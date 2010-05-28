@@ -52,7 +52,7 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
-  int LayoutToolbar(int top);
+  virtual int LayoutToolbar(int top);
   int LayoutBookmarkAndInfoBars(int top);
   int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
@@ -69,6 +69,14 @@ class BrowserViewLayout : public views::LayoutManager {
   // Layout the Extension Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
   int LayoutExtensionShelf(int bottom);
+
+  // See description above vertical_layout_rect_ for details.
+  void set_vertical_layout_rect(const gfx::Rect& bounds) {
+    vertical_layout_rect_ = bounds;
+  }
+  const gfx::Rect& vertical_layout_rect() const {
+    return vertical_layout_rect_;
+  }
 
   // Child views that the layout manager manages.
   views::ImageView* extension_app_icon_;

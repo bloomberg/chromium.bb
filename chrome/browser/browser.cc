@@ -1053,6 +1053,7 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_PAGE_MENU, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
 }
 
 bool Browser::OpenAppsPanelAsNewTab() {
@@ -1948,6 +1949,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser(); break;
     case IDC_FULLSCREEN:            ToggleFullscreenMode();        break;
     case IDC_EXIT:                  Exit();                        break;
+    case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();       break;
 #if defined(OS_CHROMEOS)
     case IDC_COMPACT_NAVBAR:        ToggleCompactNavigationBar();  break;
 #endif
@@ -3014,6 +3016,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, true);
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
+  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, true);
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
@@ -3084,17 +3087,15 @@ void Browser::InitCommandState() {
 
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
+  command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
+  command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
+
   ExtensionsService* extensions_service = profile()->GetExtensionsService();
   bool enable_extensions =
       extensions_service && extensions_service->extensions_enabled();
   command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,
                                         enable_extensions);
-
-#if defined(OS_CHROMEOS)
-  command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
-  command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
-#endif
 
   // Initialize other commands based on the window type.
   bool normal_window = type() == TYPE_NORMAL;

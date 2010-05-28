@@ -1844,8 +1844,11 @@ void BrowserView::LayoutStatusBubble(int top) {
   // frame.
   int overlap = StatusBubbleViews::kShadowThickness +
       (IsMaximized() ? 0 : views::NonClientFrameView::kClientEdgeThickness);
+  int x = -overlap;
+  if (UseVerticalTabs() && IsTabStripVisible())
+    x += tabstrip_->bounds().right();
   int height = status_bubble_->GetPreferredSize().height();
-  gfx::Point origin(-overlap, top - height + overlap);
+  gfx::Point origin(x, top - height + overlap);
   ConvertPointToView(this, GetParent(), &origin);
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }

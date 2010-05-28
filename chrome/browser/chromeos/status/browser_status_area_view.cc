@@ -38,10 +38,12 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
     CREATE_NEW_WINDOW = StatusAreaView::OPEN_TABS_ON_RIGHT + 1,
   };
 
-  explicit OptionsMenuModel(Browser* browser)
+  explicit OptionsMenuModel(BrowserView* browser_view)
       : SimpleMenuModel(this),
-        browser_(browser) {
-    AddItemWithStringId(IDC_COMPACT_NAVBAR, IDS_COMPACT_NAVBAR);
+        browser_view_(browser_view) {
+    AddCheckItemWithStringId(IDC_TOGGLE_VERTICAL_TABS,
+                             IDS_TAB_CXMENU_USE_VERTICAL_TABS);
+    AddCheckItemWithStringId(IDC_COMPACT_NAVBAR, IDS_COMPACT_NAVBAR);
     AddSeparator();
 
     AddCheckItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
@@ -56,6 +58,10 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
 
   // SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const {
+    if (command_id == IDC_TOGGLE_VERTICAL_TABS)
+      return browser_view_->UseVerticalTabs();
+    if (command_id == IDC_COMPACT_NAVBAR)
+      return browser_view_->is_compact_style();
     return StatusAreaView::GetOpenTabsMode() == command_id;
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
@@ -64,12 +70,14 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       menus::Accelerator* accelerator) {
-    return false;
+    return command_id == IDC_COMPACT_NAVBAR ?
+        browser_view_->GetAccelerator(command_id, accelerator) : false;
   }
   virtual void ExecuteCommand(int command_id) {
     switch (command_id) {
+      case IDC_TOGGLE_VERTICAL_TABS:
       case IDC_COMPACT_NAVBAR:
-        browser_->ExecuteCommand(command_id);
+        browser_view_->browser()->ExecuteCommand(command_id);
         break;
       case StatusAreaView::OPEN_TABS_ON_LEFT:
       case StatusAreaView::OPEN_TABS_CLOBBER:
@@ -83,7 +91,7 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
   }
 
  private:
-  Browser* browser_;
+  BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
 };
@@ -117,7 +125,7 @@ AppMenuModel* BrowserStatusAreaView::CreateAppMenuModel(
   // Options menu always uses StatusAreaView as delegate, so
   // we can reuse it.
   if (!options_menu_contents_.get())
-    options_menu_contents_.reset(new OptionsMenuModel(browser));
+    options_menu_contents_.reset(new OptionsMenuModel(browser_view_));
 
 #if !defined(OS_CHROMEOS)
   int sync_index = menu_model->GetIndexOfCommandId(IDC_SYNC_BOOKMARKS);
@@ -131,8 +139,9 @@ AppMenuModel* BrowserStatusAreaView::CreateAppMenuModel(
   DCHECK_GE(options_index, 0);
   menu_model->InsertSubMenuAt(
       options_index + 1,
-      IDC_COMPACT_NAVBAR,
-      ASCIIToUTF16("Compact nav bar"), options_menu_contents_.get());
+      IDC_EXPERIMENTAL,
+      ASCIIToUTF16("Experimental"),
+      options_menu_contents_.get());
   return menu_model;
 }
 
@@ -144,6 +153,8 @@ bool BrowserStatusAreaView::IsCommandIdChecked(int command_id) const {
 }
 
 bool BrowserStatusAreaView::IsCommandIdEnabled(int command_id) const {
+  if (command_id == IDC_EXPERIMENTAL)
+    return true;
   Browser* browser = browser_view_->browser();
   return browser->command_updater()->IsCommandEnabled(command_id);
 }

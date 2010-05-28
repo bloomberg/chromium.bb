@@ -86,6 +86,13 @@ NormalBrowserFrameView::~NormalBrowserFrameView() {
 gfx::Rect NormalBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
   int border_thickness = FrameBorderThickness();
+  if (browser_view_->UseVerticalTabs()) {
+    // BrowserViewLayout adjusts the height/width based on the status area and
+    // otr icon.
+    gfx::Size ps = tabstrip->GetPreferredSize();
+    return gfx::Rect(border_thickness, NonClientTopBorderHeight(),
+                     ps.width(), browser_view_->height());
+  }
   return gfx::Rect(border_thickness, NonClientTopBorderHeight(),
                    std::max(0, width() - (2 * border_thickness)),
                    tabstrip->GetPreferredHeight());
@@ -185,8 +192,13 @@ bool NormalBrowserFrameView::HitTest(const gfx::Point& l) const {
     return true;
 
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
-  if (l.y() > browser_view_->tabstrip()->bounds().bottom())
+  bool vertical_tabs = browser_view_->UseVerticalTabs();
+  const gfx::Rect& tabstrip_bounds = browser_view_->tabstrip()->bounds();
+  if ((!vertical_tabs && l.y() > tabstrip_bounds.bottom()) ||
+      (vertical_tabs && (l.x() > tabstrip_bounds.right() ||
+                         l.y() > tabstrip_bounds.bottom()))) {
     return false;
+  }
 
   // We convert from our parent's coordinates since we assume we fill its bounds
   // completely. We need to do this since we're not a parent of the tabstrip,

@@ -414,7 +414,7 @@ class BrowserView : public BrowserBubbleHost,
   // Initializes a new TabStrip for the browser view. This can be performed
   // multiple times over the life of the browser, and is run when the display
   // mode for the tabstrip changes from horizontal to vertical.
-  void InitTabStrip(TabStripModel* tab_strip_model);
+  virtual void InitTabStrip(TabStripModel* tab_strip_model);
 
   // Browser window related initializations.
   virtual void Init();

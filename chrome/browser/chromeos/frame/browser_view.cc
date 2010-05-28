@@ -28,6 +28,7 @@
 #include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/views/theme_background.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
@@ -58,6 +59,9 @@ const int kCompactNavbarSpaceHeight = 3;
 
 // The padding of the app launcher to the left side of the border.
 const int kAppLauncherLeftPadding = 5;
+
+// Amount to offset the toolbar by when vertical tabs are enabled.
+const int kVerticalTabStripToolbarOffset = 2;
 
 // A space we insert between the tabstrip and the content in
 // Compact mode.
@@ -165,8 +169,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   // layouts compact navigation buttons and status views in the title
   // area. See Layout
   virtual int LayoutTabStrip() {
-    if (browser_view_->IsFullscreen() ||
-        !browser_view_->IsTabStripVisible()) {
+    if (browser_view_->IsFullscreen() || !browser_view_->IsTabStripVisible()) {
       compact_navigation_bar_->SetVisible(false);
       status_area_->SetVisible(false);
       otr_avatar_icon_->SetVisible(false);
@@ -180,8 +183,20 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
                                       &tabstrip_origin);
       layout_bounds.set_origin(tabstrip_origin);
+      if (browser_view_->UseVerticalTabs())
+        return LayoutTitlebarComponentsWithVerticalTabs(layout_bounds);
       return LayoutTitlebarComponents(layout_bounds);
     }
+  }
+
+  virtual int LayoutToolbar(int top) {
+    if (!browser_view_->IsFullscreen() && browser_view_->IsTabStripVisible() &&
+        browser_view_->UseVerticalTabs()) {
+      // For vertical tabs the toolbar is positioned in
+      // LayoutTitlebarComponentsWithVerticalTabs.
+      return top;
+    }
+    return ::BrowserViewLayout::LayoutToolbar(top);
   }
 
   virtual bool IsPositionInWindowCaption(const gfx::Point& point) {
@@ -221,6 +236,67 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       return compact_navigation_bar_->HitTest(point_in_cnb_coords);
     }
     return false;
+  }
+
+  // Positions the titlebar, toolbar, tabstrip, tabstrip and otr icon. This is
+  // used when side tabs are enabled.
+  int LayoutTitlebarComponentsWithVerticalTabs(const gfx::Rect& bounds) {
+    if (bounds.IsEmpty())
+      return 0;
+
+    compact_navigation_bar_->SetVisible(false);
+    compact_navigation_bar_->SetBounds(0, 0, 0, 0);
+    spacer_->SetVisible(false);
+    tabstrip_->SetVisible(true);
+    otr_avatar_icon_->SetVisible(browser_view_->ShouldShowOffTheRecordAvatar());
+    status_area_->SetVisible(true);
+    status_area_->Update();
+
+    gfx::Size status_size = status_area_->GetPreferredSize();
+    int status_height = status_size.height();
+
+    // Layout the otr icon.
+    int status_x = bounds.x();
+    if (!otr_avatar_icon_->IsVisible()) {
+      otr_avatar_icon_->SetBounds(0, 0, 0, 0);
+    } else {
+      gfx::Size otr_size = otr_avatar_icon_->GetPreferredSize();
+
+      status_height = std::max(status_height, otr_size.height());
+      int y = bounds.bottom() - status_height;
+      otr_avatar_icon_->SetBounds(status_x, y, otr_size.width(), status_height);
+      status_x += otr_size.width();
+    }
+
+    // Layout the status area after the otr icon.
+    status_area_->SetBounds(status_x, bounds.bottom() - status_height,
+                            status_size.width(), status_height);
+
+    // The tabstrip's width is the bigger of it's preferred width and the width
+    // the status area.
+    int tabstrip_w = std::max(status_x + status_size.width(),
+                              tabstrip_->GetPreferredSize().width());
+    tabstrip_->SetBounds(bounds.x(), bounds.y(), tabstrip_w,
+                         bounds.height() - status_height);
+
+    // The toolbar is promoted to the title for vertical tabs.
+    bool toolbar_visible = browser_view_->IsToolbarVisible();
+    toolbar_->SetVisible(toolbar_visible);
+    int toolbar_height = 0;
+    if (toolbar_visible)
+      toolbar_height = toolbar_->GetPreferredSize().height();
+    int tabstrip_max_x = tabstrip_->bounds().right();
+    toolbar_->SetBounds(tabstrip_max_x,
+                        bounds.y() - kVerticalTabStripToolbarOffset,
+                        browser_view_->width() - tabstrip_max_x,
+                        toolbar_height);
+
+    // Adjust the available bounds for other components.
+    gfx::Rect available_bounds = vertical_layout_rect();
+    available_bounds.Inset(tabstrip_w, 0, 0, 0);
+    set_vertical_layout_rect(available_bounds);
+
+    return bounds.y() + toolbar_height;
   }
 
   // Layouts components in the title bar area (given by
@@ -412,7 +488,10 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
 }
 
 void BrowserView::ToggleCompactNavigationBar() {
-  ui_style_ = static_cast<UIStyle>((ui_style_ + 1) % 2);
+  UIStyle new_style = static_cast<UIStyle>((ui_style_ + 1) % 2);
+  if (new_style != StandardStyle && UseVerticalTabs())
+    browser()->ExecuteCommand(IDC_TOGGLE_VERTICAL_TABS);
+  ui_style_ = new_style;
   compact_location_bar_host_->SetEnabled(is_compact_style());
   compact_location_bar_host_->Hide(false);
   Layout();
@@ -420,6 +499,13 @@ void BrowserView::ToggleCompactNavigationBar() {
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout();
+}
+
+void BrowserView::InitTabStrip(TabStripModel* tab_strip_model) {
+  if (UseVerticalTabs() && is_compact_style())
+    ToggleCompactNavigationBar();
+  ::BrowserView::InitTabStrip(tab_strip_model);
+  UpdateOTRBackground();
 }
 
 void BrowserView::ChildPreferredSizeChanged(View* child) {
@@ -516,6 +602,13 @@ void BrowserView::InitSystemMenu() {
   system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
                                                IDS_TASK_MANAGER);
   system_menu_menu_.reset(new views::Menu2(system_menu_contents_.get()));
+}
+
+void BrowserView::UpdateOTRBackground() {
+  if (UseVerticalTabs())
+    otr_avatar_icon_->set_background(new ThemeBackground(this));
+  else
+    otr_avatar_icon_->set_background(NULL);
 }
 
 }  // namespace chromeos

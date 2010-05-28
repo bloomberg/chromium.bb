@@ -40,16 +40,15 @@ class BrowserView : public ::BrowserView,
                     public views::ContextMenuController,
                     public StatusAreaHost {
  public:
-  // There are 3 ui styles, standard, compact and sidebar.
-  // Standard uses the same layout as chromium/chrome browser.
-  // Compact mode hides the omnibox/toolbar to save the vertical real estate,
-  // and uses QSB (compact nav bar) to launch/switch url. In sidebar mode,
-  // the tabstrip is moved to the side and the omnibox is moved on top of
-  // the tabstrip.
+  // There are three distinct ui styles:
+  // . Standards uses the same layout as chrome. Within standard the user can
+  //   turn on side tabs. Side tabs are still represented by the constant
+  //   StandardStyle.
+  // . Compact mode hides the omnibox/toolbar to save the vertical real estate,
+  //   and uses QSB (compact nav bar) to launch/switch url.
   enum UIStyle {
     StandardStyle = 0,
     CompactStyle,
-    SidebarStyle,
   };
 
   explicit BrowserView(Browser* browser);
@@ -62,6 +61,7 @@ class BrowserView : public ::BrowserView,
   virtual void SetFocusToLocationBar(bool select_all);
   virtual void ToggleCompactNavigationBar();
   virtual views::LayoutManager* CreateLayoutManager() const;
+  virtual void InitTabStrip(TabStripModel* tab_strip_model);
   virtual void ChildPreferredSizeChanged(View* child);
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
 
@@ -96,6 +96,10 @@ class BrowserView : public ::BrowserView,
   }
 
   void InitSystemMenu();
+
+  // Updates the background of the otr icon. The background differs for vertical
+  // tabs.
+  void UpdateOTRBackground();
 
   // Status Area view.
   BrowserStatusAreaView* status_area_;

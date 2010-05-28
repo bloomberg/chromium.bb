@@ -17,7 +17,9 @@ TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate,
 
 // static
 bool TabMenuModel::AreVerticalTabsEnabled() {
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS)
+  return true;
+#elif defined(TOOLKIT_VIEWS)
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVerticalTabs);
 #else
