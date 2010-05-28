@@ -293,7 +293,11 @@ PluginProcessHost::PluginProcessHost()
     : ChildProcessHost(
           PLUGIN_PROCESS,
           PluginService::GetInstance()->resource_dispatcher_host()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL))
+#if defined(OS_MACOSX)
+      , plugin_cursor_visible_(true)
+#endif
+{
 }
 
 PluginProcessHost::~PluginProcessHost() {
