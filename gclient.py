@@ -691,6 +691,7 @@ solutions = [
             gclient_utils.RemoveDirectory(e_dir)
       # record the current list of entries for next time
       self._SaveEntries(entries)
+    return 0
 
   def PrintRevInfo(self):
     """Output revision info mapping for the client and its dependencies.

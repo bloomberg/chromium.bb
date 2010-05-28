@@ -12,125 +12,39 @@ This test assumes GClientSmokeBase.URL_BASE is valid.
 
 import logging
 import os
-import pprint
 import re
-import shutil
 import subprocess
 import sys
 import unittest
 
-from fake_repos import rmtree, write, FakeRepos
+from fake_repos import join, mangle_svn_tree, mangle_git_tree, write
+from fake_repos import FakeReposTestBase
 
-join = os.path.join
-
-SHOULD_LEAK = False
-UNITTEST_DIR = os.path.abspath(os.path.dirname(__file__))
-GCLIENT_PATH = join(os.path.dirname(UNITTEST_DIR), 'gclient')
-# all tests outputs goes there.
-TRIAL_DIR = join(UNITTEST_DIR, '_trial')
-# In case you want to use another machine to create the fake repos, e.g.
-# not on Windows.
-HOST = '127.0.0.1'
-FAKE = None
+GCLIENT_PATH = join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    'gclient')
+COVERAGE = False
 
 
-def read_tree(tree_root):
-  """Returns a dict of all the files in a tree."""
-  tree = {}
-  for root, dirs, files in os.walk(tree_root):
-    for d in filter(lambda x: x.startswith('.'), dirs):
-      dirs.remove(d)
-    for f in [join(root, f) for f in files if not f.startswith('.')]:
-      tree[f[len(tree_root) + 1:]] = open(join(root, f), 'rb').read()
-  return tree
-
-
-def dict_diff(dict1, dict2):
-  diff = {}
-  for k, v in dict1.iteritems():
-    if k not in dict2:
-      diff[k] = v
-    elif v != dict2[k]:
-      diff[k] = (v, dict2[k])
-  for k, v in dict2.iteritems():
-    if k not in dict1:
-      diff[k] = v
-  return diff
-
-
-def mangle_svn_tree(*args):
-  result = {}
-  for old_root, new_root, tree in args:
-    for k, v in tree.iteritems():
-      if not k.startswith(old_root):
-        continue
-      result[join(new_root, k[len(old_root) + 1:])] = v
-  return result
-
-
-def mangle_git_tree(*args):
-  result = {}
-  for new_root, tree in args:
-    for k, v in tree.iteritems():
-      result[join(new_root, k)] = v
-  return result
-
-
-class GClientSmokeBase(unittest.TestCase):
-  # This subversion repository contains a test repository.
-  ROOT_DIR = join(TRIAL_DIR, 'smoke')
-
+class GClientSmokeBase(FakeReposTestBase):
   def setUp(self):
-    # Vaguely inspired by twisted.
+    FakeReposTestBase.setUp(self)
     # Make sure it doesn't try to auto update when testing!
     self.env = os.environ.copy()
     self.env['DEPOT_TOOLS_UPDATE'] = '0'
-    # Remove left overs
-    self.root_dir = join(self.ROOT_DIR, self.id())
-    rmtree(self.root_dir)
-    if not os.path.exists(self.ROOT_DIR):
-      os.mkdir(self.ROOT_DIR)
-    os.mkdir(self.root_dir)
-    self.svn_base = 'svn://%s/svn/' % HOST
-    self.git_base = 'git://%s/git/' % HOST
-
-  def tearDown(self):
-    if not SHOULD_LEAK:
-      rmtree(self.root_dir)
 
   def gclient(self, cmd, cwd=None):
     if not cwd:
       cwd = self.root_dir
-    process = subprocess.Popen([GCLIENT_PATH] + cmd, cwd=cwd, env=self.env,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        shell=sys.platform.startswith('win'))
+    if COVERAGE:
+      # Don't use the wrapper script.
+      cmd_base = ['coverage', 'run', '-a', GCLIENT_PATH + '.py']
+    else:
+      cmd_base = [GCLIENT_PATH]
+    process = subprocess.Popen(cmd_base + cmd, cwd=cwd, env=self.env,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               shell=sys.platform.startswith('win'))
     (stdout, stderr) = process.communicate()
     return (stdout, stderr, process.returncode)
-
-  def checkString(self, expected, result):
-    if expected != result:
-      # Strip the begining
-      while expected and result and expected[0] == result[0]:
-        expected = expected[1:]
-        result = result[1:]
-      # The exception trace makes it hard to read so dump it too.
-      if '\n' in result:
-        print result
-    self.assertEquals(expected, result)
-
-  def check(self, expected, results):
-    self.checkString(expected[0], results[0])
-    self.checkString(expected[1], results[1])
-    self.assertEquals(expected[2], results[2])
-
-  def assertTree(self, tree):
-    actual = read_tree(self.root_dir)
-    diff = dict_diff(tree, actual)
-    if diff:
-      logging.debug('Actual %s\n%s' % (self.root_dir, pprint.pformat(actual)))
-      logging.debug('Expected\n%s' % pprint.pformat(tree))
-      logging.debug('Diff\n%s' % pprint.pformat(diff))
-    self.assertEquals(tree, actual)
 
 
 class GClientSmoke(GClientSmokeBase):
@@ -208,6 +122,10 @@ class GClientSmoke(GClientSmokeBase):
 
 
 class GClientSmokeSVN(GClientSmokeBase):
+  def setUp(self):
+    GClientSmokeBase.setUp(self)
+    self.FAKE_REPOS.setUpSVN()
+
   def testSync(self):
     # TODO(maruel): safesync.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
@@ -219,10 +137,11 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[-1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[-1]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'foo'),
-            FAKE.svn_revs[1]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[1]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         )
     tree[join('src', 'svn_hooked1')] = 'svn_hooked1'
     self.assertTree(tree)
@@ -240,13 +159,14 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[1]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'fpp'),
-            FAKE.svn_revs[2]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'),
             join('src', 'third_party', 'prout'),
-            FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
         )
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
@@ -257,15 +177,16 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[-1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[-1]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'fpp'),
-            FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'foo'),
-            FAKE.svn_revs[1]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[1]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'),
             join('src', 'third_party', 'prout'),
-            FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
         )
     tree[join('src', 'svn_hooked1')] = 'svn_hooked1'
     self.assertTree(tree)
@@ -322,10 +243,11 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[-1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[-1]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'foo'),
-            FAKE.svn_revs[1]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[1]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         )
     tree[join('src', 'svn_hooked1')] = 'svn_hooked1'
     tree[join('src', 'svn_hooked2')] = 'svn_hooked2'
@@ -371,13 +293,14 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[1]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'fpp'),
-            FAKE.svn_revs[2]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'prout'),
             join('src', 'third_party', 'prout'),
-            FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
         )
     self.assertTree(tree)
 
@@ -389,24 +312,6 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.assertEquals(out[3], '?       third_party/fpp')
     self.assertEquals(out[4], '?       third_party/prout')
     self.assertEquals(5, len(out))
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
-
-  def testRunHooks(self):
-    self.gclient(['config', self.svn_base + 'trunk/src/'])
-    self.gclient(['sync', '--deps', 'mac'])
-    results = self.gclient(['runhooks'])
-    out = results[0].splitlines(False)
-    self.assertEquals(4, len(out))
-    self.assertEquals(out[0], '')
-    self.assertTrue(re.match(r'^________ running \'.*?python -c '
-      r'open\(\'src/svn_hooked1\', \'w\'\)\.write\(\'svn_hooked1\'\)\' in \'.*',
-      out[1]))
-    self.assertEquals(out[2], '')
-    # runhooks runs all hooks even if not matching by design.
-    self.assertTrue(re.match(r'^________ running \'.*?python -c '
-      r'open\(\'src/svn_hooked2\', \'w\'\)\.write\(\'svn_hooked2\'\)\' in \'.*',
-      out[3]))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
 
@@ -447,6 +352,10 @@ class GClientSmokeSVN(GClientSmokeBase):
 
 
 class GClientSmokeGIT(GClientSmokeBase):
+  def setUp(self):
+    GClientSmokeBase.setUp(self)
+    self.FAKE_REPOS.setUpGIT()
+
   def testSync(self):
     # TODO(maruel): safesync.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
@@ -459,9 +368,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTrue(results[1].startswith('Switched to a new branch \''))
     self.assertEquals(0, results[2])
     tree = mangle_git_tree(
-        ('src', FAKE.git_hashes['repo_1'][1][1]),
-        (join('src', 'repo2'), FAKE.git_hashes['repo_2'][0][1]),
-        (join('src', 'repo2', 'repo_renamed'), FAKE.git_hashes['repo_3'][1][1]),
+        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
+        (join('src', 'repo2', 'repo_renamed'),
+              self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
         )
     tree[join('src', 'git_hooked1')] = 'git_hooked1'
     tree[join('src', 'git_hooked2')] = 'git_hooked2'
@@ -473,7 +383,7 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     # Test incremental versioned sync: sync backward.
     results = self.gclient(['sync', '--revision',
-                            'src@' + FAKE.git_hashes['repo_1'][0][0],
+                            'src@' + self.FAKE_REPOS.git_hashes['repo_1'][0][0],
                             '--deps', 'mac', '--delete_unversioned_trees'])
     logging.debug(results[0])
     out = results[0].splitlines(False)
@@ -481,10 +391,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_git_tree(
-        ('src', FAKE.git_hashes['repo_1'][0][1]),
-        (join('src', 'repo2'), FAKE.git_hashes['repo_2'][1][1]),
-        (join('src', 'repo2', 'repo3'), FAKE.git_hashes['repo_3'][1][1]),
-        (join('src', 'repo4'), FAKE.git_hashes['repo_4'][1][1]),
+        ('src', self.FAKE_REPOS.git_hashes['repo_1'][0][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
+        (join('src', 'repo2', 'repo3'),
+            self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
+        (join('src', 'repo4'), self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
         )
     tree[join('src', 'git_hooked2')] = 'git_hooked2'
     self.assertTree(tree)
@@ -496,11 +407,13 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_git_tree(
-        ('src', FAKE.git_hashes['repo_1'][1][1]),
-        (join('src', 'repo2'), FAKE.git_hashes['repo_2'][1][1]),
-        (join('src', 'repo2', 'repo3'), FAKE.git_hashes['repo_3'][1][1]),
-        (join('src', 'repo2', 'repo_renamed'), FAKE.git_hashes['repo_3'][1][1]),
-        (join('src', 'repo4'), FAKE.git_hashes['repo_4'][1][1]),
+        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
+        (join('src', 'repo2', 'repo3'),
+            self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
+        (join('src', 'repo2', 'repo_renamed'),
+              self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
+        (join('src', 'repo4'), self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
         )
     tree[join('src', 'git_hooked1')] = 'git_hooked1'
     tree[join('src', 'git_hooked2')] = 'git_hooked2'
@@ -528,9 +441,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_git_tree(
-        ('src', FAKE.git_hashes['repo_1'][1][1]),
-        (join('src', 'repo2'), FAKE.git_hashes['repo_2'][0][1]),
-        (join('src', 'repo2', 'repo_renamed'), FAKE.git_hashes['repo_3'][1][1]),
+        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
+        (join('src', 'repo2', 'repo_renamed'),
+            self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
         )
     # TODO(maruel): http://crosbug.com/3583 This file should have been removed.
     tree[join('src', 'repo2', 'hi')] = 'Hey!'
@@ -573,9 +487,9 @@ class GClientSmokeGIT(GClientSmokeBase):
            'src/repo2/repo_renamed: %(base)srepo_3@%(hash3)s\n' %
           {
             'base': self.git_base,
-            'hash1': FAKE.git_hashes['repo_1'][1][0],
-            'hash2': FAKE.git_hashes['repo_2'][0][0],
-            'hash3': FAKE.git_hashes['repo_3'][1][0],
+            'hash1': self.FAKE_REPOS.git_hashes['repo_1'][1][0],
+            'hash2': self.FAKE_REPOS.git_hashes['repo_2'][0][0],
+            'hash3': self.FAKE_REPOS.git_hashes['repo_3'][1][0],
           })
     self.check((out, '', 0), results)
 
@@ -646,14 +560,12 @@ class GClientSmokeBoth(GClientSmokeBase):
 
 
 if __name__ == '__main__':
-  if '-v' in sys.argv:
-    logging.basicConfig(level=logging.DEBUG)
-  if '-l' in sys.argv:
-    SHOULD_LEAK = True
-    sys.argv.remove('-l')
-  FAKE = FakeRepos(TRIAL_DIR, SHOULD_LEAK, True)
-  try:
-    FAKE.setUp()
-    unittest.main()
-  finally:
-    FAKE.tearDown()
+  if '-c' in sys.argv:
+    COVERAGE = True
+    sys.argv.remove('-c')
+    if os.path.exists('.coverage'):
+      os.remove('.coverage')
+    os.environ['COVERAGE_FILE'] = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        '.coverage')
+  unittest.main()

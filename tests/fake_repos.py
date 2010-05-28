@@ -5,12 +5,17 @@
 
 """Generate fake repositories for testing."""
 
+import atexit
 import logging
 import os
 import re
 import shutil
 import subprocess
 import sys
+import unittest
+
+
+## Utility functions
 
 
 def addKill():
@@ -44,11 +49,6 @@ def write(path, content):
 join = os.path.join
 
 
-def call(*args, **kwargs):
-  logging.debug(args[0])
-  subprocess.call(*args, **kwargs)
-
-
 def check_call(*args, **kwargs):
   logging.debug(args[0])
   subprocess.check_call(*args, **kwargs)
@@ -59,6 +59,48 @@ def Popen(*args, **kwargs):
   kwargs.setdefault('stderr', subprocess.STDOUT)
   logging.debug(args[0])
   return subprocess.Popen(*args, **kwargs)
+
+
+def read_tree(tree_root):
+  """Returns a dict of all the files in a tree. Defaults to self.root_dir."""
+  tree = {}
+  for root, dirs, files in os.walk(tree_root):
+    for d in filter(lambda x: x.startswith('.'), dirs):
+      dirs.remove(d)
+    for f in [join(root, f) for f in files if not f.startswith('.')]:
+      tree[f[len(tree_root) + 1:]] = open(join(root, f), 'rb').read()
+  return tree
+
+
+def dict_diff(dict1, dict2):
+  diff = {}
+  for k, v in dict1.iteritems():
+    if k not in dict2:
+      diff[k] = v
+    elif v != dict2[k]:
+      diff[k] = (v, dict2[k])
+  for k, v in dict2.iteritems():
+    if k not in dict1:
+      diff[k] = v
+  return diff
+
+
+def mangle_svn_tree(*args):
+  result = {}
+  for old_root, new_root, tree in args:
+    for k, v in tree.iteritems():
+      if not k.startswith(old_root):
+        continue
+      result[join(new_root, k[len(old_root) + 1:])] = v
+  return result
+
+
+def mangle_git_tree(*args):
+  result = {}
+  for new_root, tree in args:
+    for k, v in tree.iteritems():
+      result[join(new_root, k)] = v
+  return result
 
 
 def commit_svn(repo):
@@ -96,6 +138,8 @@ def commit_git(repo):
   return rev
 
 
+_FAKE_LOADED = False
+
 class FakeRepos(object):
   """Generate both svn and git repositories to test gclient functionality.
 
@@ -104,38 +148,71 @@ class FakeRepos(object):
 
   And types of dependencies: Relative urls, Full urls, both svn and git."""
 
-  def __init__(self, trial_dir, leak, local_only):
-    self.trial_dir = trial_dir
-    self.repos_dir = os.path.join(self.trial_dir, 'repos')
-    self.git_root = join(self.repos_dir, 'git')
-    self.svn_root = join(self.repos_dir, 'svn_checkout')
-    self.leak = leak
-    self.local_only = local_only
-    self.svnserve = []
-    self.gitdaemon = []
-    addKill()
-    rmtree(self.trial_dir)
-    os.mkdir(self.trial_dir)
-    os.mkdir(self.repos_dir)
+  # Should leak the repositories.
+  SHOULD_LEAK = False
+  # Override if unhappy.
+  TRIAL_DIR = None
+  # Hostname
+  HOST = '127.0.0.1'
+
+  def __init__(self, trial_dir=None, leak=None, host=None):
+    global _FAKE_LOADED
+    if _FAKE_LOADED:
+      raise Exception('You can only start one FakeRepos at a time.')
+    _FAKE_LOADED = True
+    # Quick hack.
+    if '-v' in sys.argv:
+      logging.basicConfig(level=logging.DEBUG)
+    if '-l' in sys.argv:
+      self.SHOULD_LEAK = True
+      sys.argv.remove('-l')
+    elif leak is not None:
+      self.SHOULD_LEAK = leak
+    if host:
+      self.HOST = host
+    if trial_dir:
+      self.TRIAL_DIR = trial_dir
+
     # Format is [ None, tree, tree, ...]
     self.svn_revs = [None]
     # Format is { repo: [ (hash, tree), (hash, tree), ... ], ... }
     self.git_hashes = {}
+    self.svnserve = None
+    self.gitdaemon = None
+    self.common_init = False
+
+  def trial_dir(self):
+    if not self.TRIAL_DIR:
+      self.TRIAL_DIR = os.path.join(
+          os.path.dirname(os.path.abspath(__file__)), '_trial')
+    return self.TRIAL_DIR
 
   def setUp(self):
-    self.setUpSVN()
-    self.setUpGIT()
+    """All late initialization comes here.
+
+    Note that it deletes all trial_dir() and not only repos_dir."""
+    if not self.common_init:
+      self.common_init = True
+      self.repos_dir = os.path.join(self.trial_dir(), 'repos')
+      self.git_root = join(self.repos_dir, 'git')
+      self.svn_root = join(self.repos_dir, 'svn_checkout')
+      addKill()
+      rmtree(self.trial_dir())
+      os.makedirs(self.repos_dir)
+      atexit.register(self.tearDown)
 
   def tearDown(self):
-    for i in self.svnserve:
-      logging.debug('Killing svnserve pid %s' % i.pid)
-      i.kill()
-    for i in self.gitdaemon:
-      logging.debug('Killing git-daemon pid %s' % i.pid)
-      i.kill()
-    if not self.leak:
-      logging.debug('Removing %s' % self.trial_dir)
-      rmtree(self.trial_dir)
+    if self.svnserve:
+      logging.debug('Killing svnserve pid %s' % self.svnserve.pid)
+      self.svnserve.kill()
+      self.svnserve = None
+    if self.gitdaemon:
+      logging.debug('Killing git-daemon pid %s' % self.gitdaemon.pid)
+      self.gitdaemon.kill()
+      self.gitdaemon = None
+    if not self.SHOULD_LEAK:
+      logging.debug('Removing %s' % self.trial_dir())
+      rmtree(self.trial_dir())
 
   def _genTree(self, root, tree_dict):
     """For a dictionary of file contents, generate a filesystem."""
@@ -155,9 +232,10 @@ class FakeRepos(object):
 
   def setUpSVN(self):
     """Creates subversion repositories and start the servers."""
-    assert not self.svnserve
+    if self.svnserve:
+      return
+    self.setUp()
     root = join(self.repos_dir, 'svn')
-    rmtree(root)
     check_call(['svnadmin', 'create', root])
     write(join(root, 'conf', 'svnserve.conf'),
         '[general]\n'
@@ -171,10 +249,10 @@ class FakeRepos(object):
 
     # Start the daemon.
     cmd = ['svnserve', '-d', '--foreground', '-r', self.repos_dir]
-    if self.local_only:
+    if self.HOST == '127.0.0.1':
       cmd.append('--listen-host=127.0.0.1')
     logging.debug(cmd)
-    self.svnserve.append(Popen(cmd, cwd=root))
+    self.svnserve = Popen(cmd, cwd=root)
     self.populateSvn()
 
   def populateSvn(self):
@@ -224,7 +302,7 @@ deps_os = {
   'mac': {
     'src/third_party/prout': '/trunk/third_party/prout',
   },
-}""" % { 'host': '127.0.0.1' }))
+}""" % { 'host': self.HOST }))
 
     self._commit_svn(file_system(2, """
 deps = {
@@ -246,12 +324,13 @@ hooks = [
                'open(\\'src/svn_hooked2\\', \\'w\\').write(\\'svn_hooked2\\')'],
   },
 ]
-""" % { 'host': '127.0.0.1' }))
+""" % { 'host': self.HOST }))
 
   def setUpGIT(self):
     """Creates git repositories and start the servers."""
-    assert not self.gitdaemon
-    rmtree(self.git_root)
+    if self.gitdaemon:
+      return
+    self.setUp()
     for repo in ['repo_%d' % r for r in range(1, 5)]:
       check_call(['git', 'init', '-q', join(self.git_root, repo)])
       self.git_hashes[repo] = []
@@ -281,7 +360,7 @@ deps_os = {
   'mac': {
     'src/repo4': '/repo_4',
   },
-}""" % { 'host': '127.0.0.1' },
+}""" % { 'host': self.HOST },
       'origin': 'git/repo_1@1\n',
     })
 
@@ -331,17 +410,19 @@ hooks = [
   },
 ]
 """ % {
-      # TODO(maruel): http://crosbug.com/3591 We need to strip the hash.. duh.
-      'host': '127.0.0.1', 'hash': self.git_hashes['repo_2'][0][0][:7] },
+        # TODO(maruel): http://crosbug.com/3591 We need to strip the hash.. duh.
+        'host': self.HOST,
+        'hash': self.git_hashes['repo_2'][0][0][:7]
+      },
       'origin': "git/repo_1@2\n"
     })
 
     # Start the daemon.
     cmd = ['git', 'daemon', '--export-all', '--base-path=' + self.repos_dir]
-    if self.local_only:
+    if self.HOST == '127.0.0.1':
       cmd.append('--listen=127.0.0.1')
     logging.debug(cmd)
-    self.gitdaemon.append(Popen(cmd, cwd=self.repos_dir))
+    self.gitdaemon = Popen(cmd, cwd=self.repos_dir)
 
   def _commit_svn(self, tree):
     self._genTree(self.svn_root, tree)
@@ -365,27 +446,71 @@ hooks = [
     self.git_hashes[repo].append((hash, new_tree))
 
 
+class FakeReposTestBase(unittest.TestCase):
+  """This is vaguely inspired by twisted."""
+
+  # Replace this in your subclass.
+  CLASS_ROOT_DIR = None
+
+  # static FakeRepos instance.
+  FAKE_REPOS = FakeRepos()
+
+  def setUp(self):
+    unittest.TestCase.setUp(self)
+    self.FAKE_REPOS.setUp()
+
+    # Remove left overs and start fresh.
+    if not self.CLASS_ROOT_DIR:
+      self.CLASS_ROOT_DIR = join(self.FAKE_REPOS.trial_dir(), 'smoke')
+    self.root_dir = join(self.CLASS_ROOT_DIR, self.id())
+    rmtree(self.root_dir)
+    os.makedirs(self.root_dir)
+    self.svn_base = 'svn://%s/svn/' % self.FAKE_REPOS.HOST
+    self.git_base = 'git://%s/git/' % self.FAKE_REPOS.HOST
+
+  def tearDown(self):
+    if not self.FAKE_REPOS.SHOULD_LEAK:
+      rmtree(self.root_dir)
+
+  def checkString(self, expected, result):
+    """Prints the diffs to ease debugging."""
+    if expected != result:
+      # Strip the begining
+      while expected and result and expected[0] == result[0]:
+        expected = expected[1:]
+        result = result[1:]
+      # The exception trace makes it hard to read so dump it too.
+      if '\n' in result:
+        print result
+    self.assertEquals(expected, result)
+
+  def check(self, expected, results):
+    """Checks stdout, stderr, retcode."""
+    self.checkString(expected[0], results[0])
+    self.checkString(expected[1], results[1])
+    self.assertEquals(expected[2], results[2])
+
+  def assertTree(self, tree, tree_root=None):
+    """Diff the checkout tree with a dict."""
+    if not tree_root:
+      tree_root = self.root_dir
+    actual = read_tree(tree_root)
+    diff = dict_diff(tree, actual)
+    if diff:
+      logging.debug('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
+      logging.debug('Expected\n%s' % pprint.pformat(tree))
+      logging.debug('Diff\n%s' % pprint.pformat(diff))
+
+
 def main(argv):
-  leak = '-l' in argv
-  if leak:
-    argv.remove('-l')
-  verbose = '-v' in argv
-  if verbose:
-    logging.basicConfig(level=logging.DEBUG)
-    argv.remove('-v')
-  assert len(argv) == 1, argv
-  trial_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           '_trial')
-  print 'Using %s' % trial_dir
-  fake = FakeRepos(trial_dir, leak, True)
+  fake = FakeRepos()
+  print 'Using %s' % fake.trial_dir()
   try:
     fake.setUp()
     print('Fake setup, press enter to quit or Ctrl-C to keep the checkouts.')
     sys.stdin.readline()
   except KeyboardInterrupt:
-    fake.leak = True
-  finally:
-    fake.tearDown()
+    fake.SHOULD_LEAK = True
   return 0
 
 
