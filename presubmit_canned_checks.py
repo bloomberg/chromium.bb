@@ -350,7 +350,7 @@ def CheckTreeIsOpen(input_api, output_api, url, closed):
     connection = input_api.urllib2.urlopen(url)
     status = connection.read()
     connection.close()
-    if input_api.re.match(closed, status):
+    if input_api.re.match(closed, status, input_api.re.IGNORECASE):
       long_text = status + '\n' + url
       return [output_api.PresubmitError('The tree is closed dude!',
                                         long_text=long_text)]
