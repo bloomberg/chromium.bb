@@ -3089,6 +3089,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
   command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
+  command_updater_.UpdateCommandEnabled(IDC_EXPERIMENTAL, true);
 #endif
 
   ExtensionsService* extensions_service = profile()->GetExtensionsService();
