@@ -199,13 +199,14 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[1]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'fpp'),
-            FAKE.svn_revs[2]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'),
             join('src', 'third_party', 'prout'),
-            FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
         )
     self.assertTree(tree)
 
@@ -495,6 +496,11 @@ class GClientSmokeGIT(GClientSmokeBase):
 
 
 class GClientSmokeBoth(GClientSmokeBase):
+  def setUp(self):
+    GClientSmokeBase.setUp(self)
+    self.FAKE_REPOS.setUpSVN()
+    self.FAKE_REPOS.setUpGIT()
+
   def testMultiSolutions(self):
     self.gclient(['config', '--spec',
       'solutions=['
@@ -510,15 +516,17 @@ class GClientSmokeBoth(GClientSmokeBase):
     #self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_git_tree(
-        ('src-git', FAKE.git_hashes['repo_1'][1][1]),
-        (join('src', 'repo2'), FAKE.git_hashes['repo_2'][0][1]),
-        (join('src', 'repo2', 'repo_renamed'), FAKE.git_hashes['repo_3'][1][1]),
+        ('src-git', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
+        (join('src', 'repo2', 'repo_renamed'),
+            self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
         )
     tree.update(mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[2]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'foo'),
-            FAKE.svn_revs[1]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[1]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         ))
     tree[join('src', 'git_hooked1')] = 'git_hooked1'
     tree[join('src', 'git_hooked2')] = 'git_hooked2'
@@ -533,8 +541,9 @@ class GClientSmokeBoth(GClientSmokeBase):
       ' "url": "' + self.svn_base + 'trunk/src/"},'
       '{"name": "src-git",'
       '"url": "' + self.git_base + 'repo_1"}]'])
-    results = self.gclient(['sync', '--deps', 'mac', '--revision', '1', '-r',
-                            'src-git@' + FAKE.git_hashes['repo_1'][0][0]])
+    results = self.gclient([
+        'sync', '--deps', 'mac', '--revision', '1', '-r',
+        'src-git@' + self.FAKE_REPOS.git_hashes['repo_1'][0][0]])
     out = results[0].splitlines(False)
     self.assertEquals(35, len(out))
     # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
@@ -542,19 +551,21 @@ class GClientSmokeBoth(GClientSmokeBase):
     #self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_git_tree(
-        ('src-git', FAKE.git_hashes['repo_1'][0][1]),
-        (join('src', 'repo2'), FAKE.git_hashes['repo_2'][1][1]),
-        (join('src', 'repo2', 'repo3'), FAKE.git_hashes['repo_3'][1][1]),
-        (join('src', 'repo4'), FAKE.git_hashes['repo_4'][1][1]),
+        ('src-git', self.FAKE_REPOS.git_hashes['repo_1'][0][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
+        (join('src', 'repo2', 'repo3'),
+            self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
+        (join('src', 'repo4'), self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
         )
     tree.update(mangle_svn_tree(
-        (join('trunk', 'src'), 'src', FAKE.svn_revs[1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[1]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'fpp'),
-            FAKE.svn_revs[2]),
-        (join('trunk', 'other'), join('src', 'other'), FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'),
             join('src', 'third_party', 'prout'),
-            FAKE.svn_revs[2]),
+            self.FAKE_REPOS.svn_revs[2]),
         ))
     self.assertTree(tree)
 
