@@ -35,6 +35,8 @@
 #include <sys/stat.h>
 #endif  // defined(LINUX)
 
+#include <cstring>
+
 namespace o3d {
 #if defined(WIN32)
 static const std::string kBreakpadProduct = "Google_O3D_Plugin";
