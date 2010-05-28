@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "media/base/mock_filters.h"
 #include "media/omx/mock_omx.h"
-#include "media/omx/omx_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;

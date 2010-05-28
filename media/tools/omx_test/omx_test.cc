@@ -14,37 +14,42 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "media/base/data_buffer.h"
 #include "media/base/media.h"
+#include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/file_protocol.h"
 #include "media/filters/bitstream_converter.h"
-#include "media/omx/omx_codec.h"
-#include "media/base/data_buffer.h"
+#include "media/filters/omx_video_decode_engine.h"
 #include "media/tools/omx_test/color_space_util.h"
 #include "media/tools/omx_test/file_reader_util.h"
 #include "media/tools/omx_test/file_sink.h"
 
 using media::BlockFileReader;
+using media::Buffer;
+using media::DataBuffer;
 using media::FFmpegFileReader;
 using media::FileReader;
 using media::FileSink;
 using media::H264FileReader;
-using media::OmxCodec;
 using media::OmxConfigurator;
 using media::OmxDecoderConfigurator;
 using media::OmxEncoderConfigurator;
+using media::OmxVideoDecodeEngine;
+using media::VideoFrame;
 using media::YuvFileReader;
-using media::Buffer;
-using media::DataBuffer;
 
 // This is the driver object to feed the decoder with data from a file.
 // It also provides callbacks for the decoder to receive events from the
 // decoder.
-class TestApp {
+// TODO(wjia): AVStream should be replaced with a new structure which is
+// neutral to any video decoder. Also change media.gyp correspondingly.
+class TestApp : public base::RefCountedThreadSafe<TestApp> {
  public:
-  TestApp(OmxConfigurator* configurator, FileSink* file_sink,
+  TestApp(AVStream* av_stream,
+          FileSink* file_sink,
           FileReader* file_reader)
-      : configurator_(configurator),
+      : av_stream_(av_stream),
         file_reader_(file_reader),
         file_sink_(file_sink),
         stopped_(false),
@@ -63,6 +68,9 @@ class TestApp {
       return false;
     }
     return true;
+  }
+
+  void InitializeDoneCallback() {
   }
 
   void StopCallback() {
@@ -98,7 +106,7 @@ class TestApp {
                              input_format.video_header.height);
   }
 
-  void FeedCompleteCallback(scoped_refptr<Buffer> buffer) {
+  void FeedDoneCallback(scoped_refptr<Buffer> buffer) {
     // We receive this callback when the decoder has consumed an input buffer.
     // In this case, delete the previous buffer and enqueue a new one.
     // There are some conditions we don't want to enqueue, for example when
@@ -109,9 +117,9 @@ class TestApp {
       FeedInputBuffer();
   }
 
-  void ReadCompleteCallback(OMX_BUFFERHEADERTYPE* buffer) {
+  void DecodeDoneCallback(scoped_refptr<VideoFrame> frame) {
     // This callback is received when the decoder has completed a decoding
-    // task and given us some output data. The buffer is owned by the decoder.
+    // task and given us some output data. The frame is owned by the decoder.
     if (stopped_ || error_)
       return;
 
@@ -119,13 +127,18 @@ class TestApp {
       first_sample_delivered_time_ = base::TimeTicks::HighResNow();
 
     // If we are readding to the end, then stop.
-    if (buffer == NULL) {
-      codec_->Stop(NewCallback(this, &TestApp::StopCallback));
+    if (frame.get() == NULL) {
+      engine_->Stop(NewCallback(this, &TestApp::StopCallback));
       return;
     }
 
-    if (file_sink_.get())
-      file_sink_->BufferReady(buffer->nFilledLen, buffer->pBuffer);
+    if (file_sink_.get()) {
+      for (size_t i = 0; i < frame->planes(); i++) {
+        int plane_size = frame->width() * frame->height();
+        if (i > 0) plane_size >>= 2;
+        file_sink_->BufferReady(plane_size, frame->data(i));
+      }
+    }
 
     // could OMX IL return patial sample for decoder?
     frame_count_++;
@@ -135,23 +148,22 @@ class TestApp {
     uint8* data;
     int read;
     file_reader_->Read(&data, &read);
-    codec_->Feed(new DataBuffer(data, read));
+    engine_->EmptyThisBuffer(new DataBuffer(data, read));
   }
 
   void Run() {
     StartProfiler();
 
-    // Setup the |codec_| with the message loop of the current thread. Also
-    // setup component name, codec format and callbacks.
-    codec_ = new OmxCodec(&message_loop_);
-    codec_->Setup(configurator_.get(),
-                  NewCallback(this, &TestApp::FeedCompleteCallback),
-                  NewCallback(this, &TestApp::ReadCompleteCallback));
-    codec_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
-    codec_->SetFormatCallback(NewCallback(this, &TestApp::FormatCallback));
+    // Setup the |engine_| with the message loop of the current thread. Also
+    // setup codec format and callbacks.
+    engine_ = new OmxVideoDecodeEngine();
+    engine_->Initialize(&message_loop_,
+                        av_stream_.get(),
+                        NewCallback(this, &TestApp::FeedDoneCallback),
+                        NewCallback(this, &TestApp::DecodeDoneCallback),
+                        NewRunnableMethod(this,
+                                          &TestApp::InitializeDoneCallback));
 
-    // Start the |codec_|.
-    codec_->Start();
     for (int i = 0; i < 20; ++i)
       FeedInputBuffer();
 
@@ -184,9 +196,9 @@ class TestApp {
     printf("\n");
   }
 
-  scoped_refptr<OmxCodec> codec_;
+  scoped_refptr<OmxVideoDecodeEngine> engine_;
   MessageLoop message_loop_;
-  scoped_ptr<OmxConfigurator> configurator_;
+  scoped_ptr<AVStream> av_stream_;
   scoped_ptr<FileReader> file_reader_;
   scoped_ptr<FileSink> file_sink_;
 
@@ -214,43 +226,48 @@ static int GetIntSwitch(const char* name) {
   return 0;
 }
 
-static bool PrepareDecodeFormats(OmxConfigurator::MediaFormat* input,
-                                 OmxConfigurator::MediaFormat* output) {
+static bool PrepareDecodeFormats(AVStream *av_stream) {
   std::string codec = GetStringSwitch("codec");
-  input->codec = OmxConfigurator::kCodecNone;
+  av_stream->codec->codec_id = CODEC_ID_NONE;
   if (codec == "h264") {
-    input->codec = OmxConfigurator::kCodecH264;
+    av_stream->codec->codec_id = CODEC_ID_H264;
   } else if (codec == "mpeg4") {
-    input->codec = OmxConfigurator::kCodecMpeg4;
+    av_stream->codec->codec_id = CODEC_ID_MPEG4;
   } else if (codec == "h263") {
-    input->codec = OmxConfigurator::kCodecH263;
+    av_stream->codec->codec_id = CODEC_ID_H263;
   } else if (codec == "vc1") {
-    input->codec = OmxConfigurator::kCodecVc1;
+    av_stream->codec->codec_id = CODEC_ID_VC1;
   } else {
     LOG(ERROR) << "Unknown codec.";
     return false;
   }
-  output->codec = OmxConfigurator::kCodecRaw;
   return true;
 }
 
-static bool PrepareEncodeFormats(OmxConfigurator::MediaFormat* input,
-                                 OmxConfigurator::MediaFormat* output) {
-  input->codec = OmxConfigurator::kCodecRaw;
-  input->video_header.width = GetIntSwitch("width");
-  input->video_header.height = GetIntSwitch("height");
-  input->video_header.frame_rate = GetIntSwitch("framerate");
-  // TODO(jiesun): make other format available.
-  output->codec = OmxConfigurator::kCodecMpeg4;
-  output->video_header.width = GetIntSwitch("width");
-  output->video_header.height = GetIntSwitch("height");
-  output->video_header.frame_rate = GetIntSwitch("framerate");
+static bool PrepareEncodeFormats(AVStream *av_stream) {
+  av_stream->codec->width = GetIntSwitch("width");
+  av_stream->codec->height = GetIntSwitch("height");
+  av_stream->avg_frame_rate.num = GetIntSwitch("framerate");
+  av_stream->avg_frame_rate.den = 1;
+
+  std::string codec = GetStringSwitch("codec");
+  av_stream->codec->codec_id = CODEC_ID_NONE;
+  if (codec == "h264") {
+    av_stream->codec->codec_id = CODEC_ID_H264;
+  } else if (codec == "mpeg4") {
+    av_stream->codec->codec_id = CODEC_ID_MPEG4;
+  } else if (codec == "h263") {
+    av_stream->codec->codec_id = CODEC_ID_H263;
+  } else if (codec == "vc1") {
+    av_stream->codec->codec_id = CODEC_ID_VC1;
+  } else {
+    LOG(ERROR) << "Unknown codec.";
+    return false;
+  }
   // TODO(jiesun): assume constant bitrate now.
-  output->video_header.bit_rate = GetIntSwitch("bitrate");
-  // TODO(jiesun): one I frame per second now. make it configurable.
-  output->video_header.i_dist = output->video_header.frame_rate;
-  // TODO(jiesun): disable B frame now. does they support it?
-  output->video_header.p_dist = 0;
+  av_stream->codec->bit_rate = GetIntSwitch("bitrate");
+
+  // TODO(wjia): add more configurations needed by encoder
   return true;
 }
 
@@ -328,21 +345,26 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  // Set the media formats for I/O.
-  OmxConfigurator::MediaFormat input, output;
-  memset(&input, 0, sizeof(input));
-  memset(&output, 0, sizeof(output));
+  // Create AVStream
+  AVStream *av_stream = new AVStream;
+  AVCodecContext *av_codec_context = new AVCodecContext;
+  memset(av_stream, 0, sizeof(AVStream));
+  memset(av_codec_context, 0, sizeof(AVCodecContext));
+  scoped_ptr<AVCodecContext> av_codec_context_deleter(av_codec_context);
+  av_stream->codec = av_codec_context;
+  av_codec_context->width = 320;
+  av_codec_context->height = 240;
   if (encoder)
-    PrepareEncodeFormats(&input, &output);
+    PrepareEncodeFormats(av_stream);
   else
-    PrepareDecodeFormats(&input, &output);
+    PrepareDecodeFormats(av_stream);
 
   // Creates the FileReader to read input file.
   FileReader* file_reader;
   if (encoder) {
     file_reader = new YuvFileReader(
-        input_filename.c_str(), input.video_header.width,
-        input.video_header.height, loop_count, enable_csc);
+        input_filename.c_str(), av_stream->codec->width,
+        av_stream->codec->height, loop_count, enable_csc);
   } else if (use_ffmpeg) {
     // Use ffmepg for reading.
     file_reader = new FFmpegFileReader(input_filename.c_str());
@@ -354,25 +376,18 @@ int main(int argc, char** argv) {
     file_reader = new BlockFileReader(input_filename.c_str(), kReadSize);
   }
 
-  // Create the configurator.
-  OmxConfigurator* configurator;
-  if (encoder)
-    configurator = new OmxEncoderConfigurator(input, output);
-  else
-    configurator = new OmxDecoderConfigurator(input, output);
-
   // Create a file sink.
   FileSink* file_sink = new FileSink(output_filename, copy, enable_csc);
 
   // Create a test app object and initialize it.
-  TestApp test(configurator, file_sink, file_reader);
-  if (!test.Initialize()) {
+  scoped_refptr<TestApp> test = new TestApp(av_stream, file_sink, file_reader);
+  if (!test->Initialize()) {
     LOG(ERROR) << "can't initialize this application";
     return -1;
   }
 
   // This will run the decoder until EOS is reached or an error
   // is encountered.
-  test.Run();
+  test->Run();
   return 0;
 }
