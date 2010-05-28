@@ -581,11 +581,13 @@ function detectSelection(e) {
   if (pickInfo) {
     // get the parent transform of this object.
     var pickTrans = pickInfo.shapeInfo.parent.transform;
+    var pickTransClientId = pickTrans.clientId;
 
     // check if a board square or a piece.
     for (var x = 0; x < g_boardSize; x += 1) {
       for (var y = 0; y < g_boardSize; y += 1) {
-        if (pickTrans === g_board[x][y].piece) {
+        if (g_board[x][y].piece &&
+            pickTransClientId == g_board[x][y].piece.clientId) {
           // do not select another player's piece.
           if (g_player != g_board[x][y].type) return;
 
@@ -605,7 +607,7 @@ function detectSelection(e) {
 
           SelectPiece(x, y);
           return;
-        } else if (pickTrans === g_board[x][y].square) {
+        } else if (pickTransClientId == g_board[x][y].square.clientId) {
           // selected the landing square if a piece move is pending.
           if (g_selectedPiece) {
             // check if a forced jump.
