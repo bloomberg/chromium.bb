@@ -401,7 +401,7 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
 // http://crbug.com/45162
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
     DISABLED_BrowserCloseTabWhenOtherTabHasListener
-#elif defined(OS_WINDOWS)
+#elif defined(OS_WIN)
 // http://crbug.com/45281
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
     DISABLED_BrowserCloseTabWhenOtherTabHasListener
