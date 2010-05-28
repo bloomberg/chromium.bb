@@ -42,7 +42,9 @@ enum PatternMatch {
  * Ensures that all stores use a safe base address.  A base address is safe if
  * it
  *     1. Has specific bits masked off by its immediate predecessor, or
- *     2. Is in a register defined as always containing a safe address.
+ *     2. Is predicated on those bits being clear, as tested by its immediate
+ *        predecessor, or
+ *     3. Is in a register defined as always containing a safe address.
  *
  * This pattern concerns itself with case #1, early-exiting if it finds #2.
  */
@@ -58,6 +60,12 @@ static PatternMatch check_store_mask(const SfiValidator &sfi,
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
       && first.always_precedes(second)) {
+    return PATTERN_SAFE;
+  }
+
+  if (first.sets_Z_if_bits_clear(second.base_address_register(),
+                                 sfi.data_address_mask())
+      && second.is_conditional_on(first)) {
     return PATTERN_SAFE;
   }
 

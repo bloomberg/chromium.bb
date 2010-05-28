@@ -187,6 +187,22 @@ class ClassDecoder {
     return false;
   }
 
+  /*
+   * Checks that an instruction will set Z if certain bits in r (chosen by 1s in
+   * the mask) are clear.
+   *
+   * Note that the inverse does not hold: the actual instruction i may require
+   * *more* bits to be clear to set Z.  This is fine.
+   */
+  virtual bool sets_Z_if_bits_clear(Instruction i,
+                                    Register r,
+                                    uint32_t mask) const {
+    UNREFERENCED_PARAMETER(i);
+    UNREFERENCED_PARAMETER(r);
+    UNREFERENCED_PARAMETER(mask);
+    return false;
+  }
+
  protected:
   ClassDecoder() {}
   virtual ~ClassDecoder() {}
@@ -335,6 +351,19 @@ class Test : public DataProc {
   virtual ~Test() {}
 
   virtual RegisterList defs(Instruction i) const;
+};
+
+/*
+ * Specifically models the TST register-immediate instruction, which is
+ * important to our conditional store sandbox.
+ */
+class TestImmediate : public Test {
+ public:
+  virtual ~TestImmediate() {}
+
+  virtual bool sets_Z_if_bits_clear(Instruction i,
+                                    Register r,
+                                    uint32_t mask) const;
 };
 
 /*

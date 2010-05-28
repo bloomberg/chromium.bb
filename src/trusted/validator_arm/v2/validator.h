@@ -215,6 +215,17 @@ class DecodedInstruction {
         && !other.defines(nacl_arm_dec::kRegisterFlags);
   }
 
+  /*
+   * Checks that the execution of 'this' is conditional on the test result
+   * (specifically, the Z flag being set) from 'other' -- which must be
+   * adjacent for this simple check to be meaningful.
+   */
+  bool is_conditional_on(const DecodedInstruction &other) const {
+    return inst_.condition() == nacl_arm_dec::Instruction::EQ
+        && other.inst_.condition() == nacl_arm_dec::Instruction::AL
+        && other.defines(nacl_arm_dec::kRegisterFlags);
+  }
+
   // The methods below mirror those on ClassDecoder, but are cached and cheap.
   nacl_arm_dec::SafetyLevel safety() const { return safety_; }
   nacl_arm_dec::RegisterList defs() const { return defs_; }
@@ -223,21 +234,31 @@ class DecodedInstruction {
   bool is_relative_branch() const {
     return decoder_->is_relative_branch(inst_);
   }
+
   const nacl_arm_dec::Register branch_target_register() const {
     return decoder_->branch_target_register(inst_);
   }
+
   bool is_literal_pool_head() const {
     return decoder_->is_literal_pool_head(inst_);
   }
+
   uint32_t branch_target() const {
     return vaddr_ + decoder_->branch_target_offset(inst_);
   }
+
   const nacl_arm_dec::Register base_address_register() const {
     return decoder_->base_address_register(inst_);
   }
+
   bool clears_bits(uint32_t mask) const {
     return decoder_->clears_bits(inst_, mask);
   }
+
+  bool sets_Z_if_bits_clear(nacl_arm_dec::Register r, uint32_t mask) const {
+    return decoder_->sets_Z_if_bits_clear(inst_, r, mask);
+  }
+
   nacl_arm_dec::RegisterList immediate_addressing_defs() const {
     return decoder_->immediate_addressing_defs(inst_);
   }
@@ -246,12 +267,15 @@ class DecodedInstruction {
   bool defines(nacl_arm_dec::Register r) const {
     return defs().contains_all(r);
   }
+
   bool defines_any(nacl_arm_dec::RegisterList rl) const {
     return defs().contains_any(rl);
   }
+
   bool defines_all(nacl_arm_dec::RegisterList rl) const {
     return defs().contains_all(rl);
   }
+
  private:
   uint32_t vaddr_;
   nacl_arm_dec::Instruction inst_;
