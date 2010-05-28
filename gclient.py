@@ -802,6 +802,10 @@ def CMDcleanup(parser, args):
 
 Mostly svn-specific. Simply runs 'svn cleanup' for each module.
 """
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
@@ -857,6 +861,10 @@ URL.
 
 def CMDexport(parser, args):
   """Wrapper for svn export for all managed directories."""
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   (options, args) = parser.parse_args(args)
   if len(args) != 1:
     raise gclient_utils.Error("Need directory name")
@@ -884,6 +892,10 @@ dependencies, and performs minimal postprocessing of the output. The
 resulting patch is printed to stdout and can be applied to a freshly
 checked out tree via 'patch -p0 < patchfile'.
 """
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
@@ -898,8 +910,9 @@ checked out tree via 'patch -p0 < patchfile'.
 def CMDstatus(parser, args):
   """Show modification status for every dependencies."""
   parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="sync deps for the specified (comma-separated) "
-                         "platform(s); 'all' will sync all platforms")
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
@@ -942,8 +955,9 @@ def CMDsync(parser, args):
   parser.add_option("--reset", action="store_true",
                     help="resets any local changes before updating (git only)")
   parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="sync deps for the specified (comma-separated) "
-                         "platform(s); 'all' will sync all platforms")
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   parser.add_option("--manually_grab_svn_rev", action="store_true",
                     help="Skip svn up whenever possible by requesting "
                          "actual HEAD revision from the repository")
@@ -990,6 +1004,10 @@ def CMDupdate(parser, args):
 
 def CMDdiff(parser, args):
   """Displays local diff for every dependencies."""
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
@@ -1004,8 +1022,9 @@ def CMDdiff(parser, args):
 def CMDrevert(parser, args):
   """Revert all modifications in every dependencies."""
   parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="sync deps for the specified (comma-separated) "
-                         "platform(s); 'all' will sync all platforms")
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   parser.add_option("--nohooks", action="store_true",
                     help="don't run hooks after the revert is complete")
   (options, args) = parser.parse_args(args)
@@ -1020,8 +1039,9 @@ def CMDrevert(parser, args):
 def CMDrunhooks(parser, args):
   """Runs hooks for files that have been modified in the local working copy."""
   parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="sync deps for the specified (comma-separated) "
-                         "platform(s); 'all' will sync all platforms")
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   parser.add_option("--force", action="store_true", default=True,
                     help="Deprecated. No effect.")
   (options, args) = parser.parse_args(args)
@@ -1039,12 +1059,15 @@ def CMDrunhooks(parser, args):
 
 def CMDrevinfo(parser, args):
   """Outputs details for every dependencies."""
+  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
+                    help="override deps for the specified (comma-separated) "
+                         "platform(s); 'all' will process all deps_os "
+                         "references")
   parser.add_option("--snapshot", action="store_true",
                     help="create a snapshot file of the current "
                          "version of all repositories")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
-  options.deps_os = None
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
   client.PrintRevInfo()
