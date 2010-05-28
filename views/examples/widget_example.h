@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 
 #include "views/background.h"
 #include "views/controls/button/text_button.h"
+#include "views/examples/box_layout.h"
 #include "views/examples/example_base.h"
-#include "views/fill_layout.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -19,55 +19,12 @@
 
 namespace {
 
-// A layout manager that layouts child views vertically.
-// TODO(oshima): support horizontal support and
-// move to views/.
-class BoxLayout : public views::LayoutManager {
- public:
-  BoxLayout() {}
-  virtual ~BoxLayout() {
-  }
-
-  // Overridden from LayoutManager:
-  virtual void Layout(views::View* host) {
-    int height = host->height();
-    int width = host->width();
-    int count = host->GetChildViewCount();
-
-    int y = 0;
-    for (int i = 0; i < count; i++) {
-      views::View* child = host->GetChildViewAt(i);
-      child->SetBounds(0, y, width, height / count);
-      y = height * (i + 1)/ count;
-    }
-  }
-
-  virtual gfx::Size GetPreferredSize(views::View* host) {
-    int count = host->GetChildViewCount();
-    gfx::Rect bounds;
-    int y = 0;
-    for (int i = 0; i < count; i++) {
-      views::View* child = host->GetChildViewAt(i);
-      gfx::Size size = child->GetPreferredSize();
-      gfx::Rect child_bounds(0, y, size.width(), size.height());
-      bounds = bounds.Union(child_bounds);
-      y += size.height();
-    }
-    return bounds.size();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BoxLayout);
-};
-
 // A layout manager that layouts a single child at
 // the center of the host view.
 class CenterLayout : public views::LayoutManager {
  public:
-  CenterLayout() {
-  }
-  virtual ~CenterLayout() {
-  }
+  CenterLayout() {}
+  virtual ~CenterLayout() {}
 
   // Overridden from LayoutManager:
   virtual void Layout(views::View* host) {
@@ -95,24 +52,24 @@ using views::Widget;
 // WidgetExample demonstrates how to create a popup widget.
 class WidgetExample : public ExampleBase, public views::ButtonListener {
  public:
-  explicit WidgetExample(ExamplesMain* main) : ExampleBase(main) {
-  }
+  explicit WidgetExample(ExamplesMain* main) : ExampleBase(main) {}
 
   virtual ~WidgetExample() {}
 
-  virtual std::wstring GetExampleTitle() {
-    return L"Widget";
-  }
+  virtual std::wstring GetExampleTitle() { return L"Widget"; }
 
   virtual void CreateExampleView(views::View* container) {
-    container->SetLayoutManager(new BoxLayout());
+    container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 2));
     BuildButton(container, L"Create a popup widget", POPUP);
     BuildButton(container, L"Create a transparent popup widget",
                 TRANSPARENT_POPUP);
 #if defined(OS_LINUX)
-    BuildButton(container, L"Create a child widget", CHILD);
-    BuildButton(container,
-                L"Create a transparent child widget", TRANSPARENT_CHILD);
+    views::View* vert_container = new views::View();
+    container->AddChildView(vert_container);
+    vert_container->SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 20));
+    BuildButton(vert_container, L"Create a child widget", CHILD);
+    BuildButton(vert_container, L"Create a transparent child widget",
+                TRANSPARENT_CHILD);
 #endif
   }
 
@@ -142,7 +99,8 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
     native_button->set_tag(CLOSE_WIDGET);
 
     views::View* button_container = new views::View();
-    button_container->SetLayoutManager(new BoxLayout);
+    button_container->SetLayoutManager(
+        new BoxLayout(BoxLayout::kHorizontal, 1));
     button_container->AddChildView(close_button);
     button_container->AddChildView(native_button);
 
