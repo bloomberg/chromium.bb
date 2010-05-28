@@ -149,6 +149,16 @@ static bool InitializeOneOff() {
       LOG(ERROR) << "glxewContextInit failed";
       return false;
     }
+
+    int major, minor;
+    if (!glXQueryVersion(display, &major, &minor)) {
+      LOG(ERROR) << "glxQueryVersion failed";
+      return false;
+    }
+
+    if (major == 1 && minor < 3) {
+      LOG(WARNING) << "GLX 1.3 or later is recommended.";
+    }
   }
 
   initialized = true;
