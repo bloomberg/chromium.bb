@@ -37,11 +37,8 @@ void SetKeyboardFocusToWindow(HWND window);
 void SendMnemonic(WORD mnemonic_char, Modifier modifiers, bool extended,
                   bool unicode);
 
-// Sends a mouse click to the desktop.
+// Sends a mouse click to the window passed in.
 enum MouseButton { LEFT, RIGHT, MIDDLE, X };
-void SendMouseClick(int x, int y, MouseButton button);
-// Sends a mouse click to the window passed in, after ensuring that the window
-// is in the foreground.
 void SendMouseClick(HWND window, int x, int y, MouseButton button);
 
 // Translates a single char to a virtual key.

@@ -192,14 +192,29 @@ void SetKeyboardFocusToWindow(HWND window) {
   SendMouseClick(window, 1, 1, LEFT);
 }
 
-void SendMouseClick(int x, int y, MouseButton button) {
+void SendMouseClick(HWND window, int x, int y, MouseButton button) {
+  if (!IsWindow(window)) {
+    NOTREACHED() << "Invalid window handle.";
+    return;
+  }
+
+  HWND top_level_window = window;
+  if (!IsTopLevelWindow(top_level_window)) {
+    top_level_window = GetAncestor(window, GA_ROOT);
+  }
+
+  ForceSetForegroundWindow(top_level_window);
+
+  POINT cursor_position = {x, y};
+  ClientToScreen(window, &cursor_position);
+
   // TODO(joshia): Fix this. GetSystemMetrics(SM_CXSCREEN) will
   // retrieve screen size of the primarary monitor only. And monitors
   // arrangement could be pretty arbitrary.
   double screen_width = ::GetSystemMetrics(SM_CXSCREEN) - 1;
   double screen_height = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-  double location_x =  x * (65535.0f / screen_width);
-  double location_y =  y * (65535.0f / screen_height);
+  double location_x =  cursor_position.x * (65535.0f / screen_width);
+  double location_y =  cursor_position.y * (65535.0f / screen_height);
 
   // Take advantage of button flag bitmask layout
   unsigned int button_flag = MOUSEEVENTF_LEFTDOWN << (button + button);
@@ -220,24 +235,6 @@ void SendMouseClick(int x, int y, MouseButton button) {
 
   input_info.mi.dwFlags = (button_flag << 1) | MOUSEEVENTF_ABSOLUTE;
   ::SendInput(1, &input_info, sizeof(INPUT));
-}
-
-void SendMouseClick(HWND window, int x, int y, MouseButton button) {
-  if (!IsWindow(window)) {
-    NOTREACHED() << "Invalid window handle.";
-    return;
-  }
-
-  HWND top_level_window = window;
-  if (!IsTopLevelWindow(top_level_window)) {
-    top_level_window = GetAncestor(window, GA_ROOT);
-  }
-
-  ForceSetForegroundWindow(top_level_window);
-
-  POINT cursor_position = {x, y};
-  ClientToScreen(window, &cursor_position);
-  SendMouseClick(cursor_position.x, cursor_position.y, button);
 }
 
 void SendExtendedKey(WORD key, Modifier modifiers) {

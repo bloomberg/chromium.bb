@@ -891,18 +891,4 @@ FilePath GetProfilePathForIE() {
   return profile_path;
 }
 
-void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,
-                                int repeat, simulate_input::Modifier mod) {
-  const unsigned int kInterval = 25;
-  unsigned int next_delay = delay;
-  for (int i = 0; i < repeat; i++) {
-    loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-        simulate_input::SendExtendedKey, c, mod), next_delay);
-    next_delay += kInterval;
-  }
-
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-    simulate_input::SendCharA, VK_RETURN, simulate_input::NONE), next_delay);
-}
-
 }  // namespace chrome_frame_test

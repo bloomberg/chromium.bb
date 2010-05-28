@@ -75,22 +75,15 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
   MOCK_METHOD2(OnWindowDetected, void (HWND hwnd,  // NOLINT
                                        const std::string& caption));
 
-  // Test expectations for general navigations.
+  // Test expectations
   ExpectationSet ExpectNavigationCardinality(const std::wstring& url,
                                              testing::Cardinality cardinality);
   ExpectationSet ExpectNavigation(const std::wstring& url);
   ExpectationSet ExpectNavigationAndSwitch(const std::wstring& url);
   ExpectationSet ExpectNavigationAndSwitchSequence(const std::wstring& url);
   ExpectationSet ExpectNewWindow(MockWebBrowserEventSink* new_window_mock);
-  ExpectationSet ExpectNavigationSequenceForAnchors(const std::wstring& url);
-
-  // Test expectations for navigations with an IE renderer.
-  // Expect one navigation to occur.
-  ExpectationSet ExpectNavigationInIE(const std::wstring& url);
-  // Expect a new window to be opened to |url|. Set |new_window_mock| as the new
-  // window.
-  ExpectationSet ExpectNewWindowWithIE(
-      const std::wstring& url, MockWebBrowserEventSink* new_window_mock);
+  ExpectationSet MockWebBrowserEventSink::ExpectNavigationSequenceForAnchors(
+      const std::wstring& url);
 };
 
 ACTION_P(CloseBrowserMock, mock) {
