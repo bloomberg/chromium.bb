@@ -3015,5 +3015,72 @@
       }
     ],
     "events": []
+  },
+  {
+    "namespace": "experimental.omnibox",
+    "types": [],
+    "functions": [
+      {
+        "name": "sendSuggestions",
+        "nodoc": true,
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "requestId"},
+          {
+            "type": "array",
+            "description": "Array of suggest results",
+            "items": {
+              "type": "object",
+              "properties": {
+                "content": {"type": "string"},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onInputChanged",
+        "type": "function",
+        "description": "User has changed what is typed into the omnibox.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "text"
+          },
+          {
+            "type": "function",
+            "name": "suggest",
+            "parameters": [
+              {
+                "type": "array",
+                "description": "Array of suggest results",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "content": {"type": "string"},
+                    "description": {"type": "string"}
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "onInputEntered",
+        "type": "function",
+        "description": "User has accepted what is typed into the omnibox.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "text"
+          }
+        ]
+      }
+    ]
   }
 ]

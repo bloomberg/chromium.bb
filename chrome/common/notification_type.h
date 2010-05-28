@@ -835,6 +835,11 @@ class NotificationType {
     // details are a pointer to the const BookmarksFunction in question.
     EXTENSION_BOOKMARKS_API_INVOKED,
 
+    // Sent when an omnibox extension has sent back omnibox suggestions. The
+    // source is the profile, and the details are a
+    // std::pair<int suggest_id, ListValue suggestions_array>
+    EXTENSION_OMNIBOX_SUGGESTIONS_READY,
+
     // Privacy Blacklist -------------------------------------------------------
 
     // Sent on the IO thread when a non-visual resource (like a cookie)

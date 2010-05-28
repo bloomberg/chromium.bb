@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/favicon_size.h"
 #include "net/base/escape.h"
 
@@ -620,4 +621,13 @@ void TemplateURL::InvalidateCachedValues() const {
     keyword_.clear();
     keyword_generated_ = false;
   }
+}
+
+std::string TemplateURL::GetExtensionId() const {
+  DCHECK(IsExtensionKeyword());
+  return GURL(WideToUTF8(url_.url())).host();
+}
+
+bool TemplateURL::IsExtensionKeyword() const {
+  return GURL(WideToUTF8(url_.url())).SchemeIs(chrome::kExtensionScheme);
 }

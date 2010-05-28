@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/location_bar/keyword_hint_view.h"
 #include "grit/generated_resources.h"
@@ -56,14 +57,16 @@ void SelectedKeywordView::SetKeyword(const std::wstring& keyword) {
   if (!profile_->GetTemplateURLModel())
     return;
 
-  const std::wstring short_name =
-      KeywordHintView::GetKeywordName(profile_, keyword);
-  full_label_.SetText(l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_TEXT,
-                                            short_name));
+  bool is_extension_keyword;
+  const std::wstring short_name = profile_->GetTemplateURLModel()->
+      GetKeywordShortName(keyword, &is_extension_keyword);
+  int message_id = is_extension_keyword ?
+      IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
+  full_label_.SetText(l10n_util::GetStringF(message_id, short_name));
   const std::wstring min_string = CalculateMinString(short_name);
   partial_label_.SetText(min_string.empty() ?
       full_label_.GetText() :
-      l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_TEXT, min_string));
+      l10n_util::GetStringF(message_id, min_string));
 }
 
 std::wstring SelectedKeywordView::CalculateMinString(

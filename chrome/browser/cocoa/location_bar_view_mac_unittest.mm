@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,19 +89,21 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
       [NSString stringWithFormat:@"Search Go%C:", 0x2026];
 
   // With no special hints requested, none set.
-  LocationBarViewMac::OnChangedImpl(field_, std::wstring(), std::wstring(), false, image);
+  LocationBarViewMac::OnChangedImpl(field_, std::wstring(), std::wstring(),
+                                    false, false, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_FALSE([cell hintString]);
 
   // Request a keyword hint.
-  LocationBarViewMac::OnChangedImpl(field_, kKeyword, kKeyword, true, image);
+  LocationBarViewMac::OnChangedImpl(field_, kKeyword, kKeyword,
+                                    true, false, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_TRUE([[[cell hintString] string] hasPrefix:kKeywordPrefix]);
   EXPECT_TRUE([[[cell hintString] string] hasSuffix:kKeywordSuffix]);
 
   // Request keyword-search mode.
   LocationBarViewMac::OnChangedImpl(
-      field_, kKeyword, kKeyword, false, image);
+      field_, kKeyword, kKeyword, false, false, image);
   EXPECT_TRUE([[[cell keywordString] string] hasSuffix:kKeywordString]);
   EXPECT_FALSE([cell hintString]);
 
@@ -112,13 +114,14 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
   NSRect frame([field_ frame]);
   frame.size.width = 10.0;
   [field_ setFrame:frame];
-  LocationBarViewMac::OnChangedImpl(field_, kKeyword, kKeyword, false, image);
+  LocationBarViewMac::OnChangedImpl(field_, kKeyword, kKeyword, false,
+                                    false, image);
   EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kPartialString]);
   EXPECT_FALSE([cell hintString]);
 
   // Transition back to baseline.
   LocationBarViewMac::OnChangedImpl(
-      field_, std::wstring(), std::wstring(), false, image);
+      field_, std::wstring(), std::wstring(), false, false, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_FALSE([cell hintString]);
 }

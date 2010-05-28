@@ -1,0 +1,8 @@
+{
+  "name": "chrome.extension.omnibox",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.omnibox API",
+  "background_page": "test.html",
+  "omnibox_keyword": "keyword",
+  "permissions": ["experimental"]
+}

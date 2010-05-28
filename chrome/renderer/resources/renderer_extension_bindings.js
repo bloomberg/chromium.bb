@@ -253,6 +253,7 @@ var chrome = chrome || {};
       "experimental.idle",
       "experimental.infobars",
       "experimental.metrics",
+      "experimental.omnibox",
       "experimental.popup",
       "experimental.processes",
       "history",

@@ -327,6 +327,8 @@ class Extension {
     return chrome_url_overrides_;
   }
 
+  const std::string omnibox_keyword() const { return omnibox_keyword_; }
+
   bool web_content_enabled() const { return web_content_enabled_; }
   const ExtensionExtent& web_extent() const { return web_extent_; }
 
@@ -527,6 +529,9 @@ class Extension {
   // Cached images for this extension. This maps from the relative_path of the
   // resource to the cached image.
   ImageCache image_cache_;
+
+  // The omnibox keyword for this extension, or empty if there is none.
+  std::string omnibox_keyword_;
 
   // Runtime data:
 

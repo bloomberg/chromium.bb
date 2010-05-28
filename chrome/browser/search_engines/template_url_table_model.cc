@@ -159,7 +159,8 @@ void TemplateURLTableModel::Reload() {
     const TemplateURL* template_url = *i;
     // NOTE: we don't use ShowInDefaultList here to avoid things bouncing
     // the lists while editing.
-    if (!template_url->show_in_default_list())
+    if (!template_url->show_in_default_list() &&
+        !template_url->IsExtensionKeyword())
       entries_.push_back(new ModelEntry(this, *template_url));
   }
 

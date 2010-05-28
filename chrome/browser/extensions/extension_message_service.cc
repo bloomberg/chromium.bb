@@ -177,6 +177,12 @@ void ExtensionMessageService::RemoveEventListener(const std::string& event_name,
   }
 }
 
+bool ExtensionMessageService::HasEventListener(
+    const std::string& event_name) {
+  return (listeners_.find(event_name) != listeners_.end() &&
+          !listeners_[event_name].empty());
+}
+
 void ExtensionMessageService::AllocatePortIdPair(int* port1, int* port2) {
   AutoLock lock(next_port_id_lock_);
 

@@ -29,9 +29,10 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -323,6 +324,9 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
   // Also copy the extension identifier since the reference might have been
   // obtained via Extension::id().
   std::string extension_id_copy(extension_id);
+
+  if (profile_->GetTemplateURLModel())
+    profile_->GetTemplateURLModel()->UnregisterExtensionKeyword(extension);
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
@@ -763,7 +767,7 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
       NotificationService::NoDetails());
 }
 
-void ExtensionsService::OnExtensionLoaded(Extension* extension,
+bool ExtensionsService::OnExtensionLoaded(Extension* extension,
                                           bool allow_privilege_increase) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_ptr<Extension> scoped_extension(extension);
@@ -831,6 +835,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
   extension->set_being_upgraded(false);
 
   UpdateActiveExtensionsInCrashReporter();
+  return true;
 }
 
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
@@ -878,12 +883,17 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   }
 
   // Also load the extension.
-  OnExtensionLoaded(extension, allow_privilege_increase);
+  bool success = OnExtensionLoaded(extension, allow_privilege_increase);
+  if (!success)
+    extension = NULL;  // extension is deleted on failure.
 
   // Erase any pending extension.
   if (it != pending_extensions_.end()) {
     pending_extensions_.erase(it);
   }
+
+  if (success && profile_->GetTemplateURLModel())
+    profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
 }
 
 Extension* ExtensionsService::GetExtensionByIdInternal(const std::string& id,

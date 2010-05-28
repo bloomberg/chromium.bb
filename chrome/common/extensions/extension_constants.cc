@@ -62,6 +62,7 @@ const wchar_t* kWebContent = L"web_content";
 const wchar_t* kWebContentEnabled = L"web_content.enabled";
 const wchar_t* kWebOrigin = L"web_content.origin";
 const wchar_t* kWebPaths = L"web_content.paths";
+const wchar_t* kOmniboxKeyword = L"omnibox_keyword";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
@@ -244,6 +245,11 @@ const char* kCannotAccessPage = "Cannot access contents of url \"*\". "
 const char* kCannotScriptGallery = "The extensions gallery cannot be scripted.";
 const char* kWebContentMustBeEnabled = "The 'web_content.enabled' property "
     "must be set to true in order to use any other web content features.";
+const char* kInvalidOmniboxKeyword =
+    "Invalid value for 'omnibox_keyword'.";
+const char* kOmniboxExperimental =
+    "You must request the 'experimental' permission in order to use the"
+    " omnibox API.";
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {

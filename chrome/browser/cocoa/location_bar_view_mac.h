@@ -134,6 +134,7 @@ class LocationBarViewMac : public AutocompleteEditController,
                             const std::wstring& keyword,
                             const std::wstring& short_name,
                             const bool is_keyword_hint,
+                            const bool is_extension_keyword,
                             NSImage* image);
 
   // Overridden from NotificationObserver.

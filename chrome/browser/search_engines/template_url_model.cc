@@ -1,13 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/search_engines/template_url_model.h"
 
-
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -16,6 +16,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -184,7 +185,8 @@ std::wstring TemplateURLModel::CleanUserInputKeyword(
 GURL TemplateURLModel::GenerateSearchURL(const TemplateURL* t_url) {
   DCHECK(t_url);
   const TemplateURLRef* search_ref = t_url->url();
-  if (!search_ref || !search_ref->IsValid())
+  // Extension keywords don't have host-based search URLs.
+  if (!search_ref || !search_ref->IsValid() || t_url->IsExtensionKeyword())
     return GURL();
 
   if (!search_ref->SupportsReplacement())
@@ -433,17 +435,13 @@ void TemplateURLModel::RemoveFromMapsByPointer(
 
 void TemplateURLModel::SetTemplateURLs(
       const std::vector<const TemplateURL*>& urls) {
-  DCHECK(template_urls_.empty()); // This should only be called on load,
-                                  // when we have no TemplateURLs.
-
   // Add mappings for the new items.
   for (TemplateURLVector::const_iterator i = urls.begin(); i != urls.end();
        ++i) {
     next_id_ = std::max(next_id_, (*i)->id());
     AddToMaps(*i);
+    template_urls_.push_back(*i);
   }
-
-  template_urls_ = urls;
 }
 
 std::vector<const TemplateURL*> TemplateURLModel::GetTemplateURLs() const {
@@ -674,6 +672,20 @@ void TemplateURLModel::RemoveDuplicatePrepopulateIDs(
   }
 }
 
+std::wstring TemplateURLModel::GetKeywordShortName(const std::wstring& keyword,
+                                                   bool* is_extension_keyword) {
+  const TemplateURL* template_url = GetTemplateURLForKeyword(keyword);
+
+  // TODO(sky): Once LocationBarView adds a listener to the TemplateURLModel
+  // to track changes to the model, this should become a DCHECK.
+  if (template_url) {
+    *is_extension_keyword = template_url->IsExtensionKeyword();
+    return template_url->AdjustedShortNameForLocaleDirection();
+  }
+  *is_extension_keyword = false;
+  return std::wstring();
+}
+
 void TemplateURLModel::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
@@ -711,6 +723,14 @@ void TemplateURLModel::NotifyLoaded() {
       NotificationType::TEMPLATE_URL_MODEL_LOADED,
       Source<TemplateURLModel>(this),
       NotificationService::NoDetails());
+
+  for (size_t i = 0; i < pending_extension_ids_.size(); ++i) {
+    Extension* extension = profile_->GetExtensionsService()->
+        GetExtensionById(pending_extension_ids_[i], true);
+    if (extension)
+      RegisterExtensionKeyword(extension);
+  }
+  pending_extension_ids_.clear();
 }
 
 void TemplateURLModel::MergeEnginesFromPrepopulateData() {
@@ -1035,4 +1055,50 @@ void TemplateURLModel::GoogleBaseURLChanged() {
     FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
                       OnTemplateURLModelChanged());
   }
+}
+
+void TemplateURLModel::RegisterExtensionKeyword(Extension* extension) {
+  // TODO(mpcomplete): disable the keyword when the extension is disabled.
+  if (extension->omnibox_keyword().empty())
+    return;
+
+  Load();
+  if (!loaded_) {
+    pending_extension_ids_.push_back(extension->id());
+    return;
+  }
+
+  if (GetTemplateURLForExtension(extension))
+    return;  // Already have this one registered (might be an upgrade).
+
+  std::wstring keyword = UTF8ToWide(extension->omnibox_keyword());
+
+  TemplateURL* template_url = new TemplateURL;
+  template_url->set_short_name(UTF8ToWide(extension->name()));
+  template_url->set_keyword(keyword);
+  // This URL is not actually used for navigation. It holds the extension's
+  // ID, as well as forcing the TemplateURL to be treated as a search keyword.
+  template_url->SetURL(
+      UTF8ToWide(chrome::kExtensionScheme) + L"://" +
+      UTF8ToWide(extension->id()) + L"/?q={searchTerms}", 0, 0);
+  template_url->set_safe_for_autoreplace(false);
+
+  Add(template_url);
+}
+
+void TemplateURLModel::UnregisterExtensionKeyword(Extension* extension) {
+  const TemplateURL* url = GetTemplateURLForExtension(extension);
+  if (url)
+    Remove(url);
+}
+
+const TemplateURL* TemplateURLModel::GetTemplateURLForExtension(
+    Extension* extension) const {
+  for (TemplateURLVector::const_iterator i = template_urls_.begin();
+       i != template_urls_.end(); ++i) {
+    if ((*i)->IsExtensionKeyword() && (*i)->url()->GetHost() == extension->id())
+      return *i;
+  }
+
+  return NULL;
 }

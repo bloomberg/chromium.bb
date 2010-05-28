@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/extension_infobar_module.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
+#include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
 #include "chrome/browser/extensions/extension_popup_api.h"
@@ -226,6 +227,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<UpdateContextMenuFunction>();
   RegisterFunction<RemoveContextMenuFunction>();
   RegisterFunction<RemoveAllContextMenusFunction>();
+
+  // Omnibox.
+  RegisterFunction<OmniboxSendSuggestionsFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

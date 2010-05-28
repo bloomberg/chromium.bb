@@ -56,9 +56,13 @@ void KeywordHintView::SetKeyword(const std::wstring& keyword) {
     return;
 
   std::vector<size_t> content_param_offsets;
+  bool is_extension_keyword;
+  std::wstring short_name = profile_->GetTemplateURLModel()->
+      GetKeywordShortName(keyword, &is_extension_keyword);
+  int message_id = is_extension_keyword ?
+      IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   const std::wstring keyword_hint(l10n_util::GetStringF(
-      IDS_OMNIBOX_KEYWORD_HINT, std::wstring(),
-      GetKeywordName(profile_, keyword), &content_param_offsets));
+      message_id, std::wstring(), short_name, &content_param_offsets));
   if (content_param_offsets.size() == 2) {
     leading_label_->SetText(
         keyword_hint.substr(0, content_param_offsets.front()));
@@ -120,18 +124,4 @@ void KeywordHintView::Layout() {
     pref = trailing_label_->GetPreferredSize();
     trailing_label_->SetBounds(x, 0, pref.width(), height());
   }
-}
-
-
-// static
-std::wstring KeywordHintView::GetKeywordName(Profile* profile,
-                                             const std::wstring& keyword) {
-  // Make sure the TemplateURL still exists.
-  // TODO(sky): Once LocationBarView adds a listener to the TemplateURLModel
-  // to track changes to the model, this should become a DCHECK.
-  const TemplateURL* template_url =
-      profile->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
-  if (template_url)
-    return template_url->AdjustedShortNameForLocaleDirection();
-  return std::wstring();
 }

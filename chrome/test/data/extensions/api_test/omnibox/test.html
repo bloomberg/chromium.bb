@@ -1,0 +1,23 @@
+<script>
+if (!chrome.omnibox) {
+  chrome.omnibox = chrome.experimental.omnibox;
+}
+
+chrome.experimental.omnibox.onInputChanged.addListener(
+  function(text, suggest) {
+    suggest([
+      {content: text + "n1", description: "description1"},
+      {content: text + "n2", description: "description2"},
+      {content: text + "n3", description: "description3"}
+    ]);
+  });
+
+chrome.experimental.omnibox.onInputEntered.addListener(
+  function(text) {
+    chrome.test.assertEq("command", text);
+    chrome.test.notifyPass();
+  });
+
+// Now we wait for the input events to fire.
+chrome.test.notifyPass();
+</script>

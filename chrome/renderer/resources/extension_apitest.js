@@ -22,7 +22,7 @@ var chrome = chrome || {};
   // Helper function to get around the fact that function names in javascript
   // are read-only, and you can't assign one to anonymous functions.
   function testName(test) {
-    return test.name || test.generatedName;
+    return test ? (test.name || test.generatedName) : "(no test)";
   }
 
   chrome.test.fail = function(message) {

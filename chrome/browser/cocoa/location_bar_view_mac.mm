@@ -255,6 +255,7 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
                                        const std::wstring& keyword,
                                        const std::wstring& short_name,
                                        const bool is_keyword_hint,
+                                       const bool is_extension_keyword,
                                        NSImage* image) {
   AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
   const CGFloat availableWidth([field availableDecorationWidth]);
@@ -266,15 +267,15 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
 
     const std::wstring min_name(CalculateMinString(short_name));
     NSString* partial_string = nil;
+    int message_id = is_extension_keyword ?
+        IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
     if (!min_name.empty()) {
       partial_string =
-          l10n_util::GetNSStringF(IDS_OMNIBOX_KEYWORD_TEXT,
-                                  WideToUTF16(min_name));
+          l10n_util::GetNSStringF(message_id, WideToUTF16(min_name));
     }
 
     NSString* keyword_string =
-        l10n_util::GetNSStringF(IDS_OMNIBOX_KEYWORD_TEXT,
-                                WideToUTF16(short_name));
+        l10n_util::GetNSStringF(message_id, WideToUTF16(short_name));
     [cell setKeywordString:keyword_string
              partialString:partial_string
             availableWidth:availableWidth];
@@ -283,8 +284,10 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
     // is a parameter to be replaced by an image.  "Engine" is a
     // parameter to be replaced by text based on the keyword.
     std::vector<size_t> content_param_offsets;
+    int message_id = is_extension_keyword ?
+        IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
     const std::wstring keyword_hint(
-        l10n_util::GetStringF(IDS_OMNIBOX_KEYWORD_HINT,
+        l10n_util::GetStringF(message_id,
                               std::wstring(), short_name,
                               &content_param_offsets));
 
@@ -318,8 +321,10 @@ void LocationBarViewMac::OnChanged() {
   // here where we have a Profile and pass it into OnChangedImpl().
   const std::wstring keyword(edit_view_->model()->keyword());
   std::wstring short_name;
+  bool is_extension_keyword = false;
   if (!keyword.empty()) {
-    short_name = GetKeywordName(profile_, keyword);
+    short_name = profile_->GetTemplateURLModel()->
+        GetKeywordShortName(keyword, &is_extension_keyword);
   }
 
   // TODO(shess): Implementation exported to a static so that it can
@@ -329,6 +334,7 @@ void LocationBarViewMac::OnChanged() {
                 keyword,
                 short_name,
                 edit_view_->model()->is_keyword_hint(),
+                is_extension_keyword,
                 GetTabButtonImage());
 }
 

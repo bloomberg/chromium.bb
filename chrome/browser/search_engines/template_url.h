@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -420,6 +420,9 @@ class TemplateURL {
   // If this TemplateURL comes from prepopulated data the prepopulate_id is > 0.
   void set_prepopulate_id(int id) { prepopulate_id_ = id; }
   int prepopulate_id() const { return prepopulate_id_; }
+
+  std::string GetExtensionId() const;
+  bool IsExtensionKeyword() const;
 
  private:
   friend class WebDatabaseTest;

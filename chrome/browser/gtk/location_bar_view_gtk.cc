@@ -94,19 +94,6 @@ const GdkColor kHintTextColor = GDK_COLOR_RGB(0x75, 0x75, 0x75);
 // Size of the rounding of the "Search site for:" box.
 const int kCornerSize = 3;
 
-// Returns the short name for a keyword.
-std::wstring GetKeywordName(Profile* profile,
-                            const std::wstring& keyword) {
-  // Make sure the TemplateURL still exists.
-  // TODO(sky): Once LocationBarView adds a listener to the TemplateURLModel
-  // to track changes to the model, this should become a DCHECK.
-  const TemplateURL* template_url =
-      profile->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
-  if (template_url)
-    return template_url->AdjustedShortNameForLocaleDirection();
-  return std::wstring();
-}
-
 // If widget is visible, increment the int pointed to by count.
 // Suitible for use with gtk_container_foreach.
 void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
@@ -905,11 +892,14 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
   if (!profile_->GetTemplateURLModel())
     return;
 
-  const std::wstring short_name = GetKeywordName(profile_, keyword);
-  std::wstring full_name(l10n_util::GetStringF(
-      IDS_OMNIBOX_KEYWORD_TEXT, short_name));
+  bool is_extension_keyword;
+  const std::wstring short_name = profile_->GetTemplateURLModel()->
+      GetKeywordShortName(keyword, &is_extension_keyword);
+  int message_id = is_extension_keyword ?
+      IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
+  std::wstring full_name(l10n_util::GetStringF(message_id, short_name));
   std::wstring partial_name(l10n_util::GetStringF(
-      IDS_OMNIBOX_KEYWORD_TEXT, CalculateMinString(short_name)));
+      message_id, CalculateMinString(short_name)));
   gtk_label_set_text(GTK_LABEL(tab_to_search_full_label_),
                      WideToUTF8(full_name).c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
@@ -924,10 +914,14 @@ void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
   if (!profile_->GetTemplateURLModel())
     return;
 
+  bool is_extension_keyword;
+  const std::wstring short_name = profile_->GetTemplateURLModel()->
+      GetKeywordShortName(keyword, &is_extension_keyword);
+  int message_id = is_extension_keyword ?
+      IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   std::vector<size_t> content_param_offsets;
   const std::wstring keyword_hint(l10n_util::GetStringF(
-      IDS_OMNIBOX_KEYWORD_HINT, std::wstring(),
-      GetKeywordName(profile_, keyword), &content_param_offsets));
+      message_id, std::wstring(), short_name, &content_param_offsets));
 
   if (content_param_offsets.size() != 2) {
     // See comments on an identical NOTREACHED() in search_provider.cc.

@@ -305,6 +305,21 @@ var chrome = chrome || {};
     });
   }
 
+  function setupOmniboxEvents(extensionId) {
+    chrome.experimental.omnibox.onInputEntered =
+        new chrome.Event("experimental.omnibox.onInputEntered/" + extensionId);
+
+    chrome.experimental.omnibox.onInputChanged =
+        new chrome.Event("experimental.omnibox.onInputChanged/" + extensionId);
+    chrome.experimental.omnibox.onInputChanged.dispatch =
+        function(text, requestId) {
+      var suggestCallback = function(suggestions) {
+        chrome.experimental.omnibox.sendSuggestions(requestId, suggestions);
+      }
+      chrome.Event.prototype.dispatch.apply(this, [text, suggestCallback]);
+    };
+  }
+
   chromeHidden.onLoad.addListener(function (extensionId) {
     chrome.initExtension(extensionId, false);
 
@@ -636,6 +651,7 @@ var chrome = chrome || {};
     setupToolstripEvents(GetRenderViewId());
     setupPopupEvents(GetRenderViewId());
     setupHiddenContextMenuEvent(extensionId);
+    setupOmniboxEvents(extensionId);
   });
 
   if (!chrome.experimental)

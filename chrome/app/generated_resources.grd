@@ -1046,12 +1046,21 @@ each locale. -->
       <message name="IDS_KEYWORD_SEARCH" desc="The description for a chrome keyword search match in the Omnibox dropdown">
         Search <ph name="SITE_NAME">$1<ex>www.google.com</ex></ph> for <ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>
       </message>
+      <message name="IDS_EXTENSION_KEYWORD_COMMAND" desc="The description for an extension keyword command match in the Omnibox dropdown">
+        Run <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> command <ph name="SEARCH_TERMS">$2<ex>mpcomplete@chromium.org</ex></ph>
+      </message>
       <message name="IDS_EMPTY_KEYWORD_VALUE"
                desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
         &lt;enter query&gt;
       </message>
       <message name="IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION" desc="Description for a keyword match.">
         (Keyword: <ph name="KEYWORD">$1</ph>)
+      </message>
+      <message name="IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_DESCRIPTION" desc="Description for an extension keyword match.">
+        (Keyword: <ph name="KEYWORD">$1</ph>)
+      </message>
+      <message name="IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_CONTENT" desc="Extra text describing usage of the suggested extension keyword command.">
+        <ph name="EXTENSION_COMMAND">$1<ex>send-mail-to</ex></ph> <ph name="EXTENSION_DESCRIPTION">$2<ex>(username@example.com)</ex></ph>
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_EDIT_SEARCH_ENGINES"
@@ -3773,11 +3782,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_KEYWORD_HINT" desc="Shown to the user when the url in the omnibox has a keyword associated with it. $1 is replaced with an image showing the tab key and is labelled with IDS_OMNIBOX_KEYWORD_HINT_KEY. $2 is replaced with the description of the keyword.">
         Press <ph name="SEARCH_KEY">$1<ex>Tab</ex></ph> to search <ph name="SITE_NAME">$2<ex>google.com</ex></ph>
       </message>
+      <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_HINT" desc="Shown to the user when the word(s) in the omnibox has an extension keyword associated with it. $1 is replaced with an image showing the tab key and is labelled with IDS_OMNIBOX_KEYWORD_HINT_KEY. $2 is replaced with the description of the keyword.">
+        Press <ph name="SEARCH_KEY">$1<ex>Tab</ex></ph> to send commands to <ph name="EXTENSION_NAME">$2<ex>Google Talk</ex></ph>
+      </message>
       <message name="IDS_OMNIBOX_KEYWORD_HINT_KEY">
         Tab
       </message>
       <message name="IDS_OMNIBOX_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected a keyword">
         Search <ph name="SITE_NAME">$1<ex>google.com</ex></ph>:
+      </message>
+      <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected an extension keyword">
+        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> command:
       </message>
       <!-- TODO(tc): This doesn't handle singular/plural properly. It needs to be reworded. -->
       <message name="IDS_OMNIBOX_RECENT_HISTORY" desc="Text shown in the omnibox that shows how many recent matches there are and allows the user to navigate to destinations->history with the selected text.">

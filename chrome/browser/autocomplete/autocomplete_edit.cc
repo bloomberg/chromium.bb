@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -265,6 +266,17 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   AutocompleteMatch match;
   GURL alternate_nav_url;
   GetInfoForCurrentText(&match, &alternate_nav_url);
+
+  if (match.template_url && match.template_url->IsExtensionKeyword()) {
+    // Strip the keyword + leading space off the input.
+    size_t prefix_length = match.template_url->keyword().size() + 1;
+    ExtensionOmniboxEventRouter::OnInputEntered(
+        profile_, match.template_url->GetExtensionId(),
+        WideToUTF8(match.fill_into_edit.substr(prefix_length)));
+    view_->RevertAll();
+    return;
+  }
+
   if (!match.destination_url.is_valid())
     return;
 
@@ -606,9 +618,13 @@ void AutocompleteEditModel::Observe(NotificationType type,
       inline_autocomplete_text =
           match->fill_into_edit.substr(match->inline_autocomplete_offset);
     }
-    // Warm up DNS Prefetch Cache.
-    chrome_browser_net::DnsPrefetchUrl(match->destination_url,
-                                       IsPreconnectable(match->type));
+
+    if (!match->destination_url.SchemeIs(chrome::kExtensionScheme)) {
+      // Warm up DNS Prefetch Cache.
+      chrome_browser_net::DnsPrefetchUrl(match->destination_url,
+                                         IsPreconnectable(match->type));
+    }
+
     // We could prefetch the alternate nav URL, if any, but because there
     // can be many of these as a user types an initial series of characters,
     // the OS DNS cache could suffer eviction problems for minimal gain.

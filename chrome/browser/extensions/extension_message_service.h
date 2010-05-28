@@ -74,6 +74,9 @@ class ExtensionMessageService
   void RemoveEventListener(const std::string& event_name,
                            int render_process_id);
 
+  // Returns true if there is at least one listener for the given event.
+  bool HasEventListener(const std::string& event_name);
+
   // Closes the message channel associated with the given port, and notifies
   // the other side.
   void CloseChannel(int port_id);

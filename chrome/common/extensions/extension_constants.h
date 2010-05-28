@@ -64,6 +64,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kWebLaunchUrl;
   extern const wchar_t* kWebOrigin;
   extern const wchar_t* kWebPaths;
+  extern const wchar_t* kOmniboxKeyword;
 }  // namespace extension_manifest_keys
 
 // Some values expected in manifests.
@@ -161,6 +162,8 @@ namespace extension_manifest_errors {
   extern const char* kCannotAccessPage;
   extern const char* kCannotScriptGallery;
   extern const char* kWebContentMustBeEnabled;
+  extern const char* kInvalidOmniboxKeyword;
+  extern const char* kOmniboxExperimental;
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {

@@ -8,10 +8,13 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -31,13 +34,17 @@ std::wstring KeywordProvider::SplitReplacementStringFromInput(
 
 KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Keyword"),
-      model_(NULL) {
+      model_(NULL),
+      current_input_id_(0) {
+  registrar_.Add(this, NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY,
+                 Source<Profile>(profile));
 }
 
 KeywordProvider::KeywordProvider(ACProviderListener* listener,
                                  TemplateURLModel* model)
     : AutocompleteProvider(listener, NULL, "Keyword"),
-      model_(model) {
+      model_(model),
+      current_input_id_(0) {
 }
 
 
@@ -83,6 +90,14 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
 void KeywordProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   matches_.clear();
+
+  if (!minimal_changes) {
+    done_ = true;
+
+    // Input has changed. Increment the input ID so that we can discard any
+    // stale extension suggestions that may be incoming.
+    ++current_input_id_;
+  }
 
   // Split user input into a keyword and some query input.
   //
@@ -131,7 +146,33 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   if (keyword_matches.front() == keyword) {
     matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
                                                keyword.length(),
-                                               remaining_input));
+                                               remaining_input, -1));
+
+    const TemplateURL* template_url(model->GetTemplateURLForKeyword(keyword));
+    if (profile_ &&
+        !input.synchronous_only() && template_url->IsExtensionKeyword()) {
+      if (minimal_changes) {
+        // If the input hasn't significantly changed, we can just use the
+        // suggestions from last time. We need to readjust the relevance to
+        // ensure it is less than the main match's relevance.
+        for (size_t i = 0; i < extension_suggest_matches_.size(); ++i) {
+          matches_.push_back(extension_suggest_matches_[i]);
+          matches_.back().relevance = matches_[0].relevance - (i + 1);
+        }
+      } else {
+        extension_suggest_last_input_ = input;
+        extension_suggest_matches_.clear();
+
+        bool have_listeners = ExtensionOmniboxEventRouter::OnInputChanged(
+            profile_, template_url->GetExtensionId(),
+            WideToUTF8(remaining_input), current_input_id_);
+
+        // We only have to wait for suggest results if there are actually
+        // extensions listening for input changes.
+        if (have_listeners)
+          done_ = false;
+      }
+    }
   } else {
     if (keyword_matches.size() > kMaxMatches) {
       keyword_matches.erase(keyword_matches.begin() + kMaxMatches,
@@ -141,7 +182,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
          i != keyword_matches.end(); ++i) {
       matches_.push_back(CreateAutocompleteMatch(model, *i, input,
                                                  keyword.length(),
-                                                 remaining_input));
+                                                 remaining_input, -1));
     }
   }
 }
@@ -189,10 +230,12 @@ void KeywordProvider::FillInURLAndContents(
   DCHECK(!element->short_name().empty());
   DCHECK(element->url());
   DCHECK(element->url()->IsValid());
+  int message_id = element->IsExtensionKeyword() ?
+      IDS_EXTENSION_KEYWORD_COMMAND : IDS_KEYWORD_SEARCH;
   if (remaining_input.empty()) {
     if (element->url()->SupportsReplacement()) {
       // No query input; return a generic, no-destination placeholder.
-      match->contents.assign(l10n_util::GetStringF(IDS_KEYWORD_SEARCH,
+      match->contents.assign(l10n_util::GetStringF(message_id,
           element->AdjustedShortNameForLocaleDirection(),
           l10n_util::GetString(IDS_EMPTY_KEYWORD_VALUE)));
       match->contents_class.push_back(
@@ -215,7 +258,7 @@ void KeywordProvider::FillInURLAndContents(
       *element, remaining_input, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
       std::wstring())));
     std::vector<size_t> content_param_offsets;
-    match->contents.assign(l10n_util::GetStringF(IDS_KEYWORD_SEARCH,
+    match->contents.assign(l10n_util::GetStringF(message_id,
                                                  element->short_name(),
                                                  remaining_input,
                                                  &content_param_offsets));
@@ -246,7 +289,8 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     const std::wstring keyword,
     const AutocompleteInput& input,
     size_t prefix_length,
-    const std::wstring& remaining_input) {
+    const std::wstring& remaining_input,
+    int relevance) {
   DCHECK(model);
   // Get keyword data from data store.
   const TemplateURL* element(model->GetTemplateURLForKeyword(keyword));
@@ -257,14 +301,17 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   // even when [remaining input] is empty, as the user can select the popup
   // choice and immediately begin typing in query input.
   const bool keyword_complete = (prefix_length == keyword.length());
-  AutocompleteMatch result(this,
-      CalculateRelevance(input.type(), keyword_complete,
-                         // When the user wants keyword matches to take
-                         // preference, score them highly regardless of whether
-                         // the input provides query text.
-                         input.prefer_keyword() || !supports_replacement),
-      false, supports_replacement ? AutocompleteMatch::SEARCH_OTHER_ENGINE :
-                                    AutocompleteMatch::HISTORY_KEYWORD);
+  if (relevance < 0) {
+    relevance =
+        CalculateRelevance(input.type(), keyword_complete,
+                           // When the user wants keyword matches to take
+                           // preference, score them highly regardless of
+                           // whether the input provides query text.
+                           input.prefer_keyword() || !supports_replacement);
+  }
+  AutocompleteMatch result(this, relevance, false,
+      supports_replacement ? AutocompleteMatch::SEARCH_OTHER_ENGINE :
+                             AutocompleteMatch::HISTORY_KEYWORD);
   result.fill_into_edit.assign(keyword);
   if (!remaining_input.empty() || !keyword_complete || supports_replacement)
     result.fill_into_edit.push_back(L' ');
@@ -278,12 +325,13 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   FillInURLAndContents(remaining_input, element, &result);
 
   // Create popup entry description based on the keyword name.
-  result.description.assign(l10n_util::GetStringF(
-      IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION, keyword));
+  int message_id = element->IsExtensionKeyword() ?
+      IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_DESCRIPTION :
+      IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION;
+  result.description.assign(l10n_util::GetStringF(message_id, keyword));
   if (supports_replacement)
     result.template_url = element;
-  static const std::wstring kKeywordDesc(l10n_util::GetString(
-      IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION));
+  static const std::wstring kKeywordDesc(l10n_util::GetString(message_id));
   AutocompleteMatch::ClassifyLocationInString(kKeywordDesc.find(L"%s"),
                                               prefix_length,
                                               result.description.length(),
@@ -293,4 +341,65 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   result.transition = PageTransition::KEYWORD;
 
   return result;
+}
+
+void KeywordProvider::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  // TODO(mpcomplete): consider clamping the number of suggestions to
+  // AutocompleteProvider::kMaxMatches.
+  DCHECK(type == NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY);
+
+  int suggest_id = Details<ExtensionOmniboxSuggestions>(details).ptr()->first;
+  if (suggest_id != current_input_id_)
+    return;  // This is an old result. Just ignore.
+
+  const AutocompleteInput& input = extension_suggest_last_input_;
+  std::wstring keyword, remaining_input;
+  if (!ExtractKeywordFromInput(input, &keyword, &remaining_input)) {
+    NOTREACHED();
+    return;
+  }
+
+  TemplateURLModel* model =
+      profile_ ? profile_->GetTemplateURLModel() : model_;
+
+  ListValue* suggestions =
+      Details<ExtensionOmniboxSuggestions>(details).ptr()->second;
+  for (size_t i = 0; i < suggestions->GetSize(); ++i) {
+    DictionaryValue* suggestion;
+    string16 content, description;
+    if (!suggestions->GetDictionary(i, &suggestion) ||
+        !suggestion->GetString("content", &content) ||
+        !suggestion->GetString("description", &description))
+      break;
+
+    // We want to order these suggestions in descending order, so start with
+    // the relevance of the first result (added synchronously in Start()),
+    // and subtract 1 for each subsequent suggestion from the extension.
+    // We know that |complete| is true, because we wouldn't get results from
+    // the extension unless the full keyword had been typed.
+    int first_relevance =
+        CalculateRelevance(input.type(), true, input.prefer_keyword());
+    extension_suggest_matches_.push_back(CreateAutocompleteMatch(
+        model, keyword, input, keyword.length(), UTF16ToWide(content),
+        first_relevance - (i + 1)));
+
+    if (!description.empty()) {
+      AutocompleteMatch* match = &extension_suggest_matches_.back();
+      std::vector<size_t> offsets;
+      match->contents.assign(l10n_util::GetStringF(
+          IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_CONTENT,
+          match->contents, UTF16ToWide(description), &offsets));
+      CHECK_EQ(2U, offsets.size()) <<
+          "Expected 2 params for IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_CONTENT";
+      match->contents_class.push_back(
+          ACMatchClassification(offsets[1], ACMatchClassification::NONE));
+    }
+  }
+
+  done_ = true;
+  matches_.insert(matches_.end(), extension_suggest_matches_.begin(),
+                  extension_suggest_matches_.end());
+  listener_->OnProviderUpdate(!extension_suggest_matches_.empty());
 }

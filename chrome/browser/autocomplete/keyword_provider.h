@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,6 +18,7 @@
 #include <string>
 
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/common/notification_registrar.h"
 
 class Profile;
 class TemplateURL;
@@ -45,7 +46,9 @@ class TemplateURLModel;
 // action "[keyword] %s".  If the user has typed a (possibly partial) keyword
 // but no search terms, the suggested result is shown greyed out, with
 // "<enter term(s)>" as the substituted input, and does nothing when selected.
-class KeywordProvider : public AutocompleteProvider {
+class KeywordProvider :
+    public AutocompleteProvider,
+    public NotificationObserver {
  public:
   KeywordProvider(ACProviderListener* listener, Profile* profile);
   // For testing.
@@ -103,16 +106,38 @@ class KeywordProvider : public AutocompleteProvider {
                                 bool no_query_text_needed);
 
   // Creates a fully marked-up AutocompleteMatch from the user's input.
+  // If |relevance| is negative, calculate a relevance based on heuristics.
   AutocompleteMatch CreateAutocompleteMatch(
       TemplateURLModel* model,
       const std::wstring keyword,
       const AutocompleteInput& input,
       size_t prefix_length,
-      const std::wstring& remaining_input);
+      const std::wstring& remaining_input,
+      int relevance);
+
+  // NotificationObserver interface.
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
 
   // Model for the keywords.  This is only non-null when testing, otherwise the
   // TemplateURLModel from the Profile is used.
   TemplateURLModel* model_;
+
+  // Identifies the current input state. This is incremented each time the
+  // autocomplete edit's input changes in any way. It is used to tell whether
+  // suggest results from the extension are current.
+  int current_input_id_;
+
+  // The input state at the time we last asked the extension for suggest
+  // results.
+  AutocompleteInput extension_suggest_last_input_;
+
+  // We remember the last suggestions we've received from the extension in case
+  // we need to reset our matches without asking the extension again.
+  std::vector<AutocompleteMatch> extension_suggest_matches_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_EVIL_CONSTRUCTORS(KeywordProvider);
 };

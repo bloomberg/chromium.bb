@@ -46,10 +46,6 @@ class KeywordHintView : public views::View {
 
   void set_profile(Profile* profile) { profile_ = profile; }
 
-  // Returns the short name for a keyword.
-  static std::wstring GetKeywordName(Profile* profile,
-                                     const std::wstring& keyword);
-
  private:
   views::Label* leading_label_;
   views::Label* trailing_label_;
