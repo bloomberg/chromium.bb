@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,6 +235,12 @@ class ImeInput {
   //     Represents the window handle of the caller.
   void DisableIME(HWND window_handle);
 
+  // Cancels an ongoing composition of the IME attached to the given window.
+  // Parameters
+  //   * window_handle [in] (HWND)
+  //     Represents the window handle of the caller.
+  void CancelIME(HWND window_handle);
+
  protected:
   // Determines whether or not the given attribute represents a target
   // (a.k.a. a selection).
@@ -300,7 +306,7 @@ class ImeInput {
   // The rectangle of the input caret retrieved from a renderer process.
   gfx::Rect caret_rect_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ImeInput);
+  DISALLOW_COPY_AND_ASSIGN(ImeInput);
 };
 
 #endif  // CHROME_BROWSER_IME_INPUT_H_

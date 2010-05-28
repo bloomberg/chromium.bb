@@ -614,6 +614,8 @@ void RenderWidgetHostViewWin::IMEUpdateStatus(int control,
                                               const gfx::Rect& caret_rect) {
   if (control == IME_DISABLE) {
     ime_input_.DisableIME(m_hWnd);
+  } else if (control == IME_CANCEL_COMPOSITION) {
+    ime_input_.CancelIME(m_hWnd);
   } else {
     ime_input_.EnableIME(m_hWnd, caret_rect,
                          control == IME_COMPLETE_COMPOSITION);

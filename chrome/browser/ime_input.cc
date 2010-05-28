@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -302,6 +302,17 @@ void ImeInput::DisableIME(HWND window_handle) {
   // clean up the resources attached to this object BEFORE DISABLING THE IME.
   CleanupComposition(window_handle);
   ::ImmAssociateContextEx(window_handle, NULL, 0);
+}
+
+void ImeInput::CancelIME(HWND window_handle) {
+  if (is_composing_) {
+    HIMC imm_context = ::ImmGetContext(window_handle);
+    if (imm_context) {
+      ::ImmNotifyIME(imm_context, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
+      ::ImmReleaseContext(window_handle, imm_context);
+    }
+    ResetComposition(window_handle);
+  }
 }
 
 void ImeInput::EnableIME(HWND window_handle,
