@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GTK_TABS_TAB_GTK_H_
 #define CHROME_BROWSER_GTK_TABS_TAB_GTK_H_
 
+#include "app/gtk_signal.h"
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
@@ -113,31 +114,26 @@ class TabGtk : public TabRendererGtk,
   virtual void DidProcessEvent(GdkEvent* event);
 
   // button-press-event handler that handles mouse clicks.
-  static gboolean OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
-                                     TabGtk* tab);
+  CHROMEGTK_CALLBACK_1(TabGtk, gboolean, OnButtonPressEvent, GdkEventButton*);
 
   // button-release-event handler that handles mouse click releases.
-  static gboolean OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
-                                       TabGtk* tab);
+  CHROMEGTK_CALLBACK_1(TabGtk, gboolean, OnButtonReleaseEvent, GdkEventButton*);
 
   // drag-begin is emitted when the drag is started. We connect so that we can
   // set the drag icon to a transparent pixbuf.
-  static void OnDragBegin(GtkWidget* widget, GdkDragContext* context,
-                          TabGtk* tab);
+  CHROMEGTK_CALLBACK_1(TabGtk, void, OnDragBegin, GdkDragContext*);
 
   // drag-failed is emitted when the drag is finished.  In our case the signal
   // does not imply failure as we don't use the drag-n-drop API to transfer drop
   // data.
-  static gboolean OnDragFailed(GtkWidget* widget, GdkDragContext* context,
-                               GtkDragResult result, TabGtk* tab);
+  CHROMEGTK_CALLBACK_2(TabGtk, gboolean, OnDragFailed, GdkDragContext*,
+                       GtkDragResult);
 
   // When a drag is ending, a fake button release event is passed to the drag
   // widget to fake letting go of the mouse button.  We need a callback for
   // this event because it is the only way to catch drag end events when the
   // user presses space or return.
-  static gboolean OnDragButtonReleased(GtkWidget* widget,
-                                       GdkEventButton* event,
-                                       TabGtk* tab);
+  CHROMEGTK_CALLBACK_1(TabGtk, gboolean, OnDragButtonReleased, GdkEventButton*);
 
   // Shows the context menu.
   void ShowContextMenu();

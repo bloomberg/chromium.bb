@@ -252,9 +252,9 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
   tab_.Own(gtk_fixed_new());
   gtk_widget_set_app_paintable(tab_.get(), TRUE);
   g_signal_connect(tab_.get(), "expose-event",
-                   G_CALLBACK(OnExposeEvent), this);
+                   G_CALLBACK(OnExposeEventThunk), this);
   g_signal_connect(tab_.get(), "size-allocate",
-                   G_CALLBACK(OnSizeAllocate), this);
+                   G_CALLBACK(OnSizeAllocateThunk), this);
   close_button_.reset(MakeCloseButton());
   gtk_widget_show(tab_.get());
 
@@ -972,13 +972,13 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
       l10n_util::GetStringUTF8(IDS_TOOLTIP_CLOSE_TAB).c_str());
 
   g_signal_connect(button->widget(), "clicked",
-                   G_CALLBACK(OnCloseButtonClicked), this);
+                   G_CALLBACK(OnCloseButtonClickedThunk), this);
   g_signal_connect(button->widget(), "button-release-event",
-                   G_CALLBACK(OnCloseButtonMouseRelease), this);
+                   G_CALLBACK(OnCloseButtonMouseReleaseThunk), this);
   g_signal_connect(button->widget(), "enter-notify-event",
-                   G_CALLBACK(OnEnterNotifyEvent), this);
+                   G_CALLBACK(OnEnterNotifyEventThunk), this);
   g_signal_connect(button->widget(), "leave-notify-event",
-                   G_CALLBACK(OnLeaveNotifyEvent), this);
+                   G_CALLBACK(OnLeaveNotifyEventThunk), this);
   GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
   gtk_fixed_put(GTK_FIXED(tab_.get()), button->widget(), 0, 0);
 
@@ -998,64 +998,53 @@ void TabRendererGtk::CloseButtonClicked() {
   // Nothing to do.
 }
 
-// static
-void TabRendererGtk::OnCloseButtonClicked(GtkWidget* widget,
-                                          TabRendererGtk* tab) {
-  tab->CloseButtonClicked();
+void TabRendererGtk::OnCloseButtonClicked(GtkWidget* widget) {
+  CloseButtonClicked();
 }
 
-// static
 gboolean TabRendererGtk::OnCloseButtonMouseRelease(GtkWidget* widget,
-                                                   GdkEventButton* event,
-                                                   TabRendererGtk* tab) {
+                                                   GdkEventButton* event) {
   if (event->button == 2) {
-    tab->CloseButtonClicked();
+    CloseButtonClicked();
     return TRUE;
   }
 
   return FALSE;
 }
 
-// static
-gboolean TabRendererGtk::OnExposeEvent(GtkWidget* widget, GdkEventExpose* event,
-                                       TabRendererGtk* tab) {
-  tab->PaintTab(event);
-  gtk_container_propagate_expose(GTK_CONTAINER(tab->tab_.get()),
-                                 tab->close_button_->widget(), event);
+gboolean TabRendererGtk::OnExposeEvent(GtkWidget* widget,
+                                       GdkEventExpose* event) {
+  PaintTab(event);
+  gtk_container_propagate_expose(GTK_CONTAINER(tab_.get()),
+                                 close_button_->widget(), event);
   return TRUE;
 }
 
-// static
 void TabRendererGtk::OnSizeAllocate(GtkWidget* widget,
-                                    GtkAllocation* allocation,
-                                    TabRendererGtk* tab) {
+                                    GtkAllocation* allocation) {
   gfx::Rect bounds = gfx::Rect(allocation->x, allocation->y,
                                allocation->width, allocation->height);
 
   // Nothing to do if the bounds are the same.  If we don't catch this, we'll
   // get an infinite loop of size-allocate signals.
-  if (tab->bounds_ == bounds)
+  if (bounds_ == bounds)
     return;
 
-  tab->bounds_ = bounds;
-  tab->Layout();
+  bounds_ = bounds;
+  Layout();
 }
 
-// static
 gboolean TabRendererGtk::OnEnterNotifyEvent(GtkWidget* widget,
-                                            GdkEventCrossing* event,
-                                            TabRendererGtk* tab) {
-  tab->hover_animation_->SetTweenType(Tween::EASE_OUT);
-  tab->hover_animation_->Show();
+                                            GdkEventCrossing* event) {
+  hover_animation_->SetTweenType(Tween::EASE_OUT);
+  hover_animation_->Show();
   return FALSE;
 }
 
-// static
 gboolean TabRendererGtk::OnLeaveNotifyEvent(GtkWidget* widget,
-                                            GdkEventCrossing* event,
-                                            TabRendererGtk* tab) {
-  tab->hover_animation_->SetTweenType(Tween::EASE_IN);
-  tab->hover_animation_->Hide();
+                                            GdkEventCrossing* event) {
+  hover_animation_->SetTweenType(Tween::EASE_IN);
+  hover_animation_->Hide();
   return FALSE;
 }
 

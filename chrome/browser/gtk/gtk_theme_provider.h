@@ -130,11 +130,6 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Additionally frees the CairoCachedSurfaces.
   virtual void FreePlatformCaches();
 
-  // Handles signal from GTK that our theme has been changed.
-  static void OnStyleSet(GtkWidget* widget,
-                         GtkStyle* previous_style,
-                         GtkThemeProvider* provider);
-
   // Extracts colors and tints from the GTK theme, both for the
   // BrowserThemeProvider interface and the colors we send to webkit.
   void LoadGtkValues();
@@ -177,6 +172,9 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Returns a tint that's the color of the current highlighted text in an
   // entry.
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
+
+  // Handles signal from GTK that our theme has been changed.
+  CHROMEGTK_CALLBACK_1(GtkThemeProvider, void, OnStyleSet, GtkStyle*);
 
   // A notification from the GtkChromeButton GObject destructor that we should
   // remove it from our internal list.

@@ -737,17 +737,17 @@ void TabStripGtk::Init() {
   gtk_dnd_util::SetDestTargetList(tabstrip_.get(), targets);
 
   g_signal_connect(tabstrip_.get(), "expose-event",
-                   G_CALLBACK(OnExpose), this);
+                   G_CALLBACK(OnExposeThunk), this);
   g_signal_connect(tabstrip_.get(), "size-allocate",
-                   G_CALLBACK(OnSizeAllocate), this);
+                   G_CALLBACK(OnSizeAllocateThunk), this);
   g_signal_connect(tabstrip_.get(), "drag-motion",
-                   G_CALLBACK(OnDragMotion), this);
+                   G_CALLBACK(OnDragMotionThunk), this);
   g_signal_connect(tabstrip_.get(), "drag-drop",
-                   G_CALLBACK(OnDragDrop), this);
+                   G_CALLBACK(OnDragDropThunk), this);
   g_signal_connect(tabstrip_.get(), "drag-leave",
-                   G_CALLBACK(OnDragLeave), this);
+                   G_CALLBACK(OnDragLeaveThunk), this);
   g_signal_connect(tabstrip_.get(), "drag-data-received",
-                   G_CALLBACK(OnDragDataReceived), this);
+                   G_CALLBACK(OnDragDataReceivedThunk), this);
 
   newtab_button_.reset(MakeNewTabButton());
 
@@ -1644,18 +1644,16 @@ TabStripGtk::DropInfo::~DropInfo() {
   DestroyContainer();
 }
 
-// static
 gboolean TabStripGtk::DropInfo::OnExposeEvent(GtkWidget* widget,
-                                              GdkEventExpose* event,
-                                              DropInfo* drop_info) {
+                                              GdkEventExpose* event) {
   if (gtk_util::IsScreenComposited()) {
-    drop_info->SetContainerTransparency();
+    SetContainerTransparency();
   } else {
-    drop_info->SetContainerShapeMask();
+    SetContainerShapeMask();
   }
 
-  gdk_pixbuf_render_to_drawable(drop_info->drop_arrow,
-                                drop_info->container->window,
+  gdk_pixbuf_render_to_drawable(drop_arrow,
+                                container->window,
                                 0, 0, 0,
                                 0, 0,
                                 drop_indicator_width,
@@ -1726,7 +1724,7 @@ void TabStripGtk::DropInfo::CreateContainer() {
   SetContainerColorMap();
   gtk_widget_set_app_paintable(container, TRUE);
   g_signal_connect(container, "expose-event",
-                   G_CALLBACK(OnExposeEvent), this);
+                   G_CALLBACK(OnExposeEventThunk), this);
   gtk_widget_add_events(container, GDK_STRUCTURE_MASK);
   gtk_window_move(GTK_WINDOW(container), 0, 0);
   gtk_window_resize(GTK_WINDOW(container),
@@ -1827,9 +1825,7 @@ void TabStripGtk::FinishAnimation(TabStripGtk::TabAnimation* animation,
     Layout();
 }
 
-// static
-gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
-                               TabStripGtk* tabstrip) {
+gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   if (gdk_region_empty(event->region))
     return TRUE;
 
@@ -1840,9 +1836,9 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
   gdk_region_get_rectangles(event->region, &rects, &num_rects);
   qsort(rects, num_rects, sizeof(GdkRectangle), CompareGdkRectangles);
   std::vector<int> tabs_to_repaint;
-  if (!tabstrip->IsDragSessionActive() &&
-      tabstrip->CanPaintOnlyFavIcons(rects, num_rects, &tabs_to_repaint)) {
-    tabstrip->PaintOnlyFavIcons(event, tabs_to_repaint);
+  if (!IsDragSessionActive() &&
+      CanPaintOnlyFavIcons(rects, num_rects, &tabs_to_repaint)) {
+    PaintOnlyFavIcons(event, tabs_to_repaint);
     g_free(rects);
     return TRUE;
   }
@@ -1856,24 +1852,24 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
   // could change the damage rect to just contain the tabs + the new tab button.
   event->area.x = 0;
   event->area.y = 0;
-  event->area.width = tabstrip->bounds_.width();
-  event->area.height = tabstrip->bounds_.height();
+  event->area.width = bounds_.width();
+  event->area.height = bounds_.height();
   gdk_region_union_with_rect(event->region, &event->area);
 
   // Paint the New Tab button.
-  gtk_container_propagate_expose(GTK_CONTAINER(tabstrip->tabstrip_.get()),
-      tabstrip->newtab_button_->widget(), event);
+  gtk_container_propagate_expose(GTK_CONTAINER(tabstrip_.get()),
+      newtab_button_->widget(), event);
 
   // Paint the tabs in reverse order, so they stack to the left.
   TabGtk* selected_tab = NULL;
-  int tab_count = tabstrip->GetTabCount();
+  int tab_count = GetTabCount();
   for (int i = tab_count - 1; i >= 0; --i) {
-    TabGtk* tab = tabstrip->GetTabAt(i);
+    TabGtk* tab = GetTabAt(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
     if (!tab->IsSelected()) {
-      gtk_container_propagate_expose(GTK_CONTAINER(tabstrip->tabstrip_.get()),
+      gtk_container_propagate_expose(GTK_CONTAINER(tabstrip_.get()),
                                      tab->widget(), event);
     } else {
       selected_tab = tab;
@@ -1882,29 +1878,27 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
 
   // Paint the selected tab last, so it overlaps all the others.
   if (selected_tab) {
-    gtk_container_propagate_expose(GTK_CONTAINER(tabstrip->tabstrip_.get()),
+    gtk_container_propagate_expose(GTK_CONTAINER(tabstrip_.get()),
                                    selected_tab->widget(), event);
   }
 
   return TRUE;
 }
 
-// static
-void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation,
-                                 TabStripGtk* tabstrip) {
+void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   gfx::Rect bounds = gfx::Rect(allocation->x, allocation->y,
       allocation->width, allocation->height);
 
   // Nothing to do if the bounds are the same.  If we don't catch this, we'll
   // get an infinite loop of size-allocate signals.
-  if (tabstrip->bounds_ == bounds)
+  if (bounds_ == bounds)
     return;
 
-  tabstrip->SetBounds(bounds);
+  SetBounds(bounds);
 
   // No tabs, nothing to layout.  This happens when a browser window is created
   // and shown before tabs are added (as in a popup window).
-  if (tabstrip->GetTabCount() == 0)
+  if (GetTabCount() == 0)
     return;
 
   // Do a regular layout on the first configure-event so we don't animate
@@ -1912,25 +1906,21 @@ void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation,
   // TODO(jhawkins): Windows resizes the layout tabs continuously during
   // a resize.  I need to investigate which signal to watch in order to
   // reproduce this behavior.
-  if (tabstrip->GetTabCount() == 1)
-    tabstrip->Layout();
+  if (GetTabCount() == 1)
+    Layout();
   else
-    tabstrip->ResizeLayoutTabs();
+    ResizeLayoutTabs();
 }
 
-// static
 gboolean TabStripGtk::OnDragMotion(GtkWidget* widget, GdkDragContext* context,
-                                   gint x, gint y, guint time,
-                                   TabStripGtk* tabstrip) {
-  tabstrip->UpdateDropIndex(context, x, y);
+                                   gint x, gint y, guint time) {
+  UpdateDropIndex(context, x, y);
   return TRUE;
 }
 
-// static
 gboolean TabStripGtk::OnDragDrop(GtkWidget* widget, GdkDragContext* context,
-                                 gint x, gint y, guint time,
-                                 TabStripGtk* tabstrip) {
-  if (!tabstrip->drop_info_.get())
+                                 gint x, gint y, guint time) {
+  if (!drop_info_.get())
     return FALSE;
 
   GdkAtom target = gtk_drag_dest_find_target(widget, context, NULL);
@@ -1942,34 +1932,30 @@ gboolean TabStripGtk::OnDragDrop(GtkWidget* widget, GdkDragContext* context,
   return TRUE;
 }
 
-// static
 gboolean TabStripGtk::OnDragLeave(GtkWidget* widget, GdkDragContext* context,
-                                  guint time, TabStripGtk* tabstrip) {
+                                  guint time) {
   // Destroy the drop indicator.
-  tabstrip->drop_info_->DestroyContainer();
+  drop_info_->DestroyContainer();
   return FALSE;
 }
 
-// static
 gboolean TabStripGtk::OnDragDataReceived(GtkWidget* widget,
                                          GdkDragContext* context,
                                          gint x, gint y,
                                          GtkSelectionData* data,
-                                         guint info, guint time,
-                                         TabStripGtk* tabstrip) {
+                                         guint info, guint time) {
   bool success = false;
 
   if (info == gtk_dnd_util::TEXT_URI_LIST ||
       info == gtk_dnd_util::NETSCAPE_URL) {
-    success = tabstrip->CompleteDrop(data->data);
+    success = CompleteDrop(data->data);
   }
 
   gtk_drag_finish(context, success, success, time);
   return TRUE;
 }
 
-// static
-void TabStripGtk::OnNewTabClicked(GtkWidget* widget, TabStripGtk* tabstrip) {
+void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
   GdkEvent* event = gtk_get_current_event();
   DCHECK_EQ(event->type, GDK_BUTTON_RELEASE);
   int mouse_button = event->button.button;
@@ -1977,24 +1963,24 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget, TabStripGtk* tabstrip) {
 
   switch (mouse_button) {
     case 1:
-      tabstrip->model_->delegate()->AddBlankTab(true);
+      model_->delegate()->AddBlankTab(true);
       break;
     case 2: {
       // On middle-click, try to parse the PRIMARY selection as a URL and load
       // it instead of creating a blank page.
       GURL url;
-      if (!gtk_util::URLFromPrimarySelection(tabstrip->model_->profile(), &url))
+      if (!gtk_util::URLFromPrimarySelection(model_->profile(), &url))
         return;
 
       TabContents* contents =
-          tabstrip->model_->delegate()->CreateTabContentsForURL(
+          model_->delegate()->CreateTabContentsForURL(
               url,
               GURL(),  // referrer
-              tabstrip->model_->profile(),
+              model_->profile(),
               PageTransition::TYPED,
               false,   // defer_load
               NULL);   // instance
-      tabstrip->model_->AddTabContents(
+      model_->AddTabContents(
           contents,
           -1,     // index
           false,  // force_index
@@ -2048,7 +2034,7 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
   // Let the middle mouse button initiate clicks as well.
   gtk_util::SetButtonTriggersNavigation(button->widget());
   g_signal_connect(button->widget(), "clicked",
-                   G_CALLBACK(OnNewTabClicked), this);
+                   G_CALLBACK(OnNewTabClickedThunk), this);
   GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
   gtk_fixed_put(GTK_FIXED(tabstrip_.get()), button->widget(), 0, 0);
 

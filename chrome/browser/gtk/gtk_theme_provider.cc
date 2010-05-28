@@ -210,7 +210,8 @@ GtkThemeProvider::GtkThemeProvider()
   // properties, too, which we query for some colors.
   gtk_widget_realize(fake_frame_);
   gtk_widget_realize(fake_window_);
-  signals_.Connect(fake_frame_, "style-set", G_CALLBACK(&OnStyleSet), this);
+  signals_.Connect(fake_frame_, "style-set",
+                   G_CALLBACK(&OnStyleSetThunk), this);
 }
 
 GtkThemeProvider::~GtkThemeProvider() {
@@ -533,19 +534,17 @@ void GtkThemeProvider::FreePlatformCaches() {
   STLDeleteValues(&gtk_images_);
 }
 
-// static
 void GtkThemeProvider::OnStyleSet(GtkWidget* widget,
-                                  GtkStyle* previous_style,
-                                  GtkThemeProvider* provider) {
+                                  GtkStyle* previous_style) {
   GdkPixbuf* default_folder_icon = default_folder_icon_;
   GdkPixbuf* default_bookmark_icon = default_bookmark_icon_;
   default_folder_icon_ = NULL;
   default_bookmark_icon_ = NULL;
 
-  if (provider->profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
-    provider->ClearAllThemeData();
-    provider->LoadGtkValues();
-    provider->NotifyThemeChanged(NULL);
+  if (profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
+    ClearAllThemeData();
+    LoadGtkValues();
+    NotifyThemeChanged(NULL);
   }
 
   // Free the old icons only after the theme change notification has gone
