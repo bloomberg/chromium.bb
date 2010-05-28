@@ -205,18 +205,19 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window_info) {
+  // The default plugin only loads in in-process mode during execution of
+  // PluginTest.DefaultPluginLoadTest. In that case, NPP_New() just calls
+  // SignalTestResult() and doesn't set |instance->pdata|.
+  // NPP_SetWindow() is called by webkit during layout of the test html. OS X
+  // and linux DCHECK the result of this function, so pretend that all's well.
+  if (webkit_glue::IsPluginRunningInRendererProcess())
+    return NPERR_NO_ERROR;
+
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
   if (window_info == NULL) {
     NOTREACHED();
-    return NPERR_GENERIC_ERROR;
-  }
-
-  // We may still get a NPP_SetWindow call from webkit in the
-  // single-process/test_shell case, as this gets invoked in the plugin
-  // destruction code path.
-  if (webkit_glue::IsPluginRunningInRendererProcess()) {
     return NPERR_GENERIC_ERROR;
   }
 

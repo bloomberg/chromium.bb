@@ -772,7 +772,6 @@ bool GetPluginFinderURL(std::string* plugin_finder_url) {
 }
 
 bool IsDefaultPluginEnabled() {
-#if defined(OS_WIN)
   FilePath exe_path;
 
   if (PathService::Get(base::FILE_EXE, &exe_path)) {
@@ -781,7 +780,6 @@ bool IsDefaultPluginEnabled() {
     if (StartsWith(exe_name, L"test_shell_tests", false))
       return true;
   }
-#endif  // OS_WIN
   return false;
 }
 

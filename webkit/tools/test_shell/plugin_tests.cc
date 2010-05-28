@@ -125,8 +125,6 @@ TEST_F(PluginTest, Refresh) {
   ASSERT_EQ(text, "DONE");
 }
 
-#if defined(OS_WIN)
-// TODO(port): Reenable on mac and linux once they have working default plugins.
 TEST_F(PluginTest, DefaultPluginLoadTest) {
   std::string html = "\
       <div id='result'>Test running....</div>\
@@ -153,7 +151,6 @@ TEST_F(PluginTest, DefaultPluginLoadTest) {
       test_shell_->webView()->mainFrame()->contentAsText(10000).utf8();
   ASSERT_EQ(true, StartsWithASCII(text, "DONE", true));
 }
-#endif
 
 // Tests that if a frame is deleted as a result of calling NPP_HandleEvent, we
 // don't crash.
