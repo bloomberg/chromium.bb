@@ -667,6 +667,8 @@ def need_change(function):
 def need_change_and_args(function):
   """Converts args -> change_info."""
   def hook(args):
+    if not args:
+      ErrorExit("You need to pass a change list name")
     change_info = ChangeInfo.Load(args.pop(0), GetRepositoryRoot(), True, True)
     return function(change_info, args)
   defer_attributes(function, hook)
