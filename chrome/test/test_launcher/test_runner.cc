@@ -40,7 +40,7 @@ static const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
 // detailed failure messages either.
 class ResultsPrinter {
  public:
-  ResultsPrinter(const CommandLine& command_line);
+  explicit ResultsPrinter(const CommandLine& command_line);
   ~ResultsPrinter();
   void OnTestCaseStart(const char* name, int test_count) const;
   void OnTestCaseEnd() const;
@@ -71,6 +71,13 @@ ResultsPrinter::ResultsPrinter(const CommandLine& command_line) : out_(NULL) {
   }
   if (path.value().empty())
     path = FilePath(kDefaultOutputFile);
+  FilePath dir_name = path.DirName();
+  if (!file_util::DirectoryExists(dir_name)) {
+    LOG(WARNING) << "The output directory does not exist. "
+                 << "Creating the directory: " << dir_name.value() << std::endl;
+    // Create the directory if necessary (because the gtest does the same).
+    file_util::CreateDirectory(dir_name);
+  }
   out_ = file_util::OpenFile(path, "w");
   if (!out_) {
     LOG(ERROR) << "Cannot open output file: "
