@@ -8,6 +8,7 @@
 #include "base/histogram.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -52,6 +53,11 @@ static const int kPaintMsgTimeoutMS = 40;
 // How long to wait before we consider a renderer hung.
 static const int kHungRendererDelayMs = 20000;
 
+// The maximum time between wheel messages while coalescing. This trades off
+// smoothness of scrolling with a risk of falling behind the events, resulting
+// in trailing scrolls after the user ends their input.
+static const int kMaxTimeBetweenWheelMessagesMs = 250;
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHost
 
@@ -77,7 +83,9 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       text_direction_updated_(false),
       text_direction_(WebKit::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
-      suppress_next_char_events_(false) {
+      suppress_next_char_events_(false),
+      spin_runloop_before_sending_wheel_event_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_runner_(this)) {
   if (routing_id_ == MSG_ROUTING_NONE)
     routing_id_ = process_->GetNextRoutingID();
 
@@ -409,6 +417,8 @@ void RenderWidgetHost::ForwardWheelEvent(
   if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
+  spin_runloop_before_sending_wheel_event_ = true;
+
   // If there's already a mouse wheel event waiting to be sent to the renderer,
   // add the new deltas to that event. Not doing so (e.g., by dropping the old
   // event, as for mouse moves) results in very slow scrolling on the Mac (on
@@ -421,12 +431,13 @@ void RenderWidgetHost::ForwardWheelEvent(
             != wheel_event.scrollByPage) {
       coalesced_mouse_wheel_events_.push_back(wheel_event);
     } else {
-      coalesced_mouse_wheel_events_.back().deltaX += wheel_event.deltaX;
-      coalesced_mouse_wheel_events_.back().deltaY += wheel_event.deltaY;
+      WebMouseWheelEvent* last_wheel_event =
+          &coalesced_mouse_wheel_events_.back();
+      last_wheel_event->deltaX += wheel_event.deltaX;
+      last_wheel_event->deltaY += wheel_event.deltaY;
       DCHECK_GE(wheel_event.timeStampSeconds,
-                coalesced_mouse_wheel_events_.back().timeStampSeconds);
-      coalesced_mouse_wheel_events_.back().timeStampSeconds =
-          wheel_event.timeStampSeconds;
+                last_wheel_event->timeStampSeconds);
+      last_wheel_event->timeStampSeconds = wheel_event.timeStampSeconds;
     }
     return;
   }
@@ -434,6 +445,8 @@ void RenderWidgetHost::ForwardWheelEvent(
 
   HISTOGRAM_COUNTS_100("MPArch.RWH_WheelQueueSize",
                        coalesced_mouse_wheel_events_.size());
+
+  last_wheel_message_time_ = TimeTicks::Now();
   ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent), false);
 }
 
@@ -546,6 +559,7 @@ void RenderWidgetHost::RendererExited() {
   mouse_move_pending_ = false;
   next_mouse_move_.reset();
   mouse_wheel_pending_ = false;
+  spin_runloop_before_sending_wheel_event_ = false;
   coalesced_mouse_wheel_events_.clear();
 
   // Must reset these to ensure that keyboard events work with a new renderer.
@@ -838,21 +852,40 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
       ForwardMouseEvent(*next_mouse_move_);
     }
   } else if (type == WebInputEvent::MouseWheel) {
-    mouse_wheel_pending_ = false;
-
-    // Now send the next (coalesced) mouse wheel event.
-    if (!coalesced_mouse_wheel_events_.empty()) {
-      WebMouseWheelEvent next_wheel_event =
-          coalesced_mouse_wheel_events_.front();
-      coalesced_mouse_wheel_events_.pop_front();
-      ForwardWheelEvent(next_wheel_event);
-    }
+    ProcessWheelAck();
   } else if (WebInputEvent::isKeyboardEventType(type)) {
     bool processed = false;
     if (!message.ReadBool(&iter, &processed))
       process()->ReceivedBadMessage(message.type());
 
     ProcessKeyboardEventAck(type, processed);
+  }
+}
+
+void RenderWidgetHost::ProcessWheelAck() {
+  static const base::TimeDelta kMaxTimeBetweenWheelMessages =
+      base::TimeDelta::FromMilliseconds(kMaxTimeBetweenWheelMessagesMs);
+
+  // Allow additional wheel events pending in the message queue to be coalesced.
+  if (spin_runloop_before_sending_wheel_event_) {
+    base::TimeDelta time_since_last_wheel_message_ =
+        TimeTicks::Now() - last_wheel_message_time_;
+    if (time_since_last_wheel_message_ < kMaxTimeBetweenWheelMessages) {
+      spin_runloop_before_sending_wheel_event_ = false;
+      MessageLoop::current()->PostTask(FROM_HERE,
+          method_runner_.NewRunnableMethod(&RenderWidgetHost::ProcessWheelAck));
+      return;
+    }
+  }
+
+  mouse_wheel_pending_ = false;
+
+  // Now send the next (coalesced) mouse wheel event.
+  if (!coalesced_mouse_wheel_events_.empty()) {
+    WebMouseWheelEvent next_wheel_event =
+        coalesced_mouse_wheel_events_.front();
+    coalesced_mouse_wheel_events_.pop_front();
+    ForwardWheelEvent(next_wheel_event);
   }
 }
 

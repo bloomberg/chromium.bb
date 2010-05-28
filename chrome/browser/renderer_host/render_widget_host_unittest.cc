@@ -647,6 +647,10 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
 
   // Check that the ACK sends the second message.
   SendInputEventACK(WebInputEvent::MouseWheel, true);
+  // The coalesced events can queue up a delayed ack
+  // so that additional input events can be processed before
+  // we turn off coalescing.
+  MessageLoop::current()->RunAllPending();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   ViewMsg_HandleInputEvent::ID));
@@ -654,6 +658,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
 
   // One more time.
   SendInputEventACK(WebInputEvent::MouseWheel, true);
+  MessageLoop::current()->RunAllPending();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   ViewMsg_HandleInputEvent::ID));
@@ -661,6 +666,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
 
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::MouseWheel, true);
+  MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0U, process_->sink().message_count());
 }
 

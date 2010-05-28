@@ -523,6 +523,11 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Called by OnMsgInputEventAck() to process a keyboard event ack message.
   void ProcessKeyboardEventAck(int type, bool processed);
 
+  // Called by OnMsgInputEventAck() to process a wheel event ack message.
+  // This could result in a task being posted to allow additional wheel
+  // input messages to be coalesced.
+  void ProcessWheelAck();
+
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
@@ -662,6 +667,17 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   // Optional video YUV layer for used for out-of-process compositing.
   scoped_ptr<VideoLayer> video_layer_;
+
+  // Set to true if we want to wait until at least one more time through
+  // the event loop to see if any additional wheel messages are coming in
+  // before sending the coalesced ones.
+  bool spin_runloop_before_sending_wheel_event_;
+
+  // The time the last wheel message was sent to the renderer.
+  base::TimeTicks last_wheel_message_time_;
+
+  // For running tasks.
+  ScopedRunnableMethodFactory<RenderWidgetHost> method_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

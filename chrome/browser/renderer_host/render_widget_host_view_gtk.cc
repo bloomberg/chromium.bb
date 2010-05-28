@@ -45,10 +45,14 @@
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
-
 static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
+#if defined(OS_CHROMEOS)
+static const float kDefaultVertScrollDelta = 20.0;
+#endif
+
 using WebKit::WebInputEventFactory;
+using WebKit::WebMouseWheelEvent;
 
 // This class is a simple convenience wrapper for Gtk functions. It has only
 // static methods.
@@ -103,6 +107,9 @@ class RenderWidgetHostViewGtkWidget {
                      G_CALLBACK(CrossingEvent), host_view);
     g_signal_connect(widget, "leave-notify-event",
                      G_CALLBACK(CrossingEvent), host_view);
+    g_signal_connect(widget, "client-event",
+                     G_CALLBACK(ClientEvent), host_view);
+
 
     // Connect after so that we are called after the handler installed by the
     // TabContentsView which handles zoom events.
@@ -295,6 +302,36 @@ class RenderWidgetHostViewGtkWidget {
     return FALSE;
   }
 
+  static gboolean ClientEvent(GtkWidget* widget, GdkEventClient* event,
+                              RenderWidgetHostViewGtk* host_view) {
+    LOG(INFO) << "client event type: " << event->message_type
+              << " data_format: " << event->data_format
+              << " data: " << event->data.l;
+    return true;
+  }
+
+#if defined(OS_CHROMEOS)
+  // Allow the vertical scroll delta to be overridden from the command line.
+  // This will allow us to test more easily to discover the amount
+  // (either hard coded or computed) that's best.
+  static float GetVertScrollDelta() {
+    static float vert_scroll_delta = -1;
+    if (vert_scroll_delta < 0) {
+      vert_scroll_delta = kDefaultVertScrollDelta;
+      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      std::string vert_scroll_option =
+          command_line->GetSwitchValueASCII(switches::kVertScrollDelta);
+      if (!vert_scroll_option.empty()) {
+        double v;
+        if (StringToDouble(vert_scroll_option, &v))
+          vert_scroll_delta = static_cast<float>(v);
+      }
+      DCHECK_GT(vert_scroll_delta, 0);
+    }
+    return vert_scroll_delta;
+  }
+#endif
+
   static gboolean MouseScrollEvent(GtkWidget* widget, GdkEventScroll* event,
                                    RenderWidgetHostViewGtk* host_view) {
     // If the user is holding shift, translate it into a horizontal scroll. We
@@ -307,8 +344,22 @@ class RenderWidgetHostViewGtkWidget {
         event->direction = GDK_SCROLL_RIGHT;
     }
 
-    host_view->GetRenderWidgetHost()->ForwardWheelEvent(
-        WebInputEventFactory::mouseWheelEvent(event));
+    WebMouseWheelEvent web_event = WebInputEventFactory::mouseWheelEvent(event);
+#if defined (OS_CHROMEOS)
+    // Under ChromeOS we know that the wheel is a touchpad. The driver for this
+    // can generate events very quickly. We configure it to generate more
+    // events and scroll by a smaller amount on each, to give us better
+    // precision. This is only configured for vertical scrolling, and
+    // doesn't apply if we are using the shift modifier to cause a horizontal
+    // scroll.
+    if (!(event->state & GDK_SHIFT_MASK)) {
+      if (event->direction == GDK_SCROLL_UP)
+        web_event.deltaY = GetVertScrollDelta();
+      else
+        web_event.deltaY = -GetVertScrollDelta();
+    }
+#endif // OS_CHROMEOS
+    host_view->GetRenderWidgetHost()->ForwardWheelEvent(web_event);
     return FALSE;
   }
 

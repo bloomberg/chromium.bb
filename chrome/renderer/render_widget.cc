@@ -328,10 +328,17 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   response->WriteInt(input_event->type);
   response->WriteBool(processed);
 
-  if (input_event->type == WebInputEvent::MouseMove &&
+  if ((input_event->type == WebInputEvent::MouseMove ||
+       input_event->type == WebInputEvent::MouseWheel) &&
       paint_aggregator_.HasPendingUpdate()) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.
+    if (pending_input_event_ack_.get()) {
+      // As two different kinds of events could cause us to postpone an ack
+      // we send it now, if we have one pending. The Browser should never
+      // send us the same kind of event we are delaying the ack for.
+      Send(pending_input_event_ack_.release());
+    }
     pending_input_event_ack_.reset(response);
   } else {
     Send(response);

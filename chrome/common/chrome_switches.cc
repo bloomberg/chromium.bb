@@ -900,6 +900,8 @@ const char kChromeosFrame[]                 = "chromeos-frame";
 // TODO(denisromanov): delete this once it's not needed for testing anymore.
 const char kStartupManifest[]               = "startup-manifest";
 
+// Specify the amount the trackpad should scroll by.
+const char kVertScrollDelta[]               = "vert-scroll-delta";
 #endif
 
 #if defined(OS_WIN)
