@@ -191,6 +191,9 @@ void BrowserToolbarGtk::Init(Profile* profile,
                        FALSE, FALSE, 0);
   }
 
+  // We need another hbox for the menu buttons so we can place them together,
+  // but still have some padding to their collective left/right.
+  GtkWidget* menus_hbox = gtk_hbox_new(FALSE, 0);
   GtkWidget* page_menu = BuildToolbarMenuButton(
       l10n_util::GetStringUTF8(IDS_PAGEMENU_TOOLTIP),
       &page_menu_button_);
@@ -200,7 +203,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_container_add(GTK_CONTAINER(page_menu), page_menu_image_);
 
   page_menu_.reset(new MenuGtk(this, &page_menu_model_));
-  gtk_box_pack_start(GTK_BOX(toolbar_right_), page_menu, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(menus_hbox), page_menu, FALSE, FALSE, 0);
 
   GtkWidget* chrome_menu = BuildToolbarMenuButton(
       l10n_util::GetStringFUTF8(IDS_APPMENU_TOOLTIP,
@@ -212,7 +215,9 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_);
 
   app_menu_.reset(new MenuGtk(this, &app_menu_model_));
-  gtk_box_pack_start(GTK_BOX(toolbar_right_), chrome_menu, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(menus_hbox), chrome_menu, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_right_), menus_hbox, FALSE, FALSE,
+                     kToolbarWidgetSpacing);
 
   gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_right_, FALSE, FALSE, 0);
 
