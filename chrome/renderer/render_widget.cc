@@ -752,16 +752,15 @@ void RenderWidget::OnImeSetComposition(WebCompositionCommand command,
   ime_control_busy_ = false;
 }
 
-// Forces a repaint even if we're hidden, so we can update backing
-// store even before a tab has been shown for the first time, and it
-// does it synchronously.
+// This message causes the renderer to render an image of the
+// desired_size, regardless of whether the tab is hidden or not.
 void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
+                                    const gfx::Size& page_size,
                                     const gfx::Size& desired_size) {
   if (!webwidget_ || dib_handle == TransportDIB::DefaultHandleValue())
     return;
 
-  if (webwidget_->size().isEmpty() ||
-      desired_size.IsEmpty()) {
+  if (page_size.IsEmpty() || desired_size.IsEmpty()) {
     // If one of these is empty, then we just return the dib we were
     // given, to avoid leaking it.
     Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_,
@@ -772,16 +771,13 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
 
   // Map the given DIB ID into this process, and unmap it at the end
   // of this function.
-  scoped_ptr<TransportDIB> paint_at_scale_buffer(TransportDIB::Map(dib_handle));
+  scoped_ptr<TransportDIB> paint_at_size_buffer(TransportDIB::Map(dib_handle));
 
-  DCHECK(paint_at_scale_buffer.get());
-  if (!paint_at_scale_buffer.get())
+  DCHECK(paint_at_size_buffer.get());
+  if (!paint_at_size_buffer.get())
     return;
 
-  // Have to make sure we're laid out before rendering.
-  webwidget_->layout();
-
-  gfx::Size canvas_size = webwidget_->size();
+  gfx::Size canvas_size = page_size;
   float x_scale = static_cast<float>(desired_size.width()) /
                   static_cast<float>(canvas_size.width());
   float y_scale = static_cast<float>(desired_size.height()) /
@@ -793,8 +789,8 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
   gfx::Rect bounds(canvas_size);
 
   scoped_ptr<skia::PlatformCanvas> canvas(
-      paint_at_scale_buffer->GetPlatformCanvas(canvas_size.width(),
-                                               canvas_size.height()));
+      paint_at_size_buffer->GetPlatformCanvas(canvas_size.width(),
+                                              canvas_size.height()));
   if (!canvas.get()) {
     NOTREACHED();
     return;
@@ -808,12 +804,21 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
   bounds.set_height(canvas->getDevice()->height());
 
   canvas->save();
-  // Add the scale factor to the canvas, so that we'll get what we expect.
+  // Add the scale factor to the canvas, so that we'll get the desired size.
   canvas->scale(SkFloatToScalar(x_scale), SkFloatToScalar(y_scale));
+
+  // Have to make sure we're laid out at the right size before
+  // rendering.
+  gfx::Size old_size = webwidget_->size();
+  webwidget_->resize(page_size);
+  webwidget_->layout();
 
   // Paint the entire thing (using original bounds, not scaled bounds).
   PaintRect(orig_bounds, orig_bounds.origin(), canvas.get());
   canvas->restore();
+
+  // Return the widget to its previous size.
+  webwidget_->resize(old_size);
 
   Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, dib_handle, bounds.size()));
 }

@@ -162,6 +162,7 @@ class RenderWidget : public IPC::Channel::Listener,
                            int target_start, int target_end,
                            const string16& ime_string);
   void OnMsgPaintAtSize(const TransportDIB::Handle& dib_id,
+                        const gfx::Size& page_size,
                         const gfx::Size& desired_size);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
   void OnSetTextDirection(WebKit::WebTextDirection direction);

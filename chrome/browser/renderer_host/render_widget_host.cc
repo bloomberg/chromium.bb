@@ -293,11 +293,13 @@ void RenderWidgetHost::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHost::PaintAtSize(TransportDIB::Handle dib_handle,
-                                   const gfx::Size& size) {
+                                   const gfx::Size& page_size,
+                                   const gfx::Size& desired_size) {
   // Ask the renderer to create a bitmap regardless of whether it's
-  // hidden, being resized, redrawn, etc., and to scale it by the
-  // scale factor given.
-  Send(new ViewMsg_PaintAtSize(routing_id_, dib_handle, size));
+  // hidden, being resized, redrawn, etc.  It resizes the web widget
+  // to the page_size and then scales it to the desired_size.
+  Send(new ViewMsg_PaintAtSize(routing_id_, dib_handle,
+                               page_size, desired_size));
 }
 
 BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {

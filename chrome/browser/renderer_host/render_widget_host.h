@@ -209,14 +209,17 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void SetIsLoading(bool is_loading);
 
   // This tells the renderer to paint into a bitmap and return it,
-  // regardless of whether the tab is hidden or not.  It returns the
-  // bitmap scaled so it matches the requested size, so that the
-  // scaling happens on the rendering thread.  When the bitmap is
-  // ready, the renderer sends a PaintAtSizeACK to this host, and the
-  // painting observer is notified.  Note that this bypasses most of
-  // the update logic that is normally invoked, and doesn't put the
-  // results into the backing store.
-  void PaintAtSize(TransportDIB::Handle dib_handle, const gfx::Size& size);
+  // regardless of whether the tab is hidden or not.  It resizes the
+  // web widget to match the |page_size| and then returns the bitmap
+  // scaled so it matches the |desired_size|, so that the scaling
+  // happens on the rendering thread.  When the bitmap is ready, the
+  // renderer sends a PaintAtSizeACK to this host, and the painting
+  // observer is notified.  Note that this bypasses most of the update
+  // logic that is normally invoked, and doesn't put the results into
+  // the backing store.
+  void PaintAtSize(TransportDIB::Handle dib_handle,
+                   const gfx::Size& page_size,
+                   const gfx::Size& desired_size);
 
   // Get access to the widget's backing store.  If a resize is in progress,
   // then the current size of the backing store may be less than the size of

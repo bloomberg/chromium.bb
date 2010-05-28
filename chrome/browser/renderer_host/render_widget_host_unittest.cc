@@ -536,7 +536,8 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 }
 
 TEST_F(RenderWidgetHostTest, PaintAtSize) {
-  host_->PaintAtSize(TransportDIB::GetFakeHandleForTest(), gfx::Size(20, 30));
+  host_->PaintAtSize(TransportDIB::GetFakeHandleForTest(), gfx::Size(40, 60),
+                     gfx::Size(20, 30));
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(ViewMsg_PaintAtSize::ID));
 

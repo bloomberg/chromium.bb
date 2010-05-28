@@ -39,15 +39,29 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
 
   // This registers a callback that can receive the resulting SkBitmap
   // from the renderer when it is done rendering it.  This differs
-  // from GetThumbnailForRenderer in that it is asynchronous, and
+  // from GetThumbnailForRenderer in that it may be asynchronous, and
   // because it will also fetch the bitmap even if the tab is hidden.
   // In addition, if the renderer has to be invoked, the scaling of
-  // the thumbnail happens on the rendering thread.  Takes ownership
-  // of the callback object.
-  void AskForThumbnail(RenderWidgetHost* renderer,
-                       ThumbnailReadyCallback* callback,
-                       gfx::Size size);
+  // the thumbnail happens on the rendering thread.
+  //
+  // Takes ownership of the callback object.
+  //
+  // If |prefer_backing_store| is set, then the function will try and
+  // use the backing store for the page if it exists.  |page_size| is
+  // the size to render the page, and |desired_size| is the size to
+  // scale the resulting rendered page to (which is done efficiently
+  // if done in the rendering thread).  If |prefer_backing_store| is
+  // set, and the backing store is used, then the resulting image will
+  // be less then twice the size of the |desired_size| in both
+  // dimensions, but might not be the exact size requested.
+  void AskForSnapshot(RenderWidgetHost* renderer,
+                      bool prefer_backing_store,
+                      ThumbnailReadyCallback* callback,
+                      gfx::Size page_size,
+                      gfx::Size desired_size);
 
+  // This returns a thumbnail of a fixed, small size for the given
+  // renderer.
   SkBitmap GetThumbnailForRenderer(RenderWidgetHost* renderer) const;
 
 #ifdef UNIT_TEST

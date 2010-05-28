@@ -453,6 +453,7 @@ void BrowserView::Init() {
   std::vector<int> params;
   params.push_back(browser()->tab_count());
   params.push_back(browser()->selected_index());
+  params.push_back(gtk_get_current_event_time());
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
       WM_IPC_WINDOW_CHROME_TOPLEVEL,

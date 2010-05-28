@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -30,6 +32,20 @@ using std::vector;
 #endif
 
 namespace chromeos {
+
+// The time that the delay timer waits before starting the
+// configuration pass.
+//
+// NOTE(gspencer): Yes, this is a pretty short delay, and I could
+// remove it and just use the configure timer.  The reason I'm not
+// doing that is that I have a hunch that we'll be needing to tune
+// things further, and this will be one of the knobs.
+static const int kDelayTimeMs = 10;
+
+// The time between setting snapshots during the configuration pass,
+// so that the CPU has a chance to do something else (to keep overview
+// mode responsive).
+static const int kConfigureTimeMs = 10;
 
 class BrowserListener : public TabStripModelObserver {
  public:
@@ -64,6 +80,9 @@ class BrowserListener : public TabStripModelObserver {
   // Removes all the snapshots and re-populates them from the browser.
   void RecreateSnapshots();
 
+  // Mark the given snapshot as dirty, and start the delay timer.
+  void ReloadSnapshot(int index);
+
   // Updates the selected index and tab count on the toplevel window.
   void UpdateSelectedIndex(int index);
 
@@ -81,17 +100,16 @@ class BrowserListener : public TabStripModelObserver {
   void RestoreOriginalSelectedTab();
 
   // Selects the tab at the given index.
-  void SelectTab(int index);
+  void SelectTab(int index, uint32 timestamp);
 
-  // Shows any snapshots that are not visible, and updates their
-  // bitmaps.
+  // Shows any snapshots that are not visible.
   void ShowSnapshots();
 
- private:
   // Returns the tab contents from the tab model for this child at index.
   TabContents* GetTabContentsAt(int index) const  {
     return browser_->tabstrip_model()->GetTabContentsAt(index);
   }
+ private:
 
   // Configures a cell from the tab contents.
   void ConfigureCell(WmOverviewSnapshot* cell, TabContents* contents);
@@ -122,6 +140,11 @@ class BrowserListener : public TabStripModelObserver {
   // True if the snapshots are showing.
   bool snapshots_showing_;
 
+  // Non-zero if we are currently setting the tab from within SelectTab.
+  // This is used to make sure we use the right timestamp when sending
+  // property changes that originated from the window manager.
+  uint32 select_tab_timestamp_;
+
   // The tab selected the last time SaveCurrentTab is called.
   int original_selected_tab_;
 
@@ -133,10 +156,17 @@ BrowserListener::BrowserListener(Browser* browser,
     : browser_(browser),
       controller_(controller),
       snapshots_showing_(false),
+      select_tab_timestamp_(0),
       original_selected_tab_(-1) {
   CHECK(browser_);
   CHECK(controller_);
+
   browser_->tabstrip_model()->AddObserver(this);
+
+  // This browser didn't already exist, and so we haven't been
+  // watching it for tab insertions, so we need to create the
+  // snapshots associated with it.
+  RecreateSnapshots();
 }
 
 BrowserListener::~BrowserListener() {
@@ -174,8 +204,10 @@ void BrowserListener::TabChangedAt(
     TabContents* contents,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
-  snapshots_[index]->reload_snapshot();
-  controller_->StartDelayTimer();
+  if (change_type != TabStripModelObserver::LOADING_ONLY &&
+      change_type != TabStripModelObserver::TITLE_NOT_LOADING) {
+    ReloadSnapshot(index);
+  }
 }
 
 void BrowserListener::TabStripEmpty() {
@@ -187,6 +219,11 @@ void BrowserListener::TabSelectedAt(TabContents* old_contents,
                                     int index,
                                     bool user_gesture) {
   UpdateSelectedIndex(index);
+}
+
+void BrowserListener::ReloadSnapshot(int index) {
+  snapshots_[index]->reload_snapshot();
+  controller_->StartDelayTimer();
 }
 
 void BrowserListener::RecreateSnapshots() {
@@ -207,6 +244,8 @@ void BrowserListener::UpdateSelectedIndex(int index) {
     std::vector<int> params;
     params.push_back(browser_->tab_count());
     params.push_back(index);
+    params.push_back(select_tab_timestamp_ ? select_tab_timestamp_ :
+                     gtk_get_current_event_time());
     WmIpc::instance()->SetWindowType(
         GTK_WIDGET(browser_->window()->GetNativeHandle()),
         WM_IPC_WINDOW_CHROME_TOPLEVEL,
@@ -218,7 +257,7 @@ bool BrowserListener::ConfigureNextUnconfiguredSnapshot() {
   for (SnapshotVector::size_type i = 0; i < snapshots_.size(); ++i) {
     WmOverviewSnapshot* cell = snapshots_[i];
     if (!cell->configured_snapshot()) {
-      ConfigureCell(cell, GetTabContentsAt(i));
+      ConfigureCell(cell, i);
       return true;
     }
   }
@@ -234,43 +273,50 @@ void BrowserListener::RestoreOriginalSelectedTab() {
 void BrowserListener::ShowSnapshots() {
   for (SnapshotVector::size_type i = 0; i < snapshots_.size(); ++i) {
     WmOverviewSnapshot* snapshot = snapshots_[i];
-    snapshot->reload_snapshot();
-    if (!snapshot->IsVisible()) {
+    if (!snapshot->IsVisible())
       snapshot->Show();
-    }
   }
 }
 
-void BrowserListener::SelectTab(int index) {
+void BrowserListener::SelectTab(int index, uint32 timestamp) {
+  uint32 old_value = select_tab_timestamp_;
+  select_tab_timestamp_ = timestamp;
   browser_->SelectTabContentsAt(index, true);
+  select_tab_timestamp_ = old_value;
 }
 
 void BrowserListener::ConfigureCell(WmOverviewSnapshot* cell,
                                     TabContents* contents) {
   if (contents) {
-    if (controller_->allow_show_snapshots()) {
-      ThumbnailGenerator* generator =
-          g_browser_process->GetThumbnailGenerator();
-      // TODO: Make sure that if the cell gets deleted before the
-      // callback is called that it sticks around until it gets
-      // called.  (some kind of "in flight" list that uses linked_ptr
-      // to make sure they don't actually get deleted?)  Also, make
-      // sure that any request for a thumbnail eventually returns
-      // (even if it has bogus data), so we don't leak orphaned cells.
-      ThumbnailGenerator::ThumbnailReadyCallback* callback =
-          NewCallback(cell, &WmOverviewSnapshot::SetImage);
-      generator->AskForThumbnail(contents->render_view_host(),
-                                 callback, cell->size());
-    }
+    ThumbnailGenerator* generator =
+        g_browser_process->GetThumbnailGenerator();
+    // TODO: Make sure that if the cell gets deleted before the
+    // callback is called that it sticks around until it gets
+    // called.  (some kind of "in flight" list that uses linked_ptr
+    // to make sure they don't actually get deleted?)  Also, make
+    // sure that any request for a thumbnail eventually returns
+    // (even if it has bogus data), so we don't leak orphaned cells,
+    // which could happen if a tab is closed while it is being
+    // rendered.
+    ThumbnailGenerator::ThumbnailReadyCallback* callback =
+        NewCallback(cell, &WmOverviewSnapshot::SetImage);
+    gfx::Size cell_size = cell->size();
+
+    // Ask for the page size to be twice the requested size of the
+    // snapshot.
+    generator->AskForSnapshot(contents->render_view_host(),
+                              false,
+                              callback,
+                              gfx::Size(cell_size.width() * 2,
+                                        cell_size.height() * 2),
+                              cell_size);
   } else {
     // This happens because the contents haven't been loaded yet.
 
     // Make sure we set the snapshot image to something, otherwise
-    // configured_snapshot remains false and ConfigureNextUnconfiguredSnapshot
-    // would get stuck.
-    if (controller_->allow_show_snapshots()) {
-      cell->SetImage(SkBitmap());
-    }
+    // configured_snapshot remains false and
+    // ConfigureNextUnconfiguredSnapshot would get stuck.
+    cell->SetImage(SkBitmap());
   }
 }
 
@@ -278,7 +324,7 @@ void BrowserListener::InsertSnapshot(int index) {
   WmOverviewSnapshot* snapshot = new WmOverviewSnapshot;
   gfx::Rect bounds =
       static_cast<BrowserView*>(browser_->window())->GetClientAreaBounds();
-  gfx::Size size(bounds.width()/2, bounds.height()/2);
+  gfx::Size size(bounds.width() / 2, bounds.height() / 2);
   snapshot->Init(size, browser_, index);
   snapshots_.insert(snapshots_.begin() + index, snapshot);
   snapshot->reload_snapshot();
@@ -292,12 +338,9 @@ void BrowserListener::ClearSnapshot(int index) {
 }
 
 void BrowserListener::RenumberSnapshots(int start_index) {
-  int changes = 0;
   for (SnapshotVector::size_type i = start_index; i < snapshots_.size(); ++i) {
-    if (snapshots_[i]->index() != static_cast<int>(i)) {
+    if (snapshots_[i]->index() != static_cast<int>(i))
       snapshots_[i]->UpdateIndex(browser_, i);
-      changes++;
-    }
   }
 }
 
@@ -314,8 +357,23 @@ WmOverviewController* WmOverviewController::instance() {
 }
 
 WmOverviewController::WmOverviewController()
-    : allow_show_snapshots_(false) {
+    : layout_mode_(ACTIVE_MODE) {
   AddAllBrowsers();
+
+  if (registrar_.IsEmpty()) {
+    // Make sure we get notifications for when the tab contents are
+    // connected, so we know when a new browser has been created.
+    registrar_.Add(this,
+                   NotificationType::TAB_CONTENTS_CONNECTED,
+                   NotificationService::AllSources());
+
+    // Ask for notification when the snapshot source image has changed
+    // and needs to be refreshed.
+    registrar_.Add(this,
+                   NotificationType::THUMBNAIL_GENERATOR_SNAPSHOT_CHANGED,
+                   NotificationService::AllSources());
+  }
+
   BrowserList::AddObserver(this);
   WmMessageListener::instance()->AddObserver(this);
 }
@@ -329,11 +387,49 @@ WmOverviewController::~WmOverviewController() {
 void WmOverviewController::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  // Now that the browser window is ready, we create the snapshots.
-  if (type == NotificationType::BROWSER_WINDOW_READY) {
-    // This makes sure that the new listener is in the right order (to
-    // match the order in the browser list).
-    AddAllBrowsers();
+  switch (type.value) {
+    // Now that the tab contents are ready, we create the listeners
+    // and snapshots for any new browsers out there.  This actually
+    // results in us traversing the list of browsers more often than
+    // necessary (whenever a tab is connected, as opposed to only when
+    // a new browser is created), but other notifications aren't
+    // sufficient to know when the first tab of a new browser has its
+    // dimensions set.  The implementation of AddAllBrowsers avoids
+    // doing anything to already-existing browsers, so it's not a huge
+    // problem, but still, it would be nice if there were a more
+    // appropriate (browser-level) notification.
+    case NotificationType::TAB_CONTENTS_CONNECTED:
+      AddAllBrowsers();
+      break;
+
+    case NotificationType::THUMBNAIL_GENERATOR_SNAPSHOT_CHANGED: {
+      // Don't do any dynamic updating if we're not in overview mode.
+      if (layout_mode_ == OVERVIEW_MODE) {
+        RenderWidgetHost* renderer = Details<RenderViewHost>(details).ptr();
+        SnapshotImageChanged(renderer);
+      }
+      break;
+    }
+    default:
+      // Do nothing.
+      break;
+  }
+}
+
+void WmOverviewController::SnapshotImageChanged(RenderWidgetHost* renderer) {
+  // Find out which TabContents this renderer is attached to, and then
+  // invalidate the associated snapshot so it'll update.
+  BrowserListenerVector::iterator iter = listeners_.begin();
+  while (iter != listeners_.end()) {
+    for (int i = 0; i < (*iter)->count(); i++) {
+      RenderWidgetHostView* view =
+          (*iter)->GetTabContentsAt(i)->GetRenderWidgetHostView();
+      if (view && view->GetRenderWidgetHost() == renderer) {
+        (*iter)->ReloadSnapshot(i);
+        return;
+      }
+    }
+    ++iter;
   }
 }
 
@@ -364,7 +460,8 @@ void WmOverviewController::ProcessWmMessage(const WmIpc::Message& message,
                                             GdkWindow* window) {
   switch (message.type()) {
     case WM_IPC_MESSAGE_CHROME_NOTIFY_LAYOUT_MODE: {
-      if (message.param(0) == 0 || BrowserList::size() == 0) {
+      layout_mode_ = message.param(0) == 0 ? ACTIVE_MODE : OVERVIEW_MODE;
+      if (layout_mode_ == ACTIVE_MODE || BrowserList::size() == 0) {
         Hide(message.param(1) != 0);
       } else {
         Show();
@@ -377,7 +474,9 @@ void WmOverviewController::ProcessWmMessage(const WmIpc::Message& message,
       for (BrowserListenerVector::iterator i = listeners_.begin();
            i != listeners_.end(); ++i) {
         if ((*i)->browser()->window() == browser_window) {
-          (*i)->SelectTab(message.param(0));
+          // param(0): index of the tab to select.
+          // param(1): timestamp of the event.
+          (*i)->SelectTab(message.param(0), message.param(1));
           break;
         }
       }
@@ -391,17 +490,13 @@ void WmOverviewController::ProcessWmMessage(const WmIpc::Message& message,
 void WmOverviewController::StartDelayTimer() {
   // We leave the delay timer running if it already is -- this means
   // we're rate limiting the number of times we can reconfigure the
-  // snapshots (at most once every 350ms).  If we were to restart the
-  // delay timer, it could result in a very long delay until they get
-  // configured if tabs keep changing.
-  if (!delay_timer_.IsRunning()) {
-    configure_timer_.Stop();
-    // Note that this pause is kind of a hack: it's just long enough
-    // that the overview-mode transitions will have finished happening
-    // before we start refreshing snapshots, so we don't bog the CPU
-    // while it's trying to animate the overview transitions.
+  // snapshots.  If we were to restart the delay timer, it could
+  // result in a very long delay until they get configured if tabs
+  // keep changing.
+  if (layout_mode_ == OVERVIEW_MODE &&
+      !delay_timer_.IsRunning() && !configure_timer_.IsRunning()) {
     delay_timer_.Start(
-        base::TimeDelta::FromMilliseconds(350), this,
+        base::TimeDelta::FromMilliseconds(kDelayTimeMs), this,
         &WmOverviewController::StartConfiguring);
   }
 }
@@ -422,11 +517,15 @@ void WmOverviewController::SaveTabSelections() {
 
 void WmOverviewController::Show() {
   SaveTabSelections();
+
+  // Reset the timers.
+  configure_timer_.Stop();
+  delay_timer_.Stop();
+
   for (BrowserListenerVector::iterator i = listeners_.begin();
        i != listeners_.end(); ++i) {
     (*i)->ShowSnapshots();
   }
-  allow_show_snapshots_ = false;
   StartDelayTimer();
 }
 
@@ -439,10 +538,9 @@ void WmOverviewController::Hide(bool cancelled) {
 }
 
 void WmOverviewController::StartConfiguring() {
-  allow_show_snapshots_ = true;
   configure_timer_.Stop();
   configure_timer_.Start(
-      base::TimeDelta::FromMilliseconds(10), this,
+      base::TimeDelta::FromMilliseconds(kConfigureTimeMs), this,
       &WmOverviewController::ConfigureNextUnconfiguredSnapshot);
 }
 
@@ -488,24 +586,14 @@ void WmOverviewController::AddAllBrowsers() {
       }
     }
 
-    // This browser isn't owned by any listener, so create it.
+    // This browser isn't tracked by any listener, so create it.
     if (item.get() == NULL) {
       item = BrowserListenerVector::value_type(
           new BrowserListener(*iterator, this));
-
-      // This browser didn't already exist, and so we haven't been
-      // watching it for tab insertions, so we need to create the
-      // snapshots associated with it.
-      item->RecreateSnapshots();
     }
     listeners_.push_back(item);
     ++iterator;
   }
-
-  // Make sure we get notifications for when browser windows are ready.
-  if (registrar_.IsEmpty())
-    registrar_.Add(this, NotificationType::BROWSER_WINDOW_READY,
-                   NotificationService::AllSources());
 }
 
 }  // namespace chromeos

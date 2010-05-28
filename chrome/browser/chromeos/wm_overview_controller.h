@@ -21,6 +21,7 @@ class Widget;
 
 class Animation;
 class Browser;
+class RenderWidgetHost;
 
 namespace chromeos {
 
@@ -47,6 +48,21 @@ class WmOverviewController : public BrowserList::Observer,
                              public WmMessageListener::Observer,
                              public NotificationObserver {
  public:
+  // These are the possible layout modes that this controller can be
+  // in.  The layout mode is controlled by the window manager.
+  enum LayoutMode {
+    // ACTIVE_MODE is the mode where chrome takes up the whole screen
+    // and the user interacts with it, and this controller hides the
+    // snapshots and stops refreshing them.
+    ACTIVE_MODE,
+
+    // OVERVIEW_MODE is the mode where the toplevel windows are hidden
+    // and the user interacts with the snapshots.  This is when the
+    // snapshot windows are shown and actively updated by this
+    // controller.
+    OVERVIEW_MODE,
+  };
+
   // This class is a singleton.
   static WmOverviewController* instance();
 
@@ -73,14 +89,12 @@ class WmOverviewController : public BrowserList::Observer,
   // Used by the BrowserListeners to configure their snapshots.
   const gfx::Rect& monitor_bounds() const { return monitor_bounds_; }
 
-  // Tells the listeners whether or not they're allowed to show
-  // snapshots yet.
-  bool allow_show_snapshots() const { return allow_show_snapshots_; }
-
   // Starts the delay timer, and once the delay is over, configures
   // any unconfigured snapshots one at a time until none are left to
   // be configured.
   void StartDelayTimer();
+
+  LayoutMode layout_mode() const { return layout_mode_; }
 
  private:
   friend struct DefaultSingletonTraits<WmOverviewController>;
@@ -105,8 +119,7 @@ class WmOverviewController : public BrowserList::Observer,
   // shown are restored.
   void Hide(bool cancelled);
 
-  // Invoked by delay_timer_. Sets allow_show_snapshots_ to true and starts
-  // configure_timer_.
+  // Invoked by delay_timer_. Starts configure_timer_.
   void StartConfiguring();
 
   // Configure the next unconfigured snapshot window owned by any of
@@ -116,6 +129,11 @@ class WmOverviewController : public BrowserList::Observer,
   // Add browser listeners for all existing browsers, reusing any that
   // were already there.
   void AddAllBrowsers();
+
+  // Called when the thumbnail generator notifies us that the snapshot
+  // image changed.  This determines which TabContents the given
+  // renderer is attached to, and reloads that snapshot.
+  void SnapshotImageChanged(RenderWidgetHost* renderer);
 
   // This is so we can register for notifications.
   NotificationRegistrar registrar_;
@@ -128,16 +146,14 @@ class WmOverviewController : public BrowserList::Observer,
   // is used to adjust the size of snapshots so they'll fit.
   gfx::Rect monitor_bounds_;
 
-  // This indicates whether we should actually set the snapshots so we
-  // don't do it when we don't need to. It is initially false, then
-  // set to true by StartConfiguring.
-  bool allow_show_snapshots_;
-
   // See description above class for details.
   base::OneShotTimer<WmOverviewController> delay_timer_;
 
   // See description above class for details.
   base::RepeatingTimer<WmOverviewController> configure_timer_;
+
+  // The current layout mode.
+  LayoutMode layout_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(WmOverviewController);
 };

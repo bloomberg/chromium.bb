@@ -68,7 +68,7 @@ static const char kThumbnailHistogramName[] = "Thumbnail.ComputeMS";
 struct WidgetThumbnail {
   SkBitmap thumbnail;
 
-  // Indicates the last time the RWH was shown and hidden.
+  // Indicates the last time the RenderWidgetHost was shown and hidden.
   base::TimeTicks last_shown;
   base::TimeTicks last_hidden;
 };
@@ -93,7 +93,9 @@ WidgetThumbnail* GetDataForHost(RenderWidgetHost* host) {
 
 // Creates a downsampled thumbnail for the given backing store. The returned
 // bitmap will be isNull if there was an error creating it.
-SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
+SkBitmap GetBitmapForBackingStore(BackingStore* backing_store,
+                                  int desired_width,
+                                  int desired_height) {
   base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
 
   SkBitmap result;
@@ -107,14 +109,10 @@ SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
     return result;
   const SkBitmap& bmp = temp_canvas.getTopPlatformDevice().accessBitmap(false);
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, the thumbnail is always half the dimensions of the
-  // original.
-  result = SkBitmapOperations::DownsampleByTwo(bmp);
-#else
-  result = SkBitmapOperations::DownsampleByTwoUntilSize(bmp,
-                                                        kThumbnailWidth,
-                                                        kThumbnailHeight);
+  // Need to resize it to the size we want, so downsample until it's
+  // close, and let the caller make it the exact size if desired.
+  result = SkBitmapOperations::DownsampleByTwoUntilSize(
+      bmp, desired_width, desired_height);
 
   // This is a bit subtle. SkBitmaps are refcounted, but the magic
   // ones in PlatformCanvas can't be assigned to SkBitmap with proper
@@ -125,7 +123,6 @@ SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
   if (bmp.width() == result.width() &&
       bmp.height() == result.height())
     bmp.copyTo(&result, SkBitmap::kARGB_8888_Config);
-#endif
 
   HISTOGRAM_TIMES(kThumbnailHistogramName,
                   base::TimeTicks::Now() - begin_compute_thumbnail);
@@ -169,23 +166,33 @@ void ThumbnailGenerator::StartThumbnailing() {
   }
 }
 
-void ThumbnailGenerator::AskForThumbnail(RenderWidgetHost* renderer,
-                                         ThumbnailReadyCallback* callback,
-                                         gfx::Size size) {
-  SkBitmap first_try = GetThumbnailForRenderer(renderer);
-  if (!first_try.isNull()) {
-    // We were able to find a non-null thumbnail for this renderer, so
-    // we'll go with it.
-    callback->Run(first_try);
-    delete callback;
-    return;
+void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
+                                        bool prefer_backing_store,
+                                        ThumbnailReadyCallback* callback,
+                                        gfx::Size page_size,
+                                        gfx::Size desired_size) {
+  if (prefer_backing_store) {
+    BackingStore* backing_store = renderer->GetBackingStore(false);
+    if (backing_store) {
+      // We were able to find a non-null backing store for this renderer, so
+      // we'll go with it.
+      SkBitmap first_try = GetBitmapForBackingStore(backing_store,
+                                                    desired_size.width(),
+                                                    desired_size.height());
+      callback->Run(first_try);
+
+      delete callback;
+      return;
+    }
+    // Now, if the backing store didn't exist, we will still try and
+    // render asynchronously.
   }
 
   // We are going to render the thumbnail asynchronously now, so keep
   // this callback for later lookup when the rendering is done.
   static int sequence_num = 0;
   TransportDIB* thumbnail_dib = TransportDIB::Create(
-      size.width() * size.height() * 4, sequence_num++);
+      desired_size.width() * desired_size.height() * 4, sequence_num++);
   linked_ptr<AsyncRequestInfo> request_info(new AsyncRequestInfo);
   request_info->callback.reset(callback);
   request_info->thumbnail_dib.reset(thumbnail_dib);
@@ -199,7 +206,7 @@ void ThumbnailGenerator::AskForThumbnail(RenderWidgetHost* renderer,
     return;
   }
 
-  renderer->PaintAtSize(thumbnail_dib->handle(), size);
+  renderer->PaintAtSize(thumbnail_dib->handle(), page_size, desired_size);
 }
 
 SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
@@ -226,7 +233,9 @@ SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
 
   // Save this thumbnail in case we need to use it again soon. It will be
   // invalidated on the next paint.
-  wt->thumbnail = GetThumbnailForBackingStore(backing_store);
+  wt->thumbnail = GetBitmapForBackingStore(backing_store,
+                                           kThumbnailWidth,
+                                           kThumbnailHeight);
   return wt->thumbnail;
 }
 
@@ -245,13 +254,21 @@ void ThumbnailGenerator::WidgetWillDestroyBackingStore(
   // Save a scaled-down image of the page in case we're asked for the thumbnail
   // when there is no RenderViewHost. If this fails, we don't want to overwrite
   // an existing thumbnail.
-  SkBitmap new_thumbnail = GetThumbnailForBackingStore(backing_store);
+  SkBitmap new_thumbnail = GetBitmapForBackingStore(backing_store,
+                                                    kThumbnailWidth,
+                                                    kThumbnailHeight);
   if (!new_thumbnail.isNull())
     wt->thumbnail = new_thumbnail;
 }
 
-void ThumbnailGenerator::WidgetDidUpdateBackingStore(
-    RenderWidgetHost* widget) {
+void ThumbnailGenerator::WidgetDidUpdateBackingStore(RenderWidgetHost* widget) {
+  // Notify interested parties that they might want to update their
+  // snapshots.
+  NotificationService::current()->Notify(
+      NotificationType::THUMBNAIL_GENERATOR_SNAPSHOT_CHANGED,
+      Source<ThumbnailGenerator>(this),
+      Details<RenderWidgetHost>(widget));
+
   // Clear the current thumbnail since it's no longer valid.
   WidgetThumbnail* wt = GetThumbnailAccessor()->GetProperty(
       widget->property_bag());

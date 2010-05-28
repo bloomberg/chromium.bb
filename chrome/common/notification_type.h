@@ -602,6 +602,13 @@ class NotificationType {
     // startup.
     THUMBNAIL_STORE_READY,
 
+    // Sent by the ThumbnailGenerator whenever a render widget host
+    // updates its backing store.  The source is the
+    // ThumbnailGenerator, and the details are the RenderWidgetHost
+    // that notified the ThumbnailGenerator that its backing store was
+    // updated.
+    THUMBNAIL_GENERATOR_SNAPSHOT_CHANGED,
+
     // Bookmarks ---------------------------------------------------------------
 
     // Sent when the starred state of a URL changes. A URL is starred if there
