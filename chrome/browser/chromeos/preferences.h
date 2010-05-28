@@ -79,6 +79,7 @@ class Preferences : public NotificationObserver {
   StringPrefMember timezone_;
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
+  BooleanPrefMember accessibility_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember sensitivity_;
 

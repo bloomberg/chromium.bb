@@ -388,12 +388,82 @@ void LanguageSection::InitContents(GridLayout* layout) {
   customize_languages_button->set_tag(kCustomizeLanguagesButton);
   layout->AddView(customize_languages_button, 1, 1,
                   GridLayout::LEADING, GridLayout::CENTER);
+  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 }
 
 void LanguageSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender->tag() == kCustomizeLanguagesButton) {
     LanguageConfigView::Show(profile(), GetOptionsViewParent());
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AccessibilitySection
+
+// Checkbox for specifying if accessibility should be enabled for this profile
+class AccessibilitySection : public SettingsPageSection,
+                             public views::ButtonListener {
+ public:
+  explicit AccessibilitySection(Profile* profile);
+  virtual ~AccessibilitySection() {}
+
+ protected:
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event);
+
+  // Overridden from SettingsPageSection:
+  virtual void InitContents(GridLayout* layout);
+  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+
+ private:
+  // The View that contains the contents of the section.
+  views::View* contents_;
+
+  // Controls for this section:
+  views::Checkbox* accessibility_checkbox_;
+
+  // Preferences for this section:
+  BooleanPrefMember accessibility_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilitySection);
+};
+
+AccessibilitySection::AccessibilitySection(Profile* profile)
+    : SettingsPageSection(profile,
+                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY),
+      accessibility_checkbox_(NULL) {
+}
+
+void AccessibilitySection::InitContents(GridLayout* layout) {
+  accessibility_checkbox_ = new views::Checkbox(l10n_util::GetString(
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION));
+  accessibility_checkbox_->set_listener(this);
+  accessibility_checkbox_->SetMultiLine(true);
+
+  layout->StartRow(0, double_column_view_set_id());
+  layout->AddView(accessibility_checkbox_);
+  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+
+  // Init member prefs so we can update the controls if prefs change.
+  accessibility_enabled_.Init(prefs::kAccessibilityEnabled,
+      profile()->GetPrefs(), this);
+}
+
+void AccessibilitySection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  if (sender == accessibility_checkbox_) {
+    bool enabled = accessibility_checkbox_->checked();
+    // Set the accessibility enabled value in profile/prefs
+    accessibility_enabled_.SetValue(enabled);
+  }
+}
+
+void AccessibilitySection::NotifyPrefChanged(const std::wstring* pref_name) {
+  if (!pref_name || *pref_name == prefs::kAccessibilityEnabled) {
+    bool enabled = accessibility_enabled_.GetValue();
+    accessibility_checkbox_->SetChecked(enabled);
   }
 }
 
@@ -420,6 +490,9 @@ void SystemPageView::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new LanguageSection(profile()));
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new AccessibilitySection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 }
 

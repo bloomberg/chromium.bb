@@ -254,6 +254,9 @@ const wchar_t kLanguageMozcPunctuationMethod[] =
     L"settings.language.mozc_punctuation_method";
 const wchar_t kLanguageMozcSymbolMethod[] =
     L"settings.language.mozc_symbol_method";
+
+// A boolean pref which determines whether accessibility is enabled.
+const wchar_t kAccessibilityEnabled[] = L"settings.accessibility";
 #endif
 
 // The disabled messages in IPC logging.

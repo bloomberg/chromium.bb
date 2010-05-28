@@ -95,6 +95,7 @@ extern const wchar_t kLanguageMozcPreeditMethod[];
 extern const wchar_t kLanguageMozcSessionKeymap[];
 extern const wchar_t kLanguageMozcPunctuationMethod[];
 extern const wchar_t kLanguageMozcSymbolMethod[];
+extern const wchar_t kAccessibilityEnabled[];
 #endif
 extern const wchar_t kIpcDisabledMessages[];
 extern const wchar_t kShowHomeButton[];

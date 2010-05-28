@@ -21,6 +21,7 @@ namespace chromeos {
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kTimeZone, L"US/Pacific");
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
   prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 9);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
@@ -49,6 +50,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 void Preferences::Init(PrefService* prefs) {
   timezone_.Init(prefs::kTimeZone, prefs, this);
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
+  accessibility_enabled_.Init(prefs::kAccessibilityEnabled, prefs, this);
   vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled, prefs, this);
   speed_factor_.Init(prefs::kTouchpadSpeedFactor, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
