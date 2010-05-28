@@ -12,25 +12,25 @@
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
 
-const wchar_t WinConfigurationPolicyProvider::kHomepageRegistryValueName[] =
+const wchar_t ConfigurationPolicyProviderWin::kHomepageRegistryValueName[] =
     L"Homepage";
-const wchar_t WinConfigurationPolicyProvider::
+const wchar_t ConfigurationPolicyProviderWin::
     kHomepageIsNewTabPageRegistryValueName[] = L"HomepageIsNewTabPage";
-const wchar_t WinConfigurationPolicyProvider::kCookiesModeRegistryValueName[] =
+const wchar_t ConfigurationPolicyProviderWin::kCookiesModeRegistryValueName[] =
     L"CookiesMode";
 
 #if defined(GOOGLE_CHROME_BUILD)
-const wchar_t WinConfigurationPolicyProvider::kPolicyRegistrySubKey[] =
+const wchar_t ConfigurationPolicyProviderWin::kPolicyRegistrySubKey[] =
     L"SOFTWARE\\Policies\\Google\\Google Chrome";
 #else
-const wchar_t WinConfigurationPolicyProvider::kPolicyRegistrySubKey[] =
+const wchar_t ConfigurationPolicyProviderWin::kPolicyRegistrySubKey[] =
     L"SOFTWARE\\Policies\\Chromium";
 #endif
 
-WinConfigurationPolicyProvider::WinConfigurationPolicyProvider() {
+ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin() {
 }
 
-bool WinConfigurationPolicyProvider::GetRegistryPolicyString(
+bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
     const wchar_t* value_name, string16* result) {
   DWORD value_size = 0;
   DWORD key_type = 0;
@@ -67,7 +67,7 @@ bool WinConfigurationPolicyProvider::GetRegistryPolicyString(
   return true;
 }
 
-bool WinConfigurationPolicyProvider::GetRegistryPolicyBoolean(
+bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
     const wchar_t* value_name, bool* result) {
   DWORD value;
   RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kPolicyRegistrySubKey);
@@ -84,7 +84,7 @@ bool WinConfigurationPolicyProvider::GetRegistryPolicyBoolean(
   return false;
 }
 
-bool WinConfigurationPolicyProvider::GetRegistryPolicyInteger(
+bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
     const wchar_t* value_name, uint32* result) {
   DWORD value;
   RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kPolicyRegistrySubKey);
@@ -101,8 +101,8 @@ bool WinConfigurationPolicyProvider::GetRegistryPolicyInteger(
   return false;
 }
 
-const WinConfigurationPolicyProvider::RegistryPolicyMapEntry
-    WinConfigurationPolicyProvider::registry_to_policy_map_[] = {
+const ConfigurationPolicyProviderWin::RegistryPolicyMapEntry
+    ConfigurationPolicyProviderWin::registry_to_policy_map_[] = {
     { Value::TYPE_STRING,
       ConfigurationPolicyStore::kPolicyHomePage,
       kHomepageRegistryValueName },
@@ -114,7 +114,7 @@ const WinConfigurationPolicyProvider::RegistryPolicyMapEntry
       kCookiesModeRegistryValueName },
 };
 
-bool WinConfigurationPolicyProvider::Provide(
+bool ConfigurationPolicyProviderWin::Provide(
     ConfigurationPolicyStore* store) {
   const RegistryPolicyMapEntry* current;
   const RegistryPolicyMapEntry* end = registry_to_policy_map_ +

@@ -14,16 +14,16 @@
 // On a managed machine in a domain, this portion of the registry is
 // periodically updated by the Windows Group Policy machinery to contain
 // the latest version of the policy set by administrators.
-class WinConfigurationPolicyProvider : public ConfigurationPolicyProvider {
+class ConfigurationPolicyProviderWin : public ConfigurationPolicyProvider {
  public:
-  WinConfigurationPolicyProvider();
-  virtual ~WinConfigurationPolicyProvider() { }
+  ConfigurationPolicyProviderWin();
+  virtual ~ConfigurationPolicyProviderWin() { }
 
   // ConfigurationPolicyProvider method overrides:
   virtual bool Provide(ConfigurationPolicyStore* store);
 
  protected:
-  // The sub key path for Chromiums's Group Policy information in the
+  // The sub key path for Chromium's Group Policy information in the
   // Windows registry.
   static const wchar_t kPolicyRegistrySubKey[];
 
@@ -46,8 +46,8 @@ class WinConfigurationPolicyProvider : public ConfigurationPolicyProvider {
 
   static const RegistryPolicyMapEntry registry_to_policy_map_[];
 
-  // Methods to perfrom type-specific policy lookups in the registry
-  // HKLM is checked fist, then HKLM.
+  // Methods to perfrom type-specific policy lookups in the registry.
+  // HKLM is checked first, then HKCU.
   bool GetRegistryPolicyString(const wchar_t* value_name, string16* result);
   bool GetRegistryPolicyBoolean(const wchar_t* value_name, bool* result);
   bool GetRegistryPolicyInteger(const wchar_t* value_name, uint32* result);

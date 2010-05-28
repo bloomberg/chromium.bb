@@ -21,13 +21,13 @@ const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
 }
 
-// A subclass of |WinConfigurationPolicyProvider| providing access to
+// A subclass of |ConfigurationPolicyProviderWin| providing access to
 // internal protected constants without an orgy of FRIEND_TESTS.
-class TestWinConfigurationPolicyProvider
-    : public WinConfigurationPolicyProvider {
+class TestConfigurationPolicyProviderWin
+    : public ConfigurationPolicyProviderWin {
  public:
-  TestWinConfigurationPolicyProvider() : WinConfigurationPolicyProvider() { }
-  virtual ~TestWinConfigurationPolicyProvider() { }
+  TestConfigurationPolicyProviderWin() : ConfigurationPolicyProviderWin() { }
+  virtual ~TestConfigurationPolicyProviderWin() { }
 
   void SetHomepageRegistryValue(HKEY hive, const wchar_t* value);
   void SetHomepageRegistryValueWrongType(HKEY hive);
@@ -35,46 +35,46 @@ class TestWinConfigurationPolicyProvider
   void SetCookiesMode(HKEY hive, uint32 value);
 };
 
-void TestWinConfigurationPolicyProvider::SetHomepageRegistryValue(
+void TestConfigurationPolicyProviderWin::SetHomepageRegistryValue(
     HKEY hive,
     const wchar_t* value) {
   RegKey key(hive,
-      WinConfigurationPolicyProvider::kPolicyRegistrySubKey,
+      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
-      WinConfigurationPolicyProvider::kHomepageRegistryValueName,
+      ConfigurationPolicyProviderWin::kHomepageRegistryValueName,
       value));
 }
 
-void TestWinConfigurationPolicyProvider::SetHomepageRegistryValueWrongType(
+void TestConfigurationPolicyProviderWin::SetHomepageRegistryValueWrongType(
     HKEY hive) {
   RegKey key(hive,
-      WinConfigurationPolicyProvider::kPolicyRegistrySubKey,
+      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
-      WinConfigurationPolicyProvider::kHomepageRegistryValueName,
+      ConfigurationPolicyProviderWin::kHomepageRegistryValueName,
       5));
 }
 
-void TestWinConfigurationPolicyProvider::SetHomepageIsNewTabPage(
+void TestConfigurationPolicyProviderWin::SetHomepageIsNewTabPage(
     HKEY hive,
     bool value) {
   RegKey key(hive,
-      WinConfigurationPolicyProvider::kPolicyRegistrySubKey,
+      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
-      WinConfigurationPolicyProvider::kHomepageIsNewTabPageRegistryValueName,
+      ConfigurationPolicyProviderWin::kHomepageIsNewTabPageRegistryValueName,
       value));
 }
 
-void TestWinConfigurationPolicyProvider::SetCookiesMode(
+void TestConfigurationPolicyProviderWin::SetCookiesMode(
     HKEY hive,
     uint32 value) {
   RegKey key(hive,
-      WinConfigurationPolicyProvider::kPolicyRegistrySubKey,
+      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
-      WinConfigurationPolicyProvider::kCookiesModeRegistryValueName,
+      ConfigurationPolicyProviderWin::kCookiesModeRegistryValueName,
       value));
 }
 
@@ -85,9 +85,9 @@ void TestWinConfigurationPolicyProvider::SetCookiesMode(
 // sandboxes, allowing the tests to manipulate and access policy as if it
 // were active, but without actually changing the parts of the Registry that
 // are managed by Group Policy.
-class WinConfigurationPolicyProviderTest : public testing::Test {
+class ConfigurationPolicyProviderWinTest : public testing::Test {
  public:
-  WinConfigurationPolicyProviderTest();
+  ConfigurationPolicyProviderWinTest();
 
   // testing::Test method overrides:
   virtual void SetUp();
@@ -106,12 +106,12 @@ class WinConfigurationPolicyProviderTest : public testing::Test {
   RegKey temp_hklm_hive_key_;
 };
 
-WinConfigurationPolicyProviderTest::WinConfigurationPolicyProviderTest()
+ConfigurationPolicyProviderWinTest::ConfigurationPolicyProviderWinTest()
     : temp_hklm_hive_key_(HKEY_CURRENT_USER, kUnitTestMachineOverrideSubKey),
       temp_hkcu_hive_key_(HKEY_CURRENT_USER, kUnitTestUserOverrideSubKey) {
 }
 
-void WinConfigurationPolicyProviderTest::SetUp() {
+void ConfigurationPolicyProviderWinTest::SetUp() {
   // Cleanup any remnants of previous tests.
   DeleteRegistrySandbox();
 
@@ -127,7 +127,7 @@ void WinConfigurationPolicyProviderTest::SetUp() {
   ActivateOverrides();
 }
 
-void WinConfigurationPolicyProviderTest::ActivateOverrides() {
+void ConfigurationPolicyProviderWinTest::ActivateOverrides() {
   HRESULT result = RegOverridePredefKey(HKEY_LOCAL_MACHINE,
                                         temp_hklm_hive_key_.Handle());
   EXPECT_EQ(ERROR_SUCCESS, result);
@@ -136,27 +136,27 @@ void WinConfigurationPolicyProviderTest::ActivateOverrides() {
   EXPECT_EQ(ERROR_SUCCESS, result);
 }
 
-void WinConfigurationPolicyProviderTest::DeactivateOverrides() {
+void ConfigurationPolicyProviderWinTest::DeactivateOverrides() {
   uint32 result = RegOverridePredefKey(HKEY_LOCAL_MACHINE, 0);
   EXPECT_EQ(ERROR_SUCCESS, result);
   result = RegOverridePredefKey(HKEY_CURRENT_USER, 0);
   EXPECT_EQ(ERROR_SUCCESS, result);
 }
 
-void WinConfigurationPolicyProviderTest::TearDown() {
+void ConfigurationPolicyProviderWinTest::TearDown() {
   DeactivateOverrides();
   DeleteRegistrySandbox();
 }
 
-void WinConfigurationPolicyProviderTest::DeleteRegistrySandbox() {
+void ConfigurationPolicyProviderWinTest::DeleteRegistrySandbox() {
   temp_hklm_hive_key_.Close();
   temp_hkcu_hive_key_.Close();
   RegKey key(HKEY_CURRENT_USER, kUnitTestRegistrySubKey, KEY_ALL_ACCESS);
   key.DeleteKey(L"");
 }
-TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyDefault) {
+TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyDefault) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
 
   provider.Provide(&store);
 
@@ -166,9 +166,9 @@ TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyDefault) {
   EXPECT_TRUE(i == map.end());
 }
 
-TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKCU) {
+TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKCU) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
   provider.SetHomepageRegistryValue(HKEY_CURRENT_USER,
                                     L"http://chromium.org");
 
@@ -183,9 +183,9 @@ TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKCU) {
   EXPECT_EQ(L"http://chromium.org", value);
 }
 
-TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKCUWrongType) {
+TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKCUWrongType) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
   provider.SetHomepageRegistryValueWrongType(HKEY_CURRENT_USER);
 
   provider.Provide(&store);
@@ -196,9 +196,9 @@ TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKCUWrongType) {
   EXPECT_TRUE(i == map.end());
 }
 
-TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKLM) {
+TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKLM) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
   provider.SetHomepageRegistryValue(HKEY_LOCAL_MACHINE,
                                     L"http://chromium.org");
 
@@ -213,9 +213,9 @@ TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKLM) {
   EXPECT_EQ(L"http://chromium.org", value);
 }
 
-TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKLMOverHKCU) {
+TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKLMOverHKCU) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
   provider.SetHomepageRegistryValue(HKEY_CURRENT_USER,
                                     L"http://chromium.org");
   provider.SetHomepageRegistryValue(HKEY_LOCAL_MACHINE,
@@ -232,10 +232,10 @@ TEST_F(WinConfigurationPolicyProviderTest, TestHomePagePolicyHKLMOverHKCU) {
   EXPECT_EQ(L"http://crbug.com", value);
 }
 
-TEST_F(WinConfigurationPolicyProviderTest,
+TEST_F(ConfigurationPolicyProviderWinTest,
     TestHomepageIsNewTabPagePolicyDefault) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
 
   provider.Provide(&store);
 
@@ -245,10 +245,10 @@ TEST_F(WinConfigurationPolicyProviderTest,
   EXPECT_TRUE(i == map.end());
 }
 
-TEST_F(WinConfigurationPolicyProviderTest,
+TEST_F(ConfigurationPolicyProviderWinTest,
     TestHomepageIsNewTabPagePolicyHKLM) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
   provider.SetHomepageIsNewTabPage(HKEY_LOCAL_MACHINE, true);
 
   provider.Provide(&store);
@@ -262,10 +262,10 @@ TEST_F(WinConfigurationPolicyProviderTest,
   EXPECT_EQ(true, value);
 }
 
-TEST_F(WinConfigurationPolicyProviderTest,
+TEST_F(ConfigurationPolicyProviderWinTest,
     TestCookiesModePolicyDefault) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
 
   provider.Provide(&store);
 
@@ -275,10 +275,10 @@ TEST_F(WinConfigurationPolicyProviderTest,
   EXPECT_TRUE(i == map.end());
 }
 
-TEST_F(WinConfigurationPolicyProviderTest,
+TEST_F(ConfigurationPolicyProviderWinTest,
     TestCookiesModePolicyHKLM) {
   MockConfigurationPolicyStore store;
-  TestWinConfigurationPolicyProvider provider;
+  TestConfigurationPolicyProviderWin provider;
   provider.SetCookiesMode(HKEY_LOCAL_MACHINE, 2);
 
   provider.Provide(&store);
