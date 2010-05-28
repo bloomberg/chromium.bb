@@ -13,6 +13,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -27,10 +28,6 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
     GtkWindow* parent,
     TabContents* tab_contents)
     : tab_contents_(tab_contents),
-      url_(tab_contents->GetURL()),
-      title_(tab_contents->GetTitle()),
-      favicon_(tab_contents->FavIconIsValid() ? tab_contents->GetFavIcon() :
-                                                SkBitmap()),
       error_dialog_(NULL) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
@@ -98,9 +95,7 @@ void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
 
   if (response == GTK_RESPONSE_ACCEPT) {
     ShellIntegration::ShortcutInfo shortcut_info;
-    shortcut_info.url = url_;
-    shortcut_info.title = title_;
-    shortcut_info.favicon = favicon_;
+    web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info);
     shortcut_info.create_on_desktop =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
     shortcut_info.create_in_applications_menu =

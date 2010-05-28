@@ -51,15 +51,6 @@ class CreateApplicationShortcutsDialogGtk
   // TabContents for which the shortcut will be created.
   TabContents* tab_contents_;
 
-  // Target URL of the shortcut.
-  GURL url_;
-
-  // Visible title of the shortcut.
-  string16 title_;
-
-  // The favicon of the tab contents, used to set the icon on the desktop.
-  SkBitmap favicon_;
-
   // Dialog box that allows the user to create an application shortcut.
   GtkWidget* create_dialog_;
 
