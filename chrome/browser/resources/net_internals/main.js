@@ -95,8 +95,8 @@ function onLoaded() {
     var aNode = document.getElementById(tabIds[i]);
     anchorMap[aNode.hash] = tabIds[i];
   }
-  // Default the empty hash to the requests tab.
-  anchorMap['#'] = anchorMap[''] = 'requestsTab';
+  // Default the empty hash to the data tab.
+  anchorMap['#'] = anchorMap[''] = 'dataTab';
 
   window.onhashchange = function() {
     var tabId = anchorMap[window.location.hash];
