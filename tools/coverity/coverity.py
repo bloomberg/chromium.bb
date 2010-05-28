@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,12 +26,19 @@ Scheduled Task on Windows XP.
 
 import optparse
 import os
+import os.path
+import shutil
 import subprocess
 import sys
 import time
 
-# TODO(wtc): Change these constants to command-line flags, particularly the
-# ones that are paths.  Set default values for the flags.
+# These constants provide default values, but are exposed as command-line
+# flags. See the --help for more info. Note that for historical reasons
+# (the script started out as Windows-only and has legacy usages which pre-date
+# these switches), the constants are all tuned for Windows.
+# Usage of this script on Linux pretty much requires explicit
+# --source-dir, --coverity-bin-dir, --coverity-intermediate-dir, and
+# --coverity-target command line flags.
 
 CHROMIUM_SOURCE_DIR = 'C:\\chromium.latest'
 
@@ -65,11 +72,17 @@ COVERITY_PRODUCT = 'Chromium'
 COVERITY_TARGET = 'Windows'
 
 COVERITY_USER = 'admin'
-
-CHROMIUM_PASSWORD = 'xxxxxxxx'
+# looking for a PASSWORD constant? Look at --coverity-password-file instead.
 
 # Relative to CHROMIUM_SOURCE_DIR.  Contains the pid of this script.
 LOCK_FILE = 'coverity.lock'
+
+def _ReadPassword(pwfilename):
+  """Reads the coverity password in from a file where it was stashed"""
+  pwfile = open(pwfilename, 'r')
+  password = pwfile.readline()
+  pwfile.close()
+  return password.rstrip()
 
 def _RunCommand(cmd, dry_run, shell=False):
   """Runs the command if dry_run is false, otherwise just prints the command."""
@@ -79,11 +92,16 @@ def _RunCommand(cmd, dry_run, shell=False):
   if not dry_run:
     subprocess.call(cmd, shell=shell)
 
+def _ReleaseLock(lock_file, lock_filename):
+  """Removes the lockfile. Function-ized so we can bail from anywhere"""
+  os.close(lock_file)
+  os.remove(lock_filename)
+
 def main(options, args):
   """Runs all the selected tests for the given build type and target."""
   # Create the lock file to prevent another instance of this script from
   # running.
-  lock_filename = '%s\\%s' % (CHROMIUM_SOURCE_DIR, LOCK_FILE)
+  lock_filename = os.path.join(options.source_dir, LOCK_FILE)
   try:
     lock_file = os.open(lock_filename,
                         os.O_CREAT | os.O_EXCL | os.O_TRUNC | os.O_RDWR)
@@ -98,50 +116,87 @@ def main(options, args):
 
   start_time = time.time()
 
-  print 'Change directory to ' + CHROMIUM_SOURCE_DIR
-  os.chdir(CHROMIUM_SOURCE_DIR)
+  print 'Change directory to ' + options.source_dir
+  os.chdir(options.source_dir)
+
+  # The coverity-password filename may have been a relative path.
+  # If so, assume it's relative to the source directory, which means
+  # the time to read the password is after we do the chdir().
+  coverity_password = _ReadPassword(options.coverity_password_file)
 
   cmd = 'gclient sync'
   _RunCommand(cmd, options.dry_run, shell=True)
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
   # Do a clean build.  Remove the build output directory first.
-  # TODO(wtc): Consider using Python's rmtree function in the shutil module,
-  # or the RemoveDirectory function in
-  # trunk/tools/buildbot/scripts/common/chromium_utils.py.
-  cmd = 'rmdir /s /q %s\\%s\\%s' % (CHROMIUM_SOURCE_DIR,
-                                    CHROMIUM_SOLUTION_DIR, options.target)
-  _RunCommand(cmd, options.dry_run, shell=True)
+  if sys.platform == 'linux2':
+    rm_path = os.path.join(options.source_dir,'src','out',options.target)
+  elif sys.platform == 'win32':
+    rm_path = os.path.join(options.source_dir,options.solution_dir,
+                           options.target)
+  else:
+    print 'Platform "%s" unrecognized, don\'t know how to proceed'
+    _ReleaseLock(lock_file, lock_filename)
+    sys.exit(1)
+
+  if options.dry_run:
+    print 'shutil.rmtree(%s)' % repr(rm_path)
+  else:
+    shutil.rmtree(rm_path,True)
+
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
-  cmd = '%s\\cov-build.exe --dir %s devenv.com %s\\%s /build %s' % (
-      COVERITY_BIN_DIR, COVERITY_INTERMEDIATE_DIR, CHROMIUM_SOURCE_DIR,
-      CHROMIUM_SOLUTION_FILE, options.target)
-  _RunCommand(cmd, options.dry_run)
+  use_shell_during_make = False
+  if sys.platform == 'linux2':
+    use_shell_during_make = True
+    os.chdir('src')
+    _RunCommand('pwd', options.dry_run, shell=True)
+    cmd = '%s/cov-build --dir %s make BUILDTYPE=%s' % (
+      options.coverity_bin_dir, options.coverity_intermediate_dir,
+      options.target)
+  elif sys.platform == 'win32':
+    cmd = '%s\\cov-build.exe --dir %s devenv.com %s\\%s /build %s' % (
+      options.coverity_bin_dir, options.coverity_intermediate_dir,
+      options.source_dir, options.solution_file, options.target)
+
+  _RunCommand(cmd, options.dry_run, shell=use_shell_during_make)
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
-  cmd = '%s\\cov-analyze.exe --dir %s %s' % (COVERITY_BIN_DIR,
-                                             COVERITY_INTERMEDIATE_DIR,
-                                             COVERITY_ANALYZE_OPTIONS)
-  _RunCommand(cmd, options.dry_run)
+  cov_analyze_exe = os.path.join(options.coverity_bin_dir,'cov-analyze')
+  cmd = '%s --dir %s %s' % (cov_analyze_exe,
+                            options.coverity_intermediate_dir,
+                            options.coverity_analyze_options)
+  _RunCommand(cmd, options.dry_run, shell=use_shell_during_make)
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
-  cmd = ('%s\\cov-commit-defects.exe --dir %s --remote %s --port %s'
+  cov_commit_exe = os.path.join(options.coverity_bin_dir,'cov-commit-defects')
+
+  # On Linux we have started using a Target with a space in it, so we want
+  # to quote it. On the other hand, Windows quoting doesn't work quite the
+  # same way. To be conservative, I'd like to avoid quoting an argument
+  # that doesn't need quoting and which we haven't historically been quoting
+  # on that platform. So, only quote the target if we have to.
+  coverity_target = options.coverity_target
+  if sys.platform != 'win32':
+    coverity_target = '"%s"' % coverity_target
+
+  cmd = ('%s --dir %s --remote %s --port %s '
          '--product %s '
          '--target %s '
          '--user %s '
-         '--password %s') % (COVERITY_BIN_DIR,
-                                   COVERITY_INTERMEDIATE_DIR,
-                                   COVERITY_REMOTE, COVERITY_PORT,
-                                   COVERITY_PRODUCT,
-                                   COVERITY_TARGET, COVERITY_USER,
-                                   CHROMIUM_PASSWORD)
-  _RunCommand(cmd, options.dry_run)
+         '--password %s') % (cov_commit_exe,
+                             options.coverity_intermediate_dir,
+                             options.coverity_dbhost,
+                             options.coverity_port,
+                             options.coverity_product,
+                             coverity_target,
+                             options.coverity_user,
+                             coverity_password)
+  _RunCommand(cmd, options.dry_run, shell=use_shell_during_make)
 
   print 'Total time: %ds' % (time.time() - start_time)
 
-  os.close(lock_file)
-  os.remove(lock_filename)
+  _ReleaseLock(lock_file, lock_filename)
 
   return 0
 
@@ -149,8 +204,62 @@ if '__main__' == __name__:
   option_parser = optparse.OptionParser()
   option_parser.add_option('', '--dry-run', action='store_true', default=False,
                            help='print but don\'t run the commands')
+
   option_parser.add_option('', '--target', default='Release',
                            help='build target (Debug or Release)')
+
+  option_parser.add_option('', '--source-dir', dest='source_dir',
+                           help='full path to directory ABOVE "src"',
+                           default=CHROMIUM_SOURCE_DIR)
+
+  option_parser.add_option('', '--solution-file', dest='solution_file',
+                           default=CHROMIUM_SOLUTION_FILE)
+
+  option_parser.add_option('', '--solution-dir', dest='solution_dir',
+                           default=CHROMIUM_SOLUTION_DIR)
+
+  option_parser.add_option('', '--coverity-bin-dir', dest='coverity_bin_dir',
+                           default=COVERITY_BIN_DIR)
+
+  option_parser.add_option('', '--coverity-intermediate-dir',
+                           dest='coverity_intermediate_dir',
+                           default=COVERITY_INTERMEDIATE_DIR)
+
+  option_parser.add_option('', '--coverity-analyze-options',
+                           dest='coverity_analyze_options',
+                           help=('all cov-analyze options, e.g. "%s"'
+                                 % COVERITY_ANALYZE_OPTIONS),
+                           default=COVERITY_ANALYZE_OPTIONS)
+
+  option_parser.add_option('', '--coverity-db-host',
+                           dest='coverity_dbhost',
+                           help=('coverity defect db server hostname, e.g. %s'
+                                 % COVERITY_REMOTE),
+                           default=COVERITY_REMOTE)
+
+  option_parser.add_option('', '--coverity-db-port', dest='coverity_port',
+                           help=('port # of coverity web/db server, e.g. %s'
+                                 % COVERITY_PORT),
+                           default=COVERITY_PORT)
+
+  option_parser.add_option('', '--coverity-product', dest='coverity_product',
+                           help=('Product name reported to coverity, e.g. %s'
+                                 % COVERITY_PRODUCT),
+                           default=COVERITY_PRODUCT)
+
+  option_parser.add_option('', '--coverity-target', dest='coverity_target',
+                           help='Platform Target reported to coverity',
+                           default=COVERITY_TARGET)
+
+  option_parser.add_option('', '--coverity-user', dest='coverity_user',
+                           help='Username used to log into coverity',
+                           default=COVERITY_USER)
+
+  option_parser.add_option('', '--coverity-password-file',
+                           dest='coverity_password_file',
+                           help='file containing the coverity password',
+                           default='coverity-password')
+
   options, args = option_parser.parse_args()
 
   result = main(options, args)
