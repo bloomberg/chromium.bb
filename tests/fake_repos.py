@@ -237,13 +237,13 @@ hooks = [
   {
     'pattern': '.',
     'action': ['python', '-c',
-               'open(\\'src/hooked1\\', \\'w\\').write(\\'hooked1\\')'],
+               'open(\\'src/svn_hooked1\\', \\'w\\').write(\\'svn_hooked1\\')'],
   },
   {
     # Should not be run.
     'pattern': 'nonexistent',
     'action': ['python', '-c',
-               'open(\\'src/hooked2\\', \\'w\\').write(\\'hooked2\\')'],
+               'open(\\'src/svn_hooked2\\', \\'w\\').write(\\'svn_hooked2\\')'],
   },
 ]
 """ % { 'host': '127.0.0.1' }))
@@ -321,13 +321,13 @@ hooks = [
   {
     'pattern': '.',
     'action': ['python', '-c',
-               'open(\\'src/hooked1\\', \\'w\\').write(\\'hooked1\\')'],
+               'open(\\'src/git_hooked1\\', \\'w\\').write(\\'git_hooked1\\')'],
   },
   {
     # Should not be run.
     'pattern': 'nonexistent',
     'action': ['python', '-c',
-               'open(\\'src/hooked2\\', \\'w\\').write(\\'hooked2\\')'],
+               'open(\\'src/git_hooked2\\', \\'w\\').write(\\'git_hooked2\\')'],
   },
 ]
 """ % {

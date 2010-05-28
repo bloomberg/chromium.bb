@@ -503,6 +503,36 @@ solutions = [
       if matching_file_list:
         self._RunHookAction(hook_dict, matching_file_list)
 
+  def _EnforceRevisions(self, solutions):
+    """Checks for revision overrides."""
+    revision_overrides = {}
+    solutions = [s['name'] for s in solutions]
+    if self._options.revisions:
+      revision = self._options.revisions[0]
+      # Ignore solution@
+      rev = revision
+      if '@' in revision:
+        rev = revision.split('@', 1)[1]
+      revision_overrides[solutions[0]] = rev
+
+    if len(self._options.revisions) > 1:
+      # Enforce solution@rev format for following params.
+      for revision in self._options.revisions[1:]:
+        if not '@' in revision:
+          raise gclient_utils.Error(
+              'Specify the full dependency when specifying a revision number '
+              'for non-primary solution.')
+        sol, rev = revision.split("@", 1)
+        # Disallow conflicting revs
+        if revision_overrides.get(sol, rev) != rev:
+          raise gclient_utils.Error(
+              'Conflicting revision numbers specified for %s: %s and %s.' %
+                  (sol, revision_overrides[sol], rev))
+        if not sol in solutions:
+          raise gclient_utils.Error('%s is not a valid solution.' % sol)
+        revision_overrides[sol] = rev
+    return revision_overrides
+
   def RunOnDeps(self, command, args):
     """Runs a command on each dependency in a client and its dependencies.
 
@@ -518,23 +548,10 @@ solutions = [
     if not command in self.supported_commands:
       raise gclient_utils.Error("'%s' is an unsupported command" % command)
 
-    # Check for revision overrides.
-    revision_overrides = {}
-    for revision in self._options.revisions:
-      if revision.find("@") == -1:
-        raise gclient_utils.Error(
-            "Specify the full dependency when specifying a revision number.")
-      revision_elem = revision.split("@")
-      # Disallow conflicting revs
-      if revision_overrides.has_key(revision_elem[0]) and \
-         revision_overrides[revision_elem[0]] != revision_elem[1]:
-        raise gclient_utils.Error(
-            "Conflicting revision numbers specified.")
-      revision_overrides[revision_elem[0]] = revision_elem[1]
-
     solutions = self.GetVar("solutions")
     if not solutions:
       raise gclient_utils.Error("No solution specified")
+    revision_overrides = self._EnforceRevisions(solutions)
 
     # When running runhooks --force, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
@@ -679,35 +696,13 @@ solutions = [
     """Output revision info mapping for the client and its dependencies.
 
     This allows the capture of an overall "revision" for the source tree that
-    can be used to reproduce the same tree in the future. The actual output
-    contains enough information (source paths, svn server urls and revisions)
-    that it can be used either to generate external svn/git commands (without
-    gclient) or as input to gclient's --rev option (with some massaging of
-    the data).
-
-    Since we care about the revision of the current source tree, for git
-    repositories this command uses the revision of the HEAD. For subversion we
-    use BASE.
+    can be used to reproduce the same tree in the future. It is only useful for
+    "unpinned dependencies", i.e. DEPS/deps references without a svn revision
+    number or a git hash. A git branch name isn't "pinned" since the actual
+    commit can change.
 
     The --snapshot option allows creating a .gclient file to reproduce the tree.
-
-    Raises:
-      Error: If the client has conflicting entries.
     """
-    # Check for revision overrides.
-    revision_overrides = {}
-    for revision in self._options.revisions:
-      if revision.find("@") < 0:
-        raise gclient_utils.Error(
-            "Specify the full dependency when specifying a revision number.")
-      revision_elem = revision.split("@")
-      # Disallow conflicting revs
-      if revision_overrides.has_key(revision_elem[0]) and \
-         revision_overrides[revision_elem[0]] != revision_elem[1]:
-        raise gclient_utils.Error(
-            "Conflicting revision numbers specified.")
-      revision_overrides[revision_elem[0]] = revision_elem[1]
-
     solutions = self.GetVar("solutions")
     if not solutions:
       raise gclient_utils.Error("No solution specified")
@@ -933,9 +928,10 @@ def CMDsync(parser, args):
                     help="don't run hooks after the update is complete")
   parser.add_option("-r", "--revision", action="append",
                     dest="revisions", metavar="REV", default=[],
-                    help="update given solution to specified revision, "
-                         "can be used multiple times for each solution, "
-                         "e.g. -r src@123, -r internal@32")
+                    help="Enforces revision/hash for the primary solution. "
+                         "To modify a secondary solution, use it at least once "
+                         "for the primary solution and then use the format "
+                         "solution@rev/hash, e.g. -r src@123")
   parser.add_option("--head", action="store_true",
                     help="skips any safesync_urls specified in "
                          "configured solutions and sync to head instead")
@@ -959,15 +955,18 @@ def CMDsync(parser, args):
   if not options.head:
     solutions = client.GetVar('solutions')
     if solutions:
+      first = True
       for s in solutions:
-        if s.get('safesync_url', ''):
+        if s.get('safesync_url', None):
           # rip through revisions and make sure we're not over-riding
           # something that was explicitly passed
           has_key = False
+          r_first = True
           for r in options.revisions:
-            if r.split('@')[0] == s['name']:
+            if (first and r_first) or r.split('@', 1)[0] == s['name']:
               has_key = True
               break
+            r_first = False
 
           if not has_key:
             handle = urllib.urlopen(s['safesync_url'])
@@ -975,6 +974,7 @@ def CMDsync(parser, args):
             handle.close()
             if len(rev):
               options.revisions.append(s['name']+'@'+rev)
+        first = False
 
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
