@@ -3047,3 +3047,22 @@
    fun:ThreadFunc
    fun:start_thread
 }
+
+{
+   Bug_45301_UnknownOwner
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
+   fun:_ZN3IPC16MessageWithReplyI6Tuple3I4GURLSsSbIwSt11char_traitsIwESaIwEEE6Tuple2IRNS_13ChannelHandleER13WebPluginInfoEE18DispatchDelayReplyI21ResourceMessageFilterMSG_FvRKS2_RKSsRKS6_PNS_7MessageEEEEbPKSN_PT_T0_
+   fun:_ZN21ResourceMessageFilter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context10TryFiltersERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
