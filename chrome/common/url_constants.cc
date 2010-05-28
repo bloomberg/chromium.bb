@@ -25,6 +25,10 @@ const char kMetadataScheme[] = "metadata";
 const char kUserScriptScheme[] = "chrome-user-script";
 const char kViewSourceScheme[] = "view-source";
 
+#if defined(OS_CHROMEOS)
+const char kCrosScheme[] = "cros";
+#endif
+
 const char kStandardSchemeSeparator[] = "://";
 
 const char* kSavableSchemes[] = {
@@ -107,6 +111,9 @@ void RegisterChromeSchemes() {
   url_util::AddStandardScheme(kGearsScheme);
   url_util::AddStandardScheme(kExtensionScheme);
   url_util::AddStandardScheme(kMetadataScheme);
+#if defined(OS_CHROMEOS)
+  url_util::AddStandardScheme(kCrosScheme);
+#endif
 
   // Prevent future modification of the standard schemes list. This is to
   // prevent accidental creation of data races in the program. AddStandardScheme

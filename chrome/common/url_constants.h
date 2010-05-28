@@ -13,6 +13,7 @@ namespace chrome {
 extern const char kAboutScheme[];
 extern const char kChromeInternalScheme[];
 extern const char kChromeUIScheme[];  // The scheme used for DOMUIs.
+extern const char kCrosScheme[];      // The scheme used for ChromeOS.
 extern const char kDataScheme[];
 extern const char kExtensionScheme[];
 extern const char kFileScheme[];
