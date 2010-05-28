@@ -506,13 +506,6 @@ void TestShell::ResizeSubViews() {
   GtkWindow* window = *(TestShell::windowList()->begin());
   TestShell* shell =
       static_cast<TestShell*>(g_object_get_data(G_OBJECT(window), "test-shell"));
-  shell->ResetTestController();
-
-  // ResetTestController may have closed the window we were holding on to.
-  // Grab the first window again.
-  window = *(TestShell::windowList()->begin());
-  shell = static_cast<TestShell*>(g_object_get_data(G_OBJECT(window), "test-shell"));
-  DCHECK(shell);
 
   // Clear focus between tests.
   shell->m_focusedWidgetHost = NULL;
@@ -520,6 +513,18 @@ void TestShell::ResizeSubViews() {
   // Make sure the previous load is stopped.
   shell->webView()->mainFrame()->stopLoading();
   shell->navigation_controller()->Reset();
+
+  // StopLoading may update state maintained in the test controller (for
+  // example, whether the WorkQueue is frozen) as such, we need to reset it
+  // after we invoke StopLoading.
+  shell->ResetTestController();
+
+  // ResetTestController may have closed the window we were holding on to.
+  // Grab the first window again.
+  window = *(TestShell::windowList()->begin());
+  shell = static_cast<TestShell*>(g_object_get_data(G_OBJECT(window),
+                                                    "test-shell"));
+  DCHECK(shell);
 
   // Clean up state between test runs.
   webkit_glue::ResetBeforeTestRun(shell->webView());
