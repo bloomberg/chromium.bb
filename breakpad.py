@@ -13,10 +13,15 @@ import traceback
 import socket
 import sys
 
+
 # Configure these values.
-DEFAULT_URL = 'http://chromium-status.appspot.com/breakpad'
+DEFAULT_URL = 'https://chromium-status.appspot.com/breakpad'
+
+_REGISTERED = False
+
 
 def SendStack(last_tb, stack, url=None):
+  """Sends the stack trace to the breakpad server."""
   if not url:
     url = DEFAULT_URL
   print 'Sending crash report ...'
@@ -26,6 +31,7 @@ def SendStack(last_tb, stack, url=None):
         'stack': stack,
         'user': getpass.getuser(),
         'exception': last_tb,
+        'host': socket.getfqdn(),
     }
     request = urllib.urlopen(url, urllib.urlencode(params))
     print request.read()
@@ -35,6 +41,7 @@ def SendStack(last_tb, stack, url=None):
 
 
 def CheckForException():
+  """Runs at exit. Look if there was an exception active."""
   last_value = getattr(sys, 'last_value', None)
   if last_value and not isinstance(last_value, KeyboardInterrupt):
     last_tb = getattr(sys, 'last_traceback', None)
@@ -42,7 +49,19 @@ def CheckForException():
       SendStack(repr(last_value), ''.join(traceback.format_tb(last_tb)))
 
 
+def Register():
+  """Registers the callback at exit. Calling it multiple times is no-op."""
+  global _REGISTERED
+  if _REGISTERED:
+    return
+  _REGISTERED = True
+  atexit.register(CheckForException)
+
+
+# Skip unit tests and we don't want anything from non-googler.
 if (not 'test' in sys.modules['__main__'].__file__ and
     socket.getfqdn().endswith('.google.com')):
-  # Skip unit tests and we don't want anything from non-googler.
-  atexit.register(CheckForException)
+  Register()
+
+# Uncomment this line if you want to test it out.
+#Register()
