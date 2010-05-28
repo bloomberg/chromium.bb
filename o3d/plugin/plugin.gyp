@@ -247,6 +247,7 @@
                     {
                       # The unbranded Mac plugin's name is a special case.
                       'action': ['/usr/bin/Rez',
+                        '-useDF',
                         '-o',
                         '${BUILT_PRODUCTS_DIR}/O3D.plugin/Contents/Resources/O3D.rsrc',
                         '${BUILT_PRODUCTS_DIR}/O3D.r',
@@ -254,6 +255,7 @@
                     },
                     {
                       'action': ['/usr/bin/Rez',
+                        '-useDF',
                         '-o',
                         '${BUILT_PRODUCTS_DIR}/<(plugin_npapi_filename).plugin/Contents/Resources/<(plugin_npapi_filename).rsrc',
                         '${BUILT_PRODUCTS_DIR}/O3D.r',
