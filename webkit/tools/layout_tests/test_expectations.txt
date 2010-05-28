@@ -4,3 +4,7 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// temporarily enable these tests downstream until they're fully upstreamed.
+BUG11246 : fast/dom/Geolocation = PASS
+BUG11246 DEFER SKIP : fast/dom/Geolocation/callback-exception.html = TEXT
