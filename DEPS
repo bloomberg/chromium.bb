@@ -184,7 +184,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
-      "/trunk/deps/third_party/nss@45059",
+      "/trunk/deps/third_party/nss@48440",
 
     "src/third_party/swig/win":
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
@@ -215,6 +215,10 @@ deps_os = {
 
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
+
+    # NSS, for SSLClientSocketNSS.
+    "src/third_party/nss":
+      "/trunk/deps/third_party/nss@48440",
   },
   "unix": {
     # Linux, really.
