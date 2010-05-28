@@ -29,23 +29,23 @@ uintptr_t MultimediaSocket::kNaClMultimediaBridgeIdent;
 
 // NB: InitializeIdentifiers is not thread-safe.
 void MultimediaSocket::InitializeIdentifiers(
-    PortablePluginInterface *plugin_interface) {
+    BrowserInterface *browser_interface) {
   static bool identifiers_initialized = false;
 
-  UNREFERENCED_PARAMETER(plugin_interface);
+  UNREFERENCED_PARAMETER(browser_interface);
   if (!identifiers_initialized) {
     kNaClMultimediaBridgeIdent =
-        PortablePluginInterface::GetStrIdentifierCallback(
+        BrowserInterface::GetStrIdentifierCallback(
           "nacl_multimedia_bridge");
     identifiers_initialized = true;
   }
 }
 
 MultimediaSocket::MultimediaSocket(ScriptableHandle<ConnectedSocket>* s,
-                                   PortablePluginInterface* plugin_interface,
+                                   BrowserInterface* browser_interface,
                                    ServiceRuntimeInterface* sri)
     : connected_socket_(s),
-      plugin_interface_(plugin_interface),
+      browser_interface_(browser_interface),
       service_runtime_(sri),
       upcall_thread_should_exit_(false),
       upcall_thread_id_(0) {
@@ -53,7 +53,7 @@ MultimediaSocket::MultimediaSocket(ScriptableHandle<ConnectedSocket>* s,
   NaClMutexCtor(&mu_);
   NaClCondVarCtor(&cv_);
   upcall_thread_state_ = UPCALL_THREAD_NOT_STARTED;
-  InitializeIdentifiers(plugin_interface_);  // inlineable; tail call.
+  InitializeIdentifiers(browser_interface_);  // inlineable; tail call.
 }
 
 MultimediaSocket::~MultimediaSocket() {
@@ -126,7 +126,7 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
   if (channel) {
     nacl::VideoScopedGlobalLock video_lock;
     nacl::VideoCallbackData *video_cb_data;
-    PortablePluginInterface *plugin_interface;
+    BrowserInterface *browser_interface;
     MultimediaSocket *msp;
 
     dprintf(("Upcall: channel %p\n", static_cast<void *>(channel)));
@@ -134,9 +134,9 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
              static_cast<void *>(channel->server_instance_data)));
     video_cb_data = reinterpret_cast<nacl::VideoCallbackData*>
         (channel->server_instance_data);
-    plugin_interface = video_cb_data->portable_plugin;
-    if (NULL != plugin_interface) {
-      nacl::VideoMap *video = plugin_interface->video();
+    browser_interface = video_cb_data->portable_plugin;
+    if (NULL != browser_interface) {
+      nacl::VideoMap *video = browser_interface->video();
       if (video) {
         video->RequestRedraw();
       }
@@ -212,9 +212,9 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
   dprintf(("MultimediaSocket::InitializeModuleMultimedia(%p)\n",
            static_cast<void *>(this)));
 
-  PortablePluginInterface *plugin_interface =
-      connected_socket_->get_handle()->GetPortablePluginInterface();
-  nacl::VideoMap *video = plugin_interface->video();
+  BrowserInterface *browser_interface =
+      connected_socket_->get_handle()->GetBrowserInterface();
+  nacl::VideoMap *video = browser_interface->video();
   ScriptableHandle<SharedMemory> *video_shared_memory =
       video->VideoSharedMemorySetup();
 
@@ -242,7 +242,7 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
   }
   // Start a thread to handle the upcalls.
   nacl::VideoCallbackData *cbdata;
-  cbdata = video->InitCallbackData(desc[0], plugin_interface, this);
+  cbdata = video->InitCallbackData(desc[0], browser_interface, this);
   dprintf((
       "MultimediaSocket::InitializeModuleMultimedia: launching thread\n"));
   uint32_t tid;

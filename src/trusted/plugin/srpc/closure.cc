@@ -88,7 +88,7 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
   NPVariant status;
   NPObject *nacl_desc = NULL;
   NPIdentifier callback_selector =
-      (NPIdentifier)PortablePluginInterface::kOnfailIdent;
+      (NPIdentifier)BrowserInterface::kOnfailIdent;
 
   dprintf(("UrlAsNaClDescNotify::Run(%p, %s)\n",
            static_cast<void *>(stream),
@@ -129,13 +129,13 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
     }
     dprintf(("created ndiod %p\n",
              static_cast<void *>(ndiod)));
-    DescHandleInitializer init_info(plugin()->GetPortablePluginInterface(),
+    DescHandleInitializer init_info(plugin()->GetBrowserInterface(),
                                     ndiod,
                                     plugin());
 
     nacl_desc = ScriptableHandle<DescBasedHandle>::New(&init_info);
     // nacl_desc takes ownership of ndiod.
-    callback_selector = (NPIdentifier)PortablePluginInterface::kOnloadIdent;
+    callback_selector = (NPIdentifier)BrowserInterface::kOnloadIdent;
 
     ScalarToNPVariant(static_cast<NPObject*>(nacl_desc), &status);
     // NPVariant takes ownership of NPObject nacl_desc
@@ -145,7 +145,7 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
            static_cast<void *>(np_callback_),
            static_cast<void *>(nacl_desc),
            static_cast<void *>(&status)));
-  NPN_Invoke(plugin()->GetPortablePluginInterface()->GetPluginIdentifier(),
+  NPN_Invoke(plugin()->GetBrowserInterface()->GetPluginIdentifier(),
              np_callback_,
              callback_selector,
              &status,
@@ -164,7 +164,7 @@ void UrlAsNaClDescNotify::Run(const char *url,
   NPVariant status;
   NPObject *nacl_desc = NULL;
   NPIdentifier callback_selector =
-    (NPIdentifier)PortablePluginInterface::kOnfailIdent;
+    (NPIdentifier)BrowserInterface::kOnfailIdent;
 
   dprintf(("UrlAsNaClDescNotify::Run(%s, %p )\n", url,
            static_cast<void*>(shmbufp)));
@@ -200,13 +200,13 @@ void UrlAsNaClDescNotify::Run(const char *url,
     }
     nacl::DescWrapper *wrapped_shm =
         plugin()->wrapper_factory()->MakeGeneric(NaClDescRef(raw_desc));
-    SharedMemoryInitializer init_info(plugin()->GetPortablePluginInterface(),
+    SharedMemoryInitializer init_info(plugin()->GetBrowserInterface(),
                                       wrapped_shm,
                                       plugin());
     ScriptableHandle<SharedMemory> *shared_memory =
         ScriptableHandle<SharedMemory>::New(&init_info);
 
-    callback_selector = (NPIdentifier)PortablePluginInterface::kOnloadIdent;
+    callback_selector = (NPIdentifier)BrowserInterface::kOnloadIdent;
 
     ScalarToNPVariant(static_cast<NPObject*>(shared_memory), &status);
     // NPVariant takes ownership of NPObject nacl_desc
@@ -216,7 +216,7 @@ void UrlAsNaClDescNotify::Run(const char *url,
           static_cast<void *>(np_callback_),
           static_cast<void *>(nacl_desc),
           static_cast<void *>(&status)));
-  NPN_Invoke(plugin()->GetPortablePluginInterface()->GetPluginIdentifier(),
+  NPN_Invoke(plugin()->GetBrowserInterface()->GetPluginIdentifier(),
              np_callback_,
              callback_selector,
              &status,

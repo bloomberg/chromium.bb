@@ -18,7 +18,7 @@ namespace nacl_srpc {
 class SrtSocket {
  public:
   SrtSocket(ScriptableHandle<ConnectedSocket> *s,
-            PortablePluginInterface* plugin_interface);
+            BrowserInterface* browser_interface);
   ~SrtSocket();
 
   bool HardShutdown();
@@ -44,10 +44,10 @@ class SrtSocket {
   static uintptr_t kInitHandlePassing;
  private:
   ScriptableHandle<ConnectedSocket> *connected_socket_;
-  PortablePluginInterface *plugin_interface_;
+  BrowserInterface *browser_interface_;
   bool is_shut_down_;
 
-  static void InitializeIdentifiers(PortablePluginInterface *plugin_interface);
+  static void InitializeIdentifiers(BrowserInterface *browser_interface);
 };  // class SrtSocket
 
 }  // namespace nacl_srpc

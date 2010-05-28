@@ -19,7 +19,7 @@ class ServiceRuntimeInterface;
 class MultimediaSocket {
  public:
   MultimediaSocket(ScriptableHandle<ConnectedSocket>* s,
-                   PortablePluginInterface* plugin_interface,
+                   BrowserInterface* browser_interface,
                    ServiceRuntimeInterface* serv_rtm_info);
 
   ~MultimediaSocket();
@@ -44,7 +44,7 @@ class MultimediaSocket {
   ScriptableHandle<ConnectedSocket>* connected_socket_;
   struct NaClThread upcall_thread_;
 
-  PortablePluginInterface* plugin_interface_;
+  BrowserInterface* browser_interface_;
   ServiceRuntimeInterface* service_runtime_;
 
   struct NaClMutex  mu_;
@@ -58,7 +58,7 @@ class MultimediaSocket {
   bool upcall_thread_should_exit_;
   uint32_t upcall_thread_id_;
 
-  static void InitializeIdentifiers(PortablePluginInterface* plugin_interface);
+  static void InitializeIdentifiers(BrowserInterface* browser_interface);
 
   static int const kMaxUpcallThreadWaitSec = 5;
   static int const kNanoXinMicroX = 1000;

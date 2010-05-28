@@ -26,9 +26,9 @@ namespace nacl_srpc {
 class Plugin;
 
 struct PortableHandleInitializer {
-  PortablePluginInterface* plugin_interface_;
-  explicit PortableHandleInitializer(PortablePluginInterface* plugin_interface):
-      plugin_interface_(plugin_interface) {}
+  BrowserInterface* browser_interface_;
+  explicit PortableHandleInitializer(BrowserInterface* browser_interface):
+      browser_interface_(browser_interface) {}
 };
 
 
@@ -49,8 +49,8 @@ class PortableHandle {
   virtual ~PortableHandle();
 
   bool Init(struct PortableHandleInitializer* init_info);
-  PortablePluginInterface* GetPortablePluginInterface() {
-    return plugin_interface_;
+  BrowserInterface* GetBrowserInterface() {
+    return browser_interface_;
   }
 
   // generic NPAPI/IDispatch interface
@@ -94,7 +94,7 @@ class PortableHandle {
 
  private:
   static int number_alive_counter;
-  PortablePluginInterface* plugin_interface_;
+  BrowserInterface* browser_interface_;
 };
 
 }  // namespace nacl_srpc

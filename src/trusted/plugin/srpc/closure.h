@@ -10,8 +10,9 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
-#include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
+
+// TODO(sehr): this needs to be made portable.
 
 namespace nacl {
   class StreamShmBuffer;
@@ -32,7 +33,7 @@ class Closure {
     plugin_(plugin), requested_url_(requested_url), buffer_(NULL) {
     if (NULL != plugin_) {
       plugin_identifier_ =
-          plugin_->GetPortablePluginInterface()->GetPluginIdentifier();
+          plugin_->GetBrowserInterface()->GetPluginIdentifier();
     }
   }
   virtual ~Closure() {}
@@ -42,7 +43,7 @@ class Closure {
   void set_plugin(nacl_srpc::Plugin* plugin) {
     plugin_ = plugin;
     plugin_identifier_ =
-        plugin_->GetPortablePluginInterface()->GetPluginIdentifier();
+        plugin_->GetBrowserInterface()->GetPluginIdentifier();
   }
   void set_buffer(nacl::StreamShmBuffer* buffer) { buffer_ = buffer; }
   nacl::StreamShmBuffer* buffer() { return buffer_; }

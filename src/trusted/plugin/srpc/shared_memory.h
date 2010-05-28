@@ -26,16 +26,16 @@ class Plugin;
 
 struct SharedMemoryInitializer: DescHandleInitializer {
  public:
-  SharedMemoryInitializer(PortablePluginInterface* plugin_interface,
+  SharedMemoryInitializer(BrowserInterface* browser_interface,
                           nacl::DescWrapper* desc,
                           Plugin* plugin):
-      DescHandleInitializer(plugin_interface, desc, plugin),
+      DescHandleInitializer(browser_interface, desc, plugin),
       length_(0) {}
 
-  SharedMemoryInitializer(PortablePluginInterface* plugin_interface,
+  SharedMemoryInitializer(BrowserInterface* browser_interface,
                           Plugin* plugin,
                           off_t length):
-      DescHandleInitializer(plugin_interface, NULL, plugin),
+      DescHandleInitializer(browser_interface, NULL, plugin),
       length_(length) {}
 
  public:

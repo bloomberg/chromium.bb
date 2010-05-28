@@ -6,6 +6,8 @@
 
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/trusted/plugin/srpc/video.h"
+
 #if NACL_OSX
 #include <Carbon/Carbon.h>
 #endif  // NACL_OSX
@@ -28,8 +30,6 @@
 
 
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
-
-#include "native_client/src/trusted/plugin/srpc/video.h"
 
 using nacl::can_cast;
 using nacl::saturate_cast;
@@ -62,7 +62,6 @@ void VideoGlobalLock() {
 
 void VideoGlobalUnlock() {
   globalVideoMutex.Unlock();
-
 }
 
 
@@ -596,8 +595,8 @@ void VideoMap::RedrawAsync(void* platform_parm) {
   }
   GrafPtr saved_port;
   Rect revealed_rect;
-  short saved_port_top;
-  short saved_port_left;
+  int16_t saved_port_top;
+  int16_t saved_port_left;
 
   NP_Port* npport = static_cast<NP_Port*>(window_->window);
   CGrafPtr our_port = npport->port;
@@ -1092,7 +1091,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
     int width, height;
     // then check width & height properties... (needed for Safari)
     nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>* scriptable_plugin =
-        plugin_interface_->plugin();
+        browser_interface_->plugin();
     nacl_srpc::Plugin* plugin =
         static_cast<nacl_srpc::Plugin*>(scriptable_plugin->get_handle());
     width = plugin->width();
@@ -1171,15 +1170,15 @@ nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
     } else {
       // Create a SharedMemory object that the script can get at.
       // SRPC_Plugin initially takes exclusive ownership
-      dprintf(("VideoMap::VideoSharedMemorySetup plugin_interface_ (%p)\n",
-               static_cast<void *>(plugin_interface_)));
+      dprintf(("VideoMap::VideoSharedMemorySetup browser_interface_ (%p)\n",
+               static_cast<void *>(browser_interface_)));
       dprintf(("VideoMap::VideoSharedMemorySetup plugin (%p)\n",
-               static_cast<void *>(plugin_interface_->plugin())));
+               static_cast<void *>(browser_interface_->plugin())));
       nacl_srpc::SharedMemoryInitializer init_info(
-        static_cast<PortablePluginInterface*>(plugin_interface_),
+        static_cast<BrowserInterface*>(browser_interface_),
         video_handle_,
         static_cast<nacl_srpc::Plugin*>(
-            plugin_interface_->plugin()->get_handle()));
+            browser_interface_->plugin()->get_handle()));
 
       video_shared_memory_ =
           nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>::
@@ -1212,14 +1211,14 @@ void VideoMap::Invalidate() {
     rect.top = 0;
     rect.right = window_->width;
     rect.bottom = window_->height;
-    ::NPN_InvalidateRect(plugin_interface_->GetPluginIdentifier(),
+    ::NPN_InvalidateRect(browser_interface_->GetPluginIdentifier(),
                          const_cast<NPRect*>(&rect));
 #endif
   }
 }
 
 VideoCallbackData* VideoMap::InitCallbackData(DescWrapper* desc,
-                                            PortablePluginInterface *p,
+                                            BrowserInterface *p,
                                             nacl_srpc::MultimediaSocket *msp) {
   // initialize with refcount set to 2
   video_callback_data_ = new(std::nothrow) VideoCallbackData(desc, p, 2, msp);
@@ -1289,7 +1288,7 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
     vps_size = NaClRoundAllocPage(vps_size);
     nacl_srpc::Plugin* plugin =
         reinterpret_cast<nacl_srpc::Plugin*>(
-            plugin_interface_->plugin()->get_handle());
+            browser_interface_->plugin()->get_handle());
     video_handle_ = plugin->wrapper_factory()->MakeShm(video_size_);
     if (NULL  == video_handle_) {
       video_size_ = 0;
@@ -1352,7 +1351,7 @@ void VideoMap::RequestRedraw() {
 #endif
 }
 
-VideoMap::VideoMap(PortablePluginInterface *plugin_interface)
+VideoMap::VideoMap(BrowserInterface *browser_interface)
   : event_state_button_(kClear),
     event_state_key_mod_(kClear),
     event_state_motion_last_x_(0),
@@ -1367,16 +1366,16 @@ VideoMap::VideoMap(PortablePluginInterface *plugin_interface)
     video_callback_data_(NULL),
     video_shared_memory_(NULL),
     video_update_mode_(0) {
-  plugin_interface_ = plugin_interface;
+  browser_interface_ = browser_interface;
   window_ = NULL;
   // retrieve update property from plugin
-  if (NULL != plugin_interface_) {
+  if (NULL != browser_interface_) {
     nacl_srpc::ScriptableHandle<nacl_srpc::Plugin> *plugin =
-        plugin_interface_->plugin();
+        browser_interface_->plugin();
     if (NULL != plugin) {
       NPVariant variant;
       nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::GetProperty(plugin,
-          (NPIdentifier)PortablePluginInterface::kVideoUpdateModeIdent,
+          (NPIdentifier)BrowserInterface::kVideoUpdateModeIdent,
           &variant);
       if (!nacl_srpc::NPVariantToScalar(&variant, &video_update_mode_)) {
         // BUG: unhandled type error in the constructor.

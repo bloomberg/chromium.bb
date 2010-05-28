@@ -99,9 +99,9 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     ScriptableHandle<HandleType>* scriptable_handle =
       static_cast<ScriptableHandle<HandleType>*>(NPN_CreateObject(
-        init_info->plugin_interface_->GetPluginIdentifier(),
+        init_info->browser_interface_->GetPluginIdentifier(),
         &scriptableHandleClass));
-    scriptable_handle->plugin_interface_ = init_info->plugin_interface_;
+    scriptable_handle->browser_interface_ = init_info->browser_interface_;
     if (!scriptable_handle->handle_->Init(init_info)) {
       // Initialization failed
       scriptable_handle->Unref();
@@ -141,11 +141,11 @@ class ScriptableHandle: public ScriptableHandleBase {
 
       dprintf(("ScriptableHandle::Invoke(%p, %s, %d)\n",
                static_cast<void*>(obj),
-               PortablePluginInterface::IdentToString(
+               BrowserInterface::IdentToString(
                    reinterpret_cast<uintptr_t>(name)).c_str(),
                arg_count));
 
-    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    BrowserInterface* intf = unknown_handle->browser_interface_;
     if (NULL == intf->nacl_instance()) {
       return unknown_handle->GenericInvoke(name,
                                            METHOD_CALL,
@@ -170,7 +170,7 @@ class ScriptableHandle: public ScriptableHandleBase {
              static_cast<void*>(obj),
              arg_count));
 
-    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    BrowserInterface* intf = unknown_handle->browser_interface_;
     if (NULL == intf->nacl_instance()) {
       return false;
     } else {
@@ -186,10 +186,10 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::HasProperty(%p, %s)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString(
+             BrowserInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name)).c_str()));
 
-    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    BrowserInterface* intf = unknown_handle->browser_interface_;
     if (NULL == intf->nacl_instance()) {
       // If the property is supported,
       // the interface should include both set and get methods.
@@ -210,10 +210,10 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::GetProperty(%p, %s)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString(
+             BrowserInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name)).c_str()));
 
-    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    BrowserInterface* intf = unknown_handle->browser_interface_;
     if (NULL == intf->nacl_instance()) {
       return unknown_handle->GenericInvoke(name,
                                            PROPERTY_GET,
@@ -234,11 +234,11 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::SetProperty(%p, %s, %p)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString(
+             BrowserInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name)).c_str(),
              static_cast<void*>(const_cast<NPVariant*>(variant))));
 
-    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    BrowserInterface* intf = unknown_handle->browser_interface_;
     if (NULL == intf->nacl_instance()) {
       return unknown_handle->GenericInvoke(name,
                                            PROPERTY_SET,
@@ -258,10 +258,10 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::RemoveProperty(%p, %s)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString(
+             BrowserInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name)).c_str()));
 
-    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    BrowserInterface* intf = unknown_handle->browser_interface_;
     if (NULL == intf->nacl_instance()) {
       // TODO(sehr): Need to proxy this across to NPAPI modules.
       return false;
@@ -348,14 +348,14 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::HasMethod(%p, %s)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString(
+             BrowserInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name)).c_str()));
-    if (NULL == unknown_handle->plugin_interface_->nacl_instance()) {
+    if (NULL == unknown_handle->browser_interface_->nacl_instance()) {
       return unknown_handle->handle_->HasMethod(
           reinterpret_cast<uintptr_t>(name),
           METHOD_CALL);
     } else {
-      PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+      BrowserInterface* intf = unknown_handle->browser_interface_;
       NPObject* proxy = intf->nacl_instance();
       return proxy->_class->hasMethod(proxy, name);
     }
@@ -368,7 +368,7 @@ class ScriptableHandle: public ScriptableHandleBase {
                      NPVariant* result) {
     SrpcParams params;
     dprintf(("ScriptableHandle::GenericInvoke: calling %s\n",
-             PortablePluginInterface::IdentToString(
+             BrowserInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name)).c_str()));
 
     if (NULL != result) {
@@ -500,7 +500,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
           /* SCOPE */ {
             if (!NPVariantToArray(&args[i],
-                                  plugin_interface_->GetPluginIdentifier(),
+                                  browser_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.caval.count,
                                   &inputs[i]->u.caval.carr)) {
               return false;
@@ -511,7 +511,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
           /* SCOPE */ {
             if (!NPVariantToArray(&args[i],
-                                  plugin_interface_->GetPluginIdentifier(),
+                                  browser_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.daval.count,
                                   &inputs[i]->u.daval.darr)) {
               return false;
@@ -522,7 +522,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         case NACL_SRPC_ARG_TYPE_INT_ARRAY:
           /* SCOPE */ {
             if (!NPVariantToArray(&args[i],
-                                  plugin_interface_->GetPluginIdentifier(),
+                                  browser_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.iaval.count,
                                   &inputs[i]->u.iaval.iarr)) {
               return false;
@@ -601,7 +601,7 @@ class ScriptableHandle: public ScriptableHandleBase {
       retvalue = result;
     } else {
       retarray = new(std::nothrow) RetArray(
-          plugin_interface_->GetPluginIdentifier());
+          browser_interface_->GetPluginIdentifier());
       if (NULL == retarray) {
         return false;
       }
@@ -628,7 +628,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         /* SCOPE */ {
           // TODO(gregoryd): implement and use ArrayToNPVariant equivalent
           uint32_t sublength = outs[i]->u.caval.count;
-          RetArray subarray(plugin_interface_->GetPluginIdentifier());
+          RetArray subarray(browser_interface_->GetPluginIdentifier());
 
           NPVariant subvalue;
           for (uint32_t j = 0; j < sublength; ++j) {
@@ -644,7 +644,7 @@ class ScriptableHandle: public ScriptableHandleBase {
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
         /* SCOPE */ {
           uint32_t sublength = outs[i]->u.daval.count;
-          RetArray subarray(plugin_interface_->GetPluginIdentifier());
+          RetArray subarray(browser_interface_->GetPluginIdentifier());
 
           NPVariant subvalue;
           for (uint32_t j = 0; j < sublength; ++j) {
@@ -661,7 +661,9 @@ class ScriptableHandle: public ScriptableHandleBase {
               plugin->wrapper_factory()->MakeGeneric(outs[i]->u.hval);
 
           if (NACL_DESC_CONN_CAP == desc->type_tag()) {
-            SocketAddressInitializer init_info(plugin_interface_, desc, plugin);
+            SocketAddressInitializer init_info(browser_interface_,
+                                               desc,
+                                               plugin);
             NPObject* sock_addr = ScriptableHandle<SocketAddress>::New(
                 static_cast<PortableHandleInitializer*>(&init_info));
             if (NULL == sock_addr) {
@@ -669,7 +671,7 @@ class ScriptableHandle: public ScriptableHandleBase {
             }
             ScalarToNPVariant(sock_addr, retvalue);
           } else {
-            DescHandleInitializer init_info(plugin_interface_, desc, plugin);
+            DescHandleInitializer init_info(browser_interface_, desc, plugin);
             NPObject* handle = ScriptableHandle<DescBasedHandle>::New(
                 static_cast<PortableHandleInitializer*>(&init_info));
             if (NULL == handle) {
@@ -692,7 +694,7 @@ class ScriptableHandle: public ScriptableHandleBase {
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:
         /* SCOPE */ {
           uint32_t sublength = outs[i]->u.iaval.count;
-          RetArray subarray(plugin_interface_->GetPluginIdentifier());
+          RetArray subarray(browser_interface_->GetPluginIdentifier());
 
           NPVariant subvalue;
           for (uint32_t j = 0; j < sublength; ++j) {
@@ -776,7 +778,7 @@ class ScriptableHandle: public ScriptableHandleBase {
  private:
 
   HandleType* handle_;
-  PortablePluginInterface* plugin_interface_;
+  BrowserInterface* browser_interface_;
 };
 
 }  // namespace nacl_srpc

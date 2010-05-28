@@ -62,7 +62,7 @@ namespace nacl_srpc {
         ptr->plugin_->wrapper_factory()->MakeGeneric(ptr->wrapper_->desc());
     // Increment the ref count of the contained object.
     NaClDescRef(shm_wrapper->desc());
-    struct SharedMemoryInitializer init_info(ptr->GetPortablePluginInterface(),
+    struct SharedMemoryInitializer init_info(ptr->GetBrowserInterface(),
         shm_wrapper, ptr->plugin_);
 
     ScriptableHandle<SharedMemory>* shared_memory =

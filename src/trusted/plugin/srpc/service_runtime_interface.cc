@@ -43,9 +43,9 @@ namespace nacl_srpc {
 int ServiceRuntimeInterface::number_alive_counter = 0;
 
 ServiceRuntimeInterface::ServiceRuntimeInterface(
-    PortablePluginInterface* plugin_interface,
+    BrowserInterface* browser_interface,
     Plugin* plugin) :
-    plugin_interface_(plugin_interface),
+    browser_interface_(browser_interface),
     default_socket_address_(NULL),
     default_socket_(NULL),
     plugin_(plugin),
@@ -74,7 +74,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   if (NULL == default_socket_address_) {
     dprintf(("ServiceRuntimeInterface::InitCommunication "
              "no valid socket address\n"));
-    plugin_interface_->Alert("service runtime: no valid socket address");
+    browser_interface_->Alert("service runtime: no valid socket address");
     return false;
   }
   ScriptableHandle<ConnectedSocket> *raw_channel;
@@ -92,12 +92,12 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   if (NULL == raw_channel) {
     dprintf(("ServiceRuntimeInterface::Start: "
             "service runtime Connect failed.\n"));
-    plugin_interface_->Alert("service runtime Connect failed");
+    browser_interface_->Alert("service runtime Connect failed");
     return false;
   }
   dprintf((" constructing SrtSocket\n"));
   runtime_channel_ = new(std::nothrow) SrtSocket(raw_channel,
-                                                 plugin_interface_);
+                                                 browser_interface_);
   if (NULL == runtime_channel_) {
     // BUG: leaking raw_channel.
     return false;
@@ -147,7 +147,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   if (!runtime_channel_->SetOrigin(plugin_->nacl_module_origin())) {
     dprintf(("ServiceRuntimeInterface::Start: "
             "set_origin RPC failed.\n"));
-    plugin_interface_->Alert("Could not set origin");
+    browser_interface_->Alert("Could not set origin");
     // BUG: leaking raw_channel and runtime_channel_.
     return false;
   }
@@ -159,7 +159,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
     // so we can send the nexe bits over
     if (!runtime_channel_->LoadModule(shm->desc())) {
       dprintf(("ServiceRuntimeInterface::Start failed to send nexe\n"));
-      plugin_interface_->Alert("failed to send nexe");
+      browser_interface_->Alert("failed to send nexe");
       shm->Delete();
       // TODO(gregoryd): close communication channels
       delete subprocess_;
@@ -188,7 +188,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   if (!runtime_channel_->StartModule(&load_status)) {
     dprintf(("ServiceRuntimeInterface::Start: "
             "module_start RPC failed.\n"));
-    plugin_interface_->Alert("Could not start nacl module");
+    browser_interface_->Alert("Could not start nacl module");
 
     // BUG: leaking raw_channel and runtime_channel_.
     return false;
@@ -200,7 +200,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
             load_status));
     nacl::stringstream ss;
     ss << "Loading of module failed with status " << load_status;
-    plugin_interface_->Alert(ss.str());
+    browser_interface_->Alert(ss.str());
     // BUG: leaking raw_channel and runtime_channel_.
     return false;
   }
@@ -222,7 +222,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   }
   dprintf((" constructing MultiMediaSocket\n"));
   multimedia_channel_ = new(std::nothrow) MultimediaSocket(raw_channel,
-                                                           plugin_interface_,
+                                                           browser_interface_,
                                                            this);
   if (NULL == multimedia_channel_) {
     dprintf(("ServiceRuntimeInterface::Start: "
@@ -282,12 +282,12 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     dprintf(("ServiceRuntimeInterface: Could not create SelLdrLauncher"));
-    plugin_interface_->Alert("Could not create SelLdrLauncher");
+    browser_interface_->Alert("Could not create SelLdrLauncher");
     return false;
   }
   if (!subprocess_->Start(nacl_file, 5, kArgv, kEmpty)) {
     dprintf(("ServiceRuntimeInterface: Could not start SelLdrLauncher"));
-    plugin_interface_->Alert("Could not start SelLdrLauncher");
+    browser_interface_->Alert("Could not start SelLdrLauncher");
     delete subprocess_;
     subprocess_ = NULL;
     return false;
@@ -408,7 +408,7 @@ ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
            "-X result descriptor (DescWrapper*) = %p\n",
            static_cast<void *>(descs[0])));
   /* SCOPE */ {
-    SocketAddressInitializer init_info(plugin_interface_, descs[0], plugin);
+    SocketAddressInitializer init_info(browser_interface_, descs[0], plugin);
     retval = ScriptableHandle<SocketAddress>::New(
         static_cast<PortableHandleInitializer*>(&init_info));
   }

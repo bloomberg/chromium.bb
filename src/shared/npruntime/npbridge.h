@@ -17,7 +17,7 @@
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/plugin/npinstance.h"
+#include "native_client/src/trusted/plugin/npapi/npinstance.h"
 
 namespace nacl {
 // Incomplete class declarations.

@@ -4,12 +4,14 @@
  * be found in the LICENSE file.
  */
 
+// TODO(sehr): this file is the NPAPI interface exported by the plugin.
+// It should be moved to a location that indicates that and renamed.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SRPC_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SRPC_H_
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/plugin/npinstance.h"
+#include "native_client/src/trusted/plugin/npapi/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
@@ -38,7 +40,7 @@ class StreamShmBuffer {
   NaClGioShmUnbounded *shmbufp_;
 };
 
-class SRPC_Plugin : public NPInstance, public PortablePluginInterface {
+class SRPC_Plugin : public NPInstance, public BrowserInterface {
  public:
   explicit SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[]);
 

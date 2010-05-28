@@ -54,7 +54,7 @@
         'conditions': [
           ['OS=="win"', {
             'sources': [
-              'nacl_plugin.rc',
+              'win/nacl_plugin.rc',
             ],
             'msvs_settings': {
               'VCCLCompilerTool': {
@@ -105,7 +105,7 @@
           'conditions': [
             ['OS=="win"', {
               'sources': [
-                'nacl_plugin.def',
+                'win/nacl_plugin.def',
               ],
             }],
           ],
@@ -123,7 +123,7 @@
             'win_target': 'x64',
           },
           'sources': [
-            'nacl_plugin64.def',
+            'win/nacl_plugin64.def',
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',

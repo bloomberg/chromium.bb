@@ -20,15 +20,6 @@
 
 using nacl::assert_cast;
 
-#ifdef TEXT_COMMAND_LOGGING
-#define LOGCOMMAND(fp, args) \
-    if (fp) { \
-      fprintf args; \
-    }
-#else
-#define LOGCOMMAND(fp, args)
-#endif
-
 namespace nacl_srpc {
 
 MethodInfo::~MethodInfo() {
@@ -79,7 +70,7 @@ char* MethodInfo::TypeName(NaClSrpcArgType type) {
       str = "BAD TYPE";
       break;
   }
-  return PortablePluginInterface::MemAllocStrdup(str);
+  return strdup(str);
 }
 
 bool InitSrpcArgArray(NaClSrpcArg* arr, int size) {
@@ -140,7 +131,7 @@ bool MethodInfo::Signature(NaClSrpcArg* toplevel) {
            static_cast<void *>(toplevel), static_cast<void *>(name_), name_));
 
   NaClSrpcArg* name_arg = &toplevel->u.vaval.varr[0];
-  char *temp_name = PortablePluginInterface::MemAllocStrdup(name_);
+  char *temp_name = strdup(name_);
   // The ownership of this memory, if this method is successful, is
   // passed to the NaClSrpcArg object *toplevel.  This code is used by
   // GetSignatureObject in ConnectedSocket (via SrpcClient's

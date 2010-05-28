@@ -30,10 +30,10 @@ namespace nacl {
   class NPModule;
 }
 
-// PortablePluginInterface represents the interface to the browser from
+// BrowserInterface represents the interface to the browser from
 // the plugin, independent of whether it is the ActiveX or NPAPI instance.
 // I.e., when the plugin needs to request an alert, it uses these interfaces.
-class PortablePluginInterface {
+class BrowserInterface {
  public:
   virtual nacl_srpc::PluginIdentifier GetPluginIdentifier() = 0;
   virtual nacl::VideoMap* video() = 0;
@@ -68,15 +68,6 @@ class PortablePluginInterface {
   // To indicate unsuccessful loading of a module, invoke the onfail handler.
   bool RunOnfailHandler();
 
-  // Returns a buffer of length |size|, allocated by the browser.
-  // Must be subsequently freed by BrowserRelease, not free().
-  // Precondition: size < 2^32.
-  static void* BrowserAlloc(size_t size);
-  // Releases a buffer previously allocated by BrowserAlloc().  Do not
-  // mix with malloc().
-  static void BrowserRelease(void* ptr);
-  // TODO(adonovan): rename.  The implementation is just strdup.
-  static char *MemAllocStrdup(const char *str);
   // Convert an identifier to a string
   static nacl::string IdentToString(uintptr_t ident);
   bool CheckExecutableVersion(const char *filename);
@@ -91,8 +82,9 @@ class PortablePluginInterface {
   bool CheckElfExecutable(const char* buffer, size_t size);
 
   void InitializeIdentifiers();
-  virtual ~PortablePluginInterface() {}
+  virtual ~BrowserInterface() {}
 
+  // TODO(sehr): all of these belong in portable portions of the plugin.
   static uintptr_t kConnectIdent;
   static uintptr_t kHeightIdent;
   static uintptr_t kInvokeIdent;
@@ -118,6 +110,7 @@ class PortablePluginInterface {
 
   static uintptr_t kLocationIdent;
   static uintptr_t kHrefIdent;
+
  private:
   static bool identifiers_initialized;
   static uint8_t const kInvalidAbiVersion;

@@ -19,40 +19,39 @@
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
-#include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 using nacl::assert_cast;
 
-bool PortablePluginInterface::identifiers_initialized = false;
-uintptr_t PortablePluginInterface::kConnectIdent;
-uintptr_t PortablePluginInterface::kHeightIdent;
-uintptr_t PortablePluginInterface::kHrefIdent;
-uintptr_t PortablePluginInterface::kLengthIdent;
-uintptr_t PortablePluginInterface::kLocationIdent;
-uintptr_t PortablePluginInterface::kMapIdent;
-uintptr_t PortablePluginInterface::kModuleReadyIdent;
-uintptr_t PortablePluginInterface::kNaClMultimediaBridgeIdent;
-uintptr_t PortablePluginInterface::kNullNpapiMethodIdent;
-uintptr_t PortablePluginInterface::kOnfailIdent;
-uintptr_t PortablePluginInterface::kOnloadIdent;
-uintptr_t PortablePluginInterface::kReadIdent;
-uintptr_t PortablePluginInterface::kSetCommandLogIdent;
-uintptr_t PortablePluginInterface::kShmFactoryIdent;
-uintptr_t PortablePluginInterface::kSignaturesIdent;
-uintptr_t PortablePluginInterface::kSrcIdent;
-uintptr_t PortablePluginInterface::kToStringIdent;
-uintptr_t PortablePluginInterface::kUrlAsNaClDescIdent;
-uintptr_t PortablePluginInterface::kValueOfIdent;
-uintptr_t PortablePluginInterface::kVideoUpdateModeIdent;
-uintptr_t PortablePluginInterface::kWidthIdent;
-uintptr_t PortablePluginInterface::kWriteIdent;
+bool BrowserInterface::identifiers_initialized = false;
+uintptr_t BrowserInterface::kConnectIdent;
+uintptr_t BrowserInterface::kHeightIdent;
+uintptr_t BrowserInterface::kHrefIdent;
+uintptr_t BrowserInterface::kLengthIdent;
+uintptr_t BrowserInterface::kLocationIdent;
+uintptr_t BrowserInterface::kMapIdent;
+uintptr_t BrowserInterface::kModuleReadyIdent;
+uintptr_t BrowserInterface::kNaClMultimediaBridgeIdent;
+uintptr_t BrowserInterface::kNullNpapiMethodIdent;
+uintptr_t BrowserInterface::kOnfailIdent;
+uintptr_t BrowserInterface::kOnloadIdent;
+uintptr_t BrowserInterface::kReadIdent;
+uintptr_t BrowserInterface::kSetCommandLogIdent;
+uintptr_t BrowserInterface::kShmFactoryIdent;
+uintptr_t BrowserInterface::kSignaturesIdent;
+uintptr_t BrowserInterface::kSrcIdent;
+uintptr_t BrowserInterface::kToStringIdent;
+uintptr_t BrowserInterface::kUrlAsNaClDescIdent;
+uintptr_t BrowserInterface::kValueOfIdent;
+uintptr_t BrowserInterface::kVideoUpdateModeIdent;
+uintptr_t BrowserInterface::kWidthIdent;
+uintptr_t BrowserInterface::kWriteIdent;
 
-uint8_t const PortablePluginInterface::kInvalidAbiVersion = UINT8_MAX;
+uint8_t const BrowserInterface::kInvalidAbiVersion = UINT8_MAX;
 
 // TODO(gregoryd): make sure that calls to AddMethodToMap use the same strings
 // move the strings to a header file.
-void PortablePluginInterface::InitializeIdentifiers() {
+void BrowserInterface::InitializeIdentifiers() {
   if (!identifiers_initialized) {
     kConnectIdent         = GetStrIdentifierCallback("connect");
     kHeightIdent          = GetStrIdentifierCallback("height");
@@ -83,12 +82,12 @@ void PortablePluginInterface::InitializeIdentifiers() {
 }
 
 
-uintptr_t PortablePluginInterface::GetStrIdentifierCallback(
+uintptr_t BrowserInterface::GetStrIdentifierCallback(
     const char *method_name) {
   return reinterpret_cast<uintptr_t>(NPN_GetStringIdentifier(method_name));
 }
 
-bool PortablePluginInterface::Alert(const nacl::string& text) {
+bool BrowserInterface::Alert(const nacl::string& text) {
   // Usually these messages are important enough to call attention to them.
   puts(text.c_str());
 
@@ -112,7 +111,7 @@ bool PortablePluginInterface::Alert(const nacl::string& text) {
   return ok;
 }
 
-bool PortablePluginInterface::GetOrigin(nacl::string **origin) {
+bool BrowserInterface::GetOrigin(nacl::string **origin) {
   NPP instance = GetPluginIdentifier();
   NPVariant loc_value;
   NPVariant href_value;
@@ -213,7 +212,7 @@ bool RunHandler(
 
 }  // namespace
 
-char* PortablePluginInterface::LookupArgument(const char *key) {
+char* BrowserInterface::LookupArgument(const char *key) {
   char **keys = argn();
   for (int ii = 0, len = argc(); ii < len; ++ii) {
     if (!strcmp(keys[ii], key)) {
@@ -223,24 +222,15 @@ char* PortablePluginInterface::LookupArgument(const char *key) {
   return NULL;
 }
 
-bool PortablePluginInterface::RunOnloadHandler() {
+bool BrowserInterface::RunOnloadHandler() {
   return RunHandler(GetPluginIdentifier(), LookupArgument("onload"));
 }
 
-bool PortablePluginInterface::RunOnfailHandler() {
+bool BrowserInterface::RunOnfailHandler() {
   return RunHandler(GetPluginIdentifier(), LookupArgument("onfail"));
 }
 
-void* PortablePluginInterface::BrowserAlloc(size_t size) {
-  return NPN_MemAlloc(assert_cast<uint32_t>(size));
-}
-
-void PortablePluginInterface::BrowserRelease(void* ptr) {
-  NPN_MemFree(ptr);
-}
-
-
-nacl::string PortablePluginInterface::IdentToString(uintptr_t ident) {
+nacl::string BrowserInterface::IdentToString(uintptr_t ident) {
   NPIdentifier npident = reinterpret_cast<NPIdentifier>(ident);
   if (NPN_IdentifierIsString(npident)) {
     return reinterpret_cast<char*>(NPN_UTF8FromIdentifier(npident));
@@ -252,7 +242,7 @@ nacl::string PortablePluginInterface::IdentToString(uintptr_t ident) {
 }
 
 // TODO(gregoryd): consider refactoring and moving the code to service_runtime
-bool PortablePluginInterface::CheckElfExecutable(const char *filename) {
+bool BrowserInterface::CheckElfExecutable(const char *filename) {
   char buf[EI_ABIVERSION + 1];  // (field offset from file beginning)
   FILE* fp = fopen(filename, "rb");
   if (fp == NULL) {
@@ -267,7 +257,7 @@ bool PortablePluginInterface::CheckElfExecutable(const char *filename) {
   return CheckElfExecutable(buf, sizeof buf);
 }
 
-bool PortablePluginInterface::CheckElfExecutable(const char* buffer,
+bool BrowserInterface::CheckElfExecutable(const char* buffer,
                                                  size_t size) {
   if (size < EI_ABIVERSION + 1) {
     Alert("Load failed: file too short to be an ELF executable.");
@@ -287,9 +277,4 @@ bool PortablePluginInterface::CheckElfExecutable(const char* buffer,
     return false;
   }
   return true;
-}
-
-char *PortablePluginInterface::MemAllocStrdup(const char *str) {
-  // TODO(adonovan): rename this function since it doesn't use MemAlloc.
-  return strdup(str);
 }

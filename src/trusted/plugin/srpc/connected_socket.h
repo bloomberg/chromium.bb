@@ -31,12 +31,12 @@ struct ConnectedSocketInitializer: DescHandleInitializer {
   bool is_srpc_client_;
   ServiceRuntimeInterface* serv_rtm_info_;
   bool is_command_channel_;
-  ConnectedSocketInitializer(PortablePluginInterface* plugin_interface,
+  ConnectedSocketInitializer(BrowserInterface* browser_interface,
                              nacl::DescWrapper* desc,
                              Plugin* plugin,
                              bool is_srpc_client,
                              ServiceRuntimeInterface* serv_rtm_info):
-      DescHandleInitializer(plugin_interface, desc, plugin),
+      DescHandleInitializer(browser_interface, desc, plugin),
       is_srpc_client_(is_srpc_client),
       serv_rtm_info_(serv_rtm_info),
       is_command_channel_(NULL == serv_rtm_info) {}

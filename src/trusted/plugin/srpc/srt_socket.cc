@@ -26,34 +26,34 @@ uintptr_t SrtSocket::kInitHandlePassing;
 
 // NB: InitializeIdentifiers is not thread-safe.
 void SrtSocket::InitializeIdentifiers(
-    PortablePluginInterface* plugin_interface) {
+    BrowserInterface* browser_interface) {
   static bool initialized = false;
 
-  UNREFERENCED_PARAMETER(plugin_interface);
+  UNREFERENCED_PARAMETER(browser_interface);
   if (!initialized) {  // branch likely
     kHardShutdownIdent =
-        PortablePluginInterface::GetStrIdentifierCallback("hard_shutdown");
+        BrowserInterface::GetStrIdentifierCallback("hard_shutdown");
     kSetOriginIdent =
-        PortablePluginInterface::GetStrIdentifierCallback("set_origin");
+        BrowserInterface::GetStrIdentifierCallback("set_origin");
     kStartModuleIdent =
-        PortablePluginInterface::GetStrIdentifierCallback("start_module");
-    kLogIdent = PortablePluginInterface::GetStrIdentifierCallback("log");
+        BrowserInterface::GetStrIdentifierCallback("start_module");
+    kLogIdent = BrowserInterface::GetStrIdentifierCallback("log");
     kLoadModule =
-        PortablePluginInterface::GetStrIdentifierCallback("load_module");
+        BrowserInterface::GetStrIdentifierCallback("load_module");
     kInitHandlePassing =
-        PortablePluginInterface::GetStrIdentifierCallback(
+        BrowserInterface::GetStrIdentifierCallback(
             "init_handle_passing");
     initialized = true;
   }
 }
 
 SrtSocket::SrtSocket(ScriptableHandle<ConnectedSocket> *s,
-                     PortablePluginInterface* plugin_interface)
+                     BrowserInterface* browser_interface)
     : connected_socket_(s),
-      plugin_interface_(plugin_interface),
+      browser_interface_(browser_interface),
       is_shut_down_(false) {
   connected_socket_->AddRef();
-  InitializeIdentifiers(plugin_interface_);  // inlineable tail call.
+  InitializeIdentifiers(browser_interface_);  // inlineable tail call.
 }
 
 SrtSocket::~SrtSocket() {
@@ -104,8 +104,7 @@ bool SrtSocket::SetOrigin(nacl::string origin) {
     return false;
   }
 
-  params.Input(0)->u.sval =
-      PortablePluginInterface::MemAllocStrdup(origin.c_str());
+  params.Input(0)->u.sval = strdup(origin.c_str());
   bool rpc_result = (connected_socket()->Invoke(kSetOriginIdent,
                                                 METHOD_CALL,
                                                 &params));
@@ -219,8 +218,7 @@ bool SrtSocket::Log(int severity, nacl::string msg) {
     return false;
   }
   params.Input(0)->u.ival = severity;
-  params.Input(1)->u.sval =
-      PortablePluginInterface::MemAllocStrdup(msg.c_str());
+  params.Input(1)->u.sval = strdup(msg.c_str());
   bool rpc_result = (connected_socket()->Invoke(kLogIdent,
                                                 METHOD_CALL,
                                                 &params));

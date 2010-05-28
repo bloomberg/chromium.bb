@@ -22,10 +22,10 @@ namespace nacl_srpc {
   struct DescHandleInitializer : PortableHandleInitializer {
     nacl::DescWrapper* wrapper_;
     Plugin* plugin_;
-    DescHandleInitializer(PortablePluginInterface* plugin_interface,
+    DescHandleInitializer(BrowserInterface* browser_interface,
                           nacl::DescWrapper* wrapper,
                           Plugin *plugin):
-        PortableHandleInitializer(plugin_interface),
+        PortableHandleInitializer(browser_interface),
         wrapper_(wrapper),
         plugin_(plugin) {}
   };

@@ -102,15 +102,14 @@ nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
   return NULL;
 }
 
-// Note: Graphics functionality similar to npapi_bridge.
-// TODO(sehr): Make only one copy of the graphics code.
 void VideoMap::Invalidate() {
   return;
 }
 
+// TODO(sehr): eliminating the nacl_srpc namespace will fix line length.
 VideoCallbackData* VideoMap::InitCallbackData(nacl::DescWrapper* desc,
-                                            PortablePluginInterface *p,
-                                            nacl_srpc::MultimediaSocket *msp) {
+                                              BrowserInterface *p,
+                                              nacl_srpc::MultimediaSocket *msp) {
   return NULL;
 }
 
@@ -138,8 +137,8 @@ void VideoMap::RequestRedraw() {
   return;
 }
 
-VideoMap::VideoMap(PortablePluginInterface *plugin_interface) {
-  plugin_interface_ = plugin_interface;
+VideoMap::VideoMap(BrowserInterface *browser_interface) {
+  browser_interface_ = browser_interface;
 }
 
 VideoMap::~VideoMap() {

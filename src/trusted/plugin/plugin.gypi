@@ -35,10 +35,10 @@
       # Currently this results inlink time symbol clashes
       '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/np_entry.cc',
       '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/npn_gate.cc',
-      'npp_gate.cc',
-      'npp_launcher.cc',
+      'npapi/npp_gate.cc',
+      'npapi/npp_launcher.cc',
       # SRPC support
-      'srpc/browser_interface.cc',
+      'srpc/browser_impl_npapi.cc',
       'srpc/closure.cc',
       'srpc/connected_socket.cc',
       'srpc/desc_based_handle.cc',

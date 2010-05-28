@@ -26,7 +26,6 @@
 #include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/trusted/plugin/srpc/video.h"
 
@@ -143,21 +142,21 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
       int32_t x = stringToInt32(argv[i]);
       INT32_TO_NPVARIANT(x, variant);
       nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::SetProperty(plugin_,
-          (NPIdentifier)PortablePluginInterface::kHeightIdent,
+          (NPIdentifier)BrowserInterface::kHeightIdent,
           &variant);
     } else if (!strncmp(argn[i], "width", 6)) {
       NPVariant variant;
       int32_t x = stringToInt32(argv[i]);
       INT32_TO_NPVARIANT(x, variant);
       nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::SetProperty(plugin_,
-        (NPIdentifier)PortablePluginInterface::kWidthIdent,
+        (NPIdentifier)BrowserInterface::kWidthIdent,
         &variant);
     } else if (!strncmp(argn[i], "update", 7)) {
       NPVariant variant;
       int32_t x = stringToInt32(argv[i]);
       INT32_TO_NPVARIANT(x, variant);
       nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::SetProperty(plugin_,
-        (NPIdentifier)PortablePluginInterface::kVideoUpdateModeIdent,
+        (NPIdentifier)BrowserInterface::kVideoUpdateModeIdent,
         &variant);
     } else {
       if (NULL != npapi_argn_ && NULL != npapi_argv_) {
@@ -481,7 +480,7 @@ void SRPC_Plugin::URLNotify(const char* url,
       closure->Run(static_cast<NPStream*>(NULL),
                    static_cast<const char*>(NULL));
     } else {
-      plugin()->get_handle()->GetPortablePluginInterface()->RunOnfailHandler();
+      plugin()->get_handle()->GetBrowserInterface()->RunOnfailHandler();
     }
   }
   delete closure;  // NB: delete NULL is okay

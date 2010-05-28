@@ -31,7 +31,7 @@ SrpcClient::SrpcClient(bool can_use_proxied_npapi)
            ++number_alive_counter));
 }
 
-bool SrpcClient::Init(PortablePluginInterface *portable_plugin,
+bool SrpcClient::Init(BrowserInterface *portable_plugin,
                       ConnectedSocket* socket) {
   dprintf(("SrpcClient::SrpcClient(%p, %p, %p, %d)\n",
            static_cast<void *>(this),
@@ -52,7 +52,7 @@ bool SrpcClient::Init(PortablePluginInterface *portable_plugin,
     // TODO(sehr): this needs to be revisited when we allow groups of instances
     // in one NaCl module.
     uintptr_t npapi_ident =
-        PortablePluginInterface::GetStrIdentifierCallback("NP_Initialize");
+        BrowserInterface::GetStrIdentifierCallback("NP_Initialize");
     if (methods_.find(npapi_ident) != methods_.end()) {
       dprintf(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
       // Start up NPAPI interaction.
@@ -103,7 +103,7 @@ void SrpcClient::GetMethods() {
       // methods_ table.
       continue;
     }
-    uintptr_t ident = PortablePluginInterface::GetStrIdentifierCallback(name);
+    uintptr_t ident = BrowserInterface::GetStrIdentifierCallback(name);
     MethodInfo* method_info = new(std::nothrow) MethodInfo(NULL,
                                                            name,
                                                            input_types,
@@ -142,7 +142,7 @@ NaClSrpcArg* SrpcClient::GetSignatureObject() {
                                                &name,
                                                &input_types,
                                                &output_types);
-    uintptr_t ident = PortablePluginInterface::GetStrIdentifierCallback(name);
+    uintptr_t ident = BrowserInterface::GetStrIdentifierCallback(name);
     methods_[ident]->Signature(&ret_array->u.vaval.varr[i]);
   }
   return ret_array;
@@ -151,7 +151,7 @@ NaClSrpcArg* SrpcClient::GetSignatureObject() {
 bool SrpcClient::HasMethod(uintptr_t method_id) {
   dprintf(("SrpcClient::HasMethod(%p, %s)\n",
            static_cast<void *>(this),
-           PortablePluginInterface::IdentToString(method_id).c_str()));
+           BrowserInterface::IdentToString(method_id).c_str()));
   return NULL != methods_[method_id];
 }
 
@@ -173,7 +173,7 @@ bool SrpcClient::Invoke(uintptr_t method_id,
   // happening specifically with hard_shutdowns.
   dprintf(("SrpcClient::Invoke(%p, %s, %p)\n",
            static_cast<void *>(this),
-           PortablePluginInterface::IdentToString(method_id).c_str(),
+           BrowserInterface::IdentToString(method_id).c_str(),
            static_cast<void *>(params)));
 
   // Ensure Invoke was called with an identifier that had a binding.

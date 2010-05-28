@@ -125,7 +125,7 @@ bool ConnectedSocket::Init(
       dprintf(("ConnectedSocket::Init -- new failed.\n"));
       return false;
     }
-    if (!srpc_client_->Init(GetPortablePluginInterface(), this)) {
+    if (!srpc_client_->Init(GetBrowserInterface(), this)) {
       delete srpc_client_;
       srpc_client_ = NULL;
       // BUG: This leaks socket.
@@ -137,7 +137,7 @@ bool ConnectedSocket::Init(
     signatures_ = GetSignatureObject();
     // only enable display on socket with service_runtime_info
     if (NULL != service_runtime_info_) {
-      GetPortablePluginInterface()->video()->Enable();
+      GetBrowserInterface()->video()->Enable();
     }
   } else {
     signatures_ = NULL;

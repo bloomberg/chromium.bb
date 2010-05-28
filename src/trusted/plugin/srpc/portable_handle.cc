@@ -17,7 +17,7 @@ namespace nacl_srpc {
   int PortableHandle::number_alive_counter = 0;
 
 
-  PortableHandle::PortableHandle() : plugin_interface_(NULL) {
+  PortableHandle::PortableHandle() : browser_interface_(NULL) {
     dprintf(("PortableHandle::PortableHandle(%p, %d)\n",
              static_cast<void *>(this),
              ++number_alive_counter));
@@ -35,7 +35,7 @@ namespace nacl_srpc {
                                       const char *ins,
                                       const char *outs) {
     uintptr_t method_id =
-        PortablePluginInterface::GetStrIdentifierCallback(name);
+        BrowserInterface::GetStrIdentifierCallback(name);
     MethodInfo* new_method = new(std::nothrow) MethodInfo(function_ptr,
                                                           name,
                                                           ins,
@@ -60,7 +60,7 @@ namespace nacl_srpc {
   }
 
   bool PortableHandle::Init(struct PortableHandleInitializer* init_info)  {
-    plugin_interface_ = init_info->plugin_interface_;
+    browser_interface_ = init_info->browser_interface_;
     return true;
   }
 

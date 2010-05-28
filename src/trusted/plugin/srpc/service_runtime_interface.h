@@ -36,7 +36,7 @@ class ServiceRuntimeInterface {
   //  The constructor is passed the name of the nacl_file (from the
   //  browser cache, typically).  It spawns a sel_ldr instance and establishes
   //  a ConnectedSocket to it.
-  ServiceRuntimeInterface(PortablePluginInterface* plugin_interface,
+  ServiceRuntimeInterface(BrowserInterface* browser_interface,
                           Plugin* plugin);
 
   //  The destructor terminates the sel_ldr.
@@ -55,7 +55,7 @@ class ServiceRuntimeInterface {
  private:
   bool InitCommunication(nacl::DescWrapper*);
  private:
-  PortablePluginInterface* plugin_interface_;
+  BrowserInterface* browser_interface_;
   ScriptableHandle<SocketAddress>* default_socket_address_;
   ScriptableHandle<ConnectedSocket>* default_socket_;
   Plugin* plugin_;

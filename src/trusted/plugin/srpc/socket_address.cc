@@ -85,7 +85,7 @@ ScriptableHandle<ConnectedSocket>*
     dprintf(("SocketAddress::Connect: connect failed\n"));
     return NULL;
   } else {
-    struct ConnectedSocketInitializer init_info(GetPortablePluginInterface(),
+    struct ConnectedSocketInitializer init_info(GetBrowserInterface(),
                                                 con_desc,
                                                 plugin_,
                                                 true, sri);

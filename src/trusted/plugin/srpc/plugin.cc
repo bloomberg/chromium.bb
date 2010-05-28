@@ -109,7 +109,7 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
 bool Plugin::ShmFactory(void *obj, SrpcParams *params) {
   Plugin *plugin = reinterpret_cast<Plugin*>(obj);
 
-  SharedMemoryInitializer init_info(plugin->GetPortablePluginInterface(),
+  SharedMemoryInitializer init_info(plugin->GetBrowserInterface(),
                                     plugin, params->Input(0)->u.ival);
   ScriptableHandle<SharedMemory>* shared_memory =
       ScriptableHandle<SharedMemory>::New(&init_info);
@@ -159,7 +159,7 @@ bool Plugin::SocketAddressFactory(void *obj, SrpcParams *params) {
     return false;
   }
   // Create a scriptable object to return.
-  DescHandleInitializer init_info(plugin->GetPortablePluginInterface(),
+  DescHandleInitializer init_info(plugin->GetBrowserInterface(),
                                   desc,
                                   plugin);
   ScriptableHandle<SocketAddress>* socket_address =
@@ -273,7 +273,7 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
     // JavaScript console: alert popups are annoying, and no-one can
     // be expected to read stderr.
     dprintf(("%s\n", result.c_str()));
-    GetPortablePluginInterface()->Alert(result);
+    GetBrowserInterface()->Alert(result);
     return false;
   } else {
     return SetSrcPropertyImpl(result);
@@ -344,7 +344,7 @@ bool Plugin::Init(struct PortableHandleInitializer* init_info) {
   }
 
   nacl::string *href = NULL;
-  if (init_info->plugin_interface_->GetOrigin(&href)) {
+  if (init_info->browser_interface_->GetOrigin(&href)) {
     origin_ = nacl::UrlToOrigin(*href);
     dprintf(("Plugin::New: origin %s\n", origin_.c_str()));
     // Check that origin is in the list of permitted origins.
@@ -364,7 +364,7 @@ void Plugin::PostInit() {
   // In the absence of this attr, we use the "nexes" attribute if present.
   if (logical_url() == NULL) {
     const char *nexes_attr =
-        GetPortablePluginInterface()->LookupArgument("nexes");
+        GetBrowserInterface()->LookupArgument("nexes");
     if (nexes_attr != NULL) {
       SetNexesPropertyImpl(nexes_attr);
     }
@@ -453,7 +453,7 @@ bool Plugin::Load(nacl::string logical_url, const char* local_url) {
 bool Plugin::Load(nacl::string logical_url,
                   const char* local_url,
                   nacl::StreamShmBuffer *shmbufp) {
-  PortablePluginInterface* plugin_interface = GetPortablePluginInterface();
+  BrowserInterface* browser_interface = GetBrowserInterface();
 
   if (NULL == shmbufp) {
     dprintf(("Plugin::Load(%s)\n", local_url));
@@ -474,7 +474,7 @@ bool Plugin::Load(nacl::string logical_url,
     nacl::string message = nacl::string("Load failed: NaCl module ") +
         logical_url + " does not come ""from a whitelisted source. "
         "See native_client/src/trusted/plugin/origin.cc for the list.";
-    plugin_interface->Alert(message.c_str());
+    browser_interface->Alert(message.c_str());
     return false;
   }
   // Catch any bad accesses, etc., while loading.
@@ -489,7 +489,7 @@ bool Plugin::Load(nacl::string logical_url,
   // Check ELF magic and ABI version compatibility.
   bool success = false;
   if (NULL == shmbufp) {
-    success = plugin_interface->CheckElfExecutable(local_url_);
+    success = browser_interface->CheckElfExecutable(local_url_);
   } else {
     // Read out first chunk for CheckElfExecutable; this suffices for
     // ELF headers etc.
@@ -497,7 +497,7 @@ bool Plugin::Load(nacl::string logical_url,
     ssize_t result;
     result = shmbufp->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
     if (sizeof elf_hdr_buf == result) {  // (const char*)(elf_hdr_buf)
-      success = plugin_interface->CheckElfExecutable(elf_hdr_buf,
+      success = browser_interface->CheckElfExecutable(elf_hdr_buf,
                                                      sizeof elf_hdr_buf);
     }
   }
@@ -506,10 +506,10 @@ bool Plugin::Load(nacl::string logical_url,
   }
   // Load a file via a forked sel_ldr process.
   service_runtime_interface_ =
-      new(std::nothrow) ServiceRuntimeInterface(plugin_interface, this);
+      new(std::nothrow) ServiceRuntimeInterface(browser_interface, this);
   if (NULL == service_runtime_interface_) {
     dprintf((" ServiceRuntimeInterface Ctor failed\n"));
-    plugin_interface->Alert("ServiceRuntimeInterface Ctor failed");
+    browser_interface->Alert("ServiceRuntimeInterface Ctor failed");
     return false;
   }
   bool service_runtime_started = false;
@@ -530,7 +530,7 @@ bool Plugin::Load(nacl::string logical_url,
   }
   if (!service_runtime_started) {
     dprintf(("  Load: FAILED to start service runtime"));
-    plugin_interface->Alert("Load: FAILED to start service runtime");
+    browser_interface->Alert("Load: FAILED to start service runtime");
     return false;
   }
 
@@ -543,7 +543,7 @@ bool Plugin::Load(nacl::string logical_url,
   // Plugin takes ownership of socket_ from service_runtime_interface_,
   // so we do not need to call NPN_RetainObject.
   // Invoke the onload handler, if any.
-  plugin_interface->RunOnloadHandler();
+  browser_interface->RunOnloadHandler();
   return true;
 }
 

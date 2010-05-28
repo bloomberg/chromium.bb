@@ -31,7 +31,7 @@ class SrpcClient {
   explicit SrpcClient(bool can_use_proxied_npapi);
   //  Init is passed a ConnectedSocket.  It performs service
   //  discovery and provides the interface for future rpcs.
-  bool Init(PortablePluginInterface* portable_plugin, ConnectedSocket* socket);
+  bool Init(BrowserInterface* portable_plugin, ConnectedSocket* socket);
 
   //  The destructor closes the connection to sel_ldr.
   ~SrpcClient();
@@ -56,7 +56,7 @@ class SrpcClient {
   typedef std::map<uintptr_t, MethodInfo*> Methods;
   Methods methods_;
   NaClSrpcChannel srpc_channel_;
-  PortablePluginInterface* portable_plugin_;
+  BrowserInterface* portable_plugin_;
   bool can_use_proxied_npapi_;
 
   static int number_alive_counter;

@@ -36,7 +36,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/srpc.h"
 
 typedef NPWindow PluginWindow;
@@ -64,12 +63,12 @@ enum {
 
 struct VideoCallbackData {
   DescWrapper *handle;
-  PortablePluginInterface *portable_plugin;
+  BrowserInterface *portable_plugin;
   int  refcount;
   nacl_srpc::MultimediaSocket *msp;
 
   VideoCallbackData(DescWrapper *h,
-                    PortablePluginInterface *p,
+                    BrowserInterface *p,
                     int r,
                     nacl_srpc::MultimediaSocket *sockp):
       handle(h), portable_plugin(p), refcount(r), msp(sockp) {}
@@ -92,7 +91,7 @@ class VideoMap {
   int16_t HandleEvent(void* event);
   int InitializeSharedMemory(PluginWindow* window);
   VideoCallbackData* InitCallbackData(DescWrapper* desc,
-                                      PortablePluginInterface *p,
+                                      BrowserInterface *p,
                                       nacl_srpc::MultimediaSocket *msp);
   void Invalidate();
   bool IsEnabled() { return video_enabled_; }
@@ -113,7 +112,7 @@ class VideoMap {
   nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
       VideoSharedMemorySetup();
 
-  explicit VideoMap(PortablePluginInterface *plugin_interface);
+  explicit VideoMap(BrowserInterface *browser_interface);
   ~VideoMap();
 
 #ifdef NACL_STANDALONE
@@ -140,7 +139,7 @@ class VideoMap {
   volatile int             event_state_motion_last_valid_;
   void*                    platform_specific_;
   volatile bool            request_redraw_;
-  PortablePluginInterface* plugin_interface_;
+  BrowserInterface*        browser_interface_;
   NaClVideoShare*          untrusted_video_share_;
   DescWrapper*             video_handle_;
   uint32_t                 video_size_;

@@ -162,7 +162,7 @@ bool NPVariantObjectLength(const NPVariant* variant,
   NPVariant nplength;
   if (!GetNPObjectProperty(npp,
                            variant,
-                           (NPIdentifier)PortablePluginInterface::kLengthIdent,
+                           (NPIdentifier)BrowserInterface::kLengthIdent,
                            &nplength)) {
     return false;
   }
