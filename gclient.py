@@ -1043,6 +1043,7 @@ def CMDrevinfo(parser, args):
                          "version of all repositories")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
+  options.deps_os = None
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
   client.PrintRevInfo()
