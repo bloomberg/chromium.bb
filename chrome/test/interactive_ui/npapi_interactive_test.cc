@@ -41,6 +41,7 @@
 
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
+static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous mousemove works correctly
@@ -98,4 +99,23 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
 
   WaitForFinish("geturl_404_response", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
+}
+
+// Tests if a plugin executing a self deleting script using Invoke with
+// a modal dialog showing works without crashing or hanging
+TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeAlert) {
+  const FilePath test_case(
+      FILE_PATH_LITERAL("self_delete_plugin_invoke_alert.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+
+  // Wait for the alert dialog and then close it.
+  ASSERT_TRUE(automation()->WaitForAppModalDialog());
+  scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
+  ASSERT_TRUE(window.get());
+  ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
+
+  WaitForFinish("self_delete_plugin_invoke_alert", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                action_max_timeout_ms());
 }
