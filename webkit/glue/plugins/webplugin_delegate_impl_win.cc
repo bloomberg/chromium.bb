@@ -264,7 +264,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-  std::wstring filename = StringToLowerASCII(plugin_info.path.BaseName().value());
+  std::wstring filename =
+      StringToLowerASCII(plugin_info.path.BaseName().value());
 
   if (instance_->mime_type() == "application/x-shockwave-flash" ||
       filename == kFlashPlugin) {
@@ -371,6 +372,21 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
           GetPluginPath().value().c_str(), "user32.dll", "SetCursor",
           WebPluginDelegateImpl::SetCursorPatch);
     }
+
+    // The windowed flash plugin has a bug which occurs when the plugin enters
+    // fullscreen mode. It basically captures the mouse on WM_LBUTTONDOWN and
+    // does not release capture correctly causing it to stop receiving
+    // subsequent mouse events. This problem is also seen in Safari where there
+    // is code to handle this in the wndproc. However the plugin subclasses the
+    // window again in WM_LBUTTONDOWN before entering full screen. As a result
+    // Safari does not receive the WM_LBUTTONUP message. To workaround this
+    // issue we use a per thread mouse hook. This bug does not occur in Firefox
+    // and opera. Firefox has code similar to Safari. It could well be a bug in
+    // the flash plugin, which only occurs in webkit based browsers.
+    if (quirks_ & PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE) {
+      mouse_hook_ = SetWindowsHookEx(WH_MOUSE, MouseHookProc, NULL,
+                                     GetCurrentThreadId());
+    }
   }
 
   // On XP, WMP will use its old UI unless a registry key under HKLM has the
@@ -386,20 +402,6 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         WebPluginDelegateImpl::RegEnumKeyExWPatch);
   }
 
-  // The windowed flash plugin has a bug which occurs when the plugin enters
-  // fullscreen mode. It basically captures the mouse on WM_LBUTTONDOWN and
-  // does not release capture correctly causing it to stop receiving subsequent
-  // mouse events. This problem is also seen in Safari where there is code to
-  // handle this in the wndproc. However the plugin subclasses the window again
-  // in WM_LBUTTONDOWN before entering full screen. As a result Safari does not
-  // receive the WM_LBUTTONUP message. To workaround this issue we use a per
-  // thread mouse hook. This bug does not occur in Firefox and opera. Firefox
-  // has code similar to Safari. It could well be a bug in the flash plugin,
-  // which only occurs in webkit based browsers.
-  if (quirks_ & PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE) {
-    mouse_hook_ = SetWindowsHookEx(WH_MOUSE, MouseHookProc, NULL,
-                                   GetCurrentThreadId());
-  }
   return true;
 }
 
@@ -1360,6 +1362,9 @@ LONG WINAPI WebPluginDelegateImpl::RegEnumKeyExWPatch(
 
 void WebPluginDelegateImpl::HandleCaptureForMessage(HWND window,
                                                     UINT message) {
+  if (!WebPluginDelegateImpl::IsPluginDelegateWindow(window))
+    return;
+
   switch (message) {
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
