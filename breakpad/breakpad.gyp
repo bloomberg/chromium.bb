@@ -231,6 +231,8 @@
                 'src/common/module.h',
                 'src/common/stabs_reader.cc',
                 'src/common/stabs_reader.h',
+                'src/common/stabs_to_module.cc',
+                'src/common/stabs_to_module.h',
                 'src/tools/linux/dump_syms/dump_syms.cc',
               ],
 
