@@ -24,6 +24,7 @@
         'third_party/bsdiff.h',
         'third_party/bsdiff_apply.cc',
         'third_party/bsdiff_create.cc',
+        'third_party/paged_array.h',
         'courgette.h',
         'crc.cc',
         'crc.h',
@@ -85,6 +86,7 @@
         'image_info_unittest.cc',
         'run_all_unittests.cc',
         'streams_unittest.cc',
+        'third_party/paged_array_unittest.cc'
        ],
       'dependencies': [
         'courgette_lib',

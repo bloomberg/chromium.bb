@@ -20,6 +20,8 @@ class BSDiffMemoryTest : public testing::Test {
   std::string FileContents(const char* file_name) const;
   void GenerateAndTestPatch(const std::string& a, const std::string& b) const;
 
+  std::string GenerateSyntheticInput(size_t length, int seed) const;
+
  private:
   void SetUp() {
     PathService::Get(base::DIR_SOURCE_ROOT, &test_dir_);
@@ -64,6 +66,18 @@ void BSDiffMemoryTest::GenerateAndTestPatch(const std::string& old_text,
   EXPECT_EQ(0, memcmp(new_text.c_str(), new2.Buffer(), new_text.length()));
 }
 
+std::string BSDiffMemoryTest::GenerateSyntheticInput(size_t length, int seed)
+  const {
+  static const char* a[8] = {"O", "A", "x", "-", "y", ".", "|", ":"};
+  std::string result;
+  while (result.length() < length) {
+    seed = (seed + 17) * 1049 + (seed >> 27);
+    result.append(a[seed & 7]);
+  }
+  result.resize(length);
+  return result;
+}
+
 TEST_F(BSDiffMemoryTest, TestEmpty) {
   GenerateAndTestPatch("", "");
 }
@@ -97,6 +111,28 @@ TEST_F(BSDiffMemoryTest, TestSmallInputsWithSmallChanges) {
       "I do not eat green eggs and HAM.\n"
       "I do not like them, Sam-I-am.\n";
   GenerateAndTestPatch(file1, file2);
+}
+
+TEST_F(BSDiffMemoryTest, TestNearPageArrayPageSize) {
+  // This magic number is the size of one block of the PageArray in
+  // third_party/bsdiff_create.cc.
+  size_t critical_size = 1 << 18;
+
+  // Test first-inputs with sizes that straddle the magic size to test this
+  // PageArray's internal boundary condition.
+
+  std::string file1 = GenerateSyntheticInput(critical_size, 0);
+  std::string file2 = GenerateSyntheticInput(critical_size, 1);
+  GenerateAndTestPatch(file1, file2);
+
+  std::string file1a = file1.substr(0, critical_size - 1);
+  GenerateAndTestPatch(file1a, file2);
+
+  std::string file1b = file1.substr(0, critical_size - 2);
+  GenerateAndTestPatch(file1b, file2);
+
+  std::string file1c = file1 + file1.substr(0, 1);
+  GenerateAndTestPatch(file1c, file2);
 }
 
 TEST_F(BSDiffMemoryTest, TestIndenticalDlls) {

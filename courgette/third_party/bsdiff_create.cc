@@ -17,6 +17,9 @@
                  --Rahul Kuchhal
   2009-03-31 - Change to use Streams.  Added lots of comments.
                  --Stephen Adams <sra@chromium.org>
+  2010-05-26 - Use a paged array for V and I. The address space may be too
+               fragmented for these big arrays to be contiguous.
+                 --Stephen Adams <sra@chromium.org>
 */
 
 #include "courgette/third_party/bsdiff.h"
@@ -31,21 +34,23 @@
 
 #include "courgette/crc.h"
 #include "courgette/streams.h"
+#include "courgette/third_party/paged_array.h"
 
 namespace courgette {
 
 // ------------------------------------------------------------------------
 //
 // The following code is taken verbatim from 'bsdiff.c'. Please keep all the
-// code formatting and variable names.  The only changes from the original are
-// replacing tabs with spaces, indentation, and using 'const'.
+// code formatting and variable names.  The changes from the original are (1)
+// replacing tabs with spaces, (2) indentation, (3) using 'const', and (4)
+// changing the V and I parameters from int* to PagedArray<int>&.
 //
 // The code appears to be a rewritten version of the suffix array algorithm
 // presented in "Faster Suffix Sorting" by N. Jesper Larsson and Kunihiko
 // Sadakane, special cased for bytes.
 
 static void
-split(int *I,int *V,int start,int len,int h)
+split(PagedArray<int>& I,PagedArray<int>& V,int start,int len,int h)
 {
   int i,j,k,x,tmp,jj,kk;
 
@@ -107,7 +112,7 @@ split(int *I,int *V,int start,int len,int h)
 }
 
 static void
-qsufsort(int *I,int *V,const unsigned char *old,int oldsize)
+qsufsort(PagedArray<int>& I, PagedArray<int>& V,const unsigned char *old,int oldsize)
 {
   int buckets[256];
   int i,h,len;
@@ -157,7 +162,7 @@ matchlen(const unsigned char *old,int oldsize,const unsigned char *newbuf,int ne
 }
 
 static int
-search(int *I,const unsigned char *old,int oldsize,
+search(PagedArray<int>& I,const unsigned char *old,int oldsize,
        const unsigned char *newbuf,int newsize,int st,int en,int *pos)
 {
   int x,y;
@@ -214,16 +219,26 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
   uint32 pending_diff_zeros = 0;
 
-  scoped_array<int> I(new(std::nothrow) int[oldsize + 1]);
-  scoped_array<int> V(new(std::nothrow) int[oldsize + 1]);
-  if (I == NULL || V == NULL)
+  PagedArray<int> I;
+  PagedArray<int> V;
+
+  if (!I.Allocate(oldsize + 1)) {
+    LOG(ERROR) << "Could not allocate I[], " << ((oldsize + 1) * sizeof(int))
+               << " bytes";
     return MEM_ERROR;
+  }
+
+  if (!V.Allocate(oldsize + 1)) {
+    LOG(ERROR) << "Could not allocate V[], " << ((oldsize + 1) * sizeof(int))
+               << " bytes";
+    return MEM_ERROR;
+  }
 
   base::Time q_start_time = base::Time::Now();
-  qsufsort(I.get(), V.get(), old, oldsize);
+  qsufsort(I, V, old, oldsize);
   LOG(INFO) << " done qsufsort "
             << (base::Time::Now() - q_start_time).InSecondsF();
-  V.reset();
+  V.clear();
 
   const uint8* newbuf = new_stream->Buffer();
   const int newsize = new_stream->Remaining();
@@ -284,7 +299,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
     scan += match_length;
     for (int scsc = scan;  scan < newsize;  ++scan) {
-      match_length = search(I.get(), old, oldsize,
+      match_length = search(I, old, oldsize,
                             newbuf + scan, newsize - scan,
                             0, oldsize, &pos);
 
@@ -396,7 +411,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
   diff_skips->WriteVarint32(pending_diff_zeros);
 
-  I.reset();
+  I.clear();
 
   MBSPatchHeader header;
   // The string will have a null terminator that we don't use, hence '-1'.
