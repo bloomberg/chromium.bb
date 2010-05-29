@@ -583,13 +583,37 @@ o3djs.util.Engine = {
 o3djs.util.mainEngine_ = o3djs.util.Engine.BROWSER;
 
 /**
+ * Checks the user agent string for substring s, returning true if it appears.
+ * @return {boolean} Whether the browser's user-agent string contains string s.
+ */
+function o3djs_navHas(s) {
+  return navigator.userAgent.indexOf(s) != -1;
+}
+
+/**
+ * Checks for V8 support. This is to cope with environments where our V8 is
+ * known to be problematic, eg Safari on 10.6.
+ * @return {boolean} Whether the environment supports V8.
+ */
+function o3djs_isV8Supported() {
+  if (o3djs_navHas('Chrome'))
+    return true;
+  if (!o3djs_navHas('Safari'))
+    return true;
+  return !o3djs_navHas('Intel Mac OS X 10_6');
+}
+
+/**
  * Select an engine to use as the main engine (the one the makeClients
  * callback will be invoked on). If an embedded engine is requested, one
  * element must be identified with the id 'o3d'. The callback will be invoked
  * in this element.
+ * Ignores attempts to choose V8 if it is not supported in this host.
  * @param {o3djs.util.Engine} engine The engine.
  */
 o3djs.util.setMainEngine = function(engine) {
+  if ((engine == o3djs.util.Engine.V8) && !o3djs_isV8Supported())
+    return;
   o3djs.util.mainEngine_ = engine;
 };
 
