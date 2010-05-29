@@ -75,7 +75,8 @@ void PrintedDocument::SetPage(int page_number,
   // be shown. Users dislike 0-based counting.
   scoped_refptr<PrintedPage> page(
       new PrintedPage(page_number + 1,
-          metafile, immutable_.settings_.page_setup_pixels().physical_size()));
+          metafile,
+          immutable_.settings_.page_setup_device_units().physical_size()));
   {
     AutoLock lock(lock_);
     mutable_.pages_[page_number] = page;
@@ -195,10 +196,12 @@ void PrintedDocument::PrintHeaderFooter(gfx::NativeDrawingContext context,
   const gfx::Size string_size(font.GetStringWidth(output), font.height());
   gfx::Rect bounding;
   bounding.set_height(string_size.height());
-  const gfx::Rect& overlay_area(settings.page_setup_pixels().overlay_area());
+  const gfx::Rect& overlay_area(
+      settings.page_setup_device_units().overlay_area());
   // Hard code .25 cm interstice between overlays. Make sure that some space is
   // kept between each headers.
-  const int interstice = ConvertUnit(250, kHundrethsMMPerInch, settings.dpi());
+  const int interstice = ConvertUnit(250, kHundrethsMMPerInch,
+                                     settings.device_units_per_inch());
   const int max_width = overlay_area.width() / 3 - interstice;
   const int actual_width = std::min(string_size.width(), max_width);
   switch (x) {

@@ -41,9 +41,10 @@ class PrintSettings {
             const PageRanges& new_ranges, bool print_selection_only);
 #endif
 
-  // Set printer printable area in in pixels.
-  void SetPrinterPrintableArea(gfx::Size const& physical_size_pixels,
-                               gfx::Rect const& printable_area_pixels);
+  // Set printer printable area in in device units.
+  void SetPrinterPrintableArea(gfx::Size const& physical_size_device_units,
+                               gfx::Rect const& printable_area_device_units,
+                               int units_per_inch);
 
   // Equality operator.
   // NOTE: printer_name is NOT tested for equality since it doesn't affect the
@@ -56,7 +57,16 @@ class PrintSettings {
   }
   const std::wstring& device_name() const { return device_name_; }
   int dpi() const { return dpi_; }
-  const PageSetup& page_setup_pixels() const { return page_setup_pixels_; }
+  const PageSetup& page_setup_device_units() const {
+    return page_setup_device_units_;
+  }
+  int device_units_per_inch() const {
+#if defined(OS_MACOSX)
+    return 72;
+#else  // defined(OS_MACOSX)
+    return dpi();
+#endif  // defined(OS_MACOSX)
+  }
 
   // Multi-page printing. Each PageRange describes a from-to page combination.
   // This permits printing selected pages only.
@@ -105,8 +115,8 @@ class PrintSettings {
   // Printer device name as opened by the OS.
   std::wstring device_name_;
 
-  // Page setup in pixel units, dpi adjusted.
-  PageSetup page_setup_pixels_;
+  // Page setup in device units.
+  PageSetup page_setup_device_units_;
 
   // Printer's device effective dots per inch in both axis.
   int dpi_;

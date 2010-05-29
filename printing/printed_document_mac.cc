@@ -25,7 +25,7 @@ void PrintedDocument::RenderPrintedPage(
 #endif
 
   const printing::PageSetup& page_setup(
-      immutable_.settings_.page_setup_pixels());
+      immutable_.settings_.page_setup_device_units());
   CGRect target_rect = page_setup.content_area().ToCGRect();
 
   const printing::NativeMetafile* metafile = page.native_metafile();

@@ -32,7 +32,7 @@ void PrintSettings::Clear() {
   selection_only = false;
   printer_name_.clear();
   device_name_.clear();
-  page_setup_pixels_.Clear();
+  page_setup_device_units_.Clear();
   dpi_ = 0;
   landscape_ = false;
 }
@@ -60,15 +60,17 @@ void PrintSettings::Init(HDC hdc,
   DCHECK_EQ(GetDeviceCaps(hdc, SCALINGFACTORX), 0);
   DCHECK_EQ(GetDeviceCaps(hdc, SCALINGFACTORY), 0);
 
-  // Initialize page_setup_pixels_.
-  gfx::Size physical_size_pixels(GetDeviceCaps(hdc, PHYSICALWIDTH),
-                                 GetDeviceCaps(hdc, PHYSICALHEIGHT));
-  gfx::Rect printable_area_pixels(GetDeviceCaps(hdc, PHYSICALOFFSETX),
-                                  GetDeviceCaps(hdc, PHYSICALOFFSETY),
-                                  GetDeviceCaps(hdc, HORZRES),
-                                  GetDeviceCaps(hdc, VERTRES));
+  // Initialize page_setup_device_units_.
+  gfx::Size physical_size_device_units(GetDeviceCaps(hdc, PHYSICALWIDTH),
+                                       GetDeviceCaps(hdc, PHYSICALHEIGHT));
+  gfx::Rect printable_area_device_units(GetDeviceCaps(hdc, PHYSICALOFFSETX),
+                                        GetDeviceCaps(hdc, PHYSICALOFFSETY),
+                                        GetDeviceCaps(hdc, HORZRES),
+                                        GetDeviceCaps(hdc, VERTRES));
 
-  SetPrinterPrintableArea(physical_size_pixels, printable_area_pixels);
+  SetPrinterPrintableArea(physical_size_device_units,
+                          printable_area_device_units,
+                          dpi_);
 }
 #elif defined(OS_MACOSX)
 void PrintSettings::Init(PMPrinter printer, PMPageFormat page_format,
@@ -91,7 +93,7 @@ void PrintSettings::Init(PMPrinter printer, PMPageFormat page_format,
     for (uint32 i = 1; i <= resolution_count; ++i) {
       PMResolution resolution;
       PMPrinterGetIndexedPrinterResolution(printer, i, &resolution);
-      if (best_resolution.hRes > resolution.hRes)
+      if (resolution.hRes > best_resolution.hRes)
         best_resolution = resolution;
     }
   }
@@ -103,36 +105,41 @@ void PrintSettings::Init(PMPrinter printer, PMPageFormat page_format,
   PMRect page_rect, paper_rect;
   PMGetAdjustedPageRect(page_format, &page_rect);
   PMGetAdjustedPaperRect(page_format, &paper_rect);
-  const double pixels_per_point = dpi_ / 72.0;
-  gfx::Size physical_size_pixels(
-      (paper_rect.right - paper_rect.left) * pixels_per_point,
-      (paper_rect.bottom - paper_rect.top) * pixels_per_point);
-  gfx::Rect printable_area_pixels(
-      (page_rect.left - paper_rect.left) * pixels_per_point,
-      (page_rect.top - paper_rect.top) * pixels_per_point,
-      (page_rect.right - page_rect.left) * pixels_per_point,
-      (page_rect.bottom - page_rect.top) * pixels_per_point);
+  // Device units are in points. Units per inch is 72.
+  gfx::Size physical_size_device_units(
+      (paper_rect.right - paper_rect.left),
+      (paper_rect.bottom - paper_rect.top));
+  gfx::Rect printable_area_device_units(
+      (page_rect.left - paper_rect.left),
+      (page_rect.top - paper_rect.top),
+      (page_rect.right - page_rect.left),
+      (page_rect.bottom - page_rect.top));
 
-  SetPrinterPrintableArea(physical_size_pixels, printable_area_pixels);
+  SetPrinterPrintableArea(physical_size_device_units,
+                          printable_area_device_units,
+                          72);
 }
 #endif
 
 void PrintSettings::SetPrinterPrintableArea(
-    gfx::Size const& physical_size_pixels,
-    gfx::Rect const& printable_area_pixels) {
+    gfx::Size const& physical_size_device_units,
+    gfx::Rect const& printable_area_device_units,
+    int units_per_inch) {
 
   int header_footer_text_height = 0;
   int margin_printer_units = 0;
   if (use_overlays) {
     // Hard-code text_height = 0.5cm = ~1/5 of inch.
-    header_footer_text_height = ConvertUnit(500, kHundrethsMMPerInch, dpi_);
+    header_footer_text_height = ConvertUnit(500, kHundrethsMMPerInch,
+                                            units_per_inch);
     // Default margins 1.0cm = ~2/5 of an inch.
-    margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch, dpi_);
+    margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch,
+                                       units_per_inch);
   }
   // Start by setting the user configuration
-  page_setup_pixels_.Init(physical_size_pixels,
-                          printable_area_pixels,
-                          header_footer_text_height);
+  page_setup_device_units_.Init(physical_size_device_units,
+                                printable_area_device_units,
+                                header_footer_text_height);
 
 
   // Apply default margins (not user configurable just yet).
@@ -145,7 +152,7 @@ void PrintSettings::SetPrinterPrintableArea(
   margins.top = margin_printer_units;
   margins.right = margin_printer_units;
   margins.bottom = margin_printer_units;
-  page_setup_pixels_.SetRequestedMargins(margins);
+  page_setup_device_units_.SetRequestedMargins(margins);
 }
 
 bool PrintSettings::Equals(const PrintSettings& rhs) const {
@@ -158,7 +165,7 @@ bool PrintSettings::Equals(const PrintSettings& rhs) const {
       desired_dpi == rhs.desired_dpi &&
       overlays.Equals(rhs.overlays) &&
       device_name_ == rhs.device_name_ &&
-      page_setup_pixels_.Equals(rhs.page_setup_pixels_) &&
+      page_setup_device_units_.Equals(rhs.page_setup_device_units_) &&
       dpi_ == rhs.dpi_ &&
       landscape_ == rhs.landscape_;
 }

@@ -50,7 +50,7 @@ void PrintedDocument::RenderPrintedPage(
 #endif
 
   const printing::PageSetup& page_setup(
-      immutable_.settings_.page_setup_pixels());
+      immutable_.settings_.page_setup_device_units());
 
   // Save the state to make sure the context this function call does not modify
   // the device context.
@@ -116,7 +116,7 @@ void PrintedDocument::RenderPrintedPage(
   int base_font_size = gfx::Font().height();
   int new_font_size = ConvertUnit(10,
                                   immutable_.settings_.desired_dpi,
-                                  immutable_.settings_.dpi());
+                                  immutable_.settings_.device_units_per_inch());
   DCHECK_GT(new_font_size, base_font_size);
   gfx::Font font(gfx::Font().DeriveFont(new_font_size - base_font_size));
   HGDIOBJ old_font = SelectObject(context, font.hfont());

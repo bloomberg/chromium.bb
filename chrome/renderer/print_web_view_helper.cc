@@ -33,14 +33,18 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     WebView* web_view)
         : frame_(frame), web_view_(web_view), expected_pages_count_(0),
           use_browser_overlays_(true) {
+  int dpi = static_cast<int>(print_params.dpi);
+#if defined(OS_MACOSX)
+  // On the Mac, the printable area is in points, don't do any scaling based
+  // on dpi.
+  dpi = 72;
+#endif  // defined(OS_MACOSX)
   print_canvas_size_.set_width(
-      printing::ConvertUnit(print_params.printable_size.width(),
-                            static_cast<int>(print_params.dpi),
+      printing::ConvertUnit(print_params.printable_size.width(), dpi,
                             print_params.desired_dpi));
 
   print_canvas_size_.set_height(
-      printing::ConvertUnit(print_params.printable_size.height(),
-                            static_cast<int>(print_params.dpi),
+      printing::ConvertUnit(print_params.printable_size.height(), dpi,
                             print_params.desired_dpi));
 
   // Layout page according to printer page size. Since WebKit shrinks the
