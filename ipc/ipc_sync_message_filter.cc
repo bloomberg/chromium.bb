@@ -48,7 +48,7 @@ bool SyncMessageFilter::Send(Message* message) {
     // Also by definition, can't use this on IO thread since we're blocking it.
     DCHECK(MessageLoop::current() != listener_loop_);
     DCHECK(MessageLoop::current() != io_loop_);
-    pending_sync_messages_[MessageLoop::current()] = &pending_message;
+    pending_sync_messages_.insert(&pending_message);
   }
 
   io_loop_->PostTask(
@@ -61,7 +61,7 @@ bool SyncMessageFilter::Send(Message* message) {
   {
     AutoLock auto_lock(lock_);
     delete pending_message.deserializer;
-    pending_sync_messages_.erase(MessageLoop::current());
+    pending_sync_messages_.erase(&pending_message);
   }
 
   return pending_message.send_result;
@@ -86,7 +86,7 @@ void SyncMessageFilter::SignalAllEvents() {
   AutoLock auto_lock(lock_);
   for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
        iter != pending_sync_messages_.end(); ++iter) {
-    iter->second->done_event->Signal();
+    (*iter)->done_event->Signal();
   }
 }
 
@@ -110,12 +110,12 @@ bool SyncMessageFilter::OnMessageReceived(const Message& message) {
   AutoLock auto_lock(lock_);
   for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
        iter != pending_sync_messages_.end(); ++iter) {
-    if (SyncMessage::IsMessageReplyTo(message, iter->second->id)) {
+    if (SyncMessage::IsMessageReplyTo(message, (*iter)->id)) {
       if (!message.is_reply_error()) {
-        iter->second->send_result =
-            iter->second->deserializer->SerializeOutputParameters(message);
+        (*iter)->send_result =
+            (*iter)->deserializer->SerializeOutputParameters(message);
       }
-      iter->second->done_event->Signal();
+      (*iter)->done_event->Signal();
       return true;
     }
   }

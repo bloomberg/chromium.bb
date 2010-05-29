@@ -6,27 +6,14 @@
 #define IPC_IPC_SYNC_MESSAGE_FILTER_H_
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message.h"
+#include <set>
 
 class MessageLoop;
-
-#if defined(COMPILER_GCC)
-// Allows us to use MessageLoop in a hash_map with gcc (MSVC is okay without
-// specifying this).
-namespace __gnu_cxx {
-template<>
-struct hash<MessageLoop*> {
-  size_t operator()(MessageLoop* message_loop) const {
-    return reinterpret_cast<size_t>(message_loop);
-  }
-};
-}
-#endif
 
 namespace IPC {
 
@@ -63,7 +50,7 @@ class SyncMessageFilter : public ChannelProxy::MessageFilter,
   MessageLoop* listener_loop_;  // The process's main thread.
   MessageLoop* io_loop_;  // The message loop where the Channel lives.
 
-  typedef base::hash_map<MessageLoop*, PendingSyncMsg*> PendingSyncMessages;
+  typedef std::set<PendingSyncMsg*> PendingSyncMessages;
   PendingSyncMessages pending_sync_messages_;
 
   // Locks data members above.
