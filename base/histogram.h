@@ -458,10 +458,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   // Invariant values set at/near construction time
 
   // ASCII version of original name given to the constructor.  All identically
-  // named instances will  be coalesced cross-project TODO(jar).
-  // If a user needs one histogram name to be called by several places in a
-  // single process, a central function should be defined by the user, which
-  // defins the single declared instance of the named histogram.
+  // named instances will be coalesced cross-project.
   const std::string histogram_name_;
   Sample declared_min_;  // Less than this goes into counts_[0]
   Sample declared_max_;  // Over this goes into counts_[bucket_count_ - 1].
