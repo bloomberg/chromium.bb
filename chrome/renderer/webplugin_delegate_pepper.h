@@ -234,6 +234,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
                             const gfx::Rect& printable_area,
                             WebKit::WebCanvas* canvas);
 #endif  // OS_WIN
+#if defined(OS_MACOSX)
+  // Draws the given kARGB_8888_Config bitmap to the specified canvas starting
+  // at the specified destination rect.
+  void DrawSkBitmapToCanvas(const SkBitmap& bitmap, WebKit::WebCanvas* canvas,
+                            const gfx::Rect& dest_rect, int canvas_height);
+#endif  // OS_MACOSX
 
 #if defined(ENABLE_GPU)
 
@@ -285,6 +291,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   // we need to stretch the printed raster bitmap to these dimensions. It is
   // cleared in PrintEnd.
   gfx::Rect current_printable_area_;
+#if defined(OS_MACOSX)
+  // On the Mac, when we draw the bitmap to the PDFContext, it seems necessary
+  // to keep the pixels valis until CGContextEndPage is called. We use this
+  // variable to hold on to the pixels.
+  SkBitmap last_printed_page_;
+#endif   // defined(OS_MACOSX)
 
 #if defined(ENABLE_GPU)
   // The command buffer used to issue commands to the nested GPU plugin.

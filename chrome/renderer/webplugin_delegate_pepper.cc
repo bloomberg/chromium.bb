@@ -1059,7 +1059,6 @@ int WebPluginDelegatePepper::PrintBegin(const gfx::Rect& printable_area,
 
 bool WebPluginDelegatePepper::PrintPage(int page_number,
                                         WebKit::WebCanvas* canvas) {
-#if defined(OS_WIN) || defined(OS_LINUX)
   NPPPrintExtensions* print_extensions = GetPrintExtensions();
   if (!print_extensions)
     return false;
@@ -1128,16 +1127,18 @@ bool WebPluginDelegatePepper::PrintPage(int page_number,
     DrawJPEGToPlatformDC(committed, current_printable_area_, canvas);
     draw_to_canvas = false;
   }
-#endif  // OS_WIN
-
+#endif  // defined(OS_WIN)
+#if defined(OS_MACOSX)
+  draw_to_canvas = false;
+  DrawSkBitmapToCanvas(committed, canvas, current_printable_area_,
+                       current_printable_area_.height());
+  // See comments in the header file.
+  last_printed_page_ = committed;
+#else  // defined(OS_MACOSX)
   if (draw_to_canvas)
     canvas->drawBitmapRect(committed, &src_rect, dest_rect);
-
+#endif  // defined(OS_MACOSX)
   return true;
-#else  // defined(OS_WIN) || defined(OS_LINUX)
-  NOTIMPLEMENTED();
-  return false;
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
 }
 
 void WebPluginDelegatePepper::PrintEnd() {
@@ -1145,6 +1146,9 @@ void WebPluginDelegatePepper::PrintEnd() {
   if (print_extensions)
     print_extensions->printEnd(instance()->npp());
   current_printable_area_ = gfx::Rect();
+#if defined(OS_MACOSX)
+  last_printed_page_ = SkBitmap();
+#endif  // defined(OS_MACOSX)
 }
 
 bool WebPluginDelegatePepper::SupportsFind() {
@@ -1207,36 +1211,8 @@ void WebPluginDelegatePepper::Paint(WebKit::WebCanvas* canvas,
     // Blit from background_context to context.
     if (!committed_bitmap_.isNull()) {
 #if defined(OS_MACOSX)
-      SkAutoLockPixels lock(committed_bitmap_);
-
-      scoped_cftyperef<CGDataProviderRef> data_provider(
-          CGDataProviderCreateWithData(
-              NULL, committed_bitmap_.getAddr32(0, 0),
-              committed_bitmap_.rowBytes() * committed_bitmap_.height(), NULL));
-      scoped_cftyperef<CGImageRef> image(
-          CGImageCreate(
-              committed_bitmap_.width(), committed_bitmap_.height(),
-              8, 32, committed_bitmap_.rowBytes(),
-              mac_util::GetSystemColorSpace(),
-              kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
-              data_provider, NULL, false, kCGRenderingIntentDefault));
-
-      // Flip the transform
-      CGContextSaveGState(canvas);
-      float window_height =
-          static_cast<float>(CGBitmapContextGetHeight(canvas));
-      CGContextTranslateCTM(canvas, 0, window_height);
-      CGContextScaleCTM(canvas, 1.0, -1.0);
-
-      CGRect bounds;
-      bounds.origin.x = window_rect_.origin().x();
-      bounds.origin.y = window_height - window_rect_.origin().y() -
-          committed_bitmap_.height();
-      bounds.size.width = committed_bitmap_.width();
-      bounds.size.height = committed_bitmap_.height();
-
-      CGContextDrawImage(canvas, bounds, image);
-      CGContextRestoreGState(canvas);
+      DrawSkBitmapToCanvas(committed_bitmap_, canvas, window_rect_,
+                           static_cast<int>(CGBitmapContextGetHeight(canvas)));
 #else
       gfx::Point origin(window_rect_.origin().x(), window_rect_.origin().y());
       canvas->drawBitmap(committed_bitmap_,
@@ -1545,4 +1521,39 @@ bool WebPluginDelegatePepper::DrawJPEGToPlatformDC(
   return true;
 }
 #endif  // OS_WIN
+
+#if defined(OS_MACOSX)
+void WebPluginDelegatePepper::DrawSkBitmapToCanvas(
+    const SkBitmap& bitmap, WebKit::WebCanvas* canvas,
+    const gfx::Rect& dest_rect,
+    int canvas_height) {
+  SkAutoLockPixels lock(bitmap);
+  DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
+  scoped_cftyperef<CGDataProviderRef> data_provider(
+      CGDataProviderCreateWithData(
+          NULL, bitmap.getAddr32(0, 0),
+          bitmap.rowBytes() * bitmap.height(), NULL));
+  scoped_cftyperef<CGImageRef> image(
+      CGImageCreate(
+          bitmap.width(), bitmap.height(),
+          8, 32, bitmap.rowBytes(),
+          mac_util::GetSystemColorSpace(),
+          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
+          data_provider, NULL, false, kCGRenderingIntentDefault));
+
+  // Flip the transform
+  CGContextSaveGState(canvas);
+  CGContextTranslateCTM(canvas, 0, canvas_height);
+  CGContextScaleCTM(canvas, 1.0, -1.0);
+
+  CGRect bounds;
+  bounds.origin.x = dest_rect.x();
+  bounds.origin.y = canvas_height - dest_rect.y() - dest_rect.height();
+  bounds.size.width = dest_rect.width();
+  bounds.size.height = dest_rect.height();
+
+  CGContextDrawImage(canvas, bounds, image);
+  CGContextRestoreGState(canvas);
+}
+#endif  // defined(OS_MACOSX)
 
