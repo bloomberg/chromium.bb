@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,10 +25,11 @@ class JavaScriptMessageBoxDialog : public ModalDialogDelegate {
 
   virtual ~JavaScriptMessageBoxDialog();
 
-  // ModalDialogDelegate overrides.
+  // Overriden from ModalDialogDelegate:
   virtual gfx::NativeWindow GetDialogRootWindow();
 
-  // views::DialogDelegate Methods:
+  // Overriden from views::DialogDelegate:
+  virtual int GetDefaultDialogButton() const;
   virtual int GetDialogButtons() const;
   virtual std::wstring GetWindowTitle() const;
   virtual void WindowClosing();
@@ -38,7 +39,7 @@ class JavaScriptMessageBoxDialog : public ModalDialogDelegate {
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
 
-  // views::WindowDelegate Methods:
+  // Overriden from views::WindowDelegate:
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView();
   virtual views::View* GetInitiallyFocusedView();

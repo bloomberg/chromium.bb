@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,16 @@ gfx::NativeWindow JavaScriptMessageBoxDialog::GetDialogRootWindow() {
 
 //////////////////////////////////////////////////////////////////////////////
 // JavaScriptMessageBoxDialog, views::DialogDelegate implementation:
+
+int JavaScriptMessageBoxDialog::GetDefaultDialogButton() const {
+  if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasOKButton)
+    return MessageBoxFlags::DIALOGBUTTON_OK;
+
+  if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasCancelButton)
+    return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+
+  return MessageBoxFlags::DIALOGBUTTON_NONE;
+}
 
 int JavaScriptMessageBoxDialog::GetDialogButtons() const {
   int dialog_buttons = 0;
