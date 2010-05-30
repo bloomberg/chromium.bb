@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/location_bar_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/location_bar/keyword_hint_view.h"
 #include "grit/generated_resources.h"
@@ -63,25 +64,9 @@ void SelectedKeywordView::SetKeyword(const std::wstring& keyword) {
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
   full_label_.SetText(l10n_util::GetStringF(message_id, short_name));
-  const std::wstring min_string = CalculateMinString(short_name);
+  const std::wstring min_string(
+      location_bar_util::CalculateMinString(short_name));
   partial_label_.SetText(min_string.empty() ?
       full_label_.GetText() :
       l10n_util::GetStringF(message_id, min_string));
-}
-
-std::wstring SelectedKeywordView::CalculateMinString(
-    const std::wstring& description) {
-  // Chop at the first '.' or whitespace.
-  const size_t dot_index = description.find(L'.');
-  const size_t ws_index = description.find_first_of(kWhitespaceWide);
-  size_t chop_index = std::min(dot_index, ws_index);
-  std::wstring min_string;
-  if (chop_index == std::wstring::npos) {
-    // No dot or whitespace, truncate to at most 3 chars.
-    min_string = l10n_util::TruncateString(description, 3);
-  } else {
-    min_string = description.substr(0, chop_index);
-  }
-  base::i18n::AdjustStringForLocaleDirection(min_string, &min_string);
-  return min_string;
 }

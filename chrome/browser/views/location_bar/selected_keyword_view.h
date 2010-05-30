@@ -38,9 +38,6 @@ class SelectedKeywordView : public IconLabelBubbleView {
   void set_profile(Profile* profile) { profile_ = profile; }
 
  private:
-  // Returns the truncated version of description to use.
-  std::wstring CalculateMinString(const std::wstring& description);
-
   // The keyword we're showing. If empty, no keyword is selected.
   // NOTE: we don't cache the TemplateURL as it is possible for it to get
   // deleted out from under us.

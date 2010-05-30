@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/location_bar_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -50,20 +51,6 @@
 
 namespace {
 
-// Returns the short name for a keyword.
-// TODO(shess): Copied from views/location_bar_view.cc.  Try to share
-// it.
-std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
-// Make sure the TemplateURL still exists.
-// TODO(sky): Once LocationBarView adds a listener to the TemplateURLModel
-// to track changes to the model, this should become a DCHECK.
-  const TemplateURL* template_url =
-      profile->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
-  if (template_url)
-    return template_url->AdjustedShortNameForLocaleDirection();
-  return std::wstring();
-}
-
 // Values for the label colors for different security states.
 static const CGFloat kEVSecureTextColorRedComponent = 0.03;
 static const CGFloat kEVSecureTextColorGreenComponent = 0.58;
@@ -71,25 +58,6 @@ static const CGFloat kEVSecureTextColorBlueComponent = 0.0;
 static const CGFloat kSecurityErrorTextColorRedComponent = 0.63;
 static const CGFloat kSecurityErrorTextColorGreenComponent = 0.0;
 static const CGFloat kSecurityErrorTextColorBlueComponent = 0.0;
-
-// Build a short string to use in keyword-search when the field isn't
-// very big.
-// TODO(shess): Copied from views/location_bar_view.cc.  Try to share.
-std::wstring CalculateMinString(const std::wstring& description) {
-  // Chop at the first '.' or whitespace.
-  const size_t dot_index = description.find(L'.');
-  const size_t ws_index = description.find_first_of(kWhitespaceWide);
-  size_t chop_index = std::min(dot_index, ws_index);
-  std::wstring min_string;
-  if (chop_index == std::wstring::npos) {
-    // No dot or whitespace, truncate to at most 3 chars.
-    min_string = l10n_util::TruncateString(description, 3);
-  } else {
-    min_string = description.substr(0, chop_index);
-  }
-  base::i18n::AdjustStringForLocaleDirection(min_string, &min_string);
-  return min_string;
-}
 
 }  // namespace
 
@@ -265,7 +233,8 @@ void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
     // "Engine" is a parameter to be replaced by text based on the
     // keyword.
 
-    const std::wstring min_name(CalculateMinString(short_name));
+    const std::wstring min_name(
+        location_bar_util::CalculateMinString(short_name));
     NSString* partial_string = nil;
     int message_id = is_extension_keyword ?
         IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;

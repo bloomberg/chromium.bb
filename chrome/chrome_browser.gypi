@@ -1613,6 +1613,8 @@
         'browser/load_from_memory_cache_details.h',
         'browser/load_notification_details.h',
         'browser/location_bar.h',
+	'browser/location_bar_util.cc',
+	'browser/location_bar_util.h',
         'browser/login_model.h',
         'browser/login_prompt.cc',
         'browser/login_prompt.h',

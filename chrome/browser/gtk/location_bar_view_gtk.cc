@@ -37,6 +37,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/location_bar_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -99,25 +100,6 @@ const int kCornerSize = 3;
 void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
   if (GTK_WIDGET_VISIBLE(widget))
     *static_cast<int*>(count) += 1;
-}
-
-// Build a short string to use in keyword-search when the field isn't
-// very big.
-// TODO(suzhe): Copied from views/location_bar_view.cc. Try to share.
-std::wstring CalculateMinString(const std::wstring& description) {
-  // Chop at the first '.' or whitespace.
-  const size_t dot_index = description.find(L'.');
-  const size_t ws_index = description.find_first_of(kWhitespaceWide);
-  size_t chop_index = std::min(dot_index, ws_index);
-  std::wstring min_string;
-  if (chop_index == std::wstring::npos) {
-    // No dot or whitespace, truncate to at most 3 chars.
-    min_string = l10n_util::TruncateString(description, 3);
-  } else {
-    min_string = description.substr(0, chop_index);
-  }
-  base::i18n::AdjustStringForLocaleDirection(min_string, &min_string);
-  return min_string;
 }
 
 }  // namespace
@@ -899,7 +881,7 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
   std::wstring full_name(l10n_util::GetStringF(message_id, short_name));
   std::wstring partial_name(l10n_util::GetStringF(
-      message_id, CalculateMinString(short_name)));
+      message_id, location_bar_util::CalculateMinString(short_name)));
   gtk_label_set_text(GTK_LABEL(tab_to_search_full_label_),
                      WideToUTF8(full_name).c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
@@ -922,7 +904,6 @@ void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
   std::vector<size_t> content_param_offsets;
   const std::wstring keyword_hint(l10n_util::GetStringF(
       message_id, std::wstring(), short_name, &content_param_offsets));
-
   if (content_param_offsets.size() != 2) {
     // See comments on an identical NOTREACHED() in search_provider.cc.
     NOTREACHED();
