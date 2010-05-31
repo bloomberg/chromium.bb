@@ -24,59 +24,29 @@ bool DllRedirector::RegisterAsFirstCFModule() {
   WNDCLASSEX wnd_class = {0};
   wnd_class.cbSize = sizeof(WNDCLASSEX);
   wnd_class.style = CS_GLOBALCLASS;
-  wnd_class.lpfnWndProc = &DefWindowProc;
-  wnd_class.cbClsExtra = sizeof(HMODULE);
-  wnd_class.cbWndExtra = 0;
-  wnd_class.hInstance = NULL;
-  wnd_class.hIcon = NULL;
-
   wnd_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wnd_class.hbrBackground = NULL;
-  wnd_class.lpszMenuName = NULL;
   wnd_class.lpszClassName = kBeaconWindowClassName;
-  wnd_class.hIconSm = wnd_class.hIcon;
 
-  ATOM atom = RegisterClassEx(&wnd_class);
+  HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
+  wnd_class.lpfnWndProc = reinterpret_cast<WNDPROC>(this_module);
 
-  bool success = false;
-  if (atom != 0) {
-    HWND hwnd = CreateWindow(MAKEINTATOM(atom), L"temp_window", WS_POPUP,
-                             0, 0, 0, 0, NULL, NULL, NULL, NULL);
-    DCHECK(IsWindow(hwnd));
-    if (hwnd) {
-      HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
-      LONG_PTR lp = reinterpret_cast<LONG_PTR>(this_module);
-      // SetClassLongPtr doesn't call this on success, so we do it here first.
-      SetLastError(ERROR_SUCCESS);
-      SetClassLongPtr(hwnd, 0, lp);
-      // We need to check the GLE value since SetClassLongPtr returns 0 on
-      // failure as well as on the first call.
-      if (GetLastError() == ERROR_SUCCESS) {
-        atom_ = atom;
-        success = true;
-      }
-      DestroyWindow(hwnd);
-    }
-  }
-
-  return success;
+  atom_ = RegisterClassEx(&wnd_class);
+  return (atom_ != 0);
 }
 
 void DllRedirector::UnregisterAsFirstCFModule() {
   if (atom_) {
     UnregisterClass(MAKEINTATOM(atom_), NULL);
+    atom_ = NULL;
   }
 }
 
 HMODULE DllRedirector::GetFirstCFModule() {
   WNDCLASSEX wnd_class = {0};
   HMODULE oldest_module = NULL;
-  HWND hwnd = CreateWindow(kBeaconWindowClassName, L"temp_window", WS_POPUP, 0,
-                           0, 0, 0, NULL, NULL, NULL, NULL);
-  DCHECK(IsWindow(hwnd));
-  if (hwnd) {
-    oldest_module = reinterpret_cast<HMODULE>(GetClassLongPtr(hwnd, 0));
-    DestroyWindow(hwnd);
+  if (GetClassInfoEx(GetModuleHandle(NULL), kBeaconWindowClassName,
+                     &wnd_class)) {
+    oldest_module = reinterpret_cast<HMODULE>(wnd_class.lpfnWndProc);
   }
   return oldest_module;
 }
