@@ -84,8 +84,11 @@ class BrowsingHistoryHandler : public DOMMessageHandler,
   // Current search text.
   std::wstring search_text_;
 
-  // Our consumer for the history service.
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
+  // Our consumer for search requests to the history service.
+  CancelableRequestConsumerT<int, 0> cancelable_search_consumer_;
+
+  // Our consumer for delete requests to the history service.
+  CancelableRequestConsumerT<int, 0> cancelable_delete_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };

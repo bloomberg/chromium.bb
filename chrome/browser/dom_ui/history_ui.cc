@@ -114,7 +114,8 @@ BrowsingHistoryHandler::BrowsingHistoryHandler()
 }
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
-  cancelable_consumer_.CancelAllRequests();
+  cancelable_search_consumer_.CancelAllRequests();
+  cancelable_delete_consumer_.CancelAllRequests();
 }
 
 DOMMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
@@ -145,7 +146,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
 
 void BrowsingHistoryHandler::HandleGetHistory(const Value* value) {
   // Anything in-flight is invalid.
-  cancelable_consumer_.CancelAllRequests();
+  cancelable_search_consumer_.CancelAllRequests();
 
   // Get arguments (if any).
   int day = 0;
@@ -165,13 +166,13 @@ void BrowsingHistoryHandler::HandleGetHistory(const Value* value) {
       dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
-      &cancelable_consumer_,
+      &cancelable_search_consumer_,
       NewCallback(this, &BrowsingHistoryHandler::QueryComplete));
 }
 
 void BrowsingHistoryHandler::HandleSearchHistory(const Value* value) {
   // Anything in-flight is invalid.
-  cancelable_consumer_.CancelAllRequests();
+  cancelable_search_consumer_.CancelAllRequests();
 
   // Get arguments (if any).
   int month = 0;
@@ -190,12 +191,12 @@ void BrowsingHistoryHandler::HandleSearchHistory(const Value* value) {
       dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
-      &cancelable_consumer_,
+      &cancelable_search_consumer_,
       NewCallback(this, &BrowsingHistoryHandler::QueryComplete));
 }
 
 void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const Value* value) {
-  if (cancelable_consumer_.HasPendingRequests()) {
+  if (cancelable_delete_consumer_.HasPendingRequests()) {
     dom_ui_->CallJavascriptFunction(L"deleteFailed");
     return;
   }
@@ -228,14 +229,12 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const Value* value) {
 
   HistoryService* hs =
       dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  hs->ExpireHistoryBetween(urls, begin_time, end_time, &cancelable_consumer_,
+  hs->ExpireHistoryBetween(
+      urls, begin_time, end_time, &cancelable_delete_consumer_,
       NewCallback(this, &BrowsingHistoryHandler::RemoveComplete));
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const Value* value) {
-  // Anything in-flight is invalid.
-  cancelable_consumer_.CancelAllRequests();
-
   dom_ui_->tab_contents()->delegate()->GetBrowser()->
       OpenClearBrowsingDataDialog();
 }
