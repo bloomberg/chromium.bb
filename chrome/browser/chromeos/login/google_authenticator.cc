@@ -34,7 +34,10 @@
 
 using base::Time;
 using base::TimeDelta;
-using namespace file_util;
+using file_util::GetFileSize;
+using file_util::PathExists;
+using file_util::ReadFile;
+using file_util::ReadFileToString;
 
 namespace chromeos {
 
@@ -45,12 +48,16 @@ const char GoogleAuthenticator::kAccountType[] = "HOSTED_OR_GOOGLE";
 // static
 const char GoogleAuthenticator::kSource[] = "chromeos";
 // static
+// Service name for Google Contacts API. API is used to get user's image.
+const char GoogleAuthenticator::kService[] = "cp";
+// static
 const char GoogleAuthenticator::kFormat[] =
     "Email=%s&"
     "Passwd=%s&"
     "PersistentCookie=%s&"
     "accountType=%s&"
-    "source=%s&";
+    "source=%s&"
+    "service=%s";
 // static
 const char GoogleAuthenticator::kSecondFactor[] = "Info=InvalidSecondFactor";
 
@@ -109,7 +116,8 @@ bool GoogleAuthenticator::AuthenticateToLogin(Profile* profile,
                                UrlEncodeString(password).c_str(),
                                kCookiePersistence,
                                kAccountType,
-                               kSource);
+                               kSource,
+                               kService);
   // TODO(cmasone): Figure out how to parallelize fetch, username/password
   // processing without impacting testability.
   username_.assign(Canonicalize(username));
@@ -336,7 +344,7 @@ std::string GoogleAuthenticator::Canonicalize(
   std::vector<std::string> parts;
   char at = '@';
   SplitString(email_address, at, &parts);
-  DCHECK(parts.size() == 2) << "email_address should have only one @";
+  DCHECK_EQ(parts.size(), 2U) << "email_address should have only one @";
   RemoveChars(parts[0], ".", &parts[0]);
   if (parts[0].find('+') != std::string::npos)
     parts[0].erase(parts[0].find('+'));

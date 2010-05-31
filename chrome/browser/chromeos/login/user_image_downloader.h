@@ -13,6 +13,7 @@
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/net/url_fetcher.h"
 
+class ListValue;
 class ResourceDispatcherHost;
 
 namespace chromeos {
@@ -23,8 +24,11 @@ namespace chromeos {
 class UserImageDownloader : public URLFetcher::Delegate,
                             public UtilityProcessHost::Client {
  public:
-  // Starts downloading the picture upon successful creation.
-  explicit UserImageDownloader(const std::string& username);
+  // Starts downloading the picture upon successful login.
+  // |auth_token| is a authentication token received in ClientLogin
+  // response, used for requests sent to Contacts API.
+  UserImageDownloader(const std::string& username,
+                      const std::string& auth_token);
 
  private:
   // It's a reference counted object, so destructor is private.
@@ -45,12 +49,23 @@ class UserImageDownloader : public URLFetcher::Delegate,
   void DecodeImageInSandbox(ResourceDispatcherHost* rdh,
                             const std::vector<unsigned char>& image_data);
 
-  // Parses profile page looking for user image url.
+  // Parses received JSON data looking for user image url.
   // If succeeded, returns true and stores the url in |image_url| parameter.
   // Otherwise, returns false.
-  bool GetImageURL(const GURL& profile_url,
-                   const std::string& profile_page,
-                   GURL* image_url) const;
+  bool GetImageURL(const std::string& json_data, GURL* image_url) const;
+
+  // Searches for image url in a list of contacts matching contact address
+  // with user email. Returns true and image url if succeeds, false
+  // otherwise.
+  bool GetImageURLFromEntries(ListValue* entry_list, GURL* image_url) const;
+
+  // Checks if email list contains user email. Returns true if match is
+  // found.
+  bool IsUserEntry(ListValue* email_list) const;
+
+  // Searches for image url in list of links for the found contact.
+  // Returns true and image url if succeeds, false otherwise.
+  bool GetImageURLFromLinks(ListValue* link_list, GURL* image_url) const;
 
   // Encodes user image in PNG format and saves the result to the file
   // specified. Should work on IO thread.
@@ -64,6 +79,9 @@ class UserImageDownloader : public URLFetcher::Delegate,
 
   // Username saved to use as a key for user picture in preferences.
   std::string username_;
+
+  // Authentication token to use for image download.
+  std::string auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageDownloader);
 };

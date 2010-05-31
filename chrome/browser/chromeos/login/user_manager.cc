@@ -6,14 +6,20 @@
 
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/user_image_downloader.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/theme_resources.h"
 
 namespace chromeos {
@@ -78,9 +84,8 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
         std::string image_path;
         if (image_it == user_images_.end()) {
           if (prefs_images &&
-              prefs_images->GetStringASCII(email, &image_path)) {
-            LOG(INFO) << "Starting image loader for " << email;
-            LOG(INFO) << "Image path is " << image_path;
+              prefs_images->GetStringWithoutPathExpansion(
+                  ASCIIToWide(email), &image_path)) {
             // Insert the default image so we don't send another request if
             // GetUsers is called twice.
             user_images_[email] = user.image();
@@ -132,18 +137,29 @@ void UserManager::UserLoggedIn(const std::string& email) {
   WmIpc::instance()->SetLoggedInProperty(true);
 }
 
-void UserManager::DownloadUserImage(const std::string& username) {
-  LOG(INFO) << "Downloading image for user " << username;
-  image_downloader_ = new UserImageDownloader(username);
-}
+void UserManager::SaveUserImage(const std::string& username,
+                                const SkBitmap& image) {
+  std::string filename = username + ".png";
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  FilePath image_path = user_data_dir.AppendASCII(filename);
+  std::vector<unsigned char> encoded_image;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &encoded_image))
+    return;
 
-void UserManager::SaveUserImagePath(const std::string& username,
-                                    const std::string& image_path) {
-  LOG(INFO) << "Saving " << username << " image path to " << image_path;
+  ChromeThread::PostTask(
+      ChromeThread::FILE,
+      FROM_HERE,
+      NewRunnableFunction<int(*)(const FilePath&, const char*, int)>(
+          &file_util::WriteFile,
+          image_path,
+          reinterpret_cast<char*>(&encoded_image[0]),
+          encoded_image.size()));
   PrefService* local_state = g_browser_process->local_state();
   DictionaryValue* images =
       local_state->GetMutableDictionary(kUserImages);
-  images->Set(ASCIIToWide(username), new StringValue(image_path));
+  images->SetWithoutPathExpansion(ASCIIToWide(username),
+                                  new StringValue(image_path.value()));
   local_state->ScheduleSavePersistentPrefs();
 }
 

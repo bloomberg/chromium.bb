@@ -18,8 +18,6 @@ class PrefService;
 
 namespace chromeos {
 
-class UserImageDownloader;
-
 // This class provides a mechanism for discovering users who have logged
 // into this chromium os device before and updating that list.
 class UserManager : public UserImageLoader::Delegate {
@@ -66,13 +64,9 @@ class UserManager : public UserImageLoader::Delegate {
     return logged_in_user_;
   }
 
-  // Downloads user image and stores it to use on subsequent login.
-  // Call it after user's cookies have been set.
-  void DownloadUserImage(const std::string& username);
-
-  // Saves path to user image in local state preferences.
-  void SaveUserImagePath(const std::string& username,
-                         const std::string& image_path);
+  // Saves image to file and saves image path in local state preferences.
+  void SaveUserImage(const std::string& username,
+                     const SkBitmap& image);
 
   // chromeos::UserImageLoader::Delegate implementation.
   virtual void OnImageLoaded(const std::string& username,
@@ -81,9 +75,6 @@ class UserManager : public UserImageLoader::Delegate {
  private:
   UserManager();
   ~UserManager();
-
-  // Downloads user image to use on subsequent login.
-  scoped_refptr<UserImageDownloader> image_downloader_;
 
   // Loads user image from its file.
   scoped_refptr<UserImageLoader> image_loader_;

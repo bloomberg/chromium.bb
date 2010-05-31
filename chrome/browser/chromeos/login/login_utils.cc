@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
@@ -37,7 +38,29 @@
 
 namespace chromeos {
 
-static const int kWifiTimeoutInMS = 15000;
+namespace {
+
+const int kWifiTimeoutInMS = 15000;
+
+// Prefix for Auth token received from ClientLogin request.
+const char kAuthPrefix[] = "Auth=";
+// Suffix for Auth token received from ClientLogin request.
+const char kAuthSuffix[] = "\n";
+
+// Find Auth token in given response from ClientLogin request.
+// Returns the token if found, empty string otherwise.
+std::string get_auth_token(const std::string& credentials) {
+  size_t auth_start = credentials.find(kAuthPrefix);
+  if (auth_start == std::string::npos)
+    return std::string();
+  auth_start += arraysize(kAuthPrefix) - 1;
+  size_t auth_end = credentials.find(kAuthSuffix, auth_start);
+  if (auth_end == std::string::npos)
+    return std::string();
+  return credentials.substr(auth_start, auth_end - auth_start);
+}
+
+
 
 class LoginUtilsImpl : public LoginUtils,
                        public NotificationObserver {
@@ -149,6 +172,9 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // delete itself.
   CookieFetcher* cf = new CookieFetcher(profile);
   cf->AttemptFetch(credentials);
+  std::string auth = get_auth_token(credentials);
+  if (!auth.empty())
+    new UserImageDownloader(username, auth);
 }
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
@@ -162,6 +188,8 @@ void LoginUtilsImpl::Observe(NotificationType type,
   if (type == NotificationType::LOGIN_USER_CHANGED)
     base::OpenPersistentNSSDB();
 }
+
+}  // namespace
 
 LoginUtils* LoginUtils::Get() {
   return Singleton<LoginUtilsWrapper>::get()->get();
@@ -180,9 +208,6 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
     return;
   }
 
-  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
-  if (!users.empty())
-    UserManager::Get()->DownloadUserImage(users[0].email());
   LOG(INFO) << "Launching browser...";
   BrowserInit browser_init;
   int return_code;

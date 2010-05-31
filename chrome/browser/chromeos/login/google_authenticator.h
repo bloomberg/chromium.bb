@@ -84,6 +84,12 @@ class GoogleAuthenticator : public Authenticator,
   void CheckLocalaccount(const std::string& error);
   void OnLoginFailure(const std::string& data);
 
+  // Perform basic canonicalization of |email_address|, taking into account
+  // that gmail does not consider '.' or caps inside a username to matter.
+  // For example, c.masone@gmail.com == cMaSone@gmail.com, per
+  // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
+  static std::string Canonicalize(const std::string& email_address);
+
   // The signal to cryptohomed that we want a tmpfs.
   // TODO(cmasone): revisit this after cryptohome re-impl
   static const char kTmpfsTrigger[];
@@ -124,12 +130,6 @@ class GoogleAuthenticator : public Authenticator,
                           char* hex_string,
                           const unsigned int len);
 
-  // Perform basic canonicalization of |email_address|, taking into account
-  // that gmail does not consider '.' or caps inside a username to matter.
-  // For example, c.masone@gmail.com == cMaSone@gmail.com, per
-  // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
-  static std::string Canonicalize(const std::string& email_address);
-
   // Create and return a URLFetcher that is set up to perform a ClientLogin
   // authentication attempt.  Caller takes ownership.
   static URLFetcher* CreateClientLoginFetcher(URLRequestContextGetter* getter,
@@ -140,6 +140,7 @@ class GoogleAuthenticator : public Authenticator,
   static const char kCookiePersistence[];
   static const char kAccountType[];
   static const char kSource[];
+  static const char kService[];
 
   // The format of said POST body.
   static const char kFormat[];
