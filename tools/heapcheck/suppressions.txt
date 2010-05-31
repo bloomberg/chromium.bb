@@ -421,7 +421,6 @@
   bug_44738_a
   Heapcheck:Leak
   ...
-  fun:Histogram
   fun:Histogram::FactoryGet
   fun:Histogram::FactoryGet
   fun:ClientSocketPoolHistograms
@@ -434,6 +433,15 @@
   Heapcheck:Leak
   ...
   fun:LinearHistogram::FactoryGet
+  fun:ClientSocketPoolHistograms
+  fun:HttpNetworkSession
+}
+# Wildcarding "operator+"
+{
+  bug_44738_c
+  Heapcheck:Leak
+  ...
+  fun:std::operator*
   fun:ClientSocketPoolHistograms
   fun:HttpNetworkSession
 }
