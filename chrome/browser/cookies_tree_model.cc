@@ -18,8 +18,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/profile.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -57,16 +55,14 @@ CookieTreeCookieNode::CookieTreeCookieNode(
 
 void CookieTreeCookieNode::DeleteStoredObjects() {
   // notify CookieMonster that we should delete this cookie
-  // Since we are running on the UI thread don't call GetURLRequestContext().
-  net::CookieMonster* monster = GetModel()->profile_->
-      GetRequestContext()->GetCookieStore()->GetCookieMonster();
   // We have stored a copy of all the cookies in the model, and our model is
   // never re-calculated. Thus, we just need to delete the nodes from our
   // model, and tell CookieMonster to delete the cookies. We can keep the
   // vector storing the cookies in-tact and not delete from there (that would
   // invalidate our pointers), and the fact that it contains semi out-of-date
   // data is not problematic as we don't re-build the model based on that.
-  monster->DeleteCookie(cookie_->first, cookie_->second, true);
+  GetModel()->cookie_monster_->
+      DeleteCookie(cookie_->first, cookie_->second, true);
 }
 
 namespace {
@@ -294,13 +290,13 @@ void CookieTreeNode::AddChildSortedByTitle(CookieTreeNode* new_child) {
 // CookiesTreeModel, public:
 
 CookiesTreeModel::CookiesTreeModel(
-    Profile* profile,
+    net::CookieMonster* cookie_monster,
     BrowsingDataDatabaseHelper* database_helper,
     BrowsingDataLocalStorageHelper* local_storage_helper,
     BrowsingDataAppCacheHelper* appcache_helper)
     : ALLOW_THIS_IN_INITIALIZER_LIST(TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
-      profile_(profile),
+      cookie_monster_(cookie_monster),
       appcache_helper_(appcache_helper),
       database_helper_(database_helper),
       local_storage_helper_(local_storage_helper),
@@ -376,11 +372,7 @@ void CookiesTreeModel::LoadCookies() {
 void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
   // mmargh mmargh mmargh!
 
-  // Since we are running on the UI thread don't call GetURLRequestContext().
-  net::CookieMonster* cookie_monster =
-      profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
-
-  all_cookies_ = cookie_monster->GetAllCookies();
+  all_cookies_ = cookie_monster_->GetAllCookies();
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
   for (CookieList::iterator it = all_cookies_.begin();
        it != all_cookies_.end(); ++it) {

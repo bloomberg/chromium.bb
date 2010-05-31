@@ -281,7 +281,8 @@ void CookiesView::Init() {
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_COOKIES_INFO_LABEL));
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  cookies_tree_model_.reset(new CookiesTreeModel(profile_,
+  cookies_tree_model_.reset(new CookiesTreeModel(
+      profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
       new BrowsingDataDatabaseHelper(profile_),
       new BrowsingDataLocalStorageHelper(profile_),
       new BrowsingDataAppCacheHelper(profile_)));

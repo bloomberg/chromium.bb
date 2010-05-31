@@ -43,7 +43,7 @@ class CookiesTreeModelTest : public testing::Test {
     monster->SetCookie(GURL("http://foo2"), "B=1");
     monster->SetCookie(GURL("http://foo3"), "C=1");
     CookiesTreeModel* cookies_model = new CookiesTreeModel(
-        profile_.get(), mock_browsing_data_database_helper_,
+        monster, mock_browsing_data_database_helper_,
         mock_browsing_data_local_storage_helper_,
         mock_browsing_data_appcache_helper_);
     mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -339,7 +339,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
   monster->SetCookie(GURL("http://foo2"), "B=1");
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
-  CookiesTreeModel cookies_model(profile_.get(),
+  CookiesTreeModel cookies_model(monster,
                                  mock_browsing_data_database_helper_,
                                  mock_browsing_data_local_storage_helper_,
                                  mock_browsing_data_appcache_helper_);
@@ -378,7 +378,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
   monster->SetCookie(GURL("http://foo3"), "E=1");
-  CookiesTreeModel cookies_model(profile_.get(),
+  CookiesTreeModel cookies_model(monster,
                                  mock_browsing_data_database_helper_,
                                  mock_browsing_data_local_storage_helper_,
                                  mock_browsing_data_appcache_helper_);
@@ -418,7 +418,7 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
   monster->SetCookie(GURL("http://foo3"), "E=1");
-  CookiesTreeModel cookies_model(profile_.get(),
+  CookiesTreeModel cookies_model(monster,
                                  mock_browsing_data_database_helper_,
                                  mock_browsing_data_local_storage_helper_,
                                  mock_browsing_data_appcache_helper_);
@@ -452,7 +452,7 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
   monster->SetCookie(GURL("http://foo3.com"), "G=1");
   monster->SetCookie(GURL("http://foo4.com"), "H=1");
 
-  CookiesTreeModel cookies_model(profile_.get(),
+  CookiesTreeModel cookies_model(monster,
       new MockBrowsingDataDatabaseHelper(profile_.get()),
       new MockBrowsingDataLocalStorageHelper(profile_.get()),
       new MockBrowsingDataAppCacheHelper(profile_.get()));

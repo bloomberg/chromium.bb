@@ -17,6 +17,7 @@
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
@@ -140,8 +141,7 @@ TEST_F(CookiesWindowControllerTest, FindCocoaNodeRecursive) {
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(browser_helper_.profile(), database_helper_,
-      local_storage_helper_, nil);
+  CookiesTreeModel model(cm, database_helper_, local_storage_helper_, nil);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'A'.
   TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
@@ -165,8 +165,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(browser_helper_.profile(), database_helper_,
-      local_storage_helper_, nil);
+  CookiesTreeModel model(cm, database_helper_, local_storage_helper_, nil);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'foo.com'.
   CookieTreeNode* node = model.GetRoot()->GetChild(0);

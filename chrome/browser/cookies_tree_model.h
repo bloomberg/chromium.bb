@@ -26,7 +26,6 @@ class CookieTreeDatabasesNode;
 class CookieTreeLocalStorageNode;
 class CookieTreeLocalStoragesNode;
 class CookieTreeOriginNode;
-class Profile;
 
 // CookieTreeNode -------------------------------------------------------------
 // The base node type in the Cookies, Databases, and Local Storage options
@@ -357,7 +356,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   };
 
   CookiesTreeModel(
-      Profile* profile,
+      net::CookieMonster* cookie_monster_,
       BrowsingDataDatabaseHelper* database_helper,
       BrowsingDataLocalStorageHelper* local_storage_helper,
       BrowsingDataAppCacheHelper* appcache_helper);
@@ -417,8 +416,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   void NotifyObserverBeginBatch();
   void NotifyObserverEndBatch();
 
-  // The profile from which this model sources cookies.
-  Profile* profile_;
+  scoped_refptr<net::CookieMonster> cookie_monster_;
   CookieList all_cookies_;
 
   scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper_;

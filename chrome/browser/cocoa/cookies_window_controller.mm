@@ -425,8 +425,9 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 // to rebuild after the user clears browsing data. Because the models get
 // clobbered, we rebuild the icon cache for safety (though they do not change).
 - (void)loadTreeModelFromProfile {
-  treeModel_.reset(new CookiesTreeModel(profile_, databaseHelper_,
-                   storageHelper_, appcacheHelper_));
+  treeModel_.reset(new CookiesTreeModel(
+      profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
+      databaseHelper_, storageHelper_, appcacheHelper_));
   modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
   treeModel_->AddObserver(modelObserver_.get());
 

@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/profile.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -181,7 +182,8 @@ void CookiesView::Init(GtkWindow* parent) {
                                       GTK_SHADOW_ETCHED_IN);
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
 
-  cookies_tree_model_.reset(new CookiesTreeModel(profile_,
+  cookies_tree_model_.reset(new CookiesTreeModel(
+      profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
       browsing_data_database_helper_,
       browsing_data_local_storage_helper_,
       browsing_data_appcache_helper_));
