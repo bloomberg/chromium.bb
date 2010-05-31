@@ -77,7 +77,7 @@ class OutOfProcTestRunner : public tests::TestRunner {
     if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
                                           test_terminate_timeout_ms)) {
       LOG(ERROR) << "Test timeout (" << test_terminate_timeout_ms
-                 << " ms) exceeded!";
+                 << " ms) exceeded for " << test_name;
 
       exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
