@@ -871,10 +871,13 @@ def TryChange(change_info, args, swallow_exception):
   else:
     trychange_args.extend(args)
     file_list = None
-  return trychange.TryChange(trychange_args,
-                             file_list=file_list,
-                             swallow_exception=swallow_exception,
-                             prog='gcl try')
+  return trychange.TryChange(
+      trychange_args,
+      file_list=file_list,
+      swallow_exception=swallow_exception,
+      prog='gcl try',
+      extra_epilog='\n'
+          'When called from gcl, use the format gcl try <change_name>.\n')
 
 
 @need_change_and_args

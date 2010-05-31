@@ -45,29 +45,29 @@ USAGE = r"""%prog [options]
 
 Client-side script to send a try job to the try server. It communicates to
 the try server by either writting to a svn repository or by directly connecting
-to the server by HTTP.
+to the server by HTTP."""
 
+EPILOG = """
 Examples:
+  Send a patch directly from rietveld:
+    %(prog)s -R codereview.chromium.org/1337
+        --email recipient@example.com --root src
+
   Try a change against a particular revision:
-    %prog -r 123
+    %(prog)s -r 123
 
   A git patch off a web site (git inserts a/ and b/) and fix the base dir:
-    %prog --url http://url/to/patch.diff --patchlevel 1 --root src
-
-  Or from rietveld:
-    %prog -R codereview.chromium.org/1337 --email me@example.com --root src
+    %(prog)s --url http://url/to/patch.diff --patchlevel 1 --root src
 
   Use svn to store the try job, specify an alternate email address and use a
   premade diff file on the local drive:
-    %prog --email user@example.com
+    %(prog)s --email user@example.com
             --svn_repo svn://svn.chromium.org/chrome-try/try --diff foo.diff
 
   Running only on a 'mac' slave with revision 123 and clobber first; specify
   manually the 3 source files to use for the try job:
-    %prog --bot mac --revision 123 --clobber -f src/a.cc -f src/a.h
+    %(prog)s --bot mac --revision 123 --clobber -f src/a.cc -f src/a.h
             -f include/b.h
-
-  When called from gcl, use the format gcl try <change_name>.
 """
 
 class InvalidScript(Exception):
@@ -449,7 +449,8 @@ def GetMungedDiff(path_diff, diff):
 def TryChange(argv,
               file_list,
               swallow_exception,
-              prog=None):
+              prog=None,
+              extra_epilog=None):
   """
   Args:
     argv: Arguments and options.
@@ -457,9 +458,15 @@ def TryChange(argv,
     swallow_exception: Whether we raise or swallow exceptions.
   """
   # Parse argv
+  epilog = EPILOG % { 'prog': prog }
+  if extra_epilog:
+    epilog += extra_epilog
   parser = optparse.OptionParser(usage=USAGE,
                                  version=__version__,
-                                 prog=prog)
+                                 prog=prog,
+                                 epilog=epilog)
+  # Remove epilog formatting
+  parser.format_epilog = lambda x: parser.epilog
   parser.add_option("-v", "--verbose", action="count", default=0,
                     help="Prints debugging infos")
   group = optparse.OptionGroup(parser, "Result and status")
@@ -482,9 +489,6 @@ def TryChange(argv,
                         "latest patchset will be used.")
   group.add_option("--dry_run", action='store_true',
                    help="Just prints the diff and quits")
-  group.add_option("-R", "--rietveld_url", default="codereview.appspot.com",
-                   metavar="URL",
-                   help="The root code review url. Default:%default")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Try job options")
@@ -525,7 +529,14 @@ def TryChange(argv,
   group.add_option("--diff",
                    help="File containing the diff to try")
   group.add_option("--url",
-                   help="Url where to grab a patch")
+                   help="Url where to grab a patch, e.g. "
+                        "http://example.com/x.diff")
+  group.add_option("-R", "--rietveld_url", default="codereview.appspot.com",
+                   metavar="URL",
+                   help="Has 2 usages, both refer to the rietveld instance: "
+                        "Specify which code review patch to use as the try job "
+                        "or rietveld instance to update the try job results "
+                        "Default:%default")
   group.add_option("--root",
                    help="Root to use for the patch; base subdirectory for "
                         "patch created in a subdirectory")
