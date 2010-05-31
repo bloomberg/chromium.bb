@@ -458,13 +458,13 @@ def TryChange(argv,
     swallow_exception: Whether we raise or swallow exceptions.
   """
   # Parse argv
+  parser = optparse.OptionParser(usage=USAGE,
+                                 version=__version__,
+                                 prog=prog)
   epilog = EPILOG % { 'prog': prog }
   if extra_epilog:
     epilog += extra_epilog
-  parser = optparse.OptionParser(usage=USAGE,
-                                 version=__version__,
-                                 prog=prog,
-                                 epilog=epilog)
+  parser.epilog = epilog
   # Remove epilog formatting
   parser.format_epilog = lambda x: parser.epilog
   parser.add_option("-v", "--verbose", action="count", default=0,
