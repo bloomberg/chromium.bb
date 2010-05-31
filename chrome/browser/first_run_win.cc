@@ -75,10 +75,10 @@
 
 namespace {
 
-bool GetNewerChromeFile(std::wstring* path) {
+bool GetNewerChromeFile(FilePath* path) {
   if (!PathService::Get(base::DIR_EXE, path))
     return false;
-  file_util::AppendToPath(path, installer_util::kChromeNewExe);
+  *path = path->Append(installer_util::kChromeNewExe);
   return true;
 }
 
@@ -422,10 +422,10 @@ void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 }
 
 bool Upgrade::SwapNewChromeExeIfPresent() {
-  std::wstring new_chrome_exe;
+  FilePath new_chrome_exe;
   if (!GetNewerChromeFile(&new_chrome_exe))
     return false;
-  if (!file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe)))
+  if (!file_util::PathExists(new_chrome_exe))
     return false;
   std::wstring curr_chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &curr_chrome_exe))
@@ -458,7 +458,7 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
   std::wstring backup_exe;
   if (!GetBackupChromeFile(&backup_exe))
     return false;
-  if (::ReplaceFileW(curr_chrome_exe.c_str(), new_chrome_exe.c_str(),
+  if (::ReplaceFileW(curr_chrome_exe.c_str(), new_chrome_exe.value().c_str(),
                      backup_exe.c_str(), REPLACEFILE_IGNORE_MERGE_ERRORS,
                      NULL, NULL)) {
     return true;
@@ -480,10 +480,10 @@ bool Upgrade::DoUpgradeTasks(const CommandLine& command_line) {
 
 // static
 bool Upgrade::IsUpdatePendingRestart() {
-  std::wstring new_chrome_exe;
+  FilePath new_chrome_exe;
   if (!GetNewerChromeFile(&new_chrome_exe))
     return false;
-  return file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe));
+  return file_util::PathExists(new_chrome_exe);
 }
 
 bool OpenFirstRunDialog(Profile* profile,
