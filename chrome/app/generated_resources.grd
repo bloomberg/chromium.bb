@@ -7698,6 +7698,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for a input method">
         Standard input method
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_CHINESE_CANGJIE_INPUT_METHOD"
+               desc="The label for the Chinese input method">
+        Chinese input method (cangjie)
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_CHINESE_QUICK_INPUT_METHOD"
                desc="The label for the Chinese input method">
         Chinese input method (quick)
