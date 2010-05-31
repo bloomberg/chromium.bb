@@ -602,6 +602,9 @@ def TryChange(argv,
 
   logging.debug(argv)
 
+  # Strip off any @ in the user, otherwise svn gets confused.
+  options.user = options.user.split('@', 1)[0]
+
   if options.rietveld_url:
     # Try to extract the review number if possible and fix the protocol.
     if not '://' in options.rietveld_url:
