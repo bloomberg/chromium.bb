@@ -78,19 +78,19 @@ IN_PROC_BROWSER_TEST_F(LanguageMenuButtonTest, IndicatorAndTooltipUpdateTest) {
   EXPECT_EQ(L"KO", indicator);
   std::wstring tooltip;
   language->GetTooltipText(gfx::Point(), &tooltip);
-  EXPECT_EQ(L"Korean: Korean input method", tooltip);
+  EXPECT_EQ(L"Korean - Korean input method", tooltip);
 
   language->InputMethodChanged(mock_language_library_);
   indicator = language->text();
   EXPECT_EQ(L"FA", indicator);
   language->GetTooltipText(gfx::Point(), &tooltip);
-  EXPECT_EQ(L"Persian: Persian input method (ISIRI 2901 layout)", tooltip);
+  EXPECT_EQ(L"Persian - Persian input method (ISIRI 2901 layout)", tooltip);
 
   language->InputMethodChanged(mock_language_library_);
   indicator = language->text();
   EXPECT_EQ(L"XX", indicator);
   language->GetTooltipText(gfx::Point(), &tooltip);
-  EXPECT_EQ(L"xx: unregistered string", tooltip);
+  EXPECT_EQ(L"xx - unregistered string", tooltip);
 }
 
 }  // namespace chromeos
