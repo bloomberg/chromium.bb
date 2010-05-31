@@ -121,7 +121,6 @@ LRESULT CALLBACK WebWidgetHost::WndProc(HWND hwnd, UINT message, WPARAM wparam,
       case WM_SYSKEYUP:
       case WM_CHAR:
       case WM_SYSCHAR:
-      case WM_IME_CHAR:
         host->KeyEvent(message, wparam, lparam);
         break;
 
