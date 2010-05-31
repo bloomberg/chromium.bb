@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,9 +28,11 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
   // written under HKLM\Mozilla. Otherwise it the keys will be written under
   // HKCU\Mozilla.
   for (int i = 0; i < arraysize(kFireFoxRegistryPaths); ++i) {
-    bool result = ReadFromRegistry(kFireFoxRegistryPaths[i],
-        L"Software\\Mozilla\\Mozilla Firefox",
-        L"CurrentVersion", ver_buffer, &ver_buffer_length);
+    RegKey reg_key(kFireFoxRegistryPaths[i],
+                   L"Software\\Mozilla\\Mozilla Firefox");
+
+    bool result = reg_key.ReadValue(L"CurrentVersion", ver_buffer,
+                                    &ver_buffer_length, NULL);
     if (!result)
       continue;
     highest_version = std::max(highest_version, _wtoi(ver_buffer));
@@ -43,15 +45,16 @@ std::wstring GetFirefoxInstallPathFromRegistry() {
   std::wstring registry_path = L"Software\\Mozilla\\Mozilla Firefox";
   TCHAR buffer[MAX_PATH];
   DWORD buffer_length = sizeof(buffer);
-  bool result;
-  result = ReadFromRegistry(HKEY_LOCAL_MACHINE, registry_path.c_str(),
-                            L"CurrentVersion", buffer, &buffer_length);
+  RegKey reg_key(HKEY_LOCAL_MACHINE, registry_path.c_str());
+  bool result = reg_key.ReadValue(L"CurrentVersion", buffer,
+                                  &buffer_length, NULL);
   if (!result)
     return std::wstring();
   registry_path += L"\\" + std::wstring(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
-  result = ReadFromRegistry(HKEY_LOCAL_MACHINE, registry_path.c_str(),
-                            L"Install Directory", buffer, &buffer_length);
+  reg_key = RegKey(HKEY_LOCAL_MACHINE, registry_path.c_str());
+  result = reg_key.ReadValue(L"Install Directory", buffer,
+                             &buffer_length, NULL);
   if (!result)
     return std::wstring();
   return buffer;
