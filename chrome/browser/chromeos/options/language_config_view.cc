@@ -46,6 +46,15 @@ namespace {
 // defined in app/l10_util.cc.
 const char kDefaultLanguageCode[] = "en-US";
 
+// The list of language codes that we don't support text input but do support
+// displaying UI in the languages.
+const struct UiOnlyLanguageCode {
+  const char* language_code;
+  const char* display_name;
+} kUiOnlyLanguageCodes[] = {
+  { "id", "Indonesian" },  // For Indonesian, we can just use US keyboard layout
+};
+
 // The width of the preferred language table shown on the left side.
 const int kPreferredLanguageTableWidth = 300;
 
@@ -282,8 +291,10 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
                         GridLayout::USE_PREF, 0, 0);
 
   AddUiLanguageSection(target_language_code, layout);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
-  AddInputMethodSection(target_language_code, layout);
+  if (ui_only_language_ids_.count(target_language_code) == 0) {
+    layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+    AddInputMethodSection(target_language_code, layout);
+  }
 
   return contents;
 }
@@ -507,6 +518,15 @@ void LanguageConfigView::InitInputMethodIdMaps() {
     id_to_display_name_map_.insert(
         std::make_pair(input_method.id, LanguageMenuL10nUtil::GetStringUTF8(
             input_method.display_name)));
+  }
+  for (size_t i = 0; i < arraysize(kUiOnlyLanguageCodes); ++i) {
+    const std::string dummy_input_method_id = StringPrintf(
+        "dummy-input-method-id-%s", kUiOnlyLanguageCodes[i].language_code);
+    id_to_language_code_map_.insert(std::make_pair(
+        dummy_input_method_id, kUiOnlyLanguageCodes[i].language_code));
+    id_to_display_name_map_.insert(std::make_pair(
+        dummy_input_method_id, kUiOnlyLanguageCodes[i].display_name));
+    ui_only_language_ids_.insert(kUiOnlyLanguageCodes[i].language_code);
   }
 }
 
@@ -750,7 +770,9 @@ void LanguageConfigView::GetActiveInputMethodIds(
     std::vector<std::string>* out_input_method_ids) {
   const std::wstring value = preload_engines_.GetValue();
   out_input_method_ids->clear();
-  SplitString(WideToUTF8(value), ',', out_input_method_ids);
+  if (!value.empty()) {
+    SplitString(WideToUTF8(value), ',', out_input_method_ids);
+  }
 }
 
 void LanguageConfigView::MaybeDisableLastCheckbox() {

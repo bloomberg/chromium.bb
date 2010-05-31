@@ -238,6 +238,7 @@ class LanguageConfigView : public TableModel,
   StringPrefMember preload_engines_;
   std::map<std::string, std::string> id_to_language_code_map_;
   std::map<std::string, std::string> id_to_display_name_map_;
+  std::set<std::string> ui_only_language_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigView);
 };
