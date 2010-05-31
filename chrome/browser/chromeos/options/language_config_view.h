@@ -27,7 +27,7 @@ class Profile;
 namespace chromeos {
 
 class InputMethodButton;
-class InputMethodRadioButton;
+class InputMethodCheckbox;
 class PreferredLanguageTableModel;
 
 // The combobox model is used for adding languages in the language config
@@ -153,9 +153,6 @@ class LanguageConfigView : public TableModel,
   // Initializes id_to_{code,display_name}_map_ member variables.
   void InitInputMethodIdMaps();
 
-  // Initializes the input method radio buttons.
-  void InitInputMethodRadioButtons();
-
   // Creates the contents on the left, including the language table.
   views::View* CreateContentsOnLeft();
 
@@ -191,6 +188,13 @@ class LanguageConfigView : public TableModel,
   // Gets the list of active IME IDs like "pinyin" and "m17n:ar:kbd".
   void GetActiveInputMethodIds(std::vector<std::string>* out_input_method_ids);
 
+  // If there is only one input method left, disable the selected method.
+  // This is done to prevent the user from disabling all input methods.
+  void MaybeDisableLastCheckbox();
+
+  // Enable all input method checkboxes.
+  void EnableAllCheckboxes();
+
   // Gets the list of supported IME IDs like "pinyin" and "m17n:ar:kbd".
   void GetSupportedInputMethodIds(
       std::vector<std::string>* out_input_method_ids) const;
@@ -221,10 +225,8 @@ class LanguageConfigView : public TableModel,
                    CreateDialogDelegateFunction> InputMethodConfigViewMap;
   InputMethodConfigViewMap input_method_config_view_map_;
 
-  // The radio buttons for activating input methods for a language.
-  // TODO(satorux): Remove this once we get rid of the hack in
-  // InitInputMethodRadioButtons().
-  std::set<InputMethodRadioButton*> input_method_radio_buttons_;
+  // The checkboxes for activating input methods for a language.
+  std::set<InputMethodCheckbox*> input_method_checkboxes_;
 
   views::View* root_container_;
   views::View* right_container_;

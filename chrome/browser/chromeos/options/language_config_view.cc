@@ -30,7 +30,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "views/controls/button/radio_button.h"
+#include "views/controls/button/checkbox.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
 #include "views/standard_layout.h"
@@ -166,13 +166,12 @@ class UiLanguageButton : public views::NativeButton {
   DISALLOW_COPY_AND_ASSIGN(UiLanguageButton);
 };
 
-// This is a radio button associated with input method information.
-class InputMethodRadioButton : public views::RadioButton {
+// This is a checkbox button associated with input method information.
+class InputMethodCheckbox : public views::Checkbox {
  public:
-  InputMethodRadioButton(const std::wstring& display_name,
-                         int group_id,
-                         const std::string& input_method_id)
-      : views::RadioButton(display_name, group_id),
+  InputMethodCheckbox(const std::wstring& display_name,
+                      const std::string& input_method_id)
+      : views::Checkbox(display_name),
         input_method_id_(input_method_id) {
   }
 
@@ -182,7 +181,7 @@ class InputMethodRadioButton : public views::RadioButton {
 
  private:
   std::string input_method_id_;
-  DISALLOW_COPY_AND_ASSIGN(InputMethodRadioButton);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodCheckbox);
 };
 
 LanguageConfigView::LanguageConfigView(Profile* profile)
@@ -201,14 +200,14 @@ void LanguageConfigView::ButtonPressed(
   if (sender->tag() == kRemoveLanguageButton) {
     OnRemoveLanguage();
   } else if (sender->tag() == kSelectInputMethodButton) {
-    InputMethodRadioButton* radio_button =
-        static_cast<InputMethodRadioButton*>(sender);
-    const std::string& input_method_id = radio_button->input_method_id();
-    if (radio_button->checked()) {
-      // Deactivate all input methods first, then activate one that checked.
-      DeactivateInputMethodsFor(GetLanguageCodeFromInputMethodId(
-          input_method_id));
-      SetInputMethodActivated(input_method_id, true);
+    InputMethodCheckbox* checkbox =
+        static_cast<InputMethodCheckbox*>(sender);
+    const std::string& input_method_id = checkbox->input_method_id();
+    SetInputMethodActivated(input_method_id, checkbox->checked());
+    if (checkbox->checked()) {
+      EnableAllCheckboxes();
+    } else {
+      MaybeDisableLastCheckbox();
     }
   } else if (sender->tag() == kConfigureInputMethodButton) {
     InputMethodButton* button = static_cast<InputMethodButton*>(sender);
@@ -341,26 +340,10 @@ void LanguageConfigView::AddInputMethodSection(
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Add input method names and configuration buttons.
-  input_method_radio_buttons_.clear();
+  input_method_checkboxes_.clear();
 
-  const int kInputMethodRadioButtonGroupId = 0;
   std::vector<std::string> input_method_ids;
   GetSupportedInputMethodIds(&input_method_ids);
-  // We only show keyboard layouts for languages that don't use IME
-  // (ex. English and French). For languages that use IME, we don't show
-  // keybard layouts for now.
-  // TODO(satorux): This is a temporary hack. Will rework this.
-  bool should_show_keyboard_layouts = true;
-  for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    const std::string candidate_language_code =
-        GetLanguageCodeFromInputMethodId(input_method_ids[i]);
-    if (language_code == candidate_language_code &&
-        !LanguageLibrary::IsKeyboardLayout(input_method_ids[i])) {
-      should_show_keyboard_layouts = false;
-      break;
-    }
-  }
-
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
     const std::string candidate_language_code =
@@ -368,25 +351,19 @@ void LanguageConfigView::AddInputMethodSection(
     const std::string display_name = GetInputMethodDisplayNameFromId(
         input_method_id);
     if (language_code == candidate_language_code) {
-      if (LanguageLibrary::IsKeyboardLayout(input_method_id)
-          && !should_show_keyboard_layouts) {
-        continue;  // Skip this input method.
-      }
       layout->StartRow(0, kPerLanguageDoubleColumnSetId);
       // TODO(satorux): Translate display_name.
-      InputMethodRadioButton* radio_button
-          = new InputMethodRadioButton(UTF8ToWide(display_name),
-                                       kInputMethodRadioButtonGroupId,
-                                       input_method_id);
-      radio_button->set_listener(this);
-      radio_button->set_tag(kSelectInputMethodButton);
-      // We should check the radio button associated with the active input
-      // method here by radio_button->SetChecked(), but this does not work
-      // for a complicated reason. Instead, we'll initialize the radio
-      // buttons in InitInputMethodRadioButtons() later.
-      // TODO(satorux): Get rid of the workaround.
-      layout->AddView(radio_button);
-      input_method_radio_buttons_.insert(radio_button);
+      InputMethodCheckbox* checkbox
+          = new InputMethodCheckbox(UTF8ToWide(display_name),
+                                    input_method_id);
+      checkbox->set_listener(this);
+      checkbox->set_tag(kSelectInputMethodButton);
+      if (InputMethodIsActivated(input_method_id)) {
+        checkbox->SetChecked(true);
+      }
+
+      layout->AddView(checkbox);
+      input_method_checkboxes_.insert(checkbox);
       // Add "configure" button for the input method if we have a
       // configuration dialog for it.
       if (input_method_config_view_map_.count(input_method_id) > 0) {
@@ -415,7 +392,7 @@ void LanguageConfigView::OnSelectionChanged() {
 
   // Add the per language config view to the right area.
   right_container_->AddChildView(CreatePerLanguageConfigView(language_code));
-  InitInputMethodRadioButtons();
+  MaybeDisableLastCheckbox();
   // Let the parent container layout again. This is needed to the the
   // contents on the right to display.
   root_container_->Layout();
@@ -533,19 +510,6 @@ void LanguageConfigView::InitInputMethodIdMaps() {
   }
 }
 
-void LanguageConfigView::InitInputMethodRadioButtons() {
-  for (std::set<InputMethodRadioButton*>::iterator
-           iter = input_method_radio_buttons_.begin();
-       iter != input_method_radio_buttons_.end(); ++iter) {
-    // Check the radio button associated with the active input method.
-    // There should be only one active input method here.
-    if (InputMethodIsActivated((*iter)->input_method_id())) {
-      (*iter)->SetChecked(true);
-      break;
-    }
-  }
-}
-
 views::View* LanguageConfigView::CreateContentsOnLeft() {
   views::View* contents = new views::View;
   GridLayout* layout = new GridLayout(contents);
@@ -634,7 +598,7 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
     return;
   }
   // Activate the first input language associated with the language. We have
-  // to call this before the OnItemsAdded() call below so the radio button
+  // to call this before the OnItemsAdded() call below so the checkbox
   // for the first input language gets checked.
   std::vector<std::string> input_method_ids;
   GetSupportedInputMethodIds(&input_method_ids);
@@ -787,6 +751,27 @@ void LanguageConfigView::GetActiveInputMethodIds(
   const std::wstring value = preload_engines_.GetValue();
   out_input_method_ids->clear();
   SplitString(WideToUTF8(value), ',', out_input_method_ids);
+}
+
+void LanguageConfigView::MaybeDisableLastCheckbox() {
+  std::vector<std::string> input_method_ids;
+  GetActiveInputMethodIds(&input_method_ids);
+  if (input_method_ids.size() <= 1) {
+    for (std::set<InputMethodCheckbox*>::iterator checkbox =
+             input_method_checkboxes_.begin();
+         checkbox != input_method_checkboxes_.end(); ++checkbox) {
+      if ((*checkbox)->checked())
+        (*checkbox)->SetEnabled(false);
+    }
+  }
+}
+
+void LanguageConfigView::EnableAllCheckboxes() {
+  for (std::set<InputMethodCheckbox*>::iterator checkbox =
+           input_method_checkboxes_.begin();
+       checkbox != input_method_checkboxes_.end(); ++checkbox) {
+    (*checkbox)->SetEnabled(true);
+  }
 }
 
 void LanguageConfigView::GetSupportedInputMethodIds(

@@ -81,6 +81,9 @@ class LanguageMenuButton : public views::MenuButton,
   // The current input method list.
   scoped_ptr<InputMethodDescriptors> input_method_descriptors_;
 
+  // Languages that need the input method name displayed.
+  std::set<std::string> need_method_name_;
+
   // We borrow menus::SimpleMenuModel implementation to maintain the current
   // content of the pop-up menu. The menus::MenuModel is implemented using this
   // |model_|.

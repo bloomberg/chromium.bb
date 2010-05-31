@@ -82,7 +82,8 @@ std::wstring GetLanguageName(const std::string& language_code) {
 // Returns a string for the drop-down menu if |for_menu| is true. Otherwise,
 // returns a string for the status area.
 std::wstring FormatInputLanguage(
-    const chromeos::InputMethodDescriptor& input_method, bool for_menu) {
+    const chromeos::InputMethodDescriptor& input_method, bool for_menu,
+    bool add_method_name) {
   const std::string language_code
       = chromeos::LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
 
@@ -99,6 +100,11 @@ std::wstring FormatInputLanguage(
     // like "Pinyin" and "Anthy".
     if (formatted.empty()) {
       formatted = GetLanguageName(language_code);
+      if (add_method_name) {
+        formatted += L" - ";
+        formatted += chromeos::LanguageMenuL10nUtil::GetString(
+            input_method.display_name);
+      }
     }
   } else {
     // For the status area, we use two-letter, upper-case language code like
@@ -110,19 +116,6 @@ std::wstring FormatInputLanguage(
   }
   DCHECK(!formatted.empty());
   return formatted;
-}
-
-// Returns localized language name + display name for the |input_method|.
-// For example, "Hebrew: Standard input method" would be returned for the Hebrew
-// input method in US locale, and "Japanese: Google Japanese Input" for Japanese
-// in the locale.
-std::wstring GetTooltipText(
-    const chromeos::InputMethodDescriptor& input_method) {
-  const std::wstring tooltip =
-      FormatInputLanguage(input_method, true) + L": " +
-      chromeos::LanguageMenuL10nUtil::GetString(input_method.display_name);
-  // TODO(yusukes): it might be better to add "intra-IME" status to the tooltip.
-  return tooltip;
 }
 
 }  // namespace
@@ -157,7 +150,7 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   UpdateIcon(kSpacer, L"" /* no tooltip */);
   // Display the default input method name.
   const std::wstring name
-      = FormatInputLanguage(input_method_descriptors_->at(0), false);
+      = FormatInputLanguage(input_method_descriptors_->at(0), false, false);
   // TODO(yusukes): The assumption that the input method at index 0 is enabled
   // by default is not always true. We should fix the logic once suzhe's patches
   // for issue 2627 (get/set ibus state without focus) are submitted.
@@ -296,7 +289,12 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
 
   std::wstring name;
   if (IndexIsInInputMethodList(index)) {
-    name = FormatInputLanguage(input_method_descriptors_->at(index), true);
+    const std::string language_code =
+        chromeos::LanguageLibrary::GetLanguageCodeFromDescriptor(
+            input_method_descriptors_->at(index));
+    bool need_method_name = (need_method_name_.count(language_code) > 0);
+    name = FormatInputLanguage(input_method_descriptors_->at(index), true,
+                               need_method_name);
   } else if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
         = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
@@ -373,8 +371,8 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
   const chromeos::InputMethodDescriptor& input_method =
       obj->current_input_method();
-  const std::wstring name = FormatInputLanguage(input_method, false);
-  const std::wstring tooltip = ::GetTooltipText(input_method);
+  const std::wstring name = FormatInputLanguage(input_method, false, false);
+  const std::wstring tooltip = FormatInputLanguage(input_method, true, true);
   UpdateIcon(name, tooltip);
 }
 
@@ -387,8 +385,8 @@ void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 void LanguageMenuButton::LocaleChanged() {
   const chromeos::InputMethodDescriptor& input_method =
       CrosLibrary::Get()->GetLanguageLibrary()->current_input_method();
-  const std::wstring name = FormatInputLanguage(input_method, false);
-  const std::wstring tooltip = ::GetTooltipText(input_method);
+  const std::wstring name = FormatInputLanguage(input_method, false, false);
+  const std::wstring tooltip = FormatInputLanguage(input_method, true, true);
   UpdateIcon(name, tooltip);
   Layout();
   SchedulePaint();
@@ -416,12 +414,25 @@ void LanguageMenuButton::RebuildModel() {
   // Indicates if separator's needed before each section.
   bool need_separator = false;
 
+  need_method_name_.clear();
+  std::set<std::string> languages_seen;
   if (!input_method_descriptors_->empty()) {
     // We "abuse" the command_id and group_id arguments of AddRadioItem method.
     // A COMMAND_ID_XXX enum value is passed as command_id, and array index of
     // |input_method_descriptors_| or |property_list| is passed as group_id.
     for (size_t i = 0; i < input_method_descriptors_->size(); ++i) {
       model_->AddRadioItem(COMMAND_ID_INPUT_METHODS, dummy_label, i);
+
+      const std::string language_code
+          = chromeos::LanguageLibrary::GetLanguageCodeFromDescriptor(
+              input_method_descriptors_->at(i));
+      // If there is more than one input method for this language, then we need
+      // to display the method name.
+      if (languages_seen.find(language_code) == languages_seen.end()) {
+        languages_seen.insert(language_code);
+      } else {
+        need_method_name_.insert(language_code);
+      }
     }
     need_separator = true;
   }
