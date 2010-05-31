@@ -177,7 +177,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = mangle_svn_tree(
-        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[-1]),
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'fpp'),
             self.FAKE_REPOS.svn_revs[2]),
         (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'foo'),
@@ -191,9 +191,29 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree[join('src', 'svn_hooked1')] = 'svn_hooked1'
     self.assertTree(tree)
 
-  def SyncAtRev1(self, arg):
+  def testSyncIgnoredSolutionName(self):
+    """TODO(maruel): This will become an error soon."""
     self.gclient(['config', self.svn_base + 'trunk/src/'])
-    results = self.gclient(['sync', '--deps', 'mac', '-r', arg])
+    results = self.gclient(['sync', '--deps', 'mac', '-r', 'invalid@1'])
+    out = results[0].splitlines(False)
+    self.assertEquals(17, len(out))
+    self.checkString('Please fix your script, having invalid --revision flags '
+        'will soon considered an error.\n', results[1])
+    self.assertEquals(0, results[2])
+    tree = mangle_svn_tree(
+        (join('trunk', 'src'), 'src', self.FAKE_REPOS.svn_revs[2]),
+        (join('trunk', 'third_party', 'foo'), join('src', 'third_party', 'foo'),
+            self.FAKE_REPOS.svn_revs[1]),
+        (join('trunk', 'other'), join('src', 'other'),
+            self.FAKE_REPOS.svn_revs[2]),
+        )
+    tree[join('src', 'svn_hooked1')] = 'svn_hooked1'
+    self.assertTree(tree)
+
+  def testSyncNoSolutionName(self):
+    # When no solution name is provided, gclient uses the first solution listed.
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+    results = self.gclient(['sync', '--deps', 'mac', '-r', '1'])
     out = results[0].splitlines(False)
     self.assertEquals(19, len(out))
     self.checkString('', results[1])
@@ -209,12 +229,6 @@ class GClientSmokeSVN(GClientSmokeBase):
             self.FAKE_REPOS.svn_revs[2]),
         )
     self.assertTree(tree)
-
-  def testSyncIgnoredSolutionName(self):
-    self.SyncAtRev1('ignored@1')
-
-  def testSyncNoSolutionName(self):
-    self.SyncAtRev1('1')
 
   def testRevertAndStatus(self):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
@@ -418,6 +432,54 @@ class GClientSmokeGIT(GClientSmokeBase):
         )
     tree[join('src', 'git_hooked1')] = 'git_hooked1'
     tree[join('src', 'git_hooked2')] = 'git_hooked2'
+    self.assertTree(tree)
+
+  def testSyncIgnoredSolutionName(self):
+    """TODO(maruel): This will become an error soon."""
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    results = self.gclient([
+        'sync', '--deps', 'mac', '--revision',
+        'invalid@' + self.FAKE_REPOS.git_hashes['repo_1'][0][0],
+      ])
+    out = results[0].splitlines(False)
+
+    self.assertEquals(13, len(out))
+    # TODO(maruel): git shouldn't output to stderr...
+    self.checkString('Please fix your script, having invalid --revision flags '
+        'will soon considered an error.\nSwitched to a new branch \'%s\'\n' %
+            self.FAKE_REPOS.git_hashes['repo_2'][0][0][:7],
+        results[1])
+    self.assertEquals(0, results[2])
+    tree = mangle_git_tree(
+        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
+        (join('src', 'repo2', 'repo_renamed'),
+              self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
+        )
+    tree[join('src', 'git_hooked1')] = 'git_hooked1'
+    tree[join('src', 'git_hooked2')] = 'git_hooked2'
+    self.assertTree(tree)
+
+  def testSyncNoSolutionName(self):
+    # When no solution name is provided, gclient uses the first solution listed.
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    results = self.gclient([
+        'sync', '--deps', 'mac', '--revision',
+        self.FAKE_REPOS.git_hashes['repo_1'][0][0],
+      ])
+    out = results[0].splitlines(False)
+    self.assertEquals(12, len(out))
+    # TODO(maruel): git shouldn't output to stderr...
+    self.checkString('Switched to a new branch \'%s\'\n'
+        % self.FAKE_REPOS.git_hashes['repo_1'][0][0], results[1])
+    self.assertEquals(0, results[2])
+    tree = mangle_git_tree(
+        ('src', self.FAKE_REPOS.git_hashes['repo_1'][0][1]),
+        (join('src', 'repo2'), self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
+        (join('src', 'repo2', 'repo3'),
+            self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
+        (join('src', 'repo4'), self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
+        )
     self.assertTree(tree)
 
   def testRevertAndStatus(self):

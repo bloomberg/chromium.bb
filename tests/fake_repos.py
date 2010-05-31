@@ -8,6 +8,7 @@
 import atexit
 import logging
 import os
+import pprint
 import re
 import shutil
 import subprocess
@@ -500,6 +501,7 @@ class FakeReposTestBase(unittest.TestCase):
       logging.debug('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
       logging.debug('Expected\n%s' % pprint.pformat(tree))
       logging.debug('Diff\n%s' % pprint.pformat(diff))
+      self.assertEquals(diff, [])
 
 
 def main(argv):

@@ -506,31 +506,33 @@ solutions = [
   def _EnforceRevisions(self, solutions):
     """Checks for revision overrides."""
     revision_overrides = {}
-    solutions = [s['name'] for s in solutions]
-    if self._options.revisions:
-      revision = self._options.revisions[0]
-      # Ignore solution@
-      rev = revision
-      if '@' in revision:
-        rev = revision.split('@', 1)[1]
-      revision_overrides[solutions[0]] = rev
-
-    if len(self._options.revisions) > 1:
-      # Enforce solution@rev format for following params.
-      for revision in self._options.revisions[1:]:
-        if not '@' in revision:
-          raise gclient_utils.Error(
-              'Specify the full dependency when specifying a revision number '
-              'for non-primary solution.')
-        sol, rev = revision.split("@", 1)
-        # Disallow conflicting revs
-        if revision_overrides.get(sol, rev) != rev:
-          raise gclient_utils.Error(
-              'Conflicting revision numbers specified for %s: %s and %s.' %
-                  (sol, revision_overrides[sol], rev))
-        if not sol in solutions:
-          raise gclient_utils.Error('%s is not a valid solution.' % sol)
+    if self._options.head:
+      return revision_overrides
+    for s in solutions:
+      if not s.get('safesync_url', None):
+        continue
+      handle = urllib.urlopen(s['safesync_url'])
+      rev = handle.read().strip()
+      handle.close()
+      if len(rev):
+        self._options.revisions.append('%s@%s' % (s['name'], rev))
+    if not self._options.revisions:
+      return revision_overrides
+    # --revision will take over safesync_url.
+    solutions_names = [s['name'] for s in solutions]
+    index = 0
+    for revision in self._options.revisions:
+      if not '@' in revision:
+        # Support for --revision 123
+        revision = '%s@%s' % (solutions_names[index], revision)
+      sol, rev = revision.split("@", 1)
+      if not sol in solutions_names:
+        #raise gclient_utils.Error('%s is not a valid solution.' % sol)
+        print >> sys.stderr, ('Please fix your script, having invalid '
+                              '--revision flags will soon considered an error.')
+      else:
         revision_overrides[sol] = rev
+      index += 1
     return revision_overrides
 
   def RunOnDeps(self, command, args):
@@ -942,10 +944,11 @@ def CMDsync(parser, args):
                     help="don't run hooks after the update is complete")
   parser.add_option("-r", "--revision", action="append",
                     dest="revisions", metavar="REV", default=[],
-                    help="Enforces revision/hash for the primary solution. "
-                         "To modify a secondary solution, use it at least once "
-                         "for the primary solution and then use the format "
-                         "solution@rev/hash, e.g. -r src@123")
+                    help="Enforces revision/hash for the solutions with the "
+                         "format src@rev. The src@ part is optional and can be "
+                         "skipped. -r can be used multiple times when .gclient "
+                         "has multiple solutions configured and will work even "
+                         "if the src@ part is skipped.")
   parser.add_option("--head", action="store_true",
                     help="skips any safesync_urls specified in "
                          "configured solutions and sync to head instead")
@@ -967,29 +970,9 @@ def CMDsync(parser, args):
   if not client:
     raise gclient_utils.Error("client not configured; see 'gclient config'")
 
-  if not options.head:
-    solutions = client.GetVar('solutions')
-    if solutions:
-      first = True
-      for s in solutions:
-        if s.get('safesync_url', None):
-          # rip through revisions and make sure we're not over-riding
-          # something that was explicitly passed
-          has_key = False
-          r_first = True
-          for r in options.revisions:
-            if (first and r_first) or r.split('@', 1)[0] == s['name']:
-              has_key = True
-              break
-            r_first = False
-
-          if not has_key:
-            handle = urllib.urlopen(s['safesync_url'])
-            rev = handle.read().strip()
-            handle.close()
-            if len(rev):
-              options.revisions.append(s['name']+'@'+rev)
-        first = False
+  if options.revisions and options.head:
+    # TODO(maruel): Make it a parser.error if it doesn't break any builder.
+    print("Warning: you cannot use both --head and --revision")
 
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
@@ -1125,6 +1108,8 @@ def Main(argv):
     if not hasattr(options, 'revisions'):
       # GClient.RunOnDeps expects it even if not applicable.
       options.revisions = []
+    if not hasattr(options, 'head'):
+      options.head = None
     return (options, args)
   parser.parse_args = Parse
   # We don't want wordwrapping in epilog (usually examples)
