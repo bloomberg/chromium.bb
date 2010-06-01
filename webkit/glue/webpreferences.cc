@@ -92,8 +92,10 @@ void WebPreferences::Apply(WebView* web_view) const {
   // on command line.
   settings->setShowDebugBorders(show_composited_layer_borders);
 
-  // Web inspector settings need to be passed in differently.
-  web_view->setInspectorSettings(WebString::fromUTF8(inspector_settings));
+  for (WebInspectorPreferences::const_iterator it = inspector_settings.begin();
+       it != inspector_settings.end(); ++it)
+    web_view->setInspectorSetting(WebString::fromUTF8(it->first),
+                                  WebString::fromUTF8(it->second));
 
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.

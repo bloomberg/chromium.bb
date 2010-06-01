@@ -440,8 +440,7 @@ void TabContents::RegisterUserPrefs(PrefService* prefs) {
                              pref_defaults.dom_paste_enabled);
   prefs->RegisterBooleanPref(prefs::kWebKitShrinksStandaloneImagesToFit,
                              pref_defaults.shrinks_standalone_images_to_fit);
-  prefs->RegisterStringPref(prefs::kWebKitInspectorSettings,
-                            UTF8ToWide(pref_defaults.inspector_settings));
+  prefs->RegisterDictionaryPref(prefs::kWebKitInspectorSettings);
   prefs->RegisterBooleanPref(prefs::kWebKitTextAreasAreResizable,
                              pref_defaults.text_areas_are_resizable);
   prefs->RegisterBooleanPref(prefs::kWebKitJavaEnabled,
@@ -2431,9 +2430,12 @@ void TabContents::UpdateThumbnail(const GURL& url,
   }
 }
 
-void TabContents::UpdateInspectorSettings(const std::string& raw_settings) {
-  profile()->GetPrefs()->SetString(prefs::kWebKitInspectorSettings,
-                                   UTF8ToWide(raw_settings));
+void TabContents::UpdateInspectorSetting(const std::string& key,
+                                         const std::string& value) {
+  DictionaryValue* inspector_settings =
+      profile()->GetPrefs()->GetMutableDictionary(
+          prefs::kWebKitInspectorSettings);
+  inspector_settings->SetString(UTF8ToWide(key), value);
 }
 
 void TabContents::Close(RenderViewHost* rvh) {

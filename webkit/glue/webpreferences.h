@@ -12,6 +12,7 @@
 #define WEBKIT_GLUE_WEBPREFERENCES_H__
 
 #include <string>
+#include <vector>
 #include "googleurl/src/gurl.h"
 
 namespace WebKit {
@@ -37,7 +38,9 @@ struct WebPreferences {
   bool plugins_enabled;
   bool dom_paste_enabled;
   bool developer_extras_enabled;
-  std::string inspector_settings;
+  typedef std::vector<std::pair<std::string, std::string> >
+      WebInspectorPreferences;
+  WebInspectorPreferences inspector_settings;
   bool site_specific_quirks_enabled;
   bool shrinks_standalone_images_to_fit;
   bool uses_universal_detector;

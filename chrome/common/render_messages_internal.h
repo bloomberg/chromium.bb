@@ -1586,9 +1586,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int32, /* line number */
                       std::wstring /* source id */)
 
-  // Stores new inspector settings in the profile.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateInspectorSettings,
-                      std::string  /* raw_settings */)
+  // Stores new inspector setting in the profile.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
+                      std::string,  /* key */
+                      std::string /* value */)
 
   // Wraps an IPC message that's destined to the DevToolsClient on
   // DevToolsAgent->browser hop.

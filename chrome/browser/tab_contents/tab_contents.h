@@ -919,7 +919,8 @@ class TabContents : public PageNavigator,
   virtual void UpdateThumbnail(const GURL& url,
                                const SkBitmap& bitmap,
                                const ThumbnailScore& score);
-  virtual void UpdateInspectorSettings(const std::string& raw_settings);
+  virtual void UpdateInspectorSetting(const std::string& key,
+                                      const std::string& value);
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RequestMove(const gfx::Rect& new_bounds);
   virtual void DidStartLoading();

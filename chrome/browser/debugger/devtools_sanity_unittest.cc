@@ -321,12 +321,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Reset inspector settings to defaults to ensure that Elements will be
   // current panel when DevTools window is open.
-  GetInspectedTab()->render_view_host()->delegate()->UpdateInspectorSettings(
-      WebPreferences().inspector_settings);
+  const WebPreferences::WebInspectorPreferences& settings =
+      WebPreferences().inspector_settings;
+  WebPreferences::WebInspectorPreferences::const_iterator it =
+      settings.begin();
+  for ( ; it != settings.end(); ++it)
+    GetInspectedTab()->render_view_host()->delegate()->UpdateInspectorSetting(
+        it->first, it->second);
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }
-
 
 // Tests that a content script is in the scripts list.
 // This test is disabled, see bug 28961.

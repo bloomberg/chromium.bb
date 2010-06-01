@@ -712,8 +712,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnMsgUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnMsgThumbnail)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnMsgScreenshot)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateInspectorSettings,
-                        OnUpdateInspectorSettings);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateInspectorSetting,
+                        OnUpdateInspectorSetting);
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartLoading, OnMsgDidStartLoading)
@@ -1019,9 +1019,9 @@ void RenderViewHost::OnMsgScreenshot(const SkBitmap& bitmap) {
       Details<const SkBitmap>(&bitmap));
 }
 
-void RenderViewHost::OnUpdateInspectorSettings(
-    const std::string& raw_settings) {
-  delegate_->UpdateInspectorSettings(raw_settings);
+void RenderViewHost::OnUpdateInspectorSetting(
+    const std::string& key, const std::string& value) {
+  delegate_->UpdateInspectorSetting(key, value);
 }
 
 void RenderViewHost::OnMsgClose() {

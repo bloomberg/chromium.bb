@@ -270,7 +270,8 @@ class RenderView : public RenderWidget,
       const WebKit::WebAccessibilityObject& acc_obj);
   virtual void didChangeAccessibilityObjectState(
       const WebKit::WebAccessibilityObject& acc_obj);
-  virtual void didUpdateInspectorSettings();
+  virtual void didUpdateInspectorSetting(const WebKit::WebString& key,
+                                         const WebKit::WebString& value);
   virtual void queryAutofillSuggestions(
       const WebKit::WebNode& node, const WebKit::WebString& name,
       const WebKit::WebString& value);

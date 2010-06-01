@@ -1991,9 +1991,11 @@ int RenderView::historyForwardListCount() {
   return history_list_length_ - historyBackListCount() - 1;
 }
 
-void RenderView::didUpdateInspectorSettings() {
-  Send(new ViewHostMsg_UpdateInspectorSettings(
-      routing_id_, webview()->inspectorSettings().utf8()));
+void RenderView::didUpdateInspectorSetting(const WebString& key,
+                                           const WebString& value) {
+  Send(new ViewHostMsg_UpdateInspectorSetting(routing_id_,
+                                              key.utf8(),
+                                              value.utf8()));
 }
 
 void RenderView::queryAutofillSuggestions(const WebNode& node,

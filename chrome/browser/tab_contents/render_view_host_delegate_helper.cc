@@ -188,8 +188,17 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
   web_prefs.shrinks_standalone_images_to_fit =
       prefs->GetBoolean(prefs::kWebKitShrinksStandaloneImagesToFit);
-  web_prefs.inspector_settings = WideToUTF8(
-      prefs->GetString(prefs::kWebKitInspectorSettings));
+  const DictionaryValue* inspector_settings =
+      prefs->GetDictionary(prefs::kWebKitInspectorSettings);
+  if (inspector_settings) {
+    for (DictionaryValue::key_iterator iter(inspector_settings->begin_keys());
+         iter != inspector_settings->end_keys(); ++iter) {
+      std::string value;
+      if (inspector_settings->GetStringWithoutPathExpansion(*iter, &value))
+          web_prefs.inspector_settings.push_back(
+              std::make_pair(WideToUTF8(*iter), value));
+    }
+  }
   web_prefs.tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);
 
   {  // Command line switches are used for preferences with no user interface.
