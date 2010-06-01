@@ -35,9 +35,11 @@ class WebSocketFrameHandler {
   void AppendData(const char* data, int len);
 
   // Updates current IOBuffer.
+  // If |buffered| is true, it tries to find WebSocket frames.
+  // Otherwise, it just picks the first buffer in |pending_buffers_|.
   // Returns available size of data, 0 if no more data or current buffer was
   // not released, and negative if some error occurred.
-  int UpdateCurrentBuffer();
+  int UpdateCurrentBuffer(bool buffered);
 
   // Gets current IOBuffer.
   // For sending, this is data to network.

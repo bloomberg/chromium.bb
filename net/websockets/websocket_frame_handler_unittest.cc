@@ -19,7 +19,7 @@ TEST(WebSocketFrameHandlerTest, Basic) {
   scoped_ptr<WebSocketFrameHandler> handler(new WebSocketFrameHandler);
 
   // No data.
-  EXPECT_EQ(0, handler->UpdateCurrentBuffer());
+  EXPECT_EQ(0, handler->UpdateCurrentBuffer(true));
   EXPECT_TRUE(handler->GetCurrentBuffer() == NULL);
   EXPECT_EQ(0, handler->GetCurrentBufferSize());
 
@@ -27,7 +27,7 @@ TEST(WebSocketFrameHandlerTest, Basic) {
   // or data is received from network (WebSocketJob::OnReceivedData)
   handler->AppendData(kInputData, kInputDataLen);
   EXPECT_TRUE(handler->GetCurrentBuffer() == NULL);
-  EXPECT_GT(handler->UpdateCurrentBuffer(), 0);
+  EXPECT_GT(handler->UpdateCurrentBuffer(true), 0);
   // Get data to send to the socket (send),
   // or to send to WebKit (receive).
   IOBuffer* buf = handler->GetCurrentBuffer();
@@ -40,7 +40,7 @@ TEST(WebSocketFrameHandlerTest, Basic) {
   handler->ReleaseCurrentBuffer();
   EXPECT_TRUE(handler->GetCurrentBuffer() == NULL);
   EXPECT_EQ(0, handler->GetCurrentBufferSize());
-  EXPECT_EQ(0, handler->UpdateCurrentBuffer());
+  EXPECT_EQ(0, handler->UpdateCurrentBuffer(true));
 }
 
 TEST(WebSocketFrameHandlerTest, ParseFrame) {

@@ -26,7 +26,7 @@ void WebSocketFrameHandler::AppendData(const char* data, int length) {
   pending_buffers_.push_back(buffer);
 }
 
-int WebSocketFrameHandler::UpdateCurrentBuffer() {
+int WebSocketFrameHandler::UpdateCurrentBuffer(bool buffered) {
   if (current_buffer_)
     return 0;
   DCHECK(!current_buffer_size_);
@@ -35,15 +35,22 @@ int WebSocketFrameHandler::UpdateCurrentBuffer() {
   if (pending_buffers_.empty())
     return 0;
   scoped_refptr<IOBufferWithSize> buffer = pending_buffers_.front();
-  std::vector<FrameInfo> frame_info;
-  int buffer_size =
-      ParseWebSocketFrame(buffer->data(), buffer->size(), &frame_info);
-  if (buffer_size <= 0)
-    return buffer_size;
 
-  original_current_buffer_size_ = buffer_size;
+  int buffer_size = 0;
+  if (buffered) {
+    std::vector<FrameInfo> frame_info;
+    buffer_size =
+        ParseWebSocketFrame(buffer->data(), buffer->size(), &frame_info);
+    if (buffer_size <= 0)
+      return buffer_size;
 
-  // TODO(ukai): filter(e.g. compress or decompress) frame messages.
+    original_current_buffer_size_ = buffer_size;
+
+    // TODO(ukai): filter(e.g. compress or decompress) frame messages.
+  } else {
+    original_current_buffer_size_ = buffer->size();
+    buffer_size = buffer->size();
+  }
 
   current_buffer_ = buffer;
   current_buffer_size_ = buffer_size;
@@ -63,6 +70,7 @@ void WebSocketFrameHandler::ReleaseCurrentBuffer() {
       buffer_size += next_buffer->size();
       pending_buffers_.pop_front();
     }
+    // TODO(ukai): don't copy data.
     scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(buffer_size);
     memcpy(buffer->data(), front_buffer->data() + original_current_buffer_size_,
            remaining_size);
