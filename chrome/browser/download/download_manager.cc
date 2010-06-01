@@ -1668,7 +1668,7 @@ void DownloadManager::GenerateSafeFileName(const std::string& mime_type,
   // Make sure we get the right file extension
   FilePath::StringType extension;
   GenerateExtension(*file_name, mime_type, &extension);
-  file_util::ReplaceExtension(file_name, extension);
+  *file_name = file_name->ReplaceExtension(extension);
 
 #if defined(OS_WIN)
   // Prepend "_" to the file name if it's a reserved name
