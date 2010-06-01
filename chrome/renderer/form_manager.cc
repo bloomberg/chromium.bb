@@ -684,6 +684,10 @@ void FormManager::FillFormField(WebKit::WebFormControlElement* field,
   if (field->formControlType() == WebString::fromUTF8("text")) {
     WebInputElement input_element = field->to<WebInputElement>();
 
+    // Don't auto-fill a disabled field.
+    if (!input_element.isEnabledFormControl())
+      return;
+
     // Don't auto-fill a field with autocomplete=off.
     if (!input_element.autoComplete())
       return;
