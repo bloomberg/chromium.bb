@@ -72,6 +72,7 @@ extern "C" {
 #endif  /* __cplusplus */
 
 extern int open(const char *file, int oflag, ...);
+extern int fcntl(int, int, ...);
 
 #ifdef __cplusplus
 }  /* extern "C" */
