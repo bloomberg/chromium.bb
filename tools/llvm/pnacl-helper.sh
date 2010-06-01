@@ -137,10 +137,10 @@ clean() {
 organize-native-code() {
   readonly arm_src=toolchain/linux_arm-untrusted
   readonly x86_src=toolchain/linux_x86/sdk/nacl-sdk
-
+  readonly arm_llvm_gcc=${arm_src}/arm-none-linux-gnueabi/llvm-gcc-4.2
   Banner "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
-  cp -f ${arm_src}/arm-none-linux-gnueabi/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc.a \
+  cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc.a \
     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/crt*.o \
     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libcrt*.a \
     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/intrinsics.o \
@@ -327,14 +327,15 @@ test-x86-32() {
 #@
 #@ test-x86-64
 #@
-#@   test-x86-64
+#@   run x86-64 tests via pnacl toolchain
 test-x86-64() {
   ./scons platform=x86-32 sdl=none sel_ldr
   export TARGET_CODE=bc-x86-64
   rm -rf scons-out/nacl-arm
-  # TODO(robertm): NYI
-  echo "ERROR: NYI"
-  exit -1
+  ./scons ${SCONS_ARGS[@]} \
+          force_emulator= \
+          force_sel_ldr=scons-out/opt-linux-x86-64/staging/sel_ldr \
+          smoke_tests "$@"
 }
 
 #@
@@ -386,7 +387,9 @@ checkout-and-build-llc() {
 llc-symlinking() {
   cd ${PNACL_HG_CLIENT}/nacl-llvm-branches/llvm-trunk
   llc=$(readlink -f Release/bin/llc)
+  echo "sym-linking:  ${llc} ${SYMLINK_LLC_X86_32}"
   ln -sf ${llc} ${SYMLINK_LLC_X86_32}
+  echo "sym-linking:  ${llc} ${SYMLINK_LLC_X86_64}"
   ln -sf ${llc} ${SYMLINK_LLC_X86_64}
   exit 0
 
