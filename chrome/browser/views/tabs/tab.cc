@@ -215,8 +215,7 @@ void Tab::Paint(gfx::Canvas* canvas) {
   // See if the model changes whether the icons should be painted.
   const bool show_icon = ShouldShowIcon() && !data().phantom;
   const bool show_close_button = ShouldShowCloseBox();
-  if (show_icon != showing_icon_ ||
-      show_close_button != showing_close_button_)
+  if (show_icon != showing_icon_ || show_close_button != showing_close_button_)
     Layout();
 
   PaintTabBackground(canvas);

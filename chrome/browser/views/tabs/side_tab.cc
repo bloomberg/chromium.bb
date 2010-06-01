@@ -21,12 +21,17 @@ const int kVerticalTabHeight = 27;
 const int kTitleCloseSpacing = 4;
 const SkScalar kRoundRectRadius = 4;
 const SkColor kTabBackgroundColor = SK_ColorWHITE;
+const SkColor kTextColor = SK_ColorBLACK;
+const SkColor kPhantomTextColor = SK_ColorGRAY;
 
 // Padding between the edge and the icon.
 const int kIconLeftPadding = 5;
 
 // Location the title starts at.
 const int kTitleX = kIconLeftPadding + kFavIconSize + 5;
+
+// Alpha value phantom tab icons are rendered at.
+const int kPhantomTabIconAlpha = 100;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +39,10 @@ const int kTitleX = kIconLeftPadding + kFavIconSize + 5;
 
 SideTab::SideTab(TabController* controller)
     : BaseTab(controller) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  close_button()->SetBackground(kTextColor,
+                                rb.GetBitmapNamed(IDR_TAB_CLOSE),
+                                rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
 }
 
 SideTab::~SideTab() {
@@ -90,10 +99,20 @@ void SideTab::Paint(gfx::Canvas* canvas) {
                           SkIntToScalar(kRoundRectRadius), paint);
   }
 
-  if (ShouldShowIcon())
-    PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
+  if (ShouldShowIcon()) {
+    if (data().phantom) {
+      SkRect bounds;
+      bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
+      canvas->saveLayerAlpha(&bounds, kPhantomTabIconAlpha,
+                             SkCanvas::kARGB_ClipLayer_SaveFlag);
+      PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
+      canvas->restore();
+    } else {
+      PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
+    }
+  }
 
-  PaintTitle(canvas, SK_ColorBLACK);
+  PaintTitle(canvas, data().phantom ? kPhantomTextColor : kTextColor);
 }
 
 gfx::Size SideTab::GetPreferredSize() {
