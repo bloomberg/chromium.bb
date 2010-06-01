@@ -249,47 +249,6 @@ TEST_F(WebSocketJobTest, SimpleHandshake) {
 
   static const char* kHandshakeRequestMessage =
       "GET /demo HTTP/1.1\r\n"
-      "Upgrade: WebSocket\r\n"
-      "Connection: Upgrade\r\n"
-      "Host: example.com\r\n"
-      "Origin: http://example.com\r\n"
-      "WebSocket-Protocol: sample\r\n"
-      "\r\n";
-
-  bool sent = websocket_->SendData(kHandshakeRequestMessage,
-                                   strlen(kHandshakeRequestMessage));
-  EXPECT_EQ(true, sent);
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(kHandshakeRequestMessage, socket_->sent_data());
-  EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-  websocket_->OnSentData(socket_.get(), strlen(kHandshakeRequestMessage));
-  EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
-
-  const char kHandshakeResponseMessage[] =
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
-      "Upgrade: WebSocket\r\n"
-      "Connection: Upgrade\r\n"
-      "WebSocket-Origin: http://example.com\r\n"
-      "WebSocket-Location: ws://example.com/demo\r\n"
-      "WebSocket-Protocol: sample\r\n"
-      "\r\n";
-
-  websocket_->OnReceivedData(socket_.get(),
-                             kHandshakeResponseMessage,
-                             strlen(kHandshakeResponseMessage));
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(kHandshakeResponseMessage, delegate.received_data());
-  EXPECT_EQ(WebSocketJob::OPEN, GetWebSocketJobState());
-  CloseWebSocketJob();
-}
-
-TEST_F(WebSocketJobTest, SimpleHandshakeDraft76) {
-  GURL url("ws://example.com/demo");
-  MockSocketStreamDelegate delegate;
-  InitWebSocketJob(url, &delegate);
-
-  static const char* kHandshakeRequestMessage =
-      "GET /demo HTTP/1.1\r\n"
       "Host: example.com\r\n"
       "Connection: Upgrade\r\n"
       "Sec-WebSocket-Key2: 12998 5 Y3 1  .P00\r\n"
@@ -335,49 +294,38 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
 
   static const char* kHandshakeRequestMessage =
       "GET /demo HTTP/1.1\r\n"
-      "Upgrade: WebSocket\r\n"
-      "Connection: Upgrade\r\n"
       "Host: example.com\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Key2: 12998 5 Y3 1  .P00\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5\r\n"
       "Origin: http://example.com\r\n"
-      "WebSocket-Protocol: sample\r\n"
-      "\r\n";
-  std::vector<std::string> lines;
-  SplitString(kHandshakeRequestMessage, '\n', &lines);
-  for (size_t i = 0; i < lines.size() - 2; i++) {
-    std::string line = lines[i] + "\r\n";
-    SCOPED_TRACE("Line: " + line);
-    bool sent = websocket_->SendData(line.c_str(), line.size());
-    EXPECT_EQ(true, sent);
-    MessageLoop::current()->RunAllPending();
-    EXPECT_TRUE(socket_->sent_data().empty());
-    EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-  }
-  bool sent = websocket_->SendData("\r\n", 2);
+      "\r\n"
+      "^n:ds[4U";
+
+  bool sent = websocket_->SendData(kHandshakeRequestMessage,
+                                   strlen(kHandshakeRequestMessage));
   EXPECT_EQ(true, sent);
-    MessageLoop::current()->RunAllPending();
+  // We assume request is sent in one data chunk (from WebKit)
+  // We don't support streaming request.
+  MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kHandshakeRequestMessage, socket_->sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-
-  for (size_t i = 0; i < lines.size() - 2; i++) {
-    std::string line = lines[i] + "\r\n";
-    SCOPED_TRACE("Line: " + line);
-    websocket_->OnSentData(socket_.get(), line.size());
-    EXPECT_EQ(0U, delegate.amount_sent());
-  }
-  websocket_->OnSentData(socket_.get(), 2);  // \r\n
+  websocket_->OnSentData(socket_.get(), strlen(kHandshakeRequestMessage));
   EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
-  EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
 
   const char kHandshakeResponseMessage[] =
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+      "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
-      "WebSocket-Origin: http://example.com\r\n"
-      "WebSocket-Location: ws://example.com/demo\r\n"
-      "WebSocket-Protocol: sample\r\n"
-      "\r\n";
+      "Sec-WebSocket-Origin: http://example.com\r\n"
+      "Sec-WebSocket-Location: ws://example.com/demo\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "\r\n"
+      "8jKS'y:G*Co,Wxa-";
 
-  lines.clear();
+  std::vector<std::string> lines;
   SplitString(kHandshakeResponseMessage, '\n', &lines);
   for (size_t i = 0; i < lines.size() - 2; i++) {
     std::string line = lines[i] + "\r\n";
@@ -391,6 +339,9 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
   }
   websocket_->OnReceivedData(socket_.get(), "\r\n", 2);
   MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(delegate.received_data().empty());
+  EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
+  websocket_->OnReceivedData(socket_.get(), "8jKS'y:G*Co,Wxa-", 16);
   EXPECT_EQ(kHandshakeResponseMessage, delegate.received_data());
   EXPECT_EQ(WebSocketJob::OPEN, GetWebSocketJobState());
   CloseWebSocketJob();
@@ -411,23 +362,29 @@ TEST_F(WebSocketJobTest, HandshakeWithCookie) {
 
   static const char* kHandshakeRequestMessage =
       "GET /demo HTTP/1.1\r\n"
-      "Upgrade: WebSocket\r\n"
-      "Connection: Upgrade\r\n"
       "Host: example.com\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Key2: 12998 5 Y3 1  .P00\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5\r\n"
       "Origin: http://example.com\r\n"
-      "WebSocket-Protocol: sample\r\n"
       "Cookie: WK-test=1\r\n"
-      "\r\n";
+      "\r\n"
+      "^n:ds[4U";
 
   static const char* kHandshakeRequestExpected =
       "GET /demo HTTP/1.1\r\n"
-      "Upgrade: WebSocket\r\n"
-      "Connection: Upgrade\r\n"
       "Host: example.com\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Key2: 12998 5 Y3 1  .P00\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5\r\n"
       "Origin: http://example.com\r\n"
-      "WebSocket-Protocol: sample\r\n"
       "Cookie: CR-test=1; CR-test-httponly=1\r\n"
-      "\r\n";
+      "\r\n"
+      "^n:ds[4U";
 
   bool sent = websocket_->SendData(kHandshakeRequestMessage,
                                    strlen(kHandshakeRequestMessage));
@@ -439,23 +396,25 @@ TEST_F(WebSocketJobTest, HandshakeWithCookie) {
   EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
 
   const char kHandshakeResponseMessage[] =
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+      "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
-      "WebSocket-Origin: http://example.com\r\n"
-      "WebSocket-Location: ws://example.com/demo\r\n"
-      "WebSocket-Protocol: sample\r\n"
+      "Sec-WebSocket-Origin: http://example.com\r\n"
+      "Sec-WebSocket-Location: ws://example.com/demo\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
       "Set-Cookie: CR-set-test=1\r\n"
-      "\r\n";
+      "\r\n"
+      "8jKS'y:G*Co,Wxa-";
 
   static const char* kHandshakeResponseExpected =
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+      "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
-      "WebSocket-Origin: http://example.com\r\n"
-      "WebSocket-Location: ws://example.com/demo\r\n"
-      "WebSocket-Protocol: sample\r\n"
-      "\r\n";
+      "Sec-WebSocket-Origin: http://example.com\r\n"
+      "Sec-WebSocket-Location: ws://example.com/demo\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "\r\n"
+      "8jKS'y:G*Co,Wxa-";
 
   websocket_->OnReceivedData(socket_.get(),
                              kHandshakeResponseMessage,
@@ -491,22 +450,28 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
 
   static const char* kHandshakeRequestMessage =
       "GET /demo HTTP/1.1\r\n"
-      "Upgrade: WebSocket\r\n"
-      "Connection: Upgrade\r\n"
       "Host: example.com\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Key2: 12998 5 Y3 1  .P00\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5\r\n"
       "Origin: http://example.com\r\n"
-      "WebSocket-Protocol: sample\r\n"
       "Cookie: WK-test=1\r\n"
-      "\r\n";
+      "\r\n"
+      "^n:ds[4U";
 
   static const char* kHandshakeRequestExpected =
       "GET /demo HTTP/1.1\r\n"
-      "Upgrade: WebSocket\r\n"
-      "Connection: Upgrade\r\n"
       "Host: example.com\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Key2: 12998 5 Y3 1  .P00\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5\r\n"
       "Origin: http://example.com\r\n"
-      "WebSocket-Protocol: sample\r\n"
-      "\r\n";
+      "\r\n"
+      "^n:ds[4U";
 
   bool sent = websocket_->SendData(kHandshakeRequestMessage,
                                    strlen(kHandshakeRequestMessage));
@@ -518,23 +483,25 @@ TEST_F(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
   EXPECT_EQ(strlen(kHandshakeRequestMessage), delegate.amount_sent());
 
   const char kHandshakeResponseMessage[] =
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+      "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
-      "WebSocket-Origin: http://example.com\r\n"
-      "WebSocket-Location: ws://example.com/demo\r\n"
-      "WebSocket-Protocol: sample\r\n"
+      "Sec-WebSocket-Origin: http://example.com\r\n"
+      "Sec-WebSocket-Location: ws://example.com/demo\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
       "Set-Cookie: CR-set-test=1\r\n"
-      "\r\n";
+      "\r\n"
+      "8jKS'y:G*Co,Wxa-";
 
   static const char* kHandshakeResponseExpected =
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+      "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
       "Upgrade: WebSocket\r\n"
       "Connection: Upgrade\r\n"
-      "WebSocket-Origin: http://example.com\r\n"
-      "WebSocket-Location: ws://example.com/demo\r\n"
-      "WebSocket-Protocol: sample\r\n"
-      "\r\n";
+      "Sec-WebSocket-Origin: http://example.com\r\n"
+      "Sec-WebSocket-Location: ws://example.com/demo\r\n"
+      "Sec-WebSocket-Protocol: sample\r\n"
+      "\r\n"
+      "8jKS'y:G*Co,Wxa-";
 
   websocket_->OnReceivedData(socket_.get(),
                              kHandshakeResponseMessage,
