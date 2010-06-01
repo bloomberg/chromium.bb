@@ -795,7 +795,9 @@ void CandidateWindowView::ResizeAndSchedulePaint() {
 }
 
 int CandidateWindowView::GetHorizontalOffset() {
-  if (!candidate_views_.empty()) {
+  // Compute the horizontal offset if the lookup table is vertical.
+  if (!candidate_views_.empty() &&
+      lookup_table_.orientation == InputMethodLookupTable::kVertical) {
     return - candidate_views_[0]->GetCandidateLabelPosition().x();
   }
   return 0;
@@ -924,7 +926,9 @@ void CandidateWindowController::OnSetCursorLocation(
   // Remember the cursor location.
   controller->set_cursor_location(gfx::Rect(x, y, width, height));
   // Move the window per the cursor location.
-  controller->MoveCandidateWindow(controller->cursor_location(), 0);
+  controller->MoveCandidateWindow(
+      controller->cursor_location(),
+      controller->candidate_window_->GetHorizontalOffset());
   // The call is needed to ensure that the candidate window is redrawed
   // properly after the cursor location is changed.
   controller->candidate_window_->ResizeAndSchedulePaint();
@@ -959,20 +963,12 @@ void CandidateWindowController::OnUpdateLookupTable(
 
   controller->candidate_window_->UpdateCandidates(lookup_table);
   controller->frame_->Show();
-  // If the orientation is vertical, move the candidate window with the
-  // horizontal offset.
-  //
-  // Note that we should call MoveCandidateWindow() after
+  // We should call MoveCandidateWindow() after
   // controller->frame_->Show(), as GetHorizontalOffset() returns a valid
   // value only after the Show() method is called.
-  if (lookup_table.orientation == InputMethodLookupTable::kVertical) {
-    // Temporarily disabled the window position adjustment since it does not
-    // work fine with ibus-mozc.  TODO(satorux): re-enable the feature.
-    //
-    // controller->MoveCandidateWindow(
-    //     controller->cursor_location(),
-    //     controller->candidate_window_->GetHorizontalOffset());
-  }
+  controller->MoveCandidateWindow(
+      controller->cursor_location(),
+      controller->candidate_window_->GetHorizontalOffset());
 }
 
 void CandidateWindowController::OnCandidateCommitted(int index,
