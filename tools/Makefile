@@ -698,15 +698,25 @@ build: ALWAYS
 ##################################################################
 # Run DejaGnu tests.
 ##################################################################
+
+DEJAGNU_TIMESTAMP := $(shell date +%y%m%d%H%M%S)
+
+.PHONY: check
 check: ALWAYS
 	(cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
 	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
-	    sdl=none --verbose run_hello_world_test) && \
-	tests/run_dejagnu_tests.sh \
-	  TOOLCHAIN="$(SDKROOT)" \
-	  WORKDIR="BUILD/build-gcc-$(CROSSARCH)" \
-	  SELLDR="../scons-out/dbg-linux-x86-$(BITSPLATFORM)/staging/sel_ldr"
+	    sdl=none --verbose run_hello_world_test)
+	mkdir BUILD/build-gcc-$(CROSSARCH)/results.$(DEJAGNU_TIMESTAMP)
+	$(MAKE) \
+	    -C BUILD/build-gcc-$(CROSSARCH) \
+	    DEJAGNU=$(abspath dejagnu/site.exp) \
+	    RUNTESTFLAGS=" \
+	        --target_board=nacl \
+	        --outdir=$(abspath BUILD/build-gcc-$(CROSSARCH)/results.$(DEJAGNU_TIMESTAMP)) \
+	        SIM=$(abspath ../scons-out/dbg-linux-x86-$(BITSPLATFORM)/staging/sel_ldr)" \
+	    LDFLAGS_FOR_TARGET="-lnosys" \
+	    check
 
 ##################################################################
 # Remove the BUILD directory.
