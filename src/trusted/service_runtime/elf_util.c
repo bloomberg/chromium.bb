@@ -33,11 +33,9 @@ struct NaClElfImage {
 
 
 enum NaClPhdrCheckAction {
-  PCA_NONE,
   PCA_TEXT_CHECK,
   PCA_RODATA,
-  PCA_DATA,
-  PCA_IGNORE  /* ignore this segment.  currently used only for PT_PHDR. */
+  PCA_DATA
 };
 
 
@@ -50,29 +48,15 @@ struct NaClPhdrChecks {
 };
 
 /*
- * Other than empty segments, these are the only ones that are allowed.
+ * These are the only loadable segments that are allowed.
  */
 static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
-  /* phdr */
-  { PT_PHDR, PF_R, PCA_IGNORE, 0, 0, },
   /* text */
   { PT_LOAD, PF_R|PF_X, PCA_TEXT_CHECK, 1, NACL_TRAMPOLINE_END, },
   /* rodata */
   { PT_LOAD, PF_R, PCA_RODATA, 0, 0, },
   /* data/bss */
   { PT_LOAD, PF_R|PF_W, PCA_DATA, 0, 0, },
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  /* arm exception handling unwind info (for c++)*/
-  /* TODO(robertm): for some reason this does NOT end up in ro maybe because
-   *             it is relocatable. Try hacking the linker script to move it.
-   */
-  { PT_ARM_EXIDX, PF_R, PCA_IGNORE, 0, 0, },
-#endif
-  /*
-   * allow optional GNU stack permission marker, but require that the
-   * stack is non-executable.
-   */
-  { PT_GNU_STACK, PF_R|PF_W, PCA_NONE, 0, 0, },
 };
 
 
@@ -240,6 +224,14 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
     php = &image->phdrs[segnum];
     NaClLog(3, "Looking at segment %d, type 0x%x, p_flags 0x%x\n",
             segnum, php->p_type, php->p_flags);
+    if (0 == php->p_memsz || php->p_type != PT_LOAD) {
+      /*
+       * We will not load this segment.
+       */
+      NaClLog(3, "Ignoring non PT_LOAD or empty segment\n");
+      continue;
+    }
+
     for (j = 0; j < NACL_ARRAY_SIZE(nacl_phdr_check_data); ++j) {
       if (php->p_type == nacl_phdr_check_data[j].p_type
           && php->p_flags == nacl_phdr_check_data[j].p_flags) {
@@ -250,94 +242,84 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
         }
         seen_seg[j] = 1;
 
-        if (PCA_IGNORE == nacl_phdr_check_data[j].action) {
-          NaClLog(3, "Ignoring\n");
-          goto next_seg;
+        /*
+         * We will load this segment later.  Do the sanity checks.
+         */
+        if (0 != nacl_phdr_check_data[j].p_vaddr
+            && (nacl_phdr_check_data[j].p_vaddr != php->p_vaddr)) {
+          NaClLog(2,
+                  ("Segment %d: bad virtual address: 0x%08"
+                   NACL_PRIxElf_Addr","
+                   " expected 0x%08"NACL_PRIxElf_Addr"\n"),
+                  segnum,
+                  php->p_vaddr,
+                  nacl_phdr_check_data[j].p_vaddr);
+          return LOAD_SEGMENT_BAD_LOC;
+        }
+        if (php->p_vaddr < NACL_TRAMPOLINE_END) {
+          NaClLog(2,
+                  ("Segment %d: virtual address (0x%08"NACL_PRIxElf_Addr
+                   ") too low\n"),
+                  segnum,
+                  php->p_vaddr);
+          return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
+        }
+        /*
+         * integer overflow?  Elf_Addr and Elf_Word are uint32_t or
+         * uint64_t, so the addition/comparison is well defined.
+         */
+        if (php->p_vaddr + php->p_memsz < php->p_vaddr) {
+          NaClLog(2,
+                  "Segment %d: p_memsz caused integer overflow\n",
+                  segnum);
+          return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
+        }
+        if (php->p_vaddr + php->p_memsz >= ((Elf_Addr) 1U << addr_bits)) {
+          NaClLog(2,
+                  "Segment %d: too large, ends at 0x%08"NACL_PRIxElf_Addr"\n",
+                  segnum,
+                  php->p_vaddr + php->p_memsz);
+          return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
+        }
+        if (php->p_filesz > php->p_memsz) {
+          NaClLog(2,
+                  ("Segment %d: file size 0x%08"NACL_PRIxElf_Xword" larger"
+                   " than memory size 0x%08"NACL_PRIxElf_Xword"\n"),
+                  segnum,
+                  php->p_filesz,
+                  php->p_memsz);
+          return LOAD_SEGMENT_BAD_PARAM;
         }
 
-        if (0 != php->p_memsz) {
-          /*
-           * We will load this segment later.  Do the sanity checks.
-           */
-          if (0 != nacl_phdr_check_data[j].p_vaddr
-              && (nacl_phdr_check_data[j].p_vaddr != php->p_vaddr)) {
-            NaClLog(2,
-                    ("Segment %d: bad virtual address: 0x%08"
-                     NACL_PRIxElf_Addr","
-                     " expected 0x%08"NACL_PRIxElf_Addr"\n"),
-                    segnum,
-                    php->p_vaddr,
-                    nacl_phdr_check_data[j].p_vaddr);
-            return LOAD_SEGMENT_BAD_LOC;
-          }
-          if (php->p_vaddr < NACL_TRAMPOLINE_END) {
-            NaClLog(2,
-                    ("Segment %d: virtual address (0x%08"NACL_PRIxElf_Addr
-                     ") too low\n"),
-                    segnum,
-                    php->p_vaddr);
-            return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
-          }
-          /*
-           * integer overflow?  Elf_Addr and Elf_Word are uint32_t or
-           * uint64_t, so the addition/comparison is well defined.
-           */
-          if (php->p_vaddr + php->p_memsz < php->p_vaddr) {
-            NaClLog(2,
-                    "Segment %d: p_memsz caused integer overflow\n",
-                    segnum);
-            return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
-          }
-          if (php->p_vaddr + php->p_memsz >= ((Elf_Addr) 1U << addr_bits)) {
-            NaClLog(2,
-                    "Segment %d: too large, ends at 0x%08"NACL_PRIxElf_Addr"\n",
-                    segnum,
-                    php->p_vaddr + php->p_memsz);
-            return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
-          }
-          if (php->p_filesz > php->p_memsz) {
-            NaClLog(2,
-                    ("Segment %d: file size 0x%08"NACL_PRIxElf_Xword" larger"
-                     " than memory size 0x%08"NACL_PRIxElf_Xword"\n"),
-                    segnum,
-                    php->p_filesz,
-                    php->p_memsz);
-            return LOAD_SEGMENT_BAD_PARAM;
-          }
+        image->loadable[segnum] = 1;
+        /* record our decision that we will load this segment */
 
-          image->loadable[segnum] = 1;
-          /* record our decision that we will load this segment */
-
-          /*
-           * NACL_TRAMPOLINE_END <= p_vaddr
-           *                     <= p_vaddr + p_memsz
-           *                     < ((uintptr_t) 1U << nap->addr_bits)
-           */
-          if (*max_vaddr < php->p_vaddr + php->p_memsz) {
-            *max_vaddr = php->p_vaddr + php->p_memsz;
-          }
-
-          switch (nacl_phdr_check_data[j].action) {
-            case PCA_NONE:
-              break;
-            case PCA_TEXT_CHECK:
-              if (0 == php->p_memsz) {
-                return LOAD_BAD_ELF_TEXT;
-              }
-              *static_text_end = NACL_TRAMPOLINE_END + php->p_filesz;
-              break;
-            case PCA_RODATA:
-              *rodata_start = php->p_vaddr;
-              *rodata_end = php->p_vaddr + php->p_memsz;
-              break;
-            case PCA_DATA:
-              *data_start = php->p_vaddr;
-              *data_end = php->p_vaddr + php->p_memsz;
-              break;
-            case PCA_IGNORE:
-              break;
-          }
+        /*
+         * NACL_TRAMPOLINE_END <= p_vaddr
+         *                     <= p_vaddr + p_memsz
+         *                     < ((uintptr_t) 1U << nap->addr_bits)
+         */
+        if (*max_vaddr < php->p_vaddr + php->p_memsz) {
+          *max_vaddr = php->p_vaddr + php->p_memsz;
         }
+
+        switch (nacl_phdr_check_data[j].action) {
+          case PCA_TEXT_CHECK:
+            if (0 == php->p_memsz) {
+              return LOAD_BAD_ELF_TEXT;
+            }
+            *static_text_end = NACL_TRAMPOLINE_END + php->p_filesz;
+            break;
+          case PCA_RODATA:
+            *rodata_start = php->p_vaddr;
+            *rodata_end = php->p_vaddr + php->p_memsz;
+            break;
+          case PCA_DATA:
+            *data_start = php->p_vaddr;
+            *data_end = php->p_vaddr + php->p_memsz;
+            break;
+        }
+
         goto next_seg;
       }
     }
