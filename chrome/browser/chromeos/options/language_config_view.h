@@ -14,6 +14,7 @@
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
+#include "third_party/cros/chromeos_input_method.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
@@ -119,10 +120,6 @@ class LanguageConfigView : public TableModel,
                            int prev_index,
                            int new_index);
 
-  // Gets the list of supported language codes like "en" and "ja".
-  void GetSupportedLanguageCodes(
-      std::vector<std::string>* out_language_codes) const;
-
   // Rewrites the language name and returns the modified version if
   // necessary. Otherwise, returns the given language name as is.
   // In particular, this rewrites the special language name used for input
@@ -150,8 +147,13 @@ class LanguageConfigView : public TableModel,
   // Initializes the input method config view.
   void InitInputMethodConfigViewMap();
 
-  // Initializes id_to_{code,display_name}_map_ member variables.
-  void InitInputMethodIdMaps();
+  // Initializes id_to_{code,display_name}_map_ maps,
+  // as well as supported_{language_codes,input_method_ids}_ vectors.
+  void InitInputMethodIdMapsAndVectors();
+
+  // Adds the given language code and input method pair to the internal maps.
+  void AddInputMethodToMaps(const std::string& language_code,
+                            const InputMethodDescriptor& input_method);
 
   // Creates the contents on the left, including the language table.
   views::View* CreateContentsOnLeft();
@@ -195,10 +197,6 @@ class LanguageConfigView : public TableModel,
   // Enable all input method checkboxes.
   void EnableAllCheckboxes();
 
-  // Gets the list of supported IME IDs like "pinyin" and "m17n:ar:kbd".
-  void GetSupportedInputMethodIds(
-      std::vector<std::string>* out_input_method_ids) const;
-
   // Converts an input method ID to a language code of the IME. Returns "Eng"
   // when |input_method_id| is unknown.
   // Example: "hangul" => "ko"
@@ -238,7 +236,13 @@ class LanguageConfigView : public TableModel,
   StringPrefMember preload_engines_;
   std::map<std::string, std::string> id_to_language_code_map_;
   std::map<std::string, std::string> id_to_display_name_map_;
-  std::set<std::string> ui_only_language_ids_;
+  // List of supported language codes like "en" and "ja".
+  std::vector<std::string> supported_language_codes_;
+  // List of supported IME IDs like "pinyin" and "m17n:ar:kbd".
+  std::vector<std::string> supported_input_method_ids_;
+  // Map from language code to associated input method IDs.
+  typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
+  LanguageCodeToIdsMap language_code_to_ids_map_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigView);
 };

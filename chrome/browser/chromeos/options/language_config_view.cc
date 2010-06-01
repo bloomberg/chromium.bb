@@ -47,13 +47,13 @@ namespace {
 // defined in app/l10_util.cc.
 const char kDefaultLanguageCode[] = "en-US";
 
-// The list of language codes that we don't support text input but do support
-// displaying UI in the languages.
-const struct UiOnlyLanguageCode {
+// The list of language that do not have associated input methods. For
+// these languages, we associate input methods here.
+const struct ExtraLanguage {
   const char* language_code;
-  const char* display_name;
-} kUiOnlyLanguageCodes[] = {
-  { "id", "Indonesian" },  // For Indonesian, we can just use US keyboard layout
+  const char* input_method_id;
+} kExtraLanguages[] = {
+  { "id", "xkb:us::eng" }, // For Indonesian, use US keyboard layout.
 };
 
 // The width of the preferred language table shown on the left side.
@@ -295,10 +295,8 @@ views::View* LanguageConfigView::CreatePerLanguageConfigView(
                         GridLayout::USE_PREF, 0, 0);
 
   AddUiLanguageSection(target_language_code, layout);
-  if (ui_only_language_ids_.count(target_language_code) == 0) {
-    layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
-    AddInputMethodSection(target_language_code, layout);
-  }
+  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  AddInputMethodSection(target_language_code, layout);
 
   return contents;
 }
@@ -357,38 +355,35 @@ void LanguageConfigView::AddInputMethodSection(
   // Add input method names and configuration buttons.
   input_method_checkboxes_.clear();
 
-  std::vector<std::string> input_method_ids;
-  GetSupportedInputMethodIds(&input_method_ids);
-  for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    const std::string& input_method_id = input_method_ids[i];
-    const std::string candidate_language_code =
-        GetLanguageCodeFromInputMethodId(input_method_id);
+  std::pair<LanguageCodeToIdsMap::const_iterator,
+            LanguageCodeToIdsMap::const_iterator> range =
+      language_code_to_ids_map_.equal_range(language_code);
+  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
+       iter != range.second; ++iter) {
+    const std::string& input_method_id = iter->second;
     const std::string display_name = GetInputMethodDisplayNameFromId(
         input_method_id);
-    if (language_code == candidate_language_code) {
-      layout->StartRow(0, kPerLanguageDoubleColumnSetId);
-      // TODO(satorux): Translate display_name.
-      InputMethodCheckbox* checkbox
-          = new InputMethodCheckbox(UTF8ToWide(display_name),
-                                    input_method_id);
-      checkbox->set_listener(this);
-      checkbox->set_tag(kSelectInputMethodButton);
-      if (InputMethodIsActivated(input_method_id)) {
-        checkbox->SetChecked(true);
-      }
+    layout->StartRow(0, kPerLanguageDoubleColumnSetId);
+    InputMethodCheckbox* checkbox
+        = new InputMethodCheckbox(UTF8ToWide(display_name),
+                                  input_method_id);
+    checkbox->set_listener(this);
+    checkbox->set_tag(kSelectInputMethodButton);
+    if (InputMethodIsActivated(input_method_id)) {
+      checkbox->SetChecked(true);
+    }
 
-      layout->AddView(checkbox);
-      input_method_checkboxes_.insert(checkbox);
-      // Add "configure" button for the input method if we have a
-      // configuration dialog for it.
-      if (input_method_config_view_map_.count(input_method_id) > 0) {
-        InputMethodButton* button = new InputMethodButton(
-            this,
-            l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE),
-            input_method_id);
-        button->set_tag(kConfigureInputMethodButton);
-        layout->AddView(button);
-      }
+    layout->AddView(checkbox);
+    input_method_checkboxes_.insert(checkbox);
+    // Add "configure" button for the input method if we have a
+    // configuration dialog for it.
+    if (input_method_config_view_map_.count(input_method_id) > 0) {
+      InputMethodButton* button = new InputMethodButton(
+          this,
+          l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE),
+          input_method_id);
+      button->set_tag(kConfigureInputMethodButton);
+      layout->AddView(button);
     }
   }
 }
@@ -398,12 +393,35 @@ void LanguageConfigView::OnSelectionChanged() {
 
   const int row = preferred_language_table_->GetFirstSelectedRow();
   const std::string& language_code = preferred_language_codes_[row];
-  // Allow removing the language only if there are more than one languages.
-  if (preferred_language_table_->GetRowCount() > 1) {
-    remove_language_button_->SetEnabled(true);
-  } else {
-    remove_language_button_->SetEnabled(false);
+
+  // Count the number of all active input methods.
+  std::vector<std::string> active_input_method_ids;
+  GetActiveInputMethodIds(&active_input_method_ids);
+  const int num_all_active_input_methods = active_input_method_ids.size();
+
+  // Count the number of active input methods for the selected language.
+  int num_selected_active_input_methods = 0;
+  std::pair<LanguageCodeToIdsMap::const_iterator,
+            LanguageCodeToIdsMap::const_iterator> range =
+      language_code_to_ids_map_.equal_range(language_code);
+  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
+       iter != range.second; ++iter) {
+    if (InputMethodIsActivated(iter->second)) {
+      ++num_selected_active_input_methods;
+    }
   }
+
+  bool remove_button_enabled = false;
+  // Allow removing the language only if the following conditions are met:
+  // 1. There are more than one language.
+  // 2. The languge in the current row is not set to the display language.
+  // 3. Removing the selected language does not result in "zero input method".
+  if (preferred_language_table_->GetRowCount() > 1 &&
+      language_code != g_browser_process->GetApplicationLocale() &&
+      num_all_active_input_methods > num_selected_active_input_methods) {
+    remove_button_enabled = true;
+  }
+  remove_language_button_->SetEnabled(remove_button_enabled);
 
   // Add the per language config view to the right area.
   right_container_->AddChildView(CreatePerLanguageConfigView(language_code));
@@ -441,7 +459,7 @@ int LanguageConfigView::RowCount() {
 
 void LanguageConfigView::InitControlLayout() {
   // Initialize the maps.
-  InitInputMethodIdMaps();
+  InitInputMethodIdMapsAndVectors();
   InitInputMethodConfigViewMap();
 
   preload_engines_.Init(
@@ -494,9 +512,11 @@ void LanguageConfigView::InitControlLayout() {
   root_layout->AddView(CreateContentsOnBottom());
 
   // Select the first row in the language table.
-  // There should be at least one language in the table.
-  CHECK(!preferred_language_codes_.empty());
-  preferred_language_table_->SelectRow(0);
+  // There should be at least one language in the table, but we check it
+  // here so this won't result in crash in case there is no row in the table.
+  if (!preferred_language_codes_.empty()) {
+    preferred_language_table_->SelectRow(0);
+  }
 }
 
 void LanguageConfigView::InitInputMethodConfigViewMap() {
@@ -510,7 +530,13 @@ void LanguageConfigView::InitInputMethodConfigViewMap() {
   // input_method_config_view_map_["mozc-jp"] = CreateLanguageMozcConfigView;
 }
 
-void LanguageConfigView::InitInputMethodIdMaps() {
+void LanguageConfigView::InitInputMethodIdMapsAndVectors() {
+  // The two sets are used to build lists without duplication.
+  std::set<std::string> supported_language_code_set;
+  std::set<std::string> supported_input_method_id_set;
+  // Build the id to descriptor map for handling kExtraLanguages later.
+  std::map<std::string, const InputMethodDescriptor*> id_to_descriptor_map;
+
   // GetSupportedLanguages() never return NULL.
   scoped_ptr<InputMethodDescriptors> supported_input_methods(
       CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedInputMethods());
@@ -518,21 +544,49 @@ void LanguageConfigView::InitInputMethodIdMaps() {
     const InputMethodDescriptor& input_method = supported_input_methods->at(i);
     const std::string language_code =
         LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
-    id_to_language_code_map_.insert(
-        std::make_pair(input_method.id, language_code));
-    id_to_display_name_map_.insert(
-        std::make_pair(input_method.id, LanguageMenuL10nUtil::GetStringUTF8(
-            input_method.display_name)));
+    AddInputMethodToMaps(language_code, input_method);
+    // Add the language code and the input method id to the sets.
+    supported_language_code_set.insert(language_code);
+    supported_input_method_id_set.insert(input_method.id);
+    // Remember the pair.
+    id_to_descriptor_map.insert(
+        std::make_pair(input_method.id, &input_method));
   }
-  for (size_t i = 0; i < arraysize(kUiOnlyLanguageCodes); ++i) {
-    const std::string dummy_input_method_id = StringPrintf(
-        "dummy-input-method-id-%s", kUiOnlyLanguageCodes[i].language_code);
-    id_to_language_code_map_.insert(std::make_pair(
-        dummy_input_method_id, kUiOnlyLanguageCodes[i].language_code));
-    id_to_display_name_map_.insert(std::make_pair(
-        dummy_input_method_id, kUiOnlyLanguageCodes[i].display_name));
-    ui_only_language_ids_.insert(kUiOnlyLanguageCodes[i].language_code);
+
+  // Go through the languages listed in kExtraLanguages.
+  for (size_t i = 0; i < arraysize(kExtraLanguages); ++i) {
+    const char* language_code = kExtraLanguages[i].language_code;
+    const char* input_method_id = kExtraLanguages[i].input_method_id;
+    std::map<std::string, const InputMethodDescriptor*>::const_iterator iter =
+        id_to_descriptor_map.find(input_method_id);
+    // If the associated input method descriptor is found, add the
+    // language code and the input method.
+    if (iter != id_to_descriptor_map.end()) {
+      const InputMethodDescriptor& input_method = *(iter->second);
+      AddInputMethodToMaps(language_code, input_method);
+      // Add the language code and the input method id to the sets.
+      supported_language_code_set.insert(language_code);
+      supported_input_method_id_set.insert(input_method.id);
+    }
   }
+
+  // Build the vectors from the sets.
+  supported_language_codes_.assign(supported_language_code_set.begin(),
+                                   supported_language_code_set.end());
+  supported_input_method_ids_.assign(supported_input_method_id_set.begin(),
+                                     supported_input_method_id_set.end());
+}
+
+void LanguageConfigView::AddInputMethodToMaps(
+    const std::string& language_code,
+    const InputMethodDescriptor& input_method) {
+  id_to_language_code_map_.insert(
+      std::make_pair(input_method.id, language_code));
+  id_to_display_name_map_.insert(
+      std::make_pair(input_method.id, LanguageMenuL10nUtil::GetStringUTF8(
+          input_method.display_name)));
+  language_code_to_ids_map_.insert(
+      std::make_pair(language_code, input_method.id));
 }
 
 views::View* LanguageConfigView::CreateContentsOnLeft() {
@@ -585,11 +639,9 @@ views::View* LanguageConfigView::CreateContentsOnBottom() {
                         GridLayout::USE_PREF, 0, 0);
 
   // Create the add language combobox model.
-  std::vector<std::string> language_codes;
-  GetSupportedLanguageCodes(&language_codes);
   // LanguageComboboxModel sorts languages by their display names.
   add_language_combobox_model_.reset(
-      new AddLanguageComboboxModel(NULL, language_codes));
+      new AddLanguageComboboxModel(NULL, supported_language_codes_));
   // Mark the existing preferred languages to be ignored.
   for (size_t i = 0; i < preferred_language_codes_.size(); ++i) {
     add_language_combobox_model_->SetIgnored(preferred_language_codes_[i],
@@ -625,12 +677,10 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
   // Activate the first input language associated with the language. We have
   // to call this before the OnItemsAdded() call below so the checkbox
   // for the first input language gets checked.
-  std::vector<std::string> input_method_ids;
-  GetSupportedInputMethodIds(&input_method_ids);
-  for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    if (GetLanguageCodeFromInputMethodId(input_method_ids[i]) ==
+  for (size_t i = 0; i < supported_input_method_ids_.size(); ++i) {
+    if (GetLanguageCodeFromInputMethodId(supported_input_method_ids_[i]) ==
         language_code) {
-      SetInputMethodActivated(input_method_ids[i], true);
+      SetInputMethodActivated(supported_input_method_ids_[i], true);
       break;
     }
   }
@@ -694,15 +744,13 @@ void LanguageConfigView::ResetAddLanguageCombobox() {
 
 void LanguageConfigView::DeactivateInputMethodsFor(
     const std::string& language_code) {
-  std::vector<std::string> input_method_ids;
-  GetSupportedInputMethodIds(&input_method_ids);
-  for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    if (GetLanguageCodeFromInputMethodId(input_method_ids[i]) ==
+  for (size_t i = 0; i < supported_input_method_ids_.size(); ++i) {
+    if (GetLanguageCodeFromInputMethodId(supported_input_method_ids_[i]) ==
         language_code) {
       // What happens if we disable the input method currently active?
       // IBus should take care of it, so we don't do anything special
       // here. See crosbug.com/2443.
-      SetInputMethodActivated(input_method_ids[i], false);
+      SetInputMethodActivated(supported_input_method_ids_[i], false);
       // Do not break; here in order to disable all engines that belong to
       // |language_code|.
     }
@@ -799,31 +847,6 @@ void LanguageConfigView::EnableAllCheckboxes() {
        checkbox != input_method_checkboxes_.end(); ++checkbox) {
     (*checkbox)->SetEnabled(true);
   }
-}
-
-void LanguageConfigView::GetSupportedInputMethodIds(
-    std::vector<std::string>* out_input_method_ids) const {
-  out_input_method_ids->clear();
-  std::map<std::string, std::string>::const_iterator iter;
-  for (iter = id_to_language_code_map_.begin();
-       iter != id_to_language_code_map_.end();
-       ++iter) {
-    out_input_method_ids->push_back(iter->first);
-  }
-}
-
-void LanguageConfigView::GetSupportedLanguageCodes(
-    std::vector<std::string>* out_language_codes) const {
-  std::set<std::string> language_code_set;
-  std::map<std::string, std::string>::const_iterator iter;
-  for (iter = id_to_language_code_map_.begin();
-       iter != id_to_language_code_map_.end();
-       ++iter) {
-    language_code_set.insert(iter->second);
-  }
-  out_language_codes->clear();
-  out_language_codes->assign(
-      language_code_set.begin(), language_code_set.end());
 }
 
 std::string LanguageConfigView::GetLanguageCodeFromInputMethodId(
