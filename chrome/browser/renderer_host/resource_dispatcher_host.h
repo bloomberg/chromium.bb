@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/process.h"
@@ -269,15 +270,16 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   }
 
  private:
-  FRIEND_TEST(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies);
-  FRIEND_TEST(ResourceDispatcherHostTest,
-              IncrementOutstandingRequestsMemoryCost);
-  FRIEND_TEST(ResourceDispatcherHostTest,
-              CalculateApproximateMemoryCost);
-  FRIEND_TEST(ApplyExtensionLocalizationFilterTest, WrongScheme);
-  FRIEND_TEST(ApplyExtensionLocalizationFilterTest, GoodScheme);
-  FRIEND_TEST(ApplyExtensionLocalizationFilterTest,
-              GoodSchemeWrongResourceType);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
+                           TestBlockedRequestsProcessDies);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
+                           IncrementOutstandingRequestsMemoryCost);
+  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
+                           CalculateApproximateMemoryCost);
+  FRIEND_TEST_ALL_PREFIXES(ApplyExtensionLocalizationFilterTest, WrongScheme);
+  FRIEND_TEST_ALL_PREFIXES(ApplyExtensionLocalizationFilterTest, GoodScheme);
+  FRIEND_TEST_ALL_PREFIXES(ApplyExtensionLocalizationFilterTest,
+                           GoodSchemeWrongResourceType);
 
   class ShutdownTask;
 

@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Task;
 class Timer;
@@ -44,10 +44,10 @@ struct hash<const URLFetcher*> {
 #endif
 
 class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
-  // Testing friends:
-  FRIEND_TEST(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
-  FRIEND_TEST(SafeBrowsingProtocolManagerTest, TestChunkStrings);
-  FRIEND_TEST(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestChunkStrings);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestGetHashBackOffTimes);
 
  public:
   // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues

@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class PrefService;
 
@@ -59,7 +59,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   static const char kDefaultGoogleHomepage[];
 
  private:
-  FRIEND_TEST(GoogleURLTrackerTest, CheckAndConvertURL);
+  FRIEND_TEST_ALL_PREFIXES(GoogleURLTrackerTest, CheckAndConvertURL);
 
   // Determines if |url| is an appropriate source for a new Google base URL, and
   // update |base_url| to the appropriate base URL if so.  Returns whether the

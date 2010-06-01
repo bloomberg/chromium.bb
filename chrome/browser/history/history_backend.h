@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/download_types.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
 #include "chrome/common/mru_cache.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkService;
 class TestingProfile;
@@ -303,10 +303,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class base::RefCountedThreadSafe<HistoryBackend>;
   friend class CommitLaterTask;  // The commit task needs to call Commit().
   friend class HistoryTest;  // So the unit tests can poke our innards.
-  FRIEND_TEST(HistoryBackendTest, DeleteAll);
-  FRIEND_TEST(HistoryBackendTest, ImportedFaviconsTest);
-  FRIEND_TEST(HistoryBackendTest, URLsNoLongerBookmarked);
-  FRIEND_TEST(HistoryBackendTest, StripUsernamePasswordTest);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ImportedFaviconsTest);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, URLsNoLongerBookmarked);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, StripUsernamePasswordTest);
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.

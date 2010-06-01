@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
@@ -19,7 +20,6 @@
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "net/url_request/url_request_job_tracker.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
 class Extension;
@@ -148,9 +148,9 @@ class TaskManager {
   void OpenAboutMemory();
 
  private:
-  FRIEND_TEST(TaskManagerTest, Basic);
-  FRIEND_TEST(TaskManagerTest, Resources);
-  FRIEND_TEST(TaskManagerTest, RefreshCalled);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Resources);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, RefreshCalled);
 
   // Obtain an instance via GetInstance().
   TaskManager();
@@ -261,7 +261,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
  private:
   friend class base::RefCountedThreadSafe<TaskManagerModel>;
-  FRIEND_TEST(TaskManagerTest, RefreshCalled);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, RefreshCalled);
 
   ~TaskManagerModel();
 

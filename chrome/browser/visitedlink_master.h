@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/visitedlink_common.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 class MessageLoop;
@@ -121,9 +121,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 #endif
 
  private:
-  FRIEND_TEST(VisitedLinkTest, Delete);
-  FRIEND_TEST(VisitedLinkTest, BigDelete);
-  FRIEND_TEST(VisitedLinkTest, BigImport);
+  FRIEND_TEST_ALL_PREFIXES(VisitedLinkTest, Delete);
+  FRIEND_TEST_ALL_PREFIXES(VisitedLinkTest, BigDelete);
+  FRIEND_TEST_ALL_PREFIXES(VisitedLinkTest, BigImport);
 
   // Object to rebuild the table on the history thread (see the .cc file).
   class TableBuilder;

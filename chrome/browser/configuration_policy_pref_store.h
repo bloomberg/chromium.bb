@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/configuration_policy_store.h"
 #include "chrome/common/pref_store.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class ConfigurationPolicyProvider;
 
@@ -30,16 +30,18 @@ class ConfigurationPolicyPrefStore : public PrefStore,
 
  private:
   // For unit tests.
-  FRIEND_TEST(ConfigurationPolicyPrefStoreTest, TestSettingHomePageDefault);
-  FRIEND_TEST(ConfigurationPolicyPrefStoreTest, TestSettingHomePageOverride);
-  FRIEND_TEST(ConfigurationPolicyPrefStoreTest,
-              TestSettingHomepageIsNewTabPageDefault);
-  FRIEND_TEST(ConfigurationPolicyPrefStoreTest,
-              TestSettingHomepageIsNewTabPage);
-  FRIEND_TEST(ConfigurationPolicyPrefStoreTest,
-              TestSettingCookiesEnabledDefault);
-  FRIEND_TEST(ConfigurationPolicyPrefStoreTest,
-              TestSettingCookiesEnabledOverride);
+  FRIEND_TEST_ALL_PREFIXES(ConfigurationPolicyPrefStoreTest,
+                           TestSettingHomePageDefault);
+  FRIEND_TEST_ALL_PREFIXES(ConfigurationPolicyPrefStoreTest,
+                           TestSettingHomePageOverride);
+  FRIEND_TEST_ALL_PREFIXES(ConfigurationPolicyPrefStoreTest,
+                           TestSettingHomepageIsNewTabPageDefault);
+  FRIEND_TEST_ALL_PREFIXES(ConfigurationPolicyPrefStoreTest,
+                           TestSettingHomepageIsNewTabPage);
+  FRIEND_TEST_ALL_PREFIXES(ConfigurationPolicyPrefStoreTest,
+                           TestSettingCookiesEnabledDefault);
+  FRIEND_TEST_ALL_PREFIXES(ConfigurationPolicyPrefStoreTest,
+                           TestSettingCookiesEnabledOverride);
 
   // Policies that map to a single preference are handled
   // by an automated converter. Each one of these policies

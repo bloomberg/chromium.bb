@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"  // For DISALLOW_COPY_AND_ASSIGN
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 class Browser;
 class Profile;
@@ -19,8 +19,8 @@ class Profile;
 // Cross-platform logic needed for the encoding menu.
 // For now, we don't need to track state so all methods are static.
 class EncodingMenuController {
-  FRIEND_TEST(EncodingMenuControllerTest, EncodingIDsBelongTest);
-  FRIEND_TEST(EncodingMenuControllerTest, IsItemChecked);
+  FRIEND_TEST_ALL_PREFIXES(EncodingMenuControllerTest, EncodingIDsBelongTest);
+  FRIEND_TEST_ALL_PREFIXES(EncodingMenuControllerTest, IsItemChecked);
 
  public:
   typedef std::pair<int, string16> EncodingMenuItem;

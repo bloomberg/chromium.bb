@@ -10,25 +10,25 @@
 #include <string>
 
 #include "app/gtk_signal.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 
 // GTK version of the bookmark editor dialog.
 class BookmarkEditorGtk : public BookmarkEditor,
                           public BookmarkModelObserver {
-  FRIEND_TEST(BookmarkEditorGtkTest, ChangeParent);
-  FRIEND_TEST(BookmarkEditorGtkTest, ChangeParentAndURL);
-  FRIEND_TEST(BookmarkEditorGtkTest, ChangeURLToExistingURL);
-  FRIEND_TEST(BookmarkEditorGtkTest, EditTitleKeepsPosition);
-  FRIEND_TEST(BookmarkEditorGtkTest, EditURLKeepsPosition);
-  FRIEND_TEST(BookmarkEditorGtkTest, ModelsMatch);
-  FRIEND_TEST(BookmarkEditorGtkTest, MoveToNewParent);
-  FRIEND_TEST(BookmarkEditorGtkTest, NewURL);
-  FRIEND_TEST(BookmarkEditorGtkTest, ChangeURLNoTree);
-  FRIEND_TEST(BookmarkEditorGtkTest, ChangeTitleNoTree);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeParent);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeParentAndURL);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeURLToExistingURL);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, EditTitleKeepsPosition);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, EditURLKeepsPosition);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ModelsMatch);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, MoveToNewParent);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, NewURL);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeURLNoTree);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeTitleNoTree);
  public:
   BookmarkEditorGtk(GtkWindow* window,
                     Profile* profile,

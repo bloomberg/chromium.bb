@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class ImporterBridge;
 class XmlReader;
@@ -58,7 +58,7 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
                           const std::string& data);
 
  private:
-  FRIEND_TEST(Toolbar5ImporterTest, BookmarkParse);
+  FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
 
   virtual ~Toolbar5Importer();
 

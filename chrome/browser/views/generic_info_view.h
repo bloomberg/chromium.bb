@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_VIEWS_GENERIC_INFO_VIEW_H_
 #define CHROME_BROWSER_VIEWS_GENERIC_INFO_VIEW_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/view.h"
 
 namespace views {
@@ -48,7 +48,7 @@ class GenericInfoView : public views::View {
       bool is_add, views::View* parent, views::View* child);
 
  private:
-  FRIEND_TEST(GenericInfoViewTest, GenericInfoView);
+  FRIEND_TEST_ALL_PREFIXES(GenericInfoViewTest, GenericInfoView);
 
   void InitGenericInfoView();
   void AddRow(int layout_id, views::GridLayout* layout,

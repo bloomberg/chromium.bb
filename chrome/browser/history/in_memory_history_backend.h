@@ -16,9 +16,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_registrar.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FilePath;
 class HistoryDatabase;
@@ -56,7 +56,7 @@ class InMemoryHistoryBackend : public NotificationObserver {
                        const NotificationDetails& details);
 
  private:
-  FRIEND_TEST(HistoryBackendTest, DeleteAll);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
 
   // Handler for NOTIFY_HISTORY_TYPED_URLS_MODIFIED.
   void OnTypedURLsModified(const URLsModifiedDetails& details);

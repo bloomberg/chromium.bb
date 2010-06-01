@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Browser;
 class CommandLine;
@@ -129,8 +129,7 @@ class BrowserInit {
                                const std::vector<Tab>& tabs);
 
    private:
-    FRIEND_TEST(BrowserTest, RestorePinnedTabs);
-    FRIEND_TEST(BrowserTest, DISABLED_RestorePinnedTabs);
+    FRIEND_TEST_ALL_PREFIXES(BrowserTest, RestorePinnedTabs);
 
     // If the process was launched with the web application command line flags,
     // e.g. --app=http://www.google.com/ or --app_id=... return true.

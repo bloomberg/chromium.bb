@@ -19,9 +19,9 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FilePath;
 
@@ -60,8 +60,8 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
 
  private:
   friend class base::RefCountedThreadSafe<BloomFilter>;
-  FRIEND_TEST(SafeBrowsingBloomFilter, BloomFilterUse);
-  FRIEND_TEST(SafeBrowsingBloomFilter, BloomFilterFile);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBloomFilter, BloomFilterUse);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBloomFilter, BloomFilterFile);
 
   static const int kNumHashKeys = 20;
   static const int kFileVersion = 1;

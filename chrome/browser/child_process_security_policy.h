@@ -10,9 +10,9 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/singleton.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FilePath;
 class GURL;
@@ -115,7 +115,7 @@ class ChildProcessSecurityPolicy {
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
-  FRIEND_TEST(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak);
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak);
 
   class SecurityState;
 

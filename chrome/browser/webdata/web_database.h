@@ -10,10 +10,10 @@
 #include "app/sql/connection.h"
 #include "app/sql/init_status.h"
 #include "app/sql/meta_table.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/glue/form_field.h"
 
 class AutofillChange;
@@ -273,13 +273,16 @@ class WebDatabase {
   bool RemoveWebApp(const GURL& url);
 
  private:
-  FRIEND_TEST(WebDatabaseTest, Autofill);
-  FRIEND_TEST(WebDatabaseTest, Autofill_AddChanges);
-  FRIEND_TEST(WebDatabaseTest, Autofill_RemoveBetweenChanges);
-  FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_OneResult);
-  FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoDistinct);
-  FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoSame);
-  FRIEND_TEST(WebDatabaseTest, Autofill_UpdateDontReplace);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_AddChanges);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_RemoveBetweenChanges);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
+                           Autofill_GetAllAutofillEntries_OneResult);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
+                           Autofill_GetAllAutofillEntries_TwoDistinct);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
+                           Autofill_GetAllAutofillEntries_TwoSame);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_UpdateDontReplace);
   // Methods for adding autofill entries at a specified time.  For
   // testing only.
   bool AddFormFieldValuesTime(

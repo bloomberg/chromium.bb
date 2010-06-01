@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class TemplateURL;
 
@@ -113,13 +113,13 @@ class TemplateURLRef {
   friend class TemplateURL;
   friend class TemplateURLModelTest;
   friend class TemplateURLTest;
-  FRIEND_TEST(TemplateURLTest, ParseParameterKnown);
-  FRIEND_TEST(TemplateURLTest, ParseParameterUnknown);
-  FRIEND_TEST(TemplateURLTest, ParseURLEmpty);
-  FRIEND_TEST(TemplateURLTest, ParseURLNoTemplateEnd);
-  FRIEND_TEST(TemplateURLTest, ParseURLNoKnownParameters);
-  FRIEND_TEST(TemplateURLTest, ParseURLTwoParameters);
-  FRIEND_TEST(TemplateURLTest, ParseURLNestedParameter);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLEmpty);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNoTemplateEnd);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNoKnownParameters);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLTwoParameters);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNestedParameter);
 
   // Enumeration of the known types.
   enum ReplacementType {

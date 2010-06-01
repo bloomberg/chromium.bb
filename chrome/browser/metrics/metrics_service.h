@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
@@ -22,7 +23,6 @@
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_registrar.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
@@ -510,9 +510,10 @@ class MetricsService : public NotificationObserver,
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 #endif
 
-  FRIEND_TEST(MetricsServiceTest, ClientIdGeneratesAllZeroes);
-  FRIEND_TEST(MetricsServiceTest, ClientIdGeneratesCorrectly);
-  FRIEND_TEST(MetricsServiceTest, ClientIdCorrectlyFormatted);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesAllZeroes);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);
+
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 

@@ -11,6 +11,7 @@
 
 #include "app/sql/connection.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
@@ -21,7 +22,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class DictionaryValue;
 class GURL;
@@ -63,10 +63,10 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
 
  private:
   friend class base::RefCountedThreadSafe<ThumbnailStore>;
-  FRIEND_TEST(ThumbnailStoreTest, RetrieveFromCache);
-  FRIEND_TEST(ThumbnailStoreTest, RetrieveFromDisk);
-  FRIEND_TEST(ThumbnailStoreTest, UpdateThumbnail);
-  FRIEND_TEST(ThumbnailStoreTest, FollowRedirects);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailStoreTest, RetrieveFromCache);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailStoreTest, RetrieveFromDisk);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailStoreTest, UpdateThumbnail);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailStoreTest, FollowRedirects);
   friend class ThumbnailStoreTest;
 
   ~ThumbnailStore();

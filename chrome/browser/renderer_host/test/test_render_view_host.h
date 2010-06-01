@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
@@ -170,7 +171,7 @@ class TestRenderViewHost : public RenderViewHost {
   virtual bool IsRenderViewLive() const;
 
  private:
-  FRIEND_TEST(RenderViewHostTest, FilterNavigate);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
 
   // Tracks if the caller thinks if it created the RenderView. This is so we can
   // respond to IsRenderViewLive appropriately.

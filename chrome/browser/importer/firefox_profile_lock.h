@@ -15,7 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "base/gtest_prod_util.h"
 
 // Firefox is designed to allow only one application to access its
 // profile at the same time.
@@ -80,8 +80,8 @@ class FirefoxProfileLock {
   bool HasAcquired();
 
  private:
-  FRIEND_TEST(FirefoxProfileLockTest, ProfileLock);
-  FRIEND_TEST(FirefoxProfileLockTest, ProfileLockOrphaned);
+  FRIEND_TEST_ALL_PREFIXES(FirefoxProfileLockTest, ProfileLock);
+  FRIEND_TEST_ALL_PREFIXES(FirefoxProfileLockTest, ProfileLockOrphaned);
 
   static const FilePath::CharType* kLockFileName;
   static const FilePath::CharType* kOldLockFileName;

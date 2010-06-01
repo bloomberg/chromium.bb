@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/cancelable_request.h"
@@ -716,9 +717,9 @@ class TabContents : public PageNavigator,
   // automation purposes.
   friend class AutomationProvider;
 
-  FRIEND_TEST(TabContentsTest, NoJSMessageOnInterstitials);
-  FRIEND_TEST(TabContentsTest, UpdateTitle);
-  FRIEND_TEST(TabContentsTest, CrossSiteCantPreemptAfterUnload);
+  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, NoJSMessageOnInterstitials);
+  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, UpdateTitle);
+  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, CrossSiteCantPreemptAfterUnload);
 
   // Temporary until the view/contents separation is complete.
   friend class TabContentsView;

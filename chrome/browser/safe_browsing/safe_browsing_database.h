@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BloomFilter;
 class GURL;
@@ -83,7 +83,7 @@ class SafeBrowsingDatabase {
   typedef base::hash_map<SBPrefix, HashList> HashCache;
 
   friend class SafeBrowsingDatabaseTest;
-  FRIEND_TEST(SafeBrowsingDatabaseTest, HashCaching);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest, HashCaching);
 
   static FilePath BloomFilterFilename(const FilePath& db_filename);
 

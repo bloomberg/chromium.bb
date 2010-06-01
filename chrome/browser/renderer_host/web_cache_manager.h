@@ -13,10 +13,10 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
 template<typename Type>
@@ -24,9 +24,8 @@ struct DefaultSingletonTraits;
 class PrefService;
 
 class WebCacheManager {
-  // Unit tests are our friends.
   friend class WebCacheManagerTest;
-  FRIEND_TEST(WebCacheManagerBrowserTest, FLAKY_CrashOnceOnly);
+  FRIEND_TEST_ALL_PREFIXES(WebCacheManagerBrowserTest, CrashOnceOnly);
 
  public:
   static void RegisterPrefs(PrefService* prefs);

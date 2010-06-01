@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_MASTER_H_
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_registrar.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace base {
 class StringPiece;
@@ -53,12 +53,12 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   virtual ~UserScriptMaster();
 
  private:
-  FRIEND_TEST(UserScriptMasterTest, Parse1);
-  FRIEND_TEST(UserScriptMasterTest, Parse2);
-  FRIEND_TEST(UserScriptMasterTest, Parse3);
-  FRIEND_TEST(UserScriptMasterTest, Parse4);
-  FRIEND_TEST(UserScriptMasterTest, Parse5);
-  FRIEND_TEST(UserScriptMasterTest, Parse6);
+  FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, Parse1);
+  FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, Parse2);
+  FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, Parse3);
+  FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, Parse4);
+  FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, Parse5);
+  FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, Parse6);
 
  public:
   // We reload user scripts on the file thread to prevent blocking the UI.

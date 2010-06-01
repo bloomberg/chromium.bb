@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/linked_ptr.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
@@ -217,8 +218,9 @@ class Blacklist : public base::RefCountedThreadSafe<Blacklist> {
   // Preferences where blacklist entries are stored.
   PrefService* prefs_;
 
-  FRIEND_TEST(BlacklistTest, Generic);
-  FRIEND_TEST(BlacklistTest, PatternMatch);
+  FRIEND_TEST_ALL_PREFIXES(BlacklistTest, Generic);
+  FRIEND_TEST_ALL_PREFIXES(BlacklistTest, PatternMatch);
+
   DISALLOW_COPY_AND_ASSIGN(Blacklist);
 };
 

@@ -12,6 +12,7 @@
 
 #include "app/gtk_signal.h"
 #include "app/slide_animation.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -24,7 +25,6 @@
 #include "chrome/common/owned_widget_gtk.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkMenuController;
 class Browser;
@@ -43,9 +43,10 @@ class BookmarkBarGtk : public AnimationDelegate,
                        public NotificationObserver,
                        public BookmarkBarInstructionsGtk::Delegate,
                        public BookmarkContextMenuControllerDelegate {
-  FRIEND_TEST(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
-  FRIEND_TEST(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark);
-  FRIEND_TEST(BookmarkBarGtkUnittest, BuildsButtons);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest,
+                           HidesHelpMessageWithBookmark);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, BuildsButtons);
  public:
   explicit BookmarkBarGtk(BrowserWindowGtk* window,
                           Profile* profile, Browser* browser,

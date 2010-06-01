@@ -11,6 +11,7 @@
 
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "net/base/cookie_monster.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class CookieDisplayGtk;
 class CookiesTreeModel;
@@ -128,17 +128,17 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   bool destroy_dialog_in_destructor_;
 
   friend class CookiesViewTest;
-  FRIEND_TEST(CookiesViewTest, Empty);
-  FRIEND_TEST(CookiesViewTest, Noop);
-  FRIEND_TEST(CookiesViewTest, RemoveAll);
-  FRIEND_TEST(CookiesViewTest, RemoveAllWithDefaultSelected);
-  FRIEND_TEST(CookiesViewTest, Remove);
-  FRIEND_TEST(CookiesViewTest, RemoveCookiesByType);
-  FRIEND_TEST(CookiesViewTest, RemoveByDomain);
-  FRIEND_TEST(CookiesViewTest, RemoveDefaultSelection);
-  FRIEND_TEST(CookiesViewTest, Filter);
-  FRIEND_TEST(CookiesViewTest, FilterRemoveAll);
-  FRIEND_TEST(CookiesViewTest, FilterRemove);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, Empty);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, Noop);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, RemoveAll);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, RemoveAllWithDefaultSelected);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, Remove);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, RemoveCookiesByType);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, RemoveByDomain);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, RemoveDefaultSelection);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, Filter);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, FilterRemoveAll);
+  FRIEND_TEST_ALL_PREFIXES(CookiesViewTest, FilterRemove);
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };

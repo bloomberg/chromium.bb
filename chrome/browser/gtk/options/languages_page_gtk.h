@@ -17,11 +17,11 @@
 #include <string>
 
 #include "app/gtk_signal.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/options_page_base.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class LanguageComboboxModel;
 class LanguageOrderTableModel;
@@ -118,12 +118,12 @@ class LanguagesPageGtk
   bool initializing_;
 
   friend class LanguagesPageGtkTest;
-  FRIEND_TEST(LanguagesPageGtkTest, RemoveAcceptLang);
-  FRIEND_TEST(LanguagesPageGtkTest, RemoveMultipleAcceptLang);
-  FRIEND_TEST(LanguagesPageGtkTest, MoveAcceptLang);
-  FRIEND_TEST(LanguagesPageGtkTest, AddAcceptLang);
-  FRIEND_TEST(LanguagesPageGtkTest, EnableSpellChecking);
-  FRIEND_TEST(LanguagesPageGtkTest, DictionaryLanguage);
+  FRIEND_TEST_ALL_PREFIXES(LanguagesPageGtkTest, RemoveAcceptLang);
+  FRIEND_TEST_ALL_PREFIXES(LanguagesPageGtkTest, RemoveMultipleAcceptLang);
+  FRIEND_TEST_ALL_PREFIXES(LanguagesPageGtkTest, MoveAcceptLang);
+  FRIEND_TEST_ALL_PREFIXES(LanguagesPageGtkTest, AddAcceptLang);
+  FRIEND_TEST_ALL_PREFIXES(LanguagesPageGtkTest, EnableSpellChecking);
+  FRIEND_TEST_ALL_PREFIXES(LanguagesPageGtkTest, DictionaryLanguage);
 
   DISALLOW_COPY_AND_ASSIGN(LanguagesPageGtk);
 };

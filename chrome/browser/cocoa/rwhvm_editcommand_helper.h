@@ -8,9 +8,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 // RenderWidgetHostViewMacEditCommandHelper is the real name of this class
 // but that's too long, so we use a shorter version.
@@ -30,8 +30,10 @@
 //  fact a distinct object) When these selectors are called, the relevant
 // edit command is executed in WebCore.
 class RWHVMEditCommandHelper {
-   FRIEND_TEST(RWHVMEditCommandHelperTest, TestAddEditingSelectorsToClass);
-   FRIEND_TEST(RWHVMEditCommandHelperTest, TestEditingCommandDelivery);
+   FRIEND_TEST_ALL_PREFIXES(RWHVMEditCommandHelperTest,
+                            TestAddEditingSelectorsToClass);
+   FRIEND_TEST_ALL_PREFIXES(RWHVMEditCommandHelperTest,
+                            TestEditingCommandDelivery);
 
  public:
   RWHVMEditCommandHelper();

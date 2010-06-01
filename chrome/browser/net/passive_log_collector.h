@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "net/base/net_log.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class PassiveLogCollector : public ChromeNetLog::Observer {
  public:
@@ -245,8 +245,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   void GetAllCapturedEvents(EntryList* out) const;
 
  private:
-  FRIEND_TEST(PassiveLogCollectorTest, LostConnectJob);
-  FRIEND_TEST(PassiveLogCollectorTest, LostSocket);
+  FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest, LostConnectJob);
+  FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest, LostSocket);
 
   ConnectJobTracker connect_job_tracker_;
   SocketTracker socket_tracker_;

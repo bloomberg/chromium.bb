@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINT_DIALOG_CLOUD_H_
 
 #include "base/basictypes.h"
-
-#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "base/gtest_prod_util.h"
 
 class Browser;
 class FilePath;
@@ -21,8 +20,7 @@ class PrintDialogCloud {
   static void CreatePrintDialogForPdf(const FilePath& path_to_pdf);
 
  private:
-  FRIEND_TEST(PrintDialogCloudTest, HandlersRegistered);
-  FRIEND_TEST(PrintDialogCloudTest, DISABLED_HandlersRegistered);
+  FRIEND_TEST_ALL_PREFIXES(PrintDialogCloudTest, HandlersRegistered);
 
   explicit PrintDialogCloud(const FilePath& path_to_pdf);
   ~PrintDialogCloud();

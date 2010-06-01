@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "app/surface/transport_dib.h"
+#include "base/gtest_prod_util.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -19,7 +20,6 @@
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 
 namespace gfx {
@@ -437,10 +437,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   bool renderer_initialized_;
 
  private:
-  FRIEND_TEST(RenderWidgetHostTest, Resize);
-  FRIEND_TEST(RenderWidgetHostTest, ResizeThenCrash);
-  FRIEND_TEST(RenderWidgetHostTest, HiddenPaint);
-  FRIEND_TEST(RenderWidgetHostTest, PaintAtSize);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, Resize);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, ResizeThenCrash);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HiddenPaint);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, PaintAtSize);
 
   // Tell this object to destroy itself.
   void Destroy();

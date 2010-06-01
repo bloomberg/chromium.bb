@@ -9,9 +9,9 @@
 
 #include "app/tree_node_model.h"
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FilePath;
 
@@ -35,7 +35,7 @@ class StarredURLDatabase : public URLDatabase {
   // The unit tests poke our innards.
   friend class HistoryTest;
   friend class StarredURLDatabaseTest;
-  FRIEND_TEST(HistoryTest, CreateStarGroup);
+  FRIEND_TEST_ALL_PREFIXES(HistoryTest, CreateStarGroup);
 
   // Writes bookmarks to the specified file.
   bool MigrateBookmarksToFile(const FilePath& path);

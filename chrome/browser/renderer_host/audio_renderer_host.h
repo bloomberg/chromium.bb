@@ -77,6 +77,7 @@
 
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
@@ -88,7 +89,6 @@
 #include "ipc/ipc_message.h"
 #include "media/audio/audio_output.h"
 #include "media/audio/simple_sources.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class AudioManager;
 struct ViewHostMsg_Audio_CreateStream_Params;
@@ -147,8 +147,8 @@ class AudioRendererHost
  private:
   friend class AudioRendererHost::IPCAudioSource;
   friend class AudioRendererHostTest;
-  FRIEND_TEST(AudioRendererHostTest, CreateMockStream);
-  FRIEND_TEST(AudioRendererHostTest, MockStreamDataConversation);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, CreateMockStream);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, MockStreamDataConversation);
 
   // The container for AudioOutputStream and serves the audio packet received
   // via IPC.

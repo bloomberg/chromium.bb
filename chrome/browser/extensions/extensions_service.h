@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/linked_ptr.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
@@ -29,7 +30,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Browser;
 class ExtensionsServiceBackend;
@@ -417,7 +417,8 @@ class ExtensionsService
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extension_manifests_;
 
-  FRIEND_TEST(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+                           UpdatePendingExtensionAlreadyInstalled);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsService);
 };

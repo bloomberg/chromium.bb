@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_
 #define CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/importer/importer.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class IEImporter : public Importer {
  public:
@@ -18,7 +18,7 @@ class IEImporter : public Importer {
                            ImporterBridge* bridge);
 
  private:
-  FRIEND_TEST(ImporterTest, IEImporter);
+  FRIEND_TEST_ALL_PREFIXES(ImporterTest, IEImporter);
 
   virtual ~IEImporter() {}
 

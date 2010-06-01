@@ -10,13 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/task.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/text_database.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/mru_cache.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 struct sqlite3;
 
@@ -156,11 +156,12 @@ class TextDatabaseManager {
 
  private:
   // These tests call ExpireRecentChangesForTime to force expiration.
-  FRIEND_TEST(TextDatabaseManagerTest, InsertPartial);
-  FRIEND_TEST(TextDatabaseManagerTest, PartialComplete);
-  FRIEND_TEST(ExpireHistoryTest, FLAKY_DeleteURLAndFavicon);
-  FRIEND_TEST(ExpireHistoryTest, FlushRecentURLsUnstarred);
-  FRIEND_TEST(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted);
+  FRIEND_TEST_ALL_PREFIXES(TextDatabaseManagerTest, InsertPartial);
+  FRIEND_TEST_ALL_PREFIXES(TextDatabaseManagerTest, PartialComplete);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, DeleteURLAndFavicon);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, FlushRecentURLsUnstarred);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest,
+                           FlushRecentURLsUnstarredRestricted);
 
   // Stores "recent stuff" that has happened with the page, since the page
   // visit, title, and body all come in at different times.

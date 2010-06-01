@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 #if __OBJC__
 @class NSDictionary;
@@ -44,9 +44,9 @@ class SafariImporter : public Importer {
  // returns true if we can import the Safari profile.
  static bool CanImport(const FilePath& library_dir, uint16 *services_supported);
  private:
-  FRIEND_TEST(SafariImporterTest, BookmarkImport);
-  FRIEND_TEST(SafariImporterTest, FavIconImport);
-  FRIEND_TEST(SafariImporterTest, HistoryImport);
+  FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);
+  FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, FavIconImport);
+  FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, HistoryImport);
 
   virtual ~SafariImporter();
 

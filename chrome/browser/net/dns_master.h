@@ -19,12 +19,12 @@
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/net/dns_host_info.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/common/net/dns.h"
 #include "net/base/host_port_pair.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace net {
 class HostResolver;
@@ -115,13 +115,13 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
 
  private:
   friend class base::RefCountedThreadSafe<DnsMaster>;
-  FRIEND_TEST(DnsMasterTest, BenefitLookupTest);
-  FRIEND_TEST(DnsMasterTest, ShutdownWhenResolutionIsPendingTest);
-  FRIEND_TEST(DnsMasterTest, SingleLookupTest);
-  FRIEND_TEST(DnsMasterTest, ConcurrentLookupTest);
-  FRIEND_TEST(DnsMasterTest, MassiveConcurrentLookupTest);
-  FRIEND_TEST(DnsMasterTest, PriorityQueuePushPopTest);
-  FRIEND_TEST(DnsMasterTest, PriorityQueueReorderTest);
+  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, BenefitLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, ShutdownWhenResolutionIsPendingTest);
+  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, SingleLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, ConcurrentLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, MassiveConcurrentLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, PriorityQueuePushPopTest);
+  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, PriorityQueueReorderTest);
   friend class WaitForResolutionHelper;  // For testing.
 
   ~DnsMaster();

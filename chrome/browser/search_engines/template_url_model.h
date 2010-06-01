@@ -7,11 +7,11 @@
 
 #include <set>
 
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_registrar.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Extension;
 class PrefService;
@@ -229,11 +229,13 @@ class TemplateURLModel : public WebDataServiceConsumer,
                                            const std::wstring& term);
 
  private:
-  FRIEND_TEST(TemplateURLModelTest, BuildQueryTerms);
-  FRIEND_TEST(TemplateURLModelTest, UpdateKeywordSearchTermsForURL);
-  FRIEND_TEST(TemplateURLModelTest, DontUpdateKeywordSearchForNonReplaceable);
-  FRIEND_TEST(TemplateURLModelTest, ChangeGoogleBaseValue);
-  FRIEND_TEST(TemplateURLModelTest, MergeDeletesUnusedProviders);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, BuildQueryTerms);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest,
+                           UpdateKeywordSearchTermsForURL);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest,
+                           DontUpdateKeywordSearchForNonReplaceable);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, ChangeGoogleBaseValue);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, MergeDeletesUnusedProviders);
   friend class TemplateURLModelTest;
 
   typedef std::map<std::wstring, const TemplateURL*> KeywordToTemplateMap;

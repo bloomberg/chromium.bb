@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
@@ -25,7 +26,6 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_zoom.h"
 #include "gfx/rect.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BrowserWindow;
 class DebuggerWindow;
@@ -612,7 +612,7 @@ class Browser : public TabStripModelDelegate,
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
 
  private:
-  FRIEND_TEST(BrowserTest, NoTabsInPopups);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
 
   // Used to describe why a tab is being detached. This is used by
   // TabDetachedAtImpl.

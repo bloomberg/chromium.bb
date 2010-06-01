@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/notification_registrar.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 class MessageLoop;
@@ -80,7 +80,7 @@ class NewTabUI : public DOMUI,
   };
 
  private:
-  FRIEND_TEST(NewTabUITest, UpdateUserPrefsVersion);
+  FRIEND_TEST_ALL_PREFIXES(NewTabUITest, UpdateUserPrefsVersion);
 
   void Observe(NotificationType type,
                const NotificationSource& source,

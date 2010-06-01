@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace gfx {
 class Size;
@@ -182,7 +182,8 @@ class Clipboard {
 #endif
 
  private:
-  FRIEND_TEST(ClipboardTest, SharedBitmapTest);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardTest, SharedBitmapTest);
+
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 
   void WriteText(const char* text_data, size_t text_len);
