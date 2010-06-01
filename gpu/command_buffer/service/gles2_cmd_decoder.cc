@@ -1110,7 +1110,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Which textures are bound to texture units through glActiveTexture.
   scoped_array<TextureUnit> texture_units_;
 
-  // Black (0,0,0,0) textures for when non-renderable textures are used.
+  // Black (0,0,0,1) textures for when non-renderable textures are used.
   // NOTE: There is no corresponding TextureInfo for these textures.
   // TextureInfos are only for textures the client side can access.
   GLuint black_2d_texture_id_;
@@ -1471,7 +1471,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   // Make black textures for replacing non-renderable textures.
   black_2d_texture_id_ = ids[0];
   black_cube_texture_id_ = ids[1];
-  static int8 black[] = {0, 0, 0, 1};
+  static uint8 black[] = {0, 0, 0, 255};
   glBindTexture(GL_TEXTURE_2D, black_2d_texture_id_);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, black);
