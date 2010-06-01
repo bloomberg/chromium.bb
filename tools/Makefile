@@ -709,13 +709,6 @@ check: ALWAYS
 	  SELLDR="../scons-out/dbg-linux-x86-$(BITSPLATFORM)/staging/sel_ldr"
 
 ##################################################################
-# Build a tarball.
-##################################################################
-TARBALL_FILE=$(shell pwd)/BUILD/$(SDKNAME).tar
-tarball:
-	(cd $(SDKLOC); tar -cvhf $(TARBALL_FILE) $(SDKNAME); gzip $(TARBALL_FILE))
-
-##################################################################
 # Remove the BUILD directory.
 # Library builds are maintained by scons.
 ##################################################################
