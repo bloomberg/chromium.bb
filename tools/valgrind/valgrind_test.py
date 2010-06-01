@@ -23,6 +23,7 @@ import time
 
 import common
 
+import drmemory_analyze
 import memcheck_analyze
 import tsan_analyze
 
@@ -681,6 +682,71 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
 
     return proc
 
+
+class DrMemory(BaseTool):
+  """Dr.Memory
+  Dynamic memory error detector for Windows.
+
+  http://dynamorio.org/drmemory.html
+  It is not very mature at the moment, some things might not work properly.
+  """
+
+  def __init__(self):
+    BaseTool.__init__(self)
+    self.RegisterOptionParserHook(DrMemory.ExtendOptionParser)
+
+  def ToolName(self):
+    return "DrMemory"
+
+  def ExtendOptionParser(self, parser):
+    parser.add_option("", "--suppressions", default=[],
+                      action="append",
+                      help="path to a drmemory suppression file")
+
+  def ToolCommand(self):
+    """Get the valgrind command to run."""
+    tool_name = self.ToolName()
+
+    pin_cmd = os.getenv("DRMEMORY_COMMAND")
+    if not pin_cmd:
+      raise RuntimeError, "Please set DRMEMORY_COMMAND environment variable " \
+                          "with the path to drmemory.exe"
+    proc = pin_cmd.split(" ")
+
+    # Dump Dr.Memory events on error
+    # proc += ["-dr_ops", "dumpcore_mask 0x8bff"]
+
+    suppression_count = 0
+    for suppression_file in self._options.suppressions:
+      if os.path.exists(suppression_file):
+        suppression_count += 1
+        # DrMemory doesn't support multiple suppressions file... oh well
+        assert suppression_count <= 1
+        proc += ["-suppress", suppression_file]
+
+    if not suppression_count:
+      logging.warning("WARNING: NOT USING SUPPRESSIONS!")
+
+    proc += ["-logdir", (os.getcwd() + "\\" + self.TMP_DIR)]
+    proc += ["-batch", "-quiet"]
+
+    # Dr.Memory requires -- to separate tool flags from the executable name.
+    proc += ["--"]
+
+    # Note that self._args begins with the name of the exe to be run.
+    self._args[0] += ".exe" # HACK
+    proc += self._args
+    return proc
+
+  def Analyze(self, check_sanity=False):
+    # Glob all the results files in the "testing.tmp" directory
+    filenames = glob.glob(self.TMP_DIR + "/*/results.txt")
+
+    analyzer = drmemory_analyze.DrMemoryAnalyze(self._source_dir, filenames)
+    ret = analyzer.Report(check_sanity)
+    return ret
+
+
 class ToolFactory:
   def Create(self, tool_name):
     if tool_name == "memcheck" and not common.IsWine():
@@ -693,6 +759,8 @@ class ToolFactory:
         return ThreadSanitizerWindows()
       else:
         return ThreadSanitizerPosix()
+    if tool_name == "drmemory":
+      return DrMemory()
     try:
       platform_name = common.PlatformNames()[0]
     except common.NotImplementedError:
