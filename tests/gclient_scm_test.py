@@ -16,7 +16,17 @@ import __builtin__
 from super_mox import mox, SuperMoxBaseTestBase, SuperMoxTestBase
 
 import gclient_scm
-from gclient_test import BaseTestCase as GCBaseTestCase
+
+
+class GCBaseTestCase(SuperMoxTestBase):
+  # Like unittest's assertRaises, but checks for Gclient.Error.
+  def assertRaisesError(self, msg, fn, *args, **kwargs):
+    try:
+      fn(*args, **kwargs)
+    except gclient_scm.gclient_utils.Error, e:
+      self.assertEquals(e.args[0], msg)
+    else:
+      self.fail('%s not raised' % msg)
 
 
 class BaseTestCase(GCBaseTestCase):

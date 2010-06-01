@@ -9,10 +9,20 @@ from shutil import rmtree
 import tempfile
 
 # Fixes include path.
-from super_mox import mox, SuperMoxBaseTestBase
+from super_mox import mox, SuperMoxBaseTestBase, SuperMoxTestBase
 
-from gclient_test import BaseTestCase
 import scm
+
+
+class BaseTestCase(SuperMoxTestBase):
+  # Like unittest's assertRaises, but checks for Gclient.Error.
+  def assertRaisesError(self, msg, fn, *args, **kwargs):
+    try:
+      fn(*args, **kwargs)
+    except scm.gclient_utils.Error, e:
+      self.assertEquals(e.args[0], msg)
+    else:
+      self.fail('%s not raised' % msg)
 
 
 class BaseSCMTestCase(BaseTestCase):
