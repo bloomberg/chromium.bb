@@ -202,6 +202,13 @@ DesktopNotificationService::~DesktopNotificationService() {
   StopObserving();
 }
 
+void DesktopNotificationService::RegisterUserPrefs(PrefService* user_prefs) {
+  if (!user_prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
+    user_prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
+  if (!user_prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
+    user_prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
+}
+
 // Initialize the cache with the allowed and denied origins, or
 // create the preferences if they don't exist yet.
 void DesktopNotificationService::InitPrefs() {
@@ -210,16 +217,12 @@ void DesktopNotificationService::InitPrefs() {
   std::vector<GURL> denied_origins;
 
   if (!profile_->IsOffTheRecord()) {
-    if (!prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
-      prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
     const ListValue* allowed_sites =
         prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
     if (allowed_sites)
       NotificationsPrefsCache::ListValueToGurlVector(*allowed_sites,
                                                      &allowed_origins);
 
-    if (!prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
-      prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
     const ListValue* denied_sites =
         prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
     if (denied_sites)

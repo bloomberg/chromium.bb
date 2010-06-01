@@ -84,6 +84,8 @@ class DesktopNotificationService : public NotificationObserver {
   // the standard formatting for notifications.
   static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
                                 const string16& body);
+
+  static void RegisterUserPrefs(PrefService* user_prefs);
  private:
   void InitPrefs();
   void StartObserving();
