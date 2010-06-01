@@ -13,6 +13,7 @@ PHDRS
   text    PT_LOAD FLAGS(5) ;       /* read + execute */
   rodata  PT_LOAD FLAGS(4) ;       /* read */
   data    PT_LOAD FLAGS(6) ;       /* read + write */
+  tls     PT_TLS;
   /* TODO(sehr): do we need a stack? */
 }
 /* @LOCALMOD-END */
@@ -117,7 +118,7 @@ SECTIONS
        PROVIDE (__tls_template_start = .);
        *(.tdata .tdata.* .gnu.linkonce.td.*)
        PROVIDE (__tls_template_tdata_end = .);
-  }
+  } : rodata :tls
   .tbss		  : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
   /* The total size of the TLS template area must be a multiple of 32 */
   /* . does not advance for tbss because it is not loaded. */
@@ -132,7 +133,9 @@ SECTIONS
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  }
+  /* @LOCALMOD-BEGIN */
+  } : rodata
+  /* @LOCALMOD-END */
   .init_array     :
   {
      PROVIDE_HIDDEN (__init_array_start = .);
