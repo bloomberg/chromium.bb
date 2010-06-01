@@ -3,3 +3,4 @@ RSA*
 GmockTest.*
 EtwTrace*
 StatsTableTest.*
+ProcessUtilTest.EnableLFH
