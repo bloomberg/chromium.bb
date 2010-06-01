@@ -905,7 +905,7 @@ void PrivacySection::ShowRestartMessageBox() const {
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
   g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy),
                            dialog);
-  gtk_widget_show_all(dialog);
+  gtk_util::ShowDialog(dialog);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

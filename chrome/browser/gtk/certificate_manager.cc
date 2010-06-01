@@ -262,9 +262,11 @@ void CertificatePage::PopulateTree(CERTCertList* cert_list) {
       gtk_tree_store_append(store_, &iter, &org_tree_map_iter->second);
       gtk_tree_store_set(store_, &iter,
                          CERT_NAME, name.c_str(),
-                         CERT_SECURITY_DEVICE, psm::GetCertTokenName(cert).c_str(),
+                         CERT_SECURITY_DEVICE,
+                         psm::GetCertTokenName(cert).c_str(),
                          CERT_SERIAL_NUMBER,
-                         Stringize(CERT_Hexify(&cert->serialNumber, TRUE)).c_str(),
+                         Stringize(CERT_Hexify(
+                             &cert->serialNumber, TRUE)).c_str(),
                          CERT_ADDRESS, cert->emailAddr,
                          CERT_POINTER, cert,
                          -1);
@@ -439,7 +441,7 @@ CertificateManager::~CertificateManager() {
 }
 
 void CertificateManager::Show() {
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 }
 
 } // namespace

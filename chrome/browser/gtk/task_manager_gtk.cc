@@ -456,7 +456,7 @@ void TaskManagerGtk::Init() {
   gtk_container_add(GTK_CONTAINER(scrolled), treeview_);
 
   SetInitialDialogSize();
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 
   model_->AddObserver(this);
 }

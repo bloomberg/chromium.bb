@@ -591,7 +591,7 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
     g_signal_connect(dialog, "response",
                      G_CALLBACK(OnStopSyncDialogResponseThunk), this);
 
-    gtk_widget_show_all(dialog);
+    gtk_util::ShowDialog(dialog);
     return;
   } else {
     sync_service_->EnableForUser();

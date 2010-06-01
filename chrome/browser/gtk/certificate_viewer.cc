@@ -719,7 +719,7 @@ void CertificateViewer::OnExportClicked(GtkButton *button,
 }
 
 void CertificateViewer::Show() {
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 }
 
 } // namespace

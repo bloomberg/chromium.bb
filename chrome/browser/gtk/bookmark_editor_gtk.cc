@@ -224,7 +224,7 @@ void BookmarkEditorGtk::Show() {
   // Manually call our OnEntryChanged handler to set the initial state.
   OnEntryChanged(NULL);
 
-  gtk_widget_show_all(dialog_);
+  gtk_util::ShowDialog(dialog_);
 }
 
 void BookmarkEditorGtk::Close() {

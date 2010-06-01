@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/gtk/gtk_util.h"
 
 class GtkInputWindowDialog : public InputWindowDialog {
  public:
@@ -94,7 +95,7 @@ GtkInputWindowDialog::~GtkInputWindowDialog() {
 }
 
 void GtkInputWindowDialog::Show() {
-  gtk_widget_show(GTK_WIDGET(dialog_));
+  gtk_util::ShowDialog(dialog_);
 }
 
 void GtkInputWindowDialog::Close() {
