@@ -128,6 +128,9 @@
     'chromeos': {
       'filepath': 'chrome/browser/chromeos/.*',
     },
+    'npapi_headers': {
+      'filepath': 'third_party/npapi/bindings/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -176,5 +179,6 @@
     'locale_settings': ['finnur+watch@chromium.org'],
     'options_dialog_content': ['finnur+watch@chromium.org'],
     'chromeos': ['davemoore+watch@chromium.org'],
+    'npapi_headers': ['stuartmorgan@chromium.org'],
   },
 }
