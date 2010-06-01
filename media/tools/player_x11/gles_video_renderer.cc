@@ -262,7 +262,9 @@ bool GlesVideoRenderer::InitializeGles() {
     return false;
   }
 
-  egl_context_ = eglCreateContext(egl_display_, config, NULL, NULL);
+  EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
+  egl_context_ = eglCreateContext(egl_display_, config,
+                                  EGL_NO_CONTEXT, context_attribs);
   if (!egl_context_) {
     DLOG(ERROR) << "eglCreateContext failed.";
     eglDestroySurface(egl_display_, egl_surface_);
