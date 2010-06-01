@@ -57,13 +57,15 @@ NPAPITester.NPObjectSetException
 NPAPIVisiblePluginTester.PluginReferrerTest
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIIncognitoTester.PrivateEnabled
+NPAPITester.ManyPlugins
 NPAPITester.FLAKY_ManyPlugins
 NPAPITester.NPObjectProxy
 NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
-NPAPIVisiblePluginTester.PluginConvertPointTest
+NPAPIVisiblePluginTester.FLAKY_SelfDeletePluginInvokeInSynchronousPaint
+LayoutPluginTester.UnloadNoCrash
 
 # Possible timing related failure triggered only on mac valgrind bots.
 # http://crbug.com/39401
