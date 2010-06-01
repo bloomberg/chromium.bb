@@ -63,7 +63,7 @@ bool SafeBrowsingDatabaseBloom::ResetDatabase() {
   if (performing_reset_)
     return false;  // Don't recurse.
 
-  AutoReset auto_reset_performing_reset(&performing_reset_, true);
+  AutoReset<bool> auto_reset_performing_reset(&performing_reset_, true);
 
   // Delete files on disk.
   bool rv = Close();

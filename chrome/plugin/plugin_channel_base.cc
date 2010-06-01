@@ -197,7 +197,7 @@ void PluginChannelBase::RemoveRoute(int route_id) {
   DCHECK(plugin_count_ >= 0);
 
   if (!plugin_count_) {
-    AutoReset auto_reset_in_remove_route(&in_remove_route_, true);
+    AutoReset<bool> auto_reset_in_remove_route(&in_remove_route_, true);
     for (ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
          npobj_iter != npobject_listeners_.end(); ++npobj_iter) {
       if (npobj_iter->second) {

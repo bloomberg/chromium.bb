@@ -84,7 +84,7 @@ Browser* ActivateBrowser(Profile* profile) {
 // to the new |Browser|.
 Browser* CreateBrowser(Profile* profile) {
   {
-    AutoReset auto_reset_in_run(&g_is_opening_new_window, true);
+    AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
     Browser::OpenEmptyWindow(profile);
   }
 
@@ -804,7 +804,7 @@ void RecordLastRunAppBundlePath() {
 
   // Otherwise open a new window.
   {
-    AutoReset auto_reset_in_run(&g_is_opening_new_window, true);
+    AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
     Browser::OpenEmptyWindow([self defaultProfile]);
   }
 

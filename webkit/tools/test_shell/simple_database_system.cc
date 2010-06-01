@@ -159,7 +159,7 @@ void SimpleDatabaseSystem::databaseClosed(const WebKit::WebDatabase& database) {
 void SimpleDatabaseSystem::ClearAllDatabases() {
   // Wait for all databases to be closed.
   if (!database_connections_.IsEmpty()) {
-    AutoReset waiting_for_dbs_auto_reset(&waiting_for_dbs_to_close_, true);
+    AutoReset<bool> waiting_for_dbs_auto_reset(&waiting_for_dbs_to_close_, true);
     MessageLoop::ScopedNestableTaskAllower nestable(MessageLoop::current());
     MessageLoop::current()->Run();
   }

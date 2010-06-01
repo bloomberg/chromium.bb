@@ -312,7 +312,7 @@ BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {
   // We should never be called recursively; this can theoretically lead to
   // infinite recursion and almost certainly leads to lower performance.
   DCHECK(!in_get_backing_store_) << "GetBackingStore called recursively!";
-  AutoReset auto_reset_in_get_backing_store(&in_get_backing_store_, true);
+  AutoReset<bool> auto_reset_in_get_backing_store(&in_get_backing_store_, true);
 
   // We might have a cached backing store that we can reuse!
   BackingStore* backing_store =

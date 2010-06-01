@@ -1122,7 +1122,7 @@ bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   if (is_recreating_)
     return false;
 
-  AutoReset auto_reset(&is_recreating_, true);
+  AutoReset<bool> auto_reset(&is_recreating_, true);
   return LazyOpen(true);
 }
 
