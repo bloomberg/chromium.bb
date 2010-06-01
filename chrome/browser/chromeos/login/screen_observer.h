@@ -29,8 +29,8 @@ class ScreenObserver {
     CONNECTION_FAILED,
     UPDATE_INSTALLED,
     UPDATE_NOUPDATE,
-    UPDATE_NETWORK_ERROR,
-    UPDATE_OTHER_ERROR,
+    UPDATE_ERROR_CHECKING_FOR_UPDATE,
+    UPDATE_ERROR_UPDATING,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 

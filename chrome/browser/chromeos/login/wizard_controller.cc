@@ -360,8 +360,16 @@ void WizardController::OnUpdateCompleted() {
   ShowLoginScreen();
 }
 
-void WizardController::OnUpdateNetworkError() {
-  // If network connection got interrupted while downloading the update,
+void WizardController::OnUpdateErrorCheckingForUpdate() {
+  // We do not want to block users from being able to proceed to the login
+  // screen if there is any error checking for an update.
+  // They could use "browse without sign-in" feature to set up the network to be
+  // able to perform the update later.
+  ShowLoginScreen();
+}
+
+void WizardController::OnUpdateErrorUpdating() {
+  // If there was an error while getting or applying the update,
   // return to network selection screen.
   // TODO(nkostylev): Show message to the user explaining update error.
   ShowNetworkScreen();
@@ -438,9 +446,11 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case UPDATE_NOUPDATE:
       OnUpdateCompleted();
       break;
-    case UPDATE_NETWORK_ERROR:
-    case UPDATE_OTHER_ERROR:
-      OnUpdateNetworkError();
+    case UPDATE_ERROR_CHECKING_FOR_UPDATE:
+      OnUpdateErrorCheckingForUpdate();
+      break;
+    case UPDATE_ERROR_UPDATING:
+      OnUpdateErrorUpdating();
       break;
     default:
       NOTREACHED();

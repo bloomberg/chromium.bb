@@ -54,6 +54,7 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   // Update status.
   GoogleUpdateUpgradeResult update_result_;
   GoogleUpdateErrorCode update_error_;
+  bool checking_for_update_;
 
   // Google Updater.
   scoped_refptr<GoogleUpdate> google_updater_;

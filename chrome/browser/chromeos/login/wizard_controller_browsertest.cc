@@ -162,7 +162,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
-  controller()->OnExit(chromeos::ScreenObserver::UPDATE_NETWORK_ERROR);
+  controller()->OnExit(
+      chromeos::ScreenObserver::UPDATE_ERROR_UPDATING);
 
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
 }

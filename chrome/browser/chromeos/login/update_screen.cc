@@ -23,7 +23,8 @@ namespace chromeos {
 UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
     : DefaultViewScreen<chromeos::UpdateView>(delegate),
       update_result_(UPGRADE_STARTED),
-      update_error_(GOOGLE_UPDATE_NO_ERROR) {
+      update_error_(GOOGLE_UPDATE_NO_ERROR),
+      checking_for_update_(true) {
 }
 
 UpdateScreen::~UpdateScreen() {
@@ -37,8 +38,8 @@ UpdateScreen::~UpdateScreen() {
 }
 
 void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
-                                 GoogleUpdateErrorCode error_code,
-                                 const std::wstring& version) {
+                                   GoogleUpdateErrorCode error_code,
+                                   const std::wstring& version) {
   // Drop the last reference to the object so that it gets cleaned up here.
   google_updater_ = NULL;
   // Depending on the result decide what to do next.
@@ -46,6 +47,7 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
   update_error_ = error_code;
   switch (update_result_) {
     case UPGRADE_IS_AVAILABLE:
+      checking_for_update_ = false;
       // Advance view progress bar.
       view()->AddProgress(kUpdateCheckProgressIncrement);
       // Create new Google Updater instance and install the update.
@@ -57,6 +59,7 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
       view()->AddProgress(kUpdateCompleteProgressIncrement);
       // Fall through.
     case UPGRADE_ALREADY_UP_TO_DATE:
+      checking_for_update_ = false;
       view()->AddProgress(kUpdateCheckProgressIncrement);
       // Fall through.
     case UPGRADE_ERROR:
@@ -81,6 +84,7 @@ void UpdateScreen::StartUpdate() {
       &UpdateScreen::OnMinimalUpdateTimeElapsed);
 
   // Create Google Updater object and check if there is an update available.
+  checking_for_update_ = true;
   google_updater_ = CreateGoogleUpdate();
   google_updater_->set_status_listener(this);
   google_updater_->CheckForUpdate(false, NULL);
@@ -106,12 +110,10 @@ void UpdateScreen::ExitUpdate() {
         observer->OnExit(ScreenObserver::UPDATE_INSTALLED);
         break;
       case UPGRADE_ERROR:
-        if (update_error_ == GOOGLE_UPDATE_ERROR_UPDATING) {
-          observer->OnExit(ScreenObserver::UPDATE_NETWORK_ERROR);
+        if (checking_for_update_) {
+          observer->OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE);
         } else {
-          // TODO(denisromanov): figure out better what to do if
-          // some other error has occurred.
-          observer->OnExit(ScreenObserver::UPDATE_OTHER_ERROR);
+          observer->OnExit(ScreenObserver::UPDATE_ERROR_UPDATING);
         }
         break;
       default:
