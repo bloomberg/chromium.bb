@@ -37,7 +37,7 @@ TEST(WinUtils, IsReparsePoint) {
   HANDLE dir = ::CreateFile(my_folder, FILE_ALL_ACCESS,
                             FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                             OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-  EXPECT_TRUE(INVALID_HANDLE_VALUE != dir);
+  EXPECT_NE(INVALID_HANDLE_VALUE, dir);
 
   std::wstring temp_dir_nt = std::wstring(L"\\??\\") + temp_directory;
   EXPECT_TRUE(SetReparsePoint(dir, temp_dir_nt.c_str()));

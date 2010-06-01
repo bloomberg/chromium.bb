@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,7 +140,9 @@ std::string GetDefaultUserAgent();
 const char* GetChromeFrameUserAgent();
 
 // Returns true if there is a frame busting header (other than the do-nothing
-// "X-Frame-Options: ALLOWALL") in the provided header block.
+// "X-Frame-Options: ALLOWALL") in the provided header block.  Note that there
+// may be multiple X-Frame-Options values specified; if there is one anywhere in
+// the list with a value other than ALLOWALL, this returns true.
 bool HasFrameBustingHeader(const std::string& http_headers);
 
 }  // namespace http_utils

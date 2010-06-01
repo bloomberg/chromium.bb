@@ -41,9 +41,8 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
   SkAutoLockPixels bitmap_lock(bitmap);
   if ((bitmap.getConfig() != SkBitmap::kARGB_8888_Config) ||
       (bitmap.width() <= 0) || (bitmap.height() <= 0) ||
-      (bitmap.getPixels() == NULL)) {
+      (bitmap.getPixels() == NULL))
     return NULL;
-  }
 
   // We start by creating a DIB which we'll use later on in order to create
   // the HICON. We use BITMAPV5HEADER since the bitmap we are about to convert
@@ -105,9 +104,8 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   // We start with validating parameters.
   ICONINFO icon_info;
   if (!icon || !(::GetIconInfo(icon, &icon_info)) ||
-      !icon_info.fIcon || s.IsEmpty()) {
+      !icon_info.fIcon || s.IsEmpty())
     return NULL;
-  }
 
   // Allocating memory for the SkBitmap object. We are going to create an ARGB
   // bitmap so we should set the configuration appropriately.
@@ -123,13 +121,9 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   BITMAPV5HEADER h;
   InitializeBitmapHeader(&h, s.width(), s.height());
   HDC dc = ::GetDC(NULL);
-  unsigned int* bits;
-  HBITMAP dib = ::CreateDIBSection(dc,
-                                   reinterpret_cast<BITMAPINFO*>(&h),
-                                   DIB_RGB_COLORS,
-                                   reinterpret_cast<void**>(&bits),
-                                   NULL,
-                                   0);
+  uint32* bits;
+  HBITMAP dib = ::CreateDIBSection(dc, reinterpret_cast<BITMAPINFO*>(&h),
+      DIB_RGB_COLORS, reinterpret_cast<void**>(&bits), NULL, 0);
   DCHECK(dib);
   HDC dib_dc = CreateCompatibleDC(dc);
   DCHECK(dib_dc);
@@ -174,7 +168,7 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   // If the bitmap does not have an alpha channel, we need to build it using
   // the previously captured AND mask. Otherwise, we are done.
   if (!bitmap_has_alpha_channel) {
-    unsigned int* p = static_cast<unsigned int*>(bitmap->getPixels());
+    uint32* p = static_cast<uint32*>(bitmap->getPixels());
     for (size_t i = 0; i < num_pixels; ++p, ++i) {
       DCHECK_EQ((*p & 0xff000000), 0u);
       if (opaque[i])
@@ -199,36 +193,29 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   SkAutoLockPixels bitmap_lock(bitmap);
   if ((bitmap.getConfig() != SkBitmap::kARGB_8888_Config) ||
       (bitmap.height() <= 0) || (bitmap.width() <= 0) ||
-      (bitmap.getPixels() == NULL)) {
+      (bitmap.getPixels() == NULL))
     return false;
-  }
 
   // We start by creating the file.
-  ScopedHandle icon_file(::CreateFile(icon_file_name.c_str(),
-                                      GENERIC_WRITE,
-                                      0,
-                                      NULL,
-                                      CREATE_ALWAYS,
-                                      FILE_ATTRIBUTE_NORMAL,
-                                      NULL));
+  ScopedHandle icon_file(::CreateFile(icon_file_name.c_str(), GENERIC_WRITE, 0,
+       NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL));
 
-  if (icon_file.Get() == INVALID_HANDLE_VALUE) {
+  if (icon_file.Get() == INVALID_HANDLE_VALUE)
     return false;
-  }
 
   // Creating a set of bitmaps corresponding to the icon images we'll end up
   // storing in the icon file. Each bitmap is created by resizing the given
   // bitmap to the desired size.
   std::vector<SkBitmap> bitmaps;
   CreateResizedBitmapSet(bitmap, &bitmaps);
-  int bitmap_count = static_cast<int>(bitmaps.size());
-  DCHECK_GT(bitmap_count, 0);
+  DCHECK(!bitmaps.empty());
+  size_t bitmap_count = bitmaps.size();
 
   // Computing the total size of the buffer we need in order to store the
   // images in the desired icon format.
-  int buffer_size = ComputeIconFileBufferSize(bitmaps);
+  size_t buffer_size = ComputeIconFileBufferSize(bitmaps);
   unsigned char* buffer = new unsigned char[buffer_size];
-  DCHECK_NE(buffer, static_cast<unsigned char*>(NULL));
+  DCHECK(buffer != NULL);
   memset(buffer, 0, buffer_size);
 
   // Setting the information in the structures residing within the buffer.
@@ -238,19 +225,15 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   ICONDIR* icon_dir = reinterpret_cast<ICONDIR*>(buffer);
   icon_dir->idType = kResourceTypeIcon;
   icon_dir->idCount = bitmap_count;
-  int icon_dir_count = bitmap_count - 1;
-  int offset = sizeof(ICONDIR) + (sizeof(ICONDIRENTRY) * icon_dir_count);
-  for (int i = 0; i < bitmap_count; i++) {
+  size_t icon_dir_count = bitmap_count - 1;  // Note DCHECK(!bitmaps.empty())!
+  size_t offset = sizeof(ICONDIR) + (sizeof(ICONDIRENTRY) * icon_dir_count);
+  for (size_t i = 0; i < bitmap_count; i++) {
     ICONIMAGE* image = reinterpret_cast<ICONIMAGE*>(buffer + offset);
     DCHECK_LT(offset, buffer_size);
-    int icon_image_size = 0;
-    SetSingleIconImageInformation(bitmaps[i],
-                                  i,
-                                  icon_dir,
-                                  image,
-                                  offset,
+    size_t icon_image_size = 0;
+    SetSingleIconImageInformation(bitmaps[i], i, icon_dir, image, offset,
                                   &icon_image_size);
-    DCHECK_GT(icon_image_size, 0);
+    DCHECK_GT(icon_image_size, 0U);
     offset += icon_image_size;
   }
   DCHECK_EQ(offset, buffer_size);
@@ -259,9 +242,8 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   DWORD bytes_written;
   bool delete_file = false;
   if (!WriteFile(icon_file.Get(), buffer, buffer_size, &bytes_written, NULL) ||
-      static_cast<int>(bytes_written) != buffer_size) {
+      bytes_written != buffer_size)
     delete_file = true;
-  }
 
   ::CloseHandle(icon_file.Take());
   delete [] buffer;
@@ -273,15 +255,10 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   return !delete_file;
 }
 
-int IconUtil::GetIconDimensionCount() {
-  return sizeof(icon_dimensions_) / sizeof(icon_dimensions_[0]);
-}
-
 bool IconUtil::PixelsHaveAlpha(const uint32* pixels, size_t num_pixels) {
   for (const uint32* end = pixels + num_pixels; pixels != end; ++pixels) {
-    if ((*pixels & 0xff000000) != 0) {
+    if ((*pixels & 0xff000000) != 0)
       return true;
-    }
   }
 
   return false;
@@ -319,24 +296,20 @@ void IconUtil::InitializeBitmapHeader(BITMAPV5HEADER* header, int width,
 }
 
 void IconUtil::SetSingleIconImageInformation(const SkBitmap& bitmap,
-                                             int index,
+                                             size_t index,
                                              ICONDIR* icon_dir,
                                              ICONIMAGE* icon_image,
-                                             int image_offset,
-                                             int* image_byte_count) {
-  DCHECK_GE(index, 0);
-  DCHECK_NE(icon_dir, static_cast<ICONDIR*>(NULL));
-  DCHECK_NE(icon_image, static_cast<ICONIMAGE*>(NULL));
-  DCHECK_GT(image_offset, 0);
-  DCHECK_NE(image_byte_count, static_cast<int*>(NULL));
+                                             size_t image_offset,
+                                             size_t* image_byte_count) {
+  DCHECK(icon_dir != NULL);
+  DCHECK(icon_image != NULL);
+  DCHECK_GT(image_offset, 0U);
+  DCHECK(image_byte_count != NULL);
 
   // We start by computing certain image values we'll use later on.
-  int xor_mask_size;
-  int and_mask_size;
-  int bytes_in_resource;
+  size_t xor_mask_size, bytes_in_resource;
   ComputeBitmapSizeComponents(bitmap,
                               &xor_mask_size,
-                              &and_mask_size,
                               &bytes_in_resource);
 
   icon_dir->idEntries[index].bWidth = static_cast<BYTE>(bitmap.width());
@@ -378,12 +351,12 @@ void IconUtil::SetSingleIconImageInformation(const SkBitmap& bitmap,
 
 void IconUtil::CopySkBitmapBitsIntoIconBuffer(const SkBitmap& bitmap,
                                               unsigned char* buffer,
-                                              int buffer_size) {
+                                              size_t buffer_size) {
   SkAutoLockPixels bitmap_lock(bitmap);
   unsigned char* bitmap_ptr = static_cast<unsigned char*>(bitmap.getPixels());
-  int bitmap_size = bitmap.height() * bitmap.width() * 4;
+  size_t bitmap_size = bitmap.height() * bitmap.width() * 4;
   DCHECK_EQ(buffer_size, bitmap_size);
-  for (int i = 0; i < bitmap_size; i += bitmap.width() * 4) {
+  for (size_t i = 0; i < bitmap_size; i += bitmap.width() * 4) {
     memcpy(buffer + bitmap_size - bitmap.width() * 4 - i,
            bitmap_ptr + i,
            bitmap.width() * 4);
@@ -392,11 +365,11 @@ void IconUtil::CopySkBitmapBitsIntoIconBuffer(const SkBitmap& bitmap,
 
 void IconUtil::CreateResizedBitmapSet(const SkBitmap& bitmap_to_resize,
                                       std::vector<SkBitmap>* bitmaps) {
-  DCHECK_NE(bitmaps, static_cast<std::vector<SkBitmap>* >(NULL));
-  DCHECK_EQ(static_cast<int>(bitmaps->size()), 0);
+  DCHECK(bitmaps != NULL);
+  DCHECK(bitmaps->empty());
 
   bool inserted_original_bitmap = false;
-  for (int i = 0; i < GetIconDimensionCount(); i++) {
+  for (size_t i = 0; i < arraysize(icon_dimensions_); i++) {
     // If the dimensions of the bitmap we are resizing are the same as the
     // current dimensions, then we should insert the bitmap and not a resized
     // bitmap. If the bitmap's dimensions are smaller, we insert our bitmap
@@ -421,31 +394,27 @@ void IconUtil::CreateResizedBitmapSet(const SkBitmap& bitmap_to_resize,
         icon_dimensions_[i], icon_dimensions_[i]));
   }
 
-  if (!inserted_original_bitmap) {
+  if (!inserted_original_bitmap)
     bitmaps->push_back(bitmap_to_resize);
-  }
 }
 
-int IconUtil::ComputeIconFileBufferSize(const std::vector<SkBitmap>& set) {
+size_t IconUtil::ComputeIconFileBufferSize(const std::vector<SkBitmap>& set) {
+  DCHECK(!set.empty());
+
   // We start by counting the bytes for the structures that don't depend on the
   // number of icon images. Note that sizeof(ICONDIR) already accounts for a
   // single ICONDIRENTRY structure, which is why we subtract one from the
   // number of bitmaps.
-  int total_buffer_size = 0;
-  total_buffer_size += sizeof(ICONDIR);
-  int bitmap_count = static_cast<int>(set.size());
+  size_t total_buffer_size = sizeof(ICONDIR);
+  size_t bitmap_count = set.size();
   total_buffer_size += sizeof(ICONDIRENTRY) * (bitmap_count - 1);
-  int dimension_count = GetIconDimensionCount();
-  DCHECK_GE(bitmap_count, dimension_count);
+  DCHECK_GE(bitmap_count, arraysize(icon_dimensions_));
 
   // Add the bitmap specific structure sizes.
-  for (int i = 0; i < bitmap_count; i++) {
-    int xor_mask_size;
-    int and_mask_size;
-    int bytes_in_resource;
+  for (size_t i = 0; i < bitmap_count; i++) {
+    size_t xor_mask_size, bytes_in_resource;
     ComputeBitmapSizeComponents(set[i],
                                 &xor_mask_size,
-                                &and_mask_size,
                                 &bytes_in_resource);
     total_buffer_size += bytes_in_resource;
   }
@@ -453,9 +422,8 @@ int IconUtil::ComputeIconFileBufferSize(const std::vector<SkBitmap>& set) {
 }
 
 void IconUtil::ComputeBitmapSizeComponents(const SkBitmap& bitmap,
-                                           int* xor_mask_size,
-                                           int* and_mask_size,
-                                           int* bytes_in_resource) {
+                                           size_t* xor_mask_size,
+                                           size_t* bytes_in_resource) {
   // The XOR mask size is easy to calculate since we only deal with 32bpp
   // images.
   *xor_mask_size = bitmap.width() * bitmap.height() * 4;
@@ -481,9 +449,9 @@ void IconUtil::ComputeBitmapSizeComponents(const SkBitmap& bitmap,
   // number by the image height in order to get the total number of bytes for
   // the AND mask. Thus, for a 15X15 image, we need 15 * 4 which is 60 bytes
   // for the monochrome bitmap representing the AND mask.
-  int and_line_length = (bitmap.width() + 7) >> 3;
+  size_t and_line_length = (bitmap.width() + 7) >> 3;
   and_line_length = (and_line_length + 3) & ~3;
-  *and_mask_size = and_line_length * bitmap.height();
-  int masks_size = *xor_mask_size + *and_mask_size;
+  size_t and_mask_size = and_line_length * bitmap.height();
+  size_t masks_size = *xor_mask_size + and_mask_size;
   *bytes_in_resource = masks_size + sizeof(BITMAPINFOHEADER);
 }

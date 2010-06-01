@@ -96,9 +96,8 @@ void UrlmonUrlRequest::Stop() {
   switch (state) {
     case Status::WORKING:
       status_.Cancel();
-      if (binding_) {
+      if (binding_)
         binding_->Abort();
-      }
       break;
 
     case Status::ABORTING:
@@ -124,9 +123,8 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
     return false;
 
   DCHECK((status_.get_state() != Status::DONE) == (binding_ != NULL));
-  if (status_.get_state() == Status::ABORTING) {
+  if (status_.get_state() == Status::ABORTING)
     return true;
-  }
 
   // Send data if available.
   size_t bytes_copied = 0;
@@ -233,15 +231,13 @@ size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
       // while still using it.
       ScopedComPtr<IStream> pending(pending_data_);
       HRESULT hr = ReadStream(pending, bytes_to_read, &read_data);
-      if (read_data.empty()) {
+      if (read_data.empty())
         pending_read_size_ = pending_data_read_save;
-      }
       // If we received S_FALSE it indicates that there is no more data in the
       // stream. Clear it to ensure that OnStopBinding correctly sends over the
       // response end notification to chrome.
-      if (hr == S_FALSE) {
+      if (hr == S_FALSE)
         pending_data_.Release();
-      }
     }
 
     bytes_copied = read_data.length();
@@ -285,9 +281,8 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
     ULONG status_code, LPCWSTR status_text) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
 
-  if (status_.get_state() != Status::WORKING) {
+  if (status_.get_state() != Status::WORKING)
     return S_OK;
-  }
 
   // Ignore any notifications received while we are in the pending state
   // waiting for the request to be initiated by Chrome.
@@ -371,9 +366,8 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   // Mark we a are done.
   status_.Done();
 
-  if (result == INET_E_TERMINATED_BIND && terminate_requested()) {
+  if (result == INET_E_TERMINATED_BIND && terminate_requested())
     terminate_bind_callback_->Run(moniker_, bind_context_);
-  }
 
   // We always return INET_E_TERMINATED_BIND from OnDataAvailable
   if (result == INET_E_TERMINATED_BIND)
@@ -658,9 +652,8 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
 
 STDMETHODIMP UrlmonUrlRequest::GetWindow(const GUID& guid_reason,
                                          HWND* parent_window) {
-  if (!parent_window) {
+  if (!parent_window)
     return E_INVALIDARG;
-  }
 
 #ifndef NDEBUG
   wchar_t guid[40] = {0};
@@ -797,9 +790,8 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
 
     hr = moniker_->BindToStorage(bind_context_, NULL, __uuidof(IStream),
                                  reinterpret_cast<void**>(stream.Receive()));
-    if (hr == S_OK) {
+    if (hr == S_OK)
       DCHECK(binding_ != NULL || status_.get_state() == Status::DONE);
-    }
 
     if (FAILED(hr)) {
       // TODO(joshia): Look into. This currently fails for:
@@ -840,9 +832,8 @@ void UrlmonUrlRequest::ReleaseBindings() {
   // Do not release bind_context here!
   // We may get DownloadToHost request and therefore we want the bind_context
   // to be available.
-  if (bind_context_) {
+  if (bind_context_)
     ::RevokeBindStatusCallback(bind_context_, this);
-  }
 }
 
 net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
@@ -988,9 +979,8 @@ void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
   DCHECK_EQ(0, calling_delegate_);
   scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id);
   // if zero, it may just have had network error.
-  if (request) {
+  if (request)
     request->Read(bytes_to_read);
-  }
 }
 
 void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {

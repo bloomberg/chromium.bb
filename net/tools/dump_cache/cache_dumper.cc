@@ -89,10 +89,8 @@ bool DiskDumper::CreateEntry(const std::string& key,
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   entry_ = CreateFileW(file.c_str(), GENERIC_WRITE|GENERIC_READ, 0, 0,
                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-  if (entry_ == INVALID_HANDLE_VALUE) {
+  if (entry_ == INVALID_HANDLE_VALUE)
     wprintf(L"CreateFileW (%s) failed: %d\n", file.c_str(), GetLastError());
-    return false;
-  }
   return entry_ != INVALID_HANDLE_VALUE;
 #else
   entry_ = file_util::OpenFile(entry_path_, "w+");
@@ -147,7 +145,7 @@ bool DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
 
   std::string headers;
   const char *data;
-  int len;
+  size_t len;
   if (index == 0) {  // Stream 0 is the headers.
     net::HttpResponseInfo response_info;
     bool truncated;

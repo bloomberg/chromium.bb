@@ -155,15 +155,15 @@ TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
       reinterpret_cast<DictionaryValue*>(message_value.get());
   std::string result;
   ASSERT_TRUE(message_dict->GetString(keys::kAutomationNameKey, &result));
-  EXPECT_EQ(result, "tabs.remove");
+  EXPECT_EQ("tabs.remove", result);
 
-  result = "";
+  result.clear();
   ASSERT_TRUE(message_dict->GetString(keys::kAutomationArgsKey, &result));
-  EXPECT_NE(result, "");
+  EXPECT_FALSE(result.empty());
 
-  int callback_id = 0xBAADF00D;
+  int callback_id = 123456789;
   message_dict->GetInteger(keys::kAutomationRequestIdKey, &callback_id);
-  EXPECT_NE(callback_id, static_cast<int>(0xBAADF00D));
+  EXPECT_NE(callback_id, 123456789);
 
   bool has_callback = true;
   EXPECT_TRUE(message_dict->GetBoolean(keys::kAutomationHasCallbackKey,
@@ -212,7 +212,7 @@ public:
       &has_callback));
 
     if (messages_received_ == 1) {
-      EXPECT_EQ(function_name, "tabs.getSelected");
+      EXPECT_EQ("tabs.getSelected", function_name);
       EXPECT_GE(request_id, 0);
       EXPECT_TRUE(has_callback);
 
@@ -241,7 +241,7 @@ public:
         keys::kAutomationOrigin,
         keys::kAutomationResponseTarget);
     } else if (messages_received_ == 2) {
-      EXPECT_EQ(function_name, "tabs.remove");
+      EXPECT_EQ("tabs.remove", function_name);
       EXPECT_FALSE(has_callback);
 
       std::string args;
@@ -383,7 +383,7 @@ void ExtensionTestBrowserEvents::HandleMessageFromChrome(
   namespace keys = extension_automation_constants;
   ASSERT_TRUE(tab_ != NULL);
 
-  ASSERT_TRUE(message.length() > 0);
+  ASSERT_FALSE(message.empty());
 
   if (target == keys::kAutomationRequestTarget) {
     // This should be a request for the current window.  We don't need to
@@ -396,7 +396,7 @@ void ExtensionTestBrowserEvents::HandleMessageFromChrome(
 
     std::string name;
     ASSERT_TRUE(message_dict->GetString(keys::kAutomationNameKey, &name));
-    ASSERT_STREQ(name.c_str(), "windows.getCurrent");
+    ASSERT_EQ("windows.getCurrent", name);
 
     // Send an OpenChannelToExtension message to chrome. Note: the JSON
     // reader expects quoted property keys.  See the comment in
@@ -410,9 +410,8 @@ void ExtensionTestBrowserEvents::HandleMessageFromChrome(
   } else if (target == keys::kAutomationPortResponseTarget) {
     // This is a response to the open channel request.  This means we know
     // that the port is ready to send us messages.  Fire all the events now.
-    for (int i = 0; i < arraysize(events_); ++i) {
+    for (size_t i = 0; i < arraysize(events_); ++i)
       FireEvent(events_[i]);
-    }
   } else if (target == keys::kAutomationPortRequestTarget) {
     // This is the test extension calling us back.  Make sure its telling
     // us that it received an event.  We do this by checking to see if the

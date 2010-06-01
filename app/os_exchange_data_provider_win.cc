@@ -127,7 +127,7 @@ STDMETHODIMP FormatEtcEnumerator::Next(
   // This method copies count elements into |elements_array|.
   ULONG index = 0;
   while (cursor_ < contents_.size() && index < count) {
-    CloneFormatEtc(contents_.at(cursor_), &elements_array[index]);
+    CloneFormatEtc(contents_[cursor_], &elements_array[index]);
     ++cursor_;
     ++index;
   }

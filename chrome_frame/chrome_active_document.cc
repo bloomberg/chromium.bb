@@ -120,9 +120,8 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
 
 ChromeActiveDocument::~ChromeActiveDocument() {
   DLOG(INFO) << __FUNCTION__;
-  if (find_dialog_.IsWindow()) {
+  if (find_dialog_.IsWindow())
     find_dialog_.DestroyWindow();
-  }
   // ChromeFramePlugin
   BaseActiveX::Uninitialize();
 
@@ -140,9 +139,8 @@ STDMETHODIMP ChromeActiveDocument::DoVerb(LONG verb,
   // the user opens a new IE window with a URL that has us as the DocObject.
   // Here we refuse to be activated in-place and we will force IE to UIActivate
   // us.
-  if (OLEIVERB_INPLACEACTIVATE == verb) {
+  if (OLEIVERB_INPLACEACTIVATE == verb)
     return E_NOTIMPL;
-  }
   // Check if we should activate as a docobject or not
   // (client supports IOleDocumentSite)
   if (doc_site_) {
@@ -150,15 +148,13 @@ STDMETHODIMP ChromeActiveDocument::DoVerb(LONG verb,
     case OLEIVERB_SHOW: {
       ScopedComPtr<IDocHostUIHandler> doc_host_handler;
       doc_host_handler.QueryFrom(doc_site_);
-      if (doc_host_handler.get()) {
+      if (doc_host_handler.get())
         doc_host_handler->ShowUI(DOCHOSTUITYPE_BROWSE, this, this, NULL, NULL);
-      }
     }
     case OLEIVERB_OPEN:
     case OLEIVERB_UIACTIVATE:
-      if (!m_bUIActive) {
+      if (!m_bUIActive)
         return doc_site_->ActivateMe(NULL);
-      }
       break;
     }
   }
@@ -208,9 +204,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
                                         IMoniker* moniker_name,
                                         LPBC bind_context,
                                         DWORD mode) {
-  if (NULL == moniker_name) {
+  if (NULL == moniker_name)
     return E_INVALIDARG;
-  }
 
   ScopedComPtr<IOleClientSite> client_site;
   if (bind_context) {
@@ -272,9 +267,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  if (!is_chrome_protocol) {
+  if (!is_chrome_protocol)
     url_fetcher_.SetInfoForUrl(url, moniker_name, bind_context);
-  }
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
                                           is_chrome_protocol, 0, 1, 2);
@@ -297,9 +291,8 @@ STDMETHODIMP ChromeActiveDocument::GetCurMoniker(IMoniker** moniker_name) {
 }
 
 STDMETHODIMP ChromeActiveDocument::GetClassID(CLSID* class_id) {
-  if (NULL == class_id) {
+  if (NULL == class_id)
     return E_POINTER;
-  }
   *class_id = GetObjectCLSID();
   return S_OK;
 }
@@ -316,9 +309,8 @@ STDMETHODIMP ChromeActiveDocument::QueryStatus(const GUID* cmd_group_guid,
   };
 
   bool supported = (cmd_group_guid == NULL);
-  for (int i = 0; !supported && i < arraysize(supported_groups); ++i) {
+  for (int i = 0; !supported && i < arraysize(supported_groups); ++i)
     supported = (IsEqualGUID(*cmd_group_guid, *supported_groups[i]) != FALSE);
-  }
 
   if (!supported) {
     DLOG(INFO) << "unsupported command group: "
@@ -330,9 +322,8 @@ STDMETHODIMP ChromeActiveDocument::QueryStatus(const GUID* cmd_group_guid,
        command_index++) {
     DLOG(INFO) << "Command id = " << commands[command_index].cmdID;
     if (enabled_commands_map_.find(commands[command_index].cmdID) !=
-        enabled_commands_map_.end()) {
+        enabled_commands_map_.end())
       commands[command_index].cmdf = OLECMDF_ENABLED;
-    }
   }
   return S_OK;
 }
@@ -422,9 +413,8 @@ STDMETHODIMP ChromeActiveDocument::GetPositionCookie(DWORD* position_cookie) {
 }
 
 STDMETHODIMP ChromeActiveDocument::GetUrlForEvents(BSTR* url) {
-  if (NULL == url) {
+  if (NULL == url)
     return E_POINTER;
-  }
   *url = ::SysAllocString(url_);
   return S_OK;
 }
@@ -481,21 +471,18 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
     }
 
     ScopedComPtr<IDocHostUIHandler> doc_host_handler;
-    if (doc_site_) {
+    if (doc_site_)
       doc_host_handler.QueryFrom(doc_site_);
-    }
 
-    if (doc_host_handler.get()) {
+    if (doc_host_handler.get())
       doc_host_handler->HideUI();
-    }
 
     doc_site_.Release();
     in_place_frame_.Release();
   }
 
-  if (client_site != m_spClientSite) {
+  if (client_site != m_spClientSite)
     return BaseActiveX::IOleObject_SetClientSite(client_site);
-  }
 
   return S_OK;
 }
@@ -505,9 +492,8 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
   m_bNegotiatedWnd = TRUE;
   if (!m_bInPlaceActive) {
     hr = m_spInPlaceSite->CanInPlaceActivate();
-    if (FAILED(hr)) {
+    if (FAILED(hr))
       return hr;
-    }
     m_spInPlaceSite->OnInPlaceActivate();
   }
   m_bInPlaceActive = TRUE;
@@ -543,17 +529,14 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
     if (!m_bUIActive) {
       m_bUIActive = TRUE;
       hr = m_spInPlaceSite->OnUIActivate();
-      if (FAILED(hr)) {
+      if (FAILED(hr))
         return hr;
-      }
       // set ourselves up in the host
       if (in_place_active_object) {
-        if (in_place_frame_) {
+        if (in_place_frame_)
           in_place_frame_->SetActiveObject(in_place_active_object, NULL);
-        }
-        if (in_place_ui_window) {
+        if (in_place_ui_window)
           in_place_ui_window->SetActiveObject(in_place_active_object, NULL);
-        }
       }
     }
   }
@@ -575,9 +558,8 @@ void ChromeActiveDocument::OnNavigationStateChanged(int tab_handle, int flags,
 
 void ChromeActiveDocument::OnUpdateTargetUrl(int tab_handle,
     const std::wstring& new_target_url) {
-  if (in_place_frame_) {
+  if (in_place_frame_)
     in_place_frame_->SetStatusText(new_target_url.c_str());
-  }
 }
 
 bool IsFindAccelerator(const MSG& msg) {
@@ -688,9 +670,8 @@ void ChromeActiveDocument::UpdateNavigationState(
        StartsWith(static_cast<BSTR>(url_), kChromeAttachExternalTabPrefix,
                   false);
 
-  if (new_navigation_info.url.is_valid()) {
+  if (new_navigation_info.url.is_valid())
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
-  }
 
   if (is_internal_navigation) {
     ScopedComPtr<IDocObjectService> doc_object_svc;
@@ -763,9 +744,8 @@ void ChromeActiveDocument::UpdateNavigationState(
 void ChromeActiveDocument::OnFindInPage() {
   TabProxy* tab = GetTabProxy();
   if (tab) {
-    if (!find_dialog_.IsWindow()) {
+    if (!find_dialog_.IsWindow())
       find_dialog_.Create(m_hWnd);
-    }
 
     find_dialog_.ShowWindow(SW_SHOW);
   }
@@ -850,19 +830,12 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   if (!browser_service || !travel_log)
     return true;
 
-  if (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_BACK, NULL))) {
-    EnableMenuItem(menu, IDS_CONTENT_CONTEXT_BACK, MF_BYCOMMAND | MF_ENABLED);
-  } else {
-    EnableMenuItem(menu, IDS_CONTENT_CONTEXT_BACK, MF_BYCOMMAND | MFS_DISABLED);
-  }
-
-  if (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_FORE, NULL))) {
-    EnableMenuItem(menu, IDS_CONTENT_CONTEXT_FORWARD,
-                   MF_BYCOMMAND | MF_ENABLED);
-  } else {
-    EnableMenuItem(menu, IDS_CONTENT_CONTEXT_FORWARD,
-                   MF_BYCOMMAND | MFS_DISABLED);
-  }
+  EnableMenuItem(menu, IDS_CONTENT_CONTEXT_BACK, MF_BYCOMMAND |
+      (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_BACK, NULL)) ?
+      MF_ENABLED : MF_DISABLED));
+  EnableMenuItem(menu, IDS_CONTENT_CONTEXT_FORWARD, MF_BYCOMMAND |
+      (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_FORE, NULL)) ?
+      MF_ENABLED : MF_DISABLED));
 
   // Call base class (adds 'About' item)
   return BaseActiveX::PreProcessContextMenu(menu);
@@ -893,16 +866,16 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
   ScopedComPtr<IOleCommandTarget> frame_cmd_target;
 
   ScopedComPtr<IOleInPlaceSite> in_place_site(m_spInPlaceSite);
-  if (!in_place_site.get() && m_spClientSite != NULL) {
+  if (!in_place_site.get() && m_spClientSite != NULL)
     in_place_site.QueryFrom(m_spClientSite);
-  }
 
   if (in_place_site)
     hr = frame_cmd_target.QueryFrom(in_place_site);
 
-  if (frame_cmd_target)
+  if (frame_cmd_target) {
     hr = frame_cmd_target->Exec(cmd_group_guid, command_id, cmd_exec_opt,
                                 in_args, out_args);
+  }
 
   return hr;
 }
@@ -1035,11 +1008,8 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
 
   automation_client_->SetUrlFetcher(&url_fetcher_);
 
-  if (InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
-                           false))
-    return true;
-
-  return false;
+  return InitializeAutomation(GetHostProcessName(false), std::wstring(),
+                              IsIEInPrivate(), false);
 }
 
 
@@ -1186,8 +1156,8 @@ HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
 
   if (travel_log) {
     hr = browser_service_local->GetTravelLog(travel_log);
-    DLOG_IF(INFO, !travel_log) << "browser_service->GetTravelLog failed: "
-        << hr;
+    DLOG_IF(INFO, !travel_log) << "browser_service->GetTravelLog failed: " <<
+        hr;
   }
 
   if (browser_service)
@@ -1203,9 +1173,8 @@ LRESULT ChromeActiveDocument::OnForward(WORD notify_code, WORD id,
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
   DCHECK(web_browser2);
 
-  if (web_browser2) {
+  if (web_browser2)
     web_browser2->GoForward();
-  }
   return 0;
 }
 
@@ -1216,9 +1185,8 @@ LRESULT ChromeActiveDocument::OnBack(WORD notify_code, WORD id,
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
   DCHECK(web_browser2);
 
-  if (web_browser2) {
+  if (web_browser2)
     web_browser2->GoBack();
-  }
   return 0;
 }
 
@@ -1242,11 +1210,9 @@ LRESULT ChromeActiveDocument::OnFirePrivacyChange(UINT message, WPARAM wparam,
   DCHECK(shell_browser.get() != NULL);
   ScopedComPtr<ITridentService2> trident_services;
   trident_services.QueryFrom(shell_browser);
-  if (trident_services) {
+  if (trident_services)
     trident_services->FirePrivacyImpactedStateChange(wparam);
-  } else {
+  else
     NOTREACHED() << "Failed to retrieve IWebBrowser2 interface.";
-  }
   return 0;
 }
-

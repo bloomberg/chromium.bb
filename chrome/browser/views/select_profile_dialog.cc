@@ -84,19 +84,11 @@ std::wstring SelectProfileDialog::GetWindowTitle() const {
 
 bool SelectProfileDialog::Accept() {
   size_t index = profile_combobox_->selected_item();
-  if (index > profiles_.size()) {
-    NOTREACHED();
-    return true;
-  }
-
-  // If the user has selected <New Profile> from the drop down, then show the
-  // new profile dialog to the user.
-  if (index == profiles_.size()) {
+  DCHECK_LE(index, profiles_.size());
+  if (index == profiles_.size())
     NewProfileDialog::RunDialog();
-  } else {
-    std::wstring profile_name = profiles_[index];
-    UserDataManager::Get()->LaunchChromeForProfile(profile_name);
-  }
+  else
+    UserDataManager::Get()->LaunchChromeForProfile(profiles_[index]);
   return true;
 }
 
