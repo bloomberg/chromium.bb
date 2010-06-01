@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -40,6 +41,9 @@ class NewUserView : public views::View,
     // User provided |username|, |password| and initiated login.
     virtual void OnLogin(const std::string& username,
                          const std::string& password) = 0;
+
+    // Initiates off the record (incognito) login.
+    virtual void OnLoginOffTheRecord() = 0;
 
     // User initiated new account creation.
     virtual void OnCreateAccount() = 0;
@@ -105,6 +109,8 @@ class NewUserView : public views::View,
   virtual void LocaleChanged();
 
  private:
+  // Enables/disables input controls (textfields, buttons).
+  void EnableInputControls(bool enabled);
   void FocusFirstField();
 
   // Delete and recreate native controls that fail to update preferred size
@@ -116,6 +122,7 @@ class NewUserView : public views::View,
   views::Label* title_label_;
   views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
+  views::Link* browse_without_signin_link_;
   views::MenuButton* languages_menubutton_;
 
   views::Accelerator accel_focus_user_;
@@ -138,6 +145,8 @@ class NewUserView : public views::View,
   // If true, this view needs RoundedRect border and background.
   bool need_border_;
 
+  FRIEND_TEST(LoginScreenTest, IncognitoLogin);
+  friend class LoginScreenTest;
   DISALLOW_COPY_AND_ASSIGN(NewUserView);
 };
 

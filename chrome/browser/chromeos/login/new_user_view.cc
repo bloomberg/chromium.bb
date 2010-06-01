@@ -50,6 +50,7 @@ NewUserView::NewUserView(Delegate* delegate, bool need_border)
       title_label_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
+      browse_without_signin_link_(NULL),
       languages_menubutton_(NULL),
       accel_focus_user_(views::Accelerator(base::VKEY_U, false, false, true)),
       accel_focus_pass_(views::Accelerator(base::VKEY_P, false, false, true)),
@@ -92,6 +93,10 @@ void NewUserView::Init() {
   create_account_link_->SetController(this);
   AddChildView(create_account_link_);
 
+  browse_without_signin_link_ = new views::Link(std::wstring());
+  browse_without_signin_link_->SetController(this);
+  AddChildView(browse_without_signin_link_);
+
   language_switch_model_.InitLanguageMenu();
   languages_menubutton_ = new views::MenuButton(
       NULL, std::wstring(), &language_switch_model_, true);
@@ -107,9 +112,7 @@ void NewUserView::Init() {
   username_field_->SetController(this);
   password_field_->SetController(this);
   if (!CrosLibrary::Get()->EnsureLoaded()) {
-    username_field_->SetReadOnly(true);
-    password_field_->SetReadOnly(true);
-    sign_in_button_->SetEnabled(false);
+    EnableInputControls(false);
   }
 }
 
@@ -148,6 +151,8 @@ void NewUserView::UpdateLocalizedStrings() {
   sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
   create_account_link_->SetText(
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
+  browse_without_signin_link_->SetText(
+      l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
   delegate_->ClearErrors();
   languages_menubutton_->SetText(language_switch_model_.GetCurrentLocaleName());
 }
@@ -237,6 +242,7 @@ void NewUserView::Layout() {
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
            create_account_link_->GetPreferredSize().height() +
+           browse_without_signin_link_->GetPreferredSize().height() +
            4 * kRowPad;
   y = (this->height() - height) / 2;
 
@@ -245,6 +251,7 @@ void NewUserView::Layout() {
   y += (setViewBounds(password_field_, x, y, width, true) + kRowPad);
   y += (setViewBounds(sign_in_button_, x, y, width, false) + kRowPad);
   y += setViewBounds(create_account_link_, x, y, max_width, false);
+  y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
 
   SchedulePaint();
 }
@@ -270,9 +277,7 @@ void NewUserView::Login() {
     return;
 
   login_in_process_ = true;
-  password_field_->SetEnabled(false);
-  sign_in_button_->SetEnabled(false);
-  create_account_link_->SetEnabled(false);
+  EnableInputControls(false);
   std::string username = UTF16ToUTF8(username_field_->text());
   // todo(cmasone) Need to sanitize memory used to store password.
   std::string password = UTF16ToUTF8(password_field_->text());
@@ -293,15 +298,16 @@ void NewUserView::ButtonPressed(
 }
 
 void NewUserView::LinkActivated(views::Link* source, int event_flags) {
-  DCHECK(source == create_account_link_);
-  delegate_->OnCreateAccount();
+  if (source == create_account_link_) {
+    delegate_->OnCreateAccount();
+  } else if (source == browse_without_signin_link_) {
+    delegate_->OnLoginOffTheRecord();
+  }
 }
 
 void NewUserView::ClearAndEnablePassword() {
   login_in_process_ = false;
-  password_field_->SetEnabled(true);
-  sign_in_button_->SetEnabled(true);
-  create_account_link_->SetEnabled(true);
+  EnableInputControls(true);
   SetPassword(std::string());
   password_field_->RequestFocus();
 }
@@ -339,6 +345,14 @@ bool NewUserView::HandleKeystroke(views::Textfield* s,
   }
   // Return false so that processing does not end
   return false;
+}
+
+void NewUserView::EnableInputControls(bool enabled) {
+  username_field_->SetEnabled(enabled);
+  password_field_->SetEnabled(enabled);
+  sign_in_button_->SetEnabled(enabled);
+  create_account_link_->SetEnabled(enabled);
+  browse_without_signin_link_->SetEnabled(enabled);
 }
 
 }  // namespace chromeos

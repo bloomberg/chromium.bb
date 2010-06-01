@@ -138,6 +138,20 @@ bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
   return true;
 }
 
+void GoogleAuthenticator::LoginOffTheRecord() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(kTmpfsTrigger, "")) {
+    AuthenticationNotificationDetails details(true);
+    NotificationService::current()->Notify(
+        NotificationType::LOGIN_AUTHENTICATION,
+        NotificationService::AllSources(),
+        Details<AuthenticationNotificationDetails>(&details));
+    consumer_->OnOffTheRecordLoginSuccess();
+  } else {
+    consumer_->OnLoginFailure("Could not mount tmpfs cryptohome");
+  }
+}
+
 void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
                                              const GURL& url,
                                              const URLRequestStatus& status,
@@ -228,6 +242,12 @@ void GoogleAuthenticator::CheckLocalaccount(const std::string& error) {
 }
 
 void GoogleAuthenticator::OnLoginFailure(const std::string& data) {
+  // Send notification of failure
+  AuthenticationNotificationDetails details(false);
+  NotificationService::current()->Notify(
+      NotificationType::LOGIN_AUTHENTICATION,
+      NotificationService::AllSources(),
+      Details<AuthenticationNotificationDetails>(&details));
   LOG(WARNING) << "Login failed: " << data;
   // TODO(cmasone): what can we do to expose these OS/server-side error strings
   // in an internationalizable way?

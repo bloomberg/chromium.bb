@@ -115,4 +115,25 @@ IN_PROC_BROWSER_TEST_F(LoginScreenTest, AuthenticationFailed) {
   controller()->set_observer(NULL);
 }
 
+IN_PROC_BROWSER_TEST_F(LoginScreenTest, IncognitoLogin) {
+  ASSERT_TRUE(controller() != NULL);
+  ASSERT_EQ(controller()->current_screen(), controller()->GetLoginScreen());
+
+  scoped_ptr<MockScreenObserver> mock_screen_observer(
+      new MockScreenObserver());
+  EXPECT_CALL(*mock_screen_observer,
+              OnExit(ScreenObserver::LOGIN_GUEST_SELECTED))
+      .WillOnce(InvokeWithoutArgs(Quit));
+
+  controller()->set_observer(mock_screen_observer.get());
+  NewUserView* login = controller()->GetLoginScreen()->view();
+
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+  login->LinkActivated(login->browse_without_signin_link_, 0);
+  MessageLoop::current()->Run();
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+  controller()->set_observer(NULL);
+}
+
 }  // namespace chromeos

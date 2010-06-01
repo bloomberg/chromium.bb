@@ -55,6 +55,10 @@ class MockAuthenticator : public Authenticator {
     return AuthenticateToLogin(NULL /* not used */, username, password);
   }
 
+  virtual void LoginOffTheRecord() {
+    consumer_->OnOffTheRecordLoginSuccess();
+  }
+
   void OnLoginSuccess(const std::string& username) {
     consumer_->OnLoginSuccess(username, std::string());
   }
@@ -88,6 +92,9 @@ class MockLoginUtils : public LoginUtils {
   virtual void CompleteLogin(const std::string& username,
                              const std::string& cookies) {
     EXPECT_EQ(expected_username_, username);
+  }
+
+  virtual void CompleteOffTheRecordLogin() {
   }
 
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {

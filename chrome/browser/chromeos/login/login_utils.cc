@@ -41,6 +41,7 @@ namespace chromeos {
 namespace {
 
 const int kWifiTimeoutInMS = 15000;
+static char kIncognitoUser[] = "incognito";
 
 // Prefix for Auth token received from ClientLogin request.
 const char kAuthPrefix[] = "Auth=";
@@ -60,7 +61,7 @@ std::string get_auth_token(const std::string& credentials) {
   return credentials.substr(auth_start, auth_end - auth_start);
 }
 
-
+}  // namespace
 
 class LoginUtilsImpl : public LoginUtils,
                        public NotificationObserver {
@@ -79,6 +80,10 @@ class LoginUtilsImpl : public LoginUtils,
   virtual void CompleteLogin(const std::string& username,
                              const std::string& credentials);
 
+  // Invoked after the tmpfs is successfully mounted.
+  // Launches a browser in the off the record (incognito) mode.
+  virtual void CompleteOffTheRecordLogin();
+
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
@@ -89,6 +94,9 @@ class LoginUtilsImpl : public LoginUtils,
                        const NotificationDetails& details);
 
  private:
+  // Attempt to connect to the preferred network if available.
+  void ConnectToPreferredNetwork();
+
   NotificationRegistrar registrar_;
   bool wifi_connecting_;
   base::Time wifi_connect_start_time_;
@@ -149,12 +157,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
 
   UserManager::Get()->UserLoggedIn(username);
-
-  // This will attempt to connect to the preferred network if available.
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  wifi_connecting_ = cros->ConnectToPreferredNetworkIfAvailable();
-  if (wifi_connecting_)
-    wifi_connect_start_time_ = base::Time::Now();
+  ConnectToPreferredNetwork();
 
   // Now launch the initial browser window.
   FilePath user_data_dir;
@@ -177,6 +180,21 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
     new UserImageDownloader(username, auth);
 }
 
+void LoginUtilsImpl::CompleteOffTheRecordLogin() {
+  LOG(INFO) << "Completing off the record login";
+
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetLoginLibrary()->StartSession(kIncognitoUser, "");
+
+  // Incognito flag is not set by default.
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kIncognito);
+
+  UserManager::Get()->OffTheRecordUserLoggedIn();
+  ConnectToPreferredNetwork();
+  LoginUtils::DoBrowserLaunch(
+      ProfileManager::GetDefaultProfile()->GetOffTheRecordProfile());
+}
+
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   return new GoogleAuthenticator(consumer);
@@ -189,7 +207,12 @@ void LoginUtilsImpl::Observe(NotificationType type,
     base::OpenPersistentNSSDB();
 }
 
-}  // namespace
+void LoginUtilsImpl::ConnectToPreferredNetwork() {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  wifi_connecting_ = cros->ConnectToPreferredNetworkIfAvailable();
+  if (wifi_connecting_)
+    wifi_connect_start_time_ = base::Time::Now();
+}
 
 LoginUtils* LoginUtils::Get() {
   return Singleton<LoginUtilsWrapper>::get()->get();

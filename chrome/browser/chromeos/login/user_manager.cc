@@ -101,6 +101,10 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
   return users;
 }
 
+void UserManager::OffTheRecordUserLoggedIn() {
+  NotifyOnLogin();
+}
+
 void UserManager::UserLoggedIn(const std::string& email) {
   // Get a copy of the current users.
   std::vector<User> users = GetUsers();
@@ -126,15 +130,7 @@ void UserManager::UserLoggedIn(const std::string& email) {
     }
   }
   prefs->ScheduleSavePersistentPrefs();
-  User user;
-  user.set_email(email);
-  NotificationService::current()->Notify(
-      NotificationType::LOGIN_USER_CHANGED,
-      Source<UserManager>(this),
-      Details<const User>(&logged_in_user_));
-
-  // Let the window manager know that we're logged in now.
-  WmIpc::instance()->SetLoggedInProperty(true);
+  NotifyOnLogin();
 }
 
 void UserManager::SaveUserImage(const std::string& username,
@@ -183,6 +179,16 @@ UserManager::UserManager()
 
 UserManager::~UserManager() {
   image_loader_->set_delegate(NULL);
+}
+
+void UserManager::NotifyOnLogin() {
+  NotificationService::current()->Notify(
+      NotificationType::LOGIN_USER_CHANGED,
+      Source<UserManager>(this),
+      Details<const User>(&logged_in_user_));
+
+  // Let the window manager know that we're logged in now.
+  WmIpc::instance()->SetLoggedInProperty(true);
 }
 
 }  // namespace chromeos

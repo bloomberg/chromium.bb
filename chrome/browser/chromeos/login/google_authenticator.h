@@ -51,6 +51,10 @@ class GoogleAuthenticator : public Authenticator,
   bool AuthenticateToUnlock(const std::string& username,
                             const std::string& password);
 
+  // Initiates off the record ("browse without signing in") login.
+  // Mounts tmpfs and notifies consumer on the success/failure.
+  void LoginOffTheRecord();
+
   // Overridden from URLFetcher::Delegate
   // When the authentication attempt comes back, will call
   // consumer_->OnLoginSuccess(|username|).

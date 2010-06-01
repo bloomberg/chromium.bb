@@ -413,6 +413,7 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
 void WizardController::OnExit(ExitCodes exit_code) {
   switch (exit_code) {
     case LOGIN_SIGN_IN_SELECTED:
+    case LOGIN_GUEST_SELECTED:
       OnLoginSignInSelected();
       break;
     case LOGIN_CREATE_ACCOUNT:

@@ -38,6 +38,10 @@ class LoginUtils {
   virtual void CompleteLogin(const std::string& username,
                              const std::string& credentials) = 0;
 
+  // Invoked after the tmpfs is successfully mounted.
+  // Launches a browser in the off the record (incognito) mode.
+  virtual void CompleteOffTheRecordLogin() = 0;
+
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) = 0;

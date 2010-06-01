@@ -55,6 +55,9 @@ class UserManager : public UserImageLoader::Delegate {
   // It is sorted in order of recency, with most recent at the beginning.
   std::vector<User> GetUsers() const;
 
+  // Indicates that user just started off the record session.
+  void OffTheRecordUserLoggedIn();
+
   // Indicates that a user with the given email has just logged in.
   // The persistent list will be updated accordingly.
   void UserLoggedIn(const std::string& email);
@@ -75,6 +78,9 @@ class UserManager : public UserImageLoader::Delegate {
  private:
   UserManager();
   ~UserManager();
+
+  // Notifies on new user session.
+  void NotifyOnLogin();
 
   // Loads user image from its file.
   scoped_refptr<UserImageLoader> image_loader_;

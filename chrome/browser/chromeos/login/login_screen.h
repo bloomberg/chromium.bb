@@ -33,6 +33,7 @@ class LoginScreen : public ViewScreen<NewUserView>,
   // NewUserView::Delegate:
   virtual void OnLogin(const std::string& username,
                        const std::string& password);
+  virtual void OnLoginOffTheRecord();
   virtual void OnCreateAccount();
   virtual void ClearErrors();
 
@@ -40,6 +41,7 @@ class LoginScreen : public ViewScreen<NewUserView>,
   virtual void OnLoginFailure(const std::string& error);
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials);
+  virtual void OnOffTheRecordLoginSuccess();
 
   // Overridden from views::InfoBubbleDelegate.
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,

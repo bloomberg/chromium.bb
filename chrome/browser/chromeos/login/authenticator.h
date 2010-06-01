@@ -42,6 +42,9 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual bool AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) = 0;
 
+  // Initiates off the record ("browse without signing in") login.
+  virtual void LoginOffTheRecord() = 0;
+
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   virtual void OnLoginSuccess(const std::string& credentials) = 0;

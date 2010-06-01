@@ -20,6 +20,7 @@ class ScreenObserver {
   // exit code for each way to exit the screen for each screen.
   enum ExitCodes {
     LOGIN_SIGN_IN_SELECTED,
+    LOGIN_GUEST_SELECTED,
     LOGIN_CREATE_ACCOUNT,
     NETWORK_CONNECTED,
     NETWORK_OFFLINE,

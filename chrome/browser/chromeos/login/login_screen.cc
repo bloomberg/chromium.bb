@@ -54,6 +54,13 @@ void LoginScreen::OnLogin(const std::string& username,
                         profile, username, password));
 }
 
+void LoginScreen::OnLoginOffTheRecord() {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(authenticator_.get(),
+                        &Authenticator::LoginOffTheRecord));
+}
+
 void LoginScreen::OnCreateAccount() {
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_CREATE_ACCOUNT);
 }
@@ -67,12 +74,6 @@ void LoginScreen::ClearErrors() {
 void LoginScreen::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "LoginManagerView: OnLoginFailure() " << error;
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-
-  // Send notification of failure
-  AuthenticationNotificationDetails details(false);
-  NotificationService::current()->Notify(
-      NotificationType::LOGIN_AUTHENTICATION, Source<LoginScreen>(this),
-      Details<AuthenticationNotificationDetails>(&details));
 
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
@@ -89,10 +90,13 @@ void LoginScreen::OnLoginFailure(const std::string& error) {
 
 void LoginScreen::OnLoginSuccess(const std::string& username,
                                  const std::string& credentials) {
-  delegate()->GetObserver(this)->OnExit(
-      ScreenObserver::LOGIN_SIGN_IN_SELECTED);
-
+  delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   LoginUtils::Get()->CompleteLogin(username, credentials);
+}
+
+void LoginScreen::OnOffTheRecordLoginSuccess() {
+  delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_GUEST_SELECTED);
+  LoginUtils::Get()->CompleteOffTheRecordLogin();
 }
 
 void LoginScreen::ShowError(int error_id, const std::string& details) {

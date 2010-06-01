@@ -43,6 +43,7 @@ class MockConsumer : public LoginStatusConsumer {
   MOCK_METHOD1(OnLoginFailure, void(const std::string& error));
   MOCK_METHOD2(OnLoginSuccess, void(const std::string& username,
                                     const std::string& data));
+  MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
 };
 
 class GoogleAuthenticatorTest : public ::testing::Test {

@@ -18,6 +18,7 @@ class LoginStatusConsumer {
   virtual void OnLoginFailure(const std::string& error) = 0;
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials) = 0;
+  virtual void OnOffTheRecordLoginSuccess() {}
 };
 
 }  // namespace chromeos
