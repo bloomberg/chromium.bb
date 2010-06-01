@@ -179,6 +179,10 @@ int main(int argc, char* argv[]) {
 
   platform.InitializeGUI();
 
+  if (parsed_command_line.HasSwitch(test_shell::kEnableHtml5Parser)) {
+    TestShell::enable_html5_parser();
+  }
+
   TestShell::InitializeTestShell(layout_test_mode, allow_external_pages);
 
   if (parsed_command_line.HasSwitch(test_shell::kAllowScriptsToCloseWindows))

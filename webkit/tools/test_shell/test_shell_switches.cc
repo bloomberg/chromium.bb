@@ -85,5 +85,7 @@ const char kProfiler[] = "profiler";
 const char kHeapProfiler[] = "heap-profiler";
 
 const char kAllowExternalPages[] = "allow-external-pages";    
-    
+
+const char kEnableHtml5Parser[] = "html5-parser";
+
 }  // namespace test_shell
