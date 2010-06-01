@@ -19,10 +19,11 @@ namespace notifier {
 
 class MockMediatorThread : public MediatorThread {
  public:
-  MockMediatorThread() : MediatorThread() {
+  MockMediatorThread() : delegate_(NULL) {
     Reset();
   }
-  ~MockMediatorThread() {}
+
+  virtual ~MockMediatorThread() {}
 
   void Reset() {
     login_calls = 0;
@@ -33,22 +34,35 @@ class MockMediatorThread : public MediatorThread {
     send_calls = 0;
   }
 
+  virtual void SetDelegate(Delegate* delegate) {
+    delegate_ = delegate;
+  }
+
   // Overridden from MediatorThread
-  void Login(const buzz::XmppClientSettings& settings) {
+  virtual void Login(const buzz::XmppClientSettings& settings) {
     login_calls++;
+    if (delegate_) {
+      delegate_->OnConnectionStateChange(true);
+    }
   }
 
-  void Logout() {
+  virtual void Logout() {
     logout_calls++;
+    if (delegate_) {
+      delegate_->OnConnectionStateChange(false);
+    }
   }
 
-  void Start() {
+  virtual void Start() {
     start_calls++;
   }
 
   virtual void SubscribeForUpdates(
       const std::vector<std::string>& subscribed_services_list) {
     subscribe_calls++;
+    if (delegate_) {
+      delegate_->OnSubscriptionStateChange(true);
+    }
   }
 
   virtual void ListenForUpdates() {
@@ -57,16 +71,18 @@ class MockMediatorThread : public MediatorThread {
 
   virtual void SendNotification(const OutgoingNotificationData &) {
     send_calls++;
+    if (delegate_) {
+      delegate_->OnOutgoingNotification();
+    }
   }
 
-  // Callback control
-  void ChangeState(MediatorThread::MediatorMessage message) {
-    SignalStateChange(message);
-  }
-  void Notify(const IncomingNotificationData& data) {
-    SignalNotificationReceived(data);
+  void ReceiveNotification(const IncomingNotificationData& data) {
+    if (delegate_) {
+      delegate_->OnIncomingNotification(data);
+    }
   }
 
+  Delegate* delegate_;
   // Intneral State
   int login_calls;
   int logout_calls;

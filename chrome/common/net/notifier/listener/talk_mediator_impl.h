@@ -27,8 +27,7 @@ class NetworkChangeNotifierThread;
 namespace notifier {
 
 class TalkMediatorImpl
-    : public TalkMediator,
-      public sigslot::has_slots<> {
+    : public TalkMediator, public MediatorThread::Delegate {
  public:
   TalkMediatorImpl(
       chrome_common_net::NetworkChangeNotifierThread*
@@ -37,9 +36,9 @@ class TalkMediatorImpl
   explicit TalkMediatorImpl(MediatorThread* thread);
   virtual ~TalkMediatorImpl();
 
-  // Overriden from TalkMediator.
+  // TalkMediator implementation.
 
-  virtual void SetDelegate(Delegate* delegate);
+  virtual void SetDelegate(TalkMediator::Delegate* delegate);
 
   virtual bool SetAuthToken(const std::string& email,
                             const std::string& token,
@@ -50,6 +49,17 @@ class TalkMediatorImpl
   virtual bool SendNotification(const OutgoingNotificationData& data);
 
   virtual void AddSubscribedServiceUrl(const std::string& service_url);
+
+  // MediatorThread::Delegate implementation.
+
+  virtual void OnConnectionStateChange(bool logged_in);
+
+  virtual void OnSubscriptionStateChange(bool subscribed);
+
+  virtual void OnIncomingNotification(
+      const IncomingNotificationData& notification_data);
+
+  virtual void OnOutgoingNotification();
 
  private:
   struct TalkMediatorState {
@@ -72,26 +82,14 @@ class TalkMediatorImpl
   // mediator thread's SignalStateChange object.
   void TalkMediatorInitialization(bool should_connect);
 
-  // Callbacks for the mediator thread.
-  void MediatorThreadMessageHandler(MediatorThread::MediatorMessage message);
-  void MediatorThreadNotificationHandler(
-      const IncomingNotificationData& notification_data);
-
-  // Responses to messages from the MediatorThread.
-  void OnNotificationSent();
-  void OnLogin();
-  void OnLogout();
-  void OnSubscriptionFailure();
-  void OnSubscriptionSuccess();
-
-  // Mutex for synchronizing event access. This class listens to events
-  // from MediatorThread.  It can also be called by through the
-  // TalkMediatorInteface.  All these access points are serialized by
-  // this mutex.
+  // Protects state_, xmpp_settings_, and subscribed_services_list_.
+  //
+  // TODO(akalin): Remove this once we use this class from one thread
+  // only.
   Lock mutex_;
 
-  // Delegate.  May be NULL.
-  Delegate* delegate_;
+  // Delegate, which we don't own.  May be NULL.
+  TalkMediator::Delegate* delegate_;
 
   // Internal state.
   TalkMediatorState state_;
@@ -102,7 +100,7 @@ class TalkMediatorImpl
   // The worker thread through which talk events are posted and received.
   scoped_ptr<MediatorThread> mediator_thread_;
 
-  bool invalidate_xmpp_auth_token_;
+  const bool invalidate_xmpp_auth_token_;
 
   std::vector<std::string> subscribed_services_list_;
 

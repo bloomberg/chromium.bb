@@ -110,6 +110,8 @@ class MediatorThreadImpl
           network_change_notifier_thread);
   virtual ~MediatorThreadImpl();
 
+  virtual void SetDelegate(Delegate* delegate);
+
   // Start the thread.
   virtual void Start();
   virtual void Stop();
@@ -150,6 +152,7 @@ class MediatorThreadImpl
 
   buzz::XmppClient* xmpp_client();
 
+  Delegate* delegate_;
   chrome_common_net::NetworkChangeNotifierThread*
       network_change_notifier_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;

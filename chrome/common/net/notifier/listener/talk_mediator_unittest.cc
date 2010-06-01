@@ -128,15 +128,10 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
   EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
                                   "fake_service"));
   EXPECT_TRUE(talk1->Login());
-  talk1->OnLogin();
+  talk1->OnConnectionStateChange(true);
   EXPECT_EQ(1, mock->login_calls);
 
-  // Failure due to not being subscribed.
-  EXPECT_FALSE(talk1->SendNotification(data));
-  EXPECT_EQ(0, mock->send_calls);
-
-  // Fake subscription
-  talk1->OnSubscriptionSuccess();
+  // Should be subscribed now.
   EXPECT_TRUE(talk1->state_.subscribed);
   EXPECT_TRUE(talk1->SendNotification(data));
   EXPECT_EQ(1, mock->send_calls);
@@ -168,30 +163,24 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   EXPECT_TRUE(talk1->Login());
   EXPECT_EQ(1, mock->login_calls);
 
-  mock->ChangeState(MediatorThread::MSG_LOGGED_IN);
-
   // The message triggers calls to listen and subscribe.
   EXPECT_EQ(1, mock->listen_calls);
   EXPECT_EQ(1, mock->subscribe_calls);
-  EXPECT_FALSE(talk1->state_.subscribed);
-
-  mock->ChangeState(MediatorThread::MSG_SUBSCRIPTION_SUCCESS);
   EXPECT_TRUE(talk1->state_.subscribed);
 
   // After subscription success is receieved, the talk mediator will allow
   // sending of notifications.
   OutgoingNotificationData outgoing_data;
   EXPECT_TRUE(talk1->SendNotification(outgoing_data));
-  // TODO(akalin): Fix locking issues issues and move this into
-  // MediatorThreadMock.
-  mock->ChangeState(MediatorThread::MSG_NOTIFICATION_SENT);
   EXPECT_EQ(1, mock->send_calls);
 
   IncomingNotificationData incoming_data;
   incoming_data.service_url = "service_url";
   incoming_data.service_specific_data = "service_data";
-  mock->Notify(incoming_data);
+  mock->ReceiveNotification(incoming_data);
 
+  // Shouldn't trigger a call to the delegate since we disconnect
+  // it before we logout.
   talk1.reset();
   EXPECT_EQ(1, mock->logout_calls);
 }

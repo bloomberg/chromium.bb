@@ -11,25 +11,36 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "chrome/common/net/notifier/listener/notification_defines.h"
-#include "talk/base/sigslot.h"
-#include "talk/xmpp/xmppclientsettings.h"
+
+namespace buzz {
+class XmppClientSettings;
+}  // namespace buzz
 
 namespace notifier {
 
 class MediatorThread {
  public:
-  enum MediatorMessage {
-    MSG_LOGGED_IN,
-    MSG_LOGGED_OUT,
-    MSG_SUBSCRIPTION_SUCCESS,
-    MSG_SUBSCRIPTION_FAILURE,
-    MSG_NOTIFICATION_SENT
-  };
-
   virtual ~MediatorThread() {}
 
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    virtual void OnConnectionStateChange(bool logged_in) = 0;
+
+    virtual void OnSubscriptionStateChange(bool subscribed) = 0;
+
+    virtual void OnIncomingNotification(
+        const IncomingNotificationData& notification_data) = 0;
+
+    virtual void OnOutgoingNotification() = 0;
+  };
+
+  // |delegate| can be NULL if we're shutting down.
+  // TODO(akalin): Handle messages during shutdown gracefully so that
+  // we don't have to deal with NULL delegates.
+  virtual void SetDelegate(Delegate* delegate) = 0;
   virtual void Login(const buzz::XmppClientSettings& settings) = 0;
   virtual void Logout() = 0;
   virtual void Start() = 0;
@@ -37,17 +48,6 @@ class MediatorThread {
       const std::vector<std::string>& subscribed_services_list) = 0;
   virtual void ListenForUpdates() = 0;
   virtual void SendNotification(const OutgoingNotificationData& data) = 0;
-
-  // Connect to this for messages about talk events (except notifications).
-  sigslot::signal1<MediatorMessage> SignalStateChange;
-  // Connect to this for notifications
-  sigslot::signal1<const IncomingNotificationData&> SignalNotificationReceived;
-
- protected:
-  MediatorThread() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediatorThread);
 };
 
 }  // namespace notifier

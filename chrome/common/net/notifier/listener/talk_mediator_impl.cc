@@ -63,12 +63,7 @@ TalkMediatorImpl::TalkMediatorImpl(MediatorThread *thread)
 
 void TalkMediatorImpl::TalkMediatorInitialization(bool should_connect) {
   if (should_connect) {
-    mediator_thread_->SignalStateChange.connect(
-        this,
-        &TalkMediatorImpl::MediatorThreadMessageHandler);
-    mediator_thread_->SignalNotificationReceived.connect(
-        this,
-        &TalkMediatorImpl::MediatorThreadNotificationHandler);
+    mediator_thread_->SetDelegate(this);
     state_.connected = 1;
   }
   mediator_thread_->Start();
@@ -82,55 +77,63 @@ TalkMediatorImpl::~TalkMediatorImpl() {
 }
 
 bool TalkMediatorImpl::Login() {
-  AutoLock lock(mutex_);
-  // Connect to the mediator thread and start processing messages.
-  if (!state_.connected) {
-    mediator_thread_->SignalStateChange.connect(
-        this,
-        &TalkMediatorImpl::MediatorThreadMessageHandler);
-    mediator_thread_->SignalNotificationReceived.connect(
-        this,
-        &TalkMediatorImpl::MediatorThreadNotificationHandler);
-    state_.connected = 1;
+  bool should_log_in = false;
+  buzz::XmppClientSettings xmpp_settings;
+  {
+    AutoLock lock(mutex_);
+    // Connect to the mediator thread and start processing messages.
+    if (!state_.connected) {
+      mediator_thread_->SetDelegate(this);
+      state_.connected = 1;
+    }
+    should_log_in =
+        state_.initialized && !state_.logging_in && !state_.logged_in;
+    state_.logging_in = should_log_in;
+    xmpp_settings = xmpp_settings_;
   }
-  if (state_.initialized && !state_.logging_in) {
-    mediator_thread_->Login(xmpp_settings_);
-    state_.logging_in = 1;
-    return true;
+  if (should_log_in) {
+    mediator_thread_->Login(xmpp_settings);
   }
-  return false;
+  return should_log_in;
 }
 
 bool TalkMediatorImpl::Logout() {
-  AutoLock lock(mutex_);
-  // We do not want to be called back during logout since we may be closing.
-  if (state_.connected) {
-    mediator_thread_->SignalStateChange.disconnect(this);
-    mediator_thread_->SignalNotificationReceived.disconnect(this);
-    state_.connected = 0;
+  bool logging_out = false;
+  {
+    AutoLock lock(mutex_);
+    if (state_.connected) {
+      state_.connected = 0;
+    }
+    logging_out = state_.started;
+    if (logging_out) {
+      state_.started = 0;
+      state_.logging_in = 0;
+      state_.logged_in = 0;
+      state_.subscribed = 0;
+    }
   }
-  if (state_.started) {
+  if (logging_out) {
+    // We do not want to be called back during logout since we may be
+    // closing.
+    mediator_thread_->SetDelegate(NULL);
     mediator_thread_->Logout();
-    state_.started = 0;
-    state_.logging_in = 0;
-    state_.logged_in = 0;
-    state_.subscribed = 0;
-    return true;
   }
-  return false;
+  return logging_out;
 }
 
 bool TalkMediatorImpl::SendNotification(const OutgoingNotificationData& data) {
-  AutoLock lock(mutex_);
-  if (state_.logged_in && state_.subscribed) {
-    mediator_thread_->SendNotification(data);
-    return true;
+  bool can_send_notification = false;
+  {
+    AutoLock lock(mutex_);
+    can_send_notification = state_.logged_in && state_.subscribed;
   }
-  return false;
+  if (can_send_notification) {
+    mediator_thread_->SendNotification(data);
+  }
+  return can_send_notification;
 }
 
-void TalkMediatorImpl::SetDelegate(Delegate* delegate) {
-  AutoLock lock(mutex_);
+void TalkMediatorImpl::SetDelegate(TalkMediator::Delegate* delegate) {
   delegate_ = delegate;
 }
 
@@ -160,98 +163,60 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
 
 void TalkMediatorImpl::AddSubscribedServiceUrl(
     const std::string& service_url) {
-  subscribed_services_list_.push_back(service_url);
-  if (state_.logged_in) {
+  bool logged_in = false;
+  {
+    AutoLock lock(mutex_);
+    subscribed_services_list_.push_back(service_url);
+    logged_in = state_.logged_in;
+  }
+  if (logged_in) {
     LOG(INFO) << "Resubscribing for updates, a new service got added";
     mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
   }
 }
 
 
-void TalkMediatorImpl::MediatorThreadMessageHandler(
-    MediatorThread::MediatorMessage message) {
-  LOG(INFO) << "P2P: MediatorThread has passed a message";
-  switch (message) {
-    case MediatorThread::MSG_LOGGED_IN:
-      OnLogin();
-      break;
-    case MediatorThread::MSG_LOGGED_OUT:
-      OnLogout();
-      break;
-    case MediatorThread::MSG_SUBSCRIPTION_SUCCESS:
-      OnSubscriptionSuccess();
-      break;
-    case MediatorThread::MSG_SUBSCRIPTION_FAILURE:
-      OnSubscriptionFailure();
-      break;
-    case MediatorThread::MSG_NOTIFICATION_SENT:
-      OnNotificationSent();
-      break;
-    default:
-      LOG(WARNING) << "P2P: Unknown message returned from mediator thread.";
-      break;
+void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
+  {
+    AutoLock lock(mutex_);
+    state_.logging_in = 0;
+    state_.logged_in = logged_in;
+  }
+  if (logged_in) {
+    LOG(INFO) << "P2P: Logged in.";
+    // ListenForUpdates enables the ListenTask.  This is done before
+    // SubscribeForUpdates.
+    mediator_thread_->ListenForUpdates();
+    // Now subscribe for updates to all the services we are interested in
+    mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
+  } else {
+    LOG(INFO) << "P2P: Logged off.";
+    OnSubscriptionStateChange(false);
   }
 }
 
-void TalkMediatorImpl::MediatorThreadNotificationHandler(
+void TalkMediatorImpl::OnSubscriptionStateChange(bool subscribed) {
+  {
+    AutoLock lock(mutex_);
+    state_.subscribed = subscribed;
+  }
+  LOG(INFO) << "P2P: " << (subscribed ? "subscribed" : "unsubscribed");
+  if (delegate_) {
+    delegate_->OnNotificationStateChange(subscribed);
+  }
+}
+
+void TalkMediatorImpl::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
   LOG(INFO) << "P2P: Updates are available on the server.";
-  AutoLock lock(mutex_);
   if (delegate_) {
     delegate_->OnIncomingNotification(notification_data);
   }
 }
 
-
-void TalkMediatorImpl::OnLogin() {
-  LOG(INFO) << "P2P: Logged in.";
-  AutoLock lock(mutex_);
-  state_.logging_in = 0;
-  state_.logged_in = 1;
-  // ListenForUpdates enables the ListenTask.  This is done before
-  // SubscribeForUpdates.
-  mediator_thread_->ListenForUpdates();
-  // Now subscribe for updates to all the services we are interested in
-  mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
-}
-
-void TalkMediatorImpl::OnLogout() {
-  LOG(INFO) << "P2P: Logged off.";
-  OnSubscriptionFailure();
-  AutoLock lock(mutex_);
-  state_.logging_in = 0;
-  state_.logged_in = 0;
-}
-
-void TalkMediatorImpl::OnSubscriptionSuccess() {
-  LOG(INFO) << "P2P: Update subscription active.";
-  {
-    AutoLock lock(mutex_);
-    state_.subscribed = 1;
-  }
-  // The above scope exists so that we can release the lock before
-  // notifying listeners. In theory we should do this for all methods.
-  // Notifying listeners with a lock held can cause the lock to be
-  // recursively taken if the listener decides to call back into us
-  // in the event handler.
-  if (delegate_) {
-    delegate_->OnNotificationStateChange(true);
-  }
-}
-
-void TalkMediatorImpl::OnSubscriptionFailure() {
-  LOG(INFO) << "P2P: Update subscription failure.";
-  AutoLock lock(mutex_);
-  state_.subscribed = 0;
-  if (delegate_) {
-    delegate_->OnNotificationStateChange(false);
-  }
-}
-
-void TalkMediatorImpl::OnNotificationSent() {
+void TalkMediatorImpl::OnOutgoingNotification() {
   LOG(INFO) <<
       "P2P: Peers were notified that updates are available on the server.";
-  AutoLock lock(mutex_);
   if (delegate_) {
     delegate_->OnOutgoingNotification();
   }

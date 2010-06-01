@@ -28,11 +28,16 @@ namespace notifier {
 MediatorThreadImpl::MediatorThreadImpl(
     chrome_common_net::NetworkChangeNotifierThread*
         network_change_notifier_thread)
-    : network_change_notifier_thread_(network_change_notifier_thread) {
+    : delegate_(NULL),
+      network_change_notifier_thread_(network_change_notifier_thread) {
   DCHECK(network_change_notifier_thread_);
 }
 
 MediatorThreadImpl::~MediatorThreadImpl() {
+}
+
+void MediatorThreadImpl::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
 }
 
 void MediatorThreadImpl::Start() {
@@ -249,35 +254,45 @@ void MediatorThreadImpl::DoSendNotification(
 
 void MediatorThreadImpl::OnUpdateListenerMessage(
     const IncomingNotificationData& notification_data) {
-  SignalNotificationReceived(notification_data);
+  if (delegate_) {
+    delegate_->OnIncomingNotification(notification_data);
+  }
 }
 
 void MediatorThreadImpl::OnUpdateNotificationSent(bool success) {
-  if (success) {
-    SignalStateChange(MSG_NOTIFICATION_SENT);
+  if (delegate_ && success) {
+    delegate_->OnOutgoingNotification();
   }
 }
 
 void MediatorThreadImpl::OnLoginFailureMessage(
     const notifier::LoginFailure& failure) {
-  SignalStateChange(MSG_LOGGED_OUT);
+  if (delegate_) {
+    delegate_->OnConnectionStateChange(false);
+  }
 }
 
 void MediatorThreadImpl::OnClientStateChangeMessage(
     LoginConnectionState state) {
   switch (state) {
     case STATE_CLOSED:
-      SignalStateChange(MSG_LOGGED_OUT);
+      if (delegate_) {
+        delegate_->OnConnectionStateChange(false);
+      }
       break;
     case STATE_RETRYING:
     case STATE_OPENING:
       LOG(INFO) << "P2P: Thread trying to connect.";
       // Maybe first time logon, maybe intermediate network disruption. Assume
       // the server went down, and lost our subscription for updates.
-      SignalStateChange(MSG_SUBSCRIPTION_FAILURE);
+      if (delegate_) {
+        delegate_->OnSubscriptionStateChange(false);
+      }
       break;
     case STATE_OPENED:
-      SignalStateChange(MSG_LOGGED_IN);
+      if (delegate_) {
+        delegate_->OnConnectionStateChange(true);
+      }
       break;
     default:
       LOG(WARNING) << "P2P: Unknown client state change.";
@@ -286,10 +301,8 @@ void MediatorThreadImpl::OnClientStateChangeMessage(
 }
 
 void MediatorThreadImpl::OnSubscriptionStateChange(bool success) {
-  if (success) {
-    SignalStateChange(MSG_SUBSCRIPTION_SUCCESS);
-  } else {
-    SignalStateChange(MSG_SUBSCRIPTION_FAILURE);
+  if (delegate_) {
+    delegate_->OnSubscriptionStateChange(success);
   }
 }
 
