@@ -82,14 +82,15 @@ bool TopSites::SetPageThumbnail(const GURL& url,
   Images& image = top_images_[most_visited.url];
 
   // When comparing the thumbnail scores, we need to take into account the
-  // redirect hops, which are not generated when the thumbnail is becuase the
+  // redirect hops, which are not generated when the thumbnail is because the
   // redirects weren't known. We fill that in here since we know the redirects.
   ThumbnailScore new_score_with_redirects(score);
   new_score_with_redirects.redirect_hops_from_dest =
       GetRedirectDistanceForURL(most_visited, url);
 
   if (!ShouldReplaceThumbnailWith(image.thumbnail_score,
-                                  new_score_with_redirects))
+                                  new_score_with_redirects) &&
+      image.thumbnail.get())
     return false;  // The one we already have is better.
 
   // Take ownership of the thumbnail data.

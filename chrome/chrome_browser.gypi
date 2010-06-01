@@ -1498,6 +1498,7 @@
         'browser/history/thumbnail_database.cc',
         'browser/history/thumbnail_database.h',
         'browser/history/top_sites.cc',
+        'browser/history/top_sites_database.cc',
         'browser/history/url_database.cc',
         'browser/history/url_database.h',
         'browser/history/visit_database.cc',

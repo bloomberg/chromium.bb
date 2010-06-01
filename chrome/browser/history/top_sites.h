@@ -86,7 +86,8 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
   friend class TopSitesTest_GetMostVisited_Test;
-  friend class TopSitesTest_ReadDatabase_Test;
+  friend class TopSitesTest_RealDatabase_Test;
+  friend class TopSitesTest_MockDatabase_Test;
 
   ~TopSites();
 

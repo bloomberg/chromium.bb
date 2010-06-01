@@ -2,16 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/test/testing_profile.h"
+#include "chrome/tools/profiles/thumbnail-inl.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 
 namespace history {
+
+static const unsigned char kBlob[] =
+    "12346102356120394751634516591348710478123649165419234519234512349134";
 
 class TopSitesTest : public testing::Test {
  public:
@@ -21,15 +27,30 @@ class TopSitesTest : public testing::Test {
   }
 
   TopSites& top_sites() { return *top_sites_; }
+  FilePath& file_name() { return file_name_; }
+  RefCountedBytes* google_thumbnail() { return google_thumbnail_; }
+  RefCountedBytes* random_thumbnail() { return random_thumbnail_; }
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
     top_sites_ = new TopSites(profile_.get());
+
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    file_name_ = temp_dir_.path().AppendASCII("TopSites.db");
+    EXPECT_TRUE(file_util::Delete(file_name_, false));
+
+    std::vector<unsigned char> random_data(kBlob, kBlob + sizeof(kBlob));
+    std::vector<unsigned char> google_data(kGoogleThumbnail,
+                                           kGoogleThumbnail +
+                                           sizeof(kGoogleThumbnail));
+    random_thumbnail_ = new RefCountedBytes(random_data);
+    google_thumbnail_ = new RefCountedBytes(google_data);
   }
 
   virtual void TearDown() {
     profile_.reset();
     top_sites_ = NULL;
+    EXPECT_TRUE(file_util::Delete(file_name_, false));
   }
 
   // Wrappers that allow private TopSites functions to be called from the
@@ -56,6 +77,10 @@ class TopSitesTest : public testing::Test {
  private:
   scoped_refptr<TopSites> top_sites_;
   scoped_ptr<TestingProfile> profile_;
+  ScopedTempDir temp_dir_;
+  FilePath file_name_;  // Database filename.
+  scoped_refptr<RefCountedBytes> google_thumbnail_;
+  scoped_refptr<RefCountedBytes> random_thumbnail_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };
@@ -99,7 +124,7 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
   }
 
   virtual void SetPageThumbnail(const MostVisitedURL& url, int url_rank,
-                                const TopSites::Images thumbnail) {
+                                const TopSites::Images& thumbnail) {
     // Update the list of URLs
     // Check if this url is in the list, and at which position.
     MostVisitedURLList::iterator pos = std::find(top_sites_list_.begin(),
@@ -123,7 +148,7 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   virtual bool GetPageThumbnail(const MostVisitedURL& url,
-                                TopSites::Images* thumbnail) const {
+                                TopSites::Images* thumbnail) {
     std::map<GURL, TopSites::Images>::const_iterator found =
         thumbnails_map_.find(url.url);
     if (found == thumbnails_map_.end())
@@ -161,6 +186,16 @@ static void AppendMostVisitedURL(std::vector<MostVisitedURL>* list,
   mv.url = url;
   mv.redirects.push_back(url);
   list->push_back(mv);
+}
+
+// Returns true if t1 and t2 contain the same data.
+static bool ThumbnailsAreEqual(RefCountedBytes* t1,
+                               RefCountedBytes* t2) {
+  if (!t1 || !t2)
+    return false;
+  return std::equal(t1->data.begin(),
+                    t1->data.end(),
+                    t2->data.begin());
 }
 
 // Same as AppendMostVisitedURL except that it adds a redirect from the first
@@ -305,7 +340,7 @@ TEST_F(TopSitesTest, GetMostVisited) {
   EXPECT_EQ(google, results[1].url);
 }
 
-TEST_F(TopSitesTest, ReadDatabase) {
+TEST_F(TopSitesTest, MockDatabase) {
   MockTopSitesDatabaseImpl* db = new MockTopSitesDatabaseImpl;
   // |db| is destroyed when the top_sites is destroyed in TearDown.
   top_sites().db_.reset(db);
@@ -358,6 +393,167 @@ TEST_F(TopSitesTest, ReadDatabase) {
 
   result = db->GetTopURLs();
   EXPECT_EQ(2u, result.size());
+  EXPECT_EQ(google_title, result[0].title);
+  EXPECT_EQ(news_title, result[1].title);
+}
+
+// Test TopSitesDatabaseImpl.
+TEST_F(TopSitesTest, TopSitesDB) {
+  TopSitesDatabaseImpl db;
+
+  ASSERT_TRUE(db.Init(file_name()));
+
+  MostVisitedURL url;
+  GURL asdf_url("http://asdf.com");
+  string16 asdf_title(ASCIIToUTF16("ASDF"));
+  GURL google_url("http://google.com");
+  string16 google_title(ASCIIToUTF16("Google"));
+  GURL news_url("http://news.google.com");
+  string16 news_title(ASCIIToUTF16("Google News"));
+
+  url.url = asdf_url;
+  url.title = asdf_title;
+  url.redirects.push_back(url.url);
+  TopSites::Images thumbnail;
+  thumbnail.thumbnail = random_thumbnail();
+  // Add asdf at rank 0.
+  db.SetPageThumbnail(url, 0, thumbnail);
+
+  TopSites::Images result;
+  EXPECT_TRUE(db.GetPageThumbnail(url, &result));
+  EXPECT_EQ(thumbnail.thumbnail->data.size(), result.thumbnail->data.size());
+  EXPECT_TRUE(ThumbnailsAreEqual(thumbnail.thumbnail, result.thumbnail));
+
+  MostVisitedURLList urls = db.GetTopURLs();
+  ASSERT_EQ(1u, urls.size());
+  EXPECT_EQ(asdf_url, urls[0].url);
+  EXPECT_EQ(asdf_title, urls[0].title);
+
+  url.url = google_url;
+  url.title = google_title;
+
+  // Add google at rank 1 - no rank shifting.
+  db.SetPageThumbnail(url, 1, thumbnail);
+  urls = db.GetTopURLs();
+  ASSERT_EQ(2u, urls.size());
+  EXPECT_EQ(asdf_url, urls[0].url);
+  EXPECT_EQ(asdf_title, urls[0].title);
+  EXPECT_EQ(google_url, urls[1].url);
+  EXPECT_EQ(google_title, urls[1].title);
+
+  url.url = news_url;
+  url.title = news_title;
+
+  // Add news at rank 1 - shift google to rank 2.
+  db.SetPageThumbnail(url, 1, thumbnail);
+  urls = db.GetTopURLs();
+  ASSERT_EQ(3u, urls.size());
+  EXPECT_EQ(asdf_url, urls[0].url);
+  EXPECT_EQ(news_url, urls[1].url);
+  EXPECT_EQ(google_url, urls[2].url);
+
+  db.GetTopURLs();
+  // Move news at rank 0 - shift the rest up.
+  db.SetPageThumbnail(url, 0, thumbnail);
+  urls = db.GetTopURLs();
+  ASSERT_EQ(3u, urls.size());
+  EXPECT_EQ(news_url, urls[0].url);
+  EXPECT_EQ(asdf_url, urls[1].url);
+  EXPECT_EQ(google_url, urls[2].url);
+
+  // Move news at rank 2 - shift the rest down.
+  db.SetPageThumbnail(url, 2, thumbnail);
+  urls = db.GetTopURLs();
+  ASSERT_EQ(3u, urls.size());
+  EXPECT_EQ(asdf_url, urls[0].url);
+  EXPECT_EQ(google_url, urls[1].url);
+  EXPECT_EQ(news_url, urls[2].url);
+
+  // Delete asdf.
+  url.url = asdf_url;
+  db.RemoveURL(url);
+
+  urls = db.GetTopURLs();
+  ASSERT_EQ(2u, urls.size());
+  EXPECT_EQ(google_url, urls[0].url);
+  EXPECT_EQ(news_url, urls[1].url);
+}
+
+// Test TopSites with a real database.
+TEST_F(TopSitesTest, RealDatabase) {
+  TopSitesDatabaseImpl* db = new TopSitesDatabaseImpl;
+
+  ASSERT_TRUE(db->Init(file_name()));
+  // |db| is destroyed when the top_sites is destroyed in TearDown.
+  top_sites().db_.reset(db);
+  MostVisitedURL url;
+  GURL asdf_url("http://asdf.com");
+  string16 asdf_title(ASCIIToUTF16("ASDF"));
+  GURL google1_url("http://google.com");
+  GURL google2_url("http://google.com/redirect");
+  GURL google3_url("http://www.google.com");
+  string16 google_title(ASCIIToUTF16("Google"));
+  GURL news_url("http://news.google.com");
+  string16 news_title(ASCIIToUTF16("Google News"));
+
+  url.url = asdf_url;
+  url.title = asdf_title;
+  url.redirects.push_back(url.url);
+  TopSites::Images thumbnail;
+  thumbnail.thumbnail = random_thumbnail();
+  db->SetPageThumbnail(url, 0, thumbnail);
+
+  top_sites().ReadDatabase();
+
+  MostVisitedURLList result = top_sites().GetMostVisitedURLs();
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(asdf_url, result[0].url);
+  EXPECT_EQ(asdf_title, result[0].title);
+
+  RefCountedBytes* thumbnail_result;
+  top_sites().GetPageThumbnail(asdf_url, &thumbnail_result);
+  EXPECT_TRUE(thumbnail_result != NULL);
+  EXPECT_TRUE(ThumbnailsAreEqual(random_thumbnail(), thumbnail_result));
+
+  MostVisitedURL url2;
+  url2.url = google1_url;
+  url2.title = google_title;
+  url2.redirects.push_back(google1_url);
+  url2.redirects.push_back(google2_url);
+  url2.redirects.push_back(google3_url);
+
+  // Add new thumbnail at rank 0 and shift the other result to 1.
+  TopSites::Images g_thumbnail;
+  g_thumbnail.thumbnail = google_thumbnail();
+  db->SetPageThumbnail(url2, 0, g_thumbnail);
+
+  top_sites().ReadDatabase();
+
+  result = top_sites().GetMostVisitedURLs();
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(google1_url, result[0].url);
+  EXPECT_EQ(google_title, result[0].title);
+  top_sites().GetPageThumbnail(google1_url, &thumbnail_result);
+  EXPECT_TRUE(ThumbnailsAreEqual(google_thumbnail(), thumbnail_result));
+  ASSERT_EQ(3u, result[0].redirects.size());
+  EXPECT_EQ(google1_url, result[0].redirects[0]);
+  EXPECT_EQ(google2_url, result[0].redirects[1]);
+  EXPECT_EQ(google3_url, result[0].redirects[2]);
+
+  EXPECT_EQ(asdf_url, result[1].url);
+  EXPECT_EQ(asdf_title, result[1].title);
+
+  MockHistoryServiceImpl hs;
+  // Add one old, one new URL to the history.
+  hs.AppendMockPage(google1_url, google_title);
+  hs.AppendMockPage(news_url, news_title);
+  top_sites().SetMockHistoryService(&hs);
+
+  // This writes the new data to the DB.
+  top_sites().StartQueryForMostVisited();
+
+  result = db->GetTopURLs();
+  ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google_title, result[0].title);
   EXPECT_EQ(news_title, result[1].title);
 }
