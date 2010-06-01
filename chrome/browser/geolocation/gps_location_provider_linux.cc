@@ -11,11 +11,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/geolocation/libgps_wrapper_linux.h"
 
-// Uncomment this to force the arbitrator to use GPS instead of network
-// location provider. Note this will break unit tests!
-// TODO(joth): remove when arbitration is implemented.
-//#define ENABLE_LIBGPS_LOCATION_PROVIDER 1
-
 namespace {
 // As per http://gpsd.berlios.de/performance.html#id374524, poll twice per sec.
 const int kPollPeriodMovingMillis = 500;
@@ -61,13 +56,11 @@ bool GpsLocationProviderLinux::StartProvider() {
   gps_.reset(libgps_factory_());
   if (gps_ == NULL) {
     LOG(WARNING) << "libgps.so could not be loaded";
-    // TODO(joth): return false once GeolocationArbitratorImpl can cope with it.
-    return true;
+    return false;
   }
   if (!gps_->Start(&error_msg_)) {
     LOG(WARNING) << "Couldn't start GPS provider: " << error_msg_;
-    // TODO(joth): return false once GeolocationArbitratorImpl can cope with it.
-    return true;
+    return false;
   }
   ScheduleNextGpsPoll(0);
   return true;
@@ -114,9 +107,5 @@ void GpsLocationProviderLinux::ScheduleNextGpsPoll(int interval) {
 }
 
 LocationProviderBase* NewGpsLocationProvider() {
-#ifdef ENABLE_LIBGPS_LOCATION_PROVIDER
   return new GpsLocationProviderLinux(LibGps::New);
-#else
-  return NULL;
-#endif
 }

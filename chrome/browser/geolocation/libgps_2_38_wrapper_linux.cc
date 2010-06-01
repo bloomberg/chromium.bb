@@ -6,7 +6,7 @@
 
 #include "chrome/browser/geolocation/libgps_wrapper_linux.h"
 
-// This lot needed for Poll()
+// This lot needed for DataWaiting()
 #include <sys/socket.h>
 #include <sys/time.h>
 
@@ -52,10 +52,9 @@ class LibGpsV238 : public LibGps {
     const gps_data_t& gps_data = library().data();
     if (gps_data.status == STATUS_NO_FIX)
       return false;
-    position->timestamp = base::Time::FromDoubleT(gps_data.fix.time);
     position->latitude = gps_data.fix.latitude;
     position->longitude = gps_data.fix.longitude;
-    position->accuracy = library().data().fix.eph;
+    position->accuracy = gps_data.fix.eph;
     position->altitude = gps_data.fix.altitude;
     position->altitude_accuracy = gps_data.fix.epv;
     position->heading = gps_data.fix.track;

@@ -30,7 +30,6 @@ class LibGpsV294 : public LibGps {
     const gps_data_t& gps_data = library().data();
     if (gps_data.status == STATUS_NO_FIX)
       return false;
-    position->timestamp = base::Time::FromDoubleT(gps_data.fix.time);
     position->latitude = gps_data.fix.latitude;
     position->longitude = gps_data.fix.longitude;
     position->accuracy = std::max(gps_data.fix.epx, gps_data.fix.epy);

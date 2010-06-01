@@ -88,6 +88,7 @@ bool LibGps::GetPosition(Geoposition* position) {
     return false;
   }
   position->error_code = Geoposition::ERROR_CODE_NONE;
+  position->timestamp = base::Time::Now();
   if (!position->IsValidFix()) {
     // GetPositionIfFixed returned true, yet we've not got a valid fix.
     // This shouldn't happen; something went wrong in the conversion.

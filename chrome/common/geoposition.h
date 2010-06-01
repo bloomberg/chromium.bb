@@ -52,6 +52,8 @@ struct Geoposition {
   double altitude_accuracy;  // In metres
   double heading;            // In degrees clockwise relative to the true north
   double speed;              // In meters per second
+  // Timestamp for this position fix object taken from the host computer's
+  // system clock (i.e. from Time::Now(), not the source device's clock).
   base::Time timestamp;
 
   // These properties are returned to JavaScript as a PositionError object.
