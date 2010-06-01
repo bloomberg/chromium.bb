@@ -67,6 +67,10 @@
         'ssl/bodge/loader.h',
         'ssl/bodge/secure_memcmp.c',
       ],
+      'sources!': [
+        'ssl/os2_err.c',
+        'ssl/os2_err.h',
+      ],
       'defines': [
         'NSS_ENABLE_ECC',
         'NSS_ENABLE_ZLIB',
@@ -77,13 +81,20 @@
         'NO_NSPR_10_SUPPORT',
       ],
       'conditions': [
+        [ 'OS == "win"', {
+            'sources!': [
+              'ssl/unix_err.c',
+              'ssl/unix_err.h',
+            ],
+          },
+          {  # else: OS != "win"
+            'sources!': [
+              'ssl/win32err.c',
+              'ssl/win32err.h',
+            ],
+          },
+        ],
         [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
-          'sources!': [
-            'ssl/os2_err.c',
-            'ssl/os2_err.h',
-            'ssl/win32err.c',
-            'ssl/win32err.h',
-          ],
           'defines': [
             # These macros are needed only for compiling the files in
             # ssl/bodge.
@@ -105,15 +116,9 @@
             '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
           ],
         }],
-        [ 'OS == "win"', {
+        [ 'OS == "mac" or OS == "win"', {
           'sources/': [
             ['exclude', 'ssl/bodge/'],
-          ],
-          'sources!': [
-            'ssl/os2_err.c',
-            'ssl/os2_err.h',
-            'ssl/unix_err.c',
-            'ssl/unix_err.h',
           ],
           'dependencies': [
             '../../../third_party/zlib/zlib.gyp:zlib',

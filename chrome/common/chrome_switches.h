@@ -272,6 +272,7 @@ extern const char kNoProcessSingletonDialog[];
 #if defined(OS_MACOSX)
 extern const char kDisableFlashCoreAnimation[];
 extern const char kEnableSandboxLogging[];
+extern const char kUseNSSForSSL[];
 #else
 extern const char kKioskMode[];
 #endif

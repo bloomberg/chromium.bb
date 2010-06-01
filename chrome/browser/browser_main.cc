@@ -113,7 +113,6 @@
 
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
-#include "base/nss_util.h"
 #include "base/registry.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser.h"
@@ -133,7 +132,6 @@
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/winsock_init.h"
-#include "net/socket/ssl_client_socket_nss_factory.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)
@@ -141,6 +139,11 @@
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
 #include "chrome/browser/cocoa/install_from_dmg.h"
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#include "base/nss_util.h"
+#include "net/socket/ssl_client_socket_nss_factory.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -757,8 +760,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
     }
   }
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #if defined(OS_WIN)
-  if (!parsed_command_line.HasSwitch(switches::kUseSChannel) ||
+  bool use_nss_for_ssl = !parsed_command_line.HasSwitch(switches::kUseSChannel);
+#else
+  bool use_nss_for_ssl = parsed_command_line.HasSwitch(switches::kUseNSSForSSL);
+#endif
+  if (use_nss_for_ssl ||
       parsed_command_line.HasSwitch(switches::kUseSpdy) ||
       is_spdy_trial) {
     net::ClientSocketFactory::SetSSLClientSocketFactory(

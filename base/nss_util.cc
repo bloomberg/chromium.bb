@@ -21,7 +21,7 @@
 // On some platforms, we use NSS for SSL only -- we don't use NSS for crypto
 // or certificate verification, and we don't use the NSS certificate and key
 // databases.
-#if defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define USE_NSS_FOR_SSL_ONLY 1
 #endif
 
