@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/scoped_vector.h"
 #include "chrome/browser/geolocation/access_token_store.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/profile.h"
@@ -21,9 +22,16 @@
 namespace {
 const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
 GeolocationArbitrator* g_instance_ = NULL;
+// TODO(joth): Remove this global function pointer and update all tests to use
+// an injected ProviderFactory class instead.
 GeolocationArbitrator::LocationProviderFactoryFunction
     g_provider_factory_function_for_test = NULL;
 }  // namespace
+
+// To avoid oscillations, set this to twice the expected update interval of a
+// a GPS-type location provider (in case it misses a beat) plus a little.
+const int64 GeolocationArbitrator::kFixStaleTimeoutMilliseconds =
+    11 * base::Time::kMillisecondsPerSecond;
 
 class GeolocationArbitratorImpl
     : public GeolocationArbitrator,
@@ -31,13 +39,16 @@ class GeolocationArbitratorImpl
       public NonThreadSafe {
  public:
   GeolocationArbitratorImpl(AccessTokenStore* access_token_store,
-                            URLRequestContextGetter* context_getter);
+                            URLRequestContextGetter* context_getter,
+                            GetTimeNow get_time_now,
+                            ProviderFactory* provider_factory);
   virtual ~GeolocationArbitratorImpl();
 
   // GeolocationArbitrator
   virtual void AddObserver(GeolocationArbitrator::Delegate* delegate,
                            const UpdateOptions& update_options);
   virtual bool RemoveObserver(GeolocationArbitrator::Delegate* delegate);
+  virtual Geoposition GetCurrentPosition();
   virtual void OnPermissionGranted(const GURL& requesting_frame);
   virtual bool HasPermissionBeenGranted() const;
 
@@ -49,40 +60,84 @@ class GeolocationArbitratorImpl
       AccessTokenStore::AccessTokenSet access_token_store);
 
  private:
-  void CreateProviders();
+  // Takes ownership of |provider| on entry; it will either be added to
+  // |provider_vector| or deleted on error (e.g. it fails to start).
+  void RegisterProvider(LocationProviderBase* provider,
+                        ScopedVector<LocationProviderBase>* provider_vector);
+  void ResetProviders(ScopedVector<LocationProviderBase>* providers);
+  void CreateProvidersIfRequired();
   bool HasHighAccuracyObserver();
+
+  // Returns true if |new_position| is an improvement over |old_position|.
+  // Set |from_same_provider| to true if both the positions came from the same
+  // provider.
+  bool IsNewPositionBetter(const Geoposition& old_position,
+                           const Geoposition& new_position,
+                           bool from_same_provider) const;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
+  GetTimeNow get_time_now_;
+  scoped_refptr<ProviderFactory> provider_factory_;
 
-  const GURL default_url_;
-  scoped_ptr<LocationProviderBase> provider_;
+  // Low accuracy providers.
+  ScopedVector<LocationProviderBase> network_providers_;
+  // High accuracy providers.
+  ScopedVector<LocationProviderBase> gps_providers_;
 
   typedef std::map<GeolocationArbitrator::Delegate*, UpdateOptions> DelegateMap;
   DelegateMap observers_;
 
   // The current best estimate of our position.
   Geoposition position_;
+  // The provider which supplied the current |position_|
+  const LocationProviderBase* position_provider_;
 
   GURL most_recent_authorized_frame_;
 
   CancelableRequestConsumer request_consumer_;
 };
 
+class DefaultLocationProviderFactory
+    : public GeolocationArbitratorImpl::ProviderFactory {
+ public:
+  virtual LocationProviderBase* NewNetworkLocationProvider(
+      AccessTokenStore* access_token_store,
+      URLRequestContextGetter* context,
+      const GURL& url,
+      const string16& access_token) {
+    if (g_provider_factory_function_for_test)
+      return g_provider_factory_function_for_test();
+    return ::NewNetworkLocationProvider(access_token_store, context,
+                                        url, access_token);
+  }
+  virtual LocationProviderBase* NewGpsLocationProvider() {
+    if (g_provider_factory_function_for_test)
+      return NULL;
+    return ::NewGpsLocationProvider();
+  }
+};
+
 GeolocationArbitratorImpl::GeolocationArbitratorImpl(
     AccessTokenStore* access_token_store,
-    URLRequestContextGetter* context_getter)
+    URLRequestContextGetter* context_getter,
+    GetTimeNow get_time_now,
+    ProviderFactory* provider_factory)
     : access_token_store_(access_token_store),
       context_getter_(context_getter),
-      default_url_(kDefaultNetworkProviderUrl) {
-  DCHECK(default_url_.is_valid());
+      get_time_now_(get_time_now),
+      provider_factory_(provider_factory),
+      position_provider_(NULL) {
   DCHECK(NULL == g_instance_);
+  DCHECK(GURL(kDefaultNetworkProviderUrl).is_valid());
   g_instance_ = this;
 }
 
 GeolocationArbitratorImpl::~GeolocationArbitratorImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(observers_.empty()) << "Not all observers have unregistered";
+  ResetProviders(&gps_providers_);
+  ResetProviders(&network_providers_);
   DCHECK(this == g_instance_);
   g_instance_ = NULL;
 }
@@ -92,9 +147,9 @@ void GeolocationArbitratorImpl::AddObserver(
     const UpdateOptions& update_options) {
   DCHECK(CalledOnValidThread());
   observers_[delegate] = update_options;
-  if (provider_ == NULL) {
-    CreateProviders();
-  } else if (position_.IsInitialized()) {
+  CreateProvidersIfRequired();
+
+  if (position_.IsInitialized()) {
     delegate->OnLocationUpdate(position_);
   }
 }
@@ -103,20 +158,27 @@ bool GeolocationArbitratorImpl::RemoveObserver(
     GeolocationArbitrator::Delegate* delegate) {
   DCHECK(CalledOnValidThread());
   size_t remove = observers_.erase(delegate);
-  if (observers_.empty() && provider_ != NULL) {
-    // TODO(joth): Delayed callback to linger before destroying the provider.
-    provider_->UnregisterListener(this);
-    provider_.reset();
-  }
+  // TODO(joth): Delayed callback to linger before destroying providers.
+  if (!HasHighAccuracyObserver())
+    ResetProviders(&gps_providers_);
+  if (observers_.empty())
+    ResetProviders(&network_providers_);
   return remove > 0;
+}
+
+Geoposition GeolocationArbitratorImpl::GetCurrentPosition() {
+  return position_;
 }
 
 void GeolocationArbitratorImpl::OnPermissionGranted(
     const GURL& requesting_frame) {
   DCHECK(CalledOnValidThread());
   most_recent_authorized_frame_ = requesting_frame;
-  if (provider_ != NULL)
-    provider_->OnPermissionGranted(requesting_frame);
+  for (ScopedVector<LocationProviderBase>::iterator i =
+          network_providers_.begin();
+      i != network_providers_.end(); ++i) {
+    (*i)->OnPermissionGranted(requesting_frame);
+  }
 }
 
 bool GeolocationArbitratorImpl::HasPermissionBeenGranted() const {
@@ -128,12 +190,17 @@ void GeolocationArbitratorImpl::LocationUpdateAvailable(
     LocationProviderBase* provider) {
   DCHECK(CalledOnValidThread());
   DCHECK(provider);
-  provider->GetPosition(&position_);
-  DCHECK(position_.IsInitialized());
-  // TODO(joth): Arbitrate.
+  Geoposition new_position;
+  provider->GetPosition(&new_position);
+  DCHECK(new_position.IsInitialized());
+  if (!IsNewPositionBetter(position_, new_position,
+                           provider == position_provider_))
+    return;
+  position_ = new_position;
+  position_provider_ = provider;
   DelegateMap::const_iterator it = observers_.begin();
   while (it != observers_.end()) {
-    // Advance iterator before callback to guard against synchronous deregister.
+    // Advance iterator before callback to guard against synchronous unregister.
     Delegate* delegate = it->first;
     ++it;
     delegate->OnLocationUpdate(position_);
@@ -147,40 +214,66 @@ void GeolocationArbitratorImpl::MovementDetected(
 
 void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
     AccessTokenStore::AccessTokenSet access_token_set) {
-  DCHECK(provider_ == NULL)
+  DCHECK(network_providers_.empty())
       << "OnAccessTokenStoresLoaded : has existing location "
       << "provider. Race condition caused repeat load of tokens?";
-  if (g_provider_factory_function_for_test) {
-    provider_.reset(g_provider_factory_function_for_test());
-  } else {
-    provider_.reset(NewGpsLocationProvider());
-    if (provider_ == NULL) {
-      // TODO(joth): When arbitration is implemented, iterate the whole
-      // set rather than cherry-pick our default url.
-      provider_.reset(NewNetworkLocationProvider(
-          access_token_store_.get(), context_getter_.get(), default_url_,
-          access_token_set[default_url_]));
-    }
+  // If there are no access tokens, boot strap it with the default server URL.
+  if (access_token_set.empty())
+    access_token_set[GURL(kDefaultNetworkProviderUrl)];
+  for (AccessTokenStore::AccessTokenSet::iterator i =
+           access_token_set.begin();
+      i != access_token_set.end(); ++i) {
+    RegisterProvider(
+        provider_factory_->NewNetworkLocationProvider(
+            access_token_store_.get(), context_getter_.get(),
+            i->first, i->second),
+        &network_providers_);
   }
-  DCHECK(provider_ != NULL);
-  provider_->RegisterListener(this);
-  const bool ok = provider_->StartProvider();
-  DCHECK(ok);
-  if (most_recent_authorized_frame_.is_valid())
-    provider_->OnPermissionGranted(most_recent_authorized_frame_);
 }
 
-void GeolocationArbitratorImpl::CreateProviders() {
+void GeolocationArbitratorImpl::RegisterProvider(
+    LocationProviderBase* provider,
+    ScopedVector<LocationProviderBase>* provider_vector) {
+  DCHECK(provider_vector);
+  if (!provider)
+    return;
+  provider->RegisterListener(this);
+  if (!provider->StartProvider()) {
+    LOG(WARNING) << "Failed to start provider " << provider;
+    delete provider;
+    return;
+  }
+  if (most_recent_authorized_frame_.is_valid())
+    provider->OnPermissionGranted(most_recent_authorized_frame_);
+  provider_vector->push_back(provider);
+}
+
+void GeolocationArbitratorImpl::ResetProviders(
+    ScopedVector<LocationProviderBase>* providers) {
+  DCHECK(providers);
+  if (providers->empty())
+    return;
+  for (ScopedVector<LocationProviderBase>::iterator i = providers->begin();
+      i != providers->end(); ++i) {
+    (*i)->UnregisterListener(this);
+  }
+  providers->reset();
+}
+
+void GeolocationArbitratorImpl::CreateProvidersIfRequired() {
   DCHECK(CalledOnValidThread());
   DCHECK(!observers_.empty());
-  DCHECK(provider_ == NULL);
-  if (!request_consumer_.HasPendingRequests()) {
+  if (network_providers_.empty() && !request_consumer_.HasPendingRequests()) {
+    // There are no network providers either created or pending creation.
     access_token_store_->LoadAccessTokens(
         &request_consumer_,
         NewCallback(this,
                     &GeolocationArbitratorImpl::OnAccessTokenStoresLoaded));
   }
-  // TODO(joth): Use high accuracy flag to conditionally create GPS provider.
+  if (gps_providers_.empty() && HasHighAccuracyObserver()) {
+    RegisterProvider(provider_factory_->NewGpsLocationProvider(),
+                     &gps_providers_);
+  }
 }
 
 bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
@@ -193,11 +286,39 @@ bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
   return false;
 }
 
+bool GeolocationArbitratorImpl::IsNewPositionBetter(
+    const Geoposition& old_position, const Geoposition& new_position,
+    bool from_same_provider) const {
+  // Updates location_info if it's better than what we currently have,
+  // or if it's a newer update from the same provider.
+  if (!old_position.IsValidFix()) {
+      // Older location wasn't locked.
+      return true;
+    }
+  if (new_position.IsValidFix()) {
+    // New location is locked, let's check if it's any better.
+    if (old_position.accuracy >= new_position.accuracy) {
+      // Accuracy is better.
+      return true;
+    } else if (from_same_provider) {
+      // Same provider, fresher location.
+      return true;
+    } else if ((get_time_now_() - old_position.timestamp).InMilliseconds() >
+               kFixStaleTimeoutMilliseconds) {
+      // Existing fix is stale.
+      return true;
+    }
+  }
+  return false;
+}
+
 GeolocationArbitrator* GeolocationArbitrator::Create(
     AccessTokenStore* access_token_store,
-    URLRequestContextGetter* context_getter) {
-  DCHECK(!g_instance_);
-  return new GeolocationArbitratorImpl(access_token_store, context_getter);
+    URLRequestContextGetter* context_getter,
+    GetTimeNow get_time_now,
+    ProviderFactory* provider_factory) {
+  return new GeolocationArbitratorImpl(access_token_store, context_getter,
+                                       get_time_now, provider_factory);
 }
 
 GeolocationArbitrator* GeolocationArbitrator::GetInstance() {
@@ -207,7 +328,9 @@ GeolocationArbitrator* GeolocationArbitrator::GetInstance() {
     // particularly important which profile it is attached to: the network
     // request implementation disables cookies anyhow.
     Create(NewChromePrefsAccessTokenStore(),
-           Profile::GetDefaultRequestContext());
+           Profile::GetDefaultRequestContext(),
+           base::Time::Now,
+           new DefaultLocationProviderFactory);
     DCHECK(g_instance_);
   }
   return g_instance_;
@@ -222,4 +345,7 @@ GeolocationArbitrator::GeolocationArbitrator() {
 }
 
 GeolocationArbitrator::~GeolocationArbitrator() {
+}
+
+GeolocationArbitrator::ProviderFactory::~ProviderFactory() {
 }

@@ -11,8 +11,10 @@
 // Mock implementation of a location provider for testing.
 class MockLocationProvider : public LocationProviderBase {
  public:
-  MockLocationProvider();
-  virtual ~MockLocationProvider();
+  // Will update |*self_ref| to point to |this| on construction, and to NULL
+  // on destruction.
+  explicit MockLocationProvider(MockLocationProvider** self_ref);
+  ~MockLocationProvider();
 
   using LocationProviderBase::UpdateListeners;
   using LocationProviderBase::InformListenersOfMovement;
@@ -25,6 +27,7 @@ class MockLocationProvider : public LocationProviderBase {
   Geoposition position_;
   int started_count_;
   GURL permission_granted_url_;
+  MockLocationProvider** self_ref_;
 
   // Set when an instance of the mock is created via a factory function.
   static MockLocationProvider* instance_;
@@ -35,7 +38,7 @@ class MockLocationProvider : public LocationProviderBase {
 // Factory functions for the various sorts of mock location providers,
 // for use with GeolocationArbitrator::SetProviderFactoryForTest (i.e.
 // not intended for test code to use to get access to the mock, you can use
-// MockLocationProvider::instance_ for this, or make a custom facotry method).
+// MockLocationProvider::instance_ for this, or make a custom factory method).
 
 // Creates a mock location provider with no default behavior.
 LocationProviderBase* NewMockLocationProvider();

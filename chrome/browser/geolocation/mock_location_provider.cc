@@ -14,15 +14,17 @@
 
 MockLocationProvider* MockLocationProvider::instance_ = NULL;
 
-MockLocationProvider::MockLocationProvider()
-    : started_count_(0) {
-  CHECK(instance_ == NULL);
-  instance_ = this;
+MockLocationProvider::MockLocationProvider(MockLocationProvider** self_ref)
+    : started_count_(0),
+      self_ref_(self_ref) {
+  CHECK(self_ref_);
+  CHECK(*self_ref_ == NULL);
+  *self_ref_ = this;
 }
 
 MockLocationProvider::~MockLocationProvider() {
-  CHECK(instance_ == this);
-  instance_ = NULL;
+  CHECK(*self_ref_ == this);
+  *self_ref_ = NULL;
 }
 
 bool MockLocationProvider::StartProvider() {
@@ -44,7 +46,8 @@ class AutoMockLocationProvider : public MockLocationProvider {
  public:
   AutoMockLocationProvider(bool has_valid_location,
                            bool requires_permission_to_start)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+      : MockLocationProvider(&instance_),
+        ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
         requires_permission_to_start_(requires_permission_to_start) {
     if (has_valid_location) {
       position_.accuracy = 3;
@@ -79,7 +82,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
 };
 
 LocationProviderBase* NewMockLocationProvider() {
-  return new MockLocationProvider;
+  return new MockLocationProvider(&MockLocationProvider::instance_);
 }
 
 LocationProviderBase* NewAutoSuccessMockLocationProvider() {
