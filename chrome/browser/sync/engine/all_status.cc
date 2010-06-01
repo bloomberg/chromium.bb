@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
-#include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "chrome/common/net/notifier/listener/talk_mediator.h"
 
 namespace browser_sync {
@@ -57,17 +56,6 @@ AllStatus::~AllStatus() {
 void AllStatus::WatchConnectionManager(ServerConnectionManager* conn_mgr) {
   conn_mgr_hookup_.reset(NewEventListenerHookup(conn_mgr->channel(), this,
                          &AllStatus::HandleServerConnectionEvent));
-}
-
-void AllStatus::WatchAuthenticator(gaia::GaiaAuthenticator* gaia) {
-  gaia_hookup_.reset(NewEventListenerHookup(gaia->channel(), this,
-                     &AllStatus::HandleGaiaAuthEvent));
-}
-
-void AllStatus::WatchAuthWatcher(AuthWatcher* auth_watcher) {
-  authwatcher_hookup_.reset(
-      NewEventListenerHookup(auth_watcher->channel(), this,
-                             &AllStatus::HandleAuthWatcherEvent));
 }
 
 void AllStatus::WatchSyncerThread(SyncerThread* syncer_thread) {
@@ -169,21 +157,6 @@ int AllStatus::CalcStatusChanges(Status* old_status) {
     return 0;
   *old_status = status_;
   return what_changed;
-}
-
-void AllStatus::HandleGaiaAuthEvent(const gaia::GaiaAuthEvent& gaia_event) {
-  ScopedStatusLockWithNotify lock(this);
-  switch (gaia_event.what_happened) {
-    case gaia::GaiaAuthEvent::GAIA_AUTH_FAILED:
-      status_.authenticated = false;
-      break;
-    case gaia::GaiaAuthEvent::GAIA_AUTH_SUCCEEDED:
-      status_.authenticated = true;
-      break;
-    default:
-      lock.set_notify_plan(DONT_NOTIFY);
-      break;
-  }
 }
 
 void AllStatus::HandleAuthWatcherEvent(const AuthWatcherEvent& auth_event) {

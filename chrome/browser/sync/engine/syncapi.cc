@@ -15,6 +15,7 @@
 #include "base/base64.h"
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/sha1.h"
@@ -81,6 +82,13 @@ typedef GoogleServiceAuthError AuthError;
 
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
+
+// We manage the lifetime of sync_api::SyncManager::SyncInternal ourselves.
+template <>
+struct RunnableMethodTraits<sync_api::SyncManager::SyncInternal> {
+  void RetainCallee(sync_api::SyncManager::SyncInternal*) {}
+  void ReleaseCallee(sync_api::SyncManager::SyncInternal*) {}
+};
 
 namespace sync_api {
 
@@ -774,16 +782,21 @@ class SyncManager::SyncInternal
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
   explicit SyncInternal(SyncManager* sync_manager)
-      : observer_(NULL),
+      : core_message_loop_(NULL),
+        observer_(NULL),
         auth_problem_(AuthError::NONE),
         sync_manager_(sync_manager),
         registrar_(NULL),
         notification_pending_(false),
         initialized_(false),
         notification_method_(browser_sync::kDefaultNotificationMethod) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   }
 
-  ~SyncInternal() { }
+  ~SyncInternal() {
+    DCHECK(!core_message_loop_);
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  }
 
   bool Init(const FilePath& database_location,
             const std::string& sync_server_and_path,
@@ -843,6 +856,10 @@ class SyncManager::SyncInternal
   // We have a direct hookup to the authwatcher to be notified for auth failures
   // on startup, to serve our UI needs.
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
+
+  // Login to the talk mediator with the given credentials.
+  void TalkMediatorLogin(
+      const std::string& email, const std::string& token);
 
   // TalkMediator::Delegate implementation.
 
@@ -948,7 +965,10 @@ class SyncManager::SyncInternal
   // already initialized, this is a no-op.
   void MarkAndNotifyInitializationComplete();
 
-  bool SendXMPPNotification();
+  // If there's a pending notification to be sent, either from the
+  // new_pending_notification flag or a previous unsuccessfully sent
+  // notification, tries to send a notification.
+  void SendPendingXMPPNotification(bool new_pending_notification);
 
   // Determine if the parents or predecessors differ between the old and new
   // versions of an entry stored in |a| and |b|.  Note that a node's index may
@@ -1009,6 +1029,8 @@ class SyncManager::SyncInternal
   // A wrapper around a sqlite store used for caching authentication data,
   // last user information, current sync-related URLs, and more.
   scoped_ptr<UserSettings> user_settings_;
+
+  MessageLoop* core_message_loop_;
 
   // Observer registered via SetObserver/RemoveObserver.
   // WARNING: This can be NULL!
@@ -1170,6 +1192,8 @@ bool SyncManager::SyncInternal::Init(
 
   LOG(INFO) << "Starting SyncInternal initialization.";
 
+  core_message_loop_ = MessageLoop::current();
+  DCHECK(core_message_loop_);
   notification_method_ = notification_method;
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
@@ -1229,10 +1253,8 @@ bool SyncManager::SyncInternal::Init(
                                   service_id,
                                   gaia_url,
                                   user_settings_.get(),
-                                  gaia_auth,
-                                  talk_mediator());
+                                  gaia_auth);
 
-  allstatus_.WatchAuthWatcher(auth_watcher());
   authwatcher_hookup_.reset(NewEventListenerHookup(auth_watcher_->channel(),
       this, &SyncInternal::HandleAuthWatcherEvent));
 
@@ -1291,7 +1313,20 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
     observer_->OnInitializationComplete();
 }
 
-bool SyncManager::SyncInternal::SendXMPPNotification() {
+void SyncManager::SyncInternal::SendPendingXMPPNotification(
+    bool new_pending_notification) {
+  DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+  notification_pending_ = notification_pending_ || new_pending_notification;
+  if (!notification_pending_) {
+    LOG(INFO) << "Not sending notification: no pending notification";
+    return;
+  }
+  if (!talk_mediator_.get()) {
+    LOG(INFO) << "Not sending notification: shutting down "
+              << "(talk_mediator_ is NULL)";
+    return;
+  }
+  LOG(INFO) << "Sending XMPP notification...";
   OutgoingNotificationData notification_data;
   if (notification_method_ == browser_sync::NOTIFICATION_LEGACY) {
     notification_data.service_id = browser_sync::kSyncLegacyServiceId;
@@ -1311,7 +1346,13 @@ bool SyncManager::SyncInternal::SendXMPPNotification() {
       notification_data.require_subscription = false;
     }
   }
-  return talk_mediator()->SendNotification(notification_data);
+  bool success = talk_mediator_->SendNotification(notification_data);
+  if (success) {
+    notification_pending_ = false;
+    LOG(INFO) << "Sent XMPP notification";
+  } else {
+    LOG(INFO) << "Could not send XMPP notification";
+  }
 }
 
 void SyncManager::SyncInternal::Authenticate(const std::string& username,
@@ -1389,11 +1430,15 @@ void SyncManager::SyncInternal::Shutdown() {
   if (auth_watcher_) {
     auth_watcher_->Shutdown();
     auth_watcher_ = NULL;
+    authwatcher_hookup_.reset();
   }
 
   if (syncer_thread()) {
-    if (!syncer_thread()->Stop(kThreadExitTimeoutMsec))
-      DCHECK(false) << "Unable to stop the syncer, it won't be happy...";
+    if (!syncer_thread()->Stop(kThreadExitTimeoutMsec)) {
+      LOG(FATAL) << "Unable to stop the syncer, it won't be happy...";
+    }
+    syncer_event_.reset();
+    syncer_thread_ = NULL;
   }
 
   // Shutdown the xmpp buzz connection.
@@ -1403,6 +1448,18 @@ void SyncManager::SyncInternal::Shutdown() {
     LOG(INFO) << "P2P: Mediator logout completed.";
     talk_mediator_.reset();
     LOG(INFO) << "P2P: Mediator destroyed.";
+  }
+
+  // Pump any messages the auth watcher, syncer thread, or talk
+  // mediator posted before they shut down. (See HandleSyncerEvent(),
+  // HandleAuthWatcherEvent(), and HandleTalkMediatorEvent() for the
+  // events that may be posted.)
+  {
+    CHECK(core_message_loop_);
+    bool old_state = core_message_loop_->NestableTasksAllowed();
+    core_message_loop_->SetNestableTasksAllowed(true);
+    core_message_loop_->RunAllPending();
+    core_message_loop_->SetNestableTasksAllowed(old_state);
   }
 
   if (network_change_notifier_.get()) {
@@ -1422,8 +1479,8 @@ void SyncManager::SyncInternal::Shutdown() {
 
   // We don't want to process any more events.
   dir_change_hookup_.reset();
-  syncer_event_.reset();
-  authwatcher_hookup_.reset();
+
+  core_message_loop_ = NULL;
 }
 
 void SyncManager::SyncInternal::OnIPAddressChanged() {
@@ -1635,33 +1692,14 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
 
     // TODO(chron): Consider changing this back to track has_more_to_sync
     // only notify peers if a successful commit has occurred.
-    if (event.snapshot->syncer_status.num_successful_commits > 0) {
-      // We use a member variable here because talk may not have connected yet.
-      // The notification must be stored until it can be sent.
-      notification_pending_ = true;
-    }
-
-    // SyncCycles are started by the following events: creation of the syncer,
-    // (re)connection to buzz, local changes, peer notifications of updates.
-    // Peers will be notified of changes made while there is no buzz connection
-    // immediately after a connection has been re-established.
-    // the next sync cycle.
-    // TODO(brg): Move this to TalkMediatorImpl as a SyncerThread event hook.
-    if (notification_pending_ && talk_mediator()) {
-        LOG(INFO) << "Sending XMPP notification...";
-        bool success = SendXMPPNotification();
-        if (success) {
-          notification_pending_ = false;
-          LOG(INFO) << "Sent XMPP notification";
-        } else {
-          LOG(INFO) << "Could not send XMPP notification";
-        }
-    } else {
-      LOG(INFO) << "Didn't send XMPP notification!"
-                   << " event.snapshot.did_commit_items: "
-                   << event.snapshot->did_commit_items
-                   << " talk_mediator(): " << talk_mediator();
-    }
+    bool new_pending_notification =
+        (event.snapshot->syncer_status.num_successful_commits > 0);
+    core_message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &SyncManager::SyncInternal::SendPendingXMPPNotification,
+            new_pending_notification));
   }
 
   if (event.what_happened == SyncerEvent::PAUSED) {
@@ -1677,6 +1715,7 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
 
 void SyncManager::SyncInternal::HandleAuthWatcherEvent(
     const AuthWatcherEvent& event) {
+  allstatus_.HandleAuthWatcherEvent(event);
   // We don't care about an authentication attempt starting event, and we
   // don't want to reset our state to GoogleServiceAuthError::NONE because the
   // fact that an _attempt_ is starting doesn't change the fact that we have an
@@ -1688,6 +1727,7 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
   auth_problem_ = AuthError::NONE;
   switch (event.what_happened) {
     case AuthWatcherEvent::AUTH_SUCCEEDED:
+      DCHECK(!event.user_email.empty());
       // We now know the supplied username and password were valid. If this
       // wasn't the first sync, authenticated_name should already be assigned.
       if (username_for_share().empty()) {
@@ -1716,6 +1756,23 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
       }
       if (InitialSyncEndedForAllEnabledTypes())
         MarkAndNotifyInitializationComplete();
+
+      if (!event.auth_token.empty()) {
+        core_message_loop_->PostTask(
+            FROM_HERE,
+            NewRunnableMethod(
+                this, &SyncManager::SyncInternal::TalkMediatorLogin,
+                event.user_email, event.auth_token));
+      }
+      return;
+    case AuthWatcherEvent::AUTH_RENEWED:
+      DCHECK(!event.user_email.empty());
+      DCHECK(!event.auth_token.empty());
+      core_message_loop_->PostTask(
+          FROM_HERE,
+            NewRunnableMethod(
+                this, &SyncManager::SyncInternal::TalkMediatorLogin,
+                event.user_email, event.auth_token));
       return;
     // Authentication failures translate to GoogleServiceAuthError events.
     case AuthWatcherEvent::GAIA_AUTH_FAILED:     // Invalid GAIA credentials.
@@ -1765,8 +1822,29 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   if (notifications_enabled) {
     // Send a notification as soon as subscriptions are on
     // (see http://code.google.com/p/chromium/issues/detail?id=38563 ).
-    SendXMPPNotification();
+    core_message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &SyncManager::SyncInternal::SendPendingXMPPNotification,
+            true));
   }
+}
+
+void SyncManager::SyncInternal::TalkMediatorLogin(
+    const std::string& email, const std::string& token) {
+  DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+  DCHECK(!email.empty());
+  DCHECK(!token.empty());
+  if (!talk_mediator_.get()) {
+    LOG(INFO) << "Not logging in: shutting down "
+              << "(talk_mediator_ is NULL)";
+    return;
+  }
+  // TODO(akalin): Make talk_mediator automatically login on
+  // auth token change.
+  talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME);
+  talk_mediator_->Login();
 }
 
 void SyncManager::SyncInternal::OnIncomingNotification(

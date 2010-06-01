@@ -15,14 +15,8 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/deprecated/event_sys.h"
 
-namespace gaia {
-class GaiaAuthenticator;
-struct GaiaAuthEvent;
-}
-
 namespace browser_sync {
 
-class AuthWatcher;
 class ScopedStatusLockWithNotify;
 class ServerConnectionManager;
 class Syncer;
@@ -100,14 +94,6 @@ class AllStatus {
   void WatchConnectionManager(ServerConnectionManager* conn_mgr);
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
-  // Both WatchAuthenticator/HandleGaiaAuthEvent and WatchAuthWatcher/
-  // HandleAuthWatcherEventachieve have the same goal; use only one of the
-  // following two. (The AuthWatcher is watched under Windows; the
-  // GaiaAuthenticator is watched under Mac/Linux.)
-  void WatchAuthenticator(gaia::GaiaAuthenticator* gaia);
-  void HandleGaiaAuthEvent(const gaia::GaiaAuthEvent& event);
-
-  void WatchAuthWatcher(AuthWatcher* auth_watcher);
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
 
   void WatchSyncerThread(SyncerThread* syncer_thread);
@@ -148,8 +134,6 @@ class AllStatus {
   Status status_;
   Channel* const channel_;
   scoped_ptr<EventListenerHookup> conn_mgr_hookup_;
-  scoped_ptr<EventListenerHookup> gaia_hookup_;
-  scoped_ptr<EventListenerHookup> authwatcher_hookup_;
   scoped_ptr<EventListenerHookup> syncer_thread_hookup_;
   scoped_ptr<EventListenerHookup> diskfull_hookup_;
   scoped_ptr<EventListenerHookup> talk_mediator_hookup_;

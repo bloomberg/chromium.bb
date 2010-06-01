@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
-#include "chrome/common/net/notifier/listener/talk_mediator.h"
 
 // How authentication happens:
 //
@@ -44,14 +43,12 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
                          const string& service_id,
                          const string& gaia_url,
                          UserSettings* user_settings,
-                         gaia::GaiaAuthenticator* gaia_auth,
-                         notifier::TalkMediator* talk_mediator)
+                         gaia::GaiaAuthenticator* gaia_auth)
     : gaia_(gaia_auth),
       dirman_(dirman),
       scm_(scm),
       status_(NOT_AUTHENTICATED),
       user_settings_(user_settings),
-      talk_mediator_(talk_mediator),
       auth_backend_thread_("SyncEngine_AuthWatcherThread"),
       current_attempt_trigger_(AuthWatcherEvent::USER_INITIATED) {
 
@@ -101,16 +98,11 @@ void AuthWatcher::DoRenewAuthToken(const std::string& updated_token) {
   LOG(INFO) << "Updating auth token:" << updated_token;
   scm_->set_auth_token(updated_token);
   gaia_->RenewAuthToken(updated_token);  // Must be on AuthWatcher thread
-  talk_mediator_->SetAuthToken(user_settings_->email(), updated_token,
-                               SYNC_SERVICE_NAME);
-  // TODO(akalin): to see if we need to call Login() here, too.
-
   user_settings_->SetAuthTokenForService(user_settings_->email(),
                                          SYNC_SERVICE_NAME,
                                          updated_token);
 
-  AuthWatcherEvent event = { AuthWatcherEvent::AUTH_RENEWED };
-  NotifyListeners(&event);
+  NotifyAuthChanged(user_settings_->email(), updated_token, true);
 }
 
 void AuthWatcher::AuthenticateWithLsid(const std::string& lsid) {
@@ -164,10 +156,6 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
         status_ = GAIA_AUTHENTICATED;
         const std::string& share_name = email;
         user_settings_->SwitchUser(email);
-
-        // Set the authentication token for notifications
-        talk_mediator_->SetAuthToken(email, auth_token, SYNC_SERVICE_NAME);
-        talk_mediator_->Login();
         scm_->set_auth_token(auth_token);
 
         if (!was_authenticated) {
@@ -175,7 +163,7 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
                     << share_name << ")";
           dirman_->Open(share_name);
         }
-        NotifyAuthSucceeded(email);
+        NotifyAuthChanged(email, auth_token, false);
         return;
       }
   case Authenticator::BAD_AUTH_TOKEN:
@@ -210,7 +198,7 @@ bool AuthWatcher::AuthenticateLocally(string email) {
     user_settings_->SwitchUser(email);
     LOG(INFO) << "Opening DB for AuthenticateLocally (" << email << ")";
     dirman_->Open(email);
-    NotifyAuthSucceeded(email);
+    NotifyAuthChanged(email, "", false);
     return true;
   } else {
     return false;
@@ -284,11 +272,18 @@ void AuthWatcher::DoAuthenticate(const AuthRequest& request) {
   }
 }
 
-void AuthWatcher::NotifyAuthSucceeded(const string& email) {
+void AuthWatcher::NotifyAuthChanged(const string& email,
+                                    const string& auth_token,
+                                    bool renewed) {
   DCHECK_EQ(MessageLoop::current(), message_loop());
   LOG(INFO) << "NotifyAuthSucceeded";
-  AuthWatcherEvent event = { AuthWatcherEvent::AUTH_SUCCEEDED };
+  AuthWatcherEvent event = {
+    renewed ?
+        AuthWatcherEvent::AUTH_RENEWED :
+        AuthWatcherEvent::AUTH_SUCCEEDED
+  };
   event.user_email = email;
+  event.auth_token = auth_token;
 
   NotifyListeners(&event);
 }
