@@ -87,6 +87,9 @@ class Preferences : public NotificationObserver {
   StringPrefMember language_hotkey_next_engine_in_menu_;
   StringPrefMember language_hotkey_previous_engine_;
   StringPrefMember language_preload_engines_;
+  BooleanPrefMember language_chewing_boolean_prefs_[kNumChewingBooleanPrefs];
+  StringPrefMember language_chewing_multiple_choice_prefs_[
+      kNumChewingMultipleChoicePrefs];
   StringPrefMember language_hangul_keyboard_;
   BooleanPrefMember language_pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];
   IntegerPrefMember language_pinyin_int_prefs_[kNumPinyinIntegerPrefs];

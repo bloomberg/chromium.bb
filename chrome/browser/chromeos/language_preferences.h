@@ -34,6 +34,95 @@ const wchar_t kHotkeyNextEngineInMenu[] =
 // TODO(suzhe): Add more key bindings?
 const wchar_t kHotkeyPreviousEngine[] = L"Control+space";
 
+// For Simplified Chinese input method (ibus-chewing)
+const char kChewingSectionName[] = "engine/Chewing";
+
+// We have to sync the |ibus_config_name|s with those in
+// ibus-chewing/files/src/Config.cc.
+const struct {
+  const wchar_t* pref_name;  // Chrome preference name.
+  bool default_pref_value;
+  const char* ibus_config_name;
+  int message_id;
+} kChewingBooleanPrefs[] = {
+  { prefs::kLanguageChewingAutoShiftCur, false, "autoShiftCur",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_AUTO_SHIFT_CUR},
+  { prefs::kLanguageChewingAddPhraseDirection, false, "addPhraseDirection",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_ADD_PHRASE_DIRECTION},
+  { prefs::kLanguageChewingEasySymbolInput, true, "easySymbolInput",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_EASY_SYMBOL_INPUT},
+  { prefs::kLanguageChewingEscCleanAllBuf, false, "escCleanAllBuf",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_ESC_CLEAN_ALL_BUF},
+  { prefs::kLanguageChewingForceLowercaseEnglish, false,
+    "forceLowercaseEnglish",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_FORCE_LOWER_CASE_ENGLISH},
+  { prefs::kLanguageChewingPlainZhuyin, false, "plainZhuyin",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_PLAIN_ZHUYIN},
+  { prefs::kLanguageChewingPhraseChoiceRearward, true, "phraseChoiceRearward",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_PHRASE_CHOICE_REARWARD},
+  { prefs::kLanguageChewingSpaceAsSelection, true, "spaceAsSelection",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_SPACE_AS_SELECTION},
+};
+const size_t kNumChewingBooleanPrefs = ARRAYSIZE_UNSAFE(kChewingBooleanPrefs);
+
+const struct ChewingMultipleChoicePreference {
+  const wchar_t* pref_name;  // Chrome preference name.
+  const wchar_t* default_pref_value;
+  const char* ibus_config_name;
+  // Currently we have 10 combobox items at most.
+  static const size_t kMaxItems = 10;
+  struct {
+    const char* ibus_config_value;
+    int item_message_id;  // Resource grd ID for the combobox item.
+  } values_and_ids[kMaxItems];
+  int label_message_id;  // Resource grd ID for the label.
+
+} kChewingMultipleChoicePrefs[] = {
+  { prefs::kLanguageChewingKeyboardType,
+    L"default",
+    "KBType",
+    {{ "default",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DEFAULT },
+     { "hsu", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HSU },
+     { "ibm", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_IBM },
+     { "gin_yieh",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_GIN_YIEH },
+     { "eten", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN },
+     { "eten26", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN26 },
+     { "dvorak", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK },
+     { "dvorak_hsu",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK_HSU },
+     { "dachen_26",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DACHEN_26 },
+     { "hanyu", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HANYU }},
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE,
+  },
+  { prefs::kLanguageChewingSelKeys,
+    L"1234567890",
+    "selKeys",
+    {{ "1234567890",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234567890 },
+     { "asdfghjkl;",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFGHJKLS },
+     { "asdfzxcv89",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFZXCV89 },
+     { "asdfjkl789",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFJKL789 },
+     { "aoeu;qjkix",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUSQJKIX },
+     { "aoeuhtnsid",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUHTNSID },
+     { "aoeuidhtns",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUIDHTNS },
+     { "1234qweras",
+       IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234QWERAS }},
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS,
+  },
+};
+const size_t kNumChewingMultipleChoicePrefs =
+    arraysize(kChewingMultipleChoicePrefs);
+// TODO(zork): Support candPerPage, hsuSelKeyType, and maxChiSymbolLen
+
 // For Korean input method (ibus-hangul)
 const char kHangulSectionName[] = "engine/Hangul";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";

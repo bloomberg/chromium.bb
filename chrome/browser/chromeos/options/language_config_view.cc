@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/options/language_chewing_config_view.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
 #include "chrome/browser/chromeos/options/language_mozc_config_view.h"
 #include "chrome/browser/chromeos/options/language_pinyin_config_view.h"
@@ -60,6 +61,9 @@ const int kPreferredLanguageTableWidth = 300;
 
 // Creates the LanguageHangulConfigView. The function is used to create
 // the object via a function pointer. See also InitInputMethodConfigViewMap().
+views::DialogDelegate* CreateLanguageChewingConfigView(Profile* profile) {
+  return new LanguageChewingConfigView(profile);
+}
 views::DialogDelegate* CreateLanguageHangulConfigView(Profile* profile) {
   return new LanguageHangulConfigView(profile);
 }
@@ -496,6 +500,7 @@ void LanguageConfigView::InitControlLayout() {
 }
 
 void LanguageConfigView::InitInputMethodConfigViewMap() {
+  input_method_config_view_map_["chewing"] = CreateLanguageChewingConfigView;
   input_method_config_view_map_["hangul"] = CreateLanguageHangulConfigView;
   input_method_config_view_map_["pinyin"] = CreateLanguagePinyinConfigView;
 

@@ -31,6 +31,15 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             kHotkeyPreviousEngine);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             UTF8ToWide(kFallbackInputMethodId));  // EN layout
+  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+    prefs->RegisterBooleanPref(kChewingBooleanPrefs[i].pref_name,
+                               kChewingBooleanPrefs[i].default_pref_value);
+  }
+  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+    prefs->RegisterStringPref(
+        kChewingMultipleChoicePrefs[i].pref_name,
+        kChewingMultipleChoicePrefs[i].default_pref_value);
+  }
   prefs->RegisterStringPref(prefs::kLanguageHangulKeyboard,
                             kHangulKeyboardNameIDPairs[0].keyboard_id);
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
@@ -59,6 +68,14 @@ void Preferences::Init(PrefService* prefs) {
   language_hotkey_previous_engine_.Init(
       prefs::kLanguageHotkeyPreviousEngine, prefs, this);
   language_preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
+  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+    language_chewing_boolean_prefs_[i].Init(
+        kChewingBooleanPrefs[i].pref_name, prefs, this);
+  }
+  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+    language_chewing_multiple_choice_prefs_[i].Init(
+        kChewingMultipleChoicePrefs[i].pref_name, prefs, this);
+  }
   language_hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, this);
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     language_pinyin_boolean_prefs_[i].Init(
@@ -121,6 +138,21 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
     SetLanguageConfigStringListAsCSV(kGeneralSectionName,
                                      kPreloadEnginesConfigName,
                                      language_preload_engines_.GetValue());
+  }
+  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+    if (!pref_name || *pref_name == kChewingBooleanPrefs[i].pref_name) {
+      SetLanguageConfigBoolean(kChewingSectionName,
+                               kChewingBooleanPrefs[i].ibus_config_name,
+                               language_chewing_boolean_prefs_[i].GetValue());
+    }
+  }
+  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+    if (!pref_name || *pref_name == kChewingMultipleChoicePrefs[i].pref_name) {
+      SetLanguageConfigString(
+          kChewingSectionName,
+          kChewingMultipleChoicePrefs[i].ibus_config_name,
+          language_chewing_multiple_choice_prefs_[i].GetValue());
+    }
   }
   if (!pref_name || *pref_name == prefs::kLanguageHangulKeyboard) {
     SetLanguageConfigString(kHangulSectionName, kHangulKeyboardConfigName,

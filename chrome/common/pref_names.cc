@@ -208,6 +208,30 @@ const wchar_t kLanguageHotkeyPreviousEngine[] =
 // method IDs.
 const wchar_t kLanguagePreloadEngines[] = L"settings.language.preload_engines";
 
+// Boolean prefs for ibus-chewing Chinese input method.
+const wchar_t kLanguageChewingAutoShiftCur[] =
+    L"settings.language.chewing_auto_shift_cur";
+const wchar_t kLanguageChewingAddPhraseDirection[] =
+    L"settings.language.chewing_add_phrase_direction";
+const wchar_t kLanguageChewingEasySymbolInput[] =
+    L"settings.language.chewing_easy_symbol_input";
+const wchar_t kLanguageChewingEscCleanAllBuf[] =
+    L"settings.language.chewing_esc_clean_all_buf";
+const wchar_t kLanguageChewingForceLowercaseEnglish[] =
+    L"settings.language.chewing_force_lowercase_english";
+const wchar_t kLanguageChewingPlainZhuyin[] =
+    L"settings.language.chewing_plain_zhuyin";
+const wchar_t kLanguageChewingPhraseChoiceRearward[] =
+    L"settings.language.chewing_phrase_choice_rearward";
+const wchar_t kLanguageChewingSpaceAsSelection[] =
+    L"settings.language.chewing_space_as_selection";
+
+// String prefs for ibus-chewing Chinese input method.
+const wchar_t kLanguageChewingKeyboardType[] =
+    L"settings.language.chewing_keyboard_type";
+const wchar_t kLanguageChewingSelKeys[] =
+    L"settings.language.chewing_sel_keys";
+
 // A string pref which determines the keyboard layout for Hangul input method.
 const wchar_t kLanguageHangulKeyboard[] = L"settings.language.hangul_keyboard";
 

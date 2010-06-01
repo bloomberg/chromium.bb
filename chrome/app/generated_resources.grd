@@ -7512,6 +7512,134 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
         Languages
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
+               desc="The title for the Chewing input settings dialog">
+        Chewing Input Settings
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_AUTO_SHIFT_CUR"
+               desc="The checkbox label for a Chewing input method preference">
+        Automatically move cursor to the next character
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_ADD_PHRASE_DIRECTION"
+               desc="The checkbox label for a Chewing input method preference">
+        Add phrases in front
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_EASY_SYMBOL_INPUT"
+               desc="The checkbox label for a Chewing input method preference">
+        Easy symbol input
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_ESC_CLEAN_ALL_BUF"
+               desc="The checkbox label for a Chewing input method preference">
+        Esc cleans whole pre-edit buffer
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_FORCE_LOWER_CASE_ENGLISH"
+               desc="The checkbox label for a Chewing input method preference">
+        Ignore CapsLock status and input lowercase by default
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_PLAIN_ZHUYIN"
+               desc="The checkbox label for a Chewing input method preference">
+        Plain Zhuyin mode.  Automatic candidate selection and related options
+        are disabled or ignored.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_PHRASE_CHOICE_REARWARD"
+               desc="The checkbox label for a Chewing input method preference">
+        Choose phrases from the back, without moving the cursor
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_SPACE_AS_SELECTION"
+               desc="The checkbox label for a Chewing input method preference">
+        Press Space to select the candidate
+      </message>
+
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE"
+               desc="The combobox description for the Chewing keyboard type">
+	Keyboard Type
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DEFAULT"
+               desc="The combobox value for the Chewing keyboard type">
+	Default
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HSU"
+               desc="The combobox value for the Chewing keyboard type">
+	Hsu
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_IBM"
+               desc="The combobox value for the Chewing keyboard type">
+	IBM
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_GIN_YIEH"
+               desc="The combobox value for the Chewing keyboard type">
+	Gin Yieh
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN"
+               desc="The combobox value for the Chewing keyboard type">
+	Eten
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN26"
+               desc="The combobox value for the Chewing keyboard type">
+	Eten 26
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK"
+               desc="The combobox value for the Chewing keyboard type">
+	Dvorak
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK_HSU"
+               desc="The combobox value for the Chewing keyboard type">
+	Dvorak (Hsu)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DACHEN_26"
+               desc="The combobox value for the Chewing keyboard type">
+	Dachen 26
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HANYU"
+               desc="The combobox value for the Chewing keyboard type">
+	Hanyu
+      </message>
+
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS"
+               desc="The combobox description for the Chewing selection keys">
+	Selection Keys
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234567890"
+               desc="The combobox value for the Chewing selection keys">
+	1234567890
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFGHJKLS"
+               desc="The combobox value for the Chewing selection keys">
+	asdfghjkl;
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFZXCV89"
+               desc="The combobox value for the Chewing selection keys">
+	asdfzxcv89
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFJKL789"
+               desc="The combobox value for the Chewing selection keys">
+	asdfjkl789
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUSQJKIX"
+               desc="The combobox value for the Chewing selection keys">
+	aoeu;qjkix (Dvorak)
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUHTNSID"
+               desc="The combobox value for the Chewing selection keys">
+	aoeuhtnsid (Dvorak)
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUIDHTNS"
+               desc="The combobox value for the Chewing selection keys">
+	aoeuidhtns (Dvorak)
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234QWERAS"
+               desc="The combobox value for the Chewing selection keys">
+	1234qweras
+      </message>
+
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE"
                desc="The title for the Hangul input settings dialog">
         Hangul Input Settings
