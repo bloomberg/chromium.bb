@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,8 +155,7 @@ int MockKeyboardDriverWin::GetCharacters(int key_code,
   CHECK(output);
   wchar_t code[16];
   int length = ToUnicodeEx(key_code, MapVirtualKey(key_code, 0),
-                           &keyboard_states_[0], &code[0],
-                           ARRAYSIZE_UNSAFE(code), 0,
+                           &keyboard_states_[0], &code[0], arraysize(code), 0,
                            active_keyboard_layout_);
   if (length > 0)
     output->assign(code);
