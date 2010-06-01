@@ -54,6 +54,11 @@ const struct ExtraLanguage {
   const char* input_method_id;
 } kExtraLanguages[] = {
   { "id", "xkb:us::eng" }, // For Indonesian, use US keyboard layout.
+  // The code "fil" comes from app/l10_util.cc.
+  { "fil", "xkb:us::eng" },  // For Filipino, use US keyboard layout.
+  // The code "es-419" comes from app/l10_util.cc.
+  // For Spanish in Latin America, use Spanish keyboard layout.
+  { "es-419", "xkb:es::spa" },
 };
 
 // The width of the preferred language table shown on the left side.
