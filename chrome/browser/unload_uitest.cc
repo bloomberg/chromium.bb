@@ -406,10 +406,8 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
     DISABLED_BrowserCloseTabWhenOtherTabHasListener
 #else
-// http://crbug.com/45562
-// (whoa momma!  That's all of them!)
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    DISABLED_BrowserCloseTabWhenOtherTabHasListener
+    BrowserCloseTabWhenOtherTabHasListener
 #endif
 
 // Tests that if there's a renderer process with two tabs, one of which has an

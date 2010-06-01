@@ -11,3 +11,5 @@ ExtensionProxyUITest.*
 BrowserTest.FLAKY_PosixSessionEnd
 # See http://crbug.com/42921
 ResourceDispatcherTest.CrossSiteAfterCrash
+# See http://crbug.com/45562
+UnloadTest.BrowserCloseTabWhenOtherTabHasListener
