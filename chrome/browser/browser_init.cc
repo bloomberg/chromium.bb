@@ -69,9 +69,11 @@
 #include "chrome/browser/chromeos/browser_notification_observers.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/low_battery_observer.h"
+#include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
@@ -420,9 +422,15 @@ bool BrowserInit::LaunchBrowser(
 
     // This observer is a singleton. It is never deleted but the pointer is kept
     // in a global so that it isn't reported as a leak.
-    static chromeos::LowBatteryObserver* observer =
+    static chromeos::LowBatteryObserver* low_battery_observer =
         new chromeos::LowBatteryObserver(profile);
-    chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(observer);
+    chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(
+        low_battery_observer);
+
+    static chromeos::NetworkMessageObserver* network_message_observer =
+        new chromeos::NetworkMessageObserver(profile);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(
+        network_message_observer);
 
     // Creates the SystemKeyEventListener to listen for keypress messages
     // regardless of what window has focus.

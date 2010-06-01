@@ -7353,6 +7353,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
+        Network Connection Error
+      </message>
+      <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE" desc="Message for network connection error notification">
+        Failed to connect to network '<ph name="name">$1<ex>GoogleGuest</ex></ph>'.
+      </message>
       <message name="IDS_LOW_BATTERY_TITLE" desc="Title for low battery notification">
         Battery Low
       </message>

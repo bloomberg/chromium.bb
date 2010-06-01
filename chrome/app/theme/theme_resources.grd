@@ -519,7 +519,10 @@
         <include name="IDR_MEDIAPLAYER_VOL_HIGH" file="mediaplayer_vol_high.png" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_FULL_SCREEN" file="mediaplayer_full_screen.png" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_PLAYLIST" file="mediaplayer_playlist.png" type="BINDATA" />
-        <include name="IDR_NOTIFICATION_LOW_BATTERY" file="notification_low_battery.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_LOW_BATTERY" file="notification_battery_low.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_NETWORK_FAILED" file="notification_network_failed.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_NETWORK_OPEN" file="notification_network_open.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_NETWORK_WARNING" file="notification_network_warning.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
         <include name="IDR_LOGIN_OTHER_USER" file="login_other.png" type="BINDATA" />
        </if>
