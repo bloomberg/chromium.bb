@@ -750,7 +750,8 @@ class InputApiUnittest(PresubmitTestsBase):
         self.assertEquals(results[i].LocalPath(),
                           presubmit.normpath(item[1][i]))
       # Same number of expected results.
-      self.assertEquals(sorted([f.LocalPath() for f in results]),
+      self.assertEquals(sorted([f.LocalPath().replace(presubmit.os.sep, '/')
+                                for f in results]),
                         sorted(item[1]))
 
   def testCustomFilter(self):
