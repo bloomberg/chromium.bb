@@ -239,6 +239,7 @@ function getSectionElement(section) {
 function showSection(section) {
   if (!(section & shownSections)) {
     shownSections |= section;
+    getSectionElement(section).classList.remove('hidden');
 
     switch (section) {
       case Section.THUMB:
@@ -249,8 +250,6 @@ function showSection(section) {
         renderRecentlyClosed();
         break;
     }
-
-    getSectionElement(section).classList.remove('hidden');
   }
 }
 
