@@ -1979,6 +1979,10 @@ void RenderView::focusPrevious() {
   Send(new ViewHostMsg_TakeFocus(routing_id_, true));
 }
 
+void RenderView::focusedNodeChanged(const WebNode& node) {
+  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_));
+}
+
 void RenderView::navigateBackForwardSoon(int offset) {
   Send(new ViewHostMsg_GoToEntryAtOffset(routing_id_, offset));
 }

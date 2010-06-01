@@ -263,6 +263,7 @@ class RenderView : public RenderWidget,
   virtual bool acceptsLoadDrops();
   virtual void focusNext();
   virtual void focusPrevious();
+  virtual void focusedNodeChanged(const WebKit::WebNode& node);
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();

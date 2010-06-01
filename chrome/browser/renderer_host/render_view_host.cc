@@ -828,6 +828,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityTree, OnAccessibilityTree)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
