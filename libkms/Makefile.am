@@ -1,6 +1,7 @@
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
-	-I$(top_srcdir)/include/drm
+	-I$(top_srcdir)/include/drm \
+	-I$(top_srcdir)
 
 libkms_la_LTLIBRARIES = libkms.la
 libkms_ladir = $(libdir)
