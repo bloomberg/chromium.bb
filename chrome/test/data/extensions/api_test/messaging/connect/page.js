@@ -1,3 +1,19 @@
+JSON.parse = function() {
+  return "JSON.parse clobbered by content script.";
+}
+
+JSON.stringify = function() {
+  return "JSON.stringify clobbered by content script.";
+}
+
+Array.prototype.toJSON = function() {
+  return "Array.prototype.toJSON clobbered by content script.";
+}
+
+Object.prototype.toJSON = function() {
+  return "Object.prototype.toJSON clobbered by content script.";
+}
+
 // For complex connect tests.
 chrome.extension.onConnect.addListener(function(port) {
   console.log('connected');

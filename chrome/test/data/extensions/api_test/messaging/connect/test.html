@@ -1,4 +1,20 @@
 <script>
+JSON.parse = function() {
+  return "JSON.parse clobbered by extension.";
+}
+
+JSON.stringify = function() {
+  return "JSON.stringify clobbered by extension.";
+}
+
+Array.prototype.toJSON = function() {
+  return "Array.prototype.toJSON clobbered by extension.";
+}
+
+Object.prototype.toJSON = function() {
+  return "Object.prototype.toJSON clobbered by extension.";
+}
+
 // Keep track of the tab that we're running tests in, for simplicity.
 var testTab = null;
   

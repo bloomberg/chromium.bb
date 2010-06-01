@@ -92,7 +92,7 @@ var chrome = chrome || {};
 
       if (request.callback) {
         // Callbacks currently only support one callback argument.
-        var callbackArgs = response ? [JSON.parse(response)] : [];
+        var callbackArgs = response ? [chromeHidden.JSON.parse(response)] : [];
 
         // Validate callback in debug only -- and only when the
         // caller has provided a callback. Implementations of api
@@ -177,20 +177,8 @@ var chrome = chrome || {};
     if (request.args === undefined)
       request.args = null;
 
-    // Some javascript libraries (e.g. prototype.js version <= 1.6) add a toJSON
-    // serializer function on Array.prototype that is incompatible with our
-    // native JSON library, causing incorrect deserialization in the C++ side of
-    // StartRequest. We work around that here by temporarily removing the toJSON
-    // function.
-    var arrayToJsonTmp;
-    if (Array.prototype.toJSON) {
-      arrayToJsonTmp = Array.prototype.toJSON;
-      Array.prototype.toJSON = null;
-    }
-    var sargs = JSON.stringify(request.args);
-    if (arrayToJsonTmp) {
-      Array.prototype.toJSON = arrayToJsonTmp;
-    }
+    var sargs = chromeHidden.JSON.stringify(request.args);
+
     var requestId = GetNextRequestId();
     requests[requestId] = request;
     var hasCallback = (request.callback || customCallback) ? true : false;
@@ -334,7 +322,7 @@ var chrome = chrome || {};
     // TODO(rafaelw): Handle synchronous functions.
     // TOOD(rafaelw): Consider providing some convenient override points
     //   for api functions that wish to insert themselves into the call.
-    var apiDefinitions = JSON.parse(GetExtensionAPIDefinition());
+    var apiDefinitions = chromeHidden.JSON.parse(GetExtensionAPIDefinition());
 
     apiDefinitions.forEach(function(apiDef) {
       var module = chrome;
@@ -609,7 +597,7 @@ var chrome = chrome || {};
 
       // Set up the onclick handler if we were passed one in the request.
       if (request.args.onclick) {
-        var menuItemId = JSON.parse(response);
+        var menuItemId = chromeHidden.JSON.parse(response);
         chromeHidden.contextMenuHandlers[menuItemId] = request.args.onclick;
       }
     };

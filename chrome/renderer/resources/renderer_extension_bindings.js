@@ -75,7 +75,7 @@ var chrome = chrome || {};
     var isExternal = sourceExtensionId != chromeHidden.extensionId;
 
     if (tab)
-      tab = JSON.parse(tab);
+      tab = chromeHidden.JSON.parse(tab);
     var sender = {tab: tab, id: sourceExtensionId};
 
     // Special case for sendRequest/onRequest.
@@ -119,7 +119,7 @@ var chrome = chrome || {};
     var port = ports[portId];
     if (port) {
       if (msg) {
-        msg = JSON.parse(msg);
+        msg = chromeHidden.JSON.parse(msg);
       }
       port.onMessage.dispatch(msg, port);
     }
@@ -131,7 +131,7 @@ var chrome = chrome || {};
     // JSON.stringify doesn't support a root object which is undefined.
     if (msg === undefined)
       msg = null;
-    PostMessage(this.portId_, JSON.stringify(msg));
+    PostMessage(this.portId_, chromeHidden.JSON.stringify(msg));
   };
 
   // Disconnects the port from the other end.
