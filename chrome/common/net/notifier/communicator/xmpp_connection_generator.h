@@ -17,7 +17,6 @@
 #include "talk/base/sigslot.h"
 
 namespace talk_base {
-class AutoDetectProxy;
 struct ProxyInfo;
 class SignalThread;
 class Task;
@@ -68,7 +67,6 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
   sigslot::signal2<bool, int> SignalExhaustedSettings;
 
  private:
-  void OnProxyDetect(talk_base::AutoDetectProxy* proxy_detect);
   void OnServerDNSResolved(int status);
   void HandleServerDNSResolved(int status);
   void HandleExhaustedConnections();

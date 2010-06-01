@@ -29,7 +29,6 @@
 #include "chrome/common/net/notifier/communicator/product_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
-#include "talk/base/autodetectproxy.h"
 #include "talk/base/httpcommon-inl.h"
 #include "talk/base/task.h"
 #include "talk/base/thread.h"
@@ -88,47 +87,14 @@ const talk_base::ProxyInfo& XmppConnectionGenerator::proxy() const {
 void XmppConnectionGenerator::StartGenerating() {
   LOG(INFO) << "XmppConnectionGenerator::StartGenerating";
 
-  talk_base::AutoDetectProxy* proxy_detect =
-      new talk_base::AutoDetectProxy(GetUserAgentString());
-
-  if (options_->autodetect_proxy()) {
-    // Pretend the xmpp server is https, when detecting whether a proxy is
-    // required to connect.
-    talk_base::Url<char> host_url("/",
-                                  server_list_[0].server.host.c_str(),
-                                  server_list_[0].server.port);
-    host_url.set_secure(true);
-    proxy_detect->set_server_url(host_url.url());
-  } else if (options_->proxy_host().length()) {
-    talk_base::SocketAddress proxy(options_->proxy_host(),
-                                   options_->proxy_port());
-    proxy_detect->set_proxy(proxy);
-  }
-  proxy_detect->set_auth_info(options_->use_proxy_auth(),
-                              options_->auth_user(),
-                              talk_base::CryptString(options_->auth_pass()));
-
-  SignalThreadTask<talk_base::AutoDetectProxy>* wrapper_task =
-      new SignalThreadTask<talk_base::AutoDetectProxy>(parent_, &proxy_detect);
-  wrapper_task->SignalWorkDone.connect(
-      this,
-      &XmppConnectionGenerator::OnProxyDetect);
-  wrapper_task->Start();
-}
-
-void XmppConnectionGenerator::OnProxyDetect(
-    talk_base::AutoDetectProxy* proxy_detect) {
-  LOG(INFO) << "XmppConnectionGenerator::OnProxyDetect";
-
-  DCHECK(settings_list_.get());
-  DCHECK(proxy_detect);
-  settings_list_->SetProxy(proxy_detect->proxy());
+  // TODO(akalin): Detect proxy settings once we use Chrome sockets.
 
   // Start iterating through the connections (which are generated on demand).
   UseNextConnection();
 }
 
 void XmppConnectionGenerator::UseNextConnection() {
+  DCHECK(settings_list_.get());
   // Loop until we can use a connection or we run out of connections
   // to try.
   while (true) {
