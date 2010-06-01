@@ -458,6 +458,7 @@ class Browser : public TabStripModelDelegate,
   void Exit();
 #if defined(OS_CHROMEOS)
   void ToggleCompactNavigationBar();
+  void Search();
 #endif
 
   // Page-related commands

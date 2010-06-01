@@ -263,8 +263,10 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_Z:
       return VKEY_Z;  // (5A) Z key case 'z': case 'Z': return 0x5A;
     case GDK_Meta_L:
+    case GDK_Super_L:
       return VKEY_LWIN; // (5B) Left Windows key (Microsoft Natural keyboard)
     case GDK_Meta_R:
+    case GDK_Super_R:
       return VKEY_RWIN; // (5C) Right Windows key (Natural keyboard)
       // VKEY_APPS (5D) Applications key (Natural keyboard)
       // VKEY_SLEEP (5F) Computer Sleep key

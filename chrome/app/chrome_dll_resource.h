@@ -119,6 +119,7 @@
 #define IDC_COMPACT_NAVBAR              34034
 #define IDC_TOGGLE_VERTICAL_TABS        34035
 #define IDC_EXPERIMENTAL                34036
+#define IDC_SEARCH                      34037
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000

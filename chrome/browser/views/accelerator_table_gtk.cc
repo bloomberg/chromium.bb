@@ -138,6 +138,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if defined(OS_CHROMEOS)
   { base::VKEY_C, true, true, false, IDC_COMPACT_NAVBAR },
   { base::VKEY_F, false, true, true, IDC_FULLSCREEN },
+  { base::VKEY_LWIN, false, false, false, IDC_SEARCH },
 #endif
 };
 

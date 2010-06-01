@@ -1391,6 +1391,17 @@ void Browser::ToggleCompactNavigationBar() {
                             profile_);
   window_->ToggleCompactNavigationBar();
 }
+
+void Browser::Search() {
+  // If the NTP is showing, close it.
+  if (StartsWithASCII(GetSelectedTabContents()->GetURL().spec(),
+                       chrome::kChromeUINewTabURL, true)) {
+    CloseTab();
+    return;
+  }
+  // Otherwise just open it.
+  NewTab();
+}
 #endif
 
 void Browser::Exit() {
@@ -1952,6 +1963,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();       break;
 #if defined(OS_CHROMEOS)
     case IDC_COMPACT_NAVBAR:        ToggleCompactNavigationBar();  break;
+    case IDC_SEARCH:                Search();                      break;
 #endif
 
     // Page-related commands
@@ -2076,7 +2088,8 @@ bool Browser::IsReservedCommand(int command_id) {
          command_id == IDC_RESTORE_TAB ||
          command_id == IDC_SELECT_NEXT_TAB ||
          command_id == IDC_SELECT_PREVIOUS_TAB ||
-         command_id == IDC_EXIT;
+         command_id == IDC_EXIT ||
+         command_id == IDC_SEARCH;
 }
 
 void Browser::SetBlockCommandExecution(bool block) {
@@ -3087,6 +3100,7 @@ void Browser::InitCommandState() {
 
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
+  command_updater_.UpdateCommandEnabled(IDC_SEARCH, true);
   command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_EXPERIMENTAL, true);
