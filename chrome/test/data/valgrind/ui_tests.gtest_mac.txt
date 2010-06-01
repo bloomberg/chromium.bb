@@ -72,3 +72,6 @@ BookmarksUITest.ShouldRedirectToExtension
 
 # See http://crbug.com/40587
 BookmarksUITest.CommandAgainGoesBackToBookmarksTab
+
+# See http://crbug.com/45564
+ChromeMainTest.AppLaunch
