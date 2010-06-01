@@ -1166,8 +1166,12 @@ def CMDdiff(args):
     files = change_info.GetFileNames()
   else:
     files = GetFilesNotInCL()
-  return RunShellWithReturnCode(['svn', 'diff'] + files + args,
-                                print_output=True)[1]
+
+  root = GetRepositoryRoot()
+  cmd = ['svn', 'diff']
+  cmd.extend([os.path.join(root, x) for x in files])
+  cmd.extend(args)
+  return RunShellWithReturnCode(cmd, print_output=True)[1]
 
 
 @no_args
