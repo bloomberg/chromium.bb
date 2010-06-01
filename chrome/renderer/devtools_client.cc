@@ -6,6 +6,7 @@
 
 #include "app/app_switches.h"
 #include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
@@ -84,4 +85,9 @@ void DevToolsClient::requestUndockWindow() {
 void DevToolsClient::OnRpcMessage(const DevToolsMessageData& data) {
   web_tools_frontend_->dispatchMessageFromAgent(
       data.ToWebDevToolsMessageData());
+}
+
+bool DevToolsClient::shouldHideScriptsPanel() {
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  return cmd->HasSwitch(switches::kRemoteShellPort);
 }

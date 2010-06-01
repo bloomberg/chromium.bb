@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/devtools_agent.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/devtools_agent_filter.h"
@@ -55,6 +57,9 @@ DevToolsAgent::DevToolsAgent(int routing_id, RenderView* render_view)
     : routing_id_(routing_id),
       render_view_(render_view) {
   agent_for_routing_id_[routing_id] = this;
+
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  expose_v8_debugger_protocol_ =cmd->HasSwitch(switches::kRemoteShellPort);
 }
 
 DevToolsAgent::~DevToolsAgent() {
@@ -123,6 +128,11 @@ WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
     DevToolsAgent::createClientMessageLoop() {
   return new WebKitClientMessageLoopImpl();
 }
+
+bool DevToolsAgent::exposeV8DebuggerProtocol() {
+  return expose_v8_debugger_protocol_;
+}
+
 
 // static
 DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {

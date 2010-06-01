@@ -572,6 +572,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSandboxLogging,
     switches::kDisableFlashCoreAnimation,
 #endif
+    switches::kRemoteShellPort,
   };
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {

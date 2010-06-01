@@ -49,6 +49,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual WebKit::WebCString injectedScriptDispatcherSource();
   virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop();
+  virtual bool exposeV8DebuggerProtocol();
 
   // Returns agent instance for its host id.
   static DevToolsAgent* FromHostId(int host_id);
@@ -70,6 +71,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
   int routing_id_; //  View routing id that we can access from IO thread.
   RenderView* render_view_;
+  bool expose_v8_debugger_protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

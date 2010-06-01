@@ -49,6 +49,8 @@ class DevToolsClient : public WebKit::WebDevToolsFrontendClient {
   virtual void requestDockWindow();
   virtual void requestUndockWindow();
 
+  virtual bool shouldHideScriptsPanel();
+
  private:
   void OnRpcMessage(const DevToolsMessageData& data);
 
