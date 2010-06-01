@@ -406,8 +406,9 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
     DISABLED_BrowserCloseTabWhenOtherTabHasListener
 #else
+// Flaky on Linux as well. http://crbug.com/45562
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    BrowserCloseTabWhenOtherTabHasListener
+    FLAKY_BrowserCloseTabWhenOtherTabHasListener
 #endif
 
 // Tests that if there's a renderer process with two tabs, one of which has an
