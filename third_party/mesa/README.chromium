@@ -17,3 +17,5 @@ Modifications made with initial commit:
 
 Later modifications:
 - Added OSMesaGetProcAddress to MesaLib/src/mesa/drivers/osmesa/osmesa.def
+
+- Added #pragma optimize('', off) to MesaLib\src\mesa\swrast\s_textcombine.c

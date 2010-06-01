@@ -23,7 +23,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #include "main/glheader.h"
 #include "main/context.h"
 #include "main/colormac.h"
@@ -35,6 +34,9 @@
 #include "s_context.h"
 #include "s_texcombine.h"
 
+#if defined(_MSC_VER)
+#pragma optimize("", off)
+#endif
 
 /**
  * Pointer to array of float[4]
