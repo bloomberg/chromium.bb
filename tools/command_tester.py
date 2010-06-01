@@ -46,6 +46,7 @@ import time
 import test_lib
 
 GlobalReportStream = [sys.stdout]
+GlobalSettings = {}
 
 # Hook print to we can print to both stdout and a file
 def Print(message):
@@ -94,31 +95,33 @@ def DifferentFromGolden(actual, golden, output_type, fail_msg):
   return False
 
 
-GlobalSettings = {
-    'exit_status': 0,
-    'osenv': '',
+def ResetGlobalSettings():
+  global GlobalSettings
+  GlobalSettings = {
+      'exit_status': 0,
+      'osenv': '',
 
-    'name': None,
-    'report': None,
+      'name': None,
+      'report': None,
 
-    'stdin': None,
-    'logout': None,
+      'stdin': None,
+      'logout': None,
 
-    'stdout_golden': None,
-    'stderr_golden': None,
-    'log_golden': None,
+      'stdout_golden': None,
+      'stderr_golden': None,
+      'log_golden': None,
 
-    'stdout_filter': None,
-    'stderr_filter': None,
-    'log_filter': None,
+      'stdout_filter': None,
+      'stderr_filter': None,
+      'log_filter': None,
 
-    'filter_validator': 0,
+      'filter_validator': 0,
 
-    'time_warning': 0,
-    'time_error': 0,
+      'time_warning': 0,
+      'time_error': 0,
 
-    'run_under': None,
-}
+      'run_under': None,
+  }
 
 
 # NOTE: The failure/success messages are parsed by Pulse and should
@@ -159,6 +162,7 @@ def MassageExitStatus(v):
 
 def ProcessOptions(argv):
   """Process command line options and return the unprocessed left overs."""
+  ResetGlobalSettings()
   try:
     opts, args = getopt.getopt(argv, '', [x + '='  for x in GlobalSettings])
   except getopt.GetoptError, err:

@@ -28,7 +28,10 @@ import command_tester
 # see AddNdisTest below
 TESTS = [
     ['service_runtime_tests', [], [], 'small'],
+    ['format_string_test', [], [], 'small'],
     ['nacl_sync_cond_test', [], [], 'small'],
+    ['expiration_test', [], [], 'medium'],
+    ['env_cleanser_test', [], [], 'small'],
 ]
 
 # If a specific test should not run on a specific platform, add it to this list
@@ -41,6 +44,7 @@ TEST_TIME_THRESHOLD = {
     'small': 2,
     'medium': 10,
     'large': 60,
+    'large_tests_arm_hw_only':60,
     'huge': 1800,
     }
 
@@ -57,24 +61,72 @@ GlobalSettings = {
 
 # ----------------------------------------------------------
 # TODO(gregoryd): move test definitions into the appropriate locations
-def AddNcdisTest():
+def AddNcdisTests():
   name = 'ncdis'
   native_client_dir = GetLocalPath()
-  stdin_path = os.path.join(native_client_dir, 'src', 'trusted',
-                            'validator_x86', 'testdata', '32',
-                            'ncdis_test.input')
-  stdout_path = os.path.join(native_client_dir, 'src', 'trusted',
-                             'validator_x86', 'testdata', '32',
-                             'ncdis_test.input')
+  testdata_dir = os.path.join(native_client_dir, 'src', 'trusted',
+                            'validator_x86', 'testdata', '32')
+  stdin_path = os.path.join(testdata_dir, 'ncdis_test.input')
+  stdout_path = os.path.join(testdata_dir, 'ncdis_test.input')
   options = ['--stdin=%s' % stdin_path,
              '--stdout_golden=%s' % stdout_path]
   extras = ['-self_document',
             '-commands=-']
   TESTS.append([name, options, extras, 'small'])
 
+  # Also add test using new iterator model
+  stdin_path = os.path.join(testdata_dir, 'ncdis_iter_test.input')
+  stdout_path = os.path.join(testdata_dir,'ncdis_iter_test.input')
+  options = ['--stdin=%s' % stdin_path,
+             '--stdout_golden=%s' % stdout_path]
+  extras = ['-use_iter'] + extras
+  TESTS.append([name, options, extras, 'small'])
+
+  # Same as above, but comparing internal representation against golden files.
+  stdout_path = os.path.join(testdata_dir, 'ncdis_iter_test.internal')
+  options = ['--stdin=%s' % stdin_path,
+             '--stdout_golden=%s' % stdout_path]
+  TESTS.append([name, options, ['-use_iter', '-internal', '-commands=-'],
+               'small'])
+
+  # Test that we can textually define a code segment using hex values.
+  stdin_path = os.path.join(testdata_dir, 'test_hex.txt')
+  stdout_path = os.path.join(testdata_dir, 'test_hex.gold')
+  options = ['--stdin=%s' % stdin_path,
+             '--stdout_golden=%s' % stdout_path]
+  TESTS.append([name, options, ['-use_iter', '-hex_text=-'], 'small'])
+
+def AddServiceRuntimeTests():
+  # Service_runtime_tests itself is in the initialized TESTS
+  if GlobalSettings['platform'].startswith('arm'):
+    params = [ '-n', '512', '-m', '2']
+    TESTS.append(['gio_shm_unbounded_test', [], [], 'large_tests_arm_hw_only'])
+  else:
+    params = []
+    TESTS.append(['gio_shm_unbounded_test', [], [], 'small'])
+  TESTS.append(['gio_shm_test', [], params, 'large'])
+
+  # Check tests
+  abort_exit_status = ['--exit_status=17']
+  TESTS.append(['nacl_check_test', [], ['-C'], 'small'])
+
+  # Death test
+  TESTS.append(['nacl_check_test', abort_exit_status,
+               ['-c'], 'small'])
+  if GlobalSettings['config'] == 'Debug':
+    TESTS.append(['nacl_check_test', abort_exit_status, ['-d'], 'small'])
+  else:
+    TESTS.append(['nacl_check_test', [], ['-d'], 'small'])
+  TESTS.append(['nacl_check_test', [], ['-s', '0', '-C'], 'small'])
+  TESTS.append(['nacl_check_test', abort_exit_status,
+               ['-s', '0', '-c'], 'small'])
+  TESTS.append(['nacl_check_test', [], ['-s', '0', '-d'], 'small'])
+  TESTS.append(['nacl_check_test', abort_exit_status,
+               ['-s', '1', '-d'], 'small'])
 
 def AddTests():
-  AddNcdisTest()
+  AddNcdisTests()
+  AddServiceRuntimeTests()
 
 
 # ----------------------------------------------------------
@@ -147,7 +199,7 @@ def ValidatePlatform():
     platform = 'linux'
   if sys.platform == 'darwin':
     platform = 'mac'
-  if sys.maxsize == 2**31-1:
+  if sys.maxint == 2**31-1:
     platform += '32'
   else:
     platform += '64'

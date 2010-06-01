@@ -180,5 +180,49 @@
         'gio_shm_unbounded_test.c',
       ],
     },
+    {
+      'target_name': 'expiration_test',
+      'type': 'executable',
+      'dependencies': [
+        'service_runtime.gyp:expiration',
+      ],
+      'sources': [
+        'expiration_test.c',
+      ],
+    },
+    {
+    'target_name': 'env_cleanser_test',
+    'type': 'executable',
+    'dependencies': [
+      'service_runtime.gyp:sel',
+      'service_runtime.gyp:gio_shm',
+    ],
+    'sources': [
+      'env_cleanser_test.c',
+    ],
+    },
+    {
+      'target_name': 'format_string_test',
+      'type': 'executable',
+      'dependencies': [
+        'service_runtime.gyp:sel',
+      ],
+      'sources': [
+        'format_string_test.c',
+      ],
+    },
+    {
+      'target_name': 'nacl_check_test',
+      'type': 'executable',
+      'dependencies': [
+        'service_runtime.gyp:sel',
+        'service_runtime.gyp:gio_shm',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+      ],
+      'sources': [
+        'nacl_check_test.c',
+      ],
+    },
   ],
 }
