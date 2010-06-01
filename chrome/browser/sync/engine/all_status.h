@@ -20,11 +20,6 @@ class GaiaAuthenticator;
 struct GaiaAuthEvent;
 }
 
-namespace notifier {
-class TalkMediator;
-struct TalkMediatorEvent;
-}
-
 namespace browser_sync {
 
 class AuthWatcher;
@@ -118,11 +113,6 @@ class AllStatus {
   void WatchSyncerThread(SyncerThread* syncer_thread);
   void HandleSyncerEvent(const SyncerEvent& event);
 
-  void WatchTalkMediator(
-      const notifier::TalkMediator* talk_mediator);
-  void HandleTalkMediatorEvent(
-      const notifier::TalkMediatorEvent& event);
-
   // Returns a string description of the SyncStatus (currently just the ascii
   // version of the enum). Will LOG(FATAL) if the status us out of range.
   static const char* GetSyncStatusString(SyncStatus status);
@@ -136,6 +126,12 @@ class AllStatus {
 
   // This uses AllStatus' max_consecutive_errors as the error count
   int GetRecommendedDelay(int base_delay) const;
+
+  void SetNotificationsEnabled(bool notifications_enabled);
+
+  void IncrementNotificationsSent();
+
+  void IncrementNotificationsReceived();
 
  protected:
   typedef std::map<Syncer*, EventListenerHookup*> Syncers;

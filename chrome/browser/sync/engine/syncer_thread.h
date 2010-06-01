@@ -30,10 +30,6 @@
 
 class EventListenerHookup;
 
-namespace notifier {
-class TalkMediator;
-}
-
 namespace syncable {
 class DirectoryManager;
 struct DirectoryManagerEvent;
@@ -48,7 +44,6 @@ class URLFactory;
 struct ServerConnectionEvent;
 struct SyncerEvent;
 struct SyncerShutdownEvent;
-struct TalkMediatorEvent;
 
 class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
                      public sessions::SyncSession::Delegate {
@@ -134,8 +129,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // from the SyncerThread's controller and will cause a mutex lock.
   virtual void NudgeSyncer(int milliseconds_from_now, NudgeSource source);
 
-  // Registers this thread to watch talk mediator events.
-  virtual void WatchTalkMediator(notifier::TalkMediator* talk_mediator);
+  void SetNotificationsEnabled(bool notifications_enabled);
 
   virtual SyncerEventChannel* relay_channel();
 
@@ -238,8 +232,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
-  void HandleTalkMediatorEvent(const notifier::TalkMediatorEvent& event);
-
   void SyncMain(Syncer* syncer);
 
   // Calculates the next sync wait time and exponential backoff state.
@@ -309,7 +301,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // this is called.
   void NudgeSyncImpl(int milliseconds_from_now, NudgeSource source);
 
-  scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
   scoped_ptr<EventListenerHookup> directory_manager_hookup_;
   scoped_ptr<EventListenerHookup> syncer_events_;
 

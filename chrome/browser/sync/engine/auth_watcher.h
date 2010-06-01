@@ -32,7 +32,6 @@ class DirectoryManager;
 
 namespace browser_sync {
 
-class AllStatus;
 class AuthWatcher;
 class ServerConnectionManager;
 class URLFactory;
@@ -89,7 +88,6 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
 
   AuthWatcher(DirectoryManager* dirman,
               ServerConnectionManager* scm,
-              AllStatus* allstatus,
               const std::string& user_agent,
               const std::string& service_id,
               const std::string& gaia_url,
@@ -138,7 +136,6 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   std::string email() const;
   syncable::DirectoryManager* dirman() const { return dirman_; }
   ServerConnectionManager* scm() const { return scm_; }
-  AllStatus* allstatus() const { return allstatus_; }
   UserSettings* settings() const { return user_settings_; }
   Status status() const { return (Status)status_; }
 
@@ -207,7 +204,6 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   syncable::DirectoryManager* const dirman_;
   ServerConnectionManager* const scm_;
   scoped_ptr<EventListenerHookup> connmgr_hookup_;
-  AllStatus* const allstatus_;
   Status status_;
   UserSettings* const user_settings_;
   // Interface to the notifications engine.

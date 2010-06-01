@@ -16,7 +16,6 @@
 #include <queue>
 
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -24,8 +23,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/notifier/listener/notification_constants.h"
-#include "chrome/common/net/notifier/listener/talk_mediator.h"
-#include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 
 using std::priority_queue;
 using std::min;
@@ -72,7 +69,6 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context,
       syncer_long_poll_interval_seconds_(kDefaultLongPollIntervalSeconds),
       syncer_polling_interval_(kDefaultShortPollIntervalSeconds),
       syncer_max_interval_(kDefaultMaxPollIntervalMs),
-      talk_mediator_hookup_(NULL),
       directory_manager_hookup_(NULL),
       syncer_events_(NULL),
       session_context_(context),
@@ -98,7 +94,6 @@ SyncerThread::~SyncerThread() {
   directory_manager_hookup_.reset();
   syncer_events_.reset();
   delete vault_.syncer_;
-  talk_mediator_hookup_.reset();
   CHECK(!thread_.IsRunning());
 }
 
@@ -602,56 +597,9 @@ void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
   vault_field_changed_.Broadcast();
 }
 
-void SyncerThread::WatchTalkMediator(notifier::TalkMediator* mediator) {
-  talk_mediator_hookup_.reset(
-      NewEventListenerHookup(
-          mediator->channel(),
-          this,
-          &SyncerThread::HandleTalkMediatorEvent));
-}
-
-void SyncerThread::HandleTalkMediatorEvent(
-    const notifier::TalkMediatorEvent& event) {
+void SyncerThread::SetNotificationsEnabled(bool notifications_enabled) {
   AutoLock lock(lock_);
-  switch (event.what_happened) {
-    case notifier::TalkMediatorEvent::LOGIN_SUCCEEDED:
-      LOG(INFO) << "P2P: Login succeeded.";
-      p2p_authenticated_ = true;
-      break;
-    case notifier::TalkMediatorEvent::LOGOUT_SUCCEEDED:
-      LOG(INFO) << "P2P: Login succeeded.";
-      p2p_authenticated_ = false;
-      break;
-    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_ON:
-      LOG(INFO) << "P2P: Subscriptions successfully enabled.";
-      p2p_subscribed_ = true;
-      if (NULL != vault_.syncer_) {
-        LOG(INFO) << "Subscriptions on.  Nudging syncer for initial push.";
-        NudgeSyncImpl(0, kLocal);
-      }
-      break;
-    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_OFF:
-      LOG(INFO) << "P2P: Subscriptions are not enabled.";
-      p2p_subscribed_ = false;
-      break;
-    case notifier::TalkMediatorEvent::NOTIFICATION_RECEIVED:
-      // Check if the service url is a sync URL. An empty service URL
-      // is treated as a legacy sync notification
-      if (event.notification_data.service_url.empty() ||
-          (event.notification_data.service_url == kSyncLegacyServiceUrl) ||
-          (event.notification_data.service_url == kSyncServiceUrl)) {
-        LOG(INFO) << "P2P: Updates on server, pushing syncer";
-        if (NULL != vault_.syncer_) {
-          NudgeSyncImpl(0, kNotification);
-        }
-      }
-      break;
-    default:
-      break;
-  }
-
-  session_context_->set_notifications_enabled(p2p_authenticated_ &&
-                                              p2p_subscribed_);
+  session_context_->set_notifications_enabled(notifications_enabled);
 }
 
 // Returns the amount of time since the user last interacted with the computer,

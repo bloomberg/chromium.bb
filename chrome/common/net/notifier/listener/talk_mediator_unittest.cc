@@ -4,81 +4,88 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_mock.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "talk/xmpp/xmppengine.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace notifier {
 
-class TalkMediatorImplTest : public testing::Test {
- public:
-  void HandleTalkMediatorEvent(
-      const notifier::TalkMediatorEvent& event) {
-    last_message_ = event.what_happened;
-  }
+using ::testing::_;
 
+class MockTalkMediatorDelegate : public TalkMediator::Delegate {
+ public:
+  MockTalkMediatorDelegate() {}
+  virtual ~MockTalkMediatorDelegate() {}
+
+  MOCK_METHOD1(OnNotificationStateChange,
+               void(bool notification_changed));
+  MOCK_METHOD1(OnIncomingNotification,
+               void(const IncomingNotificationData& data));
+  MOCK_METHOD0(OnOutgoingNotification, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTalkMediatorDelegate);
+};
+
+class TalkMediatorImplTest : public testing::Test {
  protected:
   TalkMediatorImplTest() {}
-  ~TalkMediatorImplTest() {}
-
-  virtual void SetUp() {
-    last_message_ = -1;
-  }
-
-  virtual void TearDown() {
-  }
+  virtual ~TalkMediatorImplTest() {}
 
   chrome_common_net::FakeNetworkChangeNotifierThread
       fake_network_change_notifier_thread_;
   int last_message_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TalkMediatorImplTest);
 };
 
 TEST_F(TalkMediatorImplTest, ConstructionOfTheClass) {
   // Constructing a single talk mediator enables SSL through the singleton.
   scoped_ptr<TalkMediatorImpl> talk1(
       new TalkMediatorImpl(&fake_network_change_notifier_thread_, false));
-  talk1.reset(NULL);
 }
 
 TEST_F(TalkMediatorImplTest, SetAuthTokenWithBadInput) {
   scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(
       new MockMediatorThread()));
-  ASSERT_FALSE(talk1->SetAuthToken("@missinguser.com", "", "fake_service"));
-  ASSERT_TRUE(talk1->state_.initialized == 0);
+  EXPECT_FALSE(talk1->SetAuthToken("@missinguser.com", "", "fake_service"));
+  EXPECT_FALSE(talk1->state_.initialized);
 
   scoped_ptr<TalkMediatorImpl> talk2(new TalkMediatorImpl(
       new MockMediatorThread()));
-  ASSERT_FALSE(talk2->SetAuthToken("", "1234567890", "fake_service"));
-  ASSERT_TRUE(talk2->state_.initialized == 0);
+  EXPECT_FALSE(talk2->SetAuthToken("", "1234567890", "fake_service"));
+  EXPECT_FALSE(talk2->state_.initialized);
 
   scoped_ptr<TalkMediatorImpl> talk3(new TalkMediatorImpl(
       new MockMediatorThread()));
-  ASSERT_FALSE(talk3->SetAuthToken("missingdomain", "abcde",  "fake_service"));
-  ASSERT_TRUE(talk3->state_.initialized == 0);
+  EXPECT_FALSE(talk3->SetAuthToken("missingdomain", "abcde",  "fake_service"));
+  EXPECT_FALSE(talk3->state_.initialized);
 }
 
 TEST_F(TalkMediatorImplTest, SetAuthTokenWithGoodInput) {
   scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(
       new MockMediatorThread()));
-  ASSERT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
+  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
                                   "fake_service"));
-  ASSERT_TRUE(talk1->state_.initialized == 1);
+  EXPECT_TRUE(talk1->state_.initialized);
 
   scoped_ptr<TalkMediatorImpl> talk2(new TalkMediatorImpl(
       new MockMediatorThread()));
-  ASSERT_TRUE(talk2->SetAuthToken("chromium@mail.google.com", "token",
+  EXPECT_TRUE(talk2->SetAuthToken("chromium@mail.google.com", "token",
                                   "fake_service"));
-  ASSERT_TRUE(talk2->state_.initialized == 1);
+  EXPECT_TRUE(talk2->state_.initialized);
 
   scoped_ptr<TalkMediatorImpl> talk3(new TalkMediatorImpl(
       new MockMediatorThread()));
-  ASSERT_TRUE(talk3->SetAuthToken("chromium@chromium.org", "token",
+  EXPECT_TRUE(talk3->SetAuthToken("chromium@chromium.org", "token",
                                   "fake_service"));
-  ASSERT_TRUE(talk3->state_.initialized == 1);
+  EXPECT_TRUE(talk3->state_.initialized);
 }
 
 TEST_F(TalkMediatorImplTest, LoginWiring) {
@@ -87,25 +94,25 @@ TEST_F(TalkMediatorImplTest, LoginWiring) {
   scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(mock));
 
   // Login checks states for initialization.
-  ASSERT_TRUE(talk1->Login() == false);
-  ASSERT_TRUE(mock->login_calls == 0);
+  EXPECT_FALSE(talk1->Login());
+  EXPECT_EQ(0, mock->login_calls);
 
-  ASSERT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service") == true);
-  ASSERT_TRUE(talk1->Login() == true);
-  ASSERT_TRUE(mock->login_calls == 1);
+  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
+                                  "fake_service"));
+  EXPECT_TRUE(talk1->Login());
+  EXPECT_EQ(1, mock->login_calls);
 
   // Successive calls to login will fail.  One needs to create a new talk
   // mediator object.
-  ASSERT_TRUE(talk1->Login() == false);
-  ASSERT_TRUE(mock->login_calls == 1);
+  EXPECT_FALSE(talk1->Login());
+  EXPECT_EQ(1, mock->login_calls);
 
-  ASSERT_TRUE(talk1->Logout() == true);
-  ASSERT_TRUE(mock->logout_calls == 1);
+  EXPECT_TRUE(talk1->Logout());
+  EXPECT_EQ(1, mock->logout_calls);
 
   // Successive logout calls do nothing.
-  ASSERT_TRUE(talk1->Logout() == false);
-  ASSERT_TRUE(mock->logout_calls == 1);
+  EXPECT_FALSE(talk1->Logout());
+  EXPECT_EQ(1, mock->logout_calls);
 }
 
 TEST_F(TalkMediatorImplTest, SendNotification) {
@@ -115,33 +122,33 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
 
   // Failure due to not being logged in.
   OutgoingNotificationData data;
-  ASSERT_TRUE(talk1->SendNotification(data) == false);
-  ASSERT_TRUE(mock->send_calls == 0);
+  EXPECT_FALSE(talk1->SendNotification(data));
+  EXPECT_EQ(0, mock->send_calls);
 
-  ASSERT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service") == true);
-  ASSERT_TRUE(talk1->Login() == true);
+  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
+                                  "fake_service"));
+  EXPECT_TRUE(talk1->Login());
   talk1->OnLogin();
-  ASSERT_TRUE(mock->login_calls == 1);
+  EXPECT_EQ(1, mock->login_calls);
 
   // Failure due to not being subscribed.
-  ASSERT_TRUE(talk1->SendNotification(data) == false);
-  ASSERT_TRUE(mock->send_calls == 0);
+  EXPECT_FALSE(talk1->SendNotification(data));
+  EXPECT_EQ(0, mock->send_calls);
 
   // Fake subscription
   talk1->OnSubscriptionSuccess();
-  ASSERT_TRUE(talk1->state_.subscribed == 1);
-  ASSERT_TRUE(talk1->SendNotification(data) == true);
-  ASSERT_TRUE(mock->send_calls == 1);
-  ASSERT_TRUE(talk1->SendNotification(data) == true);
-  ASSERT_TRUE(mock->send_calls == 2);
+  EXPECT_TRUE(talk1->state_.subscribed);
+  EXPECT_TRUE(talk1->SendNotification(data));
+  EXPECT_EQ(1, mock->send_calls);
+  EXPECT_TRUE(talk1->SendNotification(data));
+  EXPECT_EQ(2, mock->send_calls);
 
-  ASSERT_TRUE(talk1->Logout() == true);
-  ASSERT_TRUE(mock->logout_calls == 1);
+  EXPECT_TRUE(talk1->Logout());
+  EXPECT_EQ(1, mock->logout_calls);
 
   // Failure due to being logged out.
-  ASSERT_TRUE(talk1->SendNotification(data) == false);
-  ASSERT_TRUE(mock->send_calls == 2);
+  EXPECT_FALSE(talk1->SendNotification(data));
+  EXPECT_EQ(2, mock->send_calls);
 }
 
 TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
@@ -149,41 +156,44 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   MockMediatorThread* mock = new MockMediatorThread();
   scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(mock));
 
-  scoped_ptr<EventListenerHookup> callback(NewEventListenerHookup(
-      talk1->channel(), this, &TalkMediatorImplTest::HandleTalkMediatorEvent));
+  MockTalkMediatorDelegate mock_delegate;
+  EXPECT_CALL(mock_delegate, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_delegate, OnIncomingNotification(_));
+  EXPECT_CALL(mock_delegate, OnOutgoingNotification());
 
-  ASSERT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
-                                  "fake_service") == true);
-  ASSERT_TRUE(talk1->Login() == true);
-  ASSERT_TRUE(mock->login_calls == 1);
+  talk1->SetDelegate(&mock_delegate);
+
+  EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
+                                  "fake_service"));
+  EXPECT_TRUE(talk1->Login());
+  EXPECT_EQ(1, mock->login_calls);
 
   mock->ChangeState(MediatorThread::MSG_LOGGED_IN);
-  ASSERT_TRUE(last_message_ == TalkMediatorEvent::LOGIN_SUCCEEDED);
 
   // The message triggers calls to listen and subscribe.
-  ASSERT_TRUE(mock->listen_calls == 1);
-  ASSERT_TRUE(mock->subscribe_calls == 1);
-  ASSERT_TRUE(talk1->state_.subscribed == 0);
+  EXPECT_EQ(1, mock->listen_calls);
+  EXPECT_EQ(1, mock->subscribe_calls);
+  EXPECT_FALSE(talk1->state_.subscribed);
 
   mock->ChangeState(MediatorThread::MSG_SUBSCRIPTION_SUCCESS);
-  ASSERT_TRUE(last_message_ == TalkMediatorEvent::SUBSCRIPTIONS_ON);
-  ASSERT_TRUE(talk1->state_.subscribed == 1);
+  EXPECT_TRUE(talk1->state_.subscribed);
 
   // After subscription success is receieved, the talk mediator will allow
   // sending of notifications.
   OutgoingNotificationData outgoing_data;
-  ASSERT_TRUE(talk1->SendNotification(outgoing_data) == true);
-  ASSERT_TRUE(mock->send_calls == 1);
+  EXPECT_TRUE(talk1->SendNotification(outgoing_data));
+  // TODO(akalin): Fix locking issues issues and move this into
+  // MediatorThreadMock.
+  mock->ChangeState(MediatorThread::MSG_NOTIFICATION_SENT);
+  EXPECT_EQ(1, mock->send_calls);
 
   IncomingNotificationData incoming_data;
   incoming_data.service_url = "service_url";
   incoming_data.service_specific_data = "service_data";
   mock->Notify(incoming_data);
-  ASSERT_TRUE(last_message_ == TalkMediatorEvent::NOTIFICATION_RECEIVED);
 
-  // A |TALKMEDIATOR_DESTROYED| message is received during tear down.
   talk1.reset();
-  ASSERT_TRUE(last_message_ == TalkMediatorEvent::TALKMEDIATOR_DESTROYED);
+  EXPECT_EQ(1, mock->logout_calls);
 }
 
 }  // namespace notifier

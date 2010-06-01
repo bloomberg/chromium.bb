@@ -3,6 +3,4 @@ include_rules = [
   "+talk/base",
   "+talk/xmpp",
   "+talk/xmllite",
-  "+talk/p2p/base",  # TODO(ncarter): Determine if this is necessary/proper.
-
 ]

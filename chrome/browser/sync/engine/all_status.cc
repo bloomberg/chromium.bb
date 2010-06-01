@@ -257,38 +257,6 @@ void AllStatus::HandleServerConnectionEvent(
   }
 }
 
-void AllStatus::WatchTalkMediator(const notifier::TalkMediator* mediator) {
-  status_.notifications_enabled = false;
-  talk_mediator_hookup_.reset(
-      NewEventListenerHookup(mediator->channel(), this,
-                             &AllStatus::HandleTalkMediatorEvent));
-}
-
-void AllStatus::HandleTalkMediatorEvent(
-    const notifier::TalkMediatorEvent& event) {
-  ScopedStatusLockWithNotify lock(this);
-  switch (event.what_happened) {
-    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_ON:
-      status_.notifications_enabled = true;
-      break;
-    case notifier::TalkMediatorEvent::LOGOUT_SUCCEEDED:
-    case notifier::TalkMediatorEvent::SUBSCRIPTIONS_OFF:
-    case notifier::TalkMediatorEvent::TALKMEDIATOR_DESTROYED:
-      status_.notifications_enabled = false;
-      break;
-    case notifier::TalkMediatorEvent::NOTIFICATION_RECEIVED:
-      status_.notifications_received++;
-      break;
-    case notifier::TalkMediatorEvent::NOTIFICATION_SENT:
-      status_.notifications_sent++;
-      break;
-    case notifier::TalkMediatorEvent::LOGIN_SUCCEEDED:
-    default:
-      lock.set_notify_plan(DONT_NOTIFY);
-      break;
-  }
-}
-
 AllStatus::Status AllStatus::status() const {
   AutoLock lock(mutex_);
   return status_;
@@ -317,6 +285,21 @@ int AllStatus::GetRecommendedDelaySeconds(int base_delay_seconds) {
 
 int AllStatus::GetRecommendedDelay(int base_delay_ms) const {
   return GetRecommendedDelaySeconds(base_delay_ms / 1000) * 1000;
+}
+
+void AllStatus::SetNotificationsEnabled(bool notifications_enabled) {
+  ScopedStatusLockWithNotify lock(this);
+  status_.notifications_enabled = notifications_enabled;
+}
+
+void AllStatus::IncrementNotificationsSent() {
+  ScopedStatusLockWithNotify lock(this);
+  ++status_.notifications_sent;
+}
+
+void AllStatus::IncrementNotificationsReceived() {
+  ScopedStatusLockWithNotify lock(this);
+  ++status_.notifications_received;
 }
 
 ScopedStatusLockWithNotify::ScopedStatusLockWithNotify(AllStatus* allstatus)

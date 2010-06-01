@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "talk/base/cryptstring.h"
 #include "talk/base/ssladapter.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -43,7 +42,8 @@ TalkMediatorImpl::TalkMediatorImpl(
       chrome_common_net::NetworkChangeNotifierThread*
           network_change_notifier_thread,
       bool invalidate_xmpp_auth_token)
-    : mediator_thread_(
+    : delegate_(NULL),
+      mediator_thread_(
         new MediatorThreadImpl(network_change_notifier_thread)),
       invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
   // Ensure the SSL library is initialized.
@@ -54,15 +54,14 @@ TalkMediatorImpl::TalkMediatorImpl(
 }
 
 TalkMediatorImpl::TalkMediatorImpl(MediatorThread *thread)
-    : mediator_thread_(thread),
+    : delegate_(NULL),
+      mediator_thread_(thread),
       invalidate_xmpp_auth_token_(false) {
   // When testing we do not initialize the SSL library.
   TalkMediatorInitialization(true);
 }
 
 void TalkMediatorImpl::TalkMediatorInitialization(bool should_connect) {
-  TalkMediatorEvent done = { TalkMediatorEvent::TALKMEDIATOR_DESTROYED };
-  channel_.reset(new TalkMediatorChannel(done));
   if (should_connect) {
     mediator_thread_->SignalStateChange.connect(
         this,
@@ -130,8 +129,9 @@ bool TalkMediatorImpl::SendNotification(const OutgoingNotificationData& data) {
   return false;
 }
 
-TalkMediatorChannel* TalkMediatorImpl::channel() const {
-  return channel_.get();
+void TalkMediatorImpl::SetDelegate(Delegate* delegate) {
+  AutoLock lock(mutex_);
+  delegate_ = delegate;
 }
 
 bool TalkMediatorImpl::SetAuthToken(const std::string& email,
@@ -197,9 +197,9 @@ void TalkMediatorImpl::MediatorThreadNotificationHandler(
     const IncomingNotificationData& notification_data) {
   LOG(INFO) << "P2P: Updates are available on the server.";
   AutoLock lock(mutex_);
-  TalkMediatorEvent event = { TalkMediatorEvent::NOTIFICATION_RECEIVED };
-  event.notification_data = notification_data;
-  channel_->NotifyListeners(event);
+  if (delegate_) {
+    delegate_->OnIncomingNotification(notification_data);
+  }
 }
 
 
@@ -213,8 +213,6 @@ void TalkMediatorImpl::OnLogin() {
   mediator_thread_->ListenForUpdates();
   // Now subscribe for updates to all the services we are interested in
   mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
-  TalkMediatorEvent event = { TalkMediatorEvent::LOGIN_SUCCEEDED };
-  channel_->NotifyListeners(event);
 }
 
 void TalkMediatorImpl::OnLogout() {
@@ -223,8 +221,6 @@ void TalkMediatorImpl::OnLogout() {
   AutoLock lock(mutex_);
   state_.logging_in = 0;
   state_.logged_in = 0;
-  TalkMediatorEvent event = { TalkMediatorEvent::LOGOUT_SUCCEEDED };
-  channel_->NotifyListeners(event);
 }
 
 void TalkMediatorImpl::OnSubscriptionSuccess() {
@@ -238,24 +234,27 @@ void TalkMediatorImpl::OnSubscriptionSuccess() {
   // Notifying listeners with a lock held can cause the lock to be
   // recursively taken if the listener decides to call back into us
   // in the event handler.
-  TalkMediatorEvent event = { TalkMediatorEvent::SUBSCRIPTIONS_ON };
-  channel_->NotifyListeners(event);
+  if (delegate_) {
+    delegate_->OnNotificationStateChange(true);
+  }
 }
 
 void TalkMediatorImpl::OnSubscriptionFailure() {
   LOG(INFO) << "P2P: Update subscription failure.";
   AutoLock lock(mutex_);
   state_.subscribed = 0;
-  TalkMediatorEvent event = { TalkMediatorEvent::SUBSCRIPTIONS_OFF };
-  channel_->NotifyListeners(event);
+  if (delegate_) {
+    delegate_->OnNotificationStateChange(false);
+  }
 }
 
 void TalkMediatorImpl::OnNotificationSent() {
   LOG(INFO) <<
       "P2P: Peers were notified that updates are available on the server.";
   AutoLock lock(mutex_);
-  TalkMediatorEvent event = { TalkMediatorEvent::NOTIFICATION_SENT };
-  channel_->NotifyListeners(event);
+  if (delegate_) {
+    delegate_->OnOutgoingNotification();
+  }
 }
 
 }  // namespace notifier

@@ -20,8 +20,6 @@
 #include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
-class EventListenerHookup;
-
 namespace chrome_common_net {
 class NetworkChangeNotifierThread;
 }  // namespace chrome_common_net
@@ -40,6 +38,9 @@ class TalkMediatorImpl
   virtual ~TalkMediatorImpl();
 
   // Overriden from TalkMediator.
+
+  virtual void SetDelegate(Delegate* delegate);
+
   virtual bool SetAuthToken(const std::string& email,
                             const std::string& token,
                             const std::string& token_service);
@@ -47,8 +48,6 @@ class TalkMediatorImpl
   virtual bool Logout();
 
   virtual bool SendNotification(const OutgoingNotificationData& data);
-
-  TalkMediatorChannel* channel() const;
 
   virtual void AddSubscribedServiceUrl(const std::string& service_url);
 
@@ -91,20 +90,17 @@ class TalkMediatorImpl
   // this mutex.
   Lock mutex_;
 
+  // Delegate.  May be NULL.
+  Delegate* delegate_;
+
   // Internal state.
   TalkMediatorState state_;
 
   // Cached and verfied from the SetAuthToken method.
   buzz::XmppClientSettings xmpp_settings_;
 
-  // Interface to listen to authentication events.
-  scoped_ptr<EventListenerHookup> auth_hookup_;
-
   // The worker thread through which talk events are posted and received.
   scoped_ptr<MediatorThread> mediator_thread_;
-
-  // Channel through which to broadcast events.
-  scoped_ptr<TalkMediatorChannel> channel_;
 
   bool invalidate_xmpp_auth_token_;
 

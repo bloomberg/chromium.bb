@@ -12,7 +12,6 @@
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/net/service_network_change_notifier_thread.h"
@@ -26,7 +25,8 @@ class CloudPrintProxyBackend::Core
     : public base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>,
       public URLFetcherDelegate,
       public cloud_print::PrinterChangeNotifierDelegate,
-      public PrinterJobHandlerDelegate {
+      public PrinterJobHandlerDelegate,
+      public notifier::TalkMediator::Delegate {
  public:
   explicit Core(CloudPrintProxyBackend* backend,
                 const GURL& cloud_print_server_url);
@@ -70,6 +70,15 @@ class CloudPrintProxyBackend::Core
   // PrinterJobHandler::Delegate implementation
   void OnPrinterJobHandlerShutdown(PrinterJobHandler* job_handler,
                                    const std::string& printer_id);
+
+  // notifier::TalkMediator::Delegate implementation.
+  virtual void OnNotificationStateChange(
+      bool notifications_enabled);
+
+  virtual void OnIncomingNotification(
+      const IncomingNotificationData& notification_data);
+
+  virtual void OnOutgoingNotification();
 
  protected:
   // Prototype for a response handler.
@@ -117,7 +126,6 @@ class CloudPrintProxyBackend::Core
   // handler is responsible for checking for pending print jobs for this
   // printer and print them.
   void InitJobHandlerForPrinter(DictionaryValue* printer_data);
-  void HandleTalkMediatorEvent(const notifier::TalkMediatorEvent& event);
 
   // Our parent CloudPrintProxyBackend
   CloudPrintProxyBackend* backend_;
@@ -155,7 +163,6 @@ class CloudPrintProxyBackend::Core
   bool new_printers_available_;
   // Notification (xmpp) handler.
   scoped_ptr<notifier::TalkMediator> talk_mediator_;
-  scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -277,10 +284,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
       g_service_process->network_change_notifier_thread(), false));
   talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
-  talk_mediator_hookup_.reset(
-      NewEventListenerHookup(
-          talk_mediator_->channel(), this,
-          &CloudPrintProxyBackend::Core::HandleTalkMediatorEvent));
+  talk_mediator_->SetDelegate(this);
   talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
                                kSyncGaiaServiceId);
   talk_mediator_->Login();
@@ -580,19 +584,22 @@ bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
   return ret;
 }
 
-void CloudPrintProxyBackend::Core::HandleTalkMediatorEvent(
-    const notifier::TalkMediatorEvent& event) {
-  if ((event.what_happened ==
-      notifier::TalkMediatorEvent::NOTIFICATION_RECEIVED) &&
-      (0 == base::strcasecmp(kCloudPrintTalkServiceUrl,
-                             event.notification_data.service_url.c_str()))) {
+void CloudPrintProxyBackend::Core::OnNotificationStateChange(
+    bool notification_enabled) {}
+
+void CloudPrintProxyBackend::Core::OnIncomingNotification(
+    const IncomingNotificationData& notification_data) {
+  if (0 == base::strcasecmp(kCloudPrintTalkServiceUrl,
+                             notification_data.service_url.c_str())) {
     backend_->core_thread_.message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(
             this, &CloudPrintProxyBackend::Core::DoHandlePrinterNotification,
-            event.notification_data.service_specific_data));
+            notification_data.service_specific_data));
   }
 }
+
+void CloudPrintProxyBackend::Core::OnOutgoingNotification() {}
 
 // cloud_print::PrinterChangeNotifier::Delegate implementation
 void CloudPrintProxyBackend::Core::OnPrinterAdded() {

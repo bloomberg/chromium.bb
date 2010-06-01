@@ -19,39 +19,29 @@
 #include <string>
 
 #include "chrome/common/net/notifier/listener/notification_defines.h"
-#include "chrome/common/deprecated/event_sys.h"
 
 namespace notifier {
-
-struct TalkMediatorEvent {
-  enum WhatHappened {
-    LOGIN_SUCCEEDED,
-    LOGOUT_SUCCEEDED,
-    SUBSCRIPTIONS_ON,
-    SUBSCRIPTIONS_OFF,
-    NOTIFICATION_RECEIVED,
-    NOTIFICATION_SENT,
-    TALKMEDIATOR_DESTROYED,
-  };
-
-  // Required by EventChannel.
-  typedef TalkMediatorEvent EventType;
-
-  static inline bool IsChannelShutdownEvent(const TalkMediatorEvent& event) {
-    return event.what_happened == TALKMEDIATOR_DESTROYED;
-  }
-
-  WhatHappened what_happened;
-  // Data in the case of a NOTIFICATION_RECEIVED event
-  IncomingNotificationData notification_data;
-};
-
-typedef EventChannel<TalkMediatorEvent, Lock> TalkMediatorChannel;
 
 class TalkMediator {
  public:
   TalkMediator() {}
   virtual ~TalkMediator() {}
+
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    virtual void OnNotificationStateChange(
+        bool notifications_enabled) = 0;
+
+    virtual void OnIncomingNotification(
+        const IncomingNotificationData& notification_data) = 0;
+
+    virtual void OnOutgoingNotification() = 0;
+  };
+
+  // |delegate| may be NULL.
+  virtual void SetDelegate(Delegate* delegate) = 0;
 
   // The following methods are for authorizaiton of the xmpp client.
   virtual bool SetAuthToken(const std::string& email,
@@ -63,9 +53,6 @@ class TalkMediator {
   // Method for the owner of this object to notify peers that an update has
   // occurred.
   virtual bool SendNotification(const OutgoingNotificationData& data) = 0;
-
-  // Channel by which talk mediator events are signaled.
-  virtual TalkMediatorChannel* channel() const = 0;
 
   // Add a URL to subscribe to for notifications.
   virtual void AddSubscribedServiceUrl(const std::string& service_url) = 0;

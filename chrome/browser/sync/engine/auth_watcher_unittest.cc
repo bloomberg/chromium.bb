@@ -93,7 +93,6 @@ class AuthWatcherTest : public testing::Test {
     // Mock out data that would normally be sent back from a server.
     connection()->SetAuthenticationResponseInfo(kValidAuthToken,
         kUserDisplayName, kUserDisplayEmail, "ID");
-    allstatus_.reset(new AllStatus());
     user_settings_.reset(new UserSettings());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     FilePath user_settings_path = temp_dir_.path().Append(kUserSettingsDB);
@@ -103,7 +102,7 @@ class AuthWatcherTest : public testing::Test {
     talk_mediator_.reset(new notifier::TalkMediatorImpl(
         &fake_network_change_notifier_thread_, false));
     auth_watcher_ = new AuthWatcher(metadb_.manager(), connection_.get(),
-        allstatus_.get(), kTestUserAgent, kTestServiceId, kTestGaiaURL,
+        kTestUserAgent, kTestServiceId, kTestGaiaURL,
         user_settings_.get(), gaia_auth_, talk_mediator_.get());
     authwatcher_hookup_.reset(NewEventListenerHookup(auth_watcher_->channel(),
         this, &AuthWatcherTest::HandleAuthWatcherEvent));
@@ -150,7 +149,6 @@ class AuthWatcherTest : public testing::Test {
   // The sync engine pieces necessary to run an AuthWatcher.
   TriggeredOpenTestDirectorySetterUpper metadb_;
   scoped_ptr<MockConnectionManager> connection_;
-  scoped_ptr<AllStatus> allstatus_;
   scoped_ptr<UserSettings> user_settings_;
   GaiaAuthMockForAuthWatcher* gaia_auth_;  // Owned by auth_watcher_.
   scoped_ptr<notifier::TalkMediator> talk_mediator_;

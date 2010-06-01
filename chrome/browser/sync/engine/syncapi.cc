@@ -69,7 +69,6 @@ using browser_sync::UserSettings;
 using browser_sync::sessions::SyncSessionContext;
 using notifier::TalkMediator;
 using notifier::TalkMediatorImpl;
-using notifier::TalkMediatorEvent;
 using std::list;
 using std::hex;
 using std::string;
@@ -769,7 +768,8 @@ class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
-    : public net::NetworkChangeNotifier::Observer {
+    : public net::NetworkChangeNotifier::Observer,
+      public TalkMediator::Delegate {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
@@ -844,9 +844,15 @@ class SyncManager::SyncInternal
   // on startup, to serve our UI needs.
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
 
-  // We listen to TalkMediator events so that we can send an
-  // XMPP notification when subscriptions are on.
-  void HandleTalkMediatorEvent(const TalkMediatorEvent& event);
+  // TalkMediator::Delegate implementation.
+
+  virtual void OnNotificationStateChange(
+      bool notifications_enabled);
+
+  virtual void OnIncomingNotification(
+      const IncomingNotificationData& notification_data);
+
+  virtual void OnOutgoingNotification();
 
   // Accessors for the private members.
   DirectoryManager* dir_manager() { return share_.dir_manager.get(); }
@@ -856,7 +862,6 @@ class SyncManager::SyncInternal
   SyncerThread* syncer_thread() { return syncer_thread_.get(); }
   TalkMediator* talk_mediator() { return talk_mediator_.get(); }
   AuthWatcher* auth_watcher() { return auth_watcher_.get(); }
-  AllStatus* allstatus() { return &allstatus_; }
   void set_observer(SyncManager::Observer* observer) { observer_ = observer; }
   UserShare* GetUserShare() { return &share_; }
 
@@ -1018,9 +1023,6 @@ class SyncManager::SyncInternal
 
   // Notification (xmpp) handler.
   scoped_ptr<TalkMediator> talk_mediator_;
-
-  // XMPP notifications event handler
-  scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
 
   // A multi-purpose status watch object that aggregates stats from various
   // sync components.
@@ -1189,7 +1191,7 @@ bool SyncManager::SyncInternal::Init(
       post_factory));
 
   // Watch various objects for aggregated status.
-  allstatus()->WatchConnectionManager(connection_manager());
+  allstatus_.WatchConnectionManager(connection_manager());
 
   network_change_notifier_.reset(
       new chrome_common_net::NetworkChangeNotifierProxy(
@@ -1208,13 +1210,9 @@ bool SyncManager::SyncInternal::Init(
     }
     talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
   }
-  allstatus()->WatchTalkMediator(talk_mediator());
 
   // Listen to TalkMediator events ourselves
-  talk_mediator_hookup_.reset(
-      NewEventListenerHookup(talk_mediator_->channel(),
-                             this,
-                             &SyncInternal::HandleTalkMediatorEvent));
+  talk_mediator_->SetDelegate(this);
 
   std::string gaia_url = gaia::kGaiaUrl;
   const char* service_id = gaia_service_id ?
@@ -1227,7 +1225,6 @@ bool SyncManager::SyncInternal::Init(
 
   auth_watcher_ = new AuthWatcher(dir_manager(),
                                   connection_manager(),
-                                  &allstatus_,
                                   gaia_source,
                                   service_id,
                                   gaia_url,
@@ -1235,7 +1232,7 @@ bool SyncManager::SyncInternal::Init(
                                   gaia_auth,
                                   talk_mediator());
 
-  allstatus()->WatchAuthWatcher(auth_watcher());
+  allstatus_.WatchAuthWatcher(auth_watcher());
   authwatcher_hookup_.reset(NewEventListenerHookup(auth_watcher_->channel(),
       this, &SyncInternal::HandleAuthWatcherEvent));
 
@@ -1246,8 +1243,7 @@ bool SyncManager::SyncInternal::Init(
 
   // The SyncerThread takes ownership of |context|.
   syncer_thread_ = new SyncerThread(context, &allstatus_);
-  syncer_thread()->WatchTalkMediator(talk_mediator());
-  allstatus()->WatchSyncerThread(syncer_thread());
+  allstatus_.WatchSyncerThread(syncer_thread());
 
   // Subscribe to the syncer thread's channel.
   syncer_event_.reset(
@@ -1323,7 +1319,7 @@ void SyncManager::SyncInternal::Authenticate(const std::string& username,
                                              const std::string& captcha) {
   DCHECK(username_for_share().empty() || username == username_for_share())
         << "Username change from valid username detected";
-  if (allstatus()->status().authenticated)
+  if (allstatus_.status().authenticated)
     return;
   if (password.empty()) {
     // TODO(timsteele): Seems like this shouldn't be needed, but auth_watcher
@@ -1572,7 +1568,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
 
 SyncManager::Status::Summary
 SyncManager::SyncInternal::ComputeAggregatedStatusSummary() {
-  switch (allstatus()->status().icon) {
+  switch (allstatus_.status().icon) {
     case AllStatus::OFFLINE:
       return Status::OFFLINE;
     case AllStatus::OFFLINE_UNSYNCED:
@@ -1593,23 +1589,23 @@ SyncManager::SyncInternal::ComputeAggregatedStatusSummary() {
 SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
   Status return_status =
       { ComputeAggregatedStatusSummary(),
-        allstatus()->status().authenticated,
-        allstatus()->status().server_up,
-        allstatus()->status().server_reachable,
-        allstatus()->status().server_broken,
-        allstatus()->status().notifications_enabled,
-        allstatus()->status().notifications_received,
-        allstatus()->status().notifications_sent,
-        allstatus()->status().unsynced_count,
-        allstatus()->status().conflicting_count,
-        allstatus()->status().syncing,
-        allstatus()->status().initial_sync_ended,
-        allstatus()->status().syncer_stuck,
-        allstatus()->status().updates_available,
-        allstatus()->status().updates_received,
-        allstatus()->status().disk_full,
+        allstatus_.status().authenticated,
+        allstatus_.status().server_up,
+        allstatus_.status().server_reachable,
+        allstatus_.status().server_broken,
+        allstatus_.status().notifications_enabled,
+        allstatus_.status().notifications_received,
+        allstatus_.status().notifications_sent,
+        allstatus_.status().unsynced_count,
+        allstatus_.status().conflicting_count,
+        allstatus_.status().syncing,
+        allstatus_.status().initial_sync_ended,
+        allstatus_.status().syncer_stuck,
+        allstatus_.status().updates_available,
+        allstatus_.status().updates_received,
+        allstatus_.status().disk_full,
         false,   // TODO(ncarter): invalid store?
-        allstatus()->status().max_consecutive_errors};
+        allstatus_.status().max_consecutive_errors};
   return return_status;
 }
 
@@ -1758,16 +1754,43 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
     observer_->OnAuthError(AuthError(auth_problem_));
 }
 
-void SyncManager::SyncInternal::HandleTalkMediatorEvent(
-    const TalkMediatorEvent& event) {
-  // Send a notification as soon as subscriptions are on.
-  // This is to fix Bug 38563.
-  // See http://code.google.com/p/chromium/issues/detail?id=38563.
-  // This was originally fixed in http://codereview.chromium.org/1545024
-  // but it got moved here when the refactoring of TalkMediator happened.
-  if (event.what_happened == TalkMediatorEvent::SUBSCRIPTIONS_ON) {
+void SyncManager::SyncInternal::OnNotificationStateChange(
+    bool notifications_enabled) {
+  LOG(INFO) << "P2P: Notifications enabled = "
+            << (notifications_enabled ? "true" : "false");
+  allstatus_.SetNotificationsEnabled(notifications_enabled);
+  if (syncer_thread()) {
+    syncer_thread()->SetNotificationsEnabled(notifications_enabled);
+  }
+  if (notifications_enabled) {
+    // Send a notification as soon as subscriptions are on
+    // (see http://code.google.com/p/chromium/issues/detail?id=38563 ).
     SendXMPPNotification();
   }
+}
+
+void SyncManager::SyncInternal::OnIncomingNotification(
+    const IncomingNotificationData& notification_data) {
+  // Check if the service url is a sync URL. An empty service URL
+  // is treated as a legacy sync notification
+  if (notification_data.service_url.empty() ||
+      (notification_data.service_url ==
+       browser_sync::kSyncLegacyServiceUrl) ||
+      (notification_data.service_url ==
+       browser_sync::kSyncServiceUrl)) {
+    LOG(INFO) << "P2P: Updates on server, pushing syncer";
+    if (syncer_thread()) {
+      syncer_thread()->NudgeSyncer(0, SyncerThread::kNotification);
+    }
+    allstatus_.IncrementNotificationsReceived();
+  } else {
+    LOG(WARNING) << "Notification fron unexpected source: "
+                 << notification_data.service_url;
+  }
+}
+
+void SyncManager::SyncInternal::OnOutgoingNotification() {
+  allstatus_.IncrementNotificationsSent();
 }
 
 SyncManager::Status::Summary SyncManager::GetStatusSummary() const {
