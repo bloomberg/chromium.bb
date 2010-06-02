@@ -140,6 +140,7 @@ int main(int argc, char** argv) {
   std::string filename =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII("file");
   bool enable_audio = CommandLine::ForCurrentProcess()->HasSwitch("audio");
+  bool audio_only = false;
 
   // Install the signal handler.
   signal(SIGTERM, &TerminateHandler);
@@ -159,14 +160,20 @@ int main(int argc, char** argv) {
                    enable_audio, &pipeline)) {
     // Main loop of the application.
     g_running = true;
+
+    // Check if video is present.
+    audio_only = !pipeline->IsRendered(media::mime_type::kMajorTypeVideo);
+
     while (g_running) {
       if (XPending(g_display)) {
         XEvent e;
         XNextEvent(g_display, &e);
         if (e.type == Expose) {
-          // Tell the renderer to paint.
-          DCHECK(Renderer::instance());
-          Renderer::instance()->Paint();
+          if (!audio_only) {
+            // Tell the renderer to paint.
+            DCHECK(Renderer::instance());
+            Renderer::instance()->Paint();
+          }
         } else if (e.type == ButtonPress) {
           // Stop the playback.
           break;
