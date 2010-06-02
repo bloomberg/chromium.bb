@@ -9,6 +9,7 @@
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "gfx/codec/jpeg_codec.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -30,6 +31,7 @@ class TopSitesTest : public testing::Test {
   FilePath& file_name() { return file_name_; }
   RefCountedBytes* google_thumbnail() { return google_thumbnail_; }
   RefCountedBytes* random_thumbnail() { return random_thumbnail_; }
+  RefCountedBytes* weewar_thumbnail() { return weewar_thumbnail_; }
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
@@ -43,8 +45,12 @@ class TopSitesTest : public testing::Test {
     std::vector<unsigned char> google_data(kGoogleThumbnail,
                                            kGoogleThumbnail +
                                            sizeof(kGoogleThumbnail));
+    std::vector<unsigned char> weewar_data(kWeewarThumbnail,
+                                           kWeewarThumbnail +
+                                           sizeof(kWeewarThumbnail));
     random_thumbnail_ = new RefCountedBytes(random_data);
     google_thumbnail_ = new RefCountedBytes(google_data);
+    weewar_thumbnail_ = new RefCountedBytes(weewar_data);
   }
 
   virtual void TearDown() {
@@ -81,6 +87,7 @@ class TopSitesTest : public testing::Test {
   FilePath file_name_;  // Database filename.
   scoped_refptr<RefCountedBytes> google_thumbnail_;
   scoped_refptr<RefCountedBytes> random_thumbnail_;
+  scoped_refptr<RefCountedBytes> weewar_thumbnail_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };
@@ -192,6 +199,8 @@ static void AppendMostVisitedURL(std::vector<MostVisitedURL>* list,
 static bool ThumbnailsAreEqual(RefCountedBytes* t1,
                                RefCountedBytes* t2) {
   if (!t1 || !t2)
+    return false;
+  if (t1->data.size() != t2->data.size())
     return false;
   return std::equal(t1->data.begin(),
                     t1->data.end(),
@@ -549,13 +558,53 @@ TEST_F(TopSitesTest, RealDatabase) {
   hs.AppendMockPage(news_url, news_title);
   top_sites().SetMockHistoryService(&hs);
 
-  // This writes the new data to the DB.
+  // This requests data from History Service and  writes it to the DB.
   top_sites().StartQueryForMostVisited();
 
   result = db->GetTopURLs();
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google_title, result[0].title);
   EXPECT_EQ(news_title, result[1].title);
+
+  scoped_ptr<SkBitmap> weewar_bitmap(
+      gfx::JPEGCodec::Decode(weewar_thumbnail()->front(),
+                             weewar_thumbnail()->size()));
+
+  base::Time now = base::Time::Now();
+  ThumbnailScore low_score(1.0, true, true, now);
+  ThumbnailScore medium_score(0.5, true, true, now);
+  ThumbnailScore high_score(0.0, true, true, now);
+
+  // 1. Set to weewar. (Writes the thumbnail to the DB.)
+  EXPECT_TRUE(top_sites().SetPageThumbnail(google1_url,
+                                           *weewar_bitmap,
+                                           medium_score));
+  RefCountedBytes* out_1;
+  TopSites::Images out_2;
+  top_sites().GetPageThumbnail(google1_url, &out_1);
+  db->GetPageThumbnail(url2, &out_2);
+  EXPECT_TRUE(ThumbnailsAreEqual(out_1, out_2.thumbnail));
+
+  scoped_ptr<SkBitmap> google_bitmap(
+      gfx::JPEGCodec::Decode(google_thumbnail()->front(),
+                             google_thumbnail()->size()));
+
+  // 2. Set to google - low score.
+  EXPECT_FALSE(top_sites().SetPageThumbnail(google1_url,
+                                           *google_bitmap,
+                                           low_score));
+
+  // 3. Set to google - high score.
+  EXPECT_TRUE(top_sites().SetPageThumbnail(google1_url,
+                                           *google_bitmap,
+                                           high_score));
+  // Check that the thumbnail was updated.
+  top_sites().GetPageThumbnail(google1_url, &out_1);
+  EXPECT_FALSE(ThumbnailsAreEqual(out_1, out_2.thumbnail));
+  // Read the new thumbnail from the DB - should match what's in TopSites.
+  db->GetPageThumbnail(url2, &out_2);
+  EXPECT_TRUE(ThumbnailsAreEqual(out_1, out_2.thumbnail));
+  EXPECT_TRUE(high_score.Equals(out_2.thumbnail_score));
 }
 
 }  // namespace history

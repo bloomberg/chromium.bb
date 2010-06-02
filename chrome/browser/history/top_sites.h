@@ -91,11 +91,12 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
 
   ~TopSites();
 
-  // Called by the public SetPageThumbnail. Takes RefCountedBytes
-  // rather than a SkBitmap.
-  bool SetPageThumbnail(const GURL& url,
-                        const RefCountedBytes* thumbnail_data,
-                        const ThumbnailScore& score);
+  // Sets the thumbnail without writing to the database. Useful when
+  // reading last known top sites from the DB.
+  // Returns true if the thumbnail was set, false if the existing one is better.
+  bool SetPageThumbnailNoDB(const GURL& url,
+                            const RefCountedBytes* thumbnail_data,
+                            const ThumbnailScore& score);
 
   void StartQueryForMostVisited();
 

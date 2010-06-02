@@ -34,7 +34,11 @@ bool TopSitesDatabaseImpl::InitThumbnailTable() {
                      "url_rank INTEGER ,"
                      "title LONGVARCHAR,"
                      "thumbnail BLOB,"
-                     "redirects LONGVARCHAR)")) {
+                     "redirects LONGVARCHAR,"
+                     "boring_score DOUBLE DEFAULT 1.0, "
+                     "good_clipping INTEGER DEFAULT 0, "
+                     "at_top INTEGER DEFAULT 0, "
+                     "last_updated INTEGER DEFAULT 0) ")) {
       LOG(WARNING) << db_.GetErrorMessage();
       return false;
     }
@@ -101,8 +105,9 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT OR REPLACE INTO thumbnails "
-      "(url, url_rank, title, thumbnail, redirects) "
-      "VALUES (?, ?, ?, ?, ?)"));  // TODO(Nik): add the rest of the schema.
+      "(url, url_rank, title, thumbnail, redirects, "
+      "boring_score, good_clipping, at_top, last_updated) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   if (!statement)
     return;
 
@@ -114,6 +119,11 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
                        static_cast<int>(thumbnail.thumbnail->data.size()));
   }
   statement.BindString(4, GetRedirects(url));
+  const ThumbnailScore& score = thumbnail.thumbnail_score;
+  statement.BindDouble(5, score.boring_score);
+  statement.BindBool(6, score.good_clipping);
+  statement.BindBool(7, score.at_top);
+  statement.BindInt64(8, score.time_at_snapshot.ToInternalValue());
 
   if (!statement.Run())
     NOTREACHED() << db_.GetErrorMessage();
@@ -166,23 +176,28 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
 
 bool TopSitesDatabaseImpl::GetPageThumbnail(const MostVisitedURL& url,
                                             TopSites::Images* thumbnail) {
-  sql::Statement select_statement(db_.GetCachedStatement(
+  sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT thumbnail "
+      "SELECT thumbnail, boring_score, good_clipping, at_top, last_updated "
       "FROM thumbnails WHERE url=?"));
 
-  if (!select_statement) {
+  if (!statement) {
     LOG(WARNING) << db_.GetErrorMessage();
     return false;
   }
 
-  select_statement.BindString(0, url.url.spec());
-  if (!select_statement.Step())
+  statement.BindString(0, url.url.spec());
+  if (!statement.Step())
     return false;
 
   std::vector<unsigned char> data;
-  select_statement.ColumnBlobAsVector(0, &data);
+  statement.ColumnBlobAsVector(0, &data);
   thumbnail->thumbnail = RefCountedBytes::TakeVector(&data);
+  thumbnail->thumbnail_score.boring_score = statement.ColumnDouble(1);
+  thumbnail->thumbnail_score.good_clipping = statement.ColumnBool(2);
+  thumbnail->thumbnail_score.at_top = statement.ColumnBool(3);
+  thumbnail->thumbnail_score.time_at_snapshot =
+      base::Time::FromInternalValue(statement.ColumnInt64(4));
   return true;
 }
 

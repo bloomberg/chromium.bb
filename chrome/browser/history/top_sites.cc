@@ -47,12 +47,14 @@ void TopSites::ReadDatabase() {
     MostVisitedURL url = top_sites_[i];
     Images thumbnail;
     if (db_->GetPageThumbnail(url, &thumbnail)) {
-      SetPageThumbnail(url.url, thumbnail.thumbnail, thumbnail.thumbnail_score);
+      SetPageThumbnailNoDB(url.url, thumbnail.thumbnail,
+                           thumbnail.thumbnail_score);
     }
   }
 }
 
-// Public wrapper that encodes the bitmap into RefCountedBytes.
+// Public function that encodes the bitmap into RefCountedBytes and
+// updates the database.
 bool TopSites::SetPageThumbnail(const GURL& url,
                                 const SkBitmap& thumbnail,
                                 const ThumbnailScore& score) {
@@ -66,13 +68,26 @@ bool TopSites::SetPageThumbnail(const GURL& url,
       &thumbnail_data->data);
   if (!encoded)
     return false;
-  return SetPageThumbnail(url, thumbnail_data, score);
+  if (!SetPageThumbnailNoDB(url, thumbnail_data, score))
+    return false;
+
+  // Update the database.
+  if (!db_.get())
+    return true;
+  std::map<GURL, size_t>::iterator found = canonical_urls_.find(url);
+  if (found == canonical_urls_.end())
+    return false;
+  size_t index = found->second;
+
+  MostVisitedURL& most_visited = top_sites_[index];
+  db_->SetPageThumbnail(most_visited, index, top_images_[most_visited.url]);
+  return true;
 }
 
 // private
-bool TopSites::SetPageThumbnail(const GURL& url,
-                                const RefCountedBytes* thumbnail_data,
-                                const ThumbnailScore& score) {
+bool TopSites::SetPageThumbnailNoDB(const GURL& url,
+                                    const RefCountedBytes* thumbnail_data,
+                                    const ThumbnailScore& score) {
   AutoLock lock(lock_);
 
   std::map<GURL, size_t>::iterator found = canonical_urls_.find(url);
