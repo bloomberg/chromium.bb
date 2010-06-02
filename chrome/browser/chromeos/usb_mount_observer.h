@@ -43,6 +43,9 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
   void MountChanged(chromeos::MountLibrary* obj,
                     chromeos::MountEventType evt,
                     const std::string& path);
+
+  void ScanForDevices(chromeos::MountLibrary* obj);
+
  private:
   typedef std::vector<BrowserWithPath>::iterator BrowserIterator;
   BrowserIterator FindBrowserForPath(const std::string& path);

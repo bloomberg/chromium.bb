@@ -36,6 +36,16 @@ void USBMountObserver::Observe(NotificationType type,
   }
 }
 
+void USBMountObserver::ScanForDevices(chromeos::MountLibrary* obj) {
+  const chromeos::MountLibrary::DiskVector& disks = obj->disks();
+  for (size_t i = 0; i < disks.size(); ++i) {
+    chromeos::MountLibrary::Disk disk = disks[i];
+    if (!disk.is_parent && !disk.device_path.empty()) {
+      obj->MountPath(disk.device_path.c_str());
+    }
+  }
+}
+
 void USBMountObserver::OpenFileBrowse(const std::string& url,
                                       const std::string& device_path,
                                       bool small) {

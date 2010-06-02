@@ -417,7 +417,7 @@ bool BrowserInit::LaunchBrowser(
         chromeos::CrosLibrary::Get()->GetMountLibrary();
     chromeos::USBMountObserver* observe = chromeos::USBMountObserver::Get();
     lib->AddObserver(observe);
-
+    observe->ScanForDevices(lib);
     // Connect the chromeos notifications
 
     // This observer is a singleton. It is never deleted but the pointer is kept
