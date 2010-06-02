@@ -2,7 +2,7 @@ vars = {
   "webkit_trunk":
   "http://svn.webkit.org/repository/webkit/trunk",
   "webkit_revision": "60528",
-  "ffmpeg_revision": "47712",
+  "ffmpeg_revision": "48686",
   "skia_revision": "562",
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
@@ -139,8 +139,8 @@ deps = {
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 
-  "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
-    "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
+  "src/third_party/ffmpeg":
+    "/trunk/deps/third_party/ffmpeg/source@" +
     Var("ffmpeg_revision"),
 
   "src/third_party/libvpx/include":
