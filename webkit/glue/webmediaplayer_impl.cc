@@ -634,10 +634,6 @@ void WebMediaPlayerImpl::OnPipelineError() {
   DCHECK(MessageLoop::current() == main_loop_);
   switch (pipeline_->GetError()) {
     case media::PIPELINE_OK:
-    case media::PIPELINE_STOPPING:
-      NOTREACHED() << "We shouldn't get called with these non-errors";
-      break;
-
     case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
     case media::PIPELINE_ERROR_REQUIRED_FILTER_MISSING:
     case media::PIPELINE_ERROR_COULD_NOT_RENDER:

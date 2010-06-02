@@ -108,9 +108,22 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
     }
   }
 
+  // TODO(boliu): Remove once Stop() is asynchronous in subclasses.
+  virtual void Stop() {}
+
   // The pipeline is being stopped either as a result of an error or because
   // the client called Stop().
-  virtual void Stop() = 0;
+  // TODO(boliu): No implementation in subclasses yet.
+  virtual void Stop(FilterCallback* callback) {
+    // TODO(boliu): Call the synchronous version for now. Remove once
+    // all filters have asynchronous stop.
+    Stop();
+
+    if (callback) {
+      callback->Run();
+      delete callback;
+    }
+  }
 
   // The pipeline playback rate has been changed.  Filters may implement this
   // method if they need to respond to this call.
