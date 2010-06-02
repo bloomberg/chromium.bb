@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,16 +23,6 @@
 #include "chrome/test/ui_test_utils.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-
-#if defined(OS_MACOSX)
-// http://crbug.com/40002
-#define MAYBE_IncognitoBasic DISABLED_IncognitoBasic
-// http://crbug.com/40133
-#define MAYBE_BrowserActionAddPopup DISABLED_BrowserActionAddPopup
-#else
-#define MAYBE_IncognitoBasic IncognitoBasic
-#define MAYBE_BrowserActionAddPopup BrowserActionAddPopup
-#endif
 
 class BrowserActionApiTest : public ExtensionApiTest {
  public:
@@ -188,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
 
 // Test that calling chrome.browserAction.setPopup() can enable and change
 // a popup.
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_BrowserActionAddPopup) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
   ASSERT_TRUE(RunExtensionTest("browser_action/add_popup")) << message_;
   Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -275,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
       << "a specific tab id.";
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_IncognitoBasic) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   ASSERT_TRUE(StartHTTPServer());
 
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
