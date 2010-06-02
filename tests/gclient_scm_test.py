@@ -706,10 +706,8 @@ from :3
     self.assertRaisesError(exception, scm.update, options, (), [])
     exception = \
         '\n____ . at refs/heads/master\n' \
-        '\tAlready in a conflict, i.e. (no branch).\n' \
-        '\tFix the conflict and run gclient again.\n' \
-        '\tOr to abort run:\n\t\tgit-rebase --abort\n' \
-        '\tSee man git-rebase for details.\n'
+        '\tYou have unstaged changes.\n' \
+        '\tPlease commit, stash, or reset.\n'
     self.assertRaisesError(exception, scm.update, options, (), [])
 
   def testUpdateNotGit(self):

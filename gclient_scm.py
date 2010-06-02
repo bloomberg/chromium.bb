@@ -199,7 +199,7 @@ class GitWrapper(SCMWrapper):
       rev_type = "hash"
 
     if not os.path.exists(self.checkout_path):
-      self._Clone(rev_type, revision, url, options.verbose)
+      self._Clone(revision, url, options.verbose)
       files = self._Run(['ls-files']).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       if not verbose:
@@ -218,39 +218,40 @@ class GitWrapper(SCMWrapper):
 
     cur_branch = self._GetCurrentBranch()
 
-    # Check if we are in a rebase conflict
-    if cur_branch is None:
-      raise gclient_utils.Error('\n____ %s%s\n'
-                                '\tAlready in a conflict, i.e. (no branch).\n'
-                                '\tFix the conflict and run gclient again.\n'
-                                '\tOr to abort run:\n\t\tgit-rebase --abort\n'
-                                '\tSee man git-rebase for details.\n'
-                                 % (self.relpath, rev_str))
-
     # Cases:
-    # 1) current branch based on a hash (could be git-svn)
-    #   - try to rebase onto the new upstream (hash or branch)
-    # 2) current branch based on a remote branch with local committed changes,
-    #    but the DEPS file switched to point to a hash
+    # 0) HEAD is detached. Probably from our initial clone.
+    #   - make sure HEAD is contained by a named ref, then update.
+    # Cases 1-4. HEAD is a branch.
+    # 1) current branch is not tracking a remote branch (could be git-svn)
+    #   - try to rebase onto the new hash or branch
+    # 2) current branch is tracking a remote branch with local committed
+    #    changes, but the DEPS file switched to point to a hash
     #   - rebase those changes on top of the hash
-    # 3) current branch based on a remote with or without changes, no switch
+    # 3) current branch is tracking a remote branch w/or w/out changes,
+    #    no switch
     #   - see if we can FF, if not, prompt the user for rebase, merge, or stop
-    # 4) current branch based on a remote, switches to a new remote
+    # 4) current branch is tracking a remote branch, switches to a different
+    #    remote branch
     #   - exit
 
     # GetUpstreamBranch returns something like 'refs/remotes/origin/master' for
     # a tracking branch
     # or 'master' if not a tracking branch (it's based on a specific rev/hash)
     # or it returns None if it couldn't find an upstream
-    upstream_branch = scm.GIT.GetUpstreamBranch(self.checkout_path)
-    if not upstream_branch or not upstream_branch.startswith('refs/remotes'):
-      current_type = "hash"
-      logging.debug("Current branch is based off a specific rev and is not "
-                    "tracking an upstream.")
-    elif upstream_branch.startswith('refs/remotes'):
-      current_type = "branch"
+    if cur_branch is None:
+      upstream_branch = None
+      current_type = "detached"
+      logging.debug("Detached HEAD")
     else:
-      raise gclient_utils.Error('Invalid Upstream')
+      upstream_branch = scm.GIT.GetUpstreamBranch(self.checkout_path)
+      if not upstream_branch or not upstream_branch.startswith('refs/remotes'):
+        current_type = "hash"
+        logging.debug("Current branch is not tracking an upstream (remote)"
+                      " branch.")
+      elif upstream_branch.startswith('refs/remotes'):
+        current_type = "branch"
+      else:
+        raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
     # Update the remotes first so we have all the refs.
     for _ in range(10):
@@ -279,7 +280,14 @@ class GitWrapper(SCMWrapper):
     if options.force or options.reset:
       self._Run(['reset', '--hard', 'HEAD'], redirect_stdout=False)
 
-    if current_type == 'hash':
+    if current_type == 'detached':
+      # case 0
+      self._CheckClean(rev_str)
+      self._CheckDetachedHead(rev_str)
+      self._Run(['checkout', '--quiet', '%s^0' % revision])
+      if not printed_path:
+        print("\n_____ %s%s" % (self.relpath, rev_str))
+    elif current_type == 'hash':
       # case 1
       if scm.GIT.IsGitSvn(self.checkout_path) and upstream_branch is not None:
         # Our git-svn branch (upstream_branch) is our upstream
@@ -380,7 +388,7 @@ class GitWrapper(SCMWrapper):
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
     # If the rebase generated a conflict, abort and ask user to fix
-    if self._GetCurrentBranch() is None:
+    if self._IsRebasing():
       raise gclient_utils.Error('\n____ %s%s\n'
                                 '\nConflict while rebasing this branch.\n'
                                 'Fix the conflict and run gclient again.\n'
@@ -441,17 +449,26 @@ class GitWrapper(SCMWrapper):
     base_url = self.url
     return base_url[:base_url.rfind('/')] + url
 
-  def _Clone(self, rev_type, revision, url, verbose=False):
+  def _Clone(self, revision, url, verbose=False):
     """Clone a git repository from the given URL.
 
-    Once we've cloned the repo, we checkout a working branch based off the
-    specified revision."""
+    Once we've cloned the repo, we checkout a working branch if the specified
+    revision is a branch head. If it is a tag or a specific commit, then we
+    leave HEAD detached as it makes future updates simpler -- in this case the
+    user should first create a new branch or switch to an existing branch before
+    making changes in the repo."""
     if not verbose:
       # git clone doesn't seem to insert a newline properly before printing
       # to stdout
       print ""
 
     clone_cmd = ['clone']
+    if revision.startswith('refs/heads/'):
+      clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
+      detach_head = False
+    else:
+      clone_cmd.append('--no-checkout')
+      detach_head = True
     if verbose:
       clone_cmd.append('--verbose')
     clone_cmd.extend([url, self.checkout_path])
@@ -473,21 +490,14 @@ class GitWrapper(SCMWrapper):
           continue
         raise e
 
-    if rev_type == "branch":
-      short_rev = revision.replace('refs/heads/', '')
-      new_branch = revision.replace('heads', 'remotes/origin')
-    elif revision.startswith('refs/tags/'):
-      short_rev = revision.replace('refs/tags/', '')
-      new_branch = revision
-    else:
-      # revision is a specific sha1 hash
-      short_rev = revision
-      new_branch = revision
-
-    cur_branch = self._GetCurrentBranch()
-    if cur_branch != short_rev:
-      self._Run(['checkout', '-b', short_rev, new_branch],
-                redirect_stdout=False)
+    if detach_head:
+      # Squelch git's very verbose detached HEAD warning and use our own
+      self._Run(['checkout', '--quiet', '%s^0' % revision])
+      print \
+        "Checked out %s to a detached HEAD. Before making any commits\n" \
+        "in this repo, you should use 'git checkout <branch>' to switch to\n" \
+        "an existing branch or use 'git checkout origin -b <branch>' to\n" \
+        "create a new branch for your work." % revision
 
   def _AttemptRebase(self, upstream, files, verbose=False, newbase=None,
                      branch=None, printed_path=False):
@@ -570,14 +580,63 @@ class GitWrapper(SCMWrapper):
       raise gclient_utils.Error('git version %s < minimum required %s' %
                                 (current_version, min_version))
 
+  def _IsRebasing(self):
+    # Check for any of REBASE-i/REBASE-m/REBASE/AM. Unfortunately git doesn't
+    # have a plumbing command to determine whether a rebase is in progress, so
+    # for now emualate (more-or-less) git-rebase.sh / git-completion.bash
+    g = os.path.join(self.checkout_path, '.git')
+    return (
+      os.path.isdir(os.path.join(g, "rebase-merge")) or
+      os.path.isdir(os.path.join(g, "rebase-apply")))
+
+  def _CheckClean(self, rev_str):
+    # Make sure the tree is clean; see git-rebase.sh for reference
+    try:
+      scm.GIT.Capture(['update-index', '--ignore-submodules', '--refresh'],
+                      self.checkout_path, print_error=False)
+    except gclient_utils.CheckCallError, e:
+        raise gclient_utils.Error('\n____ %s%s\n'
+                                  '\tYou have unstaged changes.\n'
+                                  '\tPlease commit, stash, or reset.\n'
+                                   % (self.relpath, rev_str))
+    try:
+      scm.GIT.Capture(['diff-index', '--cached', '--name-status', '-r',
+                       '--ignore-submodules', 'HEAD', '--'], self.checkout_path,
+                       print_error=False)
+    except gclient_utils.CheckCallError, e:
+        raise gclient_utils.Error('\n____ %s%s\n'
+                                  '\tYour index contains uncommitted changes\n'
+                                  '\tPlease commit, stash, or reset.\n'
+                                   % (self.relpath, rev_str))
+
+  def _CheckDetachedHead(self, rev_str):
+    # HEAD is detached. Make sure it is safe to move away from (i.e., it is
+    # reference by a commit). If not, error out -- most likely a rebase is
+    # in progress, try to detect so we can give a better error.
+    try:
+      out, err = scm.GIT.Capture(
+        ['name-rev', '--no-undefined', 'HEAD'],
+        self.checkout_path,
+        print_error=False)
+    except gclient_utils.CheckCallError, e:
+      # Commit is not contained by any rev. See if the user is rebasing:
+      if self._IsRebasing():
+        # Punt to the user
+        raise gclient_utils.Error('\n____ %s%s\n'
+                                  '\tAlready in a conflict, i.e. (no branch).\n'
+                                  '\tFix the conflict and run gclient again.\n'
+                                  '\tOr to abort run:\n\t\tgit-rebase --abort\n'
+                                  '\tSee man git-rebase for details.\n'
+                                   % (self.relpath, rev_str))
+      # Let's just save off the commit so we can proceed.
+      name = "saved-by-gclient-" + self._Run(["rev-parse", "--short", "HEAD"])
+      self._Run(["branch", name])
+      print ("\n_____ found an unreferenced commit and saved it as '%s'" % name)
+
   def _GetCurrentBranch(self):
-    # Returns name of current branch
-    # Returns None if inside a (no branch)
-    tokens = self._Run(['branch']).split()
-    if not '*' in tokens:
-      return None
-    branch = tokens[tokens.index('*') + 1]
-    if branch == '(no':
+    # Returns name of current branch or None for detached HEAD
+    branch = self._Run(['rev-parse', '--abbrev-ref=strict', 'HEAD'])
+    if branch == 'HEAD':
       return None
     return branch
 
