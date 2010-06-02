@@ -449,7 +449,8 @@ void KeywordEditorView::OnRowActivated(GtkTreeView* tree_view,
 void KeywordEditorView::OnAddButtonClicked(GtkButton* button,
                                            KeywordEditorView* editor) {
   new EditSearchEngineDialog(
-      GTK_WINDOW(gtk_widget_get_toplevel(editor->dialog_)),
+      GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(
+          gtk_util::GetDialogWindow(editor->dialog_)))),
       NULL,
       editor,
       editor->profile_);
@@ -463,7 +464,8 @@ void KeywordEditorView::OnEditButtonClicked(GtkButton* button,
     return;
 
   new EditSearchEngineDialog(
-      GTK_WINDOW(gtk_widget_get_toplevel(editor->dialog_)),
+      GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(
+          gtk_util::GetDialogWindow(editor->dialog_)))),
       editor->controller_->GetTemplateURL(model_row),
       editor,
       editor->profile_);

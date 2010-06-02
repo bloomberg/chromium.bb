@@ -925,8 +925,16 @@ bool AddWindowAlphaChannel(GtkWidget* window) {
 
 #if defined(OS_CHROMEOS)
 
+GtkWindow* GetDialogTransientParent(GtkWindow* dialog) {
+  GtkWindow* parent = gtk_window_get_transient_for(dialog);
+  if (!parent)
+    parent = chromeos::GetOptionsViewParent();
+
+  return parent;
+}
+
 void ShowDialog(GtkWidget* dialog) {
-  chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
+  chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
       dialog, chromeos::DIALOG_FLAG_DEFAULT, gfx::Size(), gfx::Size());
 }
 
@@ -939,7 +947,7 @@ void ShowDialogWithLocalizedSize(GtkWidget* dialog,
   int height = (height_id == -1) ? 0 :
       views::Window::GetLocalizedContentsHeight(height_id);
 
-  chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
+  chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
       dialog,
       resizeable ? chromeos::DIALOG_FLAG_RESIZEABLE :
                    chromeos::DIALOG_FLAG_DEFAULT,
@@ -952,7 +960,7 @@ void ShowModalDialogWithMinLocalizedWidth(GtkWidget* dialog,
   int width = (width_id == -1) ? 0 :
       views::Window::GetLocalizedContentsWidth(width_id);
 
-  chromeos::ShowNativeDialog(chromeos::GetOptionsViewParent(),
+  chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
       dialog,
       chromeos::DIALOG_FLAG_MODAL,
       gfx::Size(),
@@ -967,6 +975,10 @@ void PresentWindow(GtkWidget* window, int timestamp) {
     gtk_window_present_with_time(host_window, timestamp);
   else
     gtk_window_present(host_window);
+}
+
+GtkWindow* GetDialogWindow(GtkWidget* dialog) {
+  return chromeos::GetNativeDialogWindow(dialog);
 }
 
 #else
@@ -1005,6 +1017,10 @@ void PresentWindow(GtkWidget* window, int timestamp) {
     gtk_window_present_with_time(GTK_WINDOW(window), timestamp);
   else
     gtk_window_present(GTK_WINDOW(window));
+}
+
+GtkWindow* GetDialogWindow(GtkWidget* dialog) {
+  return GTK_WINDOW(dialog);
 }
 
 #endif

@@ -300,6 +300,10 @@ void ShowModalDialogWithMinLocalizedWidth(GtkWidget* dialog,
 // finds the host window of the dialog contents and then present it.
 void PresentWindow(GtkWidget* window, int timestamp);
 
+// Get real window for given dialog. On ChromeOS, this gives the native dialog
+// host window. On Linux, it merely returns the passed in dialog.
+GtkWindow* GetDialogWindow(GtkWidget* dialog);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

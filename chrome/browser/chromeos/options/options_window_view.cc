@@ -307,8 +307,16 @@ void CloseOptionsWindow() {
 }
 
 gfx::NativeWindow GetOptionsViewParent() {
-  if (Browser* b = BrowserList::GetLastActive())
-    return b->window()->GetNativeHandle();
+  if (Browser* b = BrowserList::GetLastActive()) {
+    if (b->type() != Browser::TYPE_NORMAL) {
+      b = BrowserList::FindBrowserWithType(b->profile(),
+                                           Browser::TYPE_NORMAL,
+                                           true);
+    }
+
+    if (b)
+      return b->window()->GetNativeHandle();
+  }
 
   return NULL;
 }
