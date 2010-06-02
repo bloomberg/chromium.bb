@@ -209,6 +209,10 @@
           'cflags': [
             '-fvisibility=hidden',
             '-Wstrict-aliasing',
+            # We always want debugging information, even for release builds. It
+            # is stripped by the packager into the -dbgsym package, so it
+            # doesn't affect what we ship.
+            '-g',
           ],
         },
       },
