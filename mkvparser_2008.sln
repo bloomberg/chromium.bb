@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkvparser_2008", "mkvparser_2008.vcproj", "{F9128EC6-C008-41AD-B38F-0E70D549D9F4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_2008", "sample_2008.vcproj", "{0CB5681F-6065-490C-98C8-05531732ED7E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9128EC6-C008-41AD-B38F-0E70D549D9F4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F9128EC6-C008-41AD-B38F-0E70D549D9F4}.Debug|Win32.Build.0 = Debug|Win32
+		{F9128EC6-C008-41AD-B38F-0E70D549D9F4}.Release|Win32.ActiveCfg = Release|Win32
+		{F9128EC6-C008-41AD-B38F-0E70D549D9F4}.Release|Win32.Build.0 = Release|Win32
+		{0CB5681F-6065-490C-98C8-05531732ED7E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0CB5681F-6065-490C-98C8-05531732ED7E}.Debug|Win32.Build.0 = Debug|Win32
+		{0CB5681F-6065-490C-98C8-05531732ED7E}.Release|Win32.ActiveCfg = Release|Win32
+		{0CB5681F-6065-490C-98C8-05531732ED7E}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,8 @@
+*.mkv
+*.MKV
+core
+*.a
+*.so*
+*.o
+*~
+*.swp
