@@ -42,6 +42,14 @@
 
 namespace {
 
+void PumpAuxiliaryLoops() {
+  talk_base::Thread* current_thread =
+      talk_base::ThreadManager::CurrentThread();
+  current_thread->ProcessMessages(100);
+  MessageLoop::current()->PostTask(
+      FROM_HERE, NewRunnableFunction(&PumpAuxiliaryLoops));
+}
+
 // Main class that listens for and handles messages from the XMPP
 // client.
 class XmppNotificationClient : public sigslot::has_slots<> {
@@ -68,8 +76,7 @@ class XmppNotificationClient : public sigslot::has_slots<> {
 
   explicit XmppNotificationClient(Delegate* delegate)
       : delegate_(delegate),
-        xmpp_client_(NULL),
-        should_exit_(true) {
+        xmpp_client_(NULL) {
     CHECK(delegate_);
   }
 
@@ -95,13 +102,9 @@ class XmppNotificationClient : public sigslot::has_slots<> {
                               xmpp_socket_adapter, NULL);
     CHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);
     xmpp_client_->Start();
-    talk_base::Thread* current_thread =
-        talk_base::ThreadManager::CurrentThread();
-    should_exit_ = false;
-    while (!should_exit_) {
-      current_thread->ProcessMessages(100);
-      MessageLoop::current()->RunAllPending();
-    }
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableFunction(&PumpAuxiliaryLoops));
+    MessageLoop::current()->Run();
     // xmpp_client_ is invalid here.
     xmpp_client_ = NULL;
   }
@@ -129,7 +132,7 @@ class XmppNotificationClient : public sigslot::has_slots<> {
         } else {
           delegate_->OnError(error, subcode);
         }
-        should_exit_ = true;
+        MessageLoop::current()->Quit();
         buzz::XmppReturnStatus disconnect_status =
             xmpp_client_->Disconnect();
         CHECK_EQ(disconnect_status, buzz::XMPP_RETURN_OK);
@@ -150,7 +153,6 @@ class XmppNotificationClient : public sigslot::has_slots<> {
   buzz::XmppClientSettings xmpp_client_settings_;
   // Owned by task_pump.
   buzz::XmppClient* xmpp_client_;
-  bool should_exit_;
 };
 
 // Delegate for legacy notifications.

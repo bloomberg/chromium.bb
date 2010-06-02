@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/lock.h"
+#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/net/notifier/listener/mediator_thread.h"
 #include "chrome/common/net/notifier/listener/talk_mediator.h"
@@ -82,11 +82,7 @@ class TalkMediatorImpl
   // mediator thread's SignalStateChange object.
   void TalkMediatorInitialization(bool should_connect);
 
-  // Protects state_, xmpp_settings_, and subscribed_services_list_.
-  //
-  // TODO(akalin): Remove this once we use this class from one thread
-  // only.
-  Lock mutex_;
+  NonThreadSafe non_thread_safe_;
 
   // Delegate, which we don't own.  May be NULL.
   TalkMediator::Delegate* delegate_;

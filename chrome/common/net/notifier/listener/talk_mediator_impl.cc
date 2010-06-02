@@ -46,6 +46,7 @@ TalkMediatorImpl::TalkMediatorImpl(
       mediator_thread_(
         new MediatorThreadImpl(network_change_notifier_thread)),
       invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   // Ensure the SSL library is initialized.
   SslInitializationSingleton::GetInstance()->RegisterClient();
 
@@ -57,11 +58,13 @@ TalkMediatorImpl::TalkMediatorImpl(MediatorThread *thread)
     : delegate_(NULL),
       mediator_thread_(thread),
       invalidate_xmpp_auth_token_(false) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   // When testing we do not initialize the SSL library.
   TalkMediatorInitialization(true);
 }
 
 void TalkMediatorImpl::TalkMediatorInitialization(bool should_connect) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   if (should_connect) {
     mediator_thread_->SetDelegate(this);
     state_.connected = 1;
@@ -71,76 +74,64 @@ void TalkMediatorImpl::TalkMediatorInitialization(bool should_connect) {
 }
 
 TalkMediatorImpl::~TalkMediatorImpl() {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   if (state_.started) {
     Logout();
   }
 }
 
 bool TalkMediatorImpl::Login() {
-  bool should_log_in = false;
-  buzz::XmppClientSettings xmpp_settings;
-  {
-    AutoLock lock(mutex_);
-    // Connect to the mediator thread and start processing messages.
-    if (!state_.connected) {
-      mediator_thread_->SetDelegate(this);
-      state_.connected = 1;
-    }
-    should_log_in =
-        state_.initialized && !state_.logging_in && !state_.logged_in;
-    state_.logging_in = should_log_in;
-    xmpp_settings = xmpp_settings_;
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  // Connect to the mediator thread and start processing messages.
+  if (!state_.connected) {
+    mediator_thread_->SetDelegate(this);
+    state_.connected = 1;
   }
-  if (should_log_in) {
-    mediator_thread_->Login(xmpp_settings);
+  if (state_.initialized && !state_.logging_in && !state_.logged_in) {
+    state_.logging_in = true;
+    mediator_thread_->Login(xmpp_settings_);
+    return true;
   }
-  return should_log_in;
+  return false;
 }
 
 bool TalkMediatorImpl::Logout() {
-  bool logging_out = false;
-  {
-    AutoLock lock(mutex_);
-    if (state_.connected) {
-      state_.connected = 0;
-    }
-    logging_out = state_.started;
-    if (logging_out) {
-      state_.started = 0;
-      state_.logging_in = 0;
-      state_.logged_in = 0;
-      state_.subscribed = 0;
-    }
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  if (state_.connected) {
+    state_.connected = 0;
   }
-  if (logging_out) {
+  if (state_.started) {
+    state_.started = 0;
+    state_.logging_in = 0;
+    state_.logged_in = 0;
+    state_.subscribed = 0;
     // We do not want to be called back during logout since we may be
     // closing.
     mediator_thread_->SetDelegate(NULL);
     mediator_thread_->Logout();
+    return true;
   }
-  return logging_out;
+  return false;
 }
 
 bool TalkMediatorImpl::SendNotification(const OutgoingNotificationData& data) {
-  bool can_send_notification = false;
-  {
-    AutoLock lock(mutex_);
-    can_send_notification = state_.logged_in && state_.subscribed;
-  }
-  if (can_send_notification) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  if (state_.logged_in && state_.subscribed) {
     mediator_thread_->SendNotification(data);
+    return true;
   }
-  return can_send_notification;
+  return false;
 }
 
 void TalkMediatorImpl::SetDelegate(TalkMediator::Delegate* delegate) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   delegate_ = delegate;
 }
 
 bool TalkMediatorImpl::SetAuthToken(const std::string& email,
                                     const std::string& token,
                                     const std::string& token_service) {
-  AutoLock lock(mutex_);
+  DCHECK(non_thread_safe_.CalledOnValidThread());
 
   // Verify that we can create a JID from the email provided.
   buzz::Jid jid = buzz::Jid(email);
@@ -163,13 +154,9 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
 
 void TalkMediatorImpl::AddSubscribedServiceUrl(
     const std::string& service_url) {
-  bool logged_in = false;
-  {
-    AutoLock lock(mutex_);
-    subscribed_services_list_.push_back(service_url);
-    logged_in = state_.logged_in;
-  }
-  if (logged_in) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  subscribed_services_list_.push_back(service_url);
+  if (state_.logged_in) {
     LOG(INFO) << "Resubscribing for updates, a new service got added";
     mediator_thread_->SubscribeForUpdates(subscribed_services_list_);
   }
@@ -177,11 +164,9 @@ void TalkMediatorImpl::AddSubscribedServiceUrl(
 
 
 void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
-  {
-    AutoLock lock(mutex_);
-    state_.logging_in = 0;
-    state_.logged_in = logged_in;
-  }
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  state_.logging_in = 0;
+  state_.logged_in = logged_in;
   if (logged_in) {
     LOG(INFO) << "P2P: Logged in.";
     // ListenForUpdates enables the ListenTask.  This is done before
@@ -196,10 +181,8 @@ void TalkMediatorImpl::OnConnectionStateChange(bool logged_in) {
 }
 
 void TalkMediatorImpl::OnSubscriptionStateChange(bool subscribed) {
-  {
-    AutoLock lock(mutex_);
-    state_.subscribed = subscribed;
-  }
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  state_.subscribed = subscribed;
   LOG(INFO) << "P2P: " << (subscribed ? "subscribed" : "unsubscribed");
   if (delegate_) {
     delegate_->OnNotificationStateChange(subscribed);
@@ -208,6 +191,7 @@ void TalkMediatorImpl::OnSubscriptionStateChange(bool subscribed) {
 
 void TalkMediatorImpl::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   LOG(INFO) << "P2P: Updates are available on the server.";
   if (delegate_) {
     delegate_->OnIncomingNotification(notification_data);
@@ -215,6 +199,7 @@ void TalkMediatorImpl::OnIncomingNotification(
 }
 
 void TalkMediatorImpl::OnOutgoingNotification() {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   LOG(INFO) <<
       "P2P: Peers were notified that updates are available on the server.";
   if (delegate_) {

@@ -26,12 +26,19 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/thread.h"
 #include "chrome/common/net/notifier/communicator/login.h"
+#include "chrome/common/net/notifier/communicator/login_connection_state.h"
 #include "chrome/common/net/notifier/communicator/login_failure.h"
 #include "chrome/common/net/notifier/listener/mediator_thread.h"
 #include "talk/base/sigslot.h"
-#include "talk/base/thread.h"
 #include "talk/xmpp/xmppclientsettings.h"
+
+class MessageLoop;
+
+namespace buzz {
+class XmppClient;
+}  // namespace buzz
 
 namespace chrome_common_net {
 class NetworkChangeNotifierThread;
@@ -46,64 +53,16 @@ namespace notifier {
 class TaskPump;
 }  // namespace notifier
 
-namespace buzz {
-class XmppClient;
-}  // namespace buzz
-
 namespace talk_base {
 class SocketServer;
+class Thread;
 }  // namespace talk_base
 
 namespace notifier {
 
-enum MEDIATOR_CMD {
-  CMD_LOGIN,
-  CMD_DISCONNECT,
-  CMD_LISTEN_FOR_UPDATES,
-  CMD_SEND_NOTIFICATION,
-  CMD_SUBSCRIBE_FOR_UPDATES,
-  CMD_PUMP_AUXILIARY_LOOPS,
-};
-
-// Used to pass authentication information from the mediator to the thread.
-// Use new to allocate it on the heap, the thread will delete it for you.
-struct LoginData : public talk_base::MessageData {
-  explicit LoginData(const buzz::XmppClientSettings& settings)
-      : user_settings(settings) {
-  }
-  virtual ~LoginData() {}
-
-  buzz::XmppClientSettings user_settings;
-};
-
-// Used to pass subscription information from the mediator to the thread.
-// Use new to allocate it on the heap, the thread will delete it for you.
-struct SubscriptionData : public talk_base::MessageData {
-  explicit SubscriptionData(const std::vector<std::string>& services)
-      : subscribed_services_list(services) {
-  }
-  virtual ~SubscriptionData() {}
-
-  std::vector<std::string> subscribed_services_list;
-};
-
-// Used to pass outgoing notification information from the mediator to the
-// thread. Use new to allocate it on the heap, the thread will delete it
-// for you.
-struct OutgoingNotificationMessageData : public talk_base::MessageData {
-  explicit OutgoingNotificationMessageData(
-      const OutgoingNotificationData& data) : notification_data(data) {
-  }
-  virtual ~OutgoingNotificationMessageData() {}
-
-  OutgoingNotificationData notification_data;
-};
-
 class MediatorThreadImpl
     : public MediatorThread,
-      public sigslot::has_slots<>,
-      public talk_base::MessageHandler,
-      public talk_base::Thread {
+      public sigslot::has_slots<> {
  public:
   explicit MediatorThreadImpl(
       chrome_common_net::NetworkChangeNotifierThread*
@@ -114,47 +73,58 @@ class MediatorThreadImpl
 
   // Start the thread.
   virtual void Start();
-  virtual void Stop();
-  virtual void Run();
 
   // These are called from outside threads, by the talk mediator object.
   // They add messages to a queue which we poll in this thread.
-  void Login(const buzz::XmppClientSettings& settings);
-  void Logout();
-  void ListenForUpdates();
-  void SubscribeForUpdates(
+  virtual void Login(const buzz::XmppClientSettings& settings);
+  virtual void Logout();
+  virtual void ListenForUpdates();
+  virtual void SubscribeForUpdates(
       const std::vector<std::string>& subscribed_services_list);
-  void SendNotification(const OutgoingNotificationData& data);
-  void LogStanzas();
+  virtual void SendNotification(const OutgoingNotificationData& data);
 
  private:
+  void StartLibjingleThread();
+  void PumpLibjingleLoop();
+  void StopLibjingleThread();
+
   // Called from within the thread on internal events.
-  void ProcessMessages(int cms);
-  void OnMessage(talk_base::Message* msg);
-  void DoLogin(LoginData* login_data);
+  void DoLogin(const buzz::XmppClientSettings& settings);
   void DoDisconnect();
-  void DoSubscribeForUpdates(const SubscriptionData& subscription_data);
+  void DoSubscribeForUpdates(
+      const std::vector<std::string>& subscribed_services_list);
   void DoListenForUpdates();
   void DoSendNotification(
-      const OutgoingNotificationMessageData& data);
-  void DoStanzaLogging();
-  void PumpAuxiliaryLoops();
+      const OutgoingNotificationData& data);
 
-  // These handle messages indicating an event happened in the outside world.
-  void OnUpdateListenerMessage(
+  // These handle messages indicating an event happened in the outside
+  // world.  These are all called from the worker thread.
+  void OnIncomingNotification(
       const IncomingNotificationData& notification_data);
-  void OnUpdateNotificationSent(bool success);
+  void OnOutgoingNotification(bool success);
   void OnLoginFailureMessage(const notifier::LoginFailure& failure);
   void OnClientStateChangeMessage(LoginConnectionState state);
   void OnSubscriptionStateChange(bool success);
-  void OnInputDebug(const char* msg, int length);
-  void OnOutputDebug(const char* msg, int length);
 
+  // Equivalents of the above functions called from the parent thread.
+  void OnIncomingNotificationOnParentThread(
+      const IncomingNotificationData& notification_data);
+  void OnOutgoingNotificationOnParentThread(bool success);
+  void OnLoginFailureMessageOnParentThread(
+      const notifier::LoginFailure& failure);
+  void OnClientStateChangeMessageOnParentThread(
+      LoginConnectionState state);
+  void OnSubscriptionStateChangeOnParentThread(
+      bool success);
+
+  MessageLoop* worker_message_loop();
   buzz::XmppClient* xmpp_client();
 
   Delegate* delegate_;
+  MessageLoop* parent_message_loop_;
   chrome_common_net::NetworkChangeNotifierThread*
       network_change_notifier_thread_;
+  base::Thread worker_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_refptr<net::HostResolver> host_resolver_;
 
@@ -164,6 +134,10 @@ class MediatorThreadImpl
   // complete or the pump shuts down.
   scoped_ptr<notifier::TaskPump> pump_;
   scoped_ptr<notifier::Login> login_;
+
+  scoped_ptr<talk_base::SocketServer> socket_server_;
+  scoped_ptr<talk_base::Thread> libjingle_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(MediatorThreadImpl);
 };
 

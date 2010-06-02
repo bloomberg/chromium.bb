@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_mock.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
@@ -42,6 +43,9 @@ class TalkMediatorImplTest : public testing::Test {
   int last_message_;
 
  private:
+  // TalkMediatorImpl expects a message loop.
+  MessageLoop message_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(TalkMediatorImplTest);
 };
 

@@ -5,7 +5,6 @@
 #ifndef CHROME_COMMON_NET_NOTIFIER_COMMUNICATOR_LOGIN_FAILURE_H_
 #define CHROME_COMMON_NET_NOTIFIER_COMMUNICATOR_LOGIN_FAILURE_H_
 
-#include "talk/base/common.h"
 #include "talk/xmpp/xmppengine.h"
 
 namespace notifier {
@@ -41,11 +40,9 @@ class LoginFailure {
   buzz::XmppEngine::Error xmpp_error() const;
 
  private:
-  LoginError error_;
-  buzz::XmppEngine::Error xmpp_error_;
-  int subcode_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginFailure);
+  const LoginError error_;
+  const buzz::XmppEngine::Error xmpp_error_;
+  const int subcode_;
 };
 
 }  // namespace notifier
