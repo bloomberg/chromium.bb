@@ -1165,7 +1165,7 @@ def CMDdiff(args):
     change_info = ChangeInfo.Load(args.pop(0), GetRepositoryRoot(), True, True)
     files = change_info.GetFileNames()
   else:
-    files = GetFilesNotInCL()
+    files = [f[1] for f in GetFilesNotInCL()]
 
   root = GetRepositoryRoot()
   cmd = ['svn', 'diff']
