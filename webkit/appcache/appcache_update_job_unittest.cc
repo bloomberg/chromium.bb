@@ -3038,7 +3038,14 @@ TEST_F(AppCacheUpdateJobTest, ManifestRedirect) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestRedirectTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, ManifestWrongMimeType) {
+#if defined(OS_MACOSX)
+// Crashing on mac webkit bots. http://crbug.com/45664
+#define MAYBE_ManifestWrongMimeType DISABLED_ManifestWrongMimeType
+#else
+#define MAYBE_ManifestWrongMimeType ManifestWrongMimeType
+#endif
+
+TEST_F(AppCacheUpdateJobTest, MAYBE_ManifestWrongMimeType) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestWrongMimeTypeTest);
 }
 
