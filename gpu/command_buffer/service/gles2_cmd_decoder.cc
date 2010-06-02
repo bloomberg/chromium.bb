@@ -990,8 +990,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool SimulateAttrib0(GLuint max_vertex_accessed);
   void RestoreStateForSimulatedAttrib0();
 
-  void SetBlackTextureForNonRenderableTextures(
-      bool* has_non_renderable_textures);
+  // Returns true if textures were set.
+  bool SetBlackTextureForNonRenderableTextures();
   void RestoreStateForNonRenderableTextures();
 
   // Gets the buffer id for a given target.
@@ -1829,15 +1829,17 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
         parent_->texture_manager()->GetTextureInfo(service_id);
     DCHECK(info);
 
-    info->SetLevelInfo(GL_TEXTURE_2D,
-                       0,  // level
-                       GL_RGBA,
-                       pending_offscreen_size_.width(),
-                       pending_offscreen_size_.height(),
-                       1,  // depth
-                       0,  // border
-                       GL_RGBA,
-                       GL_UNSIGNED_BYTE);
+    texture_manager()->SetLevelInfo(
+        info,
+        GL_TEXTURE_2D,
+        0,  // level
+        GL_RGBA,
+        pending_offscreen_size_.width(),
+        pending_offscreen_size_.height(),
+        1,  // depth
+        0,  // border
+        GL_RGBA,
+        GL_UNSIGNED_BYTE);
   }
 
   return true;
@@ -2164,7 +2166,7 @@ void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
 
 void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
-  if (!info || !info->MarkMipmapsGenerated()) {
+  if (!info || !texture_manager()->MarkMipmapsGenerated(info)) {
     SetGLError(GL_INVALID_OPERATION,
                "glGenerateMipmaps: Can not generate mips for npot textures");
     return;
@@ -2584,11 +2586,10 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIds(
 void GLES2DecoderImpl::DoDrawArrays(
     GLenum mode, GLint first, GLsizei count) {
   if (IsDrawValid(first + count - 1)) {
-    bool has_non_renderable_textures;
     bool simulated_attrib_0 = SimulateAttrib0(first + count - 1);
-    SetBlackTextureForNonRenderableTextures(&has_non_renderable_textures);
+    bool textures_set = SetBlackTextureForNonRenderableTextures();
     glDrawArrays(mode, first, count);
-    if (has_non_renderable_textures) {
+    if (textures_set) {
       RestoreStateForNonRenderableTextures();
     }
     if (simulated_attrib_0) {
@@ -2700,7 +2701,7 @@ void GLES2DecoderImpl::DoTexParameterf(
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameterf: unknown texture");
   } else {
-    info->SetParameter(pname, static_cast<GLint>(param));
+    texture_manager()->SetParameter(info, pname, static_cast<GLint>(param));
     glTexParameterf(target, pname, param);
   }
 }
@@ -2711,7 +2712,7 @@ void GLES2DecoderImpl::DoTexParameteri(
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameteri: unknown texture");
   } else {
-    info->SetParameter(pname, param);
+    texture_manager()->SetParameter(info, pname, param);
     glTexParameteri(target, pname, param);
   }
 }
@@ -2722,7 +2723,8 @@ void GLES2DecoderImpl::DoTexParameterfv(
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameterfv: unknown texture");
   } else {
-    info->SetParameter(pname, *reinterpret_cast<const GLint*>(params));
+    texture_manager()->SetParameter(
+        info, pname, *reinterpret_cast<const GLint*>(params));
     glTexParameterfv(target, pname, params);
   }
 }
@@ -2733,7 +2735,7 @@ void GLES2DecoderImpl::DoTexParameteriv(
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameteriv: unknown texture");
   } else {
-    info->SetParameter(pname, *params);
+    texture_manager()->SetParameter(info, pname, *params);
     glTexParameteriv(target, pname, params);
   }
 }
@@ -2923,12 +2925,14 @@ void GLES2DecoderImpl::ClearRealGLErrors() {
   }
 }
 
-void GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures(
-    bool* has_non_renderable_textures) {
-  DCHECK(has_non_renderable_textures);
+bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
   DCHECK(current_program_);
   DCHECK(!current_program_->IsDeleted());
-  *has_non_renderable_textures = false;
+  // Only check if there are some unrenderable textures.
+  if (!texture_manager()->HaveUnrenderableTextures()) {
+    return false;
+  }
+  bool textures_set = false;
   const ProgramManager::ProgramInfo::SamplerIndices& sampler_indices =
      current_program_->sampler_indices();
   for (size_t ii = 0; ii < sampler_indices.size(); ++ii) {
@@ -2944,7 +2948,7 @@ void GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures(
                 texture_unit.bound_texture_2d :
                 texture_unit.bound_texture_cube_map;
         if (!texture_info || !texture_info->CanRender()) {
-          *has_non_renderable_textures = true;
+          textures_set = true;
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           glBindTexture(
               uniform_info->type == GL_SAMPLER_2D ? GL_TEXTURE_2D :
@@ -2956,6 +2960,7 @@ void GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures(
       // else: should this be an error?
     }
   }
+  return textures_set;
 }
 
 void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
@@ -3126,13 +3131,11 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
   }
 
   if (IsDrawValid(max_vertex_accessed)) {
-    bool has_non_renderable_textures;
     bool simulated_attrib_0 = SimulateAttrib0(max_vertex_accessed);
-    SetBlackTextureForNonRenderableTextures(
-        &has_non_renderable_textures);
+    bool textures_set = SetBlackTextureForNonRenderableTextures();
     const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
     glDrawElements(mode, count, type, indices);
-    if (has_non_renderable_textures) {
+    if (textures_set) {
       RestoreStateForNonRenderableTextures();
     }
     if (simulated_attrib_0) {
@@ -4114,8 +4117,8 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     memset(zero.get(), 0, image_size);
     data = zero.get();
   }
-  info->SetLevelInfo(
-      target, level, internal_format, width, height, 1, border, 0, 0);
+  texture_manager()->SetLevelInfo(
+      info, target, level, internal_format, width, height, 1, border, 0, 0);
   glCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
   return error::kNoError;
@@ -4257,7 +4260,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     memset(zero.get(), 0, pixels_size);
     pixels = zero.get();
   }
-  info->SetLevelInfo(
+  texture_manager()->SetLevelInfo(info,
       target, level, internal_format, width, height, 1, border, format, type);
   glTexImage2D(
       target, level, internal_format, width, height, border, format, type,

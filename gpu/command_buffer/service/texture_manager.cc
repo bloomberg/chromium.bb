@@ -263,7 +263,8 @@ TextureManager::TextureManager(
                                      max_texture_size)),
       max_cube_map_levels_(ComputeMipMapCount(max_cube_map_texture_size,
                                               max_cube_map_texture_size,
-                                              max_cube_map_texture_size)) {
+                                              max_cube_map_texture_size)),
+      num_unrenderable_textures_(0) {
   default_texture_2d_ = TextureInfo::Ref(new TextureInfo(0));
   SetInfoTarget(default_texture_2d_, GL_TEXTURE_2D);
   default_texture_2d_->SetLevelInfo(
@@ -297,12 +298,65 @@ bool TextureManager::ValidForTarget(
          (target != GL_TEXTURE_2D || (depth == 1));
 }
 
+void TextureManager::SetLevelInfo(
+    TextureManager::TextureInfo* info,
+    GLenum target,
+    GLint level,
+    GLint internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth,
+    GLint border,
+    GLenum format,
+    GLenum type) {
+  DCHECK(info);
+  DCHECK(!info->IsDeleted());
+  if (!info->CanRender()) {
+    --num_unrenderable_textures_;
+  }
+  info->SetLevelInfo(
+      target, level, internal_format, width, height, depth,
+      border, format, type);
+  if (!info->CanRender()) {
+    ++num_unrenderable_textures_;
+  }
+}
+
+void TextureManager::SetParameter(
+    TextureManager::TextureInfo* info, GLenum pname, GLint param) {
+  DCHECK(info);
+  DCHECK(!info->IsDeleted());
+  if (!info->CanRender()) {
+    --num_unrenderable_textures_;
+  }
+  info->SetParameter(pname, param);
+  if (!info->CanRender()) {
+    ++num_unrenderable_textures_;
+  }
+}
+
+bool TextureManager::MarkMipmapsGenerated(TextureManager::TextureInfo* info) {
+  DCHECK(info);
+  DCHECK(!info->IsDeleted());
+  if (!info->CanRender()) {
+    --num_unrenderable_textures_;
+  }
+  bool result = info->MarkMipmapsGenerated();
+  if (!info->CanRender()) {
+    ++num_unrenderable_textures_;
+  }
+  return result;
+}
+
 TextureManager::TextureInfo* TextureManager::CreateTextureInfo(
     GLuint client_id, GLuint service_id) {
   TextureInfo::Ref info(new TextureInfo(service_id));
   std::pair<TextureInfoMap::iterator, bool> result =
       texture_infos_.insert(std::make_pair(client_id, info));
   DCHECK(result.second);
+  if (!info->CanRender()) {
+    ++num_unrenderable_textures_;
+  }
   return info.get();
 }
 
@@ -315,7 +369,11 @@ TextureManager::TextureInfo* TextureManager::GetTextureInfo(
 void TextureManager::RemoveTextureInfo(GLuint client_id) {
   TextureInfoMap::iterator it = texture_infos_.find(client_id);
   if (it != texture_infos_.end()) {
-    it->second->MarkAsDeleted();
+    TextureInfo* info = it->second;
+    if (!info->CanRender()) {
+      --num_unrenderable_textures_;
+    }
+    info->MarkAsDeleted();
     texture_infos_.erase(it);
   }
 }
