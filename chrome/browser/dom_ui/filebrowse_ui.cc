@@ -158,6 +158,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void HandleCreateNewFolder(const Value* value);
 
   void PlayMediaFile(const Value* value);
+  void EnqueueMediaFile(const Value* value);
 
   void HandleDeleteFile(const Value* value);
   void DeleteFile(const FilePath& path);
@@ -295,7 +296,8 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_EMAIL));
   localized_strings.SetString(L"delete",
       l10n_util::GetString(IDS_FILEBROWSER_DELETE));
-
+  localized_strings.SetString(L"enqueue",
+      l10n_util::GetString(IDS_FILEBROWSER_ENQUEUE));
   SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece filebrowse_html(
@@ -404,6 +406,8 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::HandleCreateNewFolder));
   dom_ui_->RegisterMessageCallback("playMediaFile",
       NewCallback(this, &FilebrowseHandler::PlayMediaFile));
+  dom_ui_->RegisterMessageCallback("enqueueMediaFile",
+      NewCallback(this, &FilebrowseHandler::EnqueueMediaFile));
   dom_ui_->RegisterMessageCallback("pauseToggleDownload",
       NewCallback(this, &FilebrowseHandler::HandlePauseToggleDownload));
   dom_ui_->RegisterMessageCallback("deleteFile",
@@ -553,6 +557,31 @@ void FilebrowseHandler::HandleCreateNewFolder(const Value* value) {
 }
 
 void FilebrowseHandler::PlayMediaFile(const Value* value) {
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    std::string path;
+
+    // Get path string.
+    if (list_value->GetString(0, &path)) {
+      FilePath currentpath;
+      currentpath = FilePath(path);
+
+      MediaPlayer* mediaplayer = MediaPlayer::Get();
+      std::string url = currentpath.value();
+
+      GURL gurl(url);
+
+      mediaplayer->ForcePlayMediaURL(gurl);
+    } else {
+      LOG(ERROR) << "Unable to get string";
+      return;
+    }
+  }
+#endif
+}
+
+void FilebrowseHandler::EnqueueMediaFile(const Value* value) {
 #if defined(OS_CHROMEOS)
   if (value && value->GetType() == Value::TYPE_LIST) {
     const ListValue* list_value = static_cast<const ListValue*>(value);

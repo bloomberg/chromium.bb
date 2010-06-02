@@ -7357,6 +7357,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_FILEBROWSER_DELETE" desc="Delete file menu item">
       Delete
     </message>
+    <message name="IDS_FILEBROWSER_ENQUEUE" desc="Enqueue file menu item used for media playback">
+      Enqueue
+    </message>
 
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">

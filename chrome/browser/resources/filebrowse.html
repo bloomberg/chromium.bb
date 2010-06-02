@@ -1296,6 +1296,11 @@ function playMediaFile(path) {
   }
 }
 
+function enqueueMediaFile(path) {
+  var newPath = 'file://' + path;
+  chrome.send('enqueueMediaFile', [newPath]);
+}
+
 function showImage(path) {
   if (inFullMode) {
     if (photoPreviewElement == null) {
@@ -1494,6 +1499,13 @@ function createNewItem(title, path, isDirectory) {
       menu.appendChild(picasaitem);
       menu.appendChild(flickritem);
       menu.appendChild(emailitem);
+    }
+    if (pathIsVideoFile(path) || pathIsAudioFile(path)) {
+      var enqueueitem = document.createElement('div');
+      enqueueitem.textContent = localStrings.getString('enqueue');
+      enqueueitem.className = 'menuitem';
+      enqueueitem.onclick = partial(enqueueMediaFile, path);
+      menu.appendChild(enqueueitem);
     }
     var deleteitem = document.createElement('div');
     deleteitem.textContent = localStrings.getString('delete');
