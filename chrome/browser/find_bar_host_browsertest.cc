@@ -1077,8 +1077,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarTextForBrowser(browser()));
 }
 
+// See http://crbug.com/45594. On Windows, it crashes sometimes.
+#if defined(OS_WIN)
+#define MAYBE_ActivateLinkNavigatesPage DISABLED_ActivateLinkNavigatesPage
+#else
+#define MAYBE_ActivateLinkNavigatesPage ActivateLinkNavigatesPage
+#endif
 // This makes sure that dismissing the find bar with kActivateSelection works.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       MAYBE_ActivateLinkNavigatesPage) {
   HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
