@@ -12,8 +12,6 @@
 
 @interface AutoFillAddressViewController (PrivateMethods)
 - (void)labelChanged:(GTMKeyValueChangeNotification*)notification;
-- (void)addressesChanged:(GTMKeyValueChangeNotification*)notification;
-- (void)defaultChanged:(GTMKeyValueChangeNotification*)notification;
 @end
 
 @implementation AutoFillAddressViewController
@@ -38,22 +36,12 @@
     parentController_ = parentController;
 
     // Register |self| as observer so we can notify parent controller.  See
-    // |observeValueForKeyPath:| for details.
+    // |labelChanged:| for details.
     [addressModel_ gtm_addObserver:self
                         forKeyPath:@"label"
                           selector:@selector(labelChanged:)
                           userInfo:nil
                            options:0];
-    [parentController_ gtm_addObserver:self
-                            forKeyPath:@"addressLabels"
-                              selector:@selector(addressesChanged:)
-                              userInfo:nil
-                               options:0];
-    [parentController_ gtm_addObserver:self
-                            forKeyPath:@"defaultAddressLabel"
-                              selector:@selector(defaultChanged:)
-                              userInfo:nil
-                               options:0];
   }
   return self;
 }
@@ -62,12 +50,6 @@
   [addressModel_ gtm_removeObserver:self
                          forKeyPath:@"label"
                            selector:@selector(labelChanged:)];
-  [parentController_ gtm_removeObserver:self
-                             forKeyPath:@"addressLabels"
-                               selector:@selector(addressesChanged:)];
-  [parentController_ gtm_removeObserver:self
-                             forKeyPath:@"defaultAddressLabel"
-                               selector:@selector(defaultChanged:)];
   [addressModel_ release];
   [super dealloc];
 }
@@ -78,35 +60,12 @@
   [parentController_ notifyAddressChange:self];
 }
 
-- (void)addressesChanged:(GTMKeyValueChangeNotification*)notification {
-  [self willChangeValueForKey:@"canAlterDefault"];
-  [self didChangeValueForKey:@"canAlterDefault"];
-}
-
-- (void)defaultChanged:(GTMKeyValueChangeNotification*)notification {
-  [self willChangeValueForKey:@"isDefault"];
-  [self didChangeValueForKey:@"isDefault"];
-}
-
 - (IBAction)deleteAddress:(id)sender {
   [parentController_ deleteAddress:self];
 }
 
 - (void)copyModelToProfile:(AutoFillProfile*)profile {
   [addressModel_ copyModelToProfile:profile];
-}
-
-- (BOOL)canAlterDefault {
-  return [[parentController_ addressLabels] count] > 1;
-}
-
-- (BOOL)isDefault {
-  return
-      [[addressModel_ label] isEqual:[parentController_ defaultAddressLabel]];
-}
-
-- (void)setIsDefault:(BOOL)def {
-  [parentController_ setDefaultAddressLabel:def ? [addressModel_ label] : nil];
 }
 
 @end

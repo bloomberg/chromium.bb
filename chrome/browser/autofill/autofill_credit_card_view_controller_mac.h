@@ -44,8 +44,6 @@ class CreditCard;
   AutoFillDialogController* parentController_;
 }
 
-@property (readonly) BOOL canAlterDefault;
-@property BOOL isDefault;
 @property (nonatomic, retain) AutoFillCreditCardModel* creditCardModel;
 @property (nonatomic, retain) NSArray* billingAddressContents;
 @property (nonatomic, retain) NSArray* shippingAddressContents;

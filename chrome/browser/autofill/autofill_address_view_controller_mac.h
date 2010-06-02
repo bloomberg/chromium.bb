@@ -31,8 +31,6 @@ class AutoFillProfile;
   AutoFillDialogController* parentController_;
 }
 
-@property (readonly) BOOL canAlterDefault;
-@property BOOL isDefault;
 @property (nonatomic, retain) AutoFillAddressModel* addressModel;
 
 // Designated initializer.  Takes a copy of the data in |profile|,

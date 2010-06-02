@@ -180,13 +180,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     }
     profile_->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
                                      auxiliaryEnabled_);
-    // Make sure to use accessors here to save what the user sees.
-    profile_->GetPrefs()->SetString(
-        prefs::kAutoFillDefaultProfile,
-        base::SysNSStringToWide([self defaultAddressLabel]));
-    profile_->GetPrefs()->SetString(
-        prefs::kAutoFillDefaultCreditCard,
-        base::SysNSStringToWide([self defaultCreditCardLabel]));
     observer_->OnAutoFillDialogApply(&profiles_, &creditCards_);
   }
   [self closeDialog];
@@ -223,9 +216,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   [self willChangeValueForKey:@"addressLabels"];
   [addressFormViewControllers_.get() addObject:addressViewController];
   [self didChangeValueForKey:@"addressLabels"];
-  // Might need to reset the default if added.
-  [self willChangeValueForKey:@"defaultAddressLabel"];
-  [self didChangeValueForKey:@"defaultAddressLabel"];
 
   // Embed the new address into our target view.
   [childView_ addSubview:[addressViewController view]
@@ -263,9 +253,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   [self willChangeValueForKey:@"creditCardLabels"];
   [creditCardFormViewControllers_.get() addObject:creditCardViewController];
   [self didChangeValueForKey:@"creditCardLabels"];
-  // Might need to reset the default if added.
-  [self willChangeValueForKey:@"defaultCreditCardLabel"];
-  [self didChangeValueForKey:@"defaultCreditCardLabel"];
 
   // Embed the new address into our target view.
   [childView_ addSubview:[creditCardViewController view]
@@ -289,9 +276,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   [self willChangeValueForKey:@"addressLabels"];
   [addressFormViewControllers_.get() removeObjectAtIndex:i];
   [self didChangeValueForKey:@"addressLabels"];
-  // Might need to reset the default if deleted.
-  [self willChangeValueForKey:@"defaultAddressLabel"];
-  [self didChangeValueForKey:@"defaultAddressLabel"];
 
   [self notifyAddressChange:self];
 
@@ -312,9 +296,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   [self willChangeValueForKey:@"creditCardLabels"];
   [creditCardFormViewControllers_.get() removeObjectAtIndex:i];
   [self didChangeValueForKey:@"creditCardLabels"];
-  // Might need to reset the default if deleted.
-  [self willChangeValueForKey:@"defaultCreditCardLabel"];
-  [self didChangeValueForKey:@"defaultCreditCardLabel"];
 
   // Recalculate key view loop to account for change in view tree.
   [[self window] recalculateKeyViewLoop];
@@ -351,104 +332,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   }
 
   return array;
-}
-
-- (NSString*)defaultAddressLabel {
-  NSArray* labels = [self addressLabels];
-  NSString* def = defaultAddressLabel_.get();
-  if ([def length] && [labels containsObject:def])
-    return def;
-
-  // No valid default; pick the first item.
-  if ([labels count]) {
-    return [labels objectAtIndex:0];
-  } else {
-    return @"";
-  }
-}
-
-- (void)setDefaultAddressLabel:(NSString*)label {
-  if (!label) {
-    // Setting nil means the user un-checked an item. Find a new default.
-    NSUInteger itemCount = [addressFormViewControllers_ count];
-    if (itemCount == 0) {
-      DCHECK(false) << "Attempt to set default when there are no items.";
-      return;
-    } else if (itemCount == 1) {
-      DCHECK(false) << "Attempt to set default when there is only one item, so "
-                       "it should have been disabled.";
-      AutoFillAddressViewController* controller =
-          [addressFormViewControllers_ objectAtIndex:0];
-      label = [[controller addressModel] label];
-    } else {
-      AutoFillAddressViewController* controller =
-          [addressFormViewControllers_ objectAtIndex:0];
-      NSString* firstItemsLabel = [[controller addressModel] label];
-
-      // If they unchecked an item that wasn't the first item, make the first
-      // item default.
-      if (![defaultAddressLabel_ isEqual:firstItemsLabel]) {
-        label = firstItemsLabel;
-      } else {
-        // Otherwise they unchecked the first item. Pick the second one for 'em.
-        AutoFillAddressViewController* controller =
-            [addressFormViewControllers_ objectAtIndex:1];
-        label = [[controller addressModel] label];
-      }
-    }
-  }
-
-  defaultAddressLabel_.reset([label copy]);
-  return;
-}
-
-- (NSString*)defaultCreditCardLabel {
-  NSArray* labels = [self creditCardLabels];
-  NSString* def = defaultCreditCardLabel_.get();
-  if ([def length] && [labels containsObject:def])
-    return def;
-
-  // No valid default; pick the first item.
-  if ([labels count]) {
-    return [labels objectAtIndex:0];
-  } else {
-    return @"";
-  }
-}
-
-- (void)setDefaultCreditCardLabel:(NSString*)label {
-  if (!label) {
-    // Setting nil means the user un-checked an item. Find a new default.
-    NSUInteger itemCount = [creditCardFormViewControllers_ count];
-    if (itemCount == 0) {
-      DCHECK(false) << "Attempt to set default when there are no items.";
-      return;
-    } else if (itemCount == 1) {
-      DCHECK(false) << "Attempt to set default when there is only one item, so "
-                       "it should have been disabled.";
-      AutoFillCreditCardViewController* controller =
-         [creditCardFormViewControllers_ objectAtIndex:0];
-      label = [[controller creditCardModel] label];
-    } else {
-      AutoFillCreditCardViewController* controller =
-         [creditCardFormViewControllers_ objectAtIndex:0];
-      NSString* firstItemsLabel = [[controller creditCardModel] label];
-
-      // If they unchecked an item that wasn't the first item, make the first
-      // item default.
-      if (![defaultCreditCardLabel_ isEqual:firstItemsLabel]) {
-        label = firstItemsLabel;
-      } else {
-        // Otherwise they unchecked the first item. Pick the second one for 'em.
-        AutoFillCreditCardViewController* controller =
-           [creditCardFormViewControllers_ objectAtIndex:1];
-        label = [[controller creditCardModel] label];
-      }
-    }
-  }
-
-  defaultCreditCardLabel_.reset([label copy]);
-  return;
 }
 
 @end
@@ -505,14 +388,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     // Initialize array of sub-controllers.
     creditCardFormViewControllers_.reset(
         [[NSMutableArray alloc] initWithCapacity:0]);
-
-    NSString* defaultAddressLabel = base::SysWideToNSString(
-        profile_->GetPrefs()->GetString(prefs::kAutoFillDefaultProfile));
-    defaultAddressLabel_.reset([defaultAddressLabel retain]);
-
-    NSString* defaultCreditCardLabel = base::SysWideToNSString(
-        profile_->GetPrefs()->GetString(prefs::kAutoFillDefaultCreditCard));
-    defaultCreditCardLabel_.reset([defaultCreditCardLabel retain]);
   }
   return self;
 }
@@ -593,13 +468,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     insertionPoint = [creditCardViewController view];
     [[creditCardViewController view] setFrameOrigin:NSMakePoint(0, 0)];
   }
-
-  // During initialization the default accessors were returning faulty values
-  // since the controller arrays weren't set up. Poke our observers.
-  [self willChangeValueForKey:@"defaultAddressLabel"];
-  [self didChangeValueForKey:@"defaultAddressLabel"];
-  [self willChangeValueForKey:@"defaultCreditCardLabel"];
-  [self didChangeValueForKey:@"defaultCreditCardLabel"];
 }
 
 - (void)onPersonalDataLoaded:(const std::vector<AutoFillProfile*>&)profiles

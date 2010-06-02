@@ -43,9 +43,6 @@ class Profile;
   // Array of |AutoFillCreditCardViewController|.
   scoped_nsobject<NSMutableArray> creditCardFormViewControllers_;
 
-  scoped_nsobject<NSString> defaultAddressLabel_;
-  scoped_nsobject<NSString> defaultCreditCardLabel_;
-
   AutoFillDialogObserver* observer_;  // Weak, not retained.
   Profile* profile_;  // Weak, not retained.
   AutoFillProfile* importedProfile_;  // Weak, not retained.
@@ -63,10 +60,6 @@ class Profile;
 // Property representing state of Address Book "me" card usage.  Checkbox is
 // bound to this in nib.
 @property (nonatomic) BOOL auxiliaryEnabled;
-
-// Property representing the default profile and credit card.
-@property (nonatomic, copy) NSString* defaultAddressLabel;
-@property (nonatomic, copy) NSString* defaultCreditCardLabel;
 
 // Main interface for displaying an application modal autofill dialog on screen.
 // This class method creates a new |AutoFillDialogController| and runs it as a
