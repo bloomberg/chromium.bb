@@ -24,9 +24,10 @@ namespace chromeos {
 class UserImageDownloader : public URLFetcher::Delegate,
                             public UtilityProcessHost::Client {
  public:
-  // Starts downloading the picture upon successful login.
   // |auth_token| is a authentication token received in ClientLogin
   // response, used for requests sent to Contacts API.
+  // Starts downloading the picture. Object is deleted as reference counted
+  // object.
   UserImageDownloader(const std::string& username,
                       const std::string& auth_token);
 

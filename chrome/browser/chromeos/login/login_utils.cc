@@ -88,6 +88,16 @@ class LoginUtilsImpl : public LoginUtils,
   // Authenticator and must delete it when done.
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
 
+  // Used to postpone browser launch via DoBrowserLaunch() if some post
+  // login screen is to be shown.
+  virtual void EnableBrowserLaunch(bool enable);
+
+  // Returns if browser launch enabled now or not.
+  virtual bool IsBrowserLaunchEnabled() const;
+
+  // Returns auth token for 'cp' Contacts service.
+  virtual const std::string& GetAuthToken() const { return auth_token_; }
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -100,6 +110,13 @@ class LoginUtilsImpl : public LoginUtils,
   NotificationRegistrar registrar_;
   bool wifi_connecting_;
   base::Time wifi_connect_start_time_;
+
+  // Indicates if DoBrowserLaunch will actually launch the browser or not.
+  bool browser_launch_enabled_;
+
+  // Auth token for Contacts service. Received by GoogleAuthenticator as
+  // part of ClientLogin response.
+  std::string auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -175,9 +192,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // delete itself.
   CookieFetcher* cf = new CookieFetcher(profile);
   cf->AttemptFetch(credentials);
-  std::string auth = get_auth_token(credentials);
-  if (!auth.empty())
-    new UserImageDownloader(username, auth);
+  auth_token_ = get_auth_token(credentials);
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin() {
@@ -198,6 +213,14 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin() {
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   return new GoogleAuthenticator(consumer);
+}
+
+void LoginUtilsImpl::EnableBrowserLaunch(bool enable) {
+  browser_launch_enabled_ = enable;
+}
+
+bool LoginUtilsImpl::IsBrowserLaunchEnabled() const {
+  return browser_launch_enabled_;
 }
 
 void LoginUtilsImpl::Observe(NotificationType type,
@@ -230,6 +253,10 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
         NewRunnableFunction(&LoginUtils::DoBrowserLaunch, profile), 100);
     return;
   }
+
+  // Browser launch was disabled due to some post login screen.
+  if (!LoginUtils::Get()->IsBrowserLaunchEnabled())
+    return;
 
   LOG(INFO) << "Launching browser...";
   BrowserInit browser_init;

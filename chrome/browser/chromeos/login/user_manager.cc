@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -33,6 +34,45 @@ const wchar_t kUserImages[] = L"UserImages";
 
 // The one true UserManager.
 static UserManager* user_manager_ = NULL;
+
+// Stores path to the image in local state. Runs on UI thread.
+void save_path_to_local_state(const std::string& username,
+                              const std::string& image_path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  PrefService* local_state = g_browser_process->local_state();
+  DictionaryValue* images =
+      local_state->GetMutableDictionary(kUserImages);
+  images->SetWithoutPathExpansion(UTF8ToWide(username),
+                                  new StringValue(image_path));
+  LOG(INFO) << "Saving path to user image in Local State.";
+  local_state->ScheduleSavePersistentPrefs();
+}
+
+// Saves image to file with specified path. Runs on FILE thread.
+// Posts task for saving image path to local state on UI thread.
+void save_image_to_file(const SkBitmap& image,
+                        const FilePath& image_path,
+                        const std::string& username) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  std::vector<unsigned char> encoded_image;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &encoded_image)) {
+    LOG(ERROR) << "Failed to PNG encode the image.";
+    return;
+  }
+
+  if (file_util::WriteFile(image_path,
+                           reinterpret_cast<char*>(&encoded_image[0]),
+                           encoded_image.size()) == -1) {
+    LOG(ERROR) << "Failed to save image to file.";
+    return;
+  }
+
+  ChromeThread::PostTask(
+      ChromeThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(&save_path_to_local_state,
+                          username, image_path.value()));
+}
 
 }  // namespace
 
@@ -135,28 +175,18 @@ void UserManager::UserLoggedIn(const std::string& email) {
 
 void UserManager::SaveUserImage(const std::string& username,
                                 const SkBitmap& image) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   std::string filename = username + ".png";
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   FilePath image_path = user_data_dir.AppendASCII(filename);
-  std::vector<unsigned char> encoded_image;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &encoded_image))
-    return;
+  LOG(INFO) << "Saving user image to " << image_path.value();
 
   ChromeThread::PostTask(
       ChromeThread::FILE,
       FROM_HERE,
-      NewRunnableFunction<int(*)(const FilePath&, const char*, int)>(
-          &file_util::WriteFile,
-          image_path,
-          reinterpret_cast<char*>(&encoded_image[0]),
-          encoded_image.size()));
-  PrefService* local_state = g_browser_process->local_state();
-  DictionaryValue* images =
-      local_state->GetMutableDictionary(kUserImages);
-  images->SetWithoutPathExpansion(ASCIIToWide(username),
-                                  new StringValue(image_path.value()));
-  local_state->ScheduleSavePersistentPrefs();
+      NewRunnableFunction(&save_image_to_file,
+                          image, image_path, username));
 }
 
 void UserManager::OnImageLoaded(const std::string& username,
