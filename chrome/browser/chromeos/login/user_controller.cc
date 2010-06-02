@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/canvas.h"
@@ -21,6 +22,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/throbber.h"
 #include "views/grid_layout.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -66,7 +68,8 @@ UserController::UserController()
       border_window_(NULL),
       label_window_(NULL),
       unselected_label_window_(NULL),
-      image_view_(NULL) {
+      image_view_(NULL),
+      throbber_(NULL) {
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -85,7 +88,8 @@ UserController::UserController(Delegate* delegate,
       border_window_(NULL),
       label_window_(NULL),
       unselected_label_window_(NULL),
-      image_view_(NULL) {
+      image_view_(NULL),
+      throbber_(NULL) {
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -115,6 +119,7 @@ void UserController::Init(int index, int total_user_count) {
 void UserController::SetPasswordEnabled(bool enable) {
   password_field_->SetEnabled(enable);
   submit_button_->SetEnabled(enable);
+  enable ? throbber_->Stop() : throbber_->Start();
 }
 
 void UserController::ClearAndEnablePassword() {
@@ -216,6 +221,13 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
   else
     SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
                  IDR_LOGIN_OTHER_USER));
+
+  throbber_ = CreateDefaultSmoothedThrobber();
+  int w = throbber_->GetPreferredSize().width();
+  int h = throbber_->GetPreferredSize().height();
+  throbber_->SetBounds(kSize / 2 - w / 2, kSize / 2 - h / 2 , w, h);
+  image_view_->AddChildView(throbber_);
+
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, gfx::Rect(0, 0, kSize, kSize));
   window->SetContentsView(image_view_);

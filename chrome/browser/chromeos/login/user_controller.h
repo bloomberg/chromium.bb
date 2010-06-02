@@ -18,6 +18,7 @@ namespace views {
 class ImageView;
 class NativeButton;
 class WidgetGtk;
+class Throbber;
 }
 
 namespace chromeos {
@@ -134,6 +135,8 @@ class UserController : public views::ButtonListener,
 
   // View that shows user image on image window.
   views::ImageView* image_view_;
+
+  views::Throbber* throbber_;
 
   NotificationRegistrar registrar_;
 

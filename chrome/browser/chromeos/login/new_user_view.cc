@@ -21,10 +21,13 @@
 #include "base/utf_string_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "grit/generated_resources.h"
+//#include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
+#include "views/controls/throbber.h"
 
 using views::Label;
 using views::Textfield;
@@ -52,6 +55,7 @@ NewUserView::NewUserView(Delegate* delegate, bool need_border)
       create_account_link_(NULL),
       browse_without_signin_link_(NULL),
       languages_menubutton_(NULL),
+      throbber_(NULL),
       accel_focus_user_(views::Accelerator(base::VKEY_U, false, false, true)),
       accel_focus_pass_(views::Accelerator(base::VKEY_P, false, false, true)),
       delegate_(delegate),
@@ -88,6 +92,9 @@ void NewUserView::Init() {
 
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
   AddChildView(password_field_);
+
+  throbber_ = CreateDefaultSmoothedThrobber();
+  AddChildView(throbber_);
 
   create_account_link_ = new views::Link(std::wstring());
   create_account_link_->SetController(this);
@@ -249,7 +256,14 @@ void NewUserView::Layout() {
   y += (setViewBounds(title_label_, x, y, max_width, false) + kRowPad);
   y += (setViewBounds(username_field_, x, y, width, true) + kRowPad);
   y += (setViewBounds(password_field_, x, y, width, true) + kRowPad);
+  int throbber_y = y;
   y += (setViewBounds(sign_in_button_, x, y, width, false) + kRowPad);
+  setViewBounds(throbber_,
+                x + width - throbber_->GetPreferredSize().width(),
+                throbber_y + (sign_in_button_->GetPreferredSize().height() -
+                              throbber_->GetPreferredSize().height()) / 2,
+                width,
+                false);
   y += setViewBounds(create_account_link_, x, y, max_width, false);
   y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
 
@@ -276,6 +290,7 @@ void NewUserView::Login() {
   if (login_in_process_ || username_field_->text().empty())
     return;
 
+  throbber_->Start();
   login_in_process_ = true;
   EnableInputControls(false);
   std::string username = UTF16ToUTF8(username_field_->text());
@@ -318,6 +333,10 @@ gfx::Rect NewUserView::GetPasswordBounds() const {
   views::View::ConvertPointToScreen(password_field_->GetParent(), &origin);
   screen_bounds.set_origin(origin);
   return screen_bounds;
+}
+
+void NewUserView::StopThrobber() {
+  throbber_->Stop();
 }
 
 bool NewUserView::HandleKeystroke(views::Textfield* s,

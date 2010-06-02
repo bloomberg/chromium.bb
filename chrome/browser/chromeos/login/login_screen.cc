@@ -86,6 +86,7 @@ void LoginScreen::OnLoginFailure(const std::string& error) {
   }
 
   view()->ClearAndEnablePassword();
+  view()->StopThrobber();
 }
 
 void LoginScreen::OnLoginSuccess(const std::string& username,

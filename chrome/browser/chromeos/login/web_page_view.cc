@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -27,23 +28,23 @@
 
 using base::TimeDelta;
 using views::Label;
-using views::Throbber;
 using views::View;
 using webkit_glue::FormData;
+
+namespace chromeos {
+
+namespace {
 
 // Spacing (vertical/horizontal) between controls.
 const int kSpacing = 10;
 
-// Time in ms per throbber frame.
-const int kThrobberFrameMs = 60;
-
 // Time in ms after that waiting controls are shown on Start.
 const int kStartDelayMs = 500;
 
-// Time in ms after that waiting controls are hidden Stop.
+// Time in ms after that waiting controls are hidden on Stop.
 const int kStopDelayMs = 500;
 
-namespace chromeos {
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardWebPageViewTabContents, public:
@@ -102,9 +103,7 @@ void WebPageView::Init() {
   dom_view()->SetVisible(false);
   AddChildView(dom_view());
 
-  throbber_ = new views::Throbber(kThrobberFrameMs, false);
-  throbber_->SetFrames(
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SPINNER));
+  throbber_ = CreateDefaultThrobber();
   AddChildView(throbber_);
 
   connecting_label_ = new views::Label();

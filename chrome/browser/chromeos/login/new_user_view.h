@@ -22,6 +22,7 @@
 namespace views {
 class Label;
 class NativeButton;
+class Throbber;
 }  // namespace views
 
 namespace chromeos {
@@ -64,6 +65,9 @@ class NewUserView : public views::View,
 
   // Resets password text and sets the enabled state of the password.
   void ClearAndEnablePassword();
+
+  // Stops throbber shown during login.
+  void StopThrobber();
 
   // Returns bounds of password field in screen coordinates.
   gfx::Rect GetPasswordBounds() const;
@@ -124,6 +128,7 @@ class NewUserView : public views::View,
   views::Link* create_account_link_;
   views::Link* browse_without_signin_link_;
   views::MenuButton* languages_menubutton_;
+  views::Throbber* throbber_;
 
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_focus_pass_;
