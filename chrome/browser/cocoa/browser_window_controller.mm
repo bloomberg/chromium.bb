@@ -233,10 +233,16 @@
     // this window's Browser and the tab strip view. The controller will handle
     // registering for the appropriate tab notifications from the back-end and
     // managing the creation of new tabs.
-    tabStripController_.reset([[TabStripController alloc]
-                                initWithView:[self tabStripView]
-                                  switchView:[self tabContentArea]
-                                     browser:browser_.get()]);
+    if (![self useVerticalTabs]) {
+      tabStripController_.reset([[TabStripController alloc]
+                                  initWithView:[self tabStripView]
+                                    switchView:[self tabContentArea]
+                                       browser:browser_.get()]);
+    } else {
+      // TODO(pinkerton): Load SideTabController when written and add it to the
+      // contentView. This should be abstracted into a separate method like
+      // the toolbar controller initialization below.
+    }
 
     // Create the infobar container view, so we can pass it to the
     // ToolbarController.
@@ -249,15 +255,8 @@
     // Create a controller for the toolbar, giving it the toolbar model object
     // and the toolbar view from the nib. The controller will handle
     // registering for the appropriate command state changes from the back-end.
-    toolbarController_.reset([[ToolbarController alloc]
-                               initWithModel:browser->toolbar_model()
-                                    commands:browser->command_updater()
-                                     profile:browser->profile()
-                                     browser:browser
-                              resizeDelegate:self]);
-    [toolbarController_ setHasToolbar:[self hasToolbar]
-                       hasLocationBar:[self hasLocationBar]];
-    [[[self window] contentView] addSubview:[toolbarController_ view]];
+    // Adds the toolbar to the content area.
+    [self initializeToolbarWithBrowser:browser];
 
     // Create a sub-controller for the bookmark bar.
     bookmarkBarController_.reset(
@@ -1289,6 +1288,8 @@
 
 // (Override of |TabWindowController| method.)
 - (BOOL)hasTabStrip {
+  if ([self useVerticalTabs])
+    return NO;
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
 }
 
@@ -1623,6 +1624,16 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   windowTopGrowth_ = 0;
   windowBottomGrowth_ = 0;
   isShrinkingFromZoomed_ = NO;
+}
+
+- (void)toggleTabStripDisplayMode {
+  // TODO(pinkerton) re-initialize tab strip. Finish writing this method.
+  // Right now, it only switches one direction, which clearly isn't cool.
+  // [self initTabStrip:browser_->tabstrip_model()];
+  [[self tabStripView] removeFromSuperview];
+  [self initializeToolbarWithBrowser:browser_.get()];
+
+  [self layoutSubviews];
 }
 
 @end  // @implementation BrowserWindowController

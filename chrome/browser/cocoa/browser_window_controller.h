@@ -247,6 +247,11 @@ class TabStripModelObserverBridge;
 // Return the point to which a bubble window's arrow should point.
 - (NSPoint)pointForBubbleArrowTip;
 
+// Call when the user changes the tab strip display mode, enabling or
+// disabling vertical tabs for this browser. Re-flows the contents of the
+// browser.
+- (void)toggleTabStripDisplayMode;
+
 @end  // @interface BrowserWindowController
 
 

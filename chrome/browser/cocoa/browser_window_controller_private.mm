@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/cocoa/fullscreen_controller.h"
+#import "chrome/browser/cocoa/side_tabs_toolbar_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
@@ -42,6 +43,10 @@ const CGFloat kLocBarBottomInset = 1;
 
 
 @implementation BrowserWindowController(Private)
+
+- (BOOL)useVerticalTabs {
+  return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
+}
 
 - (void)saveWindowPositionIfNeeded {
   if (browser_ != BrowserList::GetLastActive())
@@ -136,6 +141,7 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* window = [self window];
   NSView* contentView = [window contentView];
   NSRect contentBounds = [contentView bounds];
+  CGFloat minX = NSMinX(contentBounds);
   CGFloat minY = NSMinY(contentBounds);
   CGFloat width = NSWidth(contentBounds);
 
@@ -165,23 +171,38 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK_GE(maxY, minY);
   DCHECK_LE(maxY, NSMaxY(contentBounds) + yOffset);
 
-  // Place the toolbar at the top of the reserved area.
+  // Place the toolbar at the top of the reserved area. Even with vertical
+  // tabs enabled, the toolbar takes up the entire top width.
   maxY = [self layoutToolbarAtMaxY:maxY width:width];
+
+  // Position the vertical tab strip on the left, taking up the entire remaining
+  // height.
+  // TODO(pinkerton): Make width not fixed.
+  const CGFloat kSidebarWidth = 200.0;
+  if ([self useVerticalTabs]) {
+    // TODO(pinkerton): Position the side bar at |minX| when the controller
+    // is implemented.
+
+    // Push everything else over to the right.
+    minX += kSidebarWidth;
+    width -= kSidebarWidth;
+  }
 
   // If we're not displaying the bookmark bar below the infobar, then it goes
   // immediately below the toolbar.
   BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
   if (!placeBookmarkBarBelowInfoBar)
-    maxY = [self layoutBookmarkBarAtMaxY:maxY width:width];
+    maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
 
   // The floating bar backing view doesn't actually add any height.
-  [self layoutFloatingBarBackingViewAtY:maxY
-                                  width:width
-                                 height:floatingBarHeight
-                             fullscreen:isFullscreen];
+  NSRect floatingBarBackingRect =
+      NSMakeRect(minX, maxY, width, floatingBarHeight);
+  [self layoutFloatingBarBackingView:floatingBarBackingRect
+                          fullscreen:isFullscreen];
 
   // Place the find bar immediately below the toolbar/attached bookmark bar. In
   // fullscreen mode, it hangs off the top of the screen when the bar is hidden.
+  // The find bar is unaffected by the side tab positioning.
   [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:width];
 
   // If in fullscreen mode, reset |maxY| to top of screen, so that the floating
@@ -191,17 +212,18 @@ willPositionSheet:(NSWindow*)sheet
 
   // Also place the infobar container immediate below the toolbar, except in
   // fullscreen mode in which case it's at the top of the visual content area.
-  maxY = [self layoutInfoBarAtMaxY:maxY width:width];
+  maxY = [self layoutInfoBarAtMinX:minX maxY:maxY width:width];
 
   // If the bookmark bar is detached, place it next in the visual content area.
   if (placeBookmarkBarBelowInfoBar)
-    maxY = [self layoutBookmarkBarAtMaxY:maxY width:width];
+    maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
 
   // Place the download shelf, if any, at the bottom of the view.
-  minY = [self layoutDownloadShelfAtMinY:minY width:width];
+  minY = [self layoutDownloadShelfAtMinX:minX minY:minY width:width];
 
   // Finally, the content area takes up all of the remaining space.
-  [self layoutTabContentAreaAtMinY:minY maxY:maxY width:width];
+  NSRect contentAreaRect = NSMakeRect(minX, minY, width, maxY - minY);
+  [self layoutTabContentArea:contentAreaRect];
 
   // Place the status bubble at the bottom of the content area.
   verticalOffsetForStatusBubble_ = minY;
@@ -305,13 +327,16 @@ willPositionSheet:(NSWindow*)sheet
       [bookmarkBarController_ isAnimatingFromState:bookmarks::kDetachedState];
 }
 
-- (CGFloat)layoutBookmarkBarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
+- (CGFloat)layoutBookmarkBarAtMinX:(CGFloat)minX
+                              maxY:(CGFloat)maxY
+                             width:(CGFloat)width {
   NSView* bookmarkBarView = [bookmarkBarController_ view];
   NSRect bookmarkBarFrame = [bookmarkBarView frame];
   BOOL oldHidden = [bookmarkBarView isHidden];
   BOOL newHidden = ![self isBookmarkBarVisible];
   if (oldHidden != newHidden)
     [bookmarkBarView setHidden:newHidden];
+  bookmarkBarFrame.origin.x = minX;
   bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
   bookmarkBarFrame.size.width = width;
   [bookmarkBarView setFrame:bookmarkBarFrame];
@@ -324,16 +349,13 @@ willPositionSheet:(NSWindow*)sheet
   return maxY;
 }
 
-- (void)layoutFloatingBarBackingViewAtY:(CGFloat)y
-                                  width:(CGFloat)width
-                                 height:(CGFloat)height
-                             fullscreen:(BOOL)fullscreen {
+- (void)layoutFloatingBarBackingView:(NSRect)frame
+                          fullscreen:(BOOL)fullscreen {
   // Only display when in fullscreen mode.
   if (fullscreen) {
     // For certain window types such as app windows (e.g., the dev tools
     // window), there's no actual overlay. (Displaying one would result in an
     // overly sliding in only under the menu, which gives an ugly effect.)
-    NSRect frame = NSMakeRect(0, y, width, height);
     if (floatingBarBackingView_.get()) {
       BOOL aboveBookmarkBar = [self placeBookmarkBarBelowInfoBar];
 
@@ -364,9 +386,12 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-- (CGFloat)layoutInfoBarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
+- (CGFloat)layoutInfoBarAtMinX:(CGFloat)minX
+                          maxY:(CGFloat)maxY
+                         width:(CGFloat)width {
   NSView* infoBarView = [infoBarContainerController_ view];
   NSRect infoBarFrame = [infoBarView frame];
+  infoBarFrame.origin.x = minX;
   infoBarFrame.origin.y = maxY - NSHeight(infoBarFrame);
   infoBarFrame.size.width = width;
   [infoBarView setFrame:infoBarFrame];
@@ -374,10 +399,13 @@ willPositionSheet:(NSWindow*)sheet
   return maxY;
 }
 
-- (CGFloat)layoutDownloadShelfAtMinY:(CGFloat)minY width:(CGFloat)width {
+- (CGFloat)layoutDownloadShelfAtMinX:(CGFloat)minX
+                                minY:(CGFloat)minY
+                               width:(CGFloat)width {
   if (downloadShelfController_.get()) {
     NSView* downloadView = [downloadShelfController_ view];
     NSRect downloadFrame = [downloadView frame];
+    downloadFrame.origin.x = minX;
     downloadFrame.origin.y = minY;
     downloadFrame.size.width = width;
     [downloadView setFrame:downloadFrame];
@@ -386,17 +414,13 @@ willPositionSheet:(NSWindow*)sheet
   return minY;
 }
 
-- (void)layoutTabContentAreaAtMinY:(CGFloat)minY
-                              maxY:(CGFloat)maxY
-                             width:(CGFloat)width {
+- (void)layoutTabContentArea:(NSRect)newFrame {
   NSView* tabContentView = [self tabContentArea];
   NSRect tabContentFrame = [tabContentView frame];
 
-  bool contentShifted = NSMaxY(tabContentFrame) != maxY;
+  bool contentShifted = NSMaxY(tabContentFrame) != NSMaxY(newFrame);
 
-  tabContentFrame.origin.y = minY;
-  tabContentFrame.size.height = maxY - minY;
-  tabContentFrame.size.width = width;
+  tabContentFrame = newFrame;
   [tabContentView setFrame:tabContentFrame];
 
   // If the relayout shifts the content area up or down, let the renderer know.
@@ -469,6 +493,34 @@ willPositionSheet:(NSWindow*)sheet
 
   barVisibilityUpdatesEnabled_ = NO;
   [fullscreenController_ cancelAnimationAndTimers];
+}
+
+// Removes existing toolbar and re-creates the appropriate toolbar controller
+// based on if vertical tabs are enabled.
+- (void)initializeToolbarWithBrowser:(Browser*)browser {
+  // Remove existing view.
+  [[toolbarController_ view] removeFromSuperview];
+  toolbarController_.reset(nil);
+
+  // Create appropriate toolbar controller.
+  if ([self useVerticalTabs]) {
+    toolbarController_.reset([[SideTabsToolbarController alloc]
+                               initWithModel:browser->toolbar_model()
+                                    commands:browser->command_updater()
+                                     profile:browser->profile()
+                                     browser:browser
+                              resizeDelegate:self]);
+  } else {
+    toolbarController_.reset([[ToolbarController alloc]
+                               initWithModel:browser->toolbar_model()
+                                    commands:browser->command_updater()
+                                     profile:browser->profile()
+                                     browser:browser
+                              resizeDelegate:self]);
+  }
+  [toolbarController_ setHasToolbar:[self hasToolbar]
+                     hasLocationBar:[self hasLocationBar]];
+  [[[self window] contentView] addSubview:[toolbarController_ view]];
 }
 
 @end  // @implementation BrowserWindowController(Private)

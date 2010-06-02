@@ -44,6 +44,20 @@ class ToolbarModel;
 
 @interface ToolbarController : NSViewController<CommandObserverProtocol,
                                                 URLDropTargetController> {
+ @protected
+  // The ordering is important for unit tests. If new items are added or the
+  // ordering is changed, make sure to update |-toolbarViews| and the
+  // corresponding enum in the unit tests.
+  IBOutlet DelayedMenuButton* backButton_;
+  IBOutlet DelayedMenuButton* forwardButton_;
+  IBOutlet NSButton* reloadButton_;
+  IBOutlet NSButton* homeButton_;
+  IBOutlet NSButton* goButton_;
+  IBOutlet MenuButton* pageButton_;
+  IBOutlet MenuButton* wrenchButton_;
+  IBOutlet AutocompleteTextField* locationBar_;
+  IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
+
  @private
   ToolbarModel* toolbarModel_;  // weak, one per window
   CommandUpdater* commands_;  // weak, one per window
@@ -88,19 +102,6 @@ class ToolbarModel;
   // hoveredButton_ is required to have an NSCell that responds to
   // setMouseInside:animate:.
   NSButton* hoveredButton_;
-
-  // The ordering is important for unit tests. If new items are added or the
-  // ordering is changed, make sure to update |-toolbarViews| and the
-  // corresponding enum in the unit tests.
-  IBOutlet DelayedMenuButton* backButton_;
-  IBOutlet DelayedMenuButton* forwardButton_;
-  IBOutlet NSButton* reloadButton_;
-  IBOutlet NSButton* homeButton_;
-  IBOutlet NSButton* goButton_;
-  IBOutlet MenuButton* pageButton_;
-  IBOutlet MenuButton* wrenchButton_;
-  IBOutlet AutocompleteTextField* locationBar_;
-  IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
 }
 
 // Initialize the toolbar and register for command updates. The profile is
@@ -160,6 +161,19 @@ class ToolbarModel;
 
 // Return the BrowserActionsController for this toolbar.
 - (BrowserActionsController*)browserActionsController;
+@end
+
+// A set of private methods used by subclasses. Do not call these directly
+// unless a subclass of ToolbarController.
+@interface ToolbarController(ProtectedMethods)
+// Designated initializer which takes a nib name in order to allow subclasses
+// to load a different nib file.
+- (id)initWithModel:(ToolbarModel*)model
+           commands:(CommandUpdater*)commands
+            profile:(Profile*)profile
+            browser:(Browser*)browser
+     resizeDelegate:(id<ViewResizer>)resizeDelegate
+       nibFileNamed:(NSString*)nibName;
 @end
 
 // A set of private methods used by tests, in the absence of "friends" in ObjC.

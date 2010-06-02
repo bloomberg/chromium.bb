@@ -154,9 +154,10 @@ class PrefObserverBridge : public NotificationObserver {
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
             browser:(Browser*)browser
-     resizeDelegate:(id<ViewResizer>)resizeDelegate {
-  DCHECK(model && commands && profile);
-  if ((self = [super initWithNibName:@"Toolbar"
+     resizeDelegate:(id<ViewResizer>)resizeDelegate
+       nibFileNamed:(NSString*)nibName {
+  DCHECK(model && commands && profile && [nibName length]);
+  if ((self = [super initWithNibName:nibName
                               bundle:mac_util::MainAppBundle()])) {
     toolbarModel_ = model;
     commands_ = commands;
@@ -176,6 +177,22 @@ class PrefObserverBridge : public NotificationObserver {
   }
   return self;
 }
+
+- (id)initWithModel:(ToolbarModel*)model
+           commands:(CommandUpdater*)commands
+            profile:(Profile*)profile
+            browser:(Browser*)browser
+     resizeDelegate:(id<ViewResizer>)resizeDelegate {
+  if ((self = [self initWithModel:model
+                         commands:commands
+                          profile:profile
+                          browser:browser
+                   resizeDelegate:resizeDelegate
+                     nibFileNamed:@"Toolbar"])) {
+  }
+  return self;
+}
+
 
 - (void)dealloc {
   // Make sure any code in the base class which assumes [self view] is

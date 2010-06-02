@@ -16,6 +16,9 @@
 // "dependencies").
 @interface BrowserWindowController(Private)
 
+// Returns YES if vertical tabs are enabled for this browser.
+- (BOOL)useVerticalTabs;
+
 // Saves the window's position in the local state preferences.
 - (void)saveWindowPositionIfNeeded;
 
@@ -58,31 +61,32 @@
 // call it with the appropriate |maxY| which depends on whether or not the
 // bookmark bar is shown as the NTP bubble or not (use
 // |-placeBookmarkBarBelowInfoBar|).
-- (CGFloat)layoutBookmarkBarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
+- (CGFloat)layoutBookmarkBarAtMinX:(CGFloat)minX
+                              maxY:(CGFloat)maxY
+                             width:(CGFloat)width;
 
 // Lay out the view which draws the background for the floating bar when in
-// fullscreen mode, with the given (minimum) y-coordinate, width, height, and
-// fullscreen-mode-status. Should be called even when not in fullscreen mode to
-// hide the backing view.
-- (void)layoutFloatingBarBackingViewAtY:(CGFloat)y
-                                  width:(CGFloat)width
-                                 height:(CGFloat)height
-                             fullscreen:(BOOL)fullscreen;
+// fullscreen mode, with the given frame and fullscreen-mode-status. Should be
+// called even when not in fullscreen mode to hide the backing view.
+- (void)layoutFloatingBarBackingView:(NSRect)frame
+                          fullscreen:(BOOL)fullscreen;
 
 // Lays out the infobar at the given maximum y-coordinate, with the given width;
 // returns the new maximum y (below the infobar).
-- (CGFloat)layoutInfoBarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
+- (CGFloat)layoutInfoBarAtMinX:(CGFloat)minX
+                          maxY:(CGFloat)maxY
+                         width:(CGFloat)width;
 
 // Lays out the download shelf, if there is one, at the given minimum
 // y-coordinate, with the given width; returns the new minimum y (above the
 // download shelf). This is safe to call even if there is no download shelf.
-- (CGFloat)layoutDownloadShelfAtMinY:(CGFloat)minY width:(CGFloat)width;
+- (CGFloat)layoutDownloadShelfAtMinX:(CGFloat)minX
+                                minY:(CGFloat)minY
+                               width:(CGFloat)width;
 
-// Lays out the tab content area between the given minimum and maximum
-// y-coordinates, with the given width.
-- (void)layoutTabContentAreaAtMinY:(CGFloat)minY
-                              maxY:(CGFloat)maxY
-                             width:(CGFloat)width;
+// Lays out the tab content area in the given frame. If the height changes,
+// sends a message to the renderer to resize.
+- (void)layoutTabContentArea:(NSRect)frame;
 
 // Should we show the normal bookmark bar?
 - (BOOL)shouldShowBookmarkBar;
@@ -104,6 +108,10 @@
 // timers/animation.
 - (void)enableBarVisibilityUpdates;
 - (void)disableBarVisibilityUpdates;
+
+// Removes existing toolbar and re-creates the appropriate toolbar controller
+// based on if vertical tabs are enabled.
+- (void)initializeToolbarWithBrowser:(Browser*)browser;
 
 @end  // @interface BrowserWindowController(Private)
 
