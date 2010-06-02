@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/account_creation_view.h"
+#include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/web_page_screen.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
@@ -51,6 +52,9 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags);
   virtual void LoadingStateChanged(TabContents* source);
+
+  // WebPageScreen implementation:
+  virtual void CloseScreen(ScreenObserver::ExitCodes code);
 
   // Url of account creation page. Overriden by tests.
   static scoped_ptr<GURL> new_account_page_url_;

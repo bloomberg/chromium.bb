@@ -89,6 +89,7 @@ void AccountScreen::CreateView() {
 }
 
 void AccountScreen::Refresh() {
+  StartTimeoutTimer();
   GURL url(*new_account_page_url_);
   Profile* profile = ProfileManager::GetDefaultProfile();
   view()->InitDOM(profile,
@@ -107,11 +108,11 @@ void AccountScreen::LoadingStateChanged(TabContents* source) {
   std::string url = source->GetURL().spec();
   if (url == kCreateAccountDoneUrl) {
     source->Stop();
-    delegate()->GetObserver(this)->OnExit(ScreenObserver::ACCOUNT_CREATED);
+    CloseScreen(ScreenObserver::ACCOUNT_CREATED);
   } else if (url == kCreateAccountBackUrl) {
-    delegate()->GetObserver(this)->OnExit(ScreenObserver::ACCOUNT_CREATE_BACK);
+    CloseScreen(ScreenObserver::ACCOUNT_CREATE_BACK);
   } else if (check_for_https_ && !source->GetURL().SchemeIsSecure()) {
-    delegate()->GetObserver(this)->OnExit(ScreenObserver::CONNECTION_FAILED);
+    CloseScreen(ScreenObserver::CONNECTION_FAILED);
   }
 }
 
@@ -128,11 +129,12 @@ void AccountScreen::NavigationStateChanged(const TabContents* source,
 ///////////////////////////////////////////////////////////////////////////////
 // AccountScreen, WebPageDelegate implementation:
 void AccountScreen::OnPageLoaded() {
+  StopTimeoutTimer();
   view()->ShowPageContent();
 }
 
 void AccountScreen::OnPageLoadFailed(const std::string& url) {
-  delegate()->GetObserver(this)->OnExit(ScreenObserver::CONNECTION_FAILED);
+  CloseScreen(ScreenObserver::CONNECTION_FAILED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,6 +142,13 @@ void AccountScreen::OnPageLoadFailed(const std::string& url) {
 void AccountScreen::OnUserCreated(const std::string& username,
                                   const std::string& password) {
   delegate()->GetObserver(this)->OnSetUserNamePassword(username, password);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AccountScreen, private:
+void AccountScreen::CloseScreen(ScreenObserver::ExitCodes code) {
+  StopTimeoutTimer();
+  delegate()->GetObserver(this)->OnExit(code);
 }
 
 }  // namespace chromeos
