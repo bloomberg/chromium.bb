@@ -617,6 +617,7 @@ void BrowserActionsContainer::Layout() {
     return;
   } else {
     SetVisible(true);
+    resize_gripper_->SetVisible(true);
   }
 
   int x = 0;
