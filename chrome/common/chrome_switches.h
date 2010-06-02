@@ -213,7 +213,6 @@ extern const char kStartMaximized[];
 extern const char kSyncServiceURL[];
 extern const char kSyncNotificationMethod[];
 extern const char kSyncerThreadTimedStop[];
-extern const char kTabCountToLoadOnSessionRestore[];
 extern const char kTestName[];
 extern const char kTestSandbox[];
 extern const char kTestType[];

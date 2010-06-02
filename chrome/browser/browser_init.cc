@@ -908,16 +908,6 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       NavigationController::DisablePromptOnRepost();
 
-    const std::string tab_count_string = command_line.GetSwitchValueASCII(
-        switches::kTabCountToLoadOnSessionRestore);
-    if (!tab_count_string.empty()) {
-      int count = 0;
-      if (StringToInt(tab_count_string, &count)) {
-        const int tab_count = std::max(0, count);
-        SessionRestore::num_tabs_to_load_ = static_cast<size_t>(tab_count);
-      }
-    }
-
     // Look for the testing channel ID ONLY during process startup
     if (command_line.HasSwitch(switches::kTestingChannelID)) {
       std::string testing_channel_id = command_line.GetSwitchValueASCII(

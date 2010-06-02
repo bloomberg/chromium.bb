@@ -33,13 +33,17 @@ namespace {
 
 // TabLoader ------------------------------------------------------------------
 
-// TabLoader is responsible for ensuring after session restore we have
-// at least SessionRestore::num_tabs_to_load_ loading. As tabs finish loading
-// new tabs are loaded. When all tabs are loading TabLoader deletes itself.
+// Initial delay (see class decription for details).
+static const int kInitialDelayTimerMS = 100;
+
+// TabLoader is responsible for loading tabs after session restore creates
+// tabs. New tabs are loaded after the current tab finishes loading, or a delay
+// is reached (initially kInitialDelayTimerMS). If the delay is reached before
+// a tab finishes loading a new tab is loaded and the time of the delay
+// doubled. When all tabs are loading TabLoader deletes itself.
 //
 // This is not part of SessionRestoreImpl so that synchronous destruction
 // of SessionRestoreImpl doesn't have timing problems.
-
 class TabLoader : public NotificationObserver {
  public:
   typedef std::list<NavigationController*> TabsToLoad;
@@ -47,18 +51,20 @@ class TabLoader : public NotificationObserver {
   TabLoader();
   ~TabLoader();
 
-  // Adds a tab to load.
-  void AddTab(NavigationController* controller);
+  // Schedules a tab for loading.
+  void ScheduleLoad(NavigationController* controller);
 
-  // Loads the next batch of tabs until SessionRestore::num_tabs_to_load_ tabs
-  // are loading, or all tabs are loading. If there are no more tabs to load,
-  // this deletes the TabLoader.
+  // Invokes |LoadNextTab| to load a tab.
   //
   // This must be invoked once to start loading.
-  void LoadTabs();
+  void StartLoading();
 
  private:
   typedef std::set<NavigationController*> TabsLoading;
+
+  // Loads the next tab. If there are no more tabs to load this deletes itself,
+  // otherwise |force_load_timer_| is restarted.
+  void LoadNextTab();
 
   // NotificationObserver method. Removes the specified tab and loads the next
   // tab.
@@ -71,7 +77,15 @@ class TabLoader : public NotificationObserver {
   // from.
   void RemoveTab(NavigationController* tab);
 
+  // Invoked from |force_load_timer_|. Doubles |force_load_delay_| and invokes
+  // |LoadNextTab| to load the next tab
+  void ForceLoadTimerFired();
+
   NotificationRegistrar registrar_;
+
+  // Current delay before a new tab is loaded. See class description for
+  // details.
+  int64 force_load_delay_;
 
   // Has Load been invoked?
   bool loading_;
@@ -82,17 +96,22 @@ class TabLoader : public NotificationObserver {
 
   // The tabs we need to load.
   TabsToLoad tabs_to_load_;
+
+  base::OneShotTimer<TabLoader> force_load_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabLoader);
 };
 
 TabLoader::TabLoader()
-    : loading_(false) {
+    : force_load_delay_(kInitialDelayTimerMS),
+      loading_(false) {
 }
 
 TabLoader::~TabLoader() {
   DCHECK(tabs_to_load_.empty() && tabs_loading_.empty());
 }
 
-void TabLoader::AddTab(NavigationController* controller) {
+void TabLoader::ScheduleLoad(NavigationController* controller) {
   if (controller) {
     DCHECK(find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) ==
            tabs_to_load_.end());
@@ -107,11 +126,13 @@ void TabLoader::AddTab(NavigationController* controller) {
   }
 }
 
-void TabLoader::LoadTabs() {
+void TabLoader::StartLoading() {
   loading_ = true;
-  while (!tabs_to_load_.empty() &&
-         (SessionRestore::num_tabs_to_load_ == 0 ||
-          tabs_loading_.size() < SessionRestore::num_tabs_to_load_)) {
+  LoadNextTab();
+}
+
+void TabLoader::LoadNextTab() {
+  if (!tabs_to_load_.empty()) {
     NavigationController* tab = tabs_to_load_.front();
     tabs_loading_.insert(tab);
     tabs_to_load_.pop_front();
@@ -135,7 +156,14 @@ void TabLoader::LoadTabs() {
   if (tabs_to_load_.empty()) {
     tabs_loading_.clear();
     delete this;
+    return;
   }
+
+  if (force_load_timer_.IsRunning())
+    force_load_timer_.Stop();
+  force_load_timer_.Start(
+      base::TimeDelta::FromMilliseconds(force_load_delay_),
+      this, &TabLoader::ForceLoadTimerFired);
 }
 
 void TabLoader::Observe(NotificationType type,
@@ -146,7 +174,7 @@ void TabLoader::Observe(NotificationType type,
   NavigationController* tab = Source<NavigationController>(source).ptr();
   RemoveTab(tab);
   if (loading_) {
-    LoadTabs();
+    LoadNextTab();
     // WARNING: if there are no more tabs to load, we have been deleted.
   }
 }
@@ -165,6 +193,11 @@ void TabLoader::RemoveTab(NavigationController* tab) {
       find(tabs_to_load_.begin(), tabs_to_load_.end(), tab);
   if (j != tabs_to_load_.end())
     tabs_to_load_.erase(j);
+}
+
+void TabLoader::ForceLoadTimerFired() {
+  force_load_delay_ *= 2;
+  LoadNextTab();
 }
 
 // SessionRestoreImpl ---------------------------------------------------------
@@ -268,7 +301,7 @@ class SessionRestoreImpl : public NotificationObserver {
     if (succeeded) {
       DCHECK(tab_loader_.get());
       // TabLoader delets itself when done loading.
-      tab_loader_.release()->LoadTabs();
+      tab_loader_.release()->StartLoading();
     }
 
     if (!synchronous_) {
@@ -398,7 +431,8 @@ class SessionRestoreImpl : public NotificationObserver {
           0,
           std::min(selected_index,
                    static_cast<int>(tab.navigations.size() - 1)));
-      tab_loader_->AddTab(&browser->AddRestoredTab(tab.navigations,
+      tab_loader_->ScheduleLoad(
+          &browser->AddRestoredTab(tab.navigations,
                                    static_cast<int>(i - window.tabs.begin()),
                                    selected_index,
                                    tab.extension_app_id,
@@ -491,9 +525,6 @@ class SessionRestoreImpl : public NotificationObserver {
 }  // namespace
 
 // SessionRestore -------------------------------------------------------------
-
-// static
-size_t SessionRestore::num_tabs_to_load_ = 0;
 
 static void Restore(Profile* profile,
                     Browser* browser,

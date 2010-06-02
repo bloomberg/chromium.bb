@@ -760,11 +760,6 @@ const char kSyncNotificationMethod[]        = "sync-notification-method";
 // Stop().  Should only use if you experience problems with the default.
 const char kSyncerThreadTimedStop[]         = "syncer-thread-timed-stop";
 
-// Used to set the value of SessionRestore::num_tabs_to_load_. See
-// session_restore.h for details.
-const char kTabCountToLoadOnSessionRestore[]=
-    "tab-count-to-load-on-session-restore";
-
 // Pass the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
