@@ -15,7 +15,8 @@
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Test succeeds locally, flaky on trybot
 // http://code.google.com/p/chromium/issues/detail?id=26349
-#define TestOnMouseOut FLAKY_TestOnMouseOut
+// http://code.google.com/p/chromium/issues/detail?id=45581
+#define TestOnMouseOut DISABLED_TestOnMouseOut
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 namespace {
