@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,10 +140,6 @@ class WidgetGtk
   // Gets the WidgetGtk in the userdata section of the widget.
   static WidgetGtk* GetViewForNative(GtkWidget* widget);
 
-  // Gets the WindowGtk in the userdata section of the widget.
-  // TODO(beng): move to WindowGtk
-  static WindowGtk* GetWindowForNative(GtkWidget* widget);
-
   // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
   // drop is done.
   void ResetDropTarget();
@@ -277,9 +273,6 @@ class WidgetGtk
 
   // Releases a grab done by this widget.
   virtual void ReleaseGrab();
-
-  // Sets the WindowGtk in the userdata section of the widget.
-  static void SetWindowForNative(GtkWidget* widget, WindowGtk* window);
 
   // Are we a subclass of WindowGtk?
   bool is_window_;

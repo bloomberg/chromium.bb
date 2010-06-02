@@ -423,12 +423,6 @@ WidgetGtk* WidgetGtk::GetViewForNative(GtkWidget* widget) {
   return static_cast<WidgetGtk*>(GetWidgetFromNativeView(widget));
 }
 
-// static
-WindowGtk* WidgetGtk::GetWindowForNative(GtkWidget* widget) {
-  gpointer user_data = g_object_get_data(G_OBJECT(widget), "chrome-window");
-  return static_cast<WindowGtk*>(user_data);
-}
-
 void WidgetGtk::ResetDropTarget() {
   ignore_drag_leave_ = false;
   drop_target_.reset(NULL);
@@ -1156,11 +1150,6 @@ void WidgetGtk::ReleaseGrab() {
   }
 }
 
-// static
-void WidgetGtk::SetWindowForNative(GtkWidget* widget, WindowGtk* window) {
-  g_object_set_data(G_OBJECT(widget), "chrome-window", window);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, private:
 
@@ -1330,7 +1319,6 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       // We'll take care of positioning our window.
       gtk_window_set_position(GTK_WINDOW(widget_), GTK_WIN_POS_NONE);
     }
-    SetWindowForNative(widget_, static_cast<WindowGtk*>(this));
 
     window_contents_ = gtk_views_fixed_new();
     gtk_widget_set_name(window_contents_, "views-gtkwidget-window-fixed");

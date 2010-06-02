@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -366,6 +366,17 @@ gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   return WidgetGtk::OnLeaveNotify(widget, event);
 }
 
+// static
+WindowGtk* WindowGtk::GetWindowForNative(GtkWidget* widget) {
+  gpointer user_data = g_object_get_data(G_OBJECT(widget), "chrome-window");
+  return static_cast<WindowGtk*>(user_data);
+}
+
+// static
+void WindowGtk::SetWindowForNative(GtkWidget* widget, WindowGtk* window) {
+  g_object_set_data(G_OBJECT(widget), "chrome-window", window);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, protected:
 
@@ -404,6 +415,8 @@ void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
 
   UpdateWindowTitle();
   SetInitialBounds(parent, bounds);
+
+  SetWindowForNative(GTK_WIDGET(GetNativeWindow()), this);
 
   // if (!IsAppWindow()) {
   //   notification_registrar_.Add(

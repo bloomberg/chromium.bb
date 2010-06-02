@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,12 @@ class WindowGtk : public WidgetGtk, public Window {
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event);
   virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
+
+  // Gets the WindowGtk in the userdata section of the widget.
+  static WindowGtk* GetWindowForNative(GtkWidget* widget);
+
+  // Sets the WindowGtk in the userdata section of the widget.
+  static void SetWindowForNative(GtkWidget* widget, WindowGtk* window);
 
  protected:
   // For  the constructor.

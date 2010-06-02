@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "views/accelerator.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_manager.h"
-#include "views/widget/widget_gtk.h"
 #include "views/window/window_gtk.h"
 
 namespace views {
@@ -46,7 +45,7 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   DCHECK(ptr);  // The top-level window is expected to always be associated
                 // with the top-level gtk widget.
   WindowGtk* widget =
-      WidgetGtk::GetWindowForNative(reinterpret_cast<GtkWidget*>(ptr));
+      WindowGtk::GetWindowForNative(reinterpret_cast<GtkWidget*>(ptr));
   if (!widget) {
     // During dnd we get events for windows we don't control (such as the
     // window being dragged).
