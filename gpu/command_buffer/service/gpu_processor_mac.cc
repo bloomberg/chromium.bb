@@ -71,6 +71,7 @@ void GPUProcessor::Destroy() {
 uint64 GPUProcessor::SetWindowSizeForIOSurface(const gfx::Size& size) {
 #if !defined(UNIT_TEST)
   ResizeOffscreenFrameBuffer(size);
+  decoder_->UpdateOffscreenFrameBufferSize();
   return surface_->SetSurfaceSize(size);
 #else
   return 0;
@@ -81,6 +82,7 @@ TransportDIB::Handle GPUProcessor::SetWindowSizeForTransportDIB(
     const gfx::Size& size) {
 #if !defined(UNIT_TEST)
   ResizeOffscreenFrameBuffer(size);
+  decoder_->UpdateOffscreenFrameBufferSize();
   return surface_->SetTransportDIBSize(size);
 #else
   return TransportDIB::DefaultHandleValue();

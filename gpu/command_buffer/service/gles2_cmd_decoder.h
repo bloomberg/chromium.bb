@@ -64,6 +64,11 @@ class GLES2Decoder : public CommonDecoder {
   // Resize an offscreen frame buffer.
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size) = 0;
 
+  // Force the offscreen frame buffer's size to be updated. This
+  // usually occurs lazily, during SwapBuffers, but on some platforms
+  // (Mac OS X in particular) it must be done immediately.
+  virtual bool UpdateOffscreenFrameBufferSize() = 0;
+
   // Make this decoder's GL context current.
   virtual bool MakeCurrent() = 0;
 

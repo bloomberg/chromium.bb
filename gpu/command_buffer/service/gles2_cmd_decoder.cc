@@ -532,6 +532,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                           uint32 parent_client_texture_id);
   virtual void Destroy();
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
+  virtual bool UpdateOffscreenFrameBufferSize();
   virtual bool MakeCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
   virtual gfx::GLContext* GetGLContext() { return context_; }
@@ -596,8 +597,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   TextureManager* texture_manager() {
     return group_->texture_manager();
   }
-
-  bool UpdateOffscreenFrameBufferSize();
 
   // Creates a TextureInfo for the given texture.
   TextureManager::TextureInfo* CreateTextureInfo(
