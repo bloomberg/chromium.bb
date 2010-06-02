@@ -298,6 +298,12 @@ class Client {
   //   true if message check was ok.
   bool Tick();
 
+  // Indicates whether a call to Tick() is in progress. This is needed
+  // to avoid reentrancy problems on some platforms.
+  bool IsTicking() const {
+    return is_ticking_;
+  }
+
   // Searches in the Client for an object by its id. This function is for
   // Javascript.
   // Parameters:
@@ -496,6 +502,9 @@ class Client {
 
   // Timer for getting the elapsed time between tick updates.
   ElapsedTimeTimer tick_elapsed_time_timer_;
+
+  // Whether a call to Tick() is currently active.
+  bool is_ticking_;
 
   // Used to gather render time from mulitple RenderTree calls.
   float total_time_to_render_;

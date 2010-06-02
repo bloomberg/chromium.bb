@@ -82,6 +82,7 @@ Client::Client(ServiceLocator* service_locator)
       render_mode_(RENDERMODE_CONTINUOUS),
       texture_on_hold_(false),
       event_manager_(),
+      is_ticking_(false),
       last_tick_time_(0),
       root_(NULL),
 #ifdef OS_WIN
@@ -175,6 +176,7 @@ void Client::ClearTickCallback() {
 }
 
 bool Client::Tick() {
+  is_ticking_ = true;
   ElapsedTimeTimer timer;
   float seconds_elapsed = tick_elapsed_time_timer_.GetElapsedTimeAndReset();
   tick_event_.set_elapsed_time(seconds_elapsed);
@@ -216,6 +218,7 @@ bool Client::Tick() {
     }
   }
 
+  is_ticking_ = false;
   return message_check_ok;
 }
 

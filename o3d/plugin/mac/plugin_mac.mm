@@ -237,9 +237,10 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
     NPP instance = instances_[i];
     PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
 
-    // RenderClient() may cause events to be processed, leading to
-    // reentrant calling of this code. Detect and avoid this case.
-    if (obj->client()->IsRendering()) {
+    // RenderClient() and Tick() may cause events to be processed,
+    // leading to reentrant calling of this code. Detect and avoid
+    // this case.
+    if (obj->client()->IsRendering() || obj->client()->IsTicking()) {
       continue;
     }
 
