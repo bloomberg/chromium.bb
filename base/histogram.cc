@@ -48,7 +48,7 @@ scoped_refptr<Histogram> Histogram::FactoryGet(const std::string& name,
   return histogram;
 }
 
-scoped_refptr<Histogram> Histogram::FactoryGet(const std::string& name,
+scoped_refptr<Histogram> Histogram::FactoryTimeGet(const std::string& name,
     base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
     Flags flags) {
   return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
@@ -440,7 +440,7 @@ bool Histogram::DeserializeHistogramInfo(const std::string& histogram_info) {
 
   scoped_refptr<Histogram> render_histogram(NULL);
 
-  if (histogram_type ==  HISTOGRAM) {
+  if (histogram_type == HISTOGRAM) {
     render_histogram = Histogram::FactoryGet(
         histogram_name, declared_min, declared_max, bucket_count, flags);
   } else if (histogram_type == LINEAR_HISTOGRAM) {

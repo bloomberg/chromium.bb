@@ -185,7 +185,7 @@ static Histogram* GetTimesHistogramForConfig(
   if (found != g_histogram_table->end()) {
     return found->second;
   }
-  Histogram* counter = Histogram::FactoryGet(
+  Histogram* counter = Histogram::FactoryTimeGet(
       counter_name, min, max, bucket_count,
       Histogram::kUmaTargetedHistogramFlag);
   counter->AddRef();  // Released in ReleaseHistogram().

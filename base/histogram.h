@@ -70,7 +70,7 @@
 // For folks that need real specific times, use this to select a precise range
 // of times you want plotted, and the number of buckets you want used.
 #define HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
     DCHECK_EQ(name, counter->histogram_name()); \
     counter->AddTime(sample); \
@@ -78,7 +78,7 @@
 
 // DO NOT USE THIS.  It is being phased out, in favor of HISTOGRAM_CUSTOM_TIMES.
 #define HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
     DCHECK_EQ(name, counter->histogram_name()); \
     if ((sample) < (max)) counter->AddTime(sample); \
@@ -158,7 +158,7 @@
     base::TimeDelta::FromHours(1), 50)
 
 #define UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     DCHECK_EQ(name, counter->histogram_name()); \
     counter->AddTime(sample); \
@@ -166,7 +166,7 @@
 
 // DO NOT USE THIS.  It is being phased out, in favor of HISTOGRAM_CUSTOM_TIMES.
 #define UMA_HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) do { \
-    static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
+    static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     DCHECK_EQ(name, counter->histogram_name()); \
     if ((sample) < (max)) counter->AddTime(sample); \
@@ -310,7 +310,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   // default underflow bucket.
   static scoped_refptr<Histogram> FactoryGet(const std::string& name,
       Sample minimum, Sample maximum, size_t bucket_count, Flags flags);
-  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+  static scoped_refptr<Histogram> FactoryTimeGet(const std::string& name,
       base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
       Flags flags);
 
