@@ -55,6 +55,12 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
       url.host() == chrome::kChromeUIDevToolsHost;
 }
 
+// static
+bool RenderViewContextMenu::IsSyncResourcesURL(const GURL& url) {
+  return url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() == chrome::kSyncResourcesHost;
+}
+
 static const int kSpellcheckRadioGroup = 1;
 static const int kExtensionsRadioGroup = 2;
 
@@ -290,11 +296,11 @@ void RenderViewContextMenu::InitMenu() {
     // If context is in subframe, show subframe options instead.
     if (!params_.frame_url.is_empty()) {
       is_devtools = IsDevToolsURL(params_.frame_url);
-      if (!is_devtools)
+      if (!is_devtools && !IsSyncResourcesURL(params_.frame_url))
         AppendFrameItems();
     } else if (!params_.page_url.is_empty()) {
       is_devtools = IsDevToolsURL(params_.page_url);
-      if (!is_devtools)
+      if (!is_devtools && !IsSyncResourcesURL(params_.page_url))
         AppendPageItems();
     }
   }

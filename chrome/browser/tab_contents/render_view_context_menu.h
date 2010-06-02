@@ -63,6 +63,7 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
 
  private:
   static bool IsDevToolsURL(const GURL& url);
+  static bool IsSyncResourcesURL(const GURL& url);
   bool AppendCustomItems();
   void AppendDeveloperItems();
   void AppendLinkItems();
