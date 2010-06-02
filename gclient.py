@@ -938,9 +938,9 @@ def CMDstatus(parser, args):
 """)
 def CMDsync(parser, args):
   """Checkout/update all modules."""
-  parser.add_option("--force", action="store_true",
+  parser.add_option("-f", "--force", action="store_true",
                     help="force update even for unchanged modules")
-  parser.add_option("--nohooks", action="store_true",
+  parser.add_option("-n", "--nohooks", action="store_true",
                     help="don't run hooks after the update is complete")
   parser.add_option("-r", "--revision", action="append",
                     dest="revisions", metavar="REV", default=[],
@@ -949,19 +949,19 @@ def CMDsync(parser, args):
                          "skipped. -r can be used multiple times when .gclient "
                          "has multiple solutions configured and will work even "
                          "if the src@ part is skipped.")
-  parser.add_option("--head", action="store_true",
+  parser.add_option("-H", "--head", action="store_true",
                     help="skips any safesync_urls specified in "
                          "configured solutions and sync to head instead")
-  parser.add_option("--delete_unversioned_trees", action="store_true",
+  parser.add_option("-D", "--delete_unversioned_trees", action="store_true",
                     help="delete any unexpected unversioned trees "
                          "that are in the checkout")
-  parser.add_option("--reset", action="store_true",
+  parser.add_option("-R", "--reset", action="store_true",
                     help="resets any local changes before updating (git only)")
   parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
                     help="override deps for the specified (comma-separated) "
                          "platform(s); 'all' will process all deps_os "
                          "references")
-  parser.add_option("--manually_grab_svn_rev", action="store_true",
+  parser.add_option("-m", "--manually_grab_svn_rev", action="store_true",
                     help="Skip svn up whenever possible by requesting "
                          "actual HEAD revision from the repository")
   (options, args) = parser.parse_args(args)
@@ -1008,7 +1008,7 @@ def CMDrevert(parser, args):
                     help="override deps for the specified (comma-separated) "
                          "platform(s); 'all' will process all deps_os "
                          "references")
-  parser.add_option("--nohooks", action="store_true",
+  parser.add_option("-n", "--nohooks", action="store_true",
                     help="don't run hooks after the revert is complete")
   (options, args) = parser.parse_args(args)
   # --force is implied.
@@ -1025,7 +1025,7 @@ def CMDrunhooks(parser, args):
                     help="override deps for the specified (comma-separated) "
                          "platform(s); 'all' will process all deps_os "
                          "references")
-  parser.add_option("--force", action="store_true", default=True,
+  parser.add_option("-f", "--force", action="store_true", default=True,
                     help="Deprecated. No effect.")
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
@@ -1046,7 +1046,7 @@ def CMDrevinfo(parser, args):
                     help="override deps for the specified (comma-separated) "
                          "platform(s); 'all' will process all deps_os "
                          "references")
-  parser.add_option("--snapshot", action="store_true",
+  parser.add_option("-s", "--snapshot", action="store_true",
                     help="create a snapshot file of the current "
                          "version of all repositories")
   (options, args) = parser.parse_args(args)
