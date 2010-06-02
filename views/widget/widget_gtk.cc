@@ -17,7 +17,6 @@
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/path.h"
 #include "views/widget/default_theme_provider.h"
@@ -42,9 +41,9 @@ const char* kCompositePainterKey = "__VIEWS_COMPOSITE_PAINTER__";
 const char* kCompositeEnabledKey = "__VIEWS_COMPOSITE_ENABLED__";
 
 // CompositePainter draws a composited child widgets image into its
-// drawing area. This object is ref counted so that it can disconnect
-// expose event handler when all transparent widgets are deleted.
-class CompositePainter : public base::RefCounted<CompositePainter> {
+// drawing area. This object is created at most once for a widget and kept
+// until the widget is destroyed.
+class CompositePainter {
  public:
   explicit CompositePainter(GtkWidget* parent)
       : parent_object_(G_OBJECT(parent)) {
@@ -55,19 +54,12 @@ class CompositePainter : public base::RefCounted<CompositePainter> {
   static void AddCompositePainter(GtkWidget* widget) {
     CompositePainter* painter = static_cast<CompositePainter*>(
         g_object_get_data(G_OBJECT(widget), kCompositePainterKey));
-    if (painter) {
-      painter->AddRef();
-    } else {
+    if (!painter) {
       g_object_set_data(G_OBJECT(widget), kCompositePainterKey,
                         new CompositePainter(widget));
+      g_signal_connect(widget, "destroy",
+                       G_CALLBACK(&DestroyPainter), NULL);
     }
-  }
-
-  static void RemoveCompositePainter(GtkWidget* widget) {
-    CompositePainter* painter = reinterpret_cast<CompositePainter*>(
-        g_object_get_data(G_OBJECT(widget), kCompositePainterKey));
-    DCHECK(painter);
-    painter->Release();
   }
 
   // Enable the composition.
@@ -84,11 +76,7 @@ class CompositePainter : public base::RefCounted<CompositePainter> {
   }
 
  private:
-  friend class base::RefCounted<CompositePainter>;
-  virtual ~CompositePainter() {
-    g_signal_handler_disconnect(parent_object_, handler_id_);
-    g_object_set_data(parent_object_, kCompositePainterKey, NULL);
-  }
+  virtual ~CompositePainter() {}
 
   // Composes a image from one child.
   static void CompositeChildWidget(GtkWidget* child, gpointer data) {
@@ -117,6 +105,13 @@ class CompositePainter : public base::RefCounted<CompositePainter> {
                           CompositeChildWidget,
                           event);
     return false;
+  }
+
+  static void DestroyPainter(GtkWidget* object) {
+    CompositePainter* painter = reinterpret_cast<CompositePainter*>(
+        g_object_get_data(G_OBJECT(object), kCompositePainterKey));
+    DCHECK(painter);
+    delete painter;
   }
 
   GObject* parent_object_;
@@ -678,13 +673,6 @@ void WidgetGtk::Close() {
 
 void WidgetGtk::CloseNow() {
   if (widget_) {
-    if (transparent_ && type_ == TYPE_CHILD) {
-      GtkWidget* parent = gtk_widget_get_parent(widget_);
-      if (parent) {
-        DCHECK(parent != null_parent_);
-        CompositePainter::RemoveCompositePainter(parent);
-      }
-    }
     gtk_widget_destroy(widget_);
     widget_ = NULL;
   }
