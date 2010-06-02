@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
@@ -65,9 +65,9 @@ class WifiConfigView : public views::View,
   void FocusFirstField();
 
  private:
-  FRIEND_TEST(WifiConfigViewTest, NoChangeSaveTest);
-  FRIEND_TEST(WifiConfigViewTest, ChangeAutoConnectSaveTest);
-  FRIEND_TEST(WifiConfigViewTest, ChangePasswordSaveTest);
+  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, NoChangeSaveTest);
+  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
+  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangePasswordSaveTest);
 
   // Initializes UI.
   void Init();

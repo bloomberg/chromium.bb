@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/language_switch_model.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -150,8 +150,9 @@ class NewUserView : public views::View,
   // If true, this view needs RoundedRect border and background.
   bool need_border_;
 
-  FRIEND_TEST(LoginScreenTest, IncognitoLogin);
+  FRIEND_TEST_ALL_PREFIXES(LoginScreenTest, IncognitoLogin);
   friend class LoginScreenTest;
+
   DISALLOW_COPY_AND_ASSIGN(NewUserView);
 };
 

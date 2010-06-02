@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/cancelable_request.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FilePath;
 
@@ -41,7 +41,7 @@ class VersionLoader : public CancelableRequestProvider {
                     GetVersionCallback* callback);
 
  private:
-  FRIEND_TEST(VersionLoaderTest, ParseVersion);
+  FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseVersion);
 
   // VersionLoader calls into the Backend on the file thread to load
   // and extract the version.

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
@@ -166,13 +167,16 @@ class WizardController : public chromeos::ScreenObserver,
   // Partner startup customizations.
   scoped_ptr<const chromeos::StartupCustomizationDocument> customization_;
 
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorNetwork);
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowErrorUpdate);
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowLanguageOnLogin);
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowLanguageOnNetwork);
-  FRIEND_TEST(WizardControllerFlowTest, ControlFlowMain);
-  FRIEND_TEST(WizardControllerTest, SwitchLanguage);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorNetwork);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorUpdate);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest,
+                           ControlFlowLanguageOnLogin);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest,
+                           ControlFlowLanguageOnNetwork);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowMain);
+  FRIEND_TEST_ALL_PREFIXES(WizardControllerTest, SwitchLanguage);
   friend class WizardControllerFlowTest;
+
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };
 

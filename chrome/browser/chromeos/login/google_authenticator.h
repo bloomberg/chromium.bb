@@ -7,15 +7,16 @@
 
 #include <string>
 #include <vector>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/sha2.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 
@@ -173,26 +174,33 @@ class GoogleAuthenticator : public Authenticator,
   bool try_again_;  // True if we're willing to retry the login attempt.
 
   friend class GoogleAuthenticatorTest;
-  FRIEND_TEST(GoogleAuthenticatorTest, SaltToAsciiTest);
-  FRIEND_TEST(GoogleAuthenticatorTest, CheckTwoFactorResponse);
-  FRIEND_TEST(GoogleAuthenticatorTest, CheckNormalErrorCode);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressNoOp);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreCaps);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreDomainCaps);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreOneUsernameDot);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreManyUsernameDots);
-  FRIEND_TEST(GoogleAuthenticatorTest,
-              EmailAddressIgnoreConsecutiveUsernameDots);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressDifferentOnesRejected);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnorePlusSuffix);
-  FRIEND_TEST(GoogleAuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix);
-  FRIEND_TEST(GoogleAuthenticatorTest, ReadSaltTest);
-  FRIEND_TEST(GoogleAuthenticatorTest, ReadLocalaccountTest);
-  FRIEND_TEST(GoogleAuthenticatorTest, ReadLocalaccountTrailingWSTest);
-  FRIEND_TEST(GoogleAuthenticatorTest, ReadNoLocalaccountTest);
-  FRIEND_TEST(GoogleAuthenticatorTest, LoginNetFailureTest);
-  FRIEND_TEST(GoogleAuthenticatorTest, LoginDeniedTest);
-  FRIEND_TEST(GoogleAuthenticatorTest, TwoFactorLoginTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, SaltToAsciiTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, CheckTwoFactorResponse);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, CheckNormalErrorCode);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, EmailAddressNoOp);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, EmailAddressIgnoreCaps);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           EmailAddressIgnoreDomainCaps);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           EmailAddressIgnoreOneUsernameDot);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           EmailAddressIgnoreManyUsernameDots);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           EmailAddressIgnoreConsecutiveUsernameDots);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           EmailAddressDifferentOnesRejected);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           EmailAddressIgnorePlusSuffix);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           EmailAddressIgnoreMultiPlusSuffix);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadSaltTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadLocalaccountTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
+                           ReadLocalaccountTrailingWSTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadNoLocalaccountTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, LoginNetFailureTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, LoginDeniedTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, TwoFactorLoginTest);
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAuthenticator);
 };

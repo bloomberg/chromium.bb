@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/task.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace chromeos {
 
@@ -21,7 +21,7 @@ namespace chromeos {
 // normal UMA mechanism. The file is then truncated to zero size. Chrome uses
 // flock() to synchronize accesses to the file.
 class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
-  FRIEND_TEST(ExternalMetricsTest, ParseExternalMetricsFile);
+  FRIEND_TEST_ALL_PREFIXES(ExternalMetricsTest, ParseExternalMetricsFile);
   friend class base::RefCountedThreadSafe<ExternalMetrics>;
 
  public:
