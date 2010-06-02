@@ -198,11 +198,12 @@ std::string UrlPickerDialogGtk::GetURLForPath(GtkTreePath* path) const {
   }
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  // Because the url_field_ is user-editable, we set the URL with
-  // username:password and escaped path and query.
+  // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
+  // trailing slash, and unescape most characters, but we need to not drop any
+  // username/password, or unescape anything that changes the meaning.
   std::wstring formatted = net::FormatUrl(url_table_model_->GetURL(row),
-      languages, net::kFormatUrlOmitNothing, UnescapeRule::NONE, NULL, NULL,
-      NULL);
+      languages, net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
+      UnescapeRule::SPACES, NULL, NULL, NULL);
   return WideToUTF8(formatted);
 }
 

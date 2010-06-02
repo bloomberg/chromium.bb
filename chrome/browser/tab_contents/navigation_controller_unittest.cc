@@ -1623,8 +1623,8 @@ TEST_F(NavigationControllerTest, SameSubframe) {
 // Test view source redirection is reflected in title bar.
 TEST_F(NavigationControllerTest, ViewSourceRedirect) {
   const char kUrl[] = "view-source:http://redirect.to/google.com";
-  const char kResult[] = "http://google.com/";
-  const char kExpected[] = "view-source:http://google.com/";
+  const char kResult[] = "http://google.com";
+  const char kExpected[] = "view-source:http://google.com";
   const GURL url(kUrl);
   const GURL result_url(kResult);
 

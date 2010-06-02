@@ -190,7 +190,8 @@ class AutocompleteInput {
   static std::string TypeToString(Type type);
 
   // Parses |text| and returns the type of input this will be interpreted as.
-  // The components of the input are stored in the output parameter |parts|.
+  // The components of the input are stored in the output parameter |parts|, if
+  // it is non-NULL.
   static Type Parse(const std::wstring& text,
                     const std::wstring& desired_tld,
                     url_parse::Parsed* parts,
@@ -204,6 +205,16 @@ class AutocompleteInput {
                                           const std::wstring& desired_tld,
                                           url_parse::Component* scheme,
                                           url_parse::Component* host);
+
+  // Code that wants to format URLs with a format flag including
+  // net::kFormatUrlOmitTrailingSlashOnBareHostname risk changing the meaning if
+  // the result is then parsed as AutocompleteInput.  Such code can call this
+  // function with the URL and its formatted string, and it will return a
+  // formatted string with the same meaning as the original URL (i.e. it will
+  // re-append a slash if necessary).
+  static std::wstring FormattedStringWithEquivalentMeaning(
+      const GURL& url,
+      const std::wstring& formatted_url);
 
   // User-provided text to be completed.
   const std::wstring& text() const { return text_; }

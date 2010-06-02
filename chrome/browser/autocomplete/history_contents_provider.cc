@@ -207,9 +207,11 @@ AutocompleteMatch HistoryContentsProvider::ResultToMatch(
   // Also show star in popup.
   AutocompleteMatch match(this, score, false, MatchInTitle(result) ?
       AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_BODY);
-  match.fill_into_edit = StringForURLDisplay(result.url(), true, trim_http_);
+  match.contents = StringForURLDisplay(result.url(), true, trim_http_);
+  match.fill_into_edit =
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(result.url(),
+                                                              match.contents);
   match.destination_url = result.url();
-  match.contents = match.fill_into_edit;
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
   match.description = result.title();

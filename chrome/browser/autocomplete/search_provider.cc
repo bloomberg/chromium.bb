@@ -754,7 +754,9 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   // suggestion, non-Search results will suddenly appear.
   if (input_.type() == AutocompleteInput::FORCED_QUERY)
     match.fill_into_edit.assign(L"?");
-  match.fill_into_edit.append(match.contents);
+  match.fill_into_edit.append(
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url,
+                                                              match.contents));
   // TODO(pkasting): http://b/1112879 These should perhaps be
   // inline-autocompletable?
 

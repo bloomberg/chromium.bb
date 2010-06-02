@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ TEST_F(StatusBubbleMacTest, SetURL) {
   EXPECT_TRUE([GetURLText() isEqualToString:@"foopy://"]);
   bubble_->SetURL(GURL("http://www.cnn.com"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetURLText() isEqualToString:@"www.cnn.com/"]);
+  EXPECT_TRUE([GetURLText() isEqualToString:@"www.cnn.com"]);
 }
 
 // Test hiding bubble that's already hidden.
@@ -160,23 +160,23 @@ TEST_F(StatusBubbleMacTest, SetStatusAndURL) {
   bubble_->SetStatus(L"Status");
   EXPECT_TRUE(IsVisible());
   EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
-  bubble_->SetURL(GURL("http://www.nytimes.com/"), L"");
+  bubble_->SetURL(GURL("http://www.nytimes.com"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com/"]);
+  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com"]);
   bubble_->SetURL(GURL(), L"");
   EXPECT_TRUE(IsVisible());
   EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
   bubble_->SetStatus(L"");
   EXPECT_FALSE(IsVisible());
-  bubble_->SetURL(GURL("http://www.nytimes.com/"), L"");
+  bubble_->SetURL(GURL("http://www.nytimes.com"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com/"]);
+  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com"]);
   bubble_->SetStatus(L"Status");
   EXPECT_TRUE(IsVisible());
   EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
   bubble_->SetStatus(L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com/"]);
+  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com"]);
   bubble_->SetURL(GURL(), L"");
   EXPECT_FALSE(IsVisible());
 }

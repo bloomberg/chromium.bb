@@ -279,9 +279,12 @@ void BookmarkEditorView::Init() {
     std::wstring languages = profile_
         ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
         : std::wstring();
-    // The following URL is user-editable, so we don't strip anything from it.
+    // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
+    // trailing slash, and unescape most characters, but we need to not drop any
+    // username/password, or unescape anything that changes the meaning.
     url_text = net::FormatUrl(details_.existing_node->GetURL(), languages,
-        net::kFormatUrlOmitNothing, UnescapeRule::NONE, NULL, NULL, NULL);
+        net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
+        UnescapeRule::SPACES, NULL, NULL, NULL);
   }
   url_tf_.SetText(url_text);
   url_tf_.SetController(this);

@@ -57,8 +57,8 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   // Setting URL affects virtual_url and GetTitleForDisplay
   entry1_.get()->set_url(GURL("http://www.google.com"));
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->url());
-  EXPECT_EQ(GURL("http://www.google.com/"), entry1_.get()->virtual_url());
-  EXPECT_EQ(ASCIIToUTF16("http://www.google.com/"),
+  EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->virtual_url());
+  EXPECT_EQ(ASCIIToUTF16("www.google.com"),
             entry1_.get()->GetTitleForDisplay(NULL));
 
   // Title affects GetTitleForDisplay

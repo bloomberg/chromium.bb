@@ -90,8 +90,6 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     const std::wstring& desired_tld,
     url_parse::Parsed* parts,
     std::wstring* scheme) {
-  DCHECK(parts);
-
   const size_t first_non_white = text.find_first_not_of(kWhitespaceWide, 0);
   if (first_non_white == std::wstring::npos)
     return INVALID;  // All whitespace.
@@ -106,6 +104,9 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // use the URLFixerUpper here because we want to be smart about what we
   // consider a scheme.  For example, we shouldn't consider www.google.com:80
   // to have a scheme.
+  url_parse::Parsed local_parts;
+  if (!parts)
+    parts = &local_parts;
   const std::wstring parsed_scheme(URLFixerUpper::SegmentURL(text, parts));
   if (scheme)
     *scheme = parsed_scheme;
@@ -343,6 +344,19 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     }
   }
 }
+
+// static
+std::wstring AutocompleteInput::FormattedStringWithEquivalentMeaning(
+    const GURL& url,
+    const std::wstring& formatted_url) {
+  if (!net::CanStripTrailingSlash(url))
+    return formatted_url;
+  const std::wstring url_with_path(formatted_url + L"/");
+  return (AutocompleteInput::Parse(formatted_url, std::wstring(), NULL, NULL) ==
+          AutocompleteInput::Parse(url_with_path, std::wstring(), NULL, NULL)) ?
+      formatted_url : url_with_path;
+}
+
 
 bool AutocompleteInput::Equals(const AutocompleteInput& other) const {
   return (text_ == other.text_) &&
@@ -591,16 +605,13 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
     i->starred = bookmark_model->IsBookmarked(GURL(i->destination_url));
 }
 
-std::wstring AutocompleteProvider::StringForURLDisplay(
-    const GURL& url,
-    bool check_accept_lang,
-    bool trim_http) const {
-  std::wstring languages = (check_accept_lang && profile_) ?
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::wstring();
-  const net::FormatUrlTypes format_types = trim_http ?
-      net::kFormatUrlOmitAll : net::kFormatUrlOmitUsernamePassword;
-  return net::FormatUrl(url, languages, format_types, UnescapeRule::SPACES,
-                        NULL, NULL, NULL);
+std::wstring AutocompleteProvider::StringForURLDisplay(const GURL& url,
+                                                       bool check_accept_lang,
+                                                       bool trim_http) const {
+  return net::FormatUrl(url, (check_accept_lang && profile_) ?
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::wstring(),
+      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
+      UnescapeRule::SPACES, NULL, NULL, NULL);
 }
 
 // AutocompleteResult ---------------------------------------------------------

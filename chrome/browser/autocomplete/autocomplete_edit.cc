@@ -158,9 +158,8 @@ AutocompleteMatch::Type AutocompleteEditModel::CurrentTextType() const {
 
 bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
                                           GURL* url) const {
-  url_parse::Parsed parts;
   const AutocompleteInput::Type type = AutocompleteInput::Parse(
-      UserTextFromDisplayText(text), std::wstring(), &parts, NULL);
+      UserTextFromDisplayText(text), std::wstring(), NULL, NULL);
   if (type != AutocompleteInput::URL)
     return false;
 

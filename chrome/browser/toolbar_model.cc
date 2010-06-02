@@ -53,8 +53,12 @@ std::wstring ToolbarModel::GetText() const {
       url = GURL(url.scheme() + ":");
     }
   }
-  return net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
-                        UnescapeRule::NORMAL, NULL, NULL, NULL);
+  // Note that we can't unescape spaces here, because if the user copies this
+  // and pastes it into another program, that program may think the URL ends at
+  // the space.
+  return AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
+      net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+                     UnescapeRule::NORMAL, NULL, NULL, NULL));
 }
 
 ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {

@@ -91,7 +91,7 @@ TEST(TextEliderTest, TestMoreEliding) {
     {"", L""},
     {"http://foo.bar..example.com...hello/test/filename.html",
      L"foo.bar..example.com...hello/" + kEllipsisStr + L"/filename.html"},
-    {"http://foo.bar../", L"foo.bar../"},
+    {"http://foo.bar../", L"foo.bar.."},
     {"http://xn--1lq90i.cn/foo", L"\x5317\x4eac.cn/foo"},
     {"http://me:mypass@secrethost.com:99/foo?bar#baz",
      L"secrethost.com:99/foo?bar#baz"},
@@ -251,8 +251,8 @@ TEST(TextEliderTest, ElideTextLongStrings) {
 
 // Verifies display_url is set correctly.
 TEST(TextEliderTest, SortedDisplayURL) {
-  gfx::SortedDisplayURL d_url(GURL("http://www.google.com/"), std::wstring());
-  EXPECT_EQ("www.google.com/", UTF16ToASCII(d_url.display_url()));
+  gfx::SortedDisplayURL d_url(GURL("http://www.google.com"), std::wstring());
+  EXPECT_EQ("www.google.com", UTF16ToASCII(d_url.display_url()));
 }
 
 // Verifies DisplayURL::Compare works correctly.
