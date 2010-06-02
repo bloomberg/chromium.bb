@@ -93,6 +93,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // on command line.
   settings->setShowDebugBorders(show_composited_layer_borders);
 
+  // Enable gpu-accelerated compositing if requested on the command line.
+  settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);
+
   for (WebInspectorPreferences::const_iterator it = inspector_settings.begin();
        it != inspector_settings.end(); ++it)
     web_view->setInspectorSetting(WebString::fromUTF8(it->first),
