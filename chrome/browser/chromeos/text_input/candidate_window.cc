@@ -386,12 +386,17 @@ void CandidateView::Init() {
   // Create the shortcut label. The label will eventually be part of the
   // tree of |this| via |wrapped_shortcut_label|, hence it's deleted when
   // |this| is deleted.
-  shortcut_label_ = new views::Label(
-      StringPrintf(L"%lc",  shortcut_character));
+  if (orientation_ == InputMethodLookupTable::kVertical) {
+    shortcut_label_ = new views::Label(
+        StringPrintf(L"%lc",  shortcut_character));
+  } else {
+    shortcut_label_ = new views::Label(
+        StringPrintf(L"%lc.",  shortcut_character));
+  }
 
   // Wrap it with padding.
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
-  const gfx::Insets kHorizontalShortcutLabelInsets(1, 1, 1, 1);
+  const gfx::Insets kHorizontalShortcutLabelInsets(1, 3, 1, 0);
   const gfx::Insets insets =
       (orientation_ == InputMethodLookupTable::kVertical ?
        kVerticalShortcutLabelInsets :
@@ -402,8 +407,13 @@ void CandidateView::Init() {
   // in the candidate window.
   const int kFontSizeDelta = 2;  // Two size bigger.
   // Make the font bold, and change the size.
-  shortcut_label_->SetFont(
-      shortcut_label_->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
+  if (orientation_ == InputMethodLookupTable::kVertical) {
+    shortcut_label_->SetFont(
+        shortcut_label_->font().DeriveFont(kFontSizeDelta, gfx::Font::BOLD));
+  } else {
+    shortcut_label_->SetFont(
+        shortcut_label_->font().DeriveFont(kFontSizeDelta));
+  }
   // TODO(satorux): Maybe we need to use language specific fonts for
   // candidate_label, like Chinese font for Chinese input method?
 
@@ -433,10 +443,16 @@ void CandidateView::Init() {
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, 4);
+  if (orientation_ == InputMethodLookupTable::kVertical) {
+    column_set->AddPaddingColumn(0, 4);
+  }
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, 4);
+  if (orientation_ == InputMethodLookupTable::kVertical) {
+    column_set->AddPaddingColumn(0, 4);
+  } else {
+    column_set->AddPaddingColumn(0, 6);
+  }
 
   // Add the shortcut label and the candidate label.
   layout->StartRow(0, 0);
