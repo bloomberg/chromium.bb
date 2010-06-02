@@ -10,6 +10,13 @@
     'chrome_personalization%': 1,
     'use_syncapi_stub%': 0,
 
+    'variables': {
+      'version_py_path': '../tools/build/version.py',
+      'version_path': 'VERSION',
+    },
+    'version_py_path': '<(version_py_path) -f',
+    'version_path': '<(version_path)',
+
     'conditions': [
       ['OS=="win"', {
         'python': [
@@ -38,9 +45,16 @@
       'msvs_guid': 'B7E540C1-49D9-4350-ACBC-FB8306316D16',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
+        '../chrome/chrome.gyp:chrome_version_info',
+        '../chrome/chrome.gyp:chrome_version_header',
+      ],
+      'resource_include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
         'chrome_launcher_main.cc',
+        'chrome_launcher_version.rc',
         'chrome_launcher.cc',
         'chrome_launcher.h',
       ],
@@ -53,7 +67,6 @@
           'AdditionalDependencies': [
             'shlwapi.lib',
           ],
-          
         },
       },
       'configurations': {
