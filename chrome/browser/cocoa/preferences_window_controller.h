@@ -107,6 +107,8 @@ class ProfileSyncService;
   IBOutlet NSButton* downloadLocationButton_;
   StringPrefMember defaultDownloadLocation_;
   BooleanPrefMember askForSaveLocation_;
+  IBOutlet NSButton* resetFileHandlersButton_;
+  StringPrefMember autoOpenFiles_;
   BooleanPrefMember translateEnabled_;
   BooleanPrefMember tabsToLinks_;
   FontLanguageSettingsController* fontLanguageSettings_;
@@ -126,29 +128,30 @@ class ProfileSyncService;
 // IBAction methods for responding to user actions.
 
 // Basics panel
-- (IBAction)makeDefaultBrowser:(id)sender;
 - (IBAction)addHomepage:(id)sender;
 - (IBAction)removeSelectedHomepages:(id)sender;
 - (IBAction)useCurrentPagesAsHomepage:(id)sender;
 - (IBAction)manageSearchEngines:(id)sender;
+- (IBAction)makeDefaultBrowser:(id)sender;
 
 // User Data panel
+- (IBAction)doSyncAction:(id)sender;
+- (IBAction)doSyncCustomize:(id)sender;
+- (IBAction)doSyncReauthentication:(id)sender;
 - (IBAction)showSavedPasswords:(id)sender;
 - (IBAction)showAutoFillSettings:(id)sender;
 - (IBAction)importData:(id)sender;
 - (IBAction)resetThemeToDefault:(id)sender;
 - (IBAction)themesGallery:(id)sender;
-- (IBAction)doSyncAction:(id)sender;
-- (IBAction)doSyncCustomize:(id)sender;
-- (IBAction)doSyncReauthentication:(id)sender;
 
 // Under the hood
-- (IBAction)browseDownloadLocation:(id)sender;
-- (IBAction)clearData:(id)sender;
 - (IBAction)showContentSettings:(id)sender;
+- (IBAction)clearData:(id)sender;
 - (IBAction)privacyLearnMore:(id)sender;
-- (IBAction)openProxyPreferences:(id)sender;
+- (IBAction)browseDownloadLocation:(id)sender;
+- (IBAction)resetAutoOpenFiles:(id)sender;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;
+- (IBAction)openProxyPreferences:(id)sender;
 - (IBAction)showCertificates:(id)sender;
 
 // When a toolbar button is clicked

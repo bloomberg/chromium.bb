@@ -28,6 +28,7 @@
 #import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
 #import "chrome/browser/cocoa/sync_customize_controller_cppsafe.h"
+#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -341,10 +342,14 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setSafeBrowsing:(BOOL)value;
 - (void)setMetricsRecording:(BOOL)value;
 - (void)setAskForSaveLocation:(BOOL)value;
+- (void)setFileHandlerUIEnabled:(BOOL)value;
 - (void)setTranslateEnabled:(BOOL)value;
 - (void)setTabsToLinks:(BOOL)value;
 - (void)displayPreferenceViewForPage:(OptionsPage)page
                              animate:(BOOL)animate;
+
+// KVC getter methods.
+- (BOOL)fileHandlerUIEnabled;
 @end
 
 namespace PreferencesWindowControllerInternal {
@@ -698,6 +703,8 @@ class PrefObserverBridge : public NotificationObserver,
   useSuggest_.Init(prefs::kSearchSuggestEnabled, prefs_, observer_.get());
   dnsPrefetch_.Init(prefs::kDnsPrefetchingEnabled, prefs_, observer_.get());
   safeBrowsing_.Init(prefs::kSafeBrowsingEnabled, prefs_, observer_.get());
+  autoOpenFiles_.Init(
+      prefs::kDownloadExtensionsToOpen, prefs_, observer_.get());
   translateEnabled_.Init(prefs::kEnableTranslate, prefs_, observer_.get());
   tabsToLinks_.Init(prefs::kWebkitTabsToLinks, prefs_, observer_.get());
 
@@ -1331,8 +1338,13 @@ const int kDisabledIndex = 1;
   }
   else if (*prefName == prefs::kEnableTranslate) {
     [self setTranslateEnabled:translateEnabled_.GetValue() ? YES : NO];
-  } else if (*prefName == prefs::kWebkitTabsToLinks) {
+  }
+  else if (*prefName == prefs::kWebkitTabsToLinks) {
     [self setTabsToLinks:tabsToLinks_.GetValue() ? YES : NO];
+  }
+  else if (*prefName == prefs::kDownloadExtensionsToOpen) {
+    // Poke KVC.
+    [self setFileHandlerUIEnabled:[self fileHandlerUIEnabled]];
   }
 }
 
@@ -1385,6 +1397,11 @@ const int kDisabledIndex = 1;
   Browser* browser = Browser::Create(profile_);
   browser->OpenURL(GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL)),
                    GURL(), NEW_WINDOW, PageTransition::LINK);
+}
+
+- (IBAction)resetAutoOpenFiles:(id)sender {
+  profile_->GetDownloadManager()->ResetAutoOpenFiles();
+  [self recordUserAction:UserMetricsAction("Options_ResetAutoOpenFiles")];
 }
 
 - (IBAction)openProxyPreferences:(id)sender {
@@ -1549,6 +1566,16 @@ const int kDisabledIndex = 1;
                            "Options_AskForSaveLocation_Disable")];
   }
   askForSaveLocation_.SetValue(value);
+}
+
+- (BOOL)fileHandlerUIEnabled {
+  if (!profile_->GetDownloadManager())  // Not set in unit tests.
+    return NO;
+  return profile_->GetDownloadManager()->HasAutoOpenFileTypesRegistered();
+}
+
+- (void)setFileHandlerUIEnabled:(BOOL)value {
+  [resetFileHandlersButton_ setEnabled:value];
 }
 
 - (BOOL)translateEnabled {
