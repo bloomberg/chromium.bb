@@ -40,15 +40,17 @@ void MockLocationProvider::OnPermissionGranted(const GURL& requesting_frame) {
   permission_granted_url_ = requesting_frame;
 }
 
-// Mock location provider that automatically calls back it's client when
-// StartProvider is called.
+// Mock location provider that automatically calls back it's client at most
+// once, when StartProvider or OnPermissionGranted is called. Use
+// |requires_permission_to_start| to select which event triggers the callback.
 class AutoMockLocationProvider : public MockLocationProvider {
  public:
   AutoMockLocationProvider(bool has_valid_location,
                            bool requires_permission_to_start)
       : MockLocationProvider(&instance_),
         ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
-        requires_permission_to_start_(requires_permission_to_start) {
+        requires_permission_to_start_(requires_permission_to_start),
+        listeners_updated_(false) {
     if (has_valid_location) {
       position_.accuracy = 3;
       position_.latitude = 4.3;
@@ -61,9 +63,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
   virtual bool StartProvider() {
     MockLocationProvider::StartProvider();
     if (!requires_permission_to_start_) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE, task_factory_.NewRunnableMethod(
-              &MockLocationProvider::UpdateListeners));
+      UpdateListenersIfNeeded();
     }
     return true;
   }
@@ -71,6 +71,13 @@ class AutoMockLocationProvider : public MockLocationProvider {
   void OnPermissionGranted(const GURL& requesting_frame) {
     MockLocationProvider::OnPermissionGranted(requesting_frame);
     if (requires_permission_to_start_) {
+      UpdateListenersIfNeeded();
+    }
+  }
+
+  void UpdateListenersIfNeeded() {
+    if (!listeners_updated_) {
+      listeners_updated_ = true;
       MessageLoop::current()->PostTask(
           FROM_HERE, task_factory_.NewRunnableMethod(
               &MockLocationProvider::UpdateListeners));
@@ -79,6 +86,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
 
   ScopedRunnableMethodFactory<MockLocationProvider> task_factory_;
   const bool requires_permission_to_start_;
+  bool listeners_updated_;
 };
 
 LocationProviderBase* NewMockLocationProvider() {
