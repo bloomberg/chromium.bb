@@ -145,6 +145,19 @@ drm_intel_bo_exec(drm_intel_bo *bo, int used,
 	return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4);
 }
 
+int
+drm_intel_bo_mrb_exec(drm_intel_bo *bo, int used,
+		drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
+		int ring_flag)
+{
+	if (bo->bufmgr->bo_mrb_exec)
+		return bo->bufmgr->bo_mrb_exec(bo, used,
+					cliprects, num_cliprects, DR4,
+					ring_flag);
+
+	return -ENODEV;
+}
+
 void drm_intel_bufmgr_set_debug(drm_intel_bufmgr *bufmgr, int enable_debug)
 {
 	bufmgr->debug = enable_debug;

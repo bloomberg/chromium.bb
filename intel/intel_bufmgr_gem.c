@@ -1530,13 +1530,16 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 }
 
 static int
-drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
-		       drm_clip_rect_t *cliprects, int num_cliprects,
-		       int DR4)
+drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
+			drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
+			int ring_flag)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
 	struct drm_i915_gem_execbuffer2 execbuf;
 	int ret, i;
+
+	if ((ring_flag != I915_EXEC_RENDER) && (ring_flag != I915_EXEC_BSD))
+		return -EINVAL;
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 	/* Update indices and set up the validate list. */
@@ -1555,7 +1558,7 @@ drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 	execbuf.num_cliprects = num_cliprects;
 	execbuf.DR1 = 0;
 	execbuf.DR4 = DR4;
-	execbuf.flags = 0;
+	execbuf.flags = ring_flag;
 	execbuf.rsvd1 = 0;
 	execbuf.rsvd2 = 0;
 
@@ -1594,6 +1597,16 @@ drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return ret;
+}
+
+static int
+drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
+		       drm_clip_rect_t *cliprects, int num_cliprects,
+		       int DR4)
+{
+	return drm_intel_gem_bo_mrb_exec2(bo, used,
+					cliprects, num_cliprects, DR4,
+					I915_EXEC_RENDER);
 }
 
 static int
@@ -1974,7 +1987,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	drm_i915_getparam_t gp;
 	int ret, i;
 	unsigned long size;
-	int exec2 = 0;
+	int exec2 = 0, has_bsd = 0;
 
 	bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
 	if (bufmgr_gem == NULL)
@@ -2022,6 +2035,11 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	if (!ret)
 		exec2 = 1;
+
+	gp.param = I915_PARAM_HAS_BSD;
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (!ret)
+		has_bsd = 1;
 
 	if (bufmgr_gem->gen < 4) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
@@ -2076,9 +2094,11 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	bufmgr_gem->bufmgr.bo_set_tiling = drm_intel_gem_bo_set_tiling;
 	bufmgr_gem->bufmgr.bo_flink = drm_intel_gem_bo_flink;
 	/* Use the new one if available */
-	if (exec2)
+	if (exec2) {
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec2;
-	else
+		if (has_bsd)
+			bufmgr_gem->bufmgr.bo_mrb_exec = drm_intel_gem_bo_mrb_exec2;
+	} else
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
 	bufmgr_gem->bufmgr.bo_busy = drm_intel_gem_bo_busy;
 	bufmgr_gem->bufmgr.bo_madvise = drm_intel_gem_bo_madvise;
