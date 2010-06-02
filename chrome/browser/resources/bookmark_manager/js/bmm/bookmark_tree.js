@@ -149,13 +149,12 @@ cr.define('bmm', function() {
     /**
      * Fetches the bookmark items and builds the tree control.
      */
-    buildTree: function() {
-
+    reload: function() {
       /**
        * Recursive helper function that adds all the directories to the
        * parentTreeItem.
-       * @param {!cr.ui.Tree|!cr.ui.TreeItem} parentTreeItem The parent tree element
-       *     to append to.
+       * @param {!cr.ui.Tree|!cr.ui.TreeItem} parentTreeItem The parent tree
+       *     element to append to.
        * @param {!Array.<BookmarkTreeNode>} bookmarkNodes
        * @return {boolean} Whether any directories where added.
        */
@@ -175,9 +174,22 @@ cr.define('bmm', function() {
 
       var self = this;
       chrome.experimental.bookmarkManager.getSubtree('', true, function(root) {
+        self.clear();
         buildTreeItems(self, root[0].children);
         cr.dispatchSimpleEvent(self, 'load');
       });
+    },
+
+    /**
+     * Clears the tree.
+     */
+    clear: function() {
+      // Remove all fields without recreating the object since other code
+      // references it.
+      for (var id in treeLookup){
+        delete treeLookup[id];
+      }
+      this.textContent = '';
     }
   };
 

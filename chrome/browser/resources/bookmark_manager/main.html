@@ -452,18 +452,30 @@ function handleRemoved(id, removeInfo) {
 
 function handleImportBegan() {
   chrome.bookmarks.onCreated.removeListener(handleCreated);
+  chrome.bookmarks.onChanged.removeListener(handleBookmarkChanged);
 }
 
 function handleImportEnded() {
-  chrome.bookmarks.onCreated.addListener(handleCreated);
-  var p = bmm.loadTree();
-  p.addListener(function(node) {
-    var otherBookmarks = node.children[1].children;
-    var importedFolder = otherBookmarks[otherBookmarks.length - 1];
-    var importId = importedFolder.id;
-    tree.insertSubtree(importedFolder);
-    navigateTo(importId)
-  });
+  // When importing is done we reload the tree and the list.
+
+  function f() {
+    tree.removeEventListener('load', f);
+
+    chrome.bookmarks.onCreated.addListener(handleCreated);
+    chrome.bookmarks.onChanged.addListener(handleBookmarkChanged);
+
+    if (list.selectImportedFolder) {
+      var otherBookmarks = tree.items[1].items;
+      var importedFolder = otherBookmarks[otherBookmarks.length - 1];
+      navigateTo(importedFolder.bookmarkId)
+      list.selectImportedFolder = false
+    } else {
+      list.reload();
+    }
+  }
+
+  tree.addEventListener('load', f);
+  tree.reload();
 }
 
 /**
@@ -516,7 +528,7 @@ tree.addEventListener('load', function(e) {
   }
 });
 
-tree.buildTree();
+tree.reload();
 addBookmarkModelListeners();
 
 var dnd = {
@@ -1287,6 +1299,8 @@ document.addEventListener('command', function(e) {
   var commandId = command.id;
   console.log(command.id, 'executed', 'on', e.target);
   if (commandId == 'import-menu-command') {
+    // Set a flag on the list so we can select the newly imported folder.
+    list.selectImportedFolder = true;
     chrome.bookmarks.import();
   } else if (command.id == 'export-menu-command') {
     chrome.bookmarks.export();

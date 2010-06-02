@@ -57,6 +57,17 @@ cr.define('bmm', function() {
       var oldParentId = this.parentId_;
       this.parentId_ = parentId;
 
+      this.reload();
+
+      cr.dispatchPropertyChange(this, 'parentId', parentId, oldParentId);
+    },
+
+    /**
+     * Reloads the list from the bookmarks backend.
+     */
+    reload: function() {
+      var parentId = this.parentId;
+
       var callback = cr.bind(this.handleBookmarkCallback, this);
       this.loading_ = true;
 
@@ -69,8 +80,6 @@ cr.define('bmm', function() {
       } else {
         chrome.bookmarks.getChildren(parentId, callback);
       }
-
-      cr.dispatchPropertyChange(this, 'parentId', parentId, oldParentId);
     },
 
     handleBookmarkCallback: function(items) {
@@ -103,8 +112,8 @@ cr.define('bmm', function() {
     },
 
     /**
-     * The bookmark node that the list is currently displaying. If we are currently
-     * displaying recent or search this returns null.
+     * The bookmark node that the list is currently displaying. If we are
+     * currently displaying recent or search this returns null.
      * @type {BookmarkTreeNode}
      */
     get bookmarkNode() {
