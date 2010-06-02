@@ -343,43 +343,19 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   GURL iframe1_url_;
 };
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_DisplaysPermissionBar DISABLED_DisplaysPermissionBar
-#else
-#define MAYBE_DisplaysPermissionBar DisplaysPermissionBar
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_DisplaysPermissionBar) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_Geoposition DISABLED_Geoposition
-#else
-#define MAYBE_Geoposition Geoposition
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_Geoposition) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_ErrorOnPermissionDenied DISABLED_ErrorOnPermissionDenied
-#else
-#define MAYBE_ErrorOnPermissionDenied ErrorOnPermissionDenied
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_ErrorOnPermissionDenied) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, ErrorOnPermissionDenied) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   // Infobar was displayed, deny access and check for error code.
@@ -402,15 +378,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_NoInfobarForDeniedOrigin DISABLED_NoInfobarForDeniedOrigin
-#else
-#define MAYBE_NoInfobarForDeniedOrigin NoInfobarForDeniedOrigin
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForDeniedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   current_browser_->profile()->GetGeolocationContentSettingsMap()->
       SetContentSetting(current_url_, current_url_, CONTENT_SETTING_BLOCK);
@@ -423,16 +391,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_NoInfobarForAllowedOrigin DISABLED_NoInfobarForAllowedOrigin
-#else
-#define MAYBE_NoInfobarForAllowedOrigin NoInfobarForAllowedOrigin
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       MAYBE_NoInfobarForAllowedOrigin) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForAllowedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   current_browser_->profile()->GetGeolocationContentSettingsMap()->
       SetContentSetting(current_url_, current_url_, CONTENT_SETTING_ALLOW);
@@ -441,15 +400,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_NoInfobarForOffTheRecord DISABLED_NoInfobarForOffTheRecord
-#else
-#define MAYBE_NoInfobarForOffTheRecord NoInfobarForOffTheRecord
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForOffTheRecord) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   // First, check infobar will be created for regular profile
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
@@ -464,16 +415,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForOffTheRecord) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_IFramesWithFreshPosition DISABLED_IFramesWithFreshPosition
-#else
-#define MAYBE_IFramesWithFreshPosition IFramesWithFreshPosition
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       MAYBE_IFramesWithFreshPosition) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LOG(WARNING) << "frames loaded";
@@ -550,17 +492,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckGeoposition(cached_position);
 }
 
-
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_CancelPermissionForFrame DISABLED_CancelPermissionForFrame
-#else
-#define MAYBE_CancelPermissionForFrame CancelPermissionForFrame
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       MAYBE_CancelPermissionForFrame) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LOG(WARNING) << "frames loaded";
@@ -586,16 +518,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_InvalidUrlRequest DISABLED_InvalidUrlRequest
-#else
-#define MAYBE_InvalidUrlRequest InvalidUrlRequest
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       MAYBE_InvalidUrlRequest) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
   // Tests that an invalid URL (e.g. from a popup window) is rejected
   // correctly. Also acts as a regression test for http://crbug.com/40478
   html_for_tests_ = "files/geolocation/invalid_request_url.html";
@@ -605,16 +528,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckStringValueFromJavascriptForTab("1", "isAlive()", original_tab);
 }
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_NoInfoBarBeforeStart DISABLED_NoInfoBarBeforeStart
-#else
-// TODO(bulach): enable after https://bugs.webkit.org/show_bug.cgi?id=38323
-#define MAYBE_NoInfoBarBeforeStart NoInfoBarBeforeStart
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfoBarBeforeStart) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
   // See http://crbug.com/42789
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
