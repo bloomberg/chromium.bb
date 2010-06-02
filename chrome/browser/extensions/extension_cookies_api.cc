@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Implements the Chrome Extensions Cookies API.
+
 #include "chrome/browser/extensions/extension_cookies_api.h"
 
 #include "chrome/browser/browser_list.h"
@@ -12,17 +14,25 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/cookie_monster.h"
 
-namespace helpers = extension_cookies_helpers;
 namespace keys = extension_cookies_api_constants;
 
-bool CookiesFunction::ParseUrl(const DictionaryValue* details, GURL* url) {
+bool CookiesFunction::ParseUrl(const DictionaryValue* details, GURL* url,
+                               bool check_host_permissions) {
   DCHECK(details && url);
   std::string url_string;
+  // Get the URL string or return false.
   EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kUrlKey, &url_string));
   *url = GURL(url_string);
   if (!url->is_valid()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kInvalidUrlError, url_string);
+    return false;
+  }
+  // Check against host permissions if needed.
+  if (check_host_permissions &&
+      !GetExtension()->HasHostPermission(*url)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kNoHostPermissionsError, url->spec());
     return false;
   }
   return true;
@@ -34,10 +44,13 @@ bool CookiesFunction::ParseCookieStore(const DictionaryValue* details,
   DCHECK(details && (store || store_id));
   Profile* store_profile = NULL;
   if (details->HasKey(keys::kStoreIdKey)) {
+    // The store ID was explicitly specified in the details dictionary.
+    // Retrieve its corresponding cookie store.
     std::string store_id_value;
+    // Get the store ID string or return false.
     EXTENSION_FUNCTION_VALIDATE(
         details->GetString(keys::kStoreIdKey, &store_id_value));
-    store_profile = helpers::ChooseProfileFromStoreId(
+    store_profile = extension_cookies_helpers::ChooseProfileFromStoreId(
         store_id_value, profile(), include_incognito());
     if (!store_profile) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
@@ -45,6 +58,8 @@ bool CookiesFunction::ParseCookieStore(const DictionaryValue* details,
       return false;
     }
   } else {
+    // The store ID was not specified; use the current execution context's
+    // cookie store by default.
     // GetCurrentBrowser() already takes into account incognito settings.
     Browser* current_browser = GetCurrentBrowser();
     if (!current_browser) {
@@ -57,26 +72,24 @@ bool CookiesFunction::ParseCookieStore(const DictionaryValue* details,
   if (store)
     *store = store_profile->GetRequestContext()->GetCookieStore();
   if (store_id)
-    *store_id = helpers::GetStoreIdFromProfile(store_profile);
+    *store_id =
+        extension_cookies_helpers::GetStoreIdFromProfile(store_profile);
   return true;
 }
 
 bool GetCookieFunction::RunImpl() {
+  // Return false if the arguments are malformed.
   DictionaryValue* details;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
   DCHECK(details);
 
   // Read/validate input parameters.
   GURL url;
-  if (!ParseUrl(details, &url))
+  if (!ParseUrl(details, &url, true))
     return false;
-  if (!GetExtension()->HasHostPermission(url)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kNoHostPermissionsError, url.spec());
-    return false;
-  }
 
   std::string name;
+  // Get the cookie name string or return false.
   EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
 
   net::CookieStore* cookie_store;
@@ -85,15 +98,16 @@ bool GetCookieFunction::RunImpl() {
     return false;
   DCHECK(cookie_store && !store_id.empty());
 
-  net::CookieMonster::CookieList cookie_list = helpers::GetCookieListFromStore(
-      cookie_store, url);
+  net::CookieMonster::CookieList cookie_list =
+      extension_cookies_helpers::GetCookieListFromStore(cookie_store, url);
   net::CookieMonster::CookieList::iterator it;
   for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
-    // Return the first matching cookie; relies on the fact that the
+    // Return the first matching cookie. Relies on the fact that the
     // CookieMonster retrieves them in reverse domain-length order.
     const net::CookieMonster::CanonicalCookie& cookie = it->second;
     if (cookie.Name() == name) {
-      result_.reset(helpers::CreateCookieValue(*it, store_id));
+      result_.reset(
+          extension_cookies_helpers::CreateCookieValue(*it, store_id));
       return true;
     }
   }
@@ -103,12 +117,14 @@ bool GetCookieFunction::RunImpl() {
 }
 
 bool GetAllCookiesFunction::RunImpl() {
+  // Return false if the arguments are malformed.
   DictionaryValue* details;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  DCHECK(details);
 
   // Read/validate input parameters.
   GURL url;
-  if (details->HasKey(keys::kUrlKey) && !ParseUrl(details, &url))
+  if (details->HasKey(keys::kUrlKey) && !ParseUrl(details, &url, false))
     return false;
 
   net::CookieStore* cookie_store;
@@ -118,25 +134,23 @@ bool GetAllCookiesFunction::RunImpl() {
   DCHECK(cookie_store);
 
   ListValue* matching_list = new ListValue();
-  helpers::AppendMatchingCookiesToList(cookie_store, store_id, url, details,
-                                       GetExtension(), matching_list);
+  extension_cookies_helpers::AppendMatchingCookiesToList(
+      cookie_store, store_id, url, details, GetExtension(), matching_list);
   result_.reset(matching_list);
   return true;
 }
 
 bool SetCookieFunction::RunImpl() {
+  // Return false if the arguments are malformed.
   DictionaryValue* details;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  DCHECK(details);
 
   // Read/validate input parameters.
   GURL url;
-  if (!ParseUrl(details, &url))
+  if (!ParseUrl(details, &url, true))
       return false;
-  if (!GetExtension()->HasHostPermission(url)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kNoHostPermissionsError, url.spec());
-    return false;
-  }
+  // The macros below return false if argument types are not as expected.
   std::string name;
   if (details->HasKey(keys::kNameKey)) {
     EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
@@ -186,7 +200,8 @@ bool SetCookieFunction::RunImpl() {
   DCHECK(cookie_store);
 
   if (!cookie_store->GetCookieMonster()->SetCookieWithDetails(
-      url, name, value, domain, path, expiration_time, secure, http_only)) {
+          url, name, value, domain, path, expiration_time, secure,
+          http_only)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kCookieSetFailedError, name);
     return false;
@@ -195,20 +210,18 @@ bool SetCookieFunction::RunImpl() {
 }
 
 bool RemoveCookieFunction::RunImpl() {
+  // Return false if the arguments are malformed.
   DictionaryValue* details;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  DCHECK(details);
 
   // Read/validate input parameters.
   GURL url;
-  if (!ParseUrl(details, &url))
+  if (!ParseUrl(details, &url, true))
     return false;
-  if (!GetExtension()->HasHostPermission(url)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kNoHostPermissionsError, url.spec());
-    return false;
-  }
 
   std::string name;
+  // Get the cookie name string or return false.
   EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
 
   net::CookieStore* cookie_store;
@@ -231,24 +244,32 @@ bool GetAllCookieStoresFunction::RunImpl() {
     if (incognito_profile)
       incognito_tab_ids.reset(new ListValue());
   }
+  // Iterate through all browser instances, and for each browser,
+  // add its tab IDs to either the regular or incognito tab ID list depending
+  // whether the browser is regular or incognito.
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     if (browser->profile() == original_profile) {
-      helpers::AppendToTabIdList(browser, original_tab_ids.get());
+      extension_cookies_helpers::AppendToTabIdList(browser,
+                                                   original_tab_ids.get());
     } else if (incognito_tab_ids.get() &&
                browser->profile() == incognito_profile) {
-      helpers::AppendToTabIdList(browser, incognito_tab_ids.get());
+      extension_cookies_helpers::AppendToTabIdList(browser,
+                                                   incognito_tab_ids.get());
     }
   }
+  // Return a list of all cookie stores with at least one open tab.
   ListValue* cookie_store_list = new ListValue();
   if (original_tab_ids->GetSize() > 0) {
-    cookie_store_list->Append(helpers::CreateCookieStoreValue(
-        original_profile, original_tab_ids.release()));
+    cookie_store_list->Append(
+        extension_cookies_helpers::CreateCookieStoreValue(
+            original_profile, original_tab_ids.release()));
   }
   if (incognito_tab_ids.get() && incognito_tab_ids->GetSize() > 0) {
-    cookie_store_list->Append(helpers::CreateCookieStoreValue(
-        incognito_profile, incognito_tab_ids.release()));
+    cookie_store_list->Append(
+        extension_cookies_helpers::CreateCookieStoreValue(
+            incognito_profile, incognito_tab_ids.release()));
   }
   result_.reset(cookie_store_list);
   return true;

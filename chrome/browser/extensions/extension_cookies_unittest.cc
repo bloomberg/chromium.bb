@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Tests common functionality used by the Chrome Extensions Cookies API
+// implementation.
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
 #include "chrome/test/testing_profile.h"
 
-namespace helpers = extension_cookies_helpers;
 namespace keys = extension_cookies_api_constants;
 
 namespace {
@@ -20,7 +22,7 @@ struct DomainMatchCase {
 };
 
 // A test profile that supports linking with another profile for off-the-record
-// support.
+// (a.k.a. incognito) support.
 class OtrTestingProfile : public TestingProfile {
  public:
   OtrTestingProfile() : linked_profile_(NULL) {}
@@ -62,21 +64,35 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
   otrProfile.set_off_the_record(true);
   OtrTestingProfile::LinkProfiles(&profile, &otrProfile);
 
-  EXPECT_EQ("0", helpers::GetStoreIdFromProfile(&profile));
-  EXPECT_EQ(&profile, helpers::ChooseProfileFromStoreId("0", &profile, true));
-  EXPECT_EQ(&profile, helpers::ChooseProfileFromStoreId("0", &profile, false));
+  EXPECT_EQ(std::string("0"),
+            extension_cookies_helpers::GetStoreIdFromProfile(&profile));
+  EXPECT_EQ(&profile,
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "0", &profile, true));
+  EXPECT_EQ(&profile,
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "0", &profile, false));
   EXPECT_EQ(&otrProfile,
-            helpers::ChooseProfileFromStoreId("1", &profile, true));
-  EXPECT_EQ(NULL, helpers::ChooseProfileFromStoreId("1", &profile, false));
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "1", &profile, true));
+  EXPECT_EQ(NULL,
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "1", &profile, false));
 
-  EXPECT_EQ("1", helpers::GetStoreIdFromProfile(&otrProfile));
+  EXPECT_EQ(std::string("1"),
+            extension_cookies_helpers::GetStoreIdFromProfile(&otrProfile));
   EXPECT_EQ(&profile,
-            helpers::ChooseProfileFromStoreId("0", &otrProfile, true));
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "0", &otrProfile, true));
   EXPECT_EQ(&profile,
-            helpers::ChooseProfileFromStoreId("0", &otrProfile, false));
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "0", &otrProfile, false));
   EXPECT_EQ(&otrProfile,
-            helpers::ChooseProfileFromStoreId("1", &otrProfile, true));
-  EXPECT_EQ(NULL, helpers::ChooseProfileFromStoreId("1", &otrProfile, false));
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "1", &otrProfile, true));
+  EXPECT_EQ(NULL,
+            extension_cookies_helpers::ChooseProfileFromStoreId(
+                "1", &otrProfile, false));
 }
 
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
@@ -90,7 +106,8 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
       base::Time(), base::Time(), false, base::Time());
   net::CookieMonster::CookieListPair cookie_pair1("www.foobar.com", cookie1);
   scoped_ptr<DictionaryValue> cookie_value1(
-    helpers::CreateCookieValue(cookie_pair1, "some cookie store"));
+      extension_cookies_helpers::CreateCookieValue(
+          cookie_pair1, "some cookie store"));
   EXPECT_TRUE(cookie_value1->GetString(keys::kNameKey, &string_value));
   EXPECT_EQ("ABC", string_value);
   EXPECT_TRUE(cookie_value1->GetString(keys::kValueKey, &string_value));
@@ -117,7 +134,8 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
       base::Time(), base::Time(), true, base::Time::FromDoubleT(10000));
   net::CookieMonster::CookieListPair cookie_pair2(".foobar.com", cookie2);
   scoped_ptr<DictionaryValue> cookie_value2(
-      helpers::CreateCookieValue(cookie_pair2, "some cookie store"));
+      extension_cookies_helpers::CreateCookieValue(
+          cookie_pair2, "some cookie store"));
   EXPECT_TRUE(cookie_value2->GetBoolean(keys::kHostOnlyKey, &boolean_value));
   EXPECT_EQ(false, boolean_value);
   EXPECT_TRUE(cookie_value2->GetBoolean(keys::kSessionKey, &boolean_value));
@@ -128,7 +146,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   TestingProfile profile;
   ListValue* tab_ids = new ListValue();
   scoped_ptr<DictionaryValue> cookie_store_value(
-      helpers::CreateCookieStoreValue(&profile, tab_ids));
+      extension_cookies_helpers::CreateCookieStoreValue(&profile, tab_ids));
   EXPECT_TRUE(cookie_store_value->GetString(keys::kIdKey, &string_value));
   EXPECT_EQ("0", string_value);
   EXPECT_TRUE(cookie_store_value->Get(keys::kTabIdsKey, &value));
@@ -141,19 +159,21 @@ TEST_F(ExtensionCookiesTest, GetURLFromCookiePair) {
       base::Time(), base::Time(), false, base::Time());
   net::CookieMonster::CookieListPair cookie_pair1("www.foobar.com", cookie1);
   EXPECT_EQ("http://www.foobar.com/",
-            helpers::GetURLFromCookiePair(cookie_pair1).spec());
+            extension_cookies_helpers::GetURLFromCookiePair(
+                cookie_pair1).spec());
 
   net::CookieMonster::CanonicalCookie cookie2(
       "ABC", "DEF", "/", true, false,
       base::Time(), base::Time(), false, base::Time());
   net::CookieMonster::CookieListPair cookie_pair2(".helloworld.com", cookie2);
   EXPECT_EQ("https://helloworld.com/",
-            helpers::GetURLFromCookiePair(cookie_pair2).spec());
+            extension_cookies_helpers::GetURLFromCookiePair(
+                cookie_pair2).spec());
 }
 
 TEST_F(ExtensionCookiesTest, EmptyDictionary) {
   scoped_ptr<DictionaryValue> details(new DictionaryValue());
-  helpers::MatchFilter filter(details.get());
+  extension_cookies_helpers::MatchFilter filter(details.get());
   std::string domain;
   net::CookieMonster::CanonicalCookie cookie;
   net::CookieMonster::CookieListPair cookie_pair(domain, cookie);
@@ -176,7 +196,7 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
   net::CookieMonster::CanonicalCookie cookie;
   for (size_t i = 0; i < arraysize(tests); ++i) {
     details->SetString(keys::kDomainKey, std::string(tests[i].filter));
-    helpers::MatchFilter filter(details.get());
+    extension_cookies_helpers::MatchFilter filter(details.get());
     net::CookieMonster::CookieListPair cookie_pair(tests[i].domain, cookie);
     EXPECT_EQ(tests[i].matches, filter.MatchesCookie(cookie_pair));
   }

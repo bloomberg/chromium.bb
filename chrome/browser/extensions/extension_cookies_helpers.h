@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Defines common functionality used by the implementation of the Chrome
+// Extensions Cookies API implemented in
+// chrome/browser/extensions/extension_cookies_api.cc. This separate interface
+// exposes pieces of the API implementation mainly for unit testing purposes.
+
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_HELPERS_H_
 
@@ -18,19 +23,24 @@ namespace extension_cookies_helpers {
 
 // Returns either the original profile or the incognito profile, based on the
 // given store ID.  Returns NULL if the profile doesn't exist or is not allowed
-// (e.g. if incognito is not enabled for the extension).
+// (e.g. if incognito mode is not enabled for the extension).
 Profile* ChooseProfileFromStoreId(const std::string& store_id,
                                   Profile* profile,
                                   bool include_incognito);
 
-std::string GetStoreIdFromProfile(Profile* profile);
+// Returns the store ID for a particular user profile.
+const char* GetStoreIdFromProfile(Profile* profile);
 
-// Constructs a Cookie object as defined by the cookies API.
+// Constructs a Cookie object as defined by the cookies API. This function
+// allocates a new DictionaryValue object; the caller is responsible for
+// freeing it.
 DictionaryValue* CreateCookieValue(
     const net::CookieMonster::CookieListPair& cookie_pair,
     const std::string& store_id);
 
-// Constructs a CookieStore object as defined by the cookies API.
+// Constructs a CookieStore object as defined by the cookies API. This function
+// allocates a new DictionaryValue object; the caller is responsible for
+// freeing it.
 DictionaryValue* CreateCookieStoreValue(Profile* profile,
                                         ListValue* tab_ids);
 
@@ -77,7 +87,14 @@ class MatchFilter {
   bool MatchesCookie(const net::CookieMonster::CookieListPair& cookie_pair);
 
  private:
+  // Returns true if the details dictionary contains a string with the given
+  // key and value. Also returns true if the dictionary doesn't contain the
+  // given key at all (trival match).
   bool MatchesString(const wchar_t* key, const std::string& value);
+
+  // Returns true if the details dictionary contains a boolean with the given
+  // key and value. Also returns true if the dictionary doesn't contain the
+  // given key at all (trival match).
   bool MatchesBoolean(const wchar_t* key, bool value);
 
   // Returns true if the given cookie domain string matches the filter's

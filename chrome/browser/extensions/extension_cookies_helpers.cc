@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Implements common functionality for the Chrome Extensions Cookies API.
+
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
 
 #include "base/logging.h"
@@ -31,7 +33,7 @@ Profile* ChooseProfileFromStoreId(const std::string& store_id,
   return NULL;
 }
 
-std::string GetStoreIdFromProfile(Profile* profile) {
+const char* GetStoreIdFromProfile(Profile* profile) {
   DCHECK(profile);
   return profile->IsOffTheRecord() ?
       kOffTheRecordProfileStoreId : kOriginalProfileStoreId;
@@ -76,9 +78,8 @@ net::CookieMonster::CookieList GetCookieListFromStore(
   if (!url.is_empty()) {
     DCHECK(url.is_valid());
     return monster->GetAllCookiesForURL(url);
-  } else {
-    return monster->GetAllCookies();
   }
+  return monster->GetAllCookies();
 }
 
 GURL GetURLFromCookiePair(
@@ -131,17 +132,12 @@ MatchFilter::MatchFilter(const DictionaryValue* details)
 bool MatchFilter::MatchesCookie(
     const net::CookieMonster::CookieListPair& cookie_pair) {
   const net::CookieMonster::CanonicalCookie& cookie = cookie_pair.second;
-  if (!MatchesString(keys::kNameKey, cookie.Name()))
-      return false;
-  if (!MatchesDomain(cookie_pair.first))
-      return false;
-  if (!MatchesString(keys::kPathKey, cookie.Path()))
-      return false;
-  if (!MatchesBoolean(keys::kSecureKey, cookie.IsSecure()))
-      return false;
-  if (!MatchesBoolean(keys::kSessionKey, !cookie.DoesExpire()))
-      return false;
-  return true;
+  return
+      MatchesString(keys::kNameKey, cookie.Name()) &&
+      MatchesDomain(cookie_pair.first) &&
+      MatchesString(keys::kPathKey, cookie.Path()) &&
+      MatchesBoolean(keys::kSecureKey, cookie.IsSecure()) &&
+      MatchesBoolean(keys::kSessionKey, !cookie.DoesExpire());
 }
 
 bool MatchFilter::MatchesString(const wchar_t* key, const std::string& value) {
@@ -169,18 +165,16 @@ bool MatchFilter::MatchesDomain(const std::string& domain) {
     return false;
   // Add a leading '.' character to the filter domain if it doesn't exist.
   if (net::CookieMonster::DomainIsHostOnly(filter_value))
-    filter_value = "." + filter_value;
+    filter_value.insert(0, ".");
 
   std::string sub_domain(domain);
   // Strip any leading '.' character from the input cookie domain.
   if (!net::CookieMonster::DomainIsHostOnly(sub_domain))
     sub_domain = sub_domain.substr(1);
 
-  // Now check whether the domain argument is a subdomain of
-  // the filter domain.
-  for (sub_domain = "." + sub_domain;
-       sub_domain.length() >= filter_value.length();
-       ) {
+  // Now check whether the domain argument is a subdomain of the filter domain.
+  for (sub_domain.insert(0, ".");
+       sub_domain.length() >= filter_value.length();) {
     if (sub_domain == filter_value)
       return true;
     const size_t next_dot = sub_domain.find('.', 1);  // Skip over leading dot.
