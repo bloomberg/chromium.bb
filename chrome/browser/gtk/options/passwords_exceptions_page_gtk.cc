@@ -115,11 +115,10 @@ void PasswordsExceptionsPageGtk::SetExceptionList(
   exception_list_.resize(result.size());
   for (size_t i = 0; i < result.size(); ++i) {
     exception_list_[i] = *result[i];
-    std::wstring formatted = net::FormatUrl(result[i]->origin, languages);
-    std::string site = WideToUTF8(formatted);
     GtkTreeIter iter;
     gtk_list_store_insert_with_values(exception_list_store_, &iter, (gint) i,
-                                      COL_SITE, site.c_str(), -1);
+        COL_SITE,
+        WideToUTF8(net::FormatUrl(result[i]->origin, languages)).c_str(), -1);
   }
   gtk_widget_set_sensitive(remove_all_button_, result.size() > 0);
 }

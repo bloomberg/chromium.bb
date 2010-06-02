@@ -1101,6 +1101,8 @@ HRESULT ChromeActiveDocument::OnEncodingChange(const GUID* cmd_group_guid,
     return E_FAIL;
   }
 
+  // Using ARRAYSIZE_UNSAFE in here is because we define the struct
+  // EncodingMapData inside function.
   const char* chrome_encoding_name = NULL;
   for (int i = 0; i < ARRAYSIZE_UNSAFE(kEncodingTestDatas); ++i) {
     const struct EncodingMapData* encoding_data = &kEncodingTestDatas[i];

@@ -126,8 +126,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetStringF(
         IDS_GEOLOCATION_INFOBAR_QUESTION,
-        net::FormatUrl(requesting_frame_url_.GetOrigin(), display_languages_,
-                       true, UnescapeRule::SPACES, NULL, NULL, NULL));
+        net::FormatUrl(requesting_frame_url_.GetOrigin(), display_languages_));
   }
   virtual SkBitmap* GetIcon() const {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(

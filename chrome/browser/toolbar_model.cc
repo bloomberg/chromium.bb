@@ -46,13 +46,8 @@ std::wstring ToolbarModel::GetText() const {
       url = entry->virtual_url();
     }
   }
-  if (url.spec().length() > chrome::kMaxURLDisplayChars) {
-    if (url.IsStandard()) {
-      url = url.GetOrigin();
-    } else {
-      url = GURL(url.scheme() + ":");
-    }
-  }
+  if (url.spec().length() > chrome::kMaxURLDisplayChars)
+    url = url.IsStandard() ? url.GetOrigin() : GURL(url.scheme() + ":");
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
   // the space.

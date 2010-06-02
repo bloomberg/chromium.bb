@@ -289,7 +289,8 @@ bool CheckAndResolveLocale(const std::string& locale,
   // We need to map them to our codes.
   struct {
     const char* source;
-    const char* dest;} alias_map[] = {
+    const char* dest;
+  } alias_map[] = {
       {"no", "nb"},
       {"tl", "fil"},
       {"iw", "he"},
