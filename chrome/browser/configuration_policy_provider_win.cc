@@ -9,15 +9,10 @@
 #include "base/logging.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
-
-const wchar_t ConfigurationPolicyProviderWin::kHomepageRegistryValueName[] =
-    L"Homepage";
-const wchar_t ConfigurationPolicyProviderWin::
-    kHomepageIsNewTabPageRegistryValueName[] = L"HomepageIsNewTabPage";
-const wchar_t ConfigurationPolicyProviderWin::kCookiesModeRegistryValueName[] =
-    L"CookiesMode";
 
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t ConfigurationPolicyProviderWin::kPolicyRegistrySubKey[] =
@@ -101,48 +96,32 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
   return false;
 }
 
-const ConfigurationPolicyProviderWin::RegistryPolicyMapEntry
-    ConfigurationPolicyProviderWin::registry_to_policy_map_[] = {
-    { Value::TYPE_STRING,
-      ConfigurationPolicyStore::kPolicyHomePage,
-      kHomepageRegistryValueName },
-    { Value::TYPE_BOOLEAN,
-      ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
-      kHomepageIsNewTabPageRegistryValueName },
-    { Value::TYPE_INTEGER,
-      ConfigurationPolicyStore::kPolicyCookiesMode,
-      kCookiesModeRegistryValueName },
-};
-
 bool ConfigurationPolicyProviderWin::Provide(
     ConfigurationPolicyStore* store) {
-  const RegistryPolicyMapEntry* current;
-  const RegistryPolicyMapEntry* end = registry_to_policy_map_ +
-      arraysize(registry_to_policy_map_);
+  const PolicyValueMap* mapping = PolicyValueMapping();
 
-  for (current = registry_to_policy_map_; current != end; ++current) {
+  for (PolicyValueMap::const_iterator current = mapping->begin();
+       current != mapping->end(); ++current) {
+    std::wstring name = UTF8ToWide(current->name);
     std::wstring string_value;
     uint32 int_value;
     bool bool_value;
     switch (current->value_type) {
       case Value::TYPE_STRING:
-        if (GetRegistryPolicyString(current->registry_value_name,
-                                    &string_value)) {
+        if (GetRegistryPolicyString(name.c_str(), &string_value)) {
           store->Apply(
               current->policy_type,
               Value::CreateStringValueFromUTF16(string_value));
         }
         break;
       case Value::TYPE_BOOLEAN:
-        if (GetRegistryPolicyBoolean(current->registry_value_name,
-                                     &bool_value)) {
+        if (GetRegistryPolicyBoolean(name.c_str(), &bool_value)) {
           store->Apply(current->policy_type,
                        Value::CreateBooleanValue(bool_value));
         }
         break;
       case Value::TYPE_INTEGER:
-        if (GetRegistryPolicyInteger(current->registry_value_name,
-                                     &int_value)) {
+        if (GetRegistryPolicyInteger(name.c_str(), &int_value)) {
           store->Apply(current->policy_type,
                        Value::CreateIntegerValue(int_value));
         }

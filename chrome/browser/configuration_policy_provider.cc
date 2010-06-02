@@ -5,36 +5,43 @@
 #include "chrome/browser/configuration_policy_provider.h"
 
 #include "base/values.h"
-#include "chrome/browser/configuration_policy_store.h"
 
 namespace {
 
-struct PolicyValueTreeMappingEntry {
+// TODO(avi): Use this mapping to auto-generate MCX manifests and Windows
+// ADM/ADMX files. http://crbug.com/45334
+
+struct InternalPolicyValueMapEntry {
   ConfigurationPolicyStore::PolicyType policy_type;
   Value::ValueType value_type;
-  const wchar_t* const name;
+  const char* name;
 };
 
-const PolicyValueTreeMappingEntry kPolicyValueTreeMapping[] = {
+const InternalPolicyValueMapEntry kPolicyValueMap[] = {
   { ConfigurationPolicyStore::kPolicyHomePage,
-    Value::TYPE_STRING, L"homepage" },
+    Value::TYPE_STRING, "Homepage" },
   { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
-    Value::TYPE_BOOLEAN, L"homepage_is_newtabpage" },
+    Value::TYPE_BOOLEAN, "HomepageIsNewTabPage" },
   { ConfigurationPolicyStore::kPolicyCookiesMode,
-    Value::TYPE_INTEGER, L"cookies_enabled" }
+    Value::TYPE_INTEGER, "CookiesMode" }
 };
 
-}
+}  // namespace
 
-void DecodePolicyValueTree(DictionaryValue* policies,
-                           ConfigurationPolicyStore* store) {
-  for (size_t i = 0; i < arraysize(kPolicyValueTreeMapping); ++i) {
-    const PolicyValueTreeMappingEntry& entry(kPolicyValueTreeMapping[i]);
-    Value* value;
-    if (policies->Get(entry.name, &value) && value->IsType(entry.value_type))
-      store->Apply(entry.policy_type, value->DeepCopy());
+/* static */
+const ConfigurationPolicyProvider::PolicyValueMap*
+    ConfigurationPolicyProvider::PolicyValueMapping() {
+  static PolicyValueMap* mapping;
+  if (!mapping) {
+    mapping = new PolicyValueMap();
+    for (size_t i = 0; i < arraysize(kPolicyValueMap); ++i) {
+      const InternalPolicyValueMapEntry& internal_entry = kPolicyValueMap[i];
+      PolicyValueMapEntry entry;
+      entry.policy_type = internal_entry.policy_type;
+      entry.value_type = internal_entry.value_type;
+      entry.name = std::string(internal_entry.name);
+      mapping->push_back(entry);
+    }
   }
-
-  // TODO (mnissler) Handle preference overrides once |ConfigurationPolicyStore|
-  // supports it.
+  return mapping;
 }

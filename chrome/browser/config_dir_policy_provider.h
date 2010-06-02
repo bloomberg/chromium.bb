@@ -29,6 +29,10 @@ class ConfigDirPolicyProvider : public ConfigurationPolicyProvider {
   // Read and merge the files from the configuration directory.
   DictionaryValue* ReadPolicies();
 
+  // Decodes the value tree and writes the configuration to the given |store|.
+  void DecodePolicyValueTree(DictionaryValue* policies,
+                             ConfigurationPolicyStore* store);
+
   // The directory in which we look for configuration files.
   const FilePath config_dir_;
 

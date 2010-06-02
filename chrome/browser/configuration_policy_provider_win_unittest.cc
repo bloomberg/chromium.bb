@@ -9,17 +9,21 @@
 #include "base/logging.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/configuration_policy_provider_win.h"
 #include "chrome/browser/mock_configuration_policy_store.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
+
 const wchar_t kUnitTestRegistrySubKey[] = L"SOFTWARE\\Chromium Unit Tests";
 const wchar_t kUnitTestMachineOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKLM Override";
 const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
-}
+
+}  // namespace
 
 // A subclass of |ConfigurationPolicyProviderWin| providing access to
 // internal protected constants without an orgy of FRIEND_TESTS.
@@ -33,7 +37,27 @@ class TestConfigurationPolicyProviderWin
   void SetHomepageRegistryValueWrongType(HKEY hive);
   void SetHomepageIsNewTabPage(HKEY hive, bool value);
   void SetCookiesMode(HKEY hive, uint32 value);
+
+  typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
+  static const PolicyValueMap* PolicyValueMapping() {
+    return ConfigurationPolicyProvider::PolicyValueMapping();
+  }
 };
+
+namespace {
+
+std::wstring NameForPolicy(ConfigurationPolicyStore::PolicyType policy) {
+  const TestConfigurationPolicyProviderWin::PolicyValueMap* mapping =
+      TestConfigurationPolicyProviderWin::PolicyValueMapping();
+  for (TestConfigurationPolicyProviderWin::PolicyValueMap::const_iterator
+       current = mapping->begin(); current != mapping->end(); ++current) {
+    if (current->policy_type == policy)
+      return UTF8ToWide(current->name);
+  }
+  return NULL;
+}
+
+}  // namespace
 
 void TestConfigurationPolicyProviderWin::SetHomepageRegistryValue(
     HKEY hive,
@@ -42,7 +66,7 @@ void TestConfigurationPolicyProviderWin::SetHomepageRegistryValue(
       ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
-      ConfigurationPolicyProviderWin::kHomepageRegistryValueName,
+      NameForPolicy(ConfigurationPolicyStore::kPolicyHomePage).c_str(),
       value));
 }
 
@@ -52,7 +76,7 @@ void TestConfigurationPolicyProviderWin::SetHomepageRegistryValueWrongType(
       ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
-      ConfigurationPolicyProviderWin::kHomepageRegistryValueName,
+      NameForPolicy(ConfigurationPolicyStore::kPolicyHomePage).c_str(),
       5));
 }
 
@@ -62,8 +86,8 @@ void TestConfigurationPolicyProviderWin::SetHomepageIsNewTabPage(
   RegKey key(hive,
       ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
-  EXPECT_TRUE(key.WriteValue(
-      ConfigurationPolicyProviderWin::kHomepageIsNewTabPageRegistryValueName,
+  EXPECT_TRUE(key.WriteValue(NameForPolicy(
+      ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage).c_str(),
       value));
 }
 
@@ -74,7 +98,7 @@ void TestConfigurationPolicyProviderWin::SetCookiesMode(
       ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
-      ConfigurationPolicyProviderWin::kCookiesModeRegistryValueName,
+      NameForPolicy(ConfigurationPolicyStore::kPolicyCookiesMode).c_str(),
       value));
 }
 

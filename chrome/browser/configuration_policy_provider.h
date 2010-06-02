@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include <vector>
 
-class ConfigurationPolicyStore;
+#include "base/basictypes.h"
+#include "chrome/browser/configuration_policy_store.h"
+
 class DictionaryValue;
 
-// An abstract super class for platform-specific policy providers.
+// A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.
 class ConfigurationPolicyProvider {
@@ -27,15 +29,22 @@ class ConfigurationPolicyProvider {
   // Returns true if the policy could be provided, otherwise false.
   virtual bool Provide(ConfigurationPolicyStore* store) = 0;
 
+ protected:
+  // A structure mapping policies to their implementations by providers.
+  struct PolicyValueMapEntry {
+    ConfigurationPolicyStore::PolicyType policy_type;
+    Value::ValueType value_type;
+    std::string name;
+  };
+  typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
+
+  // Returns the mapping from policy values to the actual names used by
+  // implementations.
+  static const PolicyValueMap* PolicyValueMapping();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };
-
-// Base functionality for all policy providers that use a DictionaryValue tree
-// structure holding key-value pairs for storing policy settings. Decodes the
-// value tree and writes the configuration to the given |store|.
-void DecodePolicyValueTree(DictionaryValue* policies,
-                           ConfigurationPolicyStore* store);
 
 #endif  // CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
 

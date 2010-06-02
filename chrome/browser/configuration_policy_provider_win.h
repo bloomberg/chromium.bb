@@ -27,25 +27,7 @@ class ConfigurationPolicyProviderWin : public ConfigurationPolicyProvider {
   // Windows registry.
   static const wchar_t kPolicyRegistrySubKey[];
 
-  // Constants specifying the names of policy-specifying registry values
-  // in |kChromiumPolicySubKey|.
-  static const wchar_t kHomepageRegistryValueName[];
-  static const wchar_t kHomepageIsNewTabPageRegistryValueName[];
-  static const wchar_t kCookiesModeRegistryValueName[];
-
  private:
-  // For each Group Policy registry value that maps to a browser policy, there
-  // is an entry in |registry_to_policy_map_| of type |RegistryPolicyMapEntry|
-  // that specifies the registry value name and the browser policy that it
-  // maps to.
-  struct RegistryPolicyMapEntry {
-    Value::ValueType value_type;
-    ConfigurationPolicyStore::PolicyType policy_type;
-    const wchar_t* registry_value_name;
-  };
-
-  static const RegistryPolicyMapEntry registry_to_policy_map_[];
-
   // Methods to perfrom type-specific policy lookups in the registry.
   // HKLM is checked first, then HKCU.
   bool GetRegistryPolicyString(const wchar_t* value_name, string16* result);

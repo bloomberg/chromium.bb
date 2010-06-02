@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/json_value_serializer.h"
 
@@ -54,3 +55,21 @@ DictionaryValue* ConfigDirPolicyProvider::ReadPolicies() {
 
   return policy;
 }
+
+void ConfigDirPolicyProvider::DecodePolicyValueTree(
+    DictionaryValue* policies,
+    ConfigurationPolicyStore* store) {
+  const PolicyValueMap* mapping = PolicyValueMapping();
+  for (PolicyValueMap::const_iterator i = mapping->begin();
+       i != mapping->end(); ++i) {
+    const PolicyValueMapEntry& entry(*i);
+    Value* value;
+    if (policies->Get(UTF8ToWide(entry.name), &value) &&
+        value->IsType(entry.value_type))
+      store->Apply(entry.policy_type, value->DeepCopy());
+  }
+
+  // TODO(mnissler): Handle preference overrides once |ConfigurationPolicyStore|
+  // supports it.
+}
+

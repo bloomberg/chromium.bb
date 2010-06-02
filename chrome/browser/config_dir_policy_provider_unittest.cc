@@ -67,7 +67,7 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsNonExistentDirectory) {
 // Test reading back a single preference value.
 TEST_F(ConfigDirPolicyProviderTest, ReadPrefsSinglePref) {
   DictionaryValue test_dict;
-  test_dict.SetString(L"homepage", L"http://www.google.com");
+  test_dict.SetString(L"Homepage", L"http://www.google.com");
   WriteConfigFile(test_dict, "config_file");
   ConfigDirPolicyProvider provider(test_dir_);
 
@@ -91,11 +91,11 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
   // filesystem may return files in arbitrary order, there is no way to be sure,
   // but this is better than nothing.
   DictionaryValue test_dict_bar;
-  test_dict_bar.SetString(L"homepage", L"http://bar.com");
+  test_dict_bar.SetString(L"Homepage", L"http://bar.com");
   for (unsigned int i = 1; i <= 4; ++i)
     WriteConfigFile(test_dict_bar, IntToString(i));
   DictionaryValue test_dict_foo;
-  test_dict_foo.SetString(L"homepage", L"http://foo.com");
+  test_dict_foo.SetString(L"Homepage", L"http://foo.com");
   WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
     WriteConfigFile(test_dict_bar, IntToString(i));
