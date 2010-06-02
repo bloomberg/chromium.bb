@@ -373,10 +373,14 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   // Cleanup function; must be called on the IO Thread.
   static void CleanupIOThread() {
-    http_server_->Release();
-    http_server_ = NULL;
-    request_context_->Release();
-    request_context_ = NULL;
+    if (http_server_) {
+      http_server_->Release();
+      http_server_ = NULL;
+    }
+    if (request_context_) {
+      request_context_->Release();
+      request_context_ = NULL;
+    }
     io_thread_shutdown_event_->Signal();
   }
 
@@ -394,6 +398,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   // when it goes out of scope.
   template <class Method>
   void RunTestOnIOThread(Method method) {
+    EXPECT_TRUE(http_server_);
+    if (!http_server_)
+      return;  // Don't even try to run any of these tests w/o the server.
+
     event_.reset(new base::WaitableEvent(false, false));
     io_thread_->message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(this, method));
@@ -3038,14 +3046,7 @@ TEST_F(AppCacheUpdateJobTest, ManifestRedirect) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestRedirectTest);
 }
 
-#if defined(OS_MACOSX)
-// Crashing on mac webkit bots. http://crbug.com/45664
-#define MAYBE_ManifestWrongMimeType DISABLED_ManifestWrongMimeType
-#else
-#define MAYBE_ManifestWrongMimeType ManifestWrongMimeType
-#endif
-
-TEST_F(AppCacheUpdateJobTest, MAYBE_ManifestWrongMimeType) {
+TEST_F(AppCacheUpdateJobTest, ManifestWrongMimeType) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestWrongMimeTypeTest);
 }
 
