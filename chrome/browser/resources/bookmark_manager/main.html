@@ -1135,6 +1135,49 @@ document.addEventListener('canExecute', function(e) {
   }
 });
 
+/**
+ * Helper function for handling canExecute for the list and the tree.
+ * @param {!Event} e Can exectue event object.
+ * @param {boolean} isRecentOrSearch Whether the user is trying to do a command
+ *     on recent or search.
+ */
+function canExcuteShared(e, isRecentOrSearch) {
+  var command = e.command;
+  var commandId = command.id;
+  switch (commandId) {
+    case 'paste-command':
+      updatePasteCommand();
+      break;
+
+    case 'sort-command':
+      if (isRecentOrSearch) {
+        e.canExecute = false;
+      } else {
+        e.canExecute = list.items.length > 0;
+
+        // The list might be loading so listen to the load event.
+        var f = function() {
+          list.removeEventListener('load', f);
+          command.disabled = list.items.length == 0;
+        };
+        list.addEventListener('load', f);
+      }
+      break;
+
+    case 'add-new-bookmark-command':
+    case 'new-folder-command':
+      e.canExecute = !isRecentOrSearch;
+      break;
+
+    case 'open-in-new-tab-command':
+    case 'open-in-background-tab-command':
+    case 'open-in-new-window-command':
+    case 'open-incognito-window-command':
+      updateOpenCommands(e, command);
+      break;
+  }
+}
+
 // Update canExecute for the commands when the list is the active element.
 list.addEventListener('canExecute', function(e) {
   if (e.target != list) return;
@@ -1191,26 +1234,12 @@ list.addEventListener('canExecute', function(e) {
       e.canExecute = hasSelected();
       break;
 
-    case 'paste-command':
-      updatePasteCommand();
-      break;
-
-    case 'sort-command':
-    case 'add-new-bookmark-command':
-    case 'new-folder-command':
-      e.canExecute = !isRecentOrSearch();
-      break;
-
-    case 'open-in-new-tab-command':
-    case 'open-in-background-tab-command':
-    case 'open-in-new-window-command':
-    case 'open-incognito-window-command':
-      updateOpenCommands(e, command);
-      break;
-
     case 'open-in-same-window-command':
       e.canExecute = hasSelected();
       break;
+
+    default:
+      canExcuteShared(e, isRecentOrSearch());
   }
 });
 
@@ -1251,22 +1280,8 @@ tree.addEventListener('canExecute', function(e) {
       e.canExecute = hasSelected() && !isTopLevelItem();
       break;
 
-    case 'paste-command':
-      updatePasteCommand();
-      break;
-
-    case 'sort-command':
-    case 'add-new-bookmark-command':
-    case 'new-folder-command':
-      e.canExecute = !isRecentOrSearch();
-      break;
-
-    case 'open-in-new-tab-command':
-    case 'open-in-background-tab-command':
-    case 'open-in-new-window-command':
-    case 'open-incognito-window-command':
-      updateOpenCommands(e, command);
-      break;
+    default:
+      canExcuteShared(e, isRecentOrSearch());
   }
 });
 
