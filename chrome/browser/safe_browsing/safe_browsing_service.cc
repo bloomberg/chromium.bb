@@ -60,13 +60,17 @@ void SafeBrowsingService::ShutDown() {
 }
 
 bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
-  return url.SchemeIs(chrome::kHttpScheme) ||
+  return url.SchemeIs(chrome::kFtpScheme) ||
+         url.SchemeIs(chrome::kHttpScheme) ||
          url.SchemeIs(chrome::kHttpsScheme);
 }
 
 bool SafeBrowsingService::CheckUrl(const GURL& url, Client* client) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!enabled_)
+    return true;
+
+  if (!CanCheckUrl(url))
     return true;
 
   if (!MakeDatabaseAvailable()) {

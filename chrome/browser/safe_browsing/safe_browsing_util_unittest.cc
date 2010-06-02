@@ -239,6 +239,26 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
       "host.com",
       "/abc/def/xyz",
       ""
+    }, {
+      "ftp://host.com/foo?bar",
+      "host.com",
+      "/foo",
+      "bar"
+    }, {
+      "data:text/html;charset=utf-8,%0D%0A",
+      "",
+      "",
+      ""
+    }, {
+      "javascript:alert()",
+      "",
+      "",
+      ""
+    }, {
+      "mailto:abc@example.com",
+      "",
+      "",
+      ""
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {

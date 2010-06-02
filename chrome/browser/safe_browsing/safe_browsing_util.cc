@@ -214,6 +214,12 @@ void CanonicalizeUrl(const GURL& url,
                      std::string* canonicalized_hostname,
                      std::string* canonicalized_path,
                      std::string* canonicalized_query) {
+  DCHECK(url.is_valid());
+
+  // We only canonicalize "normal" URLs.
+  if (!url.IsStandard())
+    return;
+
   // Following canonicalization steps are excluded since url parsing takes care
   // of those :-
   // 1. Remove any tab (0x09), CR (0x0d), and LF (0x0a) chars from url.
@@ -354,7 +360,7 @@ void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths) {
       paths->push_back(std::string(path.begin(), i + 1));
   }
 
-  if (paths->back() != path)
+  if (!paths->empty() && paths->back() != path)
     paths->push_back(path);
 
   if (!query.empty())
