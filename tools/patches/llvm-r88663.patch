@@ -141,6 +141,101 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMBaseInstrInfo.cpp
      BuildMI(MBB, MBBI, dl, TII.get(Opc), DestReg)
        .addReg(BaseReg, RegState::Kill).addImm(ThisVal)
        .addImm((unsigned)Pred).addReg(PredReg).addReg(0);
+diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMBaseRegisterInfo.cpp
+--- a/llvm-trunk/lib/Target/ARM/ARMBaseRegisterInfo.cpp
++++ b/llvm-trunk/lib/Target/ARM/ARMBaseRegisterInfo.cpp
+@@ -143,10 +143,21 @@
+     FramePtr((STI.isTargetDarwin() || STI.isThumb()) ? ARM::R7 : ARM::R11) {
+ }
+ 
++extern cl::opt<bool> ReserveR9; // @LOCALMOD
++
+ const unsigned*
+ ARMBaseRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
+   static const unsigned CalleeSavedRegs[] = {
+     ARM::LR, ARM::R11, ARM::R10, ARM::R9, ARM::R8,
++    ARM::R7, ARM::R6,  ARM::R5,  ARM::R4,
++
++    ARM::D15, ARM::D14, ARM::D13, ARM::D12,
++    ARM::D11, ARM::D10, ARM::D9,  ARM::D8,
++    0
++  };
++
++  static const unsigned CalleeSavedRegsNoR9[] = { // @LOCALMOD
++    ARM::LR, ARM::R11, ARM::R10, ARM::R8,
+     ARM::R7, ARM::R6,  ARM::R5,  ARM::R4,
+ 
+     ARM::D15, ARM::D14, ARM::D13, ARM::D12,
+@@ -164,14 +175,30 @@
+     ARM::D11, ARM::D10, ARM::D9,  ARM::D8,
+     0
+   };
+-  return STI.isTargetDarwin() ? DarwinCalleeSavedRegs : CalleeSavedRegs;
++  if (STI.isTargetDarwin())
++    return DarwinCalleeSavedRegs;
++  if (ReserveR9)
++    return CalleeSavedRegsNoR9; // @LOCALMOD
++  return CalleeSavedRegs;
+ }
+ 
+ const TargetRegisterClass* const *
+ ARMBaseRegisterInfo::getCalleeSavedRegClasses(const MachineFunction *MF) const {
++  // FIXME: Having both getCalleeSavedRegClasses and getCalleeSavedRegs is
++  // error prone.
+   static const TargetRegisterClass * const CalleeSavedRegClasses[] = {
+     &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
+     &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
++    &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
++
++    &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass,
++    &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass,
++    0
++  };
++
++  static const TargetRegisterClass * const CalleeSavedRegClassesNoR9[] = { // @LOCALMOD
++    &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
++                       &ARM::GPRRegClass, &ARM::GPRRegClass,
+     &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
+ 
+     &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass,
+@@ -189,6 +216,16 @@
+     0
+   };
+ 
++  static const TargetRegisterClass * const ThumbCalleeSavedRegClassesNoR9[] = { // @LOCALMOD
++    &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
++                       &ARM::GPRRegClass, &ARM::tGPRRegClass,
++    &ARM::tGPRRegClass,&ARM::tGPRRegClass,&ARM::tGPRRegClass,
++
++    &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass,
++    &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass, &ARM::DPRRegClass,
++    0
++  };
++
+   static const TargetRegisterClass * const DarwinCalleeSavedRegClasses[] = {
+     &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
+     &ARM::GPRRegClass, &ARM::GPRRegClass, &ARM::GPRRegClass,
+@@ -209,12 +246,14 @@
+     0
+   };
+ 
+-  if (STI.isThumb1Only()) {
+-    return STI.isTargetDarwin()
+-      ? DarwinThumbCalleeSavedRegClasses : ThumbCalleeSavedRegClasses;
+-  }
+-  return STI.isTargetDarwin()
+-    ? DarwinCalleeSavedRegClasses : CalleeSavedRegClasses;
++  if (STI.isTargetDarwin())
++    return STI.isThumb1Only() ? DarwinThumbCalleeSavedRegClasses :
++      DarwinCalleeSavedRegClasses;
++  if (ReserveR9)
++    return STI.isThumb1Only() ? ThumbCalleeSavedRegClassesNoR9
++      : CalleeSavedRegClassesNoR9;
++  return STI.isThumb1Only() ? ThumbCalleeSavedRegClasses
++    : CalleeSavedRegClasses;
+ }
+ 
+ BitVector ARMBaseRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
 --- a/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
 +++ b/llvm-trunk/lib/Target/ARM/ARMConstantIslandPass.cpp
@@ -1552,10 +1647,19 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
 --- a/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
 +++ b/llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
-@@ -27,6 +27,17 @@
+@@ -19,13 +19,24 @@
+ #include "llvm/ADT/SmallVector.h"
+ using namespace llvm;
+ 
+-static cl::opt<bool>
++cl::opt<bool>  // @LOCALMOD
+ ReserveR9("arm-reserve-r9", cl::Hidden,
+           cl::desc("Reserve R9, making it unavailable as GPR"));
+ static cl::opt<bool>
+ UseNEONFP("arm-use-neon-fp",
            cl::desc("Use NEON for single-precision FP"),
            cl::init(false), cl::Hidden);
- 
++
 +// @LOCALMOD-START
 +// TODO: * This does not currently work as expected for PIC mode:
 +//         It does work, but the table still ends up in the .text section.
@@ -1566,10 +1670,9 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.cpp
 +NoInlineJumpTables("no-inline-jumptables",
 +		  cl::desc("Do not place jump tables inline in the code"));
 +// @LOCALMOD-END
-+
+ 
  ARMSubtarget::ARMSubtarget(const std::string &TT, const std::string &FS,
                             bool isT)
-   : ARMArchVersion(V4T)
 @@ -36,6 +47,7 @@
    , ThumbMode(Thumb1)
    , PostRAScheduler(false)
