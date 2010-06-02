@@ -93,11 +93,12 @@ static const char kFragmentShader[] =
     "uniform sampler2D u_tex;\n"
     "uniform sampler2D v_tex;\n"
     "uniform mat3 yuv2rgb;\n"
+    "uniform float half;\n"
     "\n"
     "void main() {\n"
     "  float y = texture2D(y_tex, interp_tc).x;\n"
-    "  float u = texture2D(u_tex, interp_tc).r - .5;\n"
-    "  float v = texture2D(v_tex, interp_tc).r - .5;\n"
+    "  float u = texture2D(u_tex, interp_tc).r - half;\n"
+    "  float v = texture2D(v_tex, interp_tc).r - half;\n"
     "  vec3 rgb = yuv2rgb * vec3(y, u, v);\n"
     "  gl_FragColor = vec4(rgb, 1);\n"
     "}\n";
@@ -363,6 +364,8 @@ bool GlesVideoRenderer::InitializeGles() {
   glUniform1i(glGetUniformLocation(program, "y_tex"), 0);
   glUniform1i(glGetUniformLocation(program, "u_tex"), 1);
   glUniform1i(glGetUniformLocation(program, "v_tex"), 2);
+  // WAR for some vendor's compiler issues for constant literal.
+  glUniform1f(glGetUniformLocation(program, "half"), 0.5);
   int yuv2rgb_location = glGetUniformLocation(program, "yuv2rgb");
   glUniformMatrix3fv(yuv2rgb_location, 1, GL_FALSE, kYUV2RGB);
 
