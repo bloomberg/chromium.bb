@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
@@ -44,11 +44,14 @@ class OmniboxApiTest : public ExtensionApiTest {
         autocomplete_controller();
   }
 
-  void WaitForHistoryBackendToLoad() {
-    HistoryService* history_service =
-        browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (!history_service->BackendLoaded())
-      ui_test_utils::WaitForNotification(NotificationType::HISTORY_LOADED);
+  void WaitForTemplateURLModelToLoad() {
+    TemplateURLModel* model =
+        browser()->profile()->GetTemplateURLModel();
+    model->Load();
+    if (!model->loaded()) {
+      ui_test_utils::WaitForNotification(
+          NotificationType::TEMPLATE_URL_MODEL_LOADED);
+    }
   }
 
   void WaitForAutocompleteDone(AutocompleteController* controller) {
@@ -66,9 +69,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   ASSERT_TRUE(StartHTTPServer());
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
-  // The results depend on the history backend being loaded. Make sure it is
+  // The results depend on the TemplateURLModel being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  WaitForHistoryBackendToLoad();
+  WaitForTemplateURLModelToLoad();
 
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
