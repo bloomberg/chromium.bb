@@ -29,13 +29,13 @@ ImageButton::ImageButton(ButtonListener* listener)
 ImageButton::~ImageButton() {
 }
 
-void ImageButton::SetImage(ButtonState aState, SkBitmap* anImage) {
+void ImageButton::SetImage(ButtonState aState, const SkBitmap* anImage) {
   images_[aState] = anImage ? *anImage : SkBitmap();
 }
 
 void ImageButton::SetBackground(SkColor color,
-                                SkBitmap* image,
-                                SkBitmap* mask) {
+                                const SkBitmap* image,
+                                const SkBitmap* mask) {
   if (!image || !mask) {
     background_image_.reset();
     return;
@@ -127,7 +127,8 @@ void ToggleImageButton::SetToggled(bool toggled) {
   SchedulePaint();
 }
 
-void ToggleImageButton::SetToggledImage(ButtonState state, SkBitmap* image) {
+void ToggleImageButton::SetToggledImage(ButtonState state,
+                                        const SkBitmap* image) {
   if (toggled_) {
     images_[state] = image ? *image : SkBitmap();
     if (state_ == state)
@@ -144,7 +145,7 @@ void ToggleImageButton::SetToggledTooltipText(const std::wstring& tooltip) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToggleImageButton, ImageButton overrides:
 
-void ToggleImageButton::SetImage(ButtonState state, SkBitmap* image) {
+void ToggleImageButton::SetImage(ButtonState state, const SkBitmap* image) {
   if (toggled_) {
     alternate_images_[state] = image ? *image : SkBitmap();
   } else {
