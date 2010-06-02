@@ -5,6 +5,7 @@
 #include "chrome/browser/geolocation/libgps_wrapper_linux.h"
 
 #include <dlfcn.h>
+#include <errno.h>
 
 #include "chrome/common/geoposition.h"
 #include "base/logging.h"
@@ -20,7 +21,7 @@ LibGpsLibraryLoader* TryToOpen(const char* lib,
     if (wrapper->Init(mode))
       return wrapper.release();
   } else {
-    DLOG(INFO) << "Could not open " << lib << ": " << dlerror();
+    LOG(INFO) << "Could not open " << lib << ": " << dlerror();
   }
   return NULL;
 }
@@ -48,10 +49,15 @@ LibGps* LibGps::New() {
   return NULL;
 }
 
-bool LibGps::Start(std::string* error_out) {
-  if (!library().open(NULL, NULL, error_out))
+bool LibGps::Start() {
+  errno = 0;
+  if (!library().open(NULL, NULL)) {
+    // See gps.h NL_NOxxx for definition of gps_open() error numbers.
+    LOG(INFO) << "gps_open() failed: " << errno;
     return false;
+  }
   if (!StartStreaming()) {
+    LOG(INFO) << "StartStreaming failed";
     library().close();
     return false;
   }
@@ -144,23 +150,15 @@ LibGpsLibraryLoader::~LibGpsLibraryLoader() {
   }
 }
 
-bool LibGpsLibraryLoader::open(const char* host, const char* port,
-                               std::string* error_out) {
-  DCHECK(!gps_data_) << "libgps handle already opened";
+bool LibGpsLibraryLoader::open(const char* host, const char* port) {
+  DCHECK(!gps_data_) << "libgps already opened";
   DCHECK(gps_open_) << "Must call Init() first";
-  std::string dummy;
-  if (!error_out) error_out = &dummy;
-
   gps_data_ = gps_open_(host, port);
-  if (!gps_data_) {  // GPS session was not created.
-    *error_out = "gps_open failed";
-    close();
-  }
-  return gps_data_;
+  return is_open();
 }
 
 void LibGpsLibraryLoader::close() {
-  if (gps_data_) {
+  if (is_open()) {
     DCHECK(gps_close_);
     gps_close_(gps_data_);
     gps_data_ = NULL;

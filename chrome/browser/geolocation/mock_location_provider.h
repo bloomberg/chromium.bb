@@ -17,7 +17,6 @@ class MockLocationProvider : public LocationProviderBase {
   ~MockLocationProvider();
 
   using LocationProviderBase::UpdateListeners;
-  using LocationProviderBase::InformListenersOfMovement;
 
   // LocationProviderBase implementation.
   virtual bool StartProvider();

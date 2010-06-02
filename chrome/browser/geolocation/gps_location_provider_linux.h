@@ -45,7 +45,6 @@ class GpsLocationProviderLinux : public LocationProviderBase {
 
   const LibGpsFactory libgps_factory_;
   scoped_ptr<LibGps> gps_;
-  std::string error_msg_;
   Geoposition position_;
 
   // Holder for the tasks which run on the thread; takes care of cleanup.

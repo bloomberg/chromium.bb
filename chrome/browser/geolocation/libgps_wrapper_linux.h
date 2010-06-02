@@ -28,7 +28,7 @@ class LibGps {
   // failure.
   static LibGps* New();
 
-  bool Start(std::string* error_out);
+  bool Start();
   void Stop();
   bool Poll();
   bool GetPosition(Geoposition* position);
@@ -80,7 +80,7 @@ class LibGpsLibraryLoader {
   bool Init(InitMode requirement);
 
   // Analogs of gps_xxx methods in gps.h
-  bool open(const char* host, const char* port, std::string* error_out);
+  bool open(const char* host, const char* port);
   void close();
   int poll();
   int query(const char* fmt);

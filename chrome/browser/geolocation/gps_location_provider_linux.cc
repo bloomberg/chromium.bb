@@ -55,11 +55,11 @@ bool GpsLocationProviderLinux::StartProvider() {
   position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   gps_.reset(libgps_factory_());
   if (gps_ == NULL) {
-    LOG(WARNING) << "libgps.so could not be loaded";
+    DLOG(WARNING) << "libgps.so could not be loaded";
     return false;
   }
-  if (!gps_->Start(&error_msg_)) {
-    LOG(WARNING) << "Couldn't start GPS provider: " << error_msg_;
+  if (!gps_->Start()) {
+    DLOG(WARNING) << "Couldn't start GPS provider.";
     return false;
   }
   ScheduleNextGpsPoll(0);
