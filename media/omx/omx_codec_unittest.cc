@@ -8,7 +8,13 @@
 
 #include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/task.h"
+#include "media/base/buffers.h"
 #include "media/base/mock_filters.h"
+#include "media/base/mock_task.h"
+#include "media/ffmpeg/ffmpeg_common.h"
+#include "media/filters/omx_video_decode_engine.h"
+#include "media/filters/video_decode_engine.h"
 #include "media/omx/mock_omx.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,19 +29,15 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
-// Temporarily disable omx_codec_unittests during heavy refactoring.
-#if 0
 namespace {
 
 const int kBufferCount = 3;
 const int kBufferSize = 4096;
-const char* kRoleName = "awsome";
-const char* kComponentName = "OMX.google.mock.awsome";
+const char* kComponentName = "OMX.google.video_decoder.avc";
 
 }  // namespace
 
 namespace media {
-
 ACTION(ReturnComponentName) {
   strcpy(((char**)arg2)[0], kComponentName);
 }
@@ -59,40 +61,57 @@ ACTION(GetParameterPortDefinition) {
   else
     port_format->eDir = OMX_DirOutput;
   port_format->nBufferCountMin = kBufferCount;
+  port_format->nBufferCountActual = kBufferCount;
   port_format->nBufferSize = kBufferSize;
 }
 
 ACTION(AllocateBuffer) {
   *arg0 = new OMX_BUFFERHEADERTYPE();
   memset(*arg0, 0, sizeof(OMX_BUFFERHEADERTYPE));
-  (*arg0)->pBuffer = new uint8[kBufferSize];
+  (*arg0)->nAllocLen = arg3;
+  (*arg0)->pBuffer = new uint8[arg3];
+  (*arg0)->nOutputPortIndex = 1;
+  (*arg0)->nInputPortIndex = OMX_ALL;
 }
 
 ACTION(UseBuffer) {
   *arg0 = new OMX_BUFFERHEADERTYPE();
   memset(*arg0, 0, sizeof(OMX_BUFFERHEADERTYPE));
+  (*arg0)->nOutputPortIndex = OMX_ALL;
+  (*arg0)->nInputPortIndex = 0;
 }
 
 ACTION(FreeBuffer) {
-  delete [] arg1->pBuffer;
+  if (1 == arg1->nOutputPortIndex)
+    delete [] arg1->pBuffer;
   delete arg1;
 }
 
-ACTION_P2(SendEvent, event, data1) {
-  // TODO(hclam): pass data2 and event data.
+ACTION_P3(SendEvent, event, data1, data2) {
   (*MockOmx::get()->callbacks()->EventHandler)(
       MockOmx::get()->component(),
       MockOmx::get()->component()->pApplicationPrivate,
-      event, static_cast<OMX_U32>(data1), 0, NULL);
+      event, static_cast<OMX_U32>(data1), static_cast<OMX_U32>(data2), NULL);
 }
 
-ACTION(FillBuffer) {
-  arg0->nFlags = 0;
-  arg0->nFilledLen = kBufferSize;
-  (*MockOmx::get()->callbacks()->FillBufferDone)(
+ACTION_P(EmptyBufferDone, output_pool_ptr) {
+  (*MockOmx::get()->callbacks()->EmptyBufferDone)(
       MockOmx::get()->component(),
       MockOmx::get()->component()->pApplicationPrivate,
       arg0);
+  OMX_BUFFERHEADERTYPE* out_buffer = output_pool_ptr->front();
+  output_pool_ptr->pop_front();
+  if (arg0->nFlags & OMX_BUFFERFLAG_EOS)
+    out_buffer->nFlags |= OMX_BUFFERFLAG_EOS;
+  out_buffer->nFilledLen = kBufferSize;
+  (*MockOmx::get()->callbacks()->FillBufferDone)(
+      MockOmx::get()->component(),
+      MockOmx::get()->component()->pApplicationPrivate,
+      out_buffer);
+}
+
+ACTION_P(EnqueueOutputBuffer, output_pool_ptr) {
+  output_pool_ptr->push_back(arg0);
 }
 
 ACTION(FillEosBuffer) {
@@ -104,27 +123,44 @@ ACTION(FillEosBuffer) {
       arg0);
 }
 
-class MockOmxConfigurator : public OmxConfigurator {
+class TestBuffer : public media::Buffer {
  public:
-  MockOmxConfigurator()
-      : OmxConfigurator(MediaFormat(), MediaFormat()) {}
+  TestBuffer() : size_(0), data_(NULL) { }
+  explicit TestBuffer(int size) : size_(size) {
+    if (size)
+      data_.reset(new uint8[size]);
+    else
+      data_.reset(NULL);
+  }
+  virtual const uint8* GetData() const {
+    return data_.get();
+  }
+  virtual size_t GetDataSize() const {
+    return size_;
+  }
+ private:
+  virtual ~TestBuffer() { }
 
-  MOCK_CONST_METHOD0(GetRoleName, std::string());
-  MOCK_CONST_METHOD3(ConfigureIOPorts,
-                     bool(OMX_COMPONENTTYPE* component,
-                          OMX_PARAM_PORTDEFINITIONTYPE* input_fef,
-                          OMX_PARAM_PORTDEFINITIONTYPE* output_def));
+  int size_;
+  scoped_array<uint8> data_;
+  DISALLOW_COPY_AND_ASSIGN(TestBuffer);
 };
 
 class OmxCodecTest : public testing::Test {
  public:
   OmxCodecTest ()
-      : omx_codec_(new OmxCodec(&message_loop_)) {
-    omx_codec_->Setup(&mock_configurator_);
+      : got_eos_(false),
+        omx_engine_(new OmxVideoDecodeEngine()) {
+    av_stream_.codec = &av_codec_context_;
+    av_codec_context_.width = 16;
+    av_codec_context_.height = 16;
+    feed_done_cb_ =
+        NewCallback(this, &OmxCodecTest::EmptyBufferDoneCallback);
+    decode_done_cb_ =
+        NewCallback(this, &OmxCodecTest::FillBufferDoneCallback);
   }
 
   ~OmxCodecTest() {
-    CHECK(output_units_.size() == 0);
   }
 
  protected:
@@ -150,14 +186,6 @@ class OmxCodecTest : public testing::Test {
     // Ignore all set parameter calls.
     EXPECT_CALL(*MockOmx::get(), SetParameter(_, _))
         .WillRepeatedly(Return(OMX_ErrorNone));
-
-    // Expect calling to configurator once.
-    EXPECT_CALL(mock_configurator_,
-                ConfigureIOPorts(MockOmx::get()->component(), _, _))
-        .WillOnce(Return(true));
-
-    EXPECT_CALL(mock_configurator_, GetRoleName())
-        .WillRepeatedly(Return(kRoleName));
   }
 
   void ExpectToLoaded() {
@@ -183,12 +211,13 @@ class OmxCodecTest : public testing::Test {
                 SendCommand(OMX_CommandStateSet, OMX_StateIdle, _))
         .WillOnce(
             DoAll(
-                SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet),
+                SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet,
+                          OMX_StateIdle),
                 Return(OMX_ErrorNone)));
 
     // Expect allocation of buffers.
     EXPECT_CALL(*MockOmx::get(),
-                UseBuffer(NotNull(), 0, IsNull(), kBufferSize, _))
+                UseBuffer(NotNull(), 0, NotNull(), kBufferSize, _))
         .Times(kBufferCount)
         .WillRepeatedly(DoAll(UseBuffer(), Return(OMX_ErrorNone)));
 
@@ -206,13 +235,15 @@ class OmxCodecTest : public testing::Test {
     EXPECT_CALL(*MockOmx::get(),
                 SendCommand(OMX_CommandStateSet, OMX_StateExecuting, _))
         .WillOnce(DoAll(
-            SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet),
+            SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet,
+                      OMX_StateExecuting),
             Return(OMX_ErrorNone)));
 
     // Expect initial FillThisBuffer() calls.
     EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
         .Times(kBufferCount)
-        .WillRepeatedly(DoAll(FillBuffer(), Return(OMX_ErrorNone)));
+        .WillRepeatedly(DoAll(EnqueueOutputBuffer(&output_pool_),
+                              Return(OMX_ErrorNone)));
   }
 
   void ExpectToIdle() {
@@ -220,7 +251,7 @@ class OmxCodecTest : public testing::Test {
     EXPECT_CALL(*MockOmx::get(),
                 SendCommand(OMX_CommandStateSet, OMX_StateIdle, _))
         .WillOnce(DoAll(
-            SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet),
+            SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet, OMX_StateIdle),
             Return(OMX_ErrorNone)));
   }
 
@@ -231,7 +262,8 @@ class OmxCodecTest : public testing::Test {
     EXPECT_CALL(*MockOmx::get(),
                 SendCommand(OMX_CommandStateSet, OMX_StateLoaded, _))
         .WillOnce(DoAll(
-            SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet),
+            SendEvent(OMX_EventCmdComplete, OMX_CommandStateSet,
+                      OMX_StateLoaded),
             Return(OMX_ErrorNone)));
 
     // Expect free buffer for input port.
@@ -258,41 +290,68 @@ class OmxCodecTest : public testing::Test {
     ExpectToLoaded();
     ExpectLoadedToIdle();
     ExpectToExecuting();
+    EXPECT_CALL(init_done_cb_task_, Run());
   }
 
   void ExpectStop() {
+    EXPECT_CALL(stop_callback_, OnFilterCallback());
+    EXPECT_CALL(stop_callback_, OnCallbackDestroyed());
     ExpectToIdle();
     ExpectIdleToLoaded();
     ExpectToEmpty();
   }
 
-  void ReadCallback(OMX_BUFFERHEADERTYPE* buffer) {
-    output_units_.push_back(buffer);
+  void EmptyBufferDoneCallback(scoped_refptr<Buffer> buffer) {
+    input_units_.push_back(buffer);
   }
 
-  void MakeReadRequest() {
-    omx_codec_->Read(NewCallback(this, &OmxCodecTest::ReadCallback));
+  void FillBufferDoneCallback(scoped_refptr<VideoFrame> frame) {
+    output_units_.push_back(frame);
+    if (frame.get() == NULL)
+      got_eos_ = true;
   }
 
-  void SaveFillThisBuffer(OMX_BUFFERHEADERTYPE* buffer) {
-    fill_this_buffer_received_.push_back(buffer);
+  void InitializeInputBuffers(int count) {
+    for (int i = 0; i < count; ++i) {
+      scoped_refptr<Buffer> buffer_ref = new TestBuffer(i + 1);
+      input_units_.push_back(buffer_ref);
+    }
   }
 
-  void ExpectAndSaveFillThisBuffer() {
-    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
-        .WillOnce(DoAll(Invoke(this, &OmxCodecTest::SaveFillThisBuffer),
-                        Return(OMX_ErrorNone)))
+  void MakeEmptyBufferRequest() {
+    scoped_refptr<Buffer> buffer = input_units_.front();
+    input_units_.pop_front();
+    omx_engine_->EmptyThisBuffer(buffer);
+  }
+
+  void SendEOSInputBuffer() {
+    input_units_.pop_front();
+    scoped_refptr<Buffer> buffer_ref = new TestBuffer();
+    input_units_.push_front(buffer_ref);
+    EXPECT_CALL(*MockOmx::get(), EmptyThisBuffer(NotNull()))
+        .WillOnce(DoAll(EmptyBufferDone(&output_pool_), Return(OMX_ErrorNone)))
         .RetiresOnSaturation();
+    MakeEmptyBufferRequest();
+    message_loop_.RunAllPending();
   }
 
-  std::deque<OMX_BUFFERHEADERTYPE*> output_units_;
+  std::deque<scoped_refptr<Buffer> > input_units_;
+  std::deque<scoped_refptr<VideoFrame> > output_units_;
   std::deque<OMX_BUFFERHEADERTYPE*> fill_this_buffer_received_;
+  std::deque<OMX_BUFFERHEADERTYPE*> output_pool_;
 
   MockOmx mock_omx_;
-  MockOmxConfigurator mock_configurator_;
 
+  bool got_eos_;
   MessageLoop message_loop_;
-  scoped_refptr<OmxCodec> omx_codec_;
+  scoped_refptr<OmxVideoDecodeEngine> omx_engine_;
+
+  AVStream av_stream_;
+  AVCodecContext av_codec_context_;
+
+  VideoDecodeEngine::EmptyThisBufferCallback* feed_done_cb_;
+  VideoDecodeEngine::FillThisBufferCallback* decode_done_cb_;
+  TaskMocker init_done_cb_task_;
 
   MockFilterCallback stop_callback_;
 
@@ -303,150 +362,125 @@ class OmxCodecTest : public testing::Test {
 TEST_F(OmxCodecTest, SimpleStartAndStop) {
   ExpectSettings();
   ExpectStart();
-  omx_codec_->Start();
+  omx_engine_->Initialize(&message_loop_,
+                          &av_stream_,
+                          feed_done_cb_,
+                          decode_done_cb_,
+                          init_done_cb_task_.CreateTask());
   message_loop_.RunAllPending();
 
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  EXPECT_CALL(stop_callback_, OnCallbackDestroyed());
+  EXPECT_EQ(VideoDecodeEngine::kNormal, omx_engine_->state());
+
   ExpectStop();
-  omx_codec_->Stop(stop_callback_.NewCallback());
+  omx_engine_->Stop(stop_callback_.NewCallback());
   message_loop_.RunAllPending();
 }
 
-TEST_F(OmxCodecTest, EndOfStream) {
+TEST_F(OmxCodecTest, NormalFlow) {
   ExpectSettings();
   ExpectStart();
-  omx_codec_->Start();
+  omx_engine_->Initialize(&message_loop_,
+                          &av_stream_,
+                          feed_done_cb_,
+                          decode_done_cb_,
+                          init_done_cb_task_.CreateTask());
   message_loop_.RunAllPending();
 
-  // Make read requests, OmxCodec should have gotten kBufferCount
-  // buffers already.
+  EXPECT_EQ(VideoDecodeEngine::kNormal, omx_engine_->state());
+
+  // Allocate bitstream buffers.
+  InitializeInputBuffers(kBufferCount);
+
+  // Make emptybuffer requests.
   EXPECT_EQ(0u, output_units_.size());
+  int count = output_pool_.size();
   for (int i = 0; i < kBufferCount; ++i) {
-    // Give buffers back to OmxCodec. OmxCodec will make a new
-    // FillThisBuffer() call for each read.
-    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
-        .WillOnce(DoAll(FillEosBuffer(), Return(OMX_ErrorNone)))
+    // Give input buffers to OmxVideoDecodeEngine. OmxVideoDecodeEngine will
+    // make a new FillThisBuffer() call for each read.
+    EXPECT_CALL(*MockOmx::get(), EmptyThisBuffer(NotNull()))
+        .WillOnce(DoAll(EmptyBufferDone(&output_pool_), Return(OMX_ErrorNone)))
         .RetiresOnSaturation();
-    MakeReadRequest();
+    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
+        .WillOnce(DoAll(EnqueueOutputBuffer(&output_pool_),
+                        Return(OMX_ErrorNone)))
+        .RetiresOnSaturation();
+    MakeEmptyBufferRequest();
   }
   message_loop_.RunAllPending();
-  CHECK(kBufferCount == static_cast<int>(output_units_.size()));
-
-  // Make sure buffers received are in order.
-  for (int i = 0; i < kBufferCount; ++i) {
-    // TODO(jiesun): How to verify this now?
-    // EXPECT_EQ(i, output_units_[i].first);
-    EXPECT_TRUE(output_units_[i] != NULL);
-  }
-
+  EXPECT_EQ(kBufferCount, static_cast<int>(input_units_.size()));
+  EXPECT_EQ(kBufferCount, static_cast<int>(output_units_.size()));
+  EXPECT_EQ(count, static_cast<int>(output_pool_.size()));
   output_units_.clear();
 
-  // Make some read requests and make sure end-of-stream buffer id
-  // are received.
-  EXPECT_EQ(0u, output_units_.size());
-  for (int i = 0; i < 2 * kBufferCount; ++i) {
-    MakeReadRequest();
-  }
-  message_loop_.RunAllPending();
-  EXPECT_EQ(2 * kBufferCount, static_cast<int>(output_units_.size()));
+  // Send EndOfStream, expect eos flag.
+  SendEOSInputBuffer();
+  EXPECT_EQ(kBufferCount, static_cast<int>(input_units_.size()));
+  EXPECT_EQ(1, static_cast<int>(output_units_.size()));
+  EXPECT_EQ(count-1, static_cast<int>(output_pool_.size()));
+  EXPECT_EQ(true, got_eos_);
 
-  for (size_t i = 0; i <output_units_.size(); ++i) {
-    EXPECT_EQ(NULL, output_units_[i]);
-  }
-  output_units_.clear();
-
-  // Stop OmxCodec.
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  EXPECT_CALL(stop_callback_, OnCallbackDestroyed());
+  // Shutdown.
   ExpectStop();
-  omx_codec_->Stop(stop_callback_.NewCallback());
+  omx_engine_->Stop(stop_callback_.NewCallback());
   message_loop_.RunAllPending();
 }
 
-TEST_F(OmxCodecTest, OutputFlowControl) {
+TEST_F(OmxCodecTest, RecycleInputBuffers) {
   ExpectSettings();
   ExpectStart();
-  omx_codec_->Start();
+  omx_engine_->Initialize(&message_loop_,
+                          &av_stream_,
+                          feed_done_cb_,
+                          decode_done_cb_,
+                          init_done_cb_task_.CreateTask());
   message_loop_.RunAllPending();
 
-  // Since initial FillThisBuffer() calls are made and fulfilled during
-  // start. Reads issued to OmxCodec will be fulfilled now.
+  EXPECT_EQ(VideoDecodeEngine::kNormal, omx_engine_->state());
+
+  // Allocate bitstream buffers.
+  InitializeInputBuffers(kBufferCount);
+
+  // Make emptybuffer requests, also recycle input buffers
   EXPECT_EQ(0u, output_units_.size());
-  for (int i = 0; i < kBufferCount; ++i) {
-    ExpectAndSaveFillThisBuffer();
-    MakeReadRequest();
+  int count = output_pool_.size();
+  int repeat_count = kBufferCount * 2;
+  for (int i = 0; i < repeat_count; ++i) {
+    // Give input buffers to OmxVideoDecodeEngine. OmxVideoDecodeEngine will
+    // make a new FillThisBuffer() call for each read.
+    EXPECT_CALL(*MockOmx::get(), EmptyThisBuffer(NotNull()))
+        .WillOnce(DoAll(EmptyBufferDone(&output_pool_), Return(OMX_ErrorNone)))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
+        .WillOnce(DoAll(EnqueueOutputBuffer(&output_pool_),
+                        Return(OMX_ErrorNone)))
+        .RetiresOnSaturation();
+    MakeEmptyBufferRequest();
+    message_loop_.RunAllPending();
+    CHECK(kBufferCount == static_cast<int>(input_units_.size()));
+    CHECK(((i % kBufferCount) + 1) ==
+          static_cast<int>(input_units_.back()->GetDataSize()));
   }
   message_loop_.RunAllPending();
-  CHECK(kBufferCount == static_cast<int>(output_units_.size()));
-
-  // Make sure buffers received are in order.
-  for (int i = 0; i < kBufferCount; ++i) {
-    EXPECT_TRUE(output_units_[i] != NULL);
-  }
-
+  EXPECT_EQ(kBufferCount, static_cast<int>(input_units_.size()));
+  EXPECT_EQ(repeat_count, static_cast<int>(output_units_.size()));
+  EXPECT_EQ(count, static_cast<int>(output_pool_.size()));
   output_units_.clear();
 
-  // In each loop, perform the following actions:
-  // 1. Make a read request to OmxCodec.
-  // 2. Fake a response for FillBufferDone().
-  // 3. Expect read response received.
-  // 4. NULL buffer is returned in first time
-  for (int i = 0; i < kBufferCount + 1; ++i) {
-    // 1. First make a read request.
-    // Since a buffer is given back to OmxCodec component after first time,
-    // a FillThisBuffer() is called to OmxCodec component.
-    if (i > 0) {
-      EXPECT_CALL(*MockOmx::get(), FillThisBuffer(NotNull()))
-         .WillOnce(Return(OMX_ErrorNone))
-         .RetiresOnSaturation();
-    }
-    MakeReadRequest();
+  // Send EndOfStream, expect eos flag.
+  SendEOSInputBuffer();
+  EXPECT_EQ(kBufferCount, static_cast<int>(input_units_.size()));
+  EXPECT_EQ(1, static_cast<int>(output_units_.size()));
+  EXPECT_EQ(count-1, static_cast<int>(output_pool_.size()));
+  EXPECT_EQ(true, got_eos_);
 
-    // 2. Then fake a response from OpenMAX, only |kBufferCount| times
-    if (i < kBufferCount) {
-      OMX_BUFFERHEADERTYPE* buffer = fill_this_buffer_received_.front();
-      fill_this_buffer_received_.pop_front();
-      buffer->nFlags = 0;
-      buffer->nFilledLen = kBufferSize;
-      (*MockOmx::get()->callbacks()->FillBufferDone)(
-          MockOmx::get()->component(),
-          MockOmx::get()->component()->pApplicationPrivate,
-          buffer);
-    }
-
-    // Make sure actions are completed.
-    message_loop_.RunAllPending();
-
-    // 3. Expect read response received.
-    // The above action will cause a read callback be called and we should
-    // receive one buffer now. Also expect the buffer id be received in
-    // reverse order.
-    EXPECT_EQ(1u, output_units_.size());
-    //EXPECT_EQ(kBufferCount - i - 1, output_units_.front().first);
-
-    output_units_.pop_front();
-
-    // Make sure actions are completed.
-    message_loop_.RunAllPending();
-  }
-
-  // Now issue kBufferCount reads to OmxCodec.
-  EXPECT_EQ(0u, output_units_.size());
-
-  // Stop OmxCodec.
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  EXPECT_CALL(stop_callback_, OnCallbackDestroyed());
+  // Shutdown.
   ExpectStop();
-  omx_codec_->Stop(stop_callback_.NewCallback());
+  omx_engine_->Stop(stop_callback_.NewCallback());
   message_loop_.RunAllPending();
 }
 
 // TODO(hclam): Add test case for dynamic port config.
 // TODO(hclam): Create a more complicated test case so that read
 // requests and reply from FillThisBuffer() arrives out of order.
-// TODO(hclam): Add test case for Feed().
 
 }  // namespace media
-
-#endif
