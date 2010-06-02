@@ -25,16 +25,16 @@ def addKill():
   """Add kill() method to subprocess.Popen for python <2.6"""
   if getattr(subprocess.Popen, 'kill', None):
     return
-  if sys.platform.startswith('win'):
+  if sys.platform == 'win32':
     def kill_win(process):
       import win32process
       return win32process.TerminateProcess(process._handle, -1)
-    subprocess.kill = kill_win
+    subprocess.Popen.kill = kill_win
   else:
     def kill_nix(process):
       import signal
       return os.kill(process.pid, signal.SIGKILL)
-    subprocess.kill = kill_nix
+    subprocess.Popen.kill = kill_nix
 
 
 def rmtree(*path):
@@ -175,17 +175,21 @@ def commit_svn(repo):
   for item in Popen(['svn', 'status'],
                     cwd=repo).communicate()[0].splitlines(False):
     if item[0] == '?':
-      to_add.append(item[8:])
+      to_add.append(item[7:].strip())
     elif item[0] == '!':
-      to_remove.append(item[8:])
+      to_remove.append(item[7:].strip())
   if to_add:
     check_call(['svn', 'add', '--no-auto-props', '-q'] + to_add, cwd=repo)
   if to_remove:
     check_call(['svn', 'remove', '-q'] + to_remove, cwd=repo)
-  out = Popen(['svn', 'commit', repo, '-m', 'foo', '--non-interactive',
+  proc = Popen(['svn', 'commit', repo, '-m', 'foo', '--non-interactive',
                 '--no-auth-cache', '--username', 'user1', '--password', 'foo'],
-              cwd=repo).communicate()[0]
-  rev = re.search(r'revision (\d+).', out).group(1)
+               cwd=repo)
+  out, err = proc.communicate()
+  match = re.search(r'revision (\d+).', out)
+  if not match:
+    raise Exception('Commit failed', out, err, proc.returncode)
+  rev = match.group(1)
   st = Popen(['svn', 'status'], cwd=repo).communicate()[0]
   assert len(st) == 0, st
   logging.debug('At revision %s' % rev)
@@ -315,7 +319,6 @@ class FakeRepos(object):
     cmd = ['svnserve', '-d', '--foreground', '-r', self.repos_dir]
     if self.HOST == '127.0.0.1':
       cmd.append('--listen-host=127.0.0.1')
-    logging.debug(cmd)
     self.svnserve = Popen(cmd, cwd=root)
     self.populateSvn()
 
