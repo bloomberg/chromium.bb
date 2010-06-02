@@ -4,11 +4,20 @@
 
 #include "chrome/browser/js_modal_dialog.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_message.h"
+
+namespace {
+
+// The maximum sizes of various texts passed to us from javascript.
+const int kMessageTextMaxSize = 3000;
+const int kDefaultPromptTextSize = 2000;
+
+}  // namespace
 
 JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     JavaScriptMessageBoxClient* client,
@@ -23,11 +32,15 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       client_(client),
       extension_host_(client->AsExtensionHost()),
       dialog_flags_(dialog_flags),
-      message_text_(message_text),
-      default_prompt_text_(default_prompt_text),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
       reply_msg_(reply_msg) {
+  // We trim the various parts of the message dialog because otherwise we can
+  // overflow the message dialog (and crash/hang the GTK+ version).
+  ElideString(message_text, kMessageTextMaxSize, &message_text_);
+  ElideString(default_prompt_text, kDefaultPromptTextSize,
+              &default_prompt_text_);
+
   DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
   InitNotifications();
 }
