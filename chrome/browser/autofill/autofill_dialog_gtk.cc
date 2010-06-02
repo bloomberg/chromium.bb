@@ -17,6 +17,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -58,12 +59,8 @@ typedef struct _AddressWidgets {
   GtkWidget* state;
   GtkWidget* zipcode;
   GtkWidget* country;
-  GtkWidget* phone1;
-  GtkWidget* phone2;
-  GtkWidget* phone3;
-  GtkWidget* fax1;
-  GtkWidget* fax2;
-  GtkWidget* fax3;
+  GtkWidget* phone;
+  GtkWidget* fax;
 } AddressWidgets;
 
 // All of these widgets are GtkEntrys except for default_profile, which is a
@@ -78,9 +75,7 @@ typedef struct _CreditCardWidgets {
   GtkWidget* verification_code;
   GtkWidget* billing_address;
   GtkWidget* shipping_address;
-  GtkWidget* phone1;
-  GtkWidget* phone2;
-  GtkWidget* phone3;
+  GtkWidget* phone;
   string16 original_card_number;
 } CreditCardWidgets;
 
@@ -443,18 +438,20 @@ static AutoFillProfile AutoFillProfileFromWidgetValues(
       GetEntryText(widgets.zipcode));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
       GetEntryText(widgets.country));
-  profile.SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE),
-      GetEntryText(widgets.phone1));
-  profile.SetInfo(AutoFillType(PHONE_HOME_CITY_CODE),
-      GetEntryText(widgets.phone2));
-  profile.SetInfo(AutoFillType(PHONE_HOME_NUMBER),
-      GetEntryText(widgets.phone3));
-  profile.SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE),
-      GetEntryText(widgets.fax1));
-  profile.SetInfo(AutoFillType(PHONE_FAX_CITY_CODE),
-      GetEntryText(widgets.fax2));
-  profile.SetInfo(AutoFillType(PHONE_FAX_NUMBER),
-      GetEntryText(widgets.fax3));
+
+  string16 number, city_code, country_code;
+  PhoneNumber::ParsePhoneNumber(
+      GetEntryText(widgets.phone), &number, &city_code, &country_code);
+  profile.SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE), country_code);
+  profile.SetInfo(AutoFillType(PHONE_HOME_CITY_CODE), city_code);
+  profile.SetInfo(AutoFillType(PHONE_HOME_NUMBER), number);
+
+  PhoneNumber::ParsePhoneNumber(
+      GetEntryText(widgets.fax), &number, &city_code, &country_code);
+  profile.SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE), country_code);
+  profile.SetInfo(AutoFillType(PHONE_FAX_CITY_CODE), city_code);
+  profile.SetInfo(AutoFillType(PHONE_FAX_NUMBER), number);
+
   return profile;
 }
 
@@ -935,17 +932,13 @@ GtkWidget* AutoFillDialog::AddNewAddress(bool expand, bool is_default) {
   widgets.country = FormTableAddSizedEntry(address_table, 0, 3, 10,
                                            IDS_AUTOFILL_DIALOG_COUNTRY);
 
-  GtkWidget* phone_table = InitFormTable(1, 8);
+  GtkWidget* phone_table = InitFormTable(1, 2);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), phone_table);
 
-  widgets.phone1 = FormTableAddSizedEntry(phone_table, 0, 0, 4,
-                                          IDS_AUTOFILL_DIALOG_PHONE);
-  widgets.phone2 = FormTableAddSizedEntry(phone_table, 0, 1, 4, 0);
-  widgets.phone3 = FormTableAddEntry(phone_table, 0, 2, 2, 0);
-  widgets.fax1 = FormTableAddSizedEntry(phone_table, 0, 4, 4,
-                                        IDS_AUTOFILL_DIALOG_FAX);
-  widgets.fax2 = FormTableAddSizedEntry(phone_table, 0, 5, 4, 0);
-  widgets.fax3 = FormTableAddEntry(phone_table, 0, 6, 2, 0);
+  widgets.phone =
+      FormTableAddEntry(phone_table, 0, 0, 1, IDS_AUTOFILL_DIALOG_PHONE);
+  widgets.fax =
+      FormTableAddEntry(phone_table, 0, 1, 1, IDS_AUTOFILL_DIALOG_FAX);
 
   GtkWidget* button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DELETE_BUTTON).c_str());
@@ -1025,13 +1018,11 @@ GtkWidget* AutoFillDialog::AddNewCreditCard(bool expand, bool is_default) {
   gtk_combo_box_set_active(GTK_COMBO_BOX(shipping), 0);
   FormTableSetWidget(addresses_table, shipping, 1, 0, 2, false);
 
-  GtkWidget* phone_table = InitFormTable(1, 4);
+  GtkWidget* phone_table = InitFormTable(1, 1);
   gtk_box_pack_start_defaults(GTK_BOX(vbox), phone_table);
 
-  widgets.phone1 = FormTableAddSizedEntry(
-      phone_table, 0, 0, 4, IDS_AUTOFILL_DIALOG_PHONE);
-  widgets.phone2 = FormTableAddSizedEntry(phone_table, 0, 1, 4, 0);
-  widgets.phone3 = FormTableAddEntry(phone_table, 0, 2, 2, 0);
+  widgets.phone =
+      FormTableAddEntry(phone_table, 0, 0, 1, IDS_AUTOFILL_DIALOG_PHONE);
 
   GtkWidget* button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_DELETE_BUTTON).c_str());
@@ -1077,18 +1068,10 @@ void AutoFillDialog::AddAddress(const AutoFillProfile& profile,
                profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
   SetEntryText(widgets.country,
                profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
-  SetEntryText(widgets.phone1,
-               profile.GetFieldText(AutoFillType(PHONE_HOME_COUNTRY_CODE)));
-  SetEntryText(widgets.phone2,
-               profile.GetFieldText(AutoFillType(PHONE_HOME_CITY_CODE)));
-  SetEntryText(widgets.phone3,
-               profile.GetFieldText(AutoFillType(PHONE_HOME_NUMBER)));
-  SetEntryText(widgets.fax1,
-               profile.GetFieldText(AutoFillType(PHONE_FAX_COUNTRY_CODE)));
-  SetEntryText(widgets.fax2,
-               profile.GetFieldText(AutoFillType(PHONE_FAX_CITY_CODE)));
-  SetEntryText(widgets.fax3,
-               profile.GetFieldText(AutoFillType(PHONE_FAX_NUMBER)));
+  SetEntryText(widgets.phone,
+               profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)));
+  SetEntryText(widgets.fax,
+               profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)));
 
   gtk_box_pack_start(GTK_BOX(addresses_vbox_), address, FALSE, FALSE, 0);
   gtk_widget_show_all(address);
