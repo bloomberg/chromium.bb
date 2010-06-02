@@ -319,6 +319,12 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
   site_type_event_box_ = gtk_event_box_new();
   gtk_widget_modify_bg(site_type_event_box_, GTK_STATE_NORMAL,
                        &kEvSecureBackgroundColor);
+  g_signal_connect(site_type_event_box_, "drag-data-get",
+                   G_CALLBACK(&OnIconDragDataThunk), this);
+  g_signal_connect(site_type_event_box_, "drag-begin",
+                   G_CALLBACK(&OnIconDragBeginThunk), this);
+  g_signal_connect(site_type_event_box_, "drag-end",
+                   G_CALLBACK(&OnIconDragEndThunk), this);
 
   // Make the event box not visible so it does not paint a background.
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(site_type_event_box_),
@@ -358,13 +364,6 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
                                                 gtk_dnd_util::TEXT_PLAIN |
                                                 gtk_dnd_util::TEXT_URI_LIST |
                                                 gtk_dnd_util::CHROME_NAMED_URL);
-
-  g_signal_connect(site_type_event_box_, "drag-data-get",
-                   G_CALLBACK(&OnIconDragDataThunk), this);
-  g_signal_connect(site_type_event_box_, "drag-begin",
-                   G_CALLBACK(&OnIconDragBeginThunk), this);
-  g_signal_connect(site_type_event_box_, "drag-end",
-                   G_CALLBACK(&OnIconDragEndThunk), this);
 }
 
 void LocationBarViewGtk::SetProfile(Profile* profile) {
@@ -1006,6 +1005,7 @@ void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
 
 void LocationBarViewGtk::OnIconDragEnd(GtkWidget* sender,
                                        GdkDragContext* context) {
+  DCHECK(drag_icon_);
   gtk_widget_destroy(drag_icon_);
   drag_icon_ = NULL;
 }
