@@ -92,7 +92,8 @@ const CGFloat kUpperPadding = 9.0;
     [borderGradient drawInRect:borderRect angle:90.0];
   }
 
-  [self drawGrippy];
+  if (resizable_)
+    [self drawGrippy];
 }
 
 - (void)resetCursorRects {
@@ -215,9 +216,6 @@ const CGFloat kUpperPadding = 9.0;
 }
 
 - (void)drawGrippy {
-  if (!resizable_)
-    return;
-
   NSRect grippyRect = NSMakeRect(0.0, kLowerPadding + kGrippyLowerPadding, 1.0,
       [self bounds].size.height - kUpperPadding - kGrippyUpperPadding);
   [[NSColor colorWithCalibratedWhite:0.7 alpha:0.5] set];
