@@ -287,15 +287,20 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
 
 #if defined(OS_MACOSX)
 // ClickModalDialogButton doesn't work on Mac: http://crbug.com/45031
-#define BrowserCloseBeforeUnloadOK DISABLED_BrowserCloseBeforeUnloadOK
-#define BrowserCloseBeforeUnloadCancel DISABLED_BrowserCloseBeforeUnloadCancel
-#define BrowserCloseWithInnerFocusedFrame \
+#define MAYBE_BrowserCloseBeforeUnloadOK DISABLED_BrowserCloseBeforeUnloadOK
+#define MAYBE_BrowserCloseBeforeUnloadCancel \
+    DISABLED_BrowserCloseBeforeUnloadCancel
+#define MAYBE_BrowserCloseWithInnerFocusedFrame \
     DISABLED_BrowserCloseWithInnerFocusedFrame
+#elif defined(OS_LINUX)
+// Fails sometimes on Linux valgrind.
+#define MAYBE_BrowserCloseWithInnerFocusedFrame \
+    FLAKY_BrowserCloseWithInnerFocusedFrame
 #endif
 
 // Tests closing the browser with a beforeunload handler and clicking
 // OK in the beforeunload confirm dialog.
-TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseBeforeUnloadOK) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
@@ -307,7 +312,7 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
 
 // Tests closing the browser with a beforeunload handler and clicking
 // CANCEL in the beforeunload confirm dialog.
-TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseBeforeUnloadCancel) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
@@ -326,7 +331,7 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
 
 // Tests closing the browser and clicking OK in the beforeunload confirm dialog
 // if an inner frame has the focus.  See crbug.com/32615.
-TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseWithInnerFocusedFrame) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
