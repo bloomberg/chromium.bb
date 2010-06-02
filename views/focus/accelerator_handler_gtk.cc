@@ -24,10 +24,23 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
     only_menu_pressed_ = false;
   }
 
-  // Let Gtk process the event if there is a grabbed widget or it's not
-  // a keyboard event.
-  if (gtk_grab_get_current() ||
-      (event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE)) {
+  // Skip accelerator handling for non key events.
+  bool skip = event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE;
+
+  // Skip if there is a grabbed widget and it is not a window. This is because
+  // of the following two reasons:
+  // 1. Widget such as pop up from GtkComboBox is a grabbed widget and use ESC
+  //    as its accelerator key to dismiss itself. We will break Gtk's code if
+  //    we eat this key. See http://crosbug.com/2355
+  // 2. Modal dialogs in Gtk are grabbed windows and we want to have our
+  //    accelerator key processing in this case. See http://crogbug.com/3701
+  if (!skip) {
+    GtkWidget* grabbed_widget = gtk_grab_get_current();
+    skip = grabbed_widget && !GTK_IS_WINDOW(grabbed_widget);
+  }
+
+  if (skip) {
+    // Let Gtk processes the event.
     gtk_main_do_event(event);
     return true;
   }
