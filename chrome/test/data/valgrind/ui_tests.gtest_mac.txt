@@ -77,3 +77,7 @@ BookmarksUITest.CommandAgainGoesBackToBookmarksTab
 
 # See http://crbug.com/45564
 ChromeMainTest.AppLaunch
+
+# See http://crbug.com/39057
+# Hanging on mac valgrind ui bots.
+UnoadTest.FLAKY_CrossSiteInifiteBeforeUnloadAsync
