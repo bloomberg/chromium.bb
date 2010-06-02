@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -150,14 +150,9 @@ def getRevisionLog(url, revision):
                              shell=True, 
                              stdout=subprocess.PIPE, 
                              stderr=subprocess.PIPE).stdout.readlines()
-  log = ""
-  pos = 0
-  for line in svn_log:
-    if (pos > 2):
-      log += line.replace('-','').replace('\r','')
-    else:
-      pos = pos + 1
-  return log
+  # Don't include the header lines and the trailing "---..." line and eliminate
+  # any '\r's.
+  return ''.join([l.replace('\r','') for l in svn_log[3:-1]])
 
 def getSVNVersionInfo():
   """Extract version information from SVN"""
@@ -528,7 +523,7 @@ def main(options, args):
   out.write(action +" " + str(revision) + " - ")
   out.write(getRevisionLog(url, revision))
   if (author):
-    out.write("TBR=" + author)
+    out.write("\nTBR=" + author)
   out.close()
 
   change_cmd = 'change ' + str(revision) + " " + filename
