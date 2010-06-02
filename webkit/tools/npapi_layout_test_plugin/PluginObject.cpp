@@ -327,7 +327,7 @@ static NPIdentifier stringVariantToIdentifier(NPVariant variant)
 static NPIdentifier int32VariantToIdentifier(NPVariant variant)
 {
     assert(NPVARIANT_IS_INT32(variant));
-    int32 integer = NPVARIANT_TO_INT32(variant);
+    int32_t integer = NPVARIANT_TO_INT32(variant);
     return browser->getintidentifier(integer);
 }
 
@@ -336,7 +336,7 @@ static NPIdentifier doubleVariantToIdentifier(NPVariant variant)
     assert(NPVARIANT_IS_DOUBLE(variant));
     double value = NPVARIANT_TO_DOUBLE(variant);
     // Sadly there is no "getdoubleidentifier"
-    int32 integer = static_cast<int32>(value);
+    int32_t integer = static_cast<int32_t>(value);
     return browser->getintidentifier(integer);
 }
 
@@ -372,7 +372,7 @@ static bool testIdentifierToInt(PluginObject*, const NPVariant* args, uint32_t a
     NPIdentifier identifier = variantToIdentifier(args[0]);
     if (!identifier)
         return false;
-    int32 integer = browser->intfromidentifier(identifier);
+    int32_t integer = browser->intfromidentifier(identifier);
     INT32_TO_NPVARIANT(integer, *result);
     return true;
 }
@@ -573,7 +573,7 @@ static bool testGetIntIdentifier(PluginObject*, const NPVariant* args, uint32_t 
         return false;
     }
 
-    INT32_TO_NPVARIANT(static_cast<int32>(reinterpret_cast<intptr_t>(identifier)), *result);
+    INT32_TO_NPVARIANT(static_cast<int32_t>(reinterpret_cast<intptr_t>(identifier)), *result);
     return true;
 }
 
@@ -677,7 +677,7 @@ static bool testPostURLFile(PluginObject* obj, const NPVariant* args, uint32_t a
     if (written != 1)
         return false;
 
-    NPError error = browser->posturl(obj->npp, url, target, pathString.UTF8Length, path, TRUE);
+    NPError error = browser->posturl(obj->npp, url, target, pathString.UTF8Length, path, true);
 
     free(path);
     free(target);
@@ -966,13 +966,13 @@ static NPObject *pluginAllocate(NPP npp, NPClass *theClass)
 
     newInstance->npp = npp;
     newInstance->testObject = browser->createobject(npp, getTestClass());
-    newInstance->eventLogging = FALSE;
+    newInstance->eventLogging = false;
     newInstance->onStreamLoad = 0;
     newInstance->onStreamDestroy = 0;
     newInstance->onURLNotify = 0;
-    newInstance->logDestroy = FALSE;
-    newInstance->logSetWindow = FALSE;
-    newInstance->returnErrorFromNewStream = FALSE;
+    newInstance->logDestroy = false;
+    newInstance->logSetWindow = false;
+    newInstance->returnErrorFromNewStream = false;
     newInstance->stream = 0;
 
     newInstance->firstUrl = NULL;
@@ -980,9 +980,9 @@ static NPObject *pluginAllocate(NPP npp, NPClass *theClass)
     newInstance->lastUrl = NULL;
     newInstance->lastHeaders = NULL;
 
-    newInstance->testDocumentOpenInDestroyStream = FALSE;
-    newInstance->testWindowOpen = FALSE;
-    newInstance->testKeyboardFocusForPlugins = FALSE;
+    newInstance->testDocumentOpenInDestroyStream = false;
+    newInstance->testWindowOpen = false;
+    newInstance->testKeyboardFocusForPlugins = false;
 
     return (NPObject*)newInstance;
 }

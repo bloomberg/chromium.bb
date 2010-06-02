@@ -194,16 +194,6 @@ RCDATA NP_INFO_ProductName       { "NPAVI32 Dynamic Link Library\0" }
 /*                       Definition of Basic Types                      */
 /*----------------------------------------------------------------------*/
 
-#ifndef FALSE
-#define FALSE (0)
-#endif
-#ifndef TRUE
-#define TRUE (1)
-#endif
-#ifndef NULL
-#define NULL (0L)
-#endif
-
 typedef unsigned char NPBool;
 typedef int16_t       NPError;
 typedef int16_t       NPReason;

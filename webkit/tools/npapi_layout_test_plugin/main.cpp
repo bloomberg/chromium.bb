@@ -111,7 +111,7 @@ EXPORT void NPAPI NP_Shutdown(void)
 
 static void executeScript(const PluginObject* obj, const char* script);
 
-NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, char *argn[], char *argv[], NPSavedData *saved)
+NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16_t argc, char *argn[], char *argv[], NPSavedData *saved)
 {
     if (browser->version >= 14) {
         PluginObject* obj = (PluginObject*)browser->createobject(instance, getPluginClass());
@@ -124,7 +124,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, ch
             else if (strcasecmp(argn[i], "onURLNotify") == 0 && !obj->onURLNotify)
                 obj->onURLNotify = strdup(argv[i]);
             else if (strcasecmp(argn[i], "logfirstsetwindow") == 0)
-                obj->logSetWindow = TRUE;
+                obj->logSetWindow = true;
             else if (strcasecmp(argn[i], "testnpruntime") == 0)
                 testNPRuntime(instance);
             else if (strcasecmp(argn[i], "logSrc") == 0) {
@@ -137,11 +137,11 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, ch
             } else if (strcasecmp(argn[i], "cleardocumentduringnew") == 0) {
                 executeScript(obj, "document.body.innerHTML = ''");
             } else if (strcasecmp(argn[i], "testdocumentopenindestroystream") == 0) {
-                obj->testDocumentOpenInDestroyStream = TRUE;
+                obj->testDocumentOpenInDestroyStream = true;
             } else if (strcasecmp(argn[i], "testwindowopen") == 0) {
-                obj->testWindowOpen = TRUE;
+                obj->testWindowOpen = true;
             } else if (strcasecmp(argn[i], "src") == 0 && strstr(argv[i], "plugin-document-has-focus.pl"))
-                obj->testKeyboardFocusForPlugins = TRUE;
+                obj->testKeyboardFocusForPlugins = true;
         }
 
         instance->pdata = obj;
@@ -183,12 +183,12 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window)
         if (obj->logSetWindow) {
             log(instance, "NPP_SetWindow: %d %d", (int)window->width, (int)window->height);
             fflush(stdout);
-            obj->logSetWindow = FALSE;
+            obj->logSetWindow = false;
         }
 
         if (obj->testWindowOpen) {
             testWindowOpen(instance);
-            obj->testWindowOpen = FALSE;
+            obj->testWindowOpen = false;
         }
 
         if (obj->testKeyboardFocusForPlugins) {
@@ -242,18 +242,18 @@ NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason)
 
     if (obj->testDocumentOpenInDestroyStream) {
         testDocumentOpen(instance);
-        obj->testDocumentOpenInDestroyStream = FALSE;
+        obj->testDocumentOpenInDestroyStream = false;
     }
 
     return NPERR_NO_ERROR;
 }
 
-int32 NPP_WriteReady(NPP instance, NPStream *stream)
+int32_t NPP_WriteReady(NPP instance, NPStream *stream)
 {
     return 0;
 }
 
-int32 NPP_Write(NPP instance, NPStream *stream, int32 offset, int32 len, void *buffer)
+int32_t NPP_Write(NPP instance, NPStream *stream, int32_t offset, int32_t len, void *buffer)
 {
     return 0;
 }
@@ -266,7 +266,7 @@ void NPP_Print(NPP instance, NPPrint *platformPrint)
 {
 }
 
-int16 NPP_HandleEvent(NPP instance, void *event)
+int16_t NPP_HandleEvent(NPP instance, void *event)
 {
     PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
     if (!obj->eventLogging)
@@ -303,7 +303,7 @@ int16 NPP_HandleEvent(NPP instance, void *event)
             log(instance, "keyUp '%c'", MapVirtualKey(evt->wParam, MAPVK_VK_TO_CHAR));
             if (obj->testKeyboardFocusForPlugins) {
                 obj->eventLogging = false;
-                obj->testKeyboardFocusForPlugins = FALSE;
+                obj->testKeyboardFocusForPlugins = false;
                 executeScript(obj, "layoutTestController.notifyDone();");
             }
             break;
@@ -461,7 +461,7 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value)
             *((const char **)value) = "Simple Netscape plug-in that handles test content for WebKit";
             break;
         case NPPVpluginNeedsXEmbed:
-            *((NPBool *)value) = TRUE;
+            *((NPBool *)value) = true;
             break;
 #endif
         case NPPVpluginScriptableNPObject: {

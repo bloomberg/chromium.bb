@@ -25,7 +25,7 @@ typedef void NPDeviceContext;
 typedef void NPUserData;
 
 /* unique id for each device interface */
-typedef int32 NPDeviceID;
+typedef int32_t NPDeviceID;
 
 /* Events -------------------------------------------------------------------*/
 
@@ -67,54 +67,54 @@ typedef enum {
 
 typedef struct _NPKeyEvent
 {
-  uint32 modifier;
-  uint32 normalizedKeyCode;
+  uint32_t modifier;
+  uint32_t normalizedKeyCode;
 } NPKeyEvent;
 
 typedef struct _NPCharacterEvent
 {
-  uint32 modifier;
-  uint16 text[4];
-  uint16 unmodifiedText[4];
+  uint32_t modifier;
+  uint16_t text[4];
+  uint16_t unmodifiedText[4];
 } NPCharacterEvent;
 
 typedef struct _NPMouseEvent
 {
-  uint32 modifier;
-  int32 button;
-  int32 x;
-  int32 y;
-  int32 clickCount;
+  uint32_t modifier;
+  int32_t button;
+  int32_t x;
+  int32_t y;
+  int32_t clickCount;
 } NPMouseEvent;
 
 typedef struct _NPMouseWheelEvent
 {
-  uint32 modifier;
+  uint32_t modifier;
   float deltaX;
   float deltaY;
   float wheelTicksX;
   float wheelTicksY;
-  uint32 scrollByPage;
+  uint32_t scrollByPage;
 } NPMouseWheelEvent;
 
 typedef struct _NPDeviceEvent {
-  uint32 device_uid;
-  uint32 subtype;
-  /* uint8 generic[0]; */
+  uint32_t device_uid;
+  uint32_t subtype;
+  /* uint8_t generic[0]; */
 } NPDeviceEvent;
 
 typedef struct _NPMinimizeEvent {
-  int32 value;
+  int32_t value;
 } NPMinimizeEvent;
 
 typedef struct _NPFocusEvent {
-  int32 value;
+  int32_t value;
 } NPFocusEvent;
 
 typedef struct _NPPepperEvent
 {
-  uint32 size;
-  int32 type;
+  uint32_t size;
+  int32_t type;
   double timeStampSeconds;
   union {
     NPKeyEvent key;
@@ -150,17 +150,17 @@ typedef struct _NPDeviceContext2D
 
   /* Length of each row of pixels in bytes. This may be larger than width * 4
    * if there is padding at the end of each row to help with alignment. */
-  int32 stride;
+  int32_t stride;
 
   /* The dirty region that the plugin has painted into the buffer. This
    * will be initialized to the size of the plugin image in
    * initializeContextPtr. The plugin can change the values to only
    * update portions of the image. */
   struct {
-    int32 left;
-    int32 top;
-    int32 right;
-    int32 bottom;
+    int32_t left;
+    int32_t top;
+    int32_t right;
+    int32_t bottom;
   } dirty;
 } NPDeviceContext2D;
 
@@ -179,8 +179,8 @@ typedef void (*NPDeviceFlushContextCallbackPtr)(
 /* query single capabilities of device */
 typedef NPError (
     *NPDeviceQueryCapabilityPtr)(NPP instance,
-    int32 capability,
-    int32 *value);
+    int32_t capability,
+    int32_t *value);
 /* query config (configuration == a set of capabilities) */
 typedef NPError (
     *NPDeviceQueryConfigPtr)(NPP instance,
@@ -195,13 +195,13 @@ typedef NPError (*NPDeviceInitializeContextPtr)(
 typedef NPError (*NPDeviceGetStateContextPtr) (
     NPP instance,
     NPDeviceContext* context,
-    int32 state,
+    int32_t state,
     intptr_t* value);
 /* poke device state */
 typedef NPError (*NPDeviceSetStateContextPtr) (
     NPP instance,
     NPDeviceContext* context,
-    int32 state,
+    int32_t state,
     intptr_t value);
 /* flush context, if callback, userData are NULL */
 /* this becomes a blocking call */
@@ -222,17 +222,17 @@ typedef NPError (*NPDeviceCreateBufferPtr)(
     NPP instance,
     NPDeviceContext* context,
     size_t size,
-    int32* id);
+    int32_t* id);
 /* Destroy a buffer associated with a particular context. */
 typedef NPError (*NPDeviceDestroyBufferPtr)(
     NPP instance,
     NPDeviceContext* context,
-    int32 id);
+    int32_t id);
 /* Map a buffer id to its address. */
 typedef NPError (*NPDeviceMapBufferPtr)(
     NPP instance,
     NPDeviceContext* context,
-    int32 id,
+    int32_t id,
     NPDeviceBuffer* buffer);
 
 
@@ -264,7 +264,7 @@ typedef enum {
 
 /* Get the number of configs supported by a given device. */
 typedef NPError (*NPDeviceGetNumConfigsPtr)(NPP instance,
-                                            int32* numConfigs);
+                                            int32_t* numConfigs);
 
 /* Get attribute values from a config. NPDeviceGetConfigs might return        */
 /* multiple configs. This function can be used to examine them to             */
@@ -279,8 +279,8 @@ typedef NPError (*NPDeviceGetNumConfigsPtr)(NPP instance,
 /*  attribList: The values paired up with each attribute are filled in        */
 /*              on return.                                                    */
 typedef NPError (*NPDeviceGetConfigAttribsPtr)(NPP instance,
-                                               int32 config,
-                                               int32* attribList);
+                                               int32_t config,
+                                               int32_t* attribList);
 
 /* Create a device context based on a particular device configuration and a   */
 /* list config input attributes.                                              */
@@ -291,8 +291,8 @@ typedef NPError (*NPDeviceGetConfigAttribsPtr)(NPP instance,
 /* Outputs:                                                                   */
 /*  context: The created context.                                             */
 typedef NPError (*NPDeviceCreateContextPtr)(NPP instance,
-                                            int32 config,
-                                            const int32* attribList,
+                                            int32_t config,
+                                            const int32_t* attribList,
                                             NPDeviceContext** context);
 
 /* Destroy a context.                                                         */
@@ -319,7 +319,7 @@ typedef void (*NPDeviceGenericCallbackPtr)(void);
 typedef NPError (*NPDeviceRegisterCallbackPtr)(
     NPP instance,
     NPDeviceContext* context,
-    int32 callbackType,
+    int32_t callbackType,
     NPDeviceGenericCallbackPtr callback,
     void* callbackData);
 
@@ -361,8 +361,8 @@ typedef NPError (*NPDeviceSynchronizeContextPtr)(
     NPP instance,
     NPDeviceContext* context,
     NPDeviceSynchronizationMode mode,
-    const int32* inputAttribList,
-    int32* outputAttribList,
+    const int32_t* inputAttribList,
+    int32_t* outputAttribList,
     NPDeviceSynchronizeContextCallbackPtr callback,
     void* callbackData);
 
@@ -428,7 +428,7 @@ typedef void (*NPSelectedFindResultChangedPtr)(
     int index);
 
 /* Theming -----------------------------------------------------------------*/
-typedef int32 NPWidgetID;
+typedef int32_t NPWidgetID;
 
 typedef enum {
   NPWidgetTypeScrollbar = 0
@@ -447,16 +447,16 @@ typedef struct _NPRect32
 } NPRect32;
 
 typedef struct _NPScrollbarTickMarks {
-  uint32 count;
+  uint32_t count;
   NPRect32* tickmarks;
 } NPScrollbarTickMarks;
 
 typedef enum {
   NPWidgetPropertyLocation = 0,  // variable is NPRect*.
   NPWidgetPropertyDirtyRect = 1,  // Get only.  variable is NPRec*.
-  NPWidgetPropertyScrollbarThickness = 2,  // Get only.  variable is int32*.
-  NPWidgetPropertyScrollbarValue = 3,  // variable is int32*.
-  NPWidgetPropertyScrollbarDocumentSize = 4,  // Set only. variable is int32*.
+  NPWidgetPropertyScrollbarThickness = 2,  // Get only.  variable is int32_t*.
+  NPWidgetPropertyScrollbarValue = 3,  // variable is int32_t*.
+  NPWidgetPropertyScrollbarDocumentSize = 4,  // Set only. variable is int32_t*.
   // Set only.  variable is NPScrollbarTickMarks*.
   NPWidgetPropertyScrollbarTickMarks = 5,
   // Set only.  variable is bool* (true for forward, false for backward).
@@ -465,7 +465,7 @@ typedef enum {
   NPWidgetPropertyScrollbarScrollByPage = 7,
   // Set only.  variable is bool* (true for forward, false for backward).
   NPWidgetPropertyScrollbarScrollByDocument = 8,
-  // Set only.  variable is int32* (positive forward, negative  backward).
+  // Set only.  variable is int32_t* (positive forward, negative  backward).
   NPWidgetPropertyScrollbarScrollByPixels = 9
 } NPWidgetProperty;
 
@@ -570,7 +570,7 @@ typedef enum {
   NPChooseFile_Save = 3
 } NPChooseFileMode;
 typedef void (*NPChooseFileCallback)(const char** filePaths,
-                                     uint32 pathCount,
+                                     uint32_t pathCount,
                                      void* userData);
 typedef NPError (*NPChooseFilePtr)(
     NPP instance,
@@ -650,7 +650,7 @@ struct NPNExtensions {
 #define NPPepper3DDevice 2
 
 typedef struct _NPDeviceContext3DConfig {
-  int32 commandBufferSize;
+  int32_t commandBufferSize;
 } NPDeviceContext3DConfig;
 
 typedef enum _NPDeviceContext3DError {
@@ -700,16 +700,16 @@ typedef struct _NPDeviceContext3D
 
   // Buffer in which commands are stored.
   void* commandBuffer;
-  int32 commandBufferSize;
+  int32_t commandBufferSize;
 
   // Offset in command buffer reader has reached. Synchronized on flush.
-  int32 getOffset;
+  int32_t getOffset;
 
   // Offset in command buffer writer has reached. Synchronized on flush.
-  int32 putOffset;
+  int32_t putOffset;
 
   // Last processed token. Synchronized on flush.
-  int32 token;
+  int32_t token;
 
   // Callback invoked on the main thread when the context must be repainted.
   // TODO(apatrick): move this out of the context struct like the rest of the
@@ -858,13 +858,13 @@ typedef struct _NPDeviceContextAudio NPDeviceContextAudio;
 typedef void (*NPAudioCallback)(NPDeviceContextAudio *context);
 
 typedef struct _NPDeviceContextAudioConfig {
-  int32 sampleRate;
-  int32 sampleType;
-  int32 outputChannelMap;
-  int32 inputChannelMap;
-  int32 sampleFrameCount;
-  uint32 startThread;
-  uint32 flags;
+  int32_t sampleRate;
+  int32_t sampleType;
+  int32_t outputChannelMap;
+  int32_t inputChannelMap;
+  int32_t sampleFrameCount;
+  uint32_t startThread;
+  uint32_t flags;
   NPAudioCallback callback;
   void *userData;
 } NPDeviceContextAudioConfig;
@@ -886,18 +886,18 @@ struct _NPDeviceContextAudio {
 typedef NPError (*NPPPrintBeginPtr) (
     NPP instance,
     NPRect* printableArea,
-    int32 printerDPI,
-    int32* numPages);
+    int32_t printerDPI,
+    int32_t* numPages);
 /* Returns the required raster dimensions for the given page. */
 typedef NPError (*NPPGetRasterDimensionsPtr) (
     NPP instance,
-    int32 pageNumber,
-    int32* widthInPixels,
-    int32* heightInPixels);
+    int32_t pageNumber,
+    int32_t* widthInPixels,
+    int32_t* heightInPixels);
 /* Prints the specified page This allows the plugin to print a raster output. */
 typedef NPError (*NPPPrintPageRasterPtr) (
     NPP instance,
-    int32 pageNumber,
+    int32_t pageNumber,
     NPDeviceContext2D* printSurface);
 /* Ends the print operation */
 typedef NPError (*NPPPrintEndPtr) (NPP instance);

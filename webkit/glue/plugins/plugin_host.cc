@@ -606,7 +606,7 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
         rect.right = invalidRect->right;
         rect.top = invalidRect->top;
         rect.bottom = invalidRect->bottom;
-        ::InvalidateRect(plugin->window_handle(), &rect, FALSE);
+        ::InvalidateRect(plugin->window_handle(), &rect, false);
         return;
       }
 #endif
@@ -712,13 +712,13 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       break;
 
     case NPNVSupportsXEmbedBool:
-      *reinterpret_cast<NPBool*>(value) = TRUE;
+      *reinterpret_cast<NPBool*>(value) = true;
       rv = NPERR_NO_ERROR;
       break;
   #endif
     case NPNVSupportsWindowless: {
       NPBool* supports_windowless = reinterpret_cast<NPBool*>(value);
-      *supports_windowless = TRUE;
+      *supports_windowless = true;
       rv = NPERR_NO_ERROR;
       break;
     }
@@ -762,7 +762,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       // only want to use it as a fallback to keep plugins from crashing: if a
       // plugin knows enough to ask, we want them to use CoreGraphics.
       NPBool* supports_qd = reinterpret_cast<NPBool*>(value);
-      *supports_qd = FALSE;
+      *supports_qd = false;
       rv = NPERR_NO_ERROR;
       break;
     }
@@ -774,14 +774,14 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     case NPNVsupportsCocoaBool: {
       // we do support these drawing and event models.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
-      *supports_model = TRUE;
+      *supports_model = true;
       rv = NPERR_NO_ERROR;
       break;
     }
     case NPNVsupportsCoreAnimationBool: {
       // We only support the Core Animation model on 10.6 and higher
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
-      *supports_model = SupportsSharingAcceleratedSurfaces() ? TRUE : FALSE;
+      *supports_model = SupportsSharingAcceleratedSurfaces() ? true : false;
       rv = NPERR_NO_ERROR;
       break;
     }
@@ -789,7 +789,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       // This drawing model was never widely supported, and we don't plan to
       // support it.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
-      *supports_model = FALSE;
+      *supports_model = false;
       rv = NPERR_NO_ERROR;
       break;
     }
@@ -1060,7 +1060,7 @@ NPBool NPN_ConvertPoint(NPP id, double sourceX, double sourceY,
                                 destX, destY, destSpace);
   }
   NOTREACHED();
-  return FALSE;
+  return false;
 }
 
 }  // extern "C"

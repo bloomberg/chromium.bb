@@ -19,7 +19,7 @@ extern "C" {
 
 typedef void* PGLContext;
 typedef unsigned int PGLBoolean;
-typedef int32 PGLInt;
+typedef int32_t PGLInt;
 
 // These are the same error codes as used by EGL.
 enum {

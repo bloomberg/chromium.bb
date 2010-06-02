@@ -114,7 +114,7 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
       *(static_cast<const char**>(value)) = "Pepper plug-in for GPU demo.";
       break;
     case NPPVpluginNeedsXEmbed:
-      *(static_cast<NPBool*>(value)) = TRUE;
+      *(static_cast<NPBool*>(value)) = true;
       break;
 #endif
     case NPPVpluginScriptableNPObject: {
