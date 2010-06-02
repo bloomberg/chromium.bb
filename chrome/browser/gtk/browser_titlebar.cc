@@ -200,10 +200,10 @@ void BrowserTitlebar::Init() {
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(container_), FALSE);
   gtk_container_add(GTK_CONTAINER(container_), container_hbox_);
 
-  g_signal_connect(container_, "scroll-event", G_CALLBACK(OnScroll), this);
+  g_signal_connect(container_, "scroll-event", G_CALLBACK(OnScrollThunk), this);
 
   g_signal_connect(window_, "window-state-event",
-                   G_CALLBACK(OnWindowStateChanged), this);
+                   G_CALLBACK(OnWindowStateChangedThunk), this);
 
   // Allocate the two button boxes on the left and right parts of the bar.
   titlebar_left_buttons_vbox_ = gtk_vbox_new(FALSE, 0);
@@ -256,7 +256,7 @@ void BrowserTitlebar::Init() {
     GtkWidget* favicon_event_box = gtk_event_box_new();
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(favicon_event_box), FALSE);
     g_signal_connect(favicon_event_box, "button-press-event",
-                     G_CALLBACK(OnButtonPressed), this);
+                     G_CALLBACK(OnButtonPressedThunk), this);
     gtk_box_pack_start(GTK_BOX(app_mode_hbox), favicon_event_box, FALSE,
                        FALSE, 0);
     // We use the app logo as a placeholder image so the title doesn't jump
@@ -631,20 +631,16 @@ void BrowserTitlebar::UpdateMaximizeRestoreVisibility() {
   }
 }
 
-// static
 gboolean BrowserTitlebar::OnWindowStateChanged(GtkWindow* window,
-    GdkEventWindowState* event, BrowserTitlebar* titlebar) {
-  titlebar->UpdateMaximizeRestoreVisibility();
-  titlebar->UpdateTitlebarAlignment();
-  titlebar->UpdateTextColor();
+                                               GdkEventWindowState* event) {
+  UpdateMaximizeRestoreVisibility();
+  UpdateTitlebarAlignment();
+  UpdateTextColor();
   return FALSE;
 }
 
-// static
-gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event,
-                                   BrowserTitlebar* titlebar) {
-  TabStripModel* tabstrip_model =
-      titlebar->browser_window_->browser()->tabstrip_model();
+gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
+  TabStripModel* tabstrip_model = browser_window_->browser()->tabstrip_model();
   int index = tabstrip_model->selected_index();
   if (event->direction == GDK_SCROLL_LEFT ||
       event->direction == GDK_SCROLL_UP) {
@@ -669,14 +665,12 @@ void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
   }
 }
 
-// static
 gboolean BrowserTitlebar::OnButtonPressed(GtkWidget* widget,
-                                          GdkEventButton* event,
-                                          BrowserTitlebar* titlebar) {
+                                          GdkEventButton* event) {
   if (event->button != 1)
     return FALSE;
 
-  titlebar->ShowFaviconMenu(event);
+  ShowFaviconMenu(event);
   return TRUE;
 }
 

@@ -124,20 +124,19 @@ class BrowserTitlebar : public NotificationObserver,
 
   // Callback for changes to window state.  This includes
   // maximizing/restoring/minimizing the window.
-  static gboolean OnWindowStateChanged(GtkWindow* window,
-                                       GdkEventWindowState* event,
-                                       BrowserTitlebar* titlebar);
+  CHROMEG_CALLBACK_1(BrowserTitlebar, gboolean, OnWindowStateChanged,
+                     GtkWindow*, GdkEventWindowState*);
 
   // Callback for mousewheel events.
-  static gboolean OnScroll(GtkWidget* widget, GdkEventScroll* event,
-                           BrowserTitlebar* titlebar);
+  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean, OnScroll,
+                       GdkEventScroll*);
 
   // Callback for min/max/close buttons.
   CHROMEGTK_CALLBACK_0(BrowserTitlebar, void, OnButtonClicked);
 
   // Callback for favicon.
-  static gboolean OnButtonPressed(GtkWidget* widget, GdkEventButton* event,
-                                  BrowserTitlebar* titlebar);
+  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean, OnButtonPressed,
+                       GdkEventButton*);
 
   // -- Context Menu -----------------------------------------------------------
 
