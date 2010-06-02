@@ -208,6 +208,7 @@ class OmxVideoDecodeEngine :
   int output_port_;
   bool output_eos_;
   bool uses_egl_image_;
+  base::TimeDelta last_pts_;
 
   // |il_state_| records the current component state. During state transition
   // |expected_il_state_| is the next state that the component will transition

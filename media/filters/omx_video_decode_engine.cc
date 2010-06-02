@@ -224,6 +224,10 @@ void OmxVideoDecodeEngine::OnReadComplete(OMX_BUFFERHEADERTYPE* buffer) {
          buffer->pBuffer + pixels + pixels /4,
          pixels / 4);
 
+  frame->SetTimestamp(base::TimeDelta::FromMilliseconds(buffer->nTimeStamp));
+  frame->SetDuration(frame->GetTimestamp() - last_pts_);
+  last_pts_ = frame->GetTimestamp();
+
   fill_this_buffer_callback_->Run(frame);
 }
 
@@ -633,6 +637,7 @@ void OmxVideoDecodeEngine::OnPortEnableEventRun(int port) {
   DCHECK_EQ(port, output_port_);
 
   output_port_state_ = kPortEnabled;
+  last_pts_ = base::TimeDelta::FromMilliseconds(0);
   OnPortEnableEventFunc = NULL;
   InitialFillBuffer();
   if (kClientError == client_state_) {
