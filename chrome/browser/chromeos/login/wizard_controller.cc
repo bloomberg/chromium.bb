@@ -21,14 +21,11 @@
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_screen.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
-#include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
@@ -60,8 +57,6 @@ class ContentView : public views::View {
         accel_network_screen_(views::Accelerator(base::VKEY_N,
                                                  false, true, true)),
         accel_update_screen_(views::Accelerator(base::VKEY_U,
-                                                false, true, true)),
-        accel_image_screen_(views::Accelerator(base::VKEY_I,
                                                 false, true, true)) {
     if (paint_background) {
       painter_.reset(chromeos::CreateWizardPainter(
@@ -72,7 +67,6 @@ class ContentView : public views::View {
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
     AddAccelerator(accel_update_screen_);
-    AddAccelerator(accel_image_screen_);
   }
 
   ~ContentView() {
@@ -95,8 +89,6 @@ class ContentView : public views::View {
       controller->ShowNetworkScreen();
     } else if (accel == accel_update_screen_) {
       controller->ShowUpdateScreen();
-    } else if (accel == accel_image_screen_) {
-      controller->ShowUserImageScreen();
     } else {
       return false;
     }
@@ -134,7 +126,6 @@ class ContentView : public views::View {
   views::Accelerator accel_login_screen_;
   views::Accelerator accel_network_screen_;
   views::Accelerator accel_update_screen_;
-  views::Accelerator accel_image_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -160,7 +151,6 @@ const char WizardController::kNetworkScreenName[] = "network";
 const char WizardController::kLoginScreenName[] = "login";
 const char WizardController::kAccountScreenName[] = "account";
 const char WizardController::kUpdateScreenName[] = "update";
-const char WizardController::kUserImageScreenName[] = "image";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -195,14 +185,6 @@ WizardController::~WizardController() {
   if (widget_)
     widget_->Close();
 
-  // Complete login.
-  chromeos::LoginUtils::Get()->EnableBrowserLaunch(true);
-  ChromeThread::PostTask(
-      ChromeThread::UI,
-      FROM_HERE,
-      NewRunnableFunction(&chromeos::LoginUtils::DoBrowserLaunch,
-                          ProfileManager::GetDefaultProfile()));
-
   default_controller_ = NULL;
 }
 
@@ -223,13 +205,8 @@ void WizardController::Init(const std::string& first_screen_name,
   views::WidgetGtk* window =
       new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   widget_ = window;
-  if (!paint_background) {
+  if (!paint_background)
     window->MakeTransparent();
-    // Window transparency makes background flicker through controls that
-    // are constantly updating its contents (like image view with video
-    // stream). Hence enabling double buffer.
-    window->EnableDoubleBuffer(true);
-  }
   window->Init(NULL, gfx::Rect(window_x, window_y, kWizardScreenWidth,
                                kWizardScreenHeight));
   chromeos::WmIpc::instance()->SetWindowType(
@@ -295,12 +272,6 @@ chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
   return update_screen_.get();
 }
 
-chromeos::UserImageScreen* WizardController::GetUserImageScreen() {
-  if (!user_image_screen_.get())
-    user_image_screen_.reset(new chromeos::UserImageScreen(this));
-  return user_image_screen_.get();
-}
-
 void WizardController::ShowNetworkScreen() {
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
@@ -321,11 +292,6 @@ void WizardController::ShowUpdateScreen() {
   SetCurrentScreen(GetUpdateScreen());
 }
 
-void WizardController::ShowUserImageScreen() {
-  SetStatusAreaVisible(true);
-  SetCurrentScreen(GetUserImageScreen());
-}
-
 void WizardController::SetStatusAreaVisible(bool visible) {
   // When ExistingUserController passes background ownership
   // to WizardController it happens after screen is shown.
@@ -342,9 +308,8 @@ void WizardController::SetCustomization(
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnLoginSignInSelected() {
-  // Don't launch browser until we pass image screen.
-  chromeos::LoginUtils::Get()->EnableBrowserLaunch(false);
-  ShowUserImageScreen();
+  // We're on the stack, so don't try and delete us now.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void WizardController::OnLoginCreateAccount() {
@@ -410,16 +375,6 @@ void WizardController::OnUpdateErrorUpdating() {
   ShowNetworkScreen();
 }
 
-void WizardController::OnUserImageSelected() {
-  // We're on the stack, so don't try and delete us now.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  // TODO(avayvod): Sync image with Google Sync.
-}
-
-void WizardController::OnUserImageSkipped() {
-  OnUserImageSelected();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
 
@@ -452,8 +407,6 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   } else if (first_screen_name == kUpdateScreenName) {
     ShowUpdateScreen();
     GetUpdateScreen()->StartUpdate();
-  } else if (first_screen_name == kUserImageScreenName) {
-    ShowUserImageScreen();
   } else if (first_screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
@@ -498,12 +451,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case UPDATE_ERROR_UPDATING:
       OnUpdateErrorUpdating();
-      break;
-    case USER_IMAGE_SELECTED:
-      OnUserImageSelected();
-      break;
-    case USER_IMAGE_SKIPPED:
-      OnUserImageSkipped();
       break;
     default:
       NOTREACHED();

@@ -45,16 +45,6 @@ class LoginUtils {
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) = 0;
-
-  // Used to postpone browser launch via DoBrowserLaunch() if some post
-  // login screen is to be shown.
-  virtual void EnableBrowserLaunch(bool enable) = 0;
-
-  // Returns if browser launch enabled now or not.
-  virtual bool IsBrowserLaunchEnabled() const = 0;
-
-  // Returns auth token for 'cp' Contacts service.
-  virtual const std::string& GetAuthToken() const = 0;
 };
 
 }  // namespace chromeos

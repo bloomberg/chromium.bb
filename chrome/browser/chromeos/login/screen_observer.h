@@ -31,8 +31,6 @@ class ScreenObserver {
     UPDATE_NOUPDATE,
     UPDATE_ERROR_CHECKING_FOR_UPDATE,
     UPDATE_ERROR_UPDATING,
-    USER_IMAGE_SELECTED,
-    USER_IMAGE_SKIPPED,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 
