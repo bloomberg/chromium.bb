@@ -46,9 +46,12 @@ class PanelController : public views::ButtonListener {
   };
 
   PanelController(Delegate* delegate_window,
-                  GtkWindow* window,
-                  const gfx::Rect& init_bounds);
+                  GtkWindow* window);
   virtual ~PanelController() {}
+
+  // Initializes the panel controller with the initial state of the focus and
+  // the window bounds.
+  void Init(bool initial_focus, const gfx::Rect& init_bounds);
 
   bool TitleMousePressed(const views::MouseEvent& event);
   void TitleMouseReleased(const views::MouseEvent& event, bool canceled);
@@ -95,9 +98,6 @@ class PanelController : public views::ButtonListener {
       GtkWidget* widget,
       GdkEventClient* event,
       PanelController* panel_controller);
-
-  // Initializes the panel controller with the window bounds.
-  void Init(const gfx::Rect window_bounds);
 
   // Panel's delegate.
   Delegate* delegate_;

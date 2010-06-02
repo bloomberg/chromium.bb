@@ -34,8 +34,8 @@ void PanelBrowserView::Init() {
 }
 
 void PanelBrowserView::Show() {
-  panel_controller_.reset(
-      new chromeos::PanelController(this, GetNativeHandle(), bounds()));
+  panel_controller_.reset(new PanelController(this, GetNativeHandle()));
+  panel_controller_->Init(true /* focus when opened */, bounds());
   BrowserView::Show();
 }
 

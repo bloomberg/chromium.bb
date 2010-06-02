@@ -76,8 +76,7 @@ static void InitializeResources() {
 }  // namespace
 
 PanelController::PanelController(Delegate* delegate,
-                                 GtkWindow* window,
-                                 const gfx::Rect& init_bounds)
+                                 GtkWindow* window)
     :  delegate_(delegate),
        panel_(window),
        panel_xid_(x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(panel_))),
@@ -88,10 +87,9 @@ PanelController::PanelController(Delegate* delegate,
        mouse_down_(false),
        dragging_(false),
        client_event_handler_id_(0) {
-  Init(init_bounds);
 }
 
-void PanelController::Init(const gfx::Rect window_bounds) {
+void PanelController::Init(bool initial_focus, const gfx::Rect& window_bounds) {
   gfx::Rect title_bounds(
       0, 0, window_bounds.width(), kTitleHeight);
 
@@ -109,6 +107,7 @@ void PanelController::Init(const gfx::Rect window_bounds) {
   std::vector<int> type_params;
   type_params.push_back(title_xid_);
   type_params.push_back(expanded_ ? 1 : 0);
+  type_params.push_back(initial_focus ? 1 : 0);
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(panel_),
       WM_IPC_WINDOW_CHROME_PANEL_CONTENT,
