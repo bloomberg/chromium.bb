@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
 
 // Flaky crash on Mac debug. http://crbug.com/45079
 #if defined(OS_MACOSX)
-#define PageActionRefreshCrash FLAKY_PageActionRefreshCrash
+#define PageActionRefreshCrash DISABLED_PageActionRefreshCrash
 #endif
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
