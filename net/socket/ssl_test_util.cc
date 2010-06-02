@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,7 +184,10 @@ bool TestServerLauncher::Start(Protocol protocol,
   // Deliberately do not pass the --forking flag. It breaks the tests
   // on Windows.
 
-  if (!base::LaunchApp(command_line, false, true, &process_handle_)) {
+  if (!LaunchTestServerAsJob(command_line,
+                             true,
+                             &process_handle_,
+                             &job_handle_)) {
     LOG(ERROR) << "Failed to launch " << command_line;
     return false;
   }
@@ -352,5 +355,60 @@ bool TestServerLauncher::CheckCATrusted() {
 #endif
   return true;
 }
+
+#if defined(OS_WIN)
+bool LaunchTestServerAsJob(const std::wstring& cmdline,
+                           bool start_hidden,
+                           base::ProcessHandle* process_handle,
+                           ScopedHandle* job_handle) {
+  // Launch test server process.
+  STARTUPINFO startup_info = {0};
+  startup_info.cb = sizeof(startup_info);
+  startup_info.dwFlags = STARTF_USESHOWWINDOW;
+  startup_info.wShowWindow = start_hidden ? SW_HIDE : SW_SHOW;
+  PROCESS_INFORMATION process_info;
+
+  // If this code is run under a debugger, the test server process is
+  // automatically associated with a job object created by the debugger. 
+  // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this.
+  if (!CreateProcess(NULL,
+                     const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
+                     FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL,
+                     &startup_info, &process_info)) {
+    LOG(ERROR) << "Could not create process.";
+    return false;
+  }
+  CloseHandle(process_info.hThread);
+
+  // If the caller wants the process handle, we won't close it.
+  if (process_handle) {
+    *process_handle = process_info.hProcess;
+  } else {
+    CloseHandle(process_info.hProcess);
+  }
+
+  // Create a JobObject and associate the test server process with it.
+  job_handle->Set(CreateJobObject(NULL, NULL));
+  if (!job_handle->IsValid()) {
+    LOG(ERROR) << "Could not create JobObject.";
+    return false;
+  } else {
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION limit_info = {0};
+    limit_info.BasicLimitInformation.LimitFlags =
+        JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+    if (0 == SetInformationJobObject(job_handle->Get(),
+      JobObjectExtendedLimitInformation, &limit_info, sizeof(limit_info))) {
+      LOG(ERROR) << "Could not SetInformationJobObject.";
+      return false;
+    }
+    if (0 == AssignProcessToJobObject(job_handle->Get(),
+                                      process_info.hProcess)) {
+      LOG(ERROR) << "Could not AssignProcessToObject.";
+      return false;
+    }
+  }
+  return true;
+}
+#endif
 
 }  // namespace net

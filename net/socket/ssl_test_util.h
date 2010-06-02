@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,11 @@
 
 #include "base/file_path.h"
 #include "base/process_util.h"
+
+#if defined(OS_WIN)
+#include "base/scoped_handle_win.h"
+#endif
+
 #if defined(USE_NSS)
 #include "base/ref_counted.h"
 #include "net/base/x509_certificate.h"
@@ -111,6 +116,11 @@ class TestServerLauncher {
 
   base::ProcessHandle process_handle_;
 
+#if defined(OS_WIN)
+  // JobObject used to clean up orphaned child processes.
+  ScopedHandle job_handle_;
+#endif
+
   // True if the server should handle each request in a separate process.
   bool forking_;
 
@@ -125,6 +135,15 @@ class TestServerLauncher {
   DISALLOW_COPY_AND_ASSIGN(TestServerLauncher);
 };
 
-}
+#if defined(OS_WIN)
+// Launch test server as a job so that it is not orphaned if the test case is
+// abnormally terminated.
+bool LaunchTestServerAsJob(const std::wstring& cmdline,
+                           bool start_hidden,
+                           base::ProcessHandle* process_handle,
+                           ScopedHandle* job_handle);
+#endif
+
+}  // namespace net
 
 #endif  // NET_SOCKET_SSL_TEST_UTIL_H_
