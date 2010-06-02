@@ -1001,15 +1001,6 @@
    fun:_ZN7WebCore5Frame4initEv
 }
 {
-   bug_17113
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN18ResourceDispatcher12CreateBridgeERKSsRK4GURLS4_S4_S1_S1_S1_iiN12ResourceType4TypeEjii
-   fun:_ZN11webkit_glue20ResourceLoaderBridge6CreateERKSsRK4GURLS5_S5_S2_S2_S2_iiN12ResourceType4TypeEii
-   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context5StartERKN6WebKit13WebURLRequestEPNS_20ResourceLoaderBridge16SyncLoadResponseE
-   fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
-}
-{
    bug_17291
    Memcheck:Leak
    fun:malloc
