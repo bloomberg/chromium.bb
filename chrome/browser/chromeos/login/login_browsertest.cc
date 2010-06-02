@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
+#include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/mock_synaptics_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -47,6 +48,7 @@ class LoginTestBase : public InProcessBrowserTest {
 
     testApi_->SetSynapticsLibrary(&mock_synaptics_library_, false);
     testApi_->SetCryptohomeLibrary(&mock_cryptohome_library_, false);
+    testApi_->SetScreenLockLibrary(&mock_screen_lock_library_, false);
   }
 
  protected:
@@ -55,6 +57,7 @@ class LoginTestBase : public InProcessBrowserTest {
   NiceMock<MockLanguageLibrary> mock_language_library_;
   NiceMock<MockNetworkLibrary> mock_network_library_;
   NiceMock<MockPowerLibrary> mock_power_library_;
+  NiceMock<MockScreenLockLibrary> mock_screen_lock_library_;
   NiceMock<MockSynapticsLibrary> mock_synaptics_library_;
   ImePropertyList ime_properties_;
   chromeos::CrosLibrary::TestApi* testApi_;
@@ -65,6 +68,8 @@ class LoginUserTest : public LoginTestBase {
   LoginUserTest() {
     EXPECT_CALL(mock_cryptohome_library_, IsMounted())
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(mock_screen_lock_library_, AddObserver(_))
+        .WillOnce(Return());
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
@@ -107,4 +112,3 @@ IN_PROC_BROWSER_TEST_F(LoginProfileTest, UserNotPassed) {
 }
 
 } // namespace chromeos
-

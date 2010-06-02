@@ -615,7 +615,6 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
     }
     browser::ShowLoginWizard(first_screen, size);
   }
-  chromeos::ScreenLocker::InitClass();
 }
 #else
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
@@ -1041,6 +1040,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Profile creation ----------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
+  // Initialize the screen locker now so that it can receive
+  // LOGIN_USER_CHANGED notification from UserManager.
+  chromeos::ScreenLocker::InitClass();
+
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager()->GetDefaultProfile();

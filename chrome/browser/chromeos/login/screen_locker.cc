@@ -18,6 +18,11 @@
 #include "views/widget/widget_gtk.h"
 
 namespace {
+// The maxium times that the screen locker should try to grab input,
+// and its interval. It has to be able to grab all inputs in 30 seconds,
+// otherwise chromium process fails and the session is terminated.
+const int64 kRetryGrabIntervalMs = 1000;
+const int kGrabFailureLimit = 30;
 
 // Observer to start ScreenLocker when the screen lock
 class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
@@ -69,7 +74,12 @@ ScreenLocker* ScreenLocker::screen_locker_ = NULL;
 // TODO(oshima): catch grab-broke event and quit if it ever happenes.
 class GrabWidget : public views::WidgetGtk {
  public:
-  GrabWidget() : views::WidgetGtk(views::WidgetGtk::TYPE_CHILD) {
+  GrabWidget()
+      : views::WidgetGtk(views::WidgetGtk::TYPE_CHILD),
+        ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+        grab_failure_count_(0),
+        kbd_grab_status_(GDK_GRAB_INVALID_TIME),
+        mouse_grab_status_(GDK_GRAB_INVALID_TIME) {
   }
 
   virtual void Show() {
@@ -79,11 +89,34 @@ class GrabWidget : public views::WidgetGtk {
       gtk_grab_remove(current_grab_window);
 
     DoGrab();
-    GdkGrabStatus kbd_status =
-        gdk_keyboard_grab(window_contents()->window, FALSE,
-                          GDK_CURRENT_TIME);
-    CHECK_EQ(GDK_GRAB_SUCCESS, kbd_status) << "Failed to grab keyboard input";
-    GdkGrabStatus ptr_status =
+
+    // Now steal all inputs.
+    TryGrabAllInputs();
+  }
+
+  // Try to grab all inputs. It initiates another try if it fails to
+  // grab and the retry count is within a limit, or fails with CHECK.
+  void TryGrabAllInputs();
+
+ private:
+  ScopedRunnableMethodFactory<GrabWidget> task_factory_;
+
+  // The number times the widget tried to grab all focus.
+  int grab_failure_count_;
+  // Status of keyboard and mouse grab.
+  GdkGrabStatus kbd_grab_status_;
+  GdkGrabStatus mouse_grab_status_;
+
+  DISALLOW_COPY_AND_ASSIGN(GrabWidget);
+};
+
+
+void GrabWidget::TryGrabAllInputs() {
+  if (kbd_grab_status_ != GDK_GRAB_SUCCESS)
+    kbd_grab_status_ = gdk_keyboard_grab(window_contents()->window, FALSE,
+                                         GDK_CURRENT_TIME);
+  if (mouse_grab_status_ != GDK_GRAB_SUCCESS) {
+    mouse_grab_status_ =
         gdk_pointer_grab(window_contents()->window,
                          FALSE,
                          static_cast<GdkEventMask>(
@@ -92,12 +125,23 @@ class GrabWidget : public views::WidgetGtk {
                          NULL,
                          NULL,
                          GDK_CURRENT_TIME);
-    CHECK_EQ(GDK_GRAB_SUCCESS, ptr_status) << "Failed to grab pointer input";
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GrabWidget);
-};
+  if ((kbd_grab_status_ != GDK_GRAB_SUCCESS ||
+       kbd_grab_status_ != GDK_GRAB_SUCCESS) &&
+      grab_failure_count_++ < kGrabFailureLimit) {
+    DLOG(WARNING) << "Failed to grab inputs. Trying again in 1 second: kbd="
+                  << kbd_grab_status_ << ", mouse=" << mouse_grab_status_;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        task_factory_.NewRunnableMethod(&GrabWidget::TryGrabAllInputs),
+        kRetryGrabIntervalMs);
+  } else {
+    CHECK_EQ(GDK_GRAB_SUCCESS, kbd_grab_status_)
+        << "Failed to grab keyboard input:" << kbd_grab_status_;
+    CHECK_EQ(GDK_GRAB_SUCCESS, mouse_grab_status_)
+        << "Failed to grab pointer input:" << mouse_grab_status_;
+  }
+}
 
 }  // namespace
 
@@ -182,11 +226,16 @@ void ScreenLocker::EnableInput() {
 // static
 void ScreenLocker::Show() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-  DCHECK(!screen_locker_);
-  gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
-  ScreenLocker* locker =
-      new ScreenLocker(UserManager::Get()->logged_in_user());
-  locker->Init(bounds);
+  // TODO(oshima): Currently, PowerManager may send a lock screen event
+  // even if a screen is locked. Investigate & solve the issue and
+  // enable this again if it's possible.
+  // DCHECK(!screen_locker_);
+  if (!screen_locker_) {
+    gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
+    ScreenLocker* locker =
+        new ScreenLocker(UserManager::Get()->logged_in_user());
+    locker->Init(bounds);
+  }
   // TODO(oshima): Wait for a message from WM to complete the process.
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
