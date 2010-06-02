@@ -402,7 +402,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       cross_origin_access_count_(0),
       same_origin_access_count_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
+      autofill_action_(AUTOFILL_NONE) {
   ClearBlockedContentSettings();
 }
 
@@ -1505,10 +1506,17 @@ void RenderView::OnAutocompleteSuggestionsReturned(
 
 void RenderView::OnAutoFillFormDataFilled(int query_id,
                                           const webkit_glue::FormData& form) {
-  if (query_id != autofill_query_id_)
+  if (!webview() || query_id != autofill_query_id_)
     return;
 
-  form_manager_.FillForm(form);
+  DCHECK_NE(AUTOFILL_NONE, autofill_action_);
+
+  if (autofill_action_ == AUTOFILL_FILL)
+    form_manager_.FillForm(form);
+  else if (autofill_action_ == AUTOFILL_PREVIEW)
+    form_manager_.PreviewForm(form);
+
+  autofill_action_ = AUTOFILL_NONE;
 }
 
 void RenderView::OnAllowScriptToClose(bool script_can_close) {
@@ -2030,21 +2038,26 @@ void RenderView::removeAutofillSuggestions(const WebString& name,
   Send(new ViewHostMsg_RemoveAutofillEntry(routing_id_, name, value));
 }
 
-void RenderView::didAcceptAutoFillSuggestion(
-      const WebKit::WebNode& node,
-      const WebKit::WebString& value,
-      const WebKit::WebString& label) {
-  static int query_counter = 0;
-  autofill_query_id_ = query_counter++;
+void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
+                                             const WebKit::WebString& value,
+                                             const WebKit::WebString& label) {
+  QueryAutoFillFormData(node, value, label, AUTOFILL_FILL);
+}
 
+void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
+                                             const WebKit::WebString& value,
+                                             const WebKit::WebString& label) {
+  didClearAutoFillSelection(node);
+  QueryAutoFillFormData(node, value, label, AUTOFILL_PREVIEW);
+}
+
+void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {
   webkit_glue::FormData form;
-  const WebInputElement element = node.toConst<WebInputElement>();
+  const WebFormControlElement element = node.toConst<WebFormControlElement>();
   if (!form_manager_.FindFormWithFormControlElement(
           element, FormManager::REQUIRE_NONE, &form))
     return;
-
-  Send(new ViewHostMsg_FillAutoFillFormData(
-      routing_id_, autofill_query_id_, form, value, label));
+  form_manager_.ClearPreviewedForm(form);
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -5043,4 +5056,22 @@ bool RenderView::IsNonLocalTopLevelNavigation(
     }
   }
   return false;
+}
+
+void RenderView::QueryAutoFillFormData(const WebKit::WebNode& node,
+                                       const WebKit::WebString& value,
+                                       const WebKit::WebString& label,
+                                       AutoFillAction action) {
+  static int query_counter = 0;
+  autofill_query_id_ = query_counter++;
+
+  webkit_glue::FormData form;
+  const WebInputElement element = node.toConst<WebInputElement>();
+  if (!form_manager_.FindFormWithFormControlElement(
+          element, FormManager::REQUIRE_NONE, &form))
+    return;
+
+  autofill_action_ = action;
+  Send(new ViewHostMsg_FillAutoFillFormData(
+      routing_id_, autofill_query_id_, form, value, label));
 }

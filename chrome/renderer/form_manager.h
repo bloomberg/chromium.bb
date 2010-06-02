@@ -29,7 +29,8 @@ class FormManager {
   enum RequirementsMask {
     REQUIRE_NONE = 0x0,             // No requirements.
     REQUIRE_AUTOCOMPLETE = 0x1,     // Require that autocomplete != off.
-    REQUIRE_ELEMENTS_ENABLED = 0x2  // Require that disabled attribute is off.
+    REQUIRE_ENABLED = 0x2,          // Require that disabled attribute is off.
+    REQUIRE_EMPTY = 0x4,            // Require that the fields are empty.
   };
 
   FormManager();
@@ -91,6 +92,13 @@ class FormManager {
   // store multiple forms with the same names from different frames.
   bool FillForm(const webkit_glue::FormData& form);
 
+  // Previews the form represented by |form|.  Same conditions as FillForm.
+  bool PreviewForm(const webkit_glue::FormData& form);
+
+  // Clears the placeholder values and the auto-filled background for any fields
+  // in |form| that have been previewed.
+  void ClearPreviewedForm(const webkit_glue::FormData& form);
+
   // Fills all of the forms in the cache with form data from |forms|.
   void FillForms(const std::vector<webkit_glue::FormData>& forms);
 
@@ -134,17 +142,26 @@ class FormManager {
   bool FindCachedFormElement(const webkit_glue::FormData& form,
                              FormElement** form_element);
 
-  // For each field in |form| that matches the corresponding field in the cached
-  // FormElement, |callback| is called with the actual WebFormControlElement and
-  // the FormField data from |form|. This method owns |callback|.
+  // For each field in |data| that matches the corresponding field in |form|
+  // and meets the |requirements|, |callback| is called with the actual
+  // WebFormControlElement and the FormField data from |form|. This method owns
+  // |callback|.
   void ForEachMatchingFormField(FormElement* form,
+                                RequirementsMask requirements,
                                 const webkit_glue::FormData& data,
                                 Callback* callback);
 
   // A ForEachMatchingFormField() callback that sets |field|'s value using the
-  // value in |data|.
+  // value in |data|.  This method also sets the autofill attribute, causing the
+  // background to be yellow.
   void FillFormField(WebKit::WebFormControlElement* field,
                      const webkit_glue::FormField* data);
+
+  // A ForEachMatchingFormField() callback that sets |field|'s placeholder value
+  // using the value in |data|, causing the test to be greyed-out.  This method
+  // also sets the autofill attribute, causing the background to be yellow.
+  void PreviewFormField(WebKit::WebFormControlElement* field,
+                        const webkit_glue::FormField* data);
 
   // The map of form elements.
   WebFrameFormElementMap form_elements_map_;

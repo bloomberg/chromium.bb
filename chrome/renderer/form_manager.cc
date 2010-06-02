@@ -316,7 +316,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
         continue;
     }
 
-    if (requirements & REQUIRE_ELEMENTS_ENABLED && !control_element.isEnabled())
+    if (requirements & REQUIRE_ENABLED && !control_element.isEnabled())
       continue;
 
     // Create a new FormField, fill it out and map it to the field's name.
@@ -519,14 +519,56 @@ bool FormManager::FillForm(const FormData& form) {
   if (!FindCachedFormElement(form, &form_element))
     return false;
 
-  ForEachMatchingFormField(
-      form_element, form, NewCallback(this, &FormManager::FillFormField));
+  RequirementsMask requirements = static_cast<RequirementsMask>(
+      REQUIRE_AUTOCOMPLETE | REQUIRE_ENABLED | REQUIRE_EMPTY);
+  ForEachMatchingFormField(form_element,
+                           requirements,
+                           form,
+                           NewCallback(this, &FormManager::FillFormField));
 
   return true;
 }
 
-void FormManager::FillForms(const std::vector<webkit_glue::FormData>& forms) {
-  for (std::vector<webkit_glue::FormData>::const_iterator iter = forms.begin();
+bool FormManager::PreviewForm(const FormData& form) {
+  FormElement* form_element = NULL;
+  if (!FindCachedFormElement(form, &form_element))
+    return false;
+
+  RequirementsMask requirements = static_cast<RequirementsMask>(
+      REQUIRE_AUTOCOMPLETE | REQUIRE_ENABLED | REQUIRE_EMPTY);
+  ForEachMatchingFormField(form_element,
+                           requirements,
+                           form,
+                           NewCallback(this, &FormManager::PreviewFormField));
+
+  return true;
+}
+
+void FormManager::ClearPreviewedForm(const FormData& form) {
+  FormElement* form_element = NULL;
+  if (!FindCachedFormElement(form, &form_element))
+    return;
+
+  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
+    WebFormControlElement* element = &form_element->control_elements[i];
+
+    // Only input elements can be previewed.
+    if (element->formControlType() != WebString::fromUTF8("text"))
+      continue;
+
+    // If the input element has not been auto-filled, FormManager has not
+    // previewed this field, so we have nothing to reset.
+    WebInputElement input_element = element->to<WebInputElement>();
+    if (!input_element.isAutofilled())
+      continue;
+
+    input_element.setPlaceholder(string16());
+    input_element.setAutofilled(false);
+  }
+}
+
+void FormManager::FillForms(const std::vector<FormData>& forms) {
+  for (std::vector<FormData>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     FillForm(*iter);
   }
@@ -582,7 +624,7 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
         continue;
     }
 
-    if (requirements & REQUIRE_ELEMENTS_ENABLED && !control_element.isEnabled())
+    if (requirements & REQUIRE_ENABLED && !control_element.isEnabled())
       continue;
 
     FormField field;
@@ -639,8 +681,10 @@ bool FormManager::FindCachedFormElement(const FormData& form,
   return false;
 }
 
-void FormManager::ForEachMatchingFormField(
-    FormElement* form, const FormData& data, Callback* callback) {
+void FormManager::ForEachMatchingFormField(FormElement* form,
+                                           RequirementsMask requirements,
+                                           const FormData& data,
+                                           Callback* callback) {
   // It's possible that the site has injected fields into the form after the
   // page has loaded, so we can't assert that the size of the cached control
   // elements is equal to the size of the fields in |form|.  Fortunately, the
@@ -666,6 +710,26 @@ void FormManager::ForEachMatchingFormField(
       continue;
 
     DCHECK_EQ(data.fields[k].name(), element_name);
+
+    // More than likely |requirements| will contain REQUIRE_AUTOCOMPLETE and/or
+    // REQUIRE_EMPTY, which both require text form control elements, so special-
+    // case this type of element.
+    if (element->formControlType() == WebString::fromUTF8("text")) {
+      const WebInputElement& input_element =
+          element->toConst<WebInputElement>();
+
+      // TODO(jhawkins): WebKit currently doesn't handle the autocomplete
+      // attribute for select control elements, but it probably should.
+      if (requirements & REQUIRE_AUTOCOMPLETE && !input_element.autoComplete())
+        continue;
+
+      if (requirements & REQUIRE_EMPTY && !input_element.value().isEmpty())
+        continue;
+    }
+
+    if (requirements & REQUIRE_ENABLED && !element->isEnabled())
+      continue;
+
     callback->Run(element, &data.fields[k]);
 
     // We found a matching form field so move on to the next.
@@ -684,18 +748,6 @@ void FormManager::FillFormField(WebKit::WebFormControlElement* field,
   if (field->formControlType() == WebString::fromUTF8("text")) {
     WebInputElement input_element = field->to<WebInputElement>();
 
-    // Don't auto-fill a disabled field.
-    if (!input_element.isEnabledFormControl())
-      return;
-
-    // Don't auto-fill a field with autocomplete=off.
-    if (!input_element.autoComplete())
-      return;
-
-    // Don't overwrite a pre-existing value in the field.
-    if (!input_element.value().isEmpty())
-      return;
-
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
     input_element.setValue(data->value().substr(0, input_element.maxLength()));
@@ -704,4 +756,23 @@ void FormManager::FillFormField(WebKit::WebFormControlElement* field,
     WebSelectElement select_element = field->to<WebSelectElement>();
     select_element.setValue(data->value());
   }
+}
+
+void FormManager::PreviewFormField(WebKit::WebFormControlElement* field,
+                                   const FormField* data) {
+  // Nothing to preview.
+  if (data->value().empty())
+    return;
+
+  // Only preview input fields.
+  if (field->formControlType() != WebString::fromUTF8("text"))
+    return;
+
+  WebInputElement input_element = field->to<WebInputElement>();
+
+  // If the maxlength attribute contains a negative value, maxLength()
+  // returns the default maxlength value.
+  input_element.setPlaceholder(
+      data->value().substr(0, input_element.maxLength()));
+  input_element.setAutofilled(true);
 }

@@ -258,7 +258,7 @@ TEST_F(FormManagerTest, GetFormsElementsEnabled) {
   form_manager.ExtractForms(web_frame);
 
   std::vector<FormData> forms;
-  form_manager.GetForms(FormManager::REQUIRE_ELEMENTS_ENABLED, &forms);
+  form_manager.GetForms(FormManager::REQUIRE_ENABLED, &forms);
   ASSERT_EQ(1U, forms.size());
 
   const FormData& form = forms[0];
@@ -426,33 +426,162 @@ TEST_F(FormManagerTest, FillForm) {
   WebDocument document = web_frame->document();
   WebInputElement firstname =
       document.getElementById("firstname").to<WebInputElement>();
-  // TODO(jhawkins): Check firstname.isAutofilled() once support has been added
-  // in WebKit.
+  EXPECT_TRUE(firstname.isAutofilled());
   EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
 
   WebInputElement lastname =
       document.getElementById("lastname").to<WebInputElement>();
+  EXPECT_TRUE(lastname.isAutofilled());
   EXPECT_EQ(ASCIIToUTF16("Earp"), lastname.value());
 
   // Hidden fields are not filled.
   WebInputElement imhidden =
       document.getElementById("imhidden").to<WebInputElement>();
+  EXPECT_FALSE(imhidden.isAutofilled());
   EXPECT_TRUE(imhidden.value().isEmpty());
 
   // Non-empty fields are not filled.
   WebInputElement notempty =
       document.getElementById("notempty").to<WebInputElement>();
+  EXPECT_FALSE(notempty.isAutofilled());
   EXPECT_EQ(ASCIIToUTF16("Hi"), notempty.value());
 
   // autocomplete=off fields are not filled.
   WebInputElement noautocomplete =
       document.getElementById("noautocomplete").to<WebInputElement>();
+  EXPECT_FALSE(noautocomplete.isAutofilled());
   EXPECT_TRUE(noautocomplete.value().isEmpty());
 
   // Disabled fields are not filled.
   WebInputElement notenabled =
       document.getElementById("notenabled").to<WebInputElement>();
+  EXPECT_FALSE(notenabled.isAutofilled());
   EXPECT_TRUE(notenabled.value().isEmpty());
+}
+
+TEST_F(FormManagerTest, PreviewForm) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"hidden\" id=\"imhidden\"/>"
+           "  <INPUT type=\"text\" id=\"notempty\" value=\"Hi\"/>"
+           "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
+           "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Get the input element we want to find.
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
+
+  // Find the form that contains the input element.
+  FormData form;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(7U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("imhidden"),
+                      string16(),
+                      ASCIIToUTF16("hidden"),
+                      0),
+            fields[2]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("notempty"),
+                      ASCIIToUTF16("Hi"),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[3]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("noautocomplete"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[4]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("notenabled"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[5]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit"),
+                      0),
+            fields[6]);
+
+  // Preview the form.
+  form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
+  form.fields[1].set_value(ASCIIToUTF16("Earp"));
+  form.fields[2].set_value(ASCIIToUTF16("Alpha"));
+  form.fields[3].set_value(ASCIIToUTF16("Beta"));
+  form.fields[4].set_value(ASCIIToUTF16("Gamma"));
+  form.fields[5].set_value(ASCIIToUTF16("Delta"));
+  EXPECT_TRUE(form_manager.PreviewForm(form));
+
+  // Verify the previewed elements.
+  WebDocument document = web_frame->document();
+  WebInputElement firstname =
+      document.getElementById("firstname").to<WebInputElement>();
+  EXPECT_TRUE(firstname.isAutofilled());
+  EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.placeholder());
+
+  WebInputElement lastname =
+      document.getElementById("lastname").to<WebInputElement>();
+  EXPECT_TRUE(lastname.isAutofilled());
+  EXPECT_EQ(ASCIIToUTF16("Earp"), lastname.placeholder());
+
+  // Hidden fields are not previewed.
+  WebInputElement imhidden =
+      document.getElementById("imhidden").to<WebInputElement>();
+  EXPECT_FALSE(imhidden.isAutofilled());
+  EXPECT_TRUE(imhidden.placeholder().isEmpty());
+
+  // Non-empty fields are not previewed.
+  WebInputElement notempty =
+      document.getElementById("notempty").to<WebInputElement>();
+  EXPECT_FALSE(notempty.isAutofilled());
+  EXPECT_TRUE(notempty.placeholder().isEmpty());
+
+  // autocomplete=off fields are not previewed.
+  WebInputElement noautocomplete =
+      document.getElementById("noautocomplete").to<WebInputElement>();
+  EXPECT_FALSE(noautocomplete.isAutofilled());
+  EXPECT_TRUE(noautocomplete.placeholder().isEmpty());
+
+  // Disabled fields are not previewed.
+  WebInputElement notenabled =
+      document.getElementById("notenabled").to<WebInputElement>();
+  EXPECT_FALSE(notenabled.isAutofilled());
+  EXPECT_TRUE(notenabled.placeholder().isEmpty());
 }
 
 TEST_F(FormManagerTest, Reset) {

@@ -282,6 +282,11 @@ class RenderView : public RenderWidget,
       const WebKit::WebNode& node,
       const WebKit::WebString& value,
       const WebKit::WebString& label);
+  virtual void didSelectAutoFillSuggestion(
+      const WebKit::WebNode& node,
+      const WebKit::WebString& value,
+      const WebKit::WebString& label);
+  virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
 
   virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
     return notification_provider_.get();
@@ -570,6 +575,12 @@ class RenderView : public RenderWidget,
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, int> HostZoomLevels;
+
+  enum AutoFillAction {
+    AUTOFILL_NONE,    // No state set.
+    AUTOFILL_FILL,    // Fill the AutoFill form data.
+    AUTOFILL_PREVIEW, // Preview the AutoFill form data.
+  };
 
   explicit RenderView(RenderThreadBase* render_thread,
                       const WebPreferences& webkit_preferences,
@@ -929,6 +940,15 @@ class RenderView : public RenderWidget,
                                     WebKit::WebFrame* frame,
                                     WebKit::WebNavigationType type);
 
+  // Queries the AutoFillManager for form data for the form containing |node|.
+  // |value| is the current text in the field, and |label| is the selected
+  // profile label.  |action| specifies whether to Fill or Preview the values
+  // returned from the AutoFillManager.
+  void QueryAutoFillFormData(const WebKit::WebNode& node,
+                             const WebKit::WebString& value,
+                             const WebKit::WebString& label,
+                             AutoFillAction action);
+
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   int enabled_bindings_;
@@ -1220,6 +1240,9 @@ class RenderView : public RenderWidget,
   int same_origin_access_count_;
 
   PepperPluginDelegateImpl pepper_delegate_;
+
+  // The action to take when receiving AutoFill data from the AutoFillManager.
+  AutoFillAction autofill_action_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };
