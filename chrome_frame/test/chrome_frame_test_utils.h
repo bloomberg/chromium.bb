@@ -345,6 +345,11 @@ std::wstring GetExeVersion(const std::wstring& exe_path);
 // Returns the version of Internet Explorer on the machine.
 IEVersion GetInstalledIEVersion();
 
+// Posts a delayed task to send an extended keystroke |repeat| times with an
+// optional modifier via SendInput. Following this, the enter key is sent.
+void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,
+                                int repeat, simulate_input::Modifier mod);
+
 // A convenience class to close all open IE windows at the end
 // of a scope.  It's more convenient to do it this way than to
 // explicitly call chrome_frame_test::CloseAllIEWindows at the

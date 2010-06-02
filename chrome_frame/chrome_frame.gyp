@@ -229,6 +229,7 @@
         'test/chrome_frame_automation_mock.h',
         'test/http_server.cc',
         'test/http_server.h',
+        'test/no_interference_test.cc',
         'test/proxy_factory_mock.cc',
         'test/proxy_factory_mock.h',
         'test/run_all_unittests.cc',

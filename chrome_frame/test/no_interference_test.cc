@@ -64,8 +64,6 @@ class NoInterferenceTest : public ChromeFrameTestWithWebServer {
   // Launches IE and navigates to |url|, then waits until receiving a quit
   // message or the timeout is exceeded.
   void LaunchIEAndNavigate(const std::wstring& url) {
-    CloseIeAtEndOfScope last_resort_close_ie;
-
     EXPECT_CALL(mock_, OnQuit())
         .Times(testing::AtMost(1))
         .WillOnce(QUIT_LOOP(loop_));
@@ -76,6 +74,7 @@ class NoInterferenceTest : public ChromeFrameTestWithWebServer {
 
     ASSERT_TRUE(mock_.web_browser2() != NULL);
     loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+    mock_.Uninitialize();
   }
 
   const std::wstring GetTestUrl(const wchar_t* relative_path) {
@@ -84,46 +83,153 @@ class NoInterferenceTest : public ChromeFrameTestWithWebServer {
     return UTF8ToWide(server_.Resolve(path.c_str()).spec());
   }
 
+  const std::wstring empty_page_url() {
+    return GetTestUrl(L"empty.html");
+  }
+
+  // Returns the url for a page with a single link, which points to the
+  // empty page.
+  const std::wstring link_page_url() {
+    return GetTestUrl(L"link.html");
+  }
+
+  CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop_;
-  ComStackObjectWithUninitialize<
-      testing::StrictMock<MockWebBrowserEventSink> > mock_;
+  CComObjectStackEx<testing::StrictMock<MockWebBrowserEventSink> > mock_;
 };
 
 ACTION_P(ExpectIERendererWindowHasFocus, mock) {
   mock->ExpectIERendererWindowHasFocus();
 }
 
-// This tests that a new IE renderer window has focus.
-TEST_F(NoInterferenceTest, SimpleFocus) {
-  const std::wstring kEmptyFileUrl = GetTestUrl(L"empty.html");
-  mock_.ExpectNavigationAndSwitch(kEmptyFileUrl);
+ACTION_P6(DelaySendMouseClickToIE, mock, loop, delay, x, y, button) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock,
+      &MockWebBrowserEventSink::SendMouseClickToIE, x, y, button), delay);
+}
 
-  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(kEmptyFileUrl)))
+ACTION_P2(OpenContextMenu, loop, delay) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+      simulate_input::SendScanCode, VK_F10, simulate_input::SHIFT), delay);
+}
+
+ACTION_P3(SelectItem, loop, delay, index) {
+  chrome_frame_test::DelaySendExtendedKeysEnter(loop, delay, VK_DOWN, index + 1,
+      simulate_input::NONE);
+}
+
+// A new IE renderer window should have focus.
+TEST_F(NoInterferenceTest, FLAKY_SimpleFocus) {
+  mock_.ExpectNavigationInIE(empty_page_url());
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(empty_page_url())))
       .WillOnce(testing::DoAll(
           ExpectIERendererWindowHasFocus(&mock_),
           VerifyAddressBarUrl(&mock_),
           CloseBrowserMock(&mock_)));
 
-  LaunchIEAndNavigate(kEmptyFileUrl);
+  LaunchIEAndNavigate(empty_page_url());
 }
 
-// This tests that window.open does not get intercepted by Chrome Frame.
+// Javascript window.open should open a new window with an IE renderer.
 TEST_F(NoInterferenceTest, FLAKY_JavascriptWindowOpen) {
-  const std::wstring kEmptyFileUrl = GetTestUrl(L"empty.html");
   const std::wstring kWindowOpenUrl = GetTestUrl(L"window_open.html");
   ComStackObjectWithUninitialize<
       testing::StrictMock<MockWebBrowserEventSink> > new_window_mock;
 
-  mock_.ExpectNavigationAndSwitch(kWindowOpenUrl);
+  mock_.ExpectNavigationInIE(kWindowOpenUrl);
   EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(kWindowOpenUrl)));
 
-  mock_.ExpectNewWindow(&new_window_mock);
-  EXPECT_CALL(new_window_mock, OnIELoad(testing::StrCaseEq(kEmptyFileUrl)))
-      .WillOnce(CloseBrowserMock(&new_window_mock));
+  mock_.ExpectNewWindowWithIE(empty_page_url(), &new_window_mock);
+  EXPECT_CALL(new_window_mock, OnIELoad(testing::StrCaseEq(empty_page_url())))
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&new_window_mock),
+          CloseBrowserMock(&new_window_mock)));
   EXPECT_CALL(new_window_mock, OnQuit())
       .WillOnce(CloseBrowserMock(&mock_));
 
   LaunchIEAndNavigate(kWindowOpenUrl);
+}
+
+// Redirecting with window.location in Javascript should work.
+TEST_F(NoInterferenceTest, JavascriptRedirect) {
+  const std::wstring kRedirectUrl = GetTestUrl(L"javascript_redirect.html");
+  mock_.ExpectNavigationInIE(kRedirectUrl);
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(kRedirectUrl)))
+      .WillOnce(VerifyAddressBarUrl(&mock_));
+
+  mock_.ExpectNavigationInIE(empty_page_url());
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(empty_page_url())))
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock_),
+          CloseBrowserMock(&mock_)));
+
+  LaunchIEAndNavigate(kRedirectUrl);
+}
+
+TEST_F(NoInterferenceTest, FLAKY_FollowLink) {
+  mock_.ExpectNavigationInIE(link_page_url());
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(link_page_url())))
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClickToIE(&mock_, &loop_, 0, 1, 1,
+                                  simulate_input::LEFT),
+          DelaySendScanCode(&loop_, 500, VK_TAB, simulate_input::NONE),
+          DelaySendScanCode(&loop_, 1000, VK_RETURN, simulate_input::NONE)));
+
+  mock_.ExpectNavigationInIE(empty_page_url());
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(empty_page_url())))
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock_),
+          CloseBrowserMock(&mock_)));
+
+  LaunchIEAndNavigate(link_page_url());
+}
+
+TEST_F(NoInterferenceTest, FLAKY_SelectContextMenuOpen) {
+  mock_.ExpectNavigationInIE(link_page_url());
+  // Focus the renderer window by clicking and then tab once to highlight the
+  // link.
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(link_page_url())))
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClickToIE(&mock_, &loop_, 0, 1, 1,
+                                  simulate_input::LEFT),
+          DelaySendScanCode(&loop_, 500, VK_TAB, simulate_input::NONE),
+          OpenContextMenu(&loop_, 1000),
+          SelectItem(&loop_, 1500, 0)));
+
+  mock_.ExpectNavigationInIE(empty_page_url());
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(empty_page_url())))
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&mock_),
+          CloseBrowserMock(&mock_)));
+
+  LaunchIEAndNavigate(link_page_url());
+}
+
+TEST_F(NoInterferenceTest, FLAKY_SelectContextMenuOpenInNewWindow) {
+  ComStackObjectWithUninitialize<
+      testing::StrictMock<MockWebBrowserEventSink> > new_window_mock;
+  int open_new_window_index = 2;
+  if (chrome_frame_test::GetInstalledIEVersion() == IE_6)
+    open_new_window_index = 1;
+
+  // Focus the renderer window by clicking and then tab once to highlight the
+  // link.
+  mock_.ExpectNavigationInIE(link_page_url());
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(link_page_url())))
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClickToIE(&mock_, &loop_, 0, 1, 1,
+                                  simulate_input::LEFT),
+          DelaySendScanCode(&loop_, 500, VK_TAB, simulate_input::NONE),
+          OpenContextMenu(&loop_, 1000),
+          SelectItem(&loop_, 1500, open_new_window_index)));
+
+  mock_.ExpectNewWindowWithIE(empty_page_url(), &new_window_mock);
+  // TODO(kkania): Verifying the address bar is flaky with this, at least
+  // on XP ie6. Fix.
+  EXPECT_CALL(new_window_mock, OnIELoad(testing::StrCaseEq(empty_page_url())))
+      .WillOnce(CloseBrowserMock(&new_window_mock));
+  EXPECT_CALL(new_window_mock, OnQuit()).WillOnce(CloseBrowserMock(&mock_));
+
+  LaunchIEAndNavigate(link_page_url());
 }
 
 }  // namespace
