@@ -215,15 +215,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'variables': {
-            'mac_packaging_dir':
-                '<(PRODUCT_DIR)/<(mac_product_name) Packaging',
-            # <(PRODUCT_DIR) expands to $(BUILT_PRODUCTS_DIR), which doesn't
-            # work properly in a shell script, where ${BUILT_PRODUCTS_DIR} is
-            # needed.
-            'mac_packaging_sh_dir':
-                '${BUILT_PRODUCTS_DIR}/<(mac_product_name) Packaging',
-          },
           # 'branding' is a variable defined in common.gypi
           # (e.g. "Chromium", "Chrome")
           'conditions': [
@@ -275,50 +266,6 @@
                 }],
               ],
             }],  # mac_breakpad
-            ['mac_keystone==1', {
-              'copies': [
-                {
-                  # Put keystone_install.sh where the packaging system will
-                  # find it.  The packager will copy this script to the
-                  # correct location on the disk image.
-                  'destination': '<(mac_packaging_dir)',
-                  'files': [
-                    'tools/build/mac/keystone_install.sh',
-                  ],
-                },
-              ],
-            }],  # mac_keystone
-            ['buildtype=="Official"', {
-              'actions': [
-                {
-                  # Create sign.sh, the script that the packaging system will
-                  # use to sign the .app bundle.
-                  'action_name': 'Make sign.sh',
-                  'variables': {
-                    'make_sign_sh_path': 'tools/build/mac/make_sign_sh',
-                    'sign_sh_in_path': 'tools/build/mac/sign.sh.in',
-                    'app_resource_rules_in_path':
-                        'tools/build/mac/app_resource_rules.plist.in',
-                  },
-                  'inputs': [
-                    '<(make_sign_sh_path)',
-                    '<(sign_sh_in_path)',
-                    '<(app_resource_rules_in_path)',
-                    '<(version_path)',
-                  ],
-                  'outputs': [
-                    '<(mac_packaging_dir)/sign.sh',
-                    '<(mac_packaging_dir)/app_resource_rules.plist',
-                  ],
-                  'action': [
-                    '<(make_sign_sh_path)',
-                    '<(mac_packaging_sh_dir)',
-                    '<(mac_product_name)',
-                    '<(version_full)',
-                  ],
-                },
-              ],
-            }],  # buildtype=="Official"
           ],
           'product_name': '<(mac_product_name)',
           'xcode_settings': {

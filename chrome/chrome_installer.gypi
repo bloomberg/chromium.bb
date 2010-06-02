@@ -752,6 +752,82 @@
         },
       ],
     }],
+    ['OS=="mac"', {
+      'variables': {
+        'mac_packaging_dir':
+            '<(PRODUCT_DIR)/<(mac_product_name) Packaging',
+        # <(PRODUCT_DIR) expands to $(BUILT_PRODUCTS_DIR), which doesn't
+        # work properly in a shell script, where ${BUILT_PRODUCTS_DIR} is
+        # needed.
+        'mac_packaging_sh_dir':
+            '${BUILT_PRODUCTS_DIR}/<(mac_product_name) Packaging',
+      }, # variables
+      'targets': [
+        {
+          'target_name': 'installer_packaging',
+          'type': 'none',
+          'conditions': [
+            ['buildtype=="Official"', {
+              'actions': [
+                {
+                  # Create sign.sh, the script that the packaging system will
+                  # use to sign the .app bundle.
+                  'action_name': 'Make sign.sh',
+                  'variables': {
+                    'make_sign_sh_path': 'installer/mac/make_sign_sh',
+                    'sign_sh_in_path': 'installer/mac/sign.sh.in',
+                    'app_resource_rules_in_path':
+                        'installer/mac/app_resource_rules.plist.in',
+                  },
+                  'inputs': [
+                    '<(make_sign_sh_path)',
+                    '<(sign_sh_in_path)',
+                    '<(app_resource_rules_in_path)',
+                    '<(version_path)',
+                  ],
+                  'outputs': [
+                    '<(mac_packaging_dir)/sign.sh',
+                    '<(mac_packaging_dir)/app_resource_rules.plist',
+                  ],
+                  'action': [
+                    '<(make_sign_sh_path)',
+                    '<(mac_packaging_sh_dir)',
+                    '<(mac_product_name)',
+                    '<(version_full)',
+                  ],
+                },
+              ],  # actions
+            }],  # buildtype=="Official"
+          ],  # conditions
+          'copies': [
+            {
+              # Put the files where the packaging system will find them.
+              # The packager will use these when building the disk image.
+              'destination': '<(mac_packaging_dir)',
+              'files': [
+                # Pull over the known version of pkg-dmg to use.
+                'tools/build/mac/pkg-dmg',
+              ],
+              'conditions': [
+                ['mac_keystone==1', {
+                  'files': [
+                    'installer/mac/keystone_install.sh',
+                  ],
+                }],  # mac_keystone
+                ['branding=="Chrome" and buildtype=="Official"', {
+                  'files': [
+                    'installer/mac/internal/chrome_dmg_background.png',
+                    'installer/mac/internal/chrome_dmg_dsstore',
+                    'installer/mac/internal/chrome_dmg_icon.icns',
+                    'installer/mac/internal/generate_dmgs',
+                  ],
+                }],  # branding=="Chrome" and buildtype=="Official"
+              ],  # conditions
+            },
+          ],  # copies
+        },  # target: installer_packaging
+      ],  # targets
+    }],  # OS=="mac"
     [ 'branding == "Chrome"', {
       'variables': {
          'branding_dir': 'app/theme/google_chrome',
