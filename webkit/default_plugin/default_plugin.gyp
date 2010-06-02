@@ -16,6 +16,8 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../../third_party/libxml/libxml.gyp:libxml',
         '../../third_party/npapi/npapi.gyp:npapi',
+        '../support/webkit_support.gyp:webkit_resources',
+        '../support/webkit_support.gyp:webkit_strings',
       ],
       'include_dirs': [
         '../..',
@@ -36,12 +38,6 @@
       ],
       'conditions': [
          ['OS=="win"', {
-            'dependencies': [
-              # TODO(thakis): These throw a CircularException on mac.
-              # Figure out why once they're needed.
-              '../support/webkit_support.gyp:webkit_resources',
-              '../support/webkit_support.gyp:webkit_strings',
-            ],
             'msvs_guid': '5916D37D-8C97-424F-A904-74E52594C2D6',
             'link_settings': {
               'libraries': ['-lurlmon.lib'],

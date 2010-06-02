@@ -5,6 +5,7 @@ include_rules = [
   "+media/audio",
   "+sandbox/src",
   "+skia/include",
+  "+webkit/default_plugin",
   "+webkit/glue",
 
   # Other libraries.

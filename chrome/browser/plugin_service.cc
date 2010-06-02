@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/default_plugin.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/gpu_plugin.h"
 #include "chrome/common/logging_chrome.h"
@@ -158,6 +159,8 @@ PluginService::PluginService()
   FilePath path = command_line->GetSwitchValuePath(switches::kLoadPlugin);
   if (!path.empty())
     NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
+
+  chrome::RegisterInternalDefaultPlugin();
 
   // Register the internal Flash and PDF, if available.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(

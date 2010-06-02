@@ -42,8 +42,6 @@
 
 #if defined(OS_WIN)
 #include "base/registry.h"
-// TODO(port) ?
-#include "webkit/default_plugin/plugin_impl.h"
 #endif
 
 class PluginTest : public UITest {

@@ -286,6 +286,7 @@
         # run time dependencies
         '../third_party/ppapi/ppapi.gyp:ppapi_tests',
         '../webkit/webkit.gyp:npapi_layout_test_plugin',
+        '../webkit/default_plugin/default_plugin.gyp:default_plugin',
       ],
       'include_dirs': [
         '..',
@@ -300,6 +301,7 @@
         'browser/download/download_uitest.cc',
         'browser/download/save_page_uitest.cc',
         'browser/errorpage_uitest.cc',
+        'browser/default_plugin_uitest.cc',
         'browser/extensions/extension_uitest.cc',
         'browser/history/multipart_uitest.cc',
         'browser/history/redirect_uitest.cc',

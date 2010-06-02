@@ -78,6 +78,8 @@ class TabProxy : public AutomationResourceProxy,
   // will result in value = "string"
   // jscript = "window.domAutomationController.send(24);"
   // will result in value = 24
+  // NOTE: If this is called from a ui test, |dom_automation_enabled_| must be
+  // set to true for these functions to work.
   bool ExecuteAndExtractString(const std::wstring& frame_xpath,
                                const std::wstring& jscript,
                                std::wstring* value) WARN_UNUSED_RESULT;

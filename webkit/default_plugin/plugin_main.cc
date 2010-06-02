@@ -167,11 +167,6 @@ NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16 mode, int16 argc,
   // 1. Test-shell
   // 2. The plugin is running in the renderer process.
   if (webkit_glue::IsPluginRunningInRendererProcess()) {
-    if (!base::strcasecmp(plugin_type,
-        "application/chromium-test-default-plugin")) {
-      SignalTestResult(instance);
-      return NPERR_NO_ERROR;
-    }
     return NPERR_GENERIC_ERROR;
   }
 
@@ -189,6 +184,12 @@ NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16 mode, int16 argc,
                           argn, argv);
 
   instance->pdata = reinterpret_cast<void*>(plugin_impl);
+
+  if (!base::strcasecmp(plugin_type,
+      "application/chromium-test-default-plugin")) {
+    SignalTestResult(instance);
+  }
+
   return NPERR_NO_ERROR;
 }
 
@@ -205,14 +206,6 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window_info) {
-  // The default plugin only loads in in-process mode during execution of
-  // PluginTest.DefaultPluginLoadTest. In that case, NPP_New() just calls
-  // SignalTestResult() and doesn't set |instance->pdata|.
-  // NPP_SetWindow() is called by webkit during layout of the test html. OS X
-  // and linux DCHECK the result of this function, so pretend that all's well.
-  if (webkit_glue::IsPluginRunningInRendererProcess())
-    return NPERR_NO_ERROR;
-
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 

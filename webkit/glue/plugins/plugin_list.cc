@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "net/base/mime_util.h"
-#include "webkit/default_plugin/plugin_main.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
@@ -140,25 +139,6 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
 PluginList::PluginList()
     : plugins_loaded_(false), plugins_need_refresh_(false) {
   PlatformInit();
-
-  const PluginVersionInfo default_plugin = {
-    FilePath(kDefaultPluginLibraryName),
-    L"Default Plug-in",
-    L"Provides functionality for installing third-party plug-ins",
-    L"1",
-    L"*",
-    L"",
-    L"",
-    {
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
-      default_plugin::NP_GetEntryPoints,
-#endif
-      default_plugin::NP_Initialize,
-      default_plugin::NP_Shutdown
-    }
-  };
-
-  internal_plugins_.push_back(default_plugin);
 }
 
 void PluginList::LoadPlugins(bool refresh) {
