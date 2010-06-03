@@ -84,12 +84,10 @@ ACCEPTABLE_ARGUMENTS = {
     'force_sel_ldr': None,
     # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
     'loader': None,
-    # Install libraries to multilib location, i.e. to lib32 or lib64.
-    # This is actually more subtle, off for 32-bit by default, unsupported
-    # for 64-bit.
-    'multilib': False,
-    # TODO(dpolukhin): document this
+    # colon-separated list of compiler flags, e.g. "-g:-Wall".
     'nacl_ccflags': None,
+    # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
+    'nacl_linkflags': None,
     'naclsdk_mode': None,
     'naclsdk_validate': None,
     # build only C libraries, skip C++, used during SDK build
@@ -1236,9 +1234,10 @@ nacl_env = pre_base_env.Clone(
     NACL_BUILD_FAMILY = 'UNTRUSTED',
 
     EXTRA_CFLAGS = [],
-    EXTRA_CCFLAGS = [],
+    EXTRA_CCFLAGS = ARGUMENTS.get('nacl_ccflags', '').split(':'),
     EXTRA_CXXFLAGS = [],
     EXTRA_LIBS = [],
+    EXTRA_LINKFLAGS = ARGUMENTS.get('nacl_linkflags', '').split(':'),
 
     # always optimize binaries
     # Command line option nacl_ccflags=... add additional option to nacl build
@@ -1248,12 +1247,12 @@ nacl_env = pre_base_env.Clone(
                '-fdiagnostics-show-option',
                '-pedantic',
                '-Werror',
-               '${EXTRA_CCFLAGS}',
-               ARGUMENTS.get('nacl_ccflags', '')],
+               '${EXTRA_CCFLAGS}'] ,
     CPPPATH = ['$SOURCE_ROOT'],
     CFLAGS = ['${EXTRA_CFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
     LIBS = ['${EXTRA_LIBS}'],
+    LINKFLAGS = ['${EXTRA_LINKFLAGS}']
 )
 
 if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
@@ -1504,6 +1503,7 @@ nacl_extra_sdk_env.Append(
       'src/untrusted/reachable_function_symbols/nacl.scons',
       'src/untrusted/stubs/nacl.scons',
       'src/untrusted/nosys/nacl.scons',
+      'src/untrusted/valgrind/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
    ],
 )
