@@ -65,6 +65,10 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
+  network_combobox_->set_listener(NULL);
+  network_combobox_ = NULL;
+  throbber_->Stop();
+  throbber_ = NULL;
 }
 
 void NetworkSelectionView::Init() {

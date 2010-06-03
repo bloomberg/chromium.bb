@@ -37,6 +37,7 @@ NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate, bool is_out_of_box)
 }
 
 NetworkScreen::~NetworkScreen() {
+  connection_timer_.Stop();
   UnsubscribeNetworkNotification();
 }
 
@@ -109,6 +110,9 @@ void NetworkScreen::ButtonPressed(views::Button* sender,
 // NetworkLibrary::Observer implementation:
 
 void NetworkScreen::NetworkChanged(NetworkLibrary* network_lib) {
+  if (!view())
+    return;
+
   // Save network selection in case it would be available after refresh.
   NetworkList::NetworkType network_type = NetworkList::NETWORK_EMPTY;
   string16 network_id;
@@ -205,6 +209,9 @@ void NetworkScreen::UnsubscribeNetworkNotification() {
 }
 
 NetworkList::NetworkItem* NetworkScreen::GetSelectedNetwork() {
+  if (!view())
+    return NULL;
+
   return networks_.GetNetworkAt(view()->GetSelectedNetworkItem() - 1);
 }
 
