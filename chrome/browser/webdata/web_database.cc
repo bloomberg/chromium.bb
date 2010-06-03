@@ -714,13 +714,13 @@ bool WebDatabase::AddLogin(const PasswordForm& form) {
   std::string encrypted_password;
   s.BindString(0, form.origin.spec());
   s.BindString(1, form.action.spec());
-  s.BindString(2, UTF16ToUTF8(form.username_element));
-  s.BindString(3, UTF16ToUTF8(form.username_value));
-  s.BindString(4, UTF16ToUTF8(form.password_element));
+  s.BindString16(2, form.username_element);
+  s.BindString16(3, form.username_value);
+  s.BindString16(4, form.password_element);
   Encryptor::EncryptString16(form.password_value, &encrypted_password);
   s.BindBlob(5, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
-  s.BindString(6, UTF16ToUTF8(form.submit_element));
+  s.BindString16(6, form.submit_element);
   s.BindString(7, form.signon_realm);
   s.BindInt(8, form.ssl_valid);
   s.BindInt(9, form.preferred);
@@ -759,9 +759,9 @@ bool WebDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(2, form.ssl_valid);
   s.BindInt(3, form.preferred);
   s.BindString(4, form.origin.spec());
-  s.BindString(5, UTF16ToUTF8(form.username_element));
-  s.BindString(6, UTF16ToUTF8(form.username_value));
-  s.BindString(7, UTF16ToUTF8(form.password_element));
+  s.BindString16(5, form.username_element);
+  s.BindString16(6, form.username_value);
+  s.BindString16(7, form.password_element);
   s.BindString(8, form.signon_realm);
 
   if (!s.Run()) {
@@ -786,10 +786,10 @@ bool WebDatabase::RemoveLogin(const PasswordForm& form) {
     return false;
   }
   s.BindString(0, form.origin.spec());
-  s.BindString(1, UTF16ToUTF8(form.username_element));
-  s.BindString(2, UTF16ToUTF8(form.username_value));
-  s.BindString(3, UTF16ToUTF8(form.password_element));
-  s.BindString(4, UTF16ToUTF8(form.submit_element));
+  s.BindString16(1, form.username_element);
+  s.BindString16(2, form.username_value);
+  s.BindString16(3, form.password_element);
+  s.BindString16(4, form.submit_element);
   s.BindString(5, form.signon_realm);
 
   if (!s.Run()) {
@@ -841,9 +841,9 @@ static void InitPasswordFormFromStatement(PasswordForm* form,
   form->origin = GURL(tmp);
   tmp = s->ColumnString(1);
   form->action = GURL(tmp);
-  form->username_element = UTF8ToUTF16(s->ColumnString(2));
-  form->username_value = UTF8ToUTF16(s->ColumnString(3));
-  form->password_element = UTF8ToUTF16(s->ColumnString(4));
+  form->username_element = s->ColumnString16(2);
+  form->username_value = s->ColumnString16(3);
+  form->password_element = s->ColumnString16(4);
 
   int encrypted_password_len = s->ColumnByteLength(5);
   std::string encrypted_password;
@@ -854,7 +854,7 @@ static void InitPasswordFormFromStatement(PasswordForm* form,
   }
 
   form->password_value = decrypted_password;
-  form->submit_element = UTF8ToUTF16(s->ColumnString(6));
+  form->submit_element = s->ColumnString16(6);
   tmp = s->ColumnString(7);
   form->signon_realm = tmp;
   form->ssl_valid = (s->ColumnInt(8) > 0);
@@ -972,8 +972,8 @@ bool WebDatabase::GetIDAndCountOfFormElement(
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(element.name()));
-  s.BindString(1, UTF16ToUTF8(element.value()));
+  s.BindString16(0, element.name());
+  s.BindString16(1, element.value());
 
   *count = 0;
 
@@ -1019,8 +1019,8 @@ bool WebDatabase::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   string16 name, value;
   base::Time time;
   while (s.Step()) {
-    name = UTF8ToUTF16(s.ColumnString(0));
-    value = UTF8ToUTF16(s.ColumnString(1));
+    name = s.ColumnString16(0);
+    value = s.ColumnString16(1);
     time = Time::FromTimeT(s.ColumnInt64(2));
 
     if (first_entry) {
@@ -1072,8 +1072,8 @@ bool WebDatabase::GetAutofillTimestamps(const string16& name,
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(name));
-  s.BindString(1, UTF16ToUTF8(value));
+  s.BindString16(0, name);
+  s.BindString16(1, value);
   while (s.Step()) {
     timestamps->push_back(Time::FromTimeT(s.ColumnInt64(0)));
   }
@@ -1096,8 +1096,8 @@ bool WebDatabase::UpdateAutofillEntries(
       return false;
     }
 
-    s.BindString(0, UTF16ToUTF8(entries[i].key().name()));
-    s.BindString(1, UTF16ToUTF8(entries[i].key().value()));
+    s.BindString16(0, entries[i].key().name());
+    s.BindString16(1, entries[i].key().value());
     if (s.Step()) {
       if (!RemoveFormElementForID(s.ColumnInt64(0)))
         return false;
@@ -1122,9 +1122,9 @@ bool WebDatabase::InsertAutofillEntry(const AutofillEntry& entry) {
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(entry.key().name()));
-  s.BindString(1, UTF16ToUTF8(entry.key().value()));
-  s.BindString(2, UTF16ToUTF8(l10n_util::ToLower(entry.key().value())));
+  s.BindString16(0, entry.key().name());
+  s.BindString16(1, entry.key().value());
+  s.BindString16(2, l10n_util::ToLower(entry.key().value()));
   s.BindInt(3, entry.timestamps().size());
 
   if (!s.Run()) {
@@ -1150,9 +1150,9 @@ bool WebDatabase::InsertFormElement(const FormField& element,
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(element.name()));
-  s.BindString(1, UTF16ToUTF8(element.value()));
-  s.BindString(2, UTF16ToUTF8(l10n_util::ToLower(element.value())));
+  s.BindString16(0, element.name());
+  s.BindString16(1, element.value());
+  s.BindString16(2, l10n_util::ToLower(element.value()));
 
   if (!s.Run()) {
     NOTREACHED();
@@ -1251,7 +1251,7 @@ bool WebDatabase::GetFormValuesForElementName(const string16& name,
       return false;
     }
 
-    s.BindString(0, UTF16ToUTF8(name));
+    s.BindString16(0, name);
     s.BindInt(1, limit);
   } else {
     string16 prefix_lower = l10n_util::ToLower(prefix);
@@ -1270,15 +1270,15 @@ bool WebDatabase::GetFormValuesForElementName(const string16& name,
       return false;
     }
 
-    s.BindString(0, UTF16ToUTF8(name));
-    s.BindString(1, UTF16ToUTF8(prefix_lower));
-    s.BindString(2, UTF16ToUTF8(next_prefix));
+    s.BindString16(0, name);
+    s.BindString16(1, prefix_lower);
+    s.BindString16(2, next_prefix);
     s.BindInt(3, limit);
   }
 
   values->clear();
   while (s.Step())
-    values->push_back(UTF8ToUTF16(s.ColumnString(0)));
+    values->push_back(s.ColumnString16(0));
   return s.Succeeded();
 }
 
@@ -1304,10 +1304,11 @@ bool WebDatabase::RemoveFormElementsAddedBetween(
                   delete_end.ToTimeT());
 
   AutofillElementList elements;
-  while (s.Step())
+  while (s.Step()) {
     elements.push_back(MakeTuple(s.ColumnInt64(0),
-                                 UTF8ToUTF16(s.ColumnString(1)),
-                                 UTF8ToUTF16(s.ColumnString(2))));
+                                 s.ColumnString16(1),
+                                 s.ColumnString16(2)));
+  }
 
   if (!s.Succeeded()) {
     NOTREACHED();
@@ -1315,8 +1316,7 @@ bool WebDatabase::RemoveFormElementsAddedBetween(
   }
 
   for (AutofillElementList::iterator itr = elements.begin();
-       itr != elements.end();
-       itr++) {
+       itr != elements.end(); itr++) {
     int how_many = 0;
     if (!RemoveFormElementForTimeRange(itr->a, delete_begin, delete_end,
                                        &how_many)) {
@@ -1366,8 +1366,8 @@ bool WebDatabase::RemoveFormElement(const string16& name,
     NOTREACHED() << "Statement 1 prepare failed";
     return false;
   }
-  s.BindString(0, UTF16ToUTF8(name));
-  s.BindString(1, UTF16ToUTF8(value));
+  s.BindString16(0, name);
+  s.BindString16(1, value);
 
   if (s.Step())
     return RemoveFormElementForID(s.ColumnInt64(0));
@@ -1376,35 +1376,35 @@ bool WebDatabase::RemoveFormElement(const string16& name,
 
 static void BindAutoFillProfileToStatement(const AutoFillProfile& profile,
                                            sql::Statement* s) {
-  s->BindString(0, UTF16ToUTF8(profile.Label()));
+  s->BindString16(0, profile.Label());
   s->BindInt(1, profile.unique_id());
 
   string16 text = profile.GetFieldText(AutoFillType(NAME_FIRST));
-  s->BindString(2, UTF16ToUTF8(text));
+  s->BindString16(2, text);
   text = profile.GetFieldText(AutoFillType(NAME_MIDDLE));
-  s->BindString(3, UTF16ToUTF8(text));
+  s->BindString16(3, text);
   text = profile.GetFieldText(AutoFillType(NAME_LAST));
-  s->BindString(4, UTF16ToUTF8(text));
+  s->BindString16(4, text);
   text = profile.GetFieldText(AutoFillType(EMAIL_ADDRESS));
-  s->BindString(5, UTF16ToUTF8(text));
+  s->BindString16(5, text);
   text = profile.GetFieldText(AutoFillType(COMPANY_NAME));
-  s->BindString(6, UTF16ToUTF8(text));
+  s->BindString16(6, text);
   text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1));
-  s->BindString(7, UTF16ToUTF8(text));
+  s->BindString16(7, text);
   text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2));
-  s->BindString(8, UTF16ToUTF8(text));
+  s->BindString16(8, text);
   text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY));
-  s->BindString(9, UTF16ToUTF8(text));
+  s->BindString16(9, text);
   text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE));
-  s->BindString(10, UTF16ToUTF8(text));
+  s->BindString16(10, text);
   text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP));
-  s->BindString(11, UTF16ToUTF8(text));
+  s->BindString16(11, text);
   text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
-  s->BindString(12, UTF16ToUTF8(text));
+  s->BindString16(12, text);
   text = profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER));
-  s->BindString(13, UTF16ToUTF8(text));
+  s->BindString16(13, text);
   text = profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER));
-  s->BindString(14, UTF16ToUTF8(text));
+  s->BindString16(14, text);
 }
 
 bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
@@ -1431,33 +1431,33 @@ bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
 
 static AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
   AutoFillProfile* profile = new AutoFillProfile(
-      UTF8ToUTF16(s.ColumnString(0)), s.ColumnInt(1));
+      s.ColumnString16(0), s.ColumnInt(1));
   profile->SetInfo(AutoFillType(NAME_FIRST),
-                   UTF8ToUTF16(s.ColumnString(2)));
+                   s.ColumnString16(2));
   profile->SetInfo(AutoFillType(NAME_MIDDLE),
-                   UTF8ToUTF16(s.ColumnString(3)));
+                   s.ColumnString16(3));
   profile->SetInfo(AutoFillType(NAME_LAST),
-                   UTF8ToUTF16(s.ColumnString(4)));
+                   s.ColumnString16(4));
   profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
-                   UTF8ToUTF16(s.ColumnString(5)));
+                   s.ColumnString16(5));
   profile->SetInfo(AutoFillType(COMPANY_NAME),
-                   UTF8ToUTF16(s.ColumnString(6)));
+                   s.ColumnString16(6));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                   UTF8ToUTF16(s.ColumnString(7)));
+                   s.ColumnString16(7));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
-                   UTF8ToUTF16(s.ColumnString(8)));
+                   s.ColumnString16(8));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
-                   UTF8ToUTF16(s.ColumnString(9)));
+                   s.ColumnString16(9));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
-                   UTF8ToUTF16(s.ColumnString(10)));
+                   s.ColumnString16(10));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
-                   UTF8ToUTF16(s.ColumnString(11)));
+                   s.ColumnString16(11));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-                   UTF8ToUTF16(s.ColumnString(12)));
+                   s.ColumnString16(12));
   profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
-                   UTF8ToUTF16(s.ColumnString(13)));
+                   s.ColumnString16(13));
   profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
-                   UTF8ToUTF16(s.ColumnString(14)));
+                   s.ColumnString16(14));
 
   return profile;
 }
@@ -1473,7 +1473,7 @@ bool WebDatabase::GetAutoFillProfileForLabel(const string16& label,
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(label));
+  s.BindString16(0, label);
   if (!s.Step())
     return false;
 
@@ -1551,23 +1551,23 @@ bool WebDatabase::GetAutoFillProfileForID(int profile_id,
 
 static void BindCreditCardToStatement(const CreditCard& credit_card,
                                       sql::Statement* s) {
-  s->BindString(0, UTF16ToUTF8(credit_card.Label()));
+  s->BindString16(0, credit_card.Label());
   s->BindInt(1, credit_card.unique_id());
 
   string16 text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME));
-  s->BindString(2, UTF16ToUTF8(text));
+  s->BindString16(2, text);
   text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_TYPE));
-  s->BindString(3, UTF16ToUTF8(text));
+  s->BindString16(3, text);
   text.clear();  // No unencrypted cc info.
-  s->BindString(4, UTF16ToUTF8(text));
+  s->BindString16(4, text);
   text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH));
-  s->BindString(5, UTF16ToUTF8(text));
+  s->BindString16(5, text);
   text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  s->BindString(6, UTF16ToUTF8(text));
+  s->BindString16(6, text);
   text.clear();
-  s->BindString(7, UTF16ToUTF8(text));
-  s->BindString(8, UTF16ToUTF8(credit_card.billing_address()));
-  s->BindString(9, UTF16ToUTF8(credit_card.shipping_address()));
+  s->BindString16(7, text);
+  s->BindString16(8, credit_card.billing_address());
+  s->BindString16(9, credit_card.shipping_address());
   text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
   std::string encrypted_data;
   Encryptor::EncryptString16(text, &encrypted_data);
@@ -1604,12 +1604,12 @@ bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
 
 static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   CreditCard* credit_card = new CreditCard(
-      UTF8ToUTF16(s.ColumnString(0)), s.ColumnInt(1));
+      s.ColumnString16(0), s.ColumnInt(1));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                   UTF8ToUTF16(s.ColumnString(2)));
+                       s.ColumnString16(2));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
-                   UTF8ToUTF16(s.ColumnString(3)));
-  string16 credit_card_number = UTF8ToUTF16(s.ColumnString(4));
+                       s.ColumnString16(3));
+  string16 credit_card_number = s.ColumnString16(4);
   // It could be non-empty prior to version 23. After that it encrypted in
   // the column 10.
   if (credit_card_number.empty()) {
@@ -1623,11 +1623,11 @@ static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   }
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_NUMBER), credit_card_number);
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-                   UTF8ToUTF16(s.ColumnString(5)));
+                       s.ColumnString16(5));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-                   UTF8ToUTF16(s.ColumnString(6)));
+                       s.ColumnString16(6));
 
-  string16 credit_card_verification_code = UTF8ToUTF16(s.ColumnString(7));
+  string16 credit_card_verification_code = s.ColumnString16(7);
   // It could be non-empty prior to version 23. After that it encrypted in
   // the column 11.
   if (credit_card_verification_code.empty()) {
@@ -1640,9 +1640,9 @@ static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
     }
   }
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                      credit_card_verification_code);
-  credit_card->set_billing_address(UTF8ToUTF16(s.ColumnString(8)));
-  credit_card->set_shipping_address(UTF8ToUTF16(s.ColumnString(9)));
+                       credit_card_verification_code);
+  credit_card->set_billing_address(s.ColumnString16(8));
+  credit_card->set_shipping_address(s.ColumnString16(9));
   // Column 10 is processed above.
   // Column 11 is processed above.
 
@@ -1660,7 +1660,7 @@ bool WebDatabase::GetCreditCardForLabel(const string16& label,
     return false;
   }
 
-  s.BindString(0, UTF16ToUTF8(label));
+  s.BindString16(0, label);
   if (!s.Step())
     return false;
 
