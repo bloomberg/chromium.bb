@@ -9,14 +9,14 @@ var chrome = chrome || {};
   native function DetachEvent(eventName);
 
   var chromeHidden = GetChromeHidden();
-  
+
   // Local implementation of JSON.parse & JSON.stringify that protect us
   // from being clobbered by an extension.
   chromeHidden.JSON = new (function() {
-    const $Object = Object;
-    const $Array = Array;
-    const $jsonStringify = JSON.stringify;
-    const $jsonParse = JSON.parse;
+    var $Object = Object;
+    var $Array = Array;
+    var $jsonStringify = JSON.stringify;
+    var $jsonParse = JSON.parse;
 
     this.stringify = function(thing) {
       var customizedObjectToJSON = $Object.prototype.toJSON;
