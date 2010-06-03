@@ -10,7 +10,6 @@
 #include "views/window/dialog_delegate.h"
 
 class MessageBoxView;
-class PrefService;
 
 // A dialog box that tells the user that an update is recommended in order for
 // the latest version to be put to use.
@@ -18,9 +17,6 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
  public:
   // This box is modal to |parent_window|.
   static void ShowMessageBox(gfx::NativeWindow parent_window);
-
-  // Register preferences specific to this view.
-  static void RegisterUpdateRecommendedPrefs(PrefService* prefs);
 
   // Overridden from views::DialogDelegate:
   virtual bool Accept();

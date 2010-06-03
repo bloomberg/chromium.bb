@@ -37,6 +37,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
+#include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -45,6 +46,7 @@
 #include "base/stats_counters.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
+#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
@@ -475,6 +477,15 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
+    scoped_ptr<FileVersionInfo> version(chrome_app::GetChromeVersionInfo());
+    printf("%s\n", WideToASCII(version->product_version()).c_str());
+    return 0;
+  }
+#endif
+
   std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
 

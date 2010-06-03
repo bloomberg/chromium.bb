@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "chrome/browser/gtk/first_run_dialog.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
@@ -150,6 +151,11 @@ bool Upgrade::IsUpdatePendingRestart() {
 // static
 void Upgrade::SaveLastModifiedTimeOfExe() {
   saved_last_modified_time_of_exe_ = Upgrade::GetLastModifiedTimeOfExe();
+}
+
+// static
+bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
+  return base::LaunchApp(command_line, false, false, NULL);
 }
 
 // static

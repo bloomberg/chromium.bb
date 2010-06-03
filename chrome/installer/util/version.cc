@@ -4,19 +4,19 @@
 
 #include <vector>
 
+#include "base/format_macros.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/version.h"
 
 installer::Version::Version(int64 major, int64 minor, int64 build,
-                            int64 patch) :
-    major_(major), minor_(minor), build_(build), patch_(patch) {
-  version_str_.append(Int64ToWString(major_));
-  version_str_.append(L".");
-  version_str_.append(Int64ToWString(minor_));
-  version_str_.append(L".");
-  version_str_.append(Int64ToWString(build_));
-  version_str_.append(L".");
-  version_str_.append(Int64ToWString(patch_));
+                            int64 patch)
+    : major_(major),
+      minor_(minor),
+      build_(build),
+      patch_(patch) {
+  version_str_ = ASCIIToUTF16(
+      StringPrintf("%" PRId64 ".%" PRId64 ".%" PRId64 ".%" PRId64,
+                   major_, minor_, build_, patch_));
 }
 
 installer::Version::~Version() {
@@ -33,8 +33,8 @@ bool installer::Version::IsHigherThan(const installer::Version* other) const {
 }
 
 installer::Version* installer::Version::GetVersionFromString(
-    const std::wstring& version_str) {
-  std::vector<std::wstring> numbers;
+    const string16& version_str) {
+  std::vector<string16> numbers;
   SplitString(version_str, '.', &numbers);
 
   if (numbers.size() != 4) {

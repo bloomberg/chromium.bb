@@ -40,11 +40,11 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/upgrade_detector.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/update_recommended_message_box.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -81,9 +81,7 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(TOOLKIT_VIEWS)
   BrowserView::RegisterBrowserViewPrefs(local_state);
 #endif
-#if defined(OS_WIN)
-  UpdateRecommendedMessageBox::RegisterUpdateRecommendedPrefs(local_state);
-#endif
+  UpgradeDetector::RegisterPrefs(local_state);
   TaskManager::RegisterPrefs(local_state);
   CookiePromptModalDialog::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);

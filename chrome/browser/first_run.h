@@ -157,10 +157,6 @@ class Upgrade {
   // handle to the event.
   static bool IsBrowserAlreadyRunning();
 
-  // Launches chrome again simulating a 'user' launch. If chrome could not
-  // be launched the return is false.
-  static bool RelaunchChromeBrowser(const CommandLine& command_line);
-
   // If the new_chrome.exe exists (placed by the installer then is swapped
   // to chrome.exe and the old chrome is renamed to old_chrome.exe. If there
   // is no new_chrome.exe or the swap fails the return is false;
@@ -179,6 +175,10 @@ class Upgrade {
   // |version| can be 0, 1 or 2 and selects what strings to present.
   static TryResult ShowTryChromeDialog(size_t version);
 #endif  // OS_WIN
+
+  // Launches chrome again simulating a 'user' launch. If chrome could not
+  // be launched the return is false.
+  static bool RelaunchChromeBrowser(const CommandLine& command_line);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   static void SaveLastModifiedTimeOfExe();

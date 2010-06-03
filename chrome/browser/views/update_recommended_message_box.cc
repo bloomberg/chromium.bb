@@ -25,11 +25,6 @@ void UpdateRecommendedMessageBox::ShowMessageBox(
   new UpdateRecommendedMessageBox(parent_window);
 }
 
-void UpdateRecommendedMessageBox::RegisterUpdateRecommendedPrefs(
-    PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
-}
-
 bool UpdateRecommendedMessageBox::Accept() {
   // Set the flag to restore the last session on shutdown.
   PrefService* pref_service = g_browser_process->local_state();

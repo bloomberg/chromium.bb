@@ -10,6 +10,7 @@
 
 #include "app/gtk_signal.h"
 #include "app/menus/simple_menu_model.h"
+#include "app/throb_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/command_updater.h"
@@ -43,7 +44,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public menus::SimpleMenuModel::Delegate,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
-                          public MenuBarHelper::Delegate {
+                          public MenuBarHelper::Delegate,
+                          public AnimationDelegate {
  public:
   explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
   virtual ~BrowserToolbarGtk();
@@ -116,6 +118,11 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual void PopupForButtonNextTo(GtkWidget* button,
                                     GtkMenuDirectionType dir);
 
+  // AnimationDelegate implementation ------------------------------------------
+  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationCanceled(const Animation* animation);
+
  private:
   // Builds a toolbar button with all the properties set.
   // |spacing| is the width of padding (in pixels) on the left and right of the
@@ -165,11 +172,21 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
                        guint, guint);
 
+  // Used to stop the upgrade notification animation.
+  CHROMEGTK_CALLBACK_0(BrowserToolbarGtk, void, OnAppMenuShow);
+
+  // Used to draw the upgrade notification badge.
+  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAppMenuImageExpose,
+                       GdkEventExpose*);
+
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 
   // Updates preference-dependent state.
   void NotifyPrefChanged(const std::wstring* pref);
+
+  // Start the upgrade notification animation.
+  void ShowUpgradeReminder();
 
   static void SetSyncMenuLabel(GtkWidget* widget, gpointer userdata);
 
@@ -251,6 +268,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Manages the home button drop signal handler.
   scoped_ptr<GtkSignalRegistrar> drop_handler_;
+
+  ThrobAnimation upgrade_reminder_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };

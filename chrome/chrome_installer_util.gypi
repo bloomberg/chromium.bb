@@ -143,6 +143,8 @@
             'installer/util/master_preferences.h',
             'installer/util/master_preferences_constants.cc',
             'installer/util/master_preferences_constants.h',
+            'installer/util/version.cc',
+            'installer/util/version.h',
           ],
           'include_dirs': [
             '<(DEPTH)',

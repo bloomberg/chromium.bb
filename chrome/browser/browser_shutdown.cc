@@ -161,21 +161,20 @@ void Shutdown() {
       shutdown_type_ != browser_shutdown::END_SESSION) {
     Upgrade::SwapNewChromeExeIfPresent();
   }
+#endif
 
   if (restart_last_session) {
+#if defined(OS_WIN) || defined(OS_LINUX)
     // Make sure to relaunch the browser with the same command line and add
     // Restore Last Session flag if session restore is not set.
-    CommandLine command_line = CommandLine::FromString(
-        CommandLine::ForCurrentProcess()->command_line_string());
+    CommandLine command_line(*CommandLine::ForCurrentProcess());
     if (!command_line.HasSwitch(switches::kRestoreLastSession))
       command_line.AppendSwitch(switches::kRestoreLastSession);
     Upgrade::RelaunchChromeBrowser(command_line);
-  }
-#endif
-#if !defined(OS_WIN)
-  if (restart_last_session)
+#else
     NOTIMPLEMENTED();
 #endif
+  }
 
   if (shutdown_type_ > NOT_VALID && shutdown_num_processes_ > 0) {
     // Measure total shutdown time as late in the process as possible

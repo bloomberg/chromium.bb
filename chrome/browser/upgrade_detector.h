@@ -8,6 +8,8 @@
 #include "base/singleton.h"
 #include "base/timer.h"
 
+class PrefService;
+
 ///////////////////////////////////////////////////////////////////////////////
 // UpgradeDetector
 //
@@ -22,16 +24,20 @@ class UpgradeDetector {
  public:
   ~UpgradeDetector();
 
+  static void RegisterPrefs(PrefService* prefs);
+
   bool notify_upgrade() { return notify_upgrade_; }
 
  private:
   UpgradeDetector();
   friend struct DefaultSingletonTraits<UpgradeDetector>;
 
-  // Checks with Omaha if we have the latest version. If not, sends out a
-  // notification and starts a one shot timer to wait until notifying the
-  // user.
+  // Launches a task on the file thread to check if we have the latest version.
   void CheckForUpgrade();
+
+  // Sends out a notification and starts a one shot timer to wait until
+  // notifying the user.
+  void UpgradeDetected();
 
   // The function that sends out a notification (after a certain time has
   // elapsed) that lets the rest of the UI know we should start notifying the
@@ -44,8 +50,10 @@ class UpgradeDetector {
   // After we detect an upgrade we wait a set time before notifying the user.
   base::OneShotTimer<UpgradeDetector> upgrade_notification_timer_;
 
-  // Whether we have detected an upgrade happening while we were running.
-  bool upgrade_detected_;
+  // We use this factory to create callback tasks for UpgradeDetected. We pass
+  // the task to the actual upgrade detection code, which is in
+  // DetectUpgradeTask.
+  ScopedRunnableMethodFactory<UpgradeDetector> method_factory_;
 
   // Whether we have waited long enough after detecting an upgrade (to see
   // is we should start nagging about upgrading).

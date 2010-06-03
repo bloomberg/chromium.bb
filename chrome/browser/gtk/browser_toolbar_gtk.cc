@@ -41,12 +41,15 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/canvas_paint.h"
 #include "gfx/gtk_util.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -68,6 +71,13 @@ const int kToolbarWidgetSpacing = 2;
 // Amount of rounding on top corners of toolbar. Only used in Gtk theme mode.
 const int kToolbarCornerSize = 3;
 
+// The offset in pixels of the upgrade dot on the app menu.
+const int kUpgradeDotOffset = 11;
+
+// The duration of the upgrade notification animation (actually the duration
+// of a half-throb).
+const int kThrobDuration = 1000;
+
 }  // namespace
 
 // BrowserToolbarGtk, public ---------------------------------------------------
@@ -82,7 +92,8 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       window_(window),
       profile_(NULL),
       sync_service_(NULL),
-      menu_bar_helper_(this) {
+      menu_bar_helper_(this),
+      upgrade_reminder_animation_(this) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
@@ -92,6 +103,14 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::UPGRADE_RECOMMENDED,
+                 NotificationService::AllSources());
+
+  upgrade_reminder_animation_.SetThrobDuration(kThrobDuration);
+
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
+    ShowUpgradeReminder();
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
@@ -213,11 +232,15 @@ void BrowserToolbarGtk::Init(Profile* profile,
   app_menu_image_ = gtk_image_new_from_pixbuf(
       theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
   gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_);
+  g_signal_connect_after(app_menu_image_, "expose-event",
+                         G_CALLBACK(OnAppMenuImageExposeThunk), this);
 
   app_menu_.reset(new MenuGtk(this, &app_menu_model_));
   gtk_box_pack_start(GTK_BOX(menus_hbox), chrome_menu, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(toolbar_right_), menus_hbox, FALSE, FALSE,
                      kToolbarWidgetSpacing);
+  g_signal_connect(app_menu_->widget(), "show",
+                   G_CALLBACK(OnAppMenuShowThunk), this);
 
   gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_right_, FALSE, FALSE, 0);
 
@@ -425,6 +448,8 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), use_gtk);
 
     UpdateRoundedness();
+  } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
+    ShowUpgradeReminder();
   } else {
     NOTREACHED();
   }
@@ -750,6 +775,10 @@ void BrowserToolbarGtk::NotifyPrefChanged(const std::wstring* pref) {
                            !home_page_is_new_tab_page_.IsManaged());
 }
 
+void BrowserToolbarGtk::ShowUpgradeReminder() {
+  upgrade_reminder_animation_.StartThrobbing(-1);
+}
+
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
   // If we're a popup window, only show the location bar (omnibox).
   return browser_->type() != Browser::TYPE_NORMAL;
@@ -763,6 +792,7 @@ void BrowserToolbarGtk::PopupForButton(GtkWidget* button) {
                                     GTK_STATE_ACTIVE);
   MenuGtk* menu = button == page_menu_button_.get() ?
                   page_menu_.get() : app_menu_.get();
+
   menu->PopupAsFromKeyEvent(button);
   menu_bar_helper_.MenuStartedShowing(button, menu->widget());
 }
@@ -772,4 +802,52 @@ void BrowserToolbarGtk::PopupForButtonNextTo(GtkWidget* button,
   GtkWidget* other_button = button == page_menu_button_.get() ?
       app_menu_button_.get() : page_menu_button_.get();
   PopupForButton(other_button);
+}
+
+void BrowserToolbarGtk::AnimationEnded(const Animation* animation) {
+  AnimationProgressed(animation);
+}
+
+void BrowserToolbarGtk::AnimationProgressed(const Animation* animation) {
+  DCHECK_EQ(animation, &upgrade_reminder_animation_);
+  gtk_widget_queue_draw(app_menu_image_);
+}
+
+void BrowserToolbarGtk::AnimationCanceled(const Animation* animation) {
+  AnimationProgressed(animation);
+}
+
+void BrowserToolbarGtk::OnAppMenuShow(GtkWidget* sender) {
+  upgrade_reminder_animation_.Reset();
+}
+
+gboolean BrowserToolbarGtk::OnAppMenuImageExpose(GtkWidget* sender,
+                                                 GdkEventExpose* expose) {
+  if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
+    return FALSE;
+
+  SkBitmap badge;
+  if (upgrade_reminder_animation_.cycles_remaining() > 0 &&
+      // This funky looking math makes the badge throb for 2 seconds once
+      // every 8 seconds.
+      ((upgrade_reminder_animation_.cycles_remaining() - 1) / 2) % 4 == 0) {
+    badge = SkBitmapOperations::CreateBlendedBitmap(
+        *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_ACTIVE),
+        *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE),
+        upgrade_reminder_animation_.GetCurrentValue());
+  } else {
+    badge = *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE);
+  }
+
+  // Draw the chrome app menu icon onto the canvas.
+  gfx::CanvasPaint canvas(expose, false);
+  int x_offset = base::i18n::IsRTL() ?
+      sender->allocation.width - kUpgradeDotOffset - badge.width() :
+      kUpgradeDotOffset;
+  canvas.DrawBitmapInt(
+      badge,
+      sender->allocation.x + x_offset,
+      sender->allocation.y + sender->allocation.height - badge.height());
+
+  return FALSE;
 }

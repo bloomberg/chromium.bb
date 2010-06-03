@@ -65,6 +65,7 @@
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/task_manager_gtk.h"
 #include "chrome/browser/gtk/theme_install_bubble_view_gtk.h"
+#include "chrome/browser/gtk/update_recommended_dialog.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/pref_service.h"
@@ -884,7 +885,7 @@ views::Window* BrowserWindowGtk::ShowAboutChromeDialog() {
 }
 
 void BrowserWindowGtk::ShowUpdateChromeDialog() {
-  NOTIMPLEMENTED();
+  UpdateRecommendedDialog::Show(window_);
 }
 
 void BrowserWindowGtk::ShowTaskManager() {

@@ -4,6 +4,8 @@
 
 #include "app/throb_animation.h"
 
+#include <limits>
+
 static const int kDefaultThrobDurationMS = 400;
 
 ThrobAnimation::ThrobAnimation(AnimationDelegate* target)
@@ -15,6 +17,8 @@ ThrobAnimation::ThrobAnimation(AnimationDelegate* target)
 }
 
 void ThrobAnimation::StartThrobbing(int cycles_til_stop) {
+  cycles_til_stop = cycles_til_stop >= 0 ? cycles_til_stop :
+                                           std::numeric_limits<int>::max();
   cycles_remaining_ = cycles_til_stop;
   throbbing_ = true;
   SlideAnimation::SetSlideDuration(throb_duration_);

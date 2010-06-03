@@ -234,6 +234,7 @@ extern const char kUserScriptsDir[];
 extern const char kUtilityCmdPrefix[];
 extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
+extern const char kProductVersion[];
 extern const char kWaitForDebuggerChildren[];
 extern const char kWebWorkerProcessPerCore[];
 extern const char kWebWorkerShareProcesses[];

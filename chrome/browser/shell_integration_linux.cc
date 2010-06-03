@@ -210,6 +210,8 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 
 // static
 ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
   scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
 
   std::vector<std::string> argv;
