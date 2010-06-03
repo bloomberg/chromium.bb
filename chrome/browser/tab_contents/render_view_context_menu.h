@@ -80,14 +80,17 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   void AppendSpellcheckOptionsSubMenu();
   // Add writing direction sub menu (only used on Mac).
   void AppendBidiSubMenu();
-  // Fills in |items| with matching items for extension with |extension_id|.
-  void GetItemsForExtension(const std::string& extension_id,
-                            std::vector<const ExtensionMenuItem*>* items);
 
   // This is a helper function to append items for one particular extension.
   // The |index| parameter is used for assigning id's, and is incremented for
   // each item actually added.
   void AppendExtensionItems(const std::string& extension_id, int* index);
+
+  // Used for recursively adding submenus of extension items.
+  void RecursivelyAppendExtensionItems(
+      const std::vector<ExtensionMenuItem*>& items,
+      menus::SimpleMenuModel* menu_model,
+      int *index);
 
   // Opens the specified URL string in a new tab.  If |in_current_window| is
   // false, a new window is created to hold the new tab.

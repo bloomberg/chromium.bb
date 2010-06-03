@@ -62,7 +62,12 @@ bool RenderViewContextMenu::IsSyncResourcesURL(const GURL& url) {
 }
 
 static const int kSpellcheckRadioGroup = 1;
-static const int kExtensionsRadioGroup = 2;
+
+// For extensions that have multiple top level menu items, we automatically
+// create a submenu item and push the top level menu items into it. This special
+// value takes the place of the ExtensionMenuItem's internal ID for the submenu
+// item inside the extension_item_map_ member variable.
+static const int kExtensionTopLevelItem = -1;
 
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
@@ -122,97 +127,84 @@ static bool ExtensionContextMatch(ContextMenuParams params,
   return false;
 }
 
-void RenderViewContextMenu::GetItemsForExtension(
-    const std::string& extension_id,
-    std::vector<const ExtensionMenuItem*>* items) {
-  ExtensionsService* service = profile_->GetExtensionsService();
-
-  // Get the set of possible items, and iterate to find which ones are
-  // applicable.
-  std::vector<const ExtensionMenuItem*> potential_items =
-      service->menu_manager()->MenuItems(extension_id);
-
-  std::vector<const ExtensionMenuItem*>::const_iterator i;
-  for (i = potential_items.begin(); i != potential_items.end(); ++i) {
-    const ExtensionMenuItem* item = *i;
-    if (ExtensionContextMatch(params_, item->contexts()))
-      items->push_back(item);
+// Given a list of items, returns the ones that match given the contents
+// of |params|.
+static ExtensionMenuItem::List GetRelevantExtensionItems(
+    const ExtensionMenuItem::List& items,
+    ContextMenuParams params) {
+  ExtensionMenuItem::List result;
+  for (ExtensionMenuItem::List::const_iterator i = items.begin();
+       i != items.end(); ++i) {
+    if (ExtensionContextMatch(params, (*i)->contexts()))
+      result.push_back(*i);
   }
+  return result;
 }
 
 void RenderViewContextMenu::AppendExtensionItems(
     const std::string& extension_id, int* index) {
-  Extension* extension =
-      profile_->GetExtensionsService()->GetExtensionById(extension_id, false);
+  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionMenuManager* manager = service->menu_manager();
+  Extension* extension = service->GetExtensionById(extension_id, false);
   DCHECK_GE(*index, 0);
   int max_index =
       IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST - IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
   if (!extension || *index >= max_index)
     return;
 
-  std::vector<const ExtensionMenuItem*> items;
-  GetItemsForExtension(extension_id, &items);
+  // Find matching items.
+  const ExtensionMenuItem::List* all_items = manager->MenuItems(extension_id);
+  if (!all_items || all_items->empty())
+    return;
+  ExtensionMenuItem::List items =
+      GetRelevantExtensionItems(*all_items, params_);
   if (items.empty())
     return;
-
-  string16 selection_text = PrintableSelectionText();
 
   // If this is the first extension-provided menu item, add a separator.
   if (*index == 0)
     menu_model_.AddSeparator();
 
-  // When extensions have more than 1 top-level item or a single parent item
-  // with children, we will start a sub menu. In the case of 1 parent with
-  // children, we will remove the parent from |items| and insert the children
-  // into it. The |index| parameter is incremented if we start a submenu. This
-  // returns true if a submenu was started. If we had multiple top-level items
-  // that needed to be pushed into a submenu, we'll use |extension_name| as the
-  // title.
-  menus::SimpleMenuModel* menu_model;
-  if (items.empty() || (items.size() == 1 && items[0]->child_count() == 0)) {
-    menu_model = &menu_model_;
+  int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+
+  // Extensions are only allowed one top-level slot (and it can't be a radio or
+  // checkbox item because we are going to put the extension icon next to it).
+  // If they have more than that, we automatically push them into a submenu.
+  string16 title;
+  ExtensionMenuItem::List submenu_items;
+  if (items.size() > 1 || items[0]->type() != ExtensionMenuItem::NORMAL) {
+    title = UTF8ToUTF16(extension->name());
+    extension_item_map_[menu_id] = kExtensionTopLevelItem;
+    submenu_items = items;
   } else {
-    menu_model = new menus::SimpleMenuModel(this);
-    extension_menu_models_.push_back(menu_model);
-
-    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
-    string16 title;
-    if (items[0]->child_count() > 0) {
-      title = items[0]->TitleWithReplacement(selection_text);
-      extension_item_map_[menu_id] = items[0]->id();
-    } else {
-      title = UTF8ToUTF16(extension->name());
-    }
-
-    menu_model_.AddSubMenu(menu_id, title, menu_model);
-
-    // If we have 1 parent item with a submenu of children, pull the
-    // parent out of |items| and put the children in.
-    if (items.size() == 1 && items[0]->child_count() > 0) {
-      const ExtensionMenuItem* parent = items[0];
-      items.clear();
-      for (int j = 0; j < parent->child_count(); j++) {
-        const ExtensionMenuItem* child = parent->ChildAt(j);
-        if (ExtensionContextMatch(params_, child->contexts()))
-          items.push_back(child);
-      }
-    }
+    ExtensionMenuItem* item = items[0];
+    extension_item_map_[menu_id] = item->id();
+    title = item->TitleWithReplacement(PrintableSelectionText());
+    submenu_items = GetRelevantExtensionItems(item->children(), params_);
   }
 
+  // Now add our item(s) to the menu_model_.
+  if (submenu_items.empty()) {
+    menu_model_.AddItem(menu_id, title);
+  } else {
+    menus::SimpleMenuModel* submenu = new menus::SimpleMenuModel(this);
+    extension_menu_models_.push_back(submenu);
+    menu_model_.AddSubMenu(menu_id, title, submenu);
+    RecursivelyAppendExtensionItems(submenu_items, submenu, index);
+  }
+}
+
+void RenderViewContextMenu::RecursivelyAppendExtensionItems(
+    const ExtensionMenuItem::List& items,
+    menus::SimpleMenuModel* menu_model,
+    int *index) {
+  string16 selection_text = PrintableSelectionText();
   ExtensionMenuItem::Type last_type = ExtensionMenuItem::NORMAL;
-  int radio_group_id = kExtensionsRadioGroup;
-  for (std::vector<const ExtensionMenuItem*>::iterator i = items.begin();
+  int radio_group_id = 1;
+
+  for (ExtensionMenuItem::List::const_iterator i = items.begin();
        i != items.end(); ++i) {
-    const ExtensionMenuItem* item = *i;
-    if (item->type() == ExtensionMenuItem::SEPARATOR) {
-      // We don't want the case of an extension with one top-level item that is
-      // just a separator, so make sure this is inside a submenu.
-      if (menu_model != &menu_model_) {
-        menu_model->AddSeparator();
-        last_type = ExtensionMenuItem::SEPARATOR;
-      }
-      continue;
-    }
+    ExtensionMenuItem* item = *i;
 
     // Auto-prepend a separator, if needed, to visually group radio items
     // together.
@@ -229,7 +221,16 @@ void RenderViewContextMenu::AppendExtensionItems(
     extension_item_map_[menu_id] = item->id();
     string16 title = item->TitleWithReplacement(selection_text);
     if (item->type() == ExtensionMenuItem::NORMAL) {
-      menu_model->AddItem(menu_id, title);
+      ExtensionMenuItem::List children =
+          GetRelevantExtensionItems(item->children(), params_);
+      if (children.size() == 0) {
+        menu_model->AddItem(menu_id, title);
+      } else {
+        menus::SimpleMenuModel* submenu = new menus::SimpleMenuModel(this);
+        extension_menu_models_.push_back(submenu);
+        menu_model->AddSubMenu(menu_id, title, submenu);
+        RecursivelyAppendExtensionItems(children, submenu, index);
+      }
     } else if (item->type() == ExtensionMenuItem::CHECKBOX) {
       menu_model->AddCheckItem(menu_id, title);
     } else if (item->type() == ExtensionMenuItem::RADIO) {
@@ -680,11 +681,18 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    ExtensionMenuItem* item = GetExtensionMenuItem(id);
-    if (item)
-      return ExtensionContextMatch(params_, item->enabled_contexts());
-    else
+    std::map<int, int>::const_iterator i = extension_item_map_.find(id);
+
+    // Unknown item.
+    if (i == extension_item_map_.end())
       return false;
+
+    // Auto-inserted top-level extension parent.
+    if (i->second == kExtensionTopLevelItem)
+      return true;
+
+    return ExtensionContextMatch(params_,
+                                 GetExtensionMenuItem(id)->enabled_contexts());
   }
 
   switch (id) {

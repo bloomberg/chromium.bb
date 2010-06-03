@@ -26,8 +26,8 @@ class TabContents;
 // Represents a menu item added by an extension.
 class ExtensionMenuItem {
  public:
-  // A list of owned ExtensionMenuItem's.
-  typedef std::vector<linked_ptr<ExtensionMenuItem> > List;
+  // A list of ExtensionMenuItem's.
+  typedef std::vector<ExtensionMenuItem*> List;
 
   // For context menus, these are the contexts where an item can appear and
   // potentially be enabled.
@@ -89,6 +89,7 @@ class ExtensionMenuItem {
   // Simple accessor methods.
   const std::string& extension_id() const { return extension_id_; }
   const std::string& title() const { return title_; }
+  const List& children() { return children_; }
   int id() const { return id_; }
   int parent_id() const { return parent_id_; }
   int child_count() const { return children_.size(); }
@@ -102,9 +103,6 @@ class ExtensionMenuItem {
   void set_contexts(ContextList contexts) { contexts_ = contexts; }
   void set_enabled_contexts(ContextList contexts) { contexts_ = contexts; }
   void set_type(Type type) { type_ = type; }
-
-  // Returns the child at the given index, or NULL.
-  ExtensionMenuItem* ChildAt(int index) const;
 
   // Returns the title with any instances of %s replaced by |selection|.
   string16 TitleWithReplacement(const string16& selection) const;
@@ -120,9 +118,6 @@ class ExtensionMenuItem {
   virtual void set_id(int id) {
     id_ = id;
   }
-
-  // Provides direct access to the children of this item.
-  List* children() { return &children_; }
 
   // Takes ownership of |item| and sets its parent_id_.
   void AddChild(ExtensionMenuItem* item);
@@ -183,10 +178,9 @@ class ExtensionMenuManager : public NotificationObserver {
   // Returns a list of all the *top-level* menu items (added via AddContextItem)
   // for the given extension id, *not* including child items (added via
   // AddChildItem); although those can be reached via the top-level items'
-  // ChildAt function. A view can then decide how to display these, including
-  // whether to put them into a submenu if there are more than 1.
-  std::vector<const ExtensionMenuItem*> MenuItems(
-      const std::string& extension_id);
+  // children. A view can then decide how to display these, including whether to
+  // put them into a submenu if there are more than 1.
+  const ExtensionMenuItem::List* MenuItems(const std::string& extension_id);
 
   // Takes ownership of |item|. Returns the id assigned to the item. Has the
   // side-effect of incrementing the next_item_id_ member.
@@ -227,10 +221,6 @@ class ExtensionMenuManager : public NotificationObserver {
   // This is a helper function which takes care of de-selecting any other radio
   // items in the same group (i.e. that are adjacent in the list).
   void RadioItemSelected(ExtensionMenuItem* item);
-
-  // If an item with |id| is found, |item| will be set to point to it and
-  // |index| will be set to its index within the containing list.
-  void GetItemAndIndex(int id, ExtensionMenuItem** item, size_t* index);
 
   // Returns true if item is a descendant of an item with id |ancestor_id|.
   bool DescendantOf(ExtensionMenuItem* item, int ancestor_id);

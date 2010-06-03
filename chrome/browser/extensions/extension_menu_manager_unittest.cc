@@ -62,10 +62,10 @@ TEST_F(ExtensionMenuManagerTest, AddGetRemoveItems) {
   int id1 = manager_.AddContextItem(item1);  // Ownership transferred.
   ASSERT_GT(id1, 0);
   ASSERT_EQ(item1, manager_.GetItemById(id1));
-  std::vector<const ExtensionMenuItem*> items =
+  const ExtensionMenuItem::List* items =
       manager_.MenuItems(item1->extension_id());
-  ASSERT_EQ(1u, items.size());
-  ASSERT_EQ(item1, items[0]);
+  ASSERT_EQ(1u, items->size());
+  ASSERT_EQ(item1, items->at(0));
 
   // Add a second item, make sure it comes back too.
   ExtensionMenuItem* item2 = CreateTestItem(NULL);
@@ -74,9 +74,9 @@ TEST_F(ExtensionMenuManagerTest, AddGetRemoveItems) {
   ASSERT_NE(id1, id2);
   ASSERT_EQ(item2, manager_.GetItemById(id2));
   items = manager_.MenuItems(item2->extension_id());
-  ASSERT_EQ(2u, items.size());
-  ASSERT_EQ(item1, items[0]);
-  ASSERT_EQ(item2, items[1]);
+  ASSERT_EQ(2u, items->size());
+  ASSERT_EQ(item1, items->at(0));
+  ASSERT_EQ(item2, items->at(1));
 
   // Try adding item 3, then removing it.
   ExtensionMenuItem* item3 = CreateTestItem(NULL);
@@ -84,10 +84,10 @@ TEST_F(ExtensionMenuManagerTest, AddGetRemoveItems) {
   int id3 = manager_.AddContextItem(item3);  // Ownership transferred.
   ASSERT_GT(id3, 0);
   ASSERT_EQ(item3, manager_.GetItemById(id3));
-  ASSERT_EQ(3u, manager_.MenuItems(extension_id).size());
+  ASSERT_EQ(3u, manager_.MenuItems(extension_id)->size());
   ASSERT_TRUE(manager_.RemoveContextMenuItem(id3));
   ASSERT_EQ(NULL, manager_.GetItemById(id3));
-  ASSERT_EQ(2u, manager_.MenuItems(extension_id).size());
+  ASSERT_EQ(2u, manager_.MenuItems(extension_id)->size());
 
   // Make sure removing a non-existent item returns false.
   ASSERT_FALSE(manager_.RemoveContextMenuItem(5));
@@ -126,8 +126,8 @@ TEST_F(ExtensionMenuManagerTest, ChildFunctions) {
   ASSERT_EQ(0, item1->child_count());
   ASSERT_EQ(item2_child, manager_.GetItemById(id2_child));
 
-  ASSERT_EQ(1u, manager_.MenuItems(item1->extension_id()).size());
-  ASSERT_EQ(item1, manager_.MenuItems(item1->extension_id()).at(0));
+  ASSERT_EQ(1u, manager_.MenuItems(item1->extension_id())->size());
+  ASSERT_EQ(item1, manager_.MenuItems(item1->extension_id())->at(0));
 
   // Add item2_grandchild as a child of item2_child, then remove it.
   int id2_grandchild = manager_.AddChildItem(id2_child, item2_grandchild);
@@ -138,13 +138,13 @@ TEST_F(ExtensionMenuManagerTest, ChildFunctions) {
 
   // We should only get 1 thing back when asking for item2's extension id, since
   // it has a child item.
-  ASSERT_EQ(1u, manager_.MenuItems(item2->extension_id()).size());
-  ASSERT_EQ(item2, manager_.MenuItems(item2->extension_id()).at(0));
+  ASSERT_EQ(1u, manager_.MenuItems(item2->extension_id())->size());
+  ASSERT_EQ(item2, manager_.MenuItems(item2->extension_id())->at(0));
 
   // Remove child2_item.
   ASSERT_TRUE(manager_.RemoveContextMenuItem(id2_child));
-  ASSERT_EQ(1u, manager_.MenuItems(item2->extension_id()).size());
-  ASSERT_EQ(item2, manager_.MenuItems(item2->extension_id()).at(0));
+  ASSERT_EQ(1u, manager_.MenuItems(item2->extension_id())->size());
+  ASSERT_EQ(item2, manager_.MenuItems(item2->extension_id())->at(0));
   ASSERT_EQ(0, item2->child_count());
 }
 
@@ -159,11 +159,11 @@ TEST_F(ExtensionMenuManagerTest, ChangeParent) {
   int id2 = manager_.AddContextItem(item2);
   ASSERT_GT(id2, 0);
 
-  std::vector<const ExtensionMenuItem*> items =
+  const ExtensionMenuItem::List* items =
       manager_.MenuItems(item1->extension_id());
-  ASSERT_EQ(2u, items.size());
-  ASSERT_EQ(item1, items.at(0));
-  ASSERT_EQ(item2, items.at(1));
+  ASSERT_EQ(2u, items->size());
+  ASSERT_EQ(item1, items->at(0));
+  ASSERT_EQ(item2, items->at(1));
 
   // Now create a third item, initially add it as a child of item1, then move
   // it to be a child of item2.
@@ -172,50 +172,50 @@ TEST_F(ExtensionMenuManagerTest, ChangeParent) {
   int id3 = manager_.AddChildItem(id1, item3);
   ASSERT_GT(id3, 0);
   ASSERT_EQ(1, item1->child_count());
-  ASSERT_EQ(item3, item1->ChildAt(0));
+  ASSERT_EQ(item3, item1->children()[0]);
 
   ASSERT_TRUE(manager_.ChangeParent(id3, id2));
   ASSERT_EQ(0, item1->child_count());
   ASSERT_EQ(1, item2->child_count());
-  ASSERT_EQ(item3, item2->ChildAt(0));
+  ASSERT_EQ(item3, item2->children()[0]);
 
   // Move item2 to be a child of item1.
   ASSERT_TRUE(manager_.ChangeParent(id2, id1));
   ASSERT_EQ(1, item1->child_count());
-  ASSERT_EQ(item2, item1->ChildAt(0));
+  ASSERT_EQ(item2, item1->children()[0]);
   ASSERT_EQ(1, item2->child_count());
-  ASSERT_EQ(item3, item2->ChildAt(0));
+  ASSERT_EQ(item3, item2->children()[0]);
 
   // Since item2 was a top-level item but is no longer, we should only have 1
   // top-level item.
   items = manager_.MenuItems(item1->extension_id());
-  ASSERT_EQ(1u, items.size());
-  ASSERT_EQ(item1, items.at(0));
+  ASSERT_EQ(1u, items->size());
+  ASSERT_EQ(item1, items->at(0));
 
   // Move item3 back to being a child of item1, so it's now a sibling of item2.
   ASSERT_TRUE(manager_.ChangeParent(id3, id1));
   ASSERT_EQ(2, item1->child_count());
-  ASSERT_EQ(item2, item1->ChildAt(0));
-  ASSERT_EQ(item3, item1->ChildAt(1));
+  ASSERT_EQ(item2, item1->children()[0]);
+  ASSERT_EQ(item3, item1->children()[1]);
 
   // Try switching item3 to be the parent of item1 - this should fail.
   ASSERT_FALSE(manager_.ChangeParent(id1, id3));
   ASSERT_EQ(0, item3->child_count());
   ASSERT_EQ(2, item1->child_count());
-  ASSERT_EQ(item2, item1->ChildAt(0));
-  ASSERT_EQ(item3, item1->ChildAt(1));
+  ASSERT_EQ(item2, item1->children()[0]);
+  ASSERT_EQ(item3, item1->children()[1]);
   items = manager_.MenuItems(item1->extension_id());
-  ASSERT_EQ(1u, items.size());
-  ASSERT_EQ(item1, items.at(0));
+  ASSERT_EQ(1u, items->size());
+  ASSERT_EQ(item1, items->at(0));
 
   // Move item2 to be a top-level item.
   ASSERT_TRUE(manager_.ChangeParent(id2, 0));
   items = manager_.MenuItems(item1->extension_id());
-  ASSERT_EQ(2u, items.size());
-  ASSERT_EQ(item1, items.at(0));
-  ASSERT_EQ(item2, items.at(1));
+  ASSERT_EQ(2u, items->size());
+  ASSERT_EQ(item1, items->at(0));
+  ASSERT_EQ(item2, items->at(1));
   ASSERT_EQ(1, item1->child_count());
-  ASSERT_EQ(item3, item1->ChildAt(0));
+  ASSERT_EQ(item3, item1->children()[0]);
 
   // Make sure you can't move a node to be a child of another extension's item.
   DictionaryValue properties;
@@ -256,7 +256,7 @@ TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   ASSERT_EQ(extension.id(), item1->extension_id());
   int id1 = manager_.AddContextItem(item1);  // Ownership transferred.
   ASSERT_GT(id1, 0);
-  ASSERT_EQ(1u, manager_.MenuItems(extension.id()).size());
+  ASSERT_EQ(1u, manager_.MenuItems(extension.id())->size());
 
   // Create a menu item with a different extension id and add it to the manager.
   std::string alternate_extension_id = "0000";
@@ -271,8 +271,8 @@ TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   notifier->Notify(NotificationType::EXTENSION_UNLOADED,
                    Source<Profile>(NULL),
                    Details<Extension>(&extension));
-  ASSERT_EQ(0u, manager_.MenuItems(extension.id()).size());
-  ASSERT_EQ(1u, manager_.MenuItems(alternate_extension_id).size());
+  ASSERT_EQ(NULL, manager_.MenuItems(extension.id()));
+  ASSERT_EQ(1u, manager_.MenuItems(alternate_extension_id)->size());
   ASSERT_TRUE(manager_.GetItemById(id1) == NULL);
   ASSERT_TRUE(manager_.GetItemById(id2) != NULL);
 }
@@ -326,17 +326,17 @@ TEST_F(ExtensionMenuManagerTest, RemoveAll) {
   ExtensionMenuItem* item4 = CreateTestItem(&properties);
   manager_.AddContextItem(item4);
 
-  EXPECT_EQ(2u, manager_.MenuItems("AAAA").size());
-  EXPECT_EQ(1u, manager_.MenuItems("BBBB").size());
+  EXPECT_EQ(2u, manager_.MenuItems("AAAA")->size());
+  EXPECT_EQ(1u, manager_.MenuItems("BBBB")->size());
 
   // Remove the BBBB item.
   manager_.RemoveAllContextItems("BBBB");
-  EXPECT_EQ(2u, manager_.MenuItems("AAAA").size());
-  EXPECT_EQ(0u, manager_.MenuItems("BBBB").size());
+  EXPECT_EQ(2u, manager_.MenuItems("AAAA")->size());
+  EXPECT_EQ(NULL, manager_.MenuItems("BBBB"));
 
   // Remove the AAAA items.
   manager_.RemoveAllContextItems("AAAA");
-  EXPECT_EQ(0u, manager_.MenuItems("AAAA").size());
+  EXPECT_EQ(NULL, manager_.MenuItems("AAAA"));
 }
 
 TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
