@@ -28,9 +28,7 @@ class IndexedDBDispatcher {
   void RequestIndexedDatabaseOpen(
       const string16& name, const string16& description,
       WebKit::WebIDBCallbacks* callbacks, const string16& origin,
-      WebKit::WebFrame* web_frame, int* exception_code);
-
-  void SendIDBDatabaseDestroyed(int32 idb_database_id_);
+      WebKit::WebFrame* web_frame);
 
  private:
   // Message handlers.  For each message we send, we need to handle both the

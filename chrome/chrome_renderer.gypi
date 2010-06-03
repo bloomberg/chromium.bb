@@ -148,6 +148,8 @@
         'renderer/renderer_webcookiejar_impl.h',
         'renderer/renderer_webidbdatabase_impl.cc',
         'renderer/renderer_webidbdatabase_impl.h',
+        'renderer/renderer_webidbindex_impl.cc',
+        'renderer/renderer_webidbindex_impl.h',
         'renderer/renderer_webindexeddatabase_impl.cc',
         'renderer/renderer_webindexeddatabase_impl.h',
         'renderer/renderer_webkitclient_impl.cc',

@@ -23,10 +23,9 @@ RendererWebIndexedDatabaseImpl::~RendererWebIndexedDatabaseImpl() {
 void RendererWebIndexedDatabaseImpl::open(
     const WebString& name, const WebString& description,
     WebIDBCallbacks* callbacks, const WebSecurityOrigin& origin,
-    WebFrame* web_frame, int& exception_code) {
+    WebFrame* web_frame) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIndexedDatabaseOpen(
-      name, description, callbacks,
-      origin.databaseIdentifier(), web_frame, &exception_code);
+      name, description, callbacks, origin.databaseIdentifier(), web_frame);
 }

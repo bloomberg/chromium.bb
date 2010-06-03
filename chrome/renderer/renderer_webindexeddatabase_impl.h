@@ -24,8 +24,7 @@ class RendererWebIndexedDatabaseImpl : public WebKit::WebIndexedDatabase {
   virtual void open(
       const WebKit::WebString& name, const WebKit::WebString& description,
       WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame,
-      int& exception_code);
+      const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame);
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_

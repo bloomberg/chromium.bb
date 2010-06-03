@@ -38,10 +38,9 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
     const string16& name, const string16& description,
-    WebIDBCallbacks* callbacks_ptr, const string16& origin, WebFrame* web_frame,
-    int* exception_code) {
+    WebIDBCallbacks* callbacks_ptr, const string16& origin,
+    WebFrame* web_frame) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-  *exception_code = 0; // Redundant, but why not...
 
   if (!web_frame)
     return; // We must be shutting down.
@@ -57,13 +56,6 @@ void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
   params.name_ = name;
   params.description_ = description;
   RenderThread::current()->Send(new ViewHostMsg_IndexedDatabaseOpen(params));
-}
-
-void IndexedDBDispatcher::SendIDBDatabaseDestroyed(int32 idb_database_id) {
-  // TODO(jorlow): Is it possible for this to be destroyed but still have
-  //               pending callbacks?  If so, fix!
-  RenderThread::current()->Send(new ViewHostMsg_IDBDatabaseDestroyed(
-      idb_database_id));
 }
 
 void IndexedDBDispatcher::OnIndexedDatabaseOpenSuccess(

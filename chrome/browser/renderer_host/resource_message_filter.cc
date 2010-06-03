@@ -420,7 +420,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
       appcache_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      indexed_db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      indexed_db_dispatcher_host_->OnMessageReceived(msg) ||
       audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(

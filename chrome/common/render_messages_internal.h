@@ -2176,33 +2176,52 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               GURL /* url */,
                               bool /* something_cleared */)
 
-  // IndexedDatabase::open() message.
+  // WebIndexedDatabase::open() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IndexedDatabaseOpen,
                        ViewHostMsg_IndexedDatabaseOpen_Params)
 
-  // IDBDatabase::name() message.
+  // WebIDBDatabase::name() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseName,
                               int32, /* idb_database_id */
-                              string16 /* vesion */)
+                              string16 /* name */)
 
-  // IDBDatabase::description() message.
+  // WebIDBDatabase::description() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseDescription,
                               int32, /* idb_database_id */
                               string16 /* description */)
 
-  // IDBDatabase::version() message.
+  // WebIDBDatabase::version() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseVersion,
                               int32, /* idb_database_id */
                               string16 /* vesion */)
 
-  // IDBDatabase::objectStores() message.
+  // WebIDBDatabase::objectStores() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseObjectStores,
                               int32, /* idb_database_id */
                               std::vector<string16> /* objectStores */)
 
-  // IDBDatabase::~IDBDatabase() message.
+  // WebIDBDatabase::~WebIDBDatabase() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseDestroyed,
                        int32 /* idb_database_id */)
+
+  // WebIDBIndex::name() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexName,
+                              int32, /* idb_index_id */
+                              string16 /* name */)
+
+  // WebIDBIndex::keyPath() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexKeyPath,
+                              int32, /* idb_index_id */
+                              string16 /* key_path */)
+
+  // WebIDBIndex::unique() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexUnique,
+                              int32, /* idb_unique_id */
+                              bool /* unique */)
+
+  // WebIDBIndex::~WebIDBIndex() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexDestroyed,
+                       int32 /* idb_index_id */)
 
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,

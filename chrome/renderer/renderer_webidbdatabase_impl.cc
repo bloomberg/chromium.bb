@@ -17,9 +17,10 @@ RendererWebIDBDatabaseImpl::RendererWebIDBDatabaseImpl(int32 idb_database_id)
 }
 
 RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
-  IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->SendIDBDatabaseDestroyed(idb_database_id_);
+  // TODO(jorlow): Is it possible for this to be destroyed but still have
+  //               pending callbacks?  If so, fix!
+  RenderThread::current()->Send(new ViewHostMsg_IDBDatabaseDestroyed(
+      idb_database_id_));
 }
 
 WebString RendererWebIDBDatabaseImpl::name() {

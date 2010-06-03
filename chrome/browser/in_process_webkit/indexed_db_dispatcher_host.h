@@ -16,6 +16,7 @@ struct ViewHostMsg_IndexedDatabaseOpen_Params;
 
 namespace WebKit {
 class WebIDBDatabase;
+class WebIDBIndex;
 }
 
 // Handles all IndexedDB related messages from a particular renderer process.
@@ -34,7 +35,7 @@ class IndexedDBDispatcherHost
   void Shutdown();
 
   // Only call from ResourceMessageFilter on the IO thread.
-  bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
+  bool OnMessageReceived(const IPC::Message& message);
 
   // Send a message to the renderer process associated with our sender_ via the
   // IO thread.  May be called from any thread.
@@ -54,18 +55,60 @@ class IndexedDBDispatcherHost
   friend class base::RefCountedThreadSafe<IndexedDBDispatcherHost>;
   ~IndexedDBDispatcherHost();
 
-  // IndexedDB message handlers.
-  void OnIndexedDatabaseOpen(
-      const ViewHostMsg_IndexedDatabaseOpen_Params& params);
-  void OnIDBDatabaseDestroyed(int32 idb_database_id);
-  void OnIDBDatabaseName(int32 idb_database_id, IPC::Message* reply_msg);
-  void OnIDBDatabaseDescription(int32 idb_database_id, IPC::Message* reply_msg);
-  void OnIDBDatabaseVersion(int32 idb_database_id, IPC::Message* reply_msg);
-  void OnIDBDatabaseObjectStores(int32 idb_database_id,
-                                 IPC::Message* reply_msg);
+  // Message processing. Most of the work is delegated to the dispatcher hosts
+  // below.
+  void OnMessageReceivedWebKit(const IPC::Message& message);
+  void OnIndexedDatabaseOpen(const ViewHostMsg_IndexedDatabaseOpen_Params& p);
 
-  WebKit::WebIDBDatabase* GetDatabaseOrTerminateProcess(
-      int32 idb_database_id, IPC::Message* reply_msg);
+  // Helper templates.
+  template <class ReturnType>
+  ReturnType* GetOrTerminateProcess(
+    IDMap<ReturnType, IDMapOwnPointer>* map, int32 return_object_id,
+    IPC::Message* reply_msg, uint32 message_type);
+
+  template <typename ReplyType, typename MessageType,
+            typename WebObjectType, typename Method>
+  void SyncGetter(IDMap<WebObjectType, IDMapOwnPointer>* map, int32 object_id,
+                  IPC::Message* reply_msg, Method method);
+
+  template <typename ObjectType>
+  void DestroyObject(IDMap<ObjectType, IDMapOwnPointer>* map, int32 object_id,
+                     uint32 message_type);
+
+  class DatabaseDispatcherHost {
+   public:
+    DatabaseDispatcherHost(IndexedDBDispatcherHost* parent);
+    ~DatabaseDispatcherHost();
+
+    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+    void Send(IPC::Message* message);
+
+    void OnName(int32 idb_database_id, IPC::Message* reply_msg);
+    void OnDescription(int32 idb_database_id, IPC::Message* reply_msg);
+    void OnVersion(int32 idb_database_id, IPC::Message* reply_msg);
+    void OnObjectStores(int32 idb_database_id, IPC::Message* reply_msg);
+    void OnDestroyed(int32 idb_database_id);
+
+    IndexedDBDispatcherHost* parent_;
+    IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
+  };
+
+  class IndexDispatcherHost {
+   public:
+    IndexDispatcherHost(IndexedDBDispatcherHost* parent);
+    ~IndexDispatcherHost();
+
+    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+    void Send(IPC::Message* message);
+
+    void OnName(int32 idb_index_id, IPC::Message* reply_msg);
+    void OnKeyPath(int32 idb_index_id, IPC::Message* reply_msg);
+    void OnUnique(int32 idb_index_id, IPC::Message* reply_msg);
+    void OnDestroyed(int32 idb_index_id);
+
+    IndexedDBDispatcherHost* parent_;
+    IDMap<WebKit::WebIDBIndex, IDMapOwnPointer> map_;
+  };
 
   // Only use on the IO thread.
   IPC::Message::Sender* sender_;
@@ -73,12 +116,9 @@ class IndexedDBDispatcherHost
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;
 
-  // Maps from IDs we pass to the renderer and the actual WebKit objects.
-  // The map takes ownership and returns an ID.  That ID is passed to the
-  // renderer and used to reference it.  All access must be on WebKit thread.
-  scoped_ptr<IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> >
-      idb_database_map_;
-  // TODO(andreip/jorlow): Add other maps here.
+  // Only access on WebKit thread.
+  scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
+  scoped_ptr<IndexDispatcherHost> index_dispatcher_host_;
 
   // If we get a corrupt message from a renderer, we need to kill it using this
   // handle.
