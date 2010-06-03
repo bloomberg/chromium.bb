@@ -195,6 +195,11 @@ class BrowserWindowGtk : public BrowserWindow,
   // the toolbar (under the tab strip), but do not round the top corners.
   bool ShouldDrawContentDropShadow();
 
+  // Tells GTK that the toolbar area is invalidated and needs redrawing. We
+  // have this method as a hack because GTK doesn't queue the toolbar area for
+  // redraw when it should.
+  void QueueToolbarRedraw();
+
  protected:
   virtual void DestroyBrowser();
   // Top level window.

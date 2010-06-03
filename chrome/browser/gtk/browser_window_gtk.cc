@@ -1435,6 +1435,10 @@ void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {
     PlaceBookmarkBar(is_floating);
 }
 
+void BrowserWindowGtk::QueueToolbarRedraw() {
+  gtk_widget_queue_draw(toolbar_->widget());
+}
+
 void BrowserWindowGtk::SetGeometryHints() {
   // If we call gtk_window_maximize followed by gtk_window_present, compiz gets
   // confused and maximizes the window, but doesn't set the

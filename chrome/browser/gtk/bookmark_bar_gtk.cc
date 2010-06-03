@@ -809,8 +809,18 @@ void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
 void BookmarkBarGtk::AnimationEnded(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
-  if (!slide_animation_->IsShowing())
+  if (!slide_animation_->IsShowing()) {
     gtk_widget_hide(bookmark_hbox_);
+
+    // We can be windowless during unit tests.
+    if (window_) {
+      // Because of our constant resizing and our toolbar/bookmark bar overlap
+      // shenanigans, gtk+ gets confused, partially draws parts of the bookmark
+      // bar into the toolbar and than doesn't queue a redraw to fix it. So do
+      // it manually by telling the toolbar area to redraw itself.
+      window_->QueueToolbarRedraw();
+    }
+  }
 }
 
 void BookmarkBarGtk::Observe(NotificationType type,
