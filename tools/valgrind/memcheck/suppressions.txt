@@ -973,18 +973,6 @@
    fun:_ZN7WebCore9HTMLNames4initEv
 }
 {
-   bug_16583
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   fun:g_slice_alloc
-   fun:g_slice_alloc0
-   fun:g_type_create_instance
-   fun:*
-   fun:g_object_newv
-   fun:g_object_new_valist
-}
-{
    bug_16584
    Memcheck:Leak
    fun:_Znw*
