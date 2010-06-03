@@ -281,10 +281,12 @@ void TranslateInfoBar::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG:
       GetDelegate()->ToggleLanguageBlacklist();
+      RemoveInfoBar();
       break;
 
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE:
       GetDelegate()->ToggleSiteBlacklist();
+      RemoveInfoBar();
       break;
 
     case IDC_TRANSLATE_OPTIONS_ALWAYS:
