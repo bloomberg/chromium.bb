@@ -36,7 +36,10 @@ deps = {
     "/trunk/deps/third_party/icu42@47106",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell128@46230",
+   "/trunk/deps/third_party/hunspell128@48011",
+
+  "src/third_party/hunspell_dictionaries":
+   "/trunk/deps/third_party/hunspell_dictionaries@48011",
 
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@327",

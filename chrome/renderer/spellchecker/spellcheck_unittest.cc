@@ -28,8 +28,7 @@ FilePath GetHunspellDirectory() {
     return FilePath();
 
   hunspell_directory = hunspell_directory.AppendASCII("third_party");
-  hunspell_directory = hunspell_directory.AppendASCII("hunspell");
-  hunspell_directory = hunspell_directory.AppendASCII("dictionaries");
+  hunspell_directory = hunspell_directory.AppendASCII("hunspell_dictionaries");
   return hunspell_directory;
 }
 
