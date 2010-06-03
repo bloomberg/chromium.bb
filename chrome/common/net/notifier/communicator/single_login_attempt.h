@@ -46,7 +46,7 @@ class XmppConnectionGenerator;
 // fragile.
 class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
  public:
-  SingleLoginAttempt(talk_base::Task* parent,
+  SingleLoginAttempt(talk_base::TaskParent* parent,
                      LoginSettings* login_settings,
                      bool successful_connection);
   ~SingleLoginAttempt();

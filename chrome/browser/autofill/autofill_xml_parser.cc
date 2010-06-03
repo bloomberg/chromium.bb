@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/autofill/autofill_type.h"
-#include "third_party/libjingle/files/talk/xmllite/qname.h"
+#include "third_party/libjingle/overrides/talk/xmllite/qname.h"
 
 AutoFillXmlParser::AutoFillXmlParser()
     : succeeded_(true) {

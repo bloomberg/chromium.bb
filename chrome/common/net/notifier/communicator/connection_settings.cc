@@ -17,7 +17,7 @@ namespace notifier {
 class RandomGenerator {
  public:
   int operator()(int ceiling) {
-    return static_cast<int>(cricket::CreateRandomId() % ceiling);
+    return static_cast<int>(talk_base::CreateRandomId() % ceiling);
   }
 };
 
@@ -58,7 +58,7 @@ void ConnectionSettingsList::AddPermutations(const std::string& hostname,
 
   // Permute addresses for this server. In some cases we haven't resolved the
   // to ip addresses.
-  talk_base::SocketAddress server(hostname, port, false);
+  talk_base::SocketAddress server(hostname, port);
   if (iplist_random.empty()) {
     // We couldn't pre-resolve the hostname, so let's hope it will resolve
     // further down the pipeline (by a proxy, for example).

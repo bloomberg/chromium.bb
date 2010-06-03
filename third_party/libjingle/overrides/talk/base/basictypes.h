@@ -44,6 +44,10 @@ typedef int socklen_t;
 namespace talk_base {
 template<class T> inline T _min(T a, T b) { return (a > b) ? b : a; }
 template<class T> inline T _max(T a, T b) { return (a < b) ? b : a; }
+
+// For wait functions that take a number of milliseconds, kForever indicates
+// unlimited time.
+const int kForever = -1;
 }
 
 #endif // OVERRIDES_TALK_BASE_BASICTYPES_H__

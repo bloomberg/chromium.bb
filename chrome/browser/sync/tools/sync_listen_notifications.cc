@@ -29,11 +29,12 @@
 #include "talk/base/logging.h"
 #include "talk/base/sigslot.h"
 #include "talk/base/physicalsocketserver.h"
+#include "talk/base/ssladapter.h"
 #include "talk/base/thread.h"
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
-#include "talk/xmpp/xmppconstants.h"
+#include "talk/xmpp/constants.h"
 #include "talk/xmpp/xmppengine.h"
 
 // This is a simple utility that logs into an XMPP server, subscribes
