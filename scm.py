@@ -45,6 +45,7 @@ def GetCasedPath(path):
 def GenFakeDiff(filename):
   """Generates a fake diff from a file."""
   file_content = gclient_utils.FileRead(filename, 'rb').splitlines(True)
+  filename = filename.replace(os.sep, '/')
   nb_lines = len(file_content)
   # We need to use / since patch on unix will fail otherwise.
   data = cStringIO.StringIO()
@@ -730,7 +731,7 @@ class SVN(object):
           data = SVN.Capture(command, None)
           if not data:
             # We put in an empty Index entry so upload.py knows about them.
-            data = "Index: %s\n" % filename
+            data = "Index: %s\n" % filename.replace(os.sep, '/')
         # Otherwise silently ignore directories.
     else:
       if info.get("Node Kind") != "directory":
