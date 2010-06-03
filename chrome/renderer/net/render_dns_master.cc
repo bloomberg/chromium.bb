@@ -51,7 +51,7 @@ void RenderDnsMaster::Resolve(const char* name, size_t length) {
   DnsQueue::PushResult result = c_string_queue_.Push(name, length);
   if (DnsQueue::SUCCESSFUL_PUSH == result) {
     if (1 == c_string_queue_.Size()) {
-      DCHECK(0 == old_size);
+      DCHECK_EQ(old_size, 0u);
       if (0 != old_size)
         return;  // Overkill safety net: Don't send too many InvokeLater's.
       render_dns_factory_.RevokeAll();
@@ -62,7 +62,7 @@ void RenderDnsMaster::Resolve(const char* name, size_t length) {
     return;
   }
   if (DnsQueue::OVERFLOW_PUSH == result) {
-    buffer_full_discard_count_++;
+    ++buffer_full_discard_count_;
     return;
   }
   DCHECK(DnsQueue::REDUNDANT_PUSH == result);
@@ -109,18 +109,18 @@ void RenderDnsMaster::ExtractBufferedNames(size_t size_goal) {
 
   std::string name;
   while (c_string_queue_.Pop(&name)) {
-    DCHECK(0 != name.size());
+    DCHECK_NE(name.size(), 0u);
     // We don't put numeric IP names into buffer.
     DCHECK(!is_numeric_ip(name.c_str(), name.size()));
     DomainUseMap::iterator it;
     it = domain_map_.find(name);
     if (domain_map_.end() == it) {
       domain_map_[name] = kPending;
-      new_name_count_++;
+      ++new_name_count_;
       if (0 == count) continue;  // Until buffer is empty.
       if (1 == count) break;  // We found size_goal.
-      DCHECK(1 < count);
-      count--;
+      DCHECK_GT(count, 1u);
+      --count;
     } else {
       DCHECK(kPending == it->second || kLookupRequested == it->second);
     }
@@ -132,14 +132,14 @@ void RenderDnsMaster::DnsPrefetchNames(size_t max_count) {
   chrome_common_net::NameList names;
   for (DomainUseMap::iterator it = domain_map_.begin();
     it != domain_map_.end();
-    it++) {
+    ++it) {
     if (0 == (it->second & kLookupRequested)) {
       it->second |= kLookupRequested;
       names.push_back(it->first);
       if (0 == max_count) continue;  // Get all, independent of count.
       if (1 == max_count) break;
-      max_count--;
-      DCHECK(1 <= max_count);
+      --max_count;
+      DCHECK_GE(max_count, 1u);
     }
   }
   DCHECK_GE(new_name_count_, names.size());
@@ -156,7 +156,7 @@ bool RenderDnsMaster::is_numeric_ip(const char* name, size_t length) {
   while (length-- > 0) {
     if (!isdigit(*name) && '.' != *name)
       return false;
-    name++;
+    ++name;
   }
   return true;
 }

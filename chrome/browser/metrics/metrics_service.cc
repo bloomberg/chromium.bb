@@ -597,7 +597,7 @@ void MetricsService::Observe(NotificationType type,
       break;
     }
     default:
-      NOTREACHED();
+      LOG(DFATAL);
       break;
   }
 
@@ -800,7 +800,7 @@ void MetricsService::ScheduleNextStateSave() {
 void MetricsService::SaveLocalState() {
   PrefService* pref = g_browser_process->local_state();
   if (!pref) {
-    NOTREACHED();
+    LOG(DFATAL);
     return;
   }
 
@@ -1086,7 +1086,7 @@ void MetricsService::MakePendingLog() {
       break;
 
     default:
-      DCHECK(false);
+      LOG(DFATAL);
       return;
   }
 
@@ -1208,7 +1208,7 @@ void MetricsService::PrepareFetchWithPendingLog() {
 
   std::string compressed_log;
   if (!Bzip2Compress(pending_log_text_, &compressed_log)) {
-    NOTREACHED() << "Failed to compress log for transmission.";
+    LOG(DFATAL) << "Failed to compress log for transmission.";
     DiscardPendingLog();
     StartLogTransmissionTimer();  // Maybe we'll do better on next log :-/.
     return;
@@ -1286,7 +1286,7 @@ static const char* StatusToString(const URLRequestStatus& status) {
       return "FAILED";
 
     default:
-      NOTREACHED();
+      LOG(DFATAL);
       return "Unknown";
   }
 }
@@ -1348,7 +1348,7 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
         break;
 
       default:
-        DCHECK(false);
+        LOG(DFATAL);
         break;
     }
 
@@ -1612,7 +1612,7 @@ void MetricsService::LogWindowChange(NotificationType type,
       break;
 
     default:
-      NOTREACHED();
+      LOG(DFATAL);
       return;
   }
 
@@ -1651,7 +1651,7 @@ void MetricsService::IncrementLongPrefsValue(const wchar_t* path) {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
   int64 value = pref->GetInt64(path);
-  pref->SetInt64(path, value+1);
+  pref->SetInt64(path, value + 1);
 }
 
 void MetricsService::LogLoadStarted() {
@@ -1706,7 +1706,7 @@ void MetricsService::LogChildProcessChange(
       break;
 
     default:
-      NOTREACHED() << "Unexpected notification type " << type.value;
+      LOG(DFATAL) << "Unexpected notification type " << type.value;
       return;
   }
 }
@@ -1766,7 +1766,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
   for (ListValue::iterator value_iter = plugins->begin();
        value_iter != plugins->end(); ++value_iter) {
     if (!(*value_iter)->IsType(Value::TYPE_DICTIONARY)) {
-      NOTREACHED();
+      LOG(DFATAL);
       continue;
     }
 
@@ -1774,7 +1774,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     std::wstring plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     if (plugin_name.empty()) {
-      NOTREACHED();
+      LOG(DFATAL);
       continue;
     }
 
