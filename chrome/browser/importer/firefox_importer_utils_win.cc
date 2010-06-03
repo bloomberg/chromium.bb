@@ -52,9 +52,9 @@ std::wstring GetFirefoxInstallPathFromRegistry() {
     return std::wstring();
   registry_path += L"\\" + std::wstring(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
-  reg_key = RegKey(HKEY_LOCAL_MACHINE, registry_path.c_str());
-  result = reg_key.ReadValue(L"Install Directory", buffer,
-                             &buffer_length, NULL);
+  RegKey reg_key_directory = RegKey(HKEY_LOCAL_MACHINE, registry_path.c_str());
+  result = reg_key_directory.ReadValue(L"Install Directory", buffer,
+                                       &buffer_length, NULL);
   if (!result)
     return std::wstring();
   return buffer;
