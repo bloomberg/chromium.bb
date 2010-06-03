@@ -6449,6 +6449,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SELECT_PROFILE_DIALOG_NEW_PROFILE_ENTRY" desc="Text for an extra entry in the profiles combo box. The user can select this entry to create a new profile.">
         &lt;New Profile&gt;...
       </message>
+      <message name="IDS_START_IN_PROFILE_SHORTCUT_NAME" desc="Name of the desktop shortcut to start the application in a specific profile.">
+        <ph name="app_name">$1<ex>Google Chrome</ex></ph> for <ph name="profile_name">$2<ex>My Second Profile</ex></ph>
+      </message>
 
       <!-- User data directory new profile dialog -->
       <message name="IDS_NEW_PROFILE_DIALOG_TITLE" desc="Title of dialog that lets the user enter a new profile name to open new window.">

@@ -24,7 +24,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual std::wstring GetUninstallRegPath();
   virtual std::wstring GetEnvVersionKey();
   virtual bool CanSetAsDefault();
-  virtual bool ShouldUseAlternateIcon();
+  virtual int GetIconIndex();
   virtual bool GetChromeChannel(std::wstring* channel);
   // returns the channel name for GoogleChromeSxSDistribution
   static std::wstring ChannelName();

@@ -62,7 +62,7 @@ class BrowserDistribution {
 
   virtual bool CanSetAsDefault();
 
-  virtual bool ShouldUseAlternateIcon();
+  virtual int GetIconIndex();
 
   virtual bool GetChromeChannel(std::wstring* channel);
 

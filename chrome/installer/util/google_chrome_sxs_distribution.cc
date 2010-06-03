@@ -12,6 +12,7 @@ namespace {
 
 const wchar_t kChromeSxSGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
 const wchar_t kChannelName[] = L"SxS";
+const int kSxSIconIndex = 4;
 
 }  // namespace
 
@@ -43,8 +44,8 @@ bool GoogleChromeSxSDistribution::CanSetAsDefault() {
   return false;
 }
 
-bool GoogleChromeSxSDistribution::ShouldUseAlternateIcon() {
-  return true;
+int GoogleChromeSxSDistribution::GetIconIndex() {
+  return kSxSIconIndex;
 }
 
 bool GoogleChromeSxSDistribution::GetChromeChannel(std::wstring* channel) {

@@ -142,8 +142,8 @@ bool BrowserDistribution::CanSetAsDefault() {
   return true;
 }
 
-bool BrowserDistribution::ShouldUseAlternateIcon() {
-  return false;
+int BrowserDistribution::GetIconIndex() {
+  return 0;
 }
 
 bool BrowserDistribution::GetChromeChannel(std::wstring* channel) {

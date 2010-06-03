@@ -20,12 +20,12 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #include "chrome/browser/shell_integration.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #endif
 
@@ -262,6 +262,8 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
   if (!PathService::Get(base::FILE_EXE, &exe_path))
     return false;
 
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+
   // Working directory.
   FilePath exe_folder = exe_path.DirName();
 
@@ -277,6 +279,7 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
   // Shortcut path.
   std::wstring shortcut_name = l10n_util::GetStringF(
       IDS_START_IN_PROFILE_SHORTCUT_NAME,
+      dist->GetAppShortCutName(),
       profile_name);
   shortcut_name.append(L".lnk");
   FilePath shortcut_path = folder.Append(shortcut_name);
@@ -292,7 +295,7 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
       args.c_str(),
       NULL,
       exe_path.value().c_str(),
-      0,
+      dist->GetIconIndex(),
       ShellIntegration::GetChromiumAppId(profile_path).c_str());
 #else
   // TODO(port): should probably use freedesktop.org standard for desktop files.

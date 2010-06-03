@@ -31,9 +31,6 @@
 
 namespace {
 
-const int kDefaultIconIndex = 0;
-const int kSxSIconIndex = 4;
-
 // This class represents a single registry entry. The objective is to
 // encapsulate all the registry entries required for registering Chrome at one
 // place. This class can not be instantiated outside the class and the objects
@@ -505,8 +502,7 @@ std::wstring ShellUtil::GetChromeIcon(const std::wstring& chrome_exe) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring chrome_icon(chrome_exe);
   chrome_icon.append(L",");
-  chrome_icon.append(IntToWString(dist->ShouldUseAlternateIcon() ?
-                                  kSxSIconIndex : kDefaultIconIndex));
+  chrome_icon.append(IntToWString(dist->GetIconIndex()));
   return chrome_icon;
 }
 
@@ -777,8 +773,7 @@ bool ShellUtil::UpdateChromeShortcut(const std::wstring& chrome_exe,
   prefs_path = prefs_path.AppendASCII(installer_util::kDefaultMasterPrefs);
   scoped_ptr<DictionaryValue> prefs(
       installer_util::ParseDistributionPreferences(prefs_path));
-  int icon_index = dist->ShouldUseAlternateIcon() ?
-      kSxSIconIndex : kDefaultIconIndex;
+  int icon_index = dist->GetIconIndex();
   installer_util::GetDistroIntegerPreference(prefs.get(),
       installer_util::master_preferences::kChromeShortcutIconIndex,
       &icon_index);
