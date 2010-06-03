@@ -42,6 +42,8 @@ AutomationProxyTest.NavigateToURLWithTimeout2
 NewTabUITest.ChromeInternalLoadsNTP
 # See http://crbug.com/42205
 DownloadTest.*
+# See http://crbug.com/45792
+DefaultPluginUITest.DefaultPluginLoadTest
 
 ##############################################################################
 # We have a special section dedicated to WorkerTest because it's so
