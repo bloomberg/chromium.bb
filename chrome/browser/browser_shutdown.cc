@@ -164,7 +164,7 @@ void Shutdown() {
 #endif
 
   if (restart_last_session) {
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
     // Make sure to relaunch the browser with the same command line and add
     // Restore Last Session flag if session restore is not set.
     CommandLine command_line(*CommandLine::ForCurrentProcess());
