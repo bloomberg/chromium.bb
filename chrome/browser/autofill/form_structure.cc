@@ -12,7 +12,7 @@
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
-#include "third_party/libjingle/files/talk/xmllite/xmlelement.h"
+#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "webkit/glue/form_field.h"
 
 using webkit_glue::FormData;

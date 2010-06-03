@@ -33,9 +33,10 @@ class SubscribeTaskTest : public testing::Test {
 
 TEST_F(SubscribeTaskTest, MakeSubscriptionMessage) {
   std::vector<std::string> subscribed_services_list;
+
   scoped_ptr<buzz::XmlElement> message_without_services(
       SubscribeTask::MakeSubscriptionMessage(subscribed_services_list,
-                                             to_jid_bare_, task_id_));
+                                    to_jid_bare_, task_id_));
   std::string expected_xml_string =
       StringPrintf(
           "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "
@@ -51,7 +52,7 @@ TEST_F(SubscribeTaskTest, MakeSubscriptionMessage) {
   subscribed_services_list.push_back("test_service_url2");
   scoped_ptr<buzz::XmlElement> message_with_services(
       SubscribeTask::MakeSubscriptionMessage(subscribed_services_list,
-                                             to_jid_bare_, task_id_));
+                                    to_jid_bare_, task_id_));
   expected_xml_string =
       StringPrintf(
           "<cli:iq type=\"get\" to=\"%s\" id=\"%s\" "

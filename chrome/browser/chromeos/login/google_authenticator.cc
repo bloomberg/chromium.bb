@@ -30,7 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
-#include "third_party/libjingle/files/talk/base/urlencode.h"
+#include "third_party/libjingle/source/talk/base/urlencode.h"
 
 using base::Time;
 using base::TimeDelta;

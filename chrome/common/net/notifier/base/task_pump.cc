@@ -35,7 +35,10 @@ void TaskPump::CheckAndRunTasks() {
   posted_wake_ = false;
   // We shouldn't be using libjingle for timeout tasks, so we should
   // have no timeout tasks at all.
-  DCHECK(!HasTimeoutTask());
+
+  // TODO(akalin): Add HasTimeoutTask() back in TaskRunner class and
+  // uncomment this check.
+  // DCHECK(!HasTimeoutTask())
   RunTasks();
 }
 
