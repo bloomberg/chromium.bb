@@ -6,23 +6,23 @@
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
 
 #include <string>
+#include "base/file_path.h"
+#include "net/http/http_cache.h"
 
 class GURL;
 class TestShellRequestContext;
 
 class SimpleResourceLoaderBridge {
  public:
-  // Call this function to initialize the simple resource loader bridge.  If
-  // the given context is null, then a default TestShellRequestContext will be
-  // instantiated.  Otherwise, a reference is taken to the given request
-  // context, which will be released when Shutdown is called.  The caller
-  // should not hold another reference to the request context!  It is safe to
-  // call this function multiple times.
+  // Call this function to initialize the simple resource loader bridge.
+  // It is safe to call this function multiple times.
   //
   // NOTE: If this function is not called, then a default request context will
   // be initialized lazily.
   //
-  static void Init(TestShellRequestContext* context);
+  static void Init(const FilePath& cache_path,
+                   net::HttpCache::Mode cache_mode,
+                   bool no_proxy);
 
   // Call this function to shutdown the simple resource loader bridge.
   static void Shutdown();

@@ -116,8 +116,7 @@ TestWebKitClient::TestWebKitClient() : url_loader_factory_(NULL) {
 
   // Initializing with a default context, which means no on-disk cookie DB,
   // and no support for directory listings.
-  SimpleResourceLoaderBridge::Init(
-      new TestShellRequestContext(FilePath(), cache_mode, true));
+  SimpleResourceLoaderBridge::Init(FilePath(), cache_mode, true);
 
   // Test shell always exposes the GC.
   webkit_glue::SetJavaScriptFlags(L" --expose-gc");

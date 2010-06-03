@@ -308,6 +308,36 @@ std::string HttpHeadersRequestTestJob::expect_if_none_match_;
 bool HttpHeadersRequestTestJob::saw_if_none_match_ = false;
 bool HttpHeadersRequestTestJob::already_checked_ = false;
 
+namespace {
+
+class IOThread : public base::Thread {
+ public:
+  IOThread(const char* name) : base::Thread(name) {
+  }
+
+  ~IOThread() {
+    // We cannot rely on our base class to stop the thread since we want our
+    // CleanUp function to run.
+    Stop();
+  }
+
+  const scoped_refptr<URLRequestContext>& request_context() {
+    return request_context_;
+  }
+
+  virtual void Init() {
+    request_context_ = new TestURLRequestContext();
+  }
+
+  virtual void CleanUp() {
+    request_context_ = NULL;
+  }
+
+  scoped_refptr<URLRequestContext> request_context_;
+};
+
+}  // namespace
+
 class AppCacheUpdateJobTest : public testing::Test,
                               public AppCacheGroup::UpdateObserver {
  public:
@@ -358,15 +388,13 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   static void SetUpTestCase() {
-    io_thread_ = new base::Thread("AppCacheUpdateJob IO test thread");
+    io_thread_ = new IOThread("AppCacheUpdateJob IO test thread");
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
 
     http_server_ = HTTPTestServer::CreateServer(
         kDocRoot, io_thread_->message_loop()).release();
     ASSERT_TRUE(http_server_);
-    request_context_ = new TestURLRequestContext();
-    request_context_->AddRef();
   }
 
   static base::WaitableEvent* io_thread_shutdown_event_;
@@ -376,10 +404,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     if (http_server_) {
       http_server_->Release();
       http_server_ = NULL;
-    }
-    if (request_context_) {
-      request_context_->Release();
-      request_context_ = NULL;
     }
     io_thread_shutdown_event_->Signal();
   }
@@ -2630,7 +2654,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   void MakeService() {
     service_.reset(new MockAppCacheService());
-    service_->set_request_context(request_context_);
+    service_->set_request_context(io_thread_->request_context());
     service_->set_appcache_policy(&policy_);
   }
 
@@ -2915,9 +2939,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     PENDING_MASTER_NO_UPDATE,
   };
 
-  static base::Thread* io_thread_;
+  static IOThread* io_thread_;
   static HTTPTestServer* http_server_;
-  static TestURLRequestContext* request_context_;
 
   scoped_ptr<MockAppCacheService> service_;
   scoped_refptr<AppCacheGroup> group_;
@@ -2950,9 +2973,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 };
 
 // static
-base::Thread* AppCacheUpdateJobTest::io_thread_ = NULL;
+IOThread* AppCacheUpdateJobTest::io_thread_ = NULL;
 HTTPTestServer* AppCacheUpdateJobTest::http_server_ = NULL;
-TestURLRequestContext* AppCacheUpdateJobTest::request_context_ = NULL;
 base::WaitableEvent* AppCacheUpdateJobTest::io_thread_shutdown_event_ = NULL;
 
 

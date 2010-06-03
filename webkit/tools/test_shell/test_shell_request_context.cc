@@ -7,9 +7,6 @@
 #include "build/build_config.h"
 
 #include "base/file_path.h"
-#if defined(OS_WIN)
-#include "base/nss_util.h"
-#endif
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service.h"
@@ -19,9 +16,6 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
-#if defined(OS_WIN)
-#include "net/socket/ssl_client_socket_nss_factory.h"
-#endif
 #include "webkit/glue/webkit_glue.h"
 
 TestShellRequestContext::TestShellRequestContext() : cache_thread_("cache") {
@@ -68,15 +62,6 @@ void TestShellRequestContext::Init(
   ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
 
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
-
-#if defined(OS_WIN)
-  // Use NSS for SSL on Windows.  TODO(wtc): this should eventually be hidden
-  // inside DefaultClientSocketFactory::CreateSSLClientSocket.
-  net::ClientSocketFactory::SetSSLClientSocketFactory(
-      net::SSLClientSocketNSSFactory);
-  // We want to be sure to init NSPR on the main thread.
-  base::EnsureNSPRInit();
-#endif
 
   if (!cache_path.empty())
     CHECK(cache_thread_.StartWithOptions(
