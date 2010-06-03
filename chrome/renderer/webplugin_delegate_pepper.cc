@@ -580,6 +580,10 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
                                    false)) {
     plugin_->SetAcceptsInputEvents(true);
 
+    // Ensure the window has the correct size before initializing the
+    // command buffer.
+    nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
+
     // Ask the GPU plugin to create a command buffer and return a proxy.
     command_buffer_ = nested_delegate_->CreateCommandBuffer();
     if (command_buffer_) {
@@ -599,8 +603,6 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 
         ScheduleHandleRepaint(instance_->npp(), context);
 
-        // Ensure the service knows the window size before rendering anything.
-        nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
 #if defined(OS_MACOSX)
         command_buffer_->SetWindowSize(window_rect_.size());
 #endif  // OS_MACOSX
