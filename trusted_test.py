@@ -42,6 +42,7 @@ EXCEPTIONS = [
 # ----------------------------------------------------------
 TEST_TIME_THRESHOLD = {
     'small': 2,
+    'small_tests_arm_hw_only': 2,
     'medium': 10,
     'large': 60,
     'large_tests_arm_hw_only':60,
@@ -107,7 +108,7 @@ def AddServiceRuntimeTests():
   TESTS.append(['gio_shm_test', [], params, 'large'])
 
   # Check tests
-  abort_exit_status = ['--exit_status=17']
+  abort_exit_status = ['--exit_status=17'] # magic, see nacl_check_test.c
   TESTS.append(['nacl_check_test', [], ['-C'], 'small'])
 
   # Death test
@@ -123,6 +124,20 @@ def AddServiceRuntimeTests():
   TESTS.append(['nacl_check_test', [], ['-s', '0', '-d'], 'small'])
   TESTS.append(['nacl_check_test', abort_exit_status,
                ['-s', '1', '-d'], 'small'])
+  # Mac does not support thread local storage via "__thread" so do not run this
+  # test on Mac
+  if not GlobalSettings['platform'].startswith('mac'):
+    # Note that this test hangs in pthread_join() on ARM QEMU.
+    if GlobalSettings['platform'].startswith('arm'):
+      size = 'small_tests_arm_hw_only'
+    else:
+      size = 'small'
+    TESTS.append(['nacl_tls_unittest', [], [], size])
+  # TODO(issue #540): Make it work on windows.
+  if not GlobalSettings['platform'].startswith('win'):
+    segfault = str(command_tester.MassageExitStatus('segfault'))
+    TESTS.append(['sel_ldr_thread_death_test', ['--exit_status=' + segfault],
+                 [], 'medium'])
 
 def AddTests():
   AddNcdisTests()
