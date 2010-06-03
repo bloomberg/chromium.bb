@@ -123,7 +123,7 @@ void PhoneNumber::SetInfo(const AutoFillType& type, const string16& value) {
 }
 
 // Static.
-void PhoneNumber::ParsePhoneNumber(const string16& value,
+bool PhoneNumber::ParsePhoneNumber(const string16& value,
                                    string16* number,
                                    string16* city_code,
                                    string16* country_code) {
@@ -142,24 +142,25 @@ void PhoneNumber::ParsePhoneNumber(const string16& value,
   StripPunctuation(&working);
 
   if (working.size() < kPhoneNumberLength)
-    return;
+    return false;
 
   // Treat the last 7 digits as the number.
   *number = working.substr(working.size() - kPhoneNumberLength,
                            kPhoneNumberLength);
   working.resize(working.size() - kPhoneNumberLength);
   if (working.size() < kPhoneCityCodeLength)
-    return;
+    return true;
 
   // Treat the next three digits as the city code.
   *city_code = working.substr(working.size() - kPhoneCityCodeLength,
                               kPhoneCityCodeLength);
   working.resize(working.size() - kPhoneCityCodeLength);
   if (working.empty())
-    return;
+    return true;
 
   // Treat any remaining digits as the country code.
   *country_code = working;
+  return true;
 }
 
 string16 PhoneNumber::WholeNumber() const {

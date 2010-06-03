@@ -640,6 +640,26 @@
         32
       </message>
 
+      <!-- The width of the AutoFill edit Address dialog in characters. -->
+      <message name="IDS_AUTOFILL_DIALOG_EDIT_ADDRESS_WIDTH_CHARS" use_name_for_id="true">
+        80
+      </message>
+
+      <!-- The height of the AutoFill edit Address dialog in lines. -->
+      <message name="IDS_AUTOFILL_DIALOG_EDIT_ADDRESS_HEIGHT_LINES" use_name_for_id="true">
+        27
+      </message>
+
+      <!-- The width of the AutoFill edit Credit Card dialog in characters. -->
+      <message name="IDS_AUTOFILL_DIALOG_EDIT_CCARD_WIDTH_CHARS" use_name_for_id="true">
+        60
+      </message>
+
+      <!-- The height of the AutoFill edit Credit Card dialog in lines. -->
+      <message name="IDS_AUTOFILL_DIALOG_EDIT_CCARD_HEIGHT_LINES" use_name_for_id="true">
+        18
+      </message>
+
       <!-- The URL for About Google Translate. -->
       <message name="IDS_ABOUT_GOOGLE_TRANSLATE_URL" translateable="false">
         http://www.google.com/support/chrome/bin/answer.py?answer=173424&amp;hl=[GRITLANGCODE]

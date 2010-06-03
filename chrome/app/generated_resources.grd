@@ -5617,13 +5617,38 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Credit Cards
       </message>
       <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new AutoFill address.">
-        Add an address
+        Add address...
       </message>
       <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new AutoFill credit card.">
+        Add credit card...
+      </message>
+      <message name="IDS_AUTOFILL_EDIT_BUTTON"
+               desc="Text of the edit button in the autofill editor">
+        Edit...
+      </message>
+      <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit AutoFill address dialog.">
+        Edit address
+      </message>
+      <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit AutoFill address dialog for the new entry.">
+        Add an address
+      </message>
+      <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit AutoFill credit card dialog.">
+        Edit credit card
+      </message>
+      <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit AutoFill credit card dialog the new entry.">
         Add a credit card
       </message>
+      <message name="IDS_AUTOFILL_LIST_HEADER_LABEL" desc="The text on the list view header over the label.">
+        Profile
+      </message>
+      <message name="IDS_AUTOFILL_LIST_HEADER_SUMMARY" desc="The text on the list view header over the summary.">
+        Summary
+      </message>
       <message name="IDS_AUTOFILL_DELETE_BUTTON" desc="The label of the button that deletes an AutoFill profile.">
-        Delete
+        Remove
+      </message>
+      <message name="IDS_AUTOFILL_BAD_LABEL_TOOLTIP" desc="Tooltip that appears over the wrong label.">
+        Label must contain at least one character.
       </message>
       <message name="IDS_AUTOFILL_NEW_ADDRESS" desc="The profile label of a new address.">
         New address
@@ -5657,6 +5682,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_DIALOG_LABEL" desc="The label of the Label entry.">
         Label
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_FULL_NAME" desc="The label of the Full name entry.">
+        Full name
       </message>
       <message name="IDS_AUTOFILL_DIALOG_FIRST_NAME" desc="The label of the First name entry.">
         First name

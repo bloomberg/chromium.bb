@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "app/combobox_model.h"
+#include "app/table_model.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/link.h"
+#include "views/controls/table/table_view_observer.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
@@ -24,11 +26,12 @@ class GridLayout;
 class ImageButton;
 class Label;
 class RadioButton;
-class ScrollView;
+class TableView;
 class TextButton;
 }
 
 class PrefService;
+class SkBitmap;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView
@@ -36,11 +39,6 @@ class PrefService;
 //  The contents of the "AutoFill profiles" dialog window.
 //
 // Overview: has following sub-views:
-// AutoFillScrollView - scroll view that has all of the addresses and credit
-//   cards. Implemented by connecting views::ScrollView to ScrollViewContents.
-// ScrollViewContents - contents of the scroll view. Has multiple
-//   EditableSetViewContents views for credit cards and addresses and
-//   'Add address' and 'Add Credit Card' buttons.
 // EditableSetViewContents - set of displayed fields for address or credit card,
 //   has iterator to std::vector<EditableSetInfo> vector so data could be
 //   updated or notifications passes to the dialog view.
@@ -54,6 +52,7 @@ class AutoFillProfilesView : public views::View,
                              public views::ButtonListener,
                              public views::LinkController,
                              public views::FocusChangeListener,
+                             public views::TableViewObserver,
                              public PersonalDataManager::Observer {
  public:
   virtual ~AutoFillProfilesView();
@@ -66,31 +65,29 @@ class AutoFillProfilesView : public views::View,
                   CreditCard* imported_credit_card);
 
  protected:
-  enum EditableSetType {
-    EDITABLE_SET_ADDRESS,
-    EDITABLE_SET_CREDIT_CARD,
-  };
   // forward declaration. This struct defined further down.
   struct EditableSetInfo;
-  // Callbacks, called from EditableSetViewContents and ScrollViewContents.
-  // Called from ScrollViewContents when 'Add Address' (|item_type| is
-  // EDITABLE_SET_ADDRESS) or 'Add Credit Card' (|item_type| is
-  // EDITABLE_SET_CREDIT_CARD) is clicked.
-  void AddClicked(EditableSetType item_type);
-  // Called from EditableSetViewContents when 'Delete' is clicked.
-  // |field_set_iterator| is iterator to item being deleted
-  void DeleteEditableSet(
-      std::vector<EditableSetInfo>::iterator field_set_iterator);
-  // Called from EditableSetViewContents when header of the item is clicked
-  // either to collapse or expand. |field_set_iterator| is iterator to item
-  // being changed.
-  void CollapseStateChanged(
-      std::vector<EditableSetInfo>::iterator field_set_iterator);
-  // Called from EditableSetViewContents when default profile or credit card
-  // changes.
-  void NewDefaultSet(std::vector<EditableSetInfo>::iterator field_set_iterator);
-  // Validates data and fixes invalid data.
-  void ValidateAndFixLabel();
+  // Called when 'Add Address' (|group_type| is
+  // ContentListTableModel::kAddressGroup) or 'Add Credit Card' (|group_type| is
+  // ContentListTableModel::kCreditCardGroup) is clicked.
+  void AddClicked(int group_type);
+  // Called when 'Edit...' is clicked.
+  void EditClicked();
+  // Called when 'Remove' is clicked.
+  void DeleteClicked();
+
+  // Updates state of the buttons.
+  void UpdateButtonState();
+
+  // Following two functions are called from opened child dialog to
+  // disable/enable buttons.
+  void ChildWindowOpened();
+  void ChildWindowClosed();
+
+  // Returns warning bitmap to set on warning indicator. If |good| is true it
+  // returns the bitmap idicating validity, if false - indicating error.
+  // Caller owns the bitmap after the call.
+  SkBitmap* GetWarningBimap(bool good);
 
   // views::View methods:
   virtual void Layout();
@@ -112,6 +109,7 @@ class AutoFillProfilesView : public views::View,
   virtual std::wstring GetWindowTitle() const;
   virtual void WindowClosing();
   virtual views::View* GetContentsView();
+  virtual bool Cancel();
   virtual bool Accept();
 
   // views::ButtonListener methods:
@@ -125,6 +123,10 @@ class AutoFillProfilesView : public views::View,
   virtual void FocusWillChange(views::View* focused_before,
                                views::View* focused_now);
 
+  // views::TableViewObserver methods:
+  virtual void OnSelectionChanged();
+  virtual void OnDoubleClick();
+
   // PersonalDataManager::Observer methods:
   void OnPersonalDataLoaded();
 
@@ -134,29 +136,20 @@ class AutoFillProfilesView : public views::View,
   // and then rebuild EditableSetViewContents.
   struct EditableSetInfo {
     bool is_address;
-    bool is_opened;
-    // There is one default item in the addresses list, and one in credit cards.
-    bool is_default;
     bool has_credit_card_number_been_edited;
     // If |is_address| is true |address| has some data and |credit_card|
     // is empty, and vice versa
     AutoFillProfile address;
     CreditCard credit_card;
 
-    EditableSetInfo(const AutoFillProfile* input_address, bool opened,
-                    bool default_profile)
+    explicit EditableSetInfo(const AutoFillProfile* input_address)
         : address(*input_address),
           is_address(true),
-          is_opened(opened),
-          is_default(default_profile),
           has_credit_card_number_been_edited(false) {
     }
-    EditableSetInfo(const CreditCard* input_credit_card, bool opened,
-                    bool default_cc)
+    explicit EditableSetInfo(const CreditCard* input_credit_card)
         : credit_card(*input_credit_card),
           is_address(false),
-          is_opened(opened),
-          is_default(default_cc),
           has_credit_card_number_been_edited(false) {
     }
   };
@@ -183,57 +176,62 @@ class AutoFillProfilesView : public views::View,
   void GetData();
   bool IsDataReady() const;
 
-  // Sets default iterators.
-  void SetDefaultProfileIterator();
-  void SetDefaultCreditCardIterator();
+  // Rebuilds the view by deleting and re-creating sub-views
+  void RebuildView(const FocusedItem& new_focus_index);
 
   // PhoneSubView encapsulates three phone fields (country, area, and phone)
   // and label above them, so they could be used together in one grid cell.
-  class PhoneSubView : public views::View {
+  class PhoneSubView : public views::View,
+                       public views::ButtonListener {
    public:
-    PhoneSubView(views::Label* label,
-                 views::Textfield* text_country,
-                 views::Textfield* text_area,
+    PhoneSubView(AutoFillProfilesView* autofill_view,
+                 views::Label* label,
                  views::Textfield* text_phone);
     virtual ~PhoneSubView() {}
 
+    virtual void ContentsChanged(views::Textfield* sender,
+                                 const string16& new_contents);
+
+    bool IsValid() const;
    protected:
     // views::View methods:
     virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
                                       views::View* child);
+
+    // public views::ButtonListener method:
+    virtual void ButtonPressed(views::Button* sender,
+                               const views::Event& event) {
+      // Only stub is needed, it is never called.
+      NOTREACHED();
+    }
    private:
+    void UpdateButtons();
+    AutoFillProfilesView* autofill_view_;
     views::Label* label_;
-    views::Textfield* text_country_;
-    views::Textfield* text_area_;
     views::Textfield* text_phone_;
+    views::ImageButton* phone_warning_button_;
+    bool last_state_;
 
     DISALLOW_COPY_AND_ASSIGN(PhoneSubView);
   };
 
   // forward declaration
   class AddressComboBoxModel;
+  class StringVectorComboboxModel;
 
   // Sub-view dealing with addresses.
   class EditableSetViewContents : public views::View,
-                                  public views::Textfield::Controller,
+                                  public views::DialogDelegate,
                                   public views::ButtonListener,
+                                  public views::Textfield::Controller,
                                   public views::Combobox::Listener {
    public:
     EditableSetViewContents(AutoFillProfilesView* observer,
                             AddressComboBoxModel* billing_model,
-                            AddressComboBoxModel* shipping_model,
+                            bool new_item,
                             std::vector<EditableSetInfo>::iterator field_set);
     virtual ~EditableSetViewContents() {}
 
-    // Two constants defined for indexes of sub-group. The first one is index
-    // of expand button, the second one is the index of the label in expanded
-    // EditableSet.
-    static const int kExpandButton = 0;
-    static const int kLabelText = 4;
-
-    // Two helpers to set focus correctly during rebuild of list view.
-    int GetFocusedControlIndex(const views::View* focus) const;
-    views::View* GetFocusedControl(int index);
    protected:
     // views::View methods:
     virtual void Layout();
@@ -241,65 +239,83 @@ class AutoFillProfilesView : public views::View,
     virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
                                       views::View* child);
 
+    // views::DialogDelegate methods:
+    virtual int GetDialogButtons() const;
+    virtual std::wstring GetDialogButtonLabel(
+      MessageBoxFlags::DialogButton button) const;
+    virtual bool IsDialogButtonEnabled(
+      MessageBoxFlags::DialogButton button) const;
+    virtual bool CanResize() const { return true; }
+    virtual bool CanMaximize() const { return true; }
+    virtual bool IsAlwaysOnTop() const { return false; }
+    virtual bool HasAlwaysOnTopMenu() const { return false; }
+    virtual std::wstring GetWindowTitle() const;
+    virtual void WindowClosing();
+    virtual views::View* GetContentsView();
+    virtual bool Cancel();
+    virtual bool Accept();
+
+    // views::ButtonListener methods:
+    virtual void ButtonPressed(views::Button* sender,
+        const views::Event& event);
+
     // views::Textfield::Controller methods:
     virtual void ContentsChanged(views::Textfield* sender,
                                  const string16& new_contents);
     virtual bool HandleKeystroke(views::Textfield* sender,
                                  const views::Textfield::Keystroke& keystroke);
 
-    // views::ButtonListener methods:
-    virtual void ButtonPressed(views::Button* sender,
-                               const views::Event& event);
     // views::Combobox::Listener methods:
     virtual void ItemChanged(views::Combobox* combo_box,
                              int prev_index,
                              int new_index);
    private:
-    void InitTitle(views::GridLayout* layout);
-    void InitAddressFields(views::GridLayout* layout);
-    void InitCreditCardFields(views::GridLayout* layout);
-    void InitLayoutGrid(views::GridLayout* layout);
-    views::Label* CreateLeftAlignedLabel(int label_id);
-
     enum TextFields {
       TEXT_LABEL,
-      TEXT_FIRST_NAME,
-      TEXT_MIDDLE_NAME,
-      TEXT_LAST_NAME,
+      TEXT_FULL_NAME,
       TEXT_EMAIL,
-      TEXT_COMPANY_NAME,
       TEXT_ADDRESS_LINE_1,
       TEXT_ADDRESS_LINE_2,
       TEXT_ADDRESS_CITY,
       TEXT_ADDRESS_STATE,
       TEXT_ADDRESS_ZIP,
       TEXT_ADDRESS_COUNTRY,
-      TEXT_PHONE_COUNTRY,
-      TEXT_PHONE_AREA,
       TEXT_PHONE_PHONE,
-      TEXT_FAX_COUNTRY,
-      TEXT_FAX_AREA,
       TEXT_FAX_PHONE,
       TEXT_CC_NAME,
       TEXT_CC_NUMBER,
-      TEXT_CC_EXPIRATION_MONTH,
-      TEXT_CC_EXPIRATION_YEAR,
-      TEXT_CC_EXPIRATION_CVC,
+      TEXT_CC_CVC,
       // must be last
       MAX_TEXT_FIELD
     };
+
+    void InitTitle(views::GridLayout* layout);
+    void InitAddressFields(views::GridLayout* layout);
+    void InitCreditCardFields(views::GridLayout* layout);
+    void InitLayoutGrid(views::GridLayout* layout);
+    views::Label* CreateLeftAlignedLabel(int label_id);
+
+    bool LabelValid() const;
+    void UpdateButtons();
+
+    void UpdateContentsPhoneViews(TextFields field,
+                                  views::Textfield* sender,
+                                  const string16& new_contents);
+
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
     std::vector<EditableSetInfo>::iterator editable_fields_set_;
-    views::ImageButton* expand_item_button_;
-    views::TextButton* title_label_;
-    views::TextButton* title_label_preview_;
-    views::RadioButton* default_;
-    views::Button* delete_button_;
+    EditableSetInfo temporary_info_;
+    views::Label* title_label_;
+    views::ImageButton* label_warning_button_;
     AutoFillProfilesView* observer_;
     AddressComboBoxModel* billing_model_;
-    AddressComboBoxModel* shipping_model_;
     views::Combobox* combo_box_billing_;
-    views::Combobox* combo_box_shipping_;
+    scoped_ptr<StringVectorComboboxModel> combo_box_model_month_;
+    views::Combobox* combo_box_month_;
+    scoped_ptr<StringVectorComboboxModel> combo_box_model_year_;
+    views::Combobox* combo_box_year_;
+    bool new_item_;
+    std::vector<PhoneSubView*> phone_sub_views_;
 
     struct TextFieldToAutoFill {
       TextFields text_field;
@@ -314,8 +330,9 @@ class AutoFillProfilesView : public views::View,
     static const int triple_column_fill_view_set_id_ = 2;
     static const int triple_column_leading_view_set_id_ = 3;
     static const int four_column_city_state_zip_set_id_ = 4;
-    static const int four_column_ccnumber_expiration_cvc_ = 5;
+    static const int double_column_ccnumber_cvc_ = 5;
     static const int three_column_header_ = 6;
+    static const int double_column_ccexpiration_ = 7;
 
     static const int kDefaultAddressesGroup = 0;
     static const int kDefaultCreditCardsGroup = 1;
@@ -358,83 +375,66 @@ class AutoFillProfilesView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(AddressComboBoxModel);
   };
 
-  // Sub-view  for scrolling credit cards and addresses
-  class ScrollViewContents : public views::View,
-                             public views::ButtonListener {
+  class StringVectorComboboxModel : public ComboboxModel {
    public:
-    ScrollViewContents(AutoFillProfilesView* observer,
-                       std::vector<EditableSetInfo>* profiles,
-                       std::vector<EditableSetInfo>* credit_cards);
-    virtual ~ScrollViewContents() {}
+    StringVectorComboboxModel() {}
+    virtual ~StringVectorComboboxModel() {}
+
+    // Sets the vector of the strings for the combobox. Swaps content with
+    // |source|.
+    void set_cb_strings(std::vector<std::wstring> *source);
+
+    // Return the number of items in the combo box.
+    virtual int GetItemCount();
+
+    // Return the string that should be used to represent a given item.
+    virtual std::wstring GetItemAt(int index);
+
+    // Find an index of the item in the model, -1 if not present.
+    int GetIndex(const std::wstring& value);
+
+   protected:
+   private:
+    std::vector<std::wstring> cb_strings_;
+
+    DISALLOW_COPY_AND_ASSIGN(StringVectorComboboxModel);
+  };
+
+
+  // Model for scrolling credit cards and addresses
+  class ContentListTableModel : public TableModel {
+   public:
+    ContentListTableModel(std::vector<EditableSetInfo>* profiles,
+                          std::vector<EditableSetInfo>* credit_cards);
+    virtual ~ContentListTableModel() {}
 
     // Two constants defined for indexes of groups. The first one is index
     // of Add Address button, the second one is the index of Add Credit Card
     // button.
-    static const int kAddAddressButton = -10;
-    static const int kAddCcButton = -11;
-    // Two helpers to set focus correctly during rebuild of list view.
-    // The returned index is a group shifted by 8 bits to the left + index of
-    // control in that group.
-    FocusedItem GetFocusedControlIndex(const views::View* focus) const;
-    views::View* GetFocusedControl(const FocusedItem& index);
-    views::View* GetGroup(int group_index);
+    static const int kAddressGroup = 1;
+    static const int kCreditCardGroup = 2;
+
+    void Refresh();
+    void AddItem(int index);
+    void RemoveItem(int index);
+    void UpdateItem(int index);
 
    protected:
-    // views::View methods:
-    virtual int GetLineScrollIncrement(views::ScrollView* scroll_view,
-                                       bool is_horizontal, bool is_positive);
-    virtual void Layout();
-    virtual gfx::Size GetPreferredSize();
-    virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                      views::View* child);
 
-    // views::ButtonListener methods:
-    virtual void ButtonPressed(views::Button* sender,
-                               const views::Event& event);
-   private:
-    void Init();
-
-    std::vector<EditableSetInfo>* profiles_;
-    std::vector<EditableSetInfo>* credit_cards_;
-    std::vector<EditableSetViewContents *> editable_contents_;
-    views::Button* add_address_;
-    views::Button* add_credit_card_;
-    AutoFillProfilesView* observer_;
-
-    AddressComboBoxModel billing_model_;
-    AddressComboBoxModel shipping_model_;
-
-    static int line_height_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScrollViewContents);
-  };
-
-  class AutoFillScrollView : public views::View {
-   public:
-    AutoFillScrollView(AutoFillProfilesView* observer,
-                       std::vector<EditableSetInfo>* profiles,
-                       std::vector<EditableSetInfo>* credit_cards);
-    virtual ~AutoFillScrollView() {}
-
-    // Rebuilds the view by deleting and re-creating sub-views
-    void RebuildView(const FocusedItem& new_focus_index);
-    // Ensures that group is shown on the page, scrolls if necessary.
-    void EnsureGroupOnScreen(int group_index);
-
-   protected:
-    // views::View overrides:
-    virtual void Layout();
+    // TableModel members:
+    virtual int RowCount();
+    virtual std::wstring GetText(int row, int column_id);
+    virtual bool HasGroups() { return true; }
+    virtual TableModel::Groups GetGroups();
+    virtual int GetGroupID(int row);
+    virtual void SetObserver(TableModelObserver* observer);
 
    private:
-    // The scroll view that contains list of the profiles.
-    views::ScrollView* scroll_view_;
-    ScrollViewContents* scroll_contents_view_;
-
     std::vector<EditableSetInfo>* profiles_;
     std::vector<EditableSetInfo>* credit_cards_;
-    AutoFillProfilesView* observer_;
+    TableModelObserver* observer_;
 
-    DISALLOW_COPY_AND_ASSIGN(AutoFillScrollView);
+    DISALLOW_COPY_AND_ASSIGN(ContentListTableModel);
   };
 
   AutoFillDialogObserver* observer_;
@@ -442,14 +442,17 @@ class AutoFillProfilesView : public views::View,
   PrefService* preferences_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
-  std::vector<EditableSetInfo>::iterator default_profile_iterator_;
-  std::vector<EditableSetInfo>::iterator default_credit_card_iterator_;
-  string16 default_profile_;
-  string16 default_credit_card_;
 
-  views::Button* save_changes_;
-  AutoFillScrollView* scroll_view_;
+  AddressComboBoxModel billing_model_;
+
+  views::Button* add_address_button_;
+  views::Button* add_credit_card_button_;
+  views::Button* edit_button_;
+  views::Button* remove_button_;
+  views::TableView* scroll_view_;
+  scoped_ptr<ContentListTableModel> table_model_;
   views::FocusManager* focus_manager_;
+  bool child_dialog_opened_;
 
   static AutoFillProfilesView* instance_;
 
