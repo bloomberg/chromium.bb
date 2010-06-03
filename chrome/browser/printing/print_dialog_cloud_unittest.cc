@@ -64,8 +64,9 @@ class MockCloudPrintFlowHandler
     : public CloudPrintFlowHandler,
       public base::SupportsWeakPtr<MockCloudPrintFlowHandler> {
  public:
-  explicit MockCloudPrintFlowHandler(const FilePath& path)
-      : CloudPrintFlowHandler(path) {};
+  explicit MockCloudPrintFlowHandler(const FilePath& path,
+                                     const string16& title)
+      : CloudPrintFlowHandler(path, title) {}
   MOCK_METHOD0(DestructorCalled, void());
   MOCK_METHOD0(RegisterMessages, void());
   MOCK_METHOD3(Observe,
@@ -171,9 +172,10 @@ class CloudPrintDataSenderTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
+    string16 mock_job_title;
     mock_helper_.reset(new MockCloudPrintDataSenderHelper);
     print_data_sender_ =
-        new CloudPrintDataSender(mock_helper_.get());
+        new CloudPrintDataSender(mock_helper_.get(), mock_job_title);
   }
 
   scoped_refptr<CloudPrintDataSender> print_data_sender_;
@@ -245,8 +247,9 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
  protected:
   virtual void SetUp() {
     FilePath mock_path;
+    string16 mock_string;
     MockCloudPrintFlowHandler* handler =
-        new MockCloudPrintFlowHandler(mock_path);
+        new MockCloudPrintFlowHandler(mock_path, mock_string);
     mock_flow_handler_ = handler->AsWeakPtr();
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));

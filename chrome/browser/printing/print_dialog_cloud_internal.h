@@ -65,8 +65,9 @@ class CloudPrintDataSender
  public:
   // The owner of this object is also expected to own and control the
   // lifetime of the helper.
-  explicit CloudPrintDataSender(CloudPrintDataSenderHelper* helper)
-      : helper_(helper) {}
+  CloudPrintDataSender(CloudPrintDataSenderHelper* helper,
+                       const string16& print_job_title)
+      : helper_(helper), print_job_title_(print_job_title) {}
 
   // Calls to read in the PDF file (on the FILE thread) then send that
   // information to the dialog renderer (on the IO thread).  We know
@@ -86,6 +87,7 @@ class CloudPrintDataSender
   Lock lock_;
   CloudPrintDataSenderHelper* volatile helper_;
   scoped_ptr<StringValue> print_data_;
+  string16 print_job_title_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintDataSender);
 };
@@ -102,8 +104,10 @@ class CloudPrintHtmlDialogDelegate;
 class CloudPrintFlowHandler : public DOMMessageHandler,
                               public NotificationObserver {
  public:
-  explicit CloudPrintFlowHandler(const FilePath& path_to_pdf)
-      : path_to_pdf_(path_to_pdf) {}
+  explicit CloudPrintFlowHandler(const FilePath& path_to_pdf,
+                                 const string16& print_job_title)
+      : path_to_pdf_(path_to_pdf),
+        print_job_title_(print_job_title) {}
   virtual ~CloudPrintFlowHandler() {
     // This will also cancel any task in flight.
     CancelAnyRunningTask();
@@ -137,6 +141,7 @@ class CloudPrintFlowHandler : public DOMMessageHandler,
   CloudPrintHtmlDialogDelegate* dialog_delegate_;
   NotificationRegistrar registrar_;
   FilePath path_to_pdf_;
+  string16 print_job_title_;
   scoped_refptr<CloudPrintDataSender> print_data_sender_;
   scoped_ptr<CloudPrintDataSenderHelper> print_data_helper_;
 
@@ -150,7 +155,8 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
  public:
   CloudPrintHtmlDialogDelegate(const FilePath& path_to_pdf,
                                int width, int height,
-                               const std::string& json_arguments);
+                               const std::string& json_arguments,
+                               const string16& print_job_title);
   virtual ~CloudPrintHtmlDialogDelegate();
 
   // HTMLDialogUIDelegate implementation:

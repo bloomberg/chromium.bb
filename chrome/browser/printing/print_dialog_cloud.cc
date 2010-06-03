@@ -235,9 +235,7 @@ void CloudPrintDataSender::SendPrintDataFile() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   AutoLock lock(lock_);
   if (helper_ && print_data_.get()) {
-    // TODO(scottbyer) - fill this in with the title or URL of the
-    // original page.
-    StringValue title("Chrome Print Test");
+    StringValue title(print_job_title_);
 
     // Send the print data to the dialog contents.  The JavaScript
     // function is a preliminary API for prototyping purposes and is
@@ -341,7 +339,7 @@ scoped_refptr<CloudPrintDataSender>
 CloudPrintFlowHandler::CreateCloudPrintDataSender() {
   DCHECK(dom_ui_);
   print_data_helper_.reset(new CloudPrintDataSenderHelper(dom_ui_));
-  return new CloudPrintDataSender(print_data_helper_.get());
+  return new CloudPrintDataSender(print_data_helper_.get(), print_job_title_);
 }
 
 void CloudPrintFlowHandler::HandleSendPrintData(const Value* value) {
@@ -404,8 +402,9 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const Value* value) {
 CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     const FilePath& path_to_pdf,
     int width, int height,
-    const std::string& json_arguments)
-    : flow_handler_(new CloudPrintFlowHandler(path_to_pdf)),
+    const std::string& json_arguments,
+    const string16& print_job_title)
+    : flow_handler_(new CloudPrintFlowHandler(path_to_pdf, print_job_title)),
       owns_flow_handler_(true) {
   Init(width, height, json_arguments);
 }
@@ -420,7 +419,7 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
 }
 
 void CloudPrintHtmlDialogDelegate::Init(
-      int width, int height, const std::string& json_arguments) {
+    int width, int height, const std::string& json_arguments) {
   // This information is needed to show the dialog HTML content.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   std::string cloud_print_url(chrome::kCloudPrintResourcesURL);
@@ -511,12 +510,15 @@ PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf)
 
   // TODO(scottbyer): Verify GAIA login valid, execute GAIA login if not (should
   // be distilled out of bookmark sync.)
+  string16 print_job_title;
+  if (browser_ && browser_->GetSelectedTabContents())
+    print_job_title = browser_->GetSelectedTabContents()->GetTitle();
 
   // TODO(scottbyer): Get the dialog width, height from the dialog
   // contents, and take the screen size into account.
   HtmlDialogUIDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate(
-          path_to_pdf, 500, 400, std::string());
+          path_to_pdf, 500, 400, std::string(), print_job_title);
   browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);
 }
 
