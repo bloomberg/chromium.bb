@@ -19,6 +19,7 @@
 #endif
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/google_service_auth_error.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -321,6 +322,19 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       NOTREACHED() << "Invalid advance state: " << advance_state;
   }
   current_state_ = advance_state;
+}
+
+void SyncSetupFlow::Focus() {
+#if defined(OS_MACOSX)
+  if (html_dialog_window_) {
+    platform_util::ActivateWindow(html_dialog_window_);
+  }
+#else
+  // TODO(csilv): We don't currently have a way to get the reference to the
+  // dialog on windows/linux.  This can be resolved by a cross platform
+  // implementation of HTML dialogs as described by akalin below.
+  NOTIMPLEMENTED();
+#endif  // defined(OS_MACOSX)
 }
 
 // static

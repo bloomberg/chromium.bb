@@ -212,6 +212,13 @@ bool SyncSetupWizard::IsVisible() const {
   return flow_container_->get_flow() != NULL;
 }
 
+void SyncSetupWizard::Focus() {
+  SyncSetupFlow* flow = flow_container_->get_flow();
+  if (flow) {
+    flow->Focus();
+  }
+}
+
 // static
 SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
     State start_state) {

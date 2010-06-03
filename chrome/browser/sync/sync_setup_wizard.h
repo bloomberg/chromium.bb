@@ -46,6 +46,10 @@ class SyncSetupWizard {
   // if various buttons in the UI should be enabled or disabled.
   bool IsVisible() const;
 
+  // Focus the dialog if it is already open.  Does nothing if the dialog is
+  // not visible.
+  void Focus();
+
  private:
   // If we just need to pop open an individual dialog, say to collect
   // gaia credentials in the event of a steady-state auth failure, this is

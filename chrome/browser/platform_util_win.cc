@@ -143,6 +143,10 @@ bool IsWindowActive(gfx::NativeWindow window) {
   return ::GetForegroundWindow() == window;
 }
 
+void ActivateWindow(gfx::NativeWindow window) {
+  ::SetForegroundWindow(window);
+}
+
 bool IsVisible(gfx::NativeView view) {
   // MSVC complains if we don't include != 0.
   return ::IsWindowVisible(view) != 0;

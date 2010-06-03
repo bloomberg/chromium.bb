@@ -48,6 +48,10 @@ bool IsWindowActive(gfx::NativeWindow window) {
   return [window isKeyWindow] || [window isMainWindow];
 }
 
+void ActivateWindow(gfx::NativeWindow window) {
+  [window makeKeyAndOrderFront:nil];
+}
+
 bool IsVisible(gfx::NativeView view) {
   // A reasonable approximation of how you'd expect this to behave.
   return (view &&

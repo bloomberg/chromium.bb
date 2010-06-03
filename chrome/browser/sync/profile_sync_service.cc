@@ -325,7 +325,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
 
 void ProfileSyncService::EnableForUser() {
   if (WizardIsVisible()) {
-    // TODO(timsteele): Focus wizard.
+    wizard_.Focus();
     return;
   }
   expecting_first_run_auth_needed_event_ = true;
@@ -476,8 +476,10 @@ void ProfileSyncService::OnAuthError() {
 }
 
 void ProfileSyncService::ShowLoginDialog() {
-  if (WizardIsVisible())
+  if (WizardIsVisible()) {
+    wizard_.Focus();
     return;
+  }
 
   if (!auth_error_time_.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES("Sync.ReauthorizationTime",

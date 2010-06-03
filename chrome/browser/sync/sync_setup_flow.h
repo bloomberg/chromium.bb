@@ -50,6 +50,10 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // Triggers a state machine transition to advance_state.
   void Advance(SyncSetupWizard::State advance_state);
 
+  // Focuses the dialog.  This is useful in cases where the dialog has been
+  // obscured by a browser window.
+  void Focus();
+
   // HtmlDialogUIDelegate implementation.
   // Get the HTML file path for the content to load in the dialog.
   virtual GURL GetDialogContentURL() const {

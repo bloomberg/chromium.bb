@@ -27,6 +27,10 @@ bool IsWindowActive(gfx::NativeWindow window) {
   return gtk_window_is_active(window);
 }
 
+void ActivateWindow(gfx::NativeWindow window) {
+  gtk_window_present(window);
+}
+
 bool IsVisible(gfx::NativeView view) {
   return GTK_WIDGET_VISIBLE(view);
 }

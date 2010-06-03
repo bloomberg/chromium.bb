@@ -29,6 +29,9 @@ gfx::NativeWindow GetTopLevel(gfx::NativeView view);
 // Returns true if |window| is the foreground top level window.
 bool IsWindowActive(gfx::NativeWindow window);
 
+// Activate the window, bringing it to the foreground top level.
+void ActivateWindow(gfx::NativeWindow window);
+
 // Returns true if the view is visible. The exact definition of this is
 // platform-specific, but it is generally not "visible to the user", rather
 // whether the view has the visible attribute set.
