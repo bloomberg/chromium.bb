@@ -394,8 +394,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   // Let the WebPlugin know that we are windowless (unless this is a
   // Core Animation plugin, in which case BindFakePluginWindowHandle will take
   // care of setting up the appropriate window handle).
-  if (drawing_model != NPDrawingModelCoreAnimation ||
-      drawing_model != NPDrawingModelInvalidatingCoreAnimation)
+  if (!layer_)
     plugin_->SetWindow(NULL);
 
 #ifndef NP_NO_CARBON

@@ -112,7 +112,12 @@ void WebPluginProxy::Invalidate() {
 
 void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
 #if defined(OS_MACOSX)
-  delegate_->PluginDidInvalidate();
+  // If this is a Core Animation plugin, all we need to do is inform the
+  // delegate.
+  if (!windowless_context_.get()) {
+    delegate_->PluginDidInvalidate();
+    return;
+  }
 
   // Some plugins will send invalidates larger than their own rect when
   // offscreen, so constrain invalidates to the plugin rect.
@@ -588,7 +593,6 @@ void WebPluginProxy::BindFakePluginWindowHandle(bool opaque) {
 
 void WebPluginProxy::AcceleratedFrameBuffersDidSwap(
     gfx::PluginWindowHandle window) {
-  // TODO(pinkerton): Rename this message.
   Send(new PluginHostMsg_AcceleratedSurfaceBuffersSwapped(route_id_, window));
 }
 
@@ -596,7 +600,6 @@ void WebPluginProxy::SetAcceleratedSurface(gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
     uint64 accelerated_surface_identifier) {
-  // TODO(pinkerton): Rename this message.
   Send(new PluginHostMsg_AcceleratedSurfaceSetIOSurface(
       route_id_, window, width, height, accelerated_surface_identifier));
 }
