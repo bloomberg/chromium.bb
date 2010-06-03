@@ -31,7 +31,8 @@ export VERIFY=yes
 # Pick a setup
 #readonly SETUP=SetupPnaclArm
 #readonly SETUP=SetupGccX8632
-readonly SETUP=SetupNaclX8632
+#readonly SETUP=SetupNaclX8632
+readonly SETUP=SetupPnaclArmOpt
 ######################################################################
 # Helper
 ######################################################################
@@ -64,14 +65,12 @@ SetupNaclX8632() {
     exit -1
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
-
   PREFIX="${SEL_LDR} -d -f"
   SUFFIX=nacl.x8632
 }
 
 
 SetupPnaclX8632() {
-  echo "DDDD"
   SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
   if [[ ! -x ${SEL_LDR} ]] ; then
     echo "you have not build the sel_ldr yet"
@@ -89,7 +88,7 @@ SetupGccArm() {
 }
 
 
-SetupPnaclArm() {
+SetupPnaclArmCommon() {
   QEMU=$(readlink -f ../../toolchain/linux_arm-trusted/qemu_tool.sh)
   SEL_LDR=../../scons-out/opt-linux-arm/staging/sel_ldr
 
@@ -97,9 +96,21 @@ SetupPnaclArm() {
     echo "you have not build the sel_ldr yet"
     exit -1
   fi
+  SEL_LDR=$(readlink -f ${SEL_LDR})
   PREFIX="${QEMU} run ${SEL_LDR} -d -Q -f"
   SUFFIX=pnacl.arm
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+}
+
+
+SetupPnaclArmOpt() {
+  SetupPnaclArmCommon
+  SUFFIX=pnacl.opt.arm
+}
+
+
+SetupPnaclArm() {
+  SetupPnaclArmCommon
+  SUFFIX=pnacl.arm
 }
 
 
@@ -117,11 +128,25 @@ ConfigInfo() {
 ######################################################################
 
 #@
+#@ GetBenchmarkList
+#@
+#@   Show avilable benchmarks
+GetBenchmarkList() {
+  if [[ $# = 0 ]] ; then
+      echo "${LIST[@]}"
+  else
+      echo "$@"
+  fi
+}
+
+#@
 #@ CleanBenchmarks
 #@
 #@
 CleanBenchmarks() {
-  for i in ${LIST} ; do
+  local list=$(GetBenchmarkList "$@")
+
+  for i in ${list} ; do
     Banner "Cleanig: $i"
     cd $i
     make clean
@@ -137,9 +162,10 @@ CleanBenchmarks() {
 BuildBenchmarks() {
   export PREFIX=
   eval ${SETUP}
-  ConfigInfo
+  local list=$(GetBenchmarkList "$@")
 
-  for i in ${LIST} ; do
+  ConfigInfo
+  for i in ${list} ; do
     Banner "Building: $i"
     cd $i
 
@@ -157,9 +183,10 @@ done
 RunBenchmarks() {
   export PREFIX=
   eval ${SETUP}
-  ConfigInfo
+  local list=$(GetBenchmarkList "$@")
 
-  for i in ${LIST} ; do
+  ConfigInfo
+  for i in ${list} ; do
     Banner "Benchmarking: $i"
     cd $i
     size  ./${i#*.}.${SUFFIX}
@@ -173,8 +200,8 @@ RunBenchmarks() {
 #@
 #@   builds and run benchmarks fro the current configuration
 BuildAndRunBenchmarks() {
-  BuildBenchmarks
-  RunBenchmarks
+  BuildBenchmarks "$@"
+  RunBenchmarks "$@"
 }
 
 #@
