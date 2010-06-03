@@ -14,6 +14,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/test/test_suite.h"
 #include "base/time.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,7 +46,7 @@ class ResultsPrinter {
   void OnTestCaseStart(const char* name, int test_count) const;
   void OnTestCaseEnd() const;
   void OnTestEnd(const char* name, const char* case_name, bool run,
-                 bool failure, double elapsed_time) const;
+                 bool failed, bool failure_ignored, double elapsed_time) const;
  private:
   FILE* out_;
 };
@@ -110,19 +111,20 @@ void ResultsPrinter::OnTestCaseEnd() const {
 }
 
 void ResultsPrinter::OnTestEnd(const char* name, const char* case_name,
-                               bool run, bool failure,
+                               bool run, bool failed, bool failure_ignored,
                                double elapsed_time) const {
   if (!out_)
     return;
   fprintf(out_, "    <testcase name=\"%s\" status=\"%s\" time=\"%.3f\""
           " classname=\"%s\"",
           name, run ? "run" : "notrun", elapsed_time / 1000.0, case_name);
-  if (!failure) {
+  if (!failed) {
     fprintf(out_, " />\n");
     return;
   }
   fprintf(out_, ">\n");
-  fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
+  fprintf(out_, "      <failure message=\"\" type=\"\"%s></failure>\n",
+          failure_ignored ? " ignored=\"true\"" : "");
   fprintf(out_, "    </testcase>\n");
 }
 
@@ -202,6 +204,7 @@ bool RunTests(const TestRunnerFactory& test_runner_factory) {
       kGTestFilterFlag);
 
   int test_run_count = 0;
+  int ignored_failure_count = 0;
   std::vector<std::string> failed_tests;
 
   ResultsPrinter printer(*command_line);
@@ -215,7 +218,7 @@ bool RunTests(const TestRunnerFactory& test_runner_factory) {
       if (std::string(test_info->name()).find("DISABLED") == 0 &&
           !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
         printer.OnTestEnd(test_info->name(), test_case->name(),
-                          false, false, 0);
+                          false, false, false, 0);
         continue;
       }
       std::string test_name = test_info->test_case_name();
@@ -224,7 +227,7 @@ bool RunTests(const TestRunnerFactory& test_runner_factory) {
       // Skip the test that doesn't match the filter string (if given).
       if (filter_string.size() && !MatchesFilter(test_name, filter_string)) {
         printer.OnTestEnd(test_info->name(), test_case->name(),
-                          false, false, 0);
+                          false, false, false, 0);
         continue;
       }
       base::Time start_time = base::Time::Now();
@@ -235,19 +238,25 @@ bool RunTests(const TestRunnerFactory& test_runner_factory) {
       ++test_run_count;
       if (!test_runner->RunTest(test_name.c_str())) {
         failed_tests.push_back(test_name);
+        bool ignore_failure = TestSuite::ShouldIgnoreFailure(*test_info);
         printer.OnTestEnd(test_info->name(), test_case->name(), true, true,
+                          ignore_failure,
                           (base::Time::Now() - start_time).InMillisecondsF());
+        if (ignore_failure)
+          ++ignored_failure_count;
       } else {
         printer.OnTestEnd(test_info->name(), test_case->name(), true, false,
+                          false,
                           (base::Time::Now() - start_time).InMillisecondsF());
       }
     }
   }
 
   printf("%d test%s run\n", test_run_count, test_run_count > 1 ? "s" : "");
-  printf("%d test%s failed\n", static_cast<int>(failed_tests.size()),
-                               failed_tests.size() > 1 ? "s" : "");
-  if (failed_tests.empty())
+  printf("%d test%s failed (%d ignored)\n",
+         static_cast<int>(failed_tests.size()),
+         failed_tests.size() > 1 ? "s" : "", ignored_failure_count);
+  if (failed_tests.size() - ignored_failure_count == 0)
     return true;
 
   printf("Failing tests:\n");

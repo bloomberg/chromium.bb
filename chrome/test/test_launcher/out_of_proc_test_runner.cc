@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/test/test_suite.h"
 
 #include "chrome/test/test_launcher/test_runner.h"
 #include "chrome/test/unit/chrome_test_suite.h"
@@ -60,6 +61,10 @@ class OutOfProcTestRunner : public tests::TestRunner {
     new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
     new_cmd_line.AppendSwitchWithValue("gtest_filter", test_name);
     new_cmd_line.AppendSwitch(kChildProcessFlag);
+
+    // Do not let the child ignore failures.  We need to propagate the
+    // failure status back to the parent.
+    new_cmd_line.AppendSwitch(kStrictFailureHandling);
 
     base::ProcessHandle process_handle;
     if (!base::LaunchApp(new_cmd_line, false, false, &process_handle))
