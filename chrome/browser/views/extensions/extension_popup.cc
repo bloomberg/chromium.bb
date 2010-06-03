@@ -393,7 +393,15 @@ void ExtensionPopup::Close() {
     return;
   closing_ = true;
   DetachFromBrowser();
-  if (observer_)
-    observer_->ExtensionPopupClosed(this);
+
+  ExtensionPopup::Observer* observer = observer_;
+
+  if (observer)
+    observer->ExtensionPopupIsClosing(this);
+
+  DCHECK(HasOneRef()) << "Unexpected extra reference to ExtensionPopup.";
   Release();  // Balanced in ctor.
+
+  if (observer)
+    observer->ExtensionPopupClosed(this);
 }

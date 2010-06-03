@@ -350,7 +350,7 @@ class BrowserActionsContainer
   virtual void InspectPopup(ExtensionAction* action);
 
   // Overriden from ExtensionPopup::Delegate
-  virtual void ExtensionPopupClosed(ExtensionPopup* popup);
+  virtual void ExtensionPopupIsClosing(ExtensionPopup* popup);
 
   // Moves a browser action with |id| to |new_index|.
   void MoveBrowserAction(const std::string& extension_id, size_t new_index);

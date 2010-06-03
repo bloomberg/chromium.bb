@@ -1150,7 +1150,7 @@ void BrowserActionsContainer::InspectPopup(
       true);  // |inspect_with_devtools|.
 }
 
-void BrowserActionsContainer::ExtensionPopupClosed(ExtensionPopup* popup) {
+void BrowserActionsContainer::ExtensionPopupIsClosing(ExtensionPopup* popup) {
   // ExtensionPopup is ref-counted, so we don't need to delete it.
   DCHECK_EQ(popup_, popup);
   popup_ = NULL;

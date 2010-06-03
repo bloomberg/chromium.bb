@@ -427,6 +427,14 @@ class NotificationType {
     // Sent from ~RenderViewHost. The source is the TabContents.
     RENDER_VIEW_HOST_DELETED,
 
+    // Sent from RenderViewHost::ClosePage.  The hosted RenderView has
+    // processed the onbeforeunload handler and is about to be sent a
+    // ViewMsg_ClosePage message to complete the tear-down process.  The source
+    // is the RenderViewHost sending the message, and no details are provided.
+    // Note:  This message is not sent in response to RenderView closure
+    // initiated by window.close().
+    RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
+
     // Indicates a RenderWidgetHost has been hidden or restored. The source is
     // the RWH whose visibility changed, the details is a bool set to true if
     // the new state is "visible."

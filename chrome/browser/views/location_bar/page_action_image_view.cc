@@ -209,7 +209,7 @@ void PageActionImageView::InspectPopup(ExtensionAction* action) {
                 true);  // inspect_with_devtools
 }
 
-void PageActionImageView::ExtensionPopupClosed(ExtensionPopup* popup) {
+void PageActionImageView::ExtensionPopupIsClosing(ExtensionPopup* popup) {
   DCHECK_EQ(popup_, popup);
   // ExtensionPopup is ref-counted, so we don't need to delete it.
   popup_ = NULL;

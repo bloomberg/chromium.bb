@@ -128,21 +128,33 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
         NotificationType::EXTENSION_HOST_CREATED,
         Source<ExtensionProcessManager>(
             dispatcher_->profile()->GetExtensionProcessManager()));
+
+    registrar_.Add(
+        this,
+        NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
+        Source<RenderViewHost>(dispatcher_->render_view_host()));
+
+    registrar_.Add(
+        this,
+        NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
+        Source<Profile>(dispatcher_->profile()));
   }
 
   // Overridden from ExtensionPopup::Observer
-  virtual void ExtensionPopupClosed(ExtensionPopup* popup) {
+  virtual void ExtensionPopupIsClosing(ExtensionPopup* popup) {
     // Unregister the automation resource routing registered upon host
     // creation.
     AutomationResourceRoutingDelegate* router =
         GetRoutingFromDispatcher(dispatcher_);
     if (router)
       router->UnregisterRenderViewHost(popup_->host()->render_view_host());
+  }
 
-    // The OnPopupClosed event should be sent later to give the popup time to
-    // complete closing.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ExtensionPopupHost::DispatchPopupClosedEvent));
+  virtual void ExtensionPopupClosed(void* popup_token) {
+    if (popup_ == popup_token) {
+      popup_ = NULL;
+      DispatchPopupClosedEvent();
+    }
   }
 
   virtual void ExtensionHostCreated(ExtensionHost* host) {
@@ -195,9 +207,12 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
   }
 
   virtual void DispatchPopupClosedEvent() {
-    PopupEventRouter::OnPopupClosed(
-        dispatcher_->profile(), dispatcher_->render_view_host()->routing_id());
-    dispatcher_ = NULL;
+    if (dispatcher_) {
+      PopupEventRouter::OnPopupClosed(
+          dispatcher_->profile(),
+          dispatcher_->render_view_host()->routing_id());
+      dispatcher_ = NULL;
+    }
     Release();  // Balanced in ctor.
   }
 
@@ -249,7 +264,6 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(NotificationType::EXTENSION_HOST_CREATED == type);
     if (NotificationType::EXTENSION_HOST_CREATED == type) {
       Details<ExtensionHost> details_host(details);
       // Disallow multiple pop-ups from the same extension, by closing
@@ -257,6 +271,29 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
       if (ViewType::EXTENSION_POPUP == details_host->GetRenderViewType() &&
           popup_->host()->extension() == details_host->extension() &&
           Details<ExtensionHost>(popup_->host()) != details) {
+        popup_->Close();
+      }
+    } else if (NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW ==
+        type) {
+      if (Source<RenderViewHost>(dispatcher_->render_view_host()) == source) {
+        // If the parent render view is about to be closed, signal closure
+        // of the popup.
+        popup_->Close();
+      }
+    } else if (NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED ==
+        type) {
+      // Popups should not outlive the dispatchers that launched them.
+      // Normally, long-lived popups will be dismissed in response to the
+      // RENDER_VIEW_WILL_CLOSE_BY_RENDER_VIEW_HOST message.  Unfortunately,
+      // if the hosting view invokes window.close(), there is no communication
+      // back to the browser until the entire view has been torn down, at which
+      // time the dispatcher will be invoked.
+      // Note:  The onClosed event will not be fired, but because the hosting
+      // view has already been torn down, it is already too late to process it.
+      // TODO(twiz):  Add a communication path between the renderer and browser
+      // for RenderView closure notifications initiatied within the renderer.
+      if (Details<ExtensionFunctionDispatcher>(dispatcher_) == details) {
+        dispatcher_ = NULL;
         popup_->Close();
       }
     }

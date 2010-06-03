@@ -323,6 +323,11 @@ void RenderViewHost::ClosePage(bool for_cross_site_transition,
   params.new_render_process_host_id = new_render_process_host_id;
   params.new_request_id = new_request_id;
   if (IsRenderViewLive()) {
+    NotificationService::current()->Notify(
+        NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
+        Source<RenderViewHost>(this),
+        NotificationService::NoDetails());
+
     Send(new ViewMsg_ClosePage(routing_id(), params));
   } else {
     // This RenderViewHost doesn't have a live renderer, so just skip closing

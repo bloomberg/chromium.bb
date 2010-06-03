@@ -32,10 +32,14 @@ class ExtensionPopup : public BrowserBubble,
   // Observer to ExtensionPopup events.
   class Observer {
    public:
-    // Called when the ExtensionPopup has closed. Note that it
+    // Called when the ExtensionPopup is closing. Note that it
     // is ref-counted, and thus will be released shortly after
     // making this delegate call.
-    virtual void ExtensionPopupClosed(ExtensionPopup* popup) {}
+    virtual void ExtensionPopupIsClosing(ExtensionPopup* popup) {}
+
+    // Called after the ExtensionPopup has been closed and deleted.
+    // |popup_token| is the address of the deleted ExtensionPopup.
+    virtual void ExtensionPopupClosed(void* popup_token) {}
 
     // Called when the ExtensionHost is first created for the pop-up view.
     // Note that this is invoked BEFORE the ExtensionPopup is created, and can
@@ -93,7 +97,7 @@ class ExtensionPopup : public BrowserBubble,
                               Observer* observer);
 
   // Closes the ExtensionPopup (this will cause the delegate
-  // ExtensionPopupClosed to fire.
+  // ExtensionPopupIsClosing and ExtensionPopupClosed to fire.
   void Close();
 
   // Some clients wish to do their own custom focus change management. If this

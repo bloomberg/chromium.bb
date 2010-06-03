@@ -51,7 +51,7 @@ class PageActionImageView : public views::ImageView,
   virtual void InspectPopup(ExtensionAction* action);
 
   // Overridden from ExtensionPopup::Observer
-  virtual void ExtensionPopupClosed(ExtensionPopup* popup);
+  virtual void ExtensionPopupIsClosing(ExtensionPopup* popup);
 
   // Called to notify the PageAction that it should determine whether to be
   // visible or hidden. |contents| is the TabContents that is active, |url| is

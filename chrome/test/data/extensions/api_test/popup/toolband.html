@@ -28,6 +28,20 @@ function onWindowMoveCompleted(offset, initialSize, movedSize) {
       "Popup repositioned incorrectly after browser move.");
 }
 
+// Assert function used by tests executed in separate extension views.
+// Used by the following test:  popupTeardownDismissal
+// |value| is value upon which to assert.
+// |message| is displayed if |value| is false.
+function assertTrue(value, message) {
+  chrome.test.assertTrue(value, message);
+}
+
+// Function used to signal completion of tests run in separate extension views.
+// Used by the following test:  popupTeardownDismissal
+function testCompleted() {
+  chrome.test.succeed();
+}
+
 window.onload = function() {
   chrome.test.runTests([
     function showNoFocusShift() {
@@ -102,10 +116,9 @@ window.onload = function() {
     function closePopup() {
       // Ensure that the test waits until the popup is dismissed.
       chrome.test.listenOnce(chrome.experimental.popup.onClosed, function() {
-        // TODO(twiz):  getPopupView() should return undefined, but, due to
-        // shut-down races, it is sometimes still defined.  See BUG 27658.
-        // chrome.test.assertTrue(
-        //     chrome.experimental.extension.getPopupView() == undefined);
+        // The popup should not be accessible during the onClosed handler.
+        chrome.test.assertTrue(
+            chrome.experimental.extension.getPopupView() == undefined);
       });
       chrome.experimental.extension.getPopupView().close();
     },
@@ -208,6 +221,14 @@ window.onload = function() {
 
       chrome.experimental.popup.show("toolband_popup_sizing.html",
                                      showDetails);
+    },
+    function popupTeardownDismissal() {
+      // This test verifies that closing of views that launched active popups
+      // results in a popup dismissal.
+      var tabProperties = {
+        "url": "toolband_domui_popup_dismissal.html"
+      };
+      chrome.tabs.create(tabProperties);
     }
   ]);
 }
