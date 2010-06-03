@@ -8,3 +8,7 @@
 // temporarily enable these tests downstream until they're fully upstreamed.
 BUG11246 : fast/dom/Geolocation = PASS
 BUG11246 DEFER SKIP : fast/dom/Geolocation/callback-exception.html = TEXT
+
+// Fix is already in upstream, as soon as WK is rolled past r60643, remove
+// this exception.
+BUGJOHNNYG : fast/notifications/notifications-display-close-events.html = TEXT
