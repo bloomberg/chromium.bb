@@ -11,6 +11,7 @@
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -29,34 +30,22 @@
   Browser* browser = Browser::GetOrCreateTabbedBrowser(bridge_->profile());
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  browser->OpenURL(node->url, GURL(), disposition,
-                   PageTransition::AUTO_BOOKMARK);
-}
 
-- (const HistoryMenuBridge::HistoryItem*)itemForTag:(NSInteger)tag {
-  const ScopedVector<HistoryMenuBridge::HistoryItem>* results = NULL;
-  NSInteger tag_base = 0;
-  if (tag > IDC_HISTORY_MENU_VISITED && tag < IDC_HISTORY_MENU_CLOSED) {
-    results = bridge_->visited_results();
-    tag_base = IDC_HISTORY_MENU_VISITED;
-  } else if (tag > IDC_HISTORY_MENU_CLOSED) {
-    results = bridge_->closed_results();
-    tag_base = IDC_HISTORY_MENU_CLOSED;
+  // If this item can be restored using TabRestoreService, do so. Otherwise,
+  // just load the URL.
+  TabRestoreService* service = bridge_->profile()->GetTabRestoreService();
+  if (node->session_id && service) {
+    service->RestoreEntryById(browser, node->session_id, false);
   } else {
-    NOTREACHED();
+    DCHECK(node->url.is_valid());
+    browser->OpenURL(node->url, GURL(), disposition,
+                     PageTransition::AUTO_BOOKMARK);
   }
-
-  DCHECK(tag > tag_base);
-  size_t index = tag - tag_base - 1;
-  if (index >= results->size())
-    return NULL;
-  return (*results)[index];
 }
 
 - (IBAction)openHistoryMenuItem:(id)sender {
-  NSInteger tag = [sender tag];
-  const HistoryMenuBridge::HistoryItem* item = [self itemForTag:tag];
-  DCHECK(item->url.is_valid());
+  const HistoryMenuBridge::HistoryItem* item =
+      bridge_->HistoryItemForMenuItem(sender);
   [self openURLForItem:item];
 }
 

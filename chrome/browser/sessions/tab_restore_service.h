@@ -147,7 +147,7 @@ class TabRestoreService : public BaseSessionService {
 
   // Returns the entries, ordered with most recently closed entries at the
   // front.
-  const Entries& entries() const { return entries_; }
+  virtual const Entries& entries() const { return entries_; }
 
   // Restores the most recently closed entry. Does nothing if there are no
   // entries to restore. If the most recently restored entry is a tab, it is
@@ -172,6 +172,8 @@ class TabRestoreService : public BaseSessionService {
  protected:
   virtual void Save();
 
+  virtual ~TabRestoreService();
+
  private:
   // Used to indicate what has loaded.
   enum LoadState {
@@ -190,8 +192,6 @@ class TabRestoreService : public BaseSessionService {
     // last tabs).
     LOADED_LAST_SESSION  = 1 << 4
   };
-
-  virtual ~TabRestoreService();
 
   // Populates the tab's navigations from the NavigationController, and its
   // browser_id and tabstrip_index from the browser.

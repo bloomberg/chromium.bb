@@ -25,7 +25,6 @@
 @end  // HistoryMenuCocoaController
 
 @interface HistoryMenuCocoaController (ExposedForUnitTests)
-- (const HistoryMenuBridge::HistoryItem*)itemForTag:(NSInteger)tag;
 - (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)node;
 @end  // HistoryMenuCocoaController (ExposedForUnitTests)
 

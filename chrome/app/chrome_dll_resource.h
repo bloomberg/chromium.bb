@@ -273,8 +273,6 @@
 #define IDC_SYSTEM_OPTIONS              45000     // ChromeOS only
 #define IDC_INTERNET_OPTIONS            45100     // ChromeOS only
 #define IDC_HISTORY_MENU                46000     // OSX only
-#define IDC_HISTORY_MENU_VISITED        46100     // OSX only
-#define IDC_HISTORY_MENU_CLOSED         46200     // OSX only
 #define IDC_INPUT_METHODS_MENU          46300     // Linux only
 
 // Custom context menu entries

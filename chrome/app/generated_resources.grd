@@ -7119,6 +7119,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_HISTORY_CLOSED_MAC" desc="The Mac menu item for the header of recently closed items in the history menu.">
           Recently Closed
         </message>
+        <message name="IDS_HISTORY_CLOSED_RESTORE_WINDOW_MAC" desc="The Mac menu item for restoring all the tabs of a recently closed window.">
+          Restore All Tabs
+        </message>
         <!-- Bookmarks menu -->
         <message name="IDS_BOOKMARK_MANAGER_MAC" desc="The Mac menu item for opening the bookmark manager, in the bookmark menu.">
           Bookmark Manager
