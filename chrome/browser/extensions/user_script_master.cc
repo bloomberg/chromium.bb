@@ -53,11 +53,6 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
   // http://wiki.greasespot.net/Metadata_block
   base::StringPiece line;
   size_t line_start = 0;
-
-  // Skip UTF-8's BOM.
-  if (script_text.starts_with(kUtf8ByteOrderMark))
-    line_start += strlen(kUtf8ByteOrderMark);
-
   size_t line_end = line_start;
   bool in_metadata = false;
 
@@ -165,11 +160,19 @@ static bool LoadScriptContent(UserScript::File* script_file) {
     return false;
   }
 
-  script_file->set_content(content);
+  // Remove BOM from the content.
+  std::string::size_type index = content.find(kUtf8ByteOrderMark);
+  if (index == 0) {
+    script_file->set_content(content.substr(strlen(kUtf8ByteOrderMark)));
+  } else {
+    script_file->set_content(content);
+  }
+
   LOG(INFO) << "Loaded user script file: " << path.value();
   return true;
 }
 
+// static
 void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
     const FilePath& script_dir, UserScriptList* result) {
   // Clear the list. We will populate it with the scripts found in script_dir.

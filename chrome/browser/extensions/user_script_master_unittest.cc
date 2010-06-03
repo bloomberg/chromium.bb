@@ -203,21 +203,6 @@ TEST_F(UserScriptMasterTest, Parse6) {
 }
 
 TEST_F(UserScriptMasterTest, Parse7) {
-  const std::string text(
-    "\xEF\xBB\xBF// ==UserScript==\n"
-    "// @match http://*.mail.google.com/*\n"
-    "// ==/UserScript==\n");
-
-  // Should Ignore UTF-8's BOM.
-  UserScript script;
-  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
-  ASSERT_EQ(1U, script.url_patterns().size());
-  EXPECT_EQ("http://*.mail.google.com/*",
-            script.url_patterns()[0].GetAsString());
-}
-
-TEST_F(UserScriptMasterTest, Parse8) {
   // Greasemonkey allows there to be any leading text before the comment marker.
   const std::string text(
     "// ==UserScript==\n"
@@ -234,4 +219,46 @@ TEST_F(UserScriptMasterTest, Parse8) {
   ASSERT_EQ(1U, script.url_patterns().size());
   EXPECT_EQ("http://mail.yahoo.com/*",
             script.url_patterns()[0].GetAsString());
+}
+
+TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
+  FilePath path = script_dir_.AppendASCII("script.user.js");
+
+  const std::string content(
+    "\xEF\xBB\xBF// ==UserScript==\n"
+    "// @match http://*.mail.google.com/*\n"
+    "// ==/UserScript==\n");
+  size_t written = file_util::WriteFile(path, content.c_str(), content.size());
+  ASSERT_EQ(written, content.size());
+
+  UserScriptList script_list;
+  UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
+      script_dir_, &script_list);
+  ASSERT_EQ(1U, script_list.size());
+
+  EXPECT_EQ(content.substr(3),
+            script_list[0].js_scripts()[0].GetContent().as_string());
+  EXPECT_EQ("http://*.mail.google.com/*",
+            script_list[0].url_patterns()[0].GetAsString());
+}
+
+TEST_F(UserScriptMasterTest, LeaveBOMNotAtTheBeginning) {
+  FilePath path = script_dir_.AppendASCII("script.user.js");
+
+  const std::string content(
+    "// ==UserScript==\n"
+    "// @match http://*.mail.google.com/*\n"
+    "// ==/UserScript==\n"
+    "// @bom \xEF\xBB\xBF");
+  size_t written = file_util::WriteFile(path, content.c_str(), content.size());
+  ASSERT_EQ(written, content.size());
+
+  UserScriptList script_list;
+  UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
+      script_dir_, &script_list);
+  ASSERT_EQ(1U, script_list.size());
+
+  EXPECT_EQ(content, script_list[0].js_scripts()[0].GetContent().as_string());
+  EXPECT_EQ("http://*.mail.google.com/*",
+            script_list[0].url_patterns()[0].GetAsString());
 }
