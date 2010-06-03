@@ -35,9 +35,7 @@ xxxxxxx0xxxxxxxxxxxxxxxxxxxxxxxx  =DataProc
 -- dp_immed (See Section A5.2.3)
 pat0(31:0)                        
 xxxxxxx1110xxxxxxxxxxxxxxxxxxxxx  =ImmediateBic
-xxxxxxx10001xxxxxxxxxxxxxxxxxxxx  =TestImmediate
-xxxxxxx10101xxxxxxxxxxxxxxxxxxxx  =Test
-xxxxxxx10x11xxxxxxxxxxxxxxxxxxxx  =Test
+xxxxxxx10xx1xxxxxxxxxxxxxxxxxxxx  =Test
 xxxxxxx1111xxxxxxxxxxxxxxxxxxxxx  =DataProc
 xxxxxxx000xxxxxxxxxxxxxxxxxxxxxx  =DataProc
 xxxxxxx0x1xxxxxxxxxxxxxxxxxxxxxx  =DataProc

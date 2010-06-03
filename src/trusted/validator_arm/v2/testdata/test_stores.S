@@ -54,16 +54,3 @@ bundle5:
   str r1, [r0], r2        @ use it in register post-index store: should pass.
   nop                     @ Don't mask, and
   str r1, [r0], r2        @ use it in register post-index store: ERROR.
-
-conditional_sandbox:
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  streq r1, [r0]          @ store: should work.
-
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  str r1, [r0]            @ store unconditionally: ERROR.
-
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  strgt r1, [r0]          @ store using wrong predicate: ERROR.
-
-  tsteq r0, #0xC0000000   @ Conditionally set Z if the top two bits are clear,
-  strgt r1, [r0]          @ and store using wrong predicate: ERROR.
