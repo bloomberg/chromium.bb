@@ -99,6 +99,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   AutoFillManager();
   AutoFillManager(TabContents* tab_contents,
                   PersonalDataManager* personal_data);
+  void set_personal_data_manager(PersonalDataManager* personal_data) {
+    personal_data_ = personal_data;
+  }
 
  private:
   // Returns a list of values from the stored profiles that match |type| and the

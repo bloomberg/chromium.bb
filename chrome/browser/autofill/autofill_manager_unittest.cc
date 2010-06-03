@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/string16.h"
@@ -87,17 +88,19 @@ class TestPersonalDataManager : public PersonalDataManager {
 class TestAutoFillManager : public AutoFillManager {
  public:
   explicit TestAutoFillManager(TabContents* tab_contents)
-      : AutoFillManager(tab_contents, &test_personal_data_) {
+      : AutoFillManager(tab_contents, NULL) {
+    test_personal_data_ = new TestPersonalDataManager();
+    set_personal_data_manager(test_personal_data_.get());
   }
 
   virtual bool IsAutoFillEnabled() const { return true; }
 
   AutoFillProfile* GetLabeledProfile(const char* label) {
-    return test_personal_data_.GetLabeledProfile(label);
+    return test_personal_data_->GetLabeledProfile(label);
   }
 
  private:
-  TestPersonalDataManager test_personal_data_;
+  scoped_refptr<TestPersonalDataManager> test_personal_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutoFillManager);
 };

@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/string16.h"
@@ -24,8 +25,10 @@ class Profile;
 // Handles loading and saving AutoFill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // AutoFill.
-class PersonalDataManager : public WebDataServiceConsumer,
-                            public AutoFillDialogObserver {
+class PersonalDataManager
+    : public WebDataServiceConsumer,
+      public AutoFillDialogObserver,
+      public base::RefCountedThreadSafe<PersonalDataManager> {
  public:
   // An interface the PersonalDataManager uses to notify its clients (observers)
   // when it has finished loading personal data from the web database.  Register
@@ -38,8 +41,6 @@ class PersonalDataManager : public WebDataServiceConsumer,
    protected:
     virtual ~Observer() {}
   };
-
-  virtual ~PersonalDataManager();
 
   // WebDataServiceConsumer implementation:
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
@@ -153,12 +154,15 @@ class PersonalDataManager : public WebDataServiceConsumer,
   void Init(Profile* profile);
 
  protected:
-  // Make sure that only Profile and the PersonalDataManager tests can create an
-  // instance of PersonalDataManager.
-  friend class ProfileImpl;
+  // Make sure that only Profile and certain tests can create an instance of
+  // PersonalDataManager.
+  friend class base::RefCountedThreadSafe<PersonalDataManager>;
   friend class PersonalDataManagerTest;
+  friend class ProfileImpl;
+  friend class ProfileSyncServiceAutofillTest;
 
   PersonalDataManager();
+  ~PersonalDataManager();
 
   // Returns the profile of the tab contents.
   Profile* profile();

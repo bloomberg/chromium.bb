@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/ref_counted.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_view_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
@@ -70,7 +71,7 @@ class PersonalDataManagerMock : public PersonalDataManager {
 class ProfileMock : public TestingProfile {
  public:
   ProfileMock() {
-    test_manager_.reset(new PersonalDataManagerMock);
+    test_manager_ =new PersonalDataManagerMock;
   }
   virtual ~ProfileMock() {}
 
@@ -78,7 +79,7 @@ class ProfileMock : public TestingProfile {
     return test_manager_.get();
   }
 
-  scoped_ptr<PersonalDataManagerMock> test_manager_;
+  scoped_refptr<PersonalDataManagerMock> test_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileMock);
@@ -245,16 +246,18 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   profile.SetInfo(AutoFillType(EMAIL_ADDRESS),
       ASCIIToUTF16("dhollowa@chromium.org"));
   profile.SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16("Google Inc."));
-  profile.SetInfo(
-      AutoFillType(ADDRESS_HOME_LINE1), ASCIIToUTF16("1122 Mountain View Road"));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                  ASCIIToUTF16("1122 Mountain View Road"));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2), ASCIIToUTF16("Suite #1"));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY),
       ASCIIToUTF16("Mountain View"));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("94111"));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("USA"));
-  profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), ASCIIToUTF16("014155552258"));
-  profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER), ASCIIToUTF16("024087172258"));
+  profile.SetInfo(
+      AutoFillType(PHONE_HOME_WHOLE_NUMBER), ASCIIToUTF16("014155552258"));
+  profile.SetInfo(
+      AutoFillType(PHONE_FAX_WHOLE_NUMBER), ASCIIToUTF16("024087172258"));
   profiles().push_back(&profile);
 
   LoadDialog();

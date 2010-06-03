@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/spellcheck_host_observer.h"
@@ -627,7 +628,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<BrowserThemeProvider> theme_provider_;
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
-  scoped_ptr<PersonalDataManager> personal_data_manager_;
+  scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_ptr<PinnedTabService> pinned_tab_service_;
   bool history_service_created_;
   bool favicon_service_created_;

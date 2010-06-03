@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
@@ -62,7 +63,7 @@ class AutofillModelAssociator
       pdm_->Refresh();
     }
    private:
-    PersonalDataManager* pdm_;
+    scoped_refptr<PersonalDataManager> pdm_;
   };
 
   // PerDataTypeAssociatorInterface implementation.

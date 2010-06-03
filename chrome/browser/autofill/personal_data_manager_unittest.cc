@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -61,7 +62,7 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void ResetPersonalDataManager() {
-    personal_data_.reset(new PersonalDataManager());
+    personal_data_ = new PersonalDataManager();
     personal_data_->Init(profile_.get());
     personal_data_->SetObserver(&personal_data_observer_);
 
@@ -82,7 +83,7 @@ class PersonalDataManagerTest : public testing::Test {
   ChromeThread ui_thread_;
   ChromeThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<PersonalDataManager> personal_data_;
+  scoped_refptr<PersonalDataManager> personal_data_;
   NotificationRegistrar registrar_;
   NotificationObserverMock observer_;
   PersonalDataLoadedObserverMock personal_data_observer_;

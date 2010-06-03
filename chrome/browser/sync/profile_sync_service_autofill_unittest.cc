@@ -138,7 +138,8 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
 
   virtual void SetUp() {
     web_data_service_ = new WebDataServiceFake(&web_database_);
-    personal_data_manager_.Init(&profile_);
+    personal_data_manager_ = new PersonalDataManagerMock();
+    personal_data_manager_->Init(&profile_);
     db_thread_.Start();
 
     notification_service_ = new ThreadNotificationService(&db_thread_);
@@ -165,7 +166,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
       EXPECT_CALL(factory_, CreateAutofillSyncComponents(_, _, _, _)).
           WillOnce(MakeAutofillSyncComponents(service_.get(),
                                               &web_database_,
-                                              &personal_data_manager_,
+                                              personal_data_manager_.get(),
                                               data_type_controller));
       EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
           WillOnce(MakeDataTypeManager(&backend_));
@@ -174,9 +175,9 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
           WillOnce(Return(web_data_service_.get()));
 
       EXPECT_CALL(profile_, GetPersonalDataManager()).
-          WillRepeatedly(Return(&personal_data_manager_));
+          WillRepeatedly(Return(personal_data_manager_.get()));
 
-      EXPECT_CALL(personal_data_manager_, IsDataLoaded()).
+      EXPECT_CALL(*(personal_data_manager_.get()), IsDataLoaded()).
         WillRepeatedly(Return(true));
 
       // State changes once for the backend init and once for startup done.
@@ -321,7 +322,7 @@ class ProfileSyncServiceAutofillTest : public testing::Test {
   SyncBackendHostMock backend_;
   WebDatabaseMock web_database_;
   scoped_refptr<WebDataService> web_data_service_;
-  PersonalDataManagerMock personal_data_manager_;
+  scoped_refptr<PersonalDataManagerMock> personal_data_manager_;
 
   TestIdFactory ids_;
 };
@@ -427,7 +428,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasMixedNativeEmptySync) {
   expected_profiles.push_back(*profile0);
   EXPECT_CALL(web_database_, GetAutoFillProfiles(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(profiles), Return(true)));
-  EXPECT_CALL(personal_data_manager_, Refresh());
+  EXPECT_CALL(*(personal_data_manager_.get()), Refresh());
   SetIdleChangeProcessorExpectations();
   CreateAutofillRootTask task(this);
   StartSyncService(&task);
@@ -488,7 +489,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasDuplicateProfileLabelsEmptySync) {
   expected_profiles.push_back(*profile1);
   AutoFillProfile relabelled_profile;
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
-  EXPECT_CALL(personal_data_manager_, Refresh());
+  EXPECT_CALL(*(personal_data_manager_.get()), Refresh());
   EXPECT_CALL(web_database_, GetAutoFillProfiles(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(profiles), Return(true)));
   EXPECT_CALL(web_database_, UpdateAutoFillProfile(
@@ -568,7 +569,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
       WillOnce(Return(true));
   EXPECT_CALL(web_database_, AddAutoFillProfile(Eq(to_be_added))).
       WillOnce(Return(true));
-  EXPECT_CALL(personal_data_manager_, Refresh());
+  EXPECT_CALL(*(personal_data_manager_.get()), Refresh());
   StartSyncService(&task);
 
   std::set<AutofillEntry> expected_entries;
@@ -640,7 +641,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
 
   EXPECT_CALL(web_database_, UpdateAutoFillProfile(Eq(sync_profile))).
       WillOnce(Return(true));
-  EXPECT_CALL(personal_data_manager_, Refresh());
+  EXPECT_CALL(*(personal_data_manager_.get()), Refresh());
   StartSyncService(&task);
 
   std::vector<AutofillEntry> new_sync_entries;
@@ -737,7 +738,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
   EXPECT_CALL(web_database_, UpdateAutoFillProfile(
       ProfileMatchesExceptLabel(added_profile))).
       WillOnce(DoAll(SaveArg<0>(&relabelled_profile), Return(true)));
-  EXPECT_CALL(personal_data_manager_, Refresh());
+  EXPECT_CALL(*(personal_data_manager_.get()), Refresh());
 
   scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
@@ -887,7 +888,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
   EXPECT_CALL(web_database_, UpdateAutoFillProfile(
       ProfileMatchesExceptLabel(josephine_update))).
       WillOnce(DoAll(SaveArg<0>(&relabelled_profile), Return(true)));
-  EXPECT_CALL(personal_data_manager_, Refresh());
+  EXPECT_CALL(*(personal_data_manager_.get()), Refresh());
 
   AutofillProfileChange change(AutofillProfileChange::UPDATE,
                                josephine_update.Label(), &josephine_update,
@@ -956,7 +957,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   sync_profiles.push_back(sync_profile);
   AddAutofillEntriesTask task(this, sync_entries, sync_profiles);
 
-  EXPECT_CALL(personal_data_manager_, Refresh());
+  EXPECT_CALL(*(personal_data_manager_.get()), Refresh());
   StartSyncService(&task);
 
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
