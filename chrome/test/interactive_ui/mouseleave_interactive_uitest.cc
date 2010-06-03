@@ -12,13 +12,6 @@
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// Test succeeds locally, flaky on trybot
-// http://code.google.com/p/chromium/issues/detail?id=26349
-// http://code.google.com/p/chromium/issues/detail?id=45581
-#define TestOnMouseOut DISABLED_TestOnMouseOut
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 namespace {
 
 class MouseLeaveTest : public UITest {

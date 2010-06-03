@@ -41,6 +41,7 @@
     '<(DEPTH)/chrome/test/in_process_browser_test.h',
     '<(DEPTH)/chrome/test/interactive_ui/infobars_uitest.cc',
     '<(DEPTH)/chrome/test/interactive_ui/keyboard_access_uitest.cc',
+    '<(DEPTH)/chrome/test/interactive_ui/mouseleave_interactive_uitest.cc',
     '<(DEPTH)/chrome/test/interactive_ui/npapi_interactive_test.cc',
     '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.cc',
     '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
