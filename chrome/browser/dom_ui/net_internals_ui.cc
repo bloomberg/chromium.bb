@@ -581,8 +581,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   {
     DictionaryValue* dict = new DictionaryValue();
 
-    int i = 0;
-#define SOURCE_TYPE(label) dict->SetInteger(ASCIIToWide(# label), i++);
+#define SOURCE_TYPE(label, value) dict->SetInteger(ASCIIToWide(# label), value);
 #include "net/base/net_log_source_type_list.h"
 #undef SOURCE_TYPE
 

@@ -256,6 +256,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
+                         io_thread()->globals()->net_log.get(),
                          backend);
 
   if (command_line.HasSwitch(switches::kDisableByteRangeSupport))
@@ -379,6 +380,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
+                         io_thread()->globals()->net_log.get(),
                          backend);
   context->set_cookie_store(new net::CookieMonster(NULL,
       cookie_monster_delegate_));
@@ -474,6 +476,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
         main_context->proxy_service(),
         main_context->ssl_config_service(),
         main_context->http_auth_handler_factory(),
+        io_thread()->globals()->net_log.get(),
         backend);
   }
 

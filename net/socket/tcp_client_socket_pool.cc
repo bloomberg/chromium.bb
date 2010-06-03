@@ -29,7 +29,7 @@ namespace net {
 // timeout. Even worse, the per-connect timeout threshold varies greatly
 // between systems (anywhere from 20 seconds to 190 seconds).
 // See comment #12 at http://crbug.com/23364 for specifics.
-static const int kTCPConnectJobTimeoutInSeconds = 240; // 4 minutes.
+static const int kTCPConnectJobTimeoutInSeconds = 240;  // 4 minutes.
 
 TCPConnectJob::TCPConnectJob(
     const std::string& group_name,
@@ -38,8 +38,9 @@ TCPConnectJob::TCPConnectJob(
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     Delegate* delegate,
-    const BoundNetLog& net_log)
-    : ConnectJob(group_name, timeout_duration, delegate, net_log),
+    NetLog* net_log)
+    : ConnectJob(group_name, timeout_duration, delegate,
+                 BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       params_(params),
       client_socket_factory_(client_socket_factory),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -160,11 +161,10 @@ int TCPConnectJob::DoTCPConnectComplete(int result) {
 ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
-    ConnectJob::Delegate* delegate,
-    const BoundNetLog& net_log) const {
+    ConnectJob::Delegate* delegate) const {
   return new TCPConnectJob(group_name, request.params(), ConnectionTimeout(),
                            client_socket_factory_, host_resolver_, delegate,
-                           net_log);
+                           net_log_);
 }
 
 base::TimeDelta
@@ -178,11 +178,13 @@ TCPClientSocketPool::TCPClientSocketPool(
     const scoped_refptr<ClientSocketPoolHistograms>& histograms,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
-    NetworkChangeNotifier* network_change_notifier)
+    NetworkChangeNotifier* network_change_notifier,
+    NetLog* net_log)
     : base_(max_sockets, max_sockets_per_group, histograms,
             base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
-            new TCPConnectJobFactory(client_socket_factory, host_resolver),
+            new TCPConnectJobFactory(client_socket_factory,
+                                     host_resolver, net_log),
             network_change_notifier) {
   base_.enable_backup_jobs();
 }

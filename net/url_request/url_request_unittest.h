@@ -165,7 +165,8 @@ class TestURLRequestContext : public URLRequestContext {
           net::HttpNetworkLayer::CreateFactory(NULL, host_resolver_,
                                                proxy_service_,
                                                ssl_config_service_,
-                                               http_auth_handler_factory_),
+                                               http_auth_handler_factory_,
+                                               NULL),
           net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL, NULL);

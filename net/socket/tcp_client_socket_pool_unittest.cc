@@ -272,7 +272,8 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
                                       histograms_,
                                       host_resolver_,
                                       &client_socket_factory_,
-                                      &notifier_)) {
+                                      &notifier_,
+                                      NULL)) {
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
@@ -746,6 +747,7 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
                                     histograms_,
                                     host_resolver_,
                                     &client_socket_factory_,
+                                    NULL,
                                     NULL);
   }
 }

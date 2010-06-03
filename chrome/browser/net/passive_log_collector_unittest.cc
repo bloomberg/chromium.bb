@@ -14,6 +14,7 @@ namespace {
 
 typedef PassiveLogCollector::RequestTracker RequestTracker;
 typedef PassiveLogCollector::RequestInfoList RequestInfoList;
+typedef PassiveLogCollector::SocketTracker SocketTracker;
 using net::NetLog;
 
 const NetLog::SourceType kSourceType = NetLog::SOURCE_NONE;
@@ -65,14 +66,33 @@ std::string GetStringParam(const PassiveLogCollector::Entry& entry) {
       entry.params.get())->value();
 }
 
+bool OrderBySourceID(const PassiveLogCollector::RequestInfo& a,
+                     const PassiveLogCollector::RequestInfo& b) {
+  return a.source_id < b.source_id;
+}
+
+RequestInfoList GetLiveRequests(
+    const PassiveLogCollector::RequestTrackerBase& tracker) {
+  RequestInfoList result = tracker.GetAllDeadOrAliveRequests(true);
+  std::sort(result.begin(), result.end(), &OrderBySourceID);
+  return result;
+}
+
+RequestInfoList GetDeadRequests(
+    const PassiveLogCollector::RequestTrackerBase& tracker) {
+  RequestInfoList result = tracker.GetAllDeadOrAliveRequests(false);
+  std::sort(result.begin(), result.end(), &OrderBySourceID);
+  return result;
+}
+
 static const int kMaxNumLoadLogEntries = 1;
 
 }  // namespace
 
 TEST(RequestTrackerTest, BasicBounded) {
-  RequestTracker tracker(NULL, NULL);
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
+  RequestTracker tracker(NULL);
+  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
+  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
 
   tracker.OnAddEntry(MakeStartLogEntry(1));
   tracker.OnAddEntry(MakeStartLogEntry(2));
@@ -80,7 +100,7 @@ TEST(RequestTrackerTest, BasicBounded) {
   tracker.OnAddEntry(MakeStartLogEntry(4));
   tracker.OnAddEntry(MakeStartLogEntry(5));
 
-  RequestInfoList live_reqs = tracker.GetLiveRequests();
+  RequestInfoList live_reqs = GetLiveRequests(tracker);
 
   ASSERT_EQ(5u, live_reqs.size());
   EXPECT_EQ("http://req1/", live_reqs[0].GetURL());
@@ -93,9 +113,9 @@ TEST(RequestTrackerTest, BasicBounded) {
   tracker.OnAddEntry(MakeEndLogEntry(5));
   tracker.OnAddEntry(MakeEndLogEntry(3));
 
-  ASSERT_EQ(3u, tracker.GetRecentlyDeceased().size());
+  ASSERT_EQ(3u, GetDeadRequests(tracker).size());
 
-  live_reqs = tracker.GetLiveRequests();
+  live_reqs = GetLiveRequests(tracker);
 
   ASSERT_EQ(2u, live_reqs.size());
   EXPECT_EQ("http://req2/", live_reqs[0].GetURL());
@@ -103,9 +123,9 @@ TEST(RequestTrackerTest, BasicBounded) {
 }
 
 TEST(RequestTrackerTest, GraveyardBounded) {
-  RequestTracker tracker(NULL, NULL);
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
+  RequestTracker tracker(NULL);
+  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
+  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
 
   // Add twice as many requests as will fit in the graveyard.
   for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize * 2; ++i) {
@@ -113,9 +133,11 @@ TEST(RequestTrackerTest, GraveyardBounded) {
     tracker.OnAddEntry(MakeEndLogEntry(i));
   }
 
+  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
+
   // Check that only the last |kMaxGraveyardSize| requests are in-memory.
 
-  RequestInfoList recent_reqs = tracker.GetRecentlyDeceased();
+  RequestInfoList recent_reqs = GetDeadRequests(tracker);
 
   ASSERT_EQ(RequestTracker::kMaxGraveyardSize, recent_reqs.size());
 
@@ -129,7 +151,7 @@ TEST(RequestTrackerTest, GraveyardBounded) {
 // Check that we exclude "chrome://" URLs from being saved into the recent
 // requests list (graveyard).
 TEST(RequestTrackerTest, GraveyardIsFiltered) {
-  RequestTracker tracker(NULL, NULL);
+  RequestTracker tracker(NULL);
 
   // This will be excluded.
   std::string url1 = "chrome://dontcare/";
@@ -146,824 +168,15 @@ TEST(RequestTrackerTest, GraveyardIsFiltered) {
   tracker.OnAddEntry(MakeStartLogEntryWithURL(3, url3));
   tracker.OnAddEntry(MakeEndLogEntry(3));
 
-  ASSERT_EQ(2u, tracker.GetRecentlyDeceased().size());
-  EXPECT_EQ(url2, tracker.GetRecentlyDeceased()[0].GetURL());
-  EXPECT_EQ(url3, tracker.GetRecentlyDeceased()[1].GetURL());
-}
-
-TEST(PassiveLogCollectorTest, BasicConnectJobAssociation) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-  AddStartURLRequestEntries(&log, 20);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(10u, requests[0].source_id);
-  EXPECT_EQ(2u, requests[0].entries.size());
-  EXPECT_EQ(20u, requests[1].source_id);
-  EXPECT_EQ(2u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(4u, requests[0].entries.size());
-  EXPECT_EQ(5u, requests[1].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-  AddEndURLRequestEntries(&log, 20);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(2u, requests.size());
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, BasicSocketAssociation) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-  AddStartURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_END, NULL);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 21));
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(6u, requests[0].entries.size());
-  EXPECT_EQ(7u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
-
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(8u, requests[0].entries.size());
-  EXPECT_EQ(10u, requests[1].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-  AddEndURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(2u, requests.size());
-  EXPECT_EQ(9u, requests[0].entries.size());
-  EXPECT_EQ(11u, requests[1].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, IdleSocketAssociation) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-  AddStartURLRequestEntries(&log, 20);
-  log.OnAddEntry(NetLog::TYPE_INIT_PROXY_RESOLVER , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(2u, requests[0].entries.size());
-  EXPECT_EQ(3u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
-
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(4u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-  AddEndURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(2u, requests.size());
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(7u, requests[1].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, IdleAssociateAfterConnectJobStarted) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-  AddStartURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_END, NULL);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
-
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-  AddEndURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(2u, requests.size());
-  EXPECT_EQ(6u, requests[0].entries.size());
-  EXPECT_EQ(7u, requests[1].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, LateBindDifferentConnectJob) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-  AddStartURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_END, NULL);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 21));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_END, NULL);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 31),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 31),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 31),
-                 NetLog::PHASE_END, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 31),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 21));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 31));
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(7u, requests[0].entries.size());
-  EXPECT_EQ(8u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
-
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(9u, requests[0].entries.size());
-  EXPECT_EQ(11u, requests[1].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-  AddEndURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(2u, requests.size());
-  EXPECT_EQ(10u, requests[0].entries.size());
-  EXPECT_EQ(12u, requests[1].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, LateBindPendingConnectJob) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-  AddStartURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_END, NULL);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 21),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(2u, requests[0].entries.size());
-  EXPECT_EQ(2u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 21));
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 25));
-
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(2u, requests.size());
-
-  EXPECT_EQ(7u, requests[0].entries.size());
-  EXPECT_EQ(9u, requests[1].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-  AddEndURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 25),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(2u, requests.size());
-  EXPECT_EQ(8u, requests[0].entries.size());
-  EXPECT_EQ(10u, requests[1].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, ReconnectToIdleSocket) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-
-  // Initial socket.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(4u, requests[0].entries.size());
-
-  // Reconnect.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 17));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 17),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(6u, requests[0].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(7u, requests[0].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, ReconnectToLateBoundSocket) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-
-  // Initial socket.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(4u, requests[0].entries.size());
-
-  // Now reconnect.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(6u, requests[0].entries.size());
-
-  // But we get late bound to an idle socket.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 17));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 17),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(7u, requests[0].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(8u, requests[0].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, ReconnectToLateBoundConnectJob) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-
-  // Initial socket.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(4u, requests[0].entries.size());
-
-  // Now reconnect.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(6u, requests[0].entries.size());
-
-  // But we get late bound to a different ConnectJob.
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 12),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 12),
-                 NetLog::PHASE_END, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 12));
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(8u, requests[0].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 17));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 17),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(10u, requests[0].entries.size());
-
-  AddEndURLRequestEntries(&log, 10);
-
-  log.OnAddEntry(NetLog::TYPE_TCP_SOCKET_DONE , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(11u, requests[0].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, LostConnectJob) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_BEGIN, new net::NetLogIntegerParameter("x", 11));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_NONE, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_CONNECT_JOB, 11),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(6u, requests[0].entries.size());
-
-  log.connect_job_tracker_.Clear();
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 11));
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(5u, requests[0].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, LostSocket) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_BEGIN, NULL);
-  log.OnAddEntry(NetLog::TYPE_SSL_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(7u, requests[0].entries.size());
-
-  log.socket_tracker_.Clear();
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(4u, requests[0].entries.size());
-}
-
-TEST(PassiveLogCollectorTest, AccumulateRxTxData) {
-  PassiveLogCollector log;
-
-  RequestInfoList requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-
-  AddStartURLRequestEntries(&log, 10);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 10),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(4u, requests[0].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_SENT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 1));
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
-  EXPECT_EQ("Tx/Rx: 1/0 [1/0 total on socket] (Bytes)",
-            GetStringParam(requests[0].entries[4]));
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_RECEIVED , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 2));
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
-  EXPECT_EQ("Tx/Rx: 1/2 [1/2 total on socket] (Bytes)",
-            GetStringParam(requests[0].entries[4]));
-
-  AddEndURLRequestEntries(&log, 10);
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(6u, requests[0].entries.size());
-  EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
-  EXPECT_EQ("Tx/Rx: 1/2 [1/2 total on socket] (Bytes)",
-            GetStringParam(requests[0].entries[4]));
-
-  AddStartURLRequestEntries(&log, 20);
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_SOCKET_ID , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_URL_REQUEST, 20),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 15));
-  log.OnAddEntry(NetLog::TYPE_SOCKS_CONNECT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_NONE, NULL);
-
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(4u, requests[0].entries.size());
-
-  log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_SENT , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 4));
-  log.OnAddEntry(NetLog::TYPE_SOCKET_BYTES_RECEIVED , base::TimeTicks(),
-                 NetLog::Source(NetLog::SOURCE_SOCKET, 15),
-                 NetLog::PHASE_END, new net::NetLogIntegerParameter("x", 8));
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(1u, requests.size());
-  EXPECT_EQ(5u, requests[0].entries.size());
-  EXPECT_EQ(NetLog::TYPE_TODO_STRING, requests[0].entries[4].type);
-  EXPECT_EQ("Tx/Rx: 4/8 [5/10 total on socket] (Bytes)",
-            GetStringParam(requests[0].entries[4]));
-
-  AddEndURLRequestEntries(&log, 20);
-  requests = log.url_request_tracker()->GetLiveRequests();
-  EXPECT_EQ(0u, requests.size());
-  requests = log.url_request_tracker()->GetRecentlyDeceased();
-  EXPECT_EQ(2u, requests.size());
-  EXPECT_EQ(6u, requests[0].entries.size());
-  EXPECT_EQ(6u, requests[1].entries.size());
+  ASSERT_EQ(2u, GetDeadRequests(tracker).size());
+  EXPECT_EQ(url2, GetDeadRequests(tracker)[0].GetURL());
+  EXPECT_EQ(url3, GetDeadRequests(tracker)[1].GetURL());
 }
 
 TEST(SpdySessionTracker, MovesToGraveyard) {
   PassiveLogCollector::SpdySessionTracker tracker;
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
+  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
+  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
 
   PassiveLogCollector::Entry begin(
       0u,
@@ -974,8 +187,8 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
       NULL);
 
   tracker.OnAddEntry(begin);
-  EXPECT_EQ(1u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(0u, tracker.GetRecentlyDeceased().size());
+  EXPECT_EQ(1u, GetLiveRequests(tracker).size());
+  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
 
   PassiveLogCollector::Entry end(
       0u,
@@ -986,6 +199,155 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
       NULL);
 
   tracker.OnAddEntry(end);
-  EXPECT_EQ(0u, tracker.GetLiveRequests().size());
-  EXPECT_EQ(1u, tracker.GetRecentlyDeceased().size());
+  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
+  EXPECT_EQ(1u, GetDeadRequests(tracker).size());
+}
+
+// Test that when a SOURCE_SOCKET is connected to a SOURCE_URL_REQUEST
+// (via the TYPE_SOCKET_POOL_BOUND_TO_SOCKET event), it holds a reference
+// to the SOURCE_SOCKET preventing it from getting deleted as long as the
+// SOURCE_URL_REQUEST is still around.
+TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
+  PassiveLogCollector log;
+
+  EXPECT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
+  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
+
+  uint32 next_id = 0;
+  NetLog::Source socket_source(NetLog::SOURCE_SOCKET, next_id++);
+  NetLog::Source url_request_source(NetLog::SOURCE_URL_REQUEST, next_id++);
+
+  // Start a SOURCE_SOCKET.
+  log.OnAddEntry(NetLog::TYPE_SOCKET_ALIVE,
+                 base::TimeTicks(),
+                 socket_source,
+                 NetLog::PHASE_BEGIN,
+                 NULL);
+
+  EXPECT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
+  EXPECT_EQ(1u, GetLiveRequests(log.socket_tracker_).size());
+
+  // Start a SOURCE_URL_REQUEST.
+  log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
+                 base::TimeTicks(),
+                 url_request_source,
+                 NetLog::PHASE_BEGIN,
+                 NULL);
+
+  // Check that there is no association between the SOURCE_URL_REQUEST and the
+  // SOURCE_SOCKET yet.
+  ASSERT_EQ(1u, GetLiveRequests(log.url_request_tracker_).size());
+  {
+    PassiveLogCollector::RequestInfo info =
+        GetLiveRequests(log.url_request_tracker_)[0];
+    EXPECT_EQ(0, info.reference_count);
+    EXPECT_EQ(0u, info.dependencies.size());
+  }
+  ASSERT_EQ(1u, GetLiveRequests(log.socket_tracker_).size());
+  {
+    PassiveLogCollector::RequestInfo info =
+        GetLiveRequests(log.socket_tracker_)[0];
+    EXPECT_EQ(0, info.reference_count);
+    EXPECT_EQ(0u, info.dependencies.size());
+  }
+
+  // Associate the SOURCE_SOCKET with the SOURCE_URL_REQUEST.
+  log.OnAddEntry(NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
+                 base::TimeTicks(),
+                 url_request_source,
+                 NetLog::PHASE_NONE,
+                 new net::NetLogSourceParameter("x", socket_source));
+
+  // Check that an associate was made -- the SOURCE_URL_REQUEST should have
+  // added a reference to the SOURCE_SOCKET.
+  ASSERT_EQ(1u, GetLiveRequests(log.url_request_tracker_).size());
+  {
+    PassiveLogCollector::RequestInfo info =
+        GetLiveRequests(log.url_request_tracker_)[0];
+    EXPECT_EQ(0, info.reference_count);
+    EXPECT_EQ(1u, info.dependencies.size());
+    EXPECT_EQ(socket_source.id, info.dependencies[0].id);
+  }
+  ASSERT_EQ(1u, GetLiveRequests(log.socket_tracker_).size());
+  {
+    PassiveLogCollector::RequestInfo info =
+        GetLiveRequests(log.socket_tracker_)[0];
+    EXPECT_EQ(1, info.reference_count);
+    EXPECT_EQ(0u, info.dependencies.size());
+  }
+
+  // Now end both |source_socket| and |source_url_request|. This sends them
+  // to deletion queue, and they will be deleted once space runs out.
+
+  log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
+                 base::TimeTicks(),
+                 url_request_source,
+                 NetLog::PHASE_END,
+                 NULL);
+
+  log.OnAddEntry(NetLog::TYPE_SOCKET_ALIVE,
+                 base::TimeTicks(),
+                 socket_source,
+                 NetLog::PHASE_END,
+                 NULL);
+
+  // Verify that both sources are in fact dead, and that |source_url_request|
+  // still holds a reference to |source_socket|.
+  ASSERT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
+  ASSERT_EQ(1u, GetDeadRequests(log.url_request_tracker_).size());
+  {
+    PassiveLogCollector::RequestInfo info =
+        GetDeadRequests(log.url_request_tracker_)[0];
+    EXPECT_EQ(0, info.reference_count);
+    EXPECT_EQ(1u, info.dependencies.size());
+    EXPECT_EQ(socket_source.id, info.dependencies[0].id);
+  }
+  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
+  ASSERT_EQ(1u, GetDeadRequests(log.socket_tracker_).size());
+  {
+    PassiveLogCollector::RequestInfo info =
+        GetDeadRequests(log.socket_tracker_)[0];
+    EXPECT_EQ(1, info.reference_count);
+    EXPECT_EQ(0u, info.dependencies.size());
+  }
+
+  // Cycle through a bunch of SOURCE_SOCKET -- if it were not referenced, this
+  // loop will have deleted it.
+  for (size_t i = 0; i < SocketTracker::kMaxGraveyardSize; ++i) {
+      log.OnAddEntry(NetLog::TYPE_SOCKET_ALIVE,
+                     base::TimeTicks(),
+                     NetLog::Source(NetLog::SOURCE_SOCKET, next_id++),
+                     NetLog::PHASE_END,
+                     NULL);
+  }
+
+  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
+  ASSERT_EQ(SocketTracker::kMaxGraveyardSize + 1,
+            GetDeadRequests(log.socket_tracker_).size());
+  {
+    PassiveLogCollector::RequestInfo info =
+        GetDeadRequests(log.socket_tracker_)[0];
+    EXPECT_EQ(socket_source.id, info.source_id);
+    EXPECT_EQ(1, info.reference_count);
+    EXPECT_EQ(0u, info.dependencies.size());
+  }
+
+  // Cycle through a bunch of SOURCE_URL_REQUEST -- this will cause
+  // |source_url_request| to be freed, which in turn should release the final
+  // reference to |source_socket| cause it to be freed as well.
+  for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize; ++i) {
+      log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
+                     base::TimeTicks(),
+                     NetLog::Source(NetLog::SOURCE_URL_REQUEST, next_id++),
+                     NetLog::PHASE_END,
+                     NULL);
+  }
+
+  EXPECT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
+  EXPECT_EQ(RequestTracker::kMaxGraveyardSize,
+            GetDeadRequests(log.url_request_tracker_).size());
+
+  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
+  EXPECT_EQ(SocketTracker::kMaxGraveyardSize,
+            GetDeadRequests(log.socket_tracker_).size());
 }

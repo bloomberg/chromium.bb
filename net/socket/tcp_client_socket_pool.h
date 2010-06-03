@@ -64,7 +64,7 @@ class TCPConnectJob : public ConnectJob {
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
                 Delegate* delegate,
-                const BoundNetLog& net_log);
+                NetLog* net_log);
   virtual ~TCPConnectJob();
 
   // ConnectJob methods.
@@ -118,7 +118,8 @@ class TCPClientSocketPool : public ClientSocketPool {
       const scoped_refptr<ClientSocketPoolHistograms>& histograms,
       HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
-      NetworkChangeNotifier* network_change_notifier);
+      NetworkChangeNotifier* network_change_notifier,
+      NetLog* net_log);
 
   // ClientSocketPool methods:
 
@@ -164,9 +165,11 @@ class TCPClientSocketPool : public ClientSocketPool {
       : public PoolBase::ConnectJobFactory {
    public:
     TCPConnectJobFactory(ClientSocketFactory* client_socket_factory,
-                         HostResolver* host_resolver)
+                         HostResolver* host_resolver,
+                         NetLog* net_log)
         : client_socket_factory_(client_socket_factory),
-          host_resolver_(host_resolver) {}
+          host_resolver_(host_resolver),
+          net_log_(net_log) {}
 
     virtual ~TCPConnectJobFactory() {}
 
@@ -175,14 +178,14 @@ class TCPClientSocketPool : public ClientSocketPool {
     virtual ConnectJob* NewConnectJob(
         const std::string& group_name,
         const PoolBase::Request& request,
-        ConnectJob::Delegate* delegate,
-        const BoundNetLog& net_log) const;
+        ConnectJob::Delegate* delegate) const;
 
     virtual base::TimeDelta ConnectionTimeout() const;
 
    private:
     ClientSocketFactory* const client_socket_factory_;
     const scoped_refptr<HostResolver> host_resolver_;
+    NetLog* net_log_;
 
     DISALLOW_COPY_AND_ASSIGN(TCPConnectJobFactory);
   };

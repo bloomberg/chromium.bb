@@ -40,7 +40,7 @@ class RequestContext : public URLRequestContext {
         new net::HttpCache(
             net::HttpNetworkLayer::CreateFactory(
                 NULL, host_resolver_, proxy_service_, ssl_config_service_,
-                NULL),
+                NULL, NULL),
             net::HttpCache::DefaultBackend::InMemory(0));
   }
 
