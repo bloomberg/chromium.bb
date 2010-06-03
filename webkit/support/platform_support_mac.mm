@@ -182,8 +182,7 @@ base::StringPiece GetDataResource(int resource_id) {
       // use a PNG. The GIF doesn't have the color range needed to correctly
       // match the TIFF they use in Safari.
       path = path.AppendASCII("missingImage.png");
-      bool success = file_util::ReadFileToString(path.ToWStringHack(),
-                                                 &broken_image_data);
+      bool success = file_util::ReadFileToString(path, &broken_image_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();
       }
@@ -196,8 +195,7 @@ base::StringPiece GetDataResource(int resource_id) {
     if (resize_corner_data.empty()) {
       FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("textAreaResizeCorner.png");
-      bool success = file_util::ReadFileToString(path.ToWStringHack(),
-                                                 &resize_corner_data);
+      bool success = file_util::ReadFileToString(path, &resize_corner_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();
       }

@@ -53,19 +53,18 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
       ],
       'conditions': [
-        ['OS=="win"', {
+        ['OS=="mac"', {
+          'copies': [{
+            'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit',
+            'files': ['../tools/test_shell/resources/textAreaResizeCorner.png'],
+          }],
+        },{ # OS!="mac"
           'copies': [{
             'destination': '<(PRODUCT_DIR)/DumpRenderTree_resources',
             'files': [
               '../tools/test_shell/resources/missingImage.gif',
               '../tools/test_shell/resources/textAreaResizeCorner.png',
             ],
-          }],
-        }],
-        ['OS=="mac"', {
-          'copies': [{
-            'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            'files': ['../tools/test_shell/resources/textAreaResizeCorner.png'],
           }],
         }],
       ],
