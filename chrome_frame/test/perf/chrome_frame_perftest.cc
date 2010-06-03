@@ -291,7 +291,11 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
     chrome_frame_dll_ = dir_app_.Append(FILE_PATH_LITERAL("servers"));
     chrome_frame_dll_ = chrome_frame_dll_.Append(
         FilePath::FromWStringHack(kChromeFrameDllName));
-    DLOG(INFO) << __FUNCTION__ << ": " << chrome_frame_dll_.value();
+    icu_dll_ = dir_app_.Append(FILE_PATH_LITERAL("icudt42.dll"));
+    gears_dll_ = dir_app_.Append(FILE_PATH_LITERAL("gears.dll"));
+    avcodec52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avcodec-52.dll"));
+    avformat52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avformat-52.dll"));
+    avutil50_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avutil-50.dll"));
   }
   virtual void TearDown() {
     DeleteConfigValue(kChromeFrameUnpinnedMode);
@@ -319,6 +323,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
           if (!ignore_cache_error) {
             ASSERT_TRUE(result);
           } else if (!result) {
+            LOG(ERROR) << GetLastError();
             printf("\nFailed to evict file %ls from cache. Not running test\n",
                    binaries_to_evict[binary_index].value().c_str());
             return;
@@ -351,6 +356,11 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
   FilePath chrome_dll_;
   FilePath chrome_exe_;
   FilePath chrome_frame_dll_;
+  FilePath icu_dll_;
+  FilePath gears_dll_;
+  FilePath avcodec52_dll_;
+  FilePath avformat52_dll_;
+  FilePath avutil50_dll_;
 
  protected:
   // Individual startup tests should implement this function.
@@ -924,7 +934,9 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfWarm) {
 }
 
 TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
-  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_, chrome_frame_dll_};
+  FilePath binaries_to_evict[] = { gears_dll_, avcodec52_dll_,
+      avformat52_dll_, avutil50_dll_, chrome_exe_, chrome_dll_,
+      chrome_frame_dll_};
   RunStartupTest("cold", "t", "about:blank", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
                  false /* not important */, false);
