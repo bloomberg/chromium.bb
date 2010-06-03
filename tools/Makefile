@@ -348,6 +348,17 @@ binutils: BUILD/stamp-binutils
 # pregcc:
 # Builds the cross gcc used to build the libraries.
 ##################################################################
+
+GCC_CONFIGURE_FLAGS = \
+    --disable-decimal-float \
+    --disable-libgomp \
+    --disable-libmudflap \
+    --disable-libssp \
+    --disable-libstdcxx-pch \
+    --disable-shared \
+    --prefix=$(SDKROOT) \
+    --target=$(CROSSARCH)
+
 BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
@@ -356,16 +367,10 @@ BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 		CFLAGS="-m32 -Dinhibit_libc -D__gthr_posix_h -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
 	    ../../SRC/gcc/configure \
-	      --prefix=$(SDKROOT) \
-	      --without-headers \
-	      --disable-libmudflap \
-              --disable-decimal-float \
-	      --disable-libssp \
-	      --enable-languages=c \
+	      $(GCC_CONFIGURE_FLAGS) \
 	      --disable-threads \
-	      --disable-libstdcxx-pch \
-	      --disable-shared \
-	      --target=$(CROSSARCH)
+	      --enable-languages="c" \
+	      --without-headers
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2" \
@@ -476,18 +481,11 @@ endif
 		CXXFLAGS_FOR_TARGET="-O2 -g" \
 	  LDFLAGS="-s" \
 	    ../../SRC/gcc/configure \
-	      --prefix=$(SDKROOT) \
-	      --with-newlib \
+	      $(GCC_CONFIGURE_FLAGS) \
+	      --enable-languages="c,c++" \
 	      --enable-threads=nacl \
 	      --enable-tls \
-	      --disable-libmudflap \
-	      --disable-decimal-float \
-	      --disable-libssp \
-	      --disable-shared \
-	      --disable-libgomp \
-	      --disable-libstdcxx-pch \
-	      --enable-languages="c,c++" \
-	      --target=$(CROSSARCH) ;
+	      --with-newlib
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
