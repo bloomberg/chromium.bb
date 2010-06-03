@@ -67,6 +67,9 @@ extern const bool kBootstrapSyncAuthentication;
 // Should other browsers be shown in about:memory page?
 extern const bool kShowOtherBrowsersInAboutMemory;
 
+// Should always open incognito windows when started with --incognito switch?
+extern const bool kAlwaysOpenIncognitoWindow;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

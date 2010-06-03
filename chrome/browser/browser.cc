@@ -1238,6 +1238,11 @@ void Browser::Stop() {
 }
 
 void Browser::NewWindow() {
+  if (browser_defaults::kAlwaysOpenIncognitoWindow &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito)) {
+    NewIncognitoWindow();
+    return;
+  }
   UserMetrics::RecordAction(UserMetricsAction("NewWindow"), profile_);
   SessionService* session_service =
       profile_->GetOriginalProfile()->GetSessionService();
