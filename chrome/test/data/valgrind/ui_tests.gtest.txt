@@ -56,11 +56,8 @@ DownloadTest.*
 ##############################################################################
 
 WorkerTest.*IncognitoSharedWorkers
-WorkerTest.*IncognitoSharedWorkers
 WorkerTest.*LimitPerPage
 WorkerTest.*LimitTotal
-WorkerTest.*LimitTotal
-WorkerTest.*MessagePorts
 WorkerTest.*MessagePorts
 WorkerTest.*MultipleSharedWorkers
 WorkerTest.*MultipleTabsQueuedSharedWorker
@@ -68,8 +65,19 @@ WorkerTest.*MultipleWorkers
 WorkerTest.*OpenDatabaseSyncInputs
 WorkerTest.*QueuedSharedWorkerShutdown
 WorkerTest.*QueuedSharedWorkerStartedFromOtherTab
+WorkerTest.*SharedWorkerFastContextGC
+WorkerTest.*SharedWorkerFastException
+WorkerTest.*SharedWorkerFastInIframe
+WorkerTest.*SharedWorkerFastGC
 WorkerTest.*SharedWorkerFastLayoutTests
-WorkerTest.*SharedWorkerFastLayoutTests
+WorkerTest.*SharedWorkerFastLocation
+WorkerTest.*SharedWorkerFastName
+WorkerTest.*SharedWorkerFastNavigator
+WorkerTest.*SharedWorkerFastReplaceGlobalConstructor
+WorkerTest.*SharedWorkerFastReplaceSelf
+WorkerTest.*SharedWorkerFastScriptError
+WorkerTest.*SharedWorkerFastSimple
+WorkerTest.*SharedWorkerFastShared
 WorkerTest.*SharedWorkerHttpAuth
 WorkerTest.*SharedWorkerInIframe
 WorkerTest.*SingleSharedWorker
@@ -87,7 +95,6 @@ WorkerTest.*WorkerEventListener
 WorkerTest.*WorkerGC
 WorkerTest.*WorkerHttpAuth
 WorkerTest.*WorkerHttpLayoutTests
-WorkerTest.*WorkerHttpLayoutTests
 WorkerTest.*WorkerLifecycle
 WorkerTest.*WorkerLocation
 WorkerTest.*WorkerMapGc
@@ -100,6 +107,5 @@ WorkerTest.*WorkerReplaceSelf
 WorkerTest.*WorkerScriptError
 WorkerTest.*WorkerTerminate
 WorkerTest.*WorkerTimeout
-WorkerTest.*WorkerWebSocketLayoutTests
 WorkerTest.*WorkerWebSocketLayoutTests
 WorkerTest.*WorkerXhrHttpLayoutTests
