@@ -202,7 +202,7 @@ class CommandBufferHelper {
 
   // Returns the number of available entries (they may not be contiguous).
   int32 AvailableEntries() {
-    return (get_ - put_ - 1 + entry_count_) % entry_count_;
+    return (get_ - put_ - 1 + usable_entry_count_) % usable_entry_count_;
   }
 
   // Synchronize with current service state.
@@ -211,7 +211,8 @@ class CommandBufferHelper {
   CommandBuffer* command_buffer_;
   Buffer ring_buffer_;
   CommandBufferEntry *entries_;
-  int32 entry_count_;
+  int32 total_entry_count_;  // the total number of entries
+  int32 usable_entry_count_;  // the usable number (ie, minus space for jump)
   int32 token_;
   int32 last_token_read_;
   int32 get_;

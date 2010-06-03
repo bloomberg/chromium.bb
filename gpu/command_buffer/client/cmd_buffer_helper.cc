@@ -12,7 +12,8 @@ namespace gpu {
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
       entries_(NULL),
-      entry_count_(0),
+      total_entry_count_(0),
+      usable_entry_count_(0),
       token_(0),
       last_token_read_(-1),
       get_(0),
@@ -30,7 +31,12 @@ bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
   if (num_ring_buffer_entries > state.num_entries) {
     return false;
   }
-  entry_count_ = num_ring_buffer_entries;
+
+  const int32 kJumpEntries =
+      sizeof(cmd::Jump) / sizeof(*entries_);  // NOLINT
+
+  total_entry_count_ = num_ring_buffer_entries;
+  usable_entry_count_ = total_entry_count_ - kJumpEntries;
   put_ = state.put_offset;
   SynchronizeState(state);
   return true;
@@ -99,16 +105,16 @@ void CommandBufferHelper::WaitForToken(int32 token) {
 
 // Waits for available entries, basically waiting until get >= put + count + 1.
 // It actually waits for contiguous entries, so it may need to wrap the buffer
-// around, adding noops. Thus this function may change the value of put_.
-// The function will return early if an error occurs, in which case the
-// available space may not be available.
+// around, adding a jump. Thus this function may change the value of put_. The
+// function will return early if an error occurs, in which case the available
+// space may not be available.
 void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
-  CHECK(count < entry_count_);
-  if (put_ + count > entry_count_) {
+  CHECK(count < usable_entry_count_);
+  if (put_ + count > usable_entry_count_) {
     // There's not enough room between the current put and the end of the
-    // buffer, so we need to wrap. We will add noops all the way to the end,
-    // but we need to make sure get wraps first, actually that get is 1 or
-    // more (since put will wrap to 0 after we add the noops).
+    // buffer, so we need to wrap. We will add a jump back to the start, but we
+    // need to make sure get wraps first, actually that get is 1 or more (since
+    // put will wrap to 0 after we add the jump).
     DCHECK_LE(1, put_);
     Flush();
     while (get_ > put_ || get_ == 0) {
@@ -117,14 +123,8 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
       if (!Flush())
         return;
     }
-    // Insert Noops to fill out buffer.
-    int32 num_entries = entry_count_ - put_;
-    while (num_entries > 0) {
-      int32 num_to_skip = std::min(CommandHeader::kMaxSize, num_entries);
-      cmd::Noop::Set(&entries_[put_], num_to_skip);
-      put_ += num_to_skip;
-      num_entries -= num_to_skip;
-    }
+    // Insert a jump back to the beginning.
+    cmd::Jump::Set(&entries_[put_], 0);
     put_ = 0;
   }
   // If we have enough room, return immediatly.
@@ -143,8 +143,9 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   WaitForAvailableEntries(entries);
   CommandBufferEntry* space = &entries_[put_];
   put_ += entries;
-  DCHECK_LE(put_, entry_count_);
-  if (put_ == entry_count_) {
+  DCHECK_LE(put_, usable_entry_count_);
+  if (put_ == usable_entry_count_) {
+    cmd::Jump::Set(&entries_[put_], 0);
     put_ = 0;
   }
   return space;

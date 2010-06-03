@@ -24,20 +24,42 @@ using testing::DoAll;
 using testing::Invoke;
 using testing::_;
 
-const int32 kNumCommandEntries = 10;
+const int32 kTotalNumCommandEntries = 12;
+const int32 kUsableNumCommandEntries = 10;
 const int32 kCommandBufferSizeBytes =
-    kNumCommandEntries * sizeof(CommandBufferEntry);
+    kTotalNumCommandEntries * sizeof(CommandBufferEntry);
+const int32 kUnusedCommandId = 5;  // we use 0 and 2 currently.
 
 // Test fixture for CommandBufferHelper test - Creates a CommandBufferHelper,
 // using a CommandBufferEngine with a mock AsyncAPIInterface for its interface
 // (calling it directly, not through the RPC mechanism).
 class CommandBufferHelperTest : public testing::Test {
  protected:
+  // Helper so mock can handle the Jump command.
+  class DoJumpCommand {
+   public:
+    explicit DoJumpCommand(CommandParser* parser)
+        : parser_(parser) {
+    }
+
+    error::Error DoCommand(
+        unsigned int command,
+        unsigned int arg_count,
+        const void* cmd_data) {
+      const cmd::Jump* jump_cmd = static_cast<const cmd::Jump*>(cmd_data);
+      parser_->set_get(jump_cmd->offset);
+      return error::kNoError;
+    };
+
+   private:
+    CommandParser* parser_;
+  };
+
   virtual void SetUp() {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
-    EXPECT_CALL(*api_mock_, DoCommand(0, _, _))
+    EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, _, _))
         .WillRepeatedly(Return(error::kNoError));
 
     command_buffer_.reset(new CommandBufferService);
@@ -50,6 +72,11 @@ class CommandBufferHelperTest : public testing::Test {
                                 ring_buffer.size,
                                 0,
                                 api_mock_.get());
+
+    do_jump_command_.reset(new DoJumpCommand(parser_));
+    EXPECT_CALL(*api_mock_, DoCommand(cmd::kJump, _, _))
+        .WillRepeatedly(
+            Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
 
     gpu_processor_.reset(new GPUProcessor(
         command_buffer_.get(), NULL, parser_, 1));
@@ -104,7 +131,7 @@ class CommandBufferHelperTest : public testing::Test {
       // put to the limit) and the bottom side (from 0 to get).
       if (put >= parser_put) {
         // we're on the top side, check we are below the limit.
-        EXPECT_GE(kNumCommandEntries, limit);
+        EXPECT_GE(kTotalNumCommandEntries, limit);
       } else {
         // we're on the bottom side, check we are below get.
         EXPECT_GT(parser_get, limit);
@@ -135,6 +162,7 @@ class CommandBufferHelperTest : public testing::Test {
   CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;
+  scoped_ptr<DoJumpCommand> do_jump_command_;
 };
 
 // Checks that commands in the buffer are properly executed, and that the
@@ -147,17 +175,17 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   EXPECT_EQ(0, GetGetOffset());
 
   // Add 3 commands through the helper
-  AddCommandWithExpect(error::kNoError, 1, 0, NULL);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, NULL);
 
   CommandBufferEntry args1[2];
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
-  AddCommandWithExpect(error::kNoError, 2, 2, args1);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 2, args1);
 
   CommandBufferEntry args2[2];
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
-  AddCommandWithExpect(error::kNoError, 3, 2, args2);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 2, args2);
 
   helper_->Flush();
   // Check that the engine has work to do now.
@@ -184,7 +212,7 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
   args1[1].value_float = 4.f;
 
   for (unsigned int i = 0; i < 5; ++i) {
-    AddCommandWithExpect(error::kNoError, i + 1, 2, args1);
+    AddCommandWithExpect(error::kNoError, kUnusedCommandId + i, 2, args1);
   }
 
   helper_->Finish();
@@ -200,7 +228,7 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
 TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
   const int32 kCommandSize = 5;
   const size_t kNumArgs = kCommandSize - 1;
-  COMPILE_ASSERT(kNumCommandEntries % kCommandSize == 0,
+  COMPILE_ASSERT(kUsableNumCommandEntries % kCommandSize == 0,
                  Not_multiple_of_num_command_entries);
   CommandBufferEntry args1[kNumArgs];
   for (size_t ii = 0; ii < kNumArgs; ++ii) {
@@ -208,7 +236,8 @@ TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
   }
 
   for (unsigned int i = 0; i < 5; ++i) {
-    AddCommandWithExpect(error::kNoError, i + 1, kNumArgs, args1);
+    AddCommandWithExpect(
+        error::kNoError, i + kUnusedCommandId, kNumArgs, args1);
   }
 
   helper_->Finish();
@@ -227,10 +256,10 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   args[1].value_float = 4.f;
 
   // Add 2 commands through the helper - 8 entries
-  AddCommandWithExpect(error::kNoError, 1, 0, NULL);
-  AddCommandWithExpect(error::kNoError, 2, 0, NULL);
-  AddCommandWithExpect(error::kNoError, 3, 2, args);
-  AddCommandWithExpect(error::kNoError, 4, 2, args);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 1, 0, NULL);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 2, 0, NULL);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 3, 2, args);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 4, 2, args);
 
   // Ask for 5 entries.
   helper_->WaitForAvailableEntries(5);
@@ -239,7 +268,7 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   CheckFreeSpace(put, 5);
 
   // Add more commands.
-  AddCommandWithExpect(error::kNoError, 5, 2, args);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 5, 2, args);
 
   // Wait until everything is done done.
   helper_->Finish();
@@ -258,7 +287,7 @@ TEST_F(CommandBufferHelperTest, TestToken) {
   args[1].value_float = 4.f;
 
   // Add a first command.
-  AddCommandWithExpect(error::kNoError, 3, 2, args);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 3, 2, args);
   // keep track of the buffer position.
   CommandBufferOffset command1_put = get_helper_put();
   int32 token = helper_->InsertToken();
@@ -267,7 +296,7 @@ TEST_F(CommandBufferHelperTest, TestToken) {
       .WillOnce(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
                       Return(error::kNoError)));
   // Add another command.
-  AddCommandWithExpect(error::kNoError, 4, 2, args);
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId + 4, 2, args);
   helper_->WaitForToken(token);
   // check that the get pointer is beyond the first command.
   EXPECT_LE(command1_put, GetGetOffset());
