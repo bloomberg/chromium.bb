@@ -4,6 +4,8 @@
 
 #include "webkit/tools/test_shell/notification_presenter.h"
 
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotification.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPermissionCallback.h"
@@ -17,6 +19,12 @@ using WebKit::WebNotificationPermissionCallback;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebURL;
+
+namespace {
+void DeferredDisplayDispatch(WebNotification notification) {
+  notification.dispatchDisplayEvent();
+}
+}
 
 void TestNotificationPresenter::grantPermission(const std::string& origin) {
   // Make sure it's in the form of an origin.
@@ -51,8 +59,10 @@ bool TestNotificationPresenter::show(const WebNotification& notification) {
                notification.body().utf8().data());
   }
 
+
   WebNotification event_target(notification);
-  event_target.dispatchDisplayEvent();
+  MessageLoop::current()->PostTask(FROM_HERE,
+      NewRunnableFunction(&DeferredDisplayDispatch, event_target));
   return true;
 }
 
