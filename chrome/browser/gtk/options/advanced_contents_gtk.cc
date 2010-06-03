@@ -64,7 +64,13 @@ const char kLinuxProxyConfigUrl[] = "about:linux-proxy-config";
 
 // The pixel width we wrap labels at.
 // TODO(evanm): make the labels wrap at the appropriate width.
+#if defined(OS_CHROMEOS)
+// ChromeOS uses IDS_OPTIONS_DIALOG_WIDTH_CHARS for options dialog width, which
+// is slightly smaller than the Gtk options dialog's 500px.
+const int kWrapWidth = 445;
+#else
 const int kWrapWidth = 475;
+#endif
 
 GtkWidget* CreateWrappedLabel(int string_id) {
   GtkWidget* label = gtk_label_new(
