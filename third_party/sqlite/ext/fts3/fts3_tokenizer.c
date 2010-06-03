@@ -33,6 +33,7 @@
 #include "fts3_hash.h"
 #include "fts3_tokenizer.h"
 #include <assert.h>
+#include <stddef.h>
 
 /*
 ** Implementation of the SQL scalar function for accessing the underlying 
