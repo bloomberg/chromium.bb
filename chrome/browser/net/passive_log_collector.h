@@ -17,7 +17,7 @@
 #include "net/base/net_log.h"
 
 // PassiveLogCollector watches the NetLog event stream, and saves the network
-// event for recent requests, in a circular buffer.
+// events for recent requests, in a circular buffer.
 //
 // This is done so that when a network problem is encountered (performance
 // problem, or error), about:net-internals can be opened shortly after the
@@ -29,8 +29,8 @@
 // about:net-internals is open).
 //
 // The data captured by PassiveLogCollector is grouped by NetLog::Source, into
-// a RequestInfo structure. These in turn are grouped by NetLog::SourceType, and
-// owned by a RequestTrackerBase instance for the specific source type.
+// a SourceInfo structure. These in turn are grouped by NetLog::SourceType, and
+// owned by a SourceTracker instance for the specific source type.
 class PassiveLogCollector : public ChromeNetLog::Observer {
  public:
   // This structure encapsulates all of the parameters of a captured event,
@@ -58,9 +58,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   typedef std::vector<Entry> EntryList;
   typedef std::vector<net::NetLog::Source> SourceDependencyList;
 
-  // TODO(eroman): Rename to SourceInfo.
-  struct RequestInfo {
-    RequestInfo()
+  struct SourceInfo {
+    SourceInfo()
         : source_id(net::NetLog::Source::kInvalidId),
           num_entries_truncated(0), reference_count(0), is_alive(true) {}
 
@@ -74,7 +73,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     size_t num_entries_truncated;
 
     // List of other sources which contain information relevant to this
-    // request (for example, a url request might depend on the log items
+    // source (for example, a url request might depend on the log items
     // for a connect job and for a socket that were bound to it.)
     SourceDependencyList dependencies;
 
@@ -83,21 +82,21 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     // can be deleted normally.
     int reference_count;
 
-    // |is_alive| is set to false once the request has been added to the
+    // |is_alive| is set to false once the source has been added to the
     // tracker's graveyard (it may still be kept around due to a non-zero
     // reference_count, but it is still considered "dead").
     bool is_alive;
   };
 
-  typedef std::vector<RequestInfo> RequestInfoList;
+  typedef std::vector<SourceInfo> SourceInfoList;
 
   // This class stores and manages the passively logged information for
   // URLRequests/SocketStreams/ConnectJobs.
-  class RequestTrackerBase {
+  class SourceTracker {
    public:
-    RequestTrackerBase(size_t max_graveyard_size, PassiveLogCollector* parent);
+    SourceTracker(size_t max_graveyard_size, PassiveLogCollector* parent);
 
-    virtual ~RequestTrackerBase();
+    virtual ~SourceTracker();
 
     void OnAddEntry(const Entry& entry);
 
@@ -109,11 +108,11 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
 #ifdef UNIT_TEST
     // Helper used to inspect the current state by unit-tests.
-    // Retuns a copy of the requests held by the tracker.
-    RequestInfoList GetAllDeadOrAliveRequests(bool is_alive) const {
-      RequestInfoList result;
-      for (SourceIDToInfoMap::const_iterator it = requests_.begin();
-           it != requests_.end(); ++it) {
+    // Retuns a copy of the source infos held by the tracker.
+    SourceInfoList GetAllDeadOrAliveSources(bool is_alive) const {
+      SourceInfoList result;
+      for (SourceIDToInfoMap::const_iterator it = sources_.begin();
+           it != sources_.end(); ++it) {
         if (it->second.is_alive == is_alive)
           result.push_back(it->second);
       }
@@ -131,19 +130,19 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     // Makes |info| hold a reference to |source|. This way |source| will be
     // kept alive at least as long as |info|.
     void AddReferenceToSourceDependency(const net::NetLog::Source& source,
-                                        RequestInfo* info);
+                                        SourceInfo* info);
 
    private:
-    typedef base::hash_map<uint32, RequestInfo> SourceIDToInfoMap;
+    typedef base::hash_map<uint32, SourceInfo> SourceIDToInfoMap;
     typedef std::deque<uint32> DeletionQueue;
 
     // Updates |out_info| with the information from |entry|. Returns an action
     // to perform for this map entry on completion.
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info) = 0;
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info) = 0;
 
-    // Removes |source_id| from |requests_|. This also releases any references
+    // Removes |source_id| from |sources_|. This also releases any references
     // to dependencies held by this source.
-    void DeleteRequestInfo(uint32 source_id);
+    void DeleteSourceInfo(uint32 source_id);
 
     // Adds |source_id| to the FIFO queue (graveyard) for deletion.
     void AddToDeletionQueue(uint32 source_id);
@@ -153,89 +152,89 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     void AdjustReferenceCountForSource(int offset, uint32 source_id);
 
     // Releases all the references to sources held by |info|.
-    void ReleaseAllReferencesToDependencies(RequestInfo* info);
+    void ReleaseAllReferencesToDependencies(SourceInfo* info);
 
-    // This map contains all of the requests being tracked by this tracker.
-    // (It includes both the "live" requests, and the "dead" ones.)
-    SourceIDToInfoMap requests_;
+    // This map contains all of the sources being tracked by this tracker.
+    // (It includes both the "live" sources, and the "dead" ones.)
+    SourceIDToInfoMap sources_;
 
     size_t max_graveyard_size_;
 
-    // FIFO queue for entries in |requests_| that are no longer alive, and
+    // FIFO queue for entries in |sources_| that are no longer alive, and
     // can be deleted. This buffer is also called "graveyard" elsewhere. We
-    // queue requests for deletion so they can persist a bit longer.
+    // queue sources for deletion so they can persist a bit longer.
     DeletionQueue deletion_queue_;
 
     PassiveLogCollector* parent_;
 
-    DISALLOW_COPY_AND_ASSIGN(RequestTrackerBase);
+    DISALLOW_COPY_AND_ASSIGN(SourceTracker);
   };
 
-  // Specialization of RequestTrackerBase for handling ConnectJobs.
-  class ConnectJobTracker : public RequestTrackerBase {
+  // Specialization of SourceTracker for handling ConnectJobs.
+  class ConnectJobTracker : public SourceTracker {
    public:
     static const size_t kMaxGraveyardSize;
 
     explicit ConnectJobTracker(PassiveLogCollector* parent);
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
    private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobTracker);
   };
 
-  // Specialization of RequestTrackerBase for handling Sockets.
-  class SocketTracker : public RequestTrackerBase {
+  // Specialization of SourceTracker for handling Sockets.
+  class SocketTracker : public SourceTracker {
    public:
     static const size_t kMaxGraveyardSize;
 
     SocketTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SocketTracker);
   };
 
-  // Specialization of RequestTrackerBase for handling URLRequest/SocketStream.
-  class RequestTracker : public RequestTrackerBase {
+  // Specialization of SourceTracker for handling URLRequest/SocketStream.
+  class RequestTracker : public SourceTracker {
    public:
     static const size_t kMaxGraveyardSize;
 
     explicit RequestTracker(PassiveLogCollector* parent);
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(RequestTracker);
   };
 
-  // Specialization of RequestTrackerBase for handling
+  // Specialization of SourceTracker for handling
   // SOURCE_INIT_PROXY_RESOLVER.
-  class InitProxyResolverTracker : public RequestTrackerBase {
+  class InitProxyResolverTracker : public SourceTracker {
    public:
     static const size_t kMaxGraveyardSize;
 
     InitProxyResolverTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
   };
 
   // Tracks the log entries for the last seen SOURCE_SPDY_SESSION.
-  class SpdySessionTracker : public RequestTrackerBase {
+  class SpdySessionTracker : public SourceTracker {
    public:
     static const size_t kMaxGraveyardSize;
 
     SpdySessionTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, RequestInfo* out_info);
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SpdySessionTracker);
@@ -252,7 +251,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
                           net::NetLog::EventParameters* params);
 
   // Returns the tracker to use for sources of type |source_type|, or NULL.
-  RequestTrackerBase* GetTrackerForSourceType(
+  SourceTracker* GetTrackerForSourceType(
       net::NetLog::SourceType source_type);
 
   // Clears all of the passively logged data.
@@ -276,7 +275,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // This array maps each NetLog::SourceType to one of the tracker instances
   // defined above. Use of this array avoid duplicating the list of trackers
   // elsewhere.
-  RequestTrackerBase* trackers_[net::NetLog::SOURCE_COUNT];
+  SourceTracker* trackers_[net::NetLog::SOURCE_COUNT];
 
   // The count of how many events have flowed through this log. Used to set the
   // "order" field on captured events.

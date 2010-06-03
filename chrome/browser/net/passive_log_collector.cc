@@ -17,10 +17,10 @@ namespace {
 // TODO(eroman): Do something with the truncation count.
 
 const size_t kMaxNumEntriesPerLog = 30;
-const size_t kMaxRequestsPerTracker = 200;
+const size_t kMaxSourcesPerTracker = 200;
 
-void AddEntryToRequestInfo(const PassiveLogCollector::Entry& entry,
-                           PassiveLogCollector::RequestInfo* out_info) {
+void AddEntryToSourceInfo(const PassiveLogCollector::Entry& entry,
+                          PassiveLogCollector::SourceInfo* out_info) {
   // Start dropping new entries when the log has gotten too big.
   if (out_info->entries.size() + 1 <= kMaxNumEntriesPerLog) {
     out_info->entries.push_back(entry);
@@ -75,12 +75,12 @@ void PassiveLogCollector::OnAddEntry(
   // Package the parameters into a single struct for convenience.
   Entry entry(num_events_seen_++, type, time, source, phase, params);
 
-  RequestTrackerBase* tracker = GetTrackerForSourceType(entry.source.type);
+  SourceTracker* tracker = GetTrackerForSourceType(entry.source.type);
   if (tracker)
     tracker->OnAddEntry(entry);
 }
 
-PassiveLogCollector::RequestTrackerBase*
+PassiveLogCollector::SourceTracker*
 PassiveLogCollector::GetTrackerForSourceType(
     net::NetLog::SourceType source_type) {
   DCHECK_LE(source_type, static_cast<int>(arraysize(trackers_)));
@@ -105,7 +105,7 @@ void PassiveLogCollector::GetAllCapturedEvents(EntryList* out) const {
   std::sort(out->begin(), out->end(), &SortByOrderComparator);
 }
 
-std::string PassiveLogCollector::RequestInfo::GetURL() const {
+std::string PassiveLogCollector::SourceInfo::GetURL() const {
   // Note: we look at the first *two* entries, since the outer REQUEST_ALIVE
   // doesn't actually contain any data.
   for (size_t i = 0; i < 2 && i < entries.size(); ++i) {
@@ -127,18 +127,18 @@ std::string PassiveLogCollector::RequestInfo::GetURL() const {
 }
 
 //----------------------------------------------------------------------------
-// RequestTrackerBase
+// SourceTracker
 //----------------------------------------------------------------------------
 
-PassiveLogCollector::RequestTrackerBase::RequestTrackerBase(
+PassiveLogCollector::SourceTracker::SourceTracker(
     size_t max_graveyard_size, PassiveLogCollector* parent)
     : max_graveyard_size_(max_graveyard_size), parent_(parent) {
 }
 
-PassiveLogCollector::RequestTrackerBase::~RequestTrackerBase() {}
+PassiveLogCollector::SourceTracker::~SourceTracker() {}
 
-void PassiveLogCollector::RequestTrackerBase::OnAddEntry(const Entry& entry) {
-  RequestInfo& info = requests_[entry.source.id];
+void PassiveLogCollector::SourceTracker::OnAddEntry(const Entry& entry) {
+  SourceInfo& info = sources_[entry.source.id];
   info.source_id = entry.source.id;  // In case this is a new entry.
   Action result = DoAddEntry(entry, &info);
 
@@ -153,7 +153,7 @@ void PassiveLogCollector::RequestTrackerBase::OnAddEntry(const Entry& entry) {
           AddToDeletionQueue(info.source_id);
           break;
         case ACTION_DELETE:
-          DeleteRequestInfo(info.source_id);
+          DeleteSourceInfo(info.source_id);
           break;
         default:
           NOTREACHED();
@@ -162,7 +162,7 @@ void PassiveLogCollector::RequestTrackerBase::OnAddEntry(const Entry& entry) {
     }
   }
 
-  if (requests_.size() > kMaxRequestsPerTracker) {
+  if (sources_.size() > kMaxSourcesPerTracker) {
     // This is a safety net in case something went wrong, to avoid continually
     // growing memory.
     LOG(WARNING) << "The passive log data has grown larger "
@@ -171,71 +171,71 @@ void PassiveLogCollector::RequestTrackerBase::OnAddEntry(const Entry& entry) {
   }
 }
 
-void PassiveLogCollector::RequestTrackerBase::DeleteRequestInfo(
+void PassiveLogCollector::SourceTracker::DeleteSourceInfo(
     uint32 source_id) {
-  SourceIDToInfoMap::iterator it = requests_.find(source_id);
-  DCHECK(it != requests_.end());
-  // The request should not be in the deletion queue.
+  SourceIDToInfoMap::iterator it = sources_.find(source_id);
+  DCHECK(it != sources_.end());
+  // The source should not be in the deletion queue.
   DCHECK(std::find(deletion_queue_.begin(), deletion_queue_.end(),
                    source_id) == deletion_queue_.end());
   ReleaseAllReferencesToDependencies(&(it->second));
-  requests_.erase(it);
+  sources_.erase(it);
 }
 
-void PassiveLogCollector::RequestTrackerBase::Clear() {
+void PassiveLogCollector::SourceTracker::Clear() {
   deletion_queue_.clear();
 
   // Release all references held to dependent sources.
-  for (SourceIDToInfoMap::iterator it = requests_.begin();
-       it != requests_.end();
+  for (SourceIDToInfoMap::iterator it = sources_.begin();
+       it != sources_.end();
        ++it) {
     ReleaseAllReferencesToDependencies(&(it->second));
   }
-  requests_.clear();
+  sources_.clear();
 }
 
-void PassiveLogCollector::RequestTrackerBase::AppendAllEntries(
+void PassiveLogCollector::SourceTracker::AppendAllEntries(
     EntryList* out) const {
   // Append all of the entries for each of the sources.
-  for (SourceIDToInfoMap::const_iterator it = requests_.begin();
-       it != requests_.end();
+  for (SourceIDToInfoMap::const_iterator it = sources_.begin();
+       it != sources_.end();
        ++it) {
-    const RequestInfo& info = it->second;
+    const SourceInfo& info = it->second;
     out->insert(out->end(), info.entries.begin(), info.entries.end());
   }
 }
 
-void PassiveLogCollector::RequestTrackerBase::AddToDeletionQueue(
+void PassiveLogCollector::SourceTracker::AddToDeletionQueue(
     uint32 source_id) {
-  DCHECK(requests_.find(source_id) != requests_.end());
-  DCHECK(!requests_.find(source_id)->second.is_alive);
-  DCHECK_GE(requests_.find(source_id)->second.reference_count, 0);
+  DCHECK(sources_.find(source_id) != sources_.end());
+  DCHECK(!sources_.find(source_id)->second.is_alive);
+  DCHECK_GE(sources_.find(source_id)->second.reference_count, 0);
   DCHECK_LE(deletion_queue_.size(), max_graveyard_size_);
 
   deletion_queue_.push_back(source_id);
 
   // After the deletion queue has reached its maximum size, start
-  // deleting requests in FIFO order.
+  // deleting sources in FIFO order.
   if (deletion_queue_.size() > max_graveyard_size_) {
     uint32 oldest = deletion_queue_.front();
     deletion_queue_.pop_front();
-    DeleteRequestInfo(oldest);
+    DeleteSourceInfo(oldest);
   }
 }
 
-void PassiveLogCollector::RequestTrackerBase::AdjustReferenceCountForSource(
+void PassiveLogCollector::SourceTracker::AdjustReferenceCountForSource(
     int offset, uint32 source_id) {
   DCHECK(offset == -1 || offset == 1) << "invalid offset: " << offset;
 
   // In general it is invalid to call AdjustReferenceCountForSource() on
   // source that doesn't exist. However, it is possible that if
-  // RequestTrackerBase::Clear() was previously called this can happen.
+  // SourceTracker::Clear() was previously called this can happen.
   // TODO(eroman): Add a unit-test that exercises this case.
-  SourceIDToInfoMap::iterator it = requests_.find(source_id);
-  if (it == requests_.end())
+  SourceIDToInfoMap::iterator it = sources_.find(source_id);
+  if (it == sources_.end())
     return;
 
-  RequestInfo& info = it->second;
+  SourceInfo& info = it->second;
   DCHECK_GE(info.reference_count, 0);
   DCHECK_GE(info.reference_count + offset, 0);
   info.reference_count += offset;
@@ -250,18 +250,18 @@ void PassiveLogCollector::RequestTrackerBase::AdjustReferenceCountForSource(
       DCHECK(it != deletion_queue_.end());
       deletion_queue_.erase(it);
     } else if (info.reference_count == 0) {
-      // If we just released the final reference to a dead request, go ahead
+      // If we just released the final reference to a dead source, go ahead
       // and delete it right away.
-      DeleteRequestInfo(source_id);
+      DeleteSourceInfo(source_id);
     }
   }
 }
 
-void PassiveLogCollector::RequestTrackerBase::AddReferenceToSourceDependency(
-    const net::NetLog::Source& source, RequestInfo* info) {
+void PassiveLogCollector::SourceTracker::AddReferenceToSourceDependency(
+    const net::NetLog::Source& source, SourceInfo* info) {
   // Find the tracker which should be holding |source|.
   DCHECK(parent_);
-  RequestTrackerBase* tracker =
+  SourceTracker* tracker =
       parent_->GetTrackerForSourceType(source.type);
   DCHECK(tracker);
 
@@ -273,8 +273,8 @@ void PassiveLogCollector::RequestTrackerBase::AddReferenceToSourceDependency(
 }
 
 void
-PassiveLogCollector::RequestTrackerBase::ReleaseAllReferencesToDependencies(
-    RequestInfo* info) {
+PassiveLogCollector::SourceTracker::ReleaseAllReferencesToDependencies(
+    SourceInfo* info) {
   // Release all references |info| was holding to dependent sources.
   for (SourceDependencyList::const_iterator it = info->dependencies.begin();
        it != info->dependencies.end(); ++it) {
@@ -282,7 +282,7 @@ PassiveLogCollector::RequestTrackerBase::ReleaseAllReferencesToDependencies(
 
     // Find the tracker which should be holding |source|.
     DCHECK(parent_);
-    RequestTrackerBase* tracker =
+    SourceTracker* tracker =
         parent_->GetTrackerForSourceType(source.type);
     DCHECK(tracker);
 
@@ -301,13 +301,13 @@ const size_t PassiveLogCollector::ConnectJobTracker::kMaxGraveyardSize = 15;
 
 PassiveLogCollector::ConnectJobTracker::ConnectJobTracker(
     PassiveLogCollector* parent)
-    : RequestTrackerBase(kMaxGraveyardSize, parent) {
+    : SourceTracker(kMaxGraveyardSize, parent) {
 }
 
-PassiveLogCollector::RequestTrackerBase::Action
+PassiveLogCollector::SourceTracker::Action
 PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
-                                                   RequestInfo* out_info) {
-  AddEntryToRequestInfo(entry, out_info);
+                                                   SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
 
   if (entry.type == net::NetLog::TYPE_CONNECT_JOB_SET_SOCKET) {
     const net::NetLog::Source& source_dependency =
@@ -315,7 +315,7 @@ PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
     AddReferenceToSourceDependency(source_dependency, out_info);
   }
 
-  // If this is the end of the connect job, move the request to the graveyard.
+  // If this is the end of the connect job, move the source to the graveyard.
   if (entry.type == net::NetLog::TYPE_SOCKET_POOL_CONNECT_JOB &&
       entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;
@@ -331,12 +331,12 @@ PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
 const size_t PassiveLogCollector::SocketTracker::kMaxGraveyardSize = 15;
 
 PassiveLogCollector::SocketTracker::SocketTracker()
-    : RequestTrackerBase(kMaxGraveyardSize, NULL) {
+    : SourceTracker(kMaxGraveyardSize, NULL) {
 }
 
-PassiveLogCollector::RequestTrackerBase::Action
+PassiveLogCollector::SourceTracker::Action
 PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
-                                               RequestInfo* out_info) {
+                                               SourceInfo* out_info) {
   // TODO(eroman): aggregate the byte counts once truncation starts to happen,
   //               to summarize transaction read/writes for each SOCKET_IN_USE
   //               section.
@@ -345,7 +345,7 @@ PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
     return ACTION_NONE;
   }
 
-  AddEntryToRequestInfo(entry, out_info);
+  AddEntryToSourceInfo(entry, out_info);
 
   if (entry.type == net::NetLog::TYPE_SOCKET_ALIVE &&
       entry.phase == net::NetLog::PHASE_END) {
@@ -362,12 +362,12 @@ PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
 const size_t PassiveLogCollector::RequestTracker::kMaxGraveyardSize = 25;
 
 PassiveLogCollector::RequestTracker::RequestTracker(PassiveLogCollector* parent)
-    : RequestTrackerBase(kMaxGraveyardSize, parent) {
+    : SourceTracker(kMaxGraveyardSize, parent) {
 }
 
-PassiveLogCollector::RequestTrackerBase::Action
+PassiveLogCollector::SourceTracker::Action
 PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
-                                                RequestInfo* out_info) {
+                                                SourceInfo* out_info) {
   if (entry.type == net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB ||
       entry.type == net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET) {
     const net::NetLog::Source& source_dependency =
@@ -375,7 +375,7 @@ PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
     AddReferenceToSourceDependency(source_dependency, out_info);
   }
 
-  AddEntryToRequestInfo(entry, out_info);
+  AddEntryToSourceInfo(entry, out_info);
 
   // If the request has ended, move it to the graveyard.
   if (entry.type == net::NetLog::TYPE_REQUEST_ALIVE &&
@@ -399,13 +399,13 @@ const size_t PassiveLogCollector::InitProxyResolverTracker::kMaxGraveyardSize =
     3;
 
 PassiveLogCollector::InitProxyResolverTracker::InitProxyResolverTracker()
-    : RequestTrackerBase(kMaxGraveyardSize, NULL) {
+    : SourceTracker(kMaxGraveyardSize, NULL) {
 }
 
-PassiveLogCollector::RequestTrackerBase::Action
+PassiveLogCollector::SourceTracker::Action
 PassiveLogCollector::InitProxyResolverTracker::DoAddEntry(
-    const Entry& entry, RequestInfo* out_info) {
-  AddEntryToRequestInfo(entry, out_info);
+    const Entry& entry, SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_INIT_PROXY_RESOLVER &&
       entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;
@@ -421,13 +421,13 @@ PassiveLogCollector::InitProxyResolverTracker::DoAddEntry(
 const size_t PassiveLogCollector::SpdySessionTracker::kMaxGraveyardSize = 10;
 
 PassiveLogCollector::SpdySessionTracker::SpdySessionTracker()
-    : RequestTrackerBase(kMaxGraveyardSize, NULL) {
+    : SourceTracker(kMaxGraveyardSize, NULL) {
 }
 
-PassiveLogCollector::RequestTrackerBase::Action
+PassiveLogCollector::SourceTracker::Action
 PassiveLogCollector::SpdySessionTracker::DoAddEntry(const Entry& entry,
-                                                    RequestInfo* out_info) {
-  AddEntryToRequestInfo(entry, out_info);
+                                                    SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_SPDY_SESSION &&
       entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;

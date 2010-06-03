@@ -13,7 +13,7 @@
 namespace {
 
 typedef PassiveLogCollector::RequestTracker RequestTracker;
-typedef PassiveLogCollector::RequestInfoList RequestInfoList;
+typedef PassiveLogCollector::SourceInfoList SourceInfoList;
 typedef PassiveLogCollector::SocketTracker SocketTracker;
 using net::NetLog;
 
@@ -66,21 +66,21 @@ std::string GetStringParam(const PassiveLogCollector::Entry& entry) {
       entry.params.get())->value();
 }
 
-bool OrderBySourceID(const PassiveLogCollector::RequestInfo& a,
-                     const PassiveLogCollector::RequestInfo& b) {
+bool OrderBySourceID(const PassiveLogCollector::SourceInfo& a,
+                     const PassiveLogCollector::SourceInfo& b) {
   return a.source_id < b.source_id;
 }
 
-RequestInfoList GetLiveRequests(
-    const PassiveLogCollector::RequestTrackerBase& tracker) {
-  RequestInfoList result = tracker.GetAllDeadOrAliveRequests(true);
+SourceInfoList GetLiveSources(
+    const PassiveLogCollector::SourceTracker& tracker) {
+  SourceInfoList result = tracker.GetAllDeadOrAliveSources(true);
   std::sort(result.begin(), result.end(), &OrderBySourceID);
   return result;
 }
 
-RequestInfoList GetDeadRequests(
-    const PassiveLogCollector::RequestTrackerBase& tracker) {
-  RequestInfoList result = tracker.GetAllDeadOrAliveRequests(false);
+SourceInfoList GetDeadSources(
+    const PassiveLogCollector::SourceTracker& tracker) {
+  SourceInfoList result = tracker.GetAllDeadOrAliveSources(false);
   std::sort(result.begin(), result.end(), &OrderBySourceID);
   return result;
 }
@@ -91,8 +91,8 @@ static const int kMaxNumLoadLogEntries = 1;
 
 TEST(RequestTrackerTest, BasicBounded) {
   RequestTracker tracker(NULL);
-  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
-  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
+  EXPECT_EQ(0u, GetLiveSources(tracker).size());
+  EXPECT_EQ(0u, GetDeadSources(tracker).size());
 
   tracker.OnAddEntry(MakeStartLogEntry(1));
   tracker.OnAddEntry(MakeStartLogEntry(2));
@@ -100,7 +100,7 @@ TEST(RequestTrackerTest, BasicBounded) {
   tracker.OnAddEntry(MakeStartLogEntry(4));
   tracker.OnAddEntry(MakeStartLogEntry(5));
 
-  RequestInfoList live_reqs = GetLiveRequests(tracker);
+  SourceInfoList live_reqs = GetLiveSources(tracker);
 
   ASSERT_EQ(5u, live_reqs.size());
   EXPECT_EQ("http://req1/", live_reqs[0].GetURL());
@@ -113,9 +113,9 @@ TEST(RequestTrackerTest, BasicBounded) {
   tracker.OnAddEntry(MakeEndLogEntry(5));
   tracker.OnAddEntry(MakeEndLogEntry(3));
 
-  ASSERT_EQ(3u, GetDeadRequests(tracker).size());
+  ASSERT_EQ(3u, GetDeadSources(tracker).size());
 
-  live_reqs = GetLiveRequests(tracker);
+  live_reqs = GetLiveSources(tracker);
 
   ASSERT_EQ(2u, live_reqs.size());
   EXPECT_EQ("http://req2/", live_reqs[0].GetURL());
@@ -124,8 +124,8 @@ TEST(RequestTrackerTest, BasicBounded) {
 
 TEST(RequestTrackerTest, GraveyardBounded) {
   RequestTracker tracker(NULL);
-  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
-  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
+  EXPECT_EQ(0u, GetLiveSources(tracker).size());
+  EXPECT_EQ(0u, GetDeadSources(tracker).size());
 
   // Add twice as many requests as will fit in the graveyard.
   for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize * 2; ++i) {
@@ -133,18 +133,18 @@ TEST(RequestTrackerTest, GraveyardBounded) {
     tracker.OnAddEntry(MakeEndLogEntry(i));
   }
 
-  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
+  EXPECT_EQ(0u, GetLiveSources(tracker).size());
 
   // Check that only the last |kMaxGraveyardSize| requests are in-memory.
 
-  RequestInfoList recent_reqs = GetDeadRequests(tracker);
+  SourceInfoList recent = GetDeadSources(tracker);
 
-  ASSERT_EQ(RequestTracker::kMaxGraveyardSize, recent_reqs.size());
+  ASSERT_EQ(RequestTracker::kMaxGraveyardSize, recent.size());
 
   for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize; ++i) {
     size_t req_number = i + RequestTracker::kMaxGraveyardSize;
     std::string url = StringPrintf("http://req%" PRIuS "/", req_number);
-    EXPECT_EQ(url, recent_reqs[i].GetURL());
+    EXPECT_EQ(url, recent[i].GetURL());
   }
 }
 
@@ -168,15 +168,15 @@ TEST(RequestTrackerTest, GraveyardIsFiltered) {
   tracker.OnAddEntry(MakeStartLogEntryWithURL(3, url3));
   tracker.OnAddEntry(MakeEndLogEntry(3));
 
-  ASSERT_EQ(2u, GetDeadRequests(tracker).size());
-  EXPECT_EQ(url2, GetDeadRequests(tracker)[0].GetURL());
-  EXPECT_EQ(url3, GetDeadRequests(tracker)[1].GetURL());
+  ASSERT_EQ(2u, GetDeadSources(tracker).size());
+  EXPECT_EQ(url2, GetDeadSources(tracker)[0].GetURL());
+  EXPECT_EQ(url3, GetDeadSources(tracker)[1].GetURL());
 }
 
 TEST(SpdySessionTracker, MovesToGraveyard) {
   PassiveLogCollector::SpdySessionTracker tracker;
-  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
-  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
+  EXPECT_EQ(0u, GetLiveSources(tracker).size());
+  EXPECT_EQ(0u, GetDeadSources(tracker).size());
 
   PassiveLogCollector::Entry begin(
       0u,
@@ -187,8 +187,8 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
       NULL);
 
   tracker.OnAddEntry(begin);
-  EXPECT_EQ(1u, GetLiveRequests(tracker).size());
-  EXPECT_EQ(0u, GetDeadRequests(tracker).size());
+  EXPECT_EQ(1u, GetLiveSources(tracker).size());
+  EXPECT_EQ(0u, GetDeadSources(tracker).size());
 
   PassiveLogCollector::Entry end(
       0u,
@@ -199,8 +199,8 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
       NULL);
 
   tracker.OnAddEntry(end);
-  EXPECT_EQ(0u, GetLiveRequests(tracker).size());
-  EXPECT_EQ(1u, GetDeadRequests(tracker).size());
+  EXPECT_EQ(0u, GetLiveSources(tracker).size());
+  EXPECT_EQ(1u, GetDeadSources(tracker).size());
 }
 
 // Test that when a SOURCE_SOCKET is connected to a SOURCE_URL_REQUEST
@@ -210,8 +210,8 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
 TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
   PassiveLogCollector log;
 
-  EXPECT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
-  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
 
   uint32 next_id = 0;
   NetLog::Source socket_source(NetLog::SOURCE_SOCKET, next_id++);
@@ -224,8 +224,8 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
                  NetLog::PHASE_BEGIN,
                  NULL);
 
-  EXPECT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
-  EXPECT_EQ(1u, GetLiveRequests(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
+  EXPECT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
 
   // Start a SOURCE_URL_REQUEST.
   log.OnAddEntry(NetLog::TYPE_REQUEST_ALIVE,
@@ -236,17 +236,17 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
 
   // Check that there is no association between the SOURCE_URL_REQUEST and the
   // SOURCE_SOCKET yet.
-  ASSERT_EQ(1u, GetLiveRequests(log.url_request_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.url_request_tracker_).size());
   {
-    PassiveLogCollector::RequestInfo info =
-        GetLiveRequests(log.url_request_tracker_)[0];
+    PassiveLogCollector::SourceInfo info =
+        GetLiveSources(log.url_request_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
-  ASSERT_EQ(1u, GetLiveRequests(log.socket_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
   {
-    PassiveLogCollector::RequestInfo info =
-        GetLiveRequests(log.socket_tracker_)[0];
+    PassiveLogCollector::SourceInfo info =
+        GetLiveSources(log.socket_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
@@ -260,18 +260,18 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
 
   // Check that an associate was made -- the SOURCE_URL_REQUEST should have
   // added a reference to the SOURCE_SOCKET.
-  ASSERT_EQ(1u, GetLiveRequests(log.url_request_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.url_request_tracker_).size());
   {
-    PassiveLogCollector::RequestInfo info =
-        GetLiveRequests(log.url_request_tracker_)[0];
+    PassiveLogCollector::SourceInfo info =
+        GetLiveSources(log.url_request_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(1u, info.dependencies.size());
     EXPECT_EQ(socket_source.id, info.dependencies[0].id);
   }
-  ASSERT_EQ(1u, GetLiveRequests(log.socket_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
   {
-    PassiveLogCollector::RequestInfo info =
-        GetLiveRequests(log.socket_tracker_)[0];
+    PassiveLogCollector::SourceInfo info =
+        GetLiveSources(log.socket_tracker_)[0];
     EXPECT_EQ(1, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
@@ -293,20 +293,20 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
 
   // Verify that both sources are in fact dead, and that |source_url_request|
   // still holds a reference to |source_socket|.
-  ASSERT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
-  ASSERT_EQ(1u, GetDeadRequests(log.url_request_tracker_).size());
+  ASSERT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
+  ASSERT_EQ(1u, GetDeadSources(log.url_request_tracker_).size());
   {
-    PassiveLogCollector::RequestInfo info =
-        GetDeadRequests(log.url_request_tracker_)[0];
+    PassiveLogCollector::SourceInfo info =
+        GetDeadSources(log.url_request_tracker_)[0];
     EXPECT_EQ(0, info.reference_count);
     EXPECT_EQ(1u, info.dependencies.size());
     EXPECT_EQ(socket_source.id, info.dependencies[0].id);
   }
-  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
-  ASSERT_EQ(1u, GetDeadRequests(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
+  ASSERT_EQ(1u, GetDeadSources(log.socket_tracker_).size());
   {
-    PassiveLogCollector::RequestInfo info =
-        GetDeadRequests(log.socket_tracker_)[0];
+    PassiveLogCollector::SourceInfo info =
+        GetDeadSources(log.socket_tracker_)[0];
     EXPECT_EQ(1, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
   }
@@ -321,12 +321,12 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
                      NULL);
   }
 
-  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
   ASSERT_EQ(SocketTracker::kMaxGraveyardSize + 1,
-            GetDeadRequests(log.socket_tracker_).size());
+            GetDeadSources(log.socket_tracker_).size());
   {
-    PassiveLogCollector::RequestInfo info =
-        GetDeadRequests(log.socket_tracker_)[0];
+    PassiveLogCollector::SourceInfo info =
+        GetDeadSources(log.socket_tracker_)[0];
     EXPECT_EQ(socket_source.id, info.source_id);
     EXPECT_EQ(1, info.reference_count);
     EXPECT_EQ(0u, info.dependencies.size());
@@ -343,11 +343,11 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDependentSource) {
                      NULL);
   }
 
-  EXPECT_EQ(0u, GetLiveRequests(log.url_request_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.url_request_tracker_).size());
   EXPECT_EQ(RequestTracker::kMaxGraveyardSize,
-            GetDeadRequests(log.url_request_tracker_).size());
+            GetDeadSources(log.url_request_tracker_).size());
 
-  EXPECT_EQ(0u, GetLiveRequests(log.socket_tracker_).size());
+  EXPECT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
   EXPECT_EQ(SocketTracker::kMaxGraveyardSize,
-            GetDeadRequests(log.socket_tracker_).size());
+            GetDeadSources(log.socket_tracker_).size());
 }
