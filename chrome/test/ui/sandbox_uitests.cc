@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
 #include <string>
 
 #include "base/command_line.h"
@@ -19,6 +18,10 @@ class SandboxTest : public UITest {
   }
 };
 
+#if !defined(OS_WIN)
+// Need a cross-platform test library: http://crbug.com/45771
+#define ExecuteDll DISABLED_ExecuteDll
+#endif
 // Verifies that chrome is running properly.
 TEST_F(SandboxTest, ExecuteDll) {
   EXPECT_EQ(1, GetTabCount());

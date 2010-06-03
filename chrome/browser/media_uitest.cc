@@ -13,7 +13,7 @@ class MediaTest : public UITest {
  protected:
   void PlayMedia(const char* tag, const char* media_file) {
     FilePath test_file(test_data_directory_);
-    test_file = test_file.AppendASCII("/media/player.html");
+    test_file = test_file.AppendASCII("media/player.html");
 
     GURL player_gurl = net::FilePathToFileURL(test_file);
     std::string url = StringPrintf("%s?%s=%s",
@@ -47,9 +47,6 @@ class MediaTest : public UITest {
   }
 };
 
-// <video> and <audio> only works stably on Windows.
-#if defined(OS_WIN)
-
 TEST_F(MediaTest, VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
@@ -57,5 +54,3 @@ TEST_F(MediaTest, VideoBearTheora) {
 TEST_F(MediaTest, VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
-
-#endif

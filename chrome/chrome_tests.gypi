@@ -406,15 +406,9 @@
           },
         }, { # else: OS != "win"
           'sources!': [
-            # TODO(port)?  (Most of these include windows.h or similar.)
-            'browser/extensions/extension_uitest.cc',
-            'browser/media_uitest.cc',
+            # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_uitest.cc',
-            # TODO(port)? (this one compiles fine on mac and linux, but it fails
-            # to LaunchApp and thus have not been tested for success either).
             'browser/process_singleton_win_uitest.cc',
-            'browser/views/find_bar_host_uitest.cc',
-            'test/ui/sandbox_uitests.cc',
           ],
         }],
         ['OS=="linux" or OS=="freebsd"', {
@@ -426,7 +420,7 @@
             }],
           ],
           'sources!': [
-            # TODO(port)
+            # TODO(port): http://crbug.com/30700
             'test/ui/npapi_uitest.cc',
           ],
         }],

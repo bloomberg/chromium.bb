@@ -39,7 +39,7 @@ static const char kTestDirectoryRoundtripApiCall[] =
 static const char kTestDirectoryBrowserEvent[] =
     "extensions/uitest/event_sink";
 
-// TODO(port) Once external tab stuff is ported.
+// TODO(port): http://crbug.com/45766
 #if defined(OS_WIN)
 
 // Base class to test extensions almost end-to-end by including browser
