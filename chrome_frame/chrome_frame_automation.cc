@@ -515,6 +515,9 @@ bool ChromeFrameAutomationClient::Initialize(
   // InitializeComplete is called successfully.
   init_state_ = INITIALIZING;
 
+  if (chrome_launch_params_.url.is_valid())
+    navigate_after_initialization_ = false;
+
   if (!navigate_after_initialization_) {
     chrome_launch_params_.url = url_;
   }

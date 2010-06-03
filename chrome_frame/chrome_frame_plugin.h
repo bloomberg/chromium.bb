@@ -58,7 +58,8 @@ END_MSG_MAP()
 
   bool InitializeAutomation(const std::wstring& profile_name,
                             const std::wstring& extra_chrome_arguments,
-                            bool incognito, bool is_widget_mode) {
+                            bool incognito, bool is_widget_mode,
+                            const GURL& url, const GURL& referrer) {
     DCHECK(IsValid());
     // We don't want to do incognito when privileged, since we're
     // running in browser chrome or some other privileged context.
@@ -67,8 +68,8 @@ END_MSG_MAP()
     GetProfilePath(profile_name, &profile_path);
     ChromeFrameLaunchParams chrome_launch_params = {
       kCommandExecutionTimeout,
-      GURL(),
-      GURL(),
+      url,
+      referrer,
       profile_path,
       profile_name,
       extra_chrome_arguments,
@@ -206,7 +207,8 @@ END_MSG_MAP()
 
   // Return true if menu command is processed, otherwise the command will be
   // passed to Chrome for execution. Override in most-derived class if needed.
-  bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params) {
+  bool HandleContextMenuCommand(UINT cmd,
+                                const IPC::ContextMenuParams& params) {
     return false;
   }
 

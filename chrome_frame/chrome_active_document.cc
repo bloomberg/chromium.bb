@@ -961,6 +961,9 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
 
   url_.Allocate(url.c_str());
 
+  std::string referrer;
+  std::string utf8_url;
+
   if (!is_new_navigation) {
     WStringTokenizer tokenizer(url, L"&");
     // Skip over kChromeAttachExternalTabPrefix
@@ -982,10 +985,8 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
     // Initiate navigation before launching chrome so that the url will be
     // cached and sent with launch settings.
     if (url_.Length()) {
-      std::string utf8_url;
       WideToUTF8(url_, url_.Length(), &utf8_url);
 
-      std::string referrer;
       NavigationManager* mgr = NavigationManager::GetThreadInstance();
       if (mgr)
         referrer = mgr->referrer();
@@ -1008,8 +1009,8 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
 
   automation_client_->SetUrlFetcher(&url_fetcher_);
 
-  return InitializeAutomation(GetHostProcessName(false), std::wstring(),
-                              IsIEInPrivate(), false);
+  return InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
+                              false, GURL(utf8_url), GURL(referrer));
 }
 
 

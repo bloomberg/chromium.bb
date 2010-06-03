@@ -452,10 +452,16 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
         profile_name.assign(profile_name_arg, profile_name_arg.Length());
     }
 
+    std::string utf8_url;
+    if (url_.Length()) {
+      WideToUTF8(url_, url_.Length(), &utf8_url);
+    }
+
     url_fetcher_.set_frame_busting(!is_privileged_);
     automation_client_->SetUrlFetcher(&url_fetcher_);
     if (!InitializeAutomation(profile_name, chrome_extra_arguments,
-                              IsIEInPrivate(), true)) {
+                              IsIEInPrivate(), true, GURL(utf8_url),
+                              GURL())) {
       return E_FAIL;
     }
   }
