@@ -767,7 +767,7 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
       NotificationService::NoDetails());
 }
 
-bool ExtensionsService::OnExtensionLoaded(Extension* extension,
+void ExtensionsService::OnExtensionLoaded(Extension* extension,
                                           bool allow_privilege_increase) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_ptr<Extension> scoped_extension(extension);
@@ -835,7 +835,6 @@ bool ExtensionsService::OnExtensionLoaded(Extension* extension,
   extension->set_being_upgraded(false);
 
   UpdateActiveExtensionsInCrashReporter();
-  return true;
 }
 
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
@@ -883,16 +882,14 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   }
 
   // Also load the extension.
-  bool success = OnExtensionLoaded(extension, allow_privilege_increase);
-  if (!success)
-    extension = NULL;  // extension is deleted on failure.
+  OnExtensionLoaded(extension, allow_privilege_increase);
 
   // Erase any pending extension.
   if (it != pending_extensions_.end()) {
     pending_extensions_.erase(it);
   }
 
-  if (success && profile_->GetTemplateURLModel())
+  if (profile_->GetTemplateURLModel())
     profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
 }
 
@@ -926,6 +923,20 @@ Extension* ExtensionsService::GetExtensionByWebExtent(const GURL& url) {
   for (size_t i = 0; i < extensions_.size(); ++i) {
     if (extensions_[i]->web_extent().ContainsURL(url))
       return extensions_[i];
+  }
+  return NULL;
+}
+
+Extension* ExtensionsService::GetExtensionByOverlappingWebExtent(
+    const ExtensionExtent& extent, GURL* overlapping_url) {
+  for (size_t i = 0; i < extensions_.size(); ++i) {
+    for (size_t j = 0; j < extent.paths().size(); ++j) {
+      GURL url(extent.origin().Resolve(extent.paths()[j]));
+      if (extensions_[i]->web_extent().ContainsURL(url)) {
+        *overlapping_url = url;
+        return extensions_[i];
+      }
+    }
   }
   return NULL;
 }

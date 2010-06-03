@@ -60,6 +60,7 @@ const char* const good_crx = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char* const page_action = "obcimlgaoabeegjmmpldobjndiealpln";
 const char* const theme_crx = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char* const theme2_crx = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
+const char* const app_crx = "hnbefahlpjbkldcaldefcnonockppomb";
 
 struct ExtensionsOrder {
   bool operator()(const Extension* a, const Extension* b) {
@@ -241,6 +242,13 @@ ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
 
 void ExtensionsServiceTestBase::InitializeExtensionsService(
     const FilePath& pref_file, const FilePath& extensions_install_dir) {
+  // Must setup the commandline here, since Extension caches the switch value
+  // when the prefs are registered.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExtensionToolstrips);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableApps);
+
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   prefs_.reset(new PrefService(
       new JsonPrefStore(
@@ -251,8 +259,6 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
   browser::RegisterUserPrefs(prefs_.get());
   profile_.reset(profile);
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExtensionToolstrips);
   service_ = new ExtensionsService(profile_.get(),
                                    CommandLine::ForCurrentProcess(),
                                    prefs_.get(),
@@ -948,6 +954,28 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   // A theme with image resources missing (misspelt path).
   path = extensions_path.AppendASCII("theme_missing_image.crx");
   InstallExtension(path, false);
+  ValidatePrefKeyCount(pref_count);
+}
+
+TEST_F(ExtensionsServiceTest, InstallApps) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  // An empty app.
+  InstallExtension(extensions_path.AppendASCII("app1.crx"), true);
+  int pref_count = 0;
+  ValidatePrefKeyCount(++pref_count);
+  ValidateIntegerPref(app_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(app_crx, L"location", Extension::INTERNAL);
+
+  // Another app with non-overlapping extent. Should succeed.
+  InstallExtension(extensions_path.AppendASCII("app2.crx"), true);
+  ValidatePrefKeyCount(++pref_count);
+
+  // A third app whose extent overlaps the first. Should fail.
+  InstallExtension(extensions_path.AppendASCII("app3.crx"), false);
   ValidatePrefKeyCount(pref_count);
 }
 

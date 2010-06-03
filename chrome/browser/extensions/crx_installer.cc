@@ -172,6 +172,18 @@ void CrxInstaller::ConfirmInstall() {
     return;
   }
 
+  GURL overlapping_url;
+  Extension* overlapping_extension =
+      frontend_->GetExtensionByOverlappingWebExtent(
+          extension_->web_extent(), &overlapping_url);
+  if (overlapping_extension) {
+    ReportFailureFromUIThread(l10n_util::GetStringFUTF8(
+        IDS_EXTENSION_OVERLAPPING_WEB_EXTENT,
+        UTF8ToUTF16(overlapping_extension->name()),
+        UTF8ToUTF16(overlapping_url.spec())));
+    return;
+  }
+
   current_version_ =
       frontend_->extension_prefs()->GetVersionString(extension_->id());
 

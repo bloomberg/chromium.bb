@@ -252,6 +252,12 @@ class ExtensionsService
   // returns the extension whose web extent contains |url|.
   Extension* GetExtensionByWebExtent(const GURL& url);
 
+  // Returns an extension that contains any URL that overlaps with the given
+  // extent, if one exists. Also fills |overlapping_url| with the first URL that
+  // overlaps.
+  Extension* GetExtensionByOverlappingWebExtent(const ExtensionExtent& extent,
+                                                GURL* overlapping_url);
+
   // Clear all ExternalExtensionProviders.
   void ClearProvidersForTesting();
 
@@ -263,9 +269,8 @@ class ExtensionsService
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();
 
-  // Called when an extension has been loaded. Returns false if the extension
-  // failed to load (for example, if it has already been loaded).
-  bool OnExtensionLoaded(Extension* extension,
+  // Called when an extension has been loaded.
+  void OnExtensionLoaded(Extension* extension,
                          bool allow_privilege_increase);
 
   // Called by the backend when an extension has been installed.
