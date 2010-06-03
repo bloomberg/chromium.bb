@@ -19,6 +19,7 @@ class PrefService;
 class Profile;
 class ProfileSyncService;
 @class SearchEngineListModel;
+@class WindowSizeAutosaver;
 
 // A window controller that handles the preferences window. The bulk of the
 // work is handled via Cocoa Bindings and getter/setter methods that wrap
@@ -41,6 +42,7 @@ class ProfileSyncService;
   ProfileSyncService* syncService_;
   scoped_ptr<PreferencesWindowControllerInternal::PrefObserverBridge>
       observer_;  // Watches for pref changes.
+  scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
 
   IBOutlet NSToolbar* toolbar_;
 

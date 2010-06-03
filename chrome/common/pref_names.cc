@@ -644,6 +644,10 @@ const wchar_t kPageInfoWindowPlacement[] = L"page_info.window_placement";
 const wchar_t kKeywordEditorWindowPlacement[] =
     L"keyword_editor.window_placement";
 
+// A collection of position, size, and other data relating to the preferences
+// window to restore on startup.
+const wchar_t kPreferencesWindowPlacement[] = L"preferences.window_placement";
+
 // An integer specifying the total number of bytes to be used by the
 // renderer's in-memory cache of objects.
 const wchar_t kMemoryCacheSize[] = L"renderer.memory_cache.size";

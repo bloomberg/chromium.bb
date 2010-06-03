@@ -1829,6 +1829,7 @@ void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
+  prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
 }
 
 // static

@@ -229,6 +229,7 @@ extern const wchar_t kBrowserWindowPlacement[];
 extern const wchar_t kTaskManagerWindowPlacement[];
 extern const wchar_t kPageInfoWindowPlacement[];
 extern const wchar_t kKeywordEditorWindowPlacement[];
+extern const wchar_t kPreferencesWindowPlacement[];
 extern const wchar_t kMemoryCacheSize[];
 
 extern const wchar_t kDownloadDefaultDirectory[];

@@ -28,6 +28,7 @@
 #import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
 #import "chrome/browser/cocoa/sync_customize_controller_cppsafe.h"
+#import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -651,9 +652,14 @@ class PrefObserverBridge : public NotificationObserver,
 
   [self switchToPage:initialPage_ animate:NO];
 
-  // TODO(pinkerton): save/restore position based on prefs.
-  // http://crbug.com/34644
-  [[self window] center];
+  // Save/restore position based on prefs.
+  if (g_browser_process && g_browser_process->local_state()) {
+    sizeSaver_.reset([[WindowSizeAutosaver alloc]
+       initWithWindow:[self window]
+          prefService:g_browser_process->local_state()
+                 path:prefs::kPreferencesWindowPlacement
+                state:kSaveWindowRect]);
+  }
 }
 
 - (void)dealloc {
