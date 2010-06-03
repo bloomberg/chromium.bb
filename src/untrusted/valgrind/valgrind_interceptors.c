@@ -7,8 +7,10 @@
 /* This file contains valgrind interceptors for NaCl's untrusted library
    functions such as malloc, free, etc.
    When running under valgrind, the function named foo() will be replaced
-   with a function from this file named I_WRAP_SONAME_FNNAME_ZZ(NONE, foo).
+   with a function from this file named I_WRAP_SONAME_FNNAME_ZZ(NaCl, foo).
    The latter function may in turn call the original foo().
+   This requires that valgrind assigns SONAME "NaCl" to the functions
+   in untrusted code (i.e. an appropriate patch in valgrind).
 
    For details about valgrind interceptors (function wrapping) refer to
      http://valgrind.org/docs/manual/manual-core-adv.html
@@ -101,14 +103,14 @@ INLINE static void handle_free(OrigFn fn, size_t ptr) {
 }
 
 /* malloc() */
-size_t I_WRAP_SONAME_FNNAME_ZZ(NONE, malloc)(size_t size) {
+size_t I_WRAP_SONAME_FNNAME_ZZ(NaCl, malloc)(size_t size) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
   return handle_malloc(fn, size);
 }
 
 /* free() */
-void I_WRAP_SONAME_FNNAME_ZZ(NONE, free)(size_t ptr) {
+void I_WRAP_SONAME_FNNAME_ZZ(NaCl, free)(size_t ptr) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
   handle_free(fn, ptr);
