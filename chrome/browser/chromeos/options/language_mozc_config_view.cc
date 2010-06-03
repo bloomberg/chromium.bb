@@ -7,11 +7,12 @@
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/notification_type.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/options/language_config_util.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/grid_layout.h"
@@ -20,92 +21,6 @@
 
 namespace chromeos {
 
-// The combobox model for Mozc Japanese input method prefs.
-class MozcComboboxModel : public ComboboxModel {
- public:
-  explicit MozcComboboxModel(const MozcMultipleChoicePreference* pref_data)
-      : pref_data_(pref_data), num_items_(0) {
-    // Check how many items are defined in the |pref_data->values_and_ids|
-    // array.
-    for (size_t i = 0; i < MozcMultipleChoicePreference::kMaxItems; ++i) {
-      if ((pref_data_->values_and_ids)[i].ibus_config_value == NULL) {
-        break;
-      }
-      ++num_items_;
-    }
-  }
-
-  // Implements ComboboxModel interface.
-  virtual int GetItemCount() {
-    return num_items_;
-  }
-
-  // Implements ComboboxModel interface.
-  virtual std::wstring GetItemAt(int index) {
-    if (index < 0 || index >= num_items_) {
-      LOG(ERROR) << "Index is out of bounds: " << index;
-      return L"";
-    }
-    const int message_id = (pref_data_->values_and_ids)[index].item_message_id;
-    return l10n_util::GetString(message_id);
-  }
-
-  // Gets a label for the combobox like "Input mode". This function is NOT part
-  // of the ComboboxModel interface.
-  std::wstring GetLabel() const {
-    return l10n_util::GetString(pref_data_->label_message_id);
-  }
-
-  // Gets a config value for the ibus configuration daemon (e.g. "KUTEN_TOUTEN",
-  // "KUTEN_PERIOD", ..) for an item at zero-origin |index|. This function is
-  // NOT part of the ComboboxModel interface.
-  std::wstring GetConfigValueAt(int index) const {
-    if (index < 0 || index >= num_items_) {
-      LOG(ERROR) << "Index is out of bounds: " << index;
-      return L"";
-    }
-    return UTF8ToWide((pref_data_->values_and_ids)[index].ibus_config_value);
-  }
-
-  // Gets an index (>= 0) of an item such that GetConfigValueAt(index) is equal
-  // to the |config_value|. Returns -1 if such item is not found. This function
-  // is NOT part of the ComboboxModel interface.
-  int GetIndexFromConfigValue(const std::wstring& config_value) const {
-    for (int i = 0; i < num_items_; ++i) {
-      if (GetConfigValueAt(i) == config_value) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
- private:
-  const MozcMultipleChoicePreference* pref_data_;
-  int num_items_;
-
-  DISALLOW_COPY_AND_ASSIGN(MozcComboboxModel);
-};
-
-// The combobox for the dialog which has minimum width.
-class MozcCombobox : public views::Combobox {
- public:
-  explicit MozcCombobox(ComboboxModel* model) : Combobox(model) {
-  }
-
-  virtual gfx::Size GetPreferredSize() {
-    gfx::Size size = Combobox::GetPreferredSize();
-    if (size.width() < kMinComboboxWidth) {
-      size.set_width(kMinComboboxWidth);
-    }
-    return size;
-  }
-
- private:
-  static const int kMinComboboxWidth = 100;
-
-  DISALLOW_COPY_AND_ASSIGN(MozcCombobox);
-};
-
 LanguageMozcConfigView::LanguageMozcConfigView(Profile* profile)
     : OptionsPageView(profile), contents_(NULL) {
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
@@ -113,7 +28,7 @@ LanguageMozcConfigView::LanguageMozcConfigView(Profile* profile)
     current.multiple_choice_pref.Init(
         kMozcMultipleChoicePrefs[i].pref_name, profile->GetPrefs(), this);
     current.combobox_model =
-        new MozcComboboxModel(&kMozcMultipleChoicePrefs[i]);
+        new LanguageComboboxModel(&kMozcMultipleChoicePrefs[i]);
     current.combobox = NULL;
   }
 }
@@ -178,7 +93,7 @@ void LanguageMozcConfigView::InitControlLayout() {
 
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
-    current.combobox = new MozcCombobox(current.combobox_model);
+    current.combobox = new LanguageCombobox(current.combobox_model);
     current.combobox->set_listener(this);
   }
   NotifyPrefChanged();  // Sync the comboboxes with current Chrome prefs.

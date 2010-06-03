@@ -12,6 +12,19 @@
 // Section and config names for the IBus configuration daemon.
 namespace chromeos {
 
+struct LanguageMultipleChoicePreference {
+  const wchar_t* pref_name;  // Chrome preference name.
+  const wchar_t* default_pref_value;
+  const char* ibus_config_name;
+  // Currently we have 10 combobox items at most.
+  static const size_t kMaxItems = 10;
+  struct {
+    const char* ibus_config_value;
+    int item_message_id;  // Resource grd ID for the combobox item.
+  } values_and_ids[kMaxItems];
+  int label_message_id;  // Resource grd ID for the label.
+};
+
 // For ibus-daemon
 const char kGeneralSectionName[] = "general";
 const char kHotKeySectionName[] = "general/hotkey";
@@ -80,19 +93,7 @@ const struct {
 };
 const size_t kNumChewingIntegerPrefs = ARRAYSIZE_UNSAFE(kChewingIntegerPrefs);
 
-const struct ChewingMultipleChoicePreference {
-  const wchar_t* pref_name;  // Chrome preference name.
-  const wchar_t* default_pref_value;
-  const char* ibus_config_name;
-  // Currently we have 10 combobox items at most.
-  static const size_t kMaxItems = 10;
-  struct {
-    const char* ibus_config_value;
-    int item_message_id;  // Resource grd ID for the combobox item.
-  } values_and_ids[kMaxItems];
-  int label_message_id;  // Resource grd ID for the label.
-
-} kChewingMultipleChoicePrefs[] = {
+const LanguageMultipleChoicePreference kChewingMultipleChoicePrefs[] = {
   { prefs::kLanguageChewingKeyboardType,
     L"default",
     "KBType",
@@ -213,23 +214,7 @@ const size_t kNumPinyinIntegerPrefs = ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs);
 // For Japanese input method (ibus-mozc)
 const char kMozcSectionName[] = "engine/Mozc";
 
-const struct MozcMultipleChoicePreference {
-  const wchar_t* pref_name;  // Chrome preference name.
-  const wchar_t* default_pref_value;
-  // The config names and values have to be matched with protobuf member names
-  // in chromiumos/src/third_party/ibus-mozc/files/src/session/config.proto
-  // since ibus-mozc uses protobuf reflection APIs to pass prefs to the Mozc
-  // Japanese converter.
-  const char* ibus_config_name;
-  // Currently we have 4 combobox items at most.
-  static const size_t kMaxItems = 4;
-  struct {
-    const char* ibus_config_value;
-    int item_message_id;  // Resource grd ID for the combobox item.
-  } values_and_ids[kMaxItems];
-  int label_message_id;  // Resource grd ID for the label.
-
-} kMozcMultipleChoicePrefs[] = {
+const LanguageMultipleChoicePreference kMozcMultipleChoicePrefs[] = {
   { prefs::kLanguageMozcPreeditMethod,
     L"ROMAN",
     "preedit_method",

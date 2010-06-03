@@ -18,8 +18,8 @@
 
 namespace chromeos {
 
-class MozcCombobox;
-class MozcComboboxModel;
+class LanguageCombobox;
+class LanguageComboboxModel;
 
 // A dialog box for showing Mozc (Japanese input method) preferences.
 class LanguageMozcConfigView : public views::Combobox::Listener,
@@ -59,8 +59,8 @@ class LanguageMozcConfigView : public views::Combobox::Listener,
 
   struct MozcPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;
-    MozcComboboxModel* combobox_model;
-    MozcCombobox* combobox;
+    LanguageComboboxModel* combobox_model;
+    LanguageCombobox* combobox;
   } prefs_and_comboboxes_[kNumMozcMultipleChoicePrefs];
 
   DISALLOW_COPY_AND_ASSIGN(LanguageMozcConfigView);

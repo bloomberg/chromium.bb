@@ -19,8 +19,8 @@
 
 namespace chromeos {
 
-class ChewingCombobox;
-class ChewingComboboxModel;
+class LanguageCombobox;
+class LanguageComboboxModel;
 
 // A dialog box for showing Traditional Chinese (Chewing) input method
 // preferences.
@@ -76,8 +76,8 @@ class LanguageChewingConfigView : public views::ButtonListener,
 
   struct ChewingPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;
-    ChewingComboboxModel* combobox_model;
-    ChewingCombobox* combobox;
+    LanguageComboboxModel* combobox_model;
+    LanguageCombobox* combobox;
   } prefs_and_comboboxes_[kNumChewingMultipleChoicePrefs];
 
   DISALLOW_COPY_AND_ASSIGN(LanguageChewingConfigView);
