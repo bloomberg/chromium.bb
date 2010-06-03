@@ -34,7 +34,8 @@ SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     SandboxedExtensionUnpackerClient* client)
     : crx_path_(crx_path), temp_path_(temp_path),
       thread_identifier_(ChromeThread::ID_COUNT),
-      rdh_(rdh), client_(client), got_response_(false) {
+      rdh_(rdh), client_(client), got_response_(false),
+      force_web_origin_override_(false) {
 }
 
 void SandboxedExtensionUnpacker::Start() {
@@ -259,17 +260,29 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
       static_cast<DictionaryValue*>(manifest.DeepCopy()));
   final_manifest->SetString(extension_manifest_keys::kPublicKey, public_key_);
 
-  // Override the origin if appropriate.
   bool web_content_enabled = false;
   if (final_manifest->GetBoolean(extension_manifest_keys::kWebContentEnabled,
                                  &web_content_enabled) &&
-      web_content_enabled &&
-      web_origin_.is_valid()) {
-    // TODO(erikkay): Finalize origin policy.  This is intentionally loose
-    // until we can test from the gallery.  http://crbug.com/40848.
-    if (!final_manifest->Get(extension_manifest_keys::kWebOrigin, NULL)) {
+      web_content_enabled) {
+    bool has_web_origin =
+        final_manifest->Get(extension_manifest_keys::kWebOrigin, NULL);
+    if (force_web_origin_override_) {
+      if (has_web_origin) {
+        ReportFailure("Error: untrusted extension should have no web_origin.");
+        return NULL;
+      }
+      if (!web_origin_override_.is_valid() ||
+          web_origin_override_.SchemeIsFile()) {
+        ReportFailure(
+            "Error: untrusted extension has an invalid download origin.");
+        return NULL;
+      }
+
       final_manifest->SetString(extension_manifest_keys::kWebOrigin,
-                                web_origin_.spec());
+                                web_origin_override_.spec());
+    } else if (!has_web_origin) {
+      ReportFailure("Error: trusted extension should have a web_origin.");
+      return NULL;
     }
   }
 

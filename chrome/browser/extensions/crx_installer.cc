@@ -83,7 +83,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
           g_browser_process->resource_dispatcher_host(),
           this));
 
-  if (force_web_origin_to_download_url_ && original_url_.is_valid()) {
+  if (force_web_origin_to_download_url_) {
     unpacker->set_web_origin(original_url_.GetOrigin());
   }
 

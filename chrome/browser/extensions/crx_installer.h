@@ -152,7 +152,9 @@ class CrxInstaller
   bool allow_privilege_increase_;
 
   // If true and the installed extension uses web content, the web origin will
-  // be forced to the origin of |original_url_|. Defaults to false.
+  // be forced to the origin of |original_url_|. Defaults to false. This is used
+  // for non-gallery installs, where we don't trust the origin given in the
+  // manifest.
   bool force_web_origin_to_download_url_;
 
   // Whether to create an app shortcut after successful installation. This is
