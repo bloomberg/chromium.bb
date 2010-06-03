@@ -144,12 +144,17 @@ void ZombieDealloc(id self, SEL _cmd) {
   memset(self, '!', size);
 
   // If the instance is big enough, make it into a fat zombie and have
-  // it remember the old isa.  Otherwise make it a regular zombie.
+  // it remember the old |isa|.  Otherwise make it a regular zombie.
+  // Setting |isa| rather than using |object_setClass()| because that
+  // function is implemented with a memory barrier.  The runtime's
+  // |_internal_object_dispose()| (in objc-class.m) does this, so it
+  // should be safe (messaging free'd objects shouldn't be expected to
+  // be thread-safe in the first place).
   if (size >= g_fatZombieSize) {
-    object_setClass(self, g_fatZombieClass);
+    self->isa = g_fatZombieClass;
     static_cast<CrFatZombie*>(self)->wasa = wasa;
   } else {
-    object_setClass(self, g_zombieClass);
+    self->isa = g_zombieClass;
   }
 
   // The new record to swap into |g_zombies|.  If |g_zombieCount| is
