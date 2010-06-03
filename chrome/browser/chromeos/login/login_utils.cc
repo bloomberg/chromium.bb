@@ -66,7 +66,9 @@ std::string get_auth_token(const std::string& credentials) {
 class LoginUtilsImpl : public LoginUtils,
                        public NotificationObserver {
  public:
-  LoginUtilsImpl() : wifi_connecting_(false) {
+  LoginUtilsImpl()
+      : wifi_connecting_(false),
+        browser_launch_enabled_(true) {
     registrar_.Add(
         this,
         NotificationType::LOGIN_USER_CHANGED,
