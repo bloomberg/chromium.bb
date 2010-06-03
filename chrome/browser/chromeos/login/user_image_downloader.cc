@@ -40,7 +40,7 @@ UserImageDownloader::UserImageDownloader(const std::string& username,
     : username_(username),
       auth_token_(auth_token) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (auth_token.empty())
+  if (auth_token_.empty())
     return;
 
   profile_fetcher_.reset(new URLFetcher(GURL(kUserInfoURL),
@@ -49,7 +49,7 @@ UserImageDownloader::UserImageDownloader(const std::string& username,
   profile_fetcher_->set_request_context(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   profile_fetcher_->set_extra_request_headers(
-      StringPrintf(kAuthorizationHeader, auth_token.c_str()));
+      StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
   profile_fetcher_->Start();
 }
 

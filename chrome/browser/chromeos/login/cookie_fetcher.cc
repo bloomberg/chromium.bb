@@ -53,10 +53,7 @@ void CookieFetcher::OnURLFetchComplete(const URLFetcher* source,
 }
 
 void CookieFetcher::DelegateImpl::DoLaunch(Profile* profile) {
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (profile == profile_manager->GetDefaultProfile(user_data_dir)) {
+  if (profile == ProfileManager::GetDefaultProfile()) {
     LoginUtils::DoBrowserLaunch(profile);
   } else {
     LOG(ERROR) <<

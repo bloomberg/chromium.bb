@@ -102,9 +102,21 @@ class MockLoginUtils : public LoginUtils {
         consumer, expected_username_, expected_password_);
   }
 
+  virtual void EnableBrowserLaunch(bool enable) {
+  }
+
+  virtual bool IsBrowserLaunchEnabled() const {
+    return true;
+  }
+
+  virtual const std::string& GetAuthToken() const {
+    return auth_token_;
+  }
+
  private:
   std::string expected_username_;
   std::string expected_password_;
+  std::string auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(MockLoginUtils);
 };
