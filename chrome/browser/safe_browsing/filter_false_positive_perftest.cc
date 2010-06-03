@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -140,7 +140,7 @@ void BuildBloomFilter(int size_multiplier,
 bool ReadDatabase(const FilePath& path, std::vector<SBPrefix>* prefixes) {
   FilePath database_file = path.Append(FILE_PATH_LITERAL("database"));
   sqlite3* db = NULL;
-  if (OpenSqliteDb(database_file, &db) != SQLITE_OK) {
+  if (sqlite_utils::OpenSqliteDb(database_file, &db) != SQLITE_OK) {
     sqlite3_close(db);
     return false;
   }

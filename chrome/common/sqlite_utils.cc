@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,8 @@ SQLErrorHandlerFactory* GetErrorHandlerFactory() {
   return Singleton<DefaultSQLErrorHandlerFactory>::get();
 }
 
+namespace sqlite_utils {
+
 int OpenSqliteDb(const FilePath& filepath, sqlite3** database) {
 #if defined(OS_WIN)
   // We want the default encoding to always be UTF-8, so we use the
@@ -157,6 +159,8 @@ bool DoesSqliteTableHaveRow(sqlite3* db, const char* table_name) {
 
   return s.step() == SQLITE_ROW;
 }
+
+}  // namespace sqlite_utils
 
 SQLTransaction::SQLTransaction(sqlite3* db) : db_(db), began_(false) {
 }

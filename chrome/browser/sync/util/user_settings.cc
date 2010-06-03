@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -178,7 +178,7 @@ bool UserSettings::Init(const FilePath& settings_path) {
     ScopedDBHandle dbhandle(this);
     if (dbhandle_)
       sqlite3_close(dbhandle_);
-    CHECK(SQLITE_OK == OpenSqliteDb(settings_path, &dbhandle_));
+    CHECK_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(settings_path, &dbhandle_));
     // In the worst case scenario, the user may hibernate his computer during
     // one of our transactions.
     sqlite3_busy_timeout(dbhandle_, numeric_limits<int>::max());

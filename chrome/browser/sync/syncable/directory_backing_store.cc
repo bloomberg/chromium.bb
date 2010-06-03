@@ -179,7 +179,7 @@ DirectoryBackingStore::~DirectoryBackingStore() {
 
 bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
     sqlite3** handle) const {
-  if (SQLITE_OK == OpenSqliteDb(backing_filepath_, handle)) {
+  if (SQLITE_OK == sqlite_utils::OpenSqliteDb(backing_filepath_, handle)) {
     sqlite_utils::scoped_sqlite_db_ptr scoped_handle(*handle);
     sqlite3_busy_timeout(scoped_handle.get(), std::numeric_limits<int>::max());
     {
@@ -719,7 +719,7 @@ bool DirectoryBackingStore::SetVersion(int version) {
 }
 
 int DirectoryBackingStore::GetVersion() {
-  if (!DoesSqliteTableExist(load_dbhandle_, "share_version"))
+  if (!sqlite_utils::DoesSqliteTableExist(load_dbhandle_, "share_version"))
     return 0;
   SQLStatement version_query;
   version_query.prepare(load_dbhandle_, "SELECT data from share_version");

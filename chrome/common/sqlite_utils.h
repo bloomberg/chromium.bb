@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,32 +228,11 @@ class scoped_sqlite3_stmt_ptr {
 };
 
 //------------------------------------------------------------------------------
-// A scoped sqlite database that closes when it goes out of scope.
-//------------------------------------------------------------------------------
-
-// TODO: Use this namespace for the functions below (see TODO further down by
-// estade).
-namespace sqlite_utils {
-
-class DBClose {
- public:
-  inline void operator()(sqlite3* x) const {
-    sqlite3_close(x);
-  }
-};
-
-typedef scoped_ptr_malloc<sqlite3, DBClose> scoped_sqlite_db_ptr;
-
-}  // namespace sqlite_utils
-
-
-//------------------------------------------------------------------------------
 // A scoped sqlite statement with convenient C++ wrappers for sqlite3 APIs.
 //------------------------------------------------------------------------------
 class SQLStatement : public scoped_sqlite3_stmt_ptr {
  public:
-  SQLStatement() {
-  }
+  SQLStatement() {}
 
   int prepare(sqlite3* db, const char* sql) {
     return prepare(db, sql, -1);
@@ -367,7 +346,19 @@ class SQLStatement : public scoped_sqlite3_stmt_ptr {
   DISALLOW_COPY_AND_ASSIGN(SQLStatement);
 };
 
-// TODO(estade): wrap the following static functions in a namespace.
+namespace sqlite_utils {
+
+//------------------------------------------------------------------------------
+// A scoped sqlite database that closes when it goes out of scope.
+//------------------------------------------------------------------------------
+class DBClose {
+ public:
+  inline void operator()(sqlite3* x) const {
+    sqlite3_close(x);
+  }
+};
+
+typedef scoped_ptr_malloc<sqlite3, DBClose> scoped_sqlite_db_ptr;
 
 // Opens the DB in the file pointed to by |filepath|.  This method forces the
 // database to be in UTF-8 mode on all platforms. See
@@ -407,6 +398,8 @@ inline bool DoesSqliteColumnExist(sqlite3* db,
 // Test whether a table has one or more rows. Returns true if the table
 // has one or more rows and false if the table is empty or doesn't exist.
 bool DoesSqliteTableHaveRow(sqlite3* db, const char* table_name);
+
+}  // namespace sqlite_utils
 
 #if defined(USE_SYSTEM_SQLITE)
 // This function is a local change to sqlite3 which doesn't exist when one is

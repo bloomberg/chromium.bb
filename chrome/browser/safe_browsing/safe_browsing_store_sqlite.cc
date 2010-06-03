@@ -98,7 +98,7 @@ bool SafeBrowsingStoreSqlite::Open() {
   if (db_)
     return true;
 
-  if (OpenSqliteDb(filename_, &db_) != SQLITE_OK) {
+  if (sqlite_utils::OpenSqliteDb(filename_, &db_) != SQLITE_OK) {
     sqlite3_close(db_);
     db_ = NULL;
     return false;
@@ -111,7 +111,7 @@ bool SafeBrowsingStoreSqlite::Open() {
 
   statement_cache_.reset(new SqliteStatementCache(db_));
 
-  if (!DoesSqliteTableExist(db_, "add_prefix"))
+  if (!sqlite_utils::DoesSqliteTableExist(db_, "add_prefix"))
     return SetupDatabase();
 
   return CheckCompatibleVersion();

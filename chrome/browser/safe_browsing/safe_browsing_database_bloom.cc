@@ -295,7 +295,7 @@ bool SafeBrowsingDatabaseBloom::Open() {
   if (db_)
     return true;
 
-  if (OpenSqliteDb(filename_, &db_) != SQLITE_OK) {
+  if (sqlite_utils::OpenSqliteDb(filename_, &db_) != SQLITE_OK) {
     sqlite3_close(db_);
     db_ = NULL;
     return false;
@@ -307,7 +307,7 @@ bool SafeBrowsingDatabaseBloom::Open() {
 
   statement_cache_.reset(new SqliteStatementCache(db_));
 
-  if (!DoesSqliteTableExist(db_, "add_prefix")) {
+  if (!sqlite_utils::DoesSqliteTableExist(db_, "add_prefix")) {
     if (!CreateTables()) {
       // Database could be corrupt, try starting from scratch.
       if (!ResetDatabase())

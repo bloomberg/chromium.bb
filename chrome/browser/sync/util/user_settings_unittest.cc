@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,8 @@ class UserSettingsTest : public testing::Test {
     sqlite3* primer_handle = NULL;
     v10_user_setting_db_path_ =
         destination_directory.Append(FilePath(kV10UserSettingsDB));
-    ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v10_user_setting_db_path_,
-        &primer_handle));
+    ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v10_user_setting_db_path_,
+                                                    &primer_handle));
     old_style_sync_data_path_ =
         destination_directory.Append(FilePath(kOldStyleSyncDataDB));
 
@@ -91,8 +91,8 @@ class UserSettingsTest : public testing::Test {
     sqlite3* primer_handle = NULL;
     v11_user_setting_db_path_ =
         destination_directory.Append(FilePath(kV11UserSettingsDB));
-    ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v11_user_setting_db_path_,
-        &primer_handle));
+    ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v11_user_setting_db_path_,
+                                                    &primer_handle));
 
     // Create settings table.
     ExecOrDie(primer_handle, "CREATE TABLE settings"
@@ -162,7 +162,8 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
 
   // Now poke around using sqlite to see if UserSettings migrated properly.
   sqlite3* handle = NULL;
-  ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v10_user_setting_db_path(), &handle));
+  ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v10_user_setting_db_path(),
+                                                  &handle));
 
   // Note that we don't use ScopedStatement to avoid closing the sqlite handle
   // before finalizing the statement.
@@ -194,7 +195,8 @@ TEST_F(UserSettingsTest, MigrateFromV11ToV12) {
     settings.Init(v11_user_setting_db_path());
   }
   sqlite3* handle = NULL;
-  ASSERT_EQ(SQLITE_OK, OpenSqliteDb(v11_user_setting_db_path(), &handle));
+  ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v11_user_setting_db_path(),
+                                                  &handle));
 
   {
     SQLStatement version_query;
