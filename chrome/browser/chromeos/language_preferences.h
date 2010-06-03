@@ -65,6 +65,21 @@ const struct {
 };
 const size_t kNumChewingBooleanPrefs = ARRAYSIZE_UNSAFE(kChewingBooleanPrefs);
 
+const struct {
+  const wchar_t* pref_name;  // Chrome preference name.
+  int default_pref_value;
+  int min_pref_value;
+  int max_pref_value;
+  const char* ibus_config_name;
+  int message_id;
+} kChewingIntegerPrefs[] = {
+  { prefs::kLanguageChewingMaxChiSymbolLen, 20, 8, 40, "maxChiSymbolLen",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_MAX_CHI_SYMBOL_LEN},
+  { prefs::kLanguageChewingCandPerPage, 10, 8, 10, "candPerPage",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_CAND_PER_PAGE},
+};
+const size_t kNumChewingIntegerPrefs = ARRAYSIZE_UNSAFE(kChewingIntegerPrefs);
+
 const struct ChewingMultipleChoicePreference {
   const wchar_t* pref_name;  // Chrome preference name.
   const wchar_t* default_pref_value;
@@ -121,7 +136,7 @@ const struct ChewingMultipleChoicePreference {
 };
 const size_t kNumChewingMultipleChoicePrefs =
     arraysize(kChewingMultipleChoicePrefs);
-// TODO(zork): Support candPerPage, hsuSelKeyType, and maxChiSymbolLen
+// TODO(zork): Support hsuSelKeyType
 
 // For Korean input method (ibus-hangul)
 const char kHangulSectionName[] = "engine/Hangul";

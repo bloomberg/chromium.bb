@@ -126,6 +126,11 @@ LanguageChewingConfigView::LanguageChewingConfigView(Profile* profile)
         new ChewingComboboxModel(&kChewingMultipleChoicePrefs[i]);
     current.combobox = NULL;
   }
+  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+    chewing_integer_prefs_[i].Init(
+        kChewingIntegerPrefs[i].pref_name, profile->GetPrefs(), this);
+    chewing_integer_sliders_[i] = NULL;
+  }
 }
 
 LanguageChewingConfigView::~LanguageChewingConfigView() {
@@ -153,6 +158,17 @@ void LanguageChewingConfigView::ItemChanged(
     }
   }
 }
+
+void LanguageChewingConfigView::SliderValueChanged(views::Slider* sender) {
+  size_t pref_id;
+  for (pref_id = 0; pref_id < kNumChewingIntegerPrefs; ++pref_id) {
+    if (chewing_integer_sliders_[pref_id] == sender)
+      break;
+  }
+  DCHECK(pref_id < kNumChewingIntegerPrefs);
+  chewing_integer_prefs_[pref_id].SetValue(sender->value());
+}
+
 
 void LanguageChewingConfigView::Layout() {
   // Not sure why but this is needed to show contents in the dialog.
@@ -187,7 +203,7 @@ void LanguageChewingConfigView::InitControlLayout() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
@@ -201,11 +217,28 @@ void LanguageChewingConfigView::InitControlLayout() {
     current.combobox = new ChewingCombobox(current.combobox_model);
     current.combobox->set_listener(this);
   }
-  NotifyPrefChanged();
+  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+    chewing_integer_sliders_[i] = new views::Slider(
+        kChewingIntegerPrefs[i].min_pref_value,
+        kChewingIntegerPrefs[i].max_pref_value,
+        1,
+        static_cast<views::Slider::StyleFlags>(
+            views::Slider::STYLE_DRAW_VALUE |
+            views::Slider::STYLE_UPDATE_ON_RELEASE),
+        this);
+  }
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
     layout->StartRow(0, kColumnSetId);
     layout->AddView(chewing_boolean_checkboxes_[i]);
   }
+
+  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+    layout->StartRow(0, kColumnSetId);
+    layout->AddView(new views::Label(
+        l10n_util::GetString(kChewingIntegerPrefs[i].message_id)));
+    layout->AddView(chewing_integer_sliders_[i]);
+  }
+  NotifyPrefChanged();
 
   // Show the comboboxes.
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
@@ -228,6 +261,10 @@ void LanguageChewingConfigView::NotifyPrefChanged() {
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
     const bool checked = chewing_boolean_prefs_[i].GetValue();
     chewing_boolean_checkboxes_[i]->SetChecked(checked);
+  }
+  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+    const int value = chewing_integer_prefs_[i].GetValue();
+    chewing_integer_sliders_[i]->SetValue(value);
   }
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];

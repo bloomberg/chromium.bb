@@ -7568,6 +7568,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The checkbox label for a Chewing input method preference">
         Press Space to select the candidate
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_MAX_CHI_SYMBOL_LEN"
+               desc="The label for a Chewing input method preference">
+        Maximum Chinese characters in pre-edit buffer, including inputing Zhuyin
+        symbols
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_CAND_PER_PAGE"
+               desc="The label for a Chewing input method preference">
+        Number of candidates to display per page
+      </message>
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE"
                desc="The combobox description for the Chewing keyboard type">

@@ -226,6 +226,12 @@ const wchar_t kLanguageChewingPhraseChoiceRearward[] =
 const wchar_t kLanguageChewingSpaceAsSelection[] =
     L"settings.language.chewing_space_as_selection";
 
+// Integer prefs for ibus-chewing Chinese input method.
+const wchar_t kLanguageChewingMaxChiSymbolLen[] =
+    L"settings.language.chewing_max_chi_symbol_len";
+const wchar_t kLanguageChewingCandPerPage[] =
+    L"settings.language.chewing_cand_per_page";
+
 // String prefs for ibus-chewing Chinese input method.
 const wchar_t kLanguageChewingKeyboardType[] =
     L"settings.language.chewing_keyboard_type";

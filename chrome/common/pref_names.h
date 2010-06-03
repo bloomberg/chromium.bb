@@ -84,6 +84,8 @@ extern const wchar_t kLanguageChewingForceLowercaseEnglish[];
 extern const wchar_t kLanguageChewingPlainZhuyin[];
 extern const wchar_t kLanguageChewingPhraseChoiceRearward[];
 extern const wchar_t kLanguageChewingSpaceAsSelection[];
+extern const wchar_t kLanguageChewingMaxChiSymbolLen[];
+extern const wchar_t kLanguageChewingCandPerPage[];
 extern const wchar_t kLanguageChewingKeyboardType[];
 extern const wchar_t kLanguageChewingSelKeys[];
 extern const wchar_t kLanguageHangulKeyboard[];

@@ -14,6 +14,7 @@
 #include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
+#include "views/controls/slider/slider.h"
 #include "views/window/dialog_delegate.h"
 
 namespace chromeos {
@@ -26,6 +27,7 @@ class ChewingComboboxModel;
 class LanguageChewingConfigView : public views::ButtonListener,
                                   public views::Combobox::Listener,
                                   public views::DialogDelegate,
+                                  public views::SliderListener,
                                   public OptionsPageView {
  public:
   explicit LanguageChewingConfigView(Profile* profile);
@@ -38,6 +40,9 @@ class LanguageChewingConfigView : public views::ButtonListener,
   virtual void ItemChanged(views::Combobox* sender,
                            int prev_index,
                            int new_index);
+
+  // views::SliderListener overrides.
+  virtual void SliderValueChanged(views::Slider* sender);
 
   // views::DialogDelegate overrides.
   virtual bool IsModal() const { return true; }
@@ -61,10 +66,13 @@ class LanguageChewingConfigView : public views::ButtonListener,
   void NotifyPrefChanged();
 
   BooleanPrefMember chewing_boolean_prefs_[kNumChewingBooleanPrefs];
+  IntegerPrefMember chewing_integer_prefs_[kNumChewingIntegerPrefs];
   views::View* contents_;
 
   // Checkboxes for Chewing.
   views::Checkbox* chewing_boolean_checkboxes_[kNumChewingBooleanPrefs];
+
+  views::Slider* chewing_integer_sliders_[kNumChewingIntegerPrefs];
 
   struct ChewingPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;
