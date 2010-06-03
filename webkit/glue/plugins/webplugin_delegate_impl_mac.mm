@@ -333,7 +333,8 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   }
 #endif
 
-  switch (instance()->drawing_model()) {
+  NPDrawingModel drawing_model = instance()->drawing_model();
+  switch (drawing_model) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw:
       if (instance()->event_model() != NPEventModelCarbon)
@@ -353,7 +354,8 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
 #endif
       window_.type = NPWindowTypeDrawable;
       break;
-    case NPDrawingModelCoreAnimation: {
+    case NPDrawingModelCoreAnimation:
+    case NPDrawingModelInvalidatingCoreAnimation: {
       if (instance()->event_model() != NPEventModelCocoa)
         return false;
       window_.type = NPWindowTypeDrawable;
@@ -364,8 +366,10 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       NPError err = instance()->NPP_GetValue(NPPVpluginCoreAnimationLayer,
                                              reinterpret_cast<void*>(&layer));
       if (!err) {
-        // Create the timer; it will be started when we get a window handle.
-        redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
+        if (drawing_model == NPDrawingModelCoreAnimation) {
+          // Create the timer; it will be started when we get a window handle.
+          redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
+        }
         layer_ = layer;
         surface_ = new AcceleratedSurface;
         surface_->Initialize(NULL, true);
@@ -390,7 +394,8 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   // Let the WebPlugin know that we are windowless (unless this is a
   // Core Animation plugin, in which case BindFakePluginWindowHandle will take
   // care of setting up the appropriate window handle).
-  if (instance()->drawing_model() != NPDrawingModelCoreAnimation)
+  if (drawing_model != NPDrawingModelCoreAnimation ||
+      drawing_model != NPDrawingModelInvalidatingCoreAnimation)
     plugin_->SetWindow(NULL);
 
 #ifndef NP_NO_CARBON
@@ -791,6 +796,11 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
 #pragma mark -
 #pragma mark Mac Extensions
 
+void WebPluginDelegateImpl::PluginDidInvalidate() {
+  if (instance()->drawing_model() == NPDrawingModelInvalidatingCoreAnimation)
+    DrawLayerInSurface();
+}
+
 WebPluginDelegateImpl* WebPluginDelegateImpl::GetActiveDelegate() {
   return g_active_delegate;
 }
@@ -999,9 +1009,8 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
 // then tell the browser host view so it can adjust its bookkeeping and CALayer
 // appropriately.
 void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
-  // Will only have a window handle when using the CoreAnimation drawing model.
-  if (!windowed_handle() ||
-      instance()->drawing_model() != NPDrawingModelCoreAnimation)
+  // Will only have a window handle when using a Core Animation drawing model.
+  if (!windowed_handle() || !layer_)
     return;
 
   [layer_ setFrame:CGRectMake(0, 0,

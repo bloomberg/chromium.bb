@@ -112,6 +112,8 @@ void WebPluginProxy::Invalidate() {
 
 void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
 #if defined(OS_MACOSX)
+  delegate_->PluginDidInvalidate();
+
   // Some plugins will send invalidates larger than their own rect when
   // offscreen, so constrain invalidates to the plugin rect.
   gfx::Rect plugin_rect = delegate_->GetRect();

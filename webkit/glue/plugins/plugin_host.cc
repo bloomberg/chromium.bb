@@ -778,8 +778,11 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
-    case NPNVsupportsCoreAnimationBool: {
+    case NPNVsupportsCoreAnimationBool:
+    case NPNVsupportsInvalidatingCoreAnimationBool: {
       // We only support the Core Animation model on 10.6 and higher
+      // TODO(stuartmorgan): Once existing CA plugins have implemented the
+      // invalidating version, remove support for the other version.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
       *supports_model = SupportsSharingAcceleratedSurfaces() ? true : false;
       rv = NPERR_NO_ERROR;
@@ -852,7 +855,8 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
       if (model == NPDrawingModelCoreGraphics) {
         plugin->set_drawing_model(static_cast<NPDrawingModel>(model));
         return NPERR_NO_ERROR;
-      } else if (model == NPDrawingModelCoreAnimation &&
+      } else if ((model == NPDrawingModelCoreAnimation ||
+                  model == NPDrawingModelInvalidatingCoreAnimation) &&
                  SupportsSharingAcceleratedSurfaces()) {
         plugin->set_drawing_model(static_cast<NPDrawingModel>(model));
         return NPERR_NO_ERROR;

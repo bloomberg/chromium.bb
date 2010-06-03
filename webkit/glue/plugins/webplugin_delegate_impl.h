@@ -140,6 +140,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void UpdateGeometryAndContext(const gfx::Rect& window_rect,
                                 const gfx::Rect& clip_rect,
                                 gfx::NativeDrawingContext context);
+  // Informs the delegate that the plugin called NPN_Invalidate*. Used as a
+  // trigger for Core Animation drawing.
+  void PluginDidInvalidate();
   // Returns the delegate currently processing events.
   static WebPluginDelegateImpl* GetActiveDelegate();
   // Informs the plugin that the window it is in has gained or lost focus.
