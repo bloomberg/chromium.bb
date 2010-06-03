@@ -108,6 +108,21 @@
         },
       ],
     }],
+    ['OS != "mac"', {
+      'targets': [
+        {
+          'target_name': 'nacl_tls_unittest',
+          'type': 'executable',
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+          ],
+          'sources': [
+            'nacl_tls_unittest.c'
+          ],
+        },
+      ],
+    }],
   ],
   'targets': [
     {
@@ -225,21 +240,6 @@
       ],
     },
     {
-      'conditions': [
-        ['OS != "mac"', {
-          'target_name': 'nacl_tls_unittest',
-          'type': 'executable',
-          'dependencies': [
-            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
-          ],
-          'sources': [
-            'nacl_tls_unittest.c'
-          ],
-        },]
-      ]
-    },
-    {
       # ignoring condition target_arch == build_arch from scons
       'target_name': 'sel_ldr_thread_death_test',
       'type': 'executable',
@@ -258,4 +258,5 @@
       ],
     },
   ],
+
 }
