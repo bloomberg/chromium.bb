@@ -16,6 +16,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/image_view.h"
+#include "views/controls/scroll_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
@@ -27,11 +28,14 @@ namespace chromeos {
 class NetworkSection : public SettingsPageSection,
                        public views::ButtonListener {
  public:
-  NetworkSection(InternetPageView* parent, Profile* profile, int title_msg_id);
+  NetworkSection(InternetPageContentView* parent, Profile* profile,
+                 int title_msg_id);
   virtual ~NetworkSection() {}
 
   // Overriden from views::Button::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  void RefreshContents();
 
  protected:
   enum ButtonFlags {
@@ -73,7 +77,7 @@ class NetworkSection : public SettingsPageSection,
   //   will be offset by 200.
   static const int kConnectionTypeOffset = 100;
 
-  InternetPageView* parent_;
+  InternetPageContentView* parent_;
 
   int quad_column_view_set_id_;
 
@@ -82,7 +86,8 @@ class NetworkSection : public SettingsPageSection,
   DISALLOW_COPY_AND_ASSIGN(NetworkSection);
 };
 
-NetworkSection::NetworkSection(InternetPageView* parent, Profile* profile,
+NetworkSection::NetworkSection(InternetPageContentView* parent,
+                               Profile* profile,
                                int title_msg_id)
     : SettingsPageSection(profile, title_msg_id),
       parent_(parent),
@@ -100,6 +105,11 @@ void NetworkSection::ButtonPressed(views::Button* sender,
   id %= kConnectionTypeOffset;
 
   ButtonClicked(button, connection_type, id);
+}
+
+void NetworkSection::RefreshContents() {
+  RemoveAllChildViews(true);
+  InitControlLayout();
 }
 
 void NetworkSection::InitContents(GridLayout* layout) {
@@ -214,7 +224,7 @@ void NetworkSection::CreateModalPopup(views::WindowDelegate* view) {
 
 class WiredSection : public NetworkSection {
  public:
-  WiredSection(InternetPageView* parent, Profile* profile);
+  WiredSection(InternetPageContentView* parent, Profile* profile);
   virtual ~WiredSection() {}
 
  protected:
@@ -225,7 +235,7 @@ class WiredSection : public NetworkSection {
   DISALLOW_COPY_AND_ASSIGN(WiredSection);
 };
 
-WiredSection::WiredSection(InternetPageView* parent, Profile* profile)
+WiredSection::WiredSection(InternetPageContentView* parent, Profile* profile)
     : NetworkSection(parent, profile,
                      IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK) {
 }
@@ -267,7 +277,7 @@ void WiredSection::ButtonClicked(int button, int connection_type, int id) {
 
 class WirelessSection : public NetworkSection {
  public:
-  WirelessSection(InternetPageView* parent, Profile* profile);
+  WirelessSection(InternetPageContentView* parent, Profile* profile);
   virtual ~WirelessSection() {}
 
  protected:
@@ -292,7 +302,8 @@ class WirelessSection : public NetworkSection {
   DISALLOW_COPY_AND_ASSIGN(WirelessSection);
 };
 
-WirelessSection::WirelessSection(InternetPageView* parent, Profile* profile)
+WirelessSection::WirelessSection(InternetPageContentView* parent,
+                                 Profile* profile)
     : NetworkSection(parent, profile,
                      IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK) {
 }
@@ -403,7 +414,7 @@ void WirelessSection::AddWirelessNetwork(int id, const SkBitmap& icon,
 
 class RememberedSection : public NetworkSection {
  public:
-  RememberedSection(InternetPageView* parent, Profile* profile);
+  RememberedSection(InternetPageContentView* parent, Profile* profile);
   virtual ~RememberedSection() {}
 
  protected:
@@ -418,7 +429,8 @@ class RememberedSection : public NetworkSection {
   DISALLOW_COPY_AND_ASSIGN(RememberedSection);
 };
 
-RememberedSection::RememberedSection(InternetPageView* parent, Profile* profile)
+RememberedSection::RememberedSection(InternetPageContentView* parent,
+                                     Profile* profile)
     : NetworkSection(parent, profile,
                      IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK) {
 }
@@ -475,27 +487,73 @@ void RememberedSection::ButtonClicked(int button, int connection_type, int id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// InternetPageView
+// InternetPageContentView
+
+class InternetPageContentView : public SettingsPageView {
+ public:
+  explicit InternetPageContentView(Profile* profile);
+  virtual ~InternetPageContentView() {}
+
+  virtual void RefreshContents();
+
+  // views::View overrides.
+  virtual int GetLineScrollIncrement(views::ScrollView* scroll_view,
+                                     bool is_horizontal, bool is_positive);
+  virtual void Layout();
+  virtual void DidChangeBounds(const gfx::Rect& previous,
+                               const gfx::Rect& current);
+
+ protected:
+  // SettingsPageView implementation:
+  virtual void InitControlLayout();
+
+ private:
+  int line_height_;
+  WiredSection* wired_section_;
+  WirelessSection* wireless_section_;
+  RememberedSection* remembered_section_;
+
+  DISALLOW_COPY_AND_ASSIGN(InternetPageContentView);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
-// InternetPageView, SettingsPageView implementation:
+// InternetPageContentView, SettingsPageView implementation:
 
-InternetPageView::InternetPageView(Profile* profile)
+InternetPageContentView::InternetPageContentView(Profile* profile)
     : SettingsPageView(profile) {
-  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  line_height_ = rb.GetFont(ResourceBundle::BaseFont).height();
 }
 
-InternetPageView::~InternetPageView() {
-  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+void InternetPageContentView::RefreshContents() {
+  wired_section_->RefreshContents();
+  wireless_section_->RefreshContents();
+  remembered_section_->RefreshContents();
 }
 
-void InternetPageView::NetworkChanged(NetworkLibrary* obj) {
-  InitControlLayout();
+int InternetPageContentView::GetLineScrollIncrement(
+    views::ScrollView* scroll_view,
+    bool is_horizontal,
+    bool is_positive) {
+  if (!is_horizontal)
+    return line_height_;
+  return View::GetPageScrollIncrement(scroll_view, is_horizontal, is_positive);
 }
 
-void InternetPageView::InitControlLayout() {
-  RemoveAllChildViews(true);
+void InternetPageContentView::Layout() {
+  // Set the width to the parent width and the height to the preferred height.
+  // We will have a vertical scrollbar if the preferred height is longer
+  // than the parent's height.
+  SetBounds(0, 0, GetParent()->width(), GetPreferredSize().height());
+  View::Layout();
+}
 
+void InternetPageContentView::DidChangeBounds(const gfx::Rect& previous,
+                                              const gfx::Rect& current) {
+  // Override to do nothing. Calling Layout() interferes with our scrolling.
+}
+
+void InternetPageContentView::InitControlLayout() {
   GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);
 
@@ -505,18 +563,53 @@ void InternetPageView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new WiredSection(this, profile()));
+  wired_section_ = new WiredSection(this, profile());
+  layout->AddView(wired_section_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new WirelessSection(this, profile()));
+  wireless_section_ = new WirelessSection(this, profile());
+  layout->AddView(wireless_section_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new RememberedSection(this, profile()));
+  remembered_section_ = new RememberedSection(this, profile());
+  layout->AddView(remembered_section_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+}
 
+////////////////////////////////////////////////////////////////////////////////
+// InternetPageView
+
+InternetPageView::InternetPageView(Profile* profile)
+    : SettingsPageView(profile),
+      contents_view_(new InternetPageContentView(profile)),
+      scroll_view_(new views::ScrollView) {
+  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
+}
+
+InternetPageView::~InternetPageView() {
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+}
+
+void InternetPageView::NetworkChanged(NetworkLibrary* obj) {
+  // Refresh wired, wireless, and remembered networks.
+  // Remember the current scroll region, and try to scroll back afterwards.
+  gfx::Rect rect = scroll_view_->GetVisibleRect();
+  contents_view_->RefreshContents();
   Layout();
+  scroll_view_->ScrollContentsRegionToBeVisible(rect);
+}
+
+void InternetPageView::Layout() {
+  contents_view_->Layout();
+  scroll_view_->SetBounds(GetLocalBounds(false));
+  scroll_view_->Layout();
+}
+
+void InternetPageView::InitControlLayout() {
+  AddChildView(scroll_view_);
+  scroll_view_->SetContents(contents_view_);
 }
 
 }  // namespace chromeos
