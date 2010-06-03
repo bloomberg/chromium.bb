@@ -72,6 +72,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
     PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096, // Windows
     PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH = 8192, // Mac
     PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE = 16384, // Windows
+    PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK = 32768, // Linux
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,

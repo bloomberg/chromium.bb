@@ -54,9 +54,13 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   memset(&window_, 0, sizeof(window_));
   if (instance_->mime_type() == "application/x-shockwave-flash") {
     // Flash is tied to Firefox's whacky behavior with windowless plugins. See
-    // comments in WindowlessPaint
+    // comments in WindowlessPaint.
+    // TODO(viettrungluu): PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK: Don't allow
+    // right-clicks in windowless content since Flash 10.1 (initial release, at
+    // least) hangs in that case. Remove this once Flash is fixed.
     quirks_ |= PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW
-        | PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW;
+        | PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW
+        | PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK;
   }
 
   // TODO(evanm): I played with this for quite a while but couldn't
@@ -680,6 +684,14 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   if (!NPEventFromWebInputEvent(event, timestamp, &np_event)) {
     return false;
   }
+  // See comment about PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK in constructor.
+  if (windowless_ &&
+      (quirks_ & PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK) &&
+      (np_event.type == ButtonPress || np_event.type == ButtonRelease) &&
+      (np_event.xbutton.button == Button3)) {
+    return false;
+  }
+
   bool ret = instance()->NPP_HandleEvent(&np_event) != 0;
 
   // Flash always returns false, even when the event is handled.
