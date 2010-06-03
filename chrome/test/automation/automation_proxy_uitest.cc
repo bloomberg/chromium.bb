@@ -1385,13 +1385,6 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   EXPECT_FALSE(matches.empty());
 }
 
-#if defined(OS_MACOSX)
-// Hangs on Mac, http://crbug.com/25039.
-#define AppModalDialogTest DISABLED_AppModalDialogTest
-#else
-// Flaky, http://crbug.com/5314.
-#define AppModalDialogTest FLAKY_AppModalDialogTest
-#endif
 TEST_F(AutomationProxyTest, AppModalDialogTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());

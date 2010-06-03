@@ -161,8 +161,19 @@ void JavaScriptAppModalDialog::CreateAndShowDialog() {
 
 // The functions below are used by the automation framework.
 int JavaScriptAppModalDialog::GetDialogButtons() {
-  NOTIMPLEMENTED();
-  return 0;
+  // From the above, it is the case that if there is 1 button, it is always the
+  // OK button.  The second button, if it exists, is always the Cancel button.
+  int num_buttons = [[dialog_ buttons] count];
+  switch (num_buttons) {
+    case 1:
+      return MessageBoxFlags::DIALOGBUTTON_OK;
+    case 2:
+      return MessageBoxFlags::DIALOGBUTTON_OK |
+             MessageBoxFlags::DIALOGBUTTON_CANCEL;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 // On Mac, this is only used in testing.
@@ -172,7 +183,9 @@ void JavaScriptAppModalDialog::AcceptWindow() {
 }
 
 void JavaScriptAppModalDialog::CancelWindow() {
-  NOTIMPLEMENTED();
+  DCHECK([[dialog_ buttons] count] >= 2);
+  NSButton* second = [[dialog_ buttons] objectAtIndex:1];
+  [second performClick:nil];
 }
 
 // This is only used by the app-modal dialog machinery on windows.
