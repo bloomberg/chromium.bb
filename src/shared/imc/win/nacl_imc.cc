@@ -205,7 +205,7 @@ int SocketPair(Handle pair[2]) {
                         0,              // no sharing
                         NULL,           // default security attributes
                         OPEN_EXISTING,  // opens existing pipe
-                        0,              // default attributes
+                        SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION,
                         NULL);          // no template file
   if (pair[1] == INVALID_HANDLE_VALUE) {
     CloseHandle(pair[0]);
@@ -330,7 +330,7 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
                          0,              // no sharing
                          NULL,           // default security attributes
                          OPEN_EXISTING,  // opens existing pipe
-                         0,              // default attributes
+                         SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION,
                          NULL);          // no template file
     if (handle != INVALID_HANDLE_VALUE) {
       break;
@@ -351,7 +351,7 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
                              0,              // no sharing
                              NULL,           // default security attributes
                              OPEN_EXISTING,  // opens existing pipe
-                             0,              // default attributes
+                             SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION,
                              NULL);          // no template file
         if (handle != INVALID_HANDLE_VALUE) {
           break;
