@@ -417,31 +417,3 @@
    fun:::RunTest_EnsureTaskDeletion*
    fun:MessageLoopTest_*EnsureTaskDeletion_*::TestBody
 }
-{
-  bug_44738_a
-  Heapcheck:Leak
-  ...
-  fun:Histogram::FactoryGet
-  fun:Histogram::FactoryGet
-  fun:ClientSocketPoolHistograms
-  fun:HttpNetworkSession
-  fun:net::HttpNetworkLayer::GetSession
-  fun:net::HttpNetworkLayer::CreateTransaction
-}
-{
-  bug_44738_b
-  Heapcheck:Leak
-  ...
-  fun:LinearHistogram::FactoryGet
-  fun:ClientSocketPoolHistograms
-  fun:HttpNetworkSession
-}
-# Wildcarding "operator+"
-{
-  bug_44738_c
-  Heapcheck:Leak
-  ...
-  fun:std::operator*
-  fun:ClientSocketPoolHistograms
-  fun:HttpNetworkSession
-}
