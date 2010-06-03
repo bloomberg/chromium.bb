@@ -363,9 +363,9 @@ main (int argc, char **argv)
 
     printf ("#define LEAF0       (%d * sizeof (FcLangCharSet))\n", nsets);
     printf ("#define OFF0        (LEAF0 + %d * sizeof (FcCharLeaf))\n", tl);
-    printf ("#define NUM0        (OFF0 + %d * sizeof (intptr_t))\n", tn);
+    printf ("#define NUM0        (OFF0 + %d * sizeof (uintptr_t))\n", tn);
     printf ("#define SET(n)      (n * sizeof (FcLangCharSet) + offsetof (FcLangCharSet, charset))\n");
-    printf ("#define OFF(s,o)    (OFF0 + o * sizeof (intptr_t) - SET(s))\n");
+    printf ("#define OFF(s,o)    (OFF0 + o * sizeof (uintptr_t) - SET(s))\n");
     printf ("#define NUM(s,n)    (NUM0 + n * sizeof (FcChar16) - SET(s))\n");
     printf ("#define LEAF(o,l)   (LEAF0 + l * sizeof (FcCharLeaf) - (OFF0 + o * sizeof (intptr_t)))\n");
     printf ("#define fcLangCharSets (fcLangData.langCharSets)\n");
@@ -376,7 +376,7 @@ main (int argc, char **argv)
     printf ("static const struct {\n"
 	    "    FcLangCharSet  langCharSets[%d];\n"
 	    "    FcCharLeaf     leaves[%d];\n"
-	    "    intptr_t       leaf_offsets[%d];\n"
+	    "    uintptr_t      leaf_offsets[%d];\n"
 	    "    FcChar16       numbers[%d];\n"
 	    "    FcChar%s       langIndices[%d];\n"
 	    "    FcChar%s       langIndicesInv[%d];\n"
