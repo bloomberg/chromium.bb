@@ -14,7 +14,7 @@ def GetLinkFlag(env):
   if env['TARGET_ARCHITECTURE'] == 'arm':
     # On ARM, we invoke the linker directly rather than via gcc.
     # TODO(mseaborn): Change driver script to accept -Wl args.
-    return '--section-start .rodata=0x1000000'
+    return '--section-start=.rodata=0x1000000'
   else:
     return '-Wl,--section-start,.rodata=0x1000000'
 
