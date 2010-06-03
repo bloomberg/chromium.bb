@@ -18,6 +18,9 @@
     - Pad VALGRIND_CALL_NOREDIR_RAX with .align 32 and 13 nops so that the
       return address (the instruction following after "xchgq %rdx,%rdx")
       is 32-byte aligned.
+  - Naclify (clear upper bits and add r15) %rax in CALL_FN_W_*.
+  - Add VALGRIND_SANDBOX_PTR(a) function (clear upper bits and add r15)
+    and use it in VALGRIND_PRINTF*.
 */
 
 
@@ -159,6 +162,8 @@
 #  endif
 #endif
 
+/* For NaCl this will be redefined later. */
+#define VALGRIND_SANDBOX_PTR(a) (a)
 
 /* ------------------------------------------------------------------ */
 /* ARCHITECTURE SPECIFICS for SPECIAL INSTRUCTIONS.  There is nothing */
@@ -272,15 +277,34 @@ typedef
 
 #if defined(PLAT_amd64_linux)  ||  defined(PLAT_amd64_darwin)
 
+#undef VALGRIND_SANDBOX_PTR
+/* return r15+lower_32_bits(arg) */
+static uint64_t VALGRIND_SANDBOX_PTR(size_t arg) {
+  volatile size_t a = arg;  /* 32 bit */
+  volatile uint64_t b;      /* 64 bit */
+  __asm__ volatile (
+       "mov %1, %%eax\n\t"
+       "addq %%r15, %0\n\t"
+       :"=r"(b)        /* output */
+       :"r"(a)         /* input */
+       :"rax"          /* clobbered register */
+       );
+  return b;
+}
+
 typedef
    struct { 
       uint64_t nraddr; /* where's the code? */
    }
    OrigFn;
 
+#define __SANDBOX_RAX_ASM  "mov %%eax, %%eax; addq %%r15, %%rax\n\t"
+
 #define __SPECIAL_INSTRUCTION_PREAMBLE                            \
+                     __SANDBOX_RAX_ASM                            \
                      "rolq $3,  %%rdi ; rolq $13, %%rdi\n\t"      \
                      "rolq $61, %%rdi ; rolq $51, %%rdi\n\t"
+
 
 #define __SPECIAL_INSTRUCTION_PREAMBLE_32_ALIGNED                 \
                      ".align 32; "                                \
@@ -323,9 +347,8 @@ typedef
 /* NaCl: the instruction after xchgq should be 32-byte aligned. */
 #define VALGRIND_CALL_NOREDIR_RAX                                 \
                      ".align 32\n\t"                              \
-                     "nop;nop;nop;nop;nop;nop;nop\n\t" /* 7 */    \
-                     "nop;nop;nop;nop;nop;nop\n\t"     /* 6 */    \
-                     __SPECIAL_INSTRUCTION_PREAMBLE    /* 16*/    \
+                     "nop;nop;nop;nop;nop;nop;nop;nop\n\t" /* 8 */    \
+                     __SPECIAL_INSTRUCTION_PREAMBLE    /* 16 + 5 */    \
                      /* call-noredir *%RAX */                     \
                      "xchgq %%rdx,%%rdx\n\t"           /* 3 */
 #endif /* PLAT_amd64_linux || PLAT_amd64_darwin */
@@ -1180,6 +1203,7 @@ typedef
       _argvec[0] = (uint64_t)_orig.nraddr;                   \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
@@ -1199,6 +1223,7 @@ typedef
       _argvec[1] = (uint64_t)(arg1);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
@@ -1220,6 +1245,7 @@ typedef
       _argvec[2] = (uint64_t)(arg2);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "movq 16(%%rax), %%rsi\n\t"                              \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
@@ -1243,6 +1269,7 @@ typedef
       _argvec[3] = (uint64_t)(arg3);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "movq 24(%%rax), %%rdx\n\t"                              \
          "movq 16(%%rax), %%rsi\n\t"                              \
          "movq 8(%%rax), %%rdi\n\t"                               \
@@ -1268,6 +1295,7 @@ typedef
       _argvec[4] = (uint64_t)(arg4);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "movq 32(%%rax), %%rcx\n\t"                              \
          "movq 24(%%rax), %%rdx\n\t"                              \
          "movq 16(%%rax), %%rsi\n\t"                              \
@@ -1295,6 +1323,7 @@ typedef
       _argvec[5] = (uint64_t)(arg5);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "movq 40(%%rax), %%r8\n\t"                               \
          "movq 32(%%rax), %%rcx\n\t"                              \
          "movq 24(%%rax), %%rdx\n\t"                              \
@@ -1324,6 +1353,7 @@ typedef
       _argvec[6] = (uint64_t)(arg6);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "movq 48(%%rax), %%r9\n\t"                               \
          "movq 40(%%rax), %%r8\n\t"                               \
          "movq 32(%%rax), %%rcx\n\t"                              \
@@ -1356,6 +1386,7 @@ typedef
       _argvec[7] = (uint64_t)(arg7);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "pushq 56(%%rax)\n\t"                                    \
          "movq 48(%%rax), %%r9\n\t"                               \
          "movq 40(%%rax), %%r8\n\t"                               \
@@ -1391,6 +1422,7 @@ typedef
       _argvec[8] = (uint64_t)(arg8);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "pushq 64(%%rax)\n\t"                                    \
          "pushq 56(%%rax)\n\t"                                    \
          "movq 48(%%rax), %%r9\n\t"                               \
@@ -1428,6 +1460,7 @@ typedef
       _argvec[9] = (uint64_t)(arg9);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "pushq 72(%%rax)\n\t"                                    \
          "pushq 64(%%rax)\n\t"                                    \
          "pushq 56(%%rax)\n\t"                                    \
@@ -1467,6 +1500,7 @@ typedef
       _argvec[10] = (uint64_t)(arg10);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "pushq 80(%%rax)\n\t"                                    \
          "pushq 72(%%rax)\n\t"                                    \
          "pushq 64(%%rax)\n\t"                                    \
@@ -1508,6 +1542,7 @@ typedef
       _argvec[11] = (uint64_t)(arg11);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "pushq 88(%%rax)\n\t"                                    \
          "pushq 80(%%rax)\n\t"                                    \
          "pushq 72(%%rax)\n\t"                                    \
@@ -1551,6 +1586,7 @@ typedef
       _argvec[12] = (uint64_t)(arg12);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
+         __SANDBOX_RAX_ASM                                        \
          "pushq 96(%%rax)\n\t"                                    \
          "pushq 88(%%rax)\n\t"                                    \
          "pushq 80(%%rax)\n\t"                                    \
@@ -1610,7 +1646,7 @@ typedef
    "r0", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",   \
    "r11", "r12", "r13"
 
-/* These CALL_FN_ macros assume that on ppc32-linux, 
+/* These CALL_FN_ macros assume that on ppc32-linux,
    sizeof(unsigned long) == 4. */
 
 #define CALL_FN_W_v(lval, orig)                                   \
@@ -4126,7 +4162,7 @@ typedef
 #define VG_IS_TOOL_USERREQ(a, b, v) \
    (VG_USERREQ_TOOL_BASE(a,b) == ((v) & 0xffff0000))
 
-/* !! ABIWARNING !! ABIWARNING !! ABIWARNING !! ABIWARNING !! 
+/* !! ABIWARNING !! ABIWARNING !! ABIWARNING !! ABIWARNING !!
    This enum comprises an ABI exported by Valgrind to programs
    which use client requests.  DO NOT CHANGE THE ORDER OF THESE
    ENTRIES, NOR DELETE ANY -- add new ones at the end. */
@@ -4233,13 +4269,13 @@ static int VALGRIND_PRINTF(const char *format, ...)
 static int
 VALGRIND_PRINTF(const char *format, ...)
 {
-   unsigned long _qzz_res;
+   uint64_t _qzz_res;
    va_list vargs;
    va_start(vargs, format);
    VALGRIND_DO_CLIENT_REQUEST(_qzz_res, 0,
                               VG_USERREQ__PRINTF_VALIST_BY_REF,
-                              (unsigned long)format,
-                              (unsigned long)&vargs, 
+                              (uint64_t)VALGRIND_SANDBOX_PTR((size_t)format),
+                              (uint64_t)VALGRIND_SANDBOX_PTR((size_t)&vargs),
                               0, 0, 0);
    va_end(vargs);
    return (int)_qzz_res;
@@ -4250,13 +4286,13 @@ static int VALGRIND_PRINTF_BACKTRACE(const char *format, ...)
 static int
 VALGRIND_PRINTF_BACKTRACE(const char *format, ...)
 {
-   unsigned long _qzz_res;
+   uint64_t _qzz_res;
    va_list vargs;
    va_start(vargs, format);
    VALGRIND_DO_CLIENT_REQUEST(_qzz_res, 0,
                               VG_USERREQ__PRINTF_BACKTRACE_VALIST_BY_REF,
-                              (unsigned long)format,
-                              (unsigned long)&vargs, 
+                              (uint64_t)VALGRIND_SANDBOX_PTR((size_t)format),
+                              (uint64_t)VALGRIND_SANDBOX_PTR((size_t)&vargs),
                               0, 0, 0);
    va_end(vargs);
    return (int)_qzz_res;
