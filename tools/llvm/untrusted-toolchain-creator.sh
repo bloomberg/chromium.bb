@@ -52,6 +52,7 @@ readonly LLVMGCC_SFI_PATCH3=${PATCH_DIR}/libstdcpp-eh_arm.patch
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
 readonly LLVM_SFI_PATCH=${PATCH_DIR}/llvm-r88663.patch
+readonly LLVM_HACK_SFI_PATCH=${PATCH_DIR}/llvm-hack-sfi.patch
 readonly LLVM_GCC_PATCH=${PATCH_DIR}/llvm-gcc-104753.patch
 readonly LLVM_GCC_PATCH2=${PATCH_DIR}/llvm-gcc-104870.patch
 
@@ -626,6 +627,7 @@ UntarPatchConfigureAndBuildSfiLlc() {
   cd llvm
 
   Run "Patching" patch -p2 < ${LLVM_SFI_PATCH}
+  Run "Patching hack" patch -p1 < ${LLVM_HACK_SFI_PATCH}
 
   RunWithLog "Configure" ${TMP}/llvm.sfi.configure.log\
       env -i PATH=/usr/bin/:/bin \
