@@ -12,11 +12,11 @@
 #include "chrome/common/net/notifier/listener/xml_element_util.h"
 #include "talk/xmllite/qname.h"
 #include "talk/xmpp/xmppclient.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 
 namespace notifier {
 
-SendUpdateTask::SendUpdateTask(TaskParent* parent,
+SendUpdateTask::SendUpdateTask(Task* parent,
                                const OutgoingNotificationData& data)
     : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),  // Watch for one reply.
       notification_data_(data) {

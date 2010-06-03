@@ -95,7 +95,7 @@ int SSLSocketAdapter::BeginSSL() {
   // are correct for us, so we don't use the config service to initialize this
   // object.
   net::SSLConfig ssl_config;
-  transport_socket_->set_addr(talk_base::SocketAddress(hostname_, 0));
+  transport_socket_->set_addr(talk_base::SocketAddress(hostname_.c_str()));
   ssl_socket_.reset(
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
           transport_socket_, hostname_.c_str(), ssl_config));

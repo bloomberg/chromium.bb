@@ -18,7 +18,7 @@ namespace notifier {
 
 class SendUpdateTask : public buzz::XmppTask {
  public:
-  SendUpdateTask(TaskParent* parent, const OutgoingNotificationData& data);
+  SendUpdateTask(Task* parent, const OutgoingNotificationData& data);
   virtual ~SendUpdateTask();
 
   // Overridden from buzz::XmppTask.

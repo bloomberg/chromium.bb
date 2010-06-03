@@ -11,7 +11,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "third_party/expat/files/lib/expat.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
+#include "third_party/libjingle/files/talk/xmllite/xmlparser.h"
 
 // The base class that contains common functionality between
 // AutoFillQueryXmlParser and AutoFillUploadXmlParser.

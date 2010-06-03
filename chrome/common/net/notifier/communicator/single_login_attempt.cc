@@ -21,13 +21,13 @@
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/signalthread.h"
 #include "talk/base/taskrunner.h"
-#include "talk/base/win32socketinit.h"
+#include "talk/base/winsock_initializer.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/prexmppauth.h"
 #include "talk/xmpp/saslcookiemechanism.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 
 namespace notifier {
 
@@ -82,19 +82,19 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
     SignalAuthDone();
   }
 
-  virtual bool IsAuthDone() const { return true; }
+  virtual bool IsAuthDone() { return true; }
 
-  virtual bool IsAuthorized() const { return true; }
+  virtual bool IsAuthorized() { return true; }
 
-  virtual bool HadError() const { return false; }
+  virtual bool HadError() { return false; }
 
-  virtual int GetError() const { return 0; }
+  virtual int GetError() { return 0; }
 
-  virtual buzz::CaptchaChallenge GetCaptchaChallenge() const {
+  virtual buzz::CaptchaChallenge GetCaptchaChallenge() {
     return buzz::CaptchaChallenge();
   }
 
-  virtual std::string GetAuthCookie() const { return std::string(); }
+  virtual std::string GetAuthCookie() { return std::string(); }
 
   // buzz::SaslHandler implementation.
 
@@ -114,10 +114,9 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
         : NULL;
   }
 
-  // TODO(akalin): remove this code.
   virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
                                 std::string* tls_server_hostname,
-                                std::string* tls_server_domain) const {
+                                std::string* tls_server_domain) {
     std::string server_ip = server.IPAsString();
     if ((server_ip == buzz::STR_TALK_GOOGLE_COM) ||
         (server_ip == buzz::STR_TALKX_L_GOOGLE_COM)) {
@@ -137,7 +136,7 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
 
 }  // namespace
 
-SingleLoginAttempt::SingleLoginAttempt(talk_base::TaskParent* parent,
+SingleLoginAttempt::SingleLoginAttempt(talk_base::Task* parent,
                                        LoginSettings* login_settings,
                                        bool successful_connection)
     : talk_base::Task(parent),

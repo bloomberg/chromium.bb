@@ -8,7 +8,6 @@ vars = {
   "swig_revision": "40423",
   "nacl_revision": "2407",
   "libvpx_revision": "47941",
-  "libjingle_revision": "21",
 }
 
 deps = {
@@ -153,10 +152,6 @@ deps = {
 
   "src/third_party/ppapi":
     "http://ppapi.googlecode.com/svn/trunk@52",
-
-  "src/third_party/libjingle/source":
-    "http://libjingle.googlecode.com/svn/branches/nextsnap@" +
-    Var("libjingle_revision"),
 }
 
 

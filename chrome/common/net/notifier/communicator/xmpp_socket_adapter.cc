@@ -15,7 +15,6 @@
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/logging.h"
 #include "talk/base/socketadapters.h"
-#include "talk/base/ssladapter.h"
 #include "talk/base/thread.h"
 #include "talk/xmpp/xmppengine.h"
 
@@ -34,7 +33,7 @@ XmppSocketAdapter::XmppSocketAdapter(const buzz::XmppClientSettings& xcs,
     write_buffer_capacity_(0),
     allow_unverified_certs_(allow_unverified_certs) {
   proxy_.type = xcs.proxy();
-  proxy_.address.SetIP(xcs.proxy_host());
+  proxy_.address.SetIP(xcs.proxy_host(), false);
   proxy_.address.SetPort(xcs.proxy_port());
   proxy_.username = xcs.proxy_user();
   proxy_.password = xcs.proxy_pass();

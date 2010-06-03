@@ -35,7 +35,7 @@ static const int kRedirectTimeoutMinutes = 5;
 // Disconnect if network stays down for more than 10 seconds.
 static const int kDisconnectionDelaySecs = 10;
 
-Login::Login(talk_base::TaskParent* parent,
+Login::Login(talk_base::Task* parent,
              const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
              std::string lang,

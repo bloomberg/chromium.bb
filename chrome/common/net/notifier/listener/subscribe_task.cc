@@ -13,13 +13,13 @@
 #include "talk/xmllite/qname.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmppclient.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/xmpp/xmppengine.h"
 
 namespace notifier {
 
 SubscribeTask::SubscribeTask(
-    TaskParent* parent,
+    Task* parent,
     const std::vector<std::string>& subscribed_services_list)
     : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
       subscribed_services_list_(subscribed_services_list) {
