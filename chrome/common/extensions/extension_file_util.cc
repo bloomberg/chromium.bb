@@ -29,6 +29,11 @@ namespace extension_file_util {
 // Validates locale info. Doesn't check if messages.json files are valid.
 static bool ValidateLocaleInfo(const Extension& extension, std::string* error);
 
+// Returns false and sets the error if script file can't be loaded,
+// or if it's not UTF-8 encoded.
+static bool IsScriptValid(const FilePath& path, const FilePath& relative_path,
+                          int message_id, std::string* error);
+
 const char kInstallDirectoryName[] = "Extensions";
 
 FilePath InstallExtension(const FilePath& unpacked_source_dir,
@@ -163,7 +168,8 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     return true;
   }
 
-  // Validate that claimed script resources actually exist.
+  // Validate that claimed script resources actually exist,
+  // and are UTF-8 encoded.
   for (size_t i = 0; i < extension->content_scripts().size(); ++i) {
     const UserScript& script = extension->content_scripts()[i];
 
@@ -171,24 +177,18 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       const UserScript::File& js_script = script.js_scripts()[j];
       const FilePath& path = ExtensionResource::GetFilePath(
           js_script.extension_root(), js_script.relative_path());
-      if (!file_util::PathExists(path)) {
-        *error =
-            l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED,
-                WideToUTF16(js_script.relative_path().ToWStringHack()));
+      if (!IsScriptValid(path, js_script.relative_path(),
+                         IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED, error))
         return false;
-      }
     }
 
     for (size_t j = 0; j < script.css_scripts().size(); j++) {
       const UserScript::File& css_script = script.css_scripts()[j];
       const FilePath& path = ExtensionResource::GetFilePath(
           css_script.extension_root(), css_script.relative_path());
-      if (!file_util::PathExists(path)) {
-        *error =
-            l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_CSS_FAILED,
-                WideToUTF16(css_script.relative_path().ToWStringHack()));
+      if (!IsScriptValid(path, css_script.relative_path(),
+                         IDS_EXTENSION_LOAD_CSS_FAILED, error))
         return false;
-      }
     }
   }
 
@@ -405,6 +405,29 @@ static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
   // Only message file for default locale has to exist.
   if (!has_default_locale_message_file) {
     *error = errors::kLocalesNoDefaultMessages;
+    return false;
+  }
+
+  return true;
+}
+
+static bool IsScriptValid(const FilePath& path,
+                          const FilePath& relative_path,
+                          int message_id,
+                          std::string* error) {
+  std::string content;
+  if (!file_util::PathExists(path) ||
+      !file_util::ReadFileToString(path, &content)) {
+    *error = l10n_util::GetStringFUTF8(
+        message_id,
+        WideToUTF16(relative_path.ToWStringHack()));
+    return false;
+  }
+
+  if (!IsStringUTF8(content)) {
+    *error = l10n_util::GetStringFUTF8(
+        IDS_EXTENSION_BAD_FILE_ENCODING,
+        WideToUTF16(relative_path.ToWStringHack()));
     return false;
   }
 

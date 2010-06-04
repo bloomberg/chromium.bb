@@ -177,6 +177,21 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
                "Line: 2, column: 16, Syntax error.", error.c_str());
 }
 
+TEST(ExtensionFileUtil, FailLoadingNonUTF8Scripts) {
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("bad")
+      .AppendASCII("bad_encoding");
+
+  std::string error;
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(install_dir, false, &error));
+  ASSERT_TRUE(extension == NULL);
+  ASSERT_STREQ("Could not load file 'bad_encoding.js' for content script. "
+               "It isn't UTF-8 encoded.", error.c_str());
+}
+
 #define URL_PREFIX "chrome-extension://extension-id/"
 
 TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
