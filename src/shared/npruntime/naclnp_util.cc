@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
