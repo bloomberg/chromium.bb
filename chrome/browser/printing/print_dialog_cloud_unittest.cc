@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/chrome_thread.h"
@@ -24,6 +25,7 @@
 
 using testing::A;
 using testing::AtLeast;
+using testing::Eq;
 using testing::HasSubstr;
 using testing::IsNull;
 using testing::NotNull;
@@ -34,6 +36,7 @@ using testing::_;
 static const char* const kPDFTestFile = "printing/cloud_print_unittest.pdf";
 static const char* const kEmptyPDFTestFile =
     "printing/cloud_print_emptytest.pdf";
+static const char* const kMockJobTitle = "Mock Job Title";
 
 FilePath GetTestDataFileName() {
   FilePath test_data_directory;
@@ -56,6 +59,17 @@ char* GetTestData() {
     file_util::ReadFileToString(test_file, &sTestFileData);
   }
   return &sTestFileData[0];
+}
+
+MATCHER_P(StringValueEq, expected, "StringValue") {
+  if (expected->Equals(&arg))
+    return true;
+  std::string expected_string, arg_string;
+  expected->GetAsString(&expected_string);
+  arg.GetAsString(&arg_string);
+  *result_listener << "'" << arg_string
+                   << "' (expected '" << expected_string << "')";
+  return false;
 }
 
 namespace internal_cloud_print_helpers {
@@ -172,7 +186,7 @@ class CloudPrintDataSenderTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    string16 mock_job_title;
+    string16 mock_job_title(ASCIIToUTF16(kMockJobTitle));
     mock_helper_.reset(new MockCloudPrintDataSenderHelper);
     print_data_sender_ =
         new CloudPrintDataSender(mock_helper_.get(), mock_job_title);
@@ -188,8 +202,10 @@ class CloudPrintDataSenderTest : public testing::Test {
 
 // TODO(scottbyer): DISABLED until the binary test file can get
 // checked in separate from the patch.
-TEST_F(CloudPrintDataSenderTest, DISABLED_CanSend) {
-  EXPECT_CALL(*mock_helper_, CallJavascriptFunction(_, _, _)).
+TEST_F(CloudPrintDataSenderTest, CanSend) {
+  StringValue mock_job_title(kMockJobTitle);
+  EXPECT_CALL(*mock_helper_,
+              CallJavascriptFunction(_, _, StringValueEq(&mock_job_title))).
       WillOnce(Return());
 
   FilePath test_data_file_name = GetTestDataFileName();
@@ -247,9 +263,9 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
  protected:
   virtual void SetUp() {
     FilePath mock_path;
-    string16 mock_string;
+    string16 mock_title;
     MockCloudPrintFlowHandler* handler =
-        new MockCloudPrintFlowHandler(mock_path, mock_string);
+        new MockCloudPrintFlowHandler(mock_path, mock_title);
     mock_flow_handler_ = handler->AsWeakPtr();
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));
