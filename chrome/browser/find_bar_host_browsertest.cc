@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // TODO(rohitrao): The FindMovesWhenObscuring test does not pass on mac.
 // http://crbug.com/22036
 #if defined(OS_MACOSX)
-#define MAYBE_FindMovesWhenObscuring DISABLED_FindMovesWhenObscuring
+#define MAYBE_FindMovesWhenObscuring FAILS_FindMovesWhenObscuring
 #else
 #define MAYBE_FindMovesWhenObscuring FindMovesWhenObscuring
 #endif
