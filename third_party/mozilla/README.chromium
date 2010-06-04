@@ -19,3 +19,4 @@ Local modifications:
 - NSPasteboard+Utils.mm was modified to add an argument to
   -[NSPasteboard getURLs:andTitles:] to determine whether or not filenames in
   the drag should be converted to file URLs.
+  -[NSPasteboard htmlFromRtf] added to do rtf->html conversion.

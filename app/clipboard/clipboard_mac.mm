@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/size.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 namespace {
 
@@ -165,6 +166,12 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
   NSPasteboard* pb = GetPasteboard();
   NSArray* types = [pb types];
 
+  // Safari only places RTF on the pasteboard, never HTML. We can convert RTF
+  // to HTML, so the presence of either indicates success when looking for HTML.
+  if ([format_ns isEqualToString:NSHTMLPboardType]) {
+    return [types containsObject:NSHTMLPboardType] ||
+           [types containsObject:NSRTFPboardType];
+  }
   return [types containsObject:format_ns];
 }
 
@@ -195,11 +202,14 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   DCHECK_EQ(buffer, BUFFER_STANDARD);
   if (markup) {
     NSPasteboard* pb = GetPasteboard();
-    NSArray *supportedTypes = [NSArray arrayWithObjects:NSHTMLPboardType,
+    NSArray* supportedTypes = [NSArray arrayWithObjects:NSHTMLPboardType,
+                                                        NSRTFPboardType,
                                                         NSStringPboardType,
                                                         nil];
-    NSString *bestType = [pb availableTypeFromArray:supportedTypes];
+    NSString* bestType = [pb availableTypeFromArray:supportedTypes];
     NSString* contents = [pb stringForType:bestType];
+    if ([bestType isEqualToString:NSRTFPboardType])
+      contents = [pb htmlFromRtf];
     UTF8ToUTF16([contents UTF8String],
                 [contents lengthOfBytesUsingEncoding:NSUTF8StringEncoding],
                 markup);

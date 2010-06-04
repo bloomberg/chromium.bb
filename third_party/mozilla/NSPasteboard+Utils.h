@@ -58,3 +58,10 @@ extern NSString* const kWebURLsWithTitlesPboardType;
 
 @end
 
+@interface NSPasteboard(ChromiumHTMLUtils)
+
+// Returns the HTML converted from RTF data on the pasteboard. If there is
+// none, returns an empty string.
+- (NSString*)htmlFromRtf;
+
+@end
