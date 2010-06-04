@@ -19,6 +19,7 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebPlugin;
 class WebString;
+class WebThemeEngine;
 class WebURL;
 struct WebPluginParams;
 }
@@ -96,6 +97,12 @@ void ClearAllDatabases();
 
 // - Resource loader
 void SetAcceptAllCookies(bool accept);
+
+// - Theme engine
+#if defined(OS_WIN)
+void SetThemeEngine(WebKit::WebThemeEngine* engine);
+WebKit::WebThemeEngine* GetThemeEngine();
+#endif
 
 }  // namespace webkit_support
 
