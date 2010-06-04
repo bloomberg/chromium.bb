@@ -166,6 +166,10 @@ class WizardController : public chromeos::ScreenObserver,
   // True if full OOBE flow should be shown.
   bool is_out_of_box_;
 
+  // True if this is run under automation test and we need to show only
+  // login screen.
+  bool is_test_mode_;
+
   // NULL by default - controller itself is observer. Mock could be assigned.
   ScreenObserver* observer_;
 

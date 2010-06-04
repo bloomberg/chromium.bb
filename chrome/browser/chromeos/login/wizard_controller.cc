@@ -193,6 +193,7 @@ WizardController::WizardController()
       contents_(NULL),
       current_screen_(NULL),
       is_out_of_box_(false),
+      is_test_mode_(false),
       observer_(NULL) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
@@ -345,6 +346,11 @@ void WizardController::SetCustomization(
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnLoginSignInSelected() {
+  // Don't show user image screen in case of automated testing.
+  if (is_test_mode_) {
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    return;
+  }
   // Don't launch browser until we pass image screen.
   chromeos::LoginUtils::Get()->EnableBrowserLaunch(false);
   ShowUserImageScreen();
@@ -460,6 +466,8 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   if (first_screen_name == kNetworkScreenName) {
     ShowNetworkScreen();
   } else if (first_screen_name == kLoginScreenName) {
+    // This flag is passed if we're running under automation test.
+    is_test_mode_ = true;
     ShowLoginScreen();
   } else if (first_screen_name == kAccountScreenName) {
     ShowAccountScreen();
