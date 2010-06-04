@@ -47,7 +47,9 @@ void FindBarController::EndFindSession(SelectionAction action) {
     // for now, so that we can abort the scoping effort and clear all the
     // tickmarks and highlighting.
     tab_contents_->StopFinding(action);
-    find_bar_->ClearResults(tab_contents_->find_result());
+
+    if (action != kKeepSelection)
+      find_bar_->ClearResults(tab_contents_->find_result());
 
     // When we get dismissed we restore the focus to where it belongs.
     find_bar_->RestoreSavedFocus();

@@ -11,6 +11,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/find_bar_controller.h"
+#include "chrome/browser/find_bar_state.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/find_bar_host.h"
 #include "chrome/browser/view_ids.h"
@@ -447,6 +449,15 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
   } else {
     controller->tab_contents()->StopFinding(FindBarController::kClearSelection);
     UpdateForResult(controller->tab_contents()->find_result(), string16());
+
+    // Clearing the text box should clear the prepopulate state so that when
+    // we close and reopen the Find box it doesn't show the search we just
+    // deleted. We can't do this on ChromeOS yet because we get ContentsChanged
+    // sent for a lot more things than just the user nulling out the search
+    // terms. See http://crbug.com/45372.
+    FindBarState* find_bar_state =
+        controller->tab_contents()->profile()->GetFindBarState();
+    find_bar_state->set_last_prepopulate_text(string16());
   }
 }
 

@@ -22,7 +22,7 @@ class FindBarState {
     return last_prepopulate_text_;
   }
 
-  void set_last_prepopulate_text(const string16 text) {
+  void set_last_prepopulate_text(const string16& text) {
     last_prepopulate_text_ = text;
   }
 

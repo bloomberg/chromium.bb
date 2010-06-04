@@ -229,7 +229,8 @@ FindBarTesting* FindBarHost::GetFindBarTesting() {
 
 void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
                                        const string16& find_text) {
-  find_bar_view()->UpdateForResult(result, find_text);
+  if (!find_text.empty())
+    find_bar_view()->UpdateForResult(result, find_text);
 
   // We now need to check if the window is obscuring the search results.
   if (!result.selection_rect().IsEmpty())

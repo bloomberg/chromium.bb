@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/find_bar_controller.h"
+#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/custom_button.h"
@@ -557,6 +558,12 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
     tab_contents->StopFinding(FindBarController::kClearSelection);
     UpdateUIForFindResult(find_bar_controller_->tab_contents()->find_result(),
                           string16());
+
+    // Clearing the text box should also clear the prepopulate state so that
+    // when we close and reopen the Find box it doesn't show the search we
+    // just deleted.
+    FindBarState* find_bar_state = browser_->profile()->GetFindBarState();
+    find_bar_state->set_last_prepopulate_text(string16());
   }
 }
 
