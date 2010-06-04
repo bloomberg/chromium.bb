@@ -316,22 +316,6 @@ const wchar_t kDeletePasswords[] = L"browser.clear_data.passwords";
 const wchar_t kDeleteFormData[] = L"browser.clear_data.form_data";
 const wchar_t kDeleteTimePeriod[] = L"browser.clear_data.time_period";
 
-// Integer prefs giving the widths of the columns in the bookmark table. Two
-// configurations are saved, one with the path column and one without.
-const wchar_t kBookmarkTableNameWidth1[] = L"bookmark_table.name_width_1";
-const wchar_t kBookmarkTableURLWidth1[] = L"bookmark_table.url_width_1";
-const wchar_t kBookmarkTableNameWidth2[] = L"bookmark_table.name_width_2";
-const wchar_t kBookmarkTableURLWidth2[] = L"bookmark_table.url_width_2";
-const wchar_t kBookmarkTablePathWidth[] = L"bookmark_table.path_width";
-
-// Bounds of the bookmark manager.
-const wchar_t kBookmarkManagerPlacement[] =
-    L"bookmark_manager.window_placement";
-
-// Integer location of the split bar in the bookmark manager.
-const wchar_t kBookmarkManagerSplitLocation[] =
-    L"bookmark_manager.split_location";
-
 // Boolean pref to define the default values for using spellchecker.
 const wchar_t kEnableSpellCheck[] = L"browser.enable_spellchecking";
 

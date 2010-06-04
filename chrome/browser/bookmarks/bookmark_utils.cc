@@ -635,21 +635,8 @@ void ToggleWhenVisible(Profile* profile) {
       NotificationService::NoDetails());
 }
 
-void RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kBookmarkManagerPlacement);
-  prefs->RegisterIntegerPref(prefs::kBookmarkManagerSplitLocation, -1);
-}
-
 void RegisterUserPrefs(PrefService* prefs) {
-  // Formerly in BookmarkBarView
   prefs->RegisterBooleanPref(prefs::kShowBookmarkBar, false);
-
-  // Formerly in BookmarkTableView
-  prefs->RegisterIntegerPref(prefs::kBookmarkTableNameWidth1, -1);
-  prefs->RegisterIntegerPref(prefs::kBookmarkTableURLWidth1, -1);
-  prefs->RegisterIntegerPref(prefs::kBookmarkTableNameWidth2, -1);
-  prefs->RegisterIntegerPref(prefs::kBookmarkTableURLWidth2, -1);
-  prefs->RegisterIntegerPref(prefs::kBookmarkTablePathWidth, -1);
 }
 
 void GetURLAndTitleToBookmark(TabContents* tab_contents,

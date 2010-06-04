@@ -182,10 +182,7 @@ const BookmarkNode* ApplyEditsWithPossibleGroupChange(
 // all tabs.  This is a preference modifier, not a visual modifier.
 void ToggleWhenVisible(Profile* profile);
 
-// Register local state prefs for bookmark bar view.
-void RegisterPrefs(PrefService* prefs);
-
-// Register user prefs for BookmarkBar, BookmarkView, ...
+// Register user preferences for BookmarksBar.
 void RegisterUserPrefs(PrefService* prefs);
 
 // Fills in the URL and title for a bookmark of |tab_contents|.
