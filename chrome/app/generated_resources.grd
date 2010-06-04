@@ -8212,7 +8212,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Notifications
       </message>
       <message name="IDS_GUEST" desc="Shown in login panel for guest user">
-        Other user
+        New user
       </message>
       <message name="IDS_LANGUAGES_MORE" desc="Main language list 'more' link. Expands all possible languages, not only the main ones.">
         More...

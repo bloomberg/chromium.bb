@@ -65,13 +65,16 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // UserController::Delegate:
   virtual void Login(UserController* source, const string16& password);
+  virtual void LoginOffTheRecord();
   virtual void ClearErrors();
   virtual void OnUserSelected(UserController* source);
+  virtual void ActivateWizard(const std::string& screen_name);
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const std::string& error);
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials);
+  virtual void OnOffTheRecordLoginSuccess();
 
   // Overridden from views::InfoBubbleDelegate.
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
@@ -85,6 +88,9 @@ class ExistingUserController : public WmMessageListener::Observer,
   // If |details| string is not empty, it specify additional error text
   // provided by authenticator, it is not localized.
   void ShowError(int error_id, const std::string& details);
+
+  // Send message to window manager to enable/disable click on other windows.
+  void SendSetLoginState(bool is_login);
 
   // Bounds of the background window.
   const gfx::Rect background_bounds_;

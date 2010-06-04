@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/canvas.h"
@@ -41,6 +42,10 @@ const int kBorderSize = 4;
 // Gap between the border around the image/buttons and user name.
 const int kUserNameGap = 4;
 
+// Approximate height of controls window, this constant is used in new user
+// case to make border window size close to exsisting users.
+const int kControlsHeight = 30;
+
 // Background color.
 const SkColor kBackgroundColor = SK_ColorWHITE;
 
@@ -58,9 +63,9 @@ const int UserController::kPadding = 20;
 // Max size needed when an entry is not selected.
 const int UserController::kUnselectedSize = 100;
 
-UserController::UserController()
+UserController::UserController(Delegate* delegate)
     : is_guest_(true),
-      delegate_(NULL),
+      delegate_(delegate),
       password_field_(NULL),
       submit_button_(NULL),
       controls_window_(NULL),
@@ -69,6 +74,7 @@ UserController::UserController()
       label_window_(NULL),
       unselected_label_window_(NULL),
       image_view_(NULL),
+      new_user_view_(NULL),
       throbber_(NULL) {
   registrar_.Add(
       this,
@@ -89,6 +95,7 @@ UserController::UserController(Delegate* delegate,
       label_window_(NULL),
       unselected_label_window_(NULL),
       image_view_(NULL),
+      new_user_view_(NULL),
       throbber_(NULL) {
   registrar_.Add(
       this,
@@ -100,6 +107,7 @@ UserController::~UserController() {
   controls_window_->Close();
   image_window_->Close();
   image_view_ = NULL;
+  new_user_view_ = NULL;
   border_window_->Close();
   label_window_->Close();
   unselected_label_window_->Close();
@@ -117,14 +125,19 @@ void UserController::Init(int index, int total_user_count) {
 }
 
 void UserController::SetPasswordEnabled(bool enable) {
+  DCHECK(!is_guest_);
   password_field_->SetEnabled(enable);
   submit_button_->SetEnabled(enable);
   enable ? throbber_->Stop() : throbber_->Start();
 }
 
 void UserController::ClearAndEnablePassword() {
-  password_field_->SetText(string16());
-  SetPasswordEnabled(true);
+  if (is_guest_) {
+    new_user_view_->ClearAndEnablePassword();
+  } else {
+    password_field_->SetText(string16());
+    SetPasswordEnabled(true);
+  }
 }
 
 void UserController::ButtonPressed(views::Button* sender,
@@ -174,40 +187,47 @@ void UserController::IsActiveChanged(bool active) {
 }
 
 WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
-  password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
-  password_field_->set_text_to_display_when_empty(
-      l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
-  password_field_->SetController(this);
-  submit_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_LOGIN_BUTTON));
-  views::View* control_view = new views::View();
-  GridLayout* layout = new GridLayout(control_view);
-  control_view->SetLayoutManager(layout);
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kBorderSize);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                        GridLayout::USE_PREF, 0, 0);
+  views::View* control_view;
+  if (is_guest_) {
+    new_user_view_ = new NewUserView(this, false);
+    new_user_view_->Init();
+    control_view = new_user_view_;
+  } else {
+    password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+    password_field_->set_text_to_display_when_empty(
+        l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
+    password_field_->SetController(this);
+    submit_button_ = new views::NativeButton(
+        this, l10n_util::GetString(IDS_LOGIN_BUTTON));
+    control_view = new views::View();
+    GridLayout* layout = new GridLayout(control_view);
+    control_view->SetLayoutManager(layout);
+    views::ColumnSet* column_set = layout->AddColumnSet(0);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                          GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, kBorderSize);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+                          GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, 0);
-  layout->AddView(password_field_);
-  layout->AddView(submit_button_);
+    layout->StartRow(0, 0);
+    layout->AddView(password_field_);
+    layout->AddView(submit_button_);
+  }
 
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->MakeTransparent();
   window->Init(NULL, gfx::Rect());
   window->SetContentsView(control_view);
   window->SetWidgetDelegate(this);
-  gfx::Size pref = control_view->GetPreferredSize();
-  *height = pref.height();
+  *height = is_guest_ ? kSize + kControlsHeight
+                      : control_view->GetPreferredSize().height();
   std::vector<int> params;
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
       window->GetNativeView(),
       WM_IPC_WINDOW_LOGIN_CONTROLS,
       &params);
-  window->SetBounds(gfx::Rect(0, 0, kSize, pref.height()));
+  window->SetBounds(gfx::Rect(0, 0, kSize, *height));
   window->Show();
   return window;
 }
@@ -258,9 +278,11 @@ WidgetGtk* UserController::CreateBorderWindow(int index,
       WM_IPC_WINDOW_LOGIN_BORDER,
       &params);
 
-  window->SetBounds(gfx::Rect(0, 0, kSize + kBorderSize * 2,
-                              kSize + kBorderSize * 2 +
-                              kBorderSize + controls_height));
+  // Guest login controls window is much higher than exsisting user's controls
+  // window so window manager will place the control instead of image window.
+  int height = kBorderSize * 2 + controls_height;
+  height += is_guest_ ? 0 : kBorderSize + kSize;
+  window->SetBounds(gfx::Rect(0, 0, kSize + kBorderSize * 2, height));
   window->Show();
   return window;
 }
@@ -301,11 +323,33 @@ void UserController::SetImage(const SkBitmap& image) {
 }
 
 gfx::Rect UserController::GetScreenBounds() const {
-  gfx::Rect screen_bounds(password_field_->bounds());
-  gfx::Point origin(screen_bounds.origin());
-  views::View::ConvertPointToScreen(password_field_->GetParent(), &origin);
-  screen_bounds.set_origin(origin);
-  return screen_bounds;
+  if (is_guest_) {
+    return new_user_view_->GetPasswordBounds();
+  } else {
+    gfx::Rect screen_bounds(password_field_->bounds());
+    gfx::Point origin(screen_bounds.origin());
+    views::View::ConvertPointToScreen(password_field_->GetParent(), &origin);
+    screen_bounds.set_origin(origin);
+    return screen_bounds;
+  }
+}
+
+void UserController::OnLogin(const std::string& username,
+                             const std::string& password) {
+  user_.set_email(username);
+  delegate_->Login(this, UTF8ToUTF16(password));
+}
+
+void UserController::OnCreateAccount() {
+  delegate_->ActivateWizard(WizardController::kAccountScreenName);
+}
+
+void UserController::OnLoginOffTheRecord() {
+  delegate_->LoginOffTheRecord();
+}
+
+void UserController::ClearErrors() {
+  delegate_->ClearErrors();
 }
 
 }  // namespace chromeos

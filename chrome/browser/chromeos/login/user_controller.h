@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_CONTROLLER_H_
 
+#include <string>
+
 #include "base/string16.h"
+#include "chrome/browser/chromeos/login/new_user_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/notification_observer.h"
@@ -24,24 +27,28 @@ class Throbber;
 namespace chromeos {
 
 // UserController manages the set of windows needed to login a single existing
-// user. ExistingUserController creates the nececessary set of UserControllers.
+// user or first time login for a new user. ExistingUserController creates
+// the nececessary set of UserControllers.
 class UserController : public views::ButtonListener,
                        public views::Textfield::Controller,
                        public views::WidgetDelegate,
+                       public NewUserView::Delegate,
                        public NotificationObserver {
  public:
   class Delegate {
    public:
     virtual void Login(UserController* source,
                        const string16& password) = 0;
+    virtual void LoginOffTheRecord() = 0;
     virtual void ClearErrors() = 0;
     virtual void OnUserSelected(UserController* source) = 0;
+    virtual void ActivateWizard(const std::string& screen_name) = 0;
    protected:
     virtual ~Delegate() {}
   };
 
   // Creates a UserController representing the guest (other user) login.
-  UserController();
+  explicit UserController(Delegate* delegate);
 
   // Creates a UserController for the specified user.
   UserController(Delegate* delegate, const UserManager::User& user);
@@ -82,6 +89,13 @@ class UserController : public views::ButtonListener,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // NewUserView::Delegate
+  virtual void OnLogin(const std::string& username,
+                       const std::string& password);
+  virtual void OnCreateAccount();
+  virtual void OnLoginOffTheRecord();
+  virtual void ClearErrors();
 
   // Max size needed when an entry is selected.
   static const int kSize;
@@ -135,6 +149,9 @@ class UserController : public views::ButtonListener,
 
   // View that shows user image on image window.
   views::ImageView* image_view_;
+
+  // View that that is used for new user login.
+  NewUserView* new_user_view_;
 
   views::Throbber* throbber_;
 

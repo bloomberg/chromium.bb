@@ -50,9 +50,6 @@ ExistingUserController::ExistingUserController(
       background_view_(NULL),
       selected_view_index_(kNotSelected),
       bubble_(NULL) {
-  DCHECK(!users.empty());  // There must be at least one user when using
-                           // ExistingUserController.
-
   // Caclulate the max number of users from available screen size.
   size_t max_users = kMaxUsers;
   int screen_width = background_bounds.width();
@@ -69,7 +66,7 @@ ExistingUserController::ExistingUserController(
   }
 
   // Add the view representing the guest user last.
-  controllers_.push_back(new UserController());
+  controllers_.push_back(new UserController(this));
 }
 
 void ExistingUserController::Init() {
@@ -108,19 +105,13 @@ void ExistingUserController::ProcessWmMessage(const WmIpc::Message& message,
   if (message.type() != WM_IPC_MESSAGE_CHROME_CREATE_GUEST_WINDOW)
     return;
 
-  // WizardController takes care of deleting itself when done.
-  WizardController* controller = new WizardController();
-  controller->Init(std::string(), background_bounds_, false);
-  controller->Show();
+  ActivateWizard(std::string());
+}
 
-  // Give the background window to the controller.
-  controller->OwnBackground(background_window_, background_view_);
-  background_window_ = NULL;
-
-  // And schedule us for deletion. We delay for a second as the window manager
-  // is doing an animation with our windows.
-  delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
-                      &ExistingUserController::Delete);
+void ExistingUserController::SendSetLoginState(bool is_enabled) {
+  WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
+  message.set_param(0, is_enabled);
+  WmIpc::instance()->SendMessage(message);
 }
 
 void ExistingUserController::Login(UserController* source,
@@ -141,9 +132,18 @@ void ExistingUserController::Login(UserController* source,
                         UTF16ToUTF8(password)));
 
   // Disable clicking on other windows.
-  WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
-  message.set_param(0, 0);
-  WmIpc::instance()->SendMessage(message);
+  SendSetLoginState(false);
+}
+
+void ExistingUserController::LoginOffTheRecord() {
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(authenticator_.get(),
+                        &Authenticator::LoginOffTheRecord));
+
+  // Disable clicking on other windows.
+  SendSetLoginState(false);
 }
 
 void ExistingUserController::ClearErrors() {
@@ -164,6 +164,22 @@ void ExistingUserController::OnUserSelected(UserController* source) {
   selected_view_index_ = new_selected_index;
 }
 
+void ExistingUserController::ActivateWizard(const std::string& screen_name) {
+  // WizardController takes care of deleting itself when done.
+  WizardController* controller = new WizardController();
+  controller->Init(screen_name, background_bounds_, false);
+  controller->Show();
+
+  // Give the background window to the controller.
+  controller->OwnBackground(background_window_, background_view_);
+  background_window_ = NULL;
+
+  // And schedule us for deletion. We delay for a second as the window manager
+  // is doing an animation with our windows.
+  delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
+                      &ExistingUserController::Delete);
+}
+
 void ExistingUserController::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "OnLoginFailure";
 
@@ -181,9 +197,7 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   controllers_[selected_view_index_]->ClearAndEnablePassword();
 
   // Reenable clicking on other windows.
-  WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);
-  message.set_param(0, 1);
-  WmIpc::instance()->SendMessage(message);
+  SendSetLoginState(true);
 }
 
 void ExistingUserController::ShowError(int error_id,
@@ -203,15 +217,25 @@ void ExistingUserController::ShowError(int error_id,
 
 void ExistingUserController::OnLoginSuccess(const std::string& username,
                                             const std::string& credentials) {
-  // Hide the login windows now.
-  STLDeleteElements(&controllers_);
+  if (selected_view_index_ + 1 == controllers_.size()) {
+    // For new user login don't launch browser until we pass image screen.
+    chromeos::LoginUtils::Get()->EnableBrowserLaunch(false);
+    LoginUtils::Get()->CompleteLogin(username, credentials);
+    ActivateWizard(WizardController::kUserImageScreenName);
+  } else {
+    // Hide the login windows now.
+    STLDeleteElements(&controllers_);
 
-  background_window_->Close();
+    background_window_->Close();
 
-  LoginUtils::Get()->CompleteLogin(username, credentials);
+    LoginUtils::Get()->CompleteLogin(username, credentials);
+    // Delay deletion as we're on the stack.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  }
+}
 
-  // Delay deletion as we're on the stack.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+void ExistingUserController::OnOffTheRecordLoginSuccess() {
+  LoginUtils::Get()->CompleteOffTheRecordLogin();
 }
 
 }  // namespace chromeos

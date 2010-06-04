@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "grit/generated_resources.h"
-//#include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
@@ -75,6 +74,9 @@ void NewUserView::Init() {
     views::Painter* painter = CreateWizardPainter(
         &BorderDefinition::kScreenBorder);
     set_background(views::Background::CreateBackgroundPainter(true, painter));
+  } else {
+    set_background(views::Background::CreateSolidBackground(
+        BorderDefinition::kScreenBorder.top_color));
   }
 
   // Set up fonts.
@@ -325,6 +327,7 @@ void NewUserView::ClearAndEnablePassword() {
   EnableInputControls(true);
   SetPassword(std::string());
   password_field_->RequestFocus();
+  throbber_->Stop();
 }
 
 gfx::Rect NewUserView::GetPasswordBounds() const {
