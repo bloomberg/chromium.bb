@@ -61,7 +61,7 @@ void ChromeFrameTestWithWebServer::SetUp() {
   EXPECT_TRUE(server_.server() != NULL);
   if (server_.server()) {
     results_dir_ = server_.GetDataDir();
-    file_util::AppendToPath(&results_dir_, L"dump");
+    results_dir_ = results_dir_.AppendASCII("dump");
   }
 }
 
@@ -159,9 +159,9 @@ bool ChromeFrameTestWithWebServer::WaitForOnLoad(int milliseconds) {
 }
 
 bool ChromeFrameTestWithWebServer::ReadResultFile(const std::wstring& file_name,
-                                                std::string* data) {
-  std::wstring full_path = results_dir_;
-  file_util::AppendToPath(&full_path, file_name);
+                                                  std::string* data) {
+  FilePath full_path(results_dir_);
+  full_path = full_path.Append(file_name);
   return file_util::ReadFileToString(full_path, data);
 }
 
@@ -219,10 +219,11 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     ASSERT_TRUE(ver_system || ver_user);
 
     bool system_install = ver_system ? true : false;
-    std::wstring cf_dll_path(installer::GetChromeInstallPath(system_install));
-    file_util::AppendToPath(&cf_dll_path,
+    FilePath cf_dll_path = FilePath::FromWStringHack(
+        installer::GetChromeInstallPath(system_install));
+    cf_dll_path = cf_dll_path.Append(
         ver_system ? ver_system->GetString() : ver_user->GetString());
-    file_util::AppendToPath(&cf_dll_path, kChromeFrameDllName);
+    cf_dll_path = cf_dll_path.Append(kChromeFrameDllName);
     version_info = FileVersionInfo::CreateFileVersionInfo(cf_dll_path);
     if (version_info)
       version = version_info->product_version();
@@ -900,4 +901,3 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SetCookieTest) {
   chrome_frame_test::CloseAllIEWindows();
   ASSERT_TRUE(CheckResultFile(L"FullTab_SetCookieTest", "OK"));
 }
-
