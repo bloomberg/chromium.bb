@@ -18,7 +18,7 @@
 //
 // - Filmstrip: Draws via a sequence of frames in an image. There is no state
 //   where the class is frozen on an image and not animating. The image needs to
-//   be made of squares such that the height divides evently into the width.
+//   be made of squares such that the height divides evenly into the width.
 //
 // - Toast: Draws an image animating down to the bottom and then another image
 //   animating up from the bottom. Stops once the animation is complete.
