@@ -160,6 +160,9 @@ class BrowserView : public BrowserBubbleHost,
   // Accessor for the TabStrip.
   BaseTabStrip* tabstrip() const { return tabstrip_; }
 
+  // Accessor for the Toolbar.
+  ToolbarView* toolbar() const { return toolbar_; }
+
   // Accessor for the ExtensionShelf.
   ExtensionShelf* extension_shelf() const { return extension_shelf_; }
 
@@ -398,7 +401,6 @@ class BrowserView : public BrowserBubbleHost,
  protected:
   // Overridden from views::View:
   virtual std::string GetClassName() const;
-  virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,

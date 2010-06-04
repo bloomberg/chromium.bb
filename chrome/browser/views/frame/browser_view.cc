@@ -546,8 +546,7 @@ int BrowserView::GetTabStripHeight() const {
   // We want to return tabstrip_->height(), but we might be called in the midst
   // of layout, when that hasn't yet been updated to reflect the current state.
   // So return what the tabstrip height _ought_ to be right now.
-  return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height()
-                             : 0;
+  return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height() : 0;
 }
 
 gfx::Rect BrowserView::GetTabStripBounds() const {
@@ -1617,11 +1616,6 @@ std::string BrowserView::GetClassName() const {
   return kViewClassName;
 }
 
-void BrowserView::PaintChildren(gfx::Canvas* canvas) {
-  View::PaintChildren(canvas);
-  frame_->PaintTabStripShadow(canvas);
-}
-
 void BrowserView::Layout() {
   if (ignore_layout_)
     return;
@@ -1980,7 +1974,6 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
   *old_view = new_view;
   return changed;
 }
-
 
 void BrowserView::ProcessFullscreen(bool fullscreen) {
   // Reduce jankiness during the following position changes by:

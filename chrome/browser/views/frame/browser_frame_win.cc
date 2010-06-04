@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "app/win_util.h"
+#include "base/win_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -66,6 +67,15 @@ void BrowserFrameWin::Init() {
 }
 
 BrowserFrameWin::~BrowserFrameWin() {
+}
+
+int BrowserFrameWin::GetTitleBarHeight() {
+  RECT caption = { 0 };
+  if (DwmGetWindowAttribute(GetNativeView(), DWMWA_CAPTION_BUTTON_BOUNDS,
+                            &caption, sizeof(RECT)) == S_OK) {
+    return caption.bottom;
+  }
+  return GetSystemMetrics(SM_CYCAPTION);
 }
 
 views::Window* BrowserFrameWin::GetWindow() {
@@ -124,10 +134,6 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
 
 views::View* BrowserFrameWin::GetFrameView() const {
   return browser_frame_view_;
-}
-
-void BrowserFrameWin::PaintTabStripShadow(gfx::Canvas* canvas) {
-  browser_frame_view_->PaintTabStripShadow(canvas);
 }
 
 void BrowserFrameWin::TabStripDisplayModeChanged() {
@@ -307,9 +313,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
     // borders.
     if (!browser_view_->IsFullscreen()) {
       if (browser_view_->UseVerticalTabs()) {
-        margins.cxLeftWidth +=
-            GetBoundsForTabStrip(browser_view_->tabstrip()).right();
-        margins.cyTopHeight += GetSystemMetrics(SM_CYSIZEFRAME);
+        margins.cyTopHeight = GetTitleBarHeight();
       } else {
         margins.cyTopHeight =
             GetBoundsForTabStrip(browser_view_->tabstrip()).bottom() +
@@ -320,13 +324,4 @@ void BrowserFrameWin::UpdateDWMFrame() {
     // For popup and app windows we want to use the default margins.
   }
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
-
-  DWORD window_style = GetWindowLong(GWL_STYLE);
-  if (browser_view_->UseVerticalTabs()) {
-    if (window_style & WS_CAPTION)
-      SetWindowLong(GWL_STYLE, window_style & ~WS_CAPTION);
-  } else {
-    if (!(window_style & WS_CAPTION))
-      SetWindowLong(GWL_STYLE, window_style | WS_CAPTION);
-  }
 }

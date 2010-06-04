@@ -34,7 +34,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual void UpdateThrobber(bool running);
   virtual gfx::Size GetMinimumSize();
-  virtual void PaintTabStripShadow(gfx::Canvas* canvas);
 
  protected:
   // Overridden from views::NonClientFrameView:
@@ -50,6 +49,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
+  virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void Layout();
   virtual bool HitTest(const gfx::Point& l) const;
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
@@ -109,6 +109,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
+
+  // Returns the bounds of |src| in the coordinate system of |dst|.
+  // TODO(sky): promote this to view.
+  static gfx::Rect GetViewBounds(views::View* src, views::View* dst);
 
   // The layout rect of the title, if visible.
   gfx::Rect title_bounds_;

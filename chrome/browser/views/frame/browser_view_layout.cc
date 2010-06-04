@@ -30,9 +30,6 @@ namespace {
 const int kTabShadowSize = 2;
 // The vertical overlap between the TabStrip and the Toolbar.
 const int kToolbarTabStripVerticalOverlap = 3;
-// The horizontal overlap between the SideTabStrip the other contents of the
-// BrowserView.
-const int kBrowserViewTabStripHorizontalOverlap = 2;
 // An offset distance between certain toolbars and the toolbar that preceded
 // them in layout.
 const int kSeparationLineHeight = 1;
@@ -320,7 +317,7 @@ int BrowserViewLayout::LayoutTabStrip() {
 
   if (browser_view_->UseVerticalTabs()) {
     vertical_layout_rect_.Inset(
-        layout_bounds.right() - kBrowserViewTabStripHorizontalOverlap, 0, 0, 0);
+        layout_bounds.width(), 0, 0, 0);
   } else {
     gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
     tabstrip_->SetBackgroundOffset(

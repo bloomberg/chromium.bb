@@ -50,7 +50,6 @@ class PopupNonClientFrameView : public BrowserNonClientFrameView {
     return gfx::Rect(0, 0, width(), tabstrip->GetPreferredHeight());
   }
   virtual void UpdateThrobber(bool running) {}
-  virtual void PaintTabStripShadow(gfx::Canvas* canvas) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PopupNonClientFrameView);
@@ -131,9 +130,6 @@ bool BrowserFrameGtk::AlwaysUseNativeFrame() const {
 
 views::View* BrowserFrameGtk::GetFrameView() const {
   return browser_frame_view_;
-}
-
-void BrowserFrameGtk::PaintTabStripShadow(gfx::Canvas* canvas) {
 }
 
 void BrowserFrameGtk::TabStripDisplayModeChanged() {
