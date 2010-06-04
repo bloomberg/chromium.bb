@@ -787,7 +787,7 @@ class SVNWrapper(SCMWrapper):
             from_info['Repository Root'],
             to_info['Repository Root'])
       else:
-        if scm.SVN.CaptureStatus(checkout_path):
+        if scm.SVN.CaptureStatus(checkout_path) and not options.force:
           raise gclient_utils.Error("Can't switch the checkout to %s; UUID "
                                     "don't match and there is local changes "
                                     "in %s. Delete the directory and "
