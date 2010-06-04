@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,9 @@
 #include <vector>
 
 #include "base/lock.h"
-#include "base/thread.h"
+#include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "webkit/glue/password_form.h"
 
 class Pickle;
@@ -22,38 +23,54 @@ class Task;
 
 class PasswordStoreKWallet : public PasswordStore {
  public:
-  PasswordStoreKWallet();
+  PasswordStoreKWallet(LoginDatabase* login_db,
+                       Profile* profile,
+                       WebDataService* web_data_service);
 
   bool Init();
 
  private:
-  typedef std::vector<PasswordForm*> PasswordFormList;
+  typedef std::vector<webkit_glue::PasswordForm*> PasswordFormList;
 
   virtual ~PasswordStoreKWallet();
 
   // Implements PasswordStore interface.
-  void AddLoginImpl(const PasswordForm& form);
-  void UpdateLoginImpl(const PasswordForm& form);
-  void RemoveLoginImpl(const PasswordForm& form);
-  void GetLoginsImpl(GetLoginsRequest* request);
+  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                              const base::Time& delete_end);
+  virtual void GetLoginsImpl(GetLoginsRequest* request,
+                             const webkit_glue::PasswordForm& form);
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request);
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request);
+  virtual bool FillAutofillableLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms);
+  virtual bool FillBlacklistLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms);
 
-  // Initialisation.
+  // Initialization.
   bool StartKWalletd();
   bool InitWallet();
 
-  // Reads a list of PasswordForms from the wallet that match the signon_realm
-  // of key.
-  void GetLoginsList(PasswordFormList* forms, const PasswordForm& key,
+  // Reads a list of PasswordForms from the wallet that match the signon_realm.
+  void GetLoginsList(PasswordFormList* forms,
+                     const std::string& signon_realm,
                      int wallet_handle);
 
-  // Writes a list of PasswordForms to the wallet with the signon_realm from
-  // key.  Overwrites any existing list for this key.
-  void SetLoginsList(const PasswordFormList& forms, const PasswordForm& key,
+  // Writes a list of PasswordForms to the wallet with the given signon_realm.
+  // Overwrites any existing list for this signon_realm. Removes the entry if
+  // |forms| is empty.
+  void SetLoginsList(const PasswordFormList& forms,
+                     const std::string& signon_realm,
                      int wallet_handle);
 
-  // Checks if the last dbus call returned an error.  If it did, logs the error
+  // Helper for FillAutofillableLogins() and FillBlacklistLogins().
+  bool FillSomeLogins(bool autofillable, PasswordFormList* forms);
+
+  // Checks if the last DBus call returned an error. If it did, logs the error
   // message, frees it and returns true.
-  // This must be called after every dbus call.
+  // This must be called after every DBus call.
   bool CheckError();
 
   // Opens the wallet and ensures that the "Chrome Form Data" folder exists.
@@ -61,27 +78,35 @@ class PasswordStoreKWallet : public PasswordStore {
   int WalletHandle();
 
   // Compares two PasswordForms and returns true if they are the same.
-  // Checks only the fields that we persist in KWallet, and ignores
-  // password_value.
-  static bool CompareForms(const PasswordForm& a, const PasswordForm& b);
+  // If |update_check| is false, we only check the fields that are checked by
+  // LoginDatabase::UpdateLogin() when updating logins; otherwise, we check the
+  // fields that are checked by LoginDatabase::RemoveLogin() for removing them.
+  static bool CompareForms(const webkit_glue::PasswordForm& a,
+                           const webkit_glue::PasswordForm& b,
+                           bool update_check);
 
   // Serializes a list of PasswordForms to be stored in the wallet.
   static void SerializeValue(const PasswordFormList& forms, Pickle* pickle);
 
   // Deserializes a list of PasswordForms from the wallet.
-  static void DeserializeValue(const PasswordForm& key, const Pickle& pickle,
+  static void DeserializeValue(const std::string& signon_realm,
+                               const Pickle& pickle,
                                PasswordFormList* forms);
 
-  // Convenience function to read a GURL from a Pickle.  Assumes the URL has
+  // Convenience function to read a GURL from a Pickle. Assumes the URL has
   // been written as a std::string.
   static void ReadGURL(const Pickle& pickle, void** iter, GURL* url);
+
+  // In case the fields in the pickle ever change, version them so we can try to
+  // read old pickles. (Note: do not eat old pickles past the expiration date.)
+  static const int kPickleVersion = 0;
 
   // Name of the application - will appear in kwallet's dialogs.
   static const char* kAppId;
   // Name of the folder to store passwords in.
   static const char* kKWalletFolder;
 
-  // DBUS stuff.
+  // DBus stuff.
   static const char* kKWalletServiceName;
   static const char* kKWalletPath;
   static const char* kKWalletInterface;
@@ -92,18 +117,18 @@ class PasswordStoreKWallet : public PasswordStore {
   // Invalid handle returned by WalletHandle().
   static const int kInvalidKWalletHandle = -1;
 
-  // Controls all access to kwallet dbus calls.
+  // Controls all access to kwallet DBus calls.
   Lock kwallet_lock_;
 
-  // Error from the last dbus call.  NULL when there's no error.  Freed and
+  // Error from the last DBus call. NULL when there's no error. Freed and
   // cleared by CheckError().
   GError* error_;
-  // Connection to the dbus session bus.
+  // Connection to the DBus session bus.
   DBusGConnection* connection_;
-  // Proxy to the kwallet dbus service.
+  // Proxy to the kwallet DBus service.
   DBusGProxy* proxy_;
 
-  // The name of the wallet we've opened.  Set during Init().
+  // The name of the wallet we've opened. Set during Init().
   std::string wallet_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreKWallet);

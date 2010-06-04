@@ -110,11 +110,12 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form) = 0;
   // Synchronous implementation to remove the given login.
   virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form) = 0;
+  // Synchronous implementation to remove the given logins.
+  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                              const base::Time& delete_end) = 0;
   // Should find all PasswordForms with the same signon_realm. The results
   // will then be scored by the PasswordFormManager. Once they are found
   // (or not), the consumer should be notified.
-  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                              const base::Time& delete_end) = 0;
   virtual void GetLoginsImpl(GetLoginsRequest* request,
                              const webkit_glue::PasswordForm& form) = 0;
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
