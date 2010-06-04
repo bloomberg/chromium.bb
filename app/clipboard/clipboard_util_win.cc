@@ -6,7 +6,7 @@
 
 #include <shellapi.h>
 #include <shlwapi.h>
-#include <wininet.h>
+#include <wininet.h>  // For INTERNET_MAX_URL_LENGTH.
 
 #include "base/basictypes.h"
 #include "base/logging.h"

@@ -9,7 +9,6 @@
 #include <objbase.h>
 #include <process.h>
 #include <shlwapi.h>
-#include <wininet.h>  // For INTERNET_MAX_URL_LENGTH
 
 #include "base/command_line.h"
 #include "base/file_util.h"
