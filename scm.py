@@ -18,8 +18,8 @@ import xml.dom.minidom
 import gclient_utils
 
 def ValidateEmail(email):
- return (re.match(r"^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
-         is not None)
+  return (re.match(r"^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
+          is not None)
 
 
 def GetCasedPath(path):
@@ -121,10 +121,10 @@ class GIT(object):
                          in_directory,
                          print_messages,
                          print_stdout,
-                         filter):
+                         filter_fn):
     """Runs a command, optionally outputting to stdout.
 
-    stdout is passed line-by-line to the given filter function. If
+    stdout is passed line-by-line to the given filter_fn function. If
     print_stdout is true, it is also printed to sys.stdout as in Run.
 
     Args:
@@ -133,7 +133,7 @@ class GIT(object):
       print_messages: Whether to print status messages to stdout about
         which commands are being run.
       print_stdout: Whether to forward program's output to stdout.
-      filter: A function taking one argument (a string) which will be
+      filter_fn: A function taking one argument (a string) which will be
         passed each line (with the ending newline character removed) of
         program's output for filtering.
 
@@ -146,7 +146,7 @@ class GIT(object):
                                           in_directory,
                                           print_messages,
                                           print_stdout,
-                                          filter=filter)
+                                          filter_fn=filter_fn)
 
   @staticmethod
   def GetEmail(repo_root):
@@ -464,10 +464,10 @@ class SVN(object):
                          in_directory,
                          print_messages,
                          print_stdout,
-                         filter):
+                         filter_fn):
     """Runs a command, optionally outputting to stdout.
 
-    stdout is passed line-by-line to the given filter function. If
+    stdout is passed line-by-line to the given filter_fn function. If
     print_stdout is true, it is also printed to sys.stdout as in Run.
 
     Args:
@@ -476,7 +476,7 @@ class SVN(object):
       print_messages: Whether to print status messages to stdout about
         which commands are being run.
       print_stdout: Whether to forward program's output to stdout.
-      filter: A function taking one argument (a string) which will be
+      filter_fn: A function taking one argument (a string) which will be
         passed each line (with the ending newline character removed) of
         program's output for filtering.
 
@@ -489,7 +489,7 @@ class SVN(object):
                                           in_directory,
                                           print_messages,
                                           print_stdout,
-                                          filter=filter)
+                                          filter_fn=filter_fn)
 
   @staticmethod
   def CaptureInfo(relpath, in_directory=None, print_error=True):
@@ -507,7 +507,8 @@ class SVN(object):
       GetNamedNodeText = gclient_utils.GetNamedNodeText
       GetNodeNamedAttributeText = gclient_utils.GetNodeNamedAttributeText
       def C(item, f):
-        if item is not None: return f(item)
+        if item is not None:
+          return f(item)
       # /info/entry/
       #   url
       #   reposityory/(root|uuid)
@@ -516,7 +517,6 @@ class SVN(object):
       # str() the results because they may be returned as Unicode, which
       # interferes with the higher layers matching up things in the deps
       # dictionary.
-      # TODO(maruel): Fix at higher level instead (!)
       result['Repository Root'] = C(GetNamedNodeText(dom, 'root'), str)
       result['URL'] = C(GetNamedNodeText(dom, 'url'), str)
       result['UUID'] = C(GetNamedNodeText(dom, 'uuid'), str)
@@ -647,11 +647,11 @@ class SVN(object):
             info.get('Schedule') == 'add')
 
   @staticmethod
-  def GetFileProperty(file, property_name):
+  def GetFileProperty(filename, property_name):
     """Returns the value of an SVN property for the given file.
 
     Args:
-      file: The file to check
+      filename: The file to check
       property_name: The name of the SVN property, e.g. "svn:mime-type"
 
     Returns:
@@ -659,7 +659,7 @@ class SVN(object):
       is not set on the file.  If the file is not under version control, the
       empty string is also returned.
     """
-    output = SVN.Capture(["propget", property_name, file])
+    output = SVN.Capture(["propget", property_name, filename])
     if (output.startswith("svn: ") and
         output.endswith("is not under version control")):
       return ""
@@ -685,7 +685,8 @@ class SVN(object):
     try:
       # Use "svn info" output instead of os.path.isdir because the latter fails
       # when the file is deleted.
-      return SVN._DiffItemInternal(SVN.CaptureInfo(filename),
+      return SVN._DiffItemInternal(filename, SVN.CaptureInfo(filename),
+                                   bogus_dir,
                                    full_move=full_move, revision=revision)
     finally:
       shutil.rmtree(bogus_dir)
@@ -835,8 +836,8 @@ class SVN(object):
   def ReadSimpleAuth(filename):
     f = open(filename, 'r')
     values = {}
-    def ReadOneItem(type):
-      m = re.match(r'%s (\d+)' % type, f.readline())
+    def ReadOneItem(item_type):
+      m = re.match(r'%s (\d+)' % item_type, f.readline())
       if not m:
         return None
       data = f.read(int(m.group(1)))

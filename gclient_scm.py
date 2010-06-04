@@ -30,11 +30,11 @@ class DiffFilterer(object):
     self._current_file = ""
     self._replacement_file = ""
 
-  def SetCurrentFile(self, file):
-    self._current_file = file
+  def SetCurrentFile(self, current_file):
+    self._current_file = current_file
     # Note that we always use '/' as the path separator to be
     # consistent with svn's cygwin-style output on Windows
-    self._replacement_file = posixpath.join(self._relpath, file)
+    self._replacement_file = posixpath.join(self._relpath, current_file)
 
   def ReplaceAndPrint(self, line):
     print(line.replace(self._current_file, self._replacement_file))
@@ -114,15 +114,14 @@ class SCMWrapper(object):
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
 
-  def cleanup(self, options, args, file_list):
+  @staticmethod
+  def cleanup(options, args, file_list):
     """'Cleanup' the repo.
 
     There's no real git equivalent for the svn cleanup command, do a no-op.
     """
-    __pychecker__ = 'unusednames=options,args,file_list'
 
   def diff(self, options, args, file_list):
-    __pychecker__ = 'unusednames=options,args,file_list'
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
     self._Run(['diff', merge_base], redirect_stdout=False)
 
@@ -132,7 +131,6 @@ class GitWrapper(SCMWrapper):
     Exports into the specified directory, creating the path if it does
     already exist.
     """
-    __pychecker__ = 'unusednames=options,file_list'
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     if not os.path.exists(export_path):
@@ -147,7 +145,6 @@ class GitWrapper(SCMWrapper):
     The patch file is generated from a diff of the merge base of HEAD and
     its upstream branch.
     """
-    __pychecker__ = 'unusednames=options,args,file_list'
     path = os.path.join(self._root_dir, self.relpath)
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
     command = ['diff', merge_base]
@@ -403,7 +400,6 @@ class GitWrapper(SCMWrapper):
 
     All reverted files will be appended to file_list.
     """
-    __pychecker__ = 'unusednames=args'
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       # revert won't work if the directory doesn't exist. It needs to
@@ -413,7 +409,7 @@ class GitWrapper(SCMWrapper):
       return self.update(options, [], file_list)
 
     default_rev = "refs/heads/master"
-    url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
+    _, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     if not deps_revision:
       deps_revision = default_rev
     if deps_revision.startswith('refs/heads/'):
@@ -425,7 +421,6 @@ class GitWrapper(SCMWrapper):
 
   def revinfo(self, options, args, file_list):
     """Display revision"""
-    __pychecker__ = 'unusednames=options,args,file_list'
     return self._Run(['rev-parse', 'HEAD'])
 
   def runhooks(self, options, args, file_list):
@@ -433,7 +428,6 @@ class GitWrapper(SCMWrapper):
 
   def status(self, options, args, file_list):
     """Display status information."""
-    __pychecker__ = 'unusednames=options,args'
     if not os.path.isdir(self.checkout_path):
       print('\n________ couldn\'t run status in %s:\nThe directory '
             'does not exist.' % self.checkout_path)
@@ -574,7 +568,8 @@ class GitWrapper(SCMWrapper):
       # whitespace between projects when syncing.
       print ""
 
-  def _CheckMinVersion(self, min_version):
+  @staticmethod
+  def _CheckMinVersion(min_version):
     (ok, current_version) = scm.GIT.AssertVersion(min_version)
     if not ok:
       raise gclient_utils.Error('git version %s < minimum required %s' %
@@ -594,31 +589,31 @@ class GitWrapper(SCMWrapper):
     try:
       scm.GIT.Capture(['update-index', '--ignore-submodules', '--refresh'],
                       self.checkout_path, print_error=False)
-    except gclient_utils.CheckCallError, e:
-        raise gclient_utils.Error('\n____ %s%s\n'
-                                  '\tYou have unstaged changes.\n'
-                                  '\tPlease commit, stash, or reset.\n'
-                                   % (self.relpath, rev_str))
+    except gclient_utils.CheckCallError:
+      raise gclient_utils.Error('\n____ %s%s\n'
+                                '\tYou have unstaged changes.\n'
+                                '\tPlease commit, stash, or reset.\n'
+                                  % (self.relpath, rev_str))
     try:
       scm.GIT.Capture(['diff-index', '--cached', '--name-status', '-r',
                        '--ignore-submodules', 'HEAD', '--'], self.checkout_path,
                        print_error=False)
-    except gclient_utils.CheckCallError, e:
-        raise gclient_utils.Error('\n____ %s%s\n'
-                                  '\tYour index contains uncommitted changes\n'
-                                  '\tPlease commit, stash, or reset.\n'
-                                   % (self.relpath, rev_str))
+    except gclient_utils.CheckCallError:
+      raise gclient_utils.Error('\n____ %s%s\n'
+                                '\tYour index contains uncommitted changes\n'
+                                '\tPlease commit, stash, or reset.\n'
+                                  % (self.relpath, rev_str))
 
   def _CheckDetachedHead(self, rev_str):
     # HEAD is detached. Make sure it is safe to move away from (i.e., it is
     # reference by a commit). If not, error out -- most likely a rebase is
     # in progress, try to detect so we can give a better error.
     try:
-      out, err = scm.GIT.Capture(
+      _, _ = scm.GIT.Capture(
         ['name-rev', '--no-undefined', 'HEAD'],
         self.checkout_path,
         print_error=False)
-    except gclient_utils.CheckCallError, e:
+    except gclient_utils.CheckCallError:
       # Commit is not contained by any rev. See if the user is rebasing:
       if self._IsRebasing():
         # Punt to the user
@@ -670,21 +665,18 @@ class SVNWrapper(SCMWrapper):
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
-    __pychecker__ = 'unusednames=file_list,options'
     command = ['cleanup']
     command.extend(args)
     scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
-    __pychecker__ = 'unusednames=file_list,options'
     command = ['diff']
     command.extend(args)
     scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def export(self, options, args, file_list):
     """Export a clean directory tree into the given path."""
-    __pychecker__ = 'unusednames=file_list,options'
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     try:
@@ -699,7 +691,6 @@ class SVNWrapper(SCMWrapper):
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
     repository."""
-    __pychecker__ = 'unusednames=file_list,options'
     path = os.path.join(self._root_dir, self.relpath)
     command = ['diff']
     command.extend(args)
@@ -847,7 +838,6 @@ class SVNWrapper(SCMWrapper):
     All reverted files will be appended to file_list, even if Subversion
     doesn't know about them.
     """
-    __pychecker__ = 'unusednames=args'
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       # svn revert won't work if the directory doesn't exist. It needs to
@@ -900,7 +890,6 @@ class SVNWrapper(SCMWrapper):
 
   def revinfo(self, options, args, file_list):
     """Display revision"""
-    __pychecker__ = 'unusednames=args,file_list,options'
     return scm.SVN.CaptureBaseRevision(self.checkout_path)
 
   def runhooks(self, options, args, file_list):
@@ -924,7 +913,8 @@ class SVNWrapper(SCMWrapper):
     # Find the forth '/' and strip from there. A bit hackish.
     return '/'.join(self.url.split('/')[:4]) + url
 
-  def AddAdditionalFlags(self, command, options, revision):
+  @staticmethod
+  def AddAdditionalFlags(command, options, revision):
     """Add additional flags to command depending on what options are set.
     command should be a list of strings that represents an svn command.
 

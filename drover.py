@@ -29,7 +29,7 @@ Example: %(app)s --merge 12345 --branch 187
 Example: %(app)s --merge 12345 --local
 
 [Merge from branch to branch]
---merge <revision> --sbranch <branch_num> --branch <branch_num> 
+--merge <revision> --sbranch <branch_num> --branch <branch_num>
 Example: %(app)s --merge 12345 --sbranch 248 --branch 249
 
 [Revert from trunk]
@@ -62,15 +62,15 @@ def deltree(root):
         os.unlink(path)
     os.rmdir(root)
 
-def clobberDir(dir):
+def clobberDir(dirname):
   """Removes a given directory"""
 
-  if (os.path.exists(dir)):
+  if (os.path.exists(dirname)):
     print dir + " directory found, deleting"
     # The following line was removed due to access controls in Windows
     # which make os.unlink(path) calls impossible.
     #TODO(laforge) : Is this correct?
-    deltree(dir)
+    deltree(dirname)
 
 def runGcl(subcommand):
   gcl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gcl")
@@ -96,7 +96,7 @@ def getSVNInfo(url, revision):
   for line in svn_info:
     match = re.search(r"(.*?):(.*)", line)
     if match:
-    	info[match.group(1).strip()]=match.group(2).strip()
+      info[match.group(1).strip()]=match.group(2).strip()
 
   return info
 
@@ -137,7 +137,7 @@ def inCheckoutRoot(path):
   info = getSVNInfo(path, "HEAD")
   if (not info.has_key("Repository Root")):
     return False
-  repo_root = info["Repository Root"];
+  repo_root = info["Repository Root"]
   info = getSVNInfo(os.path.dirname(os.path.abspath(path)), "HEAD")
   if (info.get("Repository Root", None) != repo_root):
     return True
@@ -146,9 +146,9 @@ def inCheckoutRoot(path):
 def getRevisionLog(url, revision):
   """Takes an svn url and gets the associated revision."""
   command = 'svn log ' + url + " -r"+str(revision)
-  svn_log = subprocess.Popen(command, 
-                             shell=True, 
-                             stdout=subprocess.PIPE, 
+  svn_log = subprocess.Popen(command,
+                             shell=True,
+                             stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE).stdout.readlines()
   # Don't include the header lines and the trailing "---..." line and eliminate
   # any '\r's.
@@ -165,12 +165,12 @@ def getSVNVersionInfo():
   for line in svn_info:
     match = re.search(r"svn, version ((\d+)\.(\d+)\.(\d+)) \(r(\d+)\)", line)
     if match:
-    	info['version']=match.group(1)
-    	info['major']=int(match.group(2))
-    	info['minor']=int(match.group(3))
-    	info['patch']=int(match.group(4))
-    	info['revision']=match.group(5)
-    	return info
+      info['version'] = match.group(1)
+      info['major'] = int(match.group(2))
+      info['minor'] = int(match.group(3))
+      info['patch'] = int(match.group(4))
+      info['revision'] = match.group(5)
+      return info
 
   return None
 
@@ -217,32 +217,32 @@ def checkoutRevision(url, revision, branch_url, revert=False):
   # directories get clobbered and the merge step fails.
   paths.sort()
 
-  # Checkout the directories that already exist 
+  # Checkout the directories that already exist
   for path in paths:
-     if (export_map.has_key(path) and not revert):
-       print "Exclude new directory " + path
-       continue
-     subpaths = path.split('/')
-     subpaths.pop(0)
-     base = ''
-     for subpath in subpaths:
-       base += '/' + subpath
-       # This logic ensures that you don't empty out any directories
-       if not os.path.exists("." + base):
-         command = ('svn update --depth empty ' + "." + base)
-         print command
-         os.system(command)
+    if (export_map.has_key(path) and not revert):
+      print "Exclude new directory " + path
+      continue
+    subpaths = path.split('/')
+    subpaths.pop(0)
+    base = ''
+    for subpath in subpaths:
+      base += '/' + subpath
+      # This logic ensures that you don't empty out any directories
+      if not os.path.exists("." + base):
+        command = ('svn update --depth empty ' + "." + base)
+        print command
+        os.system(command)
 
   if (revert):
     files = getAllFilesInRevision(files_info)
   else:
     files = getExistingFilesInRevision(files_info)
-  
-  for file in files:
-   # Prevent the tool from clobbering the src directory 
-    if (file == ""):
+
+  for f in files:
+   # Prevent the tool from clobbering the src directory
+    if (f == ""):
       continue
-    command = ('svn up ".' + file + '"')
+    command = ('svn up ".' + f + '"')
     print command
     os.system(command)
 
@@ -272,7 +272,7 @@ def exportRevision(url, revision):
     os.system(command)
 
     command = 'svn add .' + path
-    print command 
+    print command
     os.system(command)
 
 def deleteRevision(url, revision):
@@ -298,7 +298,7 @@ def revertExportRevision(url, revision):
 def revertRevision(url, revision):
   paths = getBestMergePaths(url, revision)
   for path in paths:
-    command = ('svn merge -N -r ' + str(revision) + ":" + str(revision-1) + 
+    command = ('svn merge -N -r ' + str(revision) + ":" + str(revision-1) +
                 " " + url + path + " ." + path)
     print command
     os.system(command)
@@ -336,12 +336,7 @@ def getBestMergePaths(url, revision):
 
 def getBestMergePaths2(files_info, revision):
   """Takes an svn url and gets the associated revision."""
-
-  map = dict()
-  for file_info in files_info:
-    map[file_info[2]] = file_info[2]
-
-  return map.keys()
+  return list(set([f[2] for f in files_info]))
 
 def getBestExportPathsMap(url, revision):
   return getBestExportPathsMap2(getFileInfo(url, revision), revision)
@@ -353,15 +348,15 @@ def getBestExportPathsMap2(files_info, revision):
   if export_map_:
     return export_map_
 
-  map = dict()
+  result = {}
   for file_info in files_info:
     if (file_info[0] == "A"):
       if(isSVNDirectory("svn://svn.chromium.org/chrome/" + file_info[1],
                         revision)):
-        map[file_info[2] + "/" + file_info[3]] = ""
+        result[file_info[2] + "/" + file_info[3]] = ""
 
-  export_map_ = map
-  return map
+  export_map_ = result
+  return result
 
 def getBestDeletePathsMap(url, revision):
   return getBestDeletePathsMap2(getFileInfo(url, revision), revision)
@@ -373,28 +368,25 @@ def getBestDeletePathsMap2(files_info, revision):
   if delete_map_:
     return delete_map_
 
-  map = dict()
+  result = {}
   for file_info in files_info:
     if (file_info[0] == "D"):
       if(isSVNDirectory("svn://svn.chromium.org/chrome/" + file_info[1],
                         revision)):
-        map[file_info[2] + "/" + file_info[3]] = ""
+        result[file_info[2] + "/" + file_info[3]] = ""
 
-  delete_map_ = map
-  return map
+  delete_map_ = result
+  return result
+
 
 def getExistingFilesInRevision(files_info):
   """Checks for existing files in the revision.
- 
+
   Anything that's A will require special treatment (either a merge or an
   export + add)
   """
-  map = []
-  for file_info in files_info:
-    if file_info[0] != "A": 
-      map.append(file_info[2] + "/" + file_info[3])
+  return ['%s/%s' % (f[2], f[3]) for f in files_info if f[0] != 'A']
 
-  return map
 
 def getAllFilesInRevision(files_info):
   """Checks for existing files in the revision.
@@ -402,23 +394,17 @@ def getAllFilesInRevision(files_info):
   Anything that's A will require special treatment (either a merge or an
   export + add)
   """
-  map = []
-  for file_info in files_info:
-    map.append(file_info[2] + "/" + file_info[3])
-  return map
+  return ['%s/%s' % (f[2], f[3]) for f in files_info]
 
 def prompt(question):
-  answer = None
-
-  while not answer:
+  while True:
     print question + " [y|n]:",
     answer = sys.stdin.readline()
     if answer.lower().startswith('n'):
       return False
     elif answer.lower().startswith('y'):
       return True
-    else:
-      answer = None 
+
 
 def text_prompt(question, default):
   print question + " [" + default + "]:"
@@ -427,7 +413,8 @@ def text_prompt(question, default):
     return default
   return answer
 
-def main(options, args):
+
+def drover(options, args):
   revision = options.revert or options.merge
 
   # Initialize some variables used below. They can be overwritten by
@@ -442,18 +429,18 @@ def main(options, args):
   if options.branch:
     DEFAULT_WORKING += ("_" + options.branch)
 
-  if not isMinimumSVNVersion(1,5):
+  if not isMinimumSVNVersion(1, 5):
     print "You need to use at least SVN version 1.5.x"
-    sys.exit(1)
+    return 1
 
   # Override the default properties if there is a drover.properties file.
   global file_pattern_
   if os.path.exists("drover.properties"):
-    file = open("drover.properties")
-    exec(file)
-    file.close()
+    f = open("drover.properties")
+    exec(f)
+    f.close()
     if FILE_PATTERN:
-      file_pattern_ = FILE_PATTERN   
+      file_pattern_ = FILE_PATTERN
 
   if options.revert and options.branch:
     url = BRANCH_URL.replace("$branch", options.branch)
@@ -468,21 +455,21 @@ def main(options, args):
     working = os.getcwd()
     if not inCheckoutRoot(working):
       print "'%s' appears not to be the root of a working copy" % working
-      sys.exit(1)
+      return 1
     if isSVNDirty():
       print "Working copy contains uncommitted files"
-      sys.exit(1)
+      return 1
 
   command = 'svn log ' + url + " -r "+str(revision) + " -v"
   os.system(command)
 
   if not (options.revertbot or prompt("Is this the correct revision?")):
-    sys.exit(0)
+    return 0
 
   if (os.path.exists(working)) and not options.local:
     if not (options.revertbot or SKIP_CHECK_WORKING or
         prompt("Working directory: '%s' already exists, clobber?" % working)):
-      sys.exit(0)
+      return 0
     deltree(working)
 
   if not options.local:
@@ -533,7 +520,7 @@ def main(options, args):
   os.unlink(filename)
 
   if options.local:
-    sys.exit(0)
+    return 0
 
   print author
   print revision
@@ -552,18 +539,19 @@ def main(options, args):
     print "Deleting the changelist."
     print "gcl delete " + str(revision)
     runGcl("delete " + str(revision))
-    sys.exit(0)
+    return 0
 
   # We commit if the reverbot is set to commit automatically, or if this is
   # not the revertbot and the user agrees.
   if options.revertbot_commit or (not options.revertbot and
                                   prompt("Would you like to commit?")):
     print "gcl commit " + str(revision) + " --no_presubmit --force"
-    runGcl("commit " + str(revision) + " --no_presubmit --force")
+    return runGcl("commit " + str(revision) + " --no_presubmit --force")
   else:
-    sys.exit(0)
+    return 0
 
-if __name__ == "__main__":
+
+def main():
   option_parser = optparse.OptionParser(usage=USAGE % {"app": sys.argv[0]})
   option_parser.add_option('-m', '--merge', type="int",
                            help='Revision to merge from trunk to branch')
@@ -578,7 +566,7 @@ if __name__ == "__main__":
   option_parser.add_option('-w', '--workdir',
                            help='subdir to use for the revert')
   option_parser.add_option('-a', '--auditor',
-                           help='overrides the author for reviewer')                           
+                           help='overrides the author for reviewer')
   option_parser.add_option('', '--revertbot', action='store_true',
                            default=False)
   option_parser.add_option('', '--revertbot-commit', action='store_true',
@@ -588,14 +576,18 @@ if __name__ == "__main__":
 
   if not options.merge and not options.revert:
     option_parser.error("You need at least --merge or --revert")
-    sys.exit(1)
+    return 1
 
   if options.merge and not options.branch and not options.local:
     option_parser.error("--merge requires either --branch or --local")
-    sys.exit(1)
+    return 1
 
   if options.local and (options.revert or options.branch):
     option_parser.error("--local cannot be used with --revert or --branch")
-    sys.exit(1)
+    return 1
 
-  sys.exit(main(options, args))
+  return drover(options, args)
+
+
+if __name__ == "__main__":
+  sys.exit(main())

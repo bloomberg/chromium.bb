@@ -228,7 +228,7 @@ def SubprocessCallAndFilter(command,
                             in_directory,
                             print_messages,
                             print_stdout,
-                            fail_status=None, filter=None):
+                            fail_status=None, filter_fn=None):
   """Runs command, a list, in directory in_directory.
 
   If print_messages is true, a message indicating what is being done
@@ -240,7 +240,7 @@ def SubprocessCallAndFilter(command,
   Also, if print_stdout is true, the command's stdout is also forwarded
   to stdout.
 
-  If a filter function is specified, it is expected to take a single
+  If a filter_fn function is specified, it is expected to take a single
   string argument, and it will be called with each line of the
   subprocess's output. Each line has had the trailing newline character
   trimmed.
@@ -277,8 +277,8 @@ def SubprocessCallAndFilter(command,
         sys.stdout.write(in_byte)
       if in_byte != "\n":
         in_line += in_byte
-    if in_byte == "\n" and filter:
-      filter(in_line)
+    if in_byte == "\n" and filter_fn:
+      filter_fn(in_line)
       in_line = ""
     in_byte = kid.stdout.read(1)
   rv = kid.wait()

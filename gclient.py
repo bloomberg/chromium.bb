@@ -1063,7 +1063,7 @@ def Command(name):
 
 def CMDhelp(parser, args):
   """Prints list of commands or help for a specific command."""
-  (options, args) = parser.parse_args(args)
+  (_, args) = parser.parse_args(args)
   if len(args) == 1:
     return Main(args + ['--help'])
   parser.print_help()
@@ -1085,51 +1085,52 @@ def GenUsage(parser, command):
 def Main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
-  # Do it late so all commands are listed.
-  CMDhelp.usage = ('\n\nCommands are:\n' + '\n'.join([
-      '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
-      for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
-  parser = optparse.OptionParser(version='%prog ' + __version__)
-  parser.add_option("-v", "--verbose", action="count", default=0,
-                    help="Produces additional output for diagnostics. Can be "
-                         "used up to three times for more logging info.")
-  parser.add_option("--gclientfile", metavar="FILENAME", dest="config_filename",
-                    default=os.environ.get("GCLIENT_FILE", ".gclient"),
-                    help="Specify an alternate .gclient file")
-  # Integrate standard options processing.
-  old_parser = parser.parse_args
-  def Parse(args):
-    (options, args) = old_parser(args)
-    if options.verbose == 2:
-      logging.basicConfig(level=logging.INFO)
-    elif options.verbose > 2:
-      logging.basicConfig(level=logging.DEBUG)
-    options.entries_filename = options.config_filename + "_entries"
-    if not hasattr(options, 'revisions'):
-      # GClient.RunOnDeps expects it even if not applicable.
-      options.revisions = []
-    if not hasattr(options, 'head'):
-      options.head = None
-    return (options, args)
-  parser.parse_args = Parse
-  # We don't want wordwrapping in epilog (usually examples)
-  parser.format_epilog = lambda _: parser.epilog or ''
-  if argv:
-    command = Command(argv[0])
-    if command:
-      # "fix" the usage and the description now that we know the subcommand.
-      GenUsage(parser, argv[0])
-      return command(parser, argv[1:])
-  # Not a known command. Default to help.
-  GenUsage(parser, 'help')
-  return CMDhelp(parser, argv)
+  try:
+    # Do it late so all commands are listed.
+    CMDhelp.usage = ('\n\nCommands are:\n' + '\n'.join([
+        '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
+        for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
+    parser = optparse.OptionParser(version='%prog ' + __version__)
+    parser.add_option("-v", "--verbose", action="count", default=0,
+                      help="Produces additional output for diagnostics. Can be "
+                          "used up to three times for more logging info.")
+    parser.add_option("--gclientfile", metavar="FILENAME",
+                      dest="config_filename",
+                      default=os.environ.get("GCLIENT_FILE", ".gclient"),
+                      help="Specify an alternate .gclient file")
+    # Integrate standard options processing.
+    old_parser = parser.parse_args
+    def Parse(args):
+      (options, args) = old_parser(args)
+      if options.verbose == 2:
+        logging.basicConfig(level=logging.INFO)
+      elif options.verbose > 2:
+        logging.basicConfig(level=logging.DEBUG)
+      options.entries_filename = options.config_filename + "_entries"
+      if not hasattr(options, 'revisions'):
+        # GClient.RunOnDeps expects it even if not applicable.
+        options.revisions = []
+      if not hasattr(options, 'head'):
+        options.head = None
+      return (options, args)
+    parser.parse_args = Parse
+    # We don't want wordwrapping in epilog (usually examples)
+    parser.format_epilog = lambda _: parser.epilog or ''
+    if argv:
+      command = Command(argv[0])
+      if command:
+        # "fix" the usage and the description now that we know the subcommand.
+        GenUsage(parser, argv[0])
+        return command(parser, argv[1:])
+    # Not a known command. Default to help.
+    GenUsage(parser, 'help')
+    return CMDhelp(parser, argv)
+  except gclient_utils.Error, e:
+    print >> sys.stderr, "Error: %s" % str(e)
+    return 1
 
 
 if "__main__" == __name__:
-  try:
-    sys.exit(Main(sys.argv[1:]))
-  except gclient_utils.Error, e:
-    print >> sys.stderr, "Error: %s" % str(e)
-    sys.exit(1)
+  sys.exit(Main(sys.argv[1:]))
 
 # vim: ts=2:sw=2:tw=80:et:

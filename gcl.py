@@ -12,7 +12,6 @@ import getpass
 import os
 import random
 import re
-import shutil
 import string
 import subprocess
 import sys
@@ -127,7 +126,6 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
   Note: The cache will be inconsistent if the same file is retrieved with both
         use_root=True and use_root=False. Don't be stupid.
   """
-  global FILES_CACHE
   if filename not in FILES_CACHE:
     # Don't try to look up twice.
     FILES_CACHE[filename] = None
@@ -173,7 +171,6 @@ def GetCodeReviewSetting(key):
   """Returns a value for the given key for this repository."""
   # Use '__just_initialized' as a flag to determine if the settings were
   # already initialized.
-  global CODEREVIEW_SETTINGS
   if '__just_initialized' not in CODEREVIEW_SETTINGS:
     settings_file = GetCachedFile(CODEREVIEW_SETTINGS_FILE)
     if settings_file:
@@ -190,10 +187,10 @@ def Warn(msg):
   ErrorExit(msg, exit=False)
 
 
-def ErrorExit(msg, exit=True):
+def ErrorExit(msg, do_exit=True):
   """Print an error message to stderr and optionally exit."""
-  print >>sys.stderr, msg
-  if exit:
+  print >> sys.stderr, msg
+  if do_exit:
     sys.exit(1)
 
 
@@ -776,8 +773,8 @@ def CMDupload(change_info, args):
 
     cc_list = GetCodeReviewSetting("CC_LIST")
     if not no_watchlists and watchers:
-        # Filter out all empty elements and join by ','
-        cc_list = ','.join(filter(None, [cc_list] + watchers))
+      # Filter out all empty elements and join by ','
+      cc_list = ','.join(filter(None, [cc_list] + watchers))
     if cc_list:
       upload_arg.append("--cc=" + cc_list)
     upload_arg.append("--description_file=" + desc_file + "")
@@ -1178,7 +1175,7 @@ def CMDdiff(args):
 def CMDsettings():
   """Prints code review settings for this checkout."""
   # Force load settings
-  GetCodeReviewSetting("UNKNOWN");
+  GetCodeReviewSetting("UNKNOWN")
   del CODEREVIEW_SETTINGS['__just_initialized']
   print '\n'.join(("%s: %s" % (str(k), str(v))
                     for (k,v) in CODEREVIEW_SETTINGS.iteritems()))
