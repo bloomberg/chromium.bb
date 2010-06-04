@@ -108,6 +108,7 @@ class WizardController : public chromeos::ScreenObserver,
  private:
   // Exit handlers:
   void OnLoginSignInSelected();
+  void OnLoginGuestUser();
   void OnLoginCreateAccount();
   void OnNetworkConnected();
   void OnNetworkOffline();

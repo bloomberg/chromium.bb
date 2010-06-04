@@ -350,6 +350,11 @@ void WizardController::OnLoginSignInSelected() {
   ShowUserImageScreen();
 }
 
+void WizardController::OnLoginGuestUser() {
+  // We're on the stack, so don't try and delete us now.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
 void WizardController::OnLoginCreateAccount() {
   ShowAccountScreen();
 }
@@ -477,8 +482,10 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
 void WizardController::OnExit(ExitCodes exit_code) {
   switch (exit_code) {
     case LOGIN_SIGN_IN_SELECTED:
-    case LOGIN_GUEST_SELECTED:
       OnLoginSignInSelected();
+      break;
+    case LOGIN_GUEST_SELECTED:
+      OnLoginGuestUser();
       break;
     case LOGIN_CREATE_ACCOUNT:
       OnLoginCreateAccount();
