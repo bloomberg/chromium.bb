@@ -171,7 +171,7 @@ NOINLINE int wrap_me_3(int a, int b, int c) { SHOW_ME; return a+10*b+100*c; }
 
 /* Wrapper functions. */
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NONE, wrap_me_0)() {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_0)() {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -182,7 +182,7 @@ NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NONE, wrap_me_0)() {
   return ret + 777;  /* change the return value */
 }
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NONE, wrap_me_1)(int a) {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_1)(int a) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -191,7 +191,7 @@ NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NONE, wrap_me_1)(int a) {
   return ret * 7;  /* change the return value */
 }
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NONE, wrap_me_2)(int a, int b) {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_2)(int a, int b) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -200,7 +200,7 @@ NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NONE, wrap_me_2)(int a, int b) {
   return ret * 7;  /* change the return value */
 }
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NONE, wrap_me_3)(int a, int b, int c) {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaCl, wrap_me_3)(int a, int b, int c) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);

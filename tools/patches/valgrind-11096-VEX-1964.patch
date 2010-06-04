@@ -11,6 +11,15 @@ Index: memcheck/mc_main.c
  
  #endif
  
+@@ -5023,7 +5023,7 @@
+          break;
+ 
+       case VG_USERREQ__MAKE_MEM_UNDEFINED:
+-         make_mem_undefined_w_tid_and_okind ( arg[1], arg[2], tid, 
++         make_mem_undefined_w_tid_and_okind ( arg[1], arg[2], tid,
+                                               MC_OKIND_USER );
+          *ret = -1;
+          break;
 @@ -5961,11 +5961,11 @@
     tl_assert(sizeof(Addr)  == 8);
     tl_assert(sizeof(UWord) == 8);
@@ -28,6 +37,19 @@ Index: memcheck/mc_main.c
  #  endif
  }
  
+Index: memcheck/mc_malloc_wrappers.c
+===================================================================
+--- memcheck/mc_malloc_wrappers.c	(revision 11094)
++++ memcheck/mc_malloc_wrappers.c	(working copy)
+@@ -291,7 +291,7 @@
+    MC_(make_mem_noaccess)( mc->data-rzB, mc->szB + 2*rzB );
+ 
+    /* Put it out of harm's way for a while, if not from a client request */
+-   if (MC_AllocCustom != mc->allockind) {
++   if (1 || MC_AllocCustom != mc->allockind) {
+       /* Record where freed */
+       mc->where = VG_(record_ExeContext) ( tid, 0/*first_ip_delta*/ );
+       add_to_freed_queue ( mc );
 Index: include/pub_tool_threadstate.h
 ===================================================================
 --- include/pub_tool_threadstate.h	(revision 11094)
@@ -41,6 +63,38 @@ Index: include/pub_tool_threadstate.h
  
  /* Special magic value for an invalid ThreadId.  It corresponds to
     LinuxThreads using zero as the initial value for
+Index: coregrind/m_replacemalloc/vg_replace_malloc.c
+===================================================================
+--- coregrind/m_replacemalloc/vg_replace_malloc.c	(revision 11094)
++++ coregrind/m_replacemalloc/vg_replace_malloc.c	(working copy)
+@@ -844,7 +844,27 @@
+ 
+ #endif
+ 
++void I_WRAP_SONAME_FNNAME_ZZ(NONE, StopForDebuggerInit) (void *arg);
++void I_WRAP_SONAME_FNNAME_ZZ(NONE, StopForDebuggerInit) (void *arg) {
++  OrigFn fn;
++  VALGRIND_GET_ORIG_FN(fn);
++  CALL_FN_v_W(fn, arg);
++  int res;
++  VALGRIND_DO_CLIENT_REQUEST(res, 0, VG_USERREQ__NACL_MEM_START, arg, 0, 0, 0, 0);
++}
+ 
++int I_WRAP_SONAME_FNNAME_ZZ(NONE, GioMemoryFileSnapshotCtor) (void *a, char *file);
++int I_WRAP_SONAME_FNNAME_ZZ(NONE, GioMemoryFileSnapshotCtor) (void *a, char *file) {
++  OrigFn fn;
++  int ret;
++  VALGRIND_GET_ORIG_FN(fn);
++  CALL_FN_W_WW(ret, fn, a, file);
++  int res;
++  VALGRIND_DO_CLIENT_REQUEST(res, 0, VG_USERREQ__NACL_FILE, file, 0, 0, 0, 0);
++  return ret;
++}
++
++
+ /* All the code in here is unused until this function is called */
+ 
+ __attribute__((constructor))
 Index: coregrind/m_syswrap/syswrap-generic.c
 ===================================================================
 --- coregrind/m_syswrap/syswrap-generic.c	(revision 11094)
@@ -54,27 +108,120 @@ Index: coregrind/m_syswrap/syswrap-generic.c
     Bool rr, ww, xx;
  
     /* 'a' is the return value from a real kernel mmap, hence: */
-@@ -170,6 +172,10 @@
+@@ -170,6 +172,12 @@
     ww = toBool(prot & VKI_PROT_WRITE);
     xx = toBool(prot & VKI_PROT_EXEC);
  
++#ifdef VGA_amd64
 +   if (len >= fourgig + 2 * guardpage) {
 +     VG_(printf)("Valgrind: ignoring NaCl's mmap(84G)\n");
 +     return;
 +   }
++#endif  // VGA_amd64
     VG_TRACK( new_mem_mmap, a, len, rr, ww, xx, di_handle );
  }
  
-@@ -4115,4 +4121,3 @@
+@@ -4115,4 +4123,3 @@
  /*--------------------------------------------------------------------*/
  /*--- end                                                          ---*/
  /*--------------------------------------------------------------------*/
 -
+Index: coregrind/pub_core_clreq.h
+===================================================================
+--- coregrind/pub_core_clreq.h	(revision 11094)
++++ coregrind/pub_core_clreq.h	(working copy)
+@@ -53,6 +53,11 @@
+       /* Add a target for an indirect function redirection. */
+       VG_USERREQ__ADD_IFUNC_TARGET  = 0x3104,
+ 
++      /* NaCl mem_start */
++      VG_USERREQ__NACL_MEM_START = 0x3105,
++      /* NaCl nacl_file */
++      VG_USERREQ__NACL_FILE = 0x3106,
++
+    } Vg_InternalClientRequest;
+ 
+ // Function for printing from code within Valgrind, but which runs on the
 Index: coregrind/m_debuginfo/debuginfo.c
 ===================================================================
 --- coregrind/m_debuginfo/debuginfo.c	(revision 11094)
 +++ coregrind/m_debuginfo/debuginfo.c	(working copy)
-@@ -1851,12 +1851,14 @@
+@@ -598,6 +598,74 @@
+    will be one or above.  If the returned value is zero, no debug info
+    was read. */
+ 
++UWord nacl_head;
++char *nacl_file;
++#define FOURGIG (1ULL << 32)
++
++int LoadNaClDebugInfo(Addr a);
++int LoadNaClDebugInfo(Addr a) {
++#ifdef VGO_linux
++  DebugInfo *di;
++  SizeT rw_start = 0;
++  const NSegment *seg;
++
++
++  //VG_(printf)("<<%s: a=%p\n", __FUNCTION__, (void*)a);
++  nacl_head = (unsigned long)a;
++  vg_assert(nacl_file);
++  di = find_or_create_DebugInfo_for(nacl_file, NULL);
++  vg_assert(di);
++
++  // di->trace_symtab = 1;
++
++  seg = VG_(am_find_nsegment)(a);
++  while (1) {
++    if (seg->hasR && seg->hasW && !seg->hasX) {
++      rw_start = seg->start;
++      // VG_(printf)("rw_start = %p\n", (void*)rw_start);
++      break;
++    }
++    seg = VG_(am_next_nsegment)((NSegment*)seg, True);
++    vg_assert(seg);
++  }
++  vg_assert(rw_start);
++
++  di->have_rx_map = True;
++  di->rx_map_avma = nacl_head;
++  di->rx_map_size = FOURGIG;
++  di->rx_map_foff = 0;
++  di->have_rw_map = True;
++  di->rw_map_avma = nacl_head;
++  di->rw_map_size = FOURGIG;
++  di->rw_map_foff = rw_start - nacl_head;
++
++  discard_DebugInfos_which_overlap_with( di );
++  if (ML_(read_elf_debug_info)(di)) {
++      di->soname = "NaCl";
++      TRACE_SYMTAB("\n------ Canonicalising the "
++                   "acquired info ------\n");
++      /* invalidate the CFI unwind cache. */
++      cfsi_cache__invalidate();
++      /* prepare read data for use */
++      ML_(canonicaliseTables)( di );
++      /* notify m_redir about it */
++      TRACE_SYMTAB("\n------ Notifying m_redir ------\n");
++      VG_(redir_notify_new_DebugInfo)( di );
++      /* Note that we succeeded */
++      di->have_dinfo = True;
++      vg_assert(di->handle > 0);
++      /* Check invariants listed in
++         Comment_on_IMPORTANT_REPRESENTATIONAL_INVARIANTS in
++         priv_storage.h. */
++      check_CFSI_related_invariants(di);
++  } else {
++    VG_(printf)("Can't read NaCl debug info\n");
++    VG_(exit)(1);
++  }
++#endif  // VGO_linux
++  return 0;
++}
++
+ ULong VG_(di_notify_mmap)( Addr a, Bool allow_SkFileV )
+ {
+    NSegment const * seg;
+@@ -1851,12 +1919,14 @@
           APPEND("???");
        }
        if (know_srcloc) {
@@ -91,6 +238,28 @@ Index: coregrind/m_debuginfo/debuginfo.c
        } else if (know_objname) {
           APPEND(" (in ");
           APPEND(buf_obj);
+Index: coregrind/m_debuginfo/readelf.c
+===================================================================
+--- coregrind/m_debuginfo/readelf.c	(revision 11094)
++++ coregrind/m_debuginfo/readelf.c	(working copy)
+@@ -1461,7 +1461,7 @@
+ 
+       /* Accept .rodata where mapped as rx (data), even if zero-sized */
+       if (0 == VG_(strcmp)(name, ".rodata")) {
+-         if (inrx && size >= 0 && !di->rodata_present) {
++         if (/*inrx && */size >= 0 && !di->rodata_present) {
+             di->rodata_present = True;
+             di->rodata_svma = svma;
+             di->rodata_avma = svma + rx_bias;
+@@ -1710,7 +1710,7 @@
+          the common case.  However, if that doesn't pan out, try for
+          rw (data) instead. */
+       if (0 == VG_(strcmp)(name, ".eh_frame")) {
+-         if (inrx && size > 0 && !di->ehframe_present) {
++         if (/*inrx && */size > 0 && !di->ehframe_present) {
+             di->ehframe_present = True;
+             di->ehframe_avma = svma + rx_bias;
+             di->ehframe_size = size;
 Index: coregrind/m_aspacemgr/aspacemgr-linux.c
 ===================================================================
 --- coregrind/m_aspacemgr/aspacemgr-linux.c	(revision 11094)
@@ -117,3 +286,48 @@ Index: coregrind/m_aspacemgr/aspacemgr-linux.c
  #    ifdef ENABLE_INNER
       { Addr cse = VG_PGROUNDDN( sp_at_startup ) - 1;
         if (aspacem_maxAddr > cse)
+Index: coregrind/m_stacktrace.c
+===================================================================
+--- coregrind/m_stacktrace.c	(revision 11094)
++++ coregrind/m_stacktrace.c	(working copy)
+@@ -252,6 +252,14 @@
+    if (fp_max >= sizeof(Addr))
+       fp_max -= sizeof(Addr);
+ 
++   extern unsigned long nacl_head;
++
++   if (uregs.xip > nacl_head && uregs.xip < nacl_head + (1ULL << 32)) {
++     fp_min = nacl_head;
++     fp_max = nacl_head + (1ULL << 32) - 1;
++   }
++
++
+    if (debug)
+       VG_(printf)("max_n_ips=%d fp_min=0x%lx fp_max_orig=0x%lx, "
+                   "fp_max=0x%lx ip=0x%lx fp=0x%lx\n",
+Index: coregrind/m_scheduler/scheduler.c
+===================================================================
+--- coregrind/m_scheduler/scheduler.c	(revision 11094)
++++ coregrind/m_scheduler/scheduler.c	(working copy)
+@@ -1546,6 +1546,21 @@
+             goto my_default;
+          }
+ 
++      case VG_USERREQ__NACL_MEM_START: {
++         extern void LoadNaClDebugInfo(Addr a);
++         VG_(printf)("*********************** NaCl mem_start: %p\n", (void*)arg[1]);
++         LoadNaClDebugInfo(arg[1]);
++         break;
++      }
++
++      case VG_USERREQ__NACL_FILE: {
++         extern char *nacl_file;
++         VG_(printf)("*********************** NaCl nacl_file: %s\n", (void*)arg[1]);
++         nacl_file = (char*) arg[1];
++         break;
++      }
++
++
+       default:
+        my_default:
+ 	 if (os_client_request(tid, arg)) {
