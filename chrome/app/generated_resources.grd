@@ -6357,7 +6357,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Date Modified
       </message>
       <message name="IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT" desc="Text to show in a box when we failed to parse FTP directory listing.">
-	Oh, no! This server is sending data <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can't understand. Please <ph name="BEGIN_LINK">&lt;a href="http://code.google.com/p/chromium/issues/entry"&gt;</ph>report a bug<ph name="END_LINK">&lt;/a&gt;</ph>, and include the <ph name="BEGIN2_LINK">&lt;a href="LOCATION"&gt;</ph>raw listing<ph name="END2_LINK">&lt;/a&gt;</ph>.
+        Oh, no! This server is sending data <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can't understand. Please <ph name="BEGIN_LINK">&lt;a href="http://code.google.com/p/chromium/issues/entry"&gt;</ph>report a bug<ph name="END_LINK">&lt;/a&gt;</ph>, and include the <ph name="BEGIN2_LINK">&lt;a href="LOCATION"&gt;</ph>raw listing<ph name="END2_LINK">&lt;/a&gt;</ph>.
       </message>
 
       <!-- Saving Page-->
@@ -7620,92 +7620,92 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE"
                desc="The combobox description for the Chewing keyboard type">
-	Keyboard Type
+        Keyboard Type
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DEFAULT"
                desc="The combobox value for the Chewing keyboard type">
-	Default
+        Default
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HSU"
                desc="The combobox value for the Chewing keyboard type">
-	Hsu
+        Hsu
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_IBM"
                desc="The combobox value for the Chewing keyboard type">
-	IBM
+        IBM
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_GIN_YIEH"
                desc="The combobox value for the Chewing keyboard type">
-	Gin Yieh
+        Gin Yieh
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN"
                desc="The combobox value for the Chewing keyboard type">
-	Eten
+        Eten
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN26"
                desc="The combobox value for the Chewing keyboard type">
-	Eten 26
+        Eten 26
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK"
                desc="The combobox value for the Chewing keyboard type">
-	Dvorak
+        Dvorak
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK_HSU"
                desc="The combobox value for the Chewing keyboard type">
-	Dvorak (Hsu)
+        Dvorak (Hsu)
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DACHEN_26"
                desc="The combobox value for the Chewing keyboard type">
-	Dachen 26
+        Dachen 26
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HANYU"
                desc="The combobox value for the Chewing keyboard type">
-	Hanyu
+        Hanyu
       </message>
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS"
                desc="The combobox description for the Chewing selection keys">
-	Selection Keys
+        Selection Keys
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234567890"
                desc="The combobox value for the Chewing selection keys">
-	1234567890
+        1234567890
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFGHJKLS"
                desc="The combobox value for the Chewing selection keys">
-	asdfghjkl;
+        asdfghjkl;
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFZXCV89"
                desc="The combobox value for the Chewing selection keys">
-	asdfzxcv89
+        asdfzxcv89
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFJKL789"
                desc="The combobox value for the Chewing selection keys">
-	asdfjkl789
+        asdfjkl789
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUSQJKIX"
                desc="The combobox value for the Chewing selection keys">
-	aoeu;qjkix (Dvorak)
+        aoeu;qjkix (Dvorak)
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUHTNSID"
                desc="The combobox value for the Chewing selection keys">
-	aoeuhtnsid (Dvorak)
+        aoeuhtnsid (Dvorak)
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUIDHTNS"
                desc="The combobox value for the Chewing selection keys">
-	aoeuidhtns (Dvorak)
+        aoeuidhtns (Dvorak)
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234QWERAS"
                desc="The combobox value for the Chewing selection keys">
-	1234qweras
+        1234qweras
       </message>
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE"
@@ -7738,47 +7738,47 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_FUZZY_PINYIN"
                desc="The checkbox label for a Pinyin input method preference">
-	Enable Fuzzy-Pinyin mode
+        Enable Fuzzy-Pinyin mode
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN"
                desc="The checkbox label for a Pinyin input method preference">
-	Use Shift to select a candidate
+        Use Shift to select a candidate
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_MINUS_EQUAL_PAGE"
                desc="The checkbox label for a Pinyin input method preference">
-	Use - and = keys to page a candidate list
+        Use - and = keys to page a candidate list
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_COMMA_PERIOD_PAGE"
                desc="The checkbox label for a Pinyin input method preference">
-	Use , and . keys to page a candidate list
+        Use , and . keys to page a candidate list
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_AUTO_COMMIT"
                desc="The checkbox label for a Pinyin input method preference">
-	Auto-commit a string
+        Auto-commit a string
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_DOUBLE_PINYIN"
                desc="The checkbox label for a Pinyin input method preference">
-	Enable Double-Pinyin mode
+        Enable Double-Pinyin mode
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_CHINESE"
                desc="The checkbox label for a Pinyin input method preference">
-	Initial input language is Chinese
+        Initial input language is Chinese
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL"
                desc="The checkbox label for a Pinyin input method preference">
-	Initial character width is Full
+        Initial character width is Full
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL_PUNCT"
                desc="The checkbox label for a Pinyin input method preference">
-	Initial punctuation width is Full
+        Initial punctuation width is Full
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE"
                desc="The checkbox label for a Pinyin input method preference">
-	Initial Chinese mode is Simplified Chinese
+        Initial Chinese mode is Simplified Chinese
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_TRAD_CANDIDATE"
                desc="The checkbox label for a Pinyin input method preference">
-	Display candidates in Traditional Chinese
+        Display candidates in Traditional Chinese
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE"
                desc="The title for the Mozc Japanese input settings dialog">
@@ -7786,79 +7786,79 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD"
                desc="The combobox description for the Mozc input method preference">
-	Input Method
+        Input Method
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_ROMAN"
                desc="The combobox value for the Mozc input method preference">
-	Romaji
+        Romaji
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_KANA"
                desc="The combobox value for the Mozc input method preference">
-	Kana
+        Kana
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP"
                desc="The combobox description for the Mozc input method preference">
-	Keymap style
+        Keymap style
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_ATOK"
                desc="The combobox value for the Mozc input method preference (might be non-translateable?)">
-	ATOK
+        ATOK
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_MSIME"
                desc="The combobox value for the Mozc input method preference (might be non-translateable?)">
-	MS-IME
+        MS-IME
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_KOTOERI"
                desc="The combobox value for the Mozc input method preference. When lang is ja, it should be written in Hiragana">
-	Kotoeri
+        Kotoeri
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD"
                desc="The combobox description for the Mozc input method preference">
-	Punctuation style
+        Punctuation style
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_TOUTEN"
                desc="The combobox value for the Mozc input method preference">
-	&#x3001;&#x3002;
+        &#x3001;&#x3002;
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_PERIOD"
                desc="The combobox value for the Mozc input method preference">
-	&#xff0c;&#xff0e;
+        &#xff0c;&#xff0e;
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_PERIOD"
                desc="The combobox value for the Mozc input method preference">
-	&#x3001;&#xff0e;
+        &#x3001;&#xff0e;
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_TOUTEN"
                desc="The combobox value for the Mozc input method preference">
-	&#xff0c;&#x3002;
+        &#xff0c;&#x3002;
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD"
                desc="The combobox description for the Mozc input method preference">
-	Symbol style
+        Symbol style
       </message>
       <message translateable="false"
-	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_MIDDLE_DOT"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_MIDDLE_DOT"
                desc="The combobox value for the Mozc input method preference">
-	&#x300c;&#x300d;&#x30fb;
+        &#x300c;&#x300d;&#x30fb;
       </message>
       <message translateable="false"
-	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_SLASH"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_SLASH"
                desc="The combobox value for the Mozc input method preference">
-	&#xff3b;&#xff3d;&#xff0f;
+        &#xff3b;&#xff3d;&#xff0f;
       </message>
       <message translateable="false"
-	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_SLASH"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_SLASH"
                desc="The combobox value for the Mozc input method preference">
-	&#x300c;&#x300d;&#xff0f;
+        &#x300c;&#x300d;&#xff0f;
       </message>
       <message translateable="false"
-	       name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_MIDDLE_DOT"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_SQUARE_BRACKET_MIDDLE_DOT"
                desc="The combobox value for the Mozc input method preference">
-	&#xff3b;&#xff3d;&#x30fb;
+        &#xff3b;&#xff3d;&#x30fb;
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
                desc="The label for the configure button for input methods">
@@ -7944,35 +7944,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_BOPOMOFO_INPUT_METHOD"
                desc="The label for the Bopomofo (Zhuyin) traditional Chinese input method">
-	Bopomofo input method
+        Bopomofo input method
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD"
                desc="The label for the Chewing traditional Chinese input method">
-	Chewing input method
+        Chewing input method
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD"
                desc="The label for the Pinyin simplified Chinese input method">
-	Pinyin input method
+        Pinyin input method
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD"
                desc="The label for the Japanese input method for US keyboard">
-	Japanese input method (for US keyboard)
+        Japanese input method (for US keyboard)
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_JP_INPUT_METHOD"
                desc="The label for the Japanese input method for Japanese keyboard">
-	Japanese input method (for Japanese keyboard)
+        Japanese input method (for Japanese keyboard)
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_INPUT_METHOD"
                desc="The label for the Google Japanese Input input method for US keyboard">
-	Google Japanese Input (for US keyboard)
+        Google Japanese Input (for US keyboard)
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_JP_INPUT_METHOD"
                desc="The label for the Google Japanese Input input method for Japanese keyboard">
-	Google Japanese Input (for Japanese keyboard)
+        Google Japanese Input (for Japanese keyboard)
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD"
                desc="The label for the Korean input method">
-	Korean input method
+        Korean input method
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
@@ -8065,135 +8065,135 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_DIRECT_INPUT" desc="In the language menu button, this shows a character set in use is set to 'direct input' mode.">
-	Direct input
+        Direct input
       </message>
       <!-- "Half width" part is translateable. -->
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA" desc="In the language menu button, this shows a character set in use is set to half width Katakana.">
-	Half width Katakana
+        Half width Katakana
       </message>
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN" desc="In the language menu button, this shows a character set in use is set to Latin.">
-	Latin
+        Latin
       </message>
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN" desc="In the language menu button, this shows a character set in use is set to wide Latin.">
-	Wide Latin
+        Wide Latin
       </message>
       <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_MODE" desc="In the language menu button, this shows the input mode.">
-	Enable/Disable Hanja mode
+        Enable/Disable Hanja mode
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH" desc="In the language menu button, this shows the input mode.">
-	Toggle Chinese/English mode
+        Toggle Chinese/English mode
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF" desc="In the language menu button, this shows the input mode.">
-	Toggle full/half width mode
+        Toggle full/half width mode
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF_PUNCTUATION" desc="In the language menu button, this shows the input mode.">
-	Toggle full/half width punctuation mode
+        Toggle full/half width punctuation mode
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE" desc="In the language menu button, this shows the input mode.">
-	Toogle Simplfied/Traditional Chinese mode
+        Toogle Simplfied/Traditional Chinese mode
       </message>
 
       <message name="IDS_STATUSBAR_LAYOUT_JAPAN" desc="In the language menu button, this shows the input mode.">
-	Japanese keyboard layout
+        Japanese keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SLOVENIA" desc="In the language menu button, this shows the input mode.">
-	Sloveniain keyboard layout
+        Sloveniain keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_GERMANY" desc="In the language menu button, this shows the input mode.">
-	German keyboard layout
+        German keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_ITALY" desc="In the language menu button, this shows the input mode.">
-	Italian keyboard layout
+        Italian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_ESTONIA" desc="In the language menu button, this shows the input mode.">
-	Estonian keyboard layout
+        Estonian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_HUNGARY" desc="In the language menu button, this shows the input mode.">
-	Hungarian keyboard layout
+        Hungarian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_POLAND" desc="In the language menu button, this shows the input mode.">
-	Polish keyboard layout
+        Polish keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_DENMARK" desc="In the language menu button, this shows the input mode.">
-	Danish keyboard layout
+        Danish keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_CROATIA" desc="In the language menu button, this shows the input mode.">
-	Croatian keyboard layout
+        Croatian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_BRAZIL" desc="In the language menu button, this shows the input mode.">
-	Brazilian keyboard layout
+        Brazilian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SERBIA" desc="In the language menu button, this shows the input mode.">
-	Serbian keyboard layout
+        Serbian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_CZECHIA" desc="In the language menu button, this shows the input mode.">
-	Czechian keyboard layout
+        Czechian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode.">
-	English (Dvorak) keyboard layout
+        English (Dvorak) keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_ROMANIA" desc="In the language menu button, this shows the input mode.">
-	Romanian keyboard layout
+        Romanian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_USA" desc="In the language menu button, this shows the input mode.">
-	English (USA) keyboard layout
+        English (USA) keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_LITHUANIA" desc="In the language menu button, this shows the input mode.">
-	Lithuanian keyboard layout
+        Lithuanian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM" desc="In the language menu button, this shows the input mode.">
-	English (UK) keyboard layout
+        English (UK) keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode.">
-	Slovakian keyboard layout
+        Slovakian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_RUSSIA" desc="In the language menu button, this shows the input mode.">
-	Russian keyboard layout
+        Russian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_GREECE" desc="In the language menu button, this shows the input mode.">
-	Greek keyboard layout
+        Greek keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_BELGIUM" desc="In the language menu button, this shows the input mode.">
-	Belgian keyboard layout
+        Belgian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_BULGARIA" desc="In the language menu button, this shows the input mode.">
-	Bulgarian keyboard layout
+        Bulgarian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND" desc="In the language menu button, this shows the input mode.">
-	Swiss keyboard layout
+        Swiss keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_TURKEY" desc="In the language menu button, this shows the input mode.">
-	Turkish keyboard layout
+        Turkish keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_PORTUGAL" desc="In the language menu button, this shows the input mode.">
-	Portugese keyboard layout
+        Portugese keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SPAIN" desc="In the language menu button, this shows the input mode.">
-	Spainish keyboard layout
+        Spanish keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_FINLAND" desc="In the language menu button, this shows the input mode.">
-	Finnish keyboard layout
+        Finnish keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_UKRAINE" desc="In the language menu button, this shows the input mode.">
-	Ukrainian keyboard layout
+        Ukrainian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN" desc="In the language menu button, this shows the input mode.">
-	Spainish (Catalan) keyboard layout
+        Spanish (Catalan) keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_FRANCE" desc="In the language menu button, this shows the input mode.">
-	French keyboard layout
+        French keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_NORWAY" desc="In the language menu button, this shows the input mode.">
-	Norwegian keyboard layout
+        Norwegian keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SWEDEN" desc="In the language menu button, this shows the input mode.">
-	Swedish keyboard layout
+        Swedish keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_NETHERLANDS" desc="In the language menu button, this shows the input mode.">
-	Dutch keyboard layout
+        Dutch keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_LATVIA" desc="In the language menu button, this shows the input mode.">
-	Latvian keyboard layout
+        Latvian keyboard layout
       </message>
 
       <message name="IDS_COMPACT_NAVBAR" desc="The menu item on the app menu to toggle compact navigation bar">
@@ -8215,10 +8215,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Other user
       </message>
       <message name="IDS_LANGUAGES_MORE" desc="Main language list 'more' link. Expands all possible languages, not only the main ones.">
-	More...
+        More...
       </message>
       <message name="IDS_LOGIN_EMPTY_PASSWORD_TEXT" desc="Text to display in the password field when no password has been entered.">
-	Password
+        Password
       </message>
     </if>
     <message name="IDS_BOOKMARK_BAR_IMPORT_LINK" desc="text shown for importing ">
