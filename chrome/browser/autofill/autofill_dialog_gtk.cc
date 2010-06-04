@@ -527,7 +527,9 @@ void AutoFillDialog::OnResponse(GtkDialog* dialog, gint response_id,
         &autofill_dialog->credit_cards_);
   }
 
-  if (response_id == GTK_RESPONSE_OK || response_id == GTK_RESPONSE_CANCEL) {
+  if (response_id == GTK_RESPONSE_OK ||
+      response_id == GTK_RESPONSE_CANCEL ||
+      response_id == GTK_RESPONSE_DELETE_EVENT) {
     gtk_widget_destroy(GTK_WIDGET(dialog));
   }
 
