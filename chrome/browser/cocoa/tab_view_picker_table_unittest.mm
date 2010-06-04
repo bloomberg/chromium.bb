@@ -36,7 +36,8 @@ class TabViewPickerTableTest : public CocoaTest {
     view_ = view.get();
     [view_ setAllowsEmptySelection:NO];
     [view_ setAllowsMultipleSelection:NO];
-    [view_ addTableColumn:[[NSTableColumn alloc] initWithIdentifier:nil]];
+    [view_ addTableColumn:
+        [[[NSTableColumn alloc] initWithIdentifier:nil] autorelease]];
     [[test_window() contentView] addSubview:view_];
 
     // Initialize source tab view, with delegate.
