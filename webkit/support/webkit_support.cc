@@ -59,6 +59,11 @@ class TestEnvironment {
 
   WebKit::WebKitClient* webkit_client() { return webkit_client_.get(); }
 
+  void set_theme_engine(WebKit::WebThemeEngine* engine) {
+    DCHECK(webkit_client_ != 0);
+    webkit_client_->SetThemeEngine(engine);
+  }
+
  private:
   scoped_ptr<base::AtExitManager> at_exit_manager_;
   scoped_ptr<MessageLoopForUI> main_message_loop_;
@@ -290,6 +295,13 @@ void ClearAllDatabases() {
 
 void SetAcceptAllCookies(bool accept) {
   SimpleResourceLoaderBridge::SetAcceptAllCookies(accept);
+}
+
+// Theme engine
+
+void SetThemeEngine(WebKit::WebThemeEngine* engine) {
+  DCHECK(test_environment);
+  test_environment->set_theme_engine(engine);
 }
 
 }  // namespace webkit_support
