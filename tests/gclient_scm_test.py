@@ -68,7 +68,7 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testDir(self):
     members = [
-        'FullUrlForRelativeUrl', 'RunCommand',
+        'AddAdditionalFlags', 'FullUrlForRelativeUrl', 'RunCommand',
         'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update',
         'updatesingle', 'url',
@@ -266,6 +266,8 @@ class SVNWrapperTestCase(BaseTestCase):
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
+    if options.force and gclient_scm.scm.SVN.AssertVersion("1.5")[0]:
+      additional_args.append('--force')
     files_list = []
     gclient_scm.scm.SVN.RunAndGetFileList(
         options,

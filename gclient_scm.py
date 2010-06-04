@@ -740,8 +740,7 @@ class SVNWrapper(SCMWrapper):
     if not os.path.exists(checkout_path):
       # We need to checkout.
       command = ['checkout', url, checkout_path]
-      if revision:
-        command.extend(['--revision', str(revision).strip()])
+      command = self.AddAdditionalFlags(command, options, revision)
       scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
       return
 
@@ -798,8 +797,7 @@ class SVNWrapper(SCMWrapper):
         gclient_utils.RemoveDirectory(checkout_path)
         # We need to checkout.
         command = ['checkout', url, checkout_path]
-        if revision:
-          command.extend(['--revision', str(revision).strip()])
+        command = self.AddAdditionalFlags(command, options, revision)
         scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
         return
 
@@ -812,8 +810,7 @@ class SVNWrapper(SCMWrapper):
       return
 
     command = ["update", checkout_path]
-    if revision:
-      command.extend(['--revision', str(revision).strip()])
+    command = self.AddAdditionalFlags(command, options, revision)
     scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
 
   def updatesingle(self, options, args, file_list):
@@ -841,8 +838,7 @@ class SVNWrapper(SCMWrapper):
         os.makedirs(checkout_path)
       command = ["export", os.path.join(self.url, filename),
                  os.path.join(checkout_path, filename)]
-      if options.revision:
-        command.extend(['--revision', str(options.revision).strip()])
+      command = self.AddAdditionalFlags(command, options, options.revision)
       scm.SVN.Run(command, self._root_dir)
 
   def revert(self, options, args, file_list):
@@ -927,3 +923,16 @@ class SVNWrapper(SCMWrapper):
   def FullUrlForRelativeUrl(self, url):
     # Find the forth '/' and strip from there. A bit hackish.
     return '/'.join(self.url.split('/')[:4]) + url
+
+  def AddAdditionalFlags(self, command, options, revision):
+    """Add additional flags to command depending on what options are set.
+    command should be a list of strings that represents an svn command.
+
+    This method returns a new list to be used as a command."""
+    new_command = command[:]
+    if revision:
+      new_command.extend(['--revision', str(revision).strip()])
+    # --force was added to 'svn update' in svn 1.5.
+    if options.force and scm.SVN.AssertVersion("1.5")[0]:
+      new_command.append('--force')
+    return new_command
