@@ -209,6 +209,12 @@ void PromiseWriterTask::Run() {
   }
 }
 
+- (NSPoint)convertScreenPoint:(NSPoint)screenPoint {
+  DCHECK([contentsView_ window]);
+  NSPoint basePoint = [[contentsView_ window] convertScreenToBase:screenPoint];
+  return [contentsView_ convertPoint:basePoint fromView:nil];
+}
+
 - (void)startDrag {
   NSEvent* currentEvent = [NSApp currentEvent];
 
@@ -250,7 +256,7 @@ void PromiseWriterTask::Run() {
     rvh->DragSourceSystemDragEnded();
 
     // Convert |screenPoint| to view coordinates and flip it.
-    NSPoint localPoint = [contentsView_ convertPoint:screenPoint fromView:nil];
+    NSPoint localPoint = [self convertScreenPoint:screenPoint];
     NSRect viewFrame = [contentsView_ frame];
     localPoint.y = viewFrame.size.height - localPoint.y;
     // Flip |screenPoint|.
@@ -270,7 +276,7 @@ void PromiseWriterTask::Run() {
   RenderViewHost* rvh = [contentsView_ tabContents]->render_view_host();
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
-    NSPoint localPoint = [contentsView_ convertPoint:screenPoint fromView:nil];
+    NSPoint localPoint = [self convertScreenPoint:screenPoint];
     NSRect viewFrame = [contentsView_ frame];
     localPoint.y = viewFrame.size.height - localPoint.y;
     // Flip |screenPoint|.
