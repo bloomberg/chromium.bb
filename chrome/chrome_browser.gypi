@@ -753,6 +753,8 @@
         'browser/cocoa/hyperlink_button_cell.mm',
         'browser/cocoa/hung_renderer_controller.h',
         'browser/cocoa/hung_renderer_controller.mm',
+        'browser/cocoa/image_utils.h',
+        'browser/cocoa/image_utils.mm',
         'browser/cocoa/import_progress_dialog.h',
         'browser/cocoa/import_progress_dialog.mm',
         'browser/cocoa/import_settings_dialog.h',

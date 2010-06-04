@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/cocoa/event_utils.h"
+#include "chrome/browser/cocoa/image_utils.h"
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -484,11 +485,11 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
     imageRect.origin.y +=
         floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
     imageRect.origin.x += kLeftRightMargin;
-    [image setFlipped:[controlView isFlipped]];
     [image drawInRect:imageRect
              fromRect:NSZeroRect  // Entire image
             operation:NSCompositeSourceOver
-             fraction:1.0];
+             fraction:1.0
+         neverFlipped:YES];
   }
 
   // Adjust the title position to be lined up under the field's text.

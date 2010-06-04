@@ -697,6 +697,7 @@
         'browser/cocoa/html_dialog_window_controller_unittest.mm',
         'browser/cocoa/hung_renderer_controller_unittest.mm',
         'browser/cocoa/hyperlink_button_cell_unittest.mm',
+        'browser/cocoa/image_utils_unittest.mm',
         'browser/cocoa/import_settings_dialog_unittest.mm',
         'browser/cocoa/info_bubble_view_unittest.mm',
         'browser/cocoa/info_bubble_window_unittest.mm',

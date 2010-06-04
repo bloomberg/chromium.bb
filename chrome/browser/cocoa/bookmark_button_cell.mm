@@ -11,6 +11,7 @@
 #import "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
+#import "chrome/browser/cocoa/image_utils.h"
 #include "grit/generated_resources.h"
 
 
@@ -225,11 +226,11 @@
                                    NSWidth(cellFrame) - NSWidth(imageRect),
                                    (NSHeight(cellFrame) / 2.0) -
                                    (NSHeight(imageRect) / 2.0));
-    [arrowImage_ setFlipped:[controlView isFlipped]];
     [arrowImage_ drawInRect:drawRect
                     fromRect:imageRect
                    operation:NSCompositeSourceOver
-                    fraction:[self isEnabled] ? 1.0 : 0.5];
+                    fraction:[self isEnabled] ? 1.0 : 0.5
+                neverFlipped:YES];
   }
 }
 

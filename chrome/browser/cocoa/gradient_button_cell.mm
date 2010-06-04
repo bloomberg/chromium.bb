@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/browser/browser_theme_provider.h"
+#import "chrome/browser/cocoa/image_utils.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
@@ -415,11 +416,11 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     NSRect imageRect = NSZeroRect;
     imageRect.size = [[self image] size];
     NSRect drawRect = [self imageRectForBounds:cellFrame];
-    [[self image] setFlipped:[controlView isFlipped]];
     [[self image] drawInRect:drawRect
                     fromRect:imageRect
                    operation:NSCompositeSourceOver
-                    fraction:[self isEnabled] ? 1.0 : 0.5];
+                    fraction:[self isEnabled] ? 1.0 : 0.5
+                neverFlipped:YES];
     if (isTemplate) {
       if (color) {
         [color set];

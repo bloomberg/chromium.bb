@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#import "chrome/browser/cocoa/image_utils.h"
 #include "gfx/font.h"
 #include "grit/theme_resources.h"
 
@@ -17,7 +18,7 @@
 // down relative to the containing text's baseline.
 
 // Draw the image using |DrawImageInRect()| helper function for
-// |-setFlipped:| consistency with other image drawing.
+// flipped consistency with other image drawing.
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)aView;
 
 @end
@@ -85,11 +86,11 @@ void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
   // If there is an image, make sure we calculated the target size
   // correctly.
   DCHECK(!image || NSEqualSizes([image size], rect.size));
-  [image setFlipped:[view isFlipped]];
   [image drawInRect:rect
            fromRect:NSZeroRect  // Entire image
           operation:NSCompositeSourceOver
-           fraction:1.0];
+           fraction:1.0
+       neverFlipped:YES];
 }
 
 // Helper function to generate an attributed string containing
@@ -120,7 +121,7 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)aView {
   // Draw image with |DrawImageInRect()| to get consistent
-  // |-setFlipped:| treatment.
+  // flipped treatment.
   DrawImageInRect([self image], aView, cellFrame);
 }
 

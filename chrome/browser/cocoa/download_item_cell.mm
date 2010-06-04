@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/download_item_cell.h"
+#import "chrome/browser/cocoa/image_utils.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -587,11 +588,11 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   // Draw icon
   NSRect imageRect = NSZeroRect;
   imageRect.size = [[self image] size];
-  [[self image] setFlipped:[controlView isFlipped]];
   [[self image] drawInRect:[self imageRectForBounds:cellFrame]
                   fromRect:imageRect
                  operation:NSCompositeSourceOver
-                  fraction:[self isEnabled] ? 1.0 : 0.5];
+                  fraction:[self isEnabled] ? 1.0 : 0.5
+              neverFlipped:YES];
 
   // Separator between button and popup parts
   CGFloat lx = NSMaxX(cellFrame) - kDropdownAreaWidth + 0.5;

@@ -8,6 +8,7 @@
 #include "base/nsimage_cache_mac.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
+#import "chrome/browser/cocoa/image_utils.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
@@ -54,7 +55,6 @@ const CGFloat kViewCornerRadius = 4.0;
   NSRect visibleRect = [self bounds];
 
   // On top
-  [arrowUpImage_ setFlipped:[self isFlipped]];
   NSRect imageRect = NSZeroRect;
   imageRect.size = [arrowUpImage_ size];
   NSRect drawRect = NSOffsetRect(
@@ -64,10 +64,10 @@ const CGFloat kViewCornerRadius = 4.0;
   [arrowUpImage_ drawInRect:drawRect
                    fromRect:imageRect
                   operation:NSCompositeSourceOver
-                   fraction:1.0];
+                   fraction:1.0
+               neverFlipped:YES];
 
   // On bottom
-  [arrowDownImage_ setFlipped:[self isFlipped]];
   imageRect = NSZeroRect;
   imageRect.size = [arrowDownImage_ size];
   drawRect = NSOffsetRect(imageRect,
@@ -76,7 +76,8 @@ const CGFloat kViewCornerRadius = 4.0;
   [arrowDownImage_ drawInRect:drawRect
                      fromRect:imageRect
                     operation:NSCompositeSourceOver
-                     fraction:1.0];
+                     fraction:1.0
+                 neverFlipped:YES];
 }
 
 - (void)drawRect:(NSRect)rect {
