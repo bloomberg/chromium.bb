@@ -36,6 +36,7 @@ const char* const kPngMimeType = "image/png";
 
 // Tags we use in product specific data
 const char* const kPageTitleTag = "PAGE TITLE";
+const char* const kProblemTypeIdTag = "PROBLEM TYPE ID";
 const char* const kProblemTypeTag = "PROBLEM TYPE";
 const char* const kChromeVersionTag = "CHROME VERSION";
 const char* const kOsVersionTag = "OS VERSION";
@@ -130,6 +131,7 @@ void BugReportUtil::SendReport(Profile* profile,
     int png_width,
 #if defined(OS_CHROMEOS)
     int png_height,
+    const std::string& problem_type_text,
     const chromeos::LogDictionaryType* const sys_info) {
 #else
     int png_height) {
@@ -154,8 +156,13 @@ void BugReportUtil::SendReport(Profile* profile,
   AddFeedbackData(&feedback_data, std::string(kPageTitleTag),
                   page_title_text);
 
-  AddFeedbackData(&feedback_data, std::string(kProblemTypeTag),
+  AddFeedbackData(&feedback_data, std::string(kProblemTypeIdTag),
                   StringPrintf("%d\r\n", problem_type));
+
+#if defined(OS_CHROMEOS)
+  AddFeedbackData(&feedback_data, std::string(kProblemTypeTag),
+                  problem_type_text);
+#endif
 
   // Add the user e-mail to the feedback object
   common_data->set_user_email(user_email_text);
@@ -190,9 +197,11 @@ void BugReportUtil::SendReport(Profile* profile,
   AddFeedbackData(&feedback_data, std::string(kOsVersionTag), os_version);
 
 #if defined(OS_CHROMEOS)
-  for (chromeos::LogDictionaryType::const_iterator i = sys_info->begin();
-       i != sys_info->end(); ++i)
-    AddFeedbackData(&feedback_data, i->first, i->second);
+  if (sys_info) {
+    for (chromeos::LogDictionaryType::const_iterator i = sys_info->begin();
+         i != sys_info->end(); ++i)
+      AddFeedbackData(&feedback_data, i->first, i->second);
+  }
 #endif
 
   // Include the page image if we have one.

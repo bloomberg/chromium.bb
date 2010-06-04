@@ -31,18 +31,13 @@ class BugReportUtil {
  public:
 #if defined(OS_CHROMEOS)
   enum BugType {
-    PAGE_FORMATTING = 0,
-    PAGE_WONT_LOAD,
-    PHISHING_PAGE,
-    PLUGIN_ISSUE,
-    TABS_WINDOW_OVERVIEW_ISSUE,
-    CONNECTION_ISSUE,
+    CONNECTIVITY_ISSUE = 0,
     SYNC_ISSUE,
     CRASH_ISSUE,
+    PAGE_FORMATTING,
     EXTENSION_ISSUE,
-    APP_LAUNCHER_ISSUE,
-    PANEL_ISSUE,
-    POWER_ISSUE,
+    SUSPEND_ISSUE,
+    PHISHING_PAGE,
     OTHER_PROBLEM
   };
 #else
@@ -81,6 +76,7 @@ class BugReportUtil {
       int png_width,
 #if defined(OS_CHROMEOS)
       int png_height,
+      const std::string& problem_type_text,
       const chromeos::LogDictionaryType* const sys_info);
 #else
       int png_height);

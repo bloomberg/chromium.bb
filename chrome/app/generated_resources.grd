@@ -4169,35 +4169,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Bug type:
       </message>
       <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_BUGREPORT_CONNECTIVITY_ISSUE" desc="Report a bug/problem type: Connectivity">
+          Connectivity
+        </message>
+        <message name="IDS_BUGREPORT_SYNC_ISSUE" desc="Report a bug/problem type: Sync">
+          Sync
+        </message>
         <message name="IDS_BUGREPORT_PAGE_FORMATTING" desc="Report a bug/problem type: Page formatting or layout">
-          Page formatting or layout
-        </message>
-        <message name="IDS_BUGREPORT_PLUGIN_ISSUE" desc="Report a bug/problem type: Plug-ins (e.g. Adobe Flash Player, Quicktime, etc)">
-          Plug-ins (e.g. Adobe Flash Player, Quicktime, etc)
-        </message>
-        <message name="IDS_BUGREPORT_TABS_WINDOW_OVERVIEW_ISSUE" desc="Report a bug/problem type: Tabs, windows or overview mode">
-          Tabs, windows or overview mode
-        </message>
-        <message name="IDS_BUGREPORT_CONNECTION_ISSUE" desc="Report a bug/problem type: Network connection">
-          Network connection
-        </message>
-        <message name="IDS_BUGREPORT_SYNC_ISSUE" desc="Report a bug/problem type: Network connection">
-          Synced preferences
-        </message>
-        <message name="IDS_BUGREPORT_CRASH_ISSUE" desc="Report a bug/problem type: Crash">
-          Crash
+          Page formatting
         </message>
         <message name="IDS_BUGREPORT_EXTENSION_ISSUE" desc="Report a bug/problem type: Extensions or apps">
           Extensions or apps
         </message>
-        <message name="IDS_BUGREPORT_APP_LAUNCHER_ISSUE" desc="Report a bug/problem type: App launcher">
-          App launcher
+        <message name="IDS_BUGREPORT_SUSPEND_ISSUE" desc="Report a bug/problem type: Suspend or resume">
+          Suspend or resume
         </message>
-        <message name="IDS_BUGREPORT_PANEL_ISSUE" desc="Report a bug/problem type: Panels">
-          Panels
-        </message>
-        <message name="IDS_BUGREPORT_POWER_ISSUE" desc="Report a bug/problem type: Power (battery, standby, etc)">
-          Power (battery, standby, etc)
+        <message name="IDS_BUGREPORT_CRASH_ISSUE" desc="Report a bug/problem type: Crash">
+          Crash
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
@@ -4225,8 +4213,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="Report a bug/problem type: Browser crashed">
           Browser crash... go boom
         </message>
-        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="Report a bug/problem type: Other problem">
-          Other problem
+        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="Report a bug/problem type: General feedback/other">
+          General feedback/other
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
@@ -4254,8 +4242,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="In Title Case: Report a bug/problem type: Browser crashed">
           Browser Crash... Go Boom
         </message>
-        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="In Title Case: Report a bug/problem type: Other problem">
-          Other Problem
+        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="In Title Case: Report a bug/problem type: General feedback/other">
+          General feedback/other
         </message>
       </if>
 

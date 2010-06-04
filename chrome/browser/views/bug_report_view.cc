@@ -78,30 +78,20 @@ class BugReportComboBoxModel : public ComboboxModel {
   static std::wstring GetItemAtIndex(int index) {
 #if defined(OS_CHROMEOS)
     switch (index) {
-      case BugReportUtil::PAGE_FORMATTING:
-        return l10n_util::GetString(IDS_BUGREPORT_PAGE_FORMATTING);
-      case BugReportUtil::PAGE_WONT_LOAD:
-        return l10n_util::GetString(IDS_BUGREPORT_PAGE_WONT_LOAD);
-      case BugReportUtil::PHISHING_PAGE:
-        return l10n_util::GetString(IDS_BUGREPORT_PHISHING_PAGE);
-      case BugReportUtil::PLUGIN_ISSUE:
-        return l10n_util::GetString(IDS_BUGREPORT_PLUGIN_ISSUE);
-      case BugReportUtil::TABS_WINDOW_OVERVIEW_ISSUE:
-        return l10n_util::GetString(IDS_BUGREPORT_TABS_WINDOW_OVERVIEW_ISSUE);
-      case BugReportUtil::CONNECTION_ISSUE:
-        return l10n_util::GetString(IDS_BUGREPORT_CONNECTION_ISSUE);
+      case BugReportUtil::CONNECTIVITY_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_CONNECTIVITY_ISSUE);
       case BugReportUtil::SYNC_ISSUE:
         return l10n_util::GetString(IDS_BUGREPORT_SYNC_ISSUE);
       case BugReportUtil::CRASH_ISSUE:
         return l10n_util::GetString(IDS_BUGREPORT_CRASH_ISSUE);
+      case BugReportUtil::PAGE_FORMATTING:
+        return l10n_util::GetString(IDS_BUGREPORT_PAGE_FORMATTING);
       case BugReportUtil::EXTENSION_ISSUE:
         return l10n_util::GetString(IDS_BUGREPORT_EXTENSION_ISSUE);
-      case BugReportUtil::APP_LAUNCHER_ISSUE:
-        return l10n_util::GetString(IDS_BUGREPORT_APP_LAUNCHER_ISSUE);
-      case BugReportUtil::PANEL_ISSUE:
-        return l10n_util::GetString(IDS_BUGREPORT_PANEL_ISSUE);
-      case BugReportUtil::POWER_ISSUE:
-        return l10n_util::GetString(IDS_BUGREPORT_POWER_ISSUE);
+      case BugReportUtil::SUSPEND_ISSUE:
+        return l10n_util::GetString(IDS_BUGREPORT_SUSPEND_ISSUE);
+      case BugReportUtil::PHISHING_PAGE:
+        return l10n_util::GetString(IDS_BUGREPORT_PHISHING_PAGE);
       case BugReportUtil::OTHER_PROBLEM:
         return l10n_util::GetString(IDS_BUGREPORT_OTHER_PROBLEM);
       default:
@@ -602,6 +592,7 @@ bool BugReportView::Accept() {
           UTF16ToUTF8(description_text_->text()),
           image_data, image_data_size,
           screen_size_.width(), screen_size_.height(),
+          WideToUTF8(bug_type_combo_->model()->GetItemAt(problem_type_)),
           sys_info_.get());
 #else
       BugReportUtil::SendReport(profile_,
