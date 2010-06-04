@@ -296,7 +296,7 @@ Index: coregrind/m_stacktrace.c
  
 +   extern unsigned long nacl_head;
 +
-+   if (uregs.xip > nacl_head && uregs.xip < nacl_head + (1ULL << 32)) {
++   if (nacl_head && uregs.xip > nacl_head && uregs.xip < nacl_head + (1ULL << 32)) {
 +     fp_min = nacl_head;
 +     fp_max = nacl_head + (1ULL << 32) - 1;
 +   }
