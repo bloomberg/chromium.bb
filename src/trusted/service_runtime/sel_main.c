@@ -284,7 +284,6 @@ int main(int  ac,
       case 'd':
         fprintf(stderr, "DEBUG MODE ENABLED\n");
         NaClInsecurelyBypassAllAclChecks();
-        NaClIgnoreValidatorResult();
         debug_mode = 1;
         break;
       case 'h':
@@ -430,6 +429,7 @@ int main(int  ac,
   }
 
   state.restrict_to_main_thread = main_thread_only;
+  state.ignore_validator_result = debug_mode;
 
   nap = &state;
   errcode = LOAD_OK;

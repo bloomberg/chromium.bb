@@ -205,6 +205,7 @@ struct NaClApp {
    * main/privileged thread
    */
   int                       restrict_to_main_thread;
+  int                       ignore_validator_result;
   /* all threads enqueue the "special" syscalls to the work queue */
   struct NaClSyncQueue      work_queue;
 
@@ -297,7 +298,6 @@ int NaClValidateCode(struct NaClApp *nap,
                      uintptr_t      guest_addr,
                      uint8_t        *data,
                      size_t         size) NACL_WUR;
-void NaClIgnoreValidatorResult();
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) NACL_WUR;
 
 

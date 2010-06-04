@@ -87,6 +87,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->module_may_start = 0;  /* only when secure_channel != NULL */
 
   nap->restrict_to_main_thread = 1;
+  nap->ignore_validator_result = 0;
 
   if (!NaClSyncQueueCtor(&nap->work_queue)) {
     goto cleanup_cv;

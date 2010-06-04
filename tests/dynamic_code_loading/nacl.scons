@@ -39,6 +39,10 @@ env.ComponentProgram('write_to_dyncode.nexe',
 env.ComponentProgram('dyncode_disabled_test.nexe',
                      ['dyncode_disabled_test.c'])
 
+env.ComponentProgram('debug_mode_test.nexe',
+                     ['debug_mode_test.c',
+                      GetTemplate(env)])
+
 tests = [
     env.CommandSelLdrTestNacl(
         'dynamic_load_test.out',
@@ -55,6 +59,12 @@ tests = [
     env.CommandSelLdrTestNacl(
         'dyncode_disabled_test.out',
         command=[env.File('dyncode_disabled_test.nexe')]
+        ),
+    env.CommandSelLdrTestNacl(
+        'debug_mode_test.out',
+        sel_ldr_flags=["-d"],
+        command=[env.File('debug_mode_test.nexe')],
+        osenv='NACLDYNCODE=1',
         ),
   ]
 

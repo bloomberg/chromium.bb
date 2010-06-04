@@ -430,6 +430,13 @@ int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
      * TODO(mseaborn): Check before moving this outside the lock.
      */
     validator_result = NaClValidateCode(nap, dest, code_copy, size);
+
+    if (validator_result != LOAD_OK && nap->ignore_validator_result) {
+      NaClLog(LOG_ERROR, "VALIDATION FAILED for dynamically-loaded code: "
+              "continuing anyway...\n");
+      validator_result = LOAD_OK;
+    }
+
     if (validator_result != LOAD_OK) {
       NaClLog(1, "NaClTextSysDyncode_Copy: "
               "Validation of dynamic code failed\n");

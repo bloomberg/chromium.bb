@@ -75,12 +75,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
 
 #endif
 
-static int g_ignore_validator_result = 0;
-
-void NaClIgnoreValidatorResult() {
-  g_ignore_validator_result = 1;
-}
-
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   uintptr_t               memp;
   uintptr_t               endp;
@@ -97,7 +91,7 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   rcode = NaClValidateCode(nap, NACL_TRAMPOLINE_END,
                            (uint8_t *) memp, regionsize);
   if (LOAD_OK != rcode) {
-    if (g_ignore_validator_result) {
+    if (nap->ignore_validator_result) {
       NaClLog(LOG_ERROR, "VALIDATION FAILED: continuing anyway...\n");
       rcode = LOAD_OK;
     } else {
