@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/history_menu_cocoa_controller.h"
+
 #include "base/scoped_vector.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_HISTORY_MENU
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser.h"
-#import "chrome/browser/cocoa/history_menu_cocoa_controller.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/history/history.h"
@@ -23,6 +24,11 @@
     DCHECK(bridge_);
   }
   return self;
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
+  AppController* controller = [NSApp delegate];
+  return [controller keyWindowIsNotModal];
 }
 
 // Open the URL of the given history item in the current tab.

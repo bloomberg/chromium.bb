@@ -574,13 +574,15 @@ void RecordLastRunAppBundlePath() {
   return service && !service->entries().empty();
 }
 
-// Returns true if there is no browser window, or if the active window is
-// blocked by a modal dialog.
-- (BOOL)keyWindowIsMissingOrBlocked {
+// Returns true if there is not a modal window (either window- or application-
+// modal) blocking the active browser. Note that tab modal dialogs (HTTP auth
+// sheets) will not count as blocking the browser. But things like open/save
+// dialogs that are window modal will block the browser.
+- (BOOL)keyWindowIsNotModal {
   Browser* browser = BrowserList::GetLastActive();
-  return browser == NULL ||
+  return [NSApp modalWindow] == nil && (browser &&
          ![[browser->window()->GetNativeHandle() attachedSheet]
-           isKindOfClass:[NSWindow class]];
+             isKindOfClass:[NSWindow class]]);
 }
 
 // Called to validate menu items when there are no key windows. All the
@@ -602,11 +604,22 @@ void RecordLastRunAppBundlePath() {
         // app_controller is only activated when there are no key windows (see
         // function comment).
         case IDC_RESTORE_TAB:
-          enable = [self keyWindowIsMissingOrBlocked] && [self canRestoreTab];
+          enable = [self keyWindowIsNotModal] && [self canRestoreTab];
           break;
+        // Browser-level items that open in new tabs should not open if there's
+        // a window- or app-modal dialog.
         case IDC_OPEN_FILE:
         case IDC_NEW_TAB:
-          enable = [self keyWindowIsMissingOrBlocked];
+        case IDC_SHOW_HISTORY:
+        case IDC_SHOW_BOOKMARK_MANAGER:
+          enable = [self keyWindowIsNotModal];
+          break;
+        // Browser-level items that open in new windows.
+        case IDC_NEW_WINDOW:
+        case IDC_TASK_MANAGER:
+          // Allow the user to open a new window if there's a window-modal
+          // dialog.
+          enable = [self keyWindowIsNotModal] || ([NSApp modalWindow] == nil);
           break;
         case IDC_SYNC_BOOKMARKS: {
           Profile* defaultProfile = [self defaultProfile];
@@ -621,12 +634,14 @@ void RecordLastRunAppBundlePath() {
                 << "NULL defaultProfile detected -- not doing anything";
             break;
           }
-          enable = ProfileSyncService::IsSyncEnabled();
+          enable = ProfileSyncService::IsSyncEnabled() &&
+                   [self keyWindowIsNotModal];
           sync_ui_util::UpdateSyncItem(item, enable, defaultProfile);
           break;
         }
         default:
-          enable = menuState_->IsCommandEnabled(tag) ? YES : NO;
+          enable = menuState_->IsCommandEnabled(tag) ?
+                   [self keyWindowIsNotModal] : NO;
       }
     }
   } else if (action == @selector(terminate:)) {

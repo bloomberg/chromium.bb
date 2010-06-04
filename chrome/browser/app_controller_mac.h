@@ -63,6 +63,12 @@ class Profile;
 // window closure from causing the application to quit.
 - (void)stopTryingToTerminateApplication:(NSApplication*)app;
 
+// Returns true if there is not a modal window (either window- or application-
+// modal) blocking the active browser. Note that tab modal dialogs (HTTP auth
+// sheets) will not count as blocking the browser. But things like open/save
+// dialogs that are window modal will block the browser.
+- (BOOL)keyWindowIsNotModal;
+
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender;

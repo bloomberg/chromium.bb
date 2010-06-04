@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
+
 #include "app/text_elider.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_BOOKMARK_MENU
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
-#import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -52,6 +54,11 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 - (NSMenu*)menu {
   return [[[NSApp mainMenu] itemWithTag:IDC_BOOKMARK_MENU] submenu];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
+  AppController* controller = [NSApp delegate];
+  return [controller keyWindowIsNotModal];
 }
 
 // NSMenu delegate method: called just before menu is displayed.
