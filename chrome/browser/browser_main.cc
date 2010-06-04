@@ -730,10 +730,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   } else {
     const FieldTrial::Probability kSpdyDivisor = 1000;
     // TODO(lzheng): Increase these values to enable more spdy tests.
-    // To enable 100% npn_with_spdy, set kNpnHttpProbability = 0 and set
-    // kNpnSpdyProbability = FieldTrial::kAllRemainingProbability.
-    FieldTrial::Probability npnhttp_probability = 0;  // 0.0%
-    FieldTrial::Probability npnspdy_probability = 0;  // 0.0%
+    // To enable 100% npn_with_spdy, set npnhttp_probability = 0 and set
+    // npnspdy_probability = FieldTrial::kAllRemainingProbability.
+    FieldTrial::Probability npnhttp_probability = 250;  // 25%
+    FieldTrial::Probability npnspdy_probability = 250;  // 25%
 #if defined(OS_WIN)
     // Enable the A/B test for SxS. SxS is only available on windows
     std::wstring channel;
