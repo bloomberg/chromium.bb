@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,8 @@ enum ViewID {
   // The Bookmark Bar.
   VIEW_ID_BOOKMARK_BAR,
   VIEW_ID_OTHER_BOOKMARKS,
+  // Used for bookmarks/folders on the bookmark bar.
+  VIEW_ID_BOOKMARK_BAR_ELEMENT,
 
   // Find in page.
   VIEW_ID_FIND_IN_PAGE_TEXT_FIELD,

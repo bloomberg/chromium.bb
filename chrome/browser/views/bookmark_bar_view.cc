@@ -19,6 +19,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
@@ -916,6 +917,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   MenuButton* button = new BookmarkFolderButton(
       this, l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_BOOKMARKED), this,
       false);
+  button->SetID(VIEW_ID_OTHER_BOOKMARKS);
   button->SetIcon(GetGroupIcon());
   button->SetContextMenuController(this);
   button->set_tag(kOtherFolderButtonTag);
@@ -984,12 +986,14 @@ void BookmarkBarView::BookmarkNodeMoved(BookmarkModel* model,
                                         int new_index) {
   BookmarkNodeRemovedImpl(model, old_parent, old_index);
   BookmarkNodeAddedImpl(model, new_parent, new_index);
+  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
                                         const BookmarkNode* parent,
                                         int index) {
   BookmarkNodeAddedImpl(model, parent, index);
+  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
@@ -1016,6 +1020,7 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
                                           int old_index,
                                           const BookmarkNode* node) {
   BookmarkNodeRemovedImpl(model, parent, old_index);
+  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
@@ -1042,6 +1047,7 @@ void BookmarkBarView::BookmarkNodeChanged(BookmarkModel* model,
                                           const BookmarkNode* node) {
   NotifyModelChanged();
   BookmarkNodeChangedImpl(model, node);
+  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
@@ -1084,6 +1090,8 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
 
   Layout();
   SchedulePaint();
+
+  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeFavIconLoaded(BookmarkModel* model,
@@ -1120,6 +1128,8 @@ int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
     // dnd, such as pressing the mouse and hitting control-b.
     return DragDropTypes::DRAG_NONE;
   }
+
+  CheckIntegrity();
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
@@ -1276,7 +1286,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::TextButton* button) {
   button->SetText(node->GetTitle());
   button->SetAccessibleName(node->GetTitle());
-
+  button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {
     button->SetEnabledColor(GetThemeProvider()->GetColor(
@@ -1720,4 +1730,14 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   sync_error_button->SetIcon(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING));
   return sync_error_button;
+}
+
+void BookmarkBarView::CheckIntegrity() {
+  // We better be on the ui thread.
+  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // And the number of views on the bookmark bar better match that of the model.
+  volatile int model_count = model_->GetBookmarkBarNode()->GetChildCount();
+  volatile int view_count = GetBookmarkButtonCount();
+  CHECK_EQ(model_count, view_count);
 }
