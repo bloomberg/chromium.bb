@@ -39,6 +39,8 @@ cr.define('bmm', function() {
     decorate: function() {
       List.prototype.decorate.call(this);
       this.addEventListener('click', this.handleClick_);
+      this.addEventListener('mousedown', this.handleMouseDown_);
+
       // HACK(arv): http://crbug.com/40902
       var self = this;
       window.addEventListener('resize', function() {
@@ -156,7 +158,7 @@ cr.define('bmm', function() {
      * Handles the clicks on the list so that we can check if the user clicked
      * on a link or a folder.
      * @private
-     * @param {Event} e The click event object.
+     * @param {!Event} e The click event object.
      */
     handleClick_: function(e) {
       var self = this;
@@ -183,6 +185,22 @@ cr.define('bmm', function() {
         if (!bmm.isFolder(node))
           dispatch(node.url);
       }
+    },
+
+    /**
+     * Handles mousedown events so that we can prevent the auto scroll as
+     * necessary.
+     * @private
+     * @param {!Event} e The mousedown event object.
+     */
+    handleMouseDown_: function(e) {
+      // When the user does a middle click we need to prevent the auto scroll
+      // in case the user is trying to middle click to open a bookmark in a
+      // background tab.
+      // We do not do this in case the target is an input since middle click
+      // is also paste on Linux and we don't want to break that.
+      if (e.button == 1 && e.target.tagName != 'INPUT')
+        e.preventDefault();
     },
 
     // Bookmark model update callbacks
