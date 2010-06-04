@@ -215,7 +215,7 @@ void UserImageView::ButtonPressed(
     return;
   }
   if (sender == ok_button_)
-    delegate_->OnOK(*last_frame_);
+    delegate_->OnOK(selected_image_->GetImage());
   else if (sender == cancel_button_)
     delegate_->OnCancel();
   else
