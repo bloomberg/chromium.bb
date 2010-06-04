@@ -163,10 +163,9 @@ BOOL SwizzleNSExceptionInit() {
 @implementation BrowserCrApplication
 
 + (void)initialize {
-  // Turn deallocated Objective-C objects into zombies.
-  // TODO(shess): Revert back to a DCHECK() before the next beta
-  // channel.  http://crbug.com/45676
-  ObjcEvilDoers::ZombieEnable(YES, 0);
+  // Turn all deallocated Objective-C objects into zombies, keeping
+  // the most recent 10,000 of them on the treadmill.
+  DCHECK(ObjcEvilDoers::ZombieEnable(YES, 10000));
 }
 
 - init {
