@@ -161,8 +161,11 @@ void ZombieDealloc(id self, SEL _cmd) {
   // zero, then |self| will be freed immediately.
   ZombieRecord zombieToFree = {self, wasa};
 
-  {
+  // Don't involve the lock when creating zombies without a treadmill.
+  if (g_zombieCount > 0) {
     AutoLock pin(lock_);
+
+    // Check the count again in a thread-safe manner.
     if (g_zombieCount > 0) {
       // Put the current object on the treadmill and keep the previous
       // occupant.
