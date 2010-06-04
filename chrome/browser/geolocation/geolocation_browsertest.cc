@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
   // Disables further prompts from this tab.
-  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
 
   // Checks infobar will not be created a second tab.
   ASSERT_TRUE(Initialize(INITIALIZATION_NEWTAB));
@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   SetInfobarResponse(current_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this tab.
-  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
   // Go off the record, and checks no infobar will be created.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
   AddGeolocationWatch(false);
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this iframe.
-  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
 
   // Test second iframe from a different origin with a cached geoposition will
   // create the infobar.
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
 
   // Back to the first frame, enable alert and refresh geoposition.
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
-  CheckStringValueFromJavascript("true", "geoEnableAlerts(true)");
+  CheckStringValueFromJavascript("1", "geoSetMaxAlertCount(1)");
   // MockLocationProvider must have been created.
   ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   CheckGeoposition(fresh_position);
 
   // Disable alert for this frame.
-  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
 
   // Now go ahead an authorize the second frame.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
@@ -454,16 +454,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
 }
 
 
-#if defined(OS_MACOSX)
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424
-#define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
-#else
-#define MAYBE_IFramesWithCachedPosition IFramesWithCachedPosition
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       MAYBE_IFramesWithCachedPosition) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
 
@@ -476,18 +467,22 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // so that it'll fetch from cache.
   // MockLocationProvider must have been created.
   ASSERT_TRUE(MockLocationProvider::instance_);
-  Geoposition cached_position = GeopositionFromLatLong(3.17, 4.23);
+  Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
   ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, NewRunnableFunction(
       &NotifyGeopositionOnIOThread, cached_position));
   WaitForJSPrompt();
   CheckGeoposition(cached_position);
 
   // Disable alert for this frame.
-  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
 
   // Now go ahead an authorize the second frame.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
+  // WebKit will use its cache, but we also broadcast a position shortly
+  // afterwards. We're only interested in the first alert for the success
+  // callback from the cached position.
+  CheckStringValueFromJavascript("1", "geoSetMaxAlertCount(1)");
   SetInfobarResponse(iframe1_url_, true);
   CheckGeoposition(cached_position);
 }
@@ -502,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
   SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this iframe.
-  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
 
   // Test second iframe from a different origin with a cached geoposition will
   // create the infobar.
@@ -542,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
-  CheckStringValueFromJavascript("false", "geoEnableAlerts(false)");
+  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
 
   // Permission should be requested after adding a watch.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";

@@ -4,16 +4,20 @@
     var last_position = 0;
     var last_error = 0;
     var watch_id = 0;
-    var display_alert = true;
+    var alert_count = 0;
+    var max_alert_count = undefined;
+    function geoShowAlertIfNeeded(msg) {
+      if (max_alert_count == undefined || alert_count++ < max_alert_count) {
+        alert(msg);
+      }
+    }
     function geoSuccessCallback(position) {
       last_position = position;
-      if (display_alert)
-        alert('geoSuccessCallback');
+      geoShowAlertIfNeeded('geoSuccessCallback');
     }
     function geoErrorCallback(error) {
       last_error = error;
-      if (display_alert)
-        alert('geoErrorCallback');
+      geoShowAlertIfNeeded('geoErrorCallback');
     }
     function geoStart() {
       watch_id = navigator.geolocation.watchPosition(
@@ -30,9 +34,10 @@
     function geoGetLastError() {
       return "" + (last_error ? last_error.code : 0);
     }
-    function geoEnableAlerts(enabled) {
-      display_alert = enabled;
-      return "" + display_alert;
+    function geoSetMaxAlertCount(max_alerts) {
+      alert_count = 0;
+      max_alert_count = max_alerts;
+      return "" + max_alert_count;
     }
     function geoAccessNavigatorGeolocation() {
       return "" + typeof(navigator.geolocation);
