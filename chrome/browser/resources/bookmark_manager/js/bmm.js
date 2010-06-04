@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('bmm', function() {
-  const TreeIterator = bmm.TreeIterator;
   const Promise = cr.Promise;
 
   /**
@@ -44,7 +43,7 @@ cr.define('bmm', function() {
       loadingPromises[id] = new Promise;
       chrome.experimental.bookmarkManager.getSubtree(id, false,
                                                      function(nodes) {
-        loadingPromises[id].value = nodes[0];
+        loadingPromises[id].value = nodes && nodes[0];
         delete loadingPromises[id];
       });
     }
