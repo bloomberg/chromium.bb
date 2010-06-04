@@ -167,6 +167,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("overridePreference", &LayoutTestController::overridePreference);
   BindMethod("setAllowUniversalAccessFromFileURLs", &LayoutTestController::setAllowUniversalAccessFromFileURLs);
   BindMethod("setAllowFileAccessFromFileURLs", &LayoutTestController::setAllowFileAccessFromFileURLs);
+  BindMethod("setJavaScriptProfilingEnabled", &LayoutTestController::setJavaScriptProfilingEnabled);
   BindMethod("setTimelineProfilingEnabled", &LayoutTestController::setTimelineProfilingEnabled);
   BindMethod("evaluateInWebInspector", &LayoutTestController::evaluateInWebInspector);
   BindMethod("forceRedSelectionColors", &LayoutTestController::forceRedSelectionColors);
@@ -1248,6 +1249,13 @@ void LayoutTestController::LogErrorToConsole(const std::string& text) {
       WebConsoleMessage(WebConsoleMessage::LevelError,
                         WebString::fromUTF8(text)),
       WebString(), 0);
+}
+
+void LayoutTestController::setJavaScriptProfilingEnabled(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  // Dummy method. JS profiling is always enabled in InspectorController.
+  return;
 }
 
 void LayoutTestController::setTimelineProfilingEnabled(
