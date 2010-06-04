@@ -12,14 +12,13 @@
 
 class LibGpsV294 : public LibGps {
  public:
-  explicit LibGpsV294(LibGpsLibraryLoader* dl_wrapper) : LibGps(dl_wrapper) {}
+  explicit LibGpsV294(LibGpsLibraryWrapper* dl_wrapper) : LibGps(dl_wrapper) {}
 
   // LibGps
   virtual bool StartStreaming() {
     return library().stream(WATCH_ENABLE) == 0;
   }
-  virtual bool DataWaiting(bool* ok) {
-    *ok = true;
+  virtual bool DataWaiting() {
     return library().waiting();
   }
   virtual bool GetPositionIfFixed(Geoposition* position) {
@@ -44,6 +43,6 @@ class LibGpsV294 : public LibGps {
   DISALLOW_COPY_AND_ASSIGN(LibGpsV294);
 };
 
-LibGps* LibGps::NewV294(LibGpsLibraryLoader* dl_wrapper) {
+LibGps* LibGps::NewV294(LibGpsLibraryWrapper* dl_wrapper) {
   return new LibGpsV294(dl_wrapper);
 }

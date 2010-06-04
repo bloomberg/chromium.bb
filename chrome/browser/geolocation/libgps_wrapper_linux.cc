@@ -12,22 +12,53 @@
 #include "base/string_util.h"
 
 namespace {
-LibGpsLibraryLoader* TryToOpen(const char* lib,
-                               LibGpsLibraryLoader::InitMode mode) {
+// Pass to TryToOpen() to indicate which functions should be wired up.
+// This could be turned into a bit mask if required, but for now the
+// two options are mutually exclusive.
+enum InitMode {
+  INITMODE_QUERY,
+  INITMODE_STREAM,
+};
+
+// Attempts to load dynamic library named |lib| and initialize the required
+// function pointers according to |mode|. Returns ownership a new instance
+// of the library loader class, or NULL on failure.
+LibGpsLibraryWrapper* TryToOpen(const char* lib, InitMode mode) {
   void* dl_handle = dlopen(lib, RTLD_LAZY);
-  if (dl_handle) {
-    LOG(INFO) << "Loaded " << lib;
-    scoped_ptr<LibGpsLibraryLoader> wrapper(new LibGpsLibraryLoader(dl_handle));
-    if (wrapper->Init(mode))
-      return wrapper.release();
-  } else {
+  if (!dl_handle) {
     LOG(INFO) << "Could not open " << lib << ": " << dlerror();
+    return NULL;
   }
-  return NULL;
+  LOG(INFO) << "Loaded " << lib;
+
+  #define DECLARE_FN_POINTER(function, required)                        \
+    LibGpsLibraryWrapper::function##_fn function;                       \
+    function = reinterpret_cast<LibGpsLibraryWrapper::function##_fn>(   \
+        dlsym(dl_handle, #function));                                   \
+    if ((required) && !function) {                                      \
+      LOG(INFO) << "libgps " << #function << " error: " << dlerror();   \
+      dlclose(dl_handle);                                               \
+      return NULL;                                                      \
+    }
+  DECLARE_FN_POINTER(gps_open, true);
+  DECLARE_FN_POINTER(gps_close, true);
+  DECLARE_FN_POINTER(gps_poll, true);
+  DECLARE_FN_POINTER(gps_query, mode == INITMODE_QUERY);
+  DECLARE_FN_POINTER(gps_stream, mode == INITMODE_STREAM);
+  DECLARE_FN_POINTER(gps_waiting, mode == INITMODE_STREAM);
+  #undef DECLARE_FN_POINTER
+
+  return new LibGpsLibraryWrapper(dl_handle,
+                                  gps_open,
+                                  gps_close,
+                                  gps_poll,
+                                  gps_query,
+                                  gps_stream,
+                                  gps_waiting);
 }
 } // namespace
 
-LibGps::LibGps(LibGpsLibraryLoader* dl_wrapper)
+LibGps::LibGps(LibGpsLibraryWrapper* dl_wrapper)
     : library_(dl_wrapper) {
   DCHECK(dl_wrapper != NULL);
 }
@@ -36,20 +67,22 @@ LibGps::~LibGps() {
 }
 
 LibGps* LibGps::New() {
-  LibGpsLibraryLoader* wrapper;
-  wrapper = TryToOpen("libgps.so.19", LibGpsLibraryLoader::INITMODE_STREAM);
+  LibGpsLibraryWrapper* wrapper;
+  wrapper = TryToOpen("libgps.so.19", INITMODE_STREAM);
   if (wrapper)
     return NewV294(wrapper);
-  wrapper = TryToOpen("libgps.so.17", LibGpsLibraryLoader::INITMODE_QUERY);
+  wrapper = TryToOpen("libgps.so.17", INITMODE_QUERY);
   if (wrapper)
     return NewV238(wrapper);
-  wrapper = TryToOpen("libgps.so", LibGpsLibraryLoader::INITMODE_STREAM);
+  wrapper = TryToOpen("libgps.so", INITMODE_STREAM);
   if (wrapper)
     return NewV294(wrapper);
   return NULL;
 }
 
 bool LibGps::Start() {
+  if (library().is_open())
+    return true;
   errno = 0;
   if (!library().open(NULL, NULL)) {
     // See gps.h NL_NOxxx for definition of gps_open() error numbers.
@@ -69,17 +102,17 @@ void LibGps::Stop() {
 }
 
 bool LibGps::Poll() {
-  bool ret = true;
-  while (DataWaiting(&ret)) {
+  last_error_ = "no data received from gpsd";
+  while (DataWaiting()) {
     int error = library().poll();
     if (error) {
       last_error_ = StringPrintf("poll() returned %d", error);
+      Stop();
       return false;
     }
+    last_error_.clear();
   }
-  if (!ret)
-    last_error_ = "DataWaiting failed";
-  return ret;
+  return last_error_.empty();
 }
 
 bool LibGps::GetPosition(Geoposition* position) {
@@ -109,55 +142,39 @@ bool LibGps::GetPosition(Geoposition* position) {
   return true;
 }
 
-LibGpsLibraryLoader::LibGpsLibraryLoader(void* dl_handle)
+LibGpsLibraryWrapper::LibGpsLibraryWrapper(void* dl_handle,
+                                           gps_open_fn gps_open,
+                                           gps_close_fn gps_close,
+                                           gps_poll_fn gps_poll,
+                                           gps_query_fn gps_query,
+                                           gps_stream_fn gps_stream,
+                                           gps_waiting_fn gps_waiting)
     : dl_handle_(dl_handle),
-      gps_open_(NULL),
-      gps_close_(NULL),
-      gps_poll_(NULL),
-      gps_query_(NULL),
-      gps_stream_(NULL),
-      gps_waiting_(NULL),
+      gps_open_(gps_open),
+      gps_close_(gps_close),
+      gps_poll_(gps_poll),
+      gps_query_(gps_query),
+      gps_stream_(gps_stream),
+      gps_waiting_(gps_waiting),
       gps_data_(NULL) {
-  DCHECK(dl_handle_);
 }
 
-// |mode| could be turned into a bit mask if required, but for now the
-// two options are mutually exclusive.
-bool LibGpsLibraryLoader::Init(InitMode mode) {
-  DCHECK(dl_handle_);
-  DCHECK(!gps_open_) << "Already initialized";
-  #define SET_FN_POINTER(function, required)                            \
-    function##_ = (function##_fn)dlsym(dl_handle_, #function);          \
-    if ((required) && !function##_) {                                   \
-      LOG(INFO) << "libgps " << #function << " error: " << dlerror();   \
-      close();                                                          \
-      return false;                                                     \
-    }
-  SET_FN_POINTER(gps_open, true);
-  SET_FN_POINTER(gps_close, true);
-  SET_FN_POINTER(gps_poll, true);
-  SET_FN_POINTER(gps_query, mode == INITMODE_QUERY);
-  SET_FN_POINTER(gps_stream, mode == INITMODE_STREAM);
-  SET_FN_POINTER(gps_waiting, mode == INITMODE_STREAM);
-  #undef SET_FN_POINTER
-  return true;
-}
-
-LibGpsLibraryLoader::~LibGpsLibraryLoader() {
+LibGpsLibraryWrapper::~LibGpsLibraryWrapper() {
   close();
-  if (dlclose(dl_handle_) != 0) {
-    NOTREACHED() << "Error closing dl handle";
+  if (dl_handle_) {
+    const int err = dlclose(dl_handle_);
+    CHECK_EQ(0, err) << "Error closing dl handle: " << err;
   }
 }
 
-bool LibGpsLibraryLoader::open(const char* host, const char* port) {
+bool LibGpsLibraryWrapper::open(const char* host, const char* port) {
   DCHECK(!gps_data_) << "libgps already opened";
-  DCHECK(gps_open_) << "Must call Init() first";
+  DCHECK(gps_open_);
   gps_data_ = gps_open_(host, port);
   return is_open();
 }
 
-void LibGpsLibraryLoader::close() {
+void LibGpsLibraryWrapper::close() {
   if (is_open()) {
     DCHECK(gps_close_);
     gps_close_(gps_data_);
@@ -165,7 +182,7 @@ void LibGpsLibraryLoader::close() {
   }
 }
 
-int LibGpsLibraryLoader::poll() {
+int LibGpsLibraryWrapper::poll() {
   DCHECK(is_open());
   DCHECK(gps_poll_);
   return gps_poll_(gps_data_);
@@ -173,29 +190,29 @@ int LibGpsLibraryLoader::poll() {
 
 // This is intentionally ignoring the va_arg extension to query(): the caller
 // can use base::StringPrintf to achieve the same effect.
-int LibGpsLibraryLoader::query(const char* fmt) {
+int LibGpsLibraryWrapper::query(const char* fmt) {
   DCHECK(is_open());
   DCHECK(gps_query_);
   return gps_query_(gps_data_, fmt);
 }
 
-int LibGpsLibraryLoader::stream(int flags) {
+int LibGpsLibraryWrapper::stream(int flags) {
   DCHECK(is_open());
   DCHECK(gps_stream_);
   return gps_stream_(gps_data_, flags, NULL);
 }
 
-bool LibGpsLibraryLoader::waiting() {
+bool LibGpsLibraryWrapper::waiting() {
   DCHECK(is_open());
   DCHECK(gps_waiting_);
   return gps_waiting_(gps_data_);
 }
 
-const gps_data_t& LibGpsLibraryLoader::data() const {
+const gps_data_t& LibGpsLibraryWrapper::data() const {
   DCHECK(is_open());
   return *gps_data_;
 }
 
-bool LibGpsLibraryLoader::is_open() const {
+bool LibGpsLibraryWrapper::is_open() const {
   return gps_data_ != NULL;
 }

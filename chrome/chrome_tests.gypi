@@ -778,6 +778,7 @@
         'browser/geolocation/geolocation_exceptions_table_model_unittest.cc',
         'browser/geolocation/geolocation_permission_context_unittest.cc',
         'browser/geolocation/geolocation_settings_state_unittest.cc',
+        'browser/geolocation/gps_location_provider_unittest_linux.cc',
         'browser/geolocation/location_arbitrator_unittest.cc',
         'browser/geolocation/network_location_provider_unittest.cc',
         'browser/geolocation/wifi_data_provider_common_unittest.cc',

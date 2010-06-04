@@ -12,6 +12,7 @@
 #include "chrome/browser/geolocation/libgps_wrapper_linux.h"
 
 namespace {
+const int kGpsdReconnectRetryIntervalMillis = 10 * 1000;
 // As per http://gpsd.berlios.de/performance.html#id374524, poll twice per sec.
 const int kPollPeriodMovingMillis = 500;
 // Poll less frequently whilst stationary.
@@ -58,10 +59,6 @@ bool GpsLocationProviderLinux::StartProvider() {
     DLOG(WARNING) << "libgps.so could not be loaded";
     return false;
   }
-  if (!gps_->Start()) {
-    DLOG(WARNING) << "Couldn't start GPS provider.";
-    return false;
-  }
   ScheduleNextGpsPoll(0);
   return true;
 }
@@ -81,8 +78,13 @@ void GpsLocationProviderLinux::OnPermissionGranted(
 }
 
 void GpsLocationProviderLinux::DoGpsPollTask() {
+  if (!gps_->Start()) {
+    DLOG(WARNING) << "Couldn't start GPS provider.";
+    ScheduleNextGpsPoll(kGpsdReconnectRetryIntervalMillis);
+    return;
+  }
   if (!gps_->Poll()) {
-    gps_->Stop();
+    ScheduleNextGpsPoll(kPollPeriodStationaryMillis);
     return;
   }
   Geoposition new_position;

@@ -16,18 +16,16 @@
 
 class LibGpsV238 : public LibGps {
  public:
-  explicit LibGpsV238(LibGpsLibraryLoader* dl_wrapper) : LibGps(dl_wrapper) {}
+  explicit LibGpsV238(LibGpsLibraryWrapper* dl_wrapper) : LibGps(dl_wrapper) {}
 
   // LibGps
   virtual bool StartStreaming() {
     return library().query("w+x\n") == 0;
   }
-  virtual bool DataWaiting(bool* ok) {
+  virtual bool DataWaiting() {
     // Unfortunately the 2.38 API has no public method for non-blocking test
     // for new data arrived, so we must contrive our own by doing a select() on
     // the underlying struct's socket fd.
-    DCHECK(ok);
-    *ok = true;
     fd_set fds;
     struct timeval timeout = {0};
     int fd = library().data().gps_fd;
@@ -37,8 +35,7 @@ class LibGpsV238 : public LibGps {
 
     int ret = select(fd + 1, &fds, NULL, NULL, &timeout);
     if (ret == -1) {
-      LOG(INFO) << "libgps socket select failed: " << ret;
-      *ok = false;
+      LOG(WARNING) << "libgps socket select failed: " << ret;
       return false;
     }
     DCHECK_EQ(!!ret, !!FD_ISSET(fd, &fds));
@@ -66,6 +63,6 @@ class LibGpsV238 : public LibGps {
   DISALLOW_COPY_AND_ASSIGN(LibGpsV238);
 };
 
-LibGps* LibGps::NewV238(LibGpsLibraryLoader* dl_wrapper) {
+LibGps* LibGps::NewV238(LibGpsLibraryWrapper* dl_wrapper) {
   return new LibGpsV238(dl_wrapper);
 }

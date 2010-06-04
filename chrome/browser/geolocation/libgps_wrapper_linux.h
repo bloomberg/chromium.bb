@@ -18,7 +18,7 @@
 #include "base/time.h"
 
 struct Geoposition;
-class LibGpsLibraryLoader;
+class LibGpsLibraryWrapper;
 
 class LibGps {
  public:
@@ -35,14 +35,14 @@ class LibGps {
 
  protected:
   // Takes ownership of |dl_wrapper|.
-  explicit LibGps(LibGpsLibraryLoader* dl_wrapper);
+  explicit LibGps(LibGpsLibraryWrapper* dl_wrapper);
 
-  LibGpsLibraryLoader& library() {
+  LibGpsLibraryWrapper& library() {
     return *library_;
   }
   // Called be start Start after successful |gps_open| to setup streaming.
   virtual bool StartStreaming() = 0;
-  virtual bool DataWaiting(bool* ok) = 0;
+  virtual bool DataWaiting() = 0;
   // Returns false if there is not fix available.
   virtual bool GetPositionIfFixed(Geoposition* position) = 0;
 
@@ -51,10 +51,10 @@ class LibGps {
   // libgps API versions (v2.38 => libgps.so.17, v2.94 => libgps.so.19).
   // See LibGps::New() for the public API to this.
   // Takes ownership of |dl_wrapper|.
-  static LibGps* NewV238(LibGpsLibraryLoader* dl_wrapper);
-  static LibGps* NewV294(LibGpsLibraryLoader* dl_wrapper);
+  static LibGps* NewV238(LibGpsLibraryWrapper* dl_wrapper);
+  static LibGps* NewV294(LibGpsLibraryWrapper* dl_wrapper);
 
-  scoped_ptr<LibGpsLibraryLoader> library_;
+  scoped_ptr<LibGpsLibraryWrapper> library_;
   std::string last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(LibGps);
@@ -64,20 +64,25 @@ struct gps_data_t;
 
 // Wraps the low-level shared object, binding C++ member functions onto the
 // underlying C functions obtained from the library.
-class LibGpsLibraryLoader {
+class LibGpsLibraryWrapper {
  public:
-  // Pass to Init() to indicate which functions should be wired up.
-  enum InitMode {
-    INITMODE_QUERY,
-    INITMODE_STREAM,
-  };
+  typedef gps_data_t* (*gps_open_fn)(const char*, const char*);
+  typedef int (*gps_close_fn)(gps_data_t*);
+  typedef int (*gps_poll_fn)(gps_data_t*);
+  // v2.34 only
+  typedef int (*gps_query_fn)(gps_data_t*, const char*, ...);
+  // v2.90+
+  typedef int (*gps_stream_fn)(gps_data_t*, unsigned int, void*);
+  typedef bool (*gps_waiting_fn)(gps_data_t*);
 
-  // Takes ownership of the handle passed in (will be released via dlclose).
-  explicit LibGpsLibraryLoader(void* dl_handle);
-  ~LibGpsLibraryLoader();
-  // Must be successfully called before using any of the API methods below.
-  // Returns false on error.
-  bool Init(InitMode requirement);
+  LibGpsLibraryWrapper(void* dl_handle,
+                       gps_open_fn gps_open,
+                       gps_close_fn gps_close,
+                       gps_poll_fn gps_poll,
+                       gps_query_fn gps_query,
+                       gps_stream_fn gps_stream,
+                       gps_waiting_fn gps_waiting);
+  ~LibGpsLibraryWrapper();
 
   // Analogs of gps_xxx methods in gps.h
   bool open(const char* host, const char* port);
@@ -90,15 +95,6 @@ class LibGpsLibraryLoader {
   bool is_open() const;
 
  private:
-  typedef gps_data_t* (*gps_open_fn)(const char*, const char*);
-  typedef int (*gps_close_fn)(gps_data_t*);
-  typedef int (*gps_poll_fn)(gps_data_t*);
-  // v2.34 only
-  typedef int (*gps_query_fn)(struct gps_data_t *gpsdata, const char* fmt, ...);
-  // v2.90+
-  typedef int (*gps_stream_fn)(gps_data_t*, unsigned int, void*);
-  typedef bool (*gps_waiting_fn)(gps_data_t*);
-
   void* dl_handle_;
   gps_open_fn gps_open_;
   gps_close_fn gps_close_;
@@ -109,7 +105,7 @@ class LibGpsLibraryLoader {
 
   gps_data_t* gps_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(LibGpsLibraryLoader);
+  DISALLOW_COPY_AND_ASSIGN(LibGpsLibraryWrapper);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_LIBGPS_WRAPPER_LINUX_H_
