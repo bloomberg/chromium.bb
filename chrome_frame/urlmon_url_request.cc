@@ -448,7 +448,8 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
   } else if (LowerCaseEqualsASCII(method(), "put")) {
     bind_info->dwBindVerb = BINDVERB_PUT;
     upload_data = true;
-  } else if (LowerCaseEqualsASCII(method(), "head")) {
+  } else if (LowerCaseEqualsASCII(method(), "head") ||
+             LowerCaseEqualsASCII(method(), "delete")) {
     std::wstring verb(ASCIIToWide(StringToUpperASCII(method())));
     bind_info->dwBindVerb = BINDVERB_CUSTOM;
     bind_info->szCustomVerb = reinterpret_cast<wchar_t*>(
