@@ -703,7 +703,24 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
           // data.
           // This information is useful in addition to the code address, which
           // will be present in the crash thread's instruction field anyway.
-          reason = "EXCEPTION_ACCESS_VIOLATION";
+          if (raw_exception->exception_record.number_parameters >= 1) {
+            switch (raw_exception->exception_record.exception_information[0]) {
+              case 0:
+                reason = "EXCEPTION_ACCESS_VIOLATION_READ";
+                break;
+              case 1:
+                reason = "EXCEPTION_ACCESS_VIOLATION_WRITE";
+                break;
+              case 8:
+                reason = "EXCEPTION_ACCESS_VIOLATION_EXEC";
+                break;
+              default:
+                reason = "EXCEPTION_ACCESS_VIOLATION";
+                break;
+            }
+          } else {
+            reason = "EXCEPTION_ACCESS_VIOLATION";
+          }
           if (address &&
               raw_exception->exception_record.number_parameters >= 2) {
             *address =
@@ -763,6 +780,12 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
           break;
         case MD_EXCEPTION_CODE_WIN_POSSIBLE_DEADLOCK:
           reason = "EXCEPTION_POSSIBLE_DEADLOCK";
+          break;
+        case MD_EXCEPTION_CODE_WIN_STACK_BUFFER_OVERRUN:
+          reason = "EXCEPTION_STACK_BUFFER_OVERRUN";
+          break;
+        case MD_EXCEPTION_CODE_WIN_HEAP_CORRUPTION:
+          reason = "EXCEPTION_HEAP_CORRUPTION";
           break;
         case MD_EXCEPTION_CODE_WIN_UNHANDLED_CPP_EXCEPTION:
 	  reason = "Unhandled C++ Exception";
