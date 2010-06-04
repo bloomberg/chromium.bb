@@ -132,7 +132,7 @@
       },
       'dependencies': [
         'chrome_version_info',
-        # Copy a Flash Player binary to PRODUCT_DIR if applicable.
+        # Copy Flash Player files to PRODUCT_DIR if applicable.
         # Let the .gyp file decide what to do on a per-OS basis.
         '../third_party/adobe/flash/flash_player.gyp:flash_player',
       ],
@@ -337,6 +337,7 @@
                 [ 'branding == "Chrome"', {
                   'files': [
                     '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
+                    '<(PRODUCT_DIR)/plugin.vch',
                   ],
                 }],
               ],

@@ -364,7 +364,10 @@
             'deb_arch': 'i386',
             'rpm_arch': 'i386',
             # Flash Player for Linux is currently only available for ia32.
-            'packaging_files_binaries': ['<(PRODUCT_DIR)/libgcflashplayer.so'],
+            'packaging_files_binaries': [
+              '<(PRODUCT_DIR)/libgcflashplayer.so',
+              '<(PRODUCT_DIR)/plugin.vch',
+            ],
           }],
           ['target_arch=="x64"', {
             'deb_arch': 'amd64',

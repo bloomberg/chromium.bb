@@ -16,14 +16,22 @@
             'files': [],
             'conditions': [
               [ 'OS == "linux" and target_arch == "ia32"', {
-                'files': [ 'binaries/linux/libgcflashplayer.so' ]
+                'files': [
+                  'binaries/linux/libgcflashplayer.so',
+                  'binaries/linux/plugin.vch',
+                ]
               }],
               [ 'OS == "mac"', {
-                'files':
-                    [ 'binaries/mac/Flash Player Plugin for Chrome.plugin' ]
+                'files': [
+                  'binaries/mac/Flash Player Plugin for Chrome.plugin',
+                  'binaries/mac/plugin.vch',
+                ]
               }],
               [ 'OS == "win"', {
-                'files': [ 'binaries/win/gcswf32.dll' ]
+                'files': [
+                  'binaries/win/gcswf32.dll',
+                  'binaries/win/plugin.vch',
+                ]
               }],
             ],
           }],
