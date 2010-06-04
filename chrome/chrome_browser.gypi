@@ -854,6 +854,8 @@
         'browser/cocoa/tab_strip_view.mm',
         'browser/cocoa/tab_view.h',
         'browser/cocoa/tab_view.mm',
+        'browser/cocoa/tab_view_picker_table.h',
+        'browser/cocoa/tab_view_picker_table.mm',
         'browser/cocoa/tab_window_controller.h',
         'browser/cocoa/tab_window_controller.mm',
         'browser/cocoa/table_row_nsimage_cache.h',

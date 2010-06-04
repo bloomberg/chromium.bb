@@ -44,13 +44,20 @@ const NSInteger kGeolocationAskIndex = 1;
 const NSInteger kGeolocationDisabledIndex = 2;
 
 // Walks views in top-down order, wraps each to their current width, and moves
-// the latter ones down to prevernt overlaps.
+// the latter ones down to prevent overlaps.
 CGFloat VerticallyReflowGroup(NSArray* views) {
   views = [views sortedArrayUsingFunction:cocoa_l10n_util::CompareFrameY
                                   context:NULL];
   CGFloat localVerticalShift = 0;
   for (NSInteger index = [views count] - 1; index >= 0; --index) {
     NSView* view = [views objectAtIndex:index];
+
+    // Since the tab pane is in a horizontal resizer in IB, it's convenient
+    // to give all the subviews flexible width so that their sizes are
+    // autoupdated in IB. However, in chrome, the subviews shouldn't have
+    // flexible widths as this looks weird.
+    [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+
     NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
     localVerticalShift += delta.height;
     if (localVerticalShift) {
