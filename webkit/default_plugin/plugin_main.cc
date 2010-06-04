@@ -101,7 +101,7 @@ bool NegotiateModels(NPP instance) {
 #if defined(OS_MACOSX)
   NPError err;
   // Set drawing model to core graphics
-  NPBool supportsCoreGraphics = FALSE;
+  NPBool supportsCoreGraphics = false;
   err = g_browser->getvalue(instance,
                             NPNVsupportsCoreGraphicsBool,
                             &supportsCoreGraphics);
@@ -118,7 +118,7 @@ bool NegotiateModels(NPP instance) {
   }
 
   // Set event model to cocoa
-  NPBool supportsCocoaEvents = FALSE;
+  NPBool supportsCocoaEvents = false;
   err = g_browser->getvalue(instance,
                             NPNVsupportsCocoaBool,
                             &supportsCocoaEvents);
@@ -136,7 +136,7 @@ bool NegotiateModels(NPP instance) {
 #elif defined(OS_POSIX)
   NPError err;
   // Check that chrome still supports xembed.
-  NPBool supportsXEmbed = FALSE;
+  NPBool supportsXEmbed = false;
   err = g_browser->getvalue(instance,
                             NPNVSupportsXEmbedBool,
                             &supportsXEmbed);
@@ -158,7 +158,7 @@ bool NegotiateModels(NPP instance) {
   return true;
 }
 
-NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16 mode, int16 argc,
+NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16_t mode, int16_t argc,
                 char* argn[], char* argv[], NPSavedData* saved) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
@@ -172,7 +172,7 @@ NPError NPP_New(NPMIMEType plugin_type, NPP instance, uint16 mode, int16 argc,
 
   if (!NegotiateModels(instance))
     return NPERR_INCOMPATIBLE_VERSION_ERROR;
-  
+
   PluginInstallerImpl* plugin_impl = new PluginInstallerImpl(mode);
   plugin_impl->Initialize(
 #if defined(OS_WIN)
@@ -231,7 +231,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window_info) {
 }
 
 NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
-                      NPBool seekable, uint16* stype) {
+                      NPBool seekable, uint16_t* stype) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
@@ -263,7 +263,7 @@ NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason) {
   return NPERR_NO_ERROR;
 }
 
-int32 NPP_WriteReady(NPP instance, NPStream* stream) {
+int32_t NPP_WriteReady(NPP instance, NPStream* stream) {
   if (instance == NULL)
     return 0;
 
@@ -280,7 +280,7 @@ int32 NPP_WriteReady(NPP instance, NPStream* stream) {
   return 0;
 }
 
-int32 NPP_Write(NPP instance, NPStream* stream, int32 offset, int32 len,
+int32_t NPP_Write(NPP instance, NPStream* stream, int32_t offset, int32_t len,
                 void* buffer) {
   if (instance == NULL)
     return 0;
@@ -315,7 +315,7 @@ void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
   switch (variable) {
     case NPPVpluginNeedsXEmbed:
-      *static_cast<NPBool*>(value) = TRUE;
+      *static_cast<NPBool*>(value) = true;
       return NPERR_NO_ERROR;
     default:
       return NPERR_INVALID_PARAM;
@@ -323,7 +323,7 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
 }
 #endif
 
-int16 NPP_HandleEvent(NPP instance, void* event) {
+int16_t NPP_HandleEvent(NPP instance, void* event) {
   if (instance == NULL)
     return 0;
 

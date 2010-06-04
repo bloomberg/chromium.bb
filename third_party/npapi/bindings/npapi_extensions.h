@@ -10,6 +10,8 @@
 // Chromium projects, such as the Native Client SDK.
 #include "npapi.h"
 
+#include <stddef.h>         // For size_t
+
 /*
  * A fake "enum" value for getting browser-implemented Pepper extensions.
  * The variable returns a pointer to an NPNExtensions structure. */

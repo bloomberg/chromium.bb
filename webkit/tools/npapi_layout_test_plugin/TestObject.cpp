@@ -27,6 +27,7 @@
 #include "PluginObject.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 static bool testEnumerate(NPObject*, NPIdentifier **value, uint32_t *count);
 static bool testHasMethod(NPObject*, NPIdentifier name);

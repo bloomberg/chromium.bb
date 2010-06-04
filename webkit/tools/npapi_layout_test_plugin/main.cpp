@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <wtf/Platform.h>
 #include "PluginObject.h"
 
@@ -111,7 +112,7 @@ EXPORT void NPAPI NP_Shutdown(void)
 
 static void executeScript(const PluginObject* obj, const char* script);
 
-NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16_t argc, char *argn[], char *argv[], NPSavedData *saved)
+NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc, char *argn[], char *argv[], NPSavedData *saved)
 {
     if (browser->version >= 14) {
         PluginObject* obj = (PluginObject*)browser->createobject(instance, getPluginClass());
@@ -214,7 +215,7 @@ static void executeScript(const PluginObject* obj, const char* script)
     browser->releasevariantvalue(&browserResult);
 }
 
-NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, NPBool seekable, uint16 *stype)
+NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype)
 {
     PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
 
