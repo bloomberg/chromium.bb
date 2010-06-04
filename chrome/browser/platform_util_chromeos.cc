@@ -77,7 +77,7 @@ void OpenItem(const FilePath& full_path) {
     std::string url = "file://";
     url += full_path.value();
     GURL gurl(url);
-    mediaplayer->EnqueueMediaURL(gurl);
+    mediaplayer->EnqueueMediaURL(gurl, NULL);
     return;
   }
 }

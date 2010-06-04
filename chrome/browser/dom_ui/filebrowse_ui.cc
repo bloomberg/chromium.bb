@@ -188,6 +188,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   scoped_ptr<ListValue> filelist_value_;
   FilePath currentpath_;
   Profile* profile_;
+  TabContents* tab_contents_;
   std::string current_file_contents_;
   std::string current_file_uploaded_;
   int upload_response_code_;
@@ -320,6 +321,7 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
 ////////////////////////////////////////////////////////////////////////////////
 FilebrowseHandler::FilebrowseHandler()
     : profile_(NULL),
+      tab_contents_(NULL),
       is_refresh_(false),
       fetch_(NULL),
       download_manager_(NULL),
@@ -365,7 +367,7 @@ DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(new DOMUIFavIconSource(dom_ui->GetProfile()))));
   profile_ = dom_ui->GetProfile();
-
+  tab_contents_ = dom_ui->tab_contents();
   return DOMMessageHandler::Attach(dom_ui);
 }
 
@@ -571,8 +573,9 @@ void FilebrowseHandler::PlayMediaFile(const Value* value) {
       std::string url = currentpath.value();
 
       GURL gurl(url);
-
-      mediaplayer->ForcePlayMediaURL(gurl);
+      Browser* browser = Browser::GetBrowserForController(
+          &tab_contents_->controller(), NULL);
+      mediaplayer->ForcePlayMediaURL(gurl, browser);
     } else {
       LOG(ERROR) << "Unable to get string";
       return;
@@ -596,8 +599,9 @@ void FilebrowseHandler::EnqueueMediaFile(const Value* value) {
       std::string url = currentpath.value();
 
       GURL gurl(url);
-
-      mediaplayer->EnqueueMediaURL(gurl);
+      Browser* browser = Browser::GetBrowserForController(
+          &tab_contents_->controller(), NULL);
+      mediaplayer->EnqueueMediaURL(gurl, browser);
     } else {
       LOG(ERROR) << "Unable to get string";
       return;

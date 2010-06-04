@@ -458,7 +458,7 @@ void NotificationPanel::Show() {
     panel_controller_.reset(
         new PanelController(this, GTK_WINDOW(panel_widget_->GetNativeView())));
     panel_controller_->Init(false /* don't focus when opened */,
-                            gfx::Rect(0, 0, kBalloonMinWidth, 1));
+                            gfx::Rect(0, 0, kBalloonMinWidth, 1), 0);
     registrar_.Add(this, NotificationType::PANEL_STATE_CHANGED,
                    Source<PanelController>(panel_controller_.get()));
   }

@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/x11_util.h"
 #include "views/controls/button/button.h"
 
 class BrowserView;
@@ -51,7 +52,7 @@ class PanelController : public views::ButtonListener {
 
   // Initializes the panel controller with the initial state of the focus and
   // the window bounds.
-  void Init(bool initial_focus, const gfx::Rect& init_bounds);
+  void Init(bool initial_focus, const gfx::Rect& init_bounds, XID creator_xid);
 
   bool TitleMousePressed(const views::MouseEvent& event);
   void TitleMouseReleased(const views::MouseEvent& event, bool canceled);

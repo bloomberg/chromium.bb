@@ -31,11 +31,11 @@ class MediaPlayer : public NotificationObserver,
 
   // Enqueues this url into the current playlist.  If the mediaplayer is
   // not currently visible, show it, and play the given url.
-  void EnqueueMediaURL(const GURL& url);
+  void EnqueueMediaURL(const GURL& url, Browser* creator);
 
   // Clears out the current playlist, and start playback of the given url.
   // If there is no mediaplayer currently, show it, and play the given url.
-  void ForcePlayMediaURL(const GURL& url);
+  void ForcePlayMediaURL(const GURL& url, Browser* creator);
 
   // Toggle the visibility of the playlist window.
   void TogglePlaylistWindowVisible();
@@ -99,11 +99,11 @@ class MediaPlayer : public NotificationObserver,
 
   // Popup the mediaplayer, this shows the browser, and sets up its
   // locations correctly.
-  void PopupMediaPlayer();
+  void PopupMediaPlayer(Browser* creator);
 
   // Popup the playlist.  Shows the browser, sets it up to point at
   // chrome://mediaplayer#playlist
-  void PopupPlaylist();
+  void PopupPlaylist(Browser* creator);
 
   // Registers the listeners for the close events on the browser windows.
   void RegisterListeners();

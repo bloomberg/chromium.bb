@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/resource_bundle.h"
-#include "app/x11_util.h"
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "base/scoped_ptr.h"
@@ -89,7 +88,9 @@ PanelController::PanelController(Delegate* delegate,
        client_event_handler_id_(0) {
 }
 
-void PanelController::Init(bool initial_focus, const gfx::Rect& window_bounds) {
+void PanelController::Init(bool initial_focus,
+                           const gfx::Rect& window_bounds,
+                           XID creator_xid) {
   gfx::Rect title_bounds(
       0, 0, window_bounds.width(), kTitleHeight);
 
@@ -108,6 +109,7 @@ void PanelController::Init(bool initial_focus, const gfx::Rect& window_bounds) {
   type_params.push_back(title_xid_);
   type_params.push_back(expanded_ ? 1 : 0);
   type_params.push_back(initial_focus ? 1 : 0);
+  type_params.push_back(creator_xid);
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(panel_),
       WM_IPC_WINDOW_CHROME_PANEL_CONTENT,

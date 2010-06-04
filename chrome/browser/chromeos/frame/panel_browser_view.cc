@@ -10,7 +10,8 @@
 namespace chromeos {
 
 PanelBrowserView::PanelBrowserView(Browser* browser)
-    : BrowserView(browser) {
+    : BrowserView(browser),
+      creator_xid_(0) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +36,7 @@ void PanelBrowserView::Init() {
 
 void PanelBrowserView::Show() {
   panel_controller_.reset(new PanelController(this, GetNativeHandle()));
-  panel_controller_->Init(true /* focus when opened */, bounds());
+  panel_controller_->Init(true /* focus when opened */, bounds(), creator_xid_);
   BrowserView::Show();
 }
 
@@ -59,6 +60,12 @@ void PanelBrowserView::ActivationChanged(bool activated) {
     else
       panel_controller_->OnFocusOut();
   }
+}
+
+void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
+  DCHECK(creator);
+  GtkWindow* window = creator->GetNativeHandle();
+  creator_xid_ = x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

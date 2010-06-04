@@ -37,6 +37,10 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_job.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/frame/panel_browser_view.h"
+#endif
+
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -347,19 +351,19 @@ struct RunnableMethodTraits<MediaPlayer> {
   void ReleaseCallee(MediaPlayer* obj) {}
 };
 
-void MediaPlayer::EnqueueMediaURL(const GURL& url) {
+void MediaPlayer::EnqueueMediaURL(const GURL& url, Browser* creator) {
   if (handler_ == NULL) {
     unhandled_urls_.push_back(url);
-    PopupMediaPlayer();
+    PopupMediaPlayer(creator);
   } else {
     handler_->EnqueueMediaFile(url);
   }
 }
 
-void MediaPlayer::ForcePlayMediaURL(const GURL& url) {
+void MediaPlayer::ForcePlayMediaURL(const GURL& url, Browser* creator) {
   if (handler_ == NULL) {
     unhandled_urls_.push_back(url);
-    PopupMediaPlayer();
+    PopupMediaPlayer(creator);
   } else {
     handler_->PlaybackMediaFile(url);
   }
@@ -375,7 +379,7 @@ void MediaPlayer::TogglePlaylistWindowVisible() {
 
 void MediaPlayer::ShowPlaylistWindow() {
   if (playlist_browser_ == NULL) {
-    PopupPlaylist();
+    PopupPlaylist(NULL);
   }
 }
 
@@ -470,7 +474,7 @@ void MediaPlayer::RemoveHandler(MediaplayerHandler* handler) {
   }
 }
 
-void MediaPlayer::PopupPlaylist() {
+void MediaPlayer::PopupPlaylist(Browser* creator) {
   Profile* profile = BrowserList::GetLastActive()->profile();
   playlist_browser_ = Browser::CreateForPopup(profile);
   playlist_browser_->AddTabWithURL(
@@ -483,15 +487,28 @@ void MediaPlayer::PopupPlaylist() {
   playlist_browser_->window()->Show();
 }
 
-void MediaPlayer::PopupMediaPlayer() {
+void MediaPlayer::PopupMediaPlayer(Browser* creator) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &MediaPlayer::PopupMediaPlayer));
+        NewRunnableMethod(this, &MediaPlayer::PopupMediaPlayer,
+                          static_cast<Browser*>(NULL)));
     return;
   }
   Profile* profile = BrowserList::GetLastActive()->profile();
   mediaplayer_browser_ = Browser::CreateForPopup(profile);
+#if defined(OS_CHROMEOS)
+  // Since we are on chromeos, popups should be a PanelBrowserView,
+  // so we can just cast it.
+  if (creator) {
+    chromeos::PanelBrowserView* creatorview =
+        static_cast<chromeos::PanelBrowserView*>(creator->window());
+    chromeos::PanelBrowserView* view =
+        static_cast<chromeos::PanelBrowserView*>(
+            mediaplayer_browser_->window());
+    view->SetCreatorView(creatorview);
+  }
+#endif
   mediaplayer_browser_->AddTabWithURL(
       GURL(kMediaplayerURL), GURL(), PageTransition::LINK,
       -1, Browser::ADD_SELECTED, NULL, std::string());
@@ -531,7 +548,7 @@ URLRequestJob* MediaPlayer::MaybeInterceptResponse(
   if (supported_mime_types_.find(mime_type) != supported_mime_types_.end()) {
     if (request->referrer() != chrome::kChromeUIMediaplayerURL &&
         !request->referrer().empty()) {
-      EnqueueMediaURL(request->url());
+      EnqueueMediaURL(request->url(), NULL);
       request->Cancel();
     }
   }
