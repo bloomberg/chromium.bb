@@ -65,7 +65,6 @@ static const char kDataUrlPattern[] = "data:";
 static const std::string::size_type kDataUrlPatternSize =
     arraysize(kDataUrlPattern) - 1;
 static const char kFileTestPrefix[] = "(file test):";
-static const char kChrome1ProductString[] = "Chrome/1.0.154.53";
 
 //------------------------------------------------------------------------------
 // webkit_glue impl:
@@ -329,9 +328,6 @@ struct UserAgentState {
 
   std::string user_agent;
 
-  // The UA string when we're pretending to be Chrome 1.
-  std::string mimic_chrome1_user_agent;
-
   // The UA string when we're pretending to be Windows Chrome.
   std::string mimic_windows_user_agent;
 
@@ -396,10 +392,8 @@ std::string BuildOSCpuInfo() {
 
 // Construct the User-Agent header, filling in |result|.
 // The other parameters are workarounds for broken websites:
-// - If mimic_chrome1 is true, produce a fake Chrome 1 string.
 // - If mimic_windows is true, produce a fake Windows Chrome string.
-void BuildUserAgent(bool mimic_chrome1, bool mimic_windows,
-                    std::string* result) {
+void BuildUserAgent(bool mimic_windows, std::string* result) {
   const char kUserAgentPlatform[] =
 #if defined(OS_WIN)
       "Windows";
@@ -419,8 +413,7 @@ void BuildUserAgent(bool mimic_chrome1, bool mimic_windows,
   // Get the product name and version, and replace Safari's Version/X string
   // with it.  This is done to expose our product name in a manner that is
   // maximally compatible with Safari, we hope!!
-  std::string product = mimic_chrome1 ? kChrome1ProductString
-                                      : GetProductVersion();
+  std::string product = GetProductVersion();
 
   // Derived from Safari's UA string.
   StringAppendF(
@@ -440,7 +433,7 @@ void BuildUserAgent(bool mimic_chrome1, bool mimic_windows,
 }
 
 void SetUserAgentToDefault() {
-  BuildUserAgent(false, false, &g_user_agent->user_agent);
+  BuildUserAgent(false, &g_user_agent->user_agent);
 }
 
 }  // namespace
@@ -461,23 +454,13 @@ const std::string& GetUserAgent(const GURL& url) {
   g_user_agent->user_agent_requested = true;
   if (!g_user_agent->user_agent_is_overridden) {
     // Workarounds for sites that use misguided UA sniffing.
-    if (MatchPatternASCII(url.host(), "*.pointroll.com")) {
-      // For cnn.com, which uses pointroll.com to serve their front door promo,
-      // we must spoof Chrome 1.0 in order to avoid a blank page.
-      // http://crbug.com/25934
-      // TODO(dglazkov): Remove this once CNN's front door promo is
-      // over or when pointroll fixes their sniffing.
-      if (g_user_agent->mimic_chrome1_user_agent.empty())
-        BuildUserAgent(true, false, &g_user_agent->mimic_chrome1_user_agent);
-      return g_user_agent->mimic_chrome1_user_agent;
-    }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    else if (MatchPatternASCII(url.host(), "*.mail.yahoo.com")) {
+    if (MatchPatternASCII(url.host(), "*.mail.yahoo.com")) {
       // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
       // http://bugs.chromium.org/11136
       // TODO(evanm): remove this if Yahoo fixes their sniffing.
       if (g_user_agent->mimic_windows_user_agent.empty())
-        BuildUserAgent(false, true, &g_user_agent->mimic_windows_user_agent);
+        BuildUserAgent(true, &g_user_agent->mimic_windows_user_agent);
       return g_user_agent->mimic_windows_user_agent;
     }
 #endif
