@@ -27,7 +27,9 @@ namespace chromeos {
 
 LanguageSwitchModel::LanguageSwitchModel()
     : ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)),
+      delta_x_(0),
+      delta_y_(0) {
 }
 
 void LanguageSwitchModel::InitLanguageMenu() {
@@ -65,12 +67,28 @@ std::wstring LanguageSwitchModel::GetCurrentLocaleName() const {
       language_list_->GetIndexFromLocale(locale));
 };
 
+// Currently, views::Menu is implemented directly with the Gtk
+// widgets. So we use native gtk callbacks to get its future size.
+int LanguageSwitchModel::GetFirstLevelMenuWidth() const {
+  DCHECK(menu_ != NULL);
+  GtkRequisition box_size;
+  gtk_widget_size_request(menu_->GetNativeMenu(), &box_size);
+  return box_size.width;
+}
+
+void LanguageSwitchModel::SetFirstLevelMenuWidth(int width) {
+  DCHECK(menu_ != NULL);
+  gtk_widget_set_size_request(menu_->GetNativeMenu(), width, -1);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation.
 
 void LanguageSwitchModel::RunMenu(views::View* source, const gfx::Point& pt) {
   DCHECK(menu_ != NULL);
-  menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+  gfx::Point point(pt);
+  point.Offset(delta_x_, delta_y_);
+  menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPRIGHT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

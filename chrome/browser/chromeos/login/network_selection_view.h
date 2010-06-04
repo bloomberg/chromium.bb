@@ -72,6 +72,7 @@ class NetworkSelectionView : public views::View {
   views::Combobox* network_combobox_;
   views::MenuButton* languages_menubutton_;
   views::Label* welcome_label_;
+  views::Label* select_language_label_;
   views::Label* select_network_label_;
   views::Label* connecting_network_label_;
   views::NativeButton* continue_button_;

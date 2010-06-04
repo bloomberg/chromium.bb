@@ -32,6 +32,15 @@ class LanguageSwitchModel : public views::ViewMenuDelegate,
   // Returns current locale name to be placed on the language menu-button.
   std::wstring GetCurrentLocaleName() const;
 
+  // Returns original width of the first level menu to be shown when called.
+  int GetFirstLevelMenuWidth() const;
+  void SetFirstLevelMenuWidth(int width);
+
+  void set_menu_offset(int delta_x, int delta_y) {
+    delta_x_ = delta_x;
+    delta_y_ = delta_y;
+  }
+
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
@@ -53,6 +62,8 @@ class LanguageSwitchModel : public views::ViewMenuDelegate,
 
   // Language locale name storage.
   scoped_ptr<LanguageList> language_list_;
+
+  int delta_x_, delta_y_;
 
   FRIEND_TEST(::WizardControllerTest, SwitchLanguage);
   DISALLOW_COPY_AND_ASSIGN(LanguageSwitchModel);

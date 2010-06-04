@@ -7422,7 +7422,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Welcome to <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>
       </message>
       <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
-        Please select a network:
+        Select a network:
+      </message>
+      <message name="IDS_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
+        Select your language:
       </message>
       <message name="IDS_NETWORK_SELECTION_NONE" desc="Text shown in combobox when no network are selected">
         No selection
