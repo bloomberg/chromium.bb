@@ -12,12 +12,9 @@
 #include "net/base/net_util.h"
 
 #if defined(OS_MACOSX)
-// The window pops up, but doesn't close.
-#define MAYBE_IncognitoWindow DISABLED_IncognitoWindow
-// FindBarTesting not implemented on mac.
-#define MAYBE_FindInPage DISABLED_FindInPage
+// http://crbug.com/45882
+#define MAYBE_FindInPage FAILS_FindInPage
 #else  // !defined(OS_MACOSX)
-#define MAYBE_IncognitoWindow IncognitoWindow
 #define MAYBE_FindInPage FindInPage
 #endif
 
@@ -213,7 +210,7 @@ TEST_F(AutomatedUITestBase, CloseBrowserWindow) {
   ASSERT_FALSE(CloseActiveWindow());
 }
 
-TEST_F(AutomatedUITestBase, MAYBE_IncognitoWindow) {
+TEST_F(AutomatedUITestBase, IncognitoWindow) {
   int num_browser_windows;
   int num_normal_browser_windows;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&num_browser_windows));
