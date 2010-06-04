@@ -16,6 +16,11 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 class ProfileSyncService;
+class Value;
+
+namespace sync_api {
+class WriteNode;
+}
 
 namespace browser_sync {
 
@@ -87,6 +92,19 @@ class PreferenceModelAssociator
   // |sync_id| with that node's id.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
+  // Merges the value of local_pref into the supplies server_value.
+  // If there is a conflict, the server value always takes precedence.
+  // The method returns true if server_value was modified.  Note that
+  // only certain preferences are allowed to be merged, see the
+  // method's implementation for details.
+  static bool MergePreference(const PrefService::Preference& local_pref,
+                              Value* server_value);
+
+  // Writes the value of pref into the specified node.  Returns true
+  // upon success.
+  static bool WritePreferenceToNode(const PrefService::Preference& pref,
+                                    sync_api::WriteNode* node);
+
  protected:
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
@@ -94,6 +112,9 @@ class PreferenceModelAssociator
  private:
   typedef std::map<std::wstring, int64> PreferenceNameToSyncIdMap;
   typedef std::map<int64, std::wstring> SyncIdToPreferenceNameMap;
+
+  static bool MergeListValues(const Value& from_value, Value* to_value);
+  static bool MergeDictionaryValues(const Value& from_value, Value* to_value);
 
   ProfileSyncService* sync_service_;
   UnrecoverableErrorHandler* error_handler_;

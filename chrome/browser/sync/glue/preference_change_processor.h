@@ -44,9 +44,6 @@ class PreferenceChangeProcessor : public ChangeProcessor,
   virtual void StopImpl();
 
  private:
-  bool WritePreference(sync_api::WriteNode* node,
-                       const std::wstring& name,
-                       const Value* value);
   Value* ReadPreference(sync_api::ReadNode* node, std::wstring* name);
 
   void StartObserving();
