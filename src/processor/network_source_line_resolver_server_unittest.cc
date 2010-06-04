@@ -141,7 +141,7 @@ TEST(NetworkSourceLineResolverServer, SystemTest) {
   ASSERT_EQ(state.system_info()->cpu, kSystemInfoCPU);
   ASSERT_EQ(state.system_info()->cpu_info, kSystemInfoCPUInfo);
   ASSERT_TRUE(state.crashed());
-  ASSERT_EQ(state.crash_reason(), "EXCEPTION_ACCESS_VIOLATION");
+  ASSERT_EQ(state.crash_reason(), "EXCEPTION_ACCESS_VIOLATION_WRITE");
   ASSERT_EQ(state.crash_address(), 0x45U);
   ASSERT_EQ(state.threads()->size(), size_t(1));
   ASSERT_EQ(state.requesting_thread(), 0);
