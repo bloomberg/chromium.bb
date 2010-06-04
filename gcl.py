@@ -184,14 +184,12 @@ def GetCodeReviewSetting(key):
 
 
 def Warn(msg):
-  ErrorExit(msg, exit=False)
-
-
-def ErrorExit(msg, do_exit=True):
-  """Print an error message to stderr and optionally exit."""
   print >> sys.stderr, msg
-  if do_exit:
-    sys.exit(1)
+
+
+def ErrorExit(msg):
+  print >> sys.stderr, msg
+  sys.exit(1)
 
 
 def RunShellWithReturnCode(command, print_output=False):
