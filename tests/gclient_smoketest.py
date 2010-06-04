@@ -17,8 +17,7 @@ import subprocess
 import sys
 import unittest
 
-from fake_repos import join, mangle_svn_tree, mangle_git_tree, write
-from fake_repos import FakeReposTestBase
+from fake_repos import join, write, FakeReposTestBase
 
 GCLIENT_PATH = join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     'gclient')
@@ -40,12 +39,80 @@ class GClientSmokeBase(FakeReposTestBase):
       cmd_base = ['coverage', 'run', '-a', GCLIENT_PATH + '.py']
     else:
       cmd_base = [GCLIENT_PATH]
-    process = subprocess.Popen(cmd_base + cmd, cwd=cwd, env=self.env,
+    cmd = cmd_base + cmd
+    process = subprocess.Popen(cmd, cwd=cwd, env=self.env,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                shell=sys.platform.startswith('win'))
     (stdout, stderr) = process.communicate()
+    logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
+
+  def parseGclient(self, cmd, items):
+    """Parse gclient's output to make it easier to test."""
+    (stdout, stderr, returncode) = self.gclient(cmd)
+    self.checkString('', stderr)
+    self.assertEquals(0, returncode)
+    return self.checkBlock(stdout, items)
+
+  def splitBlock(self, stdout):
+    """Split gclient's output into logical execution blocks.
+    ___ running 'foo' at '/bar'
+    (...)
+    ___ running 'baz' at '/bar'
+    (...)
+
+    will result in 2 items of len((...).splitlines()) each.
+    """
+    results = []
+    for line in stdout.splitlines(False):
+      # Intentionally skips empty lines.
+      if not line:
+        continue
+      if line.startswith('__'):
+        match = re.match(r'^________ ([a-z]+) \'(.*)\' in \'(.*)\'$', line)
+        if not match:
+          match = re.match(r'^_____ (.*) is missing, synching instead$', line)
+          if match:
+            # Blah, it's when a dependency is deleted, we should probably not
+            # output this message.
+            results.append([line])
+          else:
+            print line
+            raise Exception('fail', line)
+        else:
+          results.append([[match.group(1), match.group(2), match.group(3)]])
+      else:
+        if not results:
+          # TODO(maruel): gclient's git stdout is inconsistent.
+          # This should fail the test instead!!
+          pass
+        else:
+          results[-1].append(line)
+    return results
+
+  def checkBlock(self, stdout, items):
+    results = self.splitBlock(stdout)
+    for i in xrange(min(len(results), len(items))):
+      if isinstance(items[i], (list, tuple)):
+        verb = items[i][0]
+        path = items[i][1]
+      else:
+        verb = items[i]
+        path = self.root_dir
+      self.checkString(results[i][0][0], verb)
+      self.checkString(results[i][0][2], path)
+    self.assertEquals(len(results), len(items))
+    return results
+
+  def svnBlockCleanup(self, out):
+    """Work around svn status difference between svn 1.5 and svn 1.6
+    I don't know why but on Windows they are reversed. So sorts the items."""
+    for i in xrange(len(out)):
+      if len(out[i]) < 2:
+        continue
+      out[i] = [out[i][0]] + sorted([x[1:].strip() for x in out[i][1:]])
+    return out
 
 
 class GClientSmoke(GClientSmokeBase):
@@ -131,20 +198,12 @@ class GClientSmokeSVN(GClientSmokeBase):
     # TODO(maruel): safesync.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Test unversioned checkout.
-    results = self.gclient(['sync', '--deps', 'mac'])
-    logging.debug(results[0])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(17 <= len(out), out)
-    self.assertTrue(20 >= len(out), out)
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
-    tree = mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[-1]),
-        ('trunk/third_party/foo', 'src/third_party/foo',
-            self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        )
+    self.parseGclient(['sync', '--deps', 'mac'],
+                      ['running', 'running', 'running', 'running'])
+    tree = self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other'))
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -153,43 +212,24 @@ class GClientSmokeSVN(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'svn_hooked1'))
 
     # Test incremental versioned sync: sync backward.
-    results = self.gclient(['sync', '--revision', 'src@1', '--deps', 'mac',
-                            '--delete_unversioned_trees'])
-    logging.debug(results[0])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(19 <= len(out), out)
-    self.assertTrue(23 >= len(out), out)
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
-    tree = mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/third_party/foo', 'src/third_party/fpp',
-            self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/prout',
-            self.FAKE_REPOS.svn_revs[2]),
-        )
+    self.parseGclient(['sync', '--revision', 'src@1', '--deps', 'mac',
+                       '--delete_unversioned_trees'],
+                      ['running', 'running', 'running', 'running', 'deleting'])
+    tree = self.mangle_svn_tree(
+        ('trunk/src@1', 'src'),
+        ('trunk/third_party/foo@2', 'src/third_party/fpp'),
+        ('trunk/other@2', 'src/other'),
+        ('trunk/third_party/foo@2', 'src/third_party/prout'))
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
-    results = self.gclient(['sync', '--deps', 'mac'])
-    logging.debug(results[0])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(21 <= len(out), out)
-    self.assertTrue(24 >= len(out), out)
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
-    tree = mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/fpp',
-            self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/foo',
-            self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/prout',
-            self.FAKE_REPOS.svn_revs[2]),
-        )
+    self.parseGclient(['sync', '--deps', 'mac'],
+                      ['running', 'running', 'running', 'running'])
+    tree = self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@2', 'src/third_party/fpp'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other'),
+        ('trunk/third_party/foo@2', 'src/third_party/prout'))
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -197,40 +237,27 @@ class GClientSmokeSVN(GClientSmokeBase):
     """TODO(maruel): This will become an error soon."""
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     results = self.gclient(['sync', '--deps', 'mac', '-r', 'invalid@1'])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(17 <= len(out), out)
-    self.assertTrue(20 >= len(out), out)
+    self.checkBlock(results[0], ['running', 'running', 'running', 'running'])
     self.checkString('Please fix your script, having invalid --revision flags '
         'will soon considered an error.\n', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/foo',
-            self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        )
+    tree = self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other'))
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
   def testSyncNoSolutionName(self):
     # When no solution name is provided, gclient uses the first solution listed.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
-    results = self.gclient(['sync', '--deps', 'mac', '-r', '1'])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(19 <= len(out), out)
-    self.assertTrue(23 >= len(out), out)
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
-    tree = mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/third_party/foo', 'src/third_party/fpp',
-            self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/prout',
-            self.FAKE_REPOS.svn_revs[2]),
-        )
+    self.parseGclient(['sync', '--deps', 'mac', '-r', '1'],
+                      ['running', 'running', 'running', 'running'])
+    tree = self.mangle_svn_tree(
+        ('trunk/src@1', 'src'),
+        ('trunk/third_party/foo@2', 'src/third_party/fpp'),
+        ('trunk/other@2', 'src/other'),
+        ('trunk/third_party/foo@2', 'src/third_party/prout'))
     self.assertTree(tree)
 
   def testRevertAndStatus(self):
@@ -239,53 +266,40 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     write(join(self.root_dir, 'src', 'other', 'hi'), 'Hey!')
 
-    results = self.gclient(['status', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    self.assertEquals(out[0], '')
-    self.assertTrue(out[1].startswith('________ running \'svn status\' in \''))
-    self.assertTrue(out[2].endswith('      svn_hooked1'))
-    self.assertTrue(out[3].endswith('      other'))
-    self.assertTrue(out[4].endswith('      ' + join('third_party', 'foo')))
-    self.assertEquals(out[5], '')
-    self.assertTrue(out[6].startswith('________ running \'svn status\' in \''))
-    self.assertTrue(out[7].endswith('      hi'))
-    self.assertEquals(8, len(out))
-    self.assertEquals('', results[1])
-    self.assertEquals(0, results[2])
+    out = self.parseGclient(['status', '--deps', 'mac'],
+                            [['running', join(self.root_dir, 'src')],
+                             ['running', join(self.root_dir, 'src', 'other')]])
+    out = self.svnBlockCleanup(out)
+    self.checkString('other', out[0][1])
+    self.checkString('svn_hooked1', out[0][2])
+    self.checkString(join('third_party', 'foo'), out[0][3])
+    self.checkString('hi', out[1][1])
+    self.assertEquals(4, len(out[0]))
+    self.assertEquals(2, len(out[1]))
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.
     results = self.gclient(['revert', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    self.assertEquals(22, len(out))
+    out = self.splitBlock(results[0])
+    self.assertEquals(7, len(out))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[-1]),
-        ('trunk/third_party/foo', 'src/third_party/foo',
-            self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        )
+    tree = self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other'))
     tree['src/svn_hooked1'] = 'svn_hooked1'
     tree['src/svn_hooked2'] = 'svn_hooked2'
     self.assertTree(tree)
 
-    results = self.gclient(['status', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    self.assertEquals(out[0], '')
-    self.assertTrue(out[1].startswith('________ running \'svn status\' in \''))
-    self.assertTrue(out[2].endswith('      svn_hooked1'))
-    # I don't know why but on Windows they are reversed.
-    if (not (out[3].endswith('      other') and
-             out[4].endswith('      svn_hooked2')) and
-        not (out[3].endswith('      svn_hooked2') and
-             out[4].endswith('      other'))):
-      self.assertEquals(out[3].endswith('      svn_hooked2'))
-      self.assertEquals(out[4].endswith('      other'))
-    self.assertTrue(out[5].endswith('      ' + join('third_party', 'foo')))
-    self.assertEquals(6, len(out))
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    out = self.parseGclient(['status', '--deps', 'mac'],
+                            [['running', join(self.root_dir, 'src')]])
+    out = self.svnBlockCleanup(out)
+    self.checkString('other', out[0][1])
+    self.checkString('svn_hooked1', out[0][2])
+    self.checkString('svn_hooked2', out[0][3])
+    self.checkString(join('third_party', 'foo'), out[0][4])
+    self.assertEquals(5, len(out[0]))
 
   def testRevertAndStatusDepsOs(self):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
@@ -293,71 +307,70 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac', '--revision', 'src@1'])
     write(join(self.root_dir, 'src', 'other', 'hi'), 'Hey!')
 
-    results = self.gclient(['status', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    self.assertEquals(out[0], '')
-    self.assertTrue(out[1].startswith('________ running \'svn status\' in \''))
-    self.assertTrue(out[2].endswith('      other'))
-    self.assertTrue(out[3].endswith('      ' + join('third_party', 'fpp')))
-    self.assertTrue(out[4].endswith('      ' + join('third_party', 'prout')))
-    self.assertEquals(out[5], '')
-    self.assertTrue(out[6].startswith('________ running \'svn status\' in \''))
-    self.assertTrue(out[7].endswith('      hi'))
-    self.assertEquals(8, len(out))
-    self.assertEquals('', results[1])
-    self.assertEquals(0, results[2])
+    # Without --verbose, gclient won't output the directories without
+    # modification.
+    out = self.parseGclient(['status', '--deps', 'mac'],
+                            [['running', join(self.root_dir, 'src')],
+                             ['running', join(self.root_dir, 'src', 'other')]])
+    out = self.svnBlockCleanup(out)
+    self.checkString('other', out[0][1])
+    self.checkString(join('third_party', 'fpp'), out[0][2])
+    self.checkString(join('third_party', 'prout'), out[0][3])
+    self.checkString('hi', out[1][1])
+    self.assertEquals(4, len(out[0]))
+    self.assertEquals(2, len(out[1]))
+
+    # So verify it works with --verbose.
+    out = self.parseGclient(['status', '--deps', 'mac', '--verbose'],
+        [['running', join(self.root_dir, 'src')],
+          ['running', join(self.root_dir, 'src', 'other')],
+          ['running', join(self.root_dir, 'src', 'third_party', 'fpp')],
+          ['running', join(self.root_dir, 'src', 'third_party', 'prout')]])
+    out = self.svnBlockCleanup(out)
+    self.checkString('other', out[0][1])
+    self.checkString(join('third_party', 'fpp'), out[0][2])
+    self.checkString(join('third_party', 'prout'), out[0][3])
+    self.checkString('hi', out[1][1])
+    self.assertEquals(4, len(out[0]))
+    self.assertEquals(2, len(out[1]))
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.
+    # TODO(maruel): In general, gclient revert output is wrong. It should output
+    # the file list after some ___ running 'svn status'
     results = self.gclient(['revert', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    self.assertEquals(24, len(out))
+    out = self.splitBlock(results[0])
+    self.assertEquals(7, len(out))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/third_party/foo', 'src/third_party/fpp',
-            self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/prout', 'src/third_party/prout',
-            self.FAKE_REPOS.svn_revs[2]),
-        )
+    tree = self.mangle_svn_tree(
+        ('trunk/src@1', 'src'),
+        ('trunk/third_party/foo@2', 'src/third_party/fpp'),
+        ('trunk/other@2', 'src/other'),
+        ('trunk/third_party/prout@2', 'src/third_party/prout'))
     self.assertTree(tree)
 
-    results = self.gclient(['status', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    self.assertEquals(out[0], '')
-    self.assertTrue(out[1].startswith('________ running \'svn status\' in \''))
-    self.assertTrue(out[2].endswith('     other'))
-    self.assertTrue(out[3].endswith('     ' + join('third_party', 'fpp')))
-    self.assertTrue(out[4].endswith('     ' + join('third_party', 'prout')))
-    self.assertEquals(5, len(out))
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    out = self.parseGclient(['status', '--deps', 'mac'],
+                            [['running', join(self.root_dir, 'src')]])
+    out = self.svnBlockCleanup(out)
+    self.checkString('other', out[0][1])
+    self.checkString(join('third_party', 'fpp'), out[0][2])
+    self.checkString(join('third_party', 'prout'), out[0][3])
+    self.assertEquals(4, len(out[0]))
 
   def testRunHooks(self):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     self.gclient(['sync', '--deps', 'mac'])
-    results = self.gclient(['runhooks', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    self.assertEquals(4, len(out))
-    self.assertEquals(out[0], '')
-    self.assertTrue(re.match(r'^________ running \'.*?python(.exe)? -c '
-      r'open\(\'src/svn_hooked1\', \'w\'\)\.write\(\'svn_hooked1\'\)\' in \'.*',
-      out[1]))
-    self.assertEquals(out[2], '')
-    # runhooks runs all hooks even if not matching by design.
-    self.assertTrue(re.match(r'^________ running \'.*?python(.exe)? -c '
-      r'open\(\'src/svn_hooked2\', \'w\'\)\.write\(\'svn_hooked2\'\)\' in \'.*',
-      out[3]))
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    out = self.parseGclient(['runhooks', '--deps', 'mac'],
+                            ['running', 'running'])
+    self.checkString(1, len(out[0]))
+    self.checkString(1, len(out[1]))
 
   def testRunHooksDepsOs(self):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     self.gclient(['sync', '--deps', 'mac', '--revision', 'src@1'])
-    results = self.gclient(['runhooks', '--deps', 'mac'])
-    self.check(('', '', 0), results)
+    out = self.parseGclient(['runhooks', '--deps', 'mac'], [])
+    self.assertEquals([], out)
 
   def testRevInfo(self):
     # TODO(maruel): Test multiple solutions.
@@ -383,17 +396,14 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     results = self.gclient(['sync', '--deps', 'mac'])
-    out = results[0].splitlines(False)
+    self.checkBlock(results[0], ['running', 'running'])
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
-    self.assertEquals(13, len(out))
-    self.assertTrue(results[1].startswith('Switched to a new branch \''))
+    #self.assertTrue(results[1].startswith('Switched to a new branch \''))
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
-        ('src/repo2/repo_renamed', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        )
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
@@ -404,37 +414,30 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     # Test incremental versioned sync: sync backward.
     results = self.gclient(['sync', '--revision',
-                            'src@' + self.FAKE_REPOS.git_hashes['repo_1'][0][0],
+                            'src@' + self.githash('repo_1', 1),
                             '--deps', 'mac', '--delete_unversioned_trees'])
-    logging.debug(results[0])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(20 <= len(out), out)
-    self.assertTrue(23 >= len(out), out)
-    self.checkString('', results[1])
+    # gclient's git output is unparsable and all messed up. Don't look at it, it
+    # hurts the smoke test's eyes. Add "print out" here if you want to dare to
+    # parse it. So just assert it's not empty and look at the result on the file
+    # system instead.
+    self.assertEquals('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src', self.FAKE_REPOS.git_hashes['repo_1'][0][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
-        ('src/repo2/repo3', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        ('src/repo4', self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
-        )
+    tree = self.mangle_git_tree(('repo_1@1', 'src'),
+                                ('repo_2@2', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
     results = self.gclient(['sync', '--deps', 'mac'])
-    logging.debug(results[0])
-    out = results[0].splitlines(False)
-    self.assertEquals(25, len(out))
-    self.checkString('', results[1])
+    # See comment above about parsing gclient's git output.
+    self.assertEquals('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
-        ('src/repo2/repo3', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        ('src/repo2/repo_renamed', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        ('src/repo4', self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
-        )
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'),
+                                ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
@@ -444,25 +447,21 @@ class GClientSmokeGIT(GClientSmokeBase):
     if not self.enabled:
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
-    results = self.gclient([
-        'sync', '--deps', 'mac', '--revision',
-        'invalid@' + self.FAKE_REPOS.git_hashes['repo_1'][0][0],
-      ])
-    out = results[0].splitlines(False)
-
-    self.assertEquals(13, len(out))
+    results = self.gclient(['sync', '--deps', 'mac', '--revision',
+                            'invalid@' + self.githash('repo_1', 1)])
+    self.checkBlock(results[0], ['running', 'running'])
     # TODO(maruel): git shouldn't output to stderr...
     self.checkString('Please fix your script, having invalid --revision flags '
-        'will soon considered an error.\nSwitched to a new branch \'%s\'\n' %
-            self.FAKE_REPOS.git_hashes['repo_2'][0][0][:7],
+        'will soon considered an error.\n',
         results[1])
+    #self.checkString('Please fix your script, having invalid --revision flags '
+    #    'will soon considered an error.\nSwitched to a new branch \'%s\'\n' %
+    #        self.githash('repo_2', 1)[:7],
+    #    results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
-        ('src/repo2/repo_renamed',
-              self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        )
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
@@ -472,24 +471,18 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     # When no solution name is provided, gclient uses the first solution listed.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
-    results = self.gclient([
-        'sync', '--deps', 'mac', '--revision',
-        self.FAKE_REPOS.git_hashes['repo_1'][0][0],
-      ])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(12 <= len(out), out)
-    self.assertTrue(15 >= len(out), out)
+    results = self.gclient(['sync', '--deps', 'mac',
+                            '--revision', self.githash('repo_1', 1)])
+    self.checkBlock(results[0], [])
     # TODO(maruel): git shouldn't output to stderr...
-    self.checkString('Switched to a new branch \'%s\'\n'
-        % self.FAKE_REPOS.git_hashes['repo_1'][0][0], results[1])
+    #self.checkString('Switched to a new branch \'%s\'\n'
+    #    % self.githash('repo_1', 1), results[1])
+    self.checkString('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src', self.FAKE_REPOS.git_hashes['repo_1'][0][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
-        ('src/repo2/repo3', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        ('src/repo4', self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
-        )
+    tree = self.mangle_git_tree(('repo_1@1', 'src'),
+                                ('repo_2@2', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_4@2', 'src/repo4'))
     self.assertTree(tree)
 
   def testRevertAndStatus(self):
@@ -515,11 +508,9 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEquals(7, len(out))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
-        ('src/repo2/repo_renamed', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        )
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
     # TODO(maruel): http://crosbug.com/3583 This file should have been removed.
     tree[join('src', 'repo2', 'hi')] = 'Hey!'
     tree['src/git_hooked1'] = 'git_hooked1'
@@ -537,21 +528,26 @@ class GClientSmokeGIT(GClientSmokeBase):
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
-    results = self.gclient(['runhooks', '--deps', 'mac'])
-    logging.debug(results[0])
-    out = results[0].splitlines(False)
-    self.assertEquals(4, len(out))
-    self.assertEquals(out[0], '')
-    self.assertTrue(re.match(r'^________ running \'.*?python -c '
-      r'open\(\'src/git_hooked1\', \'w\'\)\.write\(\'git_hooked1\'\)\' in \'.*',
-    out[1]))
-    self.assertEquals(out[2], '')
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+
+    os.remove(join(self.root_dir, 'src', 'git_hooked1'))
+    os.remove(join(self.root_dir, 'src', 'git_hooked2'))
     # runhooks runs all hooks even if not matching by design.
-    self.assertTrue(re.match(r'^________ running \'.*?python -c '
-      r'open\(\'src/git_hooked2\', \'w\'\)\.write\(\'git_hooked2\'\)\' in \'.*',
-      out[3]))
-    self.checkString('', results[1])
-    self.assertEquals(0, results[2])
+    out = self.parseGclient(['runhooks', '--deps', 'mac'],
+                            ['running', 'running'])
+    self.assertEquals(1, len(out[0]))
+    self.assertEquals(1, len(out[1]))
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
 
   def testRevInfo(self):
     if not self.enabled:
@@ -565,9 +561,9 @@ class GClientSmokeGIT(GClientSmokeBase):
            'src/repo2/repo_renamed: %(base)srepo_3@%(hash3)s\n' %
           {
             'base': self.git_base,
-            'hash1': self.FAKE_REPOS.git_hashes['repo_1'][1][0],
-            'hash2': self.FAKE_REPOS.git_hashes['repo_2'][0][0],
-            'hash3': self.FAKE_REPOS.git_hashes['repo_3'][1][0],
+            'hash1': self.githash('repo_1', 2),
+            'hash2': self.githash('repo_2', 1),
+            'hash3': self.githash('repo_3', 2),
           })
     self.check((out, '', 0), results)
 
@@ -582,31 +578,26 @@ class GClientSmokeBoth(GClientSmokeBase):
     if not self.enabled:
       return
     self.gclient(['config', '--spec',
-      'solutions=['
-      '{"name": "src",'
-      ' "url": "' + self.svn_base + 'trunk/src/"},'
-      '{"name": "src-git",'
-      '"url": "' + self.git_base + 'repo_1"}]'])
+        'solutions=['
+        '{"name": "src",'
+        ' "url": "' + self.svn_base + 'trunk/src/"},'
+        '{"name": "src-git",'
+        '"url": "' + self.git_base + 'repo_1"}]'])
     results = self.gclient(['sync', '--deps', 'mac'])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(32 <= len(out), out)
-    self.assertTrue(37 >= len(out), out)
+    self.checkBlock(results[0],
+                    ['running', 'running', 'running', 'running', 'running',
+                     'running', 'running'])
     # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
     # new branch \'hash\''.
     #self.checkString('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src-git', self.FAKE_REPOS.git_hashes['repo_1'][1][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][0][1]),
-        ('src/repo2/repo_renamed', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        )
-    tree.update(mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/foo',
-            self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        ))
+    tree = self.mangle_git_tree(('repo_1@2', 'src-git'),
+                                ('repo_2@1', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree.update(self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/foo'),
+        ('trunk/other@2', 'src/other')))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     tree['src/svn_hooked1'] = 'svn_hooked1'
@@ -617,36 +608,27 @@ class GClientSmokeBoth(GClientSmokeBase):
     if not self.enabled:
       return
     self.gclient(['config', '--spec',
-      'solutions=['
-      '{"name": "src",'
-      ' "url": "' + self.svn_base + 'trunk/src/"},'
-      '{"name": "src-git",'
-      '"url": "' + self.git_base + 'repo_1"}]'])
-    results = self.gclient([
-        'sync', '--deps', 'mac', '--revision', '1', '-r',
-        'src-git@' + self.FAKE_REPOS.git_hashes['repo_1'][0][0]])
-    out = results[0].splitlines(False)
-    # TODO(maruel): Have real verification here, I wonder why it differs.
-    self.assertTrue(35 <= len(out), out)
-    self.assertTrue(38 >= len(out), out)
+        'solutions=['
+        '{"name": "src",'
+        ' "url": "' + self.svn_base + 'trunk/src/"},'
+        '{"name": "src-git",'
+        '"url": "' + self.git_base + 'repo_1"}]'])
+    results = self.gclient(['sync', '--deps', 'mac', '--revision', '1',
+                            '-r', 'src-git@' + self.githash('repo_1', 1)])
+    self.checkBlock(results[0], ['running', 'running', 'running', 'running'])
     # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
     # new branch \'hash\''.
     #self.checkString('', results[1])
     self.assertEquals(0, results[2])
-    tree = mangle_git_tree(
-        ('src-git', self.FAKE_REPOS.git_hashes['repo_1'][0][1]),
-        ('src/repo2', self.FAKE_REPOS.git_hashes['repo_2'][1][1]),
-        ('src/repo2/repo3', self.FAKE_REPOS.git_hashes['repo_3'][1][1]),
-        ('src/repo4', self.FAKE_REPOS.git_hashes['repo_4'][1][1]),
-        )
-    tree.update(mangle_svn_tree(
-        ('trunk/src', 'src', self.FAKE_REPOS.svn_revs[1]),
-        ('trunk/third_party/foo', 'src/third_party/fpp',
-            self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/other', 'src/other', self.FAKE_REPOS.svn_revs[2]),
-        ('trunk/third_party/foo', 'src/third_party/prout',
-            self.FAKE_REPOS.svn_revs[2]),
-        ))
+    tree = self.mangle_git_tree(('repo_1@1', 'src-git'),
+                                ('repo_2@2', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_4@2', 'src/repo4'))
+    tree.update(self.mangle_svn_tree(
+        ('trunk/src@1', 'src'),
+        ('trunk/third_party/foo@2', 'src/third_party/fpp'),
+        ('trunk/other@2', 'src/other'),
+        ('trunk/third_party/foo@2', 'src/third_party/prout')))
     self.assertTree(tree)
 
 

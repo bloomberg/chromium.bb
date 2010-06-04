@@ -17,6 +17,9 @@ import sys
 import time
 import unittest
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import scm
 
 ## Utility functions
 
@@ -149,35 +152,15 @@ def dict_diff(dict1, dict2):
   return diff
 
 
-def mangle_svn_tree(*args):
-  result = {}
-  for old_root, new_root, tree in args:
-    for k, v in tree.iteritems():
-      if not k.startswith(old_root):
-        continue
-      result[join(new_root, k[len(old_root) + 1:]).replace(os.sep, '/')] = v
-  return result
-
-
-def mangle_git_tree(*args):
-  result = {}
-  for new_root, tree in args:
-    for k, v in tree.iteritems():
-      result[join(new_root, k)] = v
-  return result
-
-
 def commit_svn(repo):
   """Commits the changes and returns the new revision number."""
-  # Basic parsing.
   to_add = []
   to_remove = []
-  for item in Popen(['svn', 'status'],
-                    cwd=repo).communicate()[0].splitlines(False):
-    if item[0] == '?':
-      to_add.append(item[7:].strip())
-    elif item[0] == '!':
-      to_remove.append(item[7:].strip())
+  for status, filepath in scm.SVN.CaptureStatus(repo):
+    if status[0] == '?':
+      to_add.append(filepath)
+    elif status[0] == '!':
+      to_remove.append(filepath)
   if to_add:
     check_call(['svn', 'add', '--no-auto-props', '-q'] + to_add, cwd=repo)
   if to_remove:
@@ -242,8 +225,12 @@ class FakeRepos(object):
       self.TRIAL_DIR = trial_dir
 
     # Format is [ None, tree, tree, ...]
+    # i.e. revisions are 1-based.
     self.svn_revs = [None]
-    # Format is { repo: [ (hash, tree), (hash, tree), ... ], ... }
+    # Format is { repo: [ None, (hash, tree), (hash, tree), ... ], ... }
+    # so reference looks like self.git_hashes[repo][rev][0] for hash and
+    # self.git_hashes[repo][rev][1] for it's tree snapshot.
+    # For consistency with self.svn_revs, it is 1-based too.
     self.git_hashes = {}
     self.svnserve = None
     self.gitdaemon = None
@@ -402,7 +389,7 @@ hooks = [
       return False
     for repo in ['repo_%d' % r for r in range(1, 5)]:
       check_call(['git', 'init', '-q', join(self.git_root, repo)])
-      self.git_hashes[repo] = []
+      self.git_hashes[repo] = [None]
 
     # Testing:
     # - dependency disapear
@@ -479,9 +466,11 @@ hooks = [
   },
 ]
 """ % {
-        # TODO(maruel): http://crosbug.com/3591 We need to strip the hash.. duh.
         'host': self.HOST,
-        'hash': self.git_hashes['repo_2'][0][0][:7]
+        # See self.__init__() for the format. Grab's the hash of the first
+        # commit in repo_2. Only keep the first 7 character because of:
+        # TODO(maruel): http://crosbug.com/3591 We need to strip the hash.. duh.
+        'hash': self.git_hashes['repo_2'][1][0][:7]
       },
       'origin': "git/repo_1@2\n"
     })
@@ -508,7 +497,7 @@ hooks = [
     repo_root = join(self.git_root, repo)
     self._genTree(repo_root, tree)
     hash = commit_git(repo_root)
-    if self.git_hashes[repo]:
+    if self.git_hashes[repo][-1]:
       new_tree = self.git_hashes[repo][-1][1].copy()
       new_tree.update(tree)
     else:
@@ -542,7 +531,7 @@ class FakeReposTestBase(unittest.TestCase):
     if not self.FAKE_REPOS.SHOULD_LEAK:
       rmtree(self.root_dir)
 
-  def checkString(self, expected, result):
+  def checkString(self, expected, result, msg=None):
     """Prints the diffs to ease debugging."""
     if expected != result:
       # Strip the begining
@@ -552,7 +541,7 @@ class FakeReposTestBase(unittest.TestCase):
       # The exception trace makes it hard to read so dump it too.
       if '\n' in result:
         print result
-    self.assertEquals(expected, result)
+    self.assertEquals(expected, result, msg)
 
   def check(self, expected, results):
     """Checks stdout, stderr, retcode."""
@@ -571,6 +560,38 @@ class FakeReposTestBase(unittest.TestCase):
       logging.debug('Expected\n%s' % pprint.pformat(tree))
       logging.debug('Diff\n%s' % pprint.pformat(diff))
       self.assertEquals(diff, [])
+
+  def mangle_svn_tree(self, *args):
+    """Creates a 'virtual directory snapshot' to compare with the actual result
+    on disk."""
+    result = {}
+    for item, new_root in args:
+      old_root, rev = item.split('@', 1)
+      tree = self.FAKE_REPOS.svn_revs[int(rev)]
+      for k, v in tree.iteritems():
+        if not k.startswith(old_root):
+          continue
+        result[join(new_root, k[len(old_root) + 1:]).replace(os.sep, '/')] = v
+    return result
+
+  def mangle_git_tree(self, *args):
+    """Creates a 'virtual directory snapshot' to compare with the actual result
+    on disk."""
+    result = {}
+    for item, new_root in args:
+      repo, rev = item.split('@', 1)
+      tree = self.gittree(repo, rev)
+      for k, v in tree.iteritems():
+        result[join(new_root, k)] = v
+    return result
+
+  def githash(self, repo, rev):
+    """Sort-hand: Returns the hash for a git 'revision'."""
+    return self.FAKE_REPOS.git_hashes[repo][int(rev)][0]
+
+  def gittree(self, repo, rev):
+    """Sort-hand: returns the directory tree for a git 'revision'."""
+    return self.FAKE_REPOS.git_hashes[repo][int(rev)][1]
 
 
 def main(argv):
