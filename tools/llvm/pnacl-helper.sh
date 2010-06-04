@@ -329,13 +329,51 @@ test-x86-32() {
 #@
 #@   run x86-64 tests via pnacl toolchain
 test-x86-64() {
-  ./scons platform=x86-32 sdl=none sel_ldr
+  ./scons platform=x86-64 sdl=none sel_ldr
   export TARGET_CODE=bc-x86-64
   rm -rf scons-out/nacl-arm
   ./scons ${SCONS_ARGS[@]} \
           force_emulator= \
           force_sel_ldr=scons-out/opt-linux-x86-64/staging/sel_ldr \
           smoke_tests "$@"
+}
+
+#@
+#@ test-x86-64-short-term-goals
+#@
+#@   these high priority tests are currently being worked
+test-x86-64-short-term-goals() {
+  ./scons platform=x86-64 sdl=none sel_ldr
+  export TARGET_CODE=bc-x86-64
+  rm -rf scons-out/nacl-arm
+  ./scons ${SCONS_ARGS[@]} \
+          force_emulator= \
+          force_sel_ldr=scons-out/opt-linux-x86-64/staging/sel_ldr \
+          run_barebones_exit_test \
+          run_barebones_fib_test \
+          run_barebones_hello_world_test \
+          run_barebones_regs_test \
+          run_barebones_switch_test \
+          run_barebones_vaarg_test \
+          run_barebones_vtable_test \
+          "$@"
+}
+
+#@
+#@ test-x86-64-currently-working
+#@
+#@   all these tests should pass
+test-x86-64-currently-working() {
+  ./scons platform=x86-64 sdl=none sel_ldr
+  export TARGET_CODE=bc-x86-64
+  rm -rf scons-out/nacl-arm
+  ./scons ${SCONS_ARGS[@]} \
+          force_emulator= \
+          force_sel_ldr=scons-out/opt-linux-x86-64/staging/sel_ldr \
+          run_barebones_exit_test \
+          run_barebones_hello_world_test \
+          run_barebones_switch_test \
+          "$@"
 }
 
 #@
