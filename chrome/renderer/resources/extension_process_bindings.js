@@ -570,7 +570,8 @@ var chrome = chrome || {};
           delete details.path;
           details.imageData = canvas_context.getImageData(0, 0, canvas.width,
                                                           canvas.height);
-          sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
+          sendCustomRequest(SetExtensionActionIcon, name, [details],
+                            parameters);
         }
         img.src = details.path;
       } else {
@@ -596,9 +597,10 @@ var chrome = chrome || {};
       }
 
       // Set up the onclick handler if we were passed one in the request.
-      if (request.args.onclick) {
+      var onclick = request.args.length ? request.args[0].onclick : null;
+      if (onclick) {
         var menuItemId = chromeHidden.JSON.parse(response);
-        chromeHidden.contextMenuHandlers[menuItemId] = request.args.onclick;
+        chromeHidden.contextMenuHandlers[menuItemId] = onclick;
       }
     };
 
