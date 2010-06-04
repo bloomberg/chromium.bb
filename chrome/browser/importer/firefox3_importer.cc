@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/time_format.h"
@@ -33,7 +33,7 @@ using importer::ProfileInfo;
 using importer::SEARCH_ENGINES;
 using webkit_glue::PasswordForm;
 
-void Firefox3Importer::StartImport(ProfileInfo profile_info,
+void Firefox3Importer::StartImport(importer::ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   bridge_ = bridge;
@@ -43,32 +43,32 @@ void Firefox3Importer::StartImport(ProfileInfo profile_info,
 
   // The order here is important!
   bridge_->NotifyStarted();
-  if ((items & HOME_PAGE) && !cancelled())
+  if ((items & importer::HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
 
   // Note history should be imported before bookmarks because bookmark import
   // will also import favicons and we store favicon for a URL only if the URL
   // exist in history or bookmarks.
-  if ((items & HISTORY) && !cancelled()) {
-    bridge_->NotifyItemStarted(HISTORY);
+  if ((items & importer::HISTORY) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::HISTORY);
     ImportHistory();
-    bridge_->NotifyItemEnded(HISTORY);
+    bridge_->NotifyItemEnded(importer::HISTORY);
   }
 
-  if ((items & FAVORITES) && !cancelled()) {
-    bridge_->NotifyItemStarted(FAVORITES);
+  if ((items & importer::FAVORITES) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::FAVORITES);
     ImportBookmarks();
-    bridge_->NotifyItemEnded(FAVORITES);
+    bridge_->NotifyItemEnded(importer::FAVORITES);
   }
-  if ((items & SEARCH_ENGINES) && !cancelled()) {
-    bridge_->NotifyItemStarted(SEARCH_ENGINES);
+  if ((items & importer::SEARCH_ENGINES) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::SEARCH_ENGINES);
     ImportSearchEngines();
-    bridge_->NotifyItemEnded(SEARCH_ENGINES);
+    bridge_->NotifyItemEnded(importer::SEARCH_ENGINES);
   }
-  if ((items & PASSWORDS) && !cancelled()) {
-    bridge_->NotifyItemStarted(PASSWORDS);
+  if ((items & importer::PASSWORDS) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::PASSWORDS);
     ImportPasswords();
-    bridge_->NotifyItemEnded(PASSWORDS);
+    bridge_->NotifyItemEnded(importer::PASSWORDS);
   }
   bridge_->NotifyEnded();
 }
@@ -177,7 +177,7 @@ void Firefox3Importer::ImportBookmarks() {
   }
 
   std::wstring firefox_folder =
-      l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
+      bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
   for (size_t i = 0; i < list.size(); ++i) {
     BookmarkItem* item = list[i];
 
@@ -253,7 +253,7 @@ void Firefox3Importer::ImportBookmarks() {
   // Write into profile.
   if (!bookmarks.empty() && !cancelled()) {
     const std::wstring& first_folder_name =
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
+        bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
     int options = 0;
     if (import_to_bookmark_bar())
       options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;

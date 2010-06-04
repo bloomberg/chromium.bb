@@ -64,7 +64,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 }
 
 FirstRunController::FirstRunController()
-    : importer_host_(new ImporterHost) {
+    : importer_host_(new ExternalProcessImporterHost) {
 }
 
 void FirstRunController::FirstRunDone() {
@@ -72,7 +72,6 @@ void FirstRunController::FirstRunDone() {
   // TODO(jeremy): Implement
   // FirstRun::SetShowFirstRunBubblePref();
   // FirstRun::SetShowWelcomePagePref();
-
   delete this;
 }
 

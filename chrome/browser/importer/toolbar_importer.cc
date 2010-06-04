@@ -6,12 +6,12 @@
 
 #include <limits>
 
-#include "app/l10n_util.h"
 #include "base/rand_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/libxml_utils.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -82,7 +82,7 @@ const char Toolbar5Importer::kT5FrontEndUrlTemplate[] =
 // The constructor should set the initial state to NOT_USED.
 Toolbar5Importer::Toolbar5Importer()
     : state_(NOT_USED),
-      items_to_import_(NONE),
+      items_to_import_(importer::NONE),
       token_fetcher_(NULL),
       data_fetcher_(NULL) {
 }
@@ -95,7 +95,7 @@ Toolbar5Importer::~Toolbar5Importer() {
   DCHECK(!data_fetcher_);
 }
 
-void Toolbar5Importer::StartImport(ProfileInfo profile_info,
+void Toolbar5Importer::StartImport(importer::ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   DCHECK(bridge);
@@ -162,18 +162,18 @@ void Toolbar5Importer::OnURLFetchComplete(
 }
 
 void Toolbar5Importer::ContinueImport() {
-  DCHECK((items_to_import_ == FAVORITES) ||
-         (items_to_import_ == NONE)) <<
+  DCHECK((items_to_import_ == importer::FAVORITES) ||
+         (items_to_import_ == importer::NONE)) <<
       "The items requested are not supported";
 
   // The order here is important.  Each Begin... will clear the flag
   // of its item before its task finishes and re-enters this method.
-  if (NONE == items_to_import_) {
+  if (importer::NONE == items_to_import_) {
     EndImport();
     return;
   }
-  if ((items_to_import_ & FAVORITES) && !cancelled()) {
-    items_to_import_ &= ~FAVORITES;
+  if ((items_to_import_ & importer::FAVORITES) && !cancelled()) {
+    items_to_import_ &= ~importer::FAVORITES;
     BeginImportBookmarks();
     return;
   }
@@ -207,12 +207,12 @@ void Toolbar5Importer::EndImport() {
 }
 
 void Toolbar5Importer::BeginImportBookmarks() {
-  bridge_->NotifyItemStarted(FAVORITES);
+  bridge_->NotifyItemStarted(importer::FAVORITES);
   GetAuthenticationFromServer();
 }
 
 void Toolbar5Importer::EndImportBookmarks() {
-  bridge_->NotifyItemEnded(FAVORITES);
+  bridge_->NotifyItemEnded(importer::FAVORITES);
   ContinueImport();
 }
 
@@ -291,7 +291,9 @@ void Toolbar5Importer::GetBookmarksFromServerDataResponse(
   if (reader.Load(response) && !cancelled()) {
     // Construct Bookmarks
     std::vector<ProfileWriter::BookmarkEntry> bookmarks;
-    if (ParseBookmarksFromReader(&reader, &bookmarks))
+    if (ParseBookmarksFromReader(&reader, &bookmarks,
+        WideToUTF16(bridge_->GetLocalizedString(
+            IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR))))
       AddBookmarksToChrome(bookmarks);
   }
   EndImportBookmarks();
@@ -319,7 +321,8 @@ bool Toolbar5Importer::ParseAuthenticationTokenResponse(
 // Parsing
 bool Toolbar5Importer::ParseBookmarksFromReader(
     XmlReader* reader,
-    std::vector<ProfileWriter::BookmarkEntry>* bookmarks) {
+    std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
+    const string16& bookmark_group_string) {
   DCHECK(reader);
   DCHECK(bookmarks);
 
@@ -341,7 +344,8 @@ bool Toolbar5Importer::ParseBookmarksFromReader(
                                      kBookmarksXmlTag)) {
     ProfileWriter::BookmarkEntry bookmark_entry;
     std::vector<BookmarkFolderType> folders;
-    if (ExtractBookmarkInformation(reader, &bookmark_entry, &folders)) {
+    if (ExtractBookmarkInformation(reader, &bookmark_entry, &folders,
+                                   bookmark_group_string)) {
       // For each folder we create a new bookmark entry.  Duplicates will
       // be detected when we attempt to create the bookmark in the profile.
       for (std::vector<BookmarkFolderType>::iterator folder = folders.begin();
@@ -402,7 +406,8 @@ bool Toolbar5Importer::LocateNextTagWithStopByName(XmlReader* reader,
 bool Toolbar5Importer::ExtractBookmarkInformation(
     XmlReader* reader,
     ProfileWriter::BookmarkEntry* bookmark_entry,
-    std::vector<BookmarkFolderType>* bookmark_folders) {
+    std::vector<BookmarkFolderType>* bookmark_folders,
+    const string16& bookmark_group_string) {
   DCHECK(reader);
   DCHECK(bookmark_entry);
   DCHECK(bookmark_folders);
@@ -451,7 +456,8 @@ bool Toolbar5Importer::ExtractBookmarkInformation(
     return false;
   if (!ExtractTimeFromXmlReader(reader, bookmark_entry))
     return false;
-  if (!ExtractFoldersFromXmlReader(reader, bookmark_folders))
+  if (!ExtractFoldersFromXmlReader(reader, bookmark_folders,
+                                   bookmark_group_string))
     return false;
 
   return true;
@@ -523,7 +529,8 @@ bool Toolbar5Importer::ExtractTimeFromXmlReader(
 
 bool Toolbar5Importer::ExtractFoldersFromXmlReader(
     XmlReader* reader,
-    std::vector<BookmarkFolderType>* bookmark_folders) {
+    std::vector<BookmarkFolderType>* bookmark_folders,
+    const string16& bookmark_group_string) {
   DCHECK(reader);
   DCHECK(bookmark_folders);
 
@@ -550,8 +557,7 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
   if (0 == label_vector.size()) {
     if (!FirstRun::IsChromeFirstRun()) {
       bookmark_folders->resize(1);
-      (*bookmark_folders)[0].push_back(
-          l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR));
+      (*bookmark_folders)[0].push_back(UTF16ToWide(bookmark_group_string));
     }
     return true;
   }
@@ -563,8 +569,7 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
     // If this is the first run then we place favorites with no labels
     // in the title bar.  Else they are placed in the "Google Toolbar" folder.
     if (!FirstRun::IsChromeFirstRun() || !label_vector[index].empty()) {
-      (*bookmark_folders)[index].push_back(
-          l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR));
+      (*bookmark_folders)[index].push_back(UTF16ToWide(bookmark_group_string));
     }
 
     // If the label and is in the form "xxx:yyy:zzz" this was created from an
@@ -584,7 +589,7 @@ void  Toolbar5Importer::AddBookmarksToChrome(
     const std::vector<ProfileWriter::BookmarkEntry>& bookmarks) {
   if (!bookmarks.empty() && !cancelled()) {
     const std::wstring& first_folder_name =
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR);
+        bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR);
     int options = ProfileWriter::ADD_IF_UNIQUE |
         (import_to_bookmark_bar() ? ProfileWriter::IMPORT_TO_BOOKMARK_BAR : 0);
     bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);

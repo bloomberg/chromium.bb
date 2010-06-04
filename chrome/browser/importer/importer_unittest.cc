@@ -205,8 +205,8 @@ class TestObserver : public ProfileWriter,
     password_count_ = 0;
   }
 
-  virtual void ImportItemStarted(ImportItem item) {}
-  virtual void ImportItemEnded(ImportItem item) {}
+  virtual void ImportItemStarted(importer::ImportItem item) {}
+  virtual void ImportItemEnded(importer::ImportItem item) {}
   virtual void ImportStarted() {}
   virtual void ImportEnded() {
     MessageLoop::current()->Quit();
@@ -554,8 +554,8 @@ class FirefoxObserver : public ProfileWriter,
     keyword_count_ = 0;
   }
 
-  virtual void ImportItemStarted(ImportItem item) {}
-  virtual void ImportItemEnded(ImportItem item) {}
+  virtual void ImportItemStarted(importer::ImportItem item) {}
+  virtual void ImportItemEnded(importer::ImportItem item) {}
   virtual void ImportStarted() {}
   virtual void ImportEnded() {
     MessageLoop::current()->Quit();
@@ -750,8 +750,8 @@ class Firefox3Observer : public ProfileWriter,
         import_search_engines_(import_search_engines) {
   }
 
-  virtual void ImportItemStarted(ImportItem item) {}
-  virtual void ImportItemEnded(ImportItem item) {}
+  virtual void ImportItemStarted(importer::ImportItem item) {}
+  virtual void ImportItemEnded(importer::ImportItem item) {}
   virtual void ImportStarted() {}
   virtual void ImportEnded() {
     MessageLoop::current()->Quit();

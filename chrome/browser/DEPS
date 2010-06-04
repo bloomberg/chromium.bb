@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/installer",
   "+chrome/personalization",
   "+chrome/plugin",  # For Mac plugin interpose library.
+  "+chrome/profile_import",
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
   "+grit",  # For generated headers

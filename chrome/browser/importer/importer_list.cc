@@ -153,7 +153,7 @@ void ImporterList::DetectFirefoxProfiles() {
   if (firefox->app_path.empty())
     firefox->app_path = app_path;
   firefox->services_supported = importer::HISTORY | importer::FAVORITES |
-      importer::COOKIES | importer::PASSWORDS | importer::SEARCH_ENGINES;
+      importer::PASSWORDS | importer::SEARCH_ENGINES;
   source_profiles_.push_back(firefox);
 }
 

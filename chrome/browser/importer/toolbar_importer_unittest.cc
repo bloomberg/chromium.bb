@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/toolbar_importer.h"
@@ -24,6 +25,8 @@ static const wchar_t* kFolderArray[3] = {L"Google", L"Search", L"Page"};
 static const wchar_t* kOtherTitle = L"MyOtherTitle";
 static const char* kOtherUrl = "http://www.google.com/mail";
 static const wchar_t* kOtherFolder = L"Mail";
+
+static const string16 kBookmarkGroupTitle = ASCIIToUTF16("BookmarkGroupTitle");
 
 // Since the following is very dense to read I enumerate the test cases here.
 // 1. Correct bookmark structure with one label.
@@ -322,7 +325,8 @@ static const char* kBadBookmarkNoLabels =
   bookmarks.clear();
   XmlReader reader1;
   EXPECT_TRUE(reader1.Load(bookmark_xml));
-  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader1, &bookmarks));
+  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader1, &bookmarks,
+      kBookmarkGroupTitle));
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
@@ -336,7 +340,8 @@ static const char* kBadBookmarkNoLabels =
   bookmarks.clear();
   XmlReader reader2;
   EXPECT_TRUE(reader2.Load(bookmark_xml));
-  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader2, &bookmarks));
+  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader2, &bookmarks,
+      kBookmarkGroupTitle));
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
@@ -349,7 +354,8 @@ static const char* kBadBookmarkNoLabels =
   bookmarks.clear();
   XmlReader reader3;
   EXPECT_TRUE(reader3.Load(bookmark_xml));
-  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader3, &bookmarks));
+  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader3, &bookmarks,
+      kBookmarkGroupTitle));
 
   ASSERT_EQ(2U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
@@ -369,7 +375,8 @@ static const char* kBadBookmarkNoLabels =
   bookmarks.clear();
   XmlReader reader4;
   EXPECT_TRUE(reader4.Load(bookmark_xml));
-  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader4, &bookmarks));
+  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader4, &bookmarks,
+      kBookmarkGroupTitle));
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
@@ -388,7 +395,8 @@ static const char* kBadBookmarkNoLabels =
   bookmarks.clear();
   XmlReader reader5;
   EXPECT_TRUE(reader5.Load(bookmark_xml));
-  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader5, &bookmarks));
+  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader5, &bookmarks,
+      kBookmarkGroupTitle));
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
@@ -402,7 +410,8 @@ static const char* kBadBookmarkNoLabels =
   bookmarks.clear();
   XmlReader reader6;
   EXPECT_TRUE(reader6.Load(bookmark_xml));
-  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader6, &bookmarks));
+  EXPECT_TRUE(Toolbar5Importer::ParseBookmarksFromReader(&reader6, &bookmarks,
+      kBookmarkGroupTitle));
 
   ASSERT_EQ(2U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
@@ -428,7 +437,7 @@ static const char* kBadBookmarkNoLabels =
   XmlReader reader8;
   EXPECT_TRUE(reader8.Load(bookmark_xml));
   EXPECT_FALSE(Toolbar5Importer::ParseBookmarksFromReader(&reader8,
-                                                          &bookmarks));
+      &bookmarks, kBookmarkGroupTitle));
 
   // Test case 9 tests when no <bookmark> section is present.
   bookmark_xml = kBadBookmarkNoBookmark;
@@ -436,7 +445,7 @@ static const char* kBadBookmarkNoLabels =
   XmlReader reader9;
   EXPECT_TRUE(reader9.Load(bookmark_xml));
   EXPECT_FALSE(Toolbar5Importer::ParseBookmarksFromReader(&reader9,
-                                                          &bookmarks));
+      &bookmarks, kBookmarkGroupTitle));
 
 
   // Test case 10 tests when a bookmark has no <title> section.
@@ -445,7 +454,7 @@ static const char* kBadBookmarkNoLabels =
   XmlReader reader10;
   EXPECT_TRUE(reader10.Load(bookmark_xml));
   EXPECT_FALSE(Toolbar5Importer::ParseBookmarksFromReader(&reader10,
-                                                          &bookmarks));
+      &bookmarks, kBookmarkGroupTitle));
 
   // Test case 11 tests when a bookmark has no <url> section.
   bookmark_xml = kBadBookmarkNoUrl;
@@ -453,7 +462,7 @@ static const char* kBadBookmarkNoLabels =
   XmlReader reader11;
   EXPECT_TRUE(reader11.Load(bookmark_xml));
   EXPECT_FALSE(Toolbar5Importer::ParseBookmarksFromReader(&reader11,
-                                                          &bookmarks));
+      &bookmarks, kBookmarkGroupTitle));
 
   // Test case 12 tests when a bookmark has no <timestamp> section.
   bookmark_xml = kBadBookmarkNoTimestamp;
@@ -461,7 +470,7 @@ static const char* kBadBookmarkNoLabels =
   XmlReader reader12;
   EXPECT_TRUE(reader12.Load(bookmark_xml));
   EXPECT_FALSE(Toolbar5Importer::ParseBookmarksFromReader(&reader12,
-                                                          &bookmarks));
+      &bookmarks, kBookmarkGroupTitle));
 
   // Test case 13 tests when a bookmark has no <labels> section.
   bookmark_xml = kBadBookmarkNoLabels;
@@ -469,5 +478,5 @@ static const char* kBadBookmarkNoLabels =
   XmlReader reader13;
   EXPECT_TRUE(reader13.Load(bookmark_xml));
   EXPECT_FALSE(Toolbar5Importer::ParseBookmarksFromReader(&reader13,
-                                                          &bookmarks));
+      &bookmarks, kBookmarkGroupTitle));
 }

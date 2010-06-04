@@ -62,7 +62,7 @@ void ImportProgressDialogGtk::StartImport(GtkWindow* parent,
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImporterHost::Observer implementation:
-void ImportProgressDialogGtk::ImportItemStarted(ImportItem item) {
+void ImportProgressDialogGtk::ImportItemStarted(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
     case FAVORITES:
@@ -86,7 +86,7 @@ void ImportProgressDialogGtk::ImportItemStarted(ImportItem item) {
   }
 }
 
-void ImportProgressDialogGtk::ImportItemEnded(ImportItem item) {
+void ImportProgressDialogGtk::ImportItemEnded(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
     case FAVORITES:

@@ -10,20 +10,20 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
-
-#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/importer_data_types.h"
 // TODO: remove this, see friend declaration in ImporterBridge.
 #include "chrome/browser/importer/toolbar_importer.h"
 
+class ProfileImportThread;
+class DictionaryValue;
+class ImporterHost;
+
 class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
  public:
-  ImporterBridge(ProfileWriter* writer,
-                 ImporterHost* host)
-      : writer_(writer),
-      host_(host) {
-  }
+  ImporterBridge() { }
 
   virtual void AddBookmarkEntries(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
@@ -57,6 +57,12 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   // Notifies the coordinator that the entire import operation has completed.
   virtual void NotifyEnded() = 0;
 
+  // For InProcessImporters this calls l10n_util. For ExternalProcessImporters
+  // this calls the set of strings we've ported over to the external process.
+  // It's good to avoid having to create a separate ResourceBundle for the
+  // external import process, since the importer only needs a few strings.
+  virtual std::wstring GetLocalizedString(int message_id) = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<ImporterBridge>;
   // TODO: In order to run Toolbar5Importer OOP we need to cut this
@@ -66,9 +72,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 
   virtual ~ImporterBridge() {}
 
-  ProfileWriter* writer_;
-  ImporterHost* host_;
-
   DISALLOW_COPY_AND_ASSIGN(ImporterBridge);
 };
 
@@ -77,7 +80,8 @@ class InProcessImporterBridge : public ImporterBridge {
   InProcessImporterBridge(ProfileWriter* writer,
                           ImporterHost* host);
 
-  // Methods inherited from ImporterBridge.
+  // Methods inherited from ImporterBridge.  On the internal side, these
+  // methods launch tasks to write the data to the profile with the |writer_|.
   virtual void AddBookmarkEntries(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
       const std::wstring& first_folder_name,
@@ -89,7 +93,7 @@ class InProcessImporterBridge : public ImporterBridge {
 #endif
 
   virtual void SetFavIcons(
-    const std::vector<history::ImportedFavIconUsage>& fav_icons);
+      const std::vector<history::ImportedFavIconUsage>& fav_icons);
   virtual void SetHistoryItems(const std::vector<history::URLRow> &rows);
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
                            int default_keyword_index,
@@ -100,11 +104,64 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void NotifyItemEnded(importer::ImportItem item);
   virtual void NotifyStarted();
   virtual void NotifyEnded();
+  virtual std::wstring GetLocalizedString(int message_id);
 
  private:
   ~InProcessImporterBridge() {}
 
+  ProfileWriter* const writer_;  // weak
+  ImporterHost* const host_;  // weak
+
   DISALLOW_COPY_AND_ASSIGN(InProcessImporterBridge);
+};
+
+// When the importer is run in an external process, the bridge is effectively
+// split in half by the IPC infrastructure.  The external bridge receives data
+// and notifications from the importer, and sends it across IPC.  The
+// internal bridge gathers the data from the IPC host and writes it to the
+// profile.
+class ExternalProcessImporterBridge : public ImporterBridge {
+ public:
+  ExternalProcessImporterBridge(ProfileImportThread* profile_import_thread,
+                                const DictionaryValue& localized_strings);
+
+  // Methods inherited from ImporterBridge.  On the external side, these
+  // methods gather data and give it to a ProfileImportThread to pass back
+  // to the browser process.
+  virtual void AddBookmarkEntries(
+      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
+      const std::wstring& first_folder_name, int options);
+  virtual void AddHomePage(const GURL &home_page);
+
+#if defined(OS_WIN)
+  virtual void AddIE7PasswordInfo(const IE7PasswordInfo password_info);
+#endif
+
+  virtual void SetFavIcons(
+      const std::vector<history::ImportedFavIconUsage>& fav_icons);
+  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows);
+  virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
+                           int default_keyword_index,
+                           bool unique_on_host_and_path);
+  virtual void SetPasswordForm(const webkit_glue::PasswordForm& form);
+
+  virtual void NotifyItemStarted(importer::ImportItem item);
+  virtual void NotifyItemEnded(importer::ImportItem item);
+  virtual void NotifyStarted();
+  virtual void NotifyEnded();
+  virtual std::wstring GetLocalizedString(int message_id);
+
+ private:
+  ~ExternalProcessImporterBridge() {}
+
+  // Call back to send data and messages across IPC.
+  ProfileImportThread* const profile_import_thread_;
+
+  // Holds strings needed by the external importer because the resource
+  // bundle isn't available to the external process.
+  const DictionaryValue& localized_strings_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalProcessImporterBridge);
 };
 
 #endif  // CHROME_BROWSER_IMPORTER_IMPORTER_BRIDGE_H_

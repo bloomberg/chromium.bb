@@ -19,7 +19,6 @@ class ImporterObserverBridge;
   scoped_ptr<ImporterObserverBridge> import_host_observer_bridge_;
   ImporterHost* importer_host_;  // (weak)
   ImportObserver* observer_;  // (weak)
-  BOOL importing_;
 
   // Strings bound to static labels in the UI dialog.
   NSString* explanatory_text_;
@@ -50,7 +49,6 @@ class ImporterObserverBridge;
 // Methods called by importer_host via ImporterObserverBridge.
 - (void)ImportItemStarted:(importer::ImportItem)item;
 - (void)ImportItemEnded:(importer::ImportItem)item;
-- (void)ImportStarted;
 - (void)ImportEnded;
 
 @property(retain) NSString* explanatoryText;
@@ -86,7 +84,7 @@ class ImporterObserverBridge : public ImporterHost::Observer {
 
   // Invoked when the import begins.
   virtual void ImportStarted() {
-    [owner_ ImportStarted];
+    // Not needed for out of process import.
   }
 
   // Invoked when the source profile has been imported.

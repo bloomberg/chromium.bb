@@ -9,7 +9,6 @@
 #include <map>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
@@ -18,6 +17,7 @@
 #include "base/time.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -57,7 +57,7 @@ SafariImporter::~SafariImporter() {
 bool SafariImporter::CanImport(const FilePath& library_dir,
                                uint16 *services_supported) {
   DCHECK(services_supported);
-  *services_supported = NONE;
+  *services_supported = importer::NONE;
 
   // Import features are toggled by the following:
   // bookmarks import: existence of ~/Library/Safari/Bookmarks.plist file.
@@ -68,37 +68,36 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
 
   using file_util::PathExists;
   if (PathExists(bookmarks_path))
-    *services_supported |= FAVORITES;
+    *services_supported |= importer::FAVORITES;
   if (PathExists(history_path))
-    *services_supported |= HISTORY;
+    *services_supported |= importer::HISTORY;
 
-  return *services_supported != NONE;
+  return *services_supported != importer::NONE;
 }
 
-void SafariImporter::StartImport(ProfileInfo profile_info,
+void SafariImporter::StartImport(importer::ProfileInfo profile_info,
                                  uint16 services_supported,
                                  ImporterBridge* bridge) {
   bridge_ = bridge;
-
   // The order here is important!
   bridge_->NotifyStarted();
   // In keeping with import on other platforms (and for other browsers), we
   // don't import the home page (since it may lead to a useless homepage); see
   // crbug.com/25603.
-  if ((services_supported & HISTORY) && !cancelled()) {
-    bridge_->NotifyItemStarted(HISTORY);
+  if ((services_supported & importer::HISTORY) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::HISTORY);
     ImportHistory();
-    bridge_->NotifyItemEnded(HISTORY);
+    bridge_->NotifyItemEnded(importer::HISTORY);
   }
-  if ((services_supported & FAVORITES) && !cancelled()) {
-    bridge_->NotifyItemStarted(FAVORITES);
+  if ((services_supported & importer::FAVORITES) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::FAVORITES);
     ImportBookmarks();
-    bridge_->NotifyItemEnded(FAVORITES);
+    bridge_->NotifyItemEnded(importer::FAVORITES);
   }
-  if ((services_supported & PASSWORDS) && !cancelled()) {
-    bridge_->NotifyItemStarted(PASSWORDS);
+  if ((services_supported & importer::PASSWORDS) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::PASSWORDS);
     ImportPasswords();
-    bridge_->NotifyItemEnded(PASSWORDS);
+    bridge_->NotifyItemEnded(importer::PASSWORDS);
   }
   bridge_->NotifyEnded();
 }
@@ -110,7 +109,7 @@ void SafariImporter::ImportBookmarks() {
   // Write bookmarks into profile.
   if (!bookmarks.empty() && !cancelled()) {
     const std::wstring& first_folder_name =
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_SAFARI);
+        bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_SAFARI);
     int options = 0;
     if (import_to_bookmark_bar())
       options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
@@ -348,7 +347,8 @@ void SafariImporter::ParseHistoryItems(
   if (!history_dict)
     return;
 
-  NSArray* safari_history_items = [history_dict objectForKey:@"WebHistoryDates"];
+  NSArray* safari_history_items = [history_dict
+      objectForKey:@"WebHistoryDates"];
 
   for (NSDictionary* history_item in safari_history_items) {
     using base::SysNSStringToUTF8;

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/icu_string_conversions.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/mork_reader.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -47,43 +47,44 @@ Firefox2Importer::Firefox2Importer() : parsing_bookmarks_html_file_(false) {
 Firefox2Importer::~Firefox2Importer() {
 }
 
-void Firefox2Importer::StartImport(ProfileInfo profile_info,
+void Firefox2Importer::StartImport(importer::ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   bridge_ = bridge;
   source_path_ = profile_info.source_path;
   app_path_ = profile_info.app_path;
 
-  parsing_bookmarks_html_file_ = (profile_info.browser_type == BOOKMARKS_HTML);
+  parsing_bookmarks_html_file_ =
+      (profile_info.browser_type == importer::BOOKMARKS_HTML);
 
   // The order here is important!
   bridge_->NotifyStarted();
-  if ((items & HOME_PAGE) && !cancelled())
+  if ((items & importer::HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
 
   // Note history should be imported before bookmarks because bookmark import
   // will also import favicons and we store favicon for a URL only if the URL
   // exist in history or bookmarks.
-  if ((items & HISTORY) && !cancelled()) {
-    bridge_->NotifyItemStarted(HISTORY);
+  if ((items & importer::HISTORY) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::HISTORY);
     ImportHistory();
-    bridge_->NotifyItemEnded(HISTORY);
+    bridge_->NotifyItemEnded(importer::HISTORY);
   }
 
-  if ((items & FAVORITES) && !cancelled()) {
-    bridge_->NotifyItemStarted(FAVORITES);
+  if ((items & importer::FAVORITES) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::FAVORITES);
     ImportBookmarks();
-    bridge_->NotifyItemEnded(FAVORITES);
+    bridge_->NotifyItemEnded(importer::FAVORITES);
   }
-  if ((items & SEARCH_ENGINES) && !cancelled()) {
-    bridge_->NotifyItemStarted(SEARCH_ENGINES);
+  if ((items & importer::SEARCH_ENGINES) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::SEARCH_ENGINES);
     ImportSearchEngines();
-    bridge_->NotifyItemEnded(SEARCH_ENGINES);
+    bridge_->NotifyItemEnded(importer::SEARCH_ENGINES);
   }
-  if ((items & PASSWORDS) && !cancelled()) {
-    bridge_->NotifyItemStarted(PASSWORDS);
+  if ((items & importer::PASSWORDS) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::PASSWORDS);
     ImportPasswords();
-    bridge_->NotifyItemEnded(PASSWORDS);
+    bridge_->NotifyItemEnded(importer::PASSWORDS);
   }
   bridge_->NotifyEnded();
 }
@@ -263,10 +264,9 @@ void Firefox2Importer::ImportBookmarks() {
   if (!parsing_bookmarks_html_file_)
     file = file.AppendASCII("bookmarks.html");
   std::wstring first_folder_name;
-  if (parsing_bookmarks_html_file_)
-    first_folder_name = l10n_util::GetString(IDS_BOOKMARK_GROUP);
-  else
-    first_folder_name = l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
+  first_folder_name = bridge_->GetLocalizedString(
+      parsing_bookmarks_html_file_ ? IDS_BOOKMARK_GROUP :
+                                     IDS_BOOKMARK_GROUP_FROM_FIREFOX);
 
   ImportBookmarksFile(file, default_urls, import_to_bookmark_bar(),
                       first_folder_name, this, &bookmarks, &template_urls,
