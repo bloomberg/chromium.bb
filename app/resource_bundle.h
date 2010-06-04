@@ -244,7 +244,7 @@ class ResourceBundle {
 
   static ResourceBundle* g_shared_instance_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ResourceBundle);
+  DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };
 
 #endif  // APP_RESOURCE_BUNDLE_H_

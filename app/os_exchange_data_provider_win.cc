@@ -88,7 +88,7 @@ class FormatEtcEnumerator : public IEnumFORMATETC {
 
   LONG ref_count_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(FormatEtcEnumerator);
+  DISALLOW_COPY_AND_ASSIGN(FormatEtcEnumerator);
 };
 
 // Safely makes a copy of all of the relevant bits of a FORMATETC object.

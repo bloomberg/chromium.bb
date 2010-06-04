@@ -70,7 +70,7 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   bool initialized_successfully_;
 
   friend struct DefaultSingletonTraits<IOSurfaceSupportImpl>;
-  DISALLOW_EVIL_CONSTRUCTORS(IOSurfaceSupportImpl);
+  DISALLOW_COPY_AND_ASSIGN(IOSurfaceSupportImpl);
 };
 
 static Singleton<IOSurfaceSupportImpl> sole_instance_;
