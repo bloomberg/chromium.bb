@@ -66,6 +66,8 @@
 		fprintf(stderr, __VA_ARGS__);		\
 } while (0)
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
 typedef struct _drm_intel_bo_gem drm_intel_bo_gem;
 
 struct drm_intel_gem_bo_bucket {
@@ -73,10 +75,6 @@ struct drm_intel_gem_bo_bucket {
 	unsigned long size;
 };
 
-/* Only cache objects up to 64MB.  Bigger than that, and the rounding of the
- * size makes many operations fail that wouldn't otherwise.
- */
-#define DRM_INTEL_GEM_BO_BUCKETS	14
 typedef struct _drm_intel_bufmgr_gem {
 	drm_intel_bufmgr bufmgr;
 
@@ -93,7 +91,8 @@ typedef struct _drm_intel_bufmgr_gem {
 	int exec_count;
 
 	/** Array of lists of cached gem objects of power-of-two sizes */
-	struct drm_intel_gem_bo_bucket cache_bucket[DRM_INTEL_GEM_BO_BUCKETS];
+	struct drm_intel_gem_bo_bucket cache_bucket[14 * 4];
+	int num_buckets;
 
 	uint64_t gtt_size;
 	int available_fences;
@@ -285,7 +284,7 @@ drm_intel_gem_bo_bucket_for_size(drm_intel_bufmgr_gem *bufmgr_gem,
 {
 	int i;
 
-	for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++) {
+	for (i = 0; i < bufmgr_gem->num_buckets; i++) {
 		struct drm_intel_gem_bo_bucket *bucket =
 		    &bufmgr_gem->cache_bucket[i];
 		if (bucket->size >= size) {
@@ -830,7 +829,7 @@ drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
 {
 	int i;
 
-	for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++) {
+	for (i = 0; i < bufmgr_gem->num_buckets; i++) {
 		struct drm_intel_gem_bo_bucket *bucket =
 		    &bufmgr_gem->cache_bucket[i];
 
@@ -1258,7 +1257,7 @@ drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
 	pthread_mutex_destroy(&bufmgr_gem->lock);
 
 	/* Free any cached buffer objects we were going to reuse */
-	for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++) {
+	for (i = 0; i < bufmgr_gem->num_buckets; i++) {
 		struct drm_intel_gem_bo_bucket *bucket =
 		    &bufmgr_gem->cache_bucket[i];
 		drm_intel_bo_gem *bo_gem;
@@ -1989,6 +1988,45 @@ drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
 	return 0;
 }
 
+static void
+add_bucket(drm_intel_bufmgr_gem *bufmgr_gem, int size)
+{
+	unsigned int i = bufmgr_gem->num_buckets;
+
+	assert(i < ARRAY_SIZE(bufmgr_gem->cache_bucket));
+
+	DRMINITLISTHEAD(&bufmgr_gem->cache_bucket[i].head);
+	bufmgr_gem->cache_bucket[i].size = size;
+	bufmgr_gem->num_buckets++;
+}
+
+static void
+init_cache_buckets(drm_intel_bufmgr_gem *bufmgr_gem)
+{
+	unsigned long size, cache_max_size = 64 * 1024 * 1024;
+
+	/* OK, so power of two buckets was too wasteful of memory.
+	 * Give 3 other sizes between each power of two, to hopefully
+	 * cover things accurately enough.  (The alternative is
+	 * probably to just go for exact matching of sizes, and assume
+	 * that for things like composited window resize the tiled
+	 * width/height alignment and rounding of sizes to pages will
+	 * get us useful cache hit rates anyway)
+	 */
+	add_bucket(bufmgr_gem, 4096);
+	add_bucket(bufmgr_gem, 4096 * 2);
+	add_bucket(bufmgr_gem, 4096 * 3);
+
+	/* Initialize the linked lists for BO reuse cache. */
+	for (size = 4 * 4096; size <= cache_max_size; size *= 2) {
+		add_bucket(bufmgr_gem, size);
+
+		add_bucket(bufmgr_gem, size + size * 1 / 4);
+		add_bucket(bufmgr_gem, size + size * 2 / 4);
+		add_bucket(bufmgr_gem, size + size * 3 / 4);
+	}
+}
+
 /**
  * Initializes the GEM buffer manager, which uses the kernel to allocate, map,
  * and manage map buffer objections.
@@ -2001,8 +2039,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	drm_intel_bufmgr_gem *bufmgr_gem;
 	struct drm_i915_gem_get_aperture aperture;
 	drm_i915_getparam_t gp;
-	int ret, i;
-	unsigned long size;
+	int ret;
 	int exec2 = 0, has_bsd = 0;
 
 	bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
@@ -2128,11 +2165,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	    drm_intel_gem_get_pipe_from_crtc_id;
 	bufmgr_gem->bufmgr.bo_references = drm_intel_gem_bo_references;
 
-	/* Initialize the linked lists for BO reuse cache. */
-	for (i = 0, size = 4096; i < DRM_INTEL_GEM_BO_BUCKETS; i++, size *= 2) {
-		DRMINITLISTHEAD(&bufmgr_gem->cache_bucket[i].head);
-		bufmgr_gem->cache_bucket[i].size = size;
-	}
+	init_cache_buckets(bufmgr_gem);
 
 	return &bufmgr_gem->bufmgr;
 }
