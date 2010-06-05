@@ -858,6 +858,7 @@
         'browser/password_manager/password_store_default_unittest.cc',
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',
+        'browser/plugin_updater_unittest.cc',
         'browser/pref_member_unittest.cc',
         'browser/pref_service_unittest.cc',
         'browser/printing/print_dialog_cloud_unittest.cc',
