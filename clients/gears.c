@@ -249,11 +249,11 @@ static void
 resize_window(struct gears *gears)
 {
 	EGLint attribs[] = {
-		EGL_IMAGE_WIDTH_INTEL,	0,
-		EGL_IMAGE_HEIGHT_INTEL,	0,
-		EGL_IMAGE_FORMAT_INTEL,	EGL_FORMAT_RGBA_8888_KHR,
-		EGL_IMAGE_USE_INTEL,	EGL_IMAGE_USE_SHARE_INTEL |
-					EGL_IMAGE_USE_SCANOUT_INTEL,
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SHARE_MESA |
+					EGL_IMAGE_USE_SCANOUT_MESA,
 		EGL_NONE
 	};
 
@@ -275,9 +275,7 @@ resize_window(struct gears *gears)
 		eglDestroyImageKHR(gears->display, gears->image);
 	attribs[1] = gears->rectangle.width;
 	attribs[3] = gears->rectangle.height;
-	gears->image = eglCreateImageKHR(gears->display, gears->context,
-					 EGL_SYSTEM_IMAGE_INTEL,
-					 NULL, attribs);
+	gears->image = eglCreateDRMImageMESA(gears->display, attribs);
 
 	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
 	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, gears->image);
@@ -341,10 +339,10 @@ handle_frame(void *data,
 	     uint32_t frame, uint32_t timestamp)
 {
   	struct gears *gears = data;
-	EGLint name, handle, stride;
+	EGLint name, stride;
 
-	eglShareImageINTEL(gears->display, gears->context,
-			   gears->image, 0, &name, &handle, &stride);
+	eglExportDRMImageMESA(gears->display,
+			   gears->image, &name, NULL, &stride);
 	
 	window_copy(gears->window, &gears->rectangle, name, stride);
 
@@ -361,11 +359,24 @@ static const struct wl_compositor_listener compositor_listener = {
 static struct gears *
 gears_create(struct display *display, int drm_fd)
 {
+	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 	const int x = 200, y = 200, width = 450, height = 500;
-	EGLint major, minor;
-	EGLDisplayTypeDRMMESA drm_display;
+	EGLint major, minor, count;
+	EGLConfig config;
 	struct gears *gears;
 	int i;
+
+	static const EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE,		0,
+		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
+		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
+		EGL_NONE
+	};
+
+	get_typed_display_mesa =
+		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
+	if (get_typed_display_mesa == NULL)
+		die("eglGetDisplayMESA() not found\n");
 
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
@@ -373,17 +384,21 @@ gears_create(struct display *display, int drm_fd)
 	gears->window = window_create(display, "Wayland Gears",
 				      x, y, width, height);
 
-	drm_display.type = EGL_DISPLAY_TYPE_DRM_MESA;
-	drm_display.device = NULL;
-	drm_display.fd = drm_fd;
-	gears->display = eglGetDisplay((EGLNativeDisplayType) &drm_display);
+	gears->display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
+						(void *) drm_fd);
 	if (gears->display == NULL)
 		die("failed to create egl display\n");
 
 	if (!eglInitialize(gears->display, &major, &minor))
 		die("failed to initialize display\n");
 
-	gears->context = eglCreateContext(gears->display, NULL, NULL, NULL);
+	if (!eglChooseConfig(gears->display, config_attribs, &config, 1, &count) ||
+	    count == 0)
+		die("eglChooseConfig() failed\n");
+
+	eglBindAPI(EGL_OPENGL_API);
+
+	gears->context = eglCreateContext(gears->display, config, EGL_NO_CONTEXT, NULL);
 	if (gears->context == NULL)
 		die("failed to create context\n");
 
