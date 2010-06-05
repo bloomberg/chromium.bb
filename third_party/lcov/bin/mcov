@@ -48,6 +48,20 @@ $directory = Cwd::abs_path($directory);
 # convert the output file path to absolute path.
 $output_filename = Cwd::abs_path($output_filename);
 
+# Output expected args for buildbot debugging assistance.
+my $cwd = getcwd();
+print "mcov: after abs_pathing\n";
+print "mcov: getcwd() = $cwd\n";
+print "mcov: directory for data files is $directory\n";
+print "mcov: output filename is $output_filename\n";
+
+# Sanity check; die if path is wrong.
+# We don't check for output_filename because... we create it.
+if (! -d $directory) {
+  print "mcov: Bad args passed; exiting with error.\n";
+  exit(1);
+}
+
 # open file for output
 open(INFO_HANDLE, ">$output_filename");
 
