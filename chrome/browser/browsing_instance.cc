@@ -22,7 +22,7 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kProcessPerSite))
     return true;
- 
+
   if (url.SchemeIs(chrome::kExtensionScheme)) {
     // Always consolidate extensions regardless of the command line, because
     // they will break if split into multiple processes.

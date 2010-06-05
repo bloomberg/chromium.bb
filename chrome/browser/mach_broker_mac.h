@@ -62,11 +62,11 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
  private:
   // Private constructor.
   MachBroker();
-  
+
   // Used to register for notifications received by NotificationObserver.
   // Accessed only on the UI thread.
   NotificationRegistrar registrar_;
-  
+
   friend struct DefaultSingletonTraits<MachBroker>;
   friend class MachBrokerTest;
 
