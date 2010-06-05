@@ -5,10 +5,10 @@
 #ifndef VIEWS_CONTROLS_LABEL_H_
 #define VIEWS_CONTROLS_LABEL_H_
 
+#include "base/gtest_prod_util.h"
 #include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/view.h"
 
 namespace views {
@@ -195,10 +195,10 @@ class Label : public View {
  private:
   // These tests call CalculateDrawStringParams in order to verify the
   // calculations done for drawing text.
-  FRIEND_TEST(LabelTest, DrawSingleLineString);
-  FRIEND_TEST(LabelTest, DrawMultiLineString);
-  FRIEND_TEST(LabelTest, DrawSingleLineStringInRTL);
-  FRIEND_TEST(LabelTest, DrawMultiLineStringInRTL);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawSingleLineString);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawMultiLineString);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawSingleLineStringInRTL);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawMultiLineStringInRTL);
 
   static gfx::Font GetDefaultFont();
 
