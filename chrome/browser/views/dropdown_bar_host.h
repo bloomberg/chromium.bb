@@ -141,9 +141,6 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Allows implementation to tweak widget position.
   void SetWidgetPositionNative(const gfx::Rect& new_pos, bool no_redraw);
 
-  // Returns the native view (is a child of the window widget in gtk).
-  gfx::NativeView GetNativeView(BrowserView* browser_view);
-
   // Returns a keyboard event suitable for fowarding.
   NativeWebKeyboardEvent GetKeyboardEvent(
       const TabContents* contents,

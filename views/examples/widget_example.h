@@ -128,15 +128,14 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
       widget->MakeTransparent();
     // Compute where to place the child widget.
     // We'll place it at the center of the root widget.
-    views::WidgetGtk* parent_widget =
-        static_cast<views::WidgetGtk*>(parent->GetWidget());
+    views::Widget* parent_widget = parent->GetWidget();
     gfx::Rect bounds;
     parent_widget->GetBounds(&bounds, false);
     // Child widget is 200x200 square.
     bounds.SetRect((bounds.width() - 200) / 2, (bounds.height() - 200) / 2,
                    200, 200);
     // Initialize the child widget with the computed bounds.
-    widget->Init(parent_widget->window_contents(), bounds);
+    widget->InitWithWidget(parent_widget, bounds);
     InitWidget(widget, transparency);
   }
 #endif
@@ -155,7 +154,7 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
     point.Offset(0, parent->size().height());
     gfx::Rect bounds(point.x(), point.y(), 200, 300);
     // Initialize the popup widget with the computed bounds.
-    widget->Init(NULL, bounds);
+    widget->InitWithWidget(parent->GetWidget(), bounds);
     InitWidget(widget, transparency);
   }
 

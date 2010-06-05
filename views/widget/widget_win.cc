@@ -170,6 +170,10 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   ImmAssociateContextEx(hwnd(), NULL, 0);
 }
 
+void WidgetWin::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
+  Init(parent->GetNativeView(), bounds);
+}
+
 WidgetDelegate* WidgetWin::GetWidgetDelegate() {
   return delegate_;
 }

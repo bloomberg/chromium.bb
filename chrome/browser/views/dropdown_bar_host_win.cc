@@ -46,7 +46,3 @@ void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
   ::SetWindowPos(host_->GetNativeView(), HWND_TOP, new_pos.x(), new_pos.y(),
                  new_pos.width(), new_pos.height(), swp_flags);
 }
-
-gfx::NativeView DropdownBarHost::GetNativeView(BrowserView* browser_view) {
-  return browser_view->GetWidget()->GetNativeView();
-}

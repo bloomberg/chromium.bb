@@ -338,9 +338,7 @@ void InfoBubble::Init(views::Widget* parent,
 #elif defined(OS_LINUX)
   MakeTransparent();
   make_transient_to_parent();
-  WidgetGtk::Init(
-      GTK_WIDGET(static_cast<WidgetGtk*>(parent)->GetNativeView()),
-      gfx::Rect());
+  WidgetGtk::InitWithWidget(parent, gfx::Rect());
 #if defined(OS_CHROMEOS)
   chromeos::WmIpc::instance()->SetWindowType(
       GetNativeView(),

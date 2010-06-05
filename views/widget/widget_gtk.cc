@@ -456,6 +456,21 @@ void WidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, Widget implementation:
 
+void WidgetGtk::InitWithWidget(Widget* parent,
+                               const gfx::Rect& bounds) {
+  WidgetGtk* parent_gtk = static_cast<WidgetGtk*>(parent);
+  GtkWidget* native_parent = NULL;
+  if (parent != NULL) {
+    if (type_ != TYPE_CHILD) {
+      // window's parent has to be window.
+      native_parent = parent_gtk->GetNativeView();
+    } else {
+      native_parent = parent_gtk->window_contents();
+    }
+  }
+  Init(native_parent, bounds);
+}
+
 void WidgetGtk::Init(GtkWidget* parent,
                      const gfx::Rect& bounds) {
   if (type_ != TYPE_CHILD)

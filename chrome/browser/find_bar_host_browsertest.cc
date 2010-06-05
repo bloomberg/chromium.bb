@@ -732,23 +732,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = server->TestServerPage(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-#if defined(OS_WIN)
-  // TODO(oshima): Windows code assumes that NativeView is
-  // assignable from NativeWindow, which is not true on other platforms.
-  // This has to be fixed, probably by having explicit
-  // GetNativeView / GetNativewWindow methods on BrowserWindow.
-  // See http://crbug.com/26873.
-  gfx::NativeView browser_view = browser()->window()->GetNativeHandle();
-#elif defined(OS_LINUX)
-  gfx::NativeView browser_view =
-      GTK_WIDGET(browser()->window()->GetNativeHandle());
-#else
-  // Mac does not use views.
-  NOTREACHED();
-#endif
-
   views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(browser_view);
+      views::FocusManager::GetFocusManagerForNativeWindow(
+          browser()->window()->GetNativeHandle());
 
   // See where Escape is registered.
   views::Accelerator escape(base::VKEY_ESCAPE, false, false, false);

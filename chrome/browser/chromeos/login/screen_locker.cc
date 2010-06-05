@@ -181,11 +181,11 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
 
   lock_widget_ = new GrabWidget();
   lock_widget_->MakeTransparent();
-  lock_widget_->Init(lock_window_->window_contents(),
-                     gfx::Rect((bounds.width() - size.width()) /2,
-                               (bounds.height() - size.width()) /2,
-                               size.width(),
-                               size.height()));
+  lock_widget_->InitWithWidget(lock_window_,
+                               gfx::Rect((bounds.width() - size.width()) / 2,
+                                         (bounds.height() - size.width()) / 2,
+                                         size.width(),
+                                         size.height()));
   lock_widget_->SetContentsView(screen_lock_view_);
   lock_widget_->Show();
   screen_lock_view_->ClearAndSetFocusToPassword();

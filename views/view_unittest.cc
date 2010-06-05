@@ -637,11 +637,7 @@ TEST_F(ViewTest, Textfield) {
   Clipboard clipboard;
 
   Widget* window = CreateWidget();
-#if defined(OS_WIN)
-  static_cast<WidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
-#else
-  static_cast<WidgetGtk*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
-#endif
+  window->Init(NULL, gfx::Rect(0, 0, 100, 100));
   RootView* root_view = window->GetRootView();
 
   Textfield* textfield = new Textfield();
@@ -1353,4 +1349,3 @@ TEST_F(ViewTest, ChangeNativeViewHierarchyChangeHierarchy) {
   test.CheckChangingHierarhy();
 #endif
 }
-

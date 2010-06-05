@@ -24,11 +24,6 @@ void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
   host_->Show();
 }
 
-gfx::NativeView DropdownBarHost::GetNativeView(BrowserView* browser_view) {
-  return static_cast<views::WidgetGtk*>(
-      browser_view->GetWidget())->window_contents();
-}
-
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,
      const views::Textfield::Keystroke& key_stroke) {

@@ -97,6 +97,13 @@ class Widget {
   // contents as the window is sized.
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) = 0;
 
+  // Initialize the widget with a views::Widget parent and an initial
+  // desired size.  This internally invokes |Init(gfx::NativeView,
+  // const gfx::Rect&)| but it determines the correct native view
+  // for each platform and the type of widget. Passing NULL to
+  // |parent| is same as invoking |Init(NULL, bounds)|.
+  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds) = 0;
+
   // Returns the WidgetDelegate for delegating certain events.
   virtual WidgetDelegate* GetWidgetDelegate() = 0;
 

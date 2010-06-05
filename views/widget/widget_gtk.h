@@ -152,6 +152,7 @@ class WidgetGtk
 
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
+  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
   virtual WidgetDelegate* GetWidgetDelegate();
   virtual void SetWidgetDelegate(WidgetDelegate* delegate);
   virtual void SetContentsView(View* view);
