@@ -34,7 +34,7 @@ const CGFloat kDragExpirationTimeout = 1.0;
   }
   return self;
 }
-   
+
 // Determine whether a mouse down should turn into a drag; started as copy of
 // NSTableView code.
 - (BOOL)dragShouldBeginFromMouseDown:(NSEvent*)mouseDownEvent
@@ -80,7 +80,7 @@ const CGFloat kDragExpirationTimeout = 1.0;
   }
 
   // Since we've been dequeuing the events (If we don't, we'll never see
-  // the mouse up...), we need to push some of the events back on. 
+  // the mouse up...), we need to push some of the events back on.
   // It makes sense to put the first and last drag events and the mouse
   // up if there was one.
   if (mouseUp != nil) {

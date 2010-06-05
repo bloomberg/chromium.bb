@@ -100,7 +100,7 @@ TEST_F(SyncCustomizeControllerTest, EndSheetWithOK) {
   expected_preferred_types.insert(syncable::THEMES);
   EXPECT_TRUE(preferred_types == expected_preferred_types);
 }
-  
+
 TEST_F(SyncCustomizeControllerTest, CannotSelectZeroTypes) {
   SyncCustomizeController* controller = MakeSyncCustomizeController();
   [controller runAsModalSheet:test_window()];
@@ -108,7 +108,7 @@ TEST_F(SyncCustomizeControllerTest, CannotSelectZeroTypes) {
   [controller setPreferencesPreferred:NO];
   [controller setAutofillPreferred:NO];
   [controller setThemesPreferred:NO];
-  
+
   EXPECT_FALSE([controller okEnabled]);
 
   // If any data types are enabled, "OK" should be enabled too.
@@ -116,10 +116,10 @@ TEST_F(SyncCustomizeControllerTest, CannotSelectZeroTypes) {
   [controller setPreferencesPreferred:YES];
   [controller setAutofillPreferred:NO];
   [controller setThemesPreferred:NO];
-  
+
   EXPECT_TRUE([controller okEnabled]);
-  
+
   [controller endSheetWithCancel:nil];
-}   
+}
 
 }  // namespace

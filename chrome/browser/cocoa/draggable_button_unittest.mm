@@ -127,7 +127,7 @@ TEST_F(DraggableButtonTest, ResetState) {
   // The button should not be highlighted after the drag finishes.
   EXPECT_FALSE([[button cell] isHighlighted]);
   EXPECT_EQ(1U, [button dragCount]);
-  
+
   // We should be able to initiate another drag immediately after the first one.
   [NSApp postEvent:upEvent atStart:YES];
   [NSApp postEvent:moveEvent atStart:YES];
