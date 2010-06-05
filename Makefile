@@ -2,9 +2,8 @@ include config.mk
 
 subdirs = clients
 libs = libwayland-server.so libwayland.so
-compositors = wayland-system-compositor
 
-all : $(libs) $(compositors) subdirs
+all : $(libs) compositor subdirs
 
 libwayland-server.so :				\
 	wayland.o				\
@@ -26,19 +25,19 @@ $(libs) : LDLIBS += $(FFI_LIBS)
 $(libs) :
 	gcc -shared $^ $(LDLIBS)  -o $@
 
-wayland-system-compositor :			\
-	wayland-system-compositor.o		\
+compositor :					\
+	compositor.o				\
 	evdev.o					\
 	cairo-util.o				\
 	wayland-util.o
 
-wayland-system-compositor : CFLAGS += $(EGL_COMPOSITOR_CFLAGS)
-wayland-system-compositor : LDLIBS += ./libwayland-server.so $(EGL_COMPOSITOR_LIBS) -rdynamic -lrt -lEGL
+compositor : CFLAGS += $(COMPOSITOR_CFLAGS)
+compositor : LDLIBS += ./libwayland-server.so $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL
 
 subdirs-all subdirs-clean :
 	for f in $(subdirs); do $(MAKE) -C $$f $(@:subdirs-%=%); done
 
-install : $(libs) $(compositors)
+install : $(libs) compositor
 	install -d $(libdir) $(libdir)/pkgconfig ${udev_rules_dir}
 	install $(libs) $(libdir)
 	install wayland-server.pc wayland.pc $(libdir)/pkgconfig
@@ -46,7 +45,7 @@ install : $(libs) $(compositors)
 	install 70-wayland.rules ${udev_rules_dir}
 
 clean : subdirs-clean
-	rm -f $(compositors) *.o *.so
+	rm -f compositor *.o *.so
 
 config.mk : config.mk.in
 	./config.status

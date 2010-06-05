@@ -46,7 +46,7 @@
 #include "wayland.h"
 #include "wayland-protocol.h"
 #include "cairo-util.h"
-#include "wayland-system-compositor.h"
+#include "compositor.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 

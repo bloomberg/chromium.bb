@@ -25,7 +25,7 @@
 #include <linux/input.h>
 
 #include "wayland.h"
-#include "wayland-system-compositor.h"
+#include "compositor.h"
 
 struct evdev_input_device {
 	struct wlsc_input_device *device;
