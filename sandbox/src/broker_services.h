@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ class BrokerServicesBase : public BrokerServices,
   typedef std::list<JobTracker*> JobTrackerList;
   JobTrackerList tracker_list_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(BrokerServicesBase);
+  DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
 };
 
 }  // namespace sandbox

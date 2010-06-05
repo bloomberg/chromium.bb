@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ class ServiceResolverThunk : public ResolverThunk {
   bool relaxed_;
   ULONG relative_jump_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ServiceResolverThunk);
+  DISALLOW_COPY_AND_ASSIGN(ServiceResolverThunk);
 };
 
 // This is the concrete resolver used to perform service-call type functions
@@ -92,7 +92,7 @@ class Wow64ResolverThunk : public ServiceResolverThunk {
  private:
   virtual bool IsFunctionAService(void* local_thunk) const;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Wow64ResolverThunk);
+  DISALLOW_COPY_AND_ASSIGN(Wow64ResolverThunk);
 };
 
 // This is the concrete resolver used to perform service-call type functions
@@ -109,7 +109,7 @@ class Win2kResolverThunk : public ServiceResolverThunk {
  private:
   virtual bool IsFunctionAService(void* local_thunk) const;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Win2kResolverThunk);
+  DISALLOW_COPY_AND_ASSIGN(Win2kResolverThunk);
 };
 
 }  // namespace sandbox

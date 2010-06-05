@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,7 +187,7 @@ class MainUIWindow {
   // Pipe used to communicate the logs between the target and the broker.
   HANDLE pipe_handle_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(MainUIWindow);
+  DISALLOW_COPY_AND_ASSIGN(MainUIWindow);
 };
 
 #endif  // SANDBOX_SANDBOX_POC_MAIN_UI_WINDOW_H__

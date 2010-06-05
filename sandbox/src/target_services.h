@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class ProcessState {
 
  public:
   int process_state_;
-  DISALLOW_EVIL_CONSTRUCTORS(ProcessState);
+  DISALLOW_COPY_AND_ASSIGN(ProcessState);
 };
 
 // This class is an implementation of the  TargetServices.
@@ -58,7 +58,7 @@ class TargetServicesBase : public TargetServices {
 
  private:
   ProcessState process_state_;
-  DISALLOW_EVIL_CONSTRUCTORS(TargetServicesBase);
+  DISALLOW_COPY_AND_ASSIGN(TargetServicesBase);
 };
 
 }  // namespace sandbox

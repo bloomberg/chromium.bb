@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class SidestepResolverThunk : public ResolverThunk {
   virtual size_t GetThunkSize() const;
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(SidestepResolverThunk);
+  DISALLOW_COPY_AND_ASSIGN(SidestepResolverThunk);
 };
 
 // This is the concrete resolver used to perform smart sidestep interceptions.
@@ -64,7 +64,7 @@ class SmartSidestepResolverThunk : public SidestepResolverThunk {
   // Returns true if return_address is inside the module loaded at base.
   static bool IsInternalCall(const void* base, void* return_address);
 
-  DISALLOW_EVIL_CONSTRUCTORS(SmartSidestepResolverThunk);
+  DISALLOW_COPY_AND_ASSIGN(SmartSidestepResolverThunk);
 };
 
 }  // namespace sandbox

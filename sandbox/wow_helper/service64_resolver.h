@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ class Service64ResolverThunk : public ResolverThunk {
   // Returns the apropriate status code.
   virtual NTSTATUS PerformPatch(void* local_thunk, void* remote_thunk);
 
-  DISALLOW_EVIL_CONSTRUCTORS(Service64ResolverThunk);
+  DISALLOW_COPY_AND_ASSIGN(Service64ResolverThunk);
 };
 
 }  // namespace sandbox

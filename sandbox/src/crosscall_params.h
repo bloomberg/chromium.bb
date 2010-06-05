@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -155,7 +155,7 @@ class CrossCallParams {
   uint32 is_in_out_;
   CrossCallReturn call_return;
   const size_t params_count_;
-  DISALLOW_EVIL_CONSTRUCTORS(CrossCallParams);
+  DISALLOW_COPY_AND_ASSIGN(CrossCallParams);
 };
 
 // ActualCallParams models an specific IPC call parameters with respect to the
@@ -272,7 +272,7 @@ class ActualCallParams : public CrossCallParams {
   ParamInfo param_info_[NUMBER_PARAMS + 1];
   char parameters_[BLOCK_SIZE - sizeof(CrossCallParams)
                    - sizeof(ParamInfo) * (NUMBER_PARAMS + 1)];
-  DISALLOW_EVIL_CONSTRUCTORS(ActualCallParams);
+  DISALLOW_COPY_AND_ASSIGN(ActualCallParams);
 };
 
 COMPILE_ASSERT(sizeof(ActualCallParams<1, 1024>) == 1024, bad_size_buffer);

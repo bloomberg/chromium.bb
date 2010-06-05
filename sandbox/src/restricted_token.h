@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,7 +190,7 @@ class RestrictedToken {
   // Tells if the object is initialized or not (if Init() has been called)
   bool init_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(RestrictedToken);
+  DISALLOW_COPY_AND_ASSIGN(RestrictedToken);
 };
 
 }  // namespace sandbox
