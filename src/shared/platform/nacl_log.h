@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_H__
 
+#include <stdio.h>
 #include <stdarg.h>
 
 /*
@@ -23,10 +24,21 @@
 
 EXTERN_C_BEGIN
 
-enum NaClLogOptions {
-  NACL_LOG_OPTIONS_NONE,
-  NACL_LOG_OPTIONS_DEFAULT_FROM_ENVIRONMENT
-};
+
+/*
+ * PreInit functions may be used to set default module parameter
+ * values before the module initializer is called.  This is needed in
+ * some cases, such as by users of NaClNrdModuleInit or
+ * NaClAllModuleInit, where a list of module initializer is invoked,
+ * and the caller wants to crank up logging to get logging output from
+ * functions invoked in the module initializers that occur after
+ * NaClLogModuleInit (and prior to NaClNrdModuleInit returning).
+ * After either the NaClLogModuleInit or NaClLogModuleInitExtended
+ * functions are called, then these functions are no longer safe to
+ * use; use NaClLogSetVerbosity and NaClLogSetGio instead.
+ */
+void NaClLogPreInitSetVerbosity(int verb);
+void NaClLogPreInitSetGio(struct Gio *out_stream);
 
 /*
  * TODO: per-module logging, adding a module-name parameter, probably
@@ -34,14 +46,29 @@ enum NaClLogOptions {
  */
 void NaClLogModuleInit(void);
 
-void NaClLogModuleInitExtended(enum NaClLogOptions);
+void NaClLogModuleInitExtended(int        initial_verbosity,
+                               struct Gio *log_gio);
+
+/*
+ * Convenience functions, in case only one needs to be overridden.
+ * Also useful for setting a new default, e.g., invoking
+ * NaClLogPreInitSetVerbosity with the maximum of the verbosity level
+ * supplied from higher level code such as chrome's command line
+ * flags, and the default value from the environment as returned by
+ * NaClLogDefaultLogVerbosity().
+ */
+int NaClLogDefaultLogVerbosity();
+struct Gio *NaClLogDefaultLogGio();
 
 /*
  * Sets the log file to the named file.  Aborts program if the open
- * fails.
+ * fails.  A GioFile object is associated with the file.
  *
- * The GioFile object is dynamically allocated, so caller is responsible
- * for obtaining it via NaClLogGetGio and freeing it as appropriate.
+ * The GioFile object is dynamically allocated, so caller is
+ * responsible for obtaining it via NaClLogGetGio and freeing it as
+ * appropriate, since otherwise a memory leak will occur.  This
+ * includes closing the wrapped FILE *, if appropriate (e.g., not the
+ * default of stderr).
  */
 void NaClLogSetFile(char const *log_file);
 

@@ -49,10 +49,9 @@ static int              timestamp_enabled = 1;
 /* global, but explicitly not exposed in non-test header file */
 void (*gNaClLogAbortBehavior)(void) = abort;
 
-void NaClLogSetFile(char const *log_file) {
-  int log_desc = -1;
-  FILE            *log_stream;
-  struct GioFile  *log_gio;
+static FILE *NaClLogFileIoBufferFromFile(char const *log_file) {
+  int   log_desc;
+  FILE  *log_iob;
 
   log_desc = open(log_file, O_WRONLY | O_APPEND | O_CREAT, 0777);
   if (-1 == log_desc) {
@@ -61,49 +60,74 @@ void NaClLogSetFile(char const *log_file) {
     abort();
   }
 
-  log_stream = FDOPEN(log_desc, "a");
-  if (NULL == log_stream) {
+  log_iob = FDOPEN(log_desc, "a");
+  if (NULL == log_iob) {
     perror("NaClLogSetFile");
     fprintf(stderr, "Could not fdopen log stream\n");
     abort();
   }
+  return log_iob;
+}
+
+static struct Gio *NaClLogGioFromFileIoBuffer(FILE *log_iob) {
+  struct GioFile *log_gio;
+
   log_gio = malloc(sizeof *log_gio);
   if (NULL == log_gio) {
     perror("NaClLogSetFile");
     fprintf(stderr, "No memory for log buffers\n");
     abort();
   }
-  GioFileRefCtor(log_gio, log_stream);
-  NaClLogSetGio((struct Gio *) log_gio);
+  if (!GioFileRefCtor(log_gio, log_iob)) {
+    fprintf(stderr, "NaClLog module internal error: GioFileRefCtor failed\n");
+    abort();
+  }
+  return (struct Gio *) log_gio;
 }
 
-void NaClLogModuleInitExtended(enum NaClLogOptions opt) {
-  char *log_file;
+void NaClLogSetFile(char const *log_file) {
+  NaClLogSetGio(NaClLogGioFromFileIoBuffer(
+      NaClLogFileIoBufferFromFile(log_file)));
+}
+
+int NaClLogDefaultLogVerbosity() {
   char *env_verbosity;
 
-  NaClMutexCtor(&log_mu);
-  switch (opt) {
-    case NACL_LOG_OPTIONS_DEFAULT_FROM_ENVIRONMENT:
-      log_file = getenv("NACLLOG");
+  if (NULL != (env_verbosity = getenv("NACLVERBOSITY"))) {
+    int v = strtol(env_verbosity, (char **) 0, 0);
 
-      if (NULL != (env_verbosity = getenv("NACLVERBOSITY"))) {
-        int v = strtol(env_verbosity, (char **) 0, 0);
-
-        if (v >= 0) {
-          NaClLogSetVerbosity(v);
-        }
-      }
-      if (NULL != log_file) {
-        NaClLogSetFile(log_file);
-      }
-      break;
-    case NACL_LOG_OPTIONS_NONE:
-      break;
+    if (v >= 0) {
+      return v;
+    }
   }
+  return 0;
+}
+
+struct Gio *NaClLogDefaultLogGio() {
+  char            *log_file;
+  FILE            *log_iob;
+
+  log_file = getenv("NACLLOG");
+
+  if (NULL == log_file) {
+    log_iob = stderr;
+  } else {
+    log_iob = NaClLogFileIoBufferFromFile(log_file);
+  }
+  return NaClLogGioFromFileIoBuffer(log_iob);
+}
+
+void NaClLogModuleInitExtended(int        initial_verbosity,
+                               struct Gio *log_gio) {
+
+  NaClMutexCtor(&log_mu);
+  NaClLogSetVerbosity(initial_verbosity);
+  NaClLogSetGio(log_gio);
 }
 
 void NaClLogModuleInit(void) {
-  NaClLogModuleInitExtended(NACL_LOG_OPTIONS_DEFAULT_FROM_ENVIRONMENT);
+  NaClLogModuleInitExtended(NaClLogDefaultLogVerbosity(),
+                            NaClLogDefaultLogGio());
 }
 
 void NaClLogModuleFini(void) {
@@ -138,9 +162,25 @@ static INLINE struct Gio *NaClLogGetGio_mu() {
   return log_stream;
 }
 
+static void NaClLogSetVerbosity_mu(int verb) {
+  verbosity = verb;
+}
+
+void NaClLogPreInitSetVerbosity(int verb) {
+  /*
+   * The lock used by NaClLogLock has not been initialized and cannot
+   * be used; however, prior to initialization we are not going to be
+   * invoked from multiple threads, since the caller is responsible
+   * for not invoking NaClLog module functions (except for the PreInit
+   * ones, obviously) at all, let alone from multiple threads.  Ergo,
+   * it is safe to manipulate the module globals without locking.
+   */
+  NaClLogSetVerbosity_mu(verb);
+}
+
 void  NaClLogSetVerbosity(int verb) {
   NaClLogLock();
-  verbosity = verb;
+  NaClLogSetVerbosity_mu(verb);
   NaClLogUnlock();
 }
 
@@ -166,12 +206,23 @@ int NaClLogGetVerbosity(void) {
   return v;
 }
 
-void  NaClLogSetGio(struct Gio *stream) {
-  NaClLogLock();
+static void NaClLogSetGio_mu(struct Gio *stream) {
   if (NULL != log_stream) {
     (void) (*log_stream->vtbl->Flush)(log_stream);
   }
   log_stream = stream;
+}
+
+void NaClLogPreInitSetGio(struct Gio *out_stream) {
+  /*
+   * See thread safety comment in NaClLogPreInitSetVerbosity.
+   */
+  NaClLogSetGio_mu(out_stream);
+}
+
+void  NaClLogSetGio(struct Gio *stream) {
+  NaClLogLock();
+  NaClLogSetGio_mu(stream);
   NaClLogUnlock();
 }
 
@@ -234,16 +285,7 @@ void  NaClLogV_mu(int         detail_level,
   s = NaClLogGetGio_mu();
 
   if (NACL_VERBOSITY_UNSET == verbosity) {
-    char *env_verbosity = getenv("NACLVERBOSITY");
-    if (NULL != env_verbosity) {
-      int v = strtol(env_verbosity, (char **) NULL, 0);
-      if (v < 0) {
-        v = 0;
-      }
-      verbosity = v;
-    } else {
-      verbosity = 0;
-    }
+    verbosity = NaClLogDefaultLogVerbosity();
   }
 
   if (detail_level <= verbosity) {

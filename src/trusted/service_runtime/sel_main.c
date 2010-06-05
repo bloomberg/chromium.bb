@@ -462,8 +462,8 @@ int main(int  ac,
               NaClErrorString(errcode));
       fprintf(stderr,
               ("Using the wrong type of nexe (nacl-x86-32"
-               " on an x86-64 or vice versa),\n"
-               "Or a corrupt nexe file may be responsible for this error.\n"));
+               " on an x86-64 or vice versa)\n"
+               "or a corrupt nexe file may be responsible for this error.\n"));
       exit(1);
     }
   }
