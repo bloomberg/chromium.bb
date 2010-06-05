@@ -1,8 +1,4 @@
-ACTION!="add|change", GOTO="wayland_end"
-
-KERNEL=="event*", ENV{ID_CLASS}=="mouse", ENV{WAYLAND_SEAT}="1"
-KERNEL=="event*", ENV{ID_CLASS}=="kbd", ENV{WAYLAND_SEAT}="1"
+KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", ENV{WAYLAND_SEAT}="1"
+KERNEL=="event*", ENV{ID_INPUT_MOUSE}=="1", ENV{WAYLAND_SEAT}="1"
 KERNEL=="card0", ENV{WAYLAND_SEAT}="1"
-
-LABEL="wayland_end"
 
