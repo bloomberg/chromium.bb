@@ -649,16 +649,30 @@ class Coverage(object):
 
   def GenerateLcovPosix(self):
     """Convert profile data to lcov on Mac or Linux."""
+    start_dir = os.getcwd()
     if self.IsLinux():
-      # With Linux/make the current directory for this command is
-      # .../src/chrome but we need to be in .../src for the relative
-      # path of source files to be correct.  On Mac source files are
-      # compiled with abs paths so this isn't a problem.
-      start_dir = os.getcwd()
-      os.chdir('..')
+      # With Linux/make (e.g. the coverage_run target), the current
+      # directory for this command is .../build/src/chrome but we need
+      # to be in .../build/src for the relative path of source files
+      # to be correct.  However, when run from buildbot, the current
+      # directory is .../build.  Accommodate.
+      # On Mac source files are compiled with abs paths so this isn't
+      # a problem.
+      # This is a bit of a hack.  The best answer is to require this
+      # script be run in a specific directory for all cases (from
+      # Makefile or from buildbot).
+      if start_dir.endswith('chrome'):
+        print 'coverage_posix.py: doing a "cd .." to accomodate Linux/make PWD'
+        os.chdir('..')
+      elif start_dir.endswith('build'):
+        print 'coverage_posix.py: doing a "cd src" to accomodate buildbot PWD'
+        os.chdir('src')
+
     command = [self.mcov,
-               '--directory', self.directory_parent,
-               '--output', self.coverage_info_file]
+               '--directory',
+               os.path.join(start_dir, self.directory_parent),
+               '--output',
+               os.path.join(start_dir, self.coverage_info_file)]
     logging.info('Assembly command: ' + ' '.join(command))
     retcode = subprocess.call(command)
     if retcode:
@@ -668,6 +682,10 @@ class Coverage(object):
         sys.exit(retcode)
     if self.IsLinux():
       os.chdir(start_dir)
+    if not os.path.exists(self.coverage_info_file):
+      logging.fatal('%s was not created.  Coverage run failed.' %
+                    self.coverage_info_file)
+      sys.exit(1)
 
   def GenerateLcovWindows(self, testname=None):
     """Convert VSTS format to lcov.  Appends coverage data to sum file."""
