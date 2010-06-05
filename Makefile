@@ -3,7 +3,7 @@ include config.mk
 subdirs = clients
 libs = libwayland-server.so libwayland.so
 
-all : $(libs) compositor subdirs
+all : $(libs) compositor subdirs-all
 
 libwayland-server.so :				\
 	wayland.o				\
@@ -32,7 +32,7 @@ compositor :					\
 	wayland-util.o
 
 compositor : CFLAGS += $(COMPOSITOR_CFLAGS)
-compositor : LDLIBS += ./libwayland-server.so $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL
+compositor : LDLIBS += ./libwayland-server.so $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL -lm
 
 subdirs-all subdirs-clean :
 	for f in $(subdirs); do $(MAKE) -C $$f $(@:subdirs-%=%); done

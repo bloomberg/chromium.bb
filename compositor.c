@@ -674,11 +674,11 @@ surface_attach(struct wl_client *client,
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
 	EGLint attribs[] = {
-		EGL_IMAGE_WIDTH_INTEL,	0,
-		EGL_IMAGE_HEIGHT_INTEL,	0,
-		EGL_IMAGE_NAME_INTEL,	0,
-		EGL_IMAGE_STRIDE_INTEL,	0,
-		EGL_IMAGE_FORMAT_INTEL,	EGL_FORMAT_RGBA_8888_KHR,
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_IMAGE_NAME_MESA,	0,
+		EGL_IMAGE_STRIDE_MESA,	0,
+		EGL_IMAGE_FORMAT_MESA,	EGL_FORMAT_RGBA_8888_KHR,
 		EGL_NONE
 	};
 
@@ -709,7 +709,7 @@ surface_attach(struct wl_client *client,
 	attribs[7] = stride / 4;
 
 	es->image = eglCreateImageKHR(ec->display, ec->context,
-				       EGL_SYSTEM_IMAGE_INTEL,
+				       EGL_DRM_IMAGE_MESA,
 				       NULL, attribs);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
 	
@@ -1075,12 +1075,34 @@ static int
 init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 {
 	struct wl_event_loop *loop;
-	EGLDisplayTypeDRMMESA display;
-	EGLint major, minor;
+	EGLint major, minor, count;
+	EGLConfig config;
+	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 
-	display.type = EGL_DISPLAY_TYPE_DRM_MESA;
-	display.device = udev_device_get_devnode(device);
-	ec->display = eglGetDisplay((EGLNativeDisplayType) &display);
+	static const EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE,		0,
+		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
+		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
+		EGL_NONE
+	};
+
+	get_typed_display_mesa =
+		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
+	if (get_typed_display_mesa == NULL) {
+		fprintf(stderr, "eglGetDisplayMESA() not found\n");
+		return -1;
+	}
+
+	ec->drm_fd = open(udev_device_get_devnode(device), O_RDWR);
+	if (ec->drm_fd < 0) {
+		/* Probably permissions error */
+		fprintf(stderr, "couldn't open %s, skipping\n",
+			udev_device_get_devnode(device));
+		return -1;
+	}
+
+	ec->display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
+					     (void *) ec->drm_fd);
 	if (ec->display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -1091,7 +1113,14 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	ec->context = eglCreateContext(ec->display, NULL, NULL, NULL);
+	if (!eglChooseConfig(ec->display, config_attribs, &config, 1, &count) ||
+	    count == 0) {
+		fprintf(stderr, "eglChooseConfig() failed\n");
+		return -1;
+	}
+
+	eglBindAPI(EGL_OPENGL_API);
+	ec->context = eglCreateContext(ec->display, config, EGL_NO_CONTEXT, NULL);
 	if (ec->context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
@@ -1106,7 +1135,6 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 	glBindFramebuffer(GL_FRAMEBUFFER_EXT, ec->fbo);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
-	ec->drm_fd = display.fd;
 	ec->drm_source =
 		wl_event_loop_add_fd(loop, ec->drm_fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
@@ -1133,12 +1161,11 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	drmModeEncoder *encoder;
 	drmModeModeInfo *mode;
 	int i, ret;
-	EGLint name, handle, stride, attribs[] = {
-		EGL_IMAGE_WIDTH_INTEL,	0,
-		EGL_IMAGE_HEIGHT_INTEL,	0,
-		EGL_IMAGE_FORMAT_INTEL,	EGL_FORMAT_RGBA_8888_KHR,
-		EGL_IMAGE_USE_INTEL,	EGL_IMAGE_USE_SHARE_INTEL |
-					EGL_IMAGE_USE_SCANOUT_INTEL,
+	EGLint handle, stride, attribs[] = {
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
 		EGL_NONE
 	};
 
@@ -1189,15 +1216,12 @@ create_output_for_connector(struct wlsc_compositor *ec,
 
 		attribs[1] = output->width;
 		attribs[3] = output->height;
-		output->image[i] = eglCreateImageKHR(ec->display, ec->context,
-						     EGL_SYSTEM_IMAGE_INTEL,
-						     NULL, attribs);
+		output->image[i] = eglCreateDRMImageMESA(ec->display, attribs);
 		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, output->image[i]);
-		eglShareImageINTEL(ec->display, ec->context,
-				   output->image[i], 0, &name, &handle, &stride);
+		eglExportDRMImageMESA(ec->display, output->image[i], NULL, &handle, &stride);
 
 		ret = drmModeAddFB(ec->drm_fd, output->width, output->height,
-				   32, 32, stride * 4, handle, &output->fb_id[i]);
+				   32, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
 			fprintf(stderr, "failed to add fb %d: %m\n", i);
 			return -1;
