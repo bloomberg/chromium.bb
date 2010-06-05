@@ -125,7 +125,7 @@ class BalloonViewImpl : public BalloonView,
   int GetTotalHeight() const;
 
   gfx::Rect GetCloseButtonBounds() const;
-  gfx::Rect GetOptionsMenuBounds() const;
+  gfx::Rect GetOptionsButtonBounds() const;
   gfx::Rect GetLabelBounds() const;
 
   // Where the balloon contents should be placed with respect to the top left
