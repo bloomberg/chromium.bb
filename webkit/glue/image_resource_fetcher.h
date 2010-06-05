@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ class ImageResourceFetcher {
   // Does the actual download.
   scoped_ptr<ResourceFetcher> fetcher_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ImageResourceFetcher);
+  DISALLOW_COPY_AND_ASSIGN(ImageResourceFetcher);
 };
 
 }  // namespace webkit_glue

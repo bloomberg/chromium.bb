@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,7 @@ class TestNavigationController {
   TestShell* shell_;
   int max_page_id_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TestNavigationController);
+  DISALLOW_COPY_AND_ASSIGN(TestNavigationController);
 };
 
 #endif // WEBKIT_TOOLS_TEST_SHELL_TEST_NAVIGATION_CONTROLLER_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,7 +175,7 @@ class CppBoundClass {
   // be unregistered with V8 when we delete it.
   bool bound_to_frame_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(CppBoundClass);
+  DISALLOW_COPY_AND_ASSIGN(CppBoundClass);
 };
 
 #endif  // CPP_BOUNDCLASS_H__

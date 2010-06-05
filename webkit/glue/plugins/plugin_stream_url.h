@@ -61,7 +61,7 @@ class PluginStreamUrl : public PluginStream,
   GURL url_;
   unsigned long id_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginStreamUrl);
+  DISALLOW_COPY_AND_ASSIGN(PluginStreamUrl);
 };
 
 } // namespace NPAPI
