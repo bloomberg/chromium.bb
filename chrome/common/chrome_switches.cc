@@ -16,11 +16,11 @@ namespace switches {
 
 // Activate (make foreground) myself on launch.  Helpful when Chrome
 // is launched on the command line (e.g. by Selenium).  Only needed on Mac.
-const char kActivateOnLaunch[] = "activate-on-launch";
+const char kActivateOnLaunch[]              = "activate-on-launch";
 
 // By default, file:// URIs cannot read other file:// URIs. This is an
 // override for developers who need the old behavior for testing.
-const char kAllowFileAccessFromFiles[] = "allow-file-access-from-files";
+const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
@@ -390,7 +390,7 @@ const char kEnableVideoLogging[]            = "enable-video-logging";
 const char kEnableWatchdog[]                = "enable-watchdog";
 
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
-const char kEnableXSSAuditor[]             = "enable-xss-auditor";
+const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
@@ -877,7 +877,7 @@ const char kLoginManager[]                  = "login-manager";
 // chrome/browser/chromeos/login/login_wizard_view.cc for actual names).
 // Ignored if kLoginManager is not specified.
 // TODO(avayvod): Remove when the switch is no longer needed for testing.
-const char kLoginScreen[]          = "login-screen";
+const char kLoginScreen[]                   = "login-screen";
 // Allows control over the initial login screen size. Pass width,height.
 const char kLoginScreenSize[]               = "login-screen-size";
 
