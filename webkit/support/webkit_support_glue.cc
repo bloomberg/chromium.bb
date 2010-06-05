@@ -51,6 +51,9 @@ void CloseCurrentConnections() {
 void SetCacheMode(bool enabled) {
 }
 
+void ClearCache() {
+}
+
 std::string GetProductVersion() {
   return std::string("DumpRenderTree/0.0.0.0");
 }

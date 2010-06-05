@@ -67,6 +67,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -269,6 +270,25 @@ class GetRawCookiesCompletion : public net::CompletionCallback {
   IPC::Message* reply_msg_;
   scoped_refptr<ResourceMessageFilter> filter_;
   scoped_refptr<URLRequestContext> context_;
+};
+
+class ClearCacheCompletion : public net::CompletionCallback {
+ public:
+  ClearCacheCompletion(IPC::Message* reply_msg,
+                       ResourceMessageFilter* filter)
+      : reply_msg_(reply_msg),
+        filter_(filter) {
+  }
+
+  virtual void RunWithParams(const Tuple1<int>& params) {
+    ViewHostMsg_ClearCache::WriteReplyParams(reply_msg_, params.a);
+    filter_->Send(reply_msg_);
+    delete this;
+  }
+
+ private:
+  IPC::Message* reply_msg_;
+  scoped_refptr<ResourceMessageFilter> filter_;
 };
 
 void WriteFileSize(IPC::Message* reply_msg,
@@ -552,6 +572,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_CloseCurrentConnections,
                           OnCloseCurrentConnections)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                           OnCacheableMetadataAvailable)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
@@ -1345,8 +1366,32 @@ void ResourceMessageFilter::OnSetCacheMode(bool enabled) {
 
   net::HttpCache::Mode mode = enabled ?
       net::HttpCache::NORMAL : net::HttpCache::DISABLE;
-  request_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetCache()->set_mode(mode);
+  net::HttpCache* http_cache = request_context_->GetURLRequestContext()->
+      http_transaction_factory()->GetCache();
+  http_cache->set_mode(mode);
+}
+
+void ResourceMessageFilter::OnClearCache(IPC::Message* reply_msg) {
+  // This function is disabled unless the user has enabled
+  // benchmarking extensions.
+  int rv = -1;
+  if (CheckBenchmarkingEnabled()) {
+    disk_cache::Backend* backend = request_context_->GetURLRequestContext()->
+        http_transaction_factory()->GetCache()->GetCurrentBackend();
+    if (backend) {
+      ClearCacheCompletion* callback =
+          new ClearCacheCompletion(reply_msg, this);
+      rv = backend->DoomAllEntries(callback);
+      if (rv == net::ERR_IO_PENDING) {
+        // The callback will send the reply.
+        return;
+      }
+      // Completed synchronously, no need for the callback.
+      delete callback;
+    }
+  }
+  ViewHostMsg_ClearCache::WriteReplyParams(reply_msg, rv);
+  Send(reply_msg);
 }
 
 bool ResourceMessageFilter::CheckPreparsedJsCachingEnabled() const {

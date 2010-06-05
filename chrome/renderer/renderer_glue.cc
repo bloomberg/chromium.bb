@@ -268,6 +268,10 @@ void SetCacheMode(bool enabled) {
   RenderThread::current()->SetCacheMode(enabled);
 }
 
+void ClearCache() {
+  RenderThread::current()->ClearCache();
+}
+
 std::string GetProductVersion() {
   scoped_ptr<FileVersionInfo> version_info(
       chrome_app::GetChromeVersionInfo());

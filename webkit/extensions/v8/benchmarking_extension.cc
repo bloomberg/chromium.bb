@@ -55,9 +55,7 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> ClearCache(const v8::Arguments& args) {
-    // TODO(mbelshe): should be enable/disable?
-    webkit_glue::SetCacheMode(false);
-
+    webkit_glue::ClearCache();
     WebCache::clear();
     return v8::Undefined();
   }

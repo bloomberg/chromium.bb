@@ -174,6 +174,9 @@ class RenderThread : public RenderThreadBase,
   // Sends a message to the browser to enable or disable the disk cache.
   void SetCacheMode(bool enabled);
 
+  // Sends a message to the browser to clear the disk cache.
+  void ClearCache();
+
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();
 

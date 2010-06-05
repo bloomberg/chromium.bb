@@ -2120,9 +2120,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL0(ViewHostMsg_CloseCurrentConnections)
 
   // Message sent from the renderer to the browser to request that the browser
-  // close all idle sockets.  Used for debugging/testing.
+  // enable or disable the cache.  Used for debugging/testing.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_SetCacheMode,
                        bool /* enabled */)
+
+  // Message sent from the renderer to the browser to request that the browser
+  // clear the cache.  Used for debugging/testing.
+  IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClearCache,
+                              int /* result */)
 
   // Message sent from the renderer to the browser to request that the browser
   // cache |data| associated with |url|.

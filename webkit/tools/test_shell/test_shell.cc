@@ -807,6 +807,10 @@ void SetCacheMode(bool enabled) {
   // Used in benchmarking,  Ignored for test_shell.
 }
 
+void ClearCache() {
+  // Used in benchmarking,  Ignored for test_shell.
+}
+
 std::string GetProductVersion() {
   return std::string("Chrome/0.0.0.0");
 }

@@ -693,6 +693,11 @@ void RenderThread::SetCacheMode(bool enabled) {
   Send(new ViewHostMsg_SetCacheMode(enabled));
 }
 
+void RenderThread::ClearCache() {
+  int rv;
+  Send(new ViewHostMsg_ClearCache(&rv));
+}
+
 void RenderThread::UpdateActiveExtensions() {
   // In single-process mode, the browser process reports the active extensions.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
