@@ -4,6 +4,11 @@
 
 #include "chrome/browser/password_manager/password_store_gnome.h"
 
+#if defined(DLOPEN_GNOME_KEYRING)
+#include <dlfcn.h>
+#endif
+
+#include <map>
 #include <string>
 
 #include "base/logging.h"
@@ -16,6 +21,117 @@ using std::map;
 using std::string;
 using std::vector;
 using webkit_glue::PasswordForm;
+
+/* Many of the gnome_keyring_* functions use variable arguments, which makes
+ * them difficult if not impossible to wrap in C. Therefore, we want the
+ * actual uses below to either call the functions directly (if we are linking
+ * against libgnome-keyring), or call them via appropriately-typed function
+ * pointers (if we are dynamically loading libgnome-keyring).
+ *
+ * Thus, instead of making a wrapper class with two implementations, we use
+ * the preprocessor to rename the calls below in the dynamic load case, and
+ * provide a function to initialize a set of function pointers that have the
+ * alternate names. We also make sure the types are correct, since otherwise
+ * dynamic loading like this would leave us vulnerable to signature changes. */
+
+#if defined(DLOPEN_GNOME_KEYRING)
+
+namespace {
+
+gboolean (*wrap_gnome_keyring_is_available)();
+GnomeKeyringResult (*wrap_gnome_keyring_store_password_sync)(  // NOLINT
+    const GnomeKeyringPasswordSchema* schema, const gchar* keyring,
+    const gchar* display_name, const gchar* password, ...);
+GnomeKeyringResult (*wrap_gnome_keyring_delete_password_sync)(  // NOLINT
+    const GnomeKeyringPasswordSchema* schema, ...);
+GnomeKeyringResult (*wrap_gnome_keyring_find_itemsv_sync)(  // NOLINT
+    GnomeKeyringItemType type, GList** found, ...);
+const gchar* (*wrap_gnome_keyring_result_to_message)(GnomeKeyringResult res);
+void (*wrap_gnome_keyring_found_list_free)(GList* found_list);
+
+/* Cause the compiler to complain if the types of the above function pointers
+ * do not correspond to the types of the actual gnome_keyring_* functions. */
+#define GNOME_KEYRING_VERIFY_TYPE(name) \
+    typeof(&gnome_keyring_##name) name = wrap_gnome_keyring_##name; name = name
+
+inline void VerifyGnomeKeyringTypes() {
+  GNOME_KEYRING_VERIFY_TYPE(is_available);
+  GNOME_KEYRING_VERIFY_TYPE(store_password_sync);
+  GNOME_KEYRING_VERIFY_TYPE(delete_password_sync);
+  GNOME_KEYRING_VERIFY_TYPE(find_itemsv_sync);
+  GNOME_KEYRING_VERIFY_TYPE(result_to_message);
+  GNOME_KEYRING_VERIFY_TYPE(found_list_free);
+}
+#undef GNOME_KEYRING_VERIFY_TYPE
+
+/* Make it easy to initialize the function pointers above with a loop below. */
+#define GNOME_KEYRING_FUNCTION(name) \
+    {#name, reinterpret_cast<void**>(&wrap_##name)}
+const struct {
+  const char* name;
+  void** pointer;
+} gnome_keyring_functions[] = {
+    GNOME_KEYRING_FUNCTION(gnome_keyring_is_available),
+    GNOME_KEYRING_FUNCTION(gnome_keyring_store_password_sync),
+    GNOME_KEYRING_FUNCTION(gnome_keyring_delete_password_sync),
+    GNOME_KEYRING_FUNCTION(gnome_keyring_find_itemsv_sync),
+    GNOME_KEYRING_FUNCTION(gnome_keyring_result_to_message),
+    GNOME_KEYRING_FUNCTION(gnome_keyring_found_list_free),
+    {NULL, NULL}
+};
+#undef GNOME_KEYRING_FUNCTION
+
+/* Allow application code below to use the normal function names, but actually
+ * end up using the function pointers above instead. */
+#define gnome_keyring_is_available \
+    wrap_gnome_keyring_is_available
+#define gnome_keyring_store_password_sync \
+    wrap_gnome_keyring_store_password_sync
+#define gnome_keyring_delete_password_sync \
+    wrap_gnome_keyring_delete_password_sync
+#define gnome_keyring_find_itemsv_sync \
+    wrap_gnome_keyring_find_itemsv_sync
+#define gnome_keyring_result_to_message \
+    wrap_gnome_keyring_result_to_message
+#define gnome_keyring_found_list_free \
+    wrap_gnome_keyring_found_list_free
+
+/* Load the library and initialize the function pointers. */
+bool LoadGnomeKeyring() {
+  void* handle = dlopen("libgnome-keyring.so.0", RTLD_NOW | RTLD_GLOBAL);
+  if (!handle) {
+    LOG(INFO) << "Could not find libgnome-keyring.so.0";
+    return false;
+  }
+  for (size_t i = 0; gnome_keyring_functions[i].name; ++i) {
+    dlerror();
+    *gnome_keyring_functions[i].pointer =
+        dlsym(handle, gnome_keyring_functions[i].name);
+    const char* error = dlerror();
+    if (error) {
+      LOG(ERROR) << "Unable to load symbol " <<
+          gnome_keyring_functions[i].name << ": " << error;
+      dlclose(handle);
+      return false;
+    }
+  }
+  // We leak the library handle. That's OK: this function is called only once.
+  return true;
+}
+
+}  // namespace
+
+#else  // DLOPEN_GNOME_KEYRING
+
+namespace {
+
+bool LoadGnomeKeyring() {
+  return true;
+}
+
+}  // namespace
+
+#endif  // DLOPEN_GNOME_KEYRING
 
 #define GNOME_KEYRING_APPLICATION_CHROME "chrome"
 
@@ -49,7 +165,9 @@ PasswordStoreGnome::~PasswordStoreGnome() {
 }
 
 bool PasswordStoreGnome::Init() {
-  return PasswordStore::Init() && gnome_keyring_is_available();
+  return PasswordStore::Init() &&
+         LoadGnomeKeyring() &&
+         gnome_keyring_is_available();
 }
 
 void PasswordStoreGnome::AddLoginImpl(const PasswordForm& form) {
@@ -301,7 +419,7 @@ void PasswordStoreGnome::FillFormVector(GList* found,
     int64 date_created = 0;
     bool date_ok = StringToInt64(date, &date_created);
     DCHECK(date_ok);
-    DCHECK(date_created != 0);
+    DCHECK_NE(date_created, 0);
     form->date_created = base::Time::FromTimeT(date_created);
     form->blacklisted_by_user = uint_attribute_map["blacklisted_by_user"];
     form->scheme = static_cast<PasswordForm::Scheme>(
