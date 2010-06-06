@@ -67,11 +67,11 @@ void MacSandboxedClipboardTestCase::SetTestData(const char* test_data) {
 TEST_F(MacSandboxTest, ClipboardAccess) {
   NSPasteboard* pb = [NSPasteboard pasteboardWithUniqueName];
   EXPECT_EQ([[pb types] count], 0U);
-  
+
   std::string pasteboard_name = base::SysNSStringToUTF8([pb name]);
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedClipboardTestCase",
                   pasteboard_name.c_str()));
-  
+
   // After executing the test, the clipboard should still be empty.
   EXPECT_EQ([[pb types] count], 0U);
 }

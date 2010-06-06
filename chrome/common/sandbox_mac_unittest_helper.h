@@ -78,7 +78,7 @@ class MacSandboxTestCase {
   // enabled.
   // Returning false from this function will cause the entire test case to fail.
   virtual bool SandboxedTest() = 0;
-  
+
   // The data that's passed in the |user_data| parameter of
   // RunTest[s]InSandbox() is passed to this function.
   virtual void SetTestData(const char* test_data) { test_data_ = test_data; }

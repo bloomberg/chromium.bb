@@ -70,7 +70,7 @@ bool MacSandboxTest::RunTestInSandbox(sandbox::SandboxProcessType sandbox_type,
   setenv(kSandboxTestNameKey, test_name, 1);
   if (test_data)
     setenv(kTestDataKey, test_data, 1);
-  
+
   base::ProcessHandle child_process = SpawnChild(L"mac_sandbox_test_runner");
   int code = -1;
   if (!base::WaitForExitCode(child_process, &code)) {
@@ -117,9 +117,9 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     LOG(ERROR) << "Sandbox test name not specified";
     return -1;
   }
-  
+
   const char* test_data = getenv(kTestDataKey);
-    
+
   // Find Test Function to run;
   scoped_ptr<sandboxtest::MacSandboxTestCase>
       test_case(sandboxtest::SandboxTestForName(sandbox_test_name));
@@ -128,25 +128,25 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     return -1;
   }
   test_case->SetTestData(test_data);
-   
+
   // Run Test.
   if (!test_case->BeforeSandboxInit()) {
     LOG(ERROR) << sandbox_test_name << "Failed test before sandbox init";
     return -1;
   }
-  
+
   sandbox::SandboxWarmup();
-  
+
   if (!sandbox::EnableSandbox(sandbox_type, FilePath())) {
     LOG(ERROR) << "Failed to initialize sandbox " << sandbox_type;
     return -1;
   }
-  
+
   if (!test_case->SandboxedTest()) {
     LOG(ERROR) << sandbox_test_name << "Failed sandboxed test";
     return -1;
   }
-  
+
   return 0;
 }
 
