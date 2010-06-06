@@ -76,7 +76,7 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
   WifiData wifi_data_;
   base::Time timestamp_;  // Timestamp of the above data, not of the request.
 
-  DISALLOW_EVIL_CONSTRUCTORS(NetworkLocationRequest);
+  DISALLOW_COPY_AND_ASSIGN(NetworkLocationRequest);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_

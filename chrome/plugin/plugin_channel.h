@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ class PluginChannel : public PluginChannelBase {
   bool off_the_record_; // True if the renderer is in off the record mode.
   scoped_refptr<MessageFilter> filter_;  // Handles the modal dialog events.
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginChannel);
+  DISALLOW_COPY_AND_ASSIGN(PluginChannel);
 };
 
 #endif  // CHROME_PLUGIN_PLUGIN_CHANNEL_H_

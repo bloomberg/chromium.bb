@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ class SaveFile {
   // Whether the saved file is still receiving data.
   bool in_progress_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(SaveFile);
+  DISALLOW_COPY_AND_ASSIGN(SaveFile);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_SAVE_FILE_H__

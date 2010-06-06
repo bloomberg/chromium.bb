@@ -276,7 +276,7 @@ class ExpireHistoryBackend {
   // loaded.
   BookmarkService* bookmark_service_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ExpireHistoryBackend);
+  DISALLOW_COPY_AND_ASSIGN(ExpireHistoryBackend);
 };
 
 }  // namespace history

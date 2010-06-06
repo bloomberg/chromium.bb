@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,7 +212,7 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
   scoped_refptr<Histogram> total_times_;  // Total queueing plus processing.
   JankWatchdog total_time_watchdog_;  // Watching for excessive total_time.
 
-  DISALLOW_EVIL_CONSTRUCTORS(JankObserver);
+  DISALLOW_COPY_AND_ASSIGN(JankObserver);
 };
 
 // These objects are created by InstallJankometer and leaked.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ class PasswordManager : public LoginModel {
   // passwords or ask you if you want to save passwords).
   BooleanPrefMember password_manager_enabled_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PasswordManager);
+  DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_H_

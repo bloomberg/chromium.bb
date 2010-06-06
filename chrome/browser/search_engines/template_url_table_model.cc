@@ -114,7 +114,7 @@ class ModelEntry {
   TemplateURLTableModel* model_;
   CancelableRequestConsumer request_consumer_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ModelEntry);
+  DISALLOW_COPY_AND_ASSIGN(ModelEntry);
 };
 
 // TemplateURLTableModel -----------------------------------------

@@ -139,7 +139,7 @@ class KeywordProvider :
 
   NotificationRegistrar registrar_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(KeywordProvider);
+  DISALLOW_COPY_AND_ASSIGN(KeywordProvider);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_KEYWORD_PROVIDER_H_

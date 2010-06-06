@@ -217,7 +217,7 @@ class MetricsLog {
   xmlTextWriterPtr writer_;
   int num_events_;  // the number of events recorded in this log
 
-  DISALLOW_EVIL_CONSTRUCTORS(MetricsLog);
+  DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };
 
 #endif  // CHROME_BROWSER_METRICS_METRICS_LOG_H_

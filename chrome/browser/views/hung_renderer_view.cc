@@ -58,7 +58,7 @@ class HungPagesTableModel : public views::GroupTableModel {
 
   TableModelObserver* observer_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(HungPagesTableModel);
+  DISALLOW_COPY_AND_ASSIGN(HungPagesTableModel);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,7 +173,7 @@ class HungRendererDialogView : public views::View,
     ButtonContainer() {}
     virtual ~ButtonContainer() {}
    private:
-    DISALLOW_EVIL_CONSTRUCTORS(ButtonContainer);
+    DISALLOW_COPY_AND_ASSIGN(ButtonContainer);
   };
   ButtonContainer* kill_button_container_;
 
@@ -191,7 +191,7 @@ class HungRendererDialogView : public views::View,
   // An amusing icon image.
   static SkBitmap* frozen_icon_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(HungRendererDialogView);
+  DISALLOW_COPY_AND_ASSIGN(HungRendererDialogView);
 };
 
 // static

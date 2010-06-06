@@ -77,7 +77,7 @@ class URLRequestChromeJob : public URLRequestJob {
   int pending_buf_size_;
   std::string mime_type_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(URLRequestChromeJob);
+  DISALLOW_COPY_AND_ASSIGN(URLRequestChromeJob);
 };
 
 // URLRequestChromeFileJob is a URLRequestJob that acts like a file:// URL
@@ -88,7 +88,7 @@ class URLRequestChromeFileJob : public URLRequestFileJob {
  private:
   virtual ~URLRequestChromeFileJob();
 
-  DISALLOW_EVIL_CONSTRUCTORS(URLRequestChromeFileJob);
+  DISALLOW_COPY_AND_ASSIGN(URLRequestChromeFileJob);
 };
 
 void RegisterURLRequestChromeJob() {

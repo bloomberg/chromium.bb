@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -369,7 +369,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // will be false in production.
   bool suppress_rebuild_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(VisitedLinkMaster);
+  DISALLOW_COPY_AND_ASSIGN(VisitedLinkMaster);
 };
 
 // NOTE: These methods are defined inline here, so we can share the compilation

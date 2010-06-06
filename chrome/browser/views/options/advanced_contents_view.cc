@@ -107,7 +107,7 @@ class FileDisplayArea : public views::View {
   static void InitClass();
   static SkBitmap default_folder_icon_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(FileDisplayArea);
+  DISALLOW_COPY_AND_ASSIGN(FileDisplayArea);
 };
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -96,7 +96,7 @@ class MiniInstallerTestUtil {
   static bool VerifyProcessClose(const wchar_t* process_name);
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(MiniInstallerTestUtil);
+  DISALLOW_COPY_AND_ASSIGN(MiniInstallerTestUtil);
 };
 
 #endif  // CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_UTIL_H_

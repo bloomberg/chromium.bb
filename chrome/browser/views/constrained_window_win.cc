@@ -117,7 +117,7 @@ class XPWindowResources : public views::WindowResources {
 
   static SkBitmap* bitmaps_[FRAME_PART_BITMAP_COUNT];
 
-  DISALLOW_EVIL_CONSTRUCTORS(XPWindowResources);
+  DISALLOW_COPY_AND_ASSIGN(XPWindowResources);
 };
 
 class VistaWindowResources : public views::WindowResources {
@@ -147,7 +147,7 @@ class VistaWindowResources : public views::WindowResources {
 
   static SkBitmap* bitmaps_[FRAME_PART_BITMAP_COUNT];
 
-  DISALLOW_EVIL_CONSTRUCTORS(VistaWindowResources);
+  DISALLOW_COPY_AND_ASSIGN(VistaWindowResources);
 };
 
 SkBitmap* XPWindowResources::bitmaps_[];
@@ -238,7 +238,7 @@ class ConstrainedWindowFrameView
   // The font to be used to render the titlebar text.
   static gfx::Font* title_font_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ConstrainedWindowFrameView);
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowFrameView);
 };
 
 gfx::Font* ConstrainedWindowFrameView::title_font_ = NULL;

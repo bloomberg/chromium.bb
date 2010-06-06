@@ -124,7 +124,7 @@ class Firefox2Importer : public Importer {
   // If true, we only parse the bookmarks.html file specified as source_path_.
   bool parsing_bookmarks_html_file_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Firefox2Importer);
+  DISALLOW_COPY_AND_ASSIGN(Firefox2Importer);
 };
 
 #endif  // CHROME_BROWSER_IMPORTER_FIREFOX2_IMPORTER_H_

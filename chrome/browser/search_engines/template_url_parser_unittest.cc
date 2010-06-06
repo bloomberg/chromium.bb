@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,7 +152,7 @@ class ParamFilterImpl : public TemplateURLParser::ParameterFilter {
   std::string name_str_;
   std::string value_str_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ParamFilterImpl);
+  DISALLOW_COPY_AND_ASSIGN(ParamFilterImpl);
 };
 
 TEST_F(TemplateURLParserTest, TestFirefoxEbay) {

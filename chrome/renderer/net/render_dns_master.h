@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,7 +103,7 @@ class RenderDnsMaster {
 
   ScopedRunnableMethodFactory<RenderDnsMaster> render_dns_factory_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(RenderDnsMaster);
+  DISALLOW_COPY_AND_ASSIGN(RenderDnsMaster);
 };  // class RenderDnsMaster
 
 #endif  // CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_

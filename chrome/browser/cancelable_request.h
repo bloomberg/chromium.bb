@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,7 +153,7 @@ class CancelableRequestProvider {
   // The next handle value we will return. Protected by the |lock_|.
   int next_handle_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(CancelableRequestProvider);
+  DISALLOW_COPY_AND_ASSIGN(CancelableRequestProvider);
 };
 
 // CancelableRequestConsumer --------------------------------------------------
@@ -436,7 +436,7 @@ class CancelableRequestBase
   base::CancellationFlag canceled_;
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(CancelableRequestBase);
+  DISALLOW_COPY_AND_ASSIGN(CancelableRequestBase);
 };
 
 // Templatized class. This is the one you should use directly or inherit from.

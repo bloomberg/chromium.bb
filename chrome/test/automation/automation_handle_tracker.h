@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class AutomationResourceProxy
   // still exists.
   bool is_valid_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(AutomationResourceProxy);
+  DISALLOW_COPY_AND_ASSIGN(AutomationResourceProxy);
 };
 
 // This class keeps track of the mapping between AutomationHandles and
@@ -107,7 +107,7 @@ class AutomationHandleTracker {
 
   Lock map_lock_;
   IPC::Channel* channel_;
-  DISALLOW_EVIL_CONSTRUCTORS(AutomationHandleTracker);
+  DISALLOW_COPY_AND_ASSIGN(AutomationHandleTracker);
 };
 
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_HANDLE_TRACKER_H__

@@ -15,7 +15,7 @@ class GURL;
 // This class describes an error that happened while showing a page over SSL.
 // An SSLErrorInfo object only exists on the UI thread and only contains
 // information about an error (type of error and text details).
-// Note no DISALLOW_EVIL_CONSTRUCTORS as we want the copy constructor.
+// Note no DISALLOW_COPY_AND_ASSIGN as we want the copy constructor.
 class SSLErrorInfo {
  public:
   enum ErrorType {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
 
   std::vector<ProcessData> process_data_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(MemoryDetails);
+  DISALLOW_COPY_AND_ASSIGN(MemoryDetails);
 };
 
 #endif  // CHROME_BROWSER_MEMORY_DETAILS_H_

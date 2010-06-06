@@ -95,7 +95,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   static HICON throbber_icons_[kThrobberIconCount];
   static void InitThrobberIcons();
 
-  DISALLOW_EVIL_CONSTRUCTORS(GlassBrowserFrameView);
+  DISALLOW_COPY_AND_ASSIGN(GlassBrowserFrameView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_

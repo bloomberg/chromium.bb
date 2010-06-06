@@ -46,7 +46,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   // Not owned by us.
   HistoryBackendTest* test_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(HistoryBackendTestDelegate);
+  DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestDelegate);
 };
 
 class HistoryBackendTest : public testing::Test {

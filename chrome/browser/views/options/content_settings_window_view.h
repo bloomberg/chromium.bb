@@ -66,7 +66,7 @@ class ContentSettingsWindowView : public views::View,
   // The last page the user was on when they opened the Options window.
   IntegerPrefMember last_selected_page_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ContentSettingsWindowView);
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingsWindowView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_SETTINGS_WINDOW_VIEW_H_

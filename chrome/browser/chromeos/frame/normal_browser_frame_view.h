@@ -84,7 +84,7 @@ class NormalBrowserFrameView : public BrowserNonClientFrameView,
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(NormalBrowserFrameView);
+  DISALLOW_COPY_AND_ASSIGN(NormalBrowserFrameView);
 };
 
 }  // namespace chromeos

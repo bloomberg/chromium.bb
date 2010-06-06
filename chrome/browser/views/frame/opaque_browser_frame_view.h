@@ -138,7 +138,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(OpaqueBrowserFrameView);
+  DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_H_

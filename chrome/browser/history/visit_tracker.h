@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ class VisitTracker {
   // Maps render view hosts to lists of recent transitions.
   HostList hosts_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(VisitTracker);
+  DISALLOW_COPY_AND_ASSIGN(VisitTracker);
 };
 
 }  // namespace history

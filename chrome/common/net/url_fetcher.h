@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -189,7 +189,7 @@ class URLFetcher {
 
   static bool g_interception_enabled;
 
-  DISALLOW_EVIL_CONSTRUCTORS(URLFetcher);
+  DISALLOW_COPY_AND_ASSIGN(URLFetcher);
 };
 
 #endif  // CHROME_COMMON_NET_URL_FETCHER_H_

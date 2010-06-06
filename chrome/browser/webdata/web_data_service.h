@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,7 @@ class WDTypedResult {
 
  private:
   WDResultType type_;
-  DISALLOW_EVIL_CONSTRUCTORS(WDTypedResult);
+  DISALLOW_COPY_AND_ASSIGN(WDTypedResult);
 };
 
 // A result containing one specific pointer or literal value.
@@ -132,7 +132,7 @@ template <class T> class WDResult : public WDTypedResult {
  private:
   T value_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(WDResult);
+  DISALLOW_COPY_AND_ASSIGN(WDResult);
 };
 
 template <class T> class WDObjectResult : public WDTypedResult {
@@ -147,7 +147,7 @@ template <class T> class WDObjectResult : public WDTypedResult {
  private:
   // mutable to keep GetValue() const.
   mutable T value_;
-  DISALLOW_EVIL_CONSTRUCTORS(WDObjectResult);
+  DISALLOW_COPY_AND_ASSIGN(WDObjectResult);
 };
 
 class WebDataServiceConsumer;
@@ -199,7 +199,7 @@ class WebDataService
     WebDataServiceConsumer* consumer_;
     WDTypedResult* result_;
 
-    DISALLOW_EVIL_CONSTRUCTORS(WebDataRequest);
+    DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
   };
 
   //
@@ -595,7 +595,7 @@ class WebDataService
   // MessageLoop the WebDataService is created on.
   MessageLoop* main_loop_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(WebDataService);
+  DISALLOW_COPY_AND_ASSIGN(WebDataService);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

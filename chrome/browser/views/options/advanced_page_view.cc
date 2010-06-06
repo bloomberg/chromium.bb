@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ class ResetDefaultsConfirmBox : public views::DialogDelegate {
   MessageBoxView* message_box_view_;
   AdvancedPageView* advanced_page_view_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ResetDefaultsConfirmBox);
+  DISALLOW_COPY_AND_ASSIGN(ResetDefaultsConfirmBox);
 };
 
 }  // namespace

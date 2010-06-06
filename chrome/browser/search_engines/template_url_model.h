@@ -377,7 +377,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // List of extension IDs waiting for Load to have keywords registered.
   std::vector<std::string> pending_extension_ids_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TemplateURLModel);
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLModel);
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_H_

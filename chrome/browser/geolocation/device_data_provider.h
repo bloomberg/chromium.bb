@@ -395,7 +395,7 @@ class DeviceDataProvider : public NonThreadSafe {
   // The internal implementation.
   scoped_refptr<DeviceDataProviderImplBase<DataType> > impl_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(DeviceDataProvider);
+  DISALLOW_COPY_AND_ASSIGN(DeviceDataProvider);
 };
 
 // static

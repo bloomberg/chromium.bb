@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ class PluginChannelHost : public PluginChannelBase {
   // don't treat it as a crash.
   bool expecting_shutdown_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginChannelHost);
+  DISALLOW_COPY_AND_ASSIGN(PluginChannelHost);
 };
 
 #endif  // CHROME_RENDERER_PLUGIN_CHANNEL_HOST_H_

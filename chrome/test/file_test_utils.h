@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class FileAutoDeleter {
   const FilePath& path() { return path_; }
  private:
   FilePath path_;
-  DISALLOW_EVIL_CONSTRUCTORS(FileAutoDeleter);
+  DISALLOW_COPY_AND_ASSIGN(FileAutoDeleter);
 };
 
 #endif  // CHROME_TEST_FILE_TEST_UTILS_H_

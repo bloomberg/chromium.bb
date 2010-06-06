@@ -78,7 +78,7 @@ class OptionsWindowView : public views::View,
   // The last page the user was on when they opened the Options window.
   IntegerPrefMember last_selected_page_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(OptionsWindowView);
+  DISALLOW_COPY_AND_ASSIGN(OptionsWindowView);
 };
 
 // static

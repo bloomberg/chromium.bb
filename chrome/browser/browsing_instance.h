@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
   // Global map of Profile to SiteInstanceMap, for process-per-site.
   static ProfileSiteInstanceMap profile_site_instance_map_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(BrowsingInstance);
+  DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_INSTANCE_H_
