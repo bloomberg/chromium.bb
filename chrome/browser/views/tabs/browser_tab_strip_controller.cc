@@ -35,7 +35,8 @@ class BrowserTabStripController::TabContextMenuContents
   TabContextMenuContents(BaseTab* tab,
                          BrowserTabStripController* controller)
       : ALLOW_THIS_IN_INITIALIZER_LIST(
-          model_(this, controller->IsTabPinned(tab))),
+          model_(this, controller->IsTabPinned(tab), controller->IsAppTab(tab),
+                 controller->IsToolbarVisible(tab))),
         tab_(tab),
         controller_(controller),
         last_command_(TabStripModel::CommandFirst) {
@@ -163,6 +164,22 @@ void BrowserTabStripController::ExecuteCommandForTab(
 
 bool BrowserTabStripController::IsTabPinned(BaseTab* tab) {
   return IsTabPinned(tabstrip_->GetModelIndexOfBaseTab(tab));
+}
+
+bool BrowserTabStripController::IsAppTab(BaseTab* tab) {
+  int index = tabstrip_->GetModelIndexOfBaseTab(tab);
+  if (!model_->ContainsIndex(index))
+    return false;
+
+  return model_->IsAppTab(index);
+}
+
+bool BrowserTabStripController::IsToolbarVisible(BaseTab* tab) {
+  int index = tabstrip_->GetModelIndexOfBaseTab(tab);
+  if (!model_->ContainsIndex(index))
+    return false;
+
+  return model_->IsToolbarVisible(index);
 }
 
 int BrowserTabStripController::GetCount() const {

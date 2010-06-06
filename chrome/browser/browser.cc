@@ -2318,6 +2318,10 @@ void Browser::ToggleUseVerticalTabs() {
   UseVerticalTabsChanged();
 }
 
+void Browser::SetToolbarVisibility(bool visible) {
+  window()->SetToolbarCollapsedMode(!visible);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabStripModelObserver implementation:
 
@@ -2402,10 +2406,7 @@ void Browser::TabSelectedAt(TabContents* old_contents,
     }
   }
 
-  // For TYPE_EXTENSION_APP we're always collapsed. For other windows, it
-  // depends on whether the tab is an app tab.
-  if (type_ != TYPE_EXTENSION_APP)
-    window()->SetToolbarCollapsedMode(new_contents->is_app());
+  window()->SetToolbarCollapsedMode(!tabstrip_model_.IsToolbarVisible(index));
 }
 
 void Browser::TabMoved(TabContents* contents,

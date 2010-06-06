@@ -855,6 +855,10 @@ class NotificationType {
     // std::pair<int suggest_id, ListValue suggestions_array>
     EXTENSION_OMNIBOX_SUGGESTIONS_READY,
 
+    // The source is the extension object that changed. Details is a bool*
+    // with the new visibility.
+    EXTENSION_APP_TOOLBAR_VISIBILITY_CHANGED,
+
     // Privacy Blacklist -------------------------------------------------------
 
     // Sent on the IO thread when a non-visual resource (like a cookie)

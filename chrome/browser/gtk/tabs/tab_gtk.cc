@@ -38,7 +38,7 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
  public:
   explicit ContextMenuController(TabGtk* tab)
       : tab_(tab),
-        model_(this, tab->delegate()->IsTabPinned(tab)) {
+        model_(this, tab->delegate()->IsTabPinned(tab), false, true) {
     menu_.reset(new MenuGtk(NULL, &model_));
   }
 

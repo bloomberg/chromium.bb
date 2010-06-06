@@ -35,6 +35,9 @@ const wchar_t kPrefVersion[] = L"manifest.version";
 // Indicates if an extension is blacklisted:
 const wchar_t kPrefBlacklist[] = L"blacklist";
 
+// Indicates whether the toolbar should be shown on app tabs.
+const wchar_t kPrefAppTabToolbars[] = L"app_tab_toolbars";
+
 // Indicates whether to show an install warning when the user enables.
 const wchar_t kExtensionDidEscalatePermissions[] = L"install_warning_on_enable";
 
@@ -589,8 +592,8 @@ static ExtensionInfo* GetInstalledExtensionInfoImpl(
   }
   int state_value;
   if (!ext->GetInteger(kPrefState, &state_value)) {
-    LOG(WARNING) << "Missing state pref for extension " << *extension_id;
-    NOTREACHED();
+    // This can legitimately happen if we store preferences for component
+    // extensions.
     return NULL;
   }
   if (state_value == Extension::KILLBIT) {
@@ -600,14 +603,10 @@ static ExtensionInfo* GetInstalledExtensionInfoImpl(
   }
   FilePath::StringType path;
   if (!ext->GetString(kPrefPath, &path)) {
-    LOG(WARNING) << "Missing path pref for extension " << *extension_id;
-    NOTREACHED();
     return NULL;
   }
   int location_value;
   if (!ext->GetInteger(kPrefLocation, &location_value)) {
-    LOG(WARNING) << "Missing location pref for extension " << *extension_id;
-    NOTREACHED();
     return NULL;
   }
 
@@ -763,6 +762,32 @@ std::set<std::string> ExtensionPrefs::GetIdleInstallInfoIds() {
       result.insert(id);
   }
   return result;
+}
+
+bool ExtensionPrefs::AreAppTabToolbarsVisible(
+    const std::string& extension_id) {
+  // Default to hiding toolbars.
+  bool show_toolbars = false;
+  DictionaryValue* pref = GetExtensionPref(extension_id);
+  if (!pref)
+    return show_toolbars;
+
+  pref->GetBoolean(
+      ASCIIToWide(extension_id) + L"." + kPrefAppTabToolbars, &show_toolbars);
+  return show_toolbars;
+}
+
+void ExtensionPrefs::SetAppTabToolbarVisibility(
+    const std::string& extension_id, bool value) {
+  DictionaryValue* pref = GetOrCreateExtensionPref(extension_id);
+  std::wstring key = ASCIIToWide(extension_id) + L"." + kPrefAppTabToolbars;
+
+  if (value)
+    pref->SetBoolean(key, true);
+  else
+    pref->Remove(key, NULL);  // False is the default value.
+
+  prefs_->ScheduleSavePersistentPrefs();
 }
 
 

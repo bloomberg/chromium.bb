@@ -56,11 +56,14 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
       order_controller_(NULL) {
   DCHECK(delegate_);
   registrar_.Add(this,
-      NotificationType::TAB_CONTENTS_DESTROYED,
-      NotificationService::AllSources());
+                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
+  registrar_.Add(this,
+                 NotificationType::EXTENSION_APP_TOOLBAR_VISIBILITY_CHANGED,
+                 NotificationService::AllSources());
   order_controller_ = new TabStripModelOrderController(this);
 }
 
@@ -441,6 +444,16 @@ bool TabStripModel::IsAppTab(int index) const {
   return GetTabContentsAt(index)->is_app();
 }
 
+bool TabStripModel::IsToolbarVisible(int index) const {
+  Extension* extension_app = GetTabContentsAt(index)->extension_app();
+  if (!extension_app)
+    return true;
+
+  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionPrefs* prefs = service->extension_prefs();
+  return prefs->AreAppTabToolbarsVisible(extension_app->id());
+}
+
 bool TabStripModel::IsPhantomTab(int index) const {
   return IsTabPinned(index) &&
          GetTabContentsAt(index)->controller().needs_reload();
@@ -596,6 +609,8 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return delegate_->CanRestoreTab();
     case CommandTogglePinned:
       return true;
+    case CommandToggleToolbar:
+      return true;
     case CommandBookmarkAllTabs:
       return delegate_->CanBookmarkAllTabs();
     case CommandUseVerticalTabs:
@@ -687,6 +702,32 @@ void TabStripModel::ExecuteContextMenuCommand(
         SelectTabContentsAt(context_index, true);
         SetTabPinned(context_index, !IsTabPinned(context_index));
       }
+      break;
+    }
+    case CommandToggleToolbar: {
+      UserMetrics::RecordAction(
+          UserMetricsAction("TabContextMenu_ToggleToolbar"),
+          profile_);
+
+      SelectTabContentsAt(context_index, true);
+
+      Extension* extension_app =
+          GetTabContentsAt(context_index)->extension_app();
+      if (!extension_app)
+        break;
+
+      ExtensionsService* service = profile()->GetExtensionsService();
+      ExtensionPrefs* prefs = service->extension_prefs();
+      bool new_val = !prefs->AreAppTabToolbarsVisible(extension_app->id());
+      prefs->SetAppTabToolbarVisibility(extension_app->id(), new_val);
+
+      // There might be multiple browsers displaying this app, so we send a
+      // notification to update them all.
+      NotificationService::current()->Notify(
+          NotificationType::EXTENSION_APP_TOOLBAR_VISIBILITY_CHANGED,
+          Source<Extension>(extension_app),
+          Details<bool>(&new_val));
+
       break;
     }
 
@@ -781,6 +822,17 @@ void TabStripModel::Observe(NotificationType type,
           InternalCloseTab(contents, i, false);
         }
       }
+      break;
+    }
+
+    case NotificationType::EXTENSION_APP_TOOLBAR_VISIBILITY_CHANGED: {
+      Extension* extension = Source<Extension>(source).ptr();
+      bool* value = Details<bool>(details).ptr();
+      TabContents* selected = GetSelectedTabContents();
+
+      if (selected && selected->extension_app() == extension)
+        delegate_->SetToolbarVisibility(*value);
+
       break;
     }
 

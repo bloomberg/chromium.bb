@@ -1267,6 +1267,7 @@ void BrowserView::ToggleTabStripMode() {
 
 void BrowserView::SetToolbarCollapsedMode(bool val) {
   toolbar_->SetCollapsed(val);
+  Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
