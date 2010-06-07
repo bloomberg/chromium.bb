@@ -45,6 +45,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profile_manager.h"
@@ -994,10 +995,7 @@ net::TransportSecurityState*
 
 PrefService* ProfileImpl::GetPrefs() {
   if (!prefs_.get()) {
-    prefs_.reset(new PrefService(
-        new JsonPrefStore(
-            GetPrefFilePath(),
-            ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
+    prefs_.reset(PrefService::CreatePrefService(GetPrefFilePath()));
 
     // The Profile class and ProfileManager class may read some prefs so
     // register known prefs as soon as possible.

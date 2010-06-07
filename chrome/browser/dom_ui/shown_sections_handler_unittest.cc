@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,10 +17,14 @@ class ShownSectionsHandlerTest : public testing::Test {
 };
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
-  PrefService pref(
-      new JsonPrefStore(
-          FilePath(),
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
+  // Create a preference value that has only user defined
+  // preference values.
+  PrefService pref(new PrefValueStore(
+      NULL, /* no managed preference values */
+      new JsonPrefStore( /* user defined preference values */
+        FilePath(),
+        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+      NULL /* no suggested preference values */));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);
@@ -37,10 +42,12 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
 }
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
-  PrefService pref(
+  PrefService pref(new PrefValueStore(
+      NULL,
       new JsonPrefStore(
-          FilePath(),
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
+        FilePath(),
+        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+      NULL));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);
@@ -53,3 +60,4 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
   EXPECT_TRUE(shown_sections & THUMB);
   EXPECT_FALSE(shown_sections & LIST);
 }
+

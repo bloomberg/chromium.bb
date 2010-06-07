@@ -48,6 +48,7 @@
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -438,16 +439,14 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
       parsed_command_line.HasSwitch(switches::kParentProfile)) {
     FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
-    PrefService parent_local_state(
-      new JsonPrefStore(
-          parent_profile,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
-    parent_local_state.RegisterStringPref(prefs::kApplicationLocale,
-                                          std::wstring());
+    scoped_ptr<PrefService> parent_local_state(
+        PrefService::CreatePrefService(parent_profile));
+    parent_local_state->RegisterStringPref(prefs::kApplicationLocale,
+                                           std::wstring());
     // Right now, we only inherit the locale setting from the parent profile.
     local_state->SetString(
         prefs::kApplicationLocale,
-        parent_local_state.GetString(prefs::kApplicationLocale));
+        parent_local_state->GetString(prefs::kApplicationLocale));
   }
 
   return local_state;

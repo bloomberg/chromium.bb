@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -74,7 +75,20 @@ void NotifyReadError(PrefService* pref, int message_id) {
 
 }  // namespace
 
-PrefService::PrefService(PrefStore* storage) : store_(storage) {
+PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
+  // Create a PrefValueStore that has user defined preference values
+  // read from a local json text file.
+  PrefValueStore* value_store = new PrefValueStore(
+      NULL, /* no managed preference values */
+      new JsonPrefStore(  /* user defined preference values */
+          pref_filename,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+      NULL /* no recommended preference values */);
+  return new PrefService(value_store);
+}
+
+PrefService::PrefService(PrefValueStore* pref_value_store)
+    : pref_value_store_(pref_value_store) {
   InitFromStorage();
 }
 
@@ -126,13 +140,11 @@ bool PrefService::ReloadPersistentPrefs() {
 PrefStore::PrefReadError PrefService::LoadPersistentPrefs() {
   DCHECK(CalledOnValidThread());
 
-  PrefStore::PrefReadError pref_error = store_->ReadPrefs();
-
-  persistent_ = store_->prefs();
+  PrefStore::PrefReadError pref_error = pref_value_store_->ReadPrefs();
 
   for (PreferenceSet::iterator it = prefs_.begin();
        it != prefs_.end(); ++it) {
-    (*it)->root_pref_ = persistent_;
+    (*it)->pref_value_store_ = pref_value_store_.get();
   }
 
   return pref_error;
@@ -141,86 +153,86 @@ PrefStore::PrefReadError PrefService::LoadPersistentPrefs() {
 bool PrefService::SavePersistentPrefs() {
   DCHECK(CalledOnValidThread());
 
-  return store_->WritePrefs();
+  return pref_value_store_->WritePrefs();
 }
 
 void PrefService::ScheduleSavePersistentPrefs() {
   DCHECK(CalledOnValidThread());
 
-  store_->ScheduleWritePrefs();
+  pref_value_store_->ScheduleWritePrefs();
 }
 
 void PrefService::RegisterBooleanPref(const wchar_t* path,
                                       bool default_value) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateBooleanValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterIntegerPref(const wchar_t* path,
                                       int default_value) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateIntegerValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterRealPref(const wchar_t* path,
                                    double default_value) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateRealValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterStringPref(const wchar_t* path,
                                      const std::wstring& default_value) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateStringValue(default_value));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterFilePathPref(const wchar_t* path,
                                        const FilePath& default_value) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateStringValue(default_value.value()));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterListPref(const wchar_t* path) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       new ListValue);
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterDictionaryPref(const wchar_t* path) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       new DictionaryValue());
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedBooleanPref(const wchar_t* path,
                                                int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_BOOLEAN, locale_default_message_id));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedIntegerPref(const wchar_t* path,
                                                int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_INTEGER, locale_default_message_id));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedRealPref(const wchar_t* path,
                                             int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_REAL, locale_default_message_id));
   RegisterPreference(pref);
 }
 
 void PrefService::RegisterLocalizedStringPref(const wchar_t* path,
                                               int locale_default_message_id) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_STRING, locale_default_message_id));
   RegisterPreference(pref);
 }
@@ -305,8 +317,7 @@ FilePath PrefService::GetFilePath(const wchar_t* path) const {
 }
 
 bool PrefService::HasPrefPath(const wchar_t* path) const {
-  Value* value = NULL;
-  return persistent_->Get(path, &value);
+  return pref_value_store_->HasPrefPath(path);
 }
 
 const PrefService::Preference* PrefService::FindPreference(
@@ -412,8 +423,8 @@ void PrefService::ClearPref(const wchar_t* path) {
     return;
   }
   Value* value;
-  bool has_old_value = persistent_->Get(path, &value);
-  persistent_->Remove(path, NULL);
+  bool has_old_value = pref_value_store_->GetValue(path, &value);
+  pref_value_store_->RemoveUserPrefValue(path);
 
   if (has_old_value)
     FireObservers(path);
@@ -434,7 +445,7 @@ void PrefService::Set(const wchar_t* path, const Value& value) {
        pref->type() == Value::TYPE_LIST)) {
     scoped_ptr<Value> old_value(GetPrefCopy(path));
     if (!old_value->Equals(&value)) {
-      persistent_->Remove(path, NULL);
+      pref_value_store_->RemoveUserPrefValue(path);
       FireObservers(path);
     }
     return;
@@ -445,7 +456,7 @@ void PrefService::Set(const wchar_t* path, const Value& value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  persistent_->Set(path, value.DeepCopy());
+  pref_value_store_->SetUserPrefValue(path, value.DeepCopy());
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -468,7 +479,8 @@ void PrefService::SetBoolean(const wchar_t* path, bool value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  persistent_->SetBoolean(path, value);
+  Value* new_value = Value::CreateBooleanValue(value);
+  pref_value_store_->SetUserPrefValue(path, new_value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -491,7 +503,8 @@ void PrefService::SetInteger(const wchar_t* path, int value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  persistent_->SetInteger(path, value);
+  Value* new_value = Value::CreateIntegerValue(value);
+  pref_value_store_->SetUserPrefValue(path, new_value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -514,7 +527,8 @@ void PrefService::SetReal(const wchar_t* path, double value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  persistent_->SetReal(path, value);
+  Value* new_value = Value::CreateRealValue(value);
+  pref_value_store_->SetUserPrefValue(path, new_value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -537,7 +551,8 @@ void PrefService::SetString(const wchar_t* path, const std::wstring& value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  persistent_->SetString(path, value);
+  Value* new_value = Value::CreateStringValue(value);
+  pref_value_store_->SetUserPrefValue(path, new_value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -564,9 +579,11 @@ void PrefService::SetFilePath(const wchar_t* path, const FilePath& value) {
   // Value::SetString only knows about UTF8 strings, so convert the path from
   // the system native value to UTF8.
   std::string path_utf8 = WideToUTF8(base::SysNativeMBToWide(value.value()));
-  persistent_->SetString(path, path_utf8);
+  Value* new_value = Value::CreateStringValue(path_utf8);
+  pref_value_store_->SetUserPrefValue(path, new_value);
 #else
-  persistent_->SetString(path, value.value());
+  Value* new_value = Value::CreateStringValue(value.value());
+  pref_value_store_->SetUserPrefValue(path, new_value);
 #endif
 
   FireObserversIfChanged(path, old_value.get());
@@ -590,7 +607,8 @@ void PrefService::SetInt64(const wchar_t* path, int64 value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  persistent_->SetString(path, Int64ToWString(value));
+  Value* new_value = Value::CreateStringValue(Int64ToWString(value));
+  pref_value_store_->SetUserPrefValue(path, new_value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -610,7 +628,7 @@ int64 PrefService::GetInt64(const wchar_t* path) const {
 }
 
 void PrefService::RegisterInt64Pref(const wchar_t* path, int64 default_value) {
-  Preference* pref = new Preference(persistent_, path,
+  Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateStringValue(Int64ToWString(default_value)));
   RegisterPreference(pref);
 }
@@ -629,9 +647,12 @@ DictionaryValue* PrefService::GetMutableDictionary(const wchar_t* path) {
   }
 
   DictionaryValue* dict = NULL;
-  if (!persistent_->GetDictionary(path, &dict)) {
+  Value* tmp_value = NULL;
+  if (!pref_value_store_->GetValue(path, &tmp_value)) {
     dict = new DictionaryValue;
-    persistent_->Set(path, dict);
+    pref_value_store_->SetUserPrefValue(path, dict);
+  } else {
+    dict = static_cast<DictionaryValue*>(tmp_value);
   }
   return dict;
 }
@@ -650,9 +671,12 @@ ListValue* PrefService::GetMutableList(const wchar_t* path) {
   }
 
   ListValue* list = NULL;
-  if (!persistent_->GetList(path, &list)) {
+  Value* tmp_value = NULL;
+  if (!pref_value_store_->GetValue(path, &tmp_value)) {
     list = new ListValue;
-    persistent_->Set(path, list);
+    pref_value_store_->SetUserPrefValue(path, list);
+  } else {
+    list = static_cast<ListValue*>(tmp_value);
   }
   return list;
 }
@@ -668,7 +692,7 @@ Value* PrefService::GetPrefCopy(const wchar_t* path) {
 void PrefService::FireObserversIfChanged(const wchar_t* path,
                                          const Value* old_value) {
   Value* new_value = NULL;
-  persistent_->Get(path, &new_value);
+  pref_value_store_->GetValue(path, &new_value);
   if (!old_value->Equals(new_value))
     FireObservers(path);
 }
@@ -695,13 +719,13 @@ void PrefService::FireObservers(const wchar_t* path) {
 ///////////////////////////////////////////////////////////////////////////////
 // PrefService::Preference
 
-PrefService::Preference::Preference(DictionaryValue* root_pref,
+PrefService::Preference::Preference(PrefValueStore* pref_value_store,
                                     const wchar_t* name,
                                     Value* default_value)
       : type_(Value::TYPE_NULL),
         name_(name),
         default_value_(default_value),
-        root_pref_(root_pref) {
+        pref_value_store_(pref_value_store) {
   DCHECK(name);
 
   if (default_value) {
@@ -717,11 +741,11 @@ PrefService::Preference::Preference(DictionaryValue* root_pref,
 }
 
 const Value* PrefService::Preference::GetValue() const {
-  DCHECK(NULL != root_pref_) <<
+  DCHECK(NULL != pref_value_store_) <<
       "Must register pref before getting its value";
 
   Value* temp_value = NULL;
-  if (root_pref_->Get(name_.c_str(), &temp_value) &&
+  if (pref_value_store_->GetValue(name_, &temp_value) &&
       temp_value->GetType() == type_) {
     return temp_value;
   }
@@ -734,3 +758,8 @@ bool PrefService::Preference::IsDefaultValue() const {
   DCHECK(default_value_.get());
   return default_value_->Equals(GetValue());
 }
+
+bool PrefService::Preference::IsManaged() const {
+  return pref_value_store_->PrefValueIsManaged(name_.c_str());
+}
+

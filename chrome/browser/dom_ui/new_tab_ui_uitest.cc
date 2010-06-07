@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -76,10 +77,14 @@ TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
 }
 
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
-  PrefService prefs(
+  // PrefService with JSON user-pref file only, no enforced or advised prefs.
+  PrefService prefs(new PrefValueStore(
+      NULL,  /* no enforced prefs */
       new JsonPrefStore(
           FilePath(),
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+          /* user prefs */
+      NULL  /* no advised prefs */));
 
   // Does the migration
   NewTabUI::RegisterUserPrefs(&prefs);

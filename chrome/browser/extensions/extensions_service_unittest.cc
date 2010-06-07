@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -250,10 +251,14 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
       switches::kEnableApps);
 
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
-  prefs_.reset(new PrefService(
-      new JsonPrefStore(
+  // Create a preference service that only contains user defined
+  // preference values.
+  prefs_.reset(new PrefService(new PrefValueStore(
+      NULL, /* No managed preference values */
+      new JsonPrefStore( /* user defined preference values */
           pref_file,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+      NULL /* No suggested preference values */ )));
 
   Profile::RegisterUserPrefs(prefs_.get());
   browser::RegisterUserPrefs(prefs_.get());

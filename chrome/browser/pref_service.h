@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/pref_store.h"
 
 class NotificationObserver;
@@ -33,7 +34,7 @@ class PrefService : public NonThreadSafe {
     // dictionary (a branch), or list.  You shouldn't need to construct this on
     // your own, use the PrefService::Register*Pref methods instead.
     // |default_value| will be owned by the Preference object.
-    Preference(DictionaryValue* root_pref,
+    Preference(PrefValueStore* pref_value_store,
                const wchar_t* name,
                Value* default_value);
     ~Preference() {}
@@ -53,7 +54,7 @@ class PrefService : public NonThreadSafe {
 
     // Returns true if the Preference is managed, i.e. not changeable
     // by the user.
-    bool IsManaged() const { return false; }
+    bool IsManaged() const;
 
    private:
     friend class PrefService;
@@ -62,14 +63,17 @@ class PrefService : public NonThreadSafe {
     std::wstring name_;
     scoped_ptr<Value> default_value_;
 
-    // A reference to the pref service's persistent prefs.
-    DictionaryValue* root_pref_;
+    // A reference to the pref service's pref_value_store_.
+    PrefValueStore* pref_value_store_;
 
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
-  // The |PrefStore| manages reading and writing the preferences.
-  explicit PrefService(PrefStore* store);
+  // Factory method that creates a new instance of a |PrefService|.
+  static PrefService* CreatePrefService(const FilePath& pref_filename);
+
+  // The |PrefValueStore| provides preference values.
+  explicit PrefService(PrefValueStore* pref_value_store);
   ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer
@@ -177,7 +181,7 @@ class PrefService : public NonThreadSafe {
   // preference is not registered.
   const Preference* FindPreference(const wchar_t* pref_name) const;
 
-  bool read_only() const { return store_->ReadOnly(); }
+  bool read_only() const { return pref_value_store_->ReadOnly(); }
 
  private:
   // Add a preference to the PreferenceMap.  If the pref already exists, return
@@ -203,10 +207,13 @@ class PrefService : public NonThreadSafe {
   // This should only be called from the constructor.
   void InitFromStorage();
 
-  scoped_ptr<PrefStore> store_;
-
-  // The user-defined preference values. Owned by the |PrefStore|.
-  DictionaryValue* persistent_;
+  // The value of a Preference can be:
+  // managed, user defined, recommended or default.
+  // The PrefValueStore manages enforced, user defined and recommended values
+  // for Preferences. It returns the value of a Preference with the
+  // highest priority, and allows to set user defined values for preferences
+  // that are not managed.
+  scoped_ptr<PrefValueStore> pref_value_store_;
 
   // A set of all the registered Preference objects.
   PreferenceSet prefs_;

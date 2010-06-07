@@ -408,11 +408,8 @@ void BrowserProcessImpl::CreateLocalState() {
 
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  local_state_.reset(new PrefService(
-      new JsonPrefStore(
-          local_state_path,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
-}
+  local_state_.reset(PrefService::CreatePrefService(local_state_path));
+  }
 
 void BrowserProcessImpl::CreateIconManager() {
   DCHECK(!created_icon_manager_ && icon_manager_.get() == NULL);

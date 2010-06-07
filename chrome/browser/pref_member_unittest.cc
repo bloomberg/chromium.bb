@@ -6,6 +6,7 @@
 #include "chrome/browser/dummy_pref_store.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,7 +53,7 @@ class PrefMemberTestClass : public NotificationObserver {
 }  // anonymous namespace
 
 TEST(PrefMemberTest, BasicGetAndSet) {
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
   RegisterTestPrefs(&prefs);
 
   // Test bool
@@ -142,7 +143,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
 TEST(PrefMemberTest, TwoPrefs) {
   // Make sure two RealPrefMembers stay in sync.
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
   RegisterTestPrefs(&prefs);
 
   RealPrefMember pref1;
@@ -162,7 +163,7 @@ TEST(PrefMemberTest, TwoPrefs) {
 }
 
 TEST(PrefMemberTest, Observer) {
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
   RegisterTestPrefs(&prefs);
 
   PrefMemberTestClass test_obj(&prefs);

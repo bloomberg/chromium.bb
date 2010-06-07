@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/dummy_pref_store.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_service.h"
@@ -62,7 +63,7 @@ class TestPrefObserver : public NotificationObserver {
 // TODO(port): port this test to POSIX.
 #if defined(OS_WIN)
 TEST(PrefServiceTest, LocalizedPrefs) {
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
   const wchar_t kBoolean[] = L"boolean";
   const wchar_t kInteger[] = L"integer";
   const wchar_t kString[] = L"string";
@@ -85,7 +86,7 @@ TEST(PrefServiceTest, LocalizedPrefs) {
 #endif
 
 TEST(PrefServiceTest, NoObserverFire) {
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
 
   const wchar_t pref_name[] = L"homepage";
   prefs.RegisterStringPref(pref_name, L"");
@@ -120,7 +121,7 @@ TEST(PrefServiceTest, NoObserverFire) {
 }
 
 TEST(PrefServiceTest, HasPrefPath) {
-  PrefService prefs(new DummyPrefStore());
+  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
 
   const wchar_t path[] = L"fake.path";
 
@@ -143,8 +144,8 @@ TEST(PrefServiceTest, Observers) {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(pref_name, std::wstring(L"http://www.cnn.com"));
   DummyPrefStore* pref_store = new DummyPrefStore();
-  pref_store->SetPrefs(dict);
-  PrefService prefs(pref_store);
+  pref_store->set_prefs(dict);
+  PrefService prefs(new PrefValueStore(NULL, pref_store, NULL));
   prefs.RegisterStringPref(pref_name, L"");
 
   const std::wstring new_pref_value(L"http://www.google.com/");
@@ -185,7 +186,7 @@ class PrefServiceSetValueTest : public testing::Test {
   static const wchar_t value_[];
 
   PrefServiceSetValueTest()
-      : prefs_(new DummyPrefStore()),
+      : prefs_(new PrefValueStore(NULL, new DummyPrefStore(), NULL)),
         name_string_(name_),
         null_value_(Value::CreateNullValue()) {}
 

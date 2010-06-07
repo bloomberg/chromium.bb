@@ -13,6 +13,7 @@
 #include "base/platform_thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_pref_store.h"
@@ -53,10 +54,12 @@ class MetricsServiceTest : public UITest {
     FilePath local_state_path = user_data_dir()
         .Append(chrome::kLocalStateFilename);
 
-    return new PrefService(
+    return new PrefService(new PrefValueStore(
+        NULL,
         new JsonPrefStore(
             local_state_path,
-            ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
+            ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+        NULL));
   }
 };
 

@@ -5,6 +5,7 @@
 #include "app/message_box_flags.h"
 #include "base/logging.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
@@ -51,11 +52,14 @@ class TabContentsTestingProfile : public TestingProfile {
       source_path = source_path.AppendASCII("profiles")
           .AppendASCII("chrome_prefs").AppendASCII("Preferences");
 
-      prefs_.reset(new PrefService(
-          new JsonPrefStore(
-              source_path,
-              ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
-
+      // Create a preference service that only contains user defined
+      // preference values.
+      prefs_.reset(new PrefService(new PrefValueStore(
+        NULL, /* No managed preference values */
+        new JsonPrefStore( /* user defined preference values */
+          source_path,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+        NULL /* No suggested preference values */)));
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }

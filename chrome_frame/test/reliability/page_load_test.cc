@@ -38,6 +38,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -469,10 +470,12 @@ class PageLoadTest : public testing::Test {
     FilePath local_state_path;
     chrome::GetChromeFrameUserDataDirectory(&local_state_path);
 
-    PrefService* local_state = new PrefService(
-        new JsonPrefStore(
-            local_state_path,
-            ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)));
+    PrefService* local_state = new PrefService(new PrefValueStore(
+        NULL, /* no managed preference values */
+        new JsonPrefStore(/* user defined preference values */
+             local_state_path,
+             ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+        NULL /* no sugessted preference values */));
     return local_state;
   }
 

@@ -4,12 +4,16 @@
 
 #include "chrome/browser/extensions/test_extension_prefs.h"
 
+
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_pref_store.h"
@@ -37,11 +41,13 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     file_loop.RunAllPending();
   }
 
-  pref_service_.reset(new PrefService(
-      new JsonPrefStore(
-          preferences_file_,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
-
+  // Create a |PrefService| instance that contains only user defined values.
+  pref_service_.reset(new PrefService(new PrefValueStore(
+    NULL, /* no managed preference values*/
+    new JsonPrefStore( /* user defined preferemnce values*/
+        preferences_file_,
+        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+    NULL /* no suggested preference values*/)));
   ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
   prefs_.reset(new ExtensionPrefs(pref_service_.get(), temp_dir_.path()));
 }

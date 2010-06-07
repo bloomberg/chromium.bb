@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/json_pref_store.h"
@@ -149,10 +150,13 @@ class TestingProfile : public Profile {
     if (!prefs_.get()) {
       FilePath prefs_filename =
           path_.Append(FILE_PATH_LITERAL("TestPreferences"));
-      prefs_.reset(new PrefService(
-          new JsonPrefStore(
-              prefs_filename,
-              ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE))));
+
+      prefs_.reset(new PrefService(new PrefValueStore(
+        NULL, /* no managed preference values */
+        new JsonPrefStore( /* user defined preference values */
+          prefs_filename,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+        NULL /* no suggested preference values */)));
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }
