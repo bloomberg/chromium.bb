@@ -72,6 +72,12 @@ WebCString TestShellDevToolsAgent::injectedScriptDispatcherSource() {
   return WebCString(injectDispatchjs.as_string().c_str());
 }
 
+WebCString TestShellDevToolsAgent::debuggerScriptSource() {
+  base::StringPiece debuggerScriptjs =
+      webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
+  return WebCString(debuggerScriptjs.as_string().c_str());
+}
+
 void TestShellDevToolsAgent::AsyncCall(const TestShellDevToolsCallArgs &args) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,

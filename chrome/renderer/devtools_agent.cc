@@ -30,7 +30,7 @@ namespace {
 
 class WebKitClientMessageLoopImpl
     : public WebDevToolsAgentClient::WebKitClientMessageLoop {
-public:
+ public:
   WebKitClientMessageLoopImpl() : message_loop_(MessageLoop::current()) { }
   virtual ~WebKitClientMessageLoopImpl() {
     message_loop_ = NULL;
@@ -44,7 +44,7 @@ public:
   virtual void quitNow() {
     message_loop_->QuitNow();
   }
-private:
+ private:
   MessageLoop* message_loop_;
 };
 
@@ -122,6 +122,12 @@ WebCString DevToolsAgent::injectedScriptDispatcherSource() {
   base::StringPiece injectDispatchjs =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_DISPATCH_JS);
   return WebCString(injectDispatchjs.as_string().c_str());
+}
+
+WebCString DevToolsAgent::debuggerScriptSource() {
+  base::StringPiece debuggerScriptjs =
+      webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
+  return WebCString(debuggerScriptjs.as_string().c_str());
 }
 
 WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
