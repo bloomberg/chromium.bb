@@ -357,6 +357,9 @@ class AutoFillProfilesView : public views::View,
     // Model does not own |combo_box|.
     void UsedWithComboBox(views::Combobox *combo_box);
 
+    // Need to be called when comboboxes are destroyed.
+    void ClearComboBoxes() { combo_boxes_.clear(); }
+
     // Call this function if one of the labels has changed
     void LabelChanged();
 

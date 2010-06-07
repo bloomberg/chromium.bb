@@ -116,6 +116,8 @@ void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
     email_ = value;
   else if (field_type == COMPANY_NAME)
     company_name_ = value;
+  else if (field_type == NAME_FULL)
+    SetFullName(value);
   else
     NOTREACHED();
 }
@@ -357,3 +359,27 @@ void ContactInfo::SetLast(const string16& last) {
   for (iter = last_tokens_.begin(); iter != last_tokens_.end(); ++iter)
     *iter = StringToLowerASCII(*iter);
 }
+
+void ContactInfo::SetFullName(const string16& full) {
+  NameTokens full_name_tokens;
+  Tokenize(full, ASCIIToUTF16(" "), &full_name_tokens);
+  // Clear the names.
+  SetFirst(string16());
+  SetMiddle(string16());
+  SetLast(string16());
+
+  // There are four possibilities: empty; first name; first and last names;
+  // first, middle (possibly multiple strings) and then the last name.
+  if (full_name_tokens.size() > 0) {
+    SetFirst(full_name_tokens[0]);
+    if (full_name_tokens.size() > 1) {
+      SetLast(full_name_tokens.back());
+      if (full_name_tokens.size() > 2) {
+        full_name_tokens.erase(full_name_tokens.begin());
+        full_name_tokens.pop_back();
+        SetMiddle(JoinString(full_name_tokens, ' '));
+      }
+    }
+  }
+}
+

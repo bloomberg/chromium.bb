@@ -25,6 +25,7 @@
 #include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/size.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/border.h"
@@ -192,12 +193,7 @@ void AutoFillProfilesView::ChildWindowClosed() {
 
 SkBitmap* AutoFillProfilesView::GetWarningBimap(bool good) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  // TODO(georgey) : change to correct icons when available.
-  if (good) {
-    return rb.GetBitmapNamed(ThemeResourcesUtil::GetId("update_uptodate"));
-  } else {
-    return rb.GetBitmapNamed(ThemeResourcesUtil::GetId("update_available"));
-  }
+  return rb.GetBitmapNamed(good ? IDR_INPUT_GOOD : IDR_INPUT_ALERT);
 }
 
 
@@ -706,6 +702,7 @@ AutoFillProfilesView::EditableSetViewContents::GetWindowTitle() const {
 }
 
 void AutoFillProfilesView::EditableSetViewContents::WindowClosing() {
+  billing_model_->ClearComboBoxes();
   observer_->ChildWindowClosed();
 }
 
