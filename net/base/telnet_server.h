@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ private:
   int iac_option_;  // Last option read.
   std::string command_line_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TelnetServer);
+  DISALLOW_COPY_AND_ASSIGN(TelnetServer);
 };
 
 #endif // NET_BASE_TELNET_SERVER_H_

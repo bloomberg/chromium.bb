@@ -49,7 +49,7 @@ namespace {
     std::wstring test_data_directory_;
 
    private:
-    DISALLOW_EVIL_CONSTRUCTORS(IconUtilTest);
+    DISALLOW_COPY_AND_ASSIGN(IconUtilTest);
   };
 };
 

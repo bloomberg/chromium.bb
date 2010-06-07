@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -138,7 +138,7 @@ class CallStack {
                    PrivateHookAllocator<int32> > SymbolCache;
   static SymbolCache* symbol_cache_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(CallStack);
+  DISALLOW_COPY_AND_ASSIGN(CallStack);
 };
 
 // An AllocationStack is a type of CallStack which represents a CallStack where
@@ -162,7 +162,7 @@ class AllocationStack : public CallStack {
   static AllocationStack* freelist_;
   static Lock freelist_lock_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(AllocationStack);
+  DISALLOW_COPY_AND_ASSIGN(AllocationStack);
 };
 
 #endif  // MEMORY_WATCHER_CALL_STACK_H_
