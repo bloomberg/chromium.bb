@@ -230,6 +230,13 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   EXPECT_TRUE(extension_app_id == tab->extension_app_id);
 }
 
+// Crashes, http://crbug.com/45977.
+#if defined(OS_WIN)
+#define MAYBE_DontPersistPostData DISABLED_DontPersistPostData
+#else
+#define MAYBE_DontPersistPostData DontPersistPostData
+#endif  // defined(OS_WIN)
+
 // Make sure we persist entries to disk that have post data.
 TEST_F(TabRestoreServiceTest, DontPersistPostData) {
   AddThreeNavigations();
