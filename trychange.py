@@ -603,13 +603,14 @@ def TryChange(argv,
   if len(args) == 1 and args[0] == 'help':
     parser.print_help()
 
+  LOG_FORMAT = '%(levelname)s %(filename)s(%(lineno)d): %(message)s'
   if not swallow_exception:
     if options.verbose == 0:
-      logging.basicConfig(level=logging.WARNING)
+      logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
     elif options.verbose == 1:
-      logging.basicConfig(level=logging.INFO)
+      logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
     elif options.verbose > 1:
-      logging.basicConfig(level=logging.DEBUG)
+      logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
   logging.debug(argv)
 
