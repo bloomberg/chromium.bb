@@ -1,16 +1,94 @@
 <div id="pageData-name" class="pageData">Hosting</div>
+<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-If your extension is hosted in Google's
-<a href="https://chrome.google.com/extensions">gallery</a>,
-<em>ignore this page</em>.
-You don't need to worry about HTTP headers
-because the gallery handles them for you.
+Google provides a free hosting service: the
+<a href="http://chrome.google.com/extensions">Extensions gallery</a>.
+Another option is hosting your extension on other servers,
+instead of or in addition to using Google's gallery.
+This page gives tips for using the gallery,
+as well as details on how to host extensions on your own server.
+</p>
+
+<h2 id="gallery">Publishing to the Extensions gallery</h2>
+
+<p>
+Publishing to the gallery is easy,
+but your extension might be more popular
+if you take a little time to prepare:
+</p>
+
+<ul>
+  <li> Visit the
+    <a href="http://chrome.google.com/extensions">gallery</a>
+    and look at similar extensions' pages.
+    Your extension's page should look at least as good as theirs. </li>
+  <li> Consider creating a support site for your extension,
+    maybe a <a href="http://groups.google.com">Google Group</a>.
+    If your extension's page has a link to your support site,
+    people will be less likely to
+    complain in the user comments. </li>
+  <li> Consider creating a custom Gmail account
+    for this extension or for all of your extensions.
+    Only one account can upload, publish, and update your extension. </li>
+  <li> Create some great text (titles and descriptions)
+    and images (maybe even video) for your extension.
+    See the
+    <a href="http://www.google.com/support/chrome/bin/answer.py?answer=113909">gallery help</a>
+    for details on screenshot and text requirements. </li>
+</ul>
+
+<p>
+To upload your extension,
+just zip up your extension's directory,
+go to the
+<a href="https://chrome.google.com/extensions/developer/dashboard">Developer Dashboard</a>,
+and add your extension.
+This creates a page for your extension,
+viewable only by you.
+Now you can edit your extension's page &mdash;
+uploading images, specifying text, and so on.
 </p>
 
 <p>
-If you intend to use another server,
-make sure it serves appropriate HTTP headers,
+Once you verify that your extension's page looks good
+and all links are valid,
+publish your extension.
+</p>
+
+<p>
+When you want to update your extension,
+use the dashboard to upload and publish the new version.
+Your users will automatically get the new version
+over the next few hours.
+</p>
+
+
+<h2 id="server">Hosting on your own server</h2>
+
+<p>
+By convention, extensions are served &mdash;
+whether by the gallery or by a custom server &mdash;
+as <code>.crx</code> files.
+When you upload an extension to the gallery,
+the gallery creates the <code>.crx</code> file for you.
+If you aren't using the gallery,
+you need to create the <code>.crx</code> file yourself,
+as described in <a href="packaging.html">Packaging</a>.
+</p>
+
+<p class="note">
+<b>Note:</b>
+If you do your own hosting,
+don't forget to set up
+<a href="autoupdate.html">autoupdate</a>,
+so you can be sure that
+your extension's users have the latest version.
+</p>
+
+<p>
+A server that hosts extensions
+must use appropriate HTTP headers,
 so that users can install your extension
 by clicking a link to it.
 </p>

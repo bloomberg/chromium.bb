@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>External Extensions - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>Other Deployment Options - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -163,9 +163,8 @@
               </li>
               <li>Finishing
                 <ul>
-                  <li><a href="autoupdate.html">Autoupdating</a></li>
-                  <li><a href="packaging.html">Packaging</a></li>
-                 <li class="leftNavSelected">External Extensions</li>
+                  <li><a href="hosting.html">Hosting</a></li>
+                  <li class="leftNavSelected">Other Deployment Options</li>
                 </ul>
               </li>
             </ul>
@@ -196,28 +195,35 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">External Extensions</h1>
+        <h1 class="page_title">Other Deployment Options</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#preferences">Using the Preferences File</a>
+              <a href="#prereqs">Before you begin</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#registry">Using the Windows Registry</a>
+              <a href="#preferences">Using a preferences file</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#updating">Updating and Uninstalling</a>
+              <a href="#registry">Using the Windows registry</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#updating">Updating and uninstalling</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -273,155 +279,258 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">External Extensions</div>
+        <div id="static"><div id="pageData-name" class="pageData">Other Deployment Options</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Google Chrome implements a mechanism
-to detect when an external extension
-needs to be installed.
-Typically, this could be leveraged
-by 3rd party vendors
-to install an extension whenever
-the user installs their software.
-Another use case includes network admins,
-who want to install the same extensions
-throughout their company.
+Usually, users install their own extensions.
+But sometimes you might want an extension
+to be installed automatically.
+Here are two typical cases:
+</p>
 
-</p><p>
+<ul>
+  <li>
+    An extension is associated with some other software,
+    and the extension should be installed
+    whenever the user installs that other software.
+    The extension could also be uninstalled
+    when the user removes that other software.
+  </li>
+  <li>
+    A network admin wants to install the same extensions
+    throughout the company.
+  </li>
+</ul>
+
+<p>
+An extension that's installed automatically is known as an
+<em>external extension</em>.
 Google Chrome supports two ways of
 installing external extensions:
-using a preferences JSON file,
-or using the Windows registry
-(Windows only).
+</p>
 
-</p><p>
-<b>Important:</b> Before you begin,
-make sure you have a <a href="packaging.html">packaged
-crx file</a> that installs successfully,
-and make a note of both the version
-of the extension and its id (see chrome://extensions/).
-For the rest of this text, we'll assume
-the extension version is
-<code>1.0</code> and its id is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
+<ul>
+  <li> Using a preferences JSON file </li>
+  <li> Using the Windows registry (Windows only) </li>
+</ul>
 
-</p><h2 id="preferences">Using the Preferences File</h2>
+<h2 id="prereqs">Before you begin</h2>
+
+<p>
+First, package a
+<a href="packaging.html"><code>.crx</code> file</a>
+and make sure that it installs successfully.
+</p>
+
+<p>
+Then, before you edit the preferences file or the registry,
+make a note of the following:
+</p>
+
+<ul>
+ <li> The intended <b>location</b> of the extension's <code>.crx</code> file </li>
+ <li> The extension's <b>version</b>
+   (from the manifest file or the <b>chrome://extensions</b> page) </li>
+ <li> The extension's <b>ID</b>
+   (from the <b>chrome://extensions</b> page
+   when you've loaded the packed extension) </li>
+</ul>
+
+<p>
+The following examples assume the location is
+<code>\\server\share\extension.crx</code>
+or <code>/home/share/extension.crx</code>,
+the version is <code>1.0</code>,
+and the ID is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
+</p>
+
+<h2 id="preferences">Using a preferences file</h2>
+
+<p class="note">
+<b>Windows note:</b>
+Until <a href="http://crbug.com/41902">bug 41902</a> is fixed,
+you might want to use the <a href="#registry">Windows registry</a>
+instead of the preferences file.
+
+</p>
 
 <ol>
-<li>Make the .crx extension file available
+<li>Make the <code>.crx</code> extension file available
 to the machine you want to install the extension
-on (copy it to a local directory
-or to a network share, ie. <code>\\server\share\extension.crx</code>).
-</li><li>Locate the external_extensions.json file under the Chrome
-installation directory and add the following key inside
-the curly brackets (note the extra escaping for the slashes,
-which is also required when specifying local directories):
+on. (Copy it to a local directory
+or to a network share — for example, <code>\\server\share\extension.crx</code>
+or <code>/home/share/extension.crx</code>.)
+</li>
+<li>Locate the <code>external_extensions.json</code> file
+  under the Google Chrome installation directory.
+  If the file doesn't exist, create it.
+  The location depends on the operating system.
+  <dl>
+  <dt> Windows: </dt>
+    <dd> <code><em>chrome_root</em>\Application\<em>chrome_version</em>\Extensions\</code>
+    <br>
+    Example: <code>c:\Users\Me\AppData\Local\Google\Chrome\Application\6.0.422.0\Extensions\</code>
+    </dd>
+  <dt> Mac OS X: </dt>
+    <dd> <code>/Applications/Google Chrome.app/Contents/Extensions/</code> </dd>
+  <dt> Linux: </dt>
+    <dd> <code>/opt/google/chrome/extensions/</code> <br>
+    <b>Note:</b> Use <code>chmod</code> if necessary
+    to make sure that <code>extensions/external_extensions.json</code>
+    is world-readable.
+    </dd>
+  </dl>
+</li>
+<li> Add an entry to <code>external_extensions.json</code>
+  for your extension's ID,
+  specifying the extension's location and version
+  with fields named "external_crx" and "external_version".
+  Example:
 <pre>{
   "aaaaaaaaaabbbbbbbbbbcccccccccc": {
-    "external_crx": "\\\\server\\share\\extension.crx",
+    "external_crx": "/home/share/extension.crx",
     "external_version": "1.0"
   }
 }</pre>
-</li><li>Save the json file.
-</li><li>Launch Chrome and go to chrome://extensions
-and you should see the extension listed.
-</li></ol>
 
+<p class="note">
+<b>Note:</b>
+You need to escape
+each <code>\</code> character in the location.
+For example,
+<code>\\server\share\extension.crx</code> would be
+<code>"\\\\server\\share\\extension.crx"</code>.
+</p>
+</li>
 
-<h2 id="registry">Using the Windows Registry</h2>
+<li>Save the JSON file. </li>
+<li>Launch Google Chrome and go to <b>chrome://extensions</b>;
+you should see the extension listed. </li>
+</ol>
+
+<h2 id="registry">Using the Windows registry</h2>
 
 <ol>
-<li>Make the .crx extension file available
-to the machine you want to install the extension on
-(copy it to a local directory or to a network share,
-ie. <code>\\server\share\extension.crx</code>).
-</li><li>Find (or create the following key) in the
-registry:<br>
-32 bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Google\Chrome\Extensions</code><br>
-64 bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Wow6432Node\Google\Chrome\Extensions</code>
-</li><li>Create a new key (folder)
-under the Extensions key with the
-same name as the id of your extension (<code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>).
-</li><li>Create two string values (<code>REG_SZ</code>):<br>
-path: <code>\\server\share\extension.crx</code><br>
-version: <code>1.0</code>
-</li><li>Launch the browser and go to
-chrome://extensions and you should
-see the extension listed.
-</li></ol>
+<li>Make the <code>.crx</code> extension file available
+to the machine you want to install the extension on.
+(Copy it to a local directory or to a network share —
+for example, <code>\\server\share\extension.crx</code>.)
+</li><li>Find or create the following key in the
+registry:
+<ul>
+  <li> 32-bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Google\Chrome\Extensions</code> </li>
+  <li> 64-bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Wow6432Node\Google\Chrome\Extensions</code> </li>
+</ul>
+</li>
 
-<h2 id="updating">Updating and Uninstalling</h2>
+<li>Create a new key (folder)
+under the <b>Extensions</b> key with the
+same name as the ID of your extension
+(for example, <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>).
+</li><li>Create two string values (<code>REG_SZ</code>) named "path" and "version",
+  and set them to the extension's location and version.
+  For example:
+<ul>
+  <li>path: <code>\\server\share\extension.crx</code> </li>
+  <li>version: <code>1.0</code> </li>
+</ul>
+</li>
+<li>Launch the browser and go to
+<b>chrome://extensions</b>; you should
+see the extension listed. </li>
+</ol>
+
+<h2 id="updating">Updating and uninstalling</h2>
 
 <p>Google Chrome scans the metadata entries
 in the preferences and registry
 each time the browser starts, and makes
 any necessary changes to the installed
-external extensions.
+external extensions. </p>
 
-</p><p>To update your extension to a new version,
+<p>To update your extension to a new version,
 update the file, and then update the version
-in the preferences or registry.
+in the preferences or registry. </p>
 
-</p><p>To uninstall your extension
-(eg if your software is uninstalled),
+<p>To uninstall your extension
+(for example, if your software is uninstalled),
 remove the metadata from the preferences file
-or registry.
+or registry. </p>
 
-</p><h2 id="faq">FAQ</h2>
+<h2 id="faq">FAQ</h2>
 
-<p><b>Can I specify a URL as a path to the external extension?</b>
-</p><p>Not at this time.
-Chrome only supports absolute/relative local paths
+<p>
+This section answers common questions about external extensions.
+</p>
+
+<br>
+
+<p><b>Can I specify a URL as a path to the external extension?</b> </p>
+<p>Not at this time.
+Google Chrome supports only absolute or relative local paths
 and UNC paths.
 Relative paths are relative
-to the Extensions directory
-(where the external_extensions.json file is located).
-<br>
+to the <code>Extensions</code> directory
+(where the <code>external_extensions.json</code> file is located).
+</p>
+
 <br>
 
-</p><p><b>What are some common mistakes when installing with the preferences file?</b>
-</p><ul>
-<li>Not specifying the same id/version
-as the one listed in the .crx
-</li><li>external_extension.json is not in the right location
-</li><li>Syntax error in json file
-(forgetting to separate entries with comma or
-leaving a trailing comma somewhere)
-</li><li>Extra curly brackets around the top level dictionary
-</li><li>JSON file entry points to the wrong path
-to the .crx (or path specified but no filename)
-</li><li>Backslashes in UNC path not escaped (eg <code>\\server\share\file</code> (incorrect), instead of <code>\\\\server\\share\\extension</code> (correct)
-</li><li>Permissions problems on a network share
-</li></ul>
+<p><b>What are some common mistakes
+when installing with the preferences file?</b> </p>
+<ul>
+  <li>
+    Not specifying the same id/version
+    as the one listed in the <code>.crx</code> </li>
+  <li>
+    <code>external_extension.json</code> is in the wrong location </li>
+  <li>
+    Syntax error in JSON file
+    (forgetting to separate entries with comma or
+    leaving a trailing comma somewhere) </li>
+  <li>
+    Extra curly brackets around the top level dictionary </li>
+  <li>
+    JSON file entry points to the wrong path
+    to the <code>.crx</code> (or path specified but no filename) </li>
+  <li>
+    Backslashes in UNC path not escaped
+    (for example, <code>\\server\share\file</code> is wrong;
+    it should be <code>\\\\server\\share\\extension</code>) </li>
+  <li>
+    Permissions problems on a network share </li>
+</ul>
 
 <br>
 
 <p><b>What are some common mistakes when installing with the registry?</b>
 </p><ul>
-<li>Not specifying the same id/version as the one listed in the .crx
-</li><li>Key created in the wrong location in the registry
-</li><li>Registry entry points to the wrong path to the .crx (or path specified but no filename)
-</li><li>Permissions problems on a network share
-</li></ul>
+  <li>Not specifying the same id/version
+    as the one listed in the <code>.crx</code> </li>
+  <li>Key created in the wrong location in the registry </li>
+  <li>Registry entry points to the wrong path to the <code>.crx</code> file
+    (or path specified but no filename) </li>
+  <li>Permissions problems on a network share </li>
+</ul>
 
 <br>
 
 <p><b>What if the user uninstalls the extension?</b>
 </p><p>If the user uninstalls the extension through the UI, it will no
 longer be installed or updated on each startup. In other words, the
-external extension is blacklisted.
+external extension is blacklisted. </p>
 
-<br><br>
+<br>
 
-
-</p><p><b>How do I get off the blacklist?</b>
+<p><b>How do I get off the blacklist?</b>
 </p><p>If the user uninstalls your extension, you should respect that
 decision. However, if you (the developer) accidentally uninstalled
 your extension through the UI,
 you can remove the blacklist tag
 by installing the extension normally
-through the UI, and then uninstalling it.
-</p></div>
+through the UI, and then uninstalling it. </p>
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage" style="display: none; ">
