@@ -90,7 +90,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     CreateReason reason,
     int digest_nonce_count,
     const BoundNetLog& net_log,
-    scoped_refptr<HttpAuthHandler>* handler) {
+    scoped_ptr<HttpAuthHandler>* handler) {
   return ERR_UNSUPPORTED_AUTH_SCHEME;
 }
 
