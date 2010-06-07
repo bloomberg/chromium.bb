@@ -53,6 +53,11 @@
 #include "v8/include/v8.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/syslogs_library.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/views/about_ipc_dialog.h"
 #include "chrome/browser/views/about_network_dialog.h"
@@ -102,6 +107,7 @@ const char kLinuxProxyConfigPath[] = "linux-proxy-config";
 #if defined(OS_CHROMEOS)
 const char kNetworkPath[] = "network";
 const char kOSCreditsPath[] = "os-credits";
+const char kSysPath[] = "system";
 #endif
 
 // Points to the singleton AboutSource object, if any.
@@ -194,7 +200,7 @@ class ChromeOSAboutVersionHandler {
   chromeos::VersionLoader loader_;
 
   // Used to request the version.
-  CancelableRequestConsumer consumer_;
+ CancelableRequestConsumer consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSAboutVersionHandler);
 };
@@ -646,6 +652,35 @@ std::string AboutSync() {
       sync_html, &strings , "t" /* template root node id */);
 }
 
+#if defined(OS_CHROMEOS)
+std::string AboutSys() {
+  DictionaryValue strings;
+  chromeos::SyslogsLibrary* syslogs_lib =
+      chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
+  scoped_ptr<chromeos::LogDictionaryType> sys_info_;
+  if (syslogs_lib)
+    sys_info_.reset(syslogs_lib->GetSyslogs(new FilePath()));
+  if (sys_info_.get()) {
+     ListValue* details = new ListValue();
+     strings.Set(L"details", details);
+     chromeos::LogDictionaryType::iterator it;
+
+     for (it = sys_info_.get()->begin(); it != sys_info_.get()->end(); ++it) {
+       DictionaryValue* val = new DictionaryValue;
+       val->SetString(L"stat_name", (*it).first);
+       val->SetString(L"stat_value", (*it).second);
+       details->Append(val);
+     }
+  }
+  static const base::StringPiece sys_html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_ABOUT_SYS_HTML));
+
+  return jstemplate_builder::GetTemplateHtml(
+        sys_html, &strings , "t" /* template root node id */);
+}
+#endif
+
 // AboutSource -----------------------------------------------------------------
 
 AboutSource::AboutSource()
@@ -723,6 +758,10 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #endif
   } else if (path == kSyncPath) {
     response = AboutSync();
+#if defined(OS_CHROMEOS)
+  } else if (path == kSysPath) {
+    response = AboutSys();
+#endif
   }
 
   FinishDataRequest(response, request_id);

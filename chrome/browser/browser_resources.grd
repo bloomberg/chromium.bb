@@ -41,7 +41,8 @@ without changes to the corresponding grd file.  taarraa -->
   <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
   <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
   <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />
-  <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />
+  <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />   
+  <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
       </if>
       <include name="IDR_APP_GALLERY_ICON" file="resources\app_gallery_icon.png" type="BINDATA" />
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
