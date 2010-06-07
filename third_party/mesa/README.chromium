@@ -19,3 +19,9 @@ Later modifications:
 - Added OSMesaGetProcAddress to MesaLib/src/mesa/drivers/osmesa/osmesa.def
 
 - Added #pragma optimize('', off) to MesaLib\src\mesa\swrast\s_textcombine.c
+
+- Deleted MesaLib/include/EGL/ - it was conflicting with angle
+
+- Changed these typedefs in glext.h to be the same as khrplatform.h
+    typedef signed long int GLintptr;
+    typedef signed long int GLsizeiptr;

@@ -4404,14 +4404,14 @@ typedef char GLchar;
 
 #ifndef GL_VERSION_1_5
 /* GL types for handling large vertex buffer objects */
-typedef ptrdiff_t GLintptr;
-typedef ptrdiff_t GLsizeiptr;
+typedef signed long int GLintptr;
+typedef signed long int GLsizeiptr;
 #endif
 
 #ifndef GL_ARB_vertex_buffer_object
 /* GL types for handling large vertex buffer objects */
-typedef ptrdiff_t GLintptrARB;
-typedef ptrdiff_t GLsizeiptrARB;
+typedef signed long int GLintptrARB;
+typedef signed long int GLsizeiptrARB;
 #endif
 
 #ifndef GL_ARB_shader_objects
