@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_KEY_EVENT_LISTENER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_KEY_EVENT_LISTENER_H_
 
-#include <gtk/gtk.h>
-
-#include <string>
-
 #include "base/singleton.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 
 namespace chromeos {
+
+class AudioHandler;
+
+// SystemKeyEventListener listens for volume related key presses from the
+// window manager, then tells the AudioHandler to adjust volume accordingly.
+// Start by just calling instance() to get it going.
 
 class SystemKeyEventListener : public WmMessageListener::Observer {
  public:
@@ -30,7 +32,9 @@ class SystemKeyEventListener : public WmMessageListener::Observer {
   SystemKeyEventListener();
   virtual ~SystemKeyEventListener();
 
-  void RunCommand(std::string command);
+  // AudioHandler is a Singleton class we are just caching a pointer to here,
+  // and we do not own the pointer.
+  AudioHandler* const audio_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemKeyEventListener);
 };

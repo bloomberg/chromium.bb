@@ -339,6 +339,8 @@
         'browser/chromeos/notifications/system_notification.cc',
         'browser/chromeos/notifications/system_notification_factory.h',
         'browser/chromeos/notifications/system_notification_factory.cc',
+        'browser/chromeos/audio_handler.cc',
+        'browser/chromeos/audio_handler.h',
         'browser/chromeos/boot_times_loader.cc',
         'browser/chromeos/boot_times_loader.h',
         'browser/chromeos/browser_notification_observers.cc',
@@ -505,6 +507,8 @@
         'browser/chromeos/pipe_reader.h',
         'browser/chromeos/preferences.cc',
         'browser/chromeos/preferences.h',
+        'browser/chromeos/pulse_audio_mixer.cc',
+        'browser/chromeos/pulse_audio_mixer.h',
         'browser/chromeos/status/browser_status_area_view.cc',
         'browser/chromeos/status/browser_status_area_view.h',
         'browser/chromeos/status/clock_menu_button.cc',
@@ -2628,7 +2632,12 @@
         ['chromeos==1', {
           'sources!': [
             'browser/platform_util_linux.cc',
-          ]
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lpulse',
+            ],
+          },
         }],
         ['OS=="linux"', {
           'dependencies': [

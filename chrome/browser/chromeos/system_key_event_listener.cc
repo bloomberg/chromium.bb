@@ -4,27 +4,14 @@
 
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 
+#include "chrome/browser/chromeos/audio_handler.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 namespace chromeos {
 
-// For now, this file contains the SystemKeyEventListener, which listens for key
-// presses from Window Manager, and just calls amixer to adjust volume.  Start
-// by just calling instance() to get it going.
-//
-// TODO(davej): Create AudioHandler() class and call its volume up/down/mute
-// functions, getting rid of these constants and RunCommand().  This class will
-// eventually call PulseAudio directly to get current volume and adjust
-// accordingly, giving us more control over Mute/UnMute behavior as well.
-
 namespace {
 
-const char kIncreaseVolumeLevelCommand[] =
-    "/usr/bin/amixer -- sset Master unmute 5%+";
-const char kDecreaseVolumeLevelCommand[] =
-    "/usr/bin/amixer -- sset Master unmute 5%-";
-const char kMuteAudioCommand[] =
-    "/usr/bin/amixer -- sset Master mute";
+const double kStepPercentage = 4.0;
 
 }  // namespace
 
@@ -34,7 +21,8 @@ SystemKeyEventListener* SystemKeyEventListener::instance() {
   return instance;
 }
 
-SystemKeyEventListener::SystemKeyEventListener() {
+SystemKeyEventListener::SystemKeyEventListener()
+    : audio_handler_(AudioHandler::instance()) {
   WmMessageListener::instance()->AddObserver(this);
 }
 
@@ -47,16 +35,23 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
   if (message.type() != WM_IPC_MESSAGE_CHROME_NOTIFY_SYSKEY_PRESSED)
     return;
 
-  // TODO(davej): Use WmIpcSystemKey enums when available.
   switch (message.param(0)) {
-    case 0:
-      RunCommand(kMuteAudioCommand);
+    case WM_IPC_SYSTEM_KEY_VOLUME_MUTE:
+      // TODO(davej): Toggle behavior is broken until we can either recieve
+      // notification of key up events without autorepeat, or add a timer to
+      // ignore autorepeated keys.  Currently we get notified on key down and
+      // key repeat which would cause us to rapidly cycle mute/unmute/mute as
+      // long as mute key was held.
+      // Refer to http://crosbug.com/3754 and http://crosbug.com/3751
+      audio_handler_->SetMute(true);
       break;
-    case 1:
-      RunCommand(kDecreaseVolumeLevelCommand);
+    case WM_IPC_SYSTEM_KEY_VOLUME_DOWN:
+      audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
+      audio_handler_->SetMute(false);
       break;
-    case 2:
-      RunCommand(kIncreaseVolumeLevelCommand);
+    case WM_IPC_SYSTEM_KEY_VOLUME_UP:
+      audio_handler_->AdjustVolumeByPercent(kStepPercentage);
+      audio_handler_->SetMute(false);
       break;
     default:
       DLOG(ERROR) << "SystemKeyEventListener: Unexpected message "
@@ -65,13 +60,5 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
   }
 }
 
-void SystemKeyEventListener::RunCommand(std::string command) {
-  if (command.empty())
-    return;
-  command += " &";
-  DLOG(INFO) << "Running command \"" << command << "\"";
-  if (system(command.c_str()) < 0)
-    LOG(WARNING) << "Got error while running \"" << command << "\"";
-}
-
 }  // namespace chromeos
+
