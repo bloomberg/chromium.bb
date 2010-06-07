@@ -52,7 +52,7 @@ deps = {
     "http://gyp.googlecode.com/svn/trunk@826",
 
   "src/v8":
-    "http://v8.googlecode.com/svn/trunk@4730",
+    "http://v8.googlecode.com/svn/trunk@4809",
 
   "src/native_client":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" +
