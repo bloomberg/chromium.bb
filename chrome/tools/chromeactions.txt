@@ -371,6 +371,8 @@
 0x69fae31849862d21	OverrideEncoding
 0xee3677bcca83ece9	PageDown
 0x9b869c510c75c582	PageUp
+0x9ba3ff80fde405cd	PasswordManager_Disabled
+0x6cc1116fbd900ebf	PasswordManager_Enabled
 0x36bb6559696dc912	Paste
 0x5d0e6942f354a06c	PasteAndMatchStyle
 0x352f2d6315d52044	PrintNow

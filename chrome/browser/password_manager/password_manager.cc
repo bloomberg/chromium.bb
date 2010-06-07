@@ -8,8 +8,10 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/platform_thread.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -26,6 +28,27 @@ void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPasswordManagerEnabled, true);
 }
 
+// This routine is called when PasswordManagers are constructed.
+//
+// Currently we report metrics only once at startup. We require 
+// that this is only ever called from a single thread in order to 
+// avoid needing to lock (a static boolean flag is then sufficient to
+// guarantee running only once).
+static void ReportMetrics(bool password_manager_enabled) {
+  static PlatformThreadId initial_thread_id = PlatformThread::CurrentId();
+  DCHECK(initial_thread_id == PlatformThread::CurrentId());
+
+  static bool ran_once = false;
+  if (ran_once)
+    return;
+  ran_once = true;
+  
+  if (password_manager_enabled)
+    UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Enabled"));
+  else
+    UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
+}      
+  
 PasswordManager::PasswordManager(Delegate* delegate)
     : login_managers_deleter_(&pending_login_managers_),
       delegate_(delegate),
@@ -33,6 +56,8 @@ PasswordManager::PasswordManager(Delegate* delegate)
   DCHECK(delegate_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
       delegate_->GetProfileForPasswordManager()->GetPrefs(), NULL);
+ 
+  ReportMetrics(*password_manager_enabled_);
 }
 
 PasswordManager::~PasswordManager() {
