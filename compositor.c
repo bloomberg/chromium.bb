@@ -1381,6 +1381,7 @@ static void on_enter_vt(int signal_number, void *data)
 	ret = drmSetMaster(ec->drm_fd);
 	if (ret) {
 		fprintf(stderr, "failed to set drm master\n");
+		on_term_signal(SIGTERM, ec);
 		return;
 	}
 
@@ -1405,6 +1406,7 @@ static void on_leave_vt(int signal_number, void *data)
 	ret = drmDropMaster(ec->drm_fd);
 	if (ret) {
 		fprintf(stderr, "failed to drop drm master\n");
+		on_term_signal(SIGTERM, ec);
 		return;
 	}
 
