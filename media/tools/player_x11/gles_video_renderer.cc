@@ -5,6 +5,7 @@
 #include "media/tools/player_x11/gles_video_renderer.h"
 
 #include <dlfcn.h>
+#include <EGL/eglext.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/Xcomposite.h>
@@ -18,7 +19,9 @@
 GlesVideoRenderer* GlesVideoRenderer::instance_ = NULL;
 
 GlesVideoRenderer::GlesVideoRenderer(Display* display, Window window)
-    : display_(display),
+    : egl_create_image_khr_(NULL),
+      egl_destroy_image_khr_(NULL),
+      display_(display),
       window_(window),
       new_frame_(false),
       egl_display_(NULL),
@@ -43,6 +46,14 @@ void GlesVideoRenderer::OnStop() {
   // calls may fail. Need to fix them.
   eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
                  EGL_NO_SURFACE, EGL_NO_CONTEXT);
+  for (size_t i = 0; i < egl_frames_.size(); ++i) {
+    scoped_refptr<media::VideoFrame> frame = egl_frames_[i].first;
+    if (frame->private_buffer())
+      egl_destroy_image_khr_(egl_display_, frame->private_buffer());
+    if (egl_frames_[i].second)
+      glDeleteTextures(1, &egl_frames_[i].second);
+  }
+  egl_frames_.clear();
   eglDestroyContext(egl_display_, egl_context_);
   eglDestroySurface(egl_display_, egl_surface_);
 }
@@ -68,6 +79,14 @@ static const float kTextureCoords[8] = {
   0, 1,
   1, 0,
   1, 1,
+};
+
+// Texture Coordinates mapping the entire texture for EGL image.
+static const float kTextureCoordsEgl[8] = {
+  0, 1,
+  0, 0,
+  1, 1,
+  1, 0,
 };
 
 // Pass-through vertex shader.
@@ -101,6 +120,16 @@ static const char kFragmentShader[] =
     "  float v = texture2D(v_tex, interp_tc).r - half;\n"
     "  vec3 rgb = yuv2rgb * vec3(y, u, v);\n"
     "  gl_FragColor = vec4(rgb, 1);\n"
+    "}\n";
+
+// Color shader for EGLImage.
+static const char kFragmentShaderEgl[] =
+    "varying vec2 interp_tc;\n"
+    "\n"
+    "uniform sampler2D tex;\n"
+    "\n"
+    "void main() {\n"
+    "  gl_FragColor = texture2D(tex, interp_tc);\n"
     "}\n";
 
 // Buffer size for compile errors.
@@ -149,8 +178,23 @@ void GlesVideoRenderer::Paint() {
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
 
-  if (!video_frame)
+  if (!video_frame.get()) {
     return;
+  }
+
+  if (uses_egl_image_) {
+    if (media::VideoFrame::TYPE_EGL_IMAGE == video_frame->type()) {
+
+      GLuint texture = FindTexture(video_frame);
+      if (texture) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        eglSwapBuffers(egl_display_, egl_surface_);
+      }
+    }
+    return;
+  }
 
   // Convert YUV frame to RGB.
   DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
@@ -198,6 +242,17 @@ void GlesVideoRenderer::Paint() {
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   eglSwapBuffers(egl_display_, egl_surface_);
+}
+
+// find if texture exists corresponding to video_frame
+GLuint GlesVideoRenderer::FindTexture(
+    scoped_refptr<media::VideoFrame> video_frame) {
+  for (size_t i = 0; i < egl_frames_.size(); ++i) {
+    scoped_refptr<media::VideoFrame> frame = egl_frames_[i].first;
+    if (video_frame->private_buffer() == frame->private_buffer())
+      return egl_frames_[i].second;
+  }
+  return NULL;
 }
 
 bool GlesVideoRenderer::InitializeGles() {
@@ -288,6 +343,127 @@ bool GlesVideoRenderer::InitializeGles() {
   eglQuerySurface(egl_display_, egl_surface_, EGL_HEIGHT, &height);
   glViewport(0, 0, width_, height_);
 
+  if (uses_egl_image_) {
+    CreateTextureAndProgramEgl();
+    return true;
+  }
+
+  CreateTextureAndProgramYuv2Rgb();
+
+  // We are getting called on a thread. Release the context so that it can be
+  // made current on the main thread.
+  // TODO(hclam): Fix this if neccessary. Currently the following call fails
+  // for some drivers.
+  // eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
+  //                EGL_NO_SURFACE, EGL_NO_CONTEXT);
+  return true;
+}
+
+void GlesVideoRenderer::CreateShader(GLuint program,
+                                     GLenum type,
+                                     const char* source,
+                                     int size) {
+  GLuint shader = glCreateShader(type);
+  glShaderSource(shader, 1, &source, &size);
+  glCompileShader(shader);
+  int result = GL_FALSE;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+  if (!result) {
+    char log[kErrorSize];
+    int len;
+    glGetShaderInfoLog(shader, kErrorSize - 1, &len, log);
+    log[kErrorSize - 1] = 0;
+    LOG(FATAL) << log;
+  }
+  glAttachShader(program, shader);
+  glDeleteShader(shader);
+}
+
+void GlesVideoRenderer::LinkProgram(GLuint program) {
+  glLinkProgram(program);
+  int result = GL_FALSE;
+  glGetProgramiv(program, GL_LINK_STATUS, &result);
+  if (!result) {
+    char log[kErrorSize];
+    int len;
+    glGetProgramInfoLog(program, kErrorSize - 1, &len, log);
+    log[kErrorSize - 1] = 0;
+    LOG(FATAL) << log;
+  }
+  glUseProgram(program);
+  glDeleteProgram(program);
+}
+
+void GlesVideoRenderer::CreateTextureAndProgramEgl() {
+  if (!egl_create_image_khr_)
+    egl_create_image_khr_ = reinterpret_cast<PFNEGLCREATEIMAGEKHRPROC>
+                            (eglGetProcAddress("eglCreateImageKHR"));
+  if (!egl_destroy_image_khr_)
+    egl_destroy_image_khr_ = reinterpret_cast<PFNEGLDESTROYIMAGEKHRPROC>
+                             (eglGetProcAddress("eglDestroyImageKHR"));
+  // TODO(wjia): get count from decoder.
+  for (int i = 0; i < 4; i++) {
+    GLuint texture;
+    EGLint attrib = EGL_NONE;
+    EGLImageKHR egl_image;
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        width_,
+        height_,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    egl_image = egl_create_image_khr_(
+        egl_display_,
+        egl_context_,
+        EGL_GL_TEXTURE_2D_KHR,
+        reinterpret_cast<EGLClientBuffer>(texture),
+        &attrib);
+
+    scoped_refptr<media::VideoFrame> video_frame;
+    const base::TimeDelta kZero;
+    media::VideoFrame:: CreatePrivateFrame(
+        media::VideoFrame::TYPE_EGL_IMAGE,
+        media::VideoFrame::RGB565,
+        width_, height_, kZero, kZero,
+        egl_image,
+        &video_frame);
+    egl_frames_.push_back(std::make_pair(video_frame, texture));
+    GetDecoder()->FillThisBuffer(video_frame);
+  }
+
+  GLuint program = glCreateProgram();
+
+  // Create shader for EGL image
+  CreateShader(program, GL_VERTEX_SHADER,
+               kVertexShader, sizeof(kVertexShader));
+  CreateShader(program, GL_FRAGMENT_SHADER,
+               kFragmentShaderEgl, sizeof(kFragmentShaderEgl));
+  LinkProgram(program);
+
+  // Bind parameters.
+  glUniform1i(glGetUniformLocation(program, "tex"), 0);
+
+  int pos_location = glGetAttribLocation(program, "in_pos");
+  glEnableVertexAttribArray(pos_location);
+  glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, kVertices);
+
+  int tc_location = glGetAttribLocation(program, "in_tc");
+  glEnableVertexAttribArray(tc_location);
+  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
+                        kTextureCoordsEgl);
+}
+
+void GlesVideoRenderer::CreateTextureAndProgramYuv2Rgb() {
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.
   glGenTextures(media::VideoFrame::kNumYUVPlanes, textures_);
@@ -313,52 +489,11 @@ bool GlesVideoRenderer::InitializeGles() {
   GLuint program = glCreateProgram();
 
   // Create our YUV->RGB shader.
-  GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  const char* vs_source = kVertexShader;
-  int vs_size = sizeof(kVertexShader);
-  glShaderSource(vertex_shader, 1, &vs_source, &vs_size);
-  glCompileShader(vertex_shader);
-  int result = GL_FALSE;
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &result);
-  if (!result) {
-    char log[kErrorSize];
-    int len;
-    glGetShaderInfoLog(vertex_shader, kErrorSize - 1, &len, log);
-    log[kErrorSize - 1] = 0;
-    LOG(FATAL) << log;
-  }
-  glAttachShader(program, vertex_shader);
-  glDeleteShader(vertex_shader);
-
-  GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  const char* ps_source = kFragmentShader;
-  int ps_size = sizeof(kFragmentShader);
-  glShaderSource(fragment_shader, 1, &ps_source, &ps_size);
-  glCompileShader(fragment_shader);
-  result = GL_FALSE;
-  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &result);
-  if (!result) {
-    char log[kErrorSize];
-    int len;
-    glGetShaderInfoLog(fragment_shader, kErrorSize - 1, &len, log);
-    log[kErrorSize - 1] = 0;
-    LOG(FATAL) << log;
-  }
-  glAttachShader(program, fragment_shader);
-  glDeleteShader(fragment_shader);
-
-  glLinkProgram(program);
-  result = GL_FALSE;
-  glGetProgramiv(program, GL_LINK_STATUS, &result);
-  if (!result) {
-    char log[kErrorSize];
-    int len;
-    glGetProgramInfoLog(program, kErrorSize - 1, &len, log);
-    log[kErrorSize - 1] = 0;
-    LOG(FATAL) << log;
-  }
-  glUseProgram(program);
-  glDeleteProgram(program);
+  CreateShader(program, GL_VERTEX_SHADER,
+               kVertexShader, sizeof(kVertexShader));
+  CreateShader(program, GL_FRAGMENT_SHADER,
+               kFragmentShaderEgl, sizeof(kFragmentShader));
+  LinkProgram(program);
 
   // Bind parameters.
   glUniform1i(glGetUniformLocation(program, "y_tex"), 0);
@@ -377,12 +512,4 @@ bool GlesVideoRenderer::InitializeGles() {
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
                         kTextureCoords);
-
-  // We are getting called on a thread. Release the context so that it can be
-  // made current on the main thread.
-  // TODO(hclam): Fix this if neccessary. Currently the following call fails
-  // for some drivers.
-  // eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
-  //                EGL_NO_SURFACE, EGL_NO_CONTEXT);
-  return true;
 }

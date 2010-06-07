@@ -43,6 +43,7 @@ class OmxVideoDecodeEngine :
                           FillThisBufferCallback* fill_buffer_callback,
                           Task* done_cb);
   virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
+  virtual void FillThisBuffer(scoped_refptr<VideoFrame> video_frame);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
 
@@ -90,11 +91,11 @@ class OmxVideoDecodeEngine :
   typedef Callback0::Type Callback;
 
   // calls into other classes
-  void OnFeedDone(scoped_refptr<Buffer> buffer);
+  void FinishEmptyBuffer(scoped_refptr<Buffer> buffer);
   void OnFormatChange(
       const OmxConfigurator::MediaFormat& input_format,
       const OmxConfigurator::MediaFormat& output_format);
-  void OnReadComplete(OMX_BUFFERHEADERTYPE* buffer);
+  void FinishFillBuffer(OMX_BUFFERHEADERTYPE* buffer);
   // Helper method to perform tasks when this object is stopped.
   void OnStopDone();
 
@@ -107,7 +108,6 @@ class OmxVideoDecodeEngine :
   bool CreateComponent();
   void DoneSetStateIdle(OMX_STATETYPE state);
   void DoneSetStateExecuting(OMX_STATETYPE state);
-  void OnReceiveOneOutputBuffer(scoped_refptr<VideoFrame> video_frame);
   void OnPortSettingsChangedRun(OMX_INDEXTYPE index, int port);
   void OnPortDisableEventRun(int port);
   void SetupOutputPort();

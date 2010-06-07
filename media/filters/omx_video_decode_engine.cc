@@ -49,10 +49,13 @@ OmxVideoDecodeEngine::OmxVideoDecodeEngine()
       component_handle_(NULL),
       output_frames_allocated_(false),
       need_setup_output_port_(false) {
+  // TODO(wjia): change uses_egl_image_ to runtime setup
 #if ENABLE_EGLIMAGE == 1
   uses_egl_image_ = true;
+  DLOG(INFO) << "Uses egl image for output";
 #else
   uses_egl_image_ = false;
+  DLOG(INFO) << "Uses system memory for output";
 #endif
 }
 
@@ -113,12 +116,13 @@ void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanAcceptInput()) {
-    OnFeedDone(buffer);
+    FinishEmptyBuffer(buffer);
     return;
   }
 
   if (buffer->IsEndOfStream()) {
-      input_queue_has_eos_ = true;
+    DLOG(INFO) << "Input queue has EOS";
+    input_queue_has_eos_ = true;
   }
 
   // Queue this input buffer.
@@ -164,7 +168,8 @@ VideoDecodeEngine::State OmxVideoDecodeEngine::state() const {
 }
 
 void OmxVideoDecodeEngine::Stop(Callback0::Type* done_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  // TODO(wjia): make this call in the thread.
+  // DCHECK_EQ(message_loop_, MessageLoop::current());
 
   message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &OmxVideoDecodeEngine::StopTask, done_cb));
@@ -181,50 +186,48 @@ void OmxVideoDecodeEngine::OnFormatChange(
   // are already known from upper layer of the stack.
 }
 
-void OmxVideoDecodeEngine::OnFeedDone(scoped_refptr<Buffer> buffer) {
+void OmxVideoDecodeEngine::FinishEmptyBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  empty_this_buffer_callback_->Run(buffer);
+  if (!input_queue_has_eos_)
+    empty_this_buffer_callback_->Run(buffer);
 }
 
-void OmxVideoDecodeEngine::OnReadComplete(OMX_BUFFERHEADERTYPE* buffer) {
+void OmxVideoDecodeEngine::FinishFillBuffer(OMX_BUFFERHEADERTYPE* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
+  scoped_refptr<VideoFrame> frame;
   // EOF
   if (!buffer) {
-    scoped_refptr<VideoFrame> frame = NULL;
+    VideoFrame::CreateEmptyFrame(&frame);
     fill_this_buffer_callback_->Run(frame);
     return;
   }
 
-  scoped_refptr<VideoFrame> frame;
   if (uses_egl_image_) {
-    frame =
-        *static_cast<scoped_refptr<VideoFrame>* >(buffer->pAppPrivate);
-    fill_this_buffer_callback_->Run(frame);
-    return;
+    frame = static_cast<VideoFrame*>(buffer->pAppPrivate);
+  } else {
+    VideoFrame::CreateFrame(GetSurfaceFormat(),
+                            width_, height_,
+                            StreamSample::kInvalidTimestamp,
+                            StreamSample::kInvalidTimestamp,
+                            &frame);
+    if (!frame.get()) {
+      // TODO(jiesun): this is also an error case handled as normal.
+      return;
+    }
+
+    // TODO(jiesun): Assume YUV 420 format.
+    const int pixels = width_ * height_;
+    memcpy(frame->data(VideoFrame::kYPlane), buffer->pBuffer, pixels);
+    memcpy(frame->data(VideoFrame::kUPlane), buffer->pBuffer + pixels,
+           pixels / 4);
+    memcpy(frame->data(VideoFrame::kVPlane),
+           buffer->pBuffer + pixels + pixels / 4,
+           pixels / 4);
   }
 
-  VideoFrame::CreateFrame(GetSurfaceFormat(),
-                          width_, height_,
-                          StreamSample::kInvalidTimestamp,
-                          StreamSample::kInvalidTimestamp,
-                          &frame);
-  if (!frame.get()) {
-    // TODO(jiesun): this is also an error case handled as normal.
-    return;
-  }
-
-  // TODO(jiesun): Assume YUV 420 format.
-  const int pixels = width_ * height_;
-  memcpy(frame->data(VideoFrame::kYPlane), buffer->pBuffer, pixels);
-  memcpy(frame->data(VideoFrame::kUPlane), buffer->pBuffer + pixels,
-         pixels / 4);
-  memcpy(frame->data(VideoFrame::kVPlane),
-         buffer->pBuffer + pixels + pixels /4,
-         pixels / 4);
-
-  frame->SetTimestamp(base::TimeDelta::FromMilliseconds(buffer->nTimeStamp));
+  frame->SetTimestamp(base::TimeDelta::FromMicroseconds(buffer->nTimeStamp));
   frame->SetDuration(frame->GetTimestamp() - last_pts_);
   last_pts_ = frame->GetTimestamp();
 
@@ -444,10 +447,12 @@ bool OmxVideoDecodeEngine::CreateComponent() {
     return false;
   }
 
-  // override buffer count when EGLImage is used
+  // TODO(wjia): use same buffer recycling for EGLImage and system memory.
+  // Override buffer count when EGLImage is used.
   if (uses_egl_image_) {
+    // TODO(wjia): remove hard-coded value
     port_format.nBufferCountActual = port_format.nBufferCountMin =
-       output_buffer_count_ = 3;
+       output_buffer_count_ = 4;
 
     omxresult = OMX_SetParameter(component_handle_,
                                  OMX_IndexParamPortDefinition,
@@ -470,6 +475,7 @@ void OmxVideoDecodeEngine::DoneSetStateIdle(OMX_STATETYPE state) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(client_state_, kClientInitializing);
   DCHECK_EQ(OMX_StateIdle, state);
+  DLOG(INFO) << "OMX video decode engine is in Idle";
 
   il_state_ = kIlIdle;
   OnStateSetEventFunc = &OmxVideoDecodeEngine::DoneSetStateExecuting;
@@ -485,6 +491,7 @@ void OmxVideoDecodeEngine::DoneSetStateExecuting(OMX_STATETYPE state) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(client_state_, kClientInitializing);
   DCHECK_EQ(OMX_StateExecuting, state);
+  DLOG(INFO) << "OMX video decode engine is in Executing";
 
   il_state_ = kIlExecuting;
   client_state_ = kClientRunning;
@@ -503,8 +510,12 @@ void OmxVideoDecodeEngine::DoneSetStateExecuting(OMX_STATETYPE state) {
 
 // Function for receiving output buffers. Hookup for buffer recycling
 // and outside allocator.
-void OmxVideoDecodeEngine::OnReceiveOneOutputBuffer(
+void OmxVideoDecodeEngine::FillThisBuffer(
     scoped_refptr<VideoFrame> video_frame) {
+  // TODO(wjia): merge buffer recycling for EGLImage and system memory path.
+  if (!video_frame.get() || VideoFrame::TYPE_EGL_IMAGE != video_frame->type())
+    return;
+
   OMX_BUFFERHEADERTYPE* omx_buffer = FindOmxBuffer(video_frame);
   if (omx_buffer) {
     if (kClientRunning == client_state_) {
@@ -524,8 +535,9 @@ void OmxVideoDecodeEngine::OnReceiveOneOutputBuffer(
       static_cast<int>(output_frames_.size()) == output_buffer_count_) {
     output_frames_allocated_ = true;
 
-    if (need_setup_output_port_)
+    if (need_setup_output_port_) {
       SetupOutputPort();
+    }
   }
 
   if (kClientError == client_state_) {
@@ -540,6 +552,12 @@ void OmxVideoDecodeEngine::OnPortSettingsChangedRun(OMX_INDEXTYPE index,
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(client_state_, kClientRunning);
   DCHECK_EQ(port, output_port_);
+
+  // TODO(wjia): add buffer negotiation between decoder and renderer.
+  if (uses_egl_image_) {
+    DLOG(INFO) << "Port settings are changed";
+    return;
+  }
 
   if (index != OMX_IndexParamPortDefinition)
     return;
@@ -609,16 +627,19 @@ void OmxVideoDecodeEngine::OnPortDisableEventRun(int port) {
 
 // Enable output port and allocate buffers correspondingly
 void OmxVideoDecodeEngine::SetupOutputPort() {
-  DCHECK_EQ(client_state_, kClientRunning);
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   need_setup_output_port_ = false;
 
-  // Enable output port.
-  output_port_state_ = kPortEnabling;
-  OnPortEnableEventFunc = &OmxVideoDecodeEngine::OnPortEnableEventRun;
-  ChangePort(OMX_CommandPortEnable, output_port_);
-  if (kClientError == client_state_) {
-    return;
+  // Enable output port when necessary since the port could be waiting for
+  // buffers, instead of port reconfiguration.
+  if (kPortEnabled != output_port_state_) {
+    output_port_state_ = kPortEnabling;
+    OnPortEnableEventFunc = &OmxVideoDecodeEngine::OnPortEnableEventRun;
+    ChangePort(OMX_CommandPortEnable, output_port_);
+    if (kClientError == client_state_) {
+      return;
+    }
   }
 
   // TODO(wjia): add state checking
@@ -633,8 +654,8 @@ void OmxVideoDecodeEngine::SetupOutputPort() {
 // Post output port enabling
 void OmxVideoDecodeEngine::OnPortEnableEventRun(int port) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  DCHECK_EQ(client_state_, kClientRunning);
   DCHECK_EQ(port, output_port_);
+  DCHECK_EQ(client_state_, kClientRunning);
 
   output_port_state_ = kPortEnabled;
   last_pts_ = base::TimeDelta::FromMilliseconds(0);
@@ -669,6 +690,7 @@ void OmxVideoDecodeEngine::StopTask(Callback* callback) {
 void OmxVideoDecodeEngine::DeinitFromExecuting(OMX_STATETYPE state) {
   DCHECK_EQ(state, OMX_StateExecuting);
 
+  DLOG(INFO) << "Deinit from Executing";
   OnStateSetEventFunc = &OmxVideoDecodeEngine::DeinitFromIdle;
   TransitionToState(OMX_StateIdle);
   expected_il_state_ = kIlIdle;
@@ -678,6 +700,7 @@ void OmxVideoDecodeEngine::DeinitFromIdle(OMX_STATETYPE state) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(state, OMX_StateIdle);
 
+  DLOG(INFO) << "Deinit from Idle";
   il_state_ = kIlIdle;
   OnStateSetEventFunc = &OmxVideoDecodeEngine::DeinitFromLoaded;
   TransitionToState(OMX_StateLoaded);
@@ -691,6 +714,7 @@ void OmxVideoDecodeEngine::DeinitFromLoaded(OMX_STATETYPE state) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(state, OMX_StateLoaded);
 
+  DLOG(INFO) << "Deinit from Loaded";
   il_state_ = kIlLoaded;
   if (component_handle_) {
     OMX_ERRORTYPE result = OMX_FreeHandle(component_handle_);
@@ -751,6 +775,12 @@ bool OmxVideoDecodeEngine::AllocateOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // DCHECK_EQ(output_buffer_count_, static_cast<int>(output_frames_.size()));
 
+  if (uses_egl_image_ && !output_frames_allocated_) {
+    DLOG(INFO) << "Output frames are not allocated yet";
+    need_setup_output_port_ = true;
+    return true;
+  }
+
   for (int i = 0; i < output_buffer_count_; ++i) {
     OMX_BUFFERHEADERTYPE* buffer;
     OMX_ERRORTYPE error;
@@ -759,7 +789,7 @@ bool OmxVideoDecodeEngine::AllocateOutputBuffers() {
       scoped_refptr<VideoFrame> video_frame = output_frame.first;
       DCHECK(!output_frame.second);
       error = OMX_UseEGLImage(component_handle_, &buffer, output_port_,
-                              &video_frame, video_frame->private_buffer());
+                              video_frame.get(), video_frame->private_buffer());
       if (error != OMX_ErrorNone)
         return false;
       output_frames_[i].second = buffer;
@@ -798,8 +828,9 @@ void OmxVideoDecodeEngine::FreeOutputBuffers() {
   if (uses_egl_image_) {
     for (size_t i = 0; i < output_frames_.size(); ++i) {
       OMX_BUFFERHEADERTYPE* omx_buffer = output_frames_[i].second;
-      if (!omx_buffer)
+      if (omx_buffer) {
         OMX_FreeBuffer(component_handle_, output_port_, omx_buffer);
+      }
     }
     output_frames_.clear();
   } else {
@@ -814,7 +845,7 @@ void OmxVideoDecodeEngine::FreeInputQueue() {
 
   while (!pending_input_queue_.empty()) {
     scoped_refptr<Buffer> buffer = pending_input_queue_.front();
-    OnFeedDone(buffer);
+    FinishEmptyBuffer(buffer);
     pending_input_queue_.pop();
   }
 }
@@ -911,13 +942,16 @@ void OmxVideoDecodeEngine::EmptyBufferTask() {
     available_input_buffers_.pop();
 
     input_has_fed_eos_ = buffer->IsEndOfStream();
+    if (input_has_fed_eos_) {
+      DLOG(INFO) << "Input has fed EOS";
+    }
 
     // setup |omx_buffer|.
     omx_buffer->pBuffer = const_cast<OMX_U8*>(buffer.get()->GetData());
     omx_buffer->nFilledLen = buffer.get()->GetDataSize();
     omx_buffer->nAllocLen = omx_buffer->nFilledLen;
     omx_buffer->nFlags |= input_has_fed_eos_ ? OMX_BUFFERFLAG_EOS : 0;
-    omx_buffer->nTimeStamp = buffer->GetTimestamp().InMilliseconds();
+    omx_buffer->nTimeStamp = buffer->GetTimestamp().InMicroseconds();
     omx_buffer->pAppPrivate = buffer.get();
 
     // Give this buffer to OMX.
@@ -940,10 +974,10 @@ void OmxVideoDecodeEngine::FulfillOneRead() {
     // If the buffer is real then send it to downstream.
     // Otherwise if it is an end-of-stream buffer then just drop it.
     if (buffer_id != kEosBuffer) {
-      OnReadComplete(output_buffers_[buffer_id]);
+      FinishFillBuffer(output_buffers_[buffer_id]);
       SendOutputBufferToComponent(output_buffers_[buffer_id]);
     } else {
-      OnReadComplete(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
+      FinishFillBuffer(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     }
   } else if (uses_egl_image_ && !output_frames_ready_.empty()) {
     OMX_BUFFERHEADERTYPE *buffer = output_frames_ready_.front();
@@ -952,9 +986,9 @@ void OmxVideoDecodeEngine::FulfillOneRead() {
     // If the buffer is real then send it to downstream.
     // Otherwise if it is an end-of-stream buffer then just drop it.
     if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
-      OnReadComplete(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
+      FinishFillBuffer(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     } else {
-      OnReadComplete(buffer);
+      FinishFillBuffer(buffer);
     }
   }
 }
@@ -968,7 +1002,7 @@ void OmxVideoDecodeEngine::InitialFillBuffer() {
 
   // Ask the decoder to fill the output buffers.
   if (uses_egl_image_) {
-    for (size_t i = 0; i < available_output_frames_.size(); ++i) {
+    while (!available_output_frames_.empty()) {
       OMX_BUFFERHEADERTYPE* omx_buffer = available_output_frames_.front();
       available_output_frames_.pop();
       SendOutputBufferToComponent(omx_buffer);
@@ -1068,7 +1102,8 @@ void OmxVideoDecodeEngine::EmptyBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   Buffer* stored_buffer = static_cast<Buffer*>(buffer->pAppPrivate);
-  OnFeedDone(stored_buffer);
+  buffer->pAppPrivate = NULL;
+  FinishEmptyBuffer(stored_buffer);
   stored_buffer->Release();
 
   // Enqueue the available buffer beacuse the decoder has consumed it.
@@ -1090,6 +1125,7 @@ void OmxVideoDecodeEngine::FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
   if (uses_egl_image_) {
     if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
       output_eos_ = true;
+      DLOG(INFO) << "Output has EOS";
     }
     output_frames_ready_.push(buffer);
   } else {
@@ -1108,6 +1144,7 @@ void OmxVideoDecodeEngine::FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
     if (buffer->nFlags & OMX_BUFFERFLAG_EOS || !buffer->nFilledLen) {
       buffer_id = kEosBuffer;
       output_eos_ = true;
+      DLOG(INFO) << "Output has EOS";
     }
     output_buffers_ready_.push(buffer_id);
   }

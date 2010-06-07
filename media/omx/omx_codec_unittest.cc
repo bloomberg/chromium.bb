@@ -307,7 +307,7 @@ class OmxCodecTest : public testing::Test {
 
   void FillBufferDoneCallback(scoped_refptr<VideoFrame> frame) {
     output_units_.push_back(frame);
-    if (frame.get() == NULL)
+    if (frame->IsEndOfStream())
       got_eos_ = true;
   }
 
@@ -414,9 +414,9 @@ TEST_F(OmxCodecTest, NormalFlow) {
 
   // Send EndOfStream, expect eos flag.
   SendEOSInputBuffer();
-  EXPECT_EQ(kBufferCount, static_cast<int>(input_units_.size()));
+  EXPECT_EQ(kBufferCount - 1, static_cast<int>(input_units_.size()));
   EXPECT_EQ(1, static_cast<int>(output_units_.size()));
-  EXPECT_EQ(count-1, static_cast<int>(output_pool_.size()));
+  EXPECT_EQ(count - 1, static_cast<int>(output_pool_.size()));
   EXPECT_EQ(true, got_eos_);
 
   // Shutdown.
@@ -468,9 +468,9 @@ TEST_F(OmxCodecTest, RecycleInputBuffers) {
 
   // Send EndOfStream, expect eos flag.
   SendEOSInputBuffer();
-  EXPECT_EQ(kBufferCount, static_cast<int>(input_units_.size()));
+  EXPECT_EQ(kBufferCount - 1, static_cast<int>(input_units_.size()));
   EXPECT_EQ(1, static_cast<int>(output_units_.size()));
-  EXPECT_EQ(count-1, static_cast<int>(output_pool_.size()));
+  EXPECT_EQ(count - 1, static_cast<int>(output_pool_.size()));
   EXPECT_EQ(true, got_eos_);
 
   // Shutdown.
