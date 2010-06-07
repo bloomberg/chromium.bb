@@ -13,6 +13,7 @@
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
+#include "chrome/browser/gtk/options/content_settings_window_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/gtk/task_manager_gtk.h"
@@ -72,7 +73,7 @@ void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
 void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
                                ContentSettingsType content_type,
                                Profile* profile) {
-  NOTIMPLEMENTED();
+  ContentSettingsWindowGtk::Show(parent_window, content_type, profile);
 }
 
 }  // namespace browser
