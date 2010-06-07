@@ -73,8 +73,6 @@ const wchar_t kSpacer[] = L"MMM";
 std::wstring GetLanguageName(const std::string& language_code) {
   const string16 language_name = l10n_util::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
-  // TODO(satorux): We should add input method names if multiple input
-  // methods are available for one input language.
   return UTF16ToWide(language_name);
 }
 
@@ -141,8 +139,12 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
+
+  // TODO(yusukes): Make the initial state "enabled" and delete SetDisabledColor
+  // when crosbug.com/3683 is fixed.
   SetDisabledColor(0x4DFFFFFF);  // White with 30% Alpha
   SetEnabled(false);  // Disable the button until the first FocusIn comes in.
+
   SetShowHighlighted(false);
   // Update the model
   RebuildModel();
@@ -393,9 +395,13 @@ void LanguageMenuButton::LocaleChanged() {
 }
 
 void LanguageMenuButton::FocusChanged(LanguageLibrary* obj) {
+  // TODO(yusukes): Remove this function when crosbug.com/3683 is fixed.
   LanguageLibrary* language_library = CrosLibrary::Get()->GetLanguageLibrary();
-  SetEnabled(language_library->is_focused());
-  SchedulePaint();
+  if (language_library->is_focused() && !IsEnabled()) {
+    // Enable the button on the first FocusIn event.
+    SetEnabled(true);
+    SchedulePaint();
+  }
 }
 
 void LanguageMenuButton::UpdateIcon(
