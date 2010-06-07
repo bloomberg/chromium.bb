@@ -181,8 +181,7 @@ class AudioRendererHost
         int channels,                        // Number of channels.
         int sample_rate,                     // Sampling frequency/rate.
         char bits_per_sample,                // Number of bits per sample.
-        uint32 decoded_packet_size,          // Number of bytes per packet.
-        uint32 buffer_capacity,              // Number of bytes in the buffer.
+        uint32 packet_size,                  // Size of hardware packet.
         bool low_latency                     // Use low-latency (socket) code
     );
     ~IPCAudioSource();
@@ -237,8 +236,6 @@ class AudioRendererHost
                    int stream_id,               // ID of this source.
                    AudioOutputStream* stream,   // Stream associated.
                    uint32 hardware_packet_size,
-                   uint32 decoded_packet_size,  // Size of shared memory
-                                                // buffer for writing.
                    uint32 buffer_capacity);     // Capacity of transportation
                                                 // buffer.
 
@@ -258,7 +255,6 @@ class AudioRendererHost
     int stream_id_;
     AudioOutputStream* stream_;
     uint32 hardware_packet_size_;
-    uint32 decoded_packet_size_;
     uint32 buffer_capacity_;
 
     State state_;

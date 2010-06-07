@@ -166,8 +166,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // be executed on that thread. They interact with AudioMessageFilter and
   // sends IPC messages on that thread.
   void CreateStreamTask(AudioManager::Format format, int channels,
-                        int sample_rate, int bits_per_sample,
-                        uint32 packet_size, uint32 buffer_capacity);
+                        int sample_rate, int bits_per_sample);
   void PlayTask();
   void PauseTask();
   void SeekTask();

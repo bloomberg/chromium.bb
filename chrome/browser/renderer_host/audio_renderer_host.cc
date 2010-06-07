@@ -31,20 +31,22 @@
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_logging.h"
 
-namespace {
+// The minimum number of samples in a hardware packet.
+// This value is selected so that we can handle down to 5khz sample rate.
+static const int kMinSamplesPerHardwarePacket = 1024;
+
+// The maximum number of samples in a hardware packet.
+// This value is selected so that we can handle up to 192khz sample rate.
+static const int kMaxSamplesPerHardwarePacket = 64 * 1024;
 
 // This constant governs the hardware audio buffer size, this value should be
-// choosen carefully and is platform specific.
-static const int kSamplesPerHardwarePacket = 8192;
-
-// If the size of the buffer is less than this number, then the low latency
-// mode is to be used.
-static const uint32 kLowLatencyPacketThreshold = 1025;
-
-static const uint32 kMegabytes = 1024 * 1024;
+// chosen carefully.
+// This value is selected so that we have 8192 samples for 48khz streams.
+static const int kMillisecondsPerHardwarePacket = 170;
 
 // The following parameters limit the request buffer and packet size from the
 // renderer to avoid renderer from requesting too much memory.
+static const uint32 kMegabytes = 1024 * 1024;
 static const uint32 kMaxDecodedPacketSize = 2 * kMegabytes;
 static const uint32 kMaxBufferCapacity = 5 * kMegabytes;
 static const int kMaxChannels = 32;
@@ -61,7 +63,7 @@ static const size_t kMaxStreamsLeopard = 15;
 
 // Returns the number of audio streams allowed. This is a practical limit to
 // prevent failure caused by too many audio streams opened.
-size_t GetMaxAudioStreamsAllowed() {
+static size_t GetMaxAudioStreamsAllowed() {
 #if defined(OS_MACOSX)
   // We are hitting a bug in Leopard where too many audio streams will cause
   // a deadlock in the AudioQueue API when starting the stream. Unfortunately
@@ -79,7 +81,18 @@ size_t GetMaxAudioStreamsAllowed() {
   return kMaxStreams;
 }
 
-}  // namespace
+static uint32 SelectHardwarePacketSize(int channels, int sample_rate,
+                                       int bits_per_sample) {
+  // Select the number of samples that can provide at least
+  // |kMillisecondsPerHardwarePacket| worth of audio data.
+  int samples = kMinSamplesPerHardwarePacket;
+  while (samples <= kMaxSamplesPerHardwarePacket &&
+         samples * base::Time::kMillisecondsPerSecond <
+         sample_rate * kMillisecondsPerHardwarePacket) {
+    samples *= 2;
+  }
+  return channels * samples * bits_per_sample / 8;
+}
 
 //-----------------------------------------------------------------------------
 // AudioRendererHost::IPCAudioSource implementations.
@@ -91,7 +104,6 @@ AudioRendererHost::IPCAudioSource::IPCAudioSource(
     int stream_id,
     AudioOutputStream* stream,
     uint32 hardware_packet_size,
-    uint32 decoded_packet_size,
     uint32 buffer_capacity)
     : host_(host),
       process_id_(process_id),
@@ -99,7 +111,6 @@ AudioRendererHost::IPCAudioSource::IPCAudioSource(
       stream_id_(stream_id),
       stream_(stream),
       hardware_packet_size_(hardware_packet_size),
-      decoded_packet_size_(decoded_packet_size),
       buffer_capacity_(buffer_capacity),
       state_(kCreated),
       outstanding_request_(false),
@@ -122,19 +133,9 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
     int channels,
     int sample_rate,
     char bits_per_sample,
-    uint32 decoded_packet_size,
-    uint32 buffer_capacity,
+    uint32 packet_size,
     bool low_latency) {
   // Perform come preliminary checks on the parameters.
-  // Make sure the renderer didn't ask for too much memory.
-  if (buffer_capacity > kMaxBufferCapacity ||
-      decoded_packet_size > kMaxDecodedPacketSize)
-    return NULL;
-
-  // Make sure the packet size and buffer capacity parameters are valid.
-  if (buffer_capacity < decoded_packet_size)
-    return NULL;
-
   if (channels <= 0 || channels > kMaxChannels)
     return NULL;
 
@@ -149,8 +150,21 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
       AudioManager::GetAudioManager()->MakeAudioStream(
           format, channels, sample_rate, bits_per_sample);
 
-  uint32 hardware_packet_size = kSamplesPerHardwarePacket * channels *
-                                bits_per_sample / 8;
+  uint32 hardware_packet_size = packet_size;
+
+  // If the packet size is not specified in the message we generate the best
+  // value here.
+  if (!hardware_packet_size) {
+    hardware_packet_size =
+        SelectHardwarePacketSize(channels, sample_rate, bits_per_sample);
+  }
+  uint32 transport_packet_size = hardware_packet_size;
+
+  // We set the buffer capacity to be more than the total buffer amount in the
+  // audio hardware. This gives about 500ms of buffer which is a safe amount
+  // to avoid "audio clicks".
+  uint32 buffer_capacity = 3 * hardware_packet_size;
+
   if (stream && !stream->Open(hardware_packet_size)) {
     stream->Close();
     stream = NULL;
@@ -164,7 +178,6 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
         stream_id,
         stream,
         hardware_packet_size,
-        decoded_packet_size,
         buffer_capacity);
     // If we can open the stream, proceed with sharing the shared memory.
     base::SharedMemoryHandle foreign_memory_handle;
@@ -175,11 +188,9 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
     // Note that the low latency mode is not yet ready and the if part of this
     // method is never executed. TODO(cpu): Enable this mode.
 
-    if (source->shared_memory_.Create(L"",
-                                      false,
-                                      false,
-                                      decoded_packet_size) &&
-        source->shared_memory_.Map(decoded_packet_size) &&
+    if (source->shared_memory_.Create(L"", false, false,
+                                      transport_packet_size) &&
+        source->shared_memory_.Map(transport_packet_size) &&
         source->shared_memory_.ShareToProcess(process_handle,
                                               &foreign_memory_handle)) {
       if (low_latency) {
@@ -202,14 +213,15 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
           if (valid) {
             host->Send(new ViewMsg_NotifyLowLatencyAudioStreamCreated(
                 route_id, stream_id, foreign_memory_handle,
-                foreign_socket_handle, decoded_packet_size));
+                foreign_socket_handle, transport_packet_size));
             return source;
           }
         }
       } else {
         // Regular latency mode.
         host->Send(new ViewMsg_NotifyAudioStreamCreated(
-            route_id, stream_id, foreign_memory_handle, decoded_packet_size));
+            route_id, stream_id, foreign_memory_handle,
+            transport_packet_size));
 
         // Also request the first packet to kick start the pre-rolling.
         source->StartBuffering();
@@ -374,7 +386,7 @@ void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
   // renderer process.
   // If reported size is greater than capacity of the shared memory, we have
   // an error.
-  if (decoded_packet_size && decoded_packet_size <= decoded_packet_size_) {
+  if (decoded_packet_size && decoded_packet_size <= shared_memory_.max_size()) {
     bool ok = push_source_.Write(
         static_cast<char*>(shared_memory_.memory()), decoded_packet_size);
 
@@ -390,8 +402,7 @@ void AudioRendererHost::IPCAudioSource::SubmitPacketRequest_Locked() {
   // 1. No outstanding request
   // 2. There's space for data of the new request.
   if (!outstanding_request_ &&
-      (push_source_.UnProcessedBytes() + decoded_packet_size_ <=
-       buffer_capacity_)) {
+      (push_source_.UnProcessedBytes() <= buffer_capacity_)) {
     outstanding_request_ = true;
 
     // This variable keeps track of the total amount of bytes buffered for
@@ -528,7 +539,6 @@ void AudioRendererHost::OnCreateStream(
       params.sample_rate,
       params.bits_per_sample,
       params.packet_size,
-      params.buffer_capacity,
       low_latency);
 
   // If we have created the source successfully, adds it to the map.
