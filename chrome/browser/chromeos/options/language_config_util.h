@@ -86,7 +86,7 @@ class LanguageCombobox : public views::Combobox {
   }
 
  private:
-  static const int kMinComboboxWidth = 100;
+  static const int kMinComboboxWidth = 250;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageCombobox);
 };

@@ -287,6 +287,16 @@ const wchar_t kLanguageMozcPunctuationMethod[] =
     L"settings.language.mozc_punctuation_method";
 const wchar_t kLanguageMozcSymbolMethod[] =
     L"settings.language.mozc_symbol_method";
+const wchar_t kLanguageMozcSpaceCharacterForm[] =
+    L"settings.language.mozc_space_character_form";
+const wchar_t kLanguageMozcHistoryLearningLevel[] =
+    L"settings.language.mozc_history_learning_level";
+const wchar_t kLanguageMozcSelectionShortcut[] =
+    L"settings.language.mozc_selection_shortcut";
+const wchar_t kLanguageMozcShiftKeyModeSwitch[] =
+    L"settings.language.mozc_shift_key_mode_switch";
+const wchar_t kLanguageMozcNumpadCharacterForm[] =
+    L"settings.language.mozc_numpad_character_form";
 
 // A boolean pref which determines whether accessibility is enabled.
 const wchar_t kAccessibilityEnabled[] = L"settings.accessibility";

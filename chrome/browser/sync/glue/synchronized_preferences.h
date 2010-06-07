@@ -120,6 +120,11 @@ static const wchar_t* kSynchronizedPreferences[] = {
   //   prefs::kLanguageMozcSessionKeymap,
   //   prefs::kLanguageMozcPunctuationMethod,
   //   prefs::kLanguageMozcSymbolMethod,
+  //   prefs::kLanguageMozcSpaceCharacterForm;
+  //   prefs::kLanguageMozcHistoryLearningLevel;
+  //   prefs::kLanguageMozcSelectionShortcut;
+  //   prefs::kLanguageMozcShiftKeyModeSwitch;
+  //   prefs::kLanguageMozcNumpadCharacterForm;
   //
   // We don't sync the following IME prefs since they are not user-configurable
   // (yet):
