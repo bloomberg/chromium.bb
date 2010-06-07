@@ -26,8 +26,8 @@
 
 namespace {
 
-// Equivalence classes, used to match the Liberation fonts with their
-// metric-compatible replacements.  See the discussion in
+// Equivalence classes, used to match the Liberation and Ascender fonts
+// with their metric-compatible replacements.  See the discussion in
 // GetFontEquivClass().
 enum FontEquivClass
 {
@@ -50,11 +50,16 @@ FontEquivClass GetFontEquivClass(const char* fontname)
     //   /etc/fonts/conf.d/30-metric-aliases.conf
     // from my Ubuntu system, but we're better off being very conservative.
 
+    // "Ascender Sans" and "Ascender Serif" are the tentative names of
+    // another set of fonts metric-compatible with Arial and Times New Roman
+    // with a character repertoire much larger than Liberation.
     if (strcasecmp(fontname, "Arial") == 0 ||
-        strcasecmp(fontname, "Liberation Sans") == 0) {
+        strcasecmp(fontname, "Liberation Sans") == 0 ||
+        strcasecmp(fontname, "Ascender Sans") == 0) {
         return SANS;
     } else if (strcasecmp(fontname, "Times New Roman") == 0 ||
-               strcasecmp(fontname, "Liberation Serif") == 0) {
+               strcasecmp(fontname, "Liberation Serif") == 0 ||
+               strcasecmp(fontname, "Ascender Serif") == 0) {
         return SERIF;
     }
     return OTHER;
