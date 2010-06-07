@@ -121,6 +121,7 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
                   PageTransition::LINK);
               tab->NavigateToPendingEntry(NavigationController::RELOAD);
               iter->device_path = path;
+              iter->mount_path = disks[i].mount_path;
             } else {
               OpenFileBrowse(disks[i].mount_path, disks[i].device_path, false);
             }
@@ -169,7 +170,8 @@ void USBMountObserver::RemoveBrowserFromVector(const std::string& path) {
             (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
         if (url.SchemeIs(chrome::kChromeUIScheme) &&
             url.host() == chrome::kChromeUIFileBrowseHost &&
-            url.ref().find(mount_path) != std::string::npos) {
+            url.ref().find(mount_path) != std::string::npos &&
+            !mount_path.empty()) {
           close_these.push_back(*it);
         }
       }
