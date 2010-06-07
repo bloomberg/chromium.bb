@@ -72,9 +72,11 @@
 #  define GLAPIENTRY
 #endif /* WIN32 && !CYGWIN */
 
-#if (defined(__BEOS__) && defined(__POWERPC__)) || defined(__QUICKDRAW__)
-#  define PRAGMA_EXPORT_SUPPORTED		1
-#endif
+// Disabled this because __QUICKDRAW__ is defined on Mac and gcc does not
+// support the pragma.
+//#if (defined(__BEOS__) && defined(__POWERPC__)) || defined(__QUICKDRAW__)
+//#  define PRAGMA_EXPORT_SUPPORTED		1
+//#endif
 
 /*
  * WINDOWS: Include windows.h here to define APIENTRY.

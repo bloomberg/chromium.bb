@@ -25,3 +25,8 @@ Later modifications:
 - Changed these typedefs in glext.h to be the same as khrplatform.h
     typedef signed long int GLintptr;
     typedef signed long int GLsizeiptr;
+
+- Commented out this in gl.h:
+#if (defined(__BEOS__) && defined(__POWERPC__)) || defined(__QUICKDRAW__)
+#  define PRAGMA_EXPORT_SUPPORTED		1
+#endif
