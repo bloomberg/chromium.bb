@@ -39,7 +39,8 @@
 
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES
-#include <GL/gl.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
@@ -51,7 +52,7 @@
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 struct wlsc_matrix {
-	GLdouble d[16];
+	GLfloat d[16];
 };
 
 struct wl_visual {
@@ -71,6 +72,7 @@ struct wlsc_output {
 	struct wl_list link;
 	struct wlsc_compositor *compositor;
 	struct wlsc_surface *background;
+	struct wlsc_matrix matrix;
 	int32_t x, y, width, height;
 
 	drmModeModeInfo mode;
@@ -106,7 +108,8 @@ struct wlsc_compositor {
 	EGLDisplay display;
 	EGLContext context;
 	int drm_fd;
-	GLuint fbo;
+	GLuint fbo, vbo;
+	GLuint proj_uniform, tex_uniform;
 	struct wl_display *wl_display;
 
 	struct wl_list output_list;
@@ -143,7 +146,7 @@ struct wlsc_compositor {
 #define MODIFIER_ALT	(1 << 9)
 
 struct wlsc_vector {
-	GLdouble x, y, z;
+	GLfloat f[4];
 };
 
 struct wlsc_surface {
@@ -152,10 +155,10 @@ struct wlsc_surface {
 	struct wl_visual *visual;
 	GLuint texture;
 	EGLImageKHR image;
-	struct wl_map map;
 	int width, height;
 	struct wl_list link;
 	struct wlsc_matrix matrix;
+	struct wlsc_matrix matrix_inv;
 };
 
 static const char *option_background = "background.jpg";
@@ -198,7 +201,6 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 			continue;
 		}
 
-		glReadBuffer(GL_FRONT);
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		glReadPixels(0, 0, output->width, output->height,
 			     GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -262,7 +264,7 @@ static void
 wlsc_matrix_multiply(struct wlsc_matrix *m, const struct wlsc_matrix *n)
 {
 	struct wlsc_matrix tmp;
-	const GLdouble *row, *column;
+	const GLfloat *row, *column;
 	div_t d;
 	int i, j;
 
@@ -278,9 +280,9 @@ wlsc_matrix_multiply(struct wlsc_matrix *m, const struct wlsc_matrix *n)
 }
 
 static void
-wlsc_matrix_translate(struct wlsc_matrix *matrix, GLdouble x, GLdouble y, GLdouble z)
+wlsc_matrix_translate(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
 {
-	struct wlsc_matrix translate = {
+	struct wlsc_matrix translate = {	
 		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 }
 	};
 
@@ -288,7 +290,7 @@ wlsc_matrix_translate(struct wlsc_matrix *matrix, GLdouble x, GLdouble y, GLdoub
 }
 
 static void
-wlsc_matrix_scale(struct wlsc_matrix *matrix, GLdouble x, GLdouble y, GLdouble z)
+wlsc_matrix_scale(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
 {
 	struct wlsc_matrix scale = {
 		{ x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 }
@@ -299,10 +301,10 @@ wlsc_matrix_scale(struct wlsc_matrix *matrix, GLdouble x, GLdouble y, GLdouble z
 
 static void
 wlsc_matrix_rotate(struct wlsc_matrix *matrix,
-		   GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
+		   GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
-	GLdouble c = cos(angle);
-	GLdouble s = sin(angle);
+	GLfloat c = cos(angle);
+	GLfloat s = sin(angle);
 	struct wlsc_matrix rotate = {
 		{ x * x * (1 - c) + c,     y * x * (1 - c) + z * s, x * z * (1 - c) - y * s, 0,
 		  x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) + x * s, 0, 
@@ -314,18 +316,34 @@ wlsc_matrix_rotate(struct wlsc_matrix *matrix,
 }
 
 static void
+wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
+{
+	int i, j;
+	GLfloat t;
+
+	for (i = 0; i < 4; i++) {
+		t = 0;
+		for (j = 0; j < 4; j++)
+			t += v->f[j] * matrix->d[i + j * 4];
+		v->f[i] = t;
+	}
+}
+
+static void
 wlsc_surface_init(struct wlsc_surface *surface,
 		  struct wlsc_compositor *compositor, struct wl_visual *visual,
 		  int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	glGenTextures(1, &surface->texture);
 	surface->compositor = compositor;
-	surface->map.x = x;
-	surface->map.y = y;
-	surface->map.width = width;
-	surface->map.height = height;
 	surface->visual = visual;
 	wlsc_matrix_init(&surface->matrix);
+	wlsc_matrix_scale(&surface->matrix, width, height, 1);
+	wlsc_matrix_translate(&surface->matrix, x, y, 0);
+
+	wlsc_matrix_init(&surface->matrix_inv);
+	wlsc_matrix_translate(&surface->matrix_inv, -x, -y, 0);
+	wlsc_matrix_scale(&surface->matrix_inv, 1.0 / width, 1.0 / height, 1);
 }
 
 static struct wlsc_surface *
@@ -347,12 +365,12 @@ wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
 	wlsc_surface_init(es, ec, &ec->premultiplied_argb_visual,
 			  x, y, width, height);
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-		     GL_BGRA, GL_UNSIGNED_BYTE, data);
+		     GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	return es;
 }
@@ -456,8 +474,8 @@ background_create(struct wlsc_output *output, const char *filename)
 			  output->x, output->y, output->width, output->height);
 
 	glBindTexture(GL_TEXTURE_2D, background->texture);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -474,28 +492,15 @@ background_create(struct wlsc_output *output, const char *filename)
 }
 
 static void
-wlsc_surface_draw(struct wlsc_surface *es)
+wlsc_surface_draw(struct wlsc_surface *es, struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = es->compositor;
-	GLint vertices[12];
-	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
-	GLuint indices[4] = { 0, 1, 2, 3 };
+	struct wlsc_matrix tmp;
 
-	vertices[0] = es->map.x;
-	vertices[1] = es->map.y;
-	vertices[2] = 0;
-
-	vertices[3] = es->map.x;
-	vertices[4] = es->map.y + es->map.height;
-	vertices[5] = 0;
-
-	vertices[6] = es->map.x + es->map.width;
-	vertices[7] = es->map.y;
-	vertices[8] = 0;
-
-	vertices[9] = es->map.x + es->map.width;
-	vertices[10] = es->map.y + es->map.height;
-	vertices[11] = 0;
+	tmp = es->matrix;
+	wlsc_matrix_multiply(&tmp, &output->matrix);
+	glUniformMatrix4fv(ec->proj_uniform, 1, GL_FALSE, tmp.d);
+	glUniform1i(ec->tex_uniform, 0);
 
 	if (es->visual == &ec->argb_visual) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -507,16 +512,16 @@ wlsc_surface_draw(struct wlsc_surface *es)
 		glDisable(GL_BLEND);
 	}
 
-	glPushMatrix();
-	//glMultMatrixd(es->matrix.d);
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(3, GL_INT, 0, vertices);
-	glTexCoordPointer(2, GL_INT, 0, tex_coords);
-	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, indices);
-	glPopMatrix();
+	glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
+			      5 * sizeof(GLfloat), NULL);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
+			      5 * sizeof(GLfloat), (GLfloat *) 0 + 3);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 static void
@@ -535,30 +540,6 @@ wlsc_surface_lower(struct wlsc_surface *surface)
 
 	wl_list_remove(&surface->link);
 	wl_list_insert(&compositor->surface_list, &surface->link);
-}
-
-static void
-wlsc_vector_add(struct wlsc_vector *v1, struct wlsc_vector *v2)
-{
-	v1->x += v2->x;
-	v1->y += v2->y;
-	v1->z += v2->z;
-}
-
-static void
-wlsc_vector_subtract(struct wlsc_vector *v1, struct wlsc_vector *v2)
-{
-	v1->x -= v2->x;
-	v1->y -= v2->y;
-	v1->z -= v2->z;
-}
-
-static void
-wlsc_vector_scalar(struct wlsc_vector *v1, GLdouble s)
-{
-	v1->x *= s;
-	v1->y *= s;
-	v1->z *= s;
 }
 
 static void
@@ -586,35 +567,25 @@ repaint_output(struct wlsc_output *output)
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
-	double s = 3000;
 
 	glViewport(0, 0, output->width, output->height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-output->width / s, output->width / s,
-		  -output->height / s, output->height / s, 1, 2 * s);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glClearColor(0, 0, 0, 1);
-
-	glTranslatef(-output->width / 2, -output->height / 2, -s / 2);
 
 	if (output->background)
-		wlsc_surface_draw(output->background);
+		wlsc_surface_draw(output->background, output);
 	else
 		glClear(GL_COLOR_BUFFER_BIT);
 
 	wl_list_for_each(es, &ec->surface_list, link)
-		wlsc_surface_draw(es);
+		wlsc_surface_draw(es, output);
 
 	wl_list_for_each(eid, &ec->input_device_list, link)
-		wlsc_surface_draw(eid->sprite);
+		wlsc_surface_draw(eid->sprite, output);
 
 	output->current ^= 1;
 
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
-				  GL_COLOR_ATTACHMENT0_EXT,
-				  GL_RENDERBUFFER_EXT,
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
 				  output->rbo[output->current]);
 	drmModePageFlip(ec->drm_fd, output->crtc_id,
 			output->fb_id[output->current ^ 1],
@@ -695,8 +666,8 @@ surface_attach(struct wl_client *client,
 		/* FIXME: Smack client with an exception event */;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -722,10 +693,8 @@ surface_map(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
-	es->map.x = x;
-	es->map.y = y;
-	es->map.width = width;
-	es->map.height = height;
+	wlsc_matrix_translate(&es->matrix, x, y, 0);
+	wlsc_matrix_scale(&es->matrix, width, height, 1);
 }
 
 static void
@@ -791,9 +760,11 @@ static void
 wlsc_surface_transform(struct wlsc_surface *surface,
 		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
 {
-	/* Transform to surface coordinates. */
-	*sx = (x - surface->map.x) * surface->width / surface->map.width;
-	*sy = (y - surface->map.y) * surface->height / surface->map.height;
+	struct wlsc_vector v = { { x, y, 0, 1 } };
+	
+	wlsc_matrix_transform(&surface->matrix_inv, &v);
+	*sx = v.f[0];
+	*sy = v.f[1];
 }
 
 static void
@@ -850,14 +821,12 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 		return device->grab_surface;
 	}
 
-	wl_list_for_each(es, &ec->surface_list, link)
-		if (es->map.x <= device->x &&
-		    device->x < es->map.x + es->map.width &&
-		    es->map.y <= device->y &&
-		    device->y < es->map.y + es->map.height) {
-			wlsc_surface_transform(es, device->x, device->y, sx, sy);
+	wl_list_for_each(es, &ec->surface_list, link) {
+		wlsc_surface_transform(es, device->x, device->y, sx, sy);
+		if (0 <= *sx && *sx < es->width &&
+		    0 <= *sy && *sy < es->height)
 			return es;
-		}
+	}
 
 	return NULL;
 }
@@ -895,8 +864,10 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 		wl_surface_post_event(&es->base, &device->base,
 				      WL_INPUT_MOTION, x, y, sx, sy);
 
-	device->sprite->map.x = x - hotspot_x;
-	device->sprite->map.y = y - hotspot_y;
+	wlsc_matrix_init(&device->sprite->matrix);
+	wlsc_matrix_scale(&device->sprite->matrix, 64, 64, 1);
+	wlsc_matrix_translate(&device->sprite->matrix,
+			      x - hotspot_x, y - hotspot_y, 0);
 
 	wlsc_compositor_schedule_repaint(device->ec);
 }
@@ -1071,6 +1042,91 @@ on_drm_input(int fd, uint32_t mask, void *data)
 	drmHandleEvent(fd, &evctx);
 }
 
+static const char vertex_shader[] =
+	"uniform mat4 proj;\n"
+	"attribute vec4 position;\n"
+	"attribute vec2 texcoord;\n"
+	"varying vec2 v_texcoord;\n"
+	"void main()\n"
+	"{\n"
+	"   gl_Position = proj * position;\n"
+	"   v_texcoord = texcoord;\n"
+	"}\n";
+
+static const char fragment_shader[] =
+	/* "precision mediump float;\n" */
+	"varying vec2 v_texcoord;\n"
+	"uniform sampler2D tex;\n"
+	"void main()\n"
+	"{\n"
+	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
+	"}\n";
+
+static void
+init_shaders(struct wlsc_compositor *ec)
+{
+   GLuint v, f, program;
+   const char *p;
+   char msg[512];
+   GLfloat vertices[4 * 5];
+
+   p = vertex_shader;
+   v = glCreateShader(GL_VERTEX_SHADER);
+   glShaderSource(v, 1, &p, NULL);
+   glCompileShader(v);
+   glGetShaderInfoLog(v, sizeof msg, NULL, msg);
+   printf("vertex shader info: %s\n", msg);
+
+   p = fragment_shader;
+   f = glCreateShader(GL_FRAGMENT_SHADER);
+   glShaderSource(f, 1, &p, NULL);
+   glCompileShader(f);
+   glGetShaderInfoLog(f, sizeof msg, NULL, msg);
+   printf("fragment shader info: %s\n", msg);
+
+   program = glCreateProgram();
+   glAttachShader(program, v);
+   glAttachShader(program, f);
+   glBindAttribLocation(program, 0, "position");
+   glBindAttribLocation(program, 1, "texcoord");
+
+   glLinkProgram(program);
+   glGetProgramInfoLog(program, sizeof msg, NULL, msg);
+   printf("info: %s\n", msg);
+
+   glUseProgram(program);
+   ec->proj_uniform = glGetUniformLocation(program, "proj");
+   ec->tex_uniform = glGetUniformLocation(program, "tex");
+
+   vertices[ 0] = 0.0;
+   vertices[ 1] = 0.0;
+   vertices[ 2] = 0.0;
+   vertices[ 3] = 0.0;
+   vertices[ 4] = 0.0;
+
+   vertices[ 5] = 0.0;
+   vertices[ 6] = 1.0;
+   vertices[ 7] = 0.0;
+   vertices[ 8] = 0.0;
+   vertices[ 9] = 1.0;
+
+   vertices[10] = 1.0;
+   vertices[11] = 0.0;
+   vertices[12] = 0.0;
+   vertices[13] = 1.0;
+   vertices[14] = 0.0;
+
+   vertices[15] = 1.0;
+   vertices[16] = 1.0;
+   vertices[17] = 0.0;
+   vertices[18] = 1.0;
+   vertices[19] = 1.0;
+
+   glGenBuffers(1, &ec->vbo);
+   glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
+   glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
+}
+
 static int
 init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 {
@@ -1132,7 +1188,9 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 	}
 
 	glGenFramebuffers(1, &ec->fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER_EXT, ec->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, ec->fbo);
+	glActiveTexture(GL_TEXTURE0);
+	init_shaders(ec);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->drm_source =
@@ -1201,18 +1259,19 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	output->y = 0;
 	output->width = mode->hdisplay;
 	output->height = mode->vdisplay;
+	wlsc_matrix_init(&output->matrix);
 
-	printf("using crtc %d, connector %d and encoder %d, mode %s\n",
-	       output->crtc_id,
-	       output->connector_id,
-	       encoder->encoder_id,
-	       mode->name);
+	wlsc_matrix_translate(&output->matrix,
+			      -output->x - output->width / 2.0,
+			      -output->y - output->height / 2.0, 0);
+	wlsc_matrix_scale(&output->matrix,
+			  2.0 / output->width, 2.0 / output->height, 1);
 
 	drmModeFreeEncoder(encoder);
 
 	glGenRenderbuffers(2, output->rbo);
 	for (i = 0; i < 2; i++) {
-		glBindRenderbuffer(GL_RENDERBUFFER_EXT, output->rbo[i]);
+		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
 
 		attribs[1] = output->width;
 		attribs[3] = output->height;
@@ -1229,9 +1288,9 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	}
 
 	output->current = 0;
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
-				  GL_COLOR_ATTACHMENT0_EXT,
-				  GL_RENDERBUFFER_EXT,
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
 				  output->rbo[output->current]);
 	ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
