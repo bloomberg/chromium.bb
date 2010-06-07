@@ -1316,7 +1316,10 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	 * already been accounted for.
 	 */
 	assert(!bo_gem->used_as_reloc_target);
-	bo_gem->reloc_tree_size += target_bo_gem->reloc_tree_size;
+	if (target_bo_gem != bo_gem) {
+		target_bo_gem->used_as_reloc_target = 1;
+		bo_gem->reloc_tree_size += target_bo_gem->reloc_tree_size;
+	}
 	/* An object needing a fence is a tiled buffer, so it won't have
 	 * relocs to other buffers.
 	 */
@@ -1325,7 +1328,6 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	bo_gem->reloc_tree_fences += target_bo_gem->reloc_tree_fences;
 
 	/* Flag the target to disallow further relocations in it. */
-	target_bo_gem->used_as_reloc_target = 1;
 
 	bo_gem->relocs[bo_gem->reloc_count].offset = offset;
 	bo_gem->relocs[bo_gem->reloc_count].delta = target_offset;
@@ -1387,6 +1389,9 @@ drm_intel_gem_bo_process_reloc(drm_intel_bo *bo)
 	for (i = 0; i < bo_gem->reloc_count; i++) {
 		drm_intel_bo *target_bo = bo_gem->reloc_target_info[i].bo;
 
+		if (target_bo == bo)
+			continue;
+
 		/* Continue walking the tree depth-first. */
 		drm_intel_gem_bo_process_reloc(target_bo);
 
@@ -1407,6 +1412,9 @@ drm_intel_gem_bo_process_reloc2(drm_intel_bo *bo)
 	for (i = 0; i < bo_gem->reloc_count; i++) {
 		drm_intel_bo *target_bo = bo_gem->reloc_target_info[i].bo;
 		int need_fence;
+
+		if (target_bo == bo)
+			continue;
 
 		/* Continue walking the tree depth-first. */
 		drm_intel_gem_bo_process_reloc2(target_bo);
