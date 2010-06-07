@@ -29,7 +29,6 @@ class NetworkMessageObserver : public NetworkLibrary::Observer {
   virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) {}
 
   SystemNotification notification_;
-  std::set<std::string> failed_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMessageObserver);
 };
