@@ -922,6 +922,7 @@ class TabContents : public PageNavigator,
                                const ThumbnailScore& score);
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);
+  virtual void ClearInspectorSettings();
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RequestMove(const gfx::Rect& new_bounds);
   virtual void DidStartLoading();

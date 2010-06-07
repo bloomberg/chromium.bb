@@ -319,15 +319,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
-  // Reset inspector settings to defaults to ensure that Elements will be
+  // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
-  const WebPreferences::WebInspectorPreferences& settings =
-      WebPreferences().inspector_settings;
-  WebPreferences::WebInspectorPreferences::const_iterator it =
-      settings.begin();
-  for ( ; it != settings.end(); ++it)
-    GetInspectedTab()->render_view_host()->delegate()->UpdateInspectorSetting(
-        it->first, it->second);
+  GetInspectedTab()->render_view_host()->delegate()->ClearInspectorSettings();
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }

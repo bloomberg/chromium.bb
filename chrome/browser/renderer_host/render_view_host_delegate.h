@@ -520,6 +520,8 @@ class RenderViewHostDelegate {
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value) {}
 
+  virtual void ClearInspectorSettings() {}
+
   // The page is trying to close the RenderView's representation in the client.
   virtual void Close(RenderViewHost* render_view_host) {}
 

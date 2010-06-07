@@ -2442,6 +2442,13 @@ void TabContents::UpdateInspectorSetting(const std::string& key,
   inspector_settings->SetString(UTF8ToWide(key), value);
 }
 
+void TabContents::ClearInspectorSettings() {
+  DictionaryValue* inspector_settings =
+      profile()->GetPrefs()->GetMutableDictionary(
+          prefs::kWebKitInspectorSettings);
+  inspector_settings->Clear();
+}
+
 void TabContents::Close(RenderViewHost* rvh) {
   // The UI may be in an event-tracking loop, such as between the
   // mouse-down and mouse-up in text selection or a button click.
