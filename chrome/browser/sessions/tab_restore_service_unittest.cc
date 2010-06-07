@@ -238,7 +238,7 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
 #endif  // defined(OS_WIN)
 
 // Make sure we persist entries to disk that have post data.
-TEST_F(TabRestoreServiceTest, DontPersistPostData) {
+TEST_F(TabRestoreServiceTest, MAYBE_DontPersistPostData) {
   AddThreeNavigations();
   controller().GetEntryAtIndex(0)->set_has_post_data(true);
   controller().GetEntryAtIndex(1)->set_has_post_data(true);
