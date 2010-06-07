@@ -24,6 +24,19 @@ std::wstring SysUTF8ToWide(const StringPiece& utf8) {
   return out;
 }
 
+#if defined(OS_CHROMEOS)
+
+// ChromeOS always runs in UTF-8 locale.
+std::string SysWideToNativeMB(const std::wstring& wide) {
+  return WideToUTF8(wide);
+}
+
+std::wstring SysNativeMBToWide(const StringPiece& native_mb) {
+  return SysUTF8ToWide(native_mb);
+}
+
+#else
+
 std::string SysWideToNativeMB(const std::wstring& wide) {
   mbstate_t ps;
 
@@ -140,5 +153,7 @@ std::wstring SysNativeMBToWide(const StringPiece& native_mb) {
 
   return out;
 }
+
+#endif  // OS_CHROMEOS
 
 }  // namespace base
