@@ -190,10 +190,6 @@ bad_build_lists['dbg-win-64'] = ['ncval_test_call_long_dis',
                                  'run_srpc_basic_test',
                                  'run_srpc_bad_service_test']
 
-bad_build_lists['opt-mac-32'] = ['earth_browser_test']
-
-bad_build_lists['dbg-mac-32'] = ['earth_browser_test']
-
 # ----------------------------------------------------------
 # Generic Test Wrapper
 # all test suites know so far
