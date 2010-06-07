@@ -395,7 +395,7 @@ class WebDataService
   //////////////////////////////////////////////////////////////////////////////
 
   // Schedules a task to add form fields to the web database.
-  void AddFormFields(const std::vector<webkit_glue::FormField>& fields);
+  virtual void AddFormFields(const std::vector<webkit_glue::FormField>& fields);
 
   // Initiates the request for a vector of values which have been entered in
   // form input fields named |name|.  The method OnWebDataServiceRequestDone of
