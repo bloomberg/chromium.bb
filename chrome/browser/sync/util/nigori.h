@@ -39,15 +39,22 @@ class Nigori {
   // |username| and |password| are kept constant, a given |type| and |name| pair
   // always yields the same |permuted| value. Note that |permuted| will be
   // Base64 encoded.
-  bool Permute(Type type, const std::string& name, std::string* permuted);
+  bool Permute(Type type, const std::string& name, std::string* permuted) const;
 
   // Encrypts |value|. Note that on success, |encrypted| will be Base64
   // encoded.
-  bool Encrypt(const std::string& value, std::string* encrypted);
+  bool Encrypt(const std::string& value, std::string* encrypted) const;
 
   // Decrypts |value| into |decrypted|. It is assumed that |value| is Base64
   // encoded.
-  bool Decrypt(const std::string& value, std::string* decrypted);
+  bool Decrypt(const std::string& value, std::string* decrypted) const;
+
+  // The next three getters return the parameters used to initialize the keys.
+  // Given the hostname, username and password, another Nigori object capable of
+  // encrypting and decrypting the same data as this one could be initialized.
+  const std::string& hostname() const { return hostname_; }
+  const std::string& username() const { return username_; }
+  const std::string& password() const { return password_; }
 
   static const char kSaltSalt[];  // The salt used to derive the user salt.
   static const size_t kSaltKeySizeInBits = 128;
@@ -61,7 +68,10 @@ class Nigori {
   static const size_t kSigningIterations = 1004;
 
  private:
-  const std::string hostname_;
+  std::string hostname_;
+  std::string username_;
+  std::string password_;
+
   scoped_ptr<base::SymmetricKey> user_key_;
   scoped_ptr<base::SymmetricKey> encryption_key_;
   scoped_ptr<base::SymmetricKey> mac_key_;

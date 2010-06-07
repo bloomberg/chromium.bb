@@ -104,7 +104,7 @@ bool Nigori::Init(const std::string& username, const std::string& password) {
 
 // Permute[Kenc,Kmac](type || name)
 bool Nigori::Permute(Type type, const std::string& name,
-                     std::string* permuted) {
+                     std::string* permuted) const {
   DCHECK_LT(0U, name.size());
 
   NigoriStream plaintext;
@@ -147,7 +147,7 @@ std::string GenerateRandomString(size_t size) {
 }
 
 // Enc[Kenc,Kmac](value)
-bool Nigori::Encrypt(const std::string& value, std::string* encrypted) {
+bool Nigori::Encrypt(const std::string& value, std::string* encrypted) const {
   DCHECK_LT(0U, value.size());
 
   std::string iv = GenerateRandomString(kIvSize);
@@ -180,7 +180,7 @@ bool Nigori::Encrypt(const std::string& value, std::string* encrypted) {
   return Base64Encode(output, encrypted);
 }
 
-bool Nigori::Decrypt(const std::string& encrypted, std::string* value) {
+bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {
   std::string input;
   if (!Base64Decode(encrypted, &input))
     return false;
