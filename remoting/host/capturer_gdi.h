@@ -26,8 +26,8 @@ class CapturerGdi : public Capturer {
   virtual void CaptureRect(const gfx::Rect& rect, Task* done_task);
   virtual void GetData(const uint8* planes[]) const;
   virtual void GetDataStride(int strides[]) const;
-  virtual void GetWidth() const;
-  virtual void GetHeight() const;
+  virtual int GetWidth() const;
+  virtual int GetHeight() const;
 
  private:
   // Initialize GDI structures.

@@ -66,15 +66,11 @@ void CapturerGdi::GetDataStride(int strides[]) const {
 }
 
 int CapturerGdi::GetWidth() const {
-  if (!width_)
-    width_ = GetSystemMetrics(SM_CXSCREEN);
-  return width_;
+  return GetSystemMetrics(SM_CXSCREEN);
 }
 
 int CapturerGdi::GetHeight() const {
-  if (!height_)
-    height_ = GetSystemMetrics(SM_CYSCREEN);
-  return height_;
+  return GetSystemMetrics(SM_CYSCREEN);
 }
 
 // TODO(fbarchard): handle error cases.

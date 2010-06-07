@@ -110,7 +110,6 @@
       'export_dependent_settings': [
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
-        'chromoting_jingle_glue',
         # TODO(hclam): Enable VP8 in the build.
         #'third_party/on2/on2.gyp:vp8',
       ],
@@ -236,9 +235,9 @@
       'target_name': 'chromoting_jingle_glue',
       'type': '<(library)',
       'dependencies': [
+        '../chrome/chrome.gyp:notifier',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
-        '../chrome/chrome.gyp:notifier',
       ],
       'export_dependent_settings': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
