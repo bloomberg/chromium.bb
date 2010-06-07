@@ -53,14 +53,6 @@
               # Shared libraries need -fPIC on x86-64
               'cflags': ['-fPIC'],
             }],
-            ['OS=="mac"', {
-              'direct_dependent_settings': {
-                'libraries': [
-                  '$(SDKROOT)/usr/lib/libz.dylib',
-                  'demo/third_party/on2/lib/mac/libon2_codecs.a',
-                ],
-              },
-            }],
           ],  # end of 'conditions'
         },  # end of target 'chromoting_client_plugin_lib'
 
@@ -99,9 +91,9 @@
 
       ],  # end of Client targets
     }],  # end of OS conditions for Client targets
-    
+
   ],  # end of 'conditions'
-  
+
   'targets': [
     {
       'target_name': 'chromoting_base',
