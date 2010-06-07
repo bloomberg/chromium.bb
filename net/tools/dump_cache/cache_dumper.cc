@@ -67,7 +67,10 @@ bool DiskDumper::CreateEntry(const std::string& key,
   // The URL may not start with a valid protocol; search for it.
   int urlpos = key.find("http");
   std::string url = urlpos > 0 ? key.substr(urlpos) : key;
-  entry_path_ = net::UrlToFilenameEncoder::Encode(url, path);
+  std::string base_path = WideToASCII(path_);
+  std::string new_path =
+      net::UrlToFilenameEncoder::Encode(url, base_path, false);
+  entry_path_ = FilePath(ASCIIToWide(new_path));
 
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   // In order for long filenames to work, we'll need to prepend
