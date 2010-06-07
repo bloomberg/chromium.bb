@@ -176,20 +176,6 @@ void AddDllEvictionPolicy(sandbox::TargetPolicy* policy) {
   }
 }
 
-bool Is64BitWindows()
-{
-#if defined(_WIN64)
-  return true;  // 64-bit programs run only on Win64
-#elif defined(_WIN32)
-  // 32-bit programs run on both 32-bit and 64-bit Windows
-  // so must sniff.
-  BOOL f64 = FALSE;
-  return IsWow64Process(GetCurrentProcess(), &f64) && f64;
-#else
-  return false;  // no other code can run on 64-bit Windows
-#endif
-}
-
 // Adds the generic policy rules to a sandbox TargetPolicy.
 bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   sandbox::ResultCode result;
@@ -201,13 +187,11 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-  if (Is64BitWindows()) {
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-                             sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                             L"\\\\.\\pipe\\chrome.nacl.*");
-    if (result != sandbox::SBOX_ALL_OK)
-      return false;
-  }
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+                           L"\\\\.\\pipe\\chrome.nacl.*");
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
 
   // Add the policy for debug message only in debug
 #ifndef NDEBUG
@@ -455,8 +439,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
   bool on_sandbox_desktop = false;
-  // TODO(gregoryd): try locked-down policy for sel_ldr after we fix IMC.
-  // TODO(gregoryd): do we need a new desktop for sel_ldr?
   if (type == ChildProcessInfo::PLUGIN_PROCESS) {
     if (!AddPolicyForPlugin(cmd_line, policy))
       return 0;
