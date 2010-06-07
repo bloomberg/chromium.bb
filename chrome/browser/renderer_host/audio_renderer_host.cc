@@ -280,7 +280,7 @@ void AudioRendererHost::IPCAudioSource::Flush() {
   if (state_ != kPaused)
     return;
 
-  // The following operation is atomic in PushSource so we don't need to lock.
+  AutoLock auto_lock(lock_);
   push_source_.ClearAll();
 }
 
@@ -351,10 +351,12 @@ uint32 AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
 
 void AudioRendererHost::IPCAudioSource::OnClose(AudioOutputStream* stream) {
   // Push source doesn't need to know the stream so just pass in NULL.
-  if (!shared_socket_.get())
+  if (!shared_socket_.get()) {
+    AutoLock auto_lock(lock_);
     push_source_.OnClose(NULL);
-  else
+  } else {
     shared_socket_->Close();
+  }
 }
 
 void AudioRendererHost::IPCAudioSource::OnError(AudioOutputStream* stream,
