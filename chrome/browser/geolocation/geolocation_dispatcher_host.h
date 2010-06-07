@@ -37,7 +37,6 @@ class GeolocationDispatcherHost
   virtual void OnLocationUpdate(const Geoposition& position);
 
  private:
-  struct GeolocationServiceRenderId;
   friend class base::RefCountedThreadSafe<GeolocationDispatcherHost>;
   virtual ~GeolocationDispatcherHost();
 
@@ -62,8 +61,11 @@ class GeolocationDispatcherHost
   int resource_message_filter_process_id_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
 
+  // Iterated when sending location updates to renderer processes. The fan out
+  // to individual bridge IDs happens renderer side, in order to minimize
+  // context switches.
   // Only used on the IO thread.
-  std::set<GeolocationServiceRenderId> geolocation_renderers_;
+  std::set<int> geolocation_renderer_ids_;
   // Only set whilst we are registered with the arbitrator.
   scoped_refptr<GeolocationArbitrator> location_arbitrator_;
 

@@ -43,11 +43,8 @@ class GeolocationDispatcher : public WebKit::WebGeolocationService {
   // Permission for using geolocation has been set.
   void OnGeolocationPermissionSet(int bridge_id, bool is_allowed);
 
-  // We have an updated geolocation position.
+  // We have an updated geolocation position or error code.
   void OnGeolocationPositionUpdated(const Geoposition& geoposition);
-
-  // An error has happened when fetching a geolocation position.
-  void OnGeolocationError(int code, const std::string& message);
 
   RenderView* render_view_;
 

@@ -178,7 +178,7 @@ TEST(IPCMessageTest, Geoposition) {
   input.heading = 120;
   input.timestamp = base::Time::FromInternalValue(1977);
   input.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-  input.error_message = L"unittest error message for geoposition";
+  input.error_message = "unittest error message for geoposition";
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);

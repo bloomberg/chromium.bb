@@ -170,14 +170,14 @@ void FormRequestBody(const std::string& host_name,
 }
 
 void FormatPositionError(const GURL& server_url,
-                         const std::wstring& message,
+                         const std::string& message,
                          Geoposition* position) {
     position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-    position->error_message = L"Network location provider at '";
-    position->error_message += ASCIIToWide(server_url.possibly_invalid_spec());
-    position->error_message += L"' : ";
+    position->error_message = "Network location provider at '";
+    position->error_message += server_url.possibly_invalid_spec();
+    position->error_message += "' : ";
     position->error_message += message;
-    position->error_message += L".";
+    position->error_message += ".";
     LOG(INFO) << "NetworkLocationRequest::GetLocationFromResponse() : "
               << position->error_message;
 }
@@ -195,12 +195,12 @@ void GetLocationFromResponse(bool http_post_result,
   // HttpPost can fail for a number of reasons. Most likely this is because
   // we're offline, or there was no response.
   if (!http_post_result) {
-    FormatPositionError(server_url, L"No response received", position);
+    FormatPositionError(server_url, "No response received", position);
     return;
   }
   if (status_code != 200) {  // HTTP OK.
-    std::wstring message = L"Returned error code ";
-    message += IntToWString(status_code);
+    std::string message = "Returned error code ";
+    message += IntToString(status_code);
     FormatPositionError(server_url, message, position);
     return;
   }
@@ -208,14 +208,14 @@ void GetLocationFromResponse(bool http_post_result,
   // this position fix.
   if (!ParseServerResponse(response_body, timestamp, position, access_token)) {
     // We failed to parse the repsonse.
-    FormatPositionError(server_url, L"Response was malformed", position);
+    FormatPositionError(server_url, "Response was malformed", position);
     return;
   }
   // The response was successfully parsed, but it may not be a valid
   // position fix.
   if (!position->IsValidFix()) {
     FormatPositionError(server_url,
-                        L"Did not provide a good position fix", position);
+                        "Did not provide a good position fix", position);
     return;
   }
 }

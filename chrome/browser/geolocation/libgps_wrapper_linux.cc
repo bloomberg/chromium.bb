@@ -119,11 +119,11 @@ bool LibGps::GetPosition(Geoposition* position) {
   DCHECK(position);
   position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   if (!library().is_open()) {
-    position->error_message = L"No gpsd connection";
+    position->error_message = "No gpsd connection";
     return false;
   }
   if (!GetPositionIfFixed(position)) {
-    position->error_message = ASCIIToWide(last_error_);
+    position->error_message = last_error_;
     return false;
   }
   position->error_code = Geoposition::ERROR_CODE_NONE;
@@ -136,7 +136,7 @@ bool LibGps::GetPosition(Geoposition* position) {
                  << " accuracy " << position->accuracy << " time "
                  << position->timestamp.ToDoubleT();
     position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-    position->error_message = L"Bad fix from gps";
+    position->error_message = "Bad fix from gps";
     return false;
   }
   return true;

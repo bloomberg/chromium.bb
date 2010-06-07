@@ -403,7 +403,7 @@ GeolocationArbitrator* GeolocationPermissionContext::StartUpdatingRequested(
   // Note we cannot store the arbitrator as a member as it is not thread safe.
   GeolocationArbitrator* arbitrator = GeolocationArbitrator::GetInstance();
 
-  // WebKit will not request permsission until it has received a valid
+  // WebKit will not request permission until it has received a valid
   // location, but the google network location provider will not give a
   // valid location until the user has granted permission. So we cut the Gordian
   // Knot by reusing the the 'start updating' request to also trigger

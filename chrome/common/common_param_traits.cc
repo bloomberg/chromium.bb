@@ -298,7 +298,7 @@ void ParamTraits<Geoposition>::Log(const Geoposition& p, std::wstring* l) {
           p.altitude_accuracy, p.speed, p.heading));
   LogParam(p.timestamp, l);
   l->append(L" ");
-  l->append(p.error_message);
+  l->append(UTF8ToWide(p.error_message));
   LogParam(p.error_code, l);
 }
 

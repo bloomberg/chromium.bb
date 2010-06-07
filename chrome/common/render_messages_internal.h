@@ -936,15 +936,10 @@ IPC_BEGIN_MESSAGES(View)
                       bool /* is_allowed */)
 
   // Sent after ViewHostMsg_Geolocation_StartUpdating iff the user has granted
-  // permission and we have a position available.
+  // permission and we have a position available or an error occurs (such as
+  // permission denied, position unavailable, etc.)
   IPC_MESSAGE_ROUTED1(ViewMsg_Geolocation_PositionUpdated,
                       Geoposition /* geoposition */)
-
-  // Sent after ViewHostMsg_Geolocation_StartUpdating in case of error (such as
-  // permission denied, position unavailable, etc.).
-  IPC_MESSAGE_ROUTED2(ViewMsg_Geolocation_Error,
-                      int /* code */,
-                      std::string /* message */)
 
   // Sent on process startup to indicate whether this process is running in
   // incognito mode.
