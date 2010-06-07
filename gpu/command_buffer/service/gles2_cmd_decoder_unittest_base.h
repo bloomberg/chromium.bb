@@ -162,6 +162,8 @@ class GLES2DecoderTestBase : public testing::Test {
     return group_.program_manager()->GetProgramInfo(service_id);
   }
 
+  void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
+
   void SetBucketAsCString(uint32 bucket_id, const char* str);
 
   struct AttribInfo {
@@ -178,9 +180,12 @@ class GLES2DecoderTestBase : public testing::Test {
     GLint location;
   };
 
-  void SetupShader(AttribInfo* attribs, size_t num_attribs,
-                   UniformInfo* uniforms, size_t num_uniforms,
-                   GLuint client_id, GLuint service_id);
+  void SetupShader(
+      AttribInfo* attribs, size_t num_attribs,
+      UniformInfo* uniforms, size_t num_uniforms,
+      GLuint client_id, GLuint service_id,
+      GLuint vertex_shader_client_id, GLuint vertex_shader_service_id,
+      GLuint fragment_shader_client_id, GLuint fragment_shader_service_id);
 
   // Setups up a shader for testing glUniform.
   void SetupShaderForUniform();
@@ -278,8 +283,13 @@ class GLES2DecoderTestBase : public testing::Test {
 class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
  public:
   GLES2DecoderWithShaderTestBase()
-      : GLES2DecoderTestBase() {
+      : GLES2DecoderTestBase(),
+        client_vertex_shader_id_(121),
+        client_fragment_shader_id_(122) {
   }
+
+  static const GLuint kServiceVertexShaderId = 321;
+  static const GLuint kServiceFragmentShaderId = 322;
 
   static const GLsizei kNumVertices = 100;
   static const GLsizei kNumIndices = 10;
@@ -345,6 +355,9 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   void DeleteVertexBuffer();
 
   void DeleteIndexBuffer();
+
+  GLuint client_vertex_shader_id_;
+  GLuint client_fragment_shader_id_;
 };
 
 }  // namespace gles2

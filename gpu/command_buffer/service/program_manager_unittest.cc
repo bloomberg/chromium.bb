@@ -47,6 +47,7 @@ TEST_F(ProgramManagerTest, Basic) {
   ProgramManager::ProgramInfo* info1 = manager_.GetProgramInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(kService1Id, info1->service_id());
+  EXPECT_FALSE(info1->CanLink());
   GLuint client_id = 0;
   EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
   EXPECT_EQ(kClient1Id, client_id);
@@ -355,6 +356,36 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
   EXPECT_EQ(kUniform3Location, info->element_locations[0]);
   EXPECT_STREQ(expected_name.c_str(), info->name.c_str());
   EXPECT_TRUE(program_info->GetUniformInfo(kInvalidIndex) == NULL);
+}
+
+TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
+  ShaderManager shader_manager;
+  ProgramManager::ProgramInfo* program_info =
+      manager_.GetProgramInfo(kClientProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  EXPECT_FALSE(program_info->CanLink());
+  const GLuint kVShaderClientId = 2001;
+  const GLuint kFShaderClientId = 2002;
+  const GLuint kVShaderServiceId = 3001;
+  const GLuint kFShaderServiceId = 3002;
+  shader_manager.CreateShaderInfo(
+      kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
+  ShaderManager::ShaderInfo* vshader = shader_manager.GetShaderInfo(
+      kVShaderClientId);
+  shader_manager.CreateShaderInfo(
+      kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
+  ShaderManager::ShaderInfo* fshader = shader_manager.GetShaderInfo(
+      kFShaderClientId);
+  program_info->AttachShader(vshader);
+  EXPECT_FALSE(program_info->CanLink());
+  program_info->AttachShader(fshader);
+  EXPECT_TRUE(program_info->CanLink());
+  program_info->DetachShader(vshader);
+  EXPECT_FALSE(program_info->CanLink());
+  program_info->AttachShader(vshader);
+  EXPECT_TRUE(program_info->CanLink());
+  program_info->DetachShader(fshader);
+  EXPECT_FALSE(program_info->CanLink());
 }
 
 TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {

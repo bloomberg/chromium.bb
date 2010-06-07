@@ -2584,6 +2584,12 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIds(
 
 void GLES2DecoderImpl::DoDrawArrays(
     GLenum mode, GLint first, GLsizei count) {
+  // We have to check this here because the prototype for glDrawArrays
+  // is GLint not GLsizei.
+  if (first < 0) {
+    SetGLError(GL_INVALID_ENUM, "glDrawArrays: first < 0");
+    return;
+  }
   if (IsDrawValid(first + count - 1)) {
     bool simulated_attrib_0 = SimulateAttrib0(first + count - 1);
     bool textures_set = SetBlackTextureForNonRenderableTextures();
@@ -2682,6 +2688,11 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       program, "glLinkProgram");
   if (!info) {
+    return;
+  }
+  if (!info->CanLink()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glLinkProgram: must have both vertex and fragment shader");
     return;
   }
   glLinkProgram(info->service_id());
@@ -3387,6 +3398,7 @@ void GLES2DecoderImpl::DoAttachShader(
   if (!shader_info) {
     return;
   }
+  program_info->AttachShader(shader_info);
   glAttachShader(program_info->service_id(), shader_info->service_id());
 }
 
@@ -3402,6 +3414,7 @@ void GLES2DecoderImpl::DoDetachShader(
   if (!shader_info) {
     return;
   }
+  program_info->DetachShader(shader_info);
   glDetachShader(program_info->service_id(), shader_info->service_id());
 }
 

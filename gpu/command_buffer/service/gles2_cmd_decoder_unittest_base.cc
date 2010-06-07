@@ -185,15 +185,7 @@ void GLES2DecoderTestBase::SetUp() {
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
-  {
-    EXPECT_CALL(*gl_, CreateShader(_))
-        .Times(1)
-        .WillOnce(Return(kServiceShaderId))
-        .RetiresOnSaturation();
-    CreateShader cmd;
-    cmd.Init(GL_VERTEX_SHADER, client_shader_id_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  }
+  DoCreateShader(GL_VERTEX_SHADER, client_shader_id_, kServiceShaderId);
 
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -224,6 +216,17 @@ GLint GLES2DecoderTestBase::GetGLError() {
   return static_cast<GLint>(*GetSharedMemoryAs<GLenum*>());
 }
 
+void GLES2DecoderTestBase::DoCreateShader(
+    GLenum shader_type, GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, CreateShader(shader_type))
+      .Times(1)
+      .WillOnce(Return(service_id))
+      .RetiresOnSaturation();
+  CreateShader cmd;
+  cmd.Init(shader_type, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::SetBucketAsCString(
     uint32 bucket_id, const char* str) {
   uint32 size = str ? (strlen(str) + 1) : 0;
@@ -246,8 +249,14 @@ void GLES2DecoderTestBase::SetupShaderForUniform() {
   static UniformInfo uniforms[] = {
     { "bar", 1, GL_INT, 1, },
   };
+  const GLuint kClientVertexShaderId = 5001;
+  const GLuint kServiceVertexShaderId = 6001;
+  const GLuint kClientFragmentShaderId = 5002;
+  const GLuint kServiceFragmentShaderId = 6002;
   SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
-              client_program_id_, kServiceProgramId);
+              client_program_id_, kServiceProgramId,
+              kClientVertexShaderId, kServiceVertexShaderId,
+              kClientFragmentShaderId, kServiceFragmentShaderId);
 
   EXPECT_CALL(*gl_, UseProgram(kServiceProgramId))
       .Times(1)
@@ -388,7 +397,9 @@ void GLES2DecoderWithShaderTestBase::SetUp() {
       { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
-                client_program_id_, kServiceProgramId);
+                client_program_id_, kServiceProgramId,
+                client_vertex_shader_id_, kServiceVertexShaderId,
+                client_fragment_shader_id_, kServiceFragmentShaderId);
   }
 
   {
@@ -408,20 +419,28 @@ void GLES2DecoderWithShaderTestBase::TearDown() {
 void GLES2DecoderTestBase::SetupShader(
     GLES2DecoderTestBase::AttribInfo* attribs, size_t num_attribs,
     GLES2DecoderTestBase::UniformInfo* uniforms, size_t num_uniforms,
-    GLuint client_id, GLuint service_id) {
-  LinkProgram cmd;
-  cmd.Init(client_id);
-
+    GLuint program_client_id, GLuint program_service_id,
+    GLuint vertex_shader_client_id, GLuint vertex_shader_service_id,
+    GLuint fragment_shader_client_id, GLuint fragment_shader_service_id) {
   {
     InSequence s;
-    EXPECT_CALL(*gl_, LinkProgram(service_id))
+
+    EXPECT_CALL(*gl_,
+                AttachShader(program_service_id, vertex_shader_service_id))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, GetProgramiv(service_id, GL_LINK_STATUS, _))
+    EXPECT_CALL(*gl_,
+                AttachShader(program_service_id, fragment_shader_service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, LinkProgram(program_service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetProgramiv(program_service_id, GL_LINK_STATUS, _))
         .WillOnce(SetArgumentPointee<2>(1))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
-        GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))
+        GetProgramiv(program_service_id, GL_ACTIVE_ATTRIBUTES, _))
         .WillOnce(SetArgumentPointee<2>(num_attribs))
         .RetiresOnSaturation();
     size_t max_attrib_len = 0;
@@ -430,13 +449,13 @@ void GLES2DecoderTestBase::SetupShader(
       max_attrib_len = std::max(max_attrib_len, len);
     }
     EXPECT_CALL(*gl_,
-        GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
+        GetProgramiv(program_service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
         .WillOnce(SetArgumentPointee<2>(max_attrib_len))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_attribs; ++ii) {
       const AttribInfo& info = attribs[ii];
       EXPECT_CALL(*gl_,
-          GetActiveAttrib(service_id, ii, max_attrib_len, _, _, _, _))
+          GetActiveAttrib(program_service_id, ii, max_attrib_len, _, _, _, _))
           .WillOnce(DoAll(
               SetArgumentPointee<3>(strlen(info.name)),
               SetArgumentPointee<4>(info.size),
@@ -445,14 +464,14 @@ void GLES2DecoderTestBase::SetupShader(
                                   info.name + strlen(info.name) + 1)))
           .RetiresOnSaturation();
       if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
-        EXPECT_CALL(*gl_, GetAttribLocation(service_id,
+        EXPECT_CALL(*gl_, GetAttribLocation(program_service_id,
                                             StrEq(info.name)))
             .WillOnce(Return(info.location))
             .RetiresOnSaturation();
       }
     }
     EXPECT_CALL(*gl_,
-        GetProgramiv(service_id, GL_ACTIVE_UNIFORMS, _))
+        GetProgramiv(program_service_id, GL_ACTIVE_UNIFORMS, _))
         .WillOnce(SetArgumentPointee<2>(num_uniforms))
         .RetiresOnSaturation();
     size_t max_uniform_len = 0;
@@ -461,13 +480,13 @@ void GLES2DecoderTestBase::SetupShader(
       max_uniform_len = std::max(max_uniform_len, len);
     }
     EXPECT_CALL(*gl_,
-        GetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
+        GetProgramiv(program_service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
         .WillOnce(SetArgumentPointee<2>(max_uniform_len))
         .RetiresOnSaturation();
     for (size_t ii = 0; ii < num_uniforms; ++ii) {
       const UniformInfo& info = uniforms[ii];
       EXPECT_CALL(*gl_,
-          GetActiveUniform(service_id, ii, max_uniform_len, _, _, _, _))
+          GetActiveUniform(program_service_id, ii, max_uniform_len, _, _, _, _))
           .WillOnce(DoAll(
               SetArgumentPointee<3>(strlen(info.name)),
               SetArgumentPointee<4>(info.size),
@@ -476,7 +495,7 @@ void GLES2DecoderTestBase::SetupShader(
                                   info.name + strlen(info.name) + 1)))
           .RetiresOnSaturation();
       if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
-        EXPECT_CALL(*gl_, GetUniformLocation(service_id,
+        EXPECT_CALL(*gl_, GetUniformLocation(program_service_id,
                                              StrEq(info.name)))
             .WillOnce(Return(info.location))
             .RetiresOnSaturation();
@@ -484,7 +503,7 @@ void GLES2DecoderTestBase::SetupShader(
           for (GLsizei jj = 1; jj < info.size; ++jj) {
             std::string element_name(
                 std::string(info.name) + "[" + IntToString(jj) + "]");
-            EXPECT_CALL(*gl_, GetUniformLocation(service_id,
+            EXPECT_CALL(*gl_, GetUniformLocation(program_service_id,
                                                  StrEq(element_name)))
                 .WillOnce(Return(info.location + jj))
                 .RetiresOnSaturation();
@@ -494,7 +513,23 @@ void GLES2DecoderTestBase::SetupShader(
     }
   }
 
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  DoCreateShader(
+      GL_VERTEX_SHADER, vertex_shader_client_id, vertex_shader_service_id);
+  DoCreateShader(
+      GL_FRAGMENT_SHADER, fragment_shader_client_id,
+      fragment_shader_service_id);
+
+  AttachShader attach_cmd;
+  attach_cmd.Init(program_client_id, vertex_shader_client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
+
+  attach_cmd.Init(program_client_id, fragment_shader_client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
+
+  LinkProgram link_cmd;
+  link_cmd.Init(program_client_id);
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
 }
 
 void GLES2DecoderWithShaderTestBase::DoEnableVertexAttribArray(GLint index) {
@@ -576,6 +611,9 @@ void GLES2DecoderWithShaderTestBase::DeleteIndexBuffer() {
 
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
+const GLuint GLES2DecoderWithShaderTestBase::kServiceVertexShaderId;
+const GLuint GLES2DecoderWithShaderTestBase::kServiceFragmentShaderId;
+
 const GLsizei GLES2DecoderWithShaderTestBase::kNumVertices;
 const GLsizei GLES2DecoderWithShaderTestBase::kNumIndices;
 const int GLES2DecoderWithShaderTestBase::kValidIndexRangeStart;

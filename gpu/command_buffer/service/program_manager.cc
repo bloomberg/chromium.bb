@@ -12,6 +12,18 @@
 namespace gpu {
 namespace gles2 {
 
+static int ShaderTypeToIndex(GLenum shader_type) {
+  switch (shader_type) {
+    case GL_VERTEX_SHADER:
+      return 0;
+    case GL_FRAGMENT_SHADER:
+      return 1;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
   static const char kInvalidPrefix[] = { 'g', 'l', '_' };
   return (length >= sizeof(kInvalidPrefix) &&
@@ -246,10 +258,33 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       // Notice +1 to accomodate NULL terminator.
       *params = max_uniform_name_length_ + 1;
       break;
+    case GL_LINK_STATUS:
+      *params = valid_;
+      break;
     default:
       glGetProgramiv(service_id_, pname, params);
       break;
   }
+}
+
+void ProgramManager::ProgramInfo::AttachShader(
+    ShaderManager::ShaderInfo* info) {
+  attached_shaders_[ShaderTypeToIndex(info->shader_type())] =
+      ShaderManager::ShaderInfo::Ref(info);
+}
+
+void ProgramManager::ProgramInfo::DetachShader(
+    ShaderManager::ShaderInfo* info) {
+  attached_shaders_[ShaderTypeToIndex(info->shader_type())] = NULL;
+}
+
+bool ProgramManager::ProgramInfo::CanLink() const {
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    if (!attached_shaders_[ii]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void ProgramManager::CreateProgramInfo(GLuint client_id, GLuint service_id) {

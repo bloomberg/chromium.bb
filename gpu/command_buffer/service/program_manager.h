@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 
 namespace gpu {
 namespace gles2 {
@@ -28,6 +29,8 @@ class ProgramManager {
   class ProgramInfo : public base::RefCounted<ProgramInfo> {
    public:
     typedef scoped_refptr<ProgramInfo> Ref;
+
+    static const int kMaxAttachedShaders = 2;
 
     struct UniformInfo {
       UniformInfo(GLsizei _size, GLenum _type, const std::string& _name)
@@ -132,6 +135,11 @@ class ProgramManager {
       return valid_;
     }
 
+    void AttachShader(ShaderManager::ShaderInfo* info);
+    void DetachShader(ShaderManager::ShaderInfo* info);
+
+    bool CanLink() const;
+
    private:
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
@@ -166,6 +174,9 @@ class ProgramManager {
 
     // The program this ProgramInfo is tracking.
     GLuint service_id_;
+
+    // Shaders by type of shader.
+    ShaderManager::ShaderInfo::Ref attached_shaders_[kMaxAttachedShaders];
 
     // This is true if glLinkProgram was successful.
     bool valid_;
