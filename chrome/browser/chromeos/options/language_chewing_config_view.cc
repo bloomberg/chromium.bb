@@ -36,9 +36,16 @@ LanguageChewingConfigView::LanguageChewingConfigView(Profile* profile)
     current.multiple_choice_pref.Init(
         kChewingMultipleChoicePrefs[i].pref_name, profile->GetPrefs(), this);
     current.combobox_model =
-        new LanguageComboboxModel(&kChewingMultipleChoicePrefs[i]);
+        new LanguageComboboxModel<const char*>(&kChewingMultipleChoicePrefs[i]);
     current.combobox = NULL;
   }
+
+  hsu_sel_key_type_.multiple_choice_pref.Init(
+      kChewingHsuSelKeyType.pref_name, profile->GetPrefs(), this);
+  hsu_sel_key_type_.combobox_model =
+      new LanguageComboboxModel<int>(&kChewingHsuSelKeyType);
+  hsu_sel_key_type_.combobox = NULL;
+
   for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
     chewing_integer_prefs_[i].Init(
         kChewingIntegerPrefs[i].pref_name, profile->GetPrefs(), this);
@@ -63,12 +70,19 @@ void LanguageChewingConfigView::ItemChanged(
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     if (current.combobox == sender) {
       const std::wstring config_value =
-          current.combobox_model->GetConfigValueAt(new_index);
+          UTF8ToWide(current.combobox_model->GetConfigValueAt(new_index));
       LOG(INFO) << "Changing Chewing pref to " << config_value;
       // Update the Chrome pref.
       current.multiple_choice_pref.SetValue(config_value);
       break;
     }
+  }
+  if (hsu_sel_key_type_.combobox == sender) {
+    const int config_value =
+        hsu_sel_key_type_.combobox_model->GetConfigValueAt(new_index);
+    LOG(INFO) << "Changing Chewing pref to " << config_value;
+    // Update the Chrome pref.
+    hsu_sel_key_type_.multiple_choice_pref.SetValue(config_value);
   }
 }
 
@@ -130,6 +144,10 @@ void LanguageChewingConfigView::InitControlLayout() {
     current.combobox = new LanguageCombobox(current.combobox_model);
     current.combobox->set_listener(this);
   }
+  hsu_sel_key_type_.combobox =
+      new LanguageCombobox(hsu_sel_key_type_.combobox_model);
+  hsu_sel_key_type_.combobox->set_listener(this);
+
   for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
     chewing_integer_sliders_[i] = new views::Slider(
         kChewingIntegerPrefs[i].min_pref_value,
@@ -160,6 +178,10 @@ void LanguageChewingConfigView::InitControlLayout() {
     layout->AddView(new views::Label(current.combobox_model->GetLabel()));
     layout->AddView(current.combobox);
   }
+  layout->StartRow(0, kColumnSetId);
+  layout->AddView(
+      new views::Label(hsu_sel_key_type_.combobox_model->GetLabel()));
+  layout->AddView(hsu_sel_key_type_.combobox);
 }
 
 void LanguageChewingConfigView::Observe(NotificationType type,
@@ -182,10 +204,18 @@ void LanguageChewingConfigView::NotifyPrefChanged() {
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     const std::wstring value = current.multiple_choice_pref.GetValue();
-    const int combo_index =
-        current.combobox_model->GetIndexFromConfigValue(value);
-    if (combo_index >= 0) {
-      current.combobox->SetSelectedItem(combo_index);
+    for (int i = 0; i < current.combobox_model->num_items(); ++i) {
+      if (UTF8ToWide(current.combobox_model->GetConfigValueAt(i)) == value) {
+        current.combobox->SetSelectedItem(i);
+        break;
+      }
+    }
+  }
+  const int value = hsu_sel_key_type_.multiple_choice_pref.GetValue();
+  for (int i = 0; i < hsu_sel_key_type_.combobox_model->num_items(); ++i) {
+    if (hsu_sel_key_type_.combobox_model->GetConfigValueAt(i) == value) {
+      hsu_sel_key_type_.combobox->SetSelectedItem(i);
+      break;
     }
   }
 }

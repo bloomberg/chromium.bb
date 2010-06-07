@@ -90,10 +90,12 @@ class Preferences : public NotificationObserver {
   BooleanPrefMember language_chewing_boolean_prefs_[kNumChewingBooleanPrefs];
   StringPrefMember language_chewing_multiple_choice_prefs_[
       kNumChewingMultipleChoicePrefs];
+  IntegerPrefMember language_chewing_hsu_sel_key_type_;
   IntegerPrefMember language_chewing_integer_prefs_[kNumChewingIntegerPrefs];
   StringPrefMember language_hangul_keyboard_;
   BooleanPrefMember language_pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];
   IntegerPrefMember language_pinyin_int_prefs_[kNumPinyinIntegerPrefs];
+  IntegerPrefMember language_pinyin_double_pinyin_schema_;
   StringPrefMember language_mozc_multiple_choice_prefs_[
       kNumMozcMultipleChoicePrefs];
 

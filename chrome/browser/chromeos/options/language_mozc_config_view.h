@@ -19,6 +19,7 @@
 namespace chromeos {
 
 class LanguageCombobox;
+template <typename DataType>
 class LanguageComboboxModel;
 
 // A dialog box for showing Mozc (Japanese input method) preferences.
@@ -59,7 +60,7 @@ class LanguageMozcConfigView : public views::Combobox::Listener,
 
   struct MozcPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;
-    LanguageComboboxModel* combobox_model;
+    LanguageComboboxModel<const char*>* combobox_model;
     LanguageCombobox* combobox;
   } prefs_and_comboboxes_[kNumMozcMultipleChoicePrefs];
 

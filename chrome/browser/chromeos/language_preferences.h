@@ -12,14 +12,15 @@
 // Section and config names for the IBus configuration daemon.
 namespace chromeos {
 
+template <typename DataType>
 struct LanguageMultipleChoicePreference {
   const wchar_t* pref_name;  // Chrome preference name.
-  const wchar_t* default_pref_value;
+  DataType default_pref_value;
   const char* ibus_config_name;
   // Currently we have 10 combobox items at most.
-  static const size_t kMaxItems = 10;
+  static const size_t kMaxItems = 11;
   struct {
-    const char* ibus_config_value;
+    DataType ibus_config_value;
     int item_message_id;  // Resource grd ID for the combobox item.
   } values_and_ids[kMaxItems];
   int label_message_id;  // Resource grd ID for the label.
@@ -93,9 +94,10 @@ const struct {
 };
 const size_t kNumChewingIntegerPrefs = ARRAYSIZE_UNSAFE(kChewingIntegerPrefs);
 
-const LanguageMultipleChoicePreference kChewingMultipleChoicePrefs[] = {
+const LanguageMultipleChoicePreference<const char*>
+    kChewingMultipleChoicePrefs[] = {
   { prefs::kLanguageChewingKeyboardType,
-    L"default",
+    "default",
     "KBType",
     {{ "default",
        IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DEFAULT },
@@ -114,7 +116,7 @@ const LanguageMultipleChoicePreference kChewingMultipleChoicePrefs[] = {
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE,
   },
   { prefs::kLanguageChewingSelKeys,
-    L"1234567890",
+    "1234567890",
     "selKeys",
     {{ "1234567890",
        IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234567890 },
@@ -137,7 +139,15 @@ const LanguageMultipleChoicePreference kChewingMultipleChoicePrefs[] = {
 };
 const size_t kNumChewingMultipleChoicePrefs =
     arraysize(kChewingMultipleChoicePrefs);
-// TODO(zork): Support hsuSelKeyType
+
+const LanguageMultipleChoicePreference<int> kChewingHsuSelKeyType = {
+  prefs::kLanguageChewingHsuSelKeyType,
+  1,
+  "hsuSelKeyType",
+  {{ 1, IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE_1 },
+   { 2, IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE_2 }},
+  IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE,
+};
 
 // For Korean input method (ibus-hangul)
 const char kHangulSectionName[] = "engine/Hangul";
@@ -199,13 +209,24 @@ const struct {
 const size_t kNumPinyinBooleanPrefs = ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs);
 // TODO(yusukes): Support HalfWidthPuncts and IncompletePinyin prefs if needed.
 
+const LanguageMultipleChoicePreference<int> kPinyinDoublePinyinSchema = {
+  prefs::kLanguagePinyinDoublePinyinSchema,
+  0,
+  "DoublePinyinSchema",
+  {{ 0, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_MSPY},
+   { 1, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ZRM},
+   { 2, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ABC},
+   { 3, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ZGPY},
+   { 4, IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_PYJJ}},
+  IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA,
+};
+
 const struct {
   const wchar_t* pref_name;  // Chrome preference name.
   int default_pref_value;
   const char* ibus_config_name;
   // TODO(yusukes): Add message_id if needed.
 } kPinyinIntegerPrefs[] = {
-  { prefs::kLanguagePinyinDoublePinyinSchema, 0, "DoublePinyinSchema" },
   // TODO(yusukes): the type of lookup_table_page_size on ibus should be uint.
   { prefs::kLanguagePinyinLookupTablePageSize, 5, "LookupTablePageSize" },
 };
@@ -214,16 +235,17 @@ const size_t kNumPinyinIntegerPrefs = ARRAYSIZE_UNSAFE(kPinyinIntegerPrefs);
 // For Japanese input method (ibus-mozc)
 const char kMozcSectionName[] = "engine/Mozc";
 
-const LanguageMultipleChoicePreference kMozcMultipleChoicePrefs[] = {
+const LanguageMultipleChoicePreference<const char*>
+    kMozcMultipleChoicePrefs[] = {
   { prefs::kLanguageMozcPreeditMethod,
-    L"ROMAN",
+    "ROMAN",
     "preedit_method",
     {{ "ROMAN", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_ROMAN },
      { "KANA", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_KANA }},
     IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD,
   },
   { prefs::kLanguageMozcSessionKeymap,
-    L"MSIME",
+    "MSIME",
     "session_keymap",
     {{ "ATOK", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_ATOK },
      { "MSIME", IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_MSIME },
@@ -232,7 +254,7 @@ const LanguageMultipleChoicePreference kMozcMultipleChoicePrefs[] = {
     IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP,
   },
   { prefs::kLanguageMozcPunctuationMethod,
-    L"KUTEN_TOTEN",
+    "KUTEN_TOTEN",
     "punctuation_method",
     {{ "KUTEN_TOUTEN",
        IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_TOUTEN },
@@ -245,7 +267,7 @@ const LanguageMultipleChoicePreference kMozcMultipleChoicePrefs[] = {
     IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD,
   },
   { prefs::kLanguageMozcSymbolMethod,
-    L"CORNER_BRACKET_MIDDLE_DOT",
+    "CORNER_BRACKET_MIDDLE_DOT",
     "symbol_method",
     {{ "CORNER_BRACKET_MIDDLE_DOT",
        IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_CORNER_BRACKET_MIDDLE_DOT },

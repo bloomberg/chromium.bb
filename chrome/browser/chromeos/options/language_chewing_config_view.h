@@ -20,6 +20,7 @@
 namespace chromeos {
 
 class LanguageCombobox;
+template <typename DataType>
 class LanguageComboboxModel;
 
 // A dialog box for showing Traditional Chinese (Chewing) input method
@@ -76,9 +77,15 @@ class LanguageChewingConfigView : public views::ButtonListener,
 
   struct ChewingPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;
-    LanguageComboboxModel* combobox_model;
+    LanguageComboboxModel<const char*>* combobox_model;
     LanguageCombobox* combobox;
   } prefs_and_comboboxes_[kNumChewingMultipleChoicePrefs];
+
+  struct HsuSelKeyTypePrefAndAssociatedCombobox {
+    IntegerPrefMember multiple_choice_pref;
+    LanguageComboboxModel<int>* combobox_model;
+    LanguageCombobox* combobox;
+  } hsu_sel_key_type_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageChewingConfigView);
 };

@@ -7710,6 +7710,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The combobox value for the Chewing selection keys">
         1234qweras
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE"
+               desc="The combobox description for the Hsu selection key type">
+	Hsu's keyboard selection keys
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE_1"
+               desc="The combobox value for the Hsu selection key type">
+	asdfjkl789
+      </message>
+      <message translateable="false"
+               name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE_2"
+               desc="The combobox value for the Hsu selection key type">
+	asdfzxcv89
+      </message>
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE"
                desc="The title for the Hangul input settings dialog">
@@ -7783,6 +7797,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The checkbox label for a Pinyin input method preference">
         Display candidates in Traditional Chinese
       </message>
+
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA"
+               desc="The combobox description for the double Pinyin schema">
+	Double Pinyin schema
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_MSPY"
+               desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+	MSPY
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ZRM"
+               desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+	ZRM
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ABC"
+               desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+	ABC
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ZGPY"
+               desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+	ZGPY
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_PYJJ"
+               desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+	PYJJ
+      </message>
+
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE"
                desc="The title for the Mozc Japanese input settings dialog">
         Japanese Input Settings

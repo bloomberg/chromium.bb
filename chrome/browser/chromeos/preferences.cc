@@ -38,8 +38,11 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         kChewingMultipleChoicePrefs[i].pref_name,
-        kChewingMultipleChoicePrefs[i].default_pref_value);
+        UTF8ToWide(kChewingMultipleChoicePrefs[i].default_pref_value));
   }
+  prefs->RegisterIntegerPref(kChewingHsuSelKeyType.pref_name,
+                             kChewingHsuSelKeyType.default_pref_value);
+
   for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(kChewingIntegerPrefs[i].pref_name,
                                kChewingIntegerPrefs[i].default_pref_value);
@@ -54,9 +57,13 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     prefs->RegisterIntegerPref(kPinyinIntegerPrefs[i].pref_name,
                                kPinyinIntegerPrefs[i].default_pref_value);
   }
+  prefs->RegisterIntegerPref(kPinyinDoublePinyinSchema.pref_name,
+                             kPinyinDoublePinyinSchema.default_pref_value);
+
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
-    prefs->RegisterStringPref(kMozcMultipleChoicePrefs[i].pref_name,
-                              kMozcMultipleChoicePrefs[i].default_pref_value);
+    prefs->RegisterStringPref(
+        kMozcMultipleChoicePrefs[i].pref_name,
+        UTF8ToWide(kMozcMultipleChoicePrefs[i].default_pref_value));
   }
 }
 
@@ -80,6 +87,8 @@ void Preferences::Init(PrefService* prefs) {
     language_chewing_multiple_choice_prefs_[i].Init(
         kChewingMultipleChoicePrefs[i].pref_name, prefs, this);
   }
+  language_chewing_hsu_sel_key_type_.Init(
+      kChewingHsuSelKeyType.pref_name, prefs, this);
   for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
     language_chewing_integer_prefs_[i].Init(
         kChewingIntegerPrefs[i].pref_name, prefs, this);
@@ -93,6 +102,8 @@ void Preferences::Init(PrefService* prefs) {
     language_pinyin_int_prefs_[i].Init(
         kPinyinIntegerPrefs[i].pref_name, prefs, this);
   }
+  language_pinyin_double_pinyin_schema_.Init(
+      kPinyinDoublePinyinSchema.pref_name, prefs, this);
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     language_mozc_multiple_choice_prefs_[i].Init(
         kMozcMultipleChoicePrefs[i].pref_name, prefs, this);
@@ -162,6 +173,12 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
           language_chewing_multiple_choice_prefs_[i].GetValue());
     }
   }
+  if (!pref_name || *pref_name == kChewingHsuSelKeyType.pref_name) {
+    SetLanguageConfigInteger(
+        kChewingSectionName,
+        kChewingHsuSelKeyType.ibus_config_name,
+        language_chewing_hsu_sel_key_type_.GetValue());
+  }
   for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
     if (!pref_name || *pref_name == kChewingIntegerPrefs[i].pref_name) {
       SetLanguageConfigInteger(kChewingSectionName,
@@ -186,6 +203,12 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
                                kPinyinIntegerPrefs[i].ibus_config_name,
                                language_pinyin_int_prefs_[i].GetValue());
     }
+  }
+  if (!pref_name || *pref_name == kPinyinDoublePinyinSchema.pref_name) {
+    SetLanguageConfigInteger(
+        kPinyinSectionName,
+        kPinyinDoublePinyinSchema.ibus_config_name,
+        language_pinyin_double_pinyin_schema_.GetValue());
   }
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     if (!pref_name || *pref_name == kMozcMultipleChoicePrefs[i].pref_name) {

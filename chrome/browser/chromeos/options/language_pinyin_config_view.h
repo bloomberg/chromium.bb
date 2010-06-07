@@ -12,14 +12,20 @@
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/window/dialog_delegate.h"
 
 namespace chromeos {
 
+class LanguageCombobox;
+template <typename DataType>
+class LanguageComboboxModel;
+
 // A dialog box for showing Traditional Chinese (Pinyin) input method
 // preferences.
 class LanguagePinyinConfigView : public views::ButtonListener,
+                                 public views::Combobox::Listener,
                                  public views::DialogDelegate,
                                  public OptionsPageView {
  public:
@@ -28,6 +34,11 @@ class LanguagePinyinConfigView : public views::ButtonListener,
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // views::Combobox::Listener overrides.
+  virtual void ItemChanged(views::Combobox* sender,
+                           int prev_index,
+                           int new_index);
 
   // views::DialogDelegate overrides.
   virtual bool IsModal() const { return true; }
@@ -56,6 +67,12 @@ class LanguagePinyinConfigView : public views::ButtonListener,
 
   // A checkboxes for Pinyin.
   views::Checkbox* pinyin_boolean_checkboxes_[kNumPinyinBooleanPrefs];
+
+  struct DoublePinyinSchemaPrefAndAssociatedCombobox {
+    IntegerPrefMember multiple_choice_pref;
+    LanguageComboboxModel<int>* combobox_model;
+    LanguageCombobox* combobox;
+  } double_pinyin_schema_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguagePinyinConfigView);
 };

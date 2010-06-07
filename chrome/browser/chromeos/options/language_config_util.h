@@ -11,15 +11,17 @@
 namespace chromeos {
 
 // The combobox model for Language input method prefs.
+template <typename DataType>
 class LanguageComboboxModel : public ComboboxModel {
  public:
   explicit LanguageComboboxModel(
-      const LanguageMultipleChoicePreference* pref_data)
+      const LanguageMultipleChoicePreference<DataType>* pref_data)
           : pref_data_(pref_data), num_items_(0) {
     // Check how many items are defined in the |pref_data->values_and_ids|
     // array.
-    for (size_t i = 0; i < LanguageMultipleChoicePreference::kMaxItems; ++i) {
-      if ((pref_data_->values_and_ids)[i].ibus_config_value == NULL) {
+    for (size_t i = 0;
+         i < LanguageMultipleChoicePreference<DataType>::kMaxItems; ++i) {
+      if ((pref_data_->values_and_ids)[i].item_message_id == 0) {
         break;
       }
       ++num_items_;
@@ -50,28 +52,20 @@ class LanguageComboboxModel : public ComboboxModel {
   // Gets a config value for the ibus configuration daemon (e.g. "KUTEN_TOUTEN",
   // "KUTEN_PERIOD", ..) for an item at zero-origin |index|. This function is
   // NOT part of the ComboboxModel interface.
-  std::wstring GetConfigValueAt(int index) const {
+  DataType GetConfigValueAt(int index) const {
     if (index < 0 || index >= num_items_) {
       LOG(ERROR) << "Index is out of bounds: " << index;
-      return L"";
+      return (pref_data_->values_and_ids)[0].ibus_config_value;
     }
-    return UTF8ToWide((pref_data_->values_and_ids)[index].ibus_config_value);
+    return (pref_data_->values_and_ids)[index].ibus_config_value;
   }
 
-  // Gets an index (>= 0) of an item such that GetConfigValueAt(index) is equal
-  // to the |config_value|. Returns -1 if such item is not found. This function
-  // is NOT part of the ComboboxModel interface.
-  int GetIndexFromConfigValue(const std::wstring& config_value) const {
-    for (int i = 0; i < num_items_; ++i) {
-      if (GetConfigValueAt(i) == config_value) {
-        return i;
-      }
-    }
-    return -1;
+  int num_items() {
+    return num_items_;
   }
 
  private:
-  const LanguageMultipleChoicePreference* pref_data_;
+  const LanguageMultipleChoicePreference<DataType>* pref_data_;
   int num_items_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageComboboxModel);

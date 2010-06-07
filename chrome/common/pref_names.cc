@@ -238,6 +238,9 @@ const wchar_t kLanguageChewingKeyboardType[] =
 const wchar_t kLanguageChewingSelKeys[] =
     L"settings.language.chewing_sel_keys";
 
+const wchar_t kLanguageChewingHsuSelKeyType[] =
+    L"settings.language.chewing_hsu_sel_key_type";
+
 // A string pref which determines the keyboard layout for Hangul input method.
 const wchar_t kLanguageHangulKeyboard[] = L"settings.language.hangul_keyboard";
 

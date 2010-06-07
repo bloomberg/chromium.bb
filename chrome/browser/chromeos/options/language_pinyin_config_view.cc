@@ -11,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/options/language_config_util.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
@@ -30,6 +31,12 @@ LanguagePinyinConfigView::LanguagePinyinConfigView(Profile* profile)
         kPinyinBooleanPrefs[i].pref_name, profile->GetPrefs(), this);
     pinyin_boolean_checkboxes_[i] = NULL;
   }
+
+  double_pinyin_schema_.multiple_choice_pref.Init(
+      kPinyinDoublePinyinSchema.pref_name, profile->GetPrefs(), this);
+  double_pinyin_schema_.combobox_model =
+      new LanguageComboboxModel<int>(&kPinyinDoublePinyinSchema);
+  double_pinyin_schema_.combobox = NULL;
 }
 
 LanguagePinyinConfigView::~LanguagePinyinConfigView() {
@@ -41,6 +48,17 @@ void LanguagePinyinConfigView::ButtonPressed(
   const int pref_id = checkbox->tag();
   DCHECK(pref_id >= 0 && pref_id < static_cast<int>(kNumPinyinBooleanPrefs));
   pinyin_boolean_prefs_[pref_id].SetValue(checkbox->checked());
+}
+
+void LanguagePinyinConfigView::ItemChanged(
+    views::Combobox* sender, int prev_index, int new_index) {
+  if (double_pinyin_schema_.combobox == sender) {
+    const int config_value =
+        double_pinyin_schema_.combobox_model->GetConfigValueAt(new_index);
+    LOG(INFO) << "Changing Pinyin pref to " << config_value;
+    // Update the Chrome pref.
+    double_pinyin_schema_.multiple_choice_pref.SetValue(config_value);
+  }
 }
 
 void LanguagePinyinConfigView::Layout() {
@@ -86,11 +104,19 @@ void LanguagePinyinConfigView::InitControlLayout() {
     pinyin_boolean_checkboxes_[i]->set_listener(this);
     pinyin_boolean_checkboxes_[i]->set_tag(i);
   }
+  double_pinyin_schema_.combobox =
+      new LanguageCombobox(double_pinyin_schema_.combobox_model);
+  double_pinyin_schema_.combobox->set_listener(this);
+
   NotifyPrefChanged();
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     layout->StartRow(0, kColumnSetId);
     layout->AddView(pinyin_boolean_checkboxes_[i]);
   }
+  layout->StartRow(0, kColumnSetId);
+  layout->AddView(
+      new views::Label(double_pinyin_schema_.combobox_model->GetLabel()));
+  layout->AddView(double_pinyin_schema_.combobox);
 }
 
 void LanguagePinyinConfigView::Observe(NotificationType type,
@@ -105,6 +131,13 @@ void LanguagePinyinConfigView::NotifyPrefChanged() {
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     const bool checked = pinyin_boolean_prefs_[i].GetValue();
     pinyin_boolean_checkboxes_[i]->SetChecked(checked);
+  }
+  const int value = double_pinyin_schema_.multiple_choice_pref.GetValue();
+  for (int i = 0; i < double_pinyin_schema_.combobox_model->num_items(); ++i) {
+    if (double_pinyin_schema_.combobox_model->GetConfigValueAt(i) == value) {
+      double_pinyin_schema_.combobox->SetSelectedItem(i);
+      break;
+    }
   }
 }
 
