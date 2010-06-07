@@ -61,6 +61,20 @@ const struct ExtraLanguage {
   { "es-419", "xkb:es::spa" },
 };
 
+// The list defines pairs of language code and the default input method
+// id. The list is used for reordering input method ids.
+//
+// TODO(satorux): We may need to handle secondary, and ternary input
+// methods, rather than handling the default input method only.
+const struct LanguageDefaultInputMethodId {
+  const char* language_code;
+  const char* input_method_id;
+} kLanguageDefaultInputMethodIds[] = {
+  { "en-US", "xkb:us::eng", },  // US - English
+  { "fr",    "xkb:fr::fra", },  // France - French
+  { "de",    "xkb:de::ger", },  // Germany - German
+};
+
 // The width of the preferred language table shown on the left side.
 const int kPreferredLanguageTableWidth = 300;
 
@@ -360,12 +374,12 @@ void LanguageConfigView::AddInputMethodSection(
   // Add input method names and configuration buttons.
   input_method_checkboxes_.clear();
 
-  std::pair<LanguageCodeToIdsMap::const_iterator,
-            LanguageCodeToIdsMap::const_iterator> range =
-      language_code_to_ids_map_.equal_range(language_code);
-  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
-       iter != range.second; ++iter) {
-    const std::string& input_method_id = iter->second;
+  // Get the list of input method ids associated with the language code.
+  std::vector<std::string> input_method_ids;
+  GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
+
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    const std::string& input_method_id = input_method_ids[i];
     const std::string display_name = GetInputMethodDisplayNameFromId(
         input_method_id);
     layout->StartRow(0, kPerLanguageDoubleColumnSetId);
@@ -682,12 +696,10 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
   // Activate the first input language associated with the language. We have
   // to call this before the OnItemsAdded() call below so the checkbox
   // for the first input language gets checked.
-  for (size_t i = 0; i < supported_input_method_ids_.size(); ++i) {
-    if (GetLanguageCodeFromInputMethodId(supported_input_method_ids_[i]) ==
-        language_code) {
-      SetInputMethodActivated(supported_input_method_ids_[i], true);
-      break;
-    }
+  std::vector<std::string> input_method_ids;
+  GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
+  if (!input_method_ids.empty()) {
+    SetInputMethodActivated(input_method_ids[0], true);
   }
 
   // Append the language to the list of language codes.
@@ -874,6 +886,23 @@ std::string LanguageConfigView::GetInputMethodDisplayNameFromId(
       kDefaultDisplayName : iter->second;
 }
 
+void LanguageConfigView::GetInputMethodIdsFromLanguageCode(
+    const std::string& language_code,
+    std::vector<std::string>* input_method_ids) const {
+  DCHECK(input_method_ids);
+  input_method_ids->clear();
+
+  std::pair<LanguageCodeToIdsMap::const_iterator,
+            LanguageCodeToIdsMap::const_iterator> range =
+      language_code_to_ids_map_.equal_range(language_code);
+  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
+       iter != range.second; ++iter) {
+    input_method_ids->push_back(iter->second);
+  }
+  // Reorder the input methods.
+  ReorderInputMethodIdsForLanguageCode(language_code, input_method_ids);
+}
+
 void LanguageConfigView::NotifyPrefChanged() {
   std::vector<std::string> input_method_ids;
   GetActiveInputMethodIds(&input_method_ids);
@@ -946,6 +975,24 @@ void LanguageConfigView::SortLanguageCodesByNames(
     collator.reset();
   std::sort(language_codes->begin(), language_codes->end(),
             CompareByLanguageName(collator.get()));
+}
+
+void LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
+    const std::string& language_code,
+    std::vector<std::string>* input_method_ids) {
+  for (size_t i = 0; i < arraysize(kLanguageDefaultInputMethodIds); ++i) {
+    if (language_code == kLanguageDefaultInputMethodIds[i].language_code) {
+      std::vector<std::string>::iterator iter =
+          std::find(input_method_ids->begin(), input_method_ids->end(),
+                    kLanguageDefaultInputMethodIds[i].input_method_id);
+      // If it's not on the top of |input_method_id|, swap it with the top one.
+      if (iter != input_method_ids->end() &&
+          iter != input_method_ids->begin()) {
+        std::swap(*input_method_ids->begin(), *iter);
+      }
+      break;  // Don't have to check other language codes.
+    }
+  }
 }
 
 }  // namespace chromeos

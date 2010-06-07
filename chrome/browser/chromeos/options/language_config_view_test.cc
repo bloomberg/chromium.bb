@@ -48,6 +48,64 @@ TEST(LanguageConfigViewTest, SortLanguageCodesByNames) {
   ASSERT_EQ("t",  language_codes[3]);  // Others
 }
 
+TEST(LanguageConfigViewTest, ReorderInputMethodIdsForLanguageCode_DE) {
+  std::vector<std::string> input_method_ids;
+  input_method_ids.push_back("xkb:ch::ger");  // Switzerland - German
+  input_method_ids.push_back("xkb:de::ger");  // Germany - German
+  LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
+      "de", &input_method_ids);
+  // The list should be reordered.
+  ASSERT_EQ(2, static_cast<int>(input_method_ids.size()));
+  EXPECT_EQ("xkb:de::ger", input_method_ids[0]);
+  EXPECT_EQ("xkb:ch::ger", input_method_ids[1]);
+}
+
+TEST(LanguageConfigViewTest, ReorderInputMethodIdsForLanguageCode_FR) {
+  std::vector<std::string> input_method_ids;
+  input_method_ids.push_back("xkb:be::fra");  // Belgium - French
+  input_method_ids.push_back("xkb:fr::fra");  // France - French
+  LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
+      "fr", &input_method_ids);
+  // The list should be reordered.
+  ASSERT_EQ(2, static_cast<int>(input_method_ids.size()));
+  EXPECT_EQ("xkb:fr::fra", input_method_ids[0]);
+  EXPECT_EQ("xkb:be::fra", input_method_ids[1]);
+}
+
+TEST(LanguageConfigViewTest, ReorderInputMethodIdsForLanguageCode_EN_US) {
+  std::vector<std::string> input_method_ids;
+  input_method_ids.push_back("xkb:us:dvorak:eng");  // US - Dvorak - English
+  input_method_ids.push_back("xkb:us::eng");  // US - English
+  LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
+      "en-US", &input_method_ids);
+  // The list should be reordered.
+  ASSERT_EQ(2, static_cast<int>(input_method_ids.size()));
+  EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
+  EXPECT_EQ("xkb:us:dvorak:eng", input_method_ids[1]);
+}
+
+TEST(LanguageConfigViewTest, ReorderInputMethodIdsForLanguageCode_FI) {
+  std::vector<std::string> input_method_ids;
+  input_method_ids.push_back("xkb:fi::fin");  // Finland - Finnish
+  LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
+      "fi", &input_method_ids);
+  // There is no rule for reordering for Finnish.
+  ASSERT_EQ(1, static_cast<int>(input_method_ids.size()));
+  EXPECT_EQ("xkb:fi::fin", input_method_ids[0]);
+}
+
+TEST(LanguageConfigViewTest, ReorderInputMethodIdsForLanguageCode_Noop) {
+  std::vector<std::string> input_method_ids;
+  input_method_ids.push_back("xkb:fr::fra");  // France - French
+  input_method_ids.push_back("xkb:be::fra");  // Belgium - French
+  // If the list is already sorted, nothing should happen.
+  LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
+      "fr", &input_method_ids);
+  ASSERT_EQ(2, static_cast<int>(input_method_ids.size()));
+  EXPECT_EQ("xkb:fr::fra", input_method_ids[0]);
+  EXPECT_EQ("xkb:be::fra", input_method_ids[1]);
+}
+
 TEST(LanguageConfigViewTest, AddLanguageComboboxModel) {
   std::vector<std::string> language_codes;
   language_codes.push_back("de");

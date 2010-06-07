@@ -140,6 +140,15 @@ class LanguageConfigView : public TableModel,
   static void SortLanguageCodesByNames(
       std::vector<std::string>* language_codes);
 
+  // Reorders the given input method ids for the language code. For
+  // example, if |language_codes| is "fr" and |input_method_ids| contains
+  // ["xkb:be::fra", and "xkb:fr::fra"], the list is reordered to
+  // ["xkb:fr::fra", and "xkb:be::fra"], so that French keyboard layout
+  // comes before Belgian keyboard layout.
+  static void ReorderInputMethodIdsForLanguageCode(
+      const std::string& language_code,
+      std::vector<std::string>* input_method_ids);
+
   // Shows the language config dialog in a new window.
   static void Show(Profile* profile, gfx::NativeWindow parent);
 
@@ -209,6 +218,12 @@ class LanguageConfigView : public TableModel,
   //           "m17n:ar:kbd" => "kbd (m17n)"
   std::string GetInputMethodDisplayNameFromId(
       const std::string& input_method_id) const;
+
+  // Gets the list of input method ids associated with the given language
+  // code.  The original contents of |input_method_ids| will be lost.
+  void GetInputMethodIdsFromLanguageCode(
+      const std::string& language_code,
+      std::vector<std::string>* input_method_ids) const;
 
   // Callback for |preload_engines_| pref updates. Initializes the preferred
   // language codes based on the updated pref value.
