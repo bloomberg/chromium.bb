@@ -224,8 +224,13 @@ void TCPClientSocketPool::CancelRequest(
 
 void TCPClientSocketPool::ReleaseSocket(
     const std::string& group_name,
-    ClientSocket* socket) {
-  base_.ReleaseSocket(group_name, socket);
+    ClientSocket* socket,
+    int id) {
+  base_.ReleaseSocket(group_name, socket, id);
+}
+
+void TCPClientSocketPool::Flush() {
+  base_.Flush();
 }
 
 void TCPClientSocketPool::CloseIdleSockets() {
