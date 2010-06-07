@@ -83,8 +83,8 @@ for ncv_enum in ncv_enum_pairs:
               [ncv_enum_file, env.File('enum_gen.py')],
               [ncv_command])
 
-env.ComponentLibrary('ncopcode_utils',
-                     ['ncopcode_desc.c'])
+ncopcode_desc_o = env.ComponentObject('ncopcode_desc.c')
+env.ComponentLibrary('ncopcode_utils', ncopcode_desc_o)
 
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
@@ -132,7 +132,7 @@ NCVALIDATE_SOURCES = ['nacl_cpuid.c',
                                     'nc_read_segment.c',
                                     'ncvalidate.c']
 if env['TARGET_SUBARCH']=='64':
-  NCVALIDATE_SOURCES = NCVALIDATE_SOURCES + ['ncopcode_desc.c']
+  NCVALIDATE_SOURCES = NCVALIDATE_SOURCES + ncopcode_desc_o
 
 env.ComponentLibrary('ncvalidate', NCVALIDATE_SOURCES)
 
