@@ -150,17 +150,12 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->AddPrefObserver(prefs::kShowBookmarkBar, this);
   pref_service->AddPrefObserver(prefs::kNTPShownSections, this);
-
-  // Watch for pref changes that cause us to need to invalidate the CSS cache.
-  pref_service->AddPrefObserver(prefs::kNTPPromoLineRemaining, this);
 }
 
 NTPResourceCache::~NTPResourceCache() {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->RemovePrefObserver(prefs::kShowBookmarkBar, this);
   pref_service->RemovePrefObserver(prefs::kNTPShownSections, this);
-
-  pref_service->RemovePrefObserver(prefs::kNTPPromoLineRemaining, this);
 }
 
 RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_off_the_record) {
@@ -204,9 +199,6 @@ void NTPResourceCache::Observe(NotificationType type,
         *pref_name == prefs::kNTPShownSections) {
       new_tab_incognito_html_ = NULL;
       new_tab_html_ = NULL;
-    } else if (*pref_name == prefs::kNTPPromoLineRemaining) {
-      new_tab_incognito_css_ = NULL;
-      new_tab_css_ = NULL;
     } else {
       NOTREACHED();
     }
@@ -271,10 +263,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString(L"hasattribution",
       profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
       "true" : "false");
-  localized_strings.SetString(L"haspromo",
-      profile_->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) > 0 ||
-      profile_->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) > 0 ?
-      "true" : "false");
   localized_strings.SetString(L"title", title);
   localized_strings.SetString(L"mostvisited", most_visited);
   localized_strings.SetString(L"restorethumbnails",
@@ -311,15 +299,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
   localized_strings.SetString(L"tips",
       l10n_util::GetString(IDS_NEW_TAB_TIPS));
-  localized_strings.SetString(L"promonew",
-      l10n_util::GetString(IDS_NTP_PROMOTION_NEW));
-  std::wstring extensionLink = ASCIIToWide(
-      google_util::AppendGoogleLocaleParam(
-          GURL(extension_urls::kGalleryBrowsePrefix)).spec());
-  localized_strings.SetString(L"promomessage",
-      l10n_util::GetStringF(IDS_NTP_PROMO_MESSAGE,
-          l10n_util::GetString(IDS_PRODUCT_NAME), extensionLink));
-  localized_strings.SetString(L"extensionslink", extensionLink);
   localized_strings.SetString(L"close", l10n_util::GetString(IDS_CLOSE));
 
   // Don't initiate the sync related message passing with the page if the sync
@@ -487,17 +466,6 @@ void NTPResourceCache::CreateNewTabCSS() {
       tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ? "block" : "none");  // $$5
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
-
-  if (profile_->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) > 0) {
-    subst2.push_back("block");  // $$8
-  } else {
-    subst2.push_back("none");  // $$8
-  }
-  if (profile_->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) > 0) {
-    subst2.push_back("inline-block");  // $$9
-  } else {
-    subst2.push_back("none");  // $$9
-  }
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(

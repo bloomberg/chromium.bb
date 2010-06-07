@@ -107,14 +107,6 @@ body {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
-#promo-line {
-  display: $$9;
-}
-
-#bottom-right-promo {
-  display: $$8;
-}
-
 #top-bar {
   border-bottom: 1px solid $$2; /* COLOR_NTP_SECTION_BORDER */
 }

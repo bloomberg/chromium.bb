@@ -113,37 +113,6 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// PromotionalMessageHandler
-
-class PromotionalMessageHandler : public DOMMessageHandler {
- public:
-  PromotionalMessageHandler() {}
-  virtual ~PromotionalMessageHandler() {}
-
-  // DOMMessageHandler implementation.
-  virtual void RegisterMessages();
-
-  // Zero promotional message counter.
-  void HandleClosePromotionalMessage(const Value* content);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PromotionalMessageHandler);
-};
-
-void PromotionalMessageHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("stopPromoLineMessage",
-      NewCallback(this,
-                  &PromotionalMessageHandler::HandleClosePromotionalMessage));
-}
-
-void PromotionalMessageHandler::HandleClosePromotionalMessage(
-    const Value* content) {
-  dom_ui_->GetProfile()->GetPrefs()->SetInteger(
-      prefs::kNTPPromoLineRemaining, 0);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 // RecentlyClosedTabsHandler
 
 class RecentlyClosedTabsHandler : public DOMMessageHandler,
@@ -485,13 +454,6 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   static bool first_view = true;
   if (first_view) {
-    Profile* profile = GetProfile();
-    // Decrement ntp promo counters; the default values are specified in
-    // Browser::RegisterUserPrefs.
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoLineRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) - 1);
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoImageRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) - 1);
     first_view = false;
   }
 
@@ -514,7 +476,6 @@ NewTabUI::NewTabUI(TabContents* contents)
     }
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
-    AddMessageHandler((new PromotionalMessageHandler())->Attach(this));
   }
 
   // Initializing the CSS and HTML can require some CPU, so do it after

@@ -20,10 +20,6 @@ html[mode=app-launcher] {
   height: auto;
 }
 
-#promo-spacer {
-  height: 50px;
-}
-
 #main {
   background: url(chrome://theme/product_logo) no-repeat 0 6px;
   position: relative;
@@ -31,10 +27,6 @@ html[mode=app-launcher] {
   width: 920px;
   min-height: 50px;
   -webkit-transition: width .15s;
-}
-
-html[haspromo=true] #main {
-  padding-bottom: 110px;
 }
 
 html[dir=rtl] #main {
@@ -358,20 +350,6 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   margin: 10px 0;
 }
 
-/* promotions line and image */
-#bottom-right-promo {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  display: block;
-  height: 131px;
-  border: 0;
-}
-
-#promo-image {
-  display: block;
-}
-
 .sync-button {
   font-size: inherit;
   padding: 0;
@@ -382,69 +360,6 @@ html[dir=rtl] #option-menu > [command=hide]:before {
   cursor: pointer;
   text-decoration: underline;
   font-family: inherit;
-}
-
-#footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  min-width: 692px;
-}
-
-#promo-line {
-  display: inline-block;
-  margin-bottom: 20px;
-  background-color: hsl(52, 100%, 80%);
-  border: 1px solid rgb(211, 211, 211);
-  border-radius: 6px;
-  padding: 7px 10px;
-  white-space: nowrap;
-  text-align: center;
-  vertical-align: middle;
-  color: black;
-  -webkit-transition: opacity .15s;
-}
-
-#promo-line * {
-  font-weight: bold;
-  text-overflow: ellipsis;
-}
-
-#promo-message a,
-#promo-message button {
-  color: rgba(0, 102, 204, 0.3);
-  text-decoration: underline;
-}
-
-#promo-message a > .link-color,
-#promo-message button > .link-color {
-  color: rgb(0, 102, 204);
-}
-
-#promo-new {
-  color: red;
-}
-
-#promo-close {
-  display: inline-block;
-  border: 0px;
-  margin-left: 10px;
-  margin-right: auto;
-  vertical-align: middle;
-  width: 16px;
-  height: 16px;
-  background: no-repeat;
-  background-image: url(chrome://theme/close_bar);
-}
-
-#promo-close:hover,
-#promo-close:focus {
-  background-image: url(chrome://theme/close_bar_h);
-}
-
-#promo-close:active {
-  background-image: url(chrome://theme/close_bar_p);
 }
 
 #apps-section {

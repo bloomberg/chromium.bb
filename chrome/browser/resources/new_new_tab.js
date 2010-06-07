@@ -919,9 +919,6 @@ document.addEventListener('DOMContentLoaded',
 document.addEventListener('DOMContentLoaded',
                           callGetSyncMessageIfSyncIsPresent);
 
-// Set up links and text-decoration for promotional message.
-document.addEventListener('DOMContentLoaded', setUpPromoMessage);
-
 /**
  * The sync code is not yet built by default on all platforms so we have to
  * make sure we don't send the initial sync message to the backend unless the
@@ -998,22 +995,6 @@ function fixLinkUnderline(el) {
 }
 
 updateAttribution();
-
-// Closes the promo line when close button is clicked.
-$('promo-close').onclick = function (e) {
-  $('promo-line').classList.add('hidden');
-  chrome.send('stopPromoLineMessage');
-  e.preventDefault();
-};
-
-// Set bookmark sync button to start bookmark sync process on click; also set
-// link underline colors correctly.
-function setUpPromoMessage() {
-  var syncButton = document.querySelector('#promo-message button');
-  syncButton.className = 'sync-button link';
-  syncButton.onclick = syncSectionLinkClicked;
-  fixLinkUnderlines($('promo-message'));
-}
 
 var mostVisited = new MostVisited($('most-visited'),
                                   useSmallGrid(),

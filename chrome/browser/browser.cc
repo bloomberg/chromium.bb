@@ -1866,8 +1866,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoLineRemaining, 5);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoImageRemaining, 5);
   prefs->RegisterBooleanPref(prefs::kShowExtensionShelf, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
