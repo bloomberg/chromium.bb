@@ -21,15 +21,12 @@ namespace gfx {
 typedef HGLRC GLContextHandle;
 typedef HPBUFFERARB PbufferHandle;
 
-const wchar_t kNativeViewGLClass[] = L"NativeViewGLWindow";
-
 // This class is a wrapper around a GL context that renders directly to a
 // window.
 class NativeViewGLContext : public GLContext {
  public:
   explicit NativeViewGLContext(gfx::PluginWindowHandle window)
       : window_(window),
-        content_window_(NULL),
         device_context_(NULL),
         context_(NULL) {
     DCHECK(window);
@@ -47,10 +44,7 @@ class NativeViewGLContext : public GLContext {
   virtual void* GetHandle();
 
  private:
-  HWND CreateContentWindow(HWND parent);
-
   gfx::PluginWindowHandle window_;
-  HWND content_window_;
   HDC device_context_;
   GLContextHandle context_;
 
@@ -289,46 +283,9 @@ static bool InitializeOneOff() {
   return true;
 }
 
-HWND NativeViewGLContext::CreateContentWindow(HWND parent) {
-  WNDCLASS window_class = {0};
-  if (!GetClassInfo(GetModuleHandle(0), kNativeViewGLClass, &window_class)) {
-    window_class.style = CS_OWNDC;
-    window_class.hInstance = GetModuleHandle(0);
-    window_class.lpfnWndProc = DefWindowProc;
-    window_class.lpszClassName = kNativeViewGLClass;
-    if (!RegisterClass(&window_class)) {
-        DLOG(ERROR) << "Failed to register window class";
-        return 0;
-    }
-  }
-
-  // The content window's size matches the size of the hosting window at
-  // creation time. If the size of the hosting window changes, SwapBuffers
-  // must be called to resize the content window appropriately.
-  RECT rect;
-  GetClientRect(window_, &rect);
-  HWND content_window = CreateWindow(kNativeViewGLClass, L"NativeViewGLcontent",
-      WS_CHILD | WS_VISIBLE | WS_DISABLED,
-      0, 0, rect.right - rect.left, rect.bottom - rect.top, parent, 0,
-      GetModuleHandle(0), 0);
-
-  if (!content_window)
-    UnregisterClass(kNativeViewGLClass, GetModuleHandle(0));
-
-  return content_window;
-}
-
 bool NativeViewGLContext::Initialize(bool multisampled) {
-  // Create a new window to be used by the GL context. The content window is a
-  // child of hosting window and renders on top of it. Currently the content
-  // window gets resized when SwapBuffers() gets called to match the size of
-  // the host.
-  content_window_ = CreateContentWindow(window_);
-  if (!content_window_)
-      return false;
-
   // The GL context will render to this window.
-  device_context_ = GetDC(content_window_);
+  device_context_ = GetDC(window_);
 
   int pixel_format =
       multisampled ? g_multisampled_pixel_format : g_regular_pixel_format;
@@ -371,12 +328,10 @@ void NativeViewGLContext::Destroy() {
     context_ = NULL;
   }
 
-  if (content_window_ && device_context_) {
-    ReleaseDC(content_window_, device_context_);
-    ::DestroyWindow(content_window_);
-    UnregisterClass(kNativeViewGLClass, GetModuleHandle(0));
-  }
-  content_window_ = NULL;
+  if (window_ && device_context_)
+    ReleaseDC(window_, device_context_);
+
+  window_ = NULL;
   device_context_ = NULL;
 }
 
@@ -403,20 +358,7 @@ bool NativeViewGLContext::IsOffscreen() {
 
 void NativeViewGLContext::SwapBuffers() {
   DCHECK(device_context_);
-
   ::SwapBuffers(device_context_);
-
-  // Adjust the size of the content window to always match that of the hosting
-  // window.
-  RECT host_window_rect;
-  GetClientRect(window_, &host_window_rect);
-  RECT content_window_rect;
-  GetClientRect(content_window_, &content_window_rect);
-  if (!EqualRect(&host_window_rect, &content_window_rect)){
-    SetWindowPos(content_window_, NULL, 0, 0,
-                 host_window_rect.right - host_window_rect.left,
-                 host_window_rect.bottom - host_window_rect.top, 0);
-  }
 }
 
 gfx::Size NativeViewGLContext::GetSize() {
