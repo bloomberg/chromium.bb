@@ -6,6 +6,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
 
 #include <string>
+#include "base/message_loop_proxy.h"
 #include "base/file_path.h"
 #include "net/http/http_cache.h"
 
@@ -35,6 +36,9 @@ class SimpleResourceLoaderBridge {
                                 const GURL& first_party_for_cookies);
   static bool EnsureIOThread();
   static void SetAcceptAllCookies(bool accept_all_cookies);
+
+  // This method should only be called after Init(), and before Shutdown().
+  static scoped_refptr<base::MessageLoopProxy> GetCacheThread();
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__

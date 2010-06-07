@@ -25,14 +25,15 @@ AppCacheDiskCache::~AppCacheDiskCache() {
 
 int AppCacheDiskCache::InitWithDiskBackend(
     const FilePath& disk_cache_directory, int disk_cache_size, bool force,
-    net::CompletionCallback* callback) {
+    base::MessageLoopProxy* cache_thread, net::CompletionCallback* callback) {
   return Init(net::APP_CACHE, disk_cache_directory,
-              disk_cache_size, force, callback);
+              disk_cache_size, force, cache_thread, callback);
 }
 
 int AppCacheDiskCache::InitWithMemBackend(
     int mem_cache_size, net::CompletionCallback* callback) {
-  return Init(net::MEMORY_CACHE, FilePath(), mem_cache_size, false, callback);
+  return Init(net::MEMORY_CACHE, FilePath(), mem_cache_size, false, NULL,
+              callback);
 }
 
 void AppCacheDiskCache::Disable() {
@@ -99,15 +100,15 @@ int AppCacheDiskCache::DoomEntry(int64 key,
 int AppCacheDiskCache::Init(net::CacheType cache_type,
                             const FilePath& cache_directory,
                             int cache_size, bool force,
+                            base::MessageLoopProxy* cache_thread,
                             net::CompletionCallback* callback) {
   DCHECK(!is_initializing() && !disk_cache_.get());
   is_disabled_ = false;
   create_backend_callback_ = new CreateBackendCallback(
       this, &AppCacheDiskCache::OnCreateBackendComplete);
 
-  // TODO(michaeln): Pass a valid cache_thread here.
   int rv = disk_cache::CreateCacheBackend(
-      cache_type, cache_directory, cache_size, force, NULL,
+      cache_type, cache_directory, cache_size, force, cache_thread,
       &(create_backend_callback_->backend_ptr_), create_backend_callback_);
   if (rv == net::ERR_IO_PENDING)
     init_callback_ = callback;

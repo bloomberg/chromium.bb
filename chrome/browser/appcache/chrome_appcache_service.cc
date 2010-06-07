@@ -53,8 +53,7 @@ ChromeAppCacheService::ChromeAppCacheService(
 
   if (!has_initialized_thread_ids) {
     has_initialized_thread_ids = true;
-    appcache::AppCacheThread::Init(ChromeThread::DB, ChromeThread::IO,
-                                   NULL);  // TODO(michaeln): cache_thread
+    appcache::AppCacheThread::Init(ChromeThread::DB, ChromeThread::IO);
   }
 
   host_contents_settings_map_ = request_context->host_content_settings_map();
@@ -63,7 +62,8 @@ ChromeAppCacheService::ChromeAppCacheService(
 
   // Init our base class.
   Initialize(request_context->is_off_the_record() ?
-      FilePath() : profile_path.Append(chrome::kAppCacheDirname));
+                 FilePath() : profile_path.Append(chrome::kAppCacheDirname),
+             ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
   set_request_context(request_context);
   set_appcache_policy(this);
 }

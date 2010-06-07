@@ -143,10 +143,11 @@ AppCacheService::~AppCacheService() {
   STLDeleteElements(&pending_helpers_);
 }
 
-void AppCacheService::Initialize(const FilePath& cache_directory) {
+void AppCacheService::Initialize(const FilePath& cache_directory,
+                                 base::MessageLoopProxy* cache_thread) {
   DCHECK(!storage_.get());
   AppCacheStorageImpl* storage = new AppCacheStorageImpl(this);
-  storage->Initialize(cache_directory);
+  storage->Initialize(cache_directory, cache_thread);
   storage_.reset(storage);
 }
 

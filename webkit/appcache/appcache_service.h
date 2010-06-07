@@ -19,6 +19,10 @@
 
 class URLRequestContext;
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace appcache {
 
 class AppCacheBackendImpl;
@@ -62,7 +66,8 @@ class AppCacheService {
   AppCacheService();
   virtual ~AppCacheService();
 
-  void Initialize(const FilePath& cache_directory);
+  void Initialize(const FilePath& cache_directory,
+                  base::MessageLoopProxy* cache_thread);
 
   // Purges any memory not needed.
   void PurgeMemory() {

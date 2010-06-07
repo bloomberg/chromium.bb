@@ -9,6 +9,5 @@ namespace appcache {
 // static
 int AppCacheThread::db_;
 int AppCacheThread::io_;
-MessageLoop* AppCacheThread::disk_cache_thread_;
 
 }  // namespace appcache

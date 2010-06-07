@@ -86,6 +86,7 @@ struct TestShellRequestContextParams {
 
 TestShellRequestContextParams* g_request_context_params = NULL;
 URLRequestContext* g_request_context = NULL;
+base::Thread* g_cache_thread = NULL;
 
 //-----------------------------------------------------------------------------
 
@@ -733,6 +734,10 @@ void SimpleResourceLoaderBridge::Shutdown() {
     delete g_io_thread;
     g_io_thread = NULL;
 
+    DCHECK(g_cache_thread);
+    delete g_cache_thread;
+    g_cache_thread = NULL;
+
     DCHECK(!g_request_context) << "should have been nulled by thread dtor";
   } else {
     delete g_request_context_params;
@@ -788,6 +793,13 @@ bool SimpleResourceLoaderBridge::EnsureIOThread() {
   base::EnsureNSPRInit();
 #endif
 
+  // Create the cache thread. We want the cache thread to outlive the IO thread,
+  // so its lifetime is bonded to the IO thread lifetime.
+  DCHECK(!g_cache_thread);
+  g_cache_thread = new base::Thread("cache");
+  CHECK(g_cache_thread->StartWithOptions(
+      base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+
   g_io_thread = new IOThread();
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
@@ -803,4 +815,10 @@ void SimpleResourceLoaderBridge::SetAcceptAllCookies(bool accept_all_cookies) {
   } else {
     g_io_thread->SetAcceptAllCookies(accept_all_cookies);
   }
+}
+
+// static
+scoped_refptr<base::MessageLoopProxy>
+    SimpleResourceLoaderBridge::GetCacheThread() {
+  return g_cache_thread->message_loop_proxy();
 }

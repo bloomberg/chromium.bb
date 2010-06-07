@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/message_loop_proxy.h"
 #include "base/task.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_disk_cache.h"
@@ -23,7 +24,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
   explicit AppCacheStorageImpl(AppCacheService* service);
   virtual ~AppCacheStorageImpl();
 
-  void Initialize(const FilePath& cache_directory);
+  void Initialize(const FilePath& cache_directory,
+                  base::MessageLoopProxy* cache_thread);
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
@@ -113,6 +115,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // The directory in which we place files in the file system.
   FilePath cache_directory_;
+  scoped_refptr<base::MessageLoopProxy> cache_thread_;
   bool is_incognito_;
 
   // Structures to keep track of DatabaseTasks that are in-flight.

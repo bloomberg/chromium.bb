@@ -94,6 +94,7 @@
         'test_shell_switches.cc',
         'test_shell_switches.h',
         'test_shell_win.cc',
+        'test_shell_webkit_init.cc',
         'test_shell_webkit_init.h',
         'test_shell_webthemecontrol.h',
         'test_shell_webthemecontrol.cc',

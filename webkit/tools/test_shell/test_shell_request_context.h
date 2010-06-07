@@ -30,8 +30,6 @@ class TestShellRequestContext : public URLRequestContext {
 
   void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);
-
-  base::Thread cache_thread_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H__

@@ -331,11 +331,9 @@ SimpleAppCacheSystem::~SimpleAppCacheSystem() {
   }
 }
 
-void SimpleAppCacheSystem::InitOnUIThread(
-    const FilePath& cache_directory) {
+void SimpleAppCacheSystem::InitOnUIThread(const FilePath& cache_directory) {
   DCHECK(!ui_message_loop_);
-  // TODO(michaeln): provide a cache_thread message loop
-  AppCacheThread::Init(DB_THREAD_ID, IO_THREAD_ID, NULL);
+  AppCacheThread::Init(DB_THREAD_ID, IO_THREAD_ID);
   ui_message_loop_ = MessageLoop::current();
   cache_directory_ = cache_directory;
 }
@@ -354,7 +352,8 @@ void SimpleAppCacheSystem::InitOnIOThread(URLRequestContext* request_context) {
   // Recreate and initialize per each IO thread.
   service_ = new appcache::AppCacheService();
   backend_impl_ = new appcache::AppCacheBackendImpl();
-  service_->Initialize(cache_directory_);
+  service_->Initialize(cache_directory_,
+                       SimpleResourceLoaderBridge::GetCacheThread());
   service_->set_request_context(request_context);
   backend_impl_->Initialize(service_, frontend_proxy_.get(), kSingleProcessId);
 

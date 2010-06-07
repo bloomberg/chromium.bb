@@ -227,7 +227,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheService);
-    service_->Initialize(FilePath());
+    service_->Initialize(FilePath(), NULL);
     delegate_.reset(new MockStorageDelegate(this));
   }
 

@@ -11,8 +11,6 @@ namespace tracked_objects {
 class Location;
 }
 
-class MessageLoop;
-
 namespace appcache {
 
 // The appcache system uses two threads, an IO thread and a DB thread.
@@ -20,18 +18,14 @@ namespace appcache {
 // providing them to the appcache library by providing a concrete
 // implementation of the PostTask and CurrentlyOn methods declared here,
 // and by calling the Init method prior to using the appcache library.
-// The disk_cache also requires the embedder to provide a thread message
-// loop.
 class AppCacheThread {
  public:
-  static void Init(int db, int io, MessageLoop* disk_cache_thread) {
+  static void Init(int db, int io) {
     db_ = db;
     io_ = io;
-    disk_cache_thread_ = disk_cache_thread;
   }
   static int db() { return db_; }
   static int io() { return io_; }
-  static MessageLoop* disk_cache_thread() { return disk_cache_thread_; }
 
   static bool PostTask(int id,
                        const tracked_objects::Location& from_here,
@@ -51,7 +45,6 @@ class AppCacheThread {
 
   static int db_;
   static int io_;
-  static MessageLoop* disk_cache_thread_;
 };
 
 }  // namespace appcache

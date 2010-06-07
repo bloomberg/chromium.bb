@@ -17,15 +17,16 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
-TestShellRequestContext::TestShellRequestContext() : cache_thread_("cache") {
+TestShellRequestContext::TestShellRequestContext() {
   Init(FilePath(), net::HttpCache::NORMAL, false);
 }
 
 TestShellRequestContext::TestShellRequestContext(
     const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
-    bool no_proxy) : cache_thread_("cache") {
+    bool no_proxy) {
   Init(cache_path, cache_mode, no_proxy);
 }
 
@@ -63,13 +64,9 @@ void TestShellRequestContext::Init(
 
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
 
-  if (!cache_path.empty())
-    CHECK(cache_thread_.StartWithOptions(
-              base::Thread::Options(MessageLoop::TYPE_IO, 0)));
-
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,
-      cache_path, 0, cache_thread_.message_loop_proxy());
+      cache_path, 0, SimpleResourceLoaderBridge::GetCacheThread());
 
   net::HttpCache* cache =
       new net::HttpCache(NULL, host_resolver_, proxy_service_,

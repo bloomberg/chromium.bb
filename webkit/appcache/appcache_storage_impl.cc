@@ -844,8 +844,10 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
     AppCacheThread::DeleteSoon(AppCacheThread::db(), FROM_HERE, database_);
 }
 
-void AppCacheStorageImpl::Initialize(const FilePath& cache_directory) {
+void AppCacheStorageImpl::Initialize(const FilePath& cache_directory,
+                                     base::MessageLoopProxy* cache_thread) {
   cache_directory_ = cache_directory;
+  cache_thread_ = cache_thread;
   is_incognito_ = cache_directory_.empty();
 
   FilePath db_file_path;
@@ -1273,8 +1275,11 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     } else {
       rv = disk_cache_->InitWithDiskBackend(
           cache_directory_.Append(kDiskCacheDirectoryName),
-          kMaxDiskCacheSize, false, &init_callback_);
+          kMaxDiskCacheSize, false, cache_thread_, &init_callback_);
     }
+
+    // We should not keep this reference around.
+    cache_thread_ = NULL;
 
     if (rv != net::ERR_IO_PENDING)
       OnDiskCacheInitialized(rv);
