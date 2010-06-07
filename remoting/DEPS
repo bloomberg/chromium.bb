@@ -1,0 +1,9 @@
+include_rules = [
+  "+chrome/common/net",
+  "+gfx",
+  "+google/protobuf",
+  "+media/base",
+  "+talk",
+  "+third_party/npapi",
+  "+third_party/zlib",
+]
