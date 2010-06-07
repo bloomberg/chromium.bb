@@ -46,7 +46,6 @@ class GlesVideoRenderer : public media::VideoRendererBase {
   friend class scoped_refptr<GlesVideoRenderer>;
   virtual ~GlesVideoRenderer();
 
-  GLuint FindTexture(scoped_refptr<media::VideoFrame> video_frame);
   bool InitializeGles();
   void CreateShader(GLuint program, GLenum type,
                     const char* vs_source, int vs_size);
@@ -56,6 +55,7 @@ class GlesVideoRenderer : public media::VideoRendererBase {
 
   PFNEGLCREATEIMAGEKHRPROC egl_create_image_khr_;
   PFNEGLDESTROYIMAGEKHRPROC egl_destroy_image_khr_;
+  PFNGLEGLIMAGETARGETTEXTURE2DOESPROC gl_eglimage_target_texture2d_oes_;
 
   int width_;
   int height_;
