@@ -30,6 +30,8 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   void SetExternal();
 #endif
 
+  void UpdateMenuItemStates();
+
  protected:
   // RenderViewContextMenu implementation --------------------------------------
   virtual void PlatformInit();
