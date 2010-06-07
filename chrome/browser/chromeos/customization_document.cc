@@ -64,6 +64,7 @@ bool CustomizationDocument::LoadManifestFromString(
 bool CustomizationDocument::ParseFromJsonValue(const DictionaryValue* root) {
   // Partner customization manifests share only one required field -
   // version string.
+  version_.clear();
   bool result = root->GetString(kVersionAttr, &version_);
   return result && version_ == kAcceptedManifestVersion;
 }
@@ -74,11 +75,16 @@ bool StartupCustomizationDocument::ParseFromJsonValue(
     const DictionaryValue* root) {
   if (!CustomizationDocument::ParseFromJsonValue(root))
     return false;
-  // Rquired fields.
+
+  // Required fields.
+  product_sku_.clear();
   if (!root->GetString(kProductSkuAttr, &product_sku_))
     return false;
+
   // Optional fields.
+  initial_locale_.clear();
   root->GetString(kInitialLocaleAttr, &initial_locale_);
+
   std::string background_color_string;
   root->GetString(kBackgroundColorAttr, &background_color_string);
   if (!background_color_string.empty()) {
@@ -90,7 +96,10 @@ bool StartupCustomizationDocument::ParseFromJsonValue(
       return false;
     }
   }
+
+  registration_url_.clear();
   root->GetString(kRegistrationUrlAttr, &registration_url_);
+
   ListValue* setup_content_value = NULL;
   root->GetList(kSetupContentAttr, &setup_content_value);
   if (setup_content_value != NULL) {
@@ -111,6 +120,7 @@ bool StartupCustomizationDocument::ParseFromJsonValue(
       setup_content_[content_locale] = content;
     }
   }
+
   return true;
 }
 
@@ -128,8 +138,56 @@ const StartupCustomizationDocument::SetupContent*
 
 bool ServicesCustomizationDocument::ParseFromJsonValue(
     const DictionaryValue* root) {
-  return CustomizationDocument::ParseFromJsonValue(root);
-  // TODO(denisromanov): implement.
+  if (!CustomizationDocument::ParseFromJsonValue(root))
+    return false;
+
+  // Required app menu settings.
+  DictionaryValue* app_menu_value = NULL;
+  root->GetDictionary(kAppMenuAttr, &app_menu_value);
+  if (app_menu_value == NULL)
+    return false;
+
+  app_menu_section_title_.clear();
+  if (!app_menu_value->GetString(kSectionTitleAttr,
+                                 &app_menu_section_title_))
+    return false;
+  app_menu_support_page_url_.clear();
+  if (!app_menu_value->GetString(kSupportPageAttr,
+                                 &app_menu_support_page_url_))
+    return false;
+
+  ListValue* web_apps_value = NULL;
+  app_menu_value->GetList(kWebAppsAttr, &web_apps_value);
+  if (!ParseStringListFromJsonValue(web_apps_value, &web_apps_))
+    return false;
+
+  ListValue* extensions_value = NULL;
+  app_menu_value->GetList(kExtensionsAttr, &extensions_value);
+  if (!ParseStringListFromJsonValue(extensions_value, &extensions_))
+    return false;
+
+  // Optional fields.
+  initial_start_page_url_.clear();
+  root->GetString(kInitialStartPageAttr, &initial_start_page_url_);
+
+  return true;
+}
+
+bool ServicesCustomizationDocument::ParseStringListFromJsonValue(
+    const ListValue* list_value,
+    StringList* string_list) {
+  if (list_value == NULL || string_list == NULL)
+    return false;
+  DCHECK(list_value->GetType() == Value::TYPE_LIST);
+  string_list->clear();
+  for (ListValue::const_iterator iter = list_value->begin();
+       iter != list_value->end();
+       ++iter) {
+    std::string url;
+    if ((*iter)->GetAsString(&url))
+      string_list->push_back(url);
+  }
+  return true;
 }
 
 }  // namespace chromeos
