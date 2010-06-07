@@ -618,6 +618,13 @@ void ChromeActiveDocument::OnDidNavigate(int tab_handle,
   UpdateNavigationState(nav_info);
 }
 
+void ChromeActiveDocument::OnCloseTab(int tab_handle) {
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
+  if (web_browser2)
+    web_browser2->Quit();
+}
+
 void ChromeActiveDocument::UpdateNavigationState(
     const IPC::NavigationInfo& new_navigation_info) {
   HRESULT hr = S_OK;

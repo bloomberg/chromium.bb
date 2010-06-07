@@ -127,6 +127,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
 
   virtual void OnGetCookiesFromHost(int tab_handle, const GURL& url,
                                     int cookie_id) {}
+  virtual void OnCloseTab(int tab_handle) {}
 };
 
 // This interface enables tasks to be marshaled to desired threads.

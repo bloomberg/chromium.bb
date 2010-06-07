@@ -280,6 +280,7 @@ END_EXEC_COMMAND_MAP()
   virtual void OnTabbedOut(int tab_handle, bool reverse);
   virtual void OnDidNavigate(int tab_handle,
                              const IPC::NavigationInfo& nav_info);
+  virtual void OnCloseTab(int tab_handle);
   // Override DoVerb
   STDMETHOD(DoVerb)(LONG verb,
                     LPMSG msg,

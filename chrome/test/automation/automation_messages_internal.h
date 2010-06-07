@@ -1389,10 +1389,18 @@ IPC_BEGIN_MESSAGES(Automation)
                              bool /* result */)
 
 
-  // This message requests the cookie be delete for given url in the
+  // This message requests the cookie be deleted for given url in the
   // profile of the tab identified by the first parameter.  The second
   // parameter is the cookie name.
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_DeleteCookie, GURL, std::string,
                              int, bool)
+
+  // This message requests the external tab identified by the tab handle
+  // passed in be closed.
+  // Request:
+  //   -int: Tab handle
+  // Response:
+  //   None expected
+  IPC_MESSAGE_ROUTED1(AutomationMsg_CloseExternalTab, int)
 
 IPC_END_MESSAGES(Automation)

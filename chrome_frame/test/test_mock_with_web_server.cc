@@ -361,11 +361,10 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
 
   mock.ExpectNavigationAndSwitch(kWindowOpenUrl);
 
-  const wchar_t* input = L"A";
   EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kWindowOpenUrl)))
       .WillOnce(testing::DoAll(
           DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::LEFT),
-          DelaySendChar(&loop, 500, 'A', simulate_input::NONE)));
+          DelaySendChar(&loop, 500, 'O', simulate_input::NONE)));
   // Watch for new window
   mock.ExpectNewWindow(&new_window_mock);
 
@@ -1521,3 +1520,50 @@ TEST_F(ChromeFrameTestWithWebServer,
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 }
+
+// This test checks if window.open calls issued by a full tab mode ChromeFrame
+// instance make it back to IE and then transitions back to Chrome as the
+// window.open target page is supposed to render within Chrome and whether this
+// window can be closed correctly.
+// Marking this test as FLAKY initially as it relies on getting focus and user
+// input which don't work correctly at times.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowCloseInChrome) {
+  CloseIeAtEndOfScope last_resort_close_ie;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> new_window_mock;
+  chrome_frame_test::TimedMsgLoop loop;
+
+  mock.ExpectNavigationAndSwitch(kWindowOpenUrl);
+
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kWindowOpenUrl)))
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::LEFT),
+          DelaySendChar(&loop, 500, 'O', simulate_input::NONE)));
+  // Watch for new window
+  mock.ExpectNewWindow(&new_window_mock);
+
+  EXPECT_CALL(new_window_mock, OnLoad(testing::StrCaseEq(kWindowOpenPopupUrl)))
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&new_window_mock),
+          DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::LEFT),
+          DelaySendChar(&loop, 500, 'C', simulate_input::NONE)));
+
+  EXPECT_CALL(new_window_mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(CloseBrowserMock(&mock));
+
+  EXPECT_CALL(mock, OnQuit())
+      .Times(testing::AtMost(1))
+      .WillOnce(QUIT_LOOP_SOON(loop, 2));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kWindowOpenUrl);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+}
+

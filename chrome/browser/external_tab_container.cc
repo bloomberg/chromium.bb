@@ -396,6 +396,10 @@ void ExternalTabContainer::CloseContents(TabContents* source) {
       return;
     }
     MessageLoop::current()->Quit();
+  } else {
+    if (automation_) {
+      automation_->Send(new AutomationMsg_CloseExternalTab(0, tab_handle_));
+    }
   }
 }
 

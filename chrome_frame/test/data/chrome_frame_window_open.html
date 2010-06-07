@@ -15,14 +15,26 @@ function onLoad() {
   }
 }
 
+var new_window;
+
 function OpenPopup() {
-  window.open("chrome_frame_window_open_popup.html", "mywindow",
-              "left=10, top=10, height=100, width=100");
+  new_window = window.open("chrome_frame_window_open_popup.html", "mywindow",
+                           "left=10, top=10, height=100, width=100");
 }
+
+function OnKeyPress() {
+  var char_code = String.fromCharCode(event.keyCode);
+  if (char_code == 'O') {
+    OpenPopup();
+  } else if (char_code == 'C') {
+    new_window.close();
+  }
+}
+
 </script>
 </head>
 
-<body onload="onLoad();" onkeypress="OpenPopup();">
+<body onload="onLoad();" onkeypress="OnKeyPress();">
 <div id="statusPanel" style="border: 1px solid red; width: 100%">
 ChromeFrame full tab mode window open test running....
 </div>
