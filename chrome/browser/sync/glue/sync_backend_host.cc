@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/database_model_worker.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
@@ -97,7 +98,7 @@ void SyncBackendHost::Initialize(
   // be in the routing_info map.  We set them to group passive, meaning that
   // updates will be applied, but not dispatched to the UI thread yet.
   for (syncable::ModelTypeSet::const_iterator it = types.begin();
-       it != types.end(); ++it) {
+      it != types.end(); ++it) {
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
   }
 
@@ -376,6 +377,10 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.lsid.c_str(),
       options.notification_method);
   DCHECK(success) << "Syncapi initialization failed!";
+
+  // TODO(dantasse): this call is in a temporary position in order to enable
+  // the new sync setup/passphrase UI.  http://crbug.com/45869
+  syncapi_->StartSyncing();
 }
 
 void SyncBackendHost::Core::DoAuthenticate(const std::string& username,

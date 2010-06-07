@@ -705,9 +705,8 @@ class SyncManager {
   // Returns empty if there is no such username.
   const std::string& GetAuthenticatedUsername();
 
-  // Submit credentials to GAIA for verification and start the
-  // syncing process on success. On success, both |username| and the obtained
-  // auth token are persisted on disk for future re-use.
+  // Submit credentials to GAIA for verification. On success, both |username|
+  // and the obtained auth token are persisted on disk for future re-use.
   // If authentication fails, OnAuthProblem is called on our Observer.
   // The Observer may, in turn, decide to try again with new
   // credentials. Calling this method again is the appropriate course of action
@@ -715,6 +714,9 @@ class SyncManager {
   // |username|, |password|, and |captcha| are owned by the caller.
   void Authenticate(const char* username, const char* password,
                     const char* captcha);
+
+  // Start the SyncerThread.
+  void StartSyncing();
 
   // Requests the syncer thread to pause.  The observer's OnPause
   // method will be called when the syncer thread is paused.  Returns

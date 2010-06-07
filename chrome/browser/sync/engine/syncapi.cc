@@ -816,17 +816,17 @@ class SyncManager::SyncInternal
             const std::string& lsid,
             browser_sync::NotificationMethod notification_method);
 
-  // Tell sync engine to submit credentials to GAIA for verification and start
-  // the syncing process on success. Successful GAIA authentication will kick
-  // off the following chain of events:
+  // Tell sync engine to submit credentials to GAIA for verification.
+  // Successful GAIA authentication will kick off the following chain of events:
   // 1. Cause sync engine to open the syncer database.
   // 2. Trigger the AuthWatcher to create a Syncer for the directory and call
   //    SyncerThread::SyncDirectory; the SyncerThread will block until (4).
   // 3. Tell the ServerConnectionManager to pass the newly received GAIA auth
   //    token to a sync server to obtain a sync token.
   // 4. On receipt of this token, the ServerConnectionManager broadcasts
-  //    a server-reachable event, which will unblock the SyncerThread,
-  //    and the rest is the future.
+  //    a server-reachable event, which will unblock the SyncerThread.
+  // 5. When StartSyncing is called, the Syncer will begin the sync process, by
+  //    downloading from or uploading to the server.
   //
   // If authentication fails, an event will be broadcast all the way up to
   // the SyncManager::Observer. It may, in turn, decide to try again with new
@@ -834,6 +834,9 @@ class SyncManager::SyncInternal
   // to "retry".
   void Authenticate(const std::string& username, const std::string& password,
                     const std::string& captcha);
+
+  // Tell the sync engine to start the syncing process.
+  void StartSyncing();
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
@@ -1154,6 +1157,10 @@ void SyncManager::Authenticate(const char* username, const char* password,
                       std::string(captcha));
 }
 
+void SyncManager::StartSyncing() {
+  data_->StartSyncing();
+}
+
 bool SyncManager::RequestPause() {
   return data_->syncer_thread()->RequestPause();
 }
@@ -1272,11 +1279,6 @@ bool SyncManager::SyncInternal::Init(
       NewEventListenerHookup(syncer_thread()->relay_channel(), this,
           &SyncInternal::HandleSyncerEvent));
 
-  syncer_thread()->Start();  // Start the syncer thread. This won't actually
-                             // result in any syncing until at least the
-                             // DirectoryManager broadcasts the OPENED event,
-                             // and a valid server connection is detected.
-
   bool attempting_auth = false;
   std::string username, auth_token;
   if (attempt_last_user_authentication &&
@@ -1293,6 +1295,13 @@ bool SyncManager::SyncInternal::Init(
   if (attempt_last_user_authentication && !attempting_auth)
     RaiseAuthNeededEvent();
   return true;
+}
+
+void SyncManager::SyncInternal::StartSyncing() {
+  syncer_thread()->Start();  // Start the syncer thread. This won't actually
+                             // result in any syncing until at least the
+                             // DirectoryManager broadcasts the OPENED event,
+                             // and a valid server connection is detected.
 }
 
 void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
