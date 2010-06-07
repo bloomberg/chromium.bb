@@ -176,9 +176,7 @@ void ContentExceptionsWindowGtk::AcceptExceptionEdit(
   int new_index = model_->IndexOfExceptionByPattern(pattern);
   DCHECK_NE(-1, new_index);
 
-  GtkTreePath* path = gtk_tree_path_new_from_indices(new_index, -1);
-  gtk_tree_selection_select_path(treeview_selection_, path);
-  gtk_tree_path_free(path);
+  gtk_tree::SelectAndFocusRowNum(new_index, GTK_TREE_VIEW(treeview_));
 
   UpdateButtonState();
 }
@@ -215,13 +213,23 @@ void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
 }
 
 void ContentExceptionsWindowGtk::Remove(GtkWidget* widget) {
-  std::set<int> indices;
-  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
+  std::set<int> selected_indices;
+  gtk_tree::GetSelectedIndices(treeview_selection_, &selected_indices);
 
-  for (std::set<int>::reverse_iterator i = indices.rbegin();
-       i != indices.rend(); ++i) {
+  int selected_row = 0;
+  for (std::set<int>::reverse_iterator i = selected_indices.rbegin();
+       i != selected_indices.rend(); ++i) {
     model_->RemoveException(*i);
+    selected_row = *i;
   }
+
+  int row_count = model_->RowCount();
+  if (row_count <= 0)
+    return;
+  if (selected_row >= row_count)
+    selected_row = row_count - 1;
+  gtk_tree::SelectAndFocusRowNum(selected_row,
+                                 GTK_TREE_VIEW(treeview_));
 
   UpdateButtonState();
 }
