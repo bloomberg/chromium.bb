@@ -12,29 +12,45 @@ cr.define('bmm', function() {
   /**
    * Creates a new tree item for a bookmark node.
    * @param {!Object} bookmarkNode The bookmark node.
-   * @return {!cr.ui.TreeItem} The newly created tree item.
+   * @constructor
+   * @extends {TreeItem}
    */
-  function createTreeItem(bookmarkNode) {
-    var id = bookmarkNode.id;
+  function BookmarkTreeItem(bookmarkNode) {
     var ti = new TreeItem({
-      bookmarkId: id,
+      label: bookmarkNode.title,
       bookmarkNode: bookmarkNode,
       // Bookmark toolbar and Other bookmarks are not draggable.
       draggable: bookmarkNode.parentId != ROOT_ID
     });
-    treeLookup[id] = ti;
-    updateTreeItem(ti, bookmarkNode);
+    ti.__proto__ = BookmarkTreeItem.prototype;
     return ti;
   }
 
-  /**
-   * Updates an existing tree item to match a bookmark node.
-   * @param {!cr.ui.TreeItem} el The tree item to update.
-   * @param {!Object} bookmarkNode The bookmark node describing the tree item.
-   */
-  function updateTreeItem(el, bookmarkNode) {
-    el.label = bookmarkNode.title;
-  }
+  BookmarkTreeItem.prototype = {
+    __proto__: TreeItem.prototype,
+
+    /** @inheritDoc */
+    addAt: function(child, index) {
+      TreeItem.prototype.addAt.call(this, child, index);
+      if (child.bookmarkNode)
+        treeLookup[child.bookmarkNode.id] = child;
+    },
+
+    /** @inheritDoc */
+    remove: function(child) {
+      TreeItem.prototype.remove.call(this, child);
+      if (child.bookmarkNode)
+        delete treeLookup[child.bookmarkNode.id];
+    },
+
+    /**
+     * The ID of the bookmark this tree item represents.
+     * @type {string}
+     */
+    get bookmarkId() {
+      return this.bookmarkNode.id;
+    }
+  };
 
   /**
    * Asynchronousy adds a tree item at the correct index based on the bookmark
@@ -78,10 +94,8 @@ cr.define('bmm', function() {
 
     handleBookmarkChanged: function(id, changeInfo) {
       var treeItem = treeLookup[id];
-      if (treeItem) {
-        treeItem.bookmarkNode.title = changeInfo.title;
-        updateTreeItem(treeItem, treeItem.bookmarkNode);
-      }
+      if (treeItem)
+        treeItem.label = treeItem.bookmarkNode.title = changeInfo.title;
     },
 
     handleChildrenReordered: function(id, reorderInfo) {
@@ -97,7 +111,7 @@ cr.define('bmm', function() {
     handleCreated: function(id, bookmarkNode) {
       if (bmm.isFolder(bookmarkNode)) {
         var parentItem = treeLookup[bookmarkNode.parentId];
-        var newItem = createTreeItem(bookmarkNode);
+        var newItem = new BookmarkTreeItem(bookmarkNode);
         addTreeItem(parentItem, newItem);
       }
     },
@@ -117,9 +131,8 @@ cr.define('bmm', function() {
     handleRemoved: function(id, removeInfo) {
       var parentItem = treeLookup[removeInfo.parentId];
       var itemToRemove = treeLookup[id];
-      if (parentItem && itemToRemove) {
+      if (parentItem && itemToRemove)
         parentItem.remove(itemToRemove);
-      }
     },
 
     insertSubtree:function(folder) {
@@ -163,7 +176,7 @@ cr.define('bmm', function() {
         for (var i = 0, bookmarkNode; bookmarkNode = bookmarkNodes[i]; i++) {
           if (bmm.isFolder(bookmarkNode)) {
             hasDirectories = true;
-            var item = bmm.createTreeItem(bookmarkNode);
+            var item = new BookmarkTreeItem(bookmarkNode);
             parentTreeItem.add(item);
             var anyChildren = buildTreeItems(item, bookmarkNode.children);
             item.expanded = anyChildren;
@@ -190,12 +203,26 @@ cr.define('bmm', function() {
         delete treeLookup[id];
       }
       this.textContent = '';
+    },
+
+    /** @inheritDoc */
+    addAt: function(child, index) {
+      Tree.prototype.addAt.call(this, child, index);
+      if (child.bookmarkNode)
+        treeLookup[child.bookmarkNode.id] = child;
+    },
+
+    /** @inheritDoc */
+    remove: function(child) {
+      Tree.prototype.remove.call(this, child);
+      if (child.bookmarkNode)
+        delete treeLookup[child.bookmarkNode.id];
     }
   };
 
   return {
     BookmarkTree: BookmarkTree,
-    createTreeItem: createTreeItem,
+    BookmarkTreeItem: BookmarkTreeItem,
     treeLookup: treeLookup
   };
 });

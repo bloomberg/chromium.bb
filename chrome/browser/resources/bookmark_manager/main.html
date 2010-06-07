@@ -231,7 +231,8 @@ var bookmarkCache = {
     }
 
     chrome.bookmarks.getChildren(id, function(children) {
-      children.forEach(updateItem);
+      if (children)
+        children.forEach(updateItem);
 
       if (opt_f)
         opt_f(children);
@@ -401,7 +402,7 @@ document.querySelector('button.logo').onclick = function(e) {
  * @param {!Object} changeInfo
  */
 function handleBookmarkChanged(id, changeInfo) {
-  // console.log('handleBookmarkChanged', id, changeInfo);
+  // console.info('handleBookmarkChanged', id, changeInfo);
   list.handleBookmarkChanged(id, changeInfo);
   tree.handleBookmarkChanged(id, changeInfo);
 }
