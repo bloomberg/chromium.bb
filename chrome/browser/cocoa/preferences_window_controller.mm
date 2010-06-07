@@ -36,6 +36,7 @@
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/options_window.h"
+#include "chrome/browser/options_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -1636,6 +1637,33 @@ const int kDisabledIndex = 1;
 - (IBAction)showCertificates:(id)sender {
   [self recordUserAction:UserMetricsAction("Options_ManagerCerts")];
   [self launchKeychainAccess];
+}
+
+- (IBAction)resetToDefaults:(id)sender {
+  // The alert will clean itself up in the did-end selector.
+  NSAlert* alert = [[NSAlert alloc] init];
+  [alert setMessageText:l10n_util::GetNSString(IDS_OPTIONS_RESET_MESSAGE)];
+  NSButton* resetButton = [alert addButtonWithTitle:
+      l10n_util::GetNSString(IDS_OPTIONS_RESET_OKLABEL)];
+  [resetButton setKeyEquivalent:@""];
+  NSButton* cancelButton = [alert addButtonWithTitle:
+      l10n_util::GetNSString(IDS_OPTIONS_RESET_CANCELLABEL)];
+  [cancelButton setKeyEquivalent:@"\r"];
+  [alert setDelegate:self];
+
+  [alert beginSheetModalForWindow:[self window]
+                    modalDelegate:self
+                   didEndSelector:@selector(resetToDefaults:returned:context:)
+                      contextInfo:nil];
+}
+
+- (void)resetToDefaults:(NSAlert*)alert
+               returned:(NSInteger)code
+                context:(void*)context {
+  if (code == NSAlertFirstButtonReturn) {
+    OptionsUtil::ResetToDefaults(profile_);
+  }
+  [alert autorelease];
 }
 
 //-------------------------------------------------------------------------

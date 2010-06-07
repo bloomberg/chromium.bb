@@ -155,6 +155,7 @@ class ProfileSyncService;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;
 - (IBAction)openProxyPreferences:(id)sender;
 - (IBAction)showCertificates:(id)sender;
+- (IBAction)resetToDefaults:(id)sender;
 
 // When a toolbar button is clicked
 - (IBAction)toolbarButtonSelected:(id)sender;
