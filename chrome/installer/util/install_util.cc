@@ -251,3 +251,33 @@ bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
   }
   return (dll_names_count > 0) && success;
 }
+
+// This method tries to delete a registry key and logs an error message
+// in case of failure. It returns true if deletion is successful,
+// otherwise false.
+bool InstallUtil::DeleteRegistryKey(RegKey& root_key,
+                                    const std::wstring& key_path) {
+  LOG(INFO) << "Deleting registry key " << key_path;
+  if (!root_key.DeleteKey(key_path.c_str()) &&
+      ::GetLastError() != ERROR_MOD_NOT_FOUND) {
+    LOG(ERROR) << "Failed to delete registry key: " << key_path;
+    return false;
+  }
+  return true;
+}
+
+// This method tries to delete a registry value and logs an error message
+// in case of failure. It returns true if deletion is successful,
+// otherwise false.
+bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
+                                      const std::wstring& key_path,
+                                      const std::wstring& value_name) {
+  RegKey key(reg_root, key_path.c_str(), KEY_ALL_ACCESS);
+  LOG(INFO) << "Deleting registry value " << value_name;
+  if (key.ValueExists(value_name.c_str()) &&
+      !key.DeleteValue(value_name.c_str())) {
+    LOG(ERROR) << "Failed to delete registry value: " << value_name;
+    return false;
+  }
+  return true;
+}

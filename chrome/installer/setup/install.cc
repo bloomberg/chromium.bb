@@ -205,6 +205,44 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
   }
 }
 
+// This is called when an MSI installation is run. It may be that a user is
+// attempting to install the MSI on top of a non-MSI managed installation.
+// If so, try and remove any existing uninstallation shortcuts, as we want the
+// uninstall to be managed entirely by the MSI machinery (accessible via the
+// Add/Remove programs dialog).
+void DeleteUninstallShortcutsForMSI(bool is_system_install) {
+  DCHECK(InstallUtil::IsMSIProcess(is_system_install))
+      << "This must only be called for MSI installations!";
+
+  // First attempt to delete the old installation's ARP dialog entry.
+  HKEY reg_root = is_system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey root_key(reg_root, L"", KEY_ALL_ACCESS);
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring uninstall_reg = dist->GetUninstallRegPath();
+  InstallUtil::DeleteRegistryKey(root_key, uninstall_reg);
+
+  // Then attempt to delete the old installation's start menu shortcut.
+  FilePath uninstall_link;
+  if (is_system_install) {
+    PathService::Get(base::DIR_COMMON_START_MENU, &uninstall_link);
+  } else {
+    PathService::Get(base::DIR_START_MENU, &uninstall_link);
+  }
+  if (uninstall_link.empty()) {
+    LOG(ERROR) << "Failed to get location for shortcut.";
+  } else {
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    uninstall_link = uninstall_link.Append(dist->GetAppShortCutName());
+    uninstall_link = uninstall_link.Append(
+        dist->GetUninstallLinkName() + L".lnk");
+    LOG(INFO) << "Deleting old uninstall shortcut (if present):"
+              << uninstall_link.value();
+    if (!file_util::Delete(uninstall_link, true)) {
+      LOG(INFO) << "Failed to delete old uninstall shortcut.";
+    }
+  }
+}
+
 // Copy master preferences file provided to installer, in the same folder
 // as chrome.exe so Chrome first run can find it. This function will be called
 // only on the first install of Chrome.
@@ -460,6 +498,11 @@ bool DoPostInstallTasks(HKEY reg_root,
   if (InstallUtil::IsMSIProcess(is_system_install)) {
     if (!InstallUtil::SetMSIMarker(is_system_install, true))
       return false;
+
+    // We want MSI installs to take over the Add/Remove Programs shortcut. Make
+    // a best-effort attempt to delete any shortcuts left over from previous
+    // non-MSI installations for the same type of install (system or per user).
+    DeleteUninstallShortcutsForMSI(is_system_install);
   }
 
   return true;
