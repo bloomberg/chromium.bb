@@ -1,6 +1,6 @@
 include config.mk
 
-subdirs = clients
+subdirs = clients spec
 libs = libwayland-server.so libwayland.so
 
 all : $(libs) compositor subdirs-all

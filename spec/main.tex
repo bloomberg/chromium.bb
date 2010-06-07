@@ -1,0 +1,243 @@
+\documentclass{article}
+\usepackage{palatino}
+
+\author{Kristian Høgsberg\\
+\texttt{krh@bitplanet.net}
+}
+
+\title{The Wayland Display Server}
+
+\begin{document}
+
+\maketitle
+
+\section{Wayland Overview}
+
+ - wayland is a protocol for a new display server.  
+
+ - wayland is an implementation
+
+\subsection{Replacing X11}
+
+Over the last 10 years, a lot of functionality have slowly moved out
+of the X server and into libraries or kernel drivers. It started with
+freetype and fontconfig providing an alternative to the core X fonts
+and direct rendering OpenGL as a graphics driver in a client side
+library. Then cairo came along and provided a modern 2D rendering
+library independent of X and compositing managers took over control of
+the rendering of the desktop. Recently with GEM and KMS in the Linux
+kernel, we can do modesetting outside X and schedule several direct
+rendering clients. The end result is a highly modular graphics stack.
+
+Wayland is a new display server building on top of all those
+components. We’re trying to distill out the functionality in the X
+server that is still used by the modern Linux desktop. This turns out
+to be not a whole lot. Applications can allocate their own off-screen
+buffers and render their window contents by themselves. In the end,
+what’s needed is a way to present the resulting window surface to a
+compositor and a way to receive input. This is what Wayland provides,
+by piecing together the components already in the eco-system in a
+slightly different way.
+
+X will always be relevant, in the same way Fortran compilers and VRML
+browsers are, but it’s time that we think about moving it out of the
+critical path and provide it as an optional component for legacy
+applications.
+
+
+\section{Wayland protocol}
+
+\subsection{Basic Principles}
+
+The wayland protocol is a asynchronous object oriented protocol.  All
+requests are method invocations on some object.  The request include
+an object id that uniquely identifies an object on the server.  Each
+object implements an interface and the requests include an opcode that
+identifies which method in the interface to invoke.
+
+The wire protocol is determined from the C prototypes of the requests
+and events.  There is a straight forward mapping from the C types to
+packing the bytes in the request written to the socket.  It is
+possible to map the events and requests to function calls in other
+languages, but that hasn't been done at this point.
+
+The server sends back events to the client, each event is emitted from
+an object.  Events can be error conditions.  The event includes the
+object id and the event opcode, from which the client can determine
+the type of event.  Events are generated both in repsonse to a request
+(in which case the request and the event constitutes a round trip) or
+spontanously when the server state changes.
+
+    - state is broadcast on connect, events sent out when state
+      change.  client must listen for these changes and cache the state.
+      no need (or mechanism) to query server state.
+
+    - server will broadcast presence of a number of global objects,
+      which in turn will broadcast their current state
+
+\subsection{Connect Time}
+
+ - no fixed format connect block, the server emits a bunch of events
+   at connect time
+
+ - presence events for global objects: output, compositor, input devices
+
+\subsection{Security and Authentication}
+
+ - mostly about access to underlying buffers, need new drm auth
+   mechanism (the grant-to ioctl idea), need to check the cmd stream?
+
+ - getting the server socket depends on the compositor type, could be
+   a system wide name, through fd passing on the session dbus. or the
+   client is forked by the compositor and the fd is already opened.
+
+\subsection{Creating Objects}
+
+\begin{itemize}
+\item client allocates object ID, uses range protocol
+\item server tracks how many IDs are left in current range, sends new
+  range when client is about to run out.
+\end{itemize}
+
+\subsection{Compositor}
+
+\begin{itemize}
+\item a global object
+\item broadcasts drm file name, or at least a string like drm:/dev/card0
+\item commit/ack/frame protocol
+\end{itemize}
+
+\subsection{Surface}
+
+created by the client
+\begin{itemize}
+\item attach
+\item copy
+\item damage
+\item destroy
+\item input region, opaque region
+\item set cursor
+\end{itemize}
+
+\subsection{Input Group}
+
+global object
+
+\begin{itemize}
+\item - input group, keyboard, mouse
+\item keyboard map, change events
+\item pointer motion
+\item enter, leave, focus
+\item xkb on wayland
+\item multi pointer wayland
+\end{itemize}
+
+
+\subsection{Output}
+
+ - global objects
+ - a connected screen
+ - laid out in a big coordinate system
+ - basically xrandr over wayland
+
+\section{Types of compositors}
+
+\subsection{System Compositor}
+
+ - ties in with graphical boot
+ - hosts different types of session compositors
+ - lets us switch between multiple sessions (fast user switching,
+   secure/personal desktop switching)
+ - multiseat
+ - linux implementation using libudev, egl, kms, evdev, cairo
+ - for fullscreen clients, the system compositor can reprogram the
+   video scanout address to source fromt the client provided buffer.
+
+\subsection{Session Compositor}
+
+ - nested under the system compositor.  nesting is feasible because
+   protocol is async, roundtrip would break nesting
+ - gnome-shell
+ - moblin
+ - compiz?
+ - kde compositor?
+ - text mode using vte
+ - rdp session
+ - fullscreen X session under wayland
+ - can run without system compositor, on the hw where it makes
+   sense
+ - root window less X server, bridging X windows into a wayland
+   session compositor
+
+\subsection{Embbedding Compositor}
+
+X11 lets clients embed windows from other clients, or lets client copy
+pixmap contents rendered by another client into their window.  This is
+often used for applets in a panel, browser plugins and similar.
+Wayland doesn't directly allow this, but clients can communicate GEM
+buffer names out-of-band, for example, using d-bus or as command line
+arguments when the panel launches the applet.  Another option is to
+use a nested wayland instance.  For this, the wayland server will have
+to be a library that the host application links to.  The host
+application will then pass the wayland server socket name to the
+embedded application, and will need to implement the wayland
+compositor interface.  The host application composites the client
+surfaces as part of it's window, that is, in the web page or in the
+panel.  The benefit of nesting the wayland server is that it provides
+the requests the embedded client needs to inform the host about buffer
+updates and a mechanism for forwarding input events from the host
+application.
+
+ - firefox embedding flash by being a special purpose compositor to
+   the plugin
+
+\section{Implementation}
+
+what's currently implemented
+
+\subsection{Wayland Server Library}
+
+\texttt{libwayland-server.so}
+
+ - implements protocol side of a compositor
+
+ - minimal, doesn't include any rendering or input device handling
+
+ - helpers for running on egl and evdev, and for nested wayland
+
+\subsection{Wayland Client Library}
+
+\texttt{libwayland.so}
+
+ - minimal, designed to support integration with real toolkits such as
+   Qt, GTK+ or Clutter.
+
+ - doesn't cache state, but lets the toolkits cache server state in
+   native objects (GObject or QObject or whatever).
+
+\subsection{Wayland System Compositor}
+
+ - implementation of the system compositor
+
+ - uses libudev, eagle (egl), evdev and drm
+
+ - integrates with ConsoleKit, can create new sessions
+
+ - allows multi seat setups
+
+ - configurable through udev rules and maybe /etc/wayland.d type thing
+
+\subsection{X Server Session}
+
+ - xserver module and driver support
+
+ - uses wayland client library
+
+ - same X.org server as we normally run, the front buffer is a wayland
+   surface but all accel code, 3d and extensions are there
+
+ - when full screen the session compositor will scan out from the X
+   server wayland surface, at which point X is running pretty much as it
+   does natively.
+
+\end{document}
