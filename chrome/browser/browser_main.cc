@@ -714,6 +714,41 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize statistical testing infrastructure for entire browser.
   FieldTrialList field_trial;
 
+  // This is an A/B test for the maximum number of persistent connections per
+  // host.  Currently Chrome, Firefox, and IE8 have this value set at 6.
+  // Safari uses 4, and Fasterfox (a plugin for Firefox that supposedly
+  // configures it to run faster) uses 8.  We would like to see how much of an
+  // effect this value has on browsing.  Too large a value might cause us to
+  // run into SYN flood detection mechanisms.
+  const FieldTrial::Probability kConnDivisor = 100;
+  const FieldTrial::Probability kConn16 = 10;  // 10% probability
+  const FieldTrial::Probability kRemainingConn = 30;  // 30% probability
+
+  scoped_refptr<FieldTrial> conn_trial =
+      new FieldTrial("ConnCountImpact", kConnDivisor);
+
+  const int conn_16 = conn_trial->AppendGroup("_conn_count_16", kConn16);
+  const int conn_4 = conn_trial->AppendGroup("_conn_count_4", kRemainingConn);
+  const int conn_8 = conn_trial->AppendGroup("_conn_count_8", kRemainingConn);
+  const int conn_6 = conn_trial->AppendGroup("_conn_count_6",
+      FieldTrial::kAllRemainingProbability);
+
+  const int conn_trial_grp = conn_trial->group();
+
+  if (conn_trial_grp == conn_4) {
+    net::HttpNetworkSession::set_max_sockets_per_group(4);
+  } else if (conn_trial_grp == conn_6) {
+    // This (6) is the current default value.
+    net::HttpNetworkSession::set_max_sockets_per_group(6);
+  } else if (conn_trial_grp == conn_8) {
+    net::HttpNetworkSession::set_max_sockets_per_group(8);
+  } else if (conn_trial_grp == conn_16) {
+    net::HttpNetworkSession::set_max_sockets_per_group(16);
+  } else {
+    DCHECK(false);
+  }
+
+
   // When --use-spdy not set, users will be in A/B test for spdy.
   // group A (_npn_with_spdy): this means npn and spdy are enabled. In
   // case server supports spdy, browser will use spdy.
