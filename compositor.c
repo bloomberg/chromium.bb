@@ -647,7 +647,6 @@ surface_attach(struct wl_client *client,
 	EGLint attribs[] = {
 		EGL_WIDTH,		0,
 		EGL_HEIGHT,		0,
-		EGL_IMAGE_NAME_MESA,	0,
 		EGL_IMAGE_STRIDE_MESA,	0,
 		EGL_IMAGE_FORMAT_MESA,	EGL_FORMAT_RGBA_8888_KHR,
 		EGL_NONE
@@ -676,12 +675,11 @@ surface_attach(struct wl_client *client,
 
 	attribs[1] = width;
 	attribs[3] = height;
-	attribs[5] = name;
-	attribs[7] = stride / 4;
+	attribs[5] = stride / 4;
 
 	es->image = eglCreateImageKHR(ec->display, ec->context,
-				       EGL_DRM_IMAGE_MESA,
-				       NULL, attribs);
+				      EGL_DRM_IMAGE_MESA,
+				      (EGLClientBuffer) name, attribs);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
 	
 }
