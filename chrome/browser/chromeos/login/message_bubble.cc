@@ -19,8 +19,11 @@ namespace chromeos {
 static const int kBorderSize = 4;
 static const int kMaxLabelWidth = 250;
 
-MessageBubble::MessageBubble(views::Widget* parent, SkBitmap* image,
-    const std::wstring& text) : parent_(parent) {
+MessageBubble::MessageBubble(views::WidgetGtk::Type type, views::Widget* parent,
+    SkBitmap* image, const std::wstring& text, bool grab_enabled)
+    : InfoBubble(type),
+      parent_(parent),
+      grab_enabled_(grab_enabled) {
   using views::GridLayout;
 
   views::View* control_view = new views::View();
@@ -76,7 +79,24 @@ MessageBubble* MessageBubble::Show(views::Widget* parent,
                                    const std::wstring& text,
                                    InfoBubbleDelegate* delegate) {
   // The bubble will be destroyed when it is closed.
-  MessageBubble* bubble = new MessageBubble(parent, image, text);
+  MessageBubble* bubble = new MessageBubble(
+      views::WidgetGtk::TYPE_WINDOW, parent, image, text, true);
+  bubble->Init(parent, position_relative_to, arrow_location,
+               bubble->text_->GetParent(), delegate);
+  return bubble;
+}
+
+// static
+MessageBubble* MessageBubble::ShowNoGrab(
+    views::Widget* parent,
+    const gfx::Rect& position_relative_to,
+    BubbleBorder::ArrowLocation arrow_location,
+    SkBitmap* image,
+    const std::wstring& text,
+    InfoBubbleDelegate* delegate) {
+  // The bubble will be destroyed when it is closed.
+  MessageBubble* bubble = new MessageBubble(
+      views::WidgetGtk::TYPE_CHILD, parent, image, text, false);
   bubble->Init(parent, position_relative_to, arrow_location,
                bubble->text_->GetParent(), delegate);
   return bubble;
@@ -89,6 +109,11 @@ void MessageBubble::IsActiveChanged() {
         GTK_WINDOW(static_cast<WidgetGtk*>(parent_)->GetNativeView()),
                    gtk_get_current_event_time());
   }
+}
+
+void MessageBubble::DoGrab() {
+  if (grab_enabled_)
+    WidgetGtk::DoGrab();
 }
 
 void MessageBubble::Close() {

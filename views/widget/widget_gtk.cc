@@ -1153,6 +1153,15 @@ void WidgetGtk::ReleaseGrab() {
   }
 }
 
+void WidgetGtk::HandleGrabBroke() {
+  if (has_capture_) {
+    if (is_mouse_down_)
+      root_view_->ProcessMouseDragCanceled();
+    is_mouse_down_ = false;
+    has_capture_ = false;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, private:
 
@@ -1397,15 +1406,6 @@ void WidgetGtk::ConfigureWidgetForIgnoreEvents() {
       0,  // num rectangles
       ShapeSet,
       0);
-}
-
-void WidgetGtk::HandleGrabBroke() {
-  if (has_capture_) {
-    if (is_mouse_down_)
-      root_view_->ProcessMouseDragCanceled();
-    is_mouse_down_ = false;
-    has_capture_ = false;
-  }
 }
 
 void WidgetGtk::DrawTransparentBackground(GtkWidget* widget,

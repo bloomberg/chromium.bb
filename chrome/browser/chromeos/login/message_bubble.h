@@ -8,6 +8,7 @@
 #include "chrome/browser/views/info_bubble.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
+#include "views/widget/widget_gtk.h"
 
 class SkBitmap;
 
@@ -31,23 +32,39 @@ class MessageBubble : public InfoBubble,
                              const std::wstring& text,
                              InfoBubbleDelegate* delegate);
 
-  // Overridden from WidgetWin
+  // Create and show bubble which does not grab pointer.  This creates
+  // a TYPE_CHILD WidgetGtk and |position_relative_to| must be in parent's
+  // coordinates.
+  static MessageBubble* ShowNoGrab(views::Widget* parent,
+                                   const gfx::Rect& position_relative_to,
+                                   BubbleBorder::ArrowLocation arrow_location,
+                                   SkBitmap* image,
+                                   const std::wstring& text,
+                                   InfoBubbleDelegate* delegate);
+
+  // Overridden from WidgetGtk.
   virtual void Close();
 
  protected:
+
+  // views::ButtonListener implmenets.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
 
+  // Overridden from WidgetGtk.
   virtual void IsActiveChanged();
+  virtual void DoGrab();
 
  private:
-  MessageBubble(views::Widget* parent, SkBitmap* image,
-                const std::wstring& text);
+  MessageBubble(views::WidgetGtk::Type type,
+                views::Widget* parent, SkBitmap* image,
+                const std::wstring& text, bool grab_enabled);
 
   views::Widget* parent_;
   views::ImageView* icon_;
   views::Label* text_;
   views::ImageButton* close_button_;
+  bool grab_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBubble);
 };

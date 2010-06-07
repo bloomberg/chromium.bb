@@ -270,10 +270,14 @@ class WidgetGtk
   virtual bool ReleaseCaptureOnMouseReleased() { return true; }
 
   // Does a mouse grab on this widget.
-  void DoGrab();
+  virtual void DoGrab();
 
   // Releases a grab done by this widget.
   virtual void ReleaseGrab();
+
+  // Invoked when input grab is stolen by other GtkWidget in the same
+  // application.
+  virtual void HandleGrabBroke();
 
   // Are we a subclass of WindowGtk?
   bool is_window_;
@@ -315,9 +319,6 @@ class WidgetGtk
   // window which doesn't receive events. This is only invoked if
   // MakeIgnoreEvents has been invoked.
   void ConfigureWidgetForIgnoreEvents();
-
-  // TODO(sky): documentation
-  void HandleGrabBroke();
 
   // A utility function to draw a transparent background onto the |widget|.
   static void DrawTransparentBackground(GtkWidget* widget,

@@ -216,6 +216,9 @@ class InfoBubble
 
  protected:
   InfoBubble();
+#if defined(OS_CHROMEOS)
+  explicit InfoBubble(views::WidgetGtk::Type type);
+#endif
   virtual ~InfoBubble() {}
 
   // Creates the InfoBubble.

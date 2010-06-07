@@ -249,6 +249,9 @@ InfoBubble* InfoBubble::Show(views::Widget* parent,
 }
 
 void InfoBubble::Close() {
+  GetFocusManager()->UnregisterAccelerator(
+      views::Accelerator(base::VKEY_ESCAPE, false, false, false), this);
+
   if (fade_away_on_close_)
     FadeOut();
   else
@@ -297,6 +300,16 @@ InfoBubble::InfoBubble()
       closed_(false),
       fade_away_on_close_(false) {
 }
+
+#if defined(OS_CHROMEOS)
+InfoBubble::InfoBubble(views::WidgetGtk::Type type)
+    : WidgetGtk(type),
+      border_contents_(NULL),
+      delegate_(NULL),
+      closed_(false),
+      fade_away_on_close_(false) {
+}
+#endif
 
 void InfoBubble::Init(views::Widget* parent,
                       const gfx::Rect& position_relative_to,
