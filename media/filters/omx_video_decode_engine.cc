@@ -967,28 +967,19 @@ void OmxVideoDecodeEngine::EmptyBufferTask() {
 void OmxVideoDecodeEngine::FulfillOneRead() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  if (!uses_egl_image_ && !output_buffers_ready_.empty()) {
-    int buffer_id = output_buffers_ready_.front();
-    output_buffers_ready_.pop();
-
-    // If the buffer is real then send it to downstream.
-    // Otherwise if it is an end-of-stream buffer then just drop it.
-    if (buffer_id != kEosBuffer) {
-      FinishFillBuffer(output_buffers_[buffer_id]);
-      SendOutputBufferToComponent(output_buffers_[buffer_id]);
-    } else {
-      FinishFillBuffer(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
-    }
-  } else if (uses_egl_image_ && !output_frames_ready_.empty()) {
+  if (!output_frames_ready_.empty()) {
     OMX_BUFFERHEADERTYPE *buffer = output_frames_ready_.front();
     output_frames_ready_.pop();
 
     // If the buffer is real then send it to downstream.
     // Otherwise if it is an end-of-stream buffer then just drop it.
     if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
+      // We intentionally drop last frame because it could be garbage.
       FinishFillBuffer(static_cast<OMX_BUFFERHEADERTYPE*>(NULL));
     } else {
       FinishFillBuffer(buffer);
+      // In non-EGLImage path, OMX_BUFFERHEADERTYPEs are immediately recycled.
+      if (!uses_egl_image_) SendOutputBufferToComponent(buffer);
     }
   }
 }
@@ -1122,32 +1113,11 @@ void OmxVideoDecodeEngine::FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
   // This buffer is received with decoded frame. Enqueue it and make it
   // ready to be consumed by reads.
 
-  if (uses_egl_image_) {
-    if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
-      output_eos_ = true;
-      DLOG(INFO) << "Output has EOS";
-    }
-    output_frames_ready_.push(buffer);
-  } else {
-    int buffer_id = kEosBuffer;
-    for (size_t i = 0; output_buffers_.size(); ++i) {
-      if (output_buffers_[i] == buffer) {
-        buffer_id = i;
-        break;
-      }
-    }
-
-    DCHECK_NE(buffer_id, kEosBuffer);
-
-    // Determine if the buffer received is a end-of-stream buffer. If
-    // the condition is true then assign a EOS id to the buffer.
-    if (buffer->nFlags & OMX_BUFFERFLAG_EOS || !buffer->nFilledLen) {
-      buffer_id = kEosBuffer;
-      output_eos_ = true;
-      DLOG(INFO) << "Output has EOS";
-    }
-    output_buffers_ready_.push(buffer_id);
+  if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
+    output_eos_ = true;
+    DLOG(INFO) << "Output has EOS";
   }
+  output_frames_ready_.push(buffer);
 
   // Try to fulfill one read request.
   FulfillOneRead();

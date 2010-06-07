@@ -236,13 +236,6 @@ class OmxVideoDecodeEngine :
   // OMX_EmptyThisBuffer() call.
   std::queue<OMX_BUFFERHEADERTYPE*> available_input_buffers_;
 
-  // A queue of buffers that carries decoded video frames. They are
-  // ready to return to client.
-  // TOOD(hclam): extract it to a separate class.
-  // TODO(wjia): merge output_buffers with output_frames. Use
-  // OMX_BUFFERHEADERTYPE* directly.
-  std::queue<int> output_buffers_ready_;
-
   // For output buffer recycling cases.
   typedef std::pair<scoped_refptr<VideoFrame>,
                     OMX_BUFFERHEADERTYPE*> OutputFrame;
