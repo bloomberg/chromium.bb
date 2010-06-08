@@ -6798,6 +6798,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
         Themes
       </message>
+      <message name="IDS_SYNC_DATATYPE_EXTENSIONS" desc="Extensions, one of the data types that we allow syncing.">
+        Extensions
+      </message>
       <message name="IDS_SYNC_DATATYPE_PASSWORDS" desc="Saved passwords, one of the data types that we allow syncing.">
         Passwords
       </message>
