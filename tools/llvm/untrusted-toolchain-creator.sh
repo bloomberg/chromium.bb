@@ -225,6 +225,8 @@ ConfigureAndBuildLlvm() {
   Run "Untaring" tar jxf ${LLVM_TARBALL}
   cd llvm
 
+  # The --with-binutils-include is to allow llvm to build the gold plugin
+  local binutils_include="${TMP}/binutils.nacl/src/binutils-2.20/include"
   RunWithLog "Configure" ${TMP}/llvm.configure.log\
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
@@ -233,6 +235,7 @@ ConfigureAndBuildLlvm() {
              ./configure \
              --disable-jit \
              --enable-optimized \
+             --with-binutils-include=${binutils_include} \
              --enable-targets=x86,x86_64,arm \
              --target=arm-none-linux-gnueabi \
              --prefix=${LLVM_INSTALL_DIR} \
@@ -750,8 +753,8 @@ BuildAndInstallBinutils() {
 
   # --enable-checking is to avoid a build failure:
   #   tc-arm.c:2489: warning: empty body in an if-statement
-  # For now nothing depends on gold. Remove --enable-gold if you think
-  # it is causing problems.
+  # The --enable-gold and --enable-plugins options are on so that we
+  # can use gold's support for plugin to link PNaCl modules.
   RunWithLog "Configuring binutils"  ${TMP}/binutils.configure.log \
     env -i \
     PATH="/usr/bin:/bin" \
@@ -761,6 +764,7 @@ BuildAndInstallBinutils() {
                                    --target=${CROSS_TARGET} \
                                    --enable-checking \
                                    --enable-gold \
+                                   --enable-plugins \
                                    --with-sysroot=${NEWLIB_INSTALL_DIR}
 
   RunWithLog "Make binutils" ${TMP}/binutils.make.log \
