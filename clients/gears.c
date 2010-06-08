@@ -353,9 +353,8 @@ static const struct wl_compositor_listener compositor_listener = {
 };
 
 static struct gears *
-gears_create(struct display *display, int drm_fd)
+gears_create(struct display *display)
 {
-	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 	const int x = 200, y = 200, width = 450, height = 500;
 	EGLint major, minor, count;
 	EGLConfig config;
@@ -369,19 +368,13 @@ gears_create(struct display *display, int drm_fd)
 		EGL_NONE
 	};
 
-	get_typed_display_mesa =
-		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
-	if (get_typed_display_mesa == NULL)
-		die("eglGetDisplayMESA() not found\n");
-
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
 	gears->d = display;
 	gears->window = window_create(display, "Wayland Gears",
 				      x, y, width, height);
 
-	gears->display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
-						(void *) drm_fd);
+	gears->display = display_get_egl_display(gears->d);
 	if (gears->display == NULL)
 		die("failed to create egl display\n");
 
@@ -458,34 +451,12 @@ gears_create(struct display *display, int drm_fd)
 
 int main(int argc, char *argv[])
 {
-	struct wl_display *display;
 	struct display *d;
-	int fd;
-	GMainLoop *loop;
-	GSource *source;
 	struct gears *gears;
 
-	fd = open(gem_device, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
-		return -1;
-	}
-
-	display = wl_display_create(socket_name, sizeof socket_name);
-	if (display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
-		return -1;
-	}
-
-	d = display_create(display, fd);
-
-	loop = g_main_loop_new(NULL, FALSE);
-	source = wl_glib_source_new(display);
-	g_source_attach(source, NULL);
-
-	gears = gears_create(d, fd);
-
-	g_main_loop_run(loop);
+	d = display_create(&argc, &argv, NULL);
+	gears = gears_create(d);
+	display_run(d);
 
 	return 0;
 }

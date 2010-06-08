@@ -35,9 +35,18 @@ struct rectangle {
 struct display;
 
 struct display *
-display_create(struct wl_display *display, int fd);
+display_create(int *argc, char **argv[], const GOptionEntry *option_entries);
+
 struct wl_compositor *
 display_get_compositor(struct display *display);
+
+#ifdef EGL_NO_DISPLAY
+EGLDisplay
+display_get_egl_display(struct display *d);
+#endif
+
+void
+display_run(struct display *d);
 
 enum {
 	WINDOW_MODIFIER_SHIFT = 0x01,
@@ -114,4 +123,5 @@ window_set_keyboard_focus_handler(struct window *window,
 void
 window_set_frame_handler(struct window *window,
 			 window_frame_handler_t handler, void *data);
+
 #endif

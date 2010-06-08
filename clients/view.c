@@ -266,40 +266,10 @@ static const GOptionEntry option_entries[] = {
 int
 main(int argc, char *argv[])
 {
-	struct wl_display *display;
-	int fd;
-	GMainLoop *loop;
-	GSource *source;
 	struct display *d;
-	GOptionContext *context;
-	GError *error = NULL;
 	int i;
 
-	context = g_option_context_new(NULL);
-	g_option_context_add_main_entries(context, option_entries, "Wayland View");
-	if (!g_option_context_parse(context, &argc, &argv, &error)) {
-		fprintf(stderr, "option parsing failed: %s\n", error->message);
-		exit(EXIT_FAILURE);
-	}
-
-	fd = open(gem_device, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
-		return -1;
-	}
-
-	display = wl_display_create(socket_name, sizeof socket_name);
-	if (display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
-		return -1;
-	}
-
-	d = display_create(display, fd);
-	loop = g_main_loop_new(NULL, FALSE);
-	source = wl_glib_source_new(display);
-	g_source_attach(source, NULL);
-
-	g_type_init ();
+	d = display_create(&argc, &argv, option_entries);
 
 	for (i = 1; i < argc; i++) {
 		struct view *view;
@@ -307,7 +277,7 @@ main(int argc, char *argv[])
 		view = view_create (d, i, argv[i]);
 	}
 
-	g_main_loop_run(loop);
+	display_run(d);
 
 	return 0;
 }

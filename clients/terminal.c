@@ -42,8 +42,6 @@
 #include "window.h"
 
 static int option_fullscreen;
-static const char gem_device[] = "/dev/dri/card0";
-static const char socket_name[] = "\0wayland";
 
 #define MOD_SHIFT	0x01
 #define MOD_ALT		0x02
@@ -564,44 +562,16 @@ static const GOptionEntry option_entries[] = {
 
 int main(int argc, char *argv[])
 {
-	struct wl_display *display;
-	int fd;
-	GMainLoop *loop;
-	GSource *source;
 	struct display *d;
 	struct terminal *terminal;
-	GOptionContext *context;
-	GError *error;
 
-	context = g_option_context_new(NULL);
-	g_option_context_add_main_entries(context, option_entries, "Wayland Terminal");
-	if (!g_option_context_parse(context, &argc, &argv, &error)) {
-		fprintf(stderr, "option parsing failed: %s\n", error->message);
-		exit(EXIT_FAILURE);
-	}
-
-	fd = open(gem_device, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
-		return -1;
-	}
-
-	display = wl_display_create(socket_name, sizeof socket_name);
-	if (display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
-		return -1;
-	}
-
-	d = display_create(display, fd);
-	loop = g_main_loop_new(NULL, FALSE);
-	source = wl_glib_source_new(display);
-	g_source_attach(source, NULL);
+	d = display_create(&argc, &argv, option_entries);
 
 	terminal = terminal_create(d, option_fullscreen);
 	if (terminal_run(terminal, "/bin/bash"))
 		exit(EXIT_FAILURE);
 
-	g_main_loop_run(loop);
+	display_run(d);
 
 	return 0;
 }

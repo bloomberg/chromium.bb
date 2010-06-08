@@ -56,6 +56,8 @@ struct display {
 	EGLContext ctx;
 	cairo_device_t *device;
 	int fd;
+	GMainLoop *loop;
+	GSource *source;
 };
 
 struct window {
@@ -756,6 +758,7 @@ window_create(struct display *display, const char *title,
 	window->saved_allocation = window->allocation;
 	window->margin = 16;
 	window->state = WINDOW_STABLE;
+	window->decoration = 1;
 
 	wl_compositor_add_listener(display->compositor,
 				   &compositor_listener, window);
@@ -799,13 +802,20 @@ display_handle_global(struct wl_display *display,
 	}
 }
 
+static const char gem_device[] = "/dev/dri/card0";
+static const char socket_name[] = "\0wayland";
+
 struct display *
-display_create(struct wl_display *display, int fd)
+display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
 	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 	struct display *d;
 	EGLint major, minor, count;
 	EGLConfig config;
+	struct wl_display *display;
+	int fd;
+	GOptionContext *context;
+	GError *error;
 
 	static const EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE,		0,
@@ -814,9 +824,30 @@ display_create(struct wl_display *display, int fd)
 		EGL_NONE
 	};
 
+	context = g_option_context_new(NULL);
+	if (option_entries) {
+		g_option_context_add_main_entries(context, option_entries, "Wayland View");
+		if (!g_option_context_parse(context, argc, argv, &error)) {
+			fprintf(stderr, "option parsing failed: %s\n", error->message);
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	d = malloc(sizeof *d);
 	if (d == NULL)
 		return NULL;
+
+	fd = open(gem_device, O_RDWR);
+	if (fd < 0) {
+		fprintf(stderr, "drm open failed: %m\n");
+		return NULL;
+	}
+
+	display = wl_display_create(socket_name, sizeof socket_name);
+	if (display == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
+		return NULL;
+	}
 
 	get_typed_display_mesa =
 		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
@@ -865,6 +896,10 @@ display_create(struct wl_display *display, int fd)
 	/* Process connection events. */
 	wl_display_iterate(display, WL_DISPLAY_READABLE);
 
+	d->loop = g_main_loop_new(NULL, FALSE);
+	d->source = wl_glib_source_new(display);
+	g_source_attach(d->source, NULL);
+
 	return d;
 }
 
@@ -872,4 +907,16 @@ struct wl_compositor *
 display_get_compositor(struct display *display)
 {
 	return display->compositor;
+}
+
+EGLDisplay
+display_get_egl_display(struct display *d)
+{
+	return d->dpy;
+}
+
+void
+display_run(struct display *d)
+{
+	g_main_loop_run(d->loop);
 }

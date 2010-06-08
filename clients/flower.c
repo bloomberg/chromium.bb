@@ -36,9 +36,6 @@
 #include "wayland-glib.h"
 #include "window.h"
 
-static const char gem_device[] = "/dev/dri/card0";
-static const char socket_name[] = "\0wayland";
-
 static void
 set_random_color(cairo_t *cr)
 {
@@ -120,29 +117,10 @@ int main(int argc, char *argv[])
 	int fd;
 	cairo_surface_t *s;
 	struct timespec ts;
-	GMainLoop *loop;
-	GSource *source;
 	struct flower flower;
 	struct display *d;
 
-	fd = open(gem_device, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
-		return -1;
-	}
-
-	loop = g_main_loop_new(NULL, FALSE);
-
-	display = wl_display_create(socket_name, sizeof socket_name);
-	if (display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
-		return -1;
-	}
-
-	d = display_create(display, fd);
-
-	source = wl_glib_source_new(display);
-	g_source_attach(source, NULL);
+	d = display_create(&argc, &argv, NULL);
 
 	flower.x = 512;
 	flower.y = 384;
@@ -155,6 +133,7 @@ int main(int argc, char *argv[])
 	srandom(ts.tv_nsec);
 	flower.offset = random();
 
+	window_set_decoration(flower.window, 0);
 	window_draw(flower.window);
 	s = window_get_surface(flower.window);
 	if (s == NULL || cairo_surface_status (s) != CAIRO_STATUS_SUCCESS) {
@@ -168,7 +147,7 @@ int main(int argc, char *argv[])
 	window_set_frame_handler(flower.window, handle_frame, &flower);
 	window_commit(flower.window, 0);
 
-	g_main_loop_run(loop);
+	display_run(d);
 
 	return 0;
 }
