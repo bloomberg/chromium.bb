@@ -142,7 +142,6 @@ class BugReportView : public views::View,
   views::RadioButton* include_no_screen_image_radio_;
   views::Link* system_information_url_control_;
 
-  std::string system_information_url_;
   scoped_ptr<chromeos::LogDictionaryType> sys_info_;
   scoped_ptr< std::vector<unsigned char> > last_image_;
 #endif

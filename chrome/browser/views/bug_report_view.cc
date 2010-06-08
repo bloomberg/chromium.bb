@@ -57,7 +57,7 @@ static const int kScreenImageRadioGroup = 2;
 static const char kScreenshotsRelativePath[] = "/Screenshots";
 static const char kScreenshotPattern[] = "*.png";
 static const char kAboutBlank[] = "about:blank";
-
+static const char kSystemInformationUrl[] = "about:system";
 
 // Number of lines description field can display at one time.
 static const int kDescriptionLines = 5;
@@ -293,12 +293,6 @@ BugReportView::BugReportView(Profile* profile, TabContents* tab)
       chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
   if (syslogs_lib) {
     sys_info_.reset(syslogs_lib->GetSyslogs(&tmpfilename));
-    if (sys_info_.get())
-      system_information_url_ = std::string("file://") + tmpfilename.value();
-    else
-      system_information_url_ = std::string(kAboutBlank);
-  } else {
-    system_information_url_ = std::string(kAboutBlank);
   }
 #endif
 }
@@ -614,7 +608,7 @@ void BugReportView::LinkActivated(views::Link* source,
                                     int event_flags) {
   GURL url;
   if (source == system_information_url_control_) {
-    url = GURL(system_information_url_);
+    url = GURL(kSystemInformationUrl);
   } else {
     NOTREACHED() << "Unknown link source";
     return;
