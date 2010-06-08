@@ -4,7 +4,6 @@
 
 #include "base/platform_thread.h"
 
-#include <dlfcn.h>
 #include <errno.h>
 #include <sched.h>
 
@@ -12,21 +11,15 @@
 #include <mach/mach.h>
 #include <sys/resource.h>
 #include <algorithm>
-#endif
-
-#if defined(OS_LINUX)
-#include <sys/prctl.h>
+#else
 #include <sys/syscall.h>
 #include <unistd.h>
 #endif
 
-#include "base/logging.h"
-#include "base/safe_strerror_posix.h"
-
 #if defined(OS_MACOSX)
 namespace base {
 void InitThreading();
-}  // namespace base
+}  // namespace
 #endif
 
 static void* ThreadFunc(void* closure) {
@@ -70,46 +63,15 @@ void PlatformThread::Sleep(int duration_ms) {
     sleep_time = remaining;
 }
 
-#if defined(OS_LINUX)
 // static
 void PlatformThread::SetName(const char* name) {
-  // http://0pointer.de/blog/projects/name-your-threads.html
-
-  // glibc recently added support for pthread_setname_np, but it's not
-  // commonly available yet.  So test for it at runtime.
-  int (*dynamic_pthread_setname_np)(pthread_t, const char*);
-  *reinterpret_cast<void**>(&dynamic_pthread_setname_np) =
-      dlsym(RTLD_DEFAULT, "pthread_setname_np");
-
-  if (dynamic_pthread_setname_np) {
-    // This limit comes from glibc, which gets it from the kernel
-    // (TASK_COMM_LEN).
-    const int kMaxNameLength = 15;
-    std::string shortened_name = std::string(name).substr(0, kMaxNameLength);
-    int err = dynamic_pthread_setname_np(pthread_self(),
-                                         shortened_name.c_str());
-    if (err < 0)
-      LOG(ERROR) << "pthread_setname_np: " << safe_strerror(err);
-  } else {
-    // Implementing this function without glibc is simple enough.  (We
-    // don't do the name length clipping as above because it will be
-    // truncated by the callee (see TASK_COMM_LEN above).)
-    int err = prctl(PR_SET_NAME, name);
-    if (err < 0)
-      PLOG(ERROR) << "prctl(PR_SET_NAME)";
-  }
+  // The POSIX standard does not provide for naming threads, and neither Linux
+  // nor Mac OS X (our two POSIX targets) provide any non-portable way of doing
+  // it either. (Some BSDs provide pthread_set_name_np but that isn't much of a
+  // consolation prize.)
+  // TODO(darin): decide whether stuffing the name in TLS or other in-memory
+  // structure would be useful for debugging or not.
 }
-#elif defined(OS_MACOSX)
-// Mac is implemented in platform_thread_mac.mm.
-#else
-// static
-void PlatformThread::SetName(const char* name) {
-  // Leave it unimplemented.
-
-  // (This should be relatively simple to implement for the BSDs; I
-  // just don't have one handy to test the code on.)
-}
-#endif  // defined(OS_LINUX)
 
 namespace {
 
