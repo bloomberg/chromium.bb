@@ -53,6 +53,7 @@ readonly LLVMGCC_SFI_PATCH3=${PATCH_DIR}/libstdcpp-eh_arm.patch
 readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
 readonly LLVM_SFI_PATCH=${PATCH_DIR}/llvm-r88663.patch
 readonly LLVM_HACK_SFI_PATCH=${PATCH_DIR}/llvm-hack-sfi.patch
+readonly LLVM_UPDATE_PLUGIN_PATCH=${PATCH_DIR}/llvm-update-plugin.patch
 readonly LLVM_GCC_PATCH=${PATCH_DIR}/llvm-gcc-104753.patch
 readonly LLVM_GCC_PATCH2=${PATCH_DIR}/llvm-gcc-104870.patch
 
@@ -226,6 +227,10 @@ ConfigureAndBuildLlvm() {
 
   Run "Untaring" tar jxf ${LLVM_TARBALL}
   cd llvm
+
+  # TODO(espindola): This is already in hg, but we use that to build
+  # llc-sfi only. Remove this once llc and llc-sfi are merged.
+  Run "Patching" patch -p2 < ${LLVM_UPDATE_PLUGIN_PATCH}
 
   # The --with-binutils-include is to allow llvm to build the gold plugin
   local binutils_include="${TMP}/binutils.nacl/src/binutils-2.20/include"
