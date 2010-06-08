@@ -703,15 +703,6 @@ surface_map(struct wl_client *client,
 }
 
 static void
-surface_copy(struct wl_client *client,
-	     struct wl_surface *surface,
-	     int32_t dst_x, int32_t dst_y,
-	     uint32_t name, uint32_t stride,
-	     int32_t x, int32_t y, int32_t width, int32_t height)
-{
-}
-
-static void
 surface_damage(struct wl_client *client,
 	       struct wl_surface *surface,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
@@ -723,7 +714,6 @@ const static struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
 	surface_map,
-	surface_copy,
 	surface_damage
 };
 

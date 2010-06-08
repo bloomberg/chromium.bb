@@ -111,9 +111,6 @@ struct wl_surface_interface {
 	void (*map)(struct wl_client *client,
 		    struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height);
-	void (*copy)(struct wl_client *client, struct wl_surface *surface,
-		     int32_t dst_x, int32_t dst_y, uint32_t name, uint32_t stride,
-		     int32_t x, int32_t y, int32_t width, int32_t height);
 	void (*damage)(struct wl_client *client, struct wl_surface *surface,
 		       int32_t x, int32_t y, int32_t width, int32_t height);
 };

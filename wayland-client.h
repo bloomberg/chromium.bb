@@ -89,9 +89,6 @@ void wl_surface_attach(struct wl_surface *surface, uint32_t name,
 		       struct wl_visual *visual);
 void wl_surface_map(struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height);
-void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
-		     uint32_t name, uint32_t stride,
-		     int32_t x, int32_t y, int32_t width, int32_t height);
 void wl_surface_damage(struct wl_surface *surface,
 		       int32_t x, int32_t y, int32_t width, int32_t height);
 

@@ -61,7 +61,6 @@ static const struct wl_message surface_methods[] = {
 	{ "destroy", "" },
 	{ "attach", "uuuuo" },
 	{ "map", "iiii" },
-	{ "copy", "iiuuiiii" },
 	{ "damage", "iiii" }
 };
 

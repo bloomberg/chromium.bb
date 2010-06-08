@@ -584,15 +584,6 @@ wl_surface_map(struct wl_surface *surface,
 }
 
 WL_EXPORT void
-wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
-		uint32_t name, uint32_t stride,
-		int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	wl_proxy_marshal(&surface->proxy, WL_SURFACE_COPY,
-			 dst_x, dst_y, name, stride, x, y, width, height);
-}
-
-WL_EXPORT void
 wl_surface_damage(struct wl_surface *surface,
 		  int32_t x, int32_t y, int32_t width, int32_t height)
 {
