@@ -980,8 +980,8 @@
         'service/cloud_print/cloud_print_proxy_backend.h',
         'service/cloud_print/job_status_updater.cc',
         'service/cloud_print/job_status_updater.h',
-        'service/cloud_print/printer_info_dummy.cc',
-        'service/cloud_print/printer_info.h',
+        'service/cloud_print/print_system_dummy.cc',
+        'service/cloud_print/print_system.h',
         'service/cloud_print/printer_job_handler.cc',
         'service/cloud_print/printer_job_handler.h',
         'service/gaia/service_gaia_authenticator.cc',
@@ -1002,7 +1002,7 @@
             'CP_PRINT_SYSTEM_AVAILABLE',
           ],
           'sources': [
-            'service/cloud_print/printer_info_win.cc',
+            'service/cloud_print/print_system_win.cc',
           ],
         }],
         ['OS=="linux"', {
@@ -1022,7 +1022,7 @@
             'CP_PRINT_SYSTEM_AVAILABLE',
           ],
           'sources': [
-            'service/cloud_print/printer_info_cups.cc',
+            'service/cloud_print/print_system_cups.cc',
           ],
         }],
       ],

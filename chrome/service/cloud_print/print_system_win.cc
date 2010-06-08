@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/service/cloud_print/printer_info.h"
+#include "chrome/service/cloud_print/print_system.h"
 
 #include <windows.h>
 #include <objidl.h>
@@ -128,7 +128,224 @@ HRESULT PrintPdf2DC(HDC dc, const FilePath& pdf_filename) {
 
 namespace cloud_print {
 
-void EnumeratePrinters(PrinterList* printer_list) {
+class PrintSystemWatcherWin
+    : public base::ObjectWatcher::Delegate {
+ public:
+  PrintSystemWatcherWin()
+      : printer_(NULL), printer_change_(NULL), delegate_(NULL) {
+  }
+  ~PrintSystemWatcherWin() {
+    Stop();
+  }
+
+  class Delegate {
+   public:
+    virtual void OnPrinterAdded() = 0;
+    virtual void OnPrinterDeleted() = 0;
+    virtual void OnPrinterChanged() = 0;
+    virtual void OnJobChanged() = 0;
+  };
+
+  bool Start(const std::string& printer_name, Delegate* delegate) {
+    delegate_ = delegate;
+    // An empty printer name means watch the current server, we need to pass
+    // NULL to OpenPrinter.
+    LPTSTR printer_name_to_use = NULL;
+    std::wstring printer_name_wide;
+    if (!printer_name.empty()) {
+      printer_name_wide = UTF8ToWide(printer_name);
+      printer_name_to_use = const_cast<LPTSTR>(printer_name_wide.c_str());
+    }
+    bool ret = false;
+    OpenPrinter(printer_name_to_use, &printer_, NULL);
+    if (printer_) {
+      printer_change_ = FindFirstPrinterChangeNotification(
+          printer_, PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB, 0, NULL);
+      if (printer_change_) {
+        ret = watcher_.StartWatching(printer_change_, this);
+      }
+    }
+    if (!ret) {
+      Stop();
+    }
+    return ret;
+  }
+  bool Stop() {
+    watcher_.StopWatching();
+    if (printer_) {
+      ClosePrinter(printer_);
+      printer_ = NULL;
+    }
+    if (printer_change_) {
+      FindClosePrinterChangeNotification(printer_change_);
+      printer_change_ = NULL;
+    }
+    return true;
+  }
+
+  void OnObjectSignaled(HANDLE object) {
+    DWORD change = 0;
+    FindNextPrinterChangeNotification(object, &change, NULL, NULL);
+
+    if (change != ((PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB) &
+                  (~PRINTER_CHANGE_FAILED_CONNECTION_PRINTER))) {
+      // For printer connections, we get spurious change notifications with
+      // all flags set except PRINTER_CHANGE_FAILED_CONNECTION_PRINTER.
+      // Ignore these.
+      if (change & PRINTER_CHANGE_ADD_PRINTER) {
+        delegate_->OnPrinterAdded();
+      } else if (change & PRINTER_CHANGE_DELETE_PRINTER) {
+        delegate_->OnPrinterDeleted();
+      } else if (change & PRINTER_CHANGE_SET_PRINTER) {
+        delegate_->OnPrinterChanged();
+      }
+      if (change & PRINTER_CHANGE_JOB) {
+        delegate_->OnJobChanged();
+      }
+    }
+    watcher_.StartWatching(printer_change_, this);
+  }
+
+  bool GetCurrentPrinterInfo(PrinterBasicInfo* printer_info) {
+    DCHECK(printer_info);
+    if (!printer_)
+      return false;
+
+    DWORD bytes_needed = 0;
+    bool ret = false;
+    GetPrinter(printer_, 2, NULL, 0, &bytes_needed);
+    if (0 != bytes_needed) {
+      scoped_ptr<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
+      if (GetPrinter(printer_, 2, printer_info_buffer.get(),
+                     bytes_needed, &bytes_needed)) {
+        PRINTER_INFO_2* printer_info_win =
+            reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
+        printer_info->printer_name = WideToUTF8(printer_info_win->pPrinterName);
+        printer_info->printer_description =
+            WideToUTF8(printer_info_win->pComment);
+        printer_info->printer_status = printer_info_win->Status;
+        ret = true;
+      }
+    }
+    return ret;
+  }
+
+ private:
+  base::ObjectWatcher watcher_;
+  HANDLE printer_;            // The printer being watched
+  HANDLE printer_change_;     // Returned by FindFirstPrinterChangeNotifier
+  Delegate* delegate_;        // Delegate to notify
+  bool did_signal_;           // DoneWaiting was called
+};
+
+class PrintSystemWin : public PrintSystem {
+ public:
+  virtual void EnumeratePrinters(PrinterList* printer_list);
+
+  virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
+                                         PrinterCapsAndDefaults* printer_info);
+
+  virtual bool ValidatePrintTicket(const std::string& printer_name,
+                                   const std::string& print_ticket_data);
+
+  virtual bool SpoolPrintJob(const std::string& print_ticket,
+                             const FilePath& print_data_file_path,
+                             const std::string& print_data_mime_type,
+                             const std::string& printer_name,
+                             const std::string& job_title,
+                             PlatformJobId* job_id_ret);
+
+  virtual bool GetJobDetails(const std::string& printer_name,
+                             PlatformJobId job_id,
+                             PrintJobDetails *job_details);
+
+  virtual bool IsValidPrinter(const std::string& printer_name);
+
+  class PrintServerWatcherWin
+    : public PrintSystem::PrintServerWatcher, PrintSystemWatcherWin::Delegate {
+   public:
+    PrintServerWatcherWin() {}
+
+    // PrintSystem::PrintServerWatcher interface
+    virtual bool StartWatching(
+        PrintSystem::PrintServerWatcher::Delegate* delegate) {
+      delegate_ = delegate;
+      return watcher_.Start(std::string(), this);
+    }
+    virtual bool StopWatching() {
+      bool ret = watcher_.Stop();
+      delegate_ = NULL;
+      return ret;
+    }
+
+    // PrintSystemWatcherWin::Delegate interface
+    virtual void OnPrinterAdded() {
+      delegate_->OnPrinterAdded();
+    }
+    virtual void OnPrinterDeleted() {
+      NOTREACHED();
+    }
+    virtual void OnPrinterChanged() {
+      NOTREACHED();
+    }
+    virtual void OnJobChanged() {
+      NOTREACHED();
+    }
+
+   private:
+    PrintSystem::PrintServerWatcher::Delegate* delegate_;
+    PrintSystemWatcherWin watcher_;
+    DISALLOW_COPY_AND_ASSIGN(PrintServerWatcherWin);
+  };
+
+  class PrinterWatcherWin
+      : public PrintSystem::PrinterWatcher, PrintSystemWatcherWin::Delegate {
+   public:
+     explicit PrinterWatcherWin(const std::string& printer_name)
+         : printer_name_(printer_name) {}
+
+    // PrintSystem::PrinterWatcher interface
+    virtual bool StartWatching(
+        PrintSystem::PrinterWatcher::Delegate* delegate) {
+      delegate_ = delegate;
+      return watcher_.Start(printer_name_, this);
+    }
+    virtual bool StopWatching() {
+      bool ret = watcher_.Stop();
+      delegate_ = NULL;
+      return ret;
+    }
+    virtual bool GetCurrentPrinterInfo(PrinterBasicInfo* printer_info) {
+      return watcher_.GetCurrentPrinterInfo(printer_info);
+    }
+
+    // PrintSystemWatcherWin::Delegate interface
+    virtual void OnPrinterAdded() {
+      NOTREACHED();
+    }
+    virtual void OnPrinterDeleted() {
+      delegate_->OnPrinterDeleted();
+    }
+    virtual void OnPrinterChanged() {
+      delegate_->OnPrinterChanged();
+    }
+    virtual void OnJobChanged() {
+      delegate_->OnJobChanged();
+    }
+
+   private:
+    std::string printer_name_;
+    PrintSystem::PrinterWatcher::Delegate* delegate_;
+    PrintSystemWatcherWin watcher_;
+    DISALLOW_COPY_AND_ASSIGN(PrinterWatcherWin);
+  };
+
+  virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher();
+  virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
+      const std::string& printer_name);
+};
+
+void PrintSystemWin::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);
   DWORD bytes_needed = 0;
   DWORD count_returned = 0;
@@ -153,8 +370,9 @@ void EnumeratePrinters(PrinterList* printer_list) {
   }
 }
 
-bool GetPrinterCapsAndDefaults(const std::string& printer_name,
-                               PrinterCapsAndDefaults* printer_info) {
+bool PrintSystemWin::GetPrinterCapsAndDefaults(
+    const std::string& printer_name,
+    PrinterCapsAndDefaults* printer_info) {
   if (!InitXPSModule()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
@@ -224,8 +442,9 @@ bool GetPrinterCapsAndDefaults(const std::string& printer_name,
   return true;
 }
 
-bool ValidatePrintTicket(const std::string& printer_name,
-                         const std::string& print_ticket_data) {
+bool PrintSystemWin::ValidatePrintTicket(
+    const std::string& printer_name,
+    const std::string& print_ticket_data) {
   if (!InitXPSModule()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
@@ -258,25 +477,12 @@ bool ValidatePrintTicket(const std::string& printer_name,
   return ret;
 }
 
-std::string GenerateProxyId() {
-  GUID proxy_id = {0};
-  HRESULT hr = UuidCreate(&proxy_id);
-  DCHECK(SUCCEEDED(hr));
-  wchar_t* proxy_id_as_string = NULL;
-  UuidToString(&proxy_id, reinterpret_cast<RPC_WSTR *>(&proxy_id_as_string));
-  DCHECK(proxy_id_as_string);
-  std::string ret;
-  WideToUTF8(proxy_id_as_string, wcslen(proxy_id_as_string), &ret);
-  RpcStringFree(reinterpret_cast<RPC_WSTR *>(&proxy_id_as_string));
-  return ret;
-}
-
-bool SpoolPrintJob(const std::string& print_ticket,
-                   const FilePath& print_data_file_path,
-                   const std::string& print_data_mime_type,
-                   const std::string& printer_name,
-                   const std::string& job_title,
-                   PlatformJobId* job_id_ret) {
+bool PrintSystemWin::SpoolPrintJob(const std::string& print_ticket,
+                                       const FilePath& print_data_file_path,
+                                       const std::string& print_data_mime_type,
+                                       const std::string& printer_name,
+                                       const std::string& job_title,
+                                       PlatformJobId* job_id_ret) {
   if (!InitXPSModule()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
@@ -313,9 +519,9 @@ bool SpoolPrintJob(const std::string& print_ticket,
   return SUCCEEDED(hr);
 }
 
-bool GetJobDetails(const std::string& printer_name,
-                   PlatformJobId job_id,
-                   PrintJobDetails *job_details) {
+bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
+                                       PlatformJobId job_id,
+                                       PrintJobDetails *job_details) {
   DCHECK(job_details);
   HANDLE printer_handle = NULL;
   std::wstring printer_name_wide = UTF8ToWide(printer_name);
@@ -358,7 +564,7 @@ bool GetJobDetails(const std::string& printer_name,
   return ret;
 }
 
-bool IsValidPrinter(const std::string& printer_name) {
+bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
   std::wstring printer_name_wide = UTF8ToWide(printer_name);
   HANDLE printer_handle = NULL;
   OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()), &printer_handle,
@@ -371,139 +577,33 @@ bool IsValidPrinter(const std::string& printer_name) {
   return ret;
 }
 
-class PrinterChangeNotifier::NotificationState
-    : public base::ObjectWatcher::Delegate {
- public:
-  NotificationState() : printer_(NULL), printer_change_(NULL), delegate_(NULL) {
-  }
-  ~NotificationState() {
-    Stop();
-  }
-  bool Start(const std::string& printer_name,
-             PrinterChangeNotifier::Delegate* delegate) {
-    delegate_ = delegate;
-    // An empty printer name means watch the current server, we need to pass
-    // NULL to OpenPrinter.
-    LPTSTR printer_name_to_use = NULL;
-    std::wstring printer_name_wide;
-    if (!printer_name.empty()) {
-      printer_name_wide = UTF8ToWide(printer_name);
-      printer_name_to_use = const_cast<LPTSTR>(printer_name_wide.c_str());
-    }
-    bool ret = false;
-    OpenPrinter(printer_name_to_use, &printer_, NULL);
-    if (printer_) {
-      printer_change_ = FindFirstPrinterChangeNotification(
-          printer_, PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB, 0, NULL);
-      if (printer_change_) {
-        ret = watcher_.StartWatching(printer_change_, this);
-      }
-    }
-    if (!ret) {
-      Stop();
-    }
-    return ret;
-  }
-  bool Stop() {
-    watcher_.StopWatching();
-    if (printer_) {
-      ClosePrinter(printer_);
-      printer_ = NULL;
-    }
-    if (printer_change_) {
-      FindClosePrinterChangeNotification(printer_change_);
-      printer_change_ = NULL;
-    }
-    return true;
-  }
-
-  void OnObjectSignaled(HANDLE object) {
-    DWORD change = 0;
-    FindNextPrinterChangeNotification(object, &change, NULL, NULL);
-
-    if (change != ((PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB) &
-                  (~PRINTER_CHANGE_FAILED_CONNECTION_PRINTER))) {
-      // For printer connections, we get spurious change notifications with
-      // all flags set except PRINTER_CHANGE_FAILED_CONNECTION_PRINTER.
-      // Ignore these.
-      if (change & PRINTER_CHANGE_ADD_PRINTER) {
-        delegate_->OnPrinterAdded();
-      } else if (change & PRINTER_CHANGE_DELETE_PRINTER) {
-        delegate_->OnPrinterDeleted();
-      } else if (change & PRINTER_CHANGE_SET_PRINTER) {
-        delegate_->OnPrinterChanged();
-      }
-      if (change & PRINTER_CHANGE_JOB) {
-        delegate_->OnJobChanged();
-      }
-    }
-    watcher_.StartWatching(printer_change_, this);
-  }
-  HANDLE printer_handle() const {
-    return printer_;
-  }
- private:
-  base::ObjectWatcher watcher_;
-  HANDLE printer_;            // The printer being watched
-  HANDLE printer_change_;     // Returned by FindFirstPrinterChangeNotifier
-  PrinterChangeNotifier::Delegate* delegate_;  // Delegate to notify
-  bool did_signal_;           // DoneWaiting was called
-};
-
-PrinterChangeNotifier::PrinterChangeNotifier() : state_(NULL) {
+PrintSystem::PrintServerWatcher*
+PrintSystemWin::CreatePrintServerWatcher() {
+  return new PrintServerWatcherWin();
 }
 
-PrinterChangeNotifier::~PrinterChangeNotifier() {
-  StopWatching();
+PrintSystem::PrinterWatcher* PrintSystemWin::CreatePrinterWatcher(
+    const std::string& printer_name) {
+  DCHECK(!printer_name.empty());
+  return new PrinterWatcherWin(printer_name);
 }
 
-bool PrinterChangeNotifier::StartWatching(const std::string& printer_name,
-                                          Delegate* delegate) {
-  if (state_) {
-    NOTREACHED();
-    return false;
-  }
-  state_ = new NotificationState;
-  if (!state_->Start(printer_name, delegate)) {
-    StopWatching();
-    return false;
-  }
-  return true;
-}
-
-bool PrinterChangeNotifier::StopWatching() {
-  if (!state_) {
-    return false;
-  }
-  state_->Stop();
-  delete state_;
-  state_ = NULL;
-  return true;
-}
-
-bool PrinterChangeNotifier::GetCurrentPrinterInfo(
-    PrinterBasicInfo* printer_info) {
-  if (!state_) {
-    return false;
-  }
-  DCHECK(printer_info);
-  DWORD bytes_needed = 0;
-  bool ret = false;
-  GetPrinter(state_->printer_handle(), 2, NULL, 0, &bytes_needed);
-  if (0 != bytes_needed) {
-    scoped_ptr<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
-    if (GetPrinter(state_->printer_handle(), 2, printer_info_buffer.get(),
-                   bytes_needed, &bytes_needed)) {
-      PRINTER_INFO_2* printer_info_win =
-          reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
-      printer_info->printer_name = WideToUTF8(printer_info_win->pPrinterName);
-      printer_info->printer_description =
-          WideToUTF8(printer_info_win->pComment);
-      printer_info->printer_status = printer_info_win->Status;
-      ret = true;
-    }
-  }
+std::string PrintSystem::GenerateProxyId() {
+  GUID proxy_id = {0};
+  HRESULT hr = UuidCreate(&proxy_id);
+  DCHECK(SUCCEEDED(hr));
+  wchar_t* proxy_id_as_string = NULL;
+  UuidToString(&proxy_id, reinterpret_cast<RPC_WSTR *>(&proxy_id_as_string));
+  DCHECK(proxy_id_as_string);
+  std::string ret;
+  WideToUTF8(proxy_id_as_string, wcslen(proxy_id_as_string), &ret);
+  RpcStringFree(reinterpret_cast<RPC_WSTR *>(&proxy_id_as_string));
   return ret;
 }
+
+scoped_refptr<PrintSystem> PrintSystem::CreateInstance() {
+  return new PrintSystemWin;
+}
+
 }  // namespace cloud_print
 

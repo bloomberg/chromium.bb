@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/thread.h"
-#include "chrome/service/cloud_print/printer_info.h"
+#include "chrome/service/cloud_print/print_system.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
@@ -32,6 +32,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
                    cloud_print::PlatformJobId& local_job_id,
                    const std::string& auth_token,
                    const GURL& cloud_print_server_url,
+                   cloud_print::PrintSystem* print_system,
                    Delegate* delegate);
   // Checks the status of the local print job and sends an update.
   void UpdateStatus();
@@ -50,6 +51,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   scoped_ptr<URLFetcher> request_;
   std::string auth_token_;
   GURL cloud_print_server_url_;
+  scoped_refptr<cloud_print::PrintSystem> print_system_;
   Delegate* delegate_;
   // A flag that is set to true in Stop() and will ensure the next scheduled
   // task will do nothing.
