@@ -46,7 +46,7 @@ void MockProxyFactory::GetServerImpl(ChromeFrameAutomationProxy* pxy,
 void CFACMockTest::SetAutomationServerOk(int times) {
   EXPECT_CALL(factory_, GetAutomationServer(testing::NotNull(),
               testing::Field(&ChromeFrameLaunchParams::profile_name,
-                  testing::StrEq(profile_path_.BaseName().ToWStringHack())),
+                  testing::StrEq(profile_path_.BaseName().value())),
               testing::NotNull()))
     .Times(times)
     .WillRepeatedly(testing::Invoke(CreateFunctor(&factory_,

@@ -414,14 +414,13 @@ class ChromeFrameBinariesLoadTest : public ChromeFrameStartupTestActiveX {
                                   TimeTicks* end_time) {
     *start_time = TimeTicks::Now();
 
-    HMODULE chrome_exe = LoadLibrary(chrome_exe_.ToWStringHack().c_str());
+    HMODULE chrome_exe = LoadLibrary(chrome_exe_.value().c_str());
     ASSERT_TRUE(chrome_exe != NULL);
 
-    HMODULE chrome_dll = LoadLibrary(chrome_dll_.ToWStringHack().c_str());
+    HMODULE chrome_dll = LoadLibrary(chrome_dll_.value().c_str());
     ASSERT_TRUE(chrome_dll != NULL);
 
-    HMODULE chrome_tab_dll =
-        LoadLibrary(chrome_frame_dll_.ToWStringHack().c_str());
+    HMODULE chrome_tab_dll = LoadLibrary(chrome_frame_dll_.value().c_str());
     ASSERT_TRUE(chrome_tab_dll != NULL);
 
     *end_time = TimeTicks::Now();

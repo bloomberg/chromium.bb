@@ -270,7 +270,7 @@ void ChromeFrameActivex::OnGetEnabledExtensionsComplete(
   for (size_t i = 0; i < extension_directories.size(); ++i) {
     LONG index = static_cast<LONG>(i);
     ::SafeArrayPutElement(sa, &index, reinterpret_cast<void*>(
-        CComBSTR(extension_directories[i].ToWStringHack().c_str()).Detach()));
+        CComBSTR(extension_directories[i].value().c_str()).Detach()));
   }
 
   Fire_ongetenabledextensionscomplete(sa);

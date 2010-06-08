@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,8 @@ base::ProcessHandle LoadCrashService() {
 
   base::ProcessHandle crash_service = NULL;
 
-  FilePath crash_service_path = exe_dir.Append(L"crash_service.exe");
-  if (!base::LaunchApp(crash_service_path.ToWStringHack(), false, false,
+  FilePath crash_service_path = exe_dir.AppendASCII("crash_service.exe");
+  if (!base::LaunchApp(crash_service_path.value(), false, false,
                        &crash_service)) {
     printf("Couldn't start crash_service.exe, so this test run won't tell " \
            "you if any test crashes!\n");
