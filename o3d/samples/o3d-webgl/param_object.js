@@ -162,7 +162,11 @@ o3d.ParamObject.prototype.getParam =
  */
 o3d.ParamObject.prototype.removeParam =
     function(param) {
-  o3d.removeFromArray(param, this.params_);
+  for (var i in this.params_) {
+    if (this.params_[i] == param) {
+      delete this.params_[i];
+    }
+  }
 };
 
 

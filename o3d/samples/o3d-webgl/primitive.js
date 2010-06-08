@@ -178,11 +178,17 @@ o3d.Primitive.prototype.render = function() {
       break;
   }
 
-  this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.gl_buffer_);
-  this.gl.drawElements(glMode,
-                       glNumElements,
-                       this.gl.UNSIGNED_SHORT,
-                       0);
+  if (!indexBuffer) {
+    this.gl.drawArrays(glMode,
+                       0,
+                       glNumElements);
+  } else {
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.gl_buffer_);
+    this.gl.drawElements(glMode,
+                         glNumElements,
+                         this.gl.UNSIGNED_SHORT,
+                         0);
+  }
 
   for (var i = 0; i < enabled_attribs.length; ++i) {
     this.gl.disableVertexAttribArray(enabled_attribs[i]);

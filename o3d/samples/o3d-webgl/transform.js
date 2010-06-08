@@ -146,7 +146,9 @@ o3d.ParamObject.setUpO3DParam_(o3d.Transform,
 
 o3d.Transform.prototype.__defineSetter__('parent',
     function(p) {
-      // TODO(petersont): handle removal from any old parent.
+      if (this.parent_ != null) {
+        o3d.removeFromArray(this.parent_.children, this);
+      }
       this.parent_ = p;
       if (p) {
         p.addChild(this);

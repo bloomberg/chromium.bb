@@ -102,27 +102,30 @@ o3djs.debug.getDebugTransform_ = function(transform, name) {
  * @return {string} Shader string.
  */
 o3djs.debug.createColorShaders_ = function(colorParamName) {
+  var p = o3djs.effect;
   var shaders =
-  'uniform float4 ' + colorParamName + ';\n' +
-  'uniform float4x4 worldViewProjection: WORLDVIEWPROJECTION;\n' +
-  'struct VertexShaderInput {\n' +
-  '  float4 position : POSITION;\n' +
-  '};\n' +
-  'struct PixelShaderInput {\n' +
-  '  float4 position : POSITION;\n' +
-  '};\n' +
-  'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
-  '  PixelShaderInput output;\n' +
-  '  output.position = mul(input.position, worldViewProjection);\n' +
-  '  return output;\n' +
-  '}\n' +
-  'float4 pixelShaderFunction(PixelShaderInput input) : COLOR {\n' +
-  '  return ' + colorParamName + ';\n' +
-  '}\n' +
-  '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
-  '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
-  '// #o3d MatrixLoadOrder RowMajor\n';
-  return shaders;
+    'uniform ' + p.MATRIX4 + ' worldViewProjection' +
+        p.semanticSuffix('WORLDVIEWPROJECTION') + ';\n' +
+    p.BEGIN_IN_STRUCT +
+      p.ATTRIBUTE + p.FLOAT4 +  ' position' +
+          p.semanticSuffix('POSITION') + ';\n' +
+    p.END_STRUCT +
+    p.BEGIN_OUT_STRUCT +
+      p.VARYING + p.FLOAT4 + ' ' + p.VARYING_DECLARATION_PREFIX + 'position' +
+          p.semanticSuffix('POSITION') + ';\n' +
+    p.END_STRUCT +
+    p.beginVertexShaderMain() +
+    '  ' + p.VERTEX_VARYING_PREFIX + 'position = ' +
+        p.mul(p.ATTRIBUTE_PREFIX + 'position', 'worldViewProjection')
+        + ';\n' +
+    p.endVertexShaderMain() +
+    p.pixelShaderHeader() +
+    'uniform ' + p.FLOAT4 + ' ' + colorParamName + ';\n' +
+    p.beginPixelShaderMain() +
+    p.endPixelShaderMain(colorParamName) +
+    p.entryPoints() +
+    p.matrixLoadOrder();
+    return shaders;
 };
 
 /**
@@ -134,32 +137,34 @@ o3djs.debug.createColorShaders_ = function(colorParamName) {
  * @return {string} Shader string.
  */
 o3djs.debug.createScaleShaders_ = function(colorParamName, scaleParamName) {
+  var p = o3djs.effect;
   var shaders =
-  'uniform float4 ' + colorParamName + ';\n' +
-  'uniform float3 ' + scaleParamName + ';\n' +
-  'uniform float4x4 worldViewProjection: WORLDVIEWPROJECTION;\n' +
-  'struct VertexShaderInput {\n' +
-  '  float4 position : POSITION;\n' +
-  '};\n' +
-  'struct PixelShaderInput {\n' +
-  '  float4 position : POSITION;\n' +
-  '};\n' +
-  'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
-  '  PixelShaderInput output;\n' +
-  '  float4 position = float4(\n' +
-  '      input.position.x * ' + scaleParamName + '.x,\n' +
-  '      input.position.y * ' + scaleParamName + '.y,\n' +
-  '      input.position.z * ' + scaleParamName + '.z,\n' +
-  '      1);\n' +
-  '  output.position = mul(position, worldViewProjection);\n' +
-  '  return output;\n' +
-  '}\n' +
-  'float4 pixelShaderFunction(PixelShaderInput input) : COLOR {\n' +
-  '  return ' + colorParamName + ';\n' +
-  '}\n' +
-  '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
-  '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
-  '// #o3d MatrixLoadOrder RowMajor\n';
+  'uniform ' + p.FLOAT3 + ' ' + scaleParamName + ';\n' +
+  'uniform ' + p.MATRIX4 + ' worldViewProjection' +
+      p.semanticSuffix('WORLDVIEWPROJECTION') + ';\n' +
+  p.BEGIN_IN_STRUCT +
+    p.ATTRIBUTE + p.FLOAT4 + ' position' + p.semanticSuffix('POSITION') +
+        ';\n' +
+  p.END_STRUCT +
+  p.BEGIN_OUT_STRUCT +
+    p.VARYING + p.FLOAT4 + ' ' + p.VARYING_DECLARATION_PREFIX + 'position' +
+        p.semanticSuffix('POSITION') + ';\n' +
+  p.END_STRUCT +
+  p.beginVertexShaderMain() +
+  '  ' + p.FLOAT4 + ' position = ' + p.FLOAT4 + '(\n' +
+  '    ' + p.ATTRIBUTE_PREFIX + 'position.x * ' + scaleParamName + '.x,\n' +
+  '    ' + p.ATTRIBUTE_PREFIX + 'position.y * ' + scaleParamName + '.y,\n' +
+  '    ' + p.ATTRIBUTE_PREFIX + 'position.z * ' + scaleParamName + '.z,\n' +
+  '    1);\n' +
+  '  ' + p.VERTEX_VARYING_PREFIX + 'position = ' +
+      p.mul('position', 'worldViewProjection') + ';\n' +
+  p.endVertexShaderMain() +
+  p.pixelShaderHeader() +
+  'uniform ' + p.FLOAT4 + ' ' + colorParamName + ';\n' +
+  p.beginPixelShaderMain() +
+  p.endPixelShaderMain(colorParamName) +
+  p.entryPoints() +
+  p.matrixLoadOrder();
   return shaders;
 };
 
@@ -222,6 +227,7 @@ o3djs.debug.DebugLine = function(debugLineGroup) {
  * Destroys this line object cleaning up the resources used by it.
  */
 o3djs.debug.DebugLine.prototype.destroy = function() {
+  this.transform_.parent = null;
   this.debugLineGroup_.getPack().removeObject(this.transform_);
 };
 

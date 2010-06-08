@@ -178,6 +178,7 @@ o3d.Pack.prototype.createObject =
   }
   var object = new foo();
   object.gl = this.gl;
+  object.clientId = o3d.Client.nextId++;
   this.objects_.push(object);
   return object;
 };
