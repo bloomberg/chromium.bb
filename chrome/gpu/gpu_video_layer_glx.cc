@@ -80,6 +80,14 @@ static const char kFragmentShader[] =
 #endif
     "}\n";
 
+
+// Assume that somewhere along the line, someone will do width * height * 4
+// with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
+// 2**29 and floor(sqrt(2**29)) = 23170.
+
+// Max height and width for layers
+static const int kMaxVideoLayerSize = 23170;
+
 GpuVideoLayerGLX::GpuVideoLayerGLX(GpuViewX* view,
                                    GpuThread* gpu_thread,
                                    int32 routing_id,
@@ -246,16 +254,14 @@ void GpuVideoLayerGLX::OnChannelError() {
 void GpuVideoLayerGLX::OnPaintToVideoLayer(base::ProcessId source_process_id,
                                            TransportDIB::Id id,
                                            const gfx::Rect& bitmap_rect) {
-  // Assume that somewhere along the line, someone will do width * height * 4
-  // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
-  // 2**29 and floor(sqrt(2**29)) = 23170.
-  //
   // TODO(scherkus): |native_size_| is set in constructor, so perhaps this check
   // should be a DCHECK().
   const int width = native_size_.width();
   const int height = native_size_.height();
   const int stride = width;
-  if (width > 23170 || height > 23170)
+
+  if (width <= 0 || width > kMaxVideoLayerSize ||
+      height <= 0 || height > kMaxVideoLayerSize)
     return;
 
   TransportDIB* dib = TransportDIB::Map(id);
@@ -279,11 +285,16 @@ void GpuVideoLayerGLX::OnPaintToVideoLayer(base::ProcessId source_process_id,
     int plane_height = (i == kYPlane ? height : height / 2);
     int plane_stride = (i == kYPlane ? stride : stride / 2);
 
-    glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, textures_[i]);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, plane_stride);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, plane_width, plane_height, 0,
-                 GL_LUMINANCE, GL_UNSIGNED_BYTE, planes[i]);
+    // Ensure that we will not read outside the shared mem region.
+    if (planes[i] >= planes[kYPlane] &&
+        (dib->size() - (planes[kYPlane] - planes[i])) >=
+        static_cast<unsigned int>(plane_width * plane_height)) {
+      glActiveTexture(GL_TEXTURE0 + i);
+      glBindTexture(GL_TEXTURE_2D, textures_[i]);
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, plane_stride);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, plane_width, plane_height, 0,
+                   GL_LUMINANCE, GL_UNSIGNED_BYTE, planes[i]);
+    }
   }
 
   // Reset back to original state.
