@@ -95,6 +95,9 @@ class MetricsLog {
   int GetElapsedSeconds();
 
   int num_events() { return num_events_; }
+  void set_hardware_class(const std::string& hardware_class) {
+    hardware_class_ = hardware_class;
+  }
 
   // Creates an MD5 hash of the given value, and returns hash as a byte
   // buffer encoded as a std::string.
@@ -107,7 +110,7 @@ class MetricsLog {
   static std::string GetVersionString();
 
   // Get the GMT buildtime for the current binary, expressed in seconds since
-  // Januray 1, 1970 GMT.
+  // January 1, 1970 GMT.
   // The value is used to identify when a new build is run, so that previous
   // reliability stats, from other builds, can be abandoned.
   static int64 GetBuildTime();
@@ -121,6 +124,7 @@ class MetricsLog {
   static void set_version_extension(const std::string& extension) {
     version_extension_ = extension;
   }
+
  protected:
   // Returns a string containing the current time.
   // Virtual so that it can be overridden for testing.
@@ -153,6 +157,11 @@ class MetricsLog {
   friend class ScopedElement;
 
   static const char* WindowEventTypeToString(WindowEventType type);
+
+  // Frees the resources allocated by the XML document writer: the
+  // main writer object as well as the XML tree structure, if
+  // applicable.
+  void FreeDocWriter();
 
   // Convenience versions of xmlWriter functions
   void StartElement(const char* name);
@@ -207,12 +216,14 @@ class MetricsLog {
 
   std::string client_id_;
   std::string session_id_;
+  std::string hardware_class_;
 
   // locked_ is true when record has been packed up for sending, and should
   // no longer be written to.  It is only used for sanity checking and is
   // not a real lock.
   bool locked_;
 
+  xmlDocPtr doc_;
   xmlBufferPtr buffer_;
   xmlTextWriterPtr writer_;
   int num_events_;  // the number of events recorded in this log

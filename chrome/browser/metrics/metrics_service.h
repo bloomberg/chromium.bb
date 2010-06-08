@@ -116,14 +116,19 @@ class MetricsService : public NotificationObserver,
   // This count is eventually send via UMA logs.
   void RecordBreakpadHasDebugger(bool has_debugger);
 
-  // Callback to let us knew that the plugin list is warmed up.
-  void OnGetPluginListTaskComplete(const std::vector<WebPluginInfo>& plugins);
-
   // Save any unsent logs into a persistent store in a pref.  We always do this
   // at shutdown, but we can do it as we reduce the list as well.
   void StoreUnsentLogs();
 
 #if defined(OS_CHROMEOS)
+  // Returns the hardware class of the Chrome OS device (e.g.,
+  // hardware qualification ID), or "unknown" if the hardware class is
+  // not available.  The hardware class identifies the configured
+  // system components such us CPU, WiFi adapter, etc.  Note that this
+  // routine invokes an external utility to determine the hardware
+  // class.
+  static std::string GetHardwareClass();
+
   // Start the external metrics service, which collects metrics from Chrome OS
   // and passes them to UMA.
   void StartExternalMetrics();
@@ -137,8 +142,8 @@ class MetricsService : public NotificationObserver,
   // See metrics_service.cc for description of this lifecycle.
   enum State {
     INITIALIZED,            // Constructor was called.
-    PLUGIN_LIST_REQUESTED,  // Waiting for plugin list to be loaded.
-    PLUGIN_LIST_ARRIVED,    // Waiting for timer to send initial log.
+    INIT_TASK_SCHEDULED,    // Waiting for deferred init tasks to complete.
+    INIT_TASK_DONE,         // Waiting for timer to send initial log.
     INITIAL_LOG_READY,      // Initial log generated, and waiting for reply.
     SEND_OLD_INITIAL_LOGS,  // Sending unsent logs from previous session.
     SENDING_OLD_LOGS,       // Sending unsent logs from previous session.
@@ -148,8 +153,13 @@ class MetricsService : public NotificationObserver,
   // Maintain a map of histogram names to the sample stats we've sent.
   typedef std::map<std::string, Histogram::SampleSet> LoggedSampleMap;
 
-  class GetPluginListTask;
-  class GetPluginListTaskComplete;
+  class InitTask;
+  class InitTaskComplete;
+
+  // Callback to let us know that the init task is done.
+  void OnInitTaskComplete(
+      const std::string& hardware_class,
+      const std::vector<WebPluginInfo>& plugins);
 
   // When we start a new version of Chromium (different from our last run), we
   // need to discard the old crash stats so that we don't attribute crashes etc.
@@ -421,6 +431,12 @@ class MetricsService : public NotificationObserver,
   // The progession of states made by the browser are recorded in the following
   // state.
   State state_;
+
+  // Chrome OS hardware class (e.g., hardware qualification ID). This
+  // class identifies the configured system components such as CPU,
+  // WiFi adapter, etc.  For non Chrome OS hosts, this will be an
+  // empty string.
+  std::string hardware_class_;
 
   // The list of plugins which was retrieved on the file thread.
   std::vector<WebPluginInfo> plugins_;

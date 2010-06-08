@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,3 +33,13 @@ TEST(MetricsServiceTest, ClientIdCorrectlyFormatted) {
   }
 }
 #endif
+
+#if defined(OS_CHROMEOS)
+TEST(MetricsServiceTest, GetHardwareClass) {
+  // The assumption is that unit tests run on the build host rather
+  // than on the Chrome OS device so the hardware_class tool is not
+  // available.
+  std::string hardware_class = MetricsService::GetHardwareClass();
+  EXPECT_EQ("unknown", hardware_class);
+}
+#endif  // OS_CHROMEOS

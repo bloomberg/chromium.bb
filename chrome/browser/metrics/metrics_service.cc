@@ -82,8 +82,8 @@
 // are:
 //
 //    INITIALIZED,            // Constructor was called.
-//    PLUGIN_LIST_REQUESTED,  // Waiting for plugin list to be loaded.
-//    PLUGIN_LIST_ARRIVED,    // Waiting for timer to send initial log.
+//    INIT_TASK_SCHEDULED,    // Waiting for deferred init tasks to complete.
+//    INIT_TASK_DONE,         // Waiting for timer to send initial log.
 //    INITIAL_LOG_READY,      // Initial log generated, and waiting for reply.
 //    SEND_OLD_INITIAL_LOGS,  // Sending unsent logs from previous session.
 //    SENDING_OLD_LOGS,       // Sending unsent logs from previous session.
@@ -95,15 +95,17 @@
 // The MS has been constructed, but has taken no actions to compose the
 // initial log.
 //
-//    PLUGIN_LIST_REQUESTED,  // Waiting for plugin list to be loaded.
+//    INIT_TASK_SCHEDULED,    // Waiting for deferred init tasks to complete.
 // Typically about 30 seconds after startup, a task is sent to a second thread
-// to get the list of plugins.  That task will (when complete) make an async
-// callback (via a Task) to indicate the completion.
+// (the file thread) to perform deferred (lower priority and slower)
+// initialization steps such as getting the list of plugins.  That task will
+// (when complete) make an async callback (via a Task) to indicate the
+// completion.
 //
-//    PLUGIN_LIST_ARRIVED,    // Waiting for timer to send initial log.
+//    INIT_TASK_DONE,         // Waiting for timer to send initial log.
 // The callback has arrived, and it is now possible for an initial log to be
 // created.  This callback typically arrives back less than one second after
-// the task is dispatched.
+// the deferred init task is dispatched.
 //
 //    INITIAL_LOG_READY,      // Initial log generated, and waiting for reply.
 // This state is entered only after an initial log has been composed, and
@@ -197,6 +199,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_metrics.h"
+
+static const char kHardwareClassTool[] = "/usr/bin/hardware_class";
+static const char kUnknownHardwareClass[] = "unknown";
 #endif
 
 using base::Time;
@@ -282,29 +287,36 @@ class MetricsMemoryDetails : public MemoryDetails {
   DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
 };
 
-class MetricsService::GetPluginListTaskComplete : public Task {
+class MetricsService::InitTaskComplete : public Task {
  public:
-  explicit GetPluginListTaskComplete(
-      const std::vector<WebPluginInfo>& plugins) : plugins_(plugins) { }
+  explicit InitTaskComplete(const std::string& hardware_class,
+                            const std::vector<WebPluginInfo>& plugins)
+      : hardware_class_(hardware_class), plugins_(plugins) {}
+
   virtual void Run() {
-    g_browser_process->metrics_service()->OnGetPluginListTaskComplete(plugins_);
+    g_browser_process->metrics_service()->OnInitTaskComplete(
+        hardware_class_, plugins_);
   }
 
  private:
+  std::string hardware_class_;
   std::vector<WebPluginInfo> plugins_;
 };
 
-class MetricsService::GetPluginListTask : public Task {
+class MetricsService::InitTask : public Task {
  public:
-  explicit GetPluginListTask(MessageLoop* callback_loop)
+  explicit InitTask(MessageLoop* callback_loop)
       : callback_loop_(callback_loop) {}
 
   virtual void Run() {
     std::vector<WebPluginInfo> plugins;
     NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
-
-    callback_loop_->PostTask(
-        FROM_HERE, new GetPluginListTaskComplete(plugins));
+    std::string hardware_class;  // Empty string by default.
+#if defined(OS_CHROMEOS)
+    hardware_class = MetricsService::GetHardwareClass();
+#endif  // OS_CHROMEOS
+    callback_loop_->PostTask(FROM_HERE, new InitTaskComplete(
+        hardware_class, plugins));
   }
 
  private:
@@ -745,12 +757,14 @@ void MetricsService::InitializeMetricsState() {
   ScheduleNextStateSave();
 }
 
-void MetricsService::OnGetPluginListTaskComplete(
+void MetricsService::OnInitTaskComplete(
+    const std::string& hardware_class,
     const std::vector<WebPluginInfo>& plugins) {
-  DCHECK(state_ == PLUGIN_LIST_REQUESTED);
+  DCHECK(state_ == INIT_TASK_SCHEDULED);
+  hardware_class_ = hardware_class;
   plugins_ = plugins;
-  if (state_ == PLUGIN_LIST_REQUESTED)
-    state_ = PLUGIN_LIST_ARRIVED;
+  if (state_ == INIT_TASK_SCHEDULED)
+    state_ = INIT_TASK_DONE;
 }
 
 std::string MetricsService::GenerateClientID() {
@@ -822,12 +836,14 @@ void MetricsService::StartRecording() {
   current_log_ = new MetricsLog(client_id_, session_id_);
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
-    state_ = PLUGIN_LIST_REQUESTED;
+    state_ = INIT_TASK_SCHEDULED;
 
-    // Make sure the plugin list is loaded before the inital log is sent, so
-    // that the main thread isn't blocked generating the list.
+    // Schedules a task on the file thread for execution of slower
+    // initialization steps (such as plugin list generation) necessary
+    // for sending the initial log.  This avoids blocking the main UI
+    // thread.
     g_browser_process->file_thread()->message_loop()->PostDelayedTask(FROM_HERE,
-        new GetPluginListTask(MessageLoop::current()),
+        new InitTask(MessageLoop::current()),
         kInitialInterlogDuration * 1000 / 2);
   }
 }
@@ -835,6 +851,8 @@ void MetricsService::StartRecording() {
 void MetricsService::StopRecording(MetricsLog** log) {
   if (!current_log_)
     return;
+
+  current_log_->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
 
   // TODO(jar): Integrate bounds on log recording more consistently, so that we
   // can stop recording logs that are too big much sooner.
@@ -1050,16 +1068,16 @@ void MetricsService::MakePendingLog() {
 
   switch (state_) {
     case INITIALIZED:
-    case PLUGIN_LIST_REQUESTED:  // We should be further along by now.
+    case INIT_TASK_SCHEDULED:  // We should be further along by now.
       DCHECK(false);
       return;
 
-    case PLUGIN_LIST_ARRIVED:
+    case INIT_TASK_DONE:
       // We need to wait for the initial log to be ready before sending
       // anything, because the server will tell us whether it wants to hear
       // from us.
       PrepareInitialLog();
-      DCHECK(state_ == PLUGIN_LIST_ARRIVED);
+      DCHECK(state_ == INIT_TASK_DONE);
       RecallUnsentLogs();
       state_ = INITIAL_LOG_READY;
       break;
@@ -1116,9 +1134,10 @@ bool MetricsService::TransmissionPermitted() const {
 }
 
 void MetricsService::PrepareInitialLog() {
-  DCHECK(state_ == PLUGIN_LIST_ARRIVED);
+  DCHECK(state_ == INIT_TASK_DONE);
 
   MetricsLog* log = new MetricsLog(client_id_, session_id_);
+  log->set_hardware_class(hardware_class_);  // Adds to initial log.
   log->RecordEnvironment(plugins_, profile_dictionary_.get());
 
   // Histograms only get written to current_log_, so setup for the write.
@@ -1910,6 +1929,20 @@ static bool IsSingleThreaded() {
 }
 
 #if defined(OS_CHROMEOS)
+// static
+std::string MetricsService::GetHardwareClass() {
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
+  std::string hardware_class;
+  FilePath tool(kHardwareClassTool);
+  CommandLine command(tool);
+  if (base::GetAppOutput(command, &hardware_class)) {
+    TrimWhitespaceASCII(hardware_class, TRIM_ALL, &hardware_class);
+  } else {
+    hardware_class = kUnknownHardwareClass;
+  }
+  return hardware_class;
+}
+
 void MetricsService::StartExternalMetrics() {
   external_metrics_ = new chromeos::ExternalMetrics;
   external_metrics_->Start();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,12 +50,39 @@ TEST(MetricsLogTest, EmptyRecord) {
   ASSERT_GT(size, 0);
 
   std::string encoded;
-  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size), size));
+  // Leave room for the NUL terminator.
+  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size + 1), size));
+  TrimWhitespaceASCII(encoded, TRIM_ALL, &encoded);
   NormalizeBuildtime(&encoded);
   NormalizeBuildtime(&expected_output);
 
   ASSERT_EQ(expected_output, encoded);
 }
+
+#if defined(OS_CHROMEOS)
+TEST(MetricsLogTest, ChromeOSEmptyRecord) {
+  std::string expected_output = StringPrintf(
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
+      "appversion=\"%s\" hardwareclass=\"sample-class\"/>",
+      MetricsLog::GetVersionString().c_str());
+
+  MetricsLog log("bogus client ID", 0);
+  log.set_hardware_class("sample-class");
+  log.CloseLog();
+
+  int size = log.GetEncodedLogSize();
+  ASSERT_GT(size, 0);
+
+  std::string encoded;
+  // Leave room for the NUL terminator.
+  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size + 1), size));
+  TrimWhitespaceASCII(encoded, TRIM_ALL, &encoded);
+  NormalizeBuildtime(&encoded);
+  NormalizeBuildtime(&expected_output);
+
+  ASSERT_EQ(expected_output, encoded);
+}
+#endif  // OS_CHROMEOS
 
 namespace {
 
@@ -98,7 +125,9 @@ TEST(MetricsLogTest, WindowEvent) {
   ASSERT_GT(size, 0);
 
   std::string encoded;
-  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size), size));
+  // Leave room for the NUL terminator.
+  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size + 1), size));
+  TrimWhitespaceASCII(encoded, TRIM_ALL, &encoded);
   NormalizeBuildtime(&encoded);
   NormalizeBuildtime(&expected_output);
 
@@ -125,7 +154,9 @@ TEST(MetricsLogTest, LoadEvent) {
   ASSERT_GT(size, 0);
 
   std::string encoded;
-  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size), size));
+  // Leave room for the NUL terminator.
+  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size + 1), size));
+  TrimWhitespaceASCII(encoded, TRIM_ALL, &encoded);
   NormalizeBuildtime(&encoded);
   NormalizeBuildtime(&expected_output);
 

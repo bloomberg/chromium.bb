@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/md5.h"
+#include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -51,6 +52,7 @@ MetricsLog::MetricsLog(const std::string& client_id, int session_id)
       client_id_(client_id),
       session_id_(IntToString(session_id)),
       locked_(false),
+      doc_(NULL),
       buffer_(NULL),
       writer_(NULL),
       num_events_(0) {
@@ -58,7 +60,11 @@ MetricsLog::MetricsLog(const std::string& client_id, int session_id)
   buffer_ = xmlBufferCreate();
   DCHECK(buffer_);
 
-  writer_ = xmlNewTextWriterMemory(buffer_, 0);
+#if defined(OS_CHROMEOS)
+  writer_ = xmlNewTextWriterDoc(&doc_, /* compression */ 0);
+#else
+  writer_ = xmlNewTextWriterMemory(buffer_, /* compression */ 0);
+#endif  // OS_CHROMEOS
   DCHECK(writer_);
 
   int result = xmlTextWriterSetIndent(writer_, 2);
@@ -68,16 +74,15 @@ MetricsLog::MetricsLog(const std::string& client_id, int session_id)
   WriteAttribute("clientid", client_id_);
   WriteInt64Attribute("buildtime", GetBuildTime());
   WriteAttribute("appversion", GetVersionString());
-
-  DCHECK_GE(result, 0);
 }
 
 MetricsLog::~MetricsLog() {
-  if (writer_)
-    xmlFreeTextWriter(writer_);
+  FreeDocWriter();
 
-  if (buffer_)
+  if (buffer_) {
     xmlBufferFree(buffer_);
+    buffer_ = NULL;
+  }
 }
 
 void MetricsLog::CloseLog() {
@@ -89,6 +94,27 @@ void MetricsLog::CloseLog() {
 
   result = xmlTextWriterFlush(writer_);
   DCHECK_GE(result, 0);
+
+#if defined(OS_CHROMEOS)
+  xmlNodePtr root = xmlDocGetRootElement(doc_);
+  if (!hardware_class_.empty()) {
+    // The hardware class is determined after the first ongoing log is
+    // constructed, so this adds the root element's "hardwareclass"
+    // attribute when the log is closed instead.
+    xmlNewProp(root, UnsignedChar("hardwareclass"),
+               UnsignedChar(hardware_class_.c_str()));
+  }
+
+  // Flattens the XML tree into a character buffer.
+  PerfTimer dump_timer;
+  result = xmlNodeDump(buffer_, doc_, root, /* level */ 0, /* format */ 1);
+  DCHECK_GE(result, 0);
+  UMA_HISTOGRAM_TIMES("UMA.XMLNodeDumpTime", dump_timer.Elapsed());
+
+  PerfTimer free_timer;
+  FreeDocWriter();
+  UMA_HISTOGRAM_TIMES("UMA.XMLWriterDestructionTime", free_timer.Elapsed());
+#endif  // OS_CHROMEOS
 }
 
 int MetricsLog::GetEncodedLogSize() {
@@ -282,6 +308,18 @@ const char* MetricsLog::WindowEventTypeToString(WindowEventType type) {
       NOTREACHED();
       return "unknown";  // Can't return NULL as this is used in a required
                          // attribute.
+  }
+}
+
+void MetricsLog::FreeDocWriter() {
+  if (writer_) {
+    xmlFreeTextWriter(writer_);
+    writer_ = NULL;
+  }
+
+  if (doc_) {
+    xmlFreeDoc(doc_);
+    doc_ = NULL;
   }
 }
 
