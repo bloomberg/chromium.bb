@@ -67,6 +67,7 @@ WorkerTest.*MultipleWorkers
 WorkerTest.*OpenDatabaseSyncInputs
 WorkerTest.*QueuedSharedWorkerShutdown
 WorkerTest.*QueuedSharedWorkerStartedFromOtherTab
+WorkerTest.*SharedWorkerFastConstructor
 WorkerTest.*SharedWorkerFastContextGC
 WorkerTest.*SharedWorkerFastException
 WorkerTest.*SharedWorkerFastInIframe
