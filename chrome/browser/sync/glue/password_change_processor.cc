@@ -55,9 +55,9 @@ void PasswordChangeProcessor::Observe(NotificationType type,
 
   sync_api::ReadNode password_root(&trans);
   if (!password_root.InitByTagLookup(kPasswordTag)) {
-    error_handler()->OnUnrecoverableError();
-    LOG(ERROR) << "Server did not create the top-level password node. "
-               << "We might be running against an out-of-date server.";
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Server did not create the top-level password node. "
+        "We might be running against an out-of-date server.");
     return;
   }
 
@@ -71,8 +71,8 @@ void PasswordChangeProcessor::Observe(NotificationType type,
         sync_api::WriteNode sync_node(&trans);
         if (!sync_node.InitUniqueByCreation(syncable::PASSWORD,
                                             password_root, tag)) {
-          LOG(ERROR) << "Failed to create password sync node.";
-          error_handler()->OnUnrecoverableError();
+          error_handler()->OnUnrecoverableError(FROM_HERE,
+              "Failed to create password sync node.");
           return;
         }
 
@@ -84,13 +84,13 @@ void PasswordChangeProcessor::Observe(NotificationType type,
         sync_api::WriteNode sync_node(&trans);
         int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
         if (sync_api::kInvalidId == sync_id) {
-          LOG(ERROR) << "Unexpected notification for: " << tag;
-          error_handler()->OnUnrecoverableError();
+          error_handler()->OnUnrecoverableError(FROM_HERE,
+              "Unexpected notification for: ");
           return;
         } else {
           if (!sync_node.InitByIdLookup(sync_id)) {
-            LOG(ERROR) << "Password node lookup failed.";
-            error_handler()->OnUnrecoverableError();
+            error_handler()->OnUnrecoverableError(FROM_HERE,
+                "Password node lookup failed.");
             return;
           }
         }
@@ -102,13 +102,13 @@ void PasswordChangeProcessor::Observe(NotificationType type,
         sync_api::WriteNode sync_node(&trans);
         int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
         if (sync_api::kInvalidId == sync_id) {
-          LOG(ERROR) << "Unexpected notification";
-          error_handler()->OnUnrecoverableError();
+          error_handler()->OnUnrecoverableError(FROM_HERE,
+              "Unexpected notification");
           return;
         } else {
           if (!sync_node.InitByIdLookup(sync_id)) {
-            LOG(ERROR) << "Password node lookup failed.";
-            error_handler()->OnUnrecoverableError();
+            error_handler()->OnUnrecoverableError(FROM_HERE,
+                "Password node lookup failed.");
             return;
           }
           model_associator_->Disassociate(sync_node.GetId());
@@ -131,8 +131,8 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
   sync_api::ReadNode password_root(trans);
   if (!password_root.InitByTagLookup(kPasswordTag)) {
-    LOG(ERROR) << "Password root node lookup failed.";
-    error_handler()->OnUnrecoverableError();
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Password root node lookup failed.");
     return;
   }
 
@@ -144,8 +144,8 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
     sync_api::ReadNode sync_node(trans);
     if (!sync_node.InitByIdLookup(changes[i].id)) {
-      LOG(ERROR) << "Password node lookup failed.";
-      error_handler()->OnUnrecoverableError();
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "Password node lookup failed.");
       return;
     }
 
@@ -155,8 +155,8 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
     sync_pb::PasswordSpecificsData password_data;
     if (!sync_node.GetPasswordSpecifics(&password_data)) {
-      LOG(ERROR) << "Could not read password specifics";
-      error_handler()->OnUnrecoverableError();
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "Could not read password specifics");
       return;
     }
     webkit_glue::PasswordForm password;
@@ -177,8 +177,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
   if (!model_associator_->WriteToPasswordStore(&new_passwords,
                                                &updated_passwords,
                                                &deleted_passwords)) {
-    LOG(ERROR) << "Error writing passwords";
-    error_handler()->OnUnrecoverableError();
+    error_handler()->OnUnrecoverableError(FROM_HERE, "Error writing passwords");
     return;
   }
 

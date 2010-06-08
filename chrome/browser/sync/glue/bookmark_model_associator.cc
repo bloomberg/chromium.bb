@@ -155,12 +155,13 @@ const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
 
 BookmarkModelAssociator::BookmarkModelAssociator(
     ProfileSyncService* sync_service,
-    UnrecoverableErrorHandler* error_handler)
+    UnrecoverableErrorHandler* persist_ids_error_handler)
     : sync_service_(sync_service),
-      error_handler_(error_handler),
+      persist_ids_error_handler_(persist_ids_error_handler),
       ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(sync_service_);
+  DCHECK(persist_ids_error_handler_);
 }
 
 BookmarkModelAssociator::~BookmarkModelAssociator() {
@@ -455,7 +456,8 @@ void BookmarkModelAssociator::PersistAssociations() {
     int64 sync_id = *iter;
     sync_api::WriteNode sync_node(&trans);
     if (!sync_node.InitByIdLookup(sync_id)) {
-      error_handler_->OnUnrecoverableError();
+      persist_ids_error_handler_->OnUnrecoverableError(FROM_HERE,
+          "Could not lookup bookmark node for ID persistence.");
       return;
     }
     const BookmarkNode* node = GetChromeNodeFromSyncId(sync_id);

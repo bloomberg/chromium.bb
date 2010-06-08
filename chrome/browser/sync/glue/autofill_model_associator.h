@@ -49,8 +49,7 @@ class AutofillModelAssociator
   static syncable::ModelType model_type() { return syncable::AUTOFILL; }
   AutofillModelAssociator(ProfileSyncService* sync_service,
                           WebDatabase* web_database,
-                          PersonalDataManager* data_manager,
-                          UnrecoverableErrorHandler* error_handler);
+                          PersonalDataManager* data_manager);
   virtual ~AutofillModelAssociator();
 
   // A task used by this class and the change processor to inform the
@@ -204,7 +203,6 @@ class AutofillModelAssociator
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
   PersonalDataManager* personal_data_;
-  UnrecoverableErrorHandler* error_handler_;
   int64 autofill_node_id_;
 
   AutofillToSyncIdMap id_map_;

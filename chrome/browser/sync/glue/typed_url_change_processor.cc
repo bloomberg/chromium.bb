@@ -70,8 +70,8 @@ void TypedUrlChangeProcessor::HandleURLsModified(
        ++url) {
     if (!history_backend_->GetVisitsForURL(url->id(),
                                            &(visit_vectors[url->id()]))) {
-      error_handler()->OnUnrecoverableError();
-      LOG(ERROR) << "Could not get the url's visits.";
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "Could not get the url's visits.");
       return;
     }
     DCHECK(!visit_vectors[url->id()].empty());
@@ -81,9 +81,9 @@ void TypedUrlChangeProcessor::HandleURLsModified(
 
   sync_api::ReadNode typed_url_root(&trans);
   if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
-    error_handler()->OnUnrecoverableError();
-    LOG(ERROR) << "Server did not create the top-level typed_url node. We "
-               << "might be running against an out-of-date server.";
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Server did not create the top-level typed_url node. We "
+         "might be running against an out-of-date server.");
     return;
   }
 
@@ -98,8 +98,8 @@ void TypedUrlChangeProcessor::HandleURLsModified(
 
     DCHECK(static_cast<size_t>(url->visit_count()) == visits.size());
     if (static_cast<size_t>(url->visit_count()) != visits.size()) {
-      error_handler()->OnUnrecoverableError();
-      LOG(ERROR) << "Visit count does not match.";
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "Visit count does not match.");
       return;
     }
 
@@ -110,8 +110,8 @@ void TypedUrlChangeProcessor::HandleURLsModified(
       sync_api::WriteNode create_node(&trans);
       if (!create_node.InitUniqueByCreation(syncable::TYPED_URLS,
                                             typed_url_root, tag)) {
-        LOG(ERROR) << "Failed to create typed_url sync node.";
-        error_handler()->OnUnrecoverableError();
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "Failed to create typed_url sync node.");
         return;
       }
 
@@ -129,7 +129,7 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
 
   if (details->all_history) {
     if (!model_associator_->DeleteAllNodes(&trans)) {
-      error_handler()->OnUnrecoverableError();
+      error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
       return;
     }
   } else {
@@ -140,8 +140,8 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
       model_associator_->GetSyncIdFromChromeId(url->spec());
       if (sync_api::kInvalidId != sync_id) {
         if (!sync_node.InitByIdLookup(sync_id)) {
-          LOG(ERROR) << "Typed url node lookup failed.";
-          error_handler()->OnUnrecoverableError();
+          error_handler()->OnUnrecoverableError(FROM_HERE,
+              "Typed url node lookup failed.");
           return;
         }
         model_associator_->Disassociate(sync_node.GetId());
@@ -160,8 +160,8 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
   history::VisitVector visits;
   if (!history_backend_->GetVisitsForURL(details->row.id(), &visits) ||
       visits.empty()) {
-    error_handler()->OnUnrecoverableError();
-    LOG(ERROR) << "Could not get the url's visits.";
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Could not get the url's visits.");
     return;
   }
 
@@ -190,8 +190,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
   sync_api::ReadNode typed_url_root(trans);
   if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
-    LOG(ERROR) << "TypedUrl root node lookup failed.";
-    error_handler()->OnUnrecoverableError();
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "TypedUrl root node lookup failed.");
     return;
   }
 
@@ -205,8 +205,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
     sync_api::ReadNode sync_node(trans);
     if (!sync_node.InitByIdLookup(changes[i].id)) {
-      LOG(ERROR) << "TypedUrl node lookup failed.";
-      error_handler()->OnUnrecoverableError();
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "TypedUrl node lookup failed.");
       return;
     }
 
@@ -255,15 +255,15 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     } else {
       history::URLRow old_url;
       if (!history_backend_->GetURL(url, &old_url)) {
-        LOG(ERROR) << "TypedUrl db lookup failed.";
-        error_handler()->OnUnrecoverableError();
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "TypedUrl db lookup failed.");
         return;
       }
 
       history::VisitVector visits;
       if (!history_backend_->GetVisitsForURL(old_url.id(), &visits)) {
-        LOG(ERROR) << "Could not get the url's visits.";
-        error_handler()->OnUnrecoverableError();
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "Could not get the url's visits.");
         return;
       }
 
@@ -299,8 +299,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
   if (!model_associator_->WriteToHistoryBackend(&titles, &new_urls,
                                                 &updated_urls,
                                                 &new_visits, &deleted_visits)) {
-    LOG(ERROR) << "Could not write to the history backend.";
-    error_handler()->OnUnrecoverableError();
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Could not write to the history backend.");
     return;
   }
 

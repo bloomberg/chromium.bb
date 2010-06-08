@@ -85,10 +85,12 @@ void ThemeDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-void ThemeDataTypeController::OnUnrecoverableError() {
+void ThemeDataTypeController::OnUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   UMA_HISTOGRAM_COUNTS("Sync.ThemeRunFailures", 1);
-  sync_service_->OnUnrecoverableError();
+  sync_service_->OnUnrecoverableError(from_here, message);
 }
 
 void ThemeDataTypeController::FinishStart(StartResult result) {

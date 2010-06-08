@@ -231,18 +231,23 @@ void AutofillDataTypeController::StartFailed(StartResult result) {
   StartDone(result, NOT_RUNNING);
 }
 
-void AutofillDataTypeController::OnUnrecoverableError() {
+void AutofillDataTypeController::OnUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   ChromeThread::PostTask(
     ChromeThread::UI, FROM_HERE,
     NewRunnableMethod(this,
-                      &AutofillDataTypeController::OnUnrecoverableErrorImpl));
+                      &AutofillDataTypeController::OnUnrecoverableErrorImpl,
+                      from_here, message));
   UMA_HISTOGRAM_COUNTS("Sync.AutofillRunFailures", 1);
 }
 
-void AutofillDataTypeController::OnUnrecoverableErrorImpl() {
+void AutofillDataTypeController::OnUnrecoverableErrorImpl(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  sync_service_->OnUnrecoverableError();
+  sync_service_->OnUnrecoverableError(from_here, message);
 }
 
 }  // namespace browser_sync

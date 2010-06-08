@@ -19,8 +19,7 @@ class UnrecoverableErrorHandler;
 // sync themes model.
 class ThemeModelAssociator : public AssociatorInterface {
  public:
-  ThemeModelAssociator(ProfileSyncService* sync_service,
-                       UnrecoverableErrorHandler* error_handler);
+  ThemeModelAssociator(ProfileSyncService* sync_service);
   virtual ~ThemeModelAssociator();
 
   // Used by profile_sync_test_util.h.
@@ -38,7 +37,6 @@ class ThemeModelAssociator : public AssociatorInterface {
 
  private:
   ProfileSyncService* sync_service_;
-  UnrecoverableErrorHandler* error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeModelAssociator);
 };

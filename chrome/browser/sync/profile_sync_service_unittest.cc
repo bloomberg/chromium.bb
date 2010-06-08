@@ -41,15 +41,22 @@ using browser_sync::DataTypeController;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 using browser_sync::SyncBackendHostMock;
+using browser_sync::UnrecoverableErrorHandler;
 using testing::_;
 using testing::Return;
 
-class TestBookmarkModelAssociator :
-    public TestModelAssociator<BookmarkModelAssociator> {
+class TestBookmarkModelAssociator : public BookmarkModelAssociator {
  public:
-  explicit TestBookmarkModelAssociator(ProfileSyncService* service)
-      : TestModelAssociator<BookmarkModelAssociator>(service, service) {
+  TestBookmarkModelAssociator(ProfileSyncService* service,
+      UnrecoverableErrorHandler* persist_ids_error_handler)
+      : BookmarkModelAssociator(service, persist_ids_error_handler),
+        helper_(new TestModelAssociatorHelper()) {
   }
+  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
+    return helper_->GetSyncIdForTaggedNode(this, tag, sync_id);
+  }
+ private:
+  scoped_ptr<TestModelAssociatorHelper> helper_;
 };
 
 // FakeServerChange constructs a list of sync_api::ChangeRecords while modifying
@@ -235,7 +242,8 @@ class ProfileSyncServiceTest : public testing::Test {
                                                 false, true));
 
       // Register the bookmark data type.
-      model_associator_ = new TestBookmarkModelAssociator(service_.get());
+      model_associator_ = new TestBookmarkModelAssociator(service_.get(),
+                                                          service_.get());
       change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                       service_.get());
       EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).
@@ -1337,7 +1345,8 @@ TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
                                    false, true));
     profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
-    model_associator_ = new TestBookmarkModelAssociator(service_.get());
+    model_associator_ = new TestBookmarkModelAssociator(service_.get(),
+                                                        service_.get());
     change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                     service_.get());
     EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).

@@ -115,7 +115,7 @@ ACTION_P2(RunTaskOnDBThread, thread, backend) {
 
 ACTION_P3(MakeTypedUrlSyncComponents, service, hb, dtc) {
   TypedUrlModelAssociator* model_associator =
-      new TypedUrlModelAssociator(service, hb, dtc);
+      new TypedUrlModelAssociator(service, hb);
   TypedUrlChangeProcessor* change_processor =
       new TypedUrlChangeProcessor(model_associator, hb, service);
   return ProfileSyncFactory::SyncComponents(model_associator, change_processor);

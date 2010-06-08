@@ -30,8 +30,7 @@ class PreferenceModelAssociator
                                             std::wstring> {
  public:
   static syncable::ModelType model_type() { return syncable::PREFERENCES; }
-  PreferenceModelAssociator(ProfileSyncService* sync_service,
-                            UnrecoverableErrorHandler* error_handler);
+  PreferenceModelAssociator(ProfileSyncService* sync_service);
   virtual ~PreferenceModelAssociator();
 
   // Returns the list of preference names that should be monitored for
@@ -87,7 +86,6 @@ class PreferenceModelAssociator
   // |sync_id| with that node's id.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
- protected:
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
 
@@ -96,7 +94,6 @@ class PreferenceModelAssociator
   typedef std::map<int64, std::wstring> SyncIdToPreferenceNameMap;
 
   ProfileSyncService* sync_service_;
-  UnrecoverableErrorHandler* error_handler_;
   std::set<std::wstring> synced_preferences_;
   int64 preferences_node_id_;
 

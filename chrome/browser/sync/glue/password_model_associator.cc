@@ -22,17 +22,14 @@ const char kPasswordTag[] = "google_chrome_passwords";
 
 PasswordModelAssociator::PasswordModelAssociator(
     ProfileSyncService* sync_service,
-    PasswordStore* password_store,
-    UnrecoverableErrorHandler* error_handler)
+    PasswordStore* password_store)
     : sync_service_(sync_service),
       password_store_(password_store),
-      error_handler_(error_handler),
       password_node_id_(sync_api::kInvalidId),
       abort_association_pending_(false),
       expected_loop_(MessageLoop::current()) {
   DCHECK(sync_service_);
   DCHECK(password_store_);
-  DCHECK(error_handler_);
 #if defined(OS_MACOSX)
   DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
 #else

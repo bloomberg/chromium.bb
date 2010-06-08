@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_PREFERENCE_CHANGE_PROCESSOR_H_
 #define CHROME_BROWSER_SYNC_GLUE_PREFERENCE_CHANGE_PROCESSOR_H_
 
+#include <string>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"

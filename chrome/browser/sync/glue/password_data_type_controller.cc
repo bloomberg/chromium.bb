@@ -129,16 +129,20 @@ void PasswordDataTypeController::StartFailed(StartResult result) {
   StartDone(result, NOT_RUNNING);
 }
 
-void PasswordDataTypeController::OnUnrecoverableError() {
+void PasswordDataTypeController::OnUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
   ChromeThread::PostTask(
-    ChromeThread::UI, FROM_HERE,
-    NewRunnableMethod(this,
-                      &PasswordDataTypeController::OnUnrecoverableErrorImpl));
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &PasswordDataTypeController::OnUnrecoverableErrorImpl,
+                        from_here, message));
 }
 
-void PasswordDataTypeController::OnUnrecoverableErrorImpl() {
+void PasswordDataTypeController::OnUnrecoverableErrorImpl(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  sync_service_->OnUnrecoverableError();
+  sync_service_->OnUnrecoverableError(from_here, message);
 }
 
 }  // namespace browser_sync

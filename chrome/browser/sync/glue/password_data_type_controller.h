@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_PASSWORD_DATA_TYPE_CONTROLLER_H__
 #define CHROME_BROWSER_SYNC_GLUE_PASSWORD_DATA_TYPE_CONTROLLER_H__
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -56,7 +58,8 @@ class PasswordDataTypeController : public DataTypeController {
   }
 
   // UnrecoverableHandler implementation
-  virtual void OnUnrecoverableError();
+  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
+                                    const std::string& message);
 
  private:
   void StartImpl();
@@ -64,7 +67,8 @@ class PasswordDataTypeController : public DataTypeController {
   void StartDoneImpl(StartResult result, State state);
   void StopImpl();
   void StartFailed(StartResult result);
-  void OnUnrecoverableErrorImpl();
+  void OnUnrecoverableErrorImpl(const tracked_objects::Location& from_here,
+                                const std::string& message);
 
   void set_state(State state) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));

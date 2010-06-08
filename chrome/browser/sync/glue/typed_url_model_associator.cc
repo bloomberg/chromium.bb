@@ -19,16 +19,13 @@ const char kTypedUrlTag[] = "google_chrome_typed_urls";
 
 TypedUrlModelAssociator::TypedUrlModelAssociator(
     ProfileSyncService* sync_service,
-    history::HistoryBackend* history_backend,
-    UnrecoverableErrorHandler* error_handler)
+    history::HistoryBackend* history_backend)
     : sync_service_(sync_service),
       history_backend_(history_backend),
-      error_handler_(error_handler),
       typed_url_node_id_(sync_api::kInvalidId),
       expected_loop_(MessageLoop::current()) {
   DCHECK(sync_service_);
   DCHECK(history_backend_);
-  DCHECK(error_handler_);
   DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 

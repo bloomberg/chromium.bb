@@ -56,8 +56,7 @@ class TypedUrlModelAssociator
 
   static syncable::ModelType model_type() { return syncable::TYPED_URLS; }
   TypedUrlModelAssociator(ProfileSyncService* sync_service,
-                          history::HistoryBackend* history_backend,
-                          UnrecoverableErrorHandler* error_handler);
+                          history::HistoryBackend* history_backend);
   virtual ~TypedUrlModelAssociator() { }
 
   // PerDataTypeAssociatorInterface implementation.
@@ -146,7 +145,6 @@ class TypedUrlModelAssociator
 
   ProfileSyncService* sync_service_;
   history::HistoryBackend* history_backend_;
-  UnrecoverableErrorHandler* error_handler_;
   int64 typed_url_node_id_;
 
   MessageLoop* expected_loop_;

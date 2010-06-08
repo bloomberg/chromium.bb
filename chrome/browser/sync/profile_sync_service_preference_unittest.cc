@@ -29,6 +29,19 @@ using sync_api::SyncManager;
 using testing::_;
 using testing::Return;
 
+class TestPreferenceModelAssociator : public PreferenceModelAssociator {
+ public:
+  TestPreferenceModelAssociator(ProfileSyncService* service)
+    : PreferenceModelAssociator(service),
+      helper_(new TestModelAssociatorHelper()) {
+  }
+  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
+    return helper_->GetSyncIdForTaggedNode(this, tag, sync_id);
+  }
+ private:
+  scoped_ptr<TestModelAssociatorHelper> helper_;
+};
+
 class ProfileSyncServicePreferenceTest : public testing::Test {
  protected:
   ProfileSyncServicePreferenceTest()
@@ -54,9 +67,7 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
                                                 true));
 
       // Register the preference data type.
-      model_associator_ =
-          new TestModelAssociator<PreferenceModelAssociator>(service_.get(),
-                                                             service_.get());
+      model_associator_ = new TestPreferenceModelAssociator(service_.get());
       change_processor_ = new PreferenceChangeProcessor(model_associator_,
                                                         service_.get());
       EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_, _)).

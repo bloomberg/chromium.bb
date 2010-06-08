@@ -58,16 +58,11 @@ ACTION_P(InvokeTask, task) {
     task->Run();
 }
 
-template <class ModelAssociatorImpl>
-class TestModelAssociator : public ModelAssociatorImpl {
+class TestModelAssociatorHelper {
  public:
-  explicit TestModelAssociator(
-      ProfileSyncService* service,
-      browser_sync::UnrecoverableErrorHandler* error_handler)
-      : ModelAssociatorImpl(service, error_handler) {
-  }
-
-  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
+  template <class ModelAssociatorImpl>
+  bool GetSyncIdForTaggedNode(ModelAssociatorImpl* associator,
+                              const std::string& tag, int64* sync_id) {
     std::wstring tag_wide;
     if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide)) {
       NOTREACHED() << "Unable to convert UTF8 to wide for string: " << tag;
@@ -75,7 +70,7 @@ class TestModelAssociator : public ModelAssociatorImpl {
     }
 
     sync_api::WriteTransaction trans(
-        ModelAssociatorImpl::sync_service()->backend()->GetUserShareHandle());
+        associator->sync_service()->backend()->GetUserShareHandle());
     sync_api::ReadNode root(&trans);
     root.InitByRootLookup();
 
@@ -110,7 +105,7 @@ class TestModelAssociator : public ModelAssociatorImpl {
     return true;
   }
 
-  ~TestModelAssociator() {}
+  ~TestModelAssociatorHelper() {}
 };
 
 class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {

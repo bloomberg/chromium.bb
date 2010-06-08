@@ -20,10 +20,8 @@
 namespace browser_sync {
 
 PreferenceModelAssociator::PreferenceModelAssociator(
-    ProfileSyncService* sync_service,
-    UnrecoverableErrorHandler* error_handler)
+    ProfileSyncService* sync_service)
     : sync_service_(sync_service),
-      error_handler_(error_handler),
       preferences_node_id_(sync_api::kInvalidId) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(sync_service_);

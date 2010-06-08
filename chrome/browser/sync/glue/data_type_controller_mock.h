@@ -19,7 +19,8 @@ class DataTypeControllerMock : public DataTypeController {
   MOCK_CONST_METHOD0(name, const char*());
   MOCK_METHOD0(model_safe_group, browser_sync::ModelSafeGroup());
   MOCK_METHOD0(state, State());
-  MOCK_METHOD0(OnUnrecoverableError, void());
+  MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
+                                          const std::string&));
 };
 
 }  // namespace browser_sync

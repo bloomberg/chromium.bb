@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
-#include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 namespace browser_sync {
 
@@ -29,12 +28,9 @@ static const char kNoThemesFolderError[] =
 }  // namespace
 
 ThemeModelAssociator::ThemeModelAssociator(
-    ProfileSyncService* sync_service,
-    UnrecoverableErrorHandler* error_handler)
-    : sync_service_(sync_service),
-      error_handler_(error_handler) {
+    ProfileSyncService* sync_service)
+    : sync_service_(sync_service) {
   DCHECK(sync_service_);
-  DCHECK(error_handler_);
 }
 
 ThemeModelAssociator::~ThemeModelAssociator() {}

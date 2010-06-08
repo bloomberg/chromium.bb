@@ -28,7 +28,7 @@ using browser_sync::DataTypeController;
 using browser_sync::ModelAssociatorMock;
 using testing::_;
 using testing::DoAll;
-using testing::Invoke;
+using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
 
@@ -214,13 +214,13 @@ TEST_F(BookmarkDataTypeControllerTest, OnUnrecoverableError) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(service_, OnUnrecoverableError()).
-      WillOnce(Invoke(bookmark_dtc_.get(),
-                      &BookmarkDataTypeController::Stop));
+  EXPECT_CALL(service_, OnUnrecoverableError(_,_)).
+      WillOnce(InvokeWithoutArgs(bookmark_dtc_.get(),
+                                 &BookmarkDataTypeController::Stop));
   SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK));
   bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   // This should cause bookmark_dtc_->Stop() to be called.
-  bookmark_dtc_->OnUnrecoverableError();
+  bookmark_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
 }

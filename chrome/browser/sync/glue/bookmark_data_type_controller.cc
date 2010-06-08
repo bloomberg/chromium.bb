@@ -87,10 +87,11 @@ void BookmarkDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-void BookmarkDataTypeController::OnUnrecoverableError() {
+void BookmarkDataTypeController::OnUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
   // The ProfileSyncService will invoke our Stop() method in response to this.
   UMA_HISTOGRAM_COUNTS("Sync.BookmarkRunFailures", 1);
-  sync_service_->OnUnrecoverableError();
+  sync_service_->OnUnrecoverableError(from_here, message);
 }
 
 void BookmarkDataTypeController::Observe(NotificationType type,

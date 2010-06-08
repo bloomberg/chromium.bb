@@ -85,10 +85,12 @@ void PreferenceDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-void PreferenceDataTypeController::OnUnrecoverableError() {
+void PreferenceDataTypeController::OnUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   UMA_HISTOGRAM_COUNTS("Sync.PreferenceRunFailures", 1);
-  sync_service_->OnUnrecoverableError();
+  sync_service_->OnUnrecoverableError(from_here, message);
 }
 
 void PreferenceDataTypeController::FinishStart(StartResult result) {

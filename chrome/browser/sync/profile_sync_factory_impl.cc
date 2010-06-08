@@ -133,8 +133,7 @@ ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
   AutofillModelAssociator* model_associator =
       new AutofillModelAssociator(profile_sync_service,
                                   web_database,
-                                  personal_data,
-                                  error_handler);
+                                  personal_data);
   AutofillChangeProcessor* change_processor =
       new AutofillChangeProcessor(model_associator,
                                   web_database,
@@ -163,8 +162,7 @@ ProfileSyncFactoryImpl::CreatePasswordSyncComponents(
     UnrecoverableErrorHandler* error_handler) {
   PasswordModelAssociator* model_associator =
       new PasswordModelAssociator(profile_sync_service,
-                                  password_store,
-                                  error_handler);
+                                  password_store);
   PasswordChangeProcessor* change_processor =
       new PasswordChangeProcessor(model_associator,
                                   password_store,
@@ -177,8 +175,7 @@ ProfileSyncFactoryImpl::CreatePreferenceSyncComponents(
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
   PreferenceModelAssociator* model_associator =
-      new PreferenceModelAssociator(profile_sync_service,
-                                    error_handler);
+      new PreferenceModelAssociator(profile_sync_service);
   PreferenceChangeProcessor* change_processor =
       new PreferenceChangeProcessor(model_associator,
                                     error_handler);
@@ -190,8 +187,7 @@ ProfileSyncFactoryImpl::CreateThemeSyncComponents(
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
   ThemeModelAssociator* model_associator =
-      new ThemeModelAssociator(profile_sync_service,
-                               error_handler);
+      new ThemeModelAssociator(profile_sync_service);
   ThemeChangeProcessor* change_processor =
       new ThemeChangeProcessor(error_handler);
   return SyncComponents(model_associator, change_processor);
@@ -204,8 +200,7 @@ ProfileSyncFactoryImpl::CreateTypedUrlSyncComponents(
     browser_sync::UnrecoverableErrorHandler* error_handler) {
   TypedUrlModelAssociator* model_associator =
       new TypedUrlModelAssociator(profile_sync_service,
-                                  history_backend,
-                                  error_handler);
+                                  history_backend);
   TypedUrlChangeProcessor* change_processor =
       new TypedUrlChangeProcessor(model_associator,
                                   history_backend,

@@ -400,10 +400,15 @@ const wchar_t* ProfileSyncService::GetPrefNameForDataType(
 
 // An invariant has been violated.  Transition to an error state where we try
 // to do as little work as possible, to avoid further corruption or crashes.
-void ProfileSyncService::OnUnrecoverableError() {
+void ProfileSyncService::OnUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   unrecoverable_error_detected_ = true;
-  // TODO(sync) remove this unrecoverable_error_detected_ variable_ as it only
-  // affects ShouldPushChanges().
+  unrecoverable_error_message_ = message;
+  unrecoverable_error_location_.reset(
+      new tracked_objects::Location(from_here.function_name(),
+                                    from_here.file_name(),
+                                    from_here.line_number()));
 
   // Shut all data types down.
   if (data_type_manager_.get())
@@ -414,6 +419,9 @@ void ProfileSyncService::OnUnrecoverableError() {
 
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
   LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable.";
+  std::string location;
+  from_here.Write(true, true, &location);
+  LOG(ERROR) << location;
 
   if (WizardIsVisible()) {
     // We've hit an error in the middle of a startup process- shutdown all the
@@ -678,7 +686,7 @@ void ProfileSyncService::Observe(NotificationType type,
       DataTypeManager::ConfigureResult result =
           *(Details<DataTypeManager::ConfigureResult>(details).ptr());
       if (result != DataTypeManager::OK) {
-        OnUnrecoverableError();
+        OnUnrecoverableError(FROM_HERE, "Sync Configuration failed.");
         return;
       }
 

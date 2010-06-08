@@ -122,7 +122,7 @@ class PersonalDataManagerMock: public PersonalDataManager {
 ACTION_P4(MakeAutofillSyncComponents, service, wd, pdm, dtc) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   AutofillModelAssociator* model_associator =
-      new AutofillModelAssociator(service, wd, pdm, dtc);
+      new AutofillModelAssociator(service, wd, pdm);
   AutofillChangeProcessor* change_processor =
       new AutofillChangeProcessor(model_associator, wd, pdm, dtc);
   return ProfileSyncFactory::SyncComponents(model_associator,

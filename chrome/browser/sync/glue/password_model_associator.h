@@ -52,8 +52,7 @@ class PasswordModelAssociator
 
   static syncable::ModelType model_type() { return syncable::PASSWORD; }
   PasswordModelAssociator(ProfileSyncService* sync_service,
-                          PasswordStore* password_store,
-                          UnrecoverableErrorHandler* error_handler);
+                          PasswordStore* password_store);
   virtual ~PasswordModelAssociator() { }
 
   // PerDataTypeAssociatorInterface implementation.
@@ -136,7 +135,6 @@ class PasswordModelAssociator
 
   ProfileSyncService* sync_service_;
   PasswordStore* password_store_;
-  UnrecoverableErrorHandler* error_handler_;
   int64 password_node_id_;
 
   // Abort association pending flag and lock.  If this is set to true

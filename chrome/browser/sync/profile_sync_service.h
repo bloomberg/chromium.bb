@@ -205,6 +205,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool unrecoverable_error_detected() const {
     return unrecoverable_error_detected_;
   }
+  const std::string& unrecoverable_error_message() {
+    return unrecoverable_error_message_;
+  }
+  tracked_objects::Location unrecoverable_error_location() {
+    return unrecoverable_error_location_.get() ?
+        *unrecoverable_error_location_.get() : tracked_objects::Location();
+  }
 
   bool UIShouldDepictAuthInProgress() const {
     return is_auth_in_progress_;
@@ -246,7 +253,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   static bool IsSyncEnabled();
 
   // UnrecoverableErrorHandler implementation.
-  virtual void OnUnrecoverableError();
+  virtual void OnUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message);
 
   browser_sync::SyncBackendHost* backend() { return backend_.get(); }
 
@@ -405,6 +414,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // occurred during syncer operation.  This value should be checked before
   // doing any work that might corrupt things further.
   bool unrecoverable_error_detected_;
+
+  // A message sent when an unrecoverable error occurred.
+  std::string unrecoverable_error_message_;
+  scoped_ptr<tracked_objects::Location> unrecoverable_error_location_;
 
   // Which peer-to-peer notification method to use.
   browser_sync::NotificationMethod notification_method_;

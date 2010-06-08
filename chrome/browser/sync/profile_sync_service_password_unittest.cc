@@ -71,7 +71,7 @@ using webkit_glue::PasswordForm;
 ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   PasswordModelAssociator* model_associator =
-      new PasswordModelAssociator(service, ps, dtc);
+      new PasswordModelAssociator(service, ps);
   PasswordChangeProcessor* change_processor =
       new PasswordChangeProcessor(model_associator, ps, dtc);
   return ProfileSyncFactory::SyncComponents(model_associator,

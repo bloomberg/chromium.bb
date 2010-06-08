@@ -61,20 +61,20 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
 
   int64 sync_id = model_associator_->GetSyncIdFromChromeId(*name);
   if (sync_api::kInvalidId == sync_id) {
-    LOG(ERROR) << "Unexpected notification for: " << *name;
-    error_handler()->OnUnrecoverableError();
+    std::wstring err = L"Unexpected notification for: " + *name;
+    error_handler()->OnUnrecoverableError(FROM_HERE, WideToUTF8(err));
     return;
   } else {
     if (!node.InitByIdLookup(sync_id)) {
-      LOG(ERROR) << "Preference node lookup failed.";
-      error_handler()->OnUnrecoverableError();
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+                                            "Preference node lookup failed.");
       return;
     }
   }
 
   if (!WritePreference(&node, *name, preference->GetValue())) {
-    LOG(ERROR) << "Failed to update preference node.";
-    error_handler()->OnUnrecoverableError();
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+                                          "Failed to update preference node.");
     return;
   }
 }
@@ -102,8 +102,8 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     }
 
     if (!node.InitByIdLookup(changes[i].id)) {
-      LOG(ERROR) << "Preference node lookup failed.";
-      error_handler()->OnUnrecoverableError();
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+                                            "Preference node lookup failed.");
       return;
     }
     DCHECK(syncable::PREFERENCES == node.GetModelType());
@@ -154,8 +154,8 @@ bool PreferenceChangeProcessor::WritePreference(
   std::string serialized;
   JSONStringValueSerializer json(&serialized);
   if (!json.Serialize(*value)) {
-    LOG(ERROR) << "Failed to serialize preference value.";
-    error_handler()->OnUnrecoverableError();
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Failed to serialize preference value.");
     return false;
   }
 
@@ -175,9 +175,9 @@ Value* PreferenceChangeProcessor::ReadPreference(
   base::JSONReader reader;
   scoped_ptr<Value> value(reader.JsonToValue(preference.value(), false, false));
   if (!value.get()) {
-    LOG(ERROR) << "Failed to deserialize preference value: "
-               << reader.GetErrorMessage();
-    error_handler()->OnUnrecoverableError();
+    std::string err = "Failed to deserialize preference value: " +
+        reader.GetErrorMessage();
+    error_handler()->OnUnrecoverableError(FROM_HERE, err);
     return NULL;
   }
   *name = UTF8ToWide(preference.name());
