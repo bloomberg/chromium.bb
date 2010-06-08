@@ -8,6 +8,14 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "media/base/yuv_convert.h"
 
+
+// Assume that somewhere along the line, someone will do width * height * 4
+// with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
+// 2**29 and floor(sqrt(2**29)) = 23170.
+
+// Max height and width for layers
+static const int kMaxVideoLayerSize = 23170;
+
 VideoLayerX::VideoLayerX(RenderWidgetHost* widget,
                          const gfx::Size& size,
                          void* visual,
@@ -15,7 +23,8 @@ VideoLayerX::VideoLayerX(RenderWidgetHost* widget,
     : VideoLayer(widget, size),
       visual_(visual),
       depth_(depth),
-      display_(x11_util::GetXDisplay()) {
+      display_(x11_util::GetXDisplay()),
+      rgb_frame_size_(0) {
   DCHECK(!size.IsEmpty());
 
   // Create our pixmap + GC representing an RGB version of a video frame.
@@ -51,21 +60,21 @@ void VideoLayerX::CopyTransportDIB(RenderProcessHost* process,
   // Save location and size of destination bitmap.
   rgb_rect_ = bitmap_rect;
 
-  // Lazy allocate |rgb_frame_|.
-  if (!rgb_frame_.get()) {
-    // TODO(scherkus): handle changing dimensions and re-allocating.
-    CHECK(size() == rgb_rect_.size());
-
-    rgb_frame_.reset(new uint8[rgb_rect_.width() * rgb_rect_.height() * 4]);
-  }
-
   const int width = bitmap_rect.width();
   const int height = bitmap_rect.height();
-  // Assume that somewhere along the line, someone will do width * height * 4
-  // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
-  // 2**29 and floor(sqrt(2**29)) = 23170.
-  if (width > 23170 || height > 23170)
+  const size_t new_rgb_frame_size = static_cast<size_t>(width * height * 4);
+
+  if (width <= 0 || width > kMaxVideoLayerSize ||
+      height <= 0 || height > kMaxVideoLayerSize)
     return;
+
+  // Lazy allocate |rgb_frame_|.
+  if (!rgb_frame_.get() || rgb_frame_size_ < new_rgb_frame_size) {
+    // TODO(scherkus): handle changing dimensions and re-allocating.
+    CHECK(size() == rgb_rect_.size());
+    rgb_frame_.reset(new uint8[new_rgb_frame_size]);
+    rgb_frame_size_ = new_rgb_frame_size;
+  }
 
   TransportDIB* dib = process->GetTransportDIB(bitmap);
   if (!dib)

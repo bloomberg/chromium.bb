@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <limits>
 
 #include "app/surface/transport_dib.h"
 #include "app/x11_util.h"
@@ -28,6 +29,14 @@
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+// Assume that somewhere along the line, someone will do width * height * 4
+// with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
+// 2**29 and floor(sqrt(2**29)) = 23170.
+
+// Max height and width for layers
+static const int kMaxVideoLayerSize = 23170;
+
 
 // X Backing Stores:
 //
@@ -160,10 +169,9 @@ void BackingStoreX::PaintToBackingStore(
 
   const int width = bitmap_rect.width();
   const int height = bitmap_rect.height();
-  // Assume that somewhere along the line, someone will do width * height * 4
-  // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
-  // 2**29 and floor(sqrt(2**29)) = 23170.
-  if (width > 23170 || height > 23170)
+
+  if (width <= 0 || width > kMaxVideoLayerSize ||
+      height <= 0 || height > kMaxVideoLayerSize)
     return;
 
   TransportDIB* dib = process->GetTransportDIB(bitmap);
@@ -313,8 +321,16 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
     memset(&shminfo, 0, sizeof(shminfo));
     image = XShmCreateImage(display_, visual, 32,
                             ZPixmap, NULL, &shminfo, width, height);
-
+    if (!image) {
+      return false;
+    }
     // Create the shared memory segment for the image and map it.
+    if (image->bytes_per_line == 0 || image->height == 0 ||
+        (std::numeric_limits<size_t>::max() / image->bytes_per_line) >
+        static_cast<size_t>(image->height)) {
+      XDestroyImage(image);
+      return false;
+    }
     shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height,
                            IPC_CREAT|0666);
     if (shminfo.shmid == -1) {

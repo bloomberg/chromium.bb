@@ -42,6 +42,8 @@ class VideoLayerX : public VideoLayer {
 
   // Most recently converted frame stored as 32-bit ARGB.
   scoped_array<uint8> rgb_frame_;
+  size_t rgb_frame_size_;
+
   // Destination size and absolution position of the converted frame.
   gfx::Rect rgb_rect_;
 
