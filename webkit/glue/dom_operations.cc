@@ -279,8 +279,6 @@ void FillPasswordForm(WebView* view,
   FindFormElements(view, data.basic_data, &forms);
   FormElementsList::iterator iter;
   for (iter = forms.begin(); iter != forms.end(); ++iter) {
-    // TODO(timsteele): Move STLDeleteElements to base/ and have
-    // FormElementsList use that.
     scoped_ptr<FormElements> form_elements(*iter);
 
     // If wait_for_username is true, we don't want to initially fill the form
