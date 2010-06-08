@@ -26,9 +26,10 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   void Start(JingleClient* jingle_client, const std::string& host_id);
 
  private:
-
   void DoStart();
   void DoSendStanza();
+
+  void ProcessResponse(const buzz::XmlElement* response);
 
   bool started_;
   JingleClient* jingle_client_;

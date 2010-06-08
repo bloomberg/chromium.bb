@@ -46,6 +46,7 @@ void HeartbeatSender::DoStart() {
   DCHECK(MessageLoop::current() == jingle_client_->message_loop());
 
   request_.reset(new IqRequest(jingle_client_));
+  request_->set_callback(NewCallback(this, &HeartbeatSender::ProcessResponse));
 
   jingle_client_->message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoSendStanza));
@@ -64,6 +65,13 @@ void HeartbeatSender::DoSendStanza() {
   jingle_client_->message_loop()->PostDelayedTask(
       FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoSendStanza),
       kHeartbeatPeriodMs);
+}
+
+void HeartbeatSender::ProcessResponse(const buzz::XmlElement* response) {
+  if (response->Attr(buzz::QN_TYPE) == buzz::STR_ERROR) {
+    LOG(ERROR) << "Received error in response to heartbeat: "
+               << response->Str();
+  }
 }
 
 }  // namespace remoting
