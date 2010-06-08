@@ -210,11 +210,19 @@ TEST_F(GeolocationLocationArbitratorTest,
   MockLocationObserver observer;
   arbitrator_->AddObserver(
       &observer, GeolocationArbitrator::UpdateOptions(false));
+  access_token_store_->NotifyDelegateTokensLoaded();
+  EXPECT_TRUE(providers_->cell_);
   EXPECT_FALSE(providers_->gps_);
   arbitrator_->AddObserver(
       &observer, GeolocationArbitrator::UpdateOptions(true));
+  EXPECT_TRUE(providers_->cell_);
   EXPECT_TRUE(providers_->gps_);
+  arbitrator_->AddObserver(
+      &observer, GeolocationArbitrator::UpdateOptions(false));
+  EXPECT_TRUE(providers_->cell_);
+  EXPECT_FALSE(providers_->gps_);
   EXPECT_TRUE(arbitrator_->RemoveObserver(&observer));
+  EXPECT_FALSE(providers_->cell_);
   EXPECT_FALSE(arbitrator_->RemoveObserver(&observer));
 }
 

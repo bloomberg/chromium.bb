@@ -11,6 +11,7 @@
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
+#include "ipc/ipc_message.h"
 
 GeolocationDispatcherHost::GeolocationDispatcherHost(
     int resource_message_filter_process_id,
@@ -78,7 +79,8 @@ void GeolocationDispatcherHost::OnUnregisterDispatcher(int render_view_id) {
 
 void GeolocationDispatcherHost::OnRequestPermission(
     int render_view_id, int bridge_id, const GURL& requesting_frame) {
-  LOG(INFO) << "permission request";
+  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
+             << ":" << render_view_id << ":" << bridge_id;
   geolocation_permission_context_->RequestGeolocationPermission(
       resource_message_filter_process_id_, render_view_id, bridge_id,
       requesting_frame);
@@ -86,7 +88,8 @@ void GeolocationDispatcherHost::OnRequestPermission(
 
 void GeolocationDispatcherHost::OnCancelPermissionRequest(
     int render_view_id, int bridge_id, const GURL& requesting_frame) {
-  LOG(INFO) << "cancel permission request";
+  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
+             << ":" << render_view_id << ":" << bridge_id;
   geolocation_permission_context_->CancelGeolocationPermissionRequest(
       resource_message_filter_process_id_, render_view_id, bridge_id,
       requesting_frame);
@@ -98,34 +101,38 @@ void GeolocationDispatcherHost::OnStartUpdating(
   // WebKit sends the startupdating request before checking permissions, to
   // optimize the no-location-available case and reduce latency in the success
   // case (location lookup happens in parallel with the permission request).
-  LOG(INFO) << "start updating" << render_view_id;
+  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
+             << ":" << render_view_id << ":" << bridge_id;
+  bridge_update_options_[std::make_pair(render_view_id, bridge_id)] =
+      GeolocationArbitrator::UpdateOptions(enable_high_accuracy);
   location_arbitrator_ =
       geolocation_permission_context_->StartUpdatingRequested(
           resource_message_filter_process_id_, render_view_id, bridge_id,
           requesting_frame);
-  DCHECK(location_arbitrator_);
-  location_arbitrator_->AddObserver(
-      this, GeolocationArbitrator::UpdateOptions(enable_high_accuracy));
+  RefreshUpdateOptions();
 }
 
 void GeolocationDispatcherHost::OnStopUpdating(
     int render_view_id, int bridge_id) {
-  // TODO(joth): Balance calls to RemoveObserver here with AddObserver above.
-  // http://crbug.com/40103
-  LOG(INFO) << "stop updating" << render_view_id;
+  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
+             << ":" << render_view_id << ":" << bridge_id;
+  if (bridge_update_options_.erase(std::make_pair(render_view_id, bridge_id)))
+    RefreshUpdateOptions();
   geolocation_permission_context_->StopUpdatingRequested(
       resource_message_filter_process_id_, render_view_id, bridge_id);
 }
 
 void GeolocationDispatcherHost::OnSuspend(
     int render_view_id, int bridge_id) {
-  LOG(INFO) << "suspend" << render_view_id;
+  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
+             << ":" << render_view_id << ":" << bridge_id;
   // TODO(bulach): connect this with GeolocationArbitrator.
 }
 
 void GeolocationDispatcherHost::OnResume(
     int render_view_id, int bridge_id) {
-  LOG(INFO) << "resume" << render_view_id;
+  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
+             << ":" << render_view_id << ":" << bridge_id;
   // TODO(bulach): connect this with GeolocationArbitrator.
 }
 
@@ -161,4 +168,17 @@ void GeolocationDispatcherHost::UnregisterDispatcher(
 
   DCHECK_EQ(1u, geolocation_renderer_ids_.count(render_view_id));
   geolocation_renderer_ids_.erase(render_view_id);
+}
+
+void GeolocationDispatcherHost::RefreshUpdateOptions() {
+  DCHECK(location_arbitrator_);
+  if (bridge_update_options_.empty()) {
+    location_arbitrator_->RemoveObserver(this);
+    location_arbitrator_ = NULL;
+  } else {
+    location_arbitrator_->AddObserver(
+        this,
+        GeolocationArbitrator::UpdateOptions::Collapse(
+            bridge_update_options_));
+  }
 }

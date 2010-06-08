@@ -65,8 +65,7 @@ class GeolocationArbitratorImpl
   void RegisterProvider(LocationProviderBase* provider,
                         ScopedVector<LocationProviderBase>* provider_vector);
   void ResetProviders(ScopedVector<LocationProviderBase>* providers);
-  void CreateProvidersIfRequired();
-  bool HasHighAccuracyObserver();
+  void ModifyProvidersIfRequired();
 
   // Returns true if |new_position| is an improvement over |old_position|.
   // Set |from_same_provider| to true if both the positions came from the same
@@ -136,8 +135,8 @@ GeolocationArbitratorImpl::GeolocationArbitratorImpl(
 GeolocationArbitratorImpl::~GeolocationArbitratorImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(observers_.empty()) << "Not all observers have unregistered";
-  ResetProviders(&gps_providers_);
-  ResetProviders(&network_providers_);
+  observers_.clear();
+  ModifyProvidersIfRequired();
   DCHECK(this == g_instance_);
   g_instance_ = NULL;
 }
@@ -147,7 +146,7 @@ void GeolocationArbitratorImpl::AddObserver(
     const UpdateOptions& update_options) {
   DCHECK(CalledOnValidThread());
   observers_[delegate] = update_options;
-  CreateProvidersIfRequired();
+  ModifyProvidersIfRequired();
 
   if (position_.IsInitialized()) {
     delegate->OnLocationUpdate(position_);
@@ -158,11 +157,7 @@ bool GeolocationArbitratorImpl::RemoveObserver(
     GeolocationArbitrator::Delegate* delegate) {
   DCHECK(CalledOnValidThread());
   size_t remove = observers_.erase(delegate);
-  // TODO(joth): Delayed callback to linger before destroying providers.
-  if (!HasHighAccuracyObserver())
-    ResetProviders(&gps_providers_);
-  if (observers_.empty())
-    ResetProviders(&network_providers_);
+  ModifyProvidersIfRequired();
   return remove > 0;
 }
 
@@ -260,9 +255,15 @@ void GeolocationArbitratorImpl::ResetProviders(
   providers->reset();
 }
 
-void GeolocationArbitratorImpl::CreateProvidersIfRequired() {
+void GeolocationArbitratorImpl::ModifyProvidersIfRequired() {
   DCHECK(CalledOnValidThread());
-  DCHECK(!observers_.empty());
+  // TODO(joth): Delayed callback to linger before destroying providers.
+  if (observers_.empty()) {
+    ResetProviders(&network_providers_);
+    ResetProviders(&gps_providers_);
+    return;
+  }
+
   if (network_providers_.empty() && !request_consumer_.HasPendingRequests()) {
     // There are no network providers either created or pending creation.
     access_token_store_->LoadAccessTokens(
@@ -270,20 +271,14 @@ void GeolocationArbitratorImpl::CreateProvidersIfRequired() {
         NewCallback(this,
                     &GeolocationArbitratorImpl::OnAccessTokenStoresLoaded));
   }
-  if (gps_providers_.empty() && HasHighAccuracyObserver()) {
-    RegisterProvider(provider_factory_->NewGpsLocationProvider(),
-                     &gps_providers_);
-  }
-}
 
-bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
-  DCHECK(CalledOnValidThread());
-  for (DelegateMap::const_iterator it = observers_.begin();
-      it != observers_.end(); ++it) {
-    if (it->second.use_high_accuracy)
-      return true;
+  if (UpdateOptions::Collapse(observers_).use_high_accuracy) {
+    if (gps_providers_.empty())
+      RegisterProvider(provider_factory_->NewGpsLocationProvider(),
+                       &gps_providers_);
+  } else {
+    ResetProviders(&gps_providers_);
   }
-  return false;
 }
 
 bool GeolocationArbitratorImpl::IsNewPositionBetter(

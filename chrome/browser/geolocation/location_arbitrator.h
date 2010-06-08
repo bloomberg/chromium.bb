@@ -70,12 +70,30 @@ class GeolocationArbitrator : public base::RefCounted<GeolocationArbitrator> {
     virtual void OnLocationUpdate(const Geoposition& position) = 0;
 
    protected:
+    Delegate() {}
     virtual ~Delegate() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
   struct UpdateOptions {
     UpdateOptions() : use_high_accuracy(false) {}
     explicit UpdateOptions(bool high_accuracy)
         : use_high_accuracy(high_accuracy) {}
+
+    // Given a map<ANYTHING, UpdateOptions> this function will iterate the map
+    // and collapse all the options found to a single instance that satisfies
+    // them all.
+    template <typename MAP>
+    static UpdateOptions Collapse(const MAP& options_map) {
+      for (typename MAP::const_iterator it = options_map.begin();
+           it != options_map.end(); ++it) {
+        if (it->second.use_high_accuracy)
+          return UpdateOptions(true);
+      }
+      return UpdateOptions(false);
+    }
+
     bool use_high_accuracy;
   };
 
