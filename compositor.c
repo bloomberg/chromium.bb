@@ -319,14 +319,15 @@ static void
 wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 {
 	int i, j;
-	GLfloat t;
+	struct wlsc_vector t;
 
 	for (i = 0; i < 4; i++) {
-		t = 0;
+		t.f[i] = 0;
 		for (j = 0; j < 4; j++)
-			t += v->f[j] * matrix->d[i + j * 4];
-		v->f[i] = t;
+			t.f[i] += v->f[j] * matrix->d[i + j * 4];
 	}
+	
+	*v = t;
 }
 
 static void
@@ -694,6 +695,11 @@ surface_map(struct wl_client *client,
 	wlsc_matrix_init(&es->matrix);
 	wlsc_matrix_scale(&es->matrix, width, height, 1);
 	wlsc_matrix_translate(&es->matrix, x, y, 0);
+
+	wlsc_matrix_init(&es->matrix_inv);
+	wlsc_matrix_translate(&es->matrix_inv, -x, -y, 0);
+	wlsc_matrix_scale(&es->matrix_inv, 1.0 / width, 1.0 / height, 1);
+
 }
 
 static void
@@ -762,8 +768,8 @@ wlsc_surface_transform(struct wlsc_surface *surface,
 	struct wlsc_vector v = { { x, y, 0, 1 } };
 	
 	wlsc_matrix_transform(&surface->matrix_inv, &v);
-	*sx = v.f[0];
-	*sy = v.f[1];
+	*sx = v.f[0] * surface->width;
+	*sy = v.f[1] * surface->height;
 }
 
 static void
