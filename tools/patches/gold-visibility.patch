@@ -1,0 +1,21 @@
+Port of http://sourceware.org/ml/binutils-cvs/2010-06/msg00004.html
+diff -ru a/gold/plugin.cc b/gold/plugin.cc
+--- a/gold/plugin.cc	2009-10-16 03:42:51.000000000 -0400
++++ b/gold/plugin.cc	2010-06-07 22:32:09.921812164 -0400
+@@ -626,13 +626,13 @@
+       switch (isym->visibility)
+         {
+         case LDPV_PROTECTED:
+-          vis = elfcpp::STV_DEFAULT;
++          vis = elfcpp::STV_PROTECTED;
+           break;
+         case LDPV_INTERNAL:
+-          vis = elfcpp::STV_DEFAULT;
++          vis = elfcpp::STV_INTERNAL;
+           break;
+         case LDPV_HIDDEN:
+-          vis = elfcpp::STV_DEFAULT;
++          vis = elfcpp::STV_HIDDEN;
+           break;
+         case LDPV_DEFAULT:
+         default:

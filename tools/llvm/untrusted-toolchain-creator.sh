@@ -62,6 +62,8 @@ readonly BINUTILS_GAS_VMRS_PATCH=${PATCH_DIR}/binutils-2.20-gas-vmrs.patch
 readonly BINUTILS_GAS_VNMLA_PATCH=${PATCH_DIR}/binutils-2.20-gas-vnmla.patch
 readonly BINUTILS_GAS_VMLS_PATCH=${PATCH_DIR}/binutils-2.20-gas-vmls.patch
 readonly BINUTILS_GOLD_UPDATE_PATCH=${PATCH_DIR}/gold-update.patch
+readonly BINUTILS_GOLD_OUTPUT_NAME_PATCH=${PATCH_DIR}/gold-output-name.patch
+readonly BINUTILS_GOLD_VISIBILITY_PATCH=${PATCH_DIR}/gold-visibility.patch
 
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
@@ -749,6 +751,8 @@ BuildAndInstallBinutils() {
   patch -p1 < ${BINUTILS_GAS_VMRS_PATCH}
   patch -p1 < ${BINUTILS_GAS_VMLS_PATCH}
   patch -p1 < ${BINUTILS_GOLD_UPDATE_PATCH}
+  patch -p1 < ${BINUTILS_GOLD_OUTPUT_NAME_PATCH}
+  patch -p1 < ${BINUTILS_GOLD_VISIBILITY_PATCH}
   cd ../../build
 
   # --enable-checking is to avoid a build failure:
