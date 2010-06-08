@@ -51,7 +51,11 @@ int ReadContext(URLContext* h, unsigned char* buf, int size) {
   return HANDLE_EINTR(read(GetHandle(h), buf, size));
 }
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(52, 68, 0)
+int WriteContext(URLContext* h, const unsigned char* buf, int size) {
+#else
 int WriteContext(URLContext* h, unsigned char* buf, int size) {
+#endif
   return HANDLE_EINTR(write(GetHandle(h), buf, size));
 }
 
