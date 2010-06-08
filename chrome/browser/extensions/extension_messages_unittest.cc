@@ -9,10 +9,6 @@
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// See disable note at RenderViewTest.ExtensionMessagesOnConnect. Unused
-// functions cause warnings.
-#if 0
-
 static void DispatchOnConnect(int source_port_id, const std::string& name,
                               const std::string& tab_json) {
   ListValue args;
@@ -32,8 +28,6 @@ static void DispatchOnDisconnect(int source_port_id) {
       ExtensionMessageService::kDispatchOnDisconnect, args, NULL, false,
       GURL());
 }
-
-#endif  // Disable unused functions.
 
 static void DispatchOnMessage(const std::string& message, int source_port_id) {
   ListValue args;
@@ -89,9 +83,6 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
   EXPECT_EQ(L"content got: 42", alert_param.a);
 }
-
-// Disabling these tests as they're hosing the test runner.
-#if 0
 
 // Tests that the bindings for handling a new channel connection and channel
 // closing all works.
@@ -157,5 +148,3 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
   EXPECT_EQ(L"disconnected: 24", alert_param.a);
 }
-
-#endif  // Tests disabled.
