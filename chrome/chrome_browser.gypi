@@ -2612,6 +2612,8 @@
         'browser/worker_host/worker_process_host.h',
         'browser/worker_host/worker_service.cc',
         'browser/worker_host/worker_service.h',
+        'browser/wrench_menu_model.cc',
+        'browser/wrench_menu_model.h',
         'browser/zygote_host_linux.cc',
         'browser/zygote_main_linux.cc',
 

@@ -745,6 +745,9 @@ each locale. -->
         <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
           &amp;Print...
         </message>
+        <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
+          &amp;Tools
+        </message>
         <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
           &amp;Zoom
         </message>
@@ -806,6 +809,9 @@ each locale. -->
         </message>
         <message name="IDS_PRINT" desc="In Title Case: The text label of the Print... menu item. Opens a dialog box to select print settings">
           &amp;Print...
+        </message>
+        <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
+          &amp;Tools
         </message>
         <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
           &amp;Zoom

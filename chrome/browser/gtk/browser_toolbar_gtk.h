@@ -20,6 +20,7 @@
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -243,6 +244,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   PageMenuModel page_menu_model_;
   AppMenuModel app_menu_model_;
+  WrenchMenuModel wrench_menu_model_;
 
   Browser* browser_;
   BrowserWindowGtk* window_;

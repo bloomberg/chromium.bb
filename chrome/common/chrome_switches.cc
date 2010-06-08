@@ -558,6 +558,9 @@ const char kNaClStartupDialog[]             = "nacl-startup-dialog";
 // performance will be poor.
 const char kNewTabPage[]                    = "new-tab-page";
 
+// Uses the new unified app menu instead of the old "page/app" split menus.
+const char kNewWrenchMenu[]                 = "new-wrench-menu";
+
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";
