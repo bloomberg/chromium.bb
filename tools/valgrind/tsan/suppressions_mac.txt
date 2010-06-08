@@ -154,3 +154,10 @@
   ...
   fun:*net*NetworkChangeNotifierThreadD*E*
 }
+
+{
+  bug_46086
+  ThreadSanitizer:Race
+  ...
+  fun:YUVConvertTest_YV12_Test*
+}
