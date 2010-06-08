@@ -456,7 +456,8 @@ var MostVisited = (function() {
       item.style.zIndex = 2;
     },
 
-    // We listen to mousedown to get the relative position of the cursor for dnd.
+    // We listen to mousedown to get the relative position of the cursor for
+    // dnd.
     handleMouseDown_: function(e) {
       var item = getItem(e.target);
       if (item) {
@@ -561,6 +562,14 @@ var MostVisited = (function() {
       } else if (target.classList.contains('remove')) {
         this.blacklist(getItem(target));
         e.preventDefault();
+      } else {
+        var item = getItem(target);
+        if (item) {
+          var index = Array.prototype.indexOf.call(item.parentNode.children,
+                                                   item);
+          if (index != -1)
+            chrome.send('metrics', ['NTP_MostVisited' + index]);
+        }
       }
     },
 
