@@ -11,6 +11,7 @@
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/gtk/gtk_tree.h"
+#include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -149,6 +150,9 @@ class GeneralPageGtk : public OptionsPageBase,
 
   // Helper object to manage accessibility metadata.
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
+
+  // Tracks managed preference warning banner state.
+  ManagedPrefsBannerGtk managed_prefs_banner_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneralPageGtk);
 };

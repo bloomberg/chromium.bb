@@ -14,6 +14,7 @@
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
+#include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/url_picker_dialog_gtk.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -54,6 +55,12 @@ enum {
   SEARCH_ENGINES_COL_COUNT,
 };
 
+// Set of preferences which might be unavailable for editing when managed.
+const wchar_t* kGeneralManagablePrefs[] = {
+  prefs::kHomePage,
+  prefs::kHomePageIsNewTabPage
+};
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,12 +72,14 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
       default_search_initializing_(true),
       initializing_(true),
       default_browser_worker_(
-          new ShellIntegration::DefaultBrowserWorker(this)) {
+          new ShellIntegration::DefaultBrowserWorker(this)),
+      managed_prefs_banner_(profile->GetPrefs(), kGeneralManagablePrefs,
+                            arraysize(kGeneralManagablePrefs)) {
   OptionsLayoutBuilderGtk options_builder;
   page_ = options_builder.get_page_widget();
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      page_, profile));
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(page_, profile));
 
+  options_builder.AddWidget(managed_prefs_banner_.banner_widget(), false);
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_GROUP_NAME),
       InitStartupGroup(), true);

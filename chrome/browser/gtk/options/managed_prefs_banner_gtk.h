@@ -1,0 +1,39 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_GTK_OPTIONS_MANAGED_PREFS_BANNER_GTK_H_
+#define CHROME_BROWSER_GTK_OPTIONS_MANAGED_PREFS_BANNER_GTK_H_
+
+#include <set>
+
+#include <gtk/gtk.h>
+
+#include "chrome/browser/managed_prefs_banner_base.h"
+
+// Constructs and maintains a GTK widget displaying a warning banner. The banner
+// is displayed on the preferences dialog whenever there are options that are
+// not settable by the user due to policy.
+class ManagedPrefsBannerGtk : public ManagedPrefsBannerBase {
+ public:
+  ManagedPrefsBannerGtk(PrefService* prefs,
+                        const wchar_t** relevant_prefs,
+                        size_t count);
+  virtual ~ManagedPrefsBannerGtk() { }
+
+  GtkWidget* banner_widget() { return banner_widget_; }
+
+ protected:
+  // Update widget visibility.
+  virtual void OnUpdateVisibility();
+
+ private:
+  // Construct the widget.
+  void InitWidget();
+
+  GtkWidget* banner_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagedPrefsBannerGtk);
+};
+
+#endif  // CHROME_BROWSER_GTK_OPTIONS_MANAGED_PREFS_BANNER_GTK_H_

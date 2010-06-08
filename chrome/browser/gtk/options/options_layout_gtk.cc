@@ -21,5 +21,9 @@ void OptionsLayoutBuilderGtk::AddOptionGroup(const std::string& title,
   gtk_box_pack_start(GTK_BOX(group), title_label, FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(group), gtk_util::IndentWidget(content));
 
-  gtk_box_pack_start(GTK_BOX(page_), group, expandable, expandable, 0);
+  AddWidget(group, expandable);
+}
+
+void OptionsLayoutBuilderGtk::AddWidget(GtkWidget* content, bool expandable) {
+  gtk_box_pack_start(GTK_BOX(page_), content, expandable, expandable, 0);
 }
