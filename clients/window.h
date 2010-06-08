@@ -68,13 +68,19 @@ void
 window_set_child_size(struct window *window,
 		      struct rectangle *rectangle);
 void
-window_copy(struct window *window,
-	    struct rectangle *rectangle,
-	    uint32_t name, uint32_t stride);
+window_copy_image(struct window *window,
+		  struct rectangle *rectangle,
+		  void *image);
+
+void
+window_move(struct window *window, int32_t x, int32_t y);
 
 cairo_surface_t *
 window_create_surface(struct window *window,
 		      struct rectangle *rectangle);
+
+cairo_surface_t *
+window_get_surface(struct window *window);
 
 void
 window_copy_surface(struct window *window,
@@ -83,6 +89,9 @@ window_copy_surface(struct window *window,
 
 void
 window_set_fullscreen(struct window *window, int fullscreen);
+
+void
+window_set_decoration(struct window *window, int decoration);
 
 void
 window_set_resize_handler(struct window *window,
@@ -101,4 +110,8 @@ void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler,
 				  void *data);
+
+void
+window_set_frame_handler(struct window *window,
+			 window_frame_handler_t handler, void *data);
 #endif

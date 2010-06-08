@@ -31,10 +31,10 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
-#include <cairo-drm.h>
 
 #include "wayland-client.h"
 #include "wayland-glib.h"
+#include "window.h"
 
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
@@ -96,49 +96,34 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 }
 
 struct flower {
-	struct wl_compositor *compositor;
-	struct wl_surface *surface;
+	struct window *window;
 	int x, y, width, height;
 	int offset;
 };
 
 static void
-handle_acknowledge(void *data,
-			  struct wl_compositor *compositor,
-			  uint32_t key, uint32_t frame)
-{
-}
-
-static void
-handle_frame(void *data,
-		    struct wl_compositor *compositor,
-		    uint32_t frame, uint32_t timestamp)
+handle_frame(struct window *window,
+	     uint32_t frame, uint32_t timestamp, void *data)
 {
 	struct flower *flower = data;
 
-	wl_surface_map(flower->surface, 
-		       flower->x + cos((flower->offset + timestamp) / 400.0) * 400 - flower->width / 2,
-		       flower->y + sin((flower->offset + timestamp) / 320.0) * 300 - flower->height / 2,
-		       flower->width, flower->height);
-	wl_compositor_commit(flower->compositor, 0);
+	window_move(flower->window, 
+		    flower->x + cos((flower->offset + timestamp) / 400.0) * 400 - flower->width / 2,
+		    flower->y + sin((flower->offset + timestamp) / 320.0) * 300 - flower->height / 2);
+	window_commit(flower->window, 0);
 }
-
-static const struct wl_compositor_listener compositor_listener = {
-	handle_acknowledge,
-	handle_frame,
-};
 
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct wl_visual *visual;
 	int fd;
-	cairo_device_t *device;
 	cairo_surface_t *s;
 	struct timespec ts;
 	GMainLoop *loop;
 	GSource *source;
 	struct flower flower;
+	struct display *d;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -154,40 +139,34 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	d = display_create(display, fd);
+
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	/* Process connection events. */
-	wl_display_iterate(display, WL_DISPLAY_READABLE);
-
-	flower.compositor = wl_display_get_compositor(display);
 	flower.x = 512;
 	flower.y = 384;
 	flower.width = 200;
 	flower.height = 200;
-	flower.surface = wl_compositor_create_surface(flower.compositor);
+	flower.window = window_create(d, "flower", flower.x, flower.y,
+				      flower.width, flower.height);
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	srandom(ts.tv_nsec);
 	flower.offset = random();
 
-	device = cairo_drm_device_get_for_fd(fd);
-	s = cairo_drm_surface_create(device,
-				     CAIRO_CONTENT_COLOR_ALPHA,
-				     flower.width, flower.height);
+	window_draw(flower.window);
+	s = window_get_surface(flower.window);
+	if (s == NULL || cairo_surface_status (s) != CAIRO_STATUS_SUCCESS) {
+		fprintf(stderr, "failed to create cairo drm surface\n");
+		return -1;
+	}
+
 	draw_stuff(s, flower.width, flower.height);
+	cairo_surface_flush(s);
 
-	visual = wl_display_get_premultiplied_argb_visual(display);
-	wl_surface_attach(flower.surface,
-			  cairo_drm_surface_get_name(s),
-			  flower.width, flower.height,
-			  cairo_drm_surface_get_stride(s),
-			  visual);
-
-	wl_compositor_add_listener(flower.compositor,
-				   &compositor_listener, &flower);
-
-	wl_compositor_commit(flower.compositor, 0);
+	window_set_frame_handler(flower.window, handle_frame, &flower);
+	window_commit(flower.window, 0);
 
 	g_main_loop_run(loop);
 

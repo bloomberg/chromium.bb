@@ -30,7 +30,13 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
-#include <cairo-drm.h>
+
+#define EGL_EGLEXT_PROTOTYPES 1
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <cairo-gl.h>
 
 #include <linux/input.h>
 #include "wayland-util.h"
@@ -46,6 +52,8 @@ struct display {
 	struct wl_output *output;
 	struct wl_input_device *input_device;
 	struct rectangle screen_allocation;
+	EGLDisplay dpy;
+	EGLContext ctx;
 	cairo_device_t *device;
 	int fd;
 };
@@ -60,17 +68,21 @@ struct window {
 	int drag_x, drag_y;
 	int state;
 	int fullscreen;
+	int decoration;
 	struct wl_input_device *grab_device;
 	struct wl_input_device *keyboard_device;
 	uint32_t name;
 	uint32_t modifiers;
 
+	EGLImageKHR *image;
 	cairo_surface_t *cairo_surface, *pending_surface;
 	int new_surface;
 
 	window_resize_handler_t resize_handler;
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
+	window_frame_handler_t frame_handler;
+
 	void *user_data;
 };
 
@@ -88,10 +100,65 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 	cairo_close_path(cr);
 }
 
+static const cairo_user_data_key_t surface_data_key;
+struct surface_data {
+	EGLImageKHR image;
+	GLuint texture;
+	EGLDisplay dpy;
+};
+
+static void
+surface_data_destroy(void *p)
+{
+	struct surface_data *data = p;
+
+	glDeleteTextures(1, &data->texture);
+	eglDestroyImageKHR(data->dpy, data->image);
+}
+
+cairo_surface_t *
+window_create_surface(struct window *window,
+		      struct rectangle *rectangle)
+{
+	struct surface_data *data;
+	EGLDisplay dpy = window->display->dpy;
+	cairo_surface_t *surface;
+
+	EGLint image_attribs[] = {
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
+		EGL_NONE
+	};
+
+	data = malloc(sizeof *data);
+	image_attribs[1] = rectangle->width;
+	image_attribs[3] = rectangle->height;
+	data->image = eglCreateDRMImageMESA(dpy, image_attribs);
+	glGenTextures(1, &data->texture);
+	data->dpy = dpy;
+	glBindTexture(GL_TEXTURE_2D, data->texture);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
+
+	surface = cairo_gl_surface_create_for_texture(window->display->device,
+						      CAIRO_CONTENT_COLOR_ALPHA,
+						      data->texture,
+						      rectangle->width,
+						      rectangle->height);
+	
+	cairo_surface_set_user_data (surface, &surface_data_key,
+				     data, surface_data_destroy);
+	
+	return surface;
+}
+
 static void
 window_attach_surface(struct window *window)
 {
 	struct wl_visual *visual;
+	struct surface_data *data;
+	EGLint name, stride;
 
 	if (window->pending_surface != NULL)
 		return;
@@ -99,12 +166,15 @@ window_attach_surface(struct window *window)
 	window->pending_surface =
 		cairo_surface_reference(window->cairo_surface);
 
+	data = cairo_surface_get_user_data (window->cairo_surface, &surface_data_key);
+	eglExportDRMImageMESA(window->display->dpy, data->image, &name, NULL, &stride);
+
 	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
 	wl_surface_attach(window->surface,
-			  cairo_drm_surface_get_name(window->cairo_surface),
+			  name,
 			  window->allocation.width,
 			  window->allocation.height,
-			  cairo_drm_surface_get_stride(window->cairo_surface),
+			  stride,
 			  visual);
 
 	wl_surface_map(window->surface,
@@ -136,10 +206,7 @@ window_draw_decorations(struct window *window)
 	int shadow_dx = 4, shadow_dy = 4;
 
 	window->cairo_surface =
-		cairo_drm_surface_create(window->display->device,
-					 CAIRO_CONTENT_COLOR_ALPHA,
-					 window->allocation.width,
-					 window->allocation.height);
+		window_create_surface(window, &window->allocation);
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
 	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
@@ -228,10 +295,7 @@ static void
 window_draw_fullscreen(struct window *window)
 {
 	window->cairo_surface =
-		cairo_drm_surface_create(window->display->device,
-					 CAIRO_CONTENT_COLOR_ALPHA,
-					 window->allocation.width,
-					 window->allocation.height);
+		window_create_surface(window, &window->allocation);
 }
 
 void
@@ -240,12 +304,18 @@ window_draw(struct window *window)
 	if (window->cairo_surface != NULL)
 		cairo_surface_destroy(window->cairo_surface);
 
-	if (window->fullscreen)
+	if (window->fullscreen || !window->decoration)
 		window_draw_fullscreen(window);
 	else
 		window_draw_decorations(window);
 
 	window->new_surface = 1;
+}
+
+cairo_surface_t *
+window_get_surface(struct window *window)
+{
+	return window->cairo_surface;
 }
 
 static void
@@ -273,6 +343,10 @@ window_handle_frame(void *data,
 		    struct wl_compositor *compositor,
 		    uint32_t frame, uint32_t timestamp)
 {
+	struct window *window = data;
+
+	if (window->frame_handler)
+		(*window->frame_handler)(window, frame, timestamp, window->user_data);
 }
 
 static const struct wl_compositor_listener compositor_listener = {
@@ -554,7 +628,7 @@ void
 window_get_child_rectangle(struct window *window,
 			   struct rectangle *rectangle)
 {
-	if (window->fullscreen) {
+	if (window->fullscreen && !window->decoration) {
 		*rectangle = window->allocation;
 	} else {
 		rectangle->x = window->margin + 10;
@@ -574,38 +648,11 @@ window_set_child_size(struct window *window,
 	}
 }
 
-cairo_surface_t *
-window_create_surface(struct window *window,
-		      struct rectangle *rectangle)
-{
-	return cairo_drm_surface_create(window->display->device,
-					CAIRO_CONTENT_COLOR_ALPHA,
-					rectangle->width,
-					rectangle->height);
-}
-
 void
-window_copy(struct window *window,
-	    struct rectangle *rectangle,
-	    uint32_t name, uint32_t stride)
+window_copy_image(struct window *window,
+		  struct rectangle *rectangle, EGLImageKHR image)
 {
-	cairo_surface_t *surface;
-	cairo_t *cr;
-
-	surface = cairo_drm_surface_create_for_name (window->display->device,
-						     name, CAIRO_FORMAT_ARGB32,
-						     rectangle->width, rectangle->height,
-						     stride);
-
-	cr = cairo_create (window->cairo_surface);
-
-	cairo_set_source_surface (cr,
-				  surface,
-				  rectangle->x, rectangle->y);
-
-	cairo_paint (cr);
-	cairo_destroy (cr);
-	cairo_surface_destroy (surface);
+	/* set image as read buffer, copy pixels or something... */
 }
 
 void
@@ -638,6 +685,12 @@ window_set_fullscreen(struct window *window, int fullscreen)
 }
 
 void
+window_set_decoration(struct window *window, int decoration)
+{
+	window->decoration = decoration;
+}
+
+void
 window_set_resize_handler(struct window *window,
 			  window_resize_handler_t handler, void *data)
 {
@@ -654,11 +707,32 @@ window_set_key_handler(struct window *window,
 }
 
 void
+window_set_frame_handler(struct window *window,
+			 window_frame_handler_t handler, void *data)
+{
+	window->frame_handler = handler;
+	window->user_data = data;
+}
+
+void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler, void *data)
 {
 	window->keyboard_focus_handler = handler;
 	window->user_data = data;
+}
+
+void
+window_move(struct window *window, int32_t x, int32_t y)
+{
+	window->allocation.x = x;
+	window->allocation.y = y;
+
+	wl_surface_map(window->surface,
+		       window->allocation.x - window->margin,
+		       window->allocation.y - window->margin,
+		       window->allocation.width,
+		       window->allocation.height);
 }
 
 struct window *
@@ -728,14 +802,57 @@ display_handle_global(struct wl_display *display,
 struct display *
 display_create(struct wl_display *display, int fd)
 {
+	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 	struct display *d;
+	EGLint major, minor, count;
+	EGLConfig config;
+
+	static const EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE,		0,
+		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
+		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
+		EGL_NONE
+	};
 
 	d = malloc(sizeof *d);
 	if (d == NULL)
 		return NULL;
 
+	get_typed_display_mesa =
+		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
+	if (get_typed_display_mesa == NULL) {
+		fprintf(stderr, "eglGetDisplayMESA() not found\n");
+		return NULL;
+	}
+
+	d->dpy = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
+					(void *) fd);
+	if (!eglInitialize(d->dpy, &major, &minor)) {
+		fprintf(stderr, "failed to initialize display\n");
+		return NULL;
+	}
+
+	if (!eglChooseConfig(d->dpy, config_attribs, &config, 1, &count) ||
+	    count == 0) {
+		fprintf(stderr, "eglChooseConfig() failed\n");
+		return NULL;
+	}
+
+	eglBindAPI(EGL_OPENGL_API);
+
+	d->ctx = eglCreateContext(d->dpy, config, EGL_NO_CONTEXT, NULL);
+	if (d->ctx == NULL) {
+		fprintf(stderr, "failed to create context\n");
+		return NULL;
+	}
+
+	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->ctx)) {
+		fprintf(stderr, "faile to make context current\n");
+		return NULL;
+	}
+
 	d->display = display;
-	d->device = cairo_drm_device_get_for_fd(fd);
+	d->device = cairo_egl_device_create(d->dpy, d->ctx);
 	if (d->device == NULL) {
 		fprintf(stderr, "failed to get cairo drm device\n");
 		return NULL;

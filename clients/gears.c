@@ -339,12 +339,8 @@ handle_frame(void *data,
 	     uint32_t frame, uint32_t timestamp)
 {
   	struct gears *gears = data;
-	EGLint name, stride;
 
-	eglExportDRMImageMESA(gears->display,
-			   gears->image, &name, NULL, &stride);
-	
-	window_copy(gears->window, &gears->rectangle, name, stride);
+	window_copy_image(gears->window, &gears->rectangle, gears->image);
 
 	window_commit(gears->window, 10);
 

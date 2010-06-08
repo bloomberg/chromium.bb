@@ -8,7 +8,7 @@ all : $(egl_clients) $(cairo_clients)
 clean :
 	rm -f $(egl_clients) $(cairo_clients) *.o
 
-flower : flower.o wayland-glib.o
+flower : flower.o window.o wayland-glib.o
 gears : gears.o window.o wayland-glib.o
 screenshot : screenshot.o wayland-glib.o
 terminal : terminal.o window.o wayland-glib.o
@@ -23,5 +23,5 @@ view : LDLIBS += $(POPPLER_LIBS)
 
 $(egl_clients) : CFLAGS += $(EGL_CLIENT_CFLAGS)
 $(egl_clients) : LDLIBS += -L.. -lwayland $(EGL_CLIENT_LIBS) -lrt -lm
-$(cairo_clients) : CFLAGS += $(CAIRO_CLIENT_CFLAGS)
-$(cairo_clients) : LDLIBS += -L..  -lwayland $(CAIRO_CLIENT_LIBS) -lrt -lm
+$(cairo_clients) : CFLAGS += $(CAIRO_CLIENT_CFLAGS) $(EGL_CLIENT_CFLAGS)
+$(cairo_clients) : LDLIBS += -L..  -lwayland $(CAIRO_CLIENT_LIBS) $(EGL_CLIENT_LIBS) -lrt -lm
