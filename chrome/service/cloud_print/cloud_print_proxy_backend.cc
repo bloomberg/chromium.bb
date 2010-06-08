@@ -24,13 +24,12 @@
 class CloudPrintProxyBackend::Core
     : public base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>,
       public URLFetcherDelegate,
-      public cloud_print::PrintServerWatcherDelegate,
+      public cloud_print::PrinterChangeNotifierDelegate,
       public PrinterJobHandlerDelegate,
       public notifier::TalkMediator::Delegate {
  public:
   explicit Core(CloudPrintProxyBackend* backend,
                 const GURL& cloud_print_server_url);
-
   // Note:
   //
   // The Do* methods are the various entry points from CloudPrintProxyBackend
@@ -60,8 +59,14 @@ class CloudPrintProxyBackend::Core
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
-  // cloud_print::PrintServerWatcherDelegate implementation
+// cloud_print::PrinterChangeNotifier::Delegate implementation
   virtual void OnPrinterAdded();
+  virtual void OnPrinterDeleted() {
+  }
+  virtual void OnPrinterChanged() {
+  }
+  virtual void OnJobChanged() {
+  }
   // PrinterJobHandler::Delegate implementation
   void OnPrinterJobHandlerShutdown(PrinterJobHandler* job_handler,
                                    const std::string& printer_id);
@@ -126,8 +131,6 @@ class CloudPrintProxyBackend::Core
   CloudPrintProxyBackend* backend_;
 
   GURL cloud_print_server_url_;
-  // Pointer to current print system.
-  scoped_refptr<cloud_print::PrintSystem> print_system_;
   // The list of printers to be registered with the cloud print server.
   // To begin with,this list is initialized with the list of local and network
   // printers available. Then we query the server for the list of printers
@@ -156,8 +159,7 @@ class CloudPrintProxyBackend::Core
       JobHandlerMap;
   JobHandlerMap job_handler_map_;
   ResponseHandler next_response_handler_;
-  scoped_refptr<cloud_print::PrintSystem::PrintServerWatcher>
-      print_server_watcher_;
+  cloud_print::PrinterChangeNotifier printer_change_notifier_;
   bool new_printers_available_;
   // Notification (xmpp) handler.
   scoped_ptr<notifier::TalkMediator> talk_mediator_;
@@ -233,7 +235,7 @@ CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
                                    const GURL& cloud_print_server_url)
     : backend_(backend), cloud_print_server_url_(cloud_print_server_url),
       next_upload_index_(0), server_error_count_(0),
-      next_response_handler_(NULL), new_printers_available_(false) {
+     next_response_handler_(NULL), new_printers_available_(false) {
 }
 
 void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
@@ -277,13 +279,6 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     const std::string cloud_print_xmpp_token,
     const std::string email, const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-
-  print_system_ = cloud_print::PrintSystem::CreateInstance();
-  if (!print_system_.get()) {
-    NOTREACHED();
-    return;  // No print system available, fail initalization.
-  }
-
   // TODO(sanjeevr): Validate the tokens.
   auth_token_ = cloud_print_token;
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
@@ -293,17 +288,14 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
                                kSyncGaiaServiceId);
   talk_mediator_->Login();
-
-  print_server_watcher_ = print_system_->CreatePrintServerWatcher();
-  print_server_watcher_->StartWatching(this);
-
+  printer_change_notifier_.StartWatching(std::string(), this);
   proxy_id_ = proxy_id;
   StartRegistration();
 }
 
 void CloudPrintProxyBackend::Core::StartRegistration() {
   printer_list_.clear();
-  print_system_->EnumeratePrinters(&printer_list_);
+  cloud_print::EnumeratePrinters(&printer_list_);
   server_error_count_ = 0;
   // Now we need to ask the server about printers that were registered on the
   // server so that we can trim this list.
@@ -319,9 +311,6 @@ void CloudPrintProxyBackend::Core::EndRegistration() {
 }
 
 void CloudPrintProxyBackend::Core::DoShutdown() {
-  if (print_server_watcher_ != NULL)
-    print_server_watcher_->StopWatching();
-
   // Need to kill all running jobs.
   while (!job_handler_map_.empty()) {
     JobHandlerMap::iterator index = job_handler_map_.begin();
@@ -333,8 +322,6 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
 
 void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
     const cloud_print::PrinterList& printer_list) {
-  if (!print_system_.get())
-    return;  // No print system available.
   server_error_count_ = 0;
   printer_list_.assign(printer_list.begin(), printer_list.end());
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
@@ -371,7 +358,7 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
     // If we are retrying a previous upload, we don't need to fetch the caps
     // and defaults again.
     if (info.printer_name != last_uploaded_printer_name_) {
-      have_printer_info = print_system_->GetPrinterCapsAndDefaults(
+      have_printer_info = cloud_print::GetPrinterCapsAndDefaults(
           info.printer_name.c_str(), &last_uploaded_printer_info_);
     }
     if (have_printer_info) {
@@ -436,10 +423,7 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
           &CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse;
       request_->Start();
     } else {
-      LOG(ERROR) << "CP: Failed to get printer info for: " << info.printer_name;
-      next_upload_index_++;
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &CloudPrintProxyBackend::Core::RegisterNextPrinter));
+      NOTREACHED();
     }
   } else {
     EndRegistration();
@@ -541,7 +525,7 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     scoped_refptr<PrinterJobHandler> job_handler;
     job_handler = new PrinterJobHandler(printer_info, printer_id, caps_hash,
                                         auth_token_, cloud_print_server_url_,
-                                        print_system_.get(), this);
+                                        this);
     job_handler_map_[printer_id] = job_handler;
     job_handler->Initialize();
   }

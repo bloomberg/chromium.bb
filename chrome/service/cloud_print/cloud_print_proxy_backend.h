@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/thread.h"
-#include "chrome/service/cloud_print/print_system.h"
+#include "chrome/service/cloud_print/printer_info.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 

@@ -13,16 +13,15 @@
 #include "googleurl/src/gurl.h"
 
 JobStatusUpdater::JobStatusUpdater(const std::string& printer_name,
-                           const std::string& job_id,
-                           cloud_print::PlatformJobId& local_job_id,
-                           const std::string& auth_token,
-                           const GURL& cloud_print_server_url,
-                           cloud_print::PrintSystem* print_system,
-                           Delegate* delegate)
+                                   const std::string& job_id,
+                                   cloud_print::PlatformJobId& local_job_id,
+                                   const std::string& auth_token,
+                                   const GURL& cloud_print_server_url,
+                                   Delegate* delegate)
     : printer_name_(printer_name), job_id_(job_id),
       local_job_id_(local_job_id), auth_token_(auth_token),
       cloud_print_server_url_(cloud_print_server_url),
-      print_system_(print_system), delegate_(delegate), stopped_(false) {
+      delegate_(delegate), stopped_(false) {
   DCHECK(delegate_);
 }
 
@@ -40,8 +39,7 @@ void JobStatusUpdater::UpdateStatus() {
       need_update = true;
     } else {
       cloud_print::PrintJobDetails details;
-      if (print_system_->GetJobDetails(printer_name_, local_job_id_,
-              &details)) {
+      if (cloud_print::GetJobDetails(printer_name_, local_job_id_, &details)) {
         if (details != last_job_details_) {
           last_job_details_ = details;
           need_update = true;
