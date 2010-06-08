@@ -1649,7 +1649,6 @@ const int kDisabledIndex = 1;
   NSButton* cancelButton = [alert addButtonWithTitle:
       l10n_util::GetNSString(IDS_OPTIONS_RESET_CANCELLABEL)];
   [cancelButton setKeyEquivalent:@"\r"];
-  [alert setDelegate:self];
 
   [alert beginSheetModalForWindow:[self window]
                     modalDelegate:self

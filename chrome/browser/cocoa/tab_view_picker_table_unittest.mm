@@ -6,12 +6,13 @@
 
 #import "chrome/browser/cocoa/tab_view_picker_table.h"
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-@interface TabViewPickerTableTestPing : NSObject {
+@interface TabViewPickerTableTestPing : NSObject <NSTabViewDelegate> {
  @public
   BOOL didSelectItemCalled_;
 }
