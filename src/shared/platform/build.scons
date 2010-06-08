@@ -101,7 +101,7 @@ platform_inputs += [
     'time.cc',
     ]
 
-env.ComponentLibrary('platform', platform_inputs)
+env.DualLibrary('platform', platform_inputs)
 
 if env.Bit('windows'):
   PORT_WIN_TEST_SOURCES = ['platform_tests.cc',

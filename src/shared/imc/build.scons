@@ -61,12 +61,12 @@ if env['TARGET_PLATFORM'] == 'MAC':
   ]
 
 
-common_objs = env.ComponentObject(nacl_imc_inputs)
+common_objs = env.DualObject(nacl_imc_inputs)
 
 nacl_imc_c_inputs = ['nacl_imc_c.cc', 'nacl_htp_c.cc']
 
-env.ComponentLibrary('google_nacl_imc', common_objs)
-env.ComponentLibrary('google_nacl_imc_c', common_objs + nacl_imc_c_inputs)
+env.DualLibrary('google_nacl_imc', common_objs)
+env.DualLibrary('google_nacl_imc_c', common_objs + nacl_imc_c_inputs)
 
 env.ComponentProgram('client',
                      'nacl_imc_test_client.cc',

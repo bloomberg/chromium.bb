@@ -111,7 +111,7 @@ NACL_NPRUNTIME_INPUTS = [
     'npmodule.cc',
     'npobject_proxy.cc',
     'npobject_stub.cc',
-    env_no_strict_aliasing.ComponentObject('structure_translations.cc'),
+    env_no_strict_aliasing.DualObject('structure_translations.cc'),
     npmodule_rpc_cc,
     npnavigator_rpc_cc,
     'npmodule_rpc_impl.cc',
@@ -120,4 +120,4 @@ NACL_NPRUNTIME_INPUTS = [
     npupcall_rpc_cc,
     'pointer_translations.cc',
 ]
-env.ComponentLibrary('google_nacl_npruntime', NACL_NPRUNTIME_INPUTS)
+env.DualLibrary('google_nacl_npruntime', NACL_NPRUNTIME_INPUTS)

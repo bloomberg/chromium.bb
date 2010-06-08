@@ -226,17 +226,11 @@ else:
     ]
 
 # NOTE: uses sdl_env
-sdl_env.ComponentLibrary('sel',
-                         ldr_inputs)
+sdl_env.DualLibrary('sel', ldr_inputs)
 
 
 env.ComponentLibrary('container',
                      ['generic_container/container.c',
-                      ])
-
-
-env.ComponentLibrary('expiration',
-                     ['expiration.c',
                       ])
 
 
@@ -245,10 +239,15 @@ env.ComponentLibrary('nacl_xdr',
                       'fs/obj_proxy.c',
                       ])
 
-env.ComponentLibrary('gio_shm',
-                     ['gio_shm.c',
-                      'gio_shm_unbounded.c',
-                      ])
+env.DualLibrary('gio_shm',
+                ['gio_shm.c',
+                 'gio_shm_unbounded.c',
+                ])
+
+env.DualLibrary('expiration',
+                ['expiration.c',
+                ])
+
 
 # NOTE(robertm): these extra libs were orignially only added to the
 #                sel_ldr binary

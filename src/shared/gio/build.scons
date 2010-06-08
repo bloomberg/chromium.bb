@@ -41,12 +41,12 @@ if env.AllBits('windows', 'debug'):
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
 
 
-env.ComponentLibrary('gio',
-                     ['gio.c',
-                      'gio_mem.c',
-                      'gprintf.c',
-                      'gio_mem_snapshot.c',
-                      ])
+env.DualLibrary('gio',
+                ['gio.c',
+                 'gio_mem.c',
+                 'gprintf.c',
+                 'gio_mem_snapshot.c',
+                 ])
 
 
 if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:

@@ -18,4 +18,4 @@ trusted_untrusted_shared = [
     'utility.c',
 ]
 
-env.ComponentLibrary('nonnacl_srpc', trusted_untrusted_shared)
+env.DualLibrary('nonnacl_srpc', trusted_untrusted_shared)

@@ -69,7 +69,7 @@ if env['BUILD_ARCHITECTURE'] == 'arm':
 # ----------------------------------------------------------
 #
 # ----------------------------------------------------------
-env.ComponentLibrary('platform_qual_lib', pql_inputs)
+env.DualLibrary('platform_qual_lib', pql_inputs)
 
 
 # These tests use assembly which seem to make the coverage instrumentation

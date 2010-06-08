@@ -45,13 +45,13 @@ if not env.Bit('windows'):
    nrd_xfer_env.Append(CFLAGS = ['-fno-strict-aliasing'])
    nrd_xfer_env.Append(CCFLAGS = ['-Wno-missing-field-initializers'])
 
-nrd_xfer_obj = nrd_xfer_env.ComponentObject('nrd_xfer.c')
+nrd_xfer_obj = nrd_xfer_env.DualObject('nrd_xfer.c')
 
 # Chrome headers use variadic macros and other features incompatible with
 # -pedantic.
 wrapper_env = env.Clone()
 wrapper_env.FilterOut(CCFLAGS = ['-pedantic'])
-wrapper_obj = wrapper_env.ComponentObject('nacl_desc_wrapper.cc')
+wrapper_obj = wrapper_env.DualObject('nacl_desc_wrapper.cc')
 
 nrd_lib_inputs = [
     'nacl_desc_base.c',
@@ -90,8 +90,8 @@ else:
       'linux/nacl_desc_sysv_shm.c',
   ]
 
-env.ComponentLibrary('nrd_xfer', nrd_lib_inputs,
-                     EXTRA_LIBS=['platform'])
+env.DualLibrary('nrd_xfer', nrd_lib_inputs,
+                EXTRA_LIBS=['platform'])
 
 # TODO(robertm): is this still needed?
 # Make a copy of debug CRT for now.

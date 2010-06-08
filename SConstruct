@@ -403,6 +403,67 @@ n = pre_base_env.Alias(target='firefox_install_backup',
 AlwaysBuild(n)
 
 
+# ----------------------------------------------------------
+def HasSuffix(item, suffix):
+  if type(item) == str:
+    return item.endswith(suffix)
+  elif '__getitem__' in dir(item):
+    return HasSuffix(item[0], suffix)
+  else:
+    return item.path.endswith(suffix)
+
+
+def DualLibrary(env, lib_name, *args, **kwargs):
+  """Builder to build both .a and _shared.a library in one step.
+
+  Args:
+    env: Environment in which we were called.
+    lib_name: Library name.
+    args: Positional arguments.
+    kwargs: Keyword arguments.
+  """
+  static_objs = [i for i in Flatten(args[0]) if not HasSuffix(i, '.os')]
+  shared_objs = [i for i in Flatten(args[0]) if not HasSuffix(i, '.o')]
+  # Built static library as ususal.
+  env.ComponentLibrary(lib_name, static_objs, **kwargs)
+  # Build a static library using -fPIC for the .o's.
+  if (env['TARGET_ARCHITECTURE'] == 'x86' and
+      env['TARGET_SUBARCH'] == '64' and
+      env.Bit('linux')):
+    env_shared = env.Clone(OBJSUFFIX='.os')
+    env_shared.Append(CCFLAGS=['-fPIC'])
+    env_shared.ComponentLibrary(lib_name + '_shared', shared_objs, **kwargs)
+
+
+def DualObject(env, *args, **kwargs):
+  """Builder to build both .o and .os in one step.
+
+  Args:
+    env: Environment in which we were called.
+    args: Positional arguments.
+    kwargs: Keyword arguments.
+  """
+  # Built static library as ususal.
+  ret = env.ComponentObject(*args, **kwargs)
+  # Build a static library using -fPIC for the .o's.
+  if (env['TARGET_ARCHITECTURE'] == 'x86' and
+      env['TARGET_SUBARCH'] == '64' and
+      env.Bit('linux')):
+    env_shared = env.Clone(OBJSUFFIX='.os')
+    env_shared.Append(CCFLAGS=['-fPIC'])
+    ret += env_shared.ComponentObject(*args, **kwargs)
+  return ret
+
+
+def AddDualLibrary(env):
+  env.AddMethod(DualLibrary)
+  env.AddMethod(DualObject)
+  env['SHARED_LIBS_SPECIAL'] = (
+      env['TARGET_ARCHITECTURE'] == 'x86' and
+      env['TARGET_SUBARCH'] == '64' and
+      env.Bit('linux'))
+
+
 def InstallPlugin(target, source, env):
   Banner('Pluging Installation')
   sb = 'USE_SANDBOX=0'
@@ -973,6 +1034,7 @@ def GenerateOptimizationLevels(env):
   debug_env['OPTIMIZATION_LEVEL'] = 'dbg'
   debug_env['BUILD_TYPE'] = debug_env.subst('$BUILD_TYPE')
   debug_env['BUILD_DESCRIPTION'] = debug_env.subst('$BUILD_DESCRIPTION')
+  AddDualLibrary(debug_env)
   # Add to the list of fully described environments.
   environment_list.append(debug_env)
 
@@ -981,6 +1043,7 @@ def GenerateOptimizationLevels(env):
   opt_env['OPTIMIZATION_LEVEL'] = 'opt'
   opt_env['BUILD_TYPE'] = opt_env.subst('$BUILD_TYPE')
   opt_env['BUILD_DESCRIPTION'] = opt_env.subst('$BUILD_DESCRIPTION')
+  AddDualLibrary(opt_env)
   # Add opt to the default group.
   opt_env.Append(BUILD_GROUPS = ['default'])
   # Add to the list of fully described environments.

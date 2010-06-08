@@ -31,14 +31,6 @@
 
 Import('env')
 
-# Firefox/64 is happy to run 32-bit plugins, so only build x86-32 and ARM.
-if env['TARGET_SUBARCH'] != '32':
-  Return()
-
-# TODO(adonovan): why is this relevant??
-if env['BUILD_SUBARCH'] == '64':
-  Return()
-
 # TODO(sehr): there is an  unreferenced file ldt_unittest.cc in this directory
 
 # NOTE(robertm): currently needed for env.ComponentObject magic below
@@ -51,22 +43,23 @@ env.Prepend(
     CPPPATH=['${SOURCE_ROOT}/third_party/libxt/include']
 )
 
-# TODO: move this to EXTRA_LIBS
-env.Append(
-    LIBS = [
-        'nonnacl_util',
-        'nonnacl_srpc',
-        'gio_shm',
-        'nrd_xfer',
-        'google_nacl_npruntime',
-        'google_nacl_imc_c',
-        'platform',
-        'platform_qual_lib',
-        'gio',
-        'expiration',
-        'sel',
-    ],
-)
+libs = [
+    'nonnacl_util',
+    'nonnacl_srpc',
+    'gio_shm',
+    'nrd_xfer',
+    'google_nacl_npruntime',
+    'google_nacl_imc_c',
+    'platform',
+    'platform_qual_lib',
+    'gio',
+    'expiration',
+    'sel',
+]
+if env['SHARED_LIBS_SPECIAL']:
+  env.Append(LIBS=[l + '_shared' for l in libs])
+else:
+  env.Append(LIBS=libs)
 
 if not env.Bit('mac'):
   env['COMPONENT_STATIC'] = False

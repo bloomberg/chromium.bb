@@ -36,7 +36,6 @@ Import('env')
 
 if env.Bit('linux'):
     env.Append(
-        CCFLAGS=['-fPIC'],
         CPPDEFINES=['XP_UNIX'],
     )
 
@@ -79,9 +78,9 @@ elif env.Bit('mac'):
       'osx/get_plugin_dirname.mm',
   ]
 
-nonnacl_util_inputs = env.ComponentObject(nonnacl_util_inputs)
+nonnacl_util_inputs = env.DualObject(nonnacl_util_inputs)
 
 nonnacl_util_c_inputs = nonnacl_util_inputs + [ 'sel_ldr_launcher_c.cc' ]
 
-env.ComponentLibrary('nonnacl_util', nonnacl_util_inputs)
-env.ComponentLibrary('nonnacl_util_c', nonnacl_util_c_inputs)
+env.DualLibrary('nonnacl_util', nonnacl_util_inputs)
+env.DualLibrary('nonnacl_util_c', nonnacl_util_c_inputs)
