@@ -9,6 +9,10 @@
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// See disable note at RenderViewTest.ExtensionMessagesOnConnect. Unused
+// functions cause warnings.
+#if 0
+
 static void DispatchOnConnect(int source_port_id, const std::string& name,
                               const std::string& tab_json) {
   ListValue args;
@@ -28,6 +32,8 @@ static void DispatchOnDisconnect(int source_port_id) {
       ExtensionMessageService::kDispatchOnDisconnect, args, NULL, false,
       GURL());
 }
+
+#endif  // Disable unused functions.
 
 static void DispatchOnMessage(const std::string& message, int source_port_id) {
   ListValue args;
