@@ -127,8 +127,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
           "httpproxy:8888",  // http
           "",                // https
           "ftpproxy:8889",   // ftp
-          // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
-          "*.google.com,foo.com:99,1.2.3.4:22"),
+          "*.google.com,foo.com:99,1.2.3.4:22,127.0.0.1/8"),
     },
     {
       TEST_DESC("Pac URL with proxy bypass URLs"),
@@ -139,8 +138,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // auto_detect
       GURL("http://wpad/wpad.dat"),                       // pac_url
       net::ProxyRulesExpectation::EmptyWithBypass(
-          // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
-          "*.google.com,foo.com:99,1.2.3.4:22"),
+          "*.google.com,foo.com:99,1.2.3.4:22,127.0.0.1/8"),
     },
     {
       TEST_DESC("Autodetect"),
