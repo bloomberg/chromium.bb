@@ -5,8 +5,10 @@
 #include "base/platform_thread.h"
 
 #import <Foundation/Foundation.h>
+#include <dlfcn.h>
 
 #include "base/logging.h"
+#include "base/safe_strerror_posix.h"
 
 // A simple class that demonstrates our impressive ability to do nothing.
 @interface NoOp : NSObject
@@ -43,6 +45,25 @@ void InitThreading() {
 
     DCHECK([NSThread isMultiThreaded]);
   }
+}
+
+// static
+void PlatformThread::SetName(const char* name) {
+  // pthread_setname_np is only available in 10.6 or later, so test
+  // for it at runtime.
+  int (*dynamic_pthread_setname_np)(const char*);
+  *reinterpret_cast<void**>(&dynamic_pthread_setname_np) =
+      dlsym(RTLD_DEFAULT, "pthread_setname_np");
+  if (!dynamic_pthread_setname_np)
+    return;
+
+  // Mac OS X does not expose the length limit of the name, so
+  // hardcode it.
+  const int kMaxNameLength = 63;
+  std::string shortened_name = std::string(name).substr(0, kMaxNameLength);
+  int err = dynamic_pthread_setname_np(shortened_name.c_str());
+  if (err < 0)
+    LOG(ERROR) << "pthread_setname_np: " << safe_strerror(err);
 }
 
 }  // namespace base
