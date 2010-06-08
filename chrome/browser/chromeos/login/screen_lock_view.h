@@ -18,6 +18,7 @@ class ImageView;
 namespace chromeos {
 
 class ScreenLocker;
+class SignoutView;
 
 namespace test {
 class ScreenLockerTester;
@@ -37,6 +38,12 @@ class ScreenLockView : public views::View,
 
   // Clears and sets the focus to the password field.
   void ClearAndSetFocusToPassword();
+
+  // Enable/Disable signout button.
+  void SetSignoutEnabled(bool enabled);
+
+  // Returns the bounds of the password field in ScreenLocker's coordinate.
+  gfx::Rect GetPasswordBoundsRelativeTo(const views::View* view);
 
   // views::View implementation:
   virtual void SetEnabled(bool enabled);
@@ -62,6 +69,8 @@ class ScreenLockView : public views::View,
   void SetImage(const SkBitmap& image,
                 int desired_width,
                 int desired_height);
+
+  SignoutView* signout_view_;
 
   // For editing the password.
   views::ImageView* image_view_;

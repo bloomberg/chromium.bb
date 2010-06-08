@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/views/info_bubble.h"
 
 namespace gfx {
 class Rect;
@@ -22,6 +23,8 @@ class WidgetGtk;
 namespace chromeos {
 
 class Authenticator;
+class MessageBubble;
+class MouseEventRelay;
 class ScreenLockView;
 
 namespace test {
@@ -31,7 +34,8 @@ class ScreenLockerTester;
 // ScreenLocker creates a background view as well as ScreenLockView to
 // authenticate the user. ScreenLocker manages its life cycle and will
 // delete itself when it's unlocked.
-class ScreenLocker : public LoginStatusConsumer {
+class ScreenLocker : public LoginStatusConsumer,
+                     public InfoBubbleDelegate {
  public:
   explicit ScreenLocker(const UserManager::User& user);
 
@@ -43,11 +47,26 @@ class ScreenLocker : public LoginStatusConsumer {
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials);
 
+  // Overridden from views::InfoBubbleDelegate.
+  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
+                                 bool closed_by_escape);
+  virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeInOnShow() { return false; }
+
   // Authenticates the user with given |password| and authenticator.
   void Authenticate(const string16& password);
 
+  // Close message bubble to clear error messages.
+  void ClearErrors();
+
   // (Re)enable input field.
   void EnableInput();
+
+  // Exit the chrome, which will sign out the current session.
+  void Signout();
+
+  // Called when the screen locker is ready.
+  void ScreenLockReady();
 
   // Returns the user to authenticate.
   const UserManager::User& user() const {
@@ -92,8 +111,17 @@ class ScreenLocker : public LoginStatusConsumer {
   // Logged in user.
   UserManager::User user_;
 
-  // Used for logging in.
+  // Used to authenticate the user to unlock.
   scoped_refptr<Authenticator> authenticator_;
+
+  // ScreenLocker grabs all keyboard and mouse events on its
+  // gdk window and never let other gdk_window to handle inputs.
+  // This MouseEventRelay object is used to forward events to
+  // the message bubble's gdk_window so that close button works.
+  scoped_ptr<MouseEventRelay> mouse_event_relay_;
+
+  // An info bubble to display login failure message.
+  MessageBubble* error_info_;
 
   // Reference to the single instance of the screen locker object.
   // This is used to make sure there is only one screen locker instance.
