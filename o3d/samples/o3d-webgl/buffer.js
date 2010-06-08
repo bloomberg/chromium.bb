@@ -194,7 +194,7 @@ o3d.Buffer.prototype.set =
   if (!values.length) {
     o3d.notImplemented();
   }
-  if (this.array_ == null) {
+  if (this.array_ == null || this.array_.length != values.length) {
     this.resize(values.length);
   }
   this.lock();

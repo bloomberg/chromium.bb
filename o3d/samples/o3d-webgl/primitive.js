@@ -143,10 +143,44 @@ o3d.Primitive.prototype.render = function() {
 
   this.gl.client.render_stats_['primitivesRendered'] += this.numberPrimitives;
 
-  // TODO(petersont): Change the hard-coded 3 and triangles too.
+  var glMode;
+  var glNumElements;
+
+  switch (this.primitiveType) {
+    case o3d.Primitive.POINTLIST:
+      glMode = this.gl.POINTS;
+      glNumElements = this.numberPrimitives;
+      break;
+    case o3d.Primitive.LINELIST:
+      glMode = this.gl.LINES;
+      glNumElements = this.numberPrimitives * 2;
+      break;
+    case o3d.Primitive.LINESTRIP:
+      glMode = this.gl.LINE_STRIP;
+      glNumElements = this.numberPrimitives + 1;
+      break;
+    case o3d.Primitive.TRIANGLELIST:
+      glMode = this.gl.TRIANGLES;
+      glNumElements = this.numberPrimitives * 3;
+      break;
+    case o3d.Primitive.TRIANGLESTRIP:
+      glMode = this.gl.TRIANGLE_STRIP;
+      glNumElements = this.numberPrimitives + 2;
+      break;
+    case o3d.Primitive.TRIANGLEFAN:
+      glMode = this.gl.TRIANGLE_FAN;
+      glNumElements = this.numberPrimitives + 2;
+      break;
+    case o3d.Primitive.TRIANGLELIST:
+    default:
+      glMode = this.gl.TRIANGLES;
+      glNumElements = this.numberPrimitives * 3;
+      break;
+  }
+
   this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.gl_buffer_);
-  this.gl.drawElements(this.gl.TRIANGLES,
-                       this.numberPrimitives * 3,
+  this.gl.drawElements(glMode,
+                       glNumElements,
                        this.gl.UNSIGNED_SHORT,
                        0);
 
@@ -154,7 +188,6 @@ o3d.Primitive.prototype.render = function() {
     this.gl.disableVertexAttribArray(enabled_attribs[i]);
   }
 };
-
 
 /**
  * Computes the bounding box in same coordinate system as the specified
