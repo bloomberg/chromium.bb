@@ -80,4 +80,4 @@ ChromeMainTest.AppLaunch
 
 # See http://crbug.com/39057
 # Hanging on mac valgrind ui bots.
-UnoadTest.FLAKY_CrossSiteInifiteBeforeUnloadAsync
+UnoadTest.*CrossSiteInfiniteBeforeUnloadAsync
