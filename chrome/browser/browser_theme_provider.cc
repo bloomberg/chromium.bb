@@ -136,17 +136,16 @@ bool HasThemeableImage(int themeable_image_id) {
 
 // The image resources that will be tinted by the 'button' tint value.
 // If you change this list, you must increment the version number in
-// browser_theme_pack.cc and you should assign persistant ids to the
-// data table at the start of said file or otherwise tinted versions of
+// browser_theme_pack.cc, and you should assign persistent IDs to the
+// data table at the start of said file or else tinted versions of
 // these resources will not be created.
 const int kToolbarButtonIDs[] = {
   IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
   IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,
-  IDR_RELOAD, IDR_RELOAD_NOBORDER, IDR_RELOAD_NOBORDER_CENTER, IDR_RELOAD_H,
-  IDR_RELOAD_P,
+  IDR_RELOAD, IDR_RELOAD_H, IDR_RELOAD_P,
   IDR_HOME, IDR_HOME_H, IDR_HOME_P,
-  IDR_GO, IDR_GO_NOBORDER, IDR_GO_NOBORDER_CENTER, IDR_GO_H, IDR_GO_P,
-  IDR_STOP, IDR_STOP_NOBORDER, IDR_STOP_NOBORDER_CENTER, IDR_STOP_H, IDR_STOP_P,
+  IDR_GO, IDR_GO_NOBORDER_CENTER, IDR_GO_H, IDR_GO_P,
+  IDR_STOP, IDR_STOP_NOBORDER_CENTER, IDR_STOP_H, IDR_STOP_P,
   IDR_MENU_BOOKMARK,
   IDR_MENU_PAGE, IDR_MENU_PAGE_RTL,
   IDR_MENU_CHROME, IDR_MENU_CHROME_RTL,

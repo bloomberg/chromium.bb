@@ -12,7 +12,6 @@
   <release seq="1">
     <includes>
       <include name="IDR_BACK" file="back.png" type="BINDATA" />
-      <include name="IDR_BACK_NOBORDER" file="back_noborder.png" type="BINDATA" />
       <include name="IDR_BACK_D" file="back_d.png" type="BINDATA" />
       <include name="IDR_BACK_H" file="back_h.png" type="BINDATA" />
       <include name="IDR_BACK_P" file="back_p.png" type="BINDATA" />
@@ -30,12 +29,10 @@
       <include name="IDR_DROP_H" file="drop_h.png" type="BINDATA" />
       <include name="IDR_DROP_P" file="drop_p.png" type="BINDATA" />
       <include name="IDR_FORWARD" file="forward.png" type="BINDATA" />
-      <include name="IDR_FORWARD_NOBORDER" file="forward_noborder.png" type="BINDATA" />
       <include name="IDR_FORWARD_D" file="forward_d.png" type="BINDATA" />
       <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
       <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
       <include name="IDR_GO" file="go.png" type="BINDATA" />
-      <include name="IDR_GO_NOBORDER" file="go_noborder.png" type="BINDATA" />
       <include name="IDR_GO_NOBORDER_CENTER" file="go_noborder_center.png" type="BINDATA" />
       <include name="IDR_GO_H" file="go_h.png" type="BINDATA" />
       <include name="IDR_GO_P" file="go_p.png" type="BINDATA" />
@@ -72,8 +69,6 @@
       <include name="IDR_OMNIBOX_STAR_SELECTED" file="omnibox_star_selected.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
       <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
-      <include name="IDR_RELOAD_NOBORDER" file="reload_noborder.png" type="BINDATA" />
-      <include name="IDR_RELOAD_NOBORDER_CENTER" file="reload_noborder_center.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
@@ -149,7 +144,6 @@
       <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
       <include name="IDR_STOP" file="stop.png" type="BINDATA" />
-      <include name="IDR_STOP_NOBORDER" file="stop_noborder.png" type="BINDATA" />
       <include name="IDR_STOP_NOBORDER_CENTER" file="stop_noborder_center.png" type="BINDATA" />
       <include name="IDR_STOP_H" file="stop_h.png" type="BINDATA" />
       <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
@@ -264,7 +258,6 @@
       <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
       <include name="IDR_HOME" file="home.png" type="BINDATA" />
-      <include name="IDR_HOME_NOBORDER" file="home_noborder.png" type="BINDATA" />
       <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />
       <include name="IDR_HOME_P" file="home_p.png" type="BINDATA" />
       <include name="IDR_HISTORY_FAVICON" file="history_favicon.png" type="BINDATA" />
