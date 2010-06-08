@@ -10,6 +10,9 @@
       '_USE_32BIT_TIME_T',
       'SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS',
       'EXPAT_RELATIVE_PATH',
+      # TODO(sergeyu): Fix libjingle to use NDEBUG instead of
+      # _DEBUG and remove this define. See below as well.
+      '_DEBUG',
     ],
     'include_dirs': [
       './overrides',
@@ -77,7 +80,7 @@
         'Debug': {
           'defines': [
             # TODO(sergeyu): Fix libjingle to use NDEBUG instead of
-            # _DEBUG and remove this define.
+            # _DEBUG and remove this define. See above as well.
             '_DEBUG',
           ],
         }
