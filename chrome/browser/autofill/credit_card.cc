@@ -281,31 +281,6 @@ bool CreditCard::operator!=(const CreditCard& creditcard) const {
   return !operator==(creditcard);
 }
 
-// Use the Luhn formula to validate the number.
-bool CreditCard::IsCreditCardNumber(const string16& text) {
-  string16 number;
-  RemoveChars(text, kCreditCardSeparators.c_str(), &number);
-
-  int sum = 0;
-  bool odd = false;
-  string16::reverse_iterator iter;
-  for (iter = number.rbegin(); iter != number.rend(); ++iter) {
-    if (!IsAsciiDigit(*iter))
-      return false;
-
-    int digit = *iter - '0';
-    if (odd) {
-      digit *= 2;
-      sum += digit / 10 + digit % 10;
-    } else {
-      sum += digit;
-    }
-    odd = !odd;
-  }
-
-  return (sum % 10) == 0;
-}
-
 string16 CreditCard::ExpirationMonthAsString() const {
   if (expiration_month_ == 0)
     return string16();
@@ -432,6 +407,33 @@ bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
 
 bool CreditCard::IsNameOnCard(const string16& text) const {
   return StringToLowerASCII(text) == StringToLowerASCII(name_on_card_);
+}
+
+bool CreditCard::IsCreditCardNumber(const string16& text) {
+  string16 number;
+  TrimString(text, kCreditCardSeparators.c_str(), &number);
+
+  // We use the Luhn formula to validate the number; see
+  // http://www.beachnet.com/~hstiles/cardtype.html and
+  // http://www.webopedia.com/TERM/L/Luhn_formula.html.
+  int sum = 0;
+  bool odd = false;
+  string16::reverse_iterator iter;
+  for (iter = number.rbegin(); iter != number.rend(); ++iter) {
+    if (!IsAsciiDigit(*iter))
+      return false;
+
+    int digit = *iter - '0';
+    if (odd) {
+      digit *= 2;
+      sum += digit / 10 + digit % 10;
+    } else {
+      sum += digit;
+    }
+    odd = !odd;
+  }
+
+  return (sum % 10) == 0;
 }
 
 bool CreditCard::IsVerificationCode(const string16& text) const {

@@ -58,10 +58,6 @@ class CreditCard : public FormGroup {
   bool operator!=(const CreditCard& creditcard) const;
   void set_label(const string16& label) { label_ = label; }
 
-  // Returns true if |value| is a credit card number.  Uses the Luhn formula to
-  // validate the number.
-  static bool IsCreditCardNumber(const string16& text);
-
  private:
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
@@ -110,6 +106,9 @@ class CreditCard : public FormGroup {
   // Returns true if |text| matches the name on the card.  The comparison is
   // case-insensitive.
   bool IsNameOnCard(const string16& text) const;
+
+  // Uses the Luhn formula to validate the credit card number in |text|.
+  static bool IsCreditCardNumber(const string16& text);
 
   // Returns true if |text| matches the expiration month of the card.
   bool IsExpirationMonth(const string16& text) const;

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_
 
+#include <string>
+
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -25,6 +27,8 @@ class AutocompleteHistoryManager
   explicit AutocompleteHistoryManager(TabContents* tab_contents);
   virtual ~AutocompleteHistoryManager();
 
+  Profile* profile();
+
   // RenderViewHostDelegate::Autocomplete implementation.
   virtual void FormSubmitted(const webkit_glue::FormData& form);
   virtual bool GetAutocompleteSuggestions(int query_id,
@@ -37,22 +41,14 @@ class AutocompleteHistoryManager
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
 
- protected:
-  friend class AutocompleteHistoryManagerTest;
-
-  // For tests.
-  AutocompleteHistoryManager(Profile* profile, WebDataService* wds);
-
  private:
   void CancelPendingQuery();
   void StoreFormEntriesInWebDatabase(const webkit_glue::FormData& form);
   void SendSuggestions(const WDTypedResult* suggestions);
 
   TabContents* tab_contents_;
-  Profile* profile_;
-  scoped_refptr<WebDataService> web_data_service_;
 
-  BooleanPrefMember autofill_enabled_;
+  BooleanPrefMember form_autofill_enabled_;
 
   // When the manager makes a request from WebDataService, the database
   // is queried on another thread, we record the query handle until we
