@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -116,6 +117,15 @@ std::wstring FormatInputLanguage(
   return formatted;
 }
 
+// Returns PrefService object associated with |host|. Returns NULL if we are NOT
+// within a browser.
+PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
+  if (host->GetProfile()) {
+    return host->GetProfile()->GetPrefs();
+  }
+  return NULL;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -150,14 +160,34 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   RebuildModel();
   // Grab the real estate.
   UpdateIcon(kSpacer, L"" /* no tooltip */);
-  // Display the default input method name.
-  const std::wstring name
-      = FormatInputLanguage(input_method_descriptors_->at(0), false, false);
-  // TODO(yusukes): The assumption that the input method at index 0 is enabled
-  // by default is not always true. We should fix the logic once suzhe's patches
-  // for issue 2627 (get/set ibus state without focus) are submitted.
-  UpdateIcon(name, L"" /* no tooltip */);
-  CrosLibrary::Get()->GetLanguageLibrary()->AddObserver(this);
+
+  // Draw the default indicator "EN". The default indicator "EN" is used when
+  // |pref_service| is not available (for example, unit tests) or |pref_service|
+  // is available, but Chrome preferences are not available (for example,
+  // initial OS boot).
+  UpdateIcon(L"EN", L"");
+
+  // Sync current and previous input methods on Chrome prefs with ibus-daemon.
+  // InputMethodChanged() will be called soon and the indicator will be updated.
+  LanguageLibrary* library = CrosLibrary::Get()->GetLanguageLibrary();
+  PrefService* pref_service = GetPrefService(host_);
+  if (pref_service) {
+    previous_input_method_pref_.Init(
+        prefs::kLanguagePreviousInputMethod, pref_service, this);
+    const std::wstring& previous_input_method_id =
+        previous_input_method_pref_.GetValue();
+    if (!previous_input_method_id.empty()) {
+      library->ChangeInputMethod(WideToUTF8(previous_input_method_id));
+    }
+    current_input_method_pref_.Init(
+        prefs::kLanguageCurrentInputMethod, pref_service, this);
+    const std::wstring& current_input_method_id =
+        current_input_method_pref_.GetValue();
+    if (!current_input_method_id.empty()) {
+      library->ChangeInputMethod(WideToUTF8(current_input_method_id));
+    }
+  }
+  library->AddObserver(this);
 }
 
 LanguageMenuButton::~LanguageMenuButton() {
@@ -376,6 +406,15 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
   const std::wstring name = FormatInputLanguage(input_method, false, false);
   const std::wstring tooltip = FormatInputLanguage(input_method, true, true);
   UpdateIcon(name, tooltip);
+  // Update Chrome prefs as well.
+  if (GetPrefService(host_)) {
+    const std::wstring& previous_input_method_id =
+        current_input_method_pref_.GetValue();
+    // Sometimes (e.g. initial boot) |previous_input_method_id| is an empty
+    // string.
+    previous_input_method_pref_.SetValue(previous_input_method_id);
+    current_input_method_pref_.SetValue(UTF8ToWide(input_method.id));
+  }
 }
 
 void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {

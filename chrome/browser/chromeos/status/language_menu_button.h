@@ -8,6 +8,9 @@
 #include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/pref_member.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_service.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -22,7 +25,8 @@ class StatusAreaHost;
 class LanguageMenuButton : public views::MenuButton,
                            public views::ViewMenuDelegate,
                            public menus::MenuModel,
-                           public LanguageLibrary::Observer {
+                           public LanguageLibrary::Observer,
+                           public NotificationObserver {
  public:
   explicit LanguageMenuButton(StatusAreaHost* host);
   virtual ~LanguageMenuButton();
@@ -49,6 +53,11 @@ class LanguageMenuButton : public views::MenuButton,
   virtual void InputMethodChanged(LanguageLibrary* obj);
   virtual void ImePropertiesChanged(LanguageLibrary* obj);
   virtual void FocusChanged(LanguageLibrary* obj);
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {}
 
  protected:
   // views::View implementation.
@@ -80,6 +89,10 @@ class LanguageMenuButton : public views::MenuButton,
 
   // The current input method list.
   scoped_ptr<InputMethodDescriptors> input_method_descriptors_;
+
+  // Objects for reading/writing the Chrome prefs.
+  StringPrefMember previous_input_method_pref_;
+  StringPrefMember current_input_method_pref_;
 
   // Languages that need the input method name displayed.
   std::set<std::string> need_method_name_;

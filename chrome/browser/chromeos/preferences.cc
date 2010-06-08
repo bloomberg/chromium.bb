@@ -25,6 +25,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
   prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 9);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
+  prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, L"");
+  prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, L"");
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
                             kHotkeyNextEngineInMenu);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
@@ -143,6 +145,10 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
           PARAM_RANGE_TOUCH_SENSITIVITY,
           sensitivity_.GetValue());
   }
+
+  // We don't handle prefs::kLanguageCurrentInputMethod and PreviousInputMethod
+  // here.
+
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngineInMenu) {
     SetLanguageConfigStringListAsCSV(kHotKeySectionName,
                              kNextEngineInMenuConfigName,

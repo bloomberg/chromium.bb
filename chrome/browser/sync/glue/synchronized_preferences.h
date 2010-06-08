@@ -132,6 +132,8 @@ static const wchar_t* kSynchronizedPreferences[] = {
   //   prefs::kLanguageHotkeyPreviousEngine,
   //   prefs::kLanguagePinyinDoublePinyinSchema,
   //   prefs::kLanguagePinyinLookupTablePageSize,
+  //
+  // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod.
 #endif
 };
 

@@ -194,6 +194,14 @@ const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
 // A integer pref for the touchpad sensitivity.
 const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
 
+// A string pref set to the current input method.
+const wchar_t kLanguageCurrentInputMethod[] =
+    L"settings.language.current_input_method";
+
+// A string pref set to the previous input method.
+const wchar_t kLanguagePreviousInputMethod[] =
+    L"settings.language.previous_input_method";
+
 // A string pref (comma-separated list) set to the "next engine in menu"
 // hot-key lists.
 const wchar_t kLanguageHotkeyNextEngineInMenu[] =

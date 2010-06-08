@@ -73,6 +73,8 @@ extern const wchar_t kTapToClickEnabled[];
 extern const wchar_t kVertEdgeScrollEnabled[];
 extern const wchar_t kTouchpadSpeedFactor[];
 extern const wchar_t kTouchpadSensitivity[];
+extern const wchar_t kLanguageCurrentInputMethod[];
+extern const wchar_t kLanguagePreviousInputMethod[];
 extern const wchar_t kLanguageHotkeyNextEngineInMenu[];
 extern const wchar_t kLanguageHotkeyPreviousEngine[];
 extern const wchar_t kLanguagePreloadEngines[];
