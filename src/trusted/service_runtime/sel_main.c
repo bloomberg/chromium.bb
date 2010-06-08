@@ -693,6 +693,8 @@ int main(int  ac,
     fflush(stdout);
   }
 
+  NaClAppDtor(&state);
+
  done_file_dtor:
   if ((*((struct Gio *) &gf)->vtbl->Close)((struct Gio *) &gf) == -1) {
     fprintf(stderr, "Error while closing \"%s\".\n", av[optind]);

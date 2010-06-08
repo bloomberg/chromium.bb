@@ -40,6 +40,8 @@ struct NaClAppThread {
 
   int                       is_privileged;  /* can make "special" syscalls? */
 
+  uint32_t                  refcount;
+
   struct NaClClosureResult  result;
 
   uint32_t                  sysret;
@@ -156,6 +158,10 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tdb_base,
                               size_t                tdb_size) NACL_WUR;
+
+int NaClAppThreadIncRef(struct NaClAppThread *natp);
+
+int NaClAppThreadDecRef(struct NaClAppThread *natp);
 
 EXTERN_C_END
 

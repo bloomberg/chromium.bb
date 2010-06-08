@@ -103,8 +103,8 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
   NaClXCondVarBroadcast(&nap->threads_cv);
   NaClLog(3, " unlocking thread table\n");
   NaClXMutexUnlock(&nap->threads_mu);
-  NaClLog(3, " freeing thread object\n");
-  NaClAppThreadDtor(natp);
+  NaClLog(3, " decref'ing thread object (from count %d)\n", natp->refcount);
+  NaClAppThreadDecRef(natp);
   NaClLog(3, " NaClThreadExit\n");
   NaClThreadExit();  /* should not return */
   NaClLog(LOG_ERROR, "INCONCEIVABLE!\n");

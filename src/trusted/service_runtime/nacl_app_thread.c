@@ -88,6 +88,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   }
 
   natp->is_privileged = is_privileged;
+  natp->refcount = 1;
 
   if (!NaClClosureResultCtor(&natp->result)) {
     goto cleanup_cv;
@@ -206,4 +207,36 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                            usr_stack_ptr,
                            tls_idx,
                            sys_tdb_base);
+}
+
+
+int NaClAppThreadIncRef(struct NaClAppThread *natp) {
+  int refcount;
+
+  NaClXMutexLock(&natp->mu);
+  if (natp->refcount == 0) {
+    NaClLog(LOG_FATAL, "NaClAppThreadIncRef: count was already 0!\n");
+  }
+  if (++natp->refcount == 0) {
+    NaClLog(LOG_FATAL, "NaClAppThreadIncRef: refcount overflow\n");
+  }
+  refcount = natp->refcount;
+  NaClXMutexUnlock(&natp->mu);
+
+  return refcount;
+}
+
+
+int NaClAppThreadDecRef(struct NaClAppThread *natp) {
+  int refcount;
+
+  NaClXMutexLock(&natp->mu);
+  refcount = --natp->refcount;
+  NaClXMutexUnlock(&natp->mu);
+
+  if (0 == refcount) {
+    NaClAppThreadDtor(natp);
+    free(natp);
+  }
+  return refcount;
 }

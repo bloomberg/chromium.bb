@@ -79,3 +79,8 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
 
   return LOAD_OK;
 }
+
+void NaClTeardownMprotectGuards(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+  return;
+}
