@@ -487,10 +487,9 @@ void HostContentSettingsMap::Observe(NotificationType type,
     } else if (prefs::kContentSettingsPatterns == *name) {
       ReadExceptions(true);
     } else if (prefs::kBlockThirdPartyCookies == *name) {
-      updating_preferences_ = true;
-      SetBlockThirdPartyCookies(profile_->GetPrefs()->GetBoolean(
-          prefs::kBlockThirdPartyCookies));
-      updating_preferences_ = false;
+      AutoLock auto_lock(lock_);
+      block_third_party_cookies_ = profile_->GetPrefs()->GetBoolean(
+          prefs::kBlockThirdPartyCookies);
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
