@@ -35,10 +35,6 @@ void RenderViewContextMenuViews::SetExternal() {
 }
 #endif
 
-void RenderViewContextMenuViews::UpdateMenuItemStates() {
-  menu_->UpdateStates();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, protected:
 
