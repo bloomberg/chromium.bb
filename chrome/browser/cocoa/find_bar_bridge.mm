@@ -73,14 +73,16 @@ void FindBarBridge::RestoreSavedFocus() {
 bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
                                          bool* fully_visible) {
   // TODO(rohitrao): Return the proper position.  http://crbug.com/22036
-  *position = gfx::Point(0, 0);
+  if (position)
+    *position = gfx::Point(0, 0);
 
   NSWindow* window = [[cocoa_controller_ view] window];
   bool window_visible = [window isVisible] ? true : false;
-  *fully_visible = window_visible &&
-                   [cocoa_controller_ isFindBarVisible] &&
-                   ![cocoa_controller_ isFindBarAnimating];
-
+  if (fully_visible) {
+    *fully_visible = window_visible &&
+        [cocoa_controller_ isFindBarVisible] &&
+        ![cocoa_controller_ isFindBarAnimating];
+  }
   return window_visible;
 }
 

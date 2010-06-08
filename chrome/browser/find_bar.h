@@ -81,7 +81,7 @@ class FindBarTesting {
 
   // Computes the location of the find bar and whether it is fully visible in
   // its parent window. The return value indicates if the window is visible at
-  // all. Both out arguments are required.
+  // all. Both out arguments are optional.
   //
   // This is used for UI tests of the find bar. If the find bar is not currently
   // shown (return value of false), the out params will be {(0, 0), false}.
