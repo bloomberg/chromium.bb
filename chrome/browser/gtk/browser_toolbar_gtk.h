@@ -19,7 +19,6 @@
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -41,7 +40,6 @@ class ToolbarModel;
 // View class that displays the GTK version of the toolbar and routes gtk
 // events back to the Browser.
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
-                          public ProfileSyncServiceObserver,
                           public menus::SimpleMenuModel::Delegate,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
@@ -180,9 +178,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAppMenuImageExpose,
                        GdkEventExpose*);
 
-  // ProfileSyncServiceObserver method.
-  virtual void OnStateChanged();
-
   // Updates preference-dependent state.
   void NotifyPrefChanged(const std::wstring* pref);
 
@@ -249,9 +244,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   Browser* browser_;
   BrowserWindowGtk* window_;
   Profile* profile_;
-
-  // A pointer to the ProfileSyncService instance if one exists.
-  ProfileSyncService* sync_service_;
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;

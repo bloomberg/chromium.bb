@@ -40,7 +40,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
@@ -94,7 +93,6 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       browser_(browser),
       window_(window),
       profile_(NULL),
-      sync_service_(NULL),
       menu_bar_helper_(this),
       upgrade_reminder_animation_(this) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
@@ -117,9 +115,6 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
-
   browser_->command_updater()->RemoveCommandObserver(IDC_BACK, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_RELOAD, this);
@@ -481,13 +476,6 @@ void BrowserToolbarGtk::SetProfile(Profile* profile) {
 
   profile_ = profile;
   location_bar_->SetProfile(profile);
-
-  if (profile_->GetProfileSyncService()) {
-    // Obtain a pointer to the profile sync service and add our instance as an
-    // observer.
-    sync_service_ = profile_->GetProfileSyncService();
-    sync_service_->AddObserver(this);
-  }
 }
 
 void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
@@ -768,13 +756,6 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
   if (!url_is_newtab) {
     home_page_.SetValue(UTF8ToWide(url.spec()));
   }
-}
-
-void BrowserToolbarGtk::OnStateChanged() {
-  DCHECK(sync_service_);
-
-  std::string menu_label = UTF16ToUTF8(
-      sync_ui_util::GetSyncMenuLabel(sync_service_));
 }
 
 void BrowserToolbarGtk::NotifyPrefChanged(const std::wstring* pref) {
