@@ -548,7 +548,7 @@ void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
 
   gtk_util::SetLabelColor(status_label, theme_provider_->UseGtkTheme() ?
                                         NULL : &text_color);
-  gtk_label_set_label(GTK_LABEL(status_label), status_text.c_str());
+  gtk_label_set_text(GTK_LABEL(status_label), status_text.c_str());
 }
 
 void DownloadItemGtk::UpdateDangerWarning() {
@@ -583,8 +583,8 @@ void DownloadItemGtk::UpdateDangerWarning() {
       gtk_util::SetLabelColor(dangerous_label_, &color);
     }
 
-    gtk_label_set_label(GTK_LABEL(dangerous_label_),
-                        WideToUTF8(dangerous_warning).c_str());
+    gtk_label_set_text(GTK_LABEL(dangerous_label_),
+                       WideToUTF8(dangerous_warning).c_str());
 
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(dangerous_label_, kTextSize);
