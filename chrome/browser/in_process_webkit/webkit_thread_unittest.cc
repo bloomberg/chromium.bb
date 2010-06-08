@@ -5,7 +5,7 @@
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(WebKitThreadTest, ExposedInChromeThread) {
+TEST(WebKitThreadTest, DISABLED_ExposedInChromeThread) {
   int* null = NULL;  // Help the template system out.
   EXPECT_FALSE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT, FROM_HERE, null));
   {
