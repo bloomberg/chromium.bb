@@ -1838,14 +1838,14 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
 gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
                                               GdkEventButton* event) {
   // Handle back/forward.
-  // TODO(jhawkins): Investigate the possibility of the button numbers being
-  // different for other mice.
-  if (event->button == 8) {
-    browser_->GoBack(CURRENT_TAB);
-    return TRUE;
-  } else if (event->button == 9) {
-    browser_->GoForward(CURRENT_TAB);
-    return TRUE;
+  if (event->type == GDK_BUTTON_PRESS) {
+    if (event->button == 8) {
+      browser_->GoBack(CURRENT_TAB);
+      return TRUE;
+    } else if (event->button == 9) {
+      browser_->GoForward(CURRENT_TAB);
+      return TRUE;
+    }
   }
 
   // Handle left, middle and right clicks.  In particular, we care about clicks
