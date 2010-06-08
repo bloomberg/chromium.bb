@@ -525,6 +525,7 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
       new RenderViewContextMenuViews(tab_contents(), params));
   external_context_menu_->SetExternal();
   external_context_menu_->Init();
+  external_context_menu_->UpdateMenuItemStates();
 
   POINT screen_pt = { params.x, params.y };
   MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_pt, 1);
