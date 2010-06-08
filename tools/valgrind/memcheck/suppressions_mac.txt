@@ -1185,18 +1185,3 @@
    fun:_dyld_start
    obj:*
 }
-{
-   bug_46074
-   Memcheck:Addr4
-   fun:_ZN13FindBarBridge20GetFindBarWindowInfoEPN3gfx5PointEPb
-   fun:_ZN18AutomationProvider23GetFindWindowVisibilityEiPb
-   fun:_Z16DispatchToMethodI18AutomationProviderMS0_FviPbEibEvPT_T0_RK6Tuple1IT1_EPS7_IT2_E
-   fun:_ZN3IPC16MessageWithReplyI6Tuple1IiES1_IRbEE8DispatchI18AutomationProviderMS7_FviPbEEEbPKNS_7MessageEPT_T0_
-   fun:_ZN18AutomationProvider17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
-   fun:_ZN4base17AsyncCallbackTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
