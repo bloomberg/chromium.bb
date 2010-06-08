@@ -177,12 +177,12 @@ void SniffData::DetermineRendererType(bool last_chance) {
       if (is_cache_valid() && cache_) {
         HGLOBAL memory = NULL;
         GetHGlobalFromStream(cache_, &memory);
-        char* buffer = reinterpret_cast<char*>(GlobalLock(memory));
+        const char* buffer = reinterpret_cast<const char*>(GlobalLock(memory));
 
         std::wstring html_contents;
         // TODO(joshia): detect and handle different content encodings
         if (buffer && size_) {
-          UTF8ToWide(buffer, size_, &html_contents);
+          UTF8ToWide(buffer, std::min(size_, kMaxSniffSize), &html_contents);
           GlobalUnlock(memory);
         }
 
@@ -197,8 +197,8 @@ void SniffData::DetermineRendererType(bool last_chance) {
       }
     }
     DLOG(INFO) << __FUNCTION__ << "Url: " << url_ <<
-      StringPrintf("Renderer type: %s",
-                    renderer_type_ == CHROME ? "CHROME" : "OTHER");
+        StringPrintf("Renderer type: %s",
+                      renderer_type_ == CHROME ? "CHROME" : "OTHER");
   }
 }
 
