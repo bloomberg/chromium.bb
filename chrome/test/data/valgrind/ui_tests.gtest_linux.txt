@@ -12,6 +12,6 @@ BrowserTest.FLAKY_PosixSessionEnd
 # See http://crbug.com/42921
 ResourceDispatcherTest.CrossSiteAfterCrash
 # See http://crbug.com/45562
-UnloadTest.BrowserCloseTabWhenOtherTabHasListener
+UnloadTest.*BrowserCloseTabWhenOtherTabHasListener
 # http://crbug.com/45574   Unhappy on ChromeOS valgrind
 LayoutPluginTester.UnloadNoCrash
