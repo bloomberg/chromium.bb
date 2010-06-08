@@ -691,8 +691,9 @@ surface_map(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
-	wlsc_matrix_translate(&es->matrix, x, y, 0);
+	wlsc_matrix_init(&es->matrix);
 	wlsc_matrix_scale(&es->matrix, width, height, 1);
+	wlsc_matrix_translate(&es->matrix, x, y, 0);
 }
 
 static void
