@@ -80,7 +80,6 @@
           'sel_util.c',
           'sel_util-inl.c',
           'sel_validate_image.c',
-          'web_worker_stub.c',
         ],
         'include_dirs': [
           # For generated header files from the x86-64 validator,
