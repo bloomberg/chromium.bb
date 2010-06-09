@@ -247,19 +247,17 @@ const NSString* const kBrandKey = @"KSBrandID";
 }
 
 - (NSDictionary*)infoDictionary {
-  // Use mac_util::MainAppBundle() to get the app framework's dictionary.
-  return [mac_util::MainAppBundle() infoDictionary];
-}
-
-- (void)loadParameters {
-  NSDictionary* infoDictionary = [self infoDictionary];
-
   // Use [NSBundle mainBundle] to get the application's own bundle identifier
   // and path, not the framework's.  For auto-update, the application is
   // what's significant here: it's used to locate the outermost part of the
   // application for the existence checker and other operations that need to
   // see the entire application bundle.
+  return [[NSBundle mainBundle] infoDictionary];
+}
+
+- (void)loadParameters {
   NSBundle* appBundle = [NSBundle mainBundle];
+  NSDictionary* infoDictionary = [self infoDictionary];
 
   NSString* productID = [infoDictionary objectForKey:@"KSProductID"];
   if (productID == nil) {

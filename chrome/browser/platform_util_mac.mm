@@ -73,14 +73,16 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 
 string16 GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
-  NSBundle* bundle = mac_util::MainAppBundle();
+  // Use the main application bundle and not the framework bundle. Keystone
+  // keys don't live in the framework.
+  NSBundle* bundle = [NSBundle mainBundle];
   NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
 
   // Only ever return "", "unknown", "beta" or "dev" in a branded build.
   if (![bundle objectForInfoDictionaryKey:@"KSProductID"]) {
     // This build is not Keystone-enabled, it can't have a channel.
     channel = @"unknown";
-  } else if (!channel || [channel isEqual:@"stable"]) {
+  } else if (!channel) {
     // For the stable channel, KSChannelID is not set.
     channel = @"";
   } else if ([channel isEqual:@"beta"] || [channel isEqual:@"dev"]) {

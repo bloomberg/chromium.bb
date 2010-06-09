@@ -391,14 +391,15 @@
                 {
                   # Modify the Info.plist as needed.  The script explains why
                   # this is needed.  This is also done in the chrome target.
-                  # The framework needs the Breakpad and Keystone keys if
-                  # those features are enabled.  It doesn't currently use the
-                  # Subversion keys for anything, but this seems like a really
-                  # good place to store them.
+                  # The framework needs the Breakpad keys if this feature is
+                  # enabled.  It does not need the Keystone keys; these always
+                  # come from the outer application bundle.  The framework
+                  # doesn't currently use the Subversion keys for anything,
+                  # but this seems like a really good place to store them.
                   'postbuild_name': 'Tweak Info.plist',
                   'action': ['<(tweak_info_plist_path)',
                              '-b<(mac_breakpad)',
-                             '-k<(mac_keystone)',
+                             '-k0',
                              '-s1',
                              '<(branding)',
                              '<(mac_bundle_id)'],
