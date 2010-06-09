@@ -61,6 +61,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "webkit/glue/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -573,6 +574,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFlashCoreAnimation,
 #endif
     switches::kRemoteShellPort,
+    switches::kEnablePepperTesting,
   };
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {

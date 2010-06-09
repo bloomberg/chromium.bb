@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -126,8 +127,14 @@ const void* GetInterface(const char* name) {
     return ImageData::GetInterface();
   if (strcmp(name, PPB_DEVICECONTEXT2D_INTERFACE) == 0)
     return DeviceContext2D::GetInterface();
-  if (strcmp(name, PPB_TESTING_INTERFACE) == 0)
-    return &testing_interface;
+
+  // Only support the testing interface when the command line switch is
+  // specified. This allows us to prevent people from (ab)using this interface
+  // in production code.
+  if (strcmp(name, PPB_TESTING_INTERFACE) == 0) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch("enable-pepper-testing"))
+      return &testing_interface;
+  }
   return NULL;
 }
 

@@ -204,6 +204,8 @@
         'plugins/plugin_string_stream.cc',
         'plugins/plugin_string_stream.h',
         'plugins/plugin_stubs.cc',
+        'plugins/plugin_switches.cc',
+        'plugins/plugin_switches.h',
         'plugins/plugin_web_event_converter_mac.h',
         'plugins/plugin_web_event_converter_mac.mm',
         'plugins/quickdraw_drawing_manager_mac.h',

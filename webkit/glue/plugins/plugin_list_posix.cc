@@ -9,13 +9,14 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
+#include "webkit/glue/plugins/plugin_switches.h"
 
 namespace {
 
 // Return true if we're in debug-plugin-loading mode.
 bool DebugPluginLoading() {
-  static const char kDebugPluginLoading[] = "debug-plugin-loading";
-  return CommandLine::ForCurrentProcess()->HasSwitch(kDebugPluginLoading);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDebugPluginLoading);
 }
 
 // Shorthand way of logging plugin load status.
