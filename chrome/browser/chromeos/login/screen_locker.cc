@@ -16,16 +16,15 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/screen_lock_view.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
-
-#include "chrome/browser/chromeos/wm_ipc.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 namespace {
 // The maxium times that the screen locker should try to grab input,
@@ -88,11 +87,14 @@ class GrabWidget : public views::WidgetGtk {
 
   virtual void Show() {
     views::WidgetGtk::Show();
-    GtkWidget* current_grab_window = gtk_grab_get_current();
-    if (current_grab_window)
+    GtkWidget* current_grab_window;
+    // Make sure there is no grab widget so that gtk simply propagates
+    // an event.  This is necessary to allow message bubble and password
+    // field, button to process events simultaneously. GTK
+    // maintains grab widgets in a linked-list, so we need to remove
+    // until it's empty.
+    while ((current_grab_window = gtk_grab_get_current()) != NULL)
       gtk_grab_remove(current_grab_window);
-
-    gtk_grab_add(window_contents());
 
     // Now steal all inputs.
     TryGrabAllInputs();
@@ -190,7 +192,6 @@ class MouseEventRelay : public MessageLoopForUI::Observer {
 
   virtual void DidProcessEvent(GdkEvent* event) {
     if (event->any.window != src_) {
-      DLOG(INFO) << "ignore event src non grab window: " << event->type;
       return;
     }
 
