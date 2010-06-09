@@ -30,7 +30,7 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
   std::string proxy_id;
   service_prefs_->prefs()->GetString(prefs::kCloudPrintProxyId, &proxy_id);
   if (proxy_id.empty()) {
-    proxy_id = cloud_print::GenerateProxyId();
+    proxy_id = cloud_print::PrintSystem::GenerateProxyId();
     service_prefs_->prefs()->SetString(prefs::kCloudPrintProxyId, proxy_id);
     service_prefs_->WritePrefs();
   }

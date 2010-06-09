@@ -22,8 +22,10 @@ PrinterJobHandler::PrinterJobHandler(
     const std::string& caps_hash,
     const std::string& auth_token,
     const GURL& cloud_print_server_url,
+    cloud_print::PrintSystem* print_system,
     Delegate* delegate)
-    : printer_info_(printer_info),
+    : print_system_(print_system),
+      printer_info_(printer_info),
       printer_id_(printer_id),
       auth_token_(auth_token),
       last_caps_hash_(caps_hash),
@@ -41,8 +43,10 @@ PrinterJobHandler::PrinterJobHandler(
 }
 
 bool PrinterJobHandler::Initialize() {
-  if (cloud_print::IsValidPrinter(printer_info_.printer_name)) {
-    printer_change_notifier_.StartWatching(printer_info_.printer_name, this);
+  if (print_system_->IsValidPrinter(printer_info_.printer_name)) {
+    printer_watcher_ = print_system_->CreatePrinterWatcher(
+        printer_info_.printer_name);
+    printer_watcher_->StartWatching(this);
     NotifyJobAvailable();
   } else {
     // This printer does not exist any more. Delete it from the server.
@@ -52,7 +56,7 @@ bool PrinterJobHandler::Initialize() {
 }
 
 PrinterJobHandler::~PrinterJobHandler() {
-  printer_change_notifier_.StopWatching();
+  printer_watcher_->StopWatching();
 }
 
 void PrinterJobHandler::Reset() {
@@ -118,12 +122,12 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
   // We need to update the parts of the printer info that have changed
   // (could be printer name, description, status or capabilities).
   cloud_print::PrinterBasicInfo printer_info;
-  printer_change_notifier_.GetCurrentPrinterInfo(&printer_info);
+  printer_watcher_->GetCurrentPrinterInfo(&printer_info);
   cloud_print::PrinterCapsAndDefaults printer_caps;
   std::string post_data;
   std::string mime_boundary;
-  if (cloud_print::GetPrinterCapsAndDefaults(printer_info.printer_name,
-                                             &printer_caps)) {
+  if (print_system_->GetPrinterCapsAndDefaults(printer_info.printer_name,
+                                               &printer_caps)) {
     std::string caps_hash = MD5String(printer_caps.printer_capabilities);
     CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
     if (caps_hash != last_caps_hash_) {
@@ -211,12 +215,6 @@ bool PrinterJobHandler::OnJobCompleted(JobStatusUpdater* updater) {
     }
   }
   return ret;
-}
-
-  // cloud_print::PrinterChangeNotifier::Delegate implementation
-void PrinterJobHandler::OnPrinterAdded() {
-  // Should never get this notification for a printer
-  NOTREACHED();
 }
 
 void PrinterJobHandler::OnPrinterDeleted() {
@@ -356,7 +354,7 @@ bool PrinterJobHandler::HandlePrintTicketResponse(
   if (!status.is_success() || (response_code != 200)) {
     return false;
   }
-  if (cloud_print::ValidatePrintTicket(printer_info_.printer_name, data)) {
+  if (print_system_->ValidatePrintTicket(printer_info_.printer_name, data)) {
     job_details_.print_ticket_ = data;
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -416,7 +414,8 @@ void PrinterJobHandler::StartPrinting() {
       print_thread_.message_loop()->PostTask(
           FROM_HERE, NewRunnableFunction(&PrinterJobHandler::DoPrint,
                                          job_details_,
-                                         printer_info_.printer_name, this,
+                                         printer_info_.printer_name,
+                                         print_system_, this,
                                          MessageLoop::current()));
     }
   }
@@ -494,7 +493,7 @@ bool PrinterJobHandler::HandleSuccessStatusUpdateResponse(
   scoped_refptr<JobStatusUpdater> job_status_updater =
       new JobStatusUpdater(printer_info_.printer_name, job_details_.job_id_,
                            local_job_id_, auth_token_, cloud_print_server_url_,
-                           this);
+                           print_system_.get(), this);
   job_status_updater_list_.push_back(job_status_updater);
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(job_status_updater.get(),
@@ -543,17 +542,18 @@ bool PrinterJobHandler::HavePendingTasks() {
 
 
 void PrinterJobHandler::DoPrint(const JobDetails& job_details,
-                                const std::string& printer_name,
-                                PrinterJobHandler* job_handler,
-                                MessageLoop* job_message_loop) {
+                          const std::string& printer_name,
+                          scoped_refptr<cloud_print::PrintSystem> print_system,
+                          PrinterJobHandler* job_handler,
+                          MessageLoop* job_message_loop) {
   DCHECK(job_handler);
   DCHECK(job_message_loop);
   cloud_print::PlatformJobId job_id = -1;
-  if (cloud_print::SpoolPrintJob(job_details.print_ticket_,
-                                 job_details.print_data_file_path_,
-                                 job_details.print_data_mime_type_,
-                                 printer_name,
-                                 job_details.job_title_, &job_id)) {
+  if (print_system->SpoolPrintJob(job_details.print_ticket_,
+                                  job_details.print_data_file_path_,
+                                  job_details.print_data_mime_type_,
+                                  printer_name,
+                                  job_details.job_title_, &job_id)) {
     job_message_loop->PostTask(FROM_HERE,
                                NewRunnableMethod(job_handler,
                                                  &PrinterJobHandler::JobSpooled,

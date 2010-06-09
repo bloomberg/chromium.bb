@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/service/cloud_print/printer_info.h"
+#include "chrome/service/cloud_print/print_system.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
