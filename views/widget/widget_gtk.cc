@@ -62,15 +62,13 @@ class CompositePainter {
     }
   }
 
-  // Enable the composition.
+  // Set the composition flag.
   static void SetComposited(GtkWidget* widget) {
-    DCHECK(GTK_WIDGET_REALIZED(widget));
-    gdk_window_set_composited(widget->window, true);
     g_object_set_data(G_OBJECT(widget), kCompositeEnabledKey,
                       const_cast<char*>(""));
   }
 
-  // Returns true if the |widget| is composited.
+  // Returns true if the |widget| is composited and ready to be drawn.
   static bool IsComposited(GtkWidget* widget) {
     return g_object_get_data(G_OBJECT(widget), kCompositeEnabledKey) != NULL;
   }
@@ -901,6 +899,11 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   if (transparent_) {
     // Clear the background before drawing any view and native components.
     DrawTransparentBackground(widget, event);
+    if (type_ == TYPE_CHILD && !CompositePainter::IsComposited(widget_)) {
+      // Let the parent draw the content only after something is drawn on
+      // the widget.
+      CompositePainter::SetComposited(widget_);
+    }
   }
   root_view_->OnPaint(event);
   return false;  // False indicates other widgets should get the event as well.
@@ -1308,7 +1311,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       // The widget has to be realized to set composited flag.
       // I tried "realize" signal to set this flag, but it did not work
       // when the top level is popup.
-      CompositePainter::SetComposited(widget_);
+      DCHECK(GTK_WIDGET_REALIZED(widget_));
+      gdk_window_set_composited(widget_->window, true);
     }
   } else {
     widget_ = gtk_window_new(
