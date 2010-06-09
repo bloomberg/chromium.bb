@@ -894,6 +894,8 @@ function registerEventCallbacks() {
   o3djs.event.addEventListener(g_o3dElement, 'keypress', keyPressed);
   o3djs.event.addEventListener(g_o3dElement, 'keyup', keyUp);
   o3djs.event.addEventListener(g_o3dElement, 'keydown', keyDown);
+
+  o3djs.event.addEventListener(g_o3dElement, 'wheel', scrollWheel);
 }
 
 
@@ -1884,6 +1886,22 @@ function keyDown(event) {
   }
 }
 
+function zoomIn() {
+  g_cameraInfo.targetPosition.radius *= 0.9;
+}
+
+function zoomOut() {
+  g_cameraInfo.targetPosition.radius /= 0.9;
+}
+
+function scrollWheel(event) {
+  if (event.deltaY > 0) {
+    zoomIn();
+  } else {
+    zoomOut();
+  }
+}
+
 function keyPressed(event) {
   var keyChar = String.fromCharCode(o3djs.event.getEventKeyChar(event));
   keyChar = keyChar.toLowerCase();
@@ -1943,12 +1961,12 @@ function keyPressed(event) {
 
     case '=':
     case '+':
-      g_cameraInfo.targetPosition.radius *= 0.9;
+      zoomIn();
       break;
 
     case '-':
     case '_':
-      g_cameraInfo.targetPosition.radius /= 0.9;
+      zoomOut();
       break;
 
     case ' ':

@@ -74,8 +74,6 @@ var g_finished = false;  // for selenium testing
 function scrollMe(e) {
   g_eye = g_math.mulScalarVector((e.deltaY < 0 ? 11 : 13) / 12, g_eye);
   g_viewInfo.drawContext.view = g_math.matrix4.lookAt(g_eye, g_target, g_up);
-  // Prevents event from reaching up to the window, e.g. so page will not scroll
-  o3djs.event.cancel(e);
 }
 
 /**

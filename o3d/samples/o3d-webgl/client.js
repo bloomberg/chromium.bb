@@ -840,17 +840,23 @@ o3d.Client.getRelativeCoordinates_ = function(eventInfo, opt_reference) {
  * Wraps a user's event callback with one that properly computes
  * relative coordinates for the event.
  * @param {!o3d.EventCallback} handler Function to call on event.
+ * @param {boolean} doCancelEvent If event should be canceled after callback.
  * @return {!o3d.EventCallback} Wrapped handler function.
  * @private
  */
-o3d.Client.wrapEventCallback_ = function(handler) {
+o3d.Client.wrapEventCallback_ = function(handler, doCancelEvent) {
   return function(event) {
     event = o3d.Client.getEvent_(event);
     var info = o3d.Client.getEventInfo_(event);
     var relativeCoords = o3d.Client.getRelativeCoordinates_(info);
     event.x = relativeCoords.x;
     event.y = relativeCoords.y;
+    // Invert value to meet contract for deltaY. @see event.js.
+    event.deltaY = -info.wheel;
     handler(event);
+    if (doCancelEvent) {
+      o3djs.event.cancel(event);
+    }
   };
 };
 
@@ -869,13 +875,20 @@ o3d.Client.prototype.setEventCallback =
   var listener = this.gl.hack_canvas;
   // TODO(petersont): Figure out a way for a canvas to listen to a key event
   // directly.
+
+  var isWheelEvent = type == 'wheel';
   var forKeyEvent = type.substr(0, 3) == 'key';
   if (forKeyEvent) {
     listener = document;
   } else {
-    handler = o3d.Client.wrapEventCallback_(handler);
+    handler = o3d.Client.wrapEventCallback_(handler, isWheelEvent);
   }
-  listener.addEventListener(type, handler, true);
+  if (isWheelEvent) {
+    listener.addEventListener('DOMMouseScroll', handler, true);
+    listener.addEventListener('mousewheel', handler, true);
+  } else {
+    listener.addEventListener(type, handler, true);
+  }
 };
 
 
@@ -885,11 +898,21 @@ o3d.Client.prototype.setEventCallback =
  */
 o3d.Client.prototype.clearEventCallback =
     function(type) {
+  //TODO(petersont): Same as TODO in setEventCallback above.
+  var listener = this.gl.hack_canvas;
+
+  var isWheelEvent = type == 'wheel';
   var forKeyEvent = type.substr(0, 3) == 'key';
   if (forKeyEvent) {
     listener = document;
   }
-  listener.removeEventListener(type);
+
+  if (isWheelEvent) {
+    listener.removeEventListener('DOMMouseScroll');
+    listener.removeEventListener('mousewheel');
+  } else {
+    listener.removeEventListener(type);
+  }
 };
 
 
