@@ -208,7 +208,7 @@ void AboutChromeView::Init() {
   AddChildView(version_label_);
 
 #if defined(OS_CHROMEOS)
-  os_version_label_ = new views::Textfield();
+  os_version_label_ = new views::Textfield(views::Textfield::STYLE_MULTILINE);
   os_version_label_->SetReadOnly(true);
   os_version_label_->RemoveBorder();
   os_version_label_->SetTextColor(SK_ColorBLACK);
@@ -587,6 +587,14 @@ bool AboutChromeView::IsDialogButtonVisible(
   return true;
 }
 
+// (on ChromeOS) the default focus is ending up in the version field when
+// the update button is hidden. This forces the focus to always be on the
+// OK button (which is the dialog cancel button, see GetDialogButtonLabel
+// above).
+int AboutChromeView::GetDefaultDialogButton() const {
+  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+}
+
 bool AboutChromeView::CanResize() const {
   return false;
 }
@@ -655,6 +663,14 @@ void AboutChromeView::LinkActivated(views::Link* source,
 void AboutChromeView::OnOSVersion(
     chromeos::VersionLoader::Handle handle,
     std::string version) {
+
+  // This is a hack to "wrap" the very long Test Build version after
+  // the version number, the remaining text won't be visible but can
+  // be selected, copied, pasted.
+  std::string::size_type pos = version.find(" (Test Build");
+  if (pos != std::string::npos)
+    version.replace(pos, 1, "\n");
+
   os_version_label_->SetText(UTF8ToUTF16(version));
 }
 #endif
@@ -734,10 +750,16 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         UserMetrics::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"), profile_);
         check_button_status_ = CHECKBUTTON_HIDDEN;
+#if defined(OS_CHROMEOS)
+        std::wstring update_label_text =
+            l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
+                                  l10n_util::GetString(IDS_PRODUCT_NAME));
+#else
         std::wstring update_label_text =
             l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
                                   l10n_util::GetString(IDS_PRODUCT_NAME),
                                   current_version_);
+#endif
         if (base::i18n::IsRTL()) {
           update_label_text.push_back(
               static_cast<wchar_t>(base::i18n::kLeftToRightMark));

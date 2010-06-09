@@ -366,6 +366,13 @@ gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   return WidgetGtk::OnLeaveNotify(widget, event);
 }
 
+void WindowGtk::SetInitialFocus() {
+  View* v = window_delegate_->GetInitiallyFocusedView();
+  if (v) {
+    v->RequestFocus();
+  }
+}
+
 // static
 WindowGtk* WindowGtk::GetWindowForNative(GtkWidget* widget) {
   gpointer user_data = g_object_get_data(G_OBJECT(widget), "chrome-window");

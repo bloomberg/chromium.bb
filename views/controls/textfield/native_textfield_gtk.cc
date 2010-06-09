@@ -184,8 +184,13 @@ void NativeTextfieldGtk::UpdateBorder() {
     return;
 
   if (textfield_->IsMultiLine()) {
-    if (!textfield_->draw_border())
+    if (!textfield_->draw_border()) {
       gtk_container_set_border_width(GTK_CONTAINER(native_view()), 0);
+
+      // Use margin to match entry with no border
+      SetHorizontalMargins(kTextViewBorderWidth / 2 + 1,
+                           kTextViewBorderWidth / 2 + 1);
+    }
   } else {
     if (!textfield_->draw_border())
       gtk_entry_set_has_frame(GTK_ENTRY(native_view()), false);
