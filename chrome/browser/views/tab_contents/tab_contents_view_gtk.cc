@@ -189,7 +189,8 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
                         GDK_POINTER_MOTION_MASK);
 
   // Renderer target DnD.
-  drag_dest_.reset(new WebDragDestGtk(tab_contents(), view->native_view()));
+  if (tab_contents()->ShouldAcceptDragAndDrop())
+    drag_dest_.reset(new WebDragDestGtk(tab_contents(), view->native_view()));
 
   gtk_fixed_put(GTK_FIXED(GetNativeView()), view->native_view(), 0, 0);
   return view;
@@ -320,7 +321,8 @@ void TabContentsViewGtk::RestoreFocus() {
 }
 
 void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
-  drag_dest_->UpdateDragStatus(operation);
+  if (drag_dest_.get())
+    drag_dest_->UpdateDragStatus(operation);
 }
 
 void TabContentsViewGtk::GotFocus() {
