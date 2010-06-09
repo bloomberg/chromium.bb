@@ -73,6 +73,7 @@ WorkerTest.*SharedWorkerFastException
 WorkerTest.*SharedWorkerFastInIframe
 WorkerTest.*SharedWorkerFastGC
 WorkerTest.*SharedWorkerFastLayoutTests
+WorkerTest.*SharedWorkerFastLoadError
 WorkerTest.*SharedWorkerFastLocation
 WorkerTest.*SharedWorkerFastName
 WorkerTest.*SharedWorkerFastNavigator
