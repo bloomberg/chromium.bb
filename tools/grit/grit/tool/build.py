@@ -91,6 +91,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
                       (self.output_directory,
                        os.path.abspath(self.output_directory)))
     self.res = grd_reader.Parse(opts.input, debug=opts.extra_verbose)
+    self.res.SetDefines(self.defines)
     self.res.RunGatherers(recursive = True)
     self.Process()
     return 0

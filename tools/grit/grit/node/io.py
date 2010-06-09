@@ -40,11 +40,17 @@ class FileNode(base.Node):
     if not self.should_load_:
       return
 
+    root = self.GetRoot()
+    defs = {}
+    if hasattr(root, 'defines'):
+      defs = root.defines
+
     xtb_file = file(self.GetFilePath())
     try:
       lang = xtb_reader.Parse(xtb_file,
                               self.UberClique().GenerateXtbParserCallback(
-                                self.attrs['lang'], debug=debug))
+                                self.attrs['lang'], debug=debug),
+                              defs=defs)
     except:
       print "Exception during parsing of %s" % self.GetFilePath()
       raise

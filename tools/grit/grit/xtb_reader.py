@@ -17,7 +17,7 @@ class XtbContentHandler(xml.sax.handler.ContentHandler):
   translation in the XTB file.
   '''
 
-  def __init__(self, callback, debug=False):
+  def __init__(self, callback, defs=None, debug=False):
     self.callback = callback
     self.debug = debug
     # 0 if we are not currently parsing a translation, otherwise the message
@@ -31,6 +31,11 @@ class XtbContentHandler(xml.sax.handler.ContentHandler):
     self.language = ''
     # Keep track of the if block we're inside.  We can't nest ifs.
     self.if_expr = None
+    # Root defines to be used with if expr.
+    if defs:
+      self.defines = defs
+    else:
+      self.defines = {}
 
   def startElement(self, name, attrs):
     if name == 'translation':
@@ -50,11 +55,21 @@ class XtbContentHandler(xml.sax.handler.ContentHandler):
     if name == 'translation':
       assert self.current_id != 0
 
+      defs = self.defines
+      def pp_ifdef(define):
+        return define in defs
+      def pp_if(define):
+        return define in defs and defs[define]
+
       # If we're in an if block, only call the callback (add the translation)
       # if the expression is True.
       should_run_callback = True
       if self.if_expr:
-        should_run_callback = eval(self.if_expr, {}, {'os': sys.platform})
+        should_run_callback = eval(self.if_expr, {},
+                                   {'os': sys.platform,
+                                    'defs' : defs,
+                                    'pp_ifdef' : pp_ifdef,
+                                    'pp_if' : pp_if})
       if should_run_callback:
         self.callback(self.current_id, self.current_structure)
 
@@ -86,7 +101,7 @@ class XtbErrorHandler(xml.sax.handler.ErrorHandler):
     pass
 
 
-def Parse(xtb_file, callback_function, debug=False):
+def Parse(xtb_file, callback_function, defs={}, debug=False):
   '''Parse xtb_file, making a call to callback_function for every translation
   in the XTB file.
 
@@ -109,7 +124,8 @@ def Parse(xtb_file, callback_function, debug=False):
   front_of_file = xtb_file.read(1024)
   xtb_file.seek(front_of_file.find('<translationbundle'))
 
-  handler = XtbContentHandler(callback=callback_function, debug=debug)
+  handler = XtbContentHandler(callback=callback_function, defs=defs,
+                              debug=debug)
   xml.sax.parse(xtb_file, handler)
   assert handler.language != ''
   return handler.language

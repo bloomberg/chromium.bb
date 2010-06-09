@@ -234,6 +234,8 @@ class GritNode(base.Node):
     self.output_language = output_language
     self.defines = defines
 
+  def SetDefines(self, defines):
+    self.defines = defines
 
 class IdentifierNode(base.Node):
   '''A node for specifying identifiers that should appear in the resource
