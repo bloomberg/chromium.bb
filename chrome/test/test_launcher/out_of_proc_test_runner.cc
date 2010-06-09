@@ -8,9 +8,20 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
-
 #include "chrome/test/test_launcher/test_runner.h"
 #include "chrome/test/unit/chrome_test_suite.h"
+
+#if defined(OS_WIN)
+#include "base/base_switches.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/sandbox_policy.h"
+#include "sandbox/src/dep.h"
+#include "sandbox/src/sandbox_factory.h"
+#include "sandbox/src/sandbox_types.h"
+
+// The entry point signature of chrome.dll.
+typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
+#endif
 
 // This version of the test launcher forks a new process for each test it runs.
 
@@ -146,8 +157,42 @@ int main(int argc, char** argv) {
       command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) ||
       command_line->HasSwitch(kGTestListTestsFlag) ||
       command_line->HasSwitch(kGTestHelpFlag)) {
+
+#if defined(OS_WIN)
+    if (command_line->HasSwitch(kChildProcessFlag)) {
+      // This is the browser process, so setup the sandbox broker.
+      sandbox::BrokerServices* broker_services =
+          sandbox::SandboxFactory::GetBrokerServices();
+      if (broker_services) {
+        sandbox::InitBrokerServices(broker_services);
+        // Precreate the desktop and window station used by the renderers.
+        sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
+        sandbox::ResultCode result = policy->CreateAlternateDesktop(true);
+        CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
+        policy->Release();
+      }
+    }
+#endif
     return ChromeTestSuite(argc, argv).Run();
   }
+
+#if defined(OS_WIN)
+  if (command_line->HasSwitch(switches::kProcessType)) {
+    // This is a child process, call ChromeMain.
+    FilePath chrome_path(command_line->GetProgram().DirName());
+    chrome_path = chrome_path.Append(chrome::kBrowserResourcesDll);
+    HMODULE dll = LoadLibrary(chrome_path.value().c_str());
+    DLL_MAIN entry_point =
+        reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll, "ChromeMain"));
+    if (!entry_point)
+      return -1;
+
+    // Initialize the sandbox services.
+    sandbox::SandboxInterfaceInfo sandbox_info = {0};
+    sandbox_info.target_services = sandbox::SandboxFactory::GetTargetServices();
+    return entry_point(GetModuleHandle(NULL), &sandbox_info, GetCommandLineW());
+  }
+#endif
 
   fprintf(stdout,
       "Starting tests...\n"

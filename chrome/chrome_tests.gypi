@@ -1408,6 +1408,7 @@
           'dependencies': [
             'chrome_dll_version',
             'installer_util_strings',
+            '../sandbox/sandbox.gyp:sandbox',
             '<(allocator_target)',
           ],
           'configurations': {
@@ -2032,6 +2033,7 @@
             'chrome_dll_version',
             'installer_util_strings',
             '../views/views.gyp:views',
+            '../sandbox/sandbox.gyp:sandbox',
             '<(allocator_target)',
           ],
           'configurations': {

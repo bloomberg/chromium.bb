@@ -137,10 +137,6 @@ void InProcessBrowserTest::SetUp() {
   command_line->AppendSwitchWithValue(switches::kUserDataDir,
                                       user_data_dir.ToWStringHack());
 
-  // For some reason the sandbox wasn't happy running in test mode. These
-  // tests aren't intended to test the sandbox, so we turn it off.
-  command_line->AppendSwitch(switches::kNoSandbox);
-
   // Don't show the first run ui.
   command_line->AppendSwitch(switches::kNoFirstRun);
 
@@ -154,8 +150,14 @@ void InProcessBrowserTest::SetUp() {
   if (command_line->HasSwitch(switches::kSingleProcess))
     RenderProcessHost::set_run_renderer_in_process(true);
 
-  // Explicitly set the path of the exe used for the renderer and plugin,
-  // otherwise they'll try to use unit_test.exe.
+#if defined(OS_WIN)
+  // The Windows sandbox requires that the browser and child processes are the
+  // same binary.  So we launch browser_process.exe which loads chrome.dll
+  command_line->AppendSwitchWithValue(switches::kBrowserSubprocessPath,
+                                      command_line->GetProgram().value());
+#else
+  // Explicitly set the path of the binary used for child processes, otherwise
+  // they'll try to use browser_tests which doesn't contain ChromeMain.
   FilePath subprocess_path;
   PathService::Get(base::FILE_EXE, &subprocess_path);
   subprocess_path = subprocess_path.DirName();
@@ -163,6 +165,7 @@ void InProcessBrowserTest::SetUp() {
       chrome::kBrowserProcessExecutablePath));
   command_line->AppendSwitchWithValue(switches::kBrowserSubprocessPath,
                                       subprocess_path.ToWStringHack());
+#endif
 
   // Enable warning level logging so that we can see when bad stuff happens.
   command_line->AppendSwitch(switches::kEnableLogging);

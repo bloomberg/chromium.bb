@@ -110,6 +110,7 @@
         '<(DEPTH)/chrome/chrome.gyp:chrome_dll_version',
         '<(DEPTH)/chrome/chrome.gyp:crash_service',  # run time dependency
         '<(DEPTH)/chrome/chrome.gyp:installer_util_strings',
+        '<(DEPTH)/sandbox/sandbox.gyp:sandbox',
       ],
       'sources': [
         '<(DEPTH)/webkit/glue/resources/aliasb.cur',
