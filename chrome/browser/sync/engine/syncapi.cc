@@ -34,6 +34,7 @@
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
@@ -268,6 +269,11 @@ const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::typed_url);
 }
 
+const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
+  DCHECK(GetModelType() == syncable::EXTENSIONS);
+  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::extension);
+}
+
 syncable::ModelType BaseNode::GetModelType() const {
   return GetEntry()->GetModelType();
 }
@@ -369,6 +375,12 @@ void WriteNode::SetTypedUrlSpecifics(
   PutTypedUrlSpecificsAndMarkForSyncing(new_value);
 }
 
+void WriteNode::SetExtensionSpecifics(
+    const sync_pb::ExtensionSpecifics& new_value) {
+  DCHECK(GetModelType() == syncable::EXTENSIONS);
+  PutExtensionSpecificsAndMarkForSyncing(new_value);
+}
+
 void WriteNode::PutThemeSpecificsAndMarkForSyncing(
     const sync_pb::ThemeSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
@@ -380,6 +392,13 @@ void WriteNode::PutTypedUrlSpecificsAndMarkForSyncing(
     const sync_pb::TypedUrlSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::typed_url)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
+}
+
+void WriteNode::PutExtensionSpecificsAndMarkForSyncing(
+    const sync_pb::ExtensionSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::extension)->CopyFrom(new_value);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 

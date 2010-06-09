@@ -52,6 +52,8 @@ enum ModelType {
   THEMES,
   // A typed_url folder or a typed_url object.
   TYPED_URLS,
+  // A extension folder or a extension object.
+  EXTENSIONS,
 
   MODEL_TYPE_COUNT,
 };

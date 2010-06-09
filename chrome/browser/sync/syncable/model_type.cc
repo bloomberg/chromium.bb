@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -35,6 +36,9 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
       break;
     case TYPED_URLS:
       specifics->MutableExtension(sync_pb::typed_url);
+      break;
+    case EXTENSIONS:
+      specifics->MutableExtension(sync_pb::extension);
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -90,6 +94,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.HasExtension(sync_pb::typed_url))
     return TYPED_URLS;
+
+  if (specifics.HasExtension(sync_pb::extension))
+    return EXTENSIONS;
 
   return UNSPECIFIED;
 }

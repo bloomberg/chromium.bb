@@ -79,6 +79,7 @@ namespace sync_pb {
 class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
+class ExtensionSpecifics;
 class PasswordSpecifics;
 class PreferenceSpecifics;
 class PasswordSpecifics;
@@ -194,6 +195,10 @@ class BaseNode {
   // Getter specific to the TYPED_URLS datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == TYPED_URLS.
   const sync_pb::TypedUrlSpecifics& GetTypedUrlSpecifics() const;
+
+  // Getter specific to the EXTENSIONS datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == EXTENSIONS.
+  const sync_pb::ExtensionSpecifics& GetExtensionSpecifics() const;
 
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
@@ -314,6 +319,10 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == TYPED_URLS.
   void SetTypedUrlSpecifics(const sync_pb::TypedUrlSpecifics& specifics);
 
+  // Set the extension specifics (id, update url, enabled state, etc).
+  // Should only be called if GetModelType() == EXTENSIONS.
+  void SetExtensionSpecifics(const sync_pb::ExtensionSpecifics& specifics);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -345,6 +354,8 @@ class WriteNode : public BaseNode {
       const sync_pb::ThemeSpecifics& new_value);
   void PutTypedUrlSpecificsAndMarkForSyncing(
       const sync_pb::TypedUrlSpecifics& new_value);
+  void PutExtensionSpecificsAndMarkForSyncing(
+      const sync_pb::ExtensionSpecifics& new_value);
   void PutSpecificsAndMarkForSyncing(
       const sync_pb::EntitySpecifics& specifics);
 

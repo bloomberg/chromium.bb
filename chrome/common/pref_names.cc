@@ -829,6 +829,7 @@ const wchar_t kSyncPreferences[] = L"sync.preferences";
 const wchar_t kSyncAutofill[] = L"sync.autofill";
 const wchar_t kSyncThemes[] = L"sync.themes";
 const wchar_t kSyncTypedUrls[] = L"sync.typed_urls";
+const wchar_t kSyncExtensions[] = L"sync.extensions";
 
 // Create web application shortcut dialog preferences.
 const wchar_t kWebAppCreateOnDesktop[] = L"browser.web_app.create_on_desktop";

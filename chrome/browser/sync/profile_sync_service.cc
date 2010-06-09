@@ -211,6 +211,7 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncAutofill, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls, enable_by_default);
+  pref_service->RegisterBooleanPref(prefs::kSyncExtensions, enable_by_default);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -392,6 +393,8 @@ const wchar_t* ProfileSyncService::GetPrefNameForDataType(
       return prefs::kSyncThemes;
     case syncable::TYPED_URLS:
       return prefs::kSyncTypedUrls;
+    case syncable::EXTENSIONS:
+      return prefs::kSyncExtensions;
     default:
       NOTREACHED();
       return NULL;
