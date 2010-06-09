@@ -35,81 +35,14 @@ ProcessSingletonLinuxTest.NotifyOtherProcessDifferingHost
 ProcessSingletonLinuxTest.NotifyOtherProcessOrCreate_DifferingHost
 
 # These tests fail under valgrind.
-# See http://crbug.com/29579.
+# See http://crbug.com/29579
 AutomationProxyTest.NavigateToURLWithTimeout1
 AutomationProxyTest.NavigateToURLWithTimeout2
-# See http://crbug.com/29586.
+# See http://crbug.com/29586
 NewTabUITest.ChromeInternalLoadsNTP
 # See http://crbug.com/42205
 DownloadTest.*
 # See http://crbug.com/45792
 DefaultPluginUITest.DefaultPluginLoadTest
-
-##############################################################################
-# We have a special section dedicated to WorkerTest because it's so
-# problematic. Please check here before adding duplicate test exclusions to
-# ui_tests.gtest_linux.txt and ui_tests.gtest_mac.txt.
-#
-# As of 2010/03/18, thestig is disabling all WorkerTests and listing them
-# individually below. Please test them / fix them under Valgrind, and
-# re-enable them one at a time.
-#
-# See: http://crbug.com/38575
-##############################################################################
-
-WorkerTest.*IncognitoSharedWorkers
-WorkerTest.*LimitPerPage
-WorkerTest.*LimitTotal
-WorkerTest.*MessagePorts
-WorkerTest.*MultipleSharedWorkers
-WorkerTest.*MultipleTabsQueuedSharedWorker
-WorkerTest.*MultipleWorkers
-WorkerTest.*OpenDatabaseSyncInputs
-WorkerTest.*QueuedSharedWorkerShutdown
-WorkerTest.*QueuedSharedWorkerStartedFromOtherTab
-WorkerTest.*SharedWorkerFastConstructor
-WorkerTest.*SharedWorkerFastContextGC
-WorkerTest.*SharedWorkerFastException
-WorkerTest.*SharedWorkerFastInIframe
-WorkerTest.*SharedWorkerFastGC
-WorkerTest.*SharedWorkerFastLayoutTests
-WorkerTest.*SharedWorkerFastLoadError
-WorkerTest.*SharedWorkerFastLocation
-WorkerTest.*SharedWorkerFastName
-WorkerTest.*SharedWorkerFastNavigator
-WorkerTest.*SharedWorkerFastReplaceGlobalConstructor
-WorkerTest.*SharedWorkerFastReplaceSelf
-WorkerTest.*SharedWorkerFastScriptError
-WorkerTest.*SharedWorkerFastSimple
-WorkerTest.*SharedWorkerFastShared
-WorkerTest.*SharedWorkerHttpAuth
-WorkerTest.*SharedWorkerInIframe
-WorkerTest.*SingleSharedWorker
-WorkerTest.*SingleWorker
-WorkerTest.*StressJSExecution
-WorkerTest.*UseMachineStack
-WorkerTest.*WorkerCall
-WorkerTest.*WorkerClonePort
-WorkerTest.*WorkerClose
-WorkerTest.*WorkerCloseFast
-WorkerTest.*WorkerConstructor
-WorkerTest.*WorkerContextGc
-WorkerTest.*WorkerContextMultiPort
-WorkerTest.*WorkerEventListener
-WorkerTest.*WorkerGC
-WorkerTest.*WorkerHttpAuth
-WorkerTest.*WorkerHttpLayoutTests
-WorkerTest.*WorkerLifecycle
-WorkerTest.*WorkerLocation
-WorkerTest.*WorkerMapGc
-WorkerTest.*WorkerMessagePort
-WorkerTest.*WorkerMessagePortGC
-WorkerTest.*WorkerMultiPort
-WorkerTest.*WorkerNavigator
-WorkerTest.*WorkerReplaceGlobalConstructor
-WorkerTest.*WorkerReplaceSelf
-WorkerTest.*WorkerScriptError
-WorkerTest.*WorkerTerminate
-WorkerTest.*WorkerTimeout
-WorkerTest.*WorkerWebSocketLayoutTests
-WorkerTest.*WorkerXhrHttpLayoutTests
+# See http://crbug.com/38575
+WorkerTest.*
