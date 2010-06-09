@@ -13,10 +13,12 @@
 #include "ipc/ipc_message.h"
 
 struct ViewHostMsg_IndexedDatabaseOpen_Params;
+struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
 
 namespace WebKit {
 class WebIDBDatabase;
 class WebIDBIndex;
+class WebIDBObjectStore;
 }
 
 // Handles all IndexedDB related messages from a particular renderer process.
@@ -48,8 +50,8 @@ class IndexedDBDispatcherHost
 
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
-  int32 AddIDBDatabase(WebKit::WebIDBDatabase* idb_database);
-  // TODO(andreip/jorlow): Add functions for other maps here.
+  int32 Add(WebKit::WebIDBDatabase* idb_database);
+  int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
 
  private:
   friend class base::RefCountedThreadSafe<IndexedDBDispatcherHost>;
@@ -77,7 +79,7 @@ class IndexedDBDispatcherHost
 
   class DatabaseDispatcherHost {
    public:
-    DatabaseDispatcherHost(IndexedDBDispatcherHost* parent);
+    explicit DatabaseDispatcherHost(IndexedDBDispatcherHost* parent);
     ~DatabaseDispatcherHost();
 
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
@@ -87,6 +89,9 @@ class IndexedDBDispatcherHost
     void OnDescription(int32 idb_database_id, IPC::Message* reply_msg);
     void OnVersion(int32 idb_database_id, IPC::Message* reply_msg);
     void OnObjectStores(int32 idb_database_id, IPC::Message* reply_msg);
+    void OnCreateObjectStore(
+        const ViewHostMsg_IDBDatabaseCreateObjectStore_Params& params);
+
     void OnDestroyed(int32 idb_database_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -95,7 +100,7 @@ class IndexedDBDispatcherHost
 
   class IndexDispatcherHost {
    public:
-    IndexDispatcherHost(IndexedDBDispatcherHost* parent);
+    explicit IndexDispatcherHost(IndexedDBDispatcherHost* parent);
     ~IndexDispatcherHost();
 
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
@@ -110,6 +115,21 @@ class IndexedDBDispatcherHost
     IDMap<WebKit::WebIDBIndex, IDMapOwnPointer> map_;
   };
 
+  class ObjectStoreDispatcherHost {
+   public:
+    explicit ObjectStoreDispatcherHost(IndexedDBDispatcherHost* parent);
+    ~ObjectStoreDispatcherHost();
+
+    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+    void Send(IPC::Message* message);
+
+    void OnName(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnKeyPath(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnDestroyed(int32 idb_object_store_id);
+
+    IndexedDBDispatcherHost* parent_;
+    IDMap<WebKit::WebIDBObjectStore, IDMapOwnPointer> map_;
+  };
   // Only use on the IO thread.
   IPC::Message::Sender* sender_;
 
@@ -119,6 +139,7 @@ class IndexedDBDispatcherHost
   // Only access on WebKit thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
   scoped_ptr<IndexDispatcherHost> index_dispatcher_host_;
+  scoped_ptr<ObjectStoreDispatcherHost> object_store_dispatcher_host_;
 
   // If we get a corrupt message from a renderer, we need to kill it using this
   // handle.

@@ -1608,7 +1608,6 @@
         'browser/in_process_webkit/dom_storage_namespace.h',
         'browser/in_process_webkit/dom_storage_permission_request.cc',
         'browser/in_process_webkit/dom_storage_permission_request.h',
-        'browser/in_process_webkit/indexed_db_callbacks.cc',
         'browser/in_process_webkit/indexed_db_callbacks.h',
         'browser/in_process_webkit/indexed_db_context.cc',
         'browser/in_process_webkit/indexed_db_context.h',

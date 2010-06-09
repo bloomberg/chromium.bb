@@ -543,6 +543,24 @@ struct ViewHostMsg_IndexedDatabaseOpen_Params {
   string16 description_;
 };
 
+// Used to create an object store.
+struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params {
+  // The response should have this id.
+  int32 response_id_;
+
+  // The name of the object store.
+  string16 name_;
+
+  // The keyPath of the object store.
+  string16 keypath_;
+
+  // Whether the object store created should have a key generator.
+  bool auto_increment_;
+
+  // The database the object store belongs to.
+  int32 idb_database_id_;
+};
+
 // Allows an extension to execute code in a tab.
 struct ViewMsg_ExecuteCode_Params {
   ViewMsg_ExecuteCode_Params() {}
@@ -2351,6 +2369,40 @@ struct ParamTraits<ViewHostMsg_IndexedDatabaseOpen_Params> {
     LogParam(p.name_, l);
     l->append(L", ");
     LogParam(p.description_, l);
+    l->append(L")");
+  }
+};
+
+// Traits for ViewHostMsg_IDBDatabaseCreateObjectStore_Params.
+template <>
+struct ParamTraits<ViewHostMsg_IDBDatabaseCreateObjectStore_Params> {
+  typedef ViewHostMsg_IDBDatabaseCreateObjectStore_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.response_id_);
+    WriteParam(m, p.name_);
+    WriteParam(m, p.keypath_);
+    WriteParam(m, p.auto_increment_);
+    WriteParam(m, p.idb_database_id_);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->response_id_) &&
+        ReadParam(m, iter, &p->name_) &&
+        ReadParam(m, iter, &p->keypath_) &&
+        ReadParam(m, iter, &p->auto_increment_) &&
+        ReadParam(m, iter, &p->idb_database_id_);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.response_id_, l);
+    l->append(L", ");
+    LogParam(p.name_, l);
+    l->append(L", ");
+    LogParam(p.keypath_, l);
+    l->append(L", ");
+    LogParam(p.auto_increment_, l);
+    l->append(L", ");
+    LogParam(p.idb_database_id_, l);
     l->append(L")");
   }
 };

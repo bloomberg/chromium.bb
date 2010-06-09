@@ -30,6 +30,10 @@ class IndexedDBDispatcher {
       WebKit::WebIDBCallbacks* callbacks, const string16& origin,
       WebKit::WebFrame* web_frame);
 
+  void RequestIDBDatabaseCreateObjectStore(
+      const string16& name, const string16& keypath, bool auto_increment,
+      WebKit::WebIDBCallbacks* callbacks, int32 idb_database_id);
+
  private:
   // Message handlers.  For each message we send, we need to handle both the
   // success and the error case.
@@ -37,11 +41,17 @@ class IndexedDBDispatcher {
                                     int32 idb_database_id);
   void OnIndexedDatabaseOpenError(int32 response_id, int code,
                                   const string16& message);
+  void OnIDBDatabaseCreateObjectStoreSuccess(int32 response_id,
+                                             int32 idb_object_store_id);
+  void OnIDBDatabaseCreateObjectStoreError(int32 response_id, int code,
+                                           const string16& message);
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.
   IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer>
       indexed_database_open_callbacks_;
+  IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer>
+      idb_database_create_object_store_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };

@@ -9,6 +9,12 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 
+namespace WebKit {
+class WebFrame;
+class WebIDBCallbacks;
+class WebString;
+}
+
 class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
  public:
   explicit RendererWebIDBDatabaseImpl(int32 idb_database_id);
@@ -19,6 +25,9 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual WebKit::WebString description();
   virtual WebKit::WebString version();
   virtual WebKit::WebDOMStringList objectStores();
+  virtual void createObjectStore(
+      const WebKit::WebString& name, const WebKit::WebString& key_path,
+      bool auto_increment, WebKit::WebIDBCallbacks* callbacks);
 
  private:
   int32 idb_database_id_;

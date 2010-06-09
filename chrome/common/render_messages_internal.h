@@ -858,6 +858,15 @@ IPC_BEGIN_MESSAGES(View)
                        int /* code */,
                        string16 /* message */)
 
+  // IDBDatabase::createObjectStore message responses.
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBDatabaseCreateObjectStoreSuccess,
+                       int32 /* response_id */,
+                       int32 /* object_store_id */)
+  IPC_MESSAGE_CONTROL3(ViewMsg_IDBDatabaseCreateObjectStoreError,
+                       int32 /* response_id */,
+                       int /* code */,
+                       string16 /* message */)
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   // Tell the renderer process to begin or end IPC message logging.
   IPC_MESSAGE_CONTROL1(ViewMsg_SetIPCLoggingEnabled,
@@ -2200,6 +2209,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* idb_database_id */
                               std::vector<string16> /* objectStores */)
 
+  // WebIDBDatabase::createObjectStore() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseCreateObjectStore,
+                       ViewHostMsg_IDBDatabaseCreateObjectStore_Params)
+
   // WebIDBDatabase::~WebIDBDatabase() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseDestroyed,
                        int32 /* idb_database_id */)
@@ -2222,6 +2235,20 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebIDBIndex::~WebIDBIndex() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexDestroyed,
                        int32 /* idb_index_id */)
+
+  // WebIDBObjectStore::name() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreName,
+                              int32, /* idb_object_store_id */
+                              string16 /* name */)
+
+  // WebIDBObjectStore::keyPath() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreKeyPath,
+                              int32, /* idb_object_store_id */
+                              string16 /* keyPath */)
+
+  // WebIDBObjectStore::~WebIDBObjectStore() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreDestroyed,
+                       int32 /* idb_object_store_id */)
 
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,

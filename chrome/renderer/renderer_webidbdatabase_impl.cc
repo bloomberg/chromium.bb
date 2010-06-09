@@ -7,8 +7,11 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebDOMStringList;
+using WebKit::WebFrame;
+using WebKit::WebIDBCallbacks;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -54,4 +57,13 @@ WebDOMStringList RendererWebIDBDatabaseImpl::objectStores() {
     webResult.append(*it);
   }
   return webResult;
+}
+
+void RendererWebIDBDatabaseImpl::createObjectStore(
+    const WebString& name, const WebString& key_path, bool auto_increment,
+    WebIDBCallbacks* callbacks) {
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBDatabaseCreateObjectStore(
+      name, key_path, auto_increment, callbacks, idb_database_id_);
 }

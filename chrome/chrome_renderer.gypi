@@ -150,6 +150,8 @@
         'renderer/renderer_webidbdatabase_impl.h',
         'renderer/renderer_webidbindex_impl.cc',
         'renderer/renderer_webidbindex_impl.h',
+        'renderer/renderer_webidbobjectstore_impl.cc',
+        'renderer/renderer_webidbobjectstore_impl.h',
         'renderer/renderer_webindexeddatabase_impl.cc',
         'renderer/renderer_webindexeddatabase_impl.h',
         'renderer/renderer_webkitclient_impl.cc',

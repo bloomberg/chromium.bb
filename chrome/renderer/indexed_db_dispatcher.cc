@@ -8,6 +8,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webidbdatabase_impl.h"
+#include "chrome/renderer/renderer_webidbobjectstore_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -31,6 +32,8 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnIndexedDatabaseOpenSuccess)
     IPC_MESSAGE_HANDLER(ViewMsg_IndexedDatabaseOpenError,
                         OnIndexedDatabaseOpenError)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBDatabaseCreateObjectStoreSuccess,
+                        OnIDBDatabaseCreateObjectStoreSuccess)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -58,6 +61,22 @@ void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
   RenderThread::current()->Send(new ViewHostMsg_IndexedDatabaseOpen(params));
 }
 
+void IndexedDBDispatcher::RequestIDBDatabaseCreateObjectStore(
+    const string16& name, const string16& keypath, bool auto_increment,
+    WebIDBCallbacks* callbacks_ptr, int32 idb_database_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  ViewHostMsg_IDBDatabaseCreateObjectStore_Params params;
+  params.response_id_ = idb_database_create_object_store_callbacks_.Add(
+      callbacks.release());
+  params.name_ = name;
+  params.keypath_ = keypath;
+  params.auto_increment_ = auto_increment;
+  params.idb_database_id_ = idb_database_id;
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBDatabaseCreateObjectStore(params));
+}
+
 void IndexedDBDispatcher::OnIndexedDatabaseOpenSuccess(
     int32 response_id, int32 idb_database_id) {
   WebKit::WebIDBCallbacks* callbacks =
@@ -72,4 +91,20 @@ void IndexedDBDispatcher::OnIndexedDatabaseOpenError(
       indexed_database_open_callbacks_.Lookup(response_id);
   callbacks->onError(WebIDBDatabaseError(code, message));
   indexed_database_open_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnIDBDatabaseCreateObjectStoreSuccess(
+    int32 response_id, int32 idb_object_store_id) {
+  WebKit::WebIDBCallbacks* callbacks =
+      idb_database_create_object_store_callbacks_.Lookup(response_id);
+  callbacks->onSuccess(new RendererWebIDBObjectStoreImpl(idb_object_store_id));
+  idb_database_create_object_store_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnIDBDatabaseCreateObjectStoreError(
+    int32 response_id, int code, const string16& message) {
+  WebKit::WebIDBCallbacks* callbacks =
+      idb_database_create_object_store_callbacks_.Lookup(response_id);
+  callbacks->onError(WebIDBDatabaseError(code, message));
+  idb_database_create_object_store_callbacks_.Remove(response_id);
 }
