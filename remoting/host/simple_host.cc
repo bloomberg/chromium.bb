@@ -13,12 +13,21 @@
 
 namespace remoting {
 
+#if defined (OS_MACOSX)
+// The Mac depends on system callbacks to tell it what rectangles need to
+// be updated, so we need to use the system message loop.
+const MessageLoop::Type kSimpleHostMessageLoopType = MessageLoop::TYPE_UI;
+#else
+const MessageLoop::Type kSimpleHostMessageLoopType = MessageLoop::TYPE_DEFAULT;
+#endif //  defined (OS_MACOSX)
+
 SimpleHost::SimpleHost(const std::string& username,
                        const std::string& auth_token,
                        Capturer* capturer,
                        Encoder* encoder,
                        EventExecutor* executor)
-      : capture_thread_("CaptureThread"),
+      : main_loop_(kSimpleHostMessageLoopType),
+        capture_thread_("CaptureThread"),
         encode_thread_("EncodeThread"),
         username_(username),
         auth_token_(auth_token),
@@ -39,7 +48,7 @@ void SimpleHost::Run() {
   main_loop_.Run();
 }
 
-// This method is called when we need to the host process.
+// This method is called when we need to destroy the host process.
 void SimpleHost::DestroySession() {
   DCHECK_EQ(&main_loop_, MessageLoop::current());
 
@@ -112,9 +121,9 @@ void SimpleHost::OnClientDisconnected(ClientConnection* client) {
   // Also remove reference to ClientConnection from this object.
   client_ = NULL;
 
-  // TODO(hclam): If the last client has disconnected we need destroy
+  // TODO(hclam): If the last client has disconnected we need to destroy
   // the session manager and shutdown the capture and encode threads.
-  // Right now we assume there's only one client.
+  // Right now we assume that there's only one client.
   DestroySession();
 }
 
