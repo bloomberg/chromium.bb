@@ -496,8 +496,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
 }
 #endif  // !defined(OS_MACOSX)
 
+#if defined(OS_WIN)
+// http://crbug.com/46198. On XP/Vista, the failure rate is 5 ~ 6%.
+#define MAYBE_PageLanguageDetection FLAKY_PageLanguageDetection
+#else
+#define MAYBE_PageLanguageDetection PageLanguageDetection
+#endif
 // Tests that the CLD (Compact Language Detection) works properly.
-IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server(
         HTTPTestServer::CreateServer(kDocRoot, NULL));
