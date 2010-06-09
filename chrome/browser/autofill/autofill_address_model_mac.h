@@ -12,7 +12,6 @@ class AutoFillProfile;
 // A "model" class used with bindings mechanism and the
 // |AutoFillAddressViewController| to achieve the form-like view
 // of autofill data in the Chrome options UI.
-// Note that |summary| is a derived property.
 // Model objects are initialized from a given profile using the designated
 // initializer |initWithProfile:|.
 // Users of this class must be prepared to handle nil string return values.
@@ -22,9 +21,7 @@ class AutoFillProfile;
  @private
   // These are not scoped_nsobjects because we use them via KVO/bindings.
   NSString* label_;
-  NSString* firstName_;
-  NSString* middleName_;
-  NSString* lastName_;
+  NSString* fullName_;
   NSString* email_;
   NSString* companyName_;
   NSString* addressLine1_;
@@ -37,14 +34,8 @@ class AutoFillProfile;
   NSString* faxWholeNumber_;
 }
 
-// |summary| is a derived property based on |firstName|, |lastName| and
-// |addressLine1|.  KVO observers receive change notifications for |summary|
-// when any of these properties change.
-@property (readonly) NSString* summary;
 @property (nonatomic, copy) NSString* label;
-@property (nonatomic, copy) NSString* firstName;
-@property (nonatomic, copy) NSString* middleName;
-@property (nonatomic, copy) NSString* lastName;
+@property (nonatomic, copy) NSString* fullName;
 @property (nonatomic, copy) NSString* email;
 @property (nonatomic, copy) NSString* companyName;
 @property (nonatomic, copy) NSString* addressLine1;

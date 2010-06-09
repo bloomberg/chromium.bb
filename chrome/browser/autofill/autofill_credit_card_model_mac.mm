@@ -11,7 +11,6 @@
 
 @implementation AutoFillCreditCardModel
 
-@dynamic summary;
 @synthesize label = label_;
 @synthesize nameOnCard = nameOnCard_;
 @synthesize creditCardNumber = creditCardNumber_;
@@ -19,19 +18,6 @@
 @synthesize expirationYear = expirationYear_;
 @synthesize cvcCode = cvcCode_;
 @synthesize billingAddress = billingAddress_;
-@synthesize shippingAddress = shippingAddress_;
-
-// Sets up the KVO dependency between "summary" and dependent fields.
-+ (NSSet*)keyPathsForValuesAffectingValueForKey:(NSString*)key {
-  NSSet* keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
-
-  if ([key isEqualToString:@"summary"]) {
-    NSSet* affectingKeys = [NSSet setWithObjects:@"creditCardNumber",
-                            @"expirationMonth", @"expirationYear", nil];
-    keyPaths = [keyPaths setByAddingObjectsFromSet:affectingKeys];
-  }
-  return keyPaths;
-}
 
 - (id)initWithCreditCard:(const CreditCard&)creditCard {
   if ((self = [super init])) {
@@ -48,8 +34,6 @@
         creditCard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE)))];
     [self setBillingAddress:SysUTF16ToNSString(
         creditCard.billing_address())];
-    [self setShippingAddress:SysUTF16ToNSString(
-        creditCard.shipping_address())];
   }
   return self;
 }
@@ -62,15 +46,7 @@
   [expirationYear_ release];
   [cvcCode_ release];
   [billingAddress_ release];
-  [shippingAddress_ release];
   [super dealloc];
-}
-
-- (NSString*)summary {
-  // Create a temporary |creditCard| to generate summary string.
-  CreditCard creditCard(string16(), 0);
-  [self copyModelToCreditCard:&creditCard];
-  return SysUTF16ToNSString(creditCard.PreviewSummary());
 }
 
 - (void)copyModelToCreditCard:(CreditCard*)creditCard {
@@ -88,8 +64,6 @@
       base::SysNSStringToUTF16([self cvcCode]));
   creditCard->set_billing_address(
       base::SysNSStringToUTF16([self billingAddress]));
-  creditCard->set_shipping_address(
-      base::SysNSStringToUTF16([self shippingAddress]));
 }
 
 @end

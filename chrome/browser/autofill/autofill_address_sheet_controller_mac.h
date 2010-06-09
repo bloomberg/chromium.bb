@@ -2,52 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_ADDRESS_VIEW_CONTROLLER_MAC_
-#define CHROME_BROWSER_AUTOFILL_AUTOFILL_ADDRESS_VIEW_CONTROLLER_MAC_
+#ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_ADDRESS_SHEET_CONTROLLER_MAC_
+#define CHROME_BROWSER_AUTOFILL_AUTOFILL_ADDRESS_SHEET_CONTROLLER_MAC_
 
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/cocoa/disclosure_view_controller.h"
 
 @class AutoFillAddressModel;
 @class AutoFillDialogController;
 class AutoFillProfile;
 
+// The sheet can be invoked in "Add" or "Edit" mode.  This dictates the caption
+// seen at the top of the sheet.
+enum {
+  kAutoFillAddressAddMode    =  0,
+  kAutoFillAddressEditMode   =  1
+};
+typedef NSInteger AutoFillAddressMode;
+
 // A class that coordinates the |addressModel| and the associated view
-// held in AutoFillAddressFormView.xib.
+// held in AutoFillAddressSheet.xib.
 // |initWithProfile:| is the designated initializer.  It takes |profile|
 // and transcribes it to |addressModel| to which the view is bound.
-@interface AutoFillAddressViewController : DisclosureViewController {
+@interface AutoFillAddressSheetController : NSWindowController {
  @private
+  // The caption at top of dialog.  Text changes according to usage.  Either
+  // "New address" or "Edit address" depending on |mode_|.
+  IBOutlet NSTextField* caption_;
+
   // The primary model for this controller.  The model is instantiated
   // from within |initWithProfile:|.  We do not hold it as a scoped_nsobject
   // because it is exposed as a KVO compliant property.
   // Strong reference.
   AutoFillAddressModel* addressModel_;
 
-  // A reference to our parent controller.  Used for notifying parent if/when
-  // deletion occurs.  Also used to notify parent when the label of the address
-  // changes.  May be not be nil.
-  // Weak reference, owns us.
-  AutoFillDialogController* parentController_;
+  // Either "Add" or "Edit" mode of sheet.
+  AutoFillAddressMode mode_;
 }
 
 @property (nonatomic, retain) AutoFillAddressModel* addressModel;
 
+// IBActions for save and cancel buttons.  Both invoke |endSheet:|.
+- (IBAction)save:(id)sender;
+- (IBAction)cancel:(id)sender;
+
 // Designated initializer.  Takes a copy of the data in |profile|,
 // it is not held as a reference.
 - (id)initWithProfile:(const AutoFillProfile&)profile
-           disclosure:(NSCellStateValue)disclosureState
-           controller:(AutoFillDialogController*) parentController;
-
-// Action to remove this address from the dialog.  Forwards the request to
-// |parentController_| which does all the actual work.  We have the action
-// here so that the delete button in the AutoFillAddressViewFormView.xib has
-// something to call.
-- (IBAction)deleteAddress:(id)sender;
+                 mode:(AutoFillAddressMode)mode;
 
 // Copy data from internal model to |profile|.
 - (void)copyModelToProfile:(AutoFillProfile*)profile;
 
 @end
 
-#endif // CHROME_BROWSER_AUTOFILL_AUTOFILL_ADDRESS_VIEW_CONTROLLER_MAC_
+#endif // CHROME_BROWSER_AUTOFILL_AUTOFILL_ADDRESS_SHEET_CONTROLLER_MAC_

@@ -112,7 +112,27 @@ void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
     SetLast(value);
   else if (field_type == NAME_SUFFIX)
     set_suffix(value);
-  else if (field_type == EMAIL_ADDRESS)
+  else if (field_type == NAME_FULL) {
+    // TODO(dhollowa): This needs formal spec on how names are split from
+    // unstructured string to structured fields.
+    std::vector<string16> values;
+    SplitStringAlongWhitespace(value, &values);
+    if (values.size() == 1) {
+      SetInfo(AutoFillType(NAME_FIRST), values[0]);
+    } else if (values.size() == 2) {
+      SetInfo(AutoFillType(NAME_FIRST), values[0]);
+      SetInfo(AutoFillType(NAME_LAST), values[1]);
+    } else if (values.size() == 3) {
+      SetInfo(AutoFillType(NAME_FIRST), values[0]);
+      SetInfo(AutoFillType(NAME_MIDDLE), values[1]);
+      SetInfo(AutoFillType(NAME_LAST), values[2]);
+    } else if (values.size() >= 4) {
+      SetInfo(AutoFillType(NAME_FIRST), values[0]);
+      SetInfo(AutoFillType(NAME_MIDDLE), values[1]);
+      SetInfo(AutoFillType(NAME_LAST), values[2]);
+      SetInfo(AutoFillType(NAME_SUFFIX), values[3]);
+    }
+  } else if (field_type == EMAIL_ADDRESS)
     email_ = value;
   else if (field_type == COMPANY_NAME)
     company_name_ = value;

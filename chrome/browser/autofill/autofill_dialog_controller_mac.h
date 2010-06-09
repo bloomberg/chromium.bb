@@ -17,10 +17,10 @@ namespace AutoFillDialogControllerInternal {
 class PersonalDataManagerObserver;
 }  // AutoFillDialogControllerInternal
 
-@class AutoFillAddressViewController;
-@class AutoFillCreditCardViewController;
+@class AutoFillAddressSheetController;
+@class AutoFillCreditCardSheetController;
+@class AutoFillTableView;
 class Profile;
-@class SectionSeparatorView;
 @class WindowSizeAutosaver;
 
 // A window controller for managing the autofill options dialog.
@@ -28,29 +28,51 @@ class Profile;
 // personal address and credit card information.
 @interface AutoFillDialogController : NSWindowController {
  @private
-  IBOutlet NSView* childView_;
-  IBOutlet NSView* addressSection_;
-  IBOutlet SectionSeparatorView* addressSectionBox_;
-  IBOutlet NSView* creditCardSection_;
+  // Outlet to the main NSTableView object listing both addresses and credit
+  // cards with section headers for both.
+  IBOutlet AutoFillTableView* tableView_;
 
-  // Note on ownership: the controllers are strongly owned by the dialog
-  // controller.  Their views are inserted into the dialog's view hierarchy
-  // but are retained by these controllers as well.
+  // This observer is passed in by the caller of the dialog.  When the dialog
+  // is dismissed |observer_| is called with new values for the addresses and
+  // credit cards.
+  // Weak, not retained.
+  AutoFillDialogObserver* observer_;
 
-  // Array of |AutoFillAddressViewController|.
-  scoped_nsobject<NSMutableArray> addressFormViewControllers_;
+  // Reference to input parameter.
+  // Weak, not retained.
+  Profile* profile_;
 
-  // Array of |AutoFillCreditCardViewController|.
-  scoped_nsobject<NSMutableArray> creditCardFormViewControllers_;
+  // Reference to input parameter.
+  // Weak, not retained.
+  AutoFillProfile* importedProfile_;
 
-  AutoFillDialogObserver* observer_;  // Weak, not retained.
-  Profile* profile_;  // Weak, not retained.
-  AutoFillProfile* importedProfile_;  // Weak, not retained.
-  CreditCard* importedCreditCard_;  // Weak, not retained.
+  // Reference to input parameter.
+  // Weak, not retained.
+  CreditCard* importedCreditCard_;
+
+  // Working list of input profiles.
   std::vector<AutoFillProfile> profiles_;
+
+  // Working list of input credit cards.
   std::vector<CreditCard> creditCards_;
+
+  // State of checkbox for enabling Mac Address Book integration.
   BOOL auxiliaryEnabled_;
+
+  // State for |itemIsSelected| property used in bindings for "Edit..." and
+  // "Remove" buttons.
+  BOOL itemIsSelected_;
+
+  // Utility object to save and restore dialog position.
   scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
+
+  // Transient reference to address "Add" / "Edit" sheet for address
+  // information.
+  scoped_nsobject<AutoFillAddressSheetController> addressSheetController;
+
+  // Transient reference to address "Add" / "Edit" sheet for credit card
+  // information.
+  scoped_nsobject<AutoFillCreditCardSheetController> creditCardSheetController;
 
   // Manages PersonalDataManager loading.
   scoped_ptr<AutoFillDialogControllerInternal::PersonalDataManagerObserver>
@@ -61,7 +83,11 @@ class Profile;
 // bound to this in nib.
 @property (nonatomic) BOOL auxiliaryEnabled;
 
-// Main interface for displaying an application modal autofill dialog on screen.
+// Property representing selection state in |tableView_|.  Enabled state of
+// edit and delete buttons are bound to this property.
+@property (nonatomic) BOOL itemIsSelected;
+
+// Main interface for displaying an application modal AutoFill dialog on screen.
 // This class method creates a new |AutoFillDialogController| and runs it as a
 // modal dialog.  The controller autoreleases itself when the dialog is closed.
 // |observer| can be NULL, but if it is, then no notification is sent during
@@ -86,21 +112,25 @@ class Profile;
 - (IBAction)addNewAddress:(id)sender;
 - (IBAction)addNewCreditCard:(id)sender;
 
-// IBActions for deleting items.  |sender| is expected to be either a
-// |AutoFillAddressViewController| or a |AutoFillCreditCardViewController|.
-- (IBAction)deleteAddress:(id)sender;
-- (IBAction)deleteCreditCard:(id)sender;
+// IBAction for deleting an item.  |sender| is expected to be the "Remove"
+// button.  The deletion acts on the selected item in either the address or
+// credit card list.
+- (IBAction)deleteSelection:(id)sender;
 
-// IBAction for sender to alert dialog that an address label has changed.
-- (IBAction)notifyAddressChange:(id)sender;
+// IBActions for editing an item.  |sender| is expected to be the "Edit..."
+// button.  The editing acts on the selected item in either the address or
+// credit card list.
+- (IBAction)editSelection:(id)sender;
 
-// Returns an array of labels representing the addresses in the
-// |addressFormViewControllers_|.
+// NSTableView data source methods.
+- (id)tableView:(NSTableView *)tableView
+    objectValueForTableColumn:(NSTableColumn *)tableColumn
+                          row:(NSInteger)rowIndex;
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
+
+// Returns an array of labels representing the addresses in the |profiles_|.
 - (NSArray*)addressLabels;
-
-// Returns an array of labels representing the credit cards in the
-// |creditCardFormViewControllers_|.
-- (NSArray*)creditCardLabels;
 
 @end
 
@@ -119,9 +149,11 @@ class Profile;
                profile:(Profile*)profile
        importedProfile:(AutoFillProfile*)importedProfile
     importedCreditCard:(CreditCard*)importedCreditCard;
-- (NSMutableArray*)addressFormViewControllers;
-- (NSMutableArray*)creditCardFormViewControllers;
 - (void)closeDialog;
+- (AutoFillAddressSheetController*)addressSheetController;
+- (AutoFillCreditCardSheetController*)creditCardSheetController;
+- (void)selectAddressAtIndex:(size_t)i;
+- (void)selectCreditCardAtIndex:(size_t)i;
 @end
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_MAC_

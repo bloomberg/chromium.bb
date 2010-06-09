@@ -10,11 +10,8 @@
 
 @implementation AutoFillAddressModel
 
-@dynamic summary;
 @synthesize label = label_;
-@synthesize firstName = firstName_;
-@synthesize middleName = middleName_;
-@synthesize lastName = lastName_;
+@synthesize fullName = fullName_;
 @synthesize email = email_;
 @synthesize companyName = companyName_;
 @synthesize addressLine1 = addressLine1_;
@@ -26,27 +23,11 @@
 @synthesize phoneWholeNumber = phoneWholeNumber_;
 @synthesize faxWholeNumber = faxWholeNumber_;
 
-// Sets up the KVO dependency between "summary" and dependent fields.
-+ (NSSet*)keyPathsForValuesAffectingValueForKey:(NSString*)key {
-  NSSet* keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
-
-  if ([key isEqualToString:@"summary"]) {
-    NSSet* affectingKeys =
-        [NSSet setWithObjects:@"firstName", @"lastName", @"addressLine1", nil];
-    keyPaths = [keyPaths setByAddingObjectsFromSet:affectingKeys];
-  }
-  return keyPaths;
-}
-
 - (id)initWithProfile:(const AutoFillProfile&)profile {
   if ((self = [super init])) {
     [self setLabel:SysUTF16ToNSString(profile.Label())];
-    [self setFirstName:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(NAME_FIRST)))];
-    [self setMiddleName:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(NAME_MIDDLE)))];
-    [self setLastName:SysUTF16ToNSString(
-        profile.GetFieldText(AutoFillType(NAME_LAST)))];
+    [self setFullName:SysUTF16ToNSString(
+        profile.GetFieldText(AutoFillType(NAME_FULL)))];
     [self setEmail:SysUTF16ToNSString(
         profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)))];
     [self setCompanyName:SysUTF16ToNSString(
@@ -73,9 +54,7 @@
 
 - (void)dealloc {
   [label_ release];
-  [firstName_ release];
-  [middleName_ release];
-  [lastName_ release];
+  [fullName_ release];
   [email_ release];
   [companyName_ release];
   [addressLine1_ release];
@@ -89,22 +68,11 @@
   [super dealloc];
 }
 
-- (NSString*)summary {
-  // Create a temporary |profile| to generate summary string.
-  AutoFillProfile profile(string16(), 0);
-  [self copyModelToProfile:&profile];
-  return SysUTF16ToNSString(profile.PreviewSummary());
-}
-
 - (void)copyModelToProfile:(AutoFillProfile*)profile {
   DCHECK(profile);
   profile->set_label(base::SysNSStringToUTF16([self label]));
-  profile->SetInfo(AutoFillType(NAME_FIRST),
-      base::SysNSStringToUTF16([self firstName]));
-  profile->SetInfo(AutoFillType(NAME_MIDDLE),
-      base::SysNSStringToUTF16([self middleName]));
-  profile->SetInfo(AutoFillType(NAME_LAST),
-      base::SysNSStringToUTF16([self lastName]));
+  profile->SetInfo(AutoFillType(NAME_FULL),
+      base::SysNSStringToUTF16([self fullName]));
   profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
       base::SysNSStringToUTF16([self email]));
   profile->SetInfo(AutoFillType(COMPANY_NAME),

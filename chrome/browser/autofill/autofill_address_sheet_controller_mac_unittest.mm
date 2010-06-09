@@ -3,27 +3,25 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
+#include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/cocoa/disclosure_view_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-class DisclosureViewControllerTest : public CocoaTest {
- public:
-  DisclosureViewControllerTest() {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisclosureViewControllerTest);
-};
+typedef CocoaTest AutoFillAddressSheetControllerTest;
 
-TEST_F(DisclosureViewControllerTest, Basic) {
+TEST(AutoFillAddressSheetControllerTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
-  scoped_nsobject<DisclosureViewController> controller(
-      [[DisclosureViewController alloc]
-      initWithNibName:@"" bundle:nil disclosure:NSOnState]);
+  AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
+  scoped_nsobject<AutoFillAddressSheetController> controller(
+      [[AutoFillAddressSheetController alloc]
+          initWithProfile:profile
+                     mode:kAutoFillAddressAddMode]);
   EXPECT_TRUE(controller.get());
 }
 
-}
+}  // namespace

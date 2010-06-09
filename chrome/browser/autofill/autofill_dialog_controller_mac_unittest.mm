@@ -4,9 +4,9 @@
 
 #include "base/ref_counted.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
-#import "chrome/browser/autofill/autofill_address_view_controller_mac.h"
+#import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
-#import "chrome/browser/autofill/autofill_credit_card_view_controller_mac.h"
+#import "chrome/browser/autofill/autofill_credit_card_sheet_controller_mac.h"
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -240,11 +240,11 @@ TEST_F(AutoFillDialogControllerTest, NoEditsGiveBackOriginalCreditCard) {
 
 TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   AutoFillProfile profile(ASCIIToUTF16("Home"), 17);
-  profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("David"));
+  profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
   profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("C"));
-  profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Holloway"));
+  profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
   profile.SetInfo(AutoFillType(EMAIL_ADDRESS),
-      ASCIIToUTF16("dhollowa@chromium.org"));
+      ASCIIToUTF16("john@chromium.org"));
   profile.SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16("Google Inc."));
   profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
                   ASCIIToUTF16("1122 Mountain View Road"));
@@ -261,14 +261,15 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   profiles().push_back(&profile);
 
   LoadDialog();
+  [controller_ selectAddressAtIndex:0];
+  [controller_ editSelection:nil];
 
-  AutoFillAddressModel* am = [[[controller_ addressFormViewControllers]
-      objectAtIndex:0] addressModel];
+  AutoFillAddressSheetController* sheet = [controller_ addressSheetController];
+  ASSERT_TRUE(sheet != nil);
+  AutoFillAddressModel* am = [sheet addressModel];
   EXPECT_TRUE([[am label] isEqualToString:@"Home"]);
-  EXPECT_TRUE([[am firstName] isEqualToString:@"David"]);
-  EXPECT_TRUE([[am middleName] isEqualToString:@"C"]);
-  EXPECT_TRUE([[am lastName] isEqualToString:@"Holloway"]);
-  EXPECT_TRUE([[am email] isEqualToString:@"dhollowa@chromium.org"]);
+  EXPECT_TRUE([[am fullName] isEqualToString:@"John C Smith"]);
+  EXPECT_TRUE([[am email] isEqualToString:@"john@chromium.org"]);
   EXPECT_TRUE([[am companyName] isEqualToString:@"Google Inc."]);
   EXPECT_TRUE([[am addressLine1] isEqualToString:@"1122 Mountain View Road"]);
   EXPECT_TRUE([[am addressLine2] isEqualToString:@"Suite #1"]);
@@ -278,6 +279,7 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   EXPECT_TRUE([[am phoneWholeNumber] isEqualToString:@"014155552258"]);
   EXPECT_TRUE([[am faxWholeNumber] isEqualToString:@"024087172258"]);
 
+  [sheet save:nil];
   [controller_ save:nil];
 
   ASSERT_TRUE(observer_.hit_);
@@ -300,9 +302,13 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
   credit_cards().push_back(&credit_card);
 
   LoadDialog();
+  [controller_ selectCreditCardAtIndex:0];
+  [controller_ editSelection:nil];
 
-  AutoFillCreditCardModel* cm = [[[controller_ creditCardFormViewControllers]
-      objectAtIndex:0] creditCardModel];
+  AutoFillCreditCardSheetController* sheet =
+      [controller_ creditCardSheetController];
+  ASSERT_TRUE(sheet != nil);
+  AutoFillCreditCardModel* cm = [sheet creditCardModel];
   EXPECT_TRUE([[cm label] isEqualToString:@"myCC"]);
   EXPECT_TRUE([[cm nameOnCard] isEqualToString:@"DCH"]);
   EXPECT_TRUE([[cm creditCardNumber] isEqualToString:@"1234 5678 9101 1121"]);
@@ -310,6 +316,7 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
   EXPECT_TRUE([[cm expirationYear] isEqualToString:@"2012"]);
   EXPECT_TRUE([[cm cvcCode] isEqualToString:@"222"]);
 
+  [sheet save:nil];
   [controller_ save:nil];
 
   ASSERT_TRUE(observer_.hit_);
@@ -373,6 +380,9 @@ TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
   profiles().push_back(&profile);
   LoadDialog();
   [controller_ addNewAddress:nil];
+  AutoFillAddressSheetController* sheet = [controller_ addressSheetController];
+  ASSERT_TRUE(sheet != nil);
+  [sheet save:nil];
   [controller_ save:nil];
 
   // Should hit our observer.
@@ -393,6 +403,10 @@ TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
   credit_cards().push_back(&credit_card);
   LoadDialog();
   [controller_ addNewCreditCard:nil];
+  AutoFillCreditCardSheetController* sheet =
+      [controller_ creditCardSheetController];
+  ASSERT_TRUE(sheet != nil);
+  [sheet save:nil];
   [controller_ save:nil];
 
   // Should hit our observer.
@@ -412,10 +426,8 @@ TEST_F(AutoFillDialogControllerTest, DeleteProfile) {
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles().push_back(&profile);
   LoadDialog();
-  EXPECT_EQ([[[controller_ addressFormViewControllers] lastObject]
-              retainCount], 1UL);
-  [controller_ deleteAddress:[[controller_ addressFormViewControllers]
-      lastObject]];
+  [controller_ selectAddressAtIndex:0];
+  [controller_ deleteSelection:nil];
   [controller_ save:nil];
 
   // Should hit our observer.
@@ -431,10 +443,8 @@ TEST_F(AutoFillDialogControllerTest, DeleteCreditCard) {
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card);
   LoadDialog();
-  EXPECT_EQ([[[controller_ creditCardFormViewControllers] lastObject]
-              retainCount], 1UL);
-  [controller_ deleteCreditCard:[[controller_ creditCardFormViewControllers]
-      lastObject]];
+  [controller_ selectCreditCardAtIndex:0];
+  [controller_ deleteSelection:nil];
   [controller_ save:nil];
 
   // Should hit our observer.
@@ -453,8 +463,8 @@ TEST_F(AutoFillDialogControllerTest, TwoProfilesDeleteOne) {
   profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bob"));
   profiles().push_back(&profile2);
   LoadDialog();
-  [controller_ deleteAddress:[[controller_ addressFormViewControllers]
-      lastObject]];
+  [controller_ selectAddressAtIndex:1];
+  [controller_ deleteSelection:nil];
   [controller_ save:nil];
 
   // Should hit our observer.
@@ -477,8 +487,8 @@ TEST_F(AutoFillDialogControllerTest, TwoCreditCardsDeleteOne) {
   credit_card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bob"));
   credit_cards().push_back(&credit_card2);
   LoadDialog();
-  [controller_ deleteCreditCard:[[controller_ creditCardFormViewControllers]
-      lastObject]];
+  [controller_ selectCreditCardAtIndex:1];
+  [controller_ deleteSelection:nil];
   [controller_ save:nil];
 
   // Should hit our observer.

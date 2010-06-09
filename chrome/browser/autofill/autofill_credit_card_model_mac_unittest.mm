@@ -47,7 +47,6 @@ TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
   EXPECT_TRUE([[model expirationYear] isEqualToString:@"2010"]);
   EXPECT_TRUE([[model cvcCode] isEqualToString:@"123"]);
   EXPECT_TRUE([[model billingAddress] isEqualToString:@"Chicago"]);
-  EXPECT_TRUE([[model shippingAddress] isEqualToString:@"Indianapolis"]);
 }
 
 TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
@@ -74,7 +73,6 @@ TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
   [model setExpirationYear:@"2011"];
   [model setCvcCode:@"223"];
   [model setBillingAddress:@"New York"];
-  [model setShippingAddress:@"Boston"];
 
   [model copyModelToCreditCard:&credit_card];
 
@@ -92,7 +90,6 @@ TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
             credit_card.GetFieldText(
                 AutoFillType(CREDIT_CARD_VERIFICATION_CODE)));
   EXPECT_EQ(ASCIIToUTF16("New York"), credit_card.billing_address());
-  EXPECT_EQ(ASCIIToUTF16("Boston"), credit_card.shipping_address());
 }
 
 }  // namespace

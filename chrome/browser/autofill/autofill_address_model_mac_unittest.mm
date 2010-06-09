@@ -45,9 +45,7 @@ TEST(AutoFillAddressModelTest, InitializationFromProfile) {
   EXPECT_TRUE(model.get());
 
   EXPECT_TRUE([[model label] isEqualToString:@"Billing"]);
-  EXPECT_TRUE([[model firstName] isEqualToString:@"Marion"]);
-  EXPECT_TRUE([[model middleName] isEqualToString:@"Mitchell"]);
-  EXPECT_TRUE([[model lastName] isEqualToString:@"Morrison"]);
+  EXPECT_TRUE([[model fullName] isEqualToString:@"Marion Mitchell Morrison"]);
   EXPECT_TRUE([[model email] isEqualToString:@"johnwayne@me.xyz"]);
   EXPECT_TRUE([[model companyName] isEqualToString:@"Fox"]);
   EXPECT_TRUE([[model addressLine1] isEqualToString:@"123 Zoo St."]);
@@ -82,9 +80,7 @@ TEST(AutoFillAddressModelTest, CopyModelToProfile) {
   EXPECT_TRUE(model.get());
 
   [model setLabel:@"BillingX"];
-  [model setFirstName:@"MarionX"];
-  [model setMiddleName:@"MitchellX"];
-  [model setLastName:@"MorrisonX"];
+  [model setFullName:@"MarionX MitchellX MorrisonX"];
   [model setEmail:@"trigger@me.xyz"];
   [model setCompanyName:@"FoxX"];
   [model setAddressLine1:@"123 Xoo St."];
@@ -105,6 +101,8 @@ TEST(AutoFillAddressModelTest, CopyModelToProfile) {
             profile.GetFieldText(AutoFillType(NAME_MIDDLE)));
   EXPECT_EQ(ASCIIToUTF16("MorrisonX"),
             profile.GetFieldText(AutoFillType(NAME_LAST)));
+  EXPECT_EQ(ASCIIToUTF16("MarionX MitchellX MorrisonX"),
+            profile.GetFieldText(AutoFillType(NAME_FULL)));
   EXPECT_EQ(ASCIIToUTF16("trigger@me.xyz"),
             profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)));
   EXPECT_EQ(ASCIIToUTF16("FoxX"),
