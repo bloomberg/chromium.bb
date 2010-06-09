@@ -76,8 +76,16 @@
           'NACL_LINUX=1',
           'NACL_OSX=0',
         ],
-        'platform_locale_settings_grd':
-            'app/resources/locale_settings_linux.grd',
+        'conditions': [
+          ['chromeos==1', {
+            'platform_locale_settings_grd':
+                'app/resources/locale_settings_cros.grd',
+          }],
+          ['chromeos!=1', {
+            'platform_locale_settings_grd':
+                'app/resources/locale_settings_linux.grd',
+          }],
+        ],
       },],
       ['OS=="mac"', {
         'tweak_info_plist_path': 'tools/build/mac/tweak_info_plist',
