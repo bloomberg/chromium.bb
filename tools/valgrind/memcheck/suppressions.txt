@@ -866,6 +866,17 @@
    ...
    fun:_ZN3net16HostResolverImpl3Job5StartEv
 }
+
+{
+   # ditto, but for IPv6 support (?)
+   bug_16089e
+   Memcheck:Leak
+   fun:*
+   ...
+   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   ...
+   fun:_ZN3net16HostResolverImpl16ProbeIPv6SupportEv
+}
 {
    # very common in ui tests
    bug_16091
@@ -1086,6 +1097,17 @@
    fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
    fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
    fun:_ZN4base13WaitableEvent4WaitEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+}
+
+{
+   # slight variant of the above
+   bug_19371a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
+   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
 {
