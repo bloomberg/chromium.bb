@@ -138,6 +138,8 @@ void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
       object_store_dispatcher_host_->OnMessageReceived(message, &msg_is_ok);
 
   if (!handled) {
+    handled = true;
+    DCHECK(msg_is_ok);
     IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost, message, msg_is_ok)
       IPC_MESSAGE_HANDLER(ViewHostMsg_IndexedDatabaseOpen,
                           OnIndexedDatabaseOpen)
