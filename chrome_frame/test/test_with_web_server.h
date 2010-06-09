@@ -11,6 +11,7 @@
 #include "chrome_frame/test/http_server.h"
 #include "chrome_frame/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
@@ -175,5 +176,58 @@ class SimpleWebServerTest {
   test_server::SimpleWebServer server_;
   int port_;
 };
+
+// Simple Gmock friendly web server. Sample usage:
+// MockWebServer mock(9999, "0.0.0.0");
+// EXPECT_CALL(mock, Get(_, StrEq("/favicon.ico"), _)).WillRepeatedly(SendFast(
+//     "HTTP/1.1 404 Not Found"
+//     "text/html; charset=UTF-8", EmptyString()));
+//
+// EXPECT_CALL(mock, Get(_, StrEq("/book"), _)).WillRepeatedly(Send(
+//     "HTTP/1.1 302 Found\r\n"
+//     "Connection: close\r\n"
+//     "Content-Type: text/html\r\n"
+//     "Location: library\r\n",
+//     "<html>Lalalala</html>", 3, 1000));
+//
+// EXPECT_CALL(mock, Get(_, StrEq("/library"), _)).WillRepeatedly(Send(
+//     "HTTP/1.1 200 OK\r\n"
+//     "Connection: close\r\n"
+//     "Content-Type: text/html\r\n",
+//     "<html><meta http-equiv=\"X-UA-Compatible\" content=\"chrome=1\" />"
+//     "<body>Rendered in CF.</body></html>", 4, 1000));
+
+class MockWebServer : public test_server::HTTPTestServer {
+ public:
+  MockWebServer(int port, const char* address = "127.0.0.1")
+      : test_server::HTTPTestServer(port, address) {}
+  MOCK_METHOD3(Get, void(test_server::ConfigurableConnection* connection,
+                         const std::string& path,
+                         const test_server::Request&r));
+  MOCK_METHOD3(Post, void(test_server::ConfigurableConnection* connection,
+                          const std::string& path,
+                          const test_server::Request&r));
+};
+
+ACTION_P2(SendFast, headers, content) {
+  arg0->Send(headers, content);
+}
+
+ACTION_P4(Send, headers, content, chunk, timeout) {
+  test_server::ConfigurableConnection::SendOptions options(
+      test_server::ConfigurableConnection::SendOptions::
+        IMMEDIATE_HEADERS_DELAYED_CONTENT, chunk, timeout);
+  arg0->SendWithOptions(std::string(headers),
+                        std::string(content),
+                        options);
+}
+
+ACTION_P4(SendSlow, headers, content, chunk, timeout) {
+  test_server::ConfigurableConnection::SendOptions options(
+    test_server::ConfigurableConnection::SendOptions::DELAYED, chunk, timeout);
+  arg0->SendWithOptions(std::string(headers),
+                        std::string(content),
+                        options);
+}
 
 #endif  // CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
