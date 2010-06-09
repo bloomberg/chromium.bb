@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,6 @@ typedef NSInteger ButtonType;
   CGFloat hoverAlpha_;  // 0-1. Controls the alpha during mouse hover
   NSTimeInterval lastHoverUpdate_;
   scoped_nsobject<NSGradient> gradient_;
-  scoped_nsobject<NSImage> underlayImage_;
 }
 
 // Turn off theming.  Temporary work-around.
@@ -52,10 +51,6 @@ typedef NSInteger ButtonType;
                            active:(BOOL)active
                         cellFrame:(NSRect)cellFrame
                   defaultGradient:(NSGradient*)defaultGradient;
-
-// An image to underlay beneath the existing image; not themed. May be nil.
-- (NSImage*)underlayImage;
-- (void)setUnderlayImage:(NSImage*)image;
 
 // Let the view know when the mouse moves in and out. A timer will update
 // the current hoverAlpha_ based on these events.

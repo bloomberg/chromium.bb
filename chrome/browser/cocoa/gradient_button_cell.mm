@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,6 @@
 
 @interface GradientButtonCell (Private)
 - (void)sharedInit;
-- (void)drawUnderlayImageWithFrame:(NSRect)cellFrame
-                            inView:(NSView*)controlView;
 
 // Get drawing parameters for a given cell frame in a given view. The inner
 // frame is the one required by |-drawInteriorWithFrame:inView:|. The inner and
@@ -120,16 +118,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 - (void)setShouldTheme:(BOOL)shouldTheme {
   shouldTheme_ = shouldTheme;
-}
-
-- (NSImage*)underlayImage {
-  return underlayImage_;
-}
-
-- (void)setUnderlayImage:(NSImage*)image {
-  underlayImage_.reset([image retain]);
-
-  [[self controlView] setNeedsDisplay:YES];
 }
 
 - (NSBackgroundStyle)interiorBackgroundStyle {
@@ -410,8 +398,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
       [shadow set];
     }
 
-    [self drawUnderlayImageWithFrame:cellFrame inView:controlView];
-
     CGContextBeginTransparencyLayer(context, 0);
     NSRect imageRect = NSZeroRect;
     imageRect.size = [[self image] size];
@@ -431,25 +417,10 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     CGContextEndTransparencyLayer(context);
     [NSGraphicsContext restoreGraphicsState];
   } else {
-    [self drawUnderlayImageWithFrame:cellFrame inView:controlView];
-
     // NSCell draws these uncentered for some reason, probably because of the
     // of control in the xib
     [super drawInteriorWithFrame:NSOffsetRect(cellFrame, 0, 1)
                           inView:controlView];
-  }
-}
-
-- (void)drawUnderlayImageWithFrame:(NSRect)cellFrame
-                            inView:(NSView*)controlView {
-  if (underlayImage_) {
-    NSRect imageRect = NSZeroRect;
-    imageRect.size = [underlayImage_ size];
-    [underlayImage_ setFlipped:[controlView isFlipped]];
-    [underlayImage_ drawInRect:[self imageRectForBounds:cellFrame]
-                      fromRect:imageRect
-                     operation:NSCompositeSourceOver
-                      fraction:[self isEnabled] ? 1.0 : 0.5];
   }
 }
 
