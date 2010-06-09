@@ -42,6 +42,14 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClPcAddress vlimit,
                                         const uint8_t alignment);
 
+/*
+ * Allows "stub out mode" to be enabled, in which some unsafe
+ * instructions will be rendered safe by replacing them with HLT
+ * instructions.
+ */
+void NCValidateSetStubOutMode(struct NCValidatorState *vstate,
+                              int do_stub_out);
+
 /* Validate a segment */
 /* This routine will raise an segmentation exception if you ask
  * it to check memory that can't be accessed. This should of be

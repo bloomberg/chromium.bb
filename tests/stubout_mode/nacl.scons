@@ -1,0 +1,36 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
+Import('env')
+
+# TODO(mseaborn): Extend the ARM and x86-64 validators to support this.
+if not (env['BUILD_ARCHITECTURE'] == 'x86' and
+        env['BUILD_SUBARCH'] == '32'):
+  Return()
+
+env.ComponentProgram('partly_invalid.nexe', 'partly_invalid.c')
+
+nodes = []
+
+# Without any debug flags, the executable fails validation.
+nodes.append(env.CommandSelLdrTestNacl(
+        'partly_invalid_1.out', command=[env.File('partly_invalid.nexe')],
+        exit_status='1'))
+
+# With "-d", the executable runs to completion but is not safe.
+nodes.append(env.CommandSelLdrTestNacl(
+        'partly_invalid_2.out', command=[env.File('partly_invalid.nexe')],
+        stdout_golden=env.File('without_stubout.stdout'),
+        sel_ldr_flags=['-d']))
+
+# With "-s", the executable runs part way but then faults.
+nodes.append(env.CommandSelLdrTestNacl(
+        'partly_invalid_3.out', command=[env.File('partly_invalid.nexe')],
+        stdout_golden=env.File('with_stubout.stdout'),
+        sel_ldr_flags=['-s'],
+        exit_status='sigsegv_or_equivalent'))
+
+env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_stubout_mode_test')

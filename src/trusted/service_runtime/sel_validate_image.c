@@ -19,6 +19,20 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   struct NCValidatorState *vstate;
   int validator_result;
 
+  if (nap->validator_stub_out_mode) {
+    /* In stub out mode, we do two passes.  The second pass acts as a
+       sanity check that bad instructions were indeed overwritten with
+       allowable HLTs. */
+    vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
+    if (vstate == NULL) {
+      return LOAD_BAD_FILE;
+    }
+    NCValidateSetStubOutMode(vstate, 1);
+    NCValidateSegment(data, guest_addr, size, vstate);
+    NCValidateFinish(vstate);
+    NCValidateFreeState(&vstate);
+  }
+
   vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
   if (vstate == NULL) {
     return LOAD_BAD_FILE;

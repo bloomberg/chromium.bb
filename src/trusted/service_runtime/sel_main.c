@@ -155,6 +155,7 @@ static void PrintUsage() {
           "\n"
           " (testing flags)\n"
           " -d debug mode (allow access to files! dangerous!)\n"
+          " -s safely stub out non-validating instructions\n"
           " -D dump bound socket address (if any) to this POSIX\n"
           "    descriptor\n"
           " -Q disable platform qualification (dangerous!)\n");
@@ -204,6 +205,7 @@ int main(int  ac,
   struct GioFile                *log_gio;
   int                           log_desc;
   int                           debug_mode = 0;
+  int                           stub_out_mode = 0;
   int                           skip_qualification = 0;
 
   struct NaClEnvCleanser        filtered_env;
@@ -263,7 +265,7 @@ int main(int  ac,
     exit(1);
   }
 
-  while ((opt = getopt(ac, av, "a:dD:f:h:i:Il:mMP:Qr:vw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "a:dD:f:h:i:Il:mMP:Qr:svw:X:")) != -1) {
     switch (opt) {
       case 'a':
         /* import IMC socket address */
@@ -351,6 +353,9 @@ int main(int  ac,
             "Native Client's sandbox will be unreliable!\n");
         skip_qualification = 1;
         break;
+      case 's':
+        stub_out_mode = 1;
+        break;
       default:
        fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
        PrintUsage();
@@ -430,6 +435,7 @@ int main(int  ac,
 
   state.restrict_to_main_thread = main_thread_only;
   state.ignore_validator_result = debug_mode;
+  state.validator_stub_out_mode = stub_out_mode;
 
   nap = &state;
   errcode = LOAD_OK;

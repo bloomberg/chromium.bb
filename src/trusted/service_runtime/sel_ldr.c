@@ -88,6 +88,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->restrict_to_main_thread = 1;
   nap->ignore_validator_result = 0;
+  nap->validator_stub_out_mode = 0;
 
   if (!NaClSyncQueueCtor(&nap->work_queue)) {
     goto cleanup_cv;

@@ -1390,6 +1390,7 @@ nacl_env.Append(
     'tests/srpc/nacl.scons',
     'tests/srpc_hw/nacl.scons',
     'tests/srpc_without_pthread/nacl.scons',
+    'tests/stubout_mode/nacl.scons',
     'tests/sysbasic/nacl.scons',
     'tests/syscalls/nacl.scons',
     'tests/syscall_return_sandboxing/nacl.scons',

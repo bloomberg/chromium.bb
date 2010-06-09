@@ -206,6 +206,7 @@ struct NaClApp {
    */
   int                       restrict_to_main_thread;
   int                       ignore_validator_result;
+  int                       validator_stub_out_mode;
   /* all threads enqueue the "special" syscalls to the work queue */
   struct NaClSyncQueue      work_queue;
 
