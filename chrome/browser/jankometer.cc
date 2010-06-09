@@ -81,18 +81,122 @@ class JankWatchdog : public Watchdog {
   DISALLOW_COPY_AND_ASSIGN(JankWatchdog);
 };
 
-class JankObserverHelper {
+//------------------------------------------------------------------------------
+class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
+                     public MessageLoopForUI::Observer {
  public:
-  JankObserverHelper(const std::string& thread_name,
-                     const TimeDelta& excessive_duration,
-                     bool watchdog_enable);
-  ~JankObserverHelper();
+  JankObserver(const char* thread_name,
+               const TimeDelta& excessive_duration,
+               bool watchdog_enable)
+      : MaxMessageDelay_(excessive_duration),
+        slow_processing_counter_(std::string("Chrome.SlowMsg") + thread_name),
+        queueing_delay_counter_(std::string("Chrome.DelayMsg") + thread_name),
+        total_time_watchdog_(excessive_duration, thread_name, watchdog_enable) {
+    process_times_ = Histogram::FactoryGet(
+        std::string("Chrome.ProcMsgL ") + thread_name,
+        1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
+    total_times_ = Histogram::FactoryGet(
+        std::string("Chrome.TotalMsgL ") + thread_name,
+        1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
+  }
 
-  void StartProcessingTimers(const TimeDelta& queueing_time);
-  void EndProcessingTimers();
+  // Attaches the observer to the current thread's message loop. You can only
+  // attach to the current thread, so this function can be invoked on another
+  // thread to attach it.
+  void AttachToCurrentThread() {
+    // TODO(darin): support monitoring jankiness on non-UI threads!
+    if (MessageLoop::current()->type() == MessageLoop::TYPE_UI)
+      MessageLoopForUI::current()->AddObserver(this);
+  }
+
+  // Detaches the observer to the current thread's message loop.
+  void DetachFromCurrentThread() {
+    if (MessageLoop::current()->type() == MessageLoop::TYPE_UI)
+      MessageLoopForUI::current()->RemoveObserver(this);
+  }
+
+  // Called when a message has just begun processing, initializes
+  // per-message variables and timers.
+  void StartProcessingTimers() {
+    // Simulate arming when the message entered the queue.
+    total_time_watchdog_.ArmSomeTimeDeltaAgo(queueing_time_);
+    if (queueing_time_ > MaxMessageDelay_) {
+      // Message is too delayed.
+      queueing_delay_counter_.Increment();
+#if defined(OS_WIN)
+      if (kPlaySounds)
+        MessageBeep(MB_ICONASTERISK);
+#endif
+    }
+  }
+
+  // Called when a message has just finished processing, finalizes
+  // per-message variables and timers.
+  void EndProcessingTimers() {
+    total_time_watchdog_.Disarm();
+    TimeTicks now = TimeTicks::Now();
+    if (begin_process_message_ != TimeTicks()) {
+      TimeDelta processing_time = now - begin_process_message_;
+      process_times_->AddTime(processing_time);
+      total_times_->AddTime(queueing_time_ + processing_time);
+    }
+    if (now - begin_process_message_ >
+        TimeDelta::FromMilliseconds(kMaxMessageProcessingMs)) {
+      // Message took too long to process.
+      slow_processing_counter_.Increment();
+#if defined(OS_WIN)
+      if (kPlaySounds)
+        MessageBeep(MB_ICONHAND);
+#endif
+    }
+  }
+
+#if defined(OS_WIN)
+  virtual void WillProcessMessage(const MSG& msg) {
+    begin_process_message_ = TimeTicks::Now();
+
+    // GetMessageTime returns a LONG (signed 32-bit) and GetTickCount returns
+    // a DWORD (unsigned 32-bit). They both wrap around when the time is longer
+    // than they can hold. I'm not sure if GetMessageTime wraps around to 0,
+    // or if the original time comes from GetTickCount, it might wrap around
+    // to -1.
+    //
+    // Therefore, I cast to DWORD so if it wraps to -1 we will correct it. If
+    // it doesn't, then our time delta will be negative if a message happens
+    // to straddle the wraparound point, it will still be OK.
+    DWORD cur_message_issue_time = static_cast<DWORD>(msg.time);
+    DWORD cur_time = GetTickCount();
+    queueing_time_ =
+        base::TimeDelta::FromMilliseconds(cur_time - cur_message_issue_time);
+
+    StartProcessingTimers();
+  }
+
+  virtual void DidProcessMessage(const MSG& msg) {
+    EndProcessingTimers();
+  }
+#elif defined(TOOLKIT_USES_GTK)
+  virtual void WillProcessEvent(GdkEvent* event) {
+    begin_process_message_ = TimeTicks::Now();
+    // TODO(evanm): we want to set queueing_time_ using
+    // gdk_event_get_time, but how do you convert that info
+    // into a delta?
+    // guint event_time = gdk_event_get_time(event);
+    queueing_time_ = base::TimeDelta::FromMilliseconds(0);
+    StartProcessingTimers();
+  }
+
+  virtual void DidProcessEvent(GdkEvent* event) {
+    EndProcessingTimers();
+  }
+#endif
 
  private:
-  const TimeDelta max_message_delay_;
+  friend class base::RefCountedThreadSafe<JankObserver>;
+
+  ~JankObserver() {}
+
+  const TimeDelta MaxMessageDelay_;
 
   // Time at which the current message processing began.
   TimeTicks begin_process_message_;
@@ -108,208 +212,12 @@ class JankObserverHelper {
   scoped_refptr<Histogram> total_times_;  // Total queueing plus processing.
   JankWatchdog total_time_watchdog_;  // Watching for excessive total_time.
 
-  DISALLOW_COPY_AND_ASSIGN(JankObserverHelper);
-};
-
-JankObserverHelper::JankObserverHelper(
-    const std::string& thread_name,
-    const TimeDelta& excessive_duration,
-    bool watchdog_enable)
-    : max_message_delay_(excessive_duration),
-      slow_processing_counter_(std::string("Chrome.SlowMsg") + thread_name),
-      queueing_delay_counter_(std::string("Chrome.DelayMsg") + thread_name),
-      total_time_watchdog_(excessive_duration, thread_name, watchdog_enable) {
-  process_times_ = Histogram::FactoryGet(
-      std::string("Chrome.ProcMsgL ") + thread_name,
-      1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
-  total_times_ = Histogram::FactoryGet(
-      std::string("Chrome.TotalMsgL ") + thread_name,
-      1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
-}
-
-JankObserverHelper::~JankObserverHelper() {}
-
-// Called when a message has just begun processing, initializes
-// per-message variables and timers.
-void JankObserverHelper::StartProcessingTimers(const TimeDelta& queueing_time) {
-  begin_process_message_ = TimeTicks::Now();
-  queueing_time_ = queueing_time;
-
-  // Simulate arming when the message entered the queue.
-  total_time_watchdog_.ArmSomeTimeDeltaAgo(queueing_time_);
-  if (queueing_time_ > max_message_delay_) {
-    // Message is too delayed.
-    queueing_delay_counter_.Increment();
-#if defined(OS_WIN)
-    if (kPlaySounds)
-      MessageBeep(MB_ICONASTERISK);
-#endif
-  }
-}
-
-// Called when a message has just finished processing, finalizes
-// per-message variables and timers.
-void JankObserverHelper::EndProcessingTimers() {
-  total_time_watchdog_.Disarm();
-  TimeTicks now = TimeTicks::Now();
-  if (begin_process_message_ != TimeTicks()) {
-    TimeDelta processing_time = now - begin_process_message_;
-    process_times_->AddTime(processing_time);
-    total_times_->AddTime(queueing_time_ + processing_time);
-  }
-  if (now - begin_process_message_ >
-      TimeDelta::FromMilliseconds(kMaxMessageProcessingMs)) {
-    // Message took too long to process.
-    slow_processing_counter_.Increment();
-#if defined(OS_WIN)
-    if (kPlaySounds)
-      MessageBeep(MB_ICONHAND);
-#endif
-  }
-
-  // Reset message specific times.
-  begin_process_message_ = base::TimeTicks();
-  queueing_time_ = base::TimeDelta();
-}
-
-//------------------------------------------------------------------------------
-class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
-                       public MessageLoopForIO::IOObserver,
-                       public MessageLoop::TaskObserver {
- public:
-  IOJankObserver(const char* thread_name,
-                 TimeDelta excessive_duration,
-                 bool watchdog_enable)
-      : helper_(thread_name, excessive_duration, watchdog_enable) {}
-
-  ~IOJankObserver() {}
-
-  // Attaches the observer to the current thread's message loop. You can only
-  // attach to the current thread, so this function can be invoked on another
-  // thread to attach it.
-  void AttachToCurrentThread() {
-    MessageLoop::current()->AddTaskObserver(this);
-    MessageLoopForIO::current()->AddIOObserver(this);
-  }
-
-  // Detaches the observer to the current thread's message loop.
-  void DetachFromCurrentThread() {
-    MessageLoopForIO::current()->RemoveIOObserver(this);
-    MessageLoop::current()->RemoveTaskObserver(this);
-  }
-
-  virtual void WillProcessIOEvent() {
-    helper_.StartProcessingTimers(base::TimeDelta());
-  }
-
-  virtual void DidProcessIOEvent() {
-    helper_.EndProcessingTimers();
-  }
-
-  virtual void WillProcessTask(base::TimeTicks birth_time) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - birth_time;
-    helper_.StartProcessingTimers(queueing_time);
-  }
-
-  virtual void DidProcessTask() {
-    helper_.EndProcessingTimers();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<IOJankObserver>;
-
-  JankObserverHelper helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOJankObserver);
-};
-
-//------------------------------------------------------------------------------
-class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
-                       public MessageLoop::TaskObserver,
-                       public MessageLoopForUI::Observer {
- public:
-  UIJankObserver(const char* thread_name,
-                 TimeDelta excessive_duration,
-                 bool watchdog_enable)
-      : helper_(thread_name, excessive_duration, watchdog_enable) {}
-
-  // Attaches the observer to the current thread's message loop. You can only
-  // attach to the current thread, so this function can be invoked on another
-  // thread to attach it.
-  void AttachToCurrentThread() {
-    DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-    MessageLoopForUI::current()->AddObserver(this);
-    MessageLoop::current()->AddTaskObserver(this);
-  }
-
-  // Detaches the observer to the current thread's message loop.
-  void DetachFromCurrentThread() {
-    DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-    MessageLoop::current()->RemoveTaskObserver(this);
-    MessageLoopForUI::current()->RemoveObserver(this);
-  }
-
-  virtual void WillProcessTask(base::TimeTicks birth_time) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - birth_time;
-    helper_.StartProcessingTimers(queueing_time);
-  }
-
-  virtual void DidProcessTask() {
-    helper_.EndProcessingTimers();
-  }
-
-#if defined(OS_WIN)
-  virtual void WillProcessMessage(const MSG& msg) {
-    // GetMessageTime returns a LONG (signed 32-bit) and GetTickCount returns
-    // a DWORD (unsigned 32-bit). They both wrap around when the time is longer
-    // than they can hold. I'm not sure if GetMessageTime wraps around to 0,
-    // or if the original time comes from GetTickCount, it might wrap around
-    // to -1.
-    //
-    // Therefore, I cast to DWORD so if it wraps to -1 we will correct it. If
-    // it doesn't, then our time delta will be negative if a message happens
-    // to straddle the wraparound point, it will still be OK.
-    DWORD cur_message_issue_time = static_cast<DWORD>(msg.time);
-    DWORD cur_time = GetTickCount();
-    base::TimeDelta queueing_time =
-        base::TimeDelta::FromMilliseconds(cur_time - cur_message_issue_time);
-
-    helper_.StartProcessingTimers(queueing_time);
-  }
-
-  virtual void DidProcessMessage(const MSG& msg) {
-    helper_.EndProcessingTimers();
-  }
-#elif defined(TOOLKIT_USES_GTK)
-  virtual void WillProcessEvent(GdkEvent* event) {
-    // TODO(evanm): we want to set queueing_time_ using
-    // gdk_event_get_time, but how do you convert that info
-    // into a delta?
-    // guint event_time = gdk_event_get_time(event);
-    base::TimeDelta queueing_time = base::TimeDelta::FromMilliseconds(0);
-    helper_.StartProcessingTimers(queueing_time);
-  }
-
-  virtual void DidProcessEvent(GdkEvent* event) {
-    helper_.EndProcessingTimers();
-  }
-#endif
-
- private:
-  friend class base::RefCountedThreadSafe<UIJankObserver>;
-
-  ~UIJankObserver() {}
-
-  JankObserverHelper helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(UIJankObserver);
+  DISALLOW_COPY_AND_ASSIGN(JankObserver);
 };
 
 // These objects are created by InstallJankometer and leaked.
-const scoped_refptr<UIJankObserver>* ui_observer = NULL;
-const scoped_refptr<IOJankObserver>* io_observer = NULL;
+JankObserver* ui_observer = NULL;
+JankObserver* io_observer = NULL;
 
 }  // namespace
 
@@ -331,37 +239,36 @@ void InstallJankometer(const CommandLine& parsed_command_line) {
   }
 
   // Install on the UI thread.
-  ui_observer = new scoped_refptr<UIJankObserver>(
-      new UIJankObserver(
-          "UI",
-          TimeDelta::FromMilliseconds(kMaxUIMessageDelayMs),
-          ui_watchdog_enabled));
-  (*ui_observer)->AttachToCurrentThread();
+  ui_observer = new JankObserver(
+      "UI",
+      TimeDelta::FromMilliseconds(kMaxUIMessageDelayMs),
+      ui_watchdog_enabled);
+  ui_observer->AddRef();
+  ui_observer->AttachToCurrentThread();
 
   // Now install on the I/O thread. Hiccups on that thread will block
   // interaction with web pages. We must proxy to that thread before we can
   // add our observer.
-  io_observer = new scoped_refptr<IOJankObserver>(
-      new IOJankObserver(
-          "IO",
-          TimeDelta::FromMilliseconds(kMaxIOMessageDelayMs),
-          io_watchdog_enabled));
+  io_observer = new JankObserver(
+      "IO",
+      TimeDelta::FromMilliseconds(kMaxIOMessageDelayMs),
+      io_watchdog_enabled);
+  io_observer->AddRef();
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(io_observer->get(),
-                        &IOJankObserver::AttachToCurrentThread));
+      NewRunnableMethod(io_observer, &JankObserver::AttachToCurrentThread));
 }
 
 void UninstallJankometer() {
   if (ui_observer) {
-    (*ui_observer)->DetachFromCurrentThread();
-    delete ui_observer;
+    ui_observer->DetachFromCurrentThread();
+    ui_observer->Release();
     ui_observer = NULL;
   }
   if (io_observer) {
     // IO thread can't be running when we remove observers.
     DCHECK((!g_browser_process) || !(g_browser_process->io_thread()));
-    delete io_observer;
+    io_observer->Release();
     io_observer = NULL;
   }
 }
