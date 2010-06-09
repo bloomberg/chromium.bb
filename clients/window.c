@@ -30,6 +30,7 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
+#include <glib-object.h>
 
 #define EGL_EGLEXT_PROTOTYPES 1
 #define GL_GLEXT_PROTOTYPES 1
@@ -58,6 +59,8 @@ struct display {
 	int fd;
 	GMainLoop *loop;
 	GSource *source;
+	struct wl_list window_list;
+	char *device_name;
 };
 
 struct window {
@@ -83,9 +86,11 @@ struct window {
 	window_resize_handler_t resize_handler;
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
+	window_acknowledge_handler_t acknowledge_handler;
 	window_frame_handler_t frame_handler;
 
 	void *user_data;
+	struct wl_list link;
 };
 
 static void
@@ -319,42 +324,6 @@ window_get_surface(struct window *window)
 {
 	return window->cairo_surface;
 }
-
-static void
-window_handle_acknowledge(void *data,
-			  struct wl_compositor *compositor,
-			  uint32_t key, uint32_t frame)
-{
-	struct window *window = data;
-	cairo_surface_t *pending;
-
-	/* The acknowledge event means that the server
-	 * processed our last commit request and we can now
-	 * safely free the old window buffer if we resized and
-	 * render the next frame into our back buffer.. */
-
-	pending = window->pending_surface;
-	window->pending_surface = NULL;
-	if (pending != window->cairo_surface)
-		window_attach_surface(window);
-	cairo_surface_destroy(pending);
-}
-
-static void
-window_handle_frame(void *data,
-		    struct wl_compositor *compositor,
-		    uint32_t frame, uint32_t timestamp)
-{
-	struct window *window = data;
-
-	if (window->frame_handler)
-		(*window->frame_handler)(window, frame, timestamp, window->user_data);
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	window_handle_acknowledge,
-	window_handle_frame,
-};
 
 enum window_state {
 	WINDOW_STABLE,
@@ -709,6 +678,14 @@ window_set_key_handler(struct window *window,
 }
 
 void
+window_set_acknowledge_handler(struct window *window,
+			       window_acknowledge_handler_t handler, void *data)
+{
+	window->acknowledge_handler = handler;
+	window->user_data = data;
+}
+
+void
 window_set_frame_handler(struct window *window,
 			 window_frame_handler_t handler, void *data)
 {
@@ -760,14 +737,68 @@ window_create(struct display *display, const char *title,
 	window->state = WINDOW_STABLE;
 	window->decoration = 1;
 
-	wl_compositor_add_listener(display->compositor,
-				   &compositor_listener, window);
+	wl_list_insert(display->window_list.prev, &window->link);
 
 	wl_input_device_add_listener(display->input_device,
 				     &input_device_listener, window);
 
 	return window;
 }
+
+static void
+display_handle_device(void *data,
+		      struct wl_compositor *compositor,
+		      const char *device)
+{
+	struct display *d = data;
+
+	d->device_name = strdup(device);
+}
+
+static void
+display_handle_acknowledge(void *data,
+			   struct wl_compositor *compositor,
+			   uint32_t key, uint32_t frame)
+{
+	struct display *d = data;
+	struct window *window;
+	cairo_surface_t *pending;
+		
+	/* The acknowledge event means that the server processed our
+	 * last commit request and we can now safely free the old
+	 * window buffer if we resized and render the next frame into
+	 * our back buffer.. */
+	wl_list_for_each(window, &d->window_list, link) {
+		pending = window->pending_surface;
+		window->pending_surface = NULL;
+		if (pending != window->cairo_surface)
+			window_attach_surface(window);
+		cairo_surface_destroy(pending);
+		if (window->acknowledge_handler)
+			(*window->acknowledge_handler)(window, key, frame, window->user_data);
+	}
+}
+
+static void
+display_handle_frame(void *data,
+		     struct wl_compositor *compositor,
+		     uint32_t frame, uint32_t timestamp)
+{
+	struct display *d = data;
+	struct window *window;
+
+	wl_list_for_each(window, &d->window_list, link) {
+		if (window->frame_handler)
+			(*window->frame_handler)(window, frame,
+						 timestamp, window->user_data);
+	}
+}
+
+static const struct wl_compositor_listener compositor_listener = {
+	display_handle_device,
+	display_handle_acknowledge,
+	display_handle_frame,
+};
 
 static void
 display_handle_geometry(void *data,
@@ -794,6 +825,7 @@ display_handle_global(struct wl_display *display,
 
 	if (wl_object_implements(object, "compositor", 1)) { 
 		d->compositor = (struct wl_compositor *) object;
+		wl_compositor_add_listener(d->compositor, &compositor_listener, d);
 	} else if (wl_object_implements(object, "output", 1)) {
 		d->output = (struct wl_output *) object;
 		wl_output_add_listener(d->output, &output_listener, d);
@@ -802,7 +834,6 @@ display_handle_global(struct wl_display *display,
 	}
 }
 
-static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
 
 struct display *
@@ -812,7 +843,6 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	struct display *d;
 	EGLint major, minor, count;
 	EGLConfig config;
-	struct wl_display *display;
 	int fd;
 	GOptionContext *context;
 	GError *error;
@@ -823,6 +853,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
 		EGL_NONE
 	};
+
+	g_type_init();
 
 	context = g_option_context_new(NULL);
 	if (option_entries) {
@@ -837,15 +869,22 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	if (d == NULL)
 		return NULL;
 
-	fd = open(gem_device, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
+	d->display = wl_display_create(socket_name, sizeof socket_name);
+	if (d->display == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
 		return NULL;
 	}
 
-	display = wl_display_create(socket_name, sizeof socket_name);
-	if (display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+	/* Set up listener so we'll catch all events. */
+	wl_display_add_global_listener(d->display,
+				       display_handle_global, d);
+
+	/* Process connection events. */
+	wl_display_iterate(d->display, WL_DISPLAY_READABLE);
+
+	fd = open(d->device_name, O_RDWR);
+	if (fd < 0) {
+		fprintf(stderr, "drm open failed: %m\n");
 		return NULL;
 	}
 
@@ -882,23 +921,17 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 	}
 
-	d->display = display;
 	d->device = cairo_egl_device_create(d->dpy, d->ctx);
 	if (d->device == NULL) {
 		fprintf(stderr, "failed to get cairo drm device\n");
 		return NULL;
 	}
 
-	/* Set up listener so we'll catch all events. */
-	wl_display_add_global_listener(display,
-				       display_handle_global, d);
-
-	/* Process connection events. */
-	wl_display_iterate(display, WL_DISPLAY_READABLE);
-
 	d->loop = g_main_loop_new(NULL, FALSE);
-	d->source = wl_glib_source_new(display);
+	d->source = wl_glib_source_new(d->display);
 	g_source_attach(d->source, NULL);
+
+	wl_list_init(&d->window_list);
 
 	return d;
 }

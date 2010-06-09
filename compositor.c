@@ -1144,7 +1144,8 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	ec->drm_fd = open(udev_device_get_devnode(device), O_RDWR);
+	ec->base.device = strdup(udev_device_get_devnode(device));
+	ec->drm_fd = open(ec->base.device, O_RDWR);
 	if (ec->drm_fd < 0) {
 		/* Probably permissions error */
 		fprintf(stderr, "couldn't open %s, skipping\n",

@@ -46,6 +46,7 @@ static const struct wl_message compositor_methods[] = {
 };
 
 static const struct wl_message compositor_events[] = {
+	{ "device", "s" },
 	{ "acknowledge", "uu" },
 	{ "frame", "uu" }
 };

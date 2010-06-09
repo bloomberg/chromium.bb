@@ -56,7 +56,7 @@ enum {
 
 typedef void (*window_resize_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
-typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key, void *data);
+typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key, uint32_t frame, void *data);
 typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
 				     uint32_t state, uint32_t modifiers, void *data);
 typedef void (*window_keyboard_focus_handler_t)(struct window *window,
@@ -119,6 +119,10 @@ void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler,
 				  void *data);
+
+void
+window_set_acknowledge_handler(struct window *window,
+			       window_acknowledge_handler_t handler, void *data);
 
 void
 window_set_frame_handler(struct window *window,

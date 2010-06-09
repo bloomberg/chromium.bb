@@ -50,7 +50,6 @@ static int option_fullscreen;
 struct terminal {
 	struct window *window;
 	struct display *display;
-	struct wl_compositor *compositor;
 	int redraw_scheduled, redraw_pending;
 	char *data;
 	int width, height, start, row, column;
@@ -418,9 +417,8 @@ resize_handler(struct window *window, void *data)
 }
 
 static void
-handle_acknowledge(void *data,
-		   struct wl_compositor *compositor,
-		   uint32_t key, uint32_t frame)
+acknowledge_handler(struct window *window,
+		    uint32_t key, uint32_t frame, void *data)
 {
 	struct terminal *terminal = data;
 
@@ -430,18 +428,6 @@ handle_acknowledge(void *data,
 		terminal_schedule_redraw(terminal);
 	}
 }
-
-static void
-handle_frame(void *data,
-	     struct wl_compositor *compositor,
-	     uint32_t frame, uint32_t timestamp)
-{
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	handle_acknowledge,
-	handle_frame,
-};
 
 static void
 key_handler(struct window *window, uint32_t key, uint32_t unicode,
@@ -493,12 +479,9 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->redraw_scheduled = 1;
 	terminal->margin = 5;
 
-	terminal->compositor = display_get_compositor(display);
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
-
-	wl_compositor_add_listener(terminal->compositor,
-				   &compositor_listener, terminal);
+	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
 
 	window_set_key_handler(terminal->window, key_handler, terminal);
 	window_set_keyboard_focus_handler(terminal->window,

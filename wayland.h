@@ -86,6 +86,7 @@ int wl_display_add_global(struct wl_display *display, struct wl_object *object, 
 
 struct wl_compositor {
 	struct wl_object base;
+	const char *device;
 };
 
 struct wl_surface {

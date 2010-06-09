@@ -112,9 +112,6 @@ handle_frame(struct window *window,
 
 int main(int argc, char *argv[])
 {
-	struct wl_display *display;
-	struct wl_visual *visual;
-	int fd;
 	cairo_surface_t *s;
 	struct timespec ts;
 	struct flower flower;

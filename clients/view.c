@@ -49,7 +49,6 @@ static const char socket_name[] = "\0wayland";
 struct view {
 	struct window *window;
 	struct display *display;
-	struct wl_compositor *compositor;
 	uint32_t key;
 
 	gboolean redraw_scheduled;
@@ -109,7 +108,7 @@ view_draw(struct view *view)
 			    &rectangle,
 			    view->surface);
 
-	wl_compositor_commit(view->compositor, view->key);
+	window_commit(view->window, 0);
 }
 
 static gboolean
@@ -175,9 +174,8 @@ resize_handler(struct window *window, void *data)
 }
 
 static void
-handle_acknowledge(void *data,
-		   struct wl_compositor *compositor,
-		   uint32_t key, uint32_t frame)
+acknowledge_handler(struct window *window,
+		    uint32_t key, uint32_t frame, void *data)
 {
 	struct view *view = data;
 
@@ -201,18 +199,6 @@ keyboard_focus_handler(struct window *window,
 	view->focused = (device != NULL);
 	view_schedule_redraw(view);
 }
-
-static void
-handle_frame(void *data,
-	     struct wl_compositor *compositor,
-	     uint32_t frame, uint32_t timestamp)
-{
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	handle_acknowledge,
-	handle_frame,
-};
 
 static struct view *
 view_create(struct display *display, uint32_t key, const char *filename)
@@ -242,14 +228,11 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	view->key = key + 100;
 	view->redraw_scheduled = 1;
 
-	view->compositor = display_get_compositor(display);
 	window_set_resize_handler(view->window, resize_handler, view);
 	window_set_key_handler(view->window, key_handler, view);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler, view);
-
-	wl_compositor_add_listener(view->compositor,
-				   &compositor_listener, view);
+	window_set_acknowledge_handler(view->window, acknowledge_handler, view);
 
 	view->document = poppler_document_new_from_file(view->filename,
 							NULL, &error);

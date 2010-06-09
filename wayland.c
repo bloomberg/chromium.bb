@@ -275,6 +275,16 @@ wl_client_send_acknowledge(struct wl_client *client,
 			     WL_COMPOSITOR_ACKNOWLEDGE, key, frame);
 }
 
+static void
+post_compositor_device(struct wl_client *client, struct wl_object *global)
+{
+	struct wl_compositor *compositor =
+		container_of(global, struct wl_compositor, base);
+
+	wl_client_post_event(client, global,
+			     WL_COMPOSITOR_DEVICE, compositor->device);
+}
+
 WL_EXPORT int
 wl_display_set_compositor(struct wl_display *display,
 			  struct wl_compositor *compositor,
@@ -284,7 +294,7 @@ wl_display_set_compositor(struct wl_display *display,
 	compositor->base.implementation = (void (**)(void)) implementation;
 
 	wl_display_add_object(display, &compositor->base);
-	if (wl_display_add_global(display, &compositor->base, NULL))
+	if (wl_display_add_global(display, &compositor->base, post_compositor_device))
 		return -1;
 
 	return 0;

@@ -1,5 +1,8 @@
 include ../config.mk
 
+CFLAGS += -I.. $(CLIENT_CFLAGS)
+LDLIBS += -L.. -lwayland $(CLIENT_LIBS) -lrt -lm
+
 egl_clients = gears
 cairo_clients = flower screenshot terminal image view
 
@@ -16,12 +19,5 @@ image : image.o window.o wayland-glib.o
 view : view.o window.o wayland-glib.o
 
 terminal : LDLIBS += -lutil
-image : CFLAGS += $(GDK_PIXBUF_CFLAGS)
-image : LDLIBS += $(GDK_PIXBUF_LIBS)
 view : CFLAGS += $(POPPLER_CFLAGS)
 view : LDLIBS += $(POPPLER_LIBS)
-
-$(egl_clients) : CFLAGS += $(EGL_CLIENT_CFLAGS)
-$(egl_clients) : LDLIBS += -L.. -lwayland $(EGL_CLIENT_LIBS) -lrt -lm
-$(cairo_clients) : CFLAGS += $(CAIRO_CLIENT_CFLAGS) $(EGL_CLIENT_CFLAGS)
-$(cairo_clients) : LDLIBS += -L..  -lwayland $(CAIRO_CLIENT_LIBS) $(EGL_CLIENT_LIBS) -lrt -lm

@@ -37,8 +37,9 @@ extern const struct wl_interface wl_display_interface;
 #define WL_COMPOSITOR_CREATE_SURFACE	0
 #define WL_COMPOSITOR_COMMIT		1
 
-#define WL_COMPOSITOR_ACKNOWLEDGE	0
-#define WL_COMPOSITOR_FRAME		1
+#define WL_COMPOSITOR_DEVICE		0
+#define WL_COMPOSITOR_ACKNOWLEDGE	1
+#define WL_COMPOSITOR_FRAME		2
 
 extern const struct wl_interface wl_compositor_interface;
 
@@ -46,8 +47,7 @@ extern const struct wl_interface wl_compositor_interface;
 #define WL_SURFACE_DESTROY	0
 #define WL_SURFACE_ATTACH	1
 #define WL_SURFACE_MAP		2
-#define WL_SURFACE_COPY		3
-#define WL_SURFACE_DAMAGE	4
+#define WL_SURFACE_DAMAGE	3
 
 extern const struct wl_interface wl_surface_interface;
 

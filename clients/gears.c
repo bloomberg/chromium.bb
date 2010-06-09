@@ -51,7 +51,6 @@ struct gears {
 	struct window *window;
 
 	struct display *d;
-	struct wl_compositor *compositor;
 	struct rectangle rectangle;
 
 	EGLDisplay display;
@@ -319,9 +318,9 @@ keyboard_focus_handler(struct window *window,
 }
 
 static void
-handle_acknowledge(void *data,
-		   struct wl_compositor *compositor,
-		   uint32_t key, uint32_t frame)
+acknowledge_handler(struct window *window,
+		    uint32_t key, uint32_t frame,
+		    void *data)
 {
 	struct gears *gears = data;
 
@@ -334,9 +333,8 @@ handle_acknowledge(void *data,
 }
 
 static void
-handle_frame(void *data,
-	     struct wl_compositor *compositor,
-	     uint32_t frame, uint32_t timestamp)
+frame_handler(struct window *window,
+	      uint32_t frame, uint32_t timestamp, void *data)
 {
   	struct gears *gears = data;
 
@@ -346,11 +344,6 @@ handle_frame(void *data,
 
 	gears->angle = (GLfloat) (timestamp % 8192) * 360 / 8192.0;
 }
-
-static const struct wl_compositor_listener compositor_listener = {
-	handle_acknowledge,
-	handle_frame,
-};
 
 static struct gears *
 gears_create(struct display *display)
@@ -434,17 +427,14 @@ gears_create(struct display *display)
 	if (glCheckFramebufferStatus (GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE)
 		fprintf(stderr, "framebuffer incomplete\n");
 
-	gears->compositor = display_get_compositor(display);
-
 	resize_window(gears);
 	draw_gears(gears);
-	handle_frame(gears, gears->compositor, 0, 0);
+	frame_handler(gears->window, 0, 0, gears);
 
 	window_set_resize_handler(gears->window, resize_handler, gears);
 	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler, gears);
-
-	wl_compositor_add_listener(gears->compositor,
-				   &compositor_listener, gears);
+	window_set_acknowledge_handler(gears->window, acknowledge_handler, gears);
+	window_set_frame_handler(gears->window, frame_handler, gears);
 
 	return gears;
 }

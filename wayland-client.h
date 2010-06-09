@@ -65,6 +65,9 @@ struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display);
 
 struct wl_compositor_listener {
+	void (*device)(void *data,
+		       struct wl_compositor *compositor,
+		       const char *device);
 	void (*acknowledge)(void *data,
 			    struct wl_compositor *compositor,
 			    uint32_t key, uint32_t frame);

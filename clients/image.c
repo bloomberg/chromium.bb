@@ -45,7 +45,6 @@ static const char socket_name[] = "\0wayland";
 struct image {
 	struct window *window;
 	struct display *display;
-	struct wl_compositor *compositor;
 	uint32_t key;
 
 	gboolean redraw_scheduled;
@@ -226,9 +225,8 @@ keyboard_focus_handler(struct window *window,
 }
 
 static void
-handle_acknowledge(void *data,
-		   struct wl_compositor *compositor,
-		   uint32_t key, uint32_t frame)
+acknowledge_handler(struct window *window,
+		    uint32_t key, uint32_t frame, void *data)
 {
 	struct image *image = data;
 
@@ -242,18 +240,6 @@ handle_acknowledge(void *data,
 		image_schedule_redraw(image);
 	}
 }
-
-static void
-handle_frame(void *data,
-	     struct wl_compositor *compositor,
-	     uint32_t frame, uint32_t timestamp)
-{
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	handle_acknowledge,
-	handle_frame,
-};
 
 static struct image *
 image_create(struct display *display, uint32_t key, const char *filename)
@@ -281,11 +267,9 @@ image_create(struct display *display, uint32_t key, const char *filename)
 	image->key = key + 100;
 	image->redraw_scheduled = 1;
 
-	image->compositor = display_get_compositor(display);
 	window_set_resize_handler(image->window, resize_handler, image);
 	window_set_keyboard_focus_handler(image->window, keyboard_focus_handler, image);
-
-	wl_compositor_add_listener(image->compositor, &compositor_listener, image);
+	window_set_acknowledge_handler(image->window, acknowledge_handler, image);
 
 	image_draw(image);
 
