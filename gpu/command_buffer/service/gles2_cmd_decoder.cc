@@ -3007,8 +3007,11 @@ void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
 }
 
 bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
-  if (!current_program_ || current_program_->IsDeleted() ||
-      !current_program_->IsValid()) {
+  // NOTE: We specifically do not check current_program->IsValid() because
+  // it could never be invalid since glUseProgram would have failed. While
+  // glLinkProgram could later mark the program as invalid the previous
+  // valid program will still function if it is still the current program.
+  if (!current_program_ || current_program_->IsDeleted()) {
     // The program does not exist.
     // But GL says no ERROR.
     return false;
