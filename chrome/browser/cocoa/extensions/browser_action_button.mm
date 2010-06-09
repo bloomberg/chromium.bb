@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
+#import "chrome/browser/cocoa/image_utils.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -303,16 +304,16 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   [[self cell] setIconShadow];
 
   NSImage* actionImage = [self image];
-  // Never draw within a flipped coordinate system.
-  // TODO(andybons): Figure out why |flipped| can be yes in certain cases.
-  // http://crbug.com/38943
-  [actionImage setFlipped:NO];
-  CGFloat xPos = std::floor((NSWidth(bounds) - [actionImage size].width) / 2);
-  CGFloat yPos = std::floor((NSHeight(bounds) - [actionImage size].height) / 2);
-  [actionImage drawAtPoint:NSMakePoint(xPos, yPos)
-                  fromRect:NSZeroRect
-                 operation:NSCompositeSourceOver
-                  fraction:1.0];
+  const NSSize imageSize = [actionImage size];
+  const NSRect imageRect =
+      NSMakeRect(std::floor((NSWidth(bounds) - imageSize.width) / 2.0),
+                 std::floor((NSHeight(bounds) - imageSize.height) / 2.0),
+                 imageSize.width, imageSize.height);
+  [actionImage drawInRect:imageRect
+                 fromRect:NSZeroRect
+                operation:NSCompositeSourceOver
+                 fraction:1.0
+             neverFlipped:YES];
 
   bounds.origin.y += kShadowOffset - kBrowserActionBadgeOriginYOffset;
   bounds.origin.x -= kShadowOffset;
