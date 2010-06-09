@@ -8,7 +8,7 @@ UnloadTest.CrossSiteInfiniteBeforeUnloadSync
 # See http://crbug.com/40584
 ExtensionProxyUITest.*
 # See http://crbug.com/42105
-BrowserTest.FLAKY_PosixSessionEnd
+BrowserTest.PosixSessionEnd
 # See http://crbug.com/42921
 ResourceDispatcherTest.CrossSiteAfterCrash
 # See http://crbug.com/45562

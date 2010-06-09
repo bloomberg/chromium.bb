@@ -28,13 +28,13 @@ ErrorPageTest.IFrameDNSError_GoBackAndForward
 # See http://crbug.com/30366.
 BrowserEncodingTest.TestEncodingAutoDetect
 # See http://crbug.com/29598.
-DOMStorageTest.FLAKY_LocalStorageLayoutTests
-ErrorPageTest.FLAKY_DNSError_Basic
-ErrorPageTest.FLAKY_DNSError_GoBack1
-ErrorPageTest.FLAKY_DNSError_GoBack2
-ErrorPageTest.FLAKY_DNSError_GoBack2AndForward
-ErrorPageTest.FLAKY_DNSError_GoBack2Forward2
-SessionHistoryTest.FLAKY_LocationReplace
+DOMStorageTest.LocalStorageLayoutTests
+ErrorPageTest.DNSError_Basic
+ErrorPageTest.DNSError_GoBack1
+ErrorPageTest.DNSError_GoBack2
+ErrorPageTest.DNSError_GoBack2AndForward
+ErrorPageTest.DNSError_GoBack2Forward2
+SessionHistoryTest.LocationReplace
 # See http://crbug.com/30367.
 NewTabUITest.NTPHasThumbnails
 NewTabUITest.UpdateUserPrefsVersion
@@ -48,23 +48,23 @@ NPAPITester.GetURL
 NPAPITester.SelfDeletePluginGetUrl
 NPAPITester.PluginThreadAsyncCall
 NPAPITester.GetJavaScriptURL
-NPAPITester.FLAKY_SelfDeletePluginInvoke
+NPAPITester.SelfDeletePluginInvoke
 NPAPITester.NPObjectReleasedOnDestruction
 NPAPITester.Arguments
-NPAPITester.FLAKY_GetJavaScriptURL2
+NPAPITester.GetJavaScriptURL2
 NPAPITester.PrivateDisabled
 NPAPITester.NPObjectSetException
 NPAPIVisiblePluginTester.PluginReferrerTest
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIIncognitoTester.PrivateEnabled
 NPAPITester.ManyPlugins
-NPAPITester.FLAKY_ManyPlugins
+NPAPITester.ManyPlugins
 NPAPITester.NPObjectProxy
 NPAPITester.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
-NPAPIVisiblePluginTester.FLAKY_SelfDeletePluginInvokeInSynchronousPaint
+NPAPIVisiblePluginTester.SelfDeletePluginInvokeInSynchronousPaint
 LayoutPluginTester.UnloadNoCrash
 
 # Possible timing related failure triggered only on mac valgrind bots.
@@ -80,4 +80,4 @@ ChromeMainTest.AppLaunch
 
 # See http://crbug.com/39057
 # Hanging on mac valgrind ui bots.
-UnoadTest.*CrossSiteInfiniteBeforeUnloadAsync
+UnloadTest.CrossSiteInfiniteBeforeUnloadAsync

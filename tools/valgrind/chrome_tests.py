@@ -180,7 +180,18 @@ class ChromeTests:
             if line.startswith("#") or line.startswith("//") or line.isspace():
               continue
             line = line.rstrip()
+            test_prefixes = ["FLAKY", "FAILS"]
+            for p in test_prefixes:
+              # Strip prefixes from the test names.
+              line = line.replace(".%s_" % p, ".")
+            # Exclude the original test name.
             filters.append(line)
+            if line[-2:] != ".*":
+              # List all possible prefixes if line doesn't end with ".*".
+              for p in test_prefixes:
+                filters.append(line.replace(".", ".%s_" % p))
+    # Get rid of duplicates.
+    filters = set(filters)
     gtest_filter = self._gtest_filter
     if len(filters):
       if gtest_filter:
