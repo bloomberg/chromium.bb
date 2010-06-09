@@ -26,32 +26,9 @@ UtilityProcessHost::~UtilityProcessHost() {
 }
 
 bool UtilityProcessHost::StartExtensionUnpacker(const FilePath& extension) {
-  FilePath initial_path = extension.DirName();
-  FilePath real_path;
-
-  // The utility process will have access to the directory passed to
-  // StartProcess().  That directory should not be a symlink or NTFS
-  // junctions, because when the path is used, following the link will
-  // cause file system access outside the sandbox path.
-
-#if defined(OS_POSIX)
-  // Resolve symlinks to get a symlink free path.
-  if (!file_util::RealPath(initial_path, &real_path)) {
-    real_path = initial_path;
-  }
-#else
-  // TODO(skerner): For windows, we need to expand NTFS junctions.
-  // http://crbug.com/13044
-  real_path = initial_path;
-#endif
-
-  // TODO(skerner): Remove this logging once we understand crbug.com/35198
-  LOG(INFO) << "initial_path: " << initial_path.value();
-  LOG(INFO) << "real_path: " << real_path.value();
-
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
-  if (!StartProcess(real_path))
+  if (!StartProcess(extension.DirName()))
     return false;
 
   Send(new UtilityMsg_UnpackExtension(extension));

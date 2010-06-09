@@ -64,8 +64,24 @@ void SandboxedExtensionUnpacker::Start() {
     return;
   }
 
-  // If we are supposed to use a subprocess, copy the crx to the temp directory
-  // and kick off the subprocess.
+  // The utility process will have access to the directory passed to
+  // SandboxedExtensionUnpacker.  That directory should not contain a
+  // symlink or NTFS junction, because when the path is used, following
+  // the link will cause file system access outside the sandbox path.
+  FilePath normalized_crx_path;
+  if (!file_util::NormalizeFilePath(temp_crx_path, &normalized_crx_path)) {
+    // TODO(skerner): Remove this logging once crbug/13044 is fixed.
+    // This bug is starred by many users who have some kind of link.
+    // If NormalizeFilePath() fails we want to see it in the logs they send.
+    LOG(ERROR) << "Could not get the normalized path of "
+               << temp_crx_path.value();
+    normalized_crx_path = temp_crx_path;
+  } else {
+    LOG(INFO) << "RealFilePath: from " << temp_crx_path.value()
+              << " to " << normalized_crx_path.value();
+  }
+
+  // If we are supposed to use a subprocess, kick off the subprocess.
   //
   // TODO(asargent) we shouldn't need to do this branch here - instead
   // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
@@ -77,10 +93,10 @@ void SandboxedExtensionUnpacker::Start() {
         NewRunnableMethod(
             this,
             &SandboxedExtensionUnpacker::StartProcessOnIOThread,
-            temp_crx_path));
+            normalized_crx_path));
   } else {
     // Otherwise, unpack the extension in this process.
-    ExtensionUnpacker unpacker(temp_crx_path);
+    ExtensionUnpacker unpacker(normalized_crx_path);
     if (unpacker.Run() && unpacker.DumpImagesToFile() &&
         unpacker.DumpMessageCatalogsToFile()) {
       OnUnpackExtensionSucceeded(*unpacker.parsed_manifest());
