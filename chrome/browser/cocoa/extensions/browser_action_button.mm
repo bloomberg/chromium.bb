@@ -283,22 +283,9 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
 - (NSImage*)compositedImage {
   NSRect bounds = NSMakeRect(0, 0, kBrowserActionWidth, kBrowserActionHeight);
-  NSBitmapImageRep* bitmap = [[NSBitmapImageRep alloc]
-      initWithBitmapDataPlanes:NULL
-                    pixelsWide:NSWidth(bounds)
-                    pixelsHigh:NSHeight(bounds)
-                 bitsPerSample:8
-               samplesPerPixel:4
-                      hasAlpha:YES
-                      isPlanar:NO
-                colorSpaceName:NSCalibratedRGBColorSpace
-                  bitmapFormat:0
-                   bytesPerRow:0
-                  bitsPerPixel:0];
+  NSImage* image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
+  [image lockFocus];
 
-  [NSGraphicsContext saveGraphicsState];
-  [NSGraphicsContext setCurrentContext:
-      [NSGraphicsContext graphicsContextWithBitmapImageRep:bitmap]];
   [[NSColor clearColor] set];
   NSRectFill(bounds);
   [[self cell] setIconShadow];
@@ -319,11 +306,8 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   bounds.origin.x -= kShadowOffset;
   [[self cell] drawBadgeWithinFrame:bounds];
 
-  [NSGraphicsContext restoreGraphicsState];
-  NSImage* compositeImage =
-      [[[NSImage alloc] initWithSize:[bitmap size]] autorelease];
-  [compositeImage addRepresentation:bitmap];
-  return compositeImage;
+  [image unlockFocus];
+  return image;
 }
 
 @end
