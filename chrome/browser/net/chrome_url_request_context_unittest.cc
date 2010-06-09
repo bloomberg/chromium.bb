@@ -14,7 +14,7 @@
 // Builds an identifier for each test in an array.
 #define TEST_DESC(desc) StringPrintf("at line %d <%s>", __LINE__, desc)
 
-TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
+TEST(ChromeURLRequestContextTest, CreateProxyConfigTest) {
   FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
   // Build the input command lines here.
   CommandLine empty(unused_path);
