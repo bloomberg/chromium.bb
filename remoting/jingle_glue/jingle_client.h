@@ -16,10 +16,6 @@ namespace talk_base {
 class NetworkManager;
 }  // namespace talk_base
 
-namespace buzz {
-class PreXmppAuth;
-}  // namespace buzz
-
 namespace cricket {
 class BasicPortAllocator;
 class SessionManager;
@@ -67,8 +63,9 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // only once. message_loop() is guaranteed to exist after this method returns,
   // but the connection may not be open yet. |callback| specifies callback
   // object for the client and must not be NULL.
-  void Init(const std::string& username, const std::string& auth_token,
-            const std::string& auth_token_service, Callback* callback);
+  // TODO(sergeyu): Replace password with a token.
+  void Init(const std::string& username, const std::string& password,
+            Callback* callback);
 
   // Creates new JingleChannel connected to the host with the specified jid.
   // The result is returned immediately but the channel fails if the host
@@ -104,9 +101,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   void OnIncomingTunnel(cricket::TunnelSessionClient* client, buzz::Jid jid,
                         std::string description, cricket::Session* session);
 
-  void DoInitialize(const std::string& username,
-                    const std::string& auth_token,
-                    const std::string& auth_token_service);
+  void DoInitialize();
 
   // Used by Connect().
   void DoConnect(ConnectRequest* request,
@@ -120,15 +115,13 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // the jingle thread.
   void UpdateState(State new_state);
 
-  buzz::PreXmppAuth* CreatePreXmppAuth(
-      const buzz::XmppClientSettings& settings);
-
-
   buzz::XmppClient* client_;
   scoped_ptr<JingleThread> thread_;
   State state_;
   Callback* callback_;
 
+  std::string username_;
+  std::string password_;
   Lock full_jid_lock_;
   std::string full_jid_;
 

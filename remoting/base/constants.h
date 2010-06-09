@@ -11,9 +11,6 @@ namespace remoting {
 
 extern const std::string kChromotingBotJid;
 
-// Service name used for authentication.
-extern const std::string kChromotingTokenServiceName;
-
 }  // namespace remoting
 
 #endif  // REMOTING_BASE_CONSTANTS_H

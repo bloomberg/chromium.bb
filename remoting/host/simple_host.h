@@ -47,7 +47,7 @@ class SimpleHost : public base::RefCountedThreadSafe<SimpleHost>,
                    public ClientConnection::EventHandler,
                    public JingleClient::Callback {
  public:
-  SimpleHost(const std::string& username, const std::string& auth_token,
+  SimpleHost(const std::string& username, const std::string& password,
              Capturer* capturer, Encoder* encoder, EventExecutor* executor);
 
   // Run the host porcess. This method returns only after the message loop
@@ -96,7 +96,7 @@ class SimpleHost : public base::RefCountedThreadSafe<SimpleHost>,
   base::Thread encode_thread_;
 
   std::string username_;
-  std::string auth_token_;
+  std::string password_;
 
   // Capturer to be used by SessionManager. Once the SessionManager is
   // constructed this is set to NULL.

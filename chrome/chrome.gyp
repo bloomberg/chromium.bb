@@ -726,8 +726,6 @@
         'common/net/notifier/communicator/connection_settings.cc',
         'common/net/notifier/communicator/connection_settings.h',
         'common/net/notifier/communicator/const_communicator.h',
-        'common/net/notifier/communicator/gaia_token_pre_xmpp_auth.cc',
-        'common/net/notifier/communicator/gaia_token_pre_xmpp_auth.h',
         'common/net/notifier/communicator/login.cc',
         'common/net/notifier/communicator/login.h',
         'common/net/notifier/communicator/login_connection_state.h',

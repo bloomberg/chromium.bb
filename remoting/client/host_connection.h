@@ -47,7 +47,7 @@ class HostConnection : public JingleChannel::Callback,
 
   virtual ~HostConnection();
 
-  void Connect(const std::string& username, const std::string& auth_token,
+  void Connect(const std::string& username, const std::string& password,
                const std::string& host_jid);
   void Disconnect();
 

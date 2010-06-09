@@ -75,13 +75,16 @@ int main(int argc, char** argv) {
     fake = true;
   }
 
-  // Prompt user for username and auth token.
+  // Prompt user for username and password.
   std::string username;
   std::cout << "JID: ";
   std::cin >> username;
-  std::string auth_token;
-  std::cout << "Auth Token: ";
-  std::cin >> auth_token;
+  std::string password;
+  SetConsoleEcho(false);
+  std::cout << "Password: ";
+  std::cin >> password;
+  SetConsoleEcho(true);
+  std::cout << std::endl;
 
   scoped_ptr<remoting::Capturer> capturer;
   scoped_ptr<remoting::Encoder> encoder;
@@ -103,13 +106,13 @@ int main(int argc, char** argv) {
     capturer.reset(new remoting::CapturerFake());
   }
 
-  // Construct a simple host with username and auth_token.
+  // Construct a simple host with username and password.
   // TODO(hclam): Allow the host to load saved credentials.
   scoped_refptr<remoting::SimpleHost> host
-      = new remoting::SimpleHost(username, auth_token,
-                                 capturer.release(),
-                                 encoder.release(),
-                                 executor.release());
+      = new remoting::SimpleHost(username, password,
+                                   capturer.release(),
+                                   encoder.release(),
+                                   executor.release());
   host->Run();
   return 0;
 }
