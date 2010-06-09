@@ -17,10 +17,10 @@
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/validator_arm/v2/address_set.h"
-#include "native_client/src/trusted/validator_arm/v2/decode.h"
-#include "native_client/src/trusted/validator_arm/v2/inst_classes.h"
-#include "native_client/src/trusted/validator_arm/v2/model.h"
+#include "native_client/src/trusted/validator_arm/address_set.h"
+#include "native_client/src/trusted/validator_arm/decode.h"
+#include "native_client/src/trusted/validator_arm/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/include/portability.h"
 
 namespace nacl_arm_val {

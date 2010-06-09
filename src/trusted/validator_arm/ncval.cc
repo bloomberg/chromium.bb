@@ -13,8 +13,8 @@
 #include <algorithm>
 
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/validator_arm/v2/model.h"
-#include "native_client/src/trusted/validator_arm/v2/validator.h"
+#include "native_client/src/trusted/validator_arm/model.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
 
 using nacl_arm_val::SfiValidator;

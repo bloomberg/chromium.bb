@@ -73,7 +73,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
-# include "native_client/src/trusted/validator_arm/v2/ncvalidate.h"
+# include "native_client/src/trusted/validator_arm/ncvalidate.h"
 
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {

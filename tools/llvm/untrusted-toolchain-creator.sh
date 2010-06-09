@@ -660,7 +660,7 @@ InstallMiscTools() {
            arm-ncval-core
    rm -rf  ${INSTALL_ROOT}/tools-x86
    mkdir ${INSTALL_ROOT}/tools-x86
-   cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/v2/\
+   cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
 arm-ncval-core ${INSTALL_ROOT}/tools-x86
 }
 

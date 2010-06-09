@@ -8,8 +8,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_DECODE_H
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_DECODE_H
 
-#include "native_client/src/trusted/validator_arm/v2/model.h"
-#include "native_client/src/trusted/validator_arm/v2/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/model.h"
+#include "native_client/src/trusted/validator_arm/inst_classes.h"
 
 namespace nacl_arm_dec {
 

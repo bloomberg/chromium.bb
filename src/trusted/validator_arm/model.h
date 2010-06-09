@@ -205,6 +205,6 @@ class Instruction {
 }  // namespace
 
 // Definitions for our inlined functions.
-#include "native_client/src/trusted/validator_arm/v2/model-inl.h"
+#include "native_client/src/trusted/validator_arm/model-inl.h"
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_MODEL_H

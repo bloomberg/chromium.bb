@@ -6,7 +6,7 @@
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/validator_arm/v2/validator.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/include/nacl_macros.h"
 
 using nacl_arm_dec::Instruction;

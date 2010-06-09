@@ -40,7 +40,7 @@ if env.Bit('linux'):
 
   # NOTE: we cannot use TARGET_ROOT here because we want to share this file
   #       between different scons invocations
-  gen_dec=('${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/v2/'
+  gen_dec=('${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/'
            'decode.cc')
 
   env.Command(target=gen_dec,

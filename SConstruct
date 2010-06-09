@@ -942,7 +942,7 @@ if not (base_env['TARGET_ARCHITECTURE'] == 'x86' and
         base_env['TARGET_SUBARCH'] == '64'):
   base_env.Append(
       BUILD_SCONSCRIPTS = [
-        'src/trusted/validator_arm/v2/build.scons',
+        'src/trusted/validator_arm/build.scons',
       ])
 
 if base_env['TARGET_ARCHITECTURE'] not in ('arm', 'x86'):

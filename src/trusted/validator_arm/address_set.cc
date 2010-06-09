@@ -5,7 +5,7 @@
  * Copyright 2009, Google Inc.
  */
 
-#include "native_client/src/trusted/validator_arm/v2/address_set.h"
+#include "native_client/src/trusted/validator_arm/address_set.h"
 #include <stdio.h>
 #include <string.h>
 

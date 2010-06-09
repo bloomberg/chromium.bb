@@ -7,7 +7,7 @@
 # Annotates the output of ncval with line numbers, taken from debugging
 # information using binutils' addr2line.
 
-# TODO(mseaborn): Merge this with validator_arm/v2/validation-report.py,
+# TODO(mseaborn): Merge this with validator_arm/validation-report.py,
 # the Python wrapper script for the ARM validator.
 
 import linecache

@@ -5,14 +5,14 @@
  * Copyright 2009, Google Inc.
  */
 
-#include "native_client/src/trusted/validator_arm/v2/ncvalidate.h"
+#include "native_client/src/trusted/validator_arm/ncvalidate.h"
 
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/validator_arm/v2/validator.h"
-#include "native_client/src/trusted/validator_arm/v2/model.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
+#include "native_client/src/trusted/validator_arm/model.h"
 
 using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;

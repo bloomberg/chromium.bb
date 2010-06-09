@@ -199,7 +199,7 @@
       'conditions': [
         ['target_arch=="arm"', {
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator_arm/v2/validator_arm.gyp:ncvalidate_arm_v2',
+            '<(DEPTH)/native_client/src/trusted/validator_arm/validator_arm.gyp:ncvalidate_arm_v2',
           ],
         }],
         ['target_arch=="ia32" or target_arch=="x64"', {

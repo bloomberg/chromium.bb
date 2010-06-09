@@ -14,7 +14,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/validator_arm/v2/address_set.h"
+#include "native_client/src/trusted/validator_arm/address_set.h"
 
 using nacl_arm_val::AddressSet;
 

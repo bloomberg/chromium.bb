@@ -41,7 +41,7 @@
         }],
         ['target_arch=="arm"', {
           'dependencies': [
-            '../src/trusted/validator_arm/v2/validator_arm.gyp:*',
+            '../src/trusted/validator_arm/validator_arm.gyp:*',
           ],
         }],
         ['OS=="win" and nacl_standalone==0', {

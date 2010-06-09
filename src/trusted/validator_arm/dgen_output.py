@@ -41,7 +41,7 @@ def _generate_header(out):
     # TODO do we need a big ridiculous license banner in generated code?
     out.block_comment('DO NOT EDIT: GENERATED CODE')
     out.line('#include <stdio.h>')
-    out.line('#include "native_client/src/trusted/validator_arm/v2/decode.h"')
+    out.line('#include "native_client/src/trusted/validator_arm/decode.h"')
 
 
 def _generate_decoder_state_type(tables, out):

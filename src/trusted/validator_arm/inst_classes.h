@@ -9,7 +9,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_INST_CLASSES_H
 
 #include <stdint.h>
-#include "native_client/src/trusted/validator_arm/v2/model.h"
+#include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/include/portability.h"
 
 /*

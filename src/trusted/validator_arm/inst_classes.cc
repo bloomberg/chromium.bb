@@ -5,7 +5,7 @@
  * Copyright 2009, Google Inc.
  */
 
-#include "native_client/src/trusted/validator_arm/v2/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/inst_classes.h"
 
 /*
  * Implementations of instruction classes, for those not completely defined in
