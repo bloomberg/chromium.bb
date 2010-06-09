@@ -382,7 +382,7 @@ const wchar_t* ProfileSyncService::GetPrefNameForDataType(
   switch (data_type) {
     case syncable::BOOKMARKS:
       return prefs::kSyncBookmarks;
-    case syncable::PASSWORD:
+    case syncable::PASSWORDS:
       return prefs::kSyncPasswords;
     case syncable::PREFERENCES:
       return prefs::kSyncPreferences;

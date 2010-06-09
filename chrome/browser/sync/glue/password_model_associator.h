@@ -50,7 +50,7 @@ class PasswordModelAssociator
  public:
   typedef std::vector<webkit_glue::PasswordForm> PasswordVector;
 
-  static syncable::ModelType model_type() { return syncable::PASSWORD; }
+  static syncable::ModelType model_type() { return syncable::PASSWORDS; }
   PasswordModelAssociator(ProfileSyncService* sync_service,
                           PasswordStore* password_store);
   virtual ~PasswordModelAssociator() { }

@@ -72,7 +72,7 @@ bool PasswordModelAssociator::AssociateModels() {
     std::string tag = MakeTag(**ix);
 
     sync_api::ReadNode node(&trans);
-    if (node.InitByClientTagLookup(syncable::PASSWORD, tag)) {
+    if (node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
       sync_pb::PasswordSpecificsData password;
       if (!node.GetPasswordSpecifics(&password)) {
         STLDeleteElements(&passwords);
@@ -85,7 +85,7 @@ bool PasswordModelAssociator::AssociateModels() {
 
       if (MergePasswords(password, **ix, &new_password)) {
         sync_api::WriteNode write_node(&trans);
-        if (!write_node.InitByClientTagLookup(syncable::PASSWORD, tag)) {
+        if (!write_node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
           STLDeleteElements(&passwords);
           LOG(ERROR) << "Failed to edit password sync node.";
           return false;
@@ -97,7 +97,7 @@ bool PasswordModelAssociator::AssociateModels() {
       Associate(&tag, node.GetId());
     } else {
       sync_api::WriteNode node(&trans);
-      if (!node.InitUniqueByCreation(syncable::PASSWORD,
+      if (!node.InitUniqueByCreation(syncable::PASSWORDS,
                                      password_root, tag)) {
         STLDeleteElements(&passwords);
         LOG(ERROR) << "Failed to create password sync node.";

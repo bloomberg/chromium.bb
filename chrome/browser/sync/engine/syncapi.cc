@@ -246,7 +246,7 @@ const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
 
 bool BaseNode::GetPasswordSpecifics(sync_pb::PasswordSpecificsData* data)
     const {
-  DCHECK(GetModelType() == syncable::PASSWORD);
+  DCHECK(GetModelType() == syncable::PASSWORDS);
   DCHECK(data);
   const sync_pb::PasswordSpecifics& specifics =
       GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::password);
@@ -329,7 +329,7 @@ void WriteNode::PutBookmarkSpecificsAndMarkForSyncing(
 
 void WriteNode::SetPasswordSpecifics(
     const sync_pb::PasswordSpecificsData& data) {
-  DCHECK(GetModelType() == syncable::PASSWORD);
+  DCHECK(GetModelType() == syncable::PASSWORDS);
   std::string serialized_data;
   data.SerializeToString(&serialized_data);
   sync_pb::PasswordSpecifics new_value;

@@ -41,7 +41,7 @@ class PasswordDataTypeController : public DataTypeController {
   }
 
   virtual syncable::ModelType type() {
-    return syncable::PASSWORD;
+    return syncable::PASSWORDS;
   }
 
   virtual browser_sync::ModelSafeGroup model_safe_group() {

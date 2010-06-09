@@ -21,7 +21,7 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
     case BOOKMARKS:
       specifics->MutableExtension(sync_pb::bookmark);
       break;
-    case PASSWORD:
+    case PASSWORDS:
       specifics->MutableExtension(sync_pb::password);
       break;
     case PREFERENCES:
@@ -77,7 +77,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return BOOKMARKS;
 
   if (specifics.HasExtension(sync_pb::password))
-    return PASSWORD;
+    return PASSWORDS;
 
   if (specifics.HasExtension(sync_pb::preference))
     return PREFERENCES;

@@ -25,7 +25,7 @@ static const syncable::ModelType kStartOrder[] = {
   syncable::AUTOFILL,
   syncable::THEMES,
   syncable::TYPED_URLS,
-  syncable::PASSWORD,
+  syncable::PASSWORDS,
 };
 
 // Comparator used when sorting data type controllers.

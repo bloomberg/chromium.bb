@@ -69,7 +69,7 @@ void PasswordChangeProcessor::Observe(NotificationType type,
     switch (change->type()) {
       case PasswordStoreChange::ADD: {
         sync_api::WriteNode sync_node(&trans);
-        if (!sync_node.InitUniqueByCreation(syncable::PASSWORD,
+        if (!sync_node.InitUniqueByCreation(syncable::PASSWORDS,
                                             password_root, tag)) {
           error_handler()->OnUnrecoverableError(FROM_HERE,
               "Failed to create password sync node.");
@@ -151,7 +151,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
     // Check that the changed node is a child of the passwords folder.
     DCHECK(password_root.GetId() == sync_node.GetParentId());
-    DCHECK(syncable::PASSWORD == sync_node.GetModelType());
+    DCHECK(syncable::PASSWORDS == sync_node.GetModelType());
 
     sync_pb::PasswordSpecificsData password_data;
     if (!sync_node.GetPasswordSpecifics(&password_data)) {
