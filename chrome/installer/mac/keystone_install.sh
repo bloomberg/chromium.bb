@@ -231,7 +231,7 @@ fi
 APP_VERSION_KEY="CFBundleShortVersionString"
 UPD_VERSION_APP=$(defaults read "${SRC}/Contents/Info" "${APP_VERSION_KEY}" ||
                   exit 2)
-UPD_KS_PLIST="${SRC}/Contents/Versions/${UPD_VERSION_APP}/${FRAMEWORK_DIR}/Resources/Info"
+UPD_KS_PLIST="${SRC}/Contents/Info"
 KS_VERSION_KEY="KSVersion"
 UPD_VERSION_KS=$(defaults read "${UPD_KS_PLIST}" "${KS_VERSION_KEY}" || exit 2)
 PRODUCT_ID=$(defaults read "${UPD_KS_PLIST}" KSProductID || exit 2)
@@ -409,7 +409,7 @@ fi
 # to get the path to the framework, where the Keystone keys are stored.
 NEW_VERSION_APP=$(defaults read "${DEST}/Contents/Info" "${APP_VERSION_KEY}" ||
                   exit 9)
-NEW_KS_PLIST="${DEST}/Contents/Versions/${NEW_VERSION_APP}/${FRAMEWORK_DIR}/Resources/Info"
+NEW_KS_PLIST="${DEST}/Contents/Info"
 NEW_VERSION_KS=$(defaults read "${NEW_KS_PLIST}" "${KS_VERSION_KEY}" || exit 9)
 URL=$(defaults read "${NEW_KS_PLIST}" KSUpdateURL || exit 9)
 # The channel ID is optional.  Suppress stderr to prevent Keystone from seeing
