@@ -51,6 +51,73 @@ static void ScrollToVisible(View* view) {
   view->ScrollRectToVisible(gfx::Rect(gfx::Point(), view->size()));
 }
 
+// Returns the first descendant of |view| that is hot tracked.
+static View* GetFirstHotTrackedView(View* view) {
+  if (!view)
+    return NULL;
+
+  if (view->IsHotTracked())
+    return view;
+
+  for (int i = 0; i < view->GetChildViewCount(); ++i) {
+    View* hot_view = GetFirstHotTrackedView(view->GetChildViewAt(i));
+    if (hot_view)
+      return hot_view;
+  }
+  return NULL;
+}
+
+// Recurses through the child views of |view| returning the first view starting
+// at |start| that is focusable. A value of -1 for |start| indicates to start at
+// the first view (if |forward| is false, iterating starts at the last view). If
+// |forward| is true the children are considered first to last, otherwise last
+// to first.
+static View* GetFirstFocusableView(View* view, int start, bool forward) {
+  if (forward) {
+    for (int i = start == -1 ? 0 : start; i < view->GetChildViewCount(); ++i) {
+      View* deepest = GetFirstFocusableView(view->GetChildViewAt(i), -1,
+                                            forward);
+      if (deepest)
+        return deepest;
+    }
+  } else {
+    for (int i = start == -1 ? view->GetChildViewCount() - 1 : start;
+         i >= 0; --i) {
+      View* deepest = GetFirstFocusableView(view->GetChildViewAt(i), -1,
+                                            forward);
+      if (deepest)
+        return deepest;
+    }
+  }
+  return view->IsFocusable() ? view : NULL;
+}
+
+// Returns the first child of |start| that is focusable.
+static View* GetInitialFocusableView(View* start, bool forward) {
+  return GetFirstFocusableView(start, -1, forward);
+}
+
+// Returns the next view after |start_at| that is focusable. Returns NULL if
+// there are no focusable children of |ancestor| after |start_at|.
+static View* GetNextFocusableView(View* ancestor,
+                                  View* start_at,
+                                  bool forward) {
+  DCHECK(ancestor->IsParentOf(start_at));
+  View* parent = start_at;
+  do {
+    View* new_parent = parent->GetParent();
+    int index = new_parent->GetChildIndex(parent);
+    index += forward ? 1 : -1;
+    if (forward || index != -1) {
+      View* next = GetFirstFocusableView(new_parent, index, forward);
+      if (next)
+        return next;
+    }
+    parent = new_parent;
+  } while (parent != ancestor);
+  return NULL;
+}
+
 // MenuScrollTask --------------------------------------------------------------
 
 // MenuScrollTask is used when the SubmenuView does not all fit on screen and
@@ -274,6 +341,12 @@ void MenuController::SetSelection(MenuItemView* menu_item,
 
   size_t current_size = current_path.size();
   size_t new_size = new_path.size();
+
+  if (pending_state_.item != menu_item && pending_state_.item) {
+    View* current_hot_view = GetFirstHotTrackedView(pending_state_.item);
+    if (current_hot_view)
+      current_hot_view->SetHotTracked(false);
+  }
 
   // Notify the old path it isn't selected.
   for (size_t i = paths_differ_at; i < current_size; ++i)
@@ -765,11 +838,16 @@ bool MenuController::OnKeyDown(int key_code
         CloseSubmenu();
       break;
 
+    case base::VKEY_SPACE:
+      SendAcceleratorToHotTrackedView();
+      break;
+
     case base::VKEY_RETURN:
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
           OpenSubmenuChangeSelectionIfCan();
-        } else if (pending_state_.item->IsEnabled()) {
+        } else if (!SendAcceleratorToHotTrackedView() &&
+                   pending_state_.item->IsEnabled()) {
           Accept(pending_state_.item, 0);
           return false;
         }
@@ -831,6 +909,17 @@ MenuController::~MenuController() {
   instance_count--;
   DLOG(INFO) << "destroyed MC, count=" << instance_count;
 #endif
+}
+
+bool MenuController::SendAcceleratorToHotTrackedView() {
+  View* hot_view = GetFirstHotTrackedView(pending_state_.item);
+  if (!hot_view)
+    return false;
+
+  Accelerator accelerator(base::VKEY_RETURN, false, false, false);
+  hot_view->AcceleratorPressed(accelerator);
+  hot_view->SetHotTracked(true);
+  return true;
 }
 
 void MenuController::UpdateInitialLocation(
@@ -935,7 +1024,12 @@ void MenuController::CloseAllNestedMenus() {
 }
 
 MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
+  // Walk the view hierarchy until we find a menu item (or the root).
   View* child_under_mouse = source->GetViewForPoint(gfx::Point(x, y));
+  while (child_under_mouse &&
+         child_under_mouse->GetID() != MenuItemView::kMenuItemViewID) {
+    child_under_mouse = child_under_mouse->GetParent();
+  }
   if (child_under_mouse && child_under_mouse->IsEnabled() &&
       child_under_mouse->GetID() == MenuItemView::kMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
@@ -1324,9 +1418,28 @@ void MenuController::IncrementSelection(int delta) {
     if (item->GetSubmenu()->GetMenuItemCount()) {
       SetSelection(item->GetSubmenu()->GetMenuItemAt(0), false, false);
       ScrollToVisible(item->GetSubmenu()->GetMenuItemAt(0));
-      return;  // return so else case can fall through.
+      return;
     }
   }
+
+  if (item->GetChildViewCount()) {
+    View* hot_view = GetFirstHotTrackedView(item);
+    if (hot_view) {
+      hot_view->SetHotTracked(false);
+      View* to_make_hot = GetNextFocusableView(item, hot_view, delta == 1);
+      if (to_make_hot) {
+        to_make_hot->SetHotTracked(true);
+        return;
+      }
+    } else {
+      View* to_make_hot = GetInitialFocusableView(item, delta == 1);
+      if (to_make_hot) {
+        to_make_hot->SetHotTracked(true);
+        return;
+      }
+    }
+  }
+
   if (item->GetParentMenuItem()) {
     MenuItemView* parent = item->GetParentMenuItem();
     int parent_count = parent->GetSubmenu()->GetMenuItemCount();
@@ -1335,8 +1448,12 @@ void MenuController::IncrementSelection(int delta) {
         if (parent->GetSubmenu()->GetMenuItemAt(i) == item) {
           int next_index = (i + delta + parent_count) % parent_count;
           ScrollToVisible(parent->GetSubmenu()->GetMenuItemAt(next_index));
-          SetSelection(parent->GetSubmenu()->GetMenuItemAt(next_index), false,
-                       false);
+          MenuItemView* to_select =
+              parent->GetSubmenu()->GetMenuItemAt(next_index);
+          SetSelection(to_select, false, false);
+          View* to_make_hot = GetInitialFocusableView(to_select, delta == 1);
+          if (to_make_hot)
+            to_make_hot->SetHotTracked(true);
           break;
         }
       }

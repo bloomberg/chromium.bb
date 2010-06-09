@@ -397,7 +397,8 @@ void TextButton::SetEnabled(bool enabled) {
 }
 
 bool TextButton::OnMousePressed(const MouseEvent& e) {
-  RequestFocus();
+  if (request_focus_on_press())
+    RequestFocus();
   return true;
 }
 

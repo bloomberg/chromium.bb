@@ -178,7 +178,12 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view) {
                  SubmenuView::kSubmenuBorderSize));
 }
 
-void MenuScrollViewContainer::Paint(gfx::Canvas* canvas) {
+void MenuScrollViewContainer::PaintBackground(gfx::Canvas* canvas) {
+  if (background()) {
+    View::PaintBackground(canvas);
+    return;
+  }
+
 #if defined(OS_WIN)
   HDC dc = canvas->beginPlatformPaint();
   RECT bounds = {0, 0, width(), height()};

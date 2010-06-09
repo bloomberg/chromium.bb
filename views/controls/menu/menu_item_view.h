@@ -26,8 +26,13 @@ class SubmenuView;
 // of the various AddXXX methods.
 //
 // MenuItemView is itself a View, which means you can add Views to each
-// MenuItemView. This normally NOT want you want, rather add other child Views
-// to the submenu of the MenuItemView.
+// MenuItemView. This is normally NOT want you want, rather add other child
+// Views to the submenu of the MenuItemView. Any child views of the MenuItemView
+// that are focusable can be navigated to by way of the up/down arrow and can be
+// activated by way of space/return keys. Activating a focusable child results
+// in |AcceleratorPressed| being invoked. Note, that as menus try not to steal
+// focus from the hosting window child views do not actually get focus. Instead
+// |SetHotTracked| is used as the user navigates around.
 //
 // There are two ways to show a MenuItemView:
 // 1. Use RunMenuAt. This blocks the caller, executing the selected command
@@ -109,14 +114,14 @@ class MenuItemView : public View {
   void AppendMenuItem(int item_id,
                       const std::wstring& label,
                       Type type) {
-    AppendMenuItemInternal(item_id, label, SkBitmap(), type);
+    AppendMenuItemImpl(item_id, label, SkBitmap(), type);
   }
 
   // Append a submenu to this menu.
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenu(int item_id,
                               const std::wstring& label) {
-    return AppendMenuItemInternal(item_id, label, SkBitmap(), SUBMENU);
+    return AppendMenuItemImpl(item_id, label, SkBitmap(), SUBMENU);
   }
 
   // Append a submenu with an icon to this menu.
@@ -124,7 +129,7 @@ class MenuItemView : public View {
   MenuItemView* AppendSubMenuWithIcon(int item_id,
                                       const std::wstring& label,
                                       const SkBitmap& icon) {
-    return AppendMenuItemInternal(item_id, label, icon, SUBMENU);
+    return AppendMenuItemImpl(item_id, label, icon, SUBMENU);
   }
 
   // This is a convenience for standard text label menu items where the label
@@ -142,7 +147,7 @@ class MenuItemView : public View {
 
   // Adds a separator to this menu
   void AppendSeparator() {
-    AppendMenuItemInternal(0, std::wstring(), SkBitmap(), SEPARATOR);
+    AppendMenuItemImpl(0, std::wstring(), SkBitmap(), SEPARATOR);
   }
 
   // Appends a menu item with an icon. This is for the menu item which
@@ -151,8 +156,14 @@ class MenuItemView : public View {
   void AppendMenuItemWithIcon(int item_id,
                               const std::wstring& label,
                               const SkBitmap& icon) {
-    AppendMenuItemInternal(item_id, label, icon, NORMAL);
+    AppendMenuItemImpl(item_id, label, icon, NORMAL);
   }
+
+  // All the AppendXXX methods funnel into this.
+  MenuItemView* AppendMenuItemImpl(int item_id,
+                                   const std::wstring& label,
+                                   const SkBitmap& icon,
+                                   Type type);
 
   // Returns the view that contains child menu items. If the submenu has
   // not been creates, this creates it.
@@ -232,6 +243,9 @@ class MenuItemView : public View {
   // recalculates the bounds.
   void ChildrenChanged();
 
+  // Sizes any child views.
+  virtual void Layout();
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -247,12 +261,6 @@ class MenuItemView : public View {
             int command,
             MenuItemView::Type type,
             MenuDelegate* delegate);
-
-  // All the AddXXX methods funnel into this.
-  MenuItemView* AppendMenuItemInternal(int item_id,
-                                       const std::wstring& label,
-                                       const SkBitmap& icon,
-                                       Type type);
 
   // Invoked by the MenuController when the menu closes as the result of
   // drag and drop run.
@@ -288,6 +296,9 @@ class MenuItemView : public View {
   // Returns the various margins.
   int GetTopMargin();
   int GetBottomMargin();
+
+  // Returns the preferred width (and padding) of any children.
+  int GetChildPreferredWidth();
 
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as

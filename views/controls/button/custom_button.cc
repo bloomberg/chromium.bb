@@ -74,7 +74,8 @@ CustomButton::CustomButton(ButtonListener* listener)
     : Button(listener),
       state_(BS_NORMAL),
       animate_on_state_change_(true),
-      triggerable_event_flags_(MouseEvent::EF_LEFT_BUTTON_DOWN) {
+      triggerable_event_flags_(MouseEvent::EF_LEFT_BUTTON_DOWN),
+      request_focus_on_press_(true) {
   hover_animation_.reset(new ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
 }
@@ -101,7 +102,8 @@ bool CustomButton::OnMousePressed(const MouseEvent& e) {
   if (state_ != BS_DISABLED) {
     if (ShouldEnterPushedState(e) && HitTest(e.location()))
       SetState(BS_PUSHED);
-    RequestFocus();
+    if (request_focus_on_press_)
+      RequestFocus();
   }
   return true;
 }

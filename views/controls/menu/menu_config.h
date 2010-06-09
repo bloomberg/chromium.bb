@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,9 @@ struct MenuConfig {
 
   // Font used by menus.
   gfx::Font font;
+
+  // Font used when the menu has children.
+  gfx::Font font_with_controls;
 
   // Margins between the top of the item and the label.
   int item_top_margin;

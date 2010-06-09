@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ MenuConfig* MenuConfig::Create() {
   HFONT font = CreateFontIndirect(&metrics.lfMenuFont);
   DLOG_ASSERT(font);
   config->font = gfx::Font::CreateFont(font);
+  config->font_with_controls = config->font.DeriveFont(0, gfx::Font::BOLD);
 
   HDC dc = GetDC(NULL);
   RECT bounds = { 0, 0, 200, 200 };

@@ -22,7 +22,8 @@ namespace views {
 gfx::Size MenuItemView::GetPreferredSize() {
   const gfx::Font& font = MenuConfig::instance().font;
   return gfx::Size(
-      font.GetStringWidth(title_) + label_start_ + item_right_margin_,
+      font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
+          GetChildPreferredWidth(),
       font.height() + GetBottomMargin() + GetTopMargin());
 }
 
@@ -30,7 +31,8 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   const MenuConfig& config = MenuConfig::instance();
   bool render_selection =
       (!for_drag && IsSelected() &&
-       parent_menu_item_->GetSubmenu()->GetShowSelection(this));
+       parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
+       GetChildViewCount() == 0);
   int state = render_selection ? MPI_HOT :
                                  (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
   HDC dc = canvas->beginPlatformPaint();
@@ -94,7 +96,8 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
       NativeTheme::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
       default_sys_color);
   int width = this->width() - item_right_margin_ - label_start_;
-  const gfx::Font& font = MenuConfig::instance().font;
+  const gfx::Font& font = GetChildViewCount() > 0 ?
+      MenuConfig::instance().font_with_controls : MenuConfig::instance().font;
   gfx::Rect text_bounds(label_start_, top_margin, width, font.height());
   text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
   if (for_drag) {

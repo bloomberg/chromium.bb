@@ -38,9 +38,12 @@ class EmptyMenuMenuItem : public MenuItemView {
 
 }  // namespace
 
+// Padding between child views.
+static const int kChildXPadding = 8;
+
 // MenuItemView ---------------------------------------------------------------
 
-//  static
+// static
 const int MenuItemView::kMenuItemViewID = 1001;
 
 // static
@@ -164,6 +167,28 @@ void MenuItemView::Cancel() {
   }
 }
 
+MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
+                                               const std::wstring& label,
+                                               const SkBitmap& icon,
+                                               Type type) {
+  if (!submenu_)
+    CreateSubmenu();
+  if (type == SEPARATOR) {
+    submenu_->AddChildView(new MenuSeparator());
+    return NULL;
+  }
+  MenuItemView* item = new MenuItemView(this, item_id, type);
+  if (label.empty() && GetDelegate())
+    item->SetTitle(GetDelegate()->GetLabel(item_id));
+  else
+    item->SetTitle(label);
+  item->SetIcon(icon);
+  if (type == SUBMENU)
+    item->CreateSubmenu();
+  submenu_->AddChildView(item);
+  return item;
+}
+
 SubmenuView* MenuItemView::CreateSubmenu() {
   if (!submenu_)
     submenu_ = new SubmenuView(this);
@@ -272,6 +297,21 @@ void MenuItemView::ChildrenChanged() {
   }
 }
 
+void MenuItemView::Layout() {
+  int child_count = GetChildViewCount();
+  if (child_count == 0)
+    return;
+
+  // Child views are layed out right aligned and given the full height. To right
+  // align start with the last view and progress to the first.
+  for (int i = child_count - 1, x = width() - item_right_margin_; i >= 0; --i) {
+    View* child = GetChildViewAt(i);
+    int width = child->GetPreferredSize().width();
+    child->SetBounds(x - width, 0, width, height());
+    x -= width - kChildXPadding;
+  }
+}
+
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type) {
@@ -323,28 +363,6 @@ void MenuItemView::Init(MenuItemView* parent,
   MenuDelegate* root_delegate = GetDelegate();
   if (root_delegate)
     SetEnabled(root_delegate->IsCommandEnabled(command));
-}
-
-MenuItemView* MenuItemView::AppendMenuItemInternal(int item_id,
-                                                   const std::wstring& label,
-                                                   const SkBitmap& icon,
-                                                   Type type) {
-  if (!submenu_)
-    CreateSubmenu();
-  if (type == SEPARATOR) {
-    submenu_->AddChildView(new MenuSeparator());
-    return NULL;
-  }
-  MenuItemView* item = new MenuItemView(this, item_id, type);
-  if (label.empty() && GetDelegate())
-    item->SetTitle(GetDelegate()->GetLabel(item_id));
-  else
-    item->SetTitle(label);
-  item->SetIcon(icon);
-  if (type == SUBMENU)
-    item->CreateSubmenu();
-  submenu_->AddChildView(item);
-  return item;
 }
 
 void MenuItemView::DropMenuClosed(bool notify_delegate) {
@@ -434,7 +452,6 @@ void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
   rect->set_x(MirroredLeftPointForRect(*rect));
 }
 
-
 void MenuItemView::DestroyAllMenuHosts() {
   if (!HasSubmenu())
     return;
@@ -458,6 +475,20 @@ int MenuItemView::GetBottomMargin() {
   return root && root->has_icons_
       ? MenuConfig::instance().item_bottom_margin :
         MenuConfig::instance().item_no_icon_bottom_margin;
+}
+
+int MenuItemView::GetChildPreferredWidth() {
+  int child_count = GetChildViewCount();
+  if (child_count == 0)
+    return 0;
+
+  int width = 0;
+  for (int i = 0; i < child_count; ++i) {
+    if (i)
+      width += kChildXPadding;
+    width += GetChildViewAt(i)->GetPreferredSize().width();
+  }
+  return width;
 }
 
 }  // namespace views

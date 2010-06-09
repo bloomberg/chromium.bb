@@ -203,6 +203,10 @@ class MenuController : public MessageLoopForUI::Dispatcher {
 
   ~MenuController();
 
+  // If there is a hot tracked view AcceleratorPressed is invoked on it and
+  // true is returned.
+  bool SendAcceleratorToHotTrackedView();
+
   void UpdateInitialLocation(const gfx::Rect& bounds,
                              MenuItemView::AnchorPosition position);
 

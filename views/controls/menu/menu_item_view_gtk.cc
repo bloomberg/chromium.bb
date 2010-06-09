@@ -28,7 +28,8 @@ gfx::Size MenuItemView::GetPreferredSize() {
   // kFavIconSize if we're showing icons.
   int content_height = std::max(kFavIconSize, font.height());
   return gfx::Size(
-      font.GetStringWidth(title_) + label_start_ + item_right_margin_,
+      font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
+          GetChildPreferredWidth(),
       content_height + GetBottomMargin() + GetTopMargin());
 }
 
@@ -36,7 +37,8 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   const MenuConfig& config = MenuConfig::instance();
   bool render_selection =
       (!for_drag && IsSelected() &&
-       parent_menu_item_->GetSubmenu()->GetShowSelection(this));
+       parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
+       GetChildViewCount() == 0);
 
   int icon_x = config.item_left_margin;
   int top_margin = GetTopMargin();
@@ -71,7 +73,8 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
       IsEnabled() ? TextButton::kEnabledColor : TextButton::kDisabledColor;
 #endif
   int width = this->width() - item_right_margin_ - label_start_;
-  const gfx::Font& font = MenuConfig::instance().font;
+  const gfx::Font& font = GetChildViewCount() > 0 ?
+      MenuConfig::instance().font_with_controls : MenuConfig::instance().font;
   gfx::Rect text_bounds(label_start_, top_margin +
                         (available_height - font.height()) / 2, width,
                         font.height());

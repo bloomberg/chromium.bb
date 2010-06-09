@@ -23,7 +23,7 @@ class MenuScrollViewContainer : public View {
   View* scroll_up_button() const { return scroll_up_button_; }
 
   // View overrides.
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void PaintBackground(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);

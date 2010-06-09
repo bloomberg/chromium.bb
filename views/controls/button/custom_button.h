@@ -54,6 +54,13 @@ class CustomButton : public Button,
     return triggerable_event_flags_;
   }
 
+  // Sets whether |RequestFocus| should be invoked on a mouse press. The default
+  // is true.
+  void set_request_focus_on_press(bool value) {
+    request_focus_on_press_ = value;
+  }
+  bool request_focus_on_press() const { return request_focus_on_press_; }
+
  protected:
   // Construct the Button with a Listener. See comment for Button's ctor.
   explicit CustomButton(ButtonListener* listener);
@@ -107,6 +114,9 @@ class CustomButton : public Button,
 
   // Mouse event flags which can trigger button actions.
   int triggerable_event_flags_;
+
+  // See description above setter.
+  bool request_focus_on_press_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButton);
 };
