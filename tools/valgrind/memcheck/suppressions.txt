@@ -3101,3 +3101,43 @@
    fun:_ZN3WTF13FastAllocBasenwEj
    fun:_ZN3WTF20ThreadIdentifierData10initializeEj
 }
+
+{
+   bug_46163
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+
+{
+   bug_46162
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEE3setEPS1_
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEcvPS1_Ev
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEdeEv
+   fun:_ZN3WTF13wtfThreadDataEv
+   fun:_ZN7WebCore11stringTableEv
+   fun:_ZN7WebCore12AtomicString3addEPKc
+   fun:_ZN7WebCore12AtomicStringC1EPKc
+   fun:_ZN7WebCore12AtomicString4initEv
+   fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
+   fun:_ZN12WebKitThread20InternalWebKitThread4InitEv
+   fun:_ZN4base6Thread10ThreadMainEv
+}
+
+{
+   bug_46161
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net14DnsReloadTimer7ExpiredEv
+   fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
+   fun:_ZN3net15ResolveAddrInfoEPNS_16HostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
+   fun:_ZN3net16HostResolverImpl3Job8DoLookupEv
+   fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvvE6Tuple0E3RunEv
+}
