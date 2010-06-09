@@ -437,7 +437,7 @@ bool IsTextHtmlClipFormat(CLIPFORMAT cf);
 ProtocolPatchMethod GetPatchMethod();
 
 // Returns true if the IMoniker patch is enabled.
-bool MonikerPatchEnabled();
+bool IsIBrowserServicePatchEnabled();
 
 // STL helper class that implements a functor to delete objects.
 // E.g: std::for_each(v.begin(), v.end(), utils::DeleteObject());
@@ -450,5 +450,10 @@ class DeleteObject {
   }
 };
 }
+
+// Convert various protocol flags to text representation. Used for logging.
+std::string BindStatus2Str(ULONG bind_status);
+std::string PiFlags2Str(DWORD flags);
+std::string Bscf2Str(DWORD flags);
 
 #endif  // CHROME_FRAME_UTILS_H_

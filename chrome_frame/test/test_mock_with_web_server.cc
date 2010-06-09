@@ -1285,8 +1285,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 }
 
 TEST(IEPrivacy, NavigationToRestrictedSite) {
-  if (!MonikerPatchEnabled()) {
-    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
+  if (IsIBrowserServicePatchEnabled()) {
+    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
     return;
   }
   CloseIeAtEndOfScope last_resort_close_ie;
@@ -1340,8 +1340,8 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
 // See bug 36694 for details.  http://crbug.com/36694
 TEST_F(ChromeFrameTestWithWebServer,
        DISABLED_FullTabModeIE_TestDownloadFromForm) {
-  if (!MonikerPatchEnabled()) {
-    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
+  if (IsIBrowserServicePatchEnabled()) {
+    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
     return;
   }
 
@@ -1488,8 +1488,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 // to ChromeFrame correctly.
 TEST_F(ChromeFrameTestWithWebServer,
        FLAKY_FullTabModeIE_AltD_AnchorUrlNavigate) {
-  if (!MonikerPatchEnabled()) {
-    LOG(ERROR) << "Not running test. Moniker patch not enabled.";
+  if (IsIBrowserServicePatchEnabled()) {
+    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
     return;
   }
 

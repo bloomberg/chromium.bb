@@ -10,6 +10,7 @@
 
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
+#include "chrome_frame/protocol_sink_wrap.h"
 
 class __declspec(uuid("71CC3EC7-7E8A-457f-93BC-1090CF31CC18"))
 IBindContextInfoInternal : public IUnknown {
@@ -80,6 +81,14 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
     return url_;
   }
 
+  void set_prot_data(ProtData* data) {
+    prot_data_ = data;
+  }
+
+  scoped_refptr<ProtData> get_prot_data() {
+    return prot_data_;
+  }
+
  protected:
   STDMETHOD(GetCppObject)(void** me) {
     DCHECK(me);
@@ -97,9 +106,9 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
   bool is_switching_;
   std::wstring url_;
   ScopedComPtr<IUnknown> ftm_;
+  scoped_refptr<ProtData> prot_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BindContextInfo);
 };
 
 #endif  // CHROME_FRAME_BIND_CONTEXT_INFO_
-

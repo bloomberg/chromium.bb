@@ -123,8 +123,7 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   if (is_top_level) {
     set_url(url->bstrVal);
     set_referrer("");
-    // The moniker patch checks opt-in URLs in SniffData::DetermineRendererType.
-    if (!MonikerPatchEnabled()) {
+    if (IsIBrowserServicePatchEnabled()) {
       ProcessOptInUrls(web_browser2, url->bstrVal);
     }
   }
@@ -320,10 +319,10 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
     ProtocolPatchMethod patch_method = GetPatchMethod();
     if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
-      ProtocolSinkWrap::PatchProtocolHandlers();
+      g_trans_hooks.InstallHooks();
       state_ = PATCH_PROTOCOL;
     } else if (patch_method == PATCH_METHOD_IBROWSER) {
-        state_ =  PATCH_IBROWSER;
+      state_ =  PATCH_IBROWSER;
     } else {
       DCHECK(patch_method == PATCH_METHOD_MONIKER);
       state_ = PATCH_MONIKER;
@@ -348,7 +347,7 @@ void PatchHelper::PatchBrowserService(IBrowserService* browser_service) {
 
 void PatchHelper::UnpatchIfNeeded() {
   if (state_ == PATCH_PROTOCOL) {
-    ProtocolSinkWrap::UnpatchProtocolHandlers();
+    g_trans_hooks.RevertHooks();
   } else if (state_ == PATCH_IBROWSER) {
     vtable_patch::UnpatchInterfaceMethods(IBrowserService_PatchInfo);
     MonikerPatch::Uninitialize();
