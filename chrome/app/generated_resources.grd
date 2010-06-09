@@ -7484,10 +7484,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CREATE_ACCOUNT_BUTTON">
         Create a Google Account now
+      </message>      
+      <message name="IDS_CANT_ACCESS_ACCOUNT_BUTTON">
+        Can't access your account?
       </message>
       <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON">
         Browse without signing in
       </message>
+      <message name="IDS_LOGIN_OOBE_HELP_DIALOG_TITLE" desc="Default title for help dialogs during OOBE/login">
+        Help
+      </message>      
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
         Date and Time
       </message>

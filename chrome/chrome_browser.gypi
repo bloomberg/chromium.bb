@@ -419,6 +419,8 @@
         'browser/chromeos/login/helper.cc',
         'browser/chromeos/login/language_switch_model.cc',
         'browser/chromeos/login/language_switch_model.h',
+        'browser/chromeos/login/login_html_dialog.cc',
+        'browser/chromeos/login/login_html_dialog.h',
         'browser/chromeos/login/login_screen.cc',
         'browser/chromeos/login/login_screen.h',
         'browser/chromeos/login/login_status_consumer.h',

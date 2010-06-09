@@ -23,14 +23,17 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/google_util.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
+#include "views/widget/widget_gtk.h"
 
 using views::Label;
 using views::Textfield;
 using views::View;
+using views::WidgetGtk;
 
 namespace {
 
@@ -40,7 +43,10 @@ const int kColumnPad = 7;
 const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
 const SkColor kErrorColor = 0xFF8F384F;
-const char *kDefaultDomain = "@gmail.com";
+const char kDefaultDomain[] = "@gmail.com";
+
+const char kAccountRecoveryHelpUrl[] =
+    "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
 
 }  // namespace
 
@@ -52,6 +58,7 @@ NewUserView::NewUserView(Delegate* delegate, bool need_border)
       title_label_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
+      cant_access_account_link_(NULL),
       browse_without_signin_link_(NULL),
       languages_menubutton_(NULL),
       throbber_(NULL),
@@ -98,13 +105,9 @@ void NewUserView::Init() {
   throbber_ = CreateDefaultSmoothedThrobber();
   AddChildView(throbber_);
 
-  create_account_link_ = new views::Link(std::wstring());
-  create_account_link_->SetController(this);
-  AddChildView(create_account_link_);
-
-  browse_without_signin_link_ = new views::Link(std::wstring());
-  browse_without_signin_link_->SetController(this);
-  AddChildView(browse_without_signin_link_);
+  InitLink(&create_account_link_);
+  InitLink(&cant_access_account_link_);
+  InitLink(&browse_without_signin_link_);
 
   language_switch_model_.InitLanguageMenu();
   languages_menubutton_ = new views::MenuButton(
@@ -160,6 +163,8 @@ void NewUserView::UpdateLocalizedStrings() {
   sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
   create_account_link_->SetText(
       l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
+  cant_access_account_link_->SetText(
+      l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON));
   browse_without_signin_link_->SetText(
       l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
   delegate_->ClearErrors();
@@ -251,6 +256,7 @@ void NewUserView::Layout() {
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
            create_account_link_->GetPreferredSize().height() +
+           cant_access_account_link_->GetPreferredSize().height() +
            browse_without_signin_link_->GetPreferredSize().height() +
            4 * kRowPad;
   y = (this->height() - height) / 2;
@@ -267,6 +273,7 @@ void NewUserView::Layout() {
                 width,
                 false);
   y += setViewBounds(create_account_link_, x, y, max_width, false);
+  y += setViewBounds(cant_access_account_link_, x, y, max_width, false);
   y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
 
   SchedulePaint();
@@ -319,6 +326,15 @@ void NewUserView::LinkActivated(views::Link* source, int event_flags) {
     delegate_->OnCreateAccount();
   } else if (source == browse_without_signin_link_) {
     delegate_->OnLoginOffTheRecord();
+  } else if (source == cant_access_account_link_) {
+    // TODO(nkostylev): Display offline help when network is not connected.
+    // http://crosbug.com/3874
+    dialog_.reset(new LoginHtmlDialog(
+        this,
+        GetNativeWindow(),
+        l10n_util::GetString(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
+        google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl))));
+    dialog_->Show();
   }
 }
 
@@ -340,6 +356,10 @@ gfx::Rect NewUserView::GetPasswordBounds() const {
 
 void NewUserView::StopThrobber() {
   throbber_->Stop();
+}
+
+gfx::NativeWindow NewUserView::GetNativeWindow() const {
+  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 bool NewUserView::HandleKeystroke(views::Textfield* s,
@@ -374,7 +394,14 @@ void NewUserView::EnableInputControls(bool enabled) {
   password_field_->SetEnabled(enabled);
   sign_in_button_->SetEnabled(enabled);
   create_account_link_->SetEnabled(enabled);
+  cant_access_account_link_->SetEnabled(enabled);
   browse_without_signin_link_->SetEnabled(enabled);
+}
+
+void NewUserView::InitLink(views::Link** link) {
+  *link = new views::Link(std::wstring());
+  (*link)->SetController(this);
+  AddChildView(*link);
 }
 
 }  // namespace chromeos

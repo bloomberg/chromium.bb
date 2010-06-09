@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -32,7 +33,8 @@ namespace chromeos {
 class NewUserView : public views::View,
                     public views::Textfield::Controller,
                     public views::LinkController,
-                    public views::ButtonListener {
+                    public views::ButtonListener,
+                    public LoginHtmlDialog::Delegate {
  public:
   // Delegate class to get notifications from the view.
   class Delegate {
@@ -102,20 +104,28 @@ class NewUserView : public views::View,
 
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
+  // LoginHtmlDialog::Delegate implementation.
+  virtual void OnDialogClosed() {}
+
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add, views::View *parent,
                                     views::View *child);
-
   virtual void NativeViewHierarchyChanged(bool attached,
                                           gfx::NativeView native_view,
                                           views::RootView* root_view);
   virtual void LocaleChanged();
 
  private:
+  // Returns corresponding native window.
+  gfx::NativeWindow GetNativeWindow() const;
+
   // Enables/disables input controls (textfields, buttons).
   void EnableInputControls(bool enabled);
   void FocusFirstField();
+
+  // Creates Link control and adds it as a child.
+  void InitLink(views::Link** link);
 
   // Delete and recreate native controls that fail to update preferred size
   // after string update.
@@ -126,6 +136,7 @@ class NewUserView : public views::View,
   views::Label* title_label_;
   views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
+  views::Link* cant_access_account_link_;
   views::Link* browse_without_signin_link_;
   views::MenuButton* languages_menubutton_;
   views::Throbber* throbber_;
@@ -139,6 +150,9 @@ class NewUserView : public views::View,
   ScopedRunnableMethodFactory<NewUserView> focus_grabber_factory_;
 
   LanguageSwitchModel language_switch_model_;
+
+  // Dialog used to display help like "Can't access your account".
+  scoped_ptr<LoginHtmlDialog> dialog_;
 
   // Indicates that this view was created when focus manager was unavailable
   // (on the hidden tab, for example).
