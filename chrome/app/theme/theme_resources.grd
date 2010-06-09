@@ -46,13 +46,9 @@
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="omnibox_ev_bubble_background_r.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY" file="omnibox_history.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY_DARK" file="omnibox_history_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HISTORY_TRANSPARENT" file="omnibox_history_transparent.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT" file="omnibox_history_dark_transparent.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY_SELECTED" file="omnibox_history_selected.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTP" file="omnibox_http.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTP_DARK" file="omnibox_http_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTTP_TRANSPARENT" file="omnibox_http_transparent.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTTP_DARK_TRANSPARENT" file="omnibox_http_dark_transparent.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTP_SELECTED" file="omnibox_http_selected.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTPS_INVALID" file="omnibox_https_invalid.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" type="BINDATA" />
@@ -531,6 +527,14 @@
         <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default_inactive.png" type="BINDATA" />
       </if> 
 
+      <if expr="not pp_ifdef('toolkit_views')">
+        <!-- The GTK interface needs these slightly modified images in
+             gtk-theme mode. Other platforms don't need these. -->
+        <include name="IDR_OMNIBOX_HISTORY_TRANSPARENT" file="omnibox_history_transparent.png" type="BINDATA" />
+        <include name="IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT" file="omnibox_history_dark_transparent.png" type="BINDATA" />
+        <include name="IDR_OMNIBOX_HTTP_TRANSPARENT" file="omnibox_http_transparent.png" type="BINDATA" />
+        <include name="IDR_OMNIBOX_HTTP_DARK_TRANSPARENT" file="omnibox_http_dark_transparent.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
