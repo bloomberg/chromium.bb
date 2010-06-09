@@ -15,8 +15,8 @@
 
 namespace remoting {
 
-typedef std::vector<chromotocol_pb::HostMessage*> HostMessageList;
-typedef std::vector<chromotocol_pb::ClientMessage*> ClientMessageList;
+typedef std::vector<HostMessage*> HostMessageList;
+typedef std::vector<ClientMessage*> ClientMessageList;
 
 // A protocol decoder is used to decode data transmitted in the chromoting
 // network.

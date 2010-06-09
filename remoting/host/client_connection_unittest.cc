@@ -51,8 +51,7 @@ TEST_F(ClientConnectionTest, SendUpdateStream) {
 
   // Then send the actual data.
   EXPECT_CALL(*channel_, Write(_));
-  chromotocol_pb::UpdateStreamPacketHeader* header
-      = new chromotocol_pb::UpdateStreamPacketHeader();
+  UpdateStreamPacketHeader* header = new UpdateStreamPacketHeader();
   header->set_x(0);
   header->set_y(0);
   header->set_width(640);

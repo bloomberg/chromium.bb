@@ -47,8 +47,7 @@ TEST(EncoderVp8Test, SimpleEncode) {
   GenerateData(planes[2], kWidth * kHeight / 4);
 
   scoped_refptr<EncodeDoneHandler> handler = new EncodeDoneHandler();
-  chromotocol_pb::UpdateStreamPacketHeader* header
-      = new chromotocol_pb::UpdateStreamPacketHeader();
+  UpdateStreamPacketHeader* header = new UpdateStreamPacketHeader();
   scoped_refptr<media::DataBuffer> encoded_data;
   bool encode_done = false;
   EXPECT_CALL(*handler, EncodeDone());

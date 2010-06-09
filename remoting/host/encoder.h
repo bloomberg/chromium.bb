@@ -44,7 +44,7 @@ class Encoder {
                       const uint8** input_data,
                       const int* strides,
                       bool key_frame,
-                      chromotocol_pb::UpdateStreamPacketHeader* header,
+                      UpdateStreamPacketHeader* header,
                       scoped_refptr<media::DataBuffer>* output_data,
                       bool* encode_done,
                       Task* data_available_task) = 0;
@@ -55,7 +55,7 @@ class Encoder {
 
   // Set the pixel format of the incoming images. Need to call this before
   // calling Encode().
-  virtual void SetPixelFormat(chromotocol_pb::PixelFormat pixel_format) = 0;
+  virtual void SetPixelFormat(PixelFormat pixel_format) = 0;
 };
 
 }  // namespace remoting

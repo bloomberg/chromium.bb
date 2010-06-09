@@ -77,7 +77,7 @@ class Capturer {
   virtual int GetHeight() const;
 
   // Get the pixel format of the image captured.
-  virtual chromotocol_pb::PixelFormat GetPixelFormat() const;
+  virtual PixelFormat GetPixelFormat() const;
 
   // Invalidate the specified screen rect.
   virtual void InvalidateRect(gfx::Rect dirty);
@@ -100,7 +100,7 @@ class Capturer {
   int height_;
 
   // Format of pixels returned in buffer.
-  chromotocol_pb::PixelFormat pixel_format_;
+  PixelFormat pixel_format_;
 
   // Information about screen.
   int bytes_per_pixel_;

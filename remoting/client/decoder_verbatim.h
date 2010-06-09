@@ -11,19 +11,25 @@ namespace remoting {
 
 class DecoderVerbatim : public Decoder {
  public:
-  DecoderVerbatim(PartialDecodeDoneCallback* partial_decode_done_callback,
-                  DecodeDoneCallback* decode_done_callback)
-      : Decoder(partial_decode_done_callback, decode_done_callback) {
+  DecoderVerbatim() {
   }
 
   // Decoder implementations.
-  virtual bool BeginDecode(scoped_refptr<media::VideoFrame> frame);
-  virtual bool PartialDecode(chromotocol_pb::HostMessage* message);
+  virtual bool BeginDecode(scoped_refptr<media::VideoFrame> frame,
+                           UpdatedRects* update_rects,
+                           Task* partial_decode_done,
+                           Task* decode_done);
+  virtual bool PartialDecode(HostMessage* message);
   virtual void EndDecode();
 
  private:
+  // Tasks to call when decode is done.
+  scoped_ptr<Task> partial_decode_done_;
+  scoped_ptr<Task> decode_done_;
+
   // The video frame to write to.
   scoped_refptr<media::VideoFrame> frame_;
+  UpdatedRects* updated_rects_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderVerbatim);
 };

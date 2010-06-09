@@ -70,7 +70,6 @@
             'client/pepper/pepper_main.cc',
           ],
           'conditions': [
-
             ['OS=="linux" and target_arch=="x64" and linux_fpic!=1', {
               # Shared libraries need -fPIC on x86-64
               'cflags': [
@@ -194,9 +193,14 @@
         'chromoting_jingle_glue',
       ],
       'sources': [
+        'client/client_util.cc',
+        'client/client_util.h',
+        'client/chromoting_view.h',
         'client/decoder.h',
         'client/decoder_verbatim.cc',
         'client/decoder_verbatim.h',
+        'client/host_connection.cc',
+        'client/host_connection.h',
       ],
     },  # end of target 'chromoting_client'
 
@@ -228,11 +232,32 @@
         'chromoting_jingle_glue',
       ],
       'sources': [
-        'client/host_connection.cc',
-        'client/host_connection.h',
         'client/simple_client.cc',
       ],
     },  # end of target 'chromoting_simple_client'
+
+    {
+      'target_name': 'chromoting_x11_client',
+      'type': 'executable',
+      'dependencies': [
+        'chromoting_base',
+        'chromoting_client',
+        'chromoting_jingle_glue',
+      ],
+      'link_settings': {
+        'libraries': [
+          '-ldl',
+          '-lX11',
+          '-lXrender',
+          '-lXext',
+        ],
+      },
+      'sources': [
+        'client/x11_client.cc',
+        'client/x11_view.cc',
+        'client/x11_view.h',
+      ],
+    },  # end of target 'chromoting_x11_client'
 
     {
       'target_name': 'chromoting_jingle_glue',

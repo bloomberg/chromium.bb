@@ -21,12 +21,12 @@ class EncoderVerbatim : public Encoder {
                       const uint8** input_data,
                       const int* strides,
                       bool key_frame,
-                      chromotocol_pb::UpdateStreamPacketHeader* header,
+                      UpdateStreamPacketHeader* header,
                       scoped_refptr<media::DataBuffer>* output_data,
                       bool* encode_done,
                       Task* data_available_task);
   virtual void SetSize(int width, int height);
-  virtual void SetPixelFormat(chromotocol_pb::PixelFormat pixel_format);
+  virtual void SetPixelFormat(PixelFormat pixel_format);
 
  private:
   // Encode a single dirty rect. Called by Encode().
@@ -34,12 +34,13 @@ class EncoderVerbatim : public Encoder {
   bool EncodeRect(const gfx::Rect& dirty,
                   const uint8** input_data,
                   const int* strides,
-                  chromotocol_pb::UpdateStreamPacketHeader* header,
+                  UpdateStreamPacketHeader* header,
                   scoped_refptr<media::DataBuffer>* output_data);
 
   int width_;
   int height_;
   int bytes_per_pixel_;
+  PixelFormat pixel_format_;
 };
 
 }  // namespace remoting

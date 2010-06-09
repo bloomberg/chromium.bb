@@ -16,7 +16,7 @@ CapturerFakeAscii::CapturerFakeAscii() {
   // Dimensions of screen.
   width_ = kWidth;
   height_ = kHeight;
-  pixel_format_ = chromotocol_pb::PixelFormatAscii;
+  pixel_format_ = PixelFormatAscii;
   bytes_per_pixel_ = kBytesPerPixel;
   bytes_per_row_ = width_ * bytes_per_pixel_;
 

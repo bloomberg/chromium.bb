@@ -104,7 +104,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void DoFinishEncode();
   void DoEncode();
   void DoSendUpdate(
-      chromotocol_pb::UpdateStreamPacketHeader* header,
+      UpdateStreamPacketHeader* header,
       scoped_refptr<media::DataBuffer> encoded_data,
       bool begin_update,
       bool end_update);
@@ -168,11 +168,11 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   int capture_data_strides_[3];
   int capture_width_;
   int capture_height_;
-  chromotocol_pb::PixelFormat capture_pixel_format_;
+  PixelFormat capture_pixel_format_;
 
   // The following members are accessed on the encode thread.
   // Output parameter written by Encoder to carry encoded data.
-  chromotocol_pb::UpdateStreamPacketHeader encoded_data_header_;
+  UpdateStreamPacketHeader encoded_data_header_;
   scoped_refptr<media::DataBuffer> encoded_data_;
 
   // True if we have started receiving encoded data from the Encoder.

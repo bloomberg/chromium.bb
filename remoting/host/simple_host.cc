@@ -45,11 +45,16 @@ void SimpleHost::DestroySession() {
 
   // First we tell the session to pause and then we wait until all
   // the tasks are done.
-  session_->Pause();
+  if (session_.get()) {
+    session_->Pause();
 
-  // TODO(hclam): Revise the order.
-  encode_thread_.Stop();
-  capture_thread_.Stop();
+    // TODO(hclam): Revise the order.
+    DCHECK(encode_thread_.IsRunning());
+    encode_thread_.Stop();
+
+    DCHECK(capture_thread_.IsRunning());
+    capture_thread_.Stop();
+  }
 }
 
 // This method talks to the cloud to register the host process. If
@@ -69,7 +74,7 @@ void SimpleHost::OnClientConnected(ClientConnection* client) {
   DCHECK_EQ(&main_loop_, MessageLoop::current());
 
   // Create a new RecordSession if there was none.
-  if (!session_) {
+  if (!session_.get()) {
     // The first we need to make sure capture and encode thread are
     // running.
     capture_thread_.Start();
@@ -101,8 +106,8 @@ void SimpleHost::OnClientDisconnected(ClientConnection* client) {
   DCHECK_EQ(&main_loop_, MessageLoop::current());
 
   // Remove the client from the session manager.
-  DCHECK(session_);
-  session_->RemoveClient(client);
+  if (session_.get())
+    session_->RemoveClient(client);
 
   // Also remove reference to ClientConnection from this object.
   client_ = NULL;
@@ -157,10 +162,8 @@ void SimpleHost::OnStateChange(JingleClient* jingle_client,
   DCHECK_EQ(jingle_client_.get(), jingle_client);
 
   if (state == JingleClient::CONNECTED) {
-    // TODO(hclam): Change to use LOG(INFO).
-    // LOG(INFO) << "Host connected as "
-    //           << jingle_client->GetFullJid() << "." << std::endl;
-    printf("Host connected as %s\n", jingle_client->GetFullJid().c_str());
+    LOG(INFO) << "Host connected as "
+              << jingle_client->GetFullJid() << "." << std::endl;
 
     // Start heartbeating after we connected
     heartbeat_sender_ = new HeartbeatSender();
@@ -168,8 +171,10 @@ void SimpleHost::OnStateChange(JingleClient* jingle_client,
     heartbeat_sender_->Start(jingle_client_.get(), "HostID");
   } else if (state == JingleClient::CLOSED) {
     LOG(INFO) << "Host disconnected from talk network." << std::endl;
-
     heartbeat_sender_ = NULL;
+
+    // Quit the message loop if disconected.
+    main_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 }
 
@@ -178,6 +183,7 @@ bool SimpleHost::OnAcceptConnection(
     JingleChannel::Callback** channel_callback) {
   DCHECK_EQ(jingle_client_.get(), jingle_client);
 
+  // TODO(hclam): Allow multiple clients to connect to the host.
   if (client_.get())
     return false;
 

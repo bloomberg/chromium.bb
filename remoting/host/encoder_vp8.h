@@ -32,7 +32,7 @@ class EncoderVp8 : public Encoder {
                       const uint8** input_data,
                       const int* strides,
                       bool key_frame,
-                      chromotocol_pb::UpdateStreamPacketHeader* header,
+                      UpdateStreamPacketHeader* header,
                       scoped_refptr<media::DataBuffer>* output_data,
                       bool* encode_done,
                       Task* data_available_task);

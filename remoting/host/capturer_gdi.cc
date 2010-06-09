@@ -84,7 +84,7 @@ void CapturerGdi::InitializeBuffers() {
   int rounded_width = (width_ + 3) & (~3);
 
   // Dimensions of screen.
-  pixel_format_ = chromotocol_pb::PixelFormatRgb24;
+  pixel_format_ = PixelFormatRgb24;
   bytes_per_pixel_ = kBytesPerPixel;
   bytes_per_row_ = rounded_width * bytes_per_pixel_;
 

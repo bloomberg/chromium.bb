@@ -9,7 +9,7 @@ namespace remoting {
 Capturer::Capturer()
     : width_(0),
       height_(0),
-      pixel_format_(chromotocol_pb::PixelFormatInvalid),
+      pixel_format_(PixelFormatInvalid),
       bytes_per_pixel_(0),
       bytes_per_row_(0),
       current_buffer_(0) {
@@ -30,7 +30,7 @@ int Capturer::GetHeight() const {
   return height_;
 }
 
-chromotocol_pb::PixelFormat Capturer::GetPixelFormat() const {
+PixelFormat Capturer::GetPixelFormat() const {
   return pixel_format_;
 }
 

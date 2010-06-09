@@ -49,7 +49,7 @@ SessionManager::SessionManager(
       rate_control_started_(false),
       capture_width_(0),
       capture_height_(0),
-      capture_pixel_format_(chromotocol_pb::PixelFormatInvalid),
+      capture_pixel_format_(PixelFormatInvalid),
       encode_stream_started_(false),
       encode_done_(false) {
   DCHECK(capture_loop_);
@@ -59,7 +59,6 @@ SessionManager::SessionManager(
 
 SessionManager::~SessionManager() {
   clients_.clear();
-  DCHECK_EQ(0u, clients_.size());
 }
 
 void SessionManager::Start() {
@@ -132,9 +131,10 @@ void SessionManager::SetMaxRate(double rate) {
 }
 
 void SessionManager::AddClient(scoped_refptr<ClientConnection> client) {
-  network_loop_->PostTask(
+  // Gets the init information for the client.
+  capture_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoAddClient, client));
+      NewRunnableMethod(this, &SessionManager::DoGetInitInfo, client));
 }
 
 void SessionManager::RemoveClient(scoped_refptr<ClientConnection> client) {
@@ -214,7 +214,7 @@ void SessionManager::DoEncode() {
 }
 
 void SessionManager::DoSendUpdate(
-    chromotocol_pb::UpdateStreamPacketHeader* header,
+    UpdateStreamPacketHeader* header,
     scoped_refptr<media::DataBuffer> encoded_data,
     bool begin_update, bool end_update) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
@@ -242,10 +242,18 @@ void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
 void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
+  // Sends the init message to the cleint.
   network_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &SessionManager::DoSendInit, client,
                         capturer_->GetWidth(), capturer_->GetHeight()));
+
+  // And then add the client to the list so it can receive update stream.
+  // It is important we do so in such order or the client will receive
+  // update stream before init message.
+  network_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoAddClient, client));
 }
 
 void SessionManager::DoSetRate(double rate) {
@@ -279,11 +287,6 @@ void SessionManager::DoAddClient(scoped_refptr<ClientConnection> client) {
 
   // TODO(hclam): Force a full frame for next encode.
   clients_.push_back(client);
-
-  // Gets the init information for the client.
-  capture_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoGetInitInfo, client));
 }
 
 void SessionManager::DoRemoveClient(scoped_refptr<ClientConnection> client) {

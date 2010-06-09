@@ -8,7 +8,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package chromotocol_pb;
+package remoting;
 
 // A message that gets sent to the client after the client is connected to the
 // host. It contains information that the client needs to know about the host.

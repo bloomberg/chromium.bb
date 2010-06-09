@@ -26,22 +26,28 @@ void HostConnection::Connect(const std::string& username,
 }
 
 void HostConnection::Disconnect() {
-  if (jingle_channel_.get())
+  // TODO(hclam): It's not thread safe to read the state.
+  if (jingle_channel_.get() &&
+      jingle_channel_->state() != JingleChannel::CLOSED) {
     jingle_channel_->Close();
+  }
 
-  if (jingle_client_.get())
+  // TODO(hclam): It's not thread safe to read the state.
+  if (jingle_client_.get() &&
+      jingle_client_->state() != JingleClient::CLOSED) {
     jingle_client_->Close();
+  }
 }
 
 void HostConnection::OnStateChange(JingleChannel* channel,
                                    JingleChannel::State state) {
   DCHECK(handler_);
-  if (state == JingleChannel::FAILED)
+  if (state == JingleChannel::OPEN)
+    handler_->OnConnectionOpened(this);
+  else if (state == JingleChannel::FAILED)
     handler_->OnConnectionFailed(this);
   else if (state == JingleChannel::CLOSED)
     handler_->OnConnectionClosed(this);
-  else if (state == JingleChannel::OPEN)
-    handler_->OnConnectionOpened(this);
 }
 
 void HostConnection::OnPacketReceived(JingleChannel* channel,

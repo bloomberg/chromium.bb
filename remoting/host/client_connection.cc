@@ -40,7 +40,7 @@ void ClientConnection::SendInitClientMessage(int width, int height) {
   DCHECK(!update_stream_size_);
   DCHECK(channel_.get());
 
-  chromotocol_pb::HostMessage msg;
+  HostMessage msg;
   msg.mutable_init_client()->set_width(width);
   msg.mutable_init_client()->set_height(height);
   DCHECK(msg.IsInitialized());
@@ -51,7 +51,7 @@ void ClientConnection::SendBeginUpdateStreamMessage() {
   DCHECK_EQ(loop_, MessageLoop::current());
   DCHECK(channel_.get());
 
-  chromotocol_pb::HostMessage msg;
+  HostMessage msg;
   msg.mutable_begin_update_stream();
   DCHECK(msg.IsInitialized());
 
@@ -62,12 +62,12 @@ void ClientConnection::SendBeginUpdateStreamMessage() {
 }
 
 void ClientConnection::SendUpdateStreamPacketMessage(
-    chromotocol_pb::UpdateStreamPacketHeader* header,
+    UpdateStreamPacketHeader* header,
     scoped_refptr<DataBuffer> data) {
   DCHECK_EQ(loop_, MessageLoop::current());
   DCHECK(channel_.get());
 
-  chromotocol_pb::HostMessage msg;
+  HostMessage msg;
   msg.mutable_update_stream_packet()->mutable_header()->CopyFrom(*header);
   // TODO(hclam): This introduce one memory copy. Eliminate it.
   msg.mutable_update_stream_packet()->set_data(
@@ -83,7 +83,7 @@ void ClientConnection::SendEndUpdateStreamMessage() {
   DCHECK_EQ(loop_, MessageLoop::current());
   DCHECK(channel_.get());
 
-  chromotocol_pb::HostMessage msg;
+  HostMessage msg;
   msg.mutable_end_update_stream();
   DCHECK(msg.IsInitialized());
 

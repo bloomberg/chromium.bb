@@ -355,7 +355,7 @@ EventExecutorWin::~EventExecutorWin() {
 
 void EventExecutorWin::HandleInputEvents(ClientMessageList* messages) {
   for (size_t i = 0; i < messages->size(); ++i) {
-    chromotocol_pb::ClientMessage* msg = (*messages)[i];
+    ClientMessage* msg = (*messages)[i];
     if (msg->has_mouse_set_position_event()) {
       mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE,
         static_cast<int>((msg->mouse_set_position_event().x() * 65535)),
@@ -369,20 +369,20 @@ void EventExecutorWin::HandleInputEvents(ClientMessageList* messages) {
       // TODO(hclam): Handle wheel events.
     } else if (msg->has_mouse_down_event()) {
       if (msg->mouse_down_event().button() ==
-          chromotocol_pb::MouseDownEvent::LEFT) {
+          MouseDownEvent::LEFT) {
         mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
       } else if (msg->mouse_down_event().button() ==
-          chromotocol_pb::MouseDownEvent::RIGHT) {
+          MouseDownEvent::RIGHT) {
         mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
       } else {
         // TODO(hclam): Handle other buttons.
       }
     } else if (msg->has_mouse_up_event()) {
       if (msg->mouse_up_event().button() ==
-          chromotocol_pb::MouseUpEvent::LEFT) {
+          MouseUpEvent::LEFT) {
         mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
       } else if (msg->mouse_up_event().button() ==
-          chromotocol_pb::MouseUpEvent::RIGHT) {
+          MouseUpEvent::RIGHT) {
         mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
       } else {
         // TODO(hclam): Handle other buttons.

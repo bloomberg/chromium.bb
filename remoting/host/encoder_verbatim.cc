@@ -10,17 +10,16 @@
 
 namespace remoting {
 
-using chromotocol_pb::UpdateStreamPacketHeader;
 using media::DataBuffer;
 
 void EncoderVerbatim::Encode(const DirtyRects& dirty_rects,
-                            const uint8** input_data,
-                            const int* strides,
-                            bool key_frame,
-                            UpdateStreamPacketHeader* header,
-                            scoped_refptr<DataBuffer>* output_data,
-                            bool* encode_done,
-                            Task* data_available_task) {
+                             const uint8** input_data,
+                             const int* strides,
+                             bool key_frame,
+                             UpdateStreamPacketHeader* header,
+                             scoped_refptr<DataBuffer>* output_data,
+                             bool* encode_done,
+                             Task* data_available_task) {
   int num_rects = dirty_rects.size();
   for (int i = 0; i < num_rects; i++) {
     if (EncodeRect(dirty_rects[i], input_data, strides, header, output_data)) {
@@ -37,26 +36,28 @@ void EncoderVerbatim::SetSize(int width, int height) {
   height_ = height;
 }
 
-void EncoderVerbatim::SetPixelFormat(chromotocol_pb::PixelFormat pixel_format) {
+void EncoderVerbatim::SetPixelFormat(PixelFormat pixel_format) {
   // These are sorted so that the most common formats are checked first.
-  if (pixel_format == chromotocol_pb::PixelFormatRgb24) {
+  // TODO(hclam): Extract this into a util function.
+  if (pixel_format == PixelFormatRgb24) {
     bytes_per_pixel_ = 3;
-  } else if (pixel_format == chromotocol_pb::PixelFormatRgb565) {
+  } else if (pixel_format == PixelFormatRgb565) {
     bytes_per_pixel_ = 2;
-  } else if (pixel_format == chromotocol_pb::PixelFormatRgb32) {
+  } else if (pixel_format == PixelFormatRgb32) {
     bytes_per_pixel_ = 4;
-  } else if (pixel_format != chromotocol_pb::PixelFormatAscii) {
+  } else if (pixel_format != PixelFormatAscii) {
     bytes_per_pixel_ = 1;
   } else {
     NOTREACHED() << "Pixel format not supported";
   }
+  pixel_format_ = pixel_format;
 }
 
 bool EncoderVerbatim::EncodeRect(const gfx::Rect& dirty,
-                                const uint8** input_data,
-                                const int* strides,
-                                UpdateStreamPacketHeader* header,
-                                scoped_refptr<DataBuffer>* output_data) {
+                                 const uint8** input_data,
+                                 const int* strides,
+                                 UpdateStreamPacketHeader* header,
+                                 scoped_refptr<DataBuffer>* output_data) {
   const int kPlanes = 3;
 
   // Calculate the size of output.
@@ -70,7 +71,8 @@ bool EncoderVerbatim::EncodeRect(const gfx::Rect& dirty,
   header->set_y(dirty.y());
   header->set_width(dirty.width());
   header->set_height(dirty.height());
-  header->set_encoding(chromotocol_pb::EncodingNone);
+  header->set_encoding(EncodingNone);
+  header->set_pixel_format(pixel_format_);
 
   *output_data = new DataBuffer(output_size);
   (*output_data)->SetDataSize(output_size);

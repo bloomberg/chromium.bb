@@ -8,9 +8,9 @@
 
 namespace remoting {
 
-static const int kWidth = 640;
-static const int kHeight = 480;
-static const int kBytesPerPixel = 3;  // 24 bit RGB is 3 bytes per pixel.
+static const int kWidth = 320;
+static const int kHeight = 240;
+static const int kBytesPerPixel = 4;  // 32 bit RGB is 4 bytes per pixel.
 static const int kMaxColorChannelValue = 255;
 
 CapturerFake::CapturerFake()
@@ -18,7 +18,7 @@ CapturerFake::CapturerFake()
   // Dimensions of screen.
   width_ = kWidth;
   height_ = kHeight;
-  pixel_format_ = chromotocol_pb::PixelFormatRgb24;
+  pixel_format_ = PixelFormatRgb32;
   bytes_per_pixel_ = kBytesPerPixel;
   bytes_per_row_ = width_ * bytes_per_pixel_;
 
@@ -75,12 +75,14 @@ void CapturerFake::GetDataStride(int strides[]) const {
 void CapturerFake::GenerateImage() {
   uint8* row = buffers_[current_buffer_].get();
   for (int y = 0; y < height_; ++y) {
+    int offset = y % 3;
     for (int x = 0; x < width_; ++x) {
-      row[x] = seed_++;
+      row[x * kBytesPerPixel + offset] = seed_++;
       seed_ &= kMaxColorChannelValue;
     }
     row += bytes_per_row_;
   }
+  ++seed_;
 }
 
 }  // namespace remoting

@@ -27,7 +27,7 @@ class MockCapturer : public Capturer {
   MOCK_CONST_METHOD1(GetDirtyRects, void(DirtyRects* rects));
   MOCK_CONST_METHOD0(GetWidth, int());
   MOCK_CONST_METHOD0(GetHeight, int());
-  MOCK_CONST_METHOD0(GetPixelFormat, chromotocol_pb::PixelFormat());
+  MOCK_CONST_METHOD0(GetPixelFormat, PixelFormat());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCapturer);
@@ -42,12 +42,12 @@ class MockEncoder : public Encoder {
       const uint8** planes,
       const int* strides,
       bool key_frame,
-      chromotocol_pb::UpdateStreamPacketHeader* output_data_header,
+      UpdateStreamPacketHeader* output_data_header,
       scoped_refptr<media::DataBuffer>* output_data,
       bool* encode_done,
       Task* data_available_task));
   MOCK_METHOD2(SetSize, void(int width, int height));
-  MOCK_METHOD1(SetPixelFormat, void(chromotocol_pb::PixelFormat pixel_format));
+  MOCK_METHOD1(SetPixelFormat, void(PixelFormat pixel_format));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEncoder);
@@ -70,7 +70,7 @@ class MockClientConnection : public ClientConnection {
   MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
   MOCK_METHOD0(SendBeginUpdateStreamMessage, void());
   MOCK_METHOD2(SendUpdateStreamPacketMessage,
-               void(chromotocol_pb::UpdateStreamPacketHeader* header,
+               void(UpdateStreamPacketHeader* header,
                     scoped_refptr<media::DataBuffer> data));
   MOCK_METHOD0(SendEndUpdateStreamMessage, void());
   MOCK_METHOD0(GetPendingUpdateStreamMessages, int());

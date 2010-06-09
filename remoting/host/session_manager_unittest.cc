@@ -28,8 +28,8 @@ static uint8* kData[3] = {
   reinterpret_cast<uint8*>(0x02),
   reinterpret_cast<uint8*>(0x03),
 };
-static const chromotocol_pb::PixelFormat kFormat =
-    chromotocol_pb::PixelFormatRgb32;
+static const PixelFormat kFormat =
+    PixelFormatRgb32;
 
 class SessionManagerTest : public testing::Test {
  public:
@@ -106,7 +106,7 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
       .WillOnce(Return(kFormat));
 
   // Expect the encoder be called.
-  chromotocol_pb::UpdateStreamPacketHeader header;
+  UpdateStreamPacketHeader header;
   scoped_refptr<media::DataBuffer> buffer = new media::DataBuffer(0);
   EXPECT_CALL(*encoder_, SetSize(kWidth, kHeight));
   EXPECT_CALL(*encoder_, SetPixelFormat(kFormat));
