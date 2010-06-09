@@ -6921,6 +6921,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING" desc="Text shown when page is currently being translated by servers">
         Translating...
       </message>
+      <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING_TO" desc="Text shown when page is currently being translated by servers">
+        Translating page to <ph name="language">$1<ex>English</ex></ph>...
+      </message>
       <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE" desc="Message that page has been translated from one language to another">
         This page has been translated from<ph name="original_language">$1<ex>French</ex></ph>to<ph name="language_language">$2<ex>German</ex></ph>
       </message>

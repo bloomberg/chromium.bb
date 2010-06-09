@@ -19,9 +19,9 @@ class ImageView;
 class Label;
 class MenuButton;
 }
+class InfoBarTextButton;
 class LanguagesMenuModel;
 class OptionsMenuModel;
-class TranslateTextButton;
 
 // This file contains implementations for infobars for the Translate feature.
 
@@ -95,13 +95,13 @@ class TranslateInfoBar : public InfoBar,
   views::Label* label_3_;
   views::Label* translating_label_;
   views::Label* error_label_;
-  TranslateTextButton* accept_button_;
-  TranslateTextButton* deny_button_;
+  InfoBarTextButton* accept_button_;
+  InfoBarTextButton* deny_button_;
   views::MenuButton* original_language_menu_button_;
   views::MenuButton* target_language_menu_button_;
-  TranslateTextButton* revert_button_;
+  InfoBarTextButton* revert_button_;
   views::MenuButton* options_menu_button_;
-  TranslateTextButton* retry_button_;
+  InfoBarTextButton* retry_button_;
 
   scoped_ptr<LanguagesMenuModel> original_language_menu_model_;
   scoped_ptr<LanguagesMenuModel> target_language_menu_model_;

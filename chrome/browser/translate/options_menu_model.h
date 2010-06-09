@@ -8,16 +8,24 @@
 #include "app/menus/simple_menu_model.h"
 
 class TranslateInfoBarDelegate;
+class TranslateInfoBarDelegate2;
+class String16;
 
 // A menu model that builds the contents of the options menu in the translate
 // infobar. This menu has only one level (no submenus).
 class OptionsMenuModel : public menus::SimpleMenuModel {
  public:
-  explicit OptionsMenuModel(menus::SimpleMenuModel::Delegate* menu_delegate,
-      TranslateInfoBarDelegate* translate_delegate);
+  // TODO(jcivelli): remove this constructor once we have migrated to the new
+  //                 translate infobars.
+  OptionsMenuModel(menus::SimpleMenuModel::Delegate* menu_delegate,
+                   TranslateInfoBarDelegate* translate_delegate);
+  OptionsMenuModel(menus::SimpleMenuModel::Delegate* menu_delegate,
+                   TranslateInfoBarDelegate2* translate_delegate);
   virtual ~OptionsMenuModel();
 
  private:
+  void Init(const string16& original_language, const string16& target_language);
+
   DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
 };
 

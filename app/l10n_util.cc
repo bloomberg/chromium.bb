@@ -648,6 +648,15 @@ std::wstring GetStringF(int message_id,
                                 string16(), string16(), offsets));
 }
 
+string16 GetStringFUTF16(int message_id, const string16& a, size_t* offset) {
+  DCHECK(offset);
+  std::vector<size_t> offsets;
+  string16 result = GetStringFUTF16(message_id, a, string16(), &offsets);
+  DCHECK(offsets.size() == 1);
+  *offset = offsets[0];
+  return result;
+}
+
 string16 GetStringFUTF16(int message_id,
                         const string16& a,
                         const string16& b,

@@ -147,8 +147,11 @@ void InfoBar::AnimateOpen() {
 }
 
 void InfoBar::Open() {
+  // Set the animation value to 1.0 so that GetPreferredSize() returns the right
+  // size.
   animation_->Reset(1.0);
-  animation_->Show();
+  if (container_)
+    container_->InfoBarAnimated(false);
 }
 
 void InfoBar::AnimateClose() {

@@ -149,6 +149,9 @@ std::wstring GetStringF(int message_id,
                         const std::wstring& b,
                         std::vector<size_t>* offsets);
 string16 GetStringFUTF16(int message_id,
+                         const string16& a,
+                         size_t* offset);
+string16 GetStringFUTF16(int message_id,
                         const string16& a,
                         const string16& b,
                         std::vector<size_t>* offsets);

@@ -17,6 +17,8 @@
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/page_translated_details.h"
+#include "chrome/browser/views/infobars/infobar_button_border.h"
+#include "chrome/browser/views/infobars/infobar_text_button.h"
 #include "gfx/canvas.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -28,209 +30,12 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 
+#include "chrome/browser/views/infobars/before_translate_infobar.h"
+
 // IDs for various menus.
 static const int kMenuIDOptions          = 1000;
 static const int kMenuIDOriginalLanguage = 1001;
 static const int kMenuIDTargetLanguage   = 1002;
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// TranslateButtonBorder
-//
-//  A TextButtonBorder subclass that adds to also paint button frame in normal
-//  state, and changes the images used.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class TranslateButtonBorder : public views::TextButtonBorder {
- public:
-  TranslateButtonBorder();
-  virtual ~TranslateButtonBorder();
-
-  // Overriden from Border
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
-
- private:
-  MBBImageSet normal_set_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TranslateButtonBorder);
-};
-
-// TranslateButtonBorder, public: ----------------------------------------------
-
-TranslateButtonBorder::TranslateButtonBorder() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  normal_set_.top_left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_N);
-  normal_set_.top = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_N);
-  normal_set_.top_right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_RIGHT_N);
-  normal_set_.left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_LEFT_N);
-  normal_set_.center = rb.GetBitmapNamed(IDR_INFOBARBUTTON_CENTER_N);
-  normal_set_.right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_RIGHT_N);
-  normal_set_.bottom_left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_N);
-  normal_set_.bottom = rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_N);
-  normal_set_.bottom_right = rb.GetBitmapNamed(
-      IDR_INFOBARBUTTON_BOTTOM_RIGHT_N);
-
-  hot_set_.top_left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_H);
-  hot_set_.top = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_H);
-  hot_set_.top_right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_RIGHT_H);
-  hot_set_.left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_LEFT_H);
-  hot_set_.center = rb.GetBitmapNamed(IDR_INFOBARBUTTON_CENTER_H);
-  hot_set_.right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_RIGHT_H);
-  hot_set_.bottom_left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_H);
-  hot_set_.bottom = rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_H);
-  hot_set_.bottom_right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_H);
-
-  pushed_set_.top_left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_P);
-  pushed_set_.top = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_P);
-  pushed_set_.top_right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_RIGHT_P);
-  pushed_set_.left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_LEFT_P);
-  pushed_set_.center = rb.GetBitmapNamed(IDR_INFOBARBUTTON_CENTER_P);
-  pushed_set_.right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_RIGHT_P);
-  pushed_set_.bottom_left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_P);
-  pushed_set_.bottom = rb.GetBitmapNamed(IDR_INFOBARBUTTON_BOTTOM_P);
-  pushed_set_.bottom_right = rb.GetBitmapNamed(
-      IDR_INFOBARBUTTON_BOTTOM_RIGHT_P);
-}
-
-TranslateButtonBorder::~TranslateButtonBorder() {
-}
-
-// TranslateButtonBorder, Border overrides: ------------------------------------
-
-void TranslateButtonBorder::Paint(const views::View& view, gfx::Canvas* canvas)
-    const {
-  const views::TextButton* mb = static_cast<const views::TextButton*>(&view);
-  int state = mb->state();
-
-  // TextButton takes care of deciding when to call Paint.
-  const MBBImageSet* set = &normal_set_;
-  if (state == views::TextButton::BS_HOT)
-    set = &hot_set_;
-  else if (state == views::TextButton::BS_PUSHED)
-    set = &pushed_set_;
-
-  gfx::Rect bounds = view.bounds();
-
-  // Draw top left image.
-  canvas->DrawBitmapInt(*set->top_left, 0, 0);
-
-  // Stretch top image.
-  canvas->DrawBitmapInt(
-      *set->top,
-      0, 0, set->top->width(), set->top->height(),
-      set->top_left->width(),
-      0,
-      bounds.width() - set->top_right->width() - set->top_left->width(),
-      set->top->height(), false);
-
-  // Draw top right image.
-  canvas->DrawBitmapInt(*set->top_right,
-                        bounds.width() - set->top_right->width(), 0);
-
-  // Stretch left image.
-  canvas->DrawBitmapInt(
-      *set->left,
-      0, 0, set->left->width(), set->left->height(),
-      0,
-      set->top_left->height(),
-      set->top_left->width(),
-      bounds.height() - set->top->height() - set->bottom_left->height(), false);
-
-  // Stretch center image.
-  canvas->DrawBitmapInt(
-      *set->center,
-      0, 0, set->center->width(), set->center->height(),
-      set->left->width(),
-      set->top->height(),
-      bounds.width() - set->right->width() - set->left->width(),
-      bounds.height() - set->bottom->height() - set->top->height(), false);
-
-  // Stretch right image.
-  canvas->DrawBitmapInt(
-      *set->right,
-      0, 0, set->right->width(), set->right->height(),
-      bounds.width() - set->right->width(),
-      set->top_right->height(),
-      set->right->width(),
-      bounds.height() - set->bottom_right->height() -
-          set->top_right->height(), false);
-
-  // Draw bottom left image.
-  canvas->DrawBitmapInt(*set->bottom_left,
-                        0,
-                        bounds.height() - set->bottom_left->height());
-
-  // Stretch bottom image.
-  canvas->DrawBitmapInt(
-      *set->bottom,
-      0, 0, set->bottom->width(), set->bottom->height(),
-      set->bottom_left->width(),
-      bounds.height() - set->bottom->height(),
-      bounds.width() - set->bottom_right->width() -
-          set->bottom_left->width(),
-      set->bottom->height(), false);
-
-  // Draw bottom right image.
-  canvas->DrawBitmapInt(*set->bottom_right,
-                        bounds.width() - set->bottom_right->width(),
-                        bounds.height() -  set->bottom_right->height());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// TranslateTextButton
-//
-//  A TextButton subclass that overrides OnMousePressed to default to
-//  CustomButton so as to create pressed state effect.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class TranslateTextButton : public views::TextButton {
- public:
-  TranslateTextButton(views::ButtonListener* listener, int label_id);
-  virtual ~TranslateTextButton();
-
- protected:
-  // Overriden from TextButton:
-  virtual bool OnMousePressed(const views::MouseEvent& e);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TranslateTextButton);
-};
-
-// TranslateButtonBorder, public: ----------------------------------------------
-
-TranslateTextButton::TranslateTextButton(views::ButtonListener* listener,
-    int label_id)
-    // Don't use text to construct TextButton because we need to set font
-    // before setting text so that the button will resize to fit entire text.
-    : TextButton(listener, std::wstring()) {
-  set_border(new TranslateButtonBorder);
-  SetNormalHasBorder(true);  // Normal button state has border.
-  SetAnimationDuration(0);  // Disable animation during state change.
-  // Set font colors for different states.
-  SetEnabledColor(SK_ColorBLACK);
-  SetHighlightColor(SK_ColorBLACK);
-  SetHoverColor(SK_ColorBLACK);
-  // Set font then text, then size button to fit text.
-  SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont));
-  SetText(l10n_util::GetString(label_id));
-  ClearMaxTextSize();
-  SizeToPreferredSize();
-}
-
-TranslateTextButton::~TranslateTextButton() {
-}
-
-// TranslateTextButton, protected: ---------------------------------------------
-
-bool TranslateTextButton::OnMousePressed(const views::MouseEvent& e) {
-  return views::CustomButton::OnMousePressed(e);
-}
 
 // TranslateInfoBar, public: ---------------------------------------------------
 
@@ -321,7 +126,7 @@ void TranslateInfoBar::UpdateState(
         AddChildView(target_language_menu_button_);
       }
       if (!revert_button_) {
-        revert_button_ = new TranslateTextButton(this,
+        revert_button_ = InfoBarTextButton::CreateWithMessageID(this,
             IDS_TRANSLATE_INFOBAR_REVERT);
         AddChildView(revert_button_);
       }
@@ -331,12 +136,12 @@ void TranslateInfoBar::UpdateState(
       if (!label_1_)
         CreateLabels();
       if (!accept_button_) {
-        accept_button_ = new TranslateTextButton(this,
+        accept_button_ = InfoBarTextButton::CreateWithMessageID(this,
             IDS_TRANSLATE_INFOBAR_ACCEPT);
         AddChildView(accept_button_);
       }
       if (!deny_button_) {
-        deny_button_ = new TranslateTextButton(this,
+        deny_button_ = InfoBarTextButton::CreateWithMessageID(this,
             IDS_TRANSLATE_INFOBAR_DENY);
         AddChildView(deny_button_);
       }
@@ -352,7 +157,7 @@ void TranslateInfoBar::UpdateState(
         AddChildView(error_label_);
       }
       if (!retry_button_) {
-        retry_button_ = new TranslateTextButton(this,
+        retry_button_ = InfoBarTextButton::CreateWithMessageID(this,
             IDS_TRANSLATE_INFOBAR_RETRY);
         AddChildView(retry_button_);
       }
@@ -875,7 +680,7 @@ views::MenuButton* TranslateInfoBar::CreateMenuButton(int menu_id,
   views::MenuButton* menu_button =
       new views::MenuButton(NULL, std::wstring(), this, true);
   menu_button->SetID(menu_id);
-  menu_button->set_border(new TranslateButtonBorder);
+  menu_button->set_border(new InfoBarButtonBorder);
   menu_button->set_menu_marker(ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_INFOBARBUTTON_MENU_DROPARROW));
   if (normal_has_border) {

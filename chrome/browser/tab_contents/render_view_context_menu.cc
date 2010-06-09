@@ -35,6 +35,9 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/translate_manager.h"
+#if defined(OS_WIN)
+#include "chrome/browser/translate/translate_manager2.h"
+#endif
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -1135,8 +1138,13 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       TranslatePrefs prefs(profile_->GetPrefs());
       prefs.RemoveLanguageFromBlacklist(original_lang);
       prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
+#if defined(OS_WIN)
+      Singleton<TranslateManager2>::get()->TranslatePage(
+          source_tab_contents_, original_lang, target_lang);
+#else
       Singleton<TranslateManager>::get()->TranslatePage(
           source_tab_contents_, original_lang, target_lang);
+#endif
       break;
     }
 
