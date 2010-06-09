@@ -794,6 +794,8 @@
         '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.h',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/extension_specifics.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/extension_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/password_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/password_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.cc',
