@@ -244,10 +244,10 @@ function initMaterials() {
 
   var shadowVertexShader = document.getElementById('shadowVertexShader').text;
   var shadowPixelShader = document.getElementById('shadowPixelShader').text;
-  
+
   g_shadowMaterial = g_pack.createObject('Material');
   g_shadowMaterial.drawList = g_shadowViewInfo.performanceDrawList;
-  
+
   var shadowEffect = g_pack.createObject('Effect');
   shadowEffect.loadVertexShaderFromString(shadowVertexShader);
   shadowEffect.loadPixelShaderFromString(shadowPixelShader);
@@ -382,10 +382,9 @@ function createShapes() {
 function createLightShape() {
   var inverseMatrix = g_math.matrix4.inverse(g_lightViewProjection);
 
-/*
   // Scale and translate a cube of side length 2 to get a box
   // that extends from [-1, -1, 0] to [1, 1, 1].
-  var shape = o3djs.debug.createLineCube(
+  var shape = o3djs.lineprimitives.createLineCube(
                   g_pack,
                   o3djs.material.createConstantMaterial(g_pack,
                                                         g_colorViewInfo,
@@ -393,12 +392,12 @@ function createLightShape() {
                   2,
                   g_math.matrix4.compose(
                       g_math.matrix4.translation([0, 0, 0.5]),
-                      g_math.matrix4.scaling([1, 1, 0.5])));*/
+                      g_math.matrix4.scaling([1, 1, 0.5])));
 
   g_lightFrustumTransform = g_pack.createObject('Transform');
   g_lightFrustumTransform.localMatrix = inverseMatrix;
   g_lightFrustumTransform.parent = g_client.root;
-  //g_lightFrustumTransform.addShape(shape);
+  g_lightFrustumTransform.addShape(shape);
 }
 
 

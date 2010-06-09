@@ -430,10 +430,11 @@ o3d.Effect.prototype.getParameterInfo = function() {
     var sasTypeName = sasTypes[name] || '';
     var className = paramTypes[info.type] || '';
     var numElements = 0;  // TODO(petersont): Add array support.
-    var semantic = semanticMap[name].semantic || o3d.Stream.UNKNOWN_SEMANTIC;
+    var semantic = (semanticMap[name] && semanticMap[name].semantic) ?
+        semanticMap[name].semantic : o3d.Stream.UNKNOWN_SEMANTIC;
 
-    infoArray.push(new EffectParameterInfo(
-      name, className, numElements, semantic, sasClassName));
+    infoArray.push(new o3d.EffectParameterInfo(
+      name, className, numElements, semantic, sasTypeName));
   }
 
   return infoArray;

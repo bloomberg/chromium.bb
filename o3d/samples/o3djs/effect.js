@@ -1310,11 +1310,11 @@ o3djs.effect.attachStandardShader = function(pack,
     // help the user get something on the screen. We check to make sure they
     // are not connected to something otherwise we'll get an error.
     var param = material.getParam('lightWorldPos');
-    if (!param.inputConnection) {
+    if (param && !param.inputConnection) {
       param.value = lightPos;
     }
     var param = material.getParam('lightColor');
-    if (!param.inputConnection) {
+    if (param && !param.inputConnection) {
       param.value = [1, 1, 1, 1];
     }
     return true;
