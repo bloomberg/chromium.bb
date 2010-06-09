@@ -27,8 +27,4 @@ bool SpeechSynthesisLibraryImpl::IsSpeaking() {
   return chromeos::IsSpeaking();
 }
 
-void SpeechSynthesisLibraryImpl::InitTts(InitStatusCallback callback) {
-  chromeos::InitTts(callback);
-}
-
 }  // namespace chromeos

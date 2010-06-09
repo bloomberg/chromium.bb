@@ -18,7 +18,6 @@ class MockSpeechSynthesisLibrary : public SpeechSynthesisLibrary {
   MOCK_METHOD1(SetSpeakProperties, bool(const char*));
   MOCK_METHOD0(StopSpeaking, bool(void));
   MOCK_METHOD0(IsSpeaking, bool(void));
-  MOCK_METHOD1(InitTts, void(InitStatusCallback));
 };
 
 }  // namespace chromeos
