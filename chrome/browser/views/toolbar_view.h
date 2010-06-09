@@ -141,13 +141,8 @@ class ToolbarView : public AccessibleToolbarView,
   // Returns the number of pixels above the location bar in non-normal display.
   int PopupTopSpacing() const;
 
-  // Set up the various Views in the toolbar
-  void CreateLeftSideControls();
-  void CreateCenterStack(Profile* profile);
-  void CreateRightSideControls(Profile* profile);
-  void LoadLeftSideControlsImages();
-  void LoadCenterStackImages();
-  void LoadRightSideControlsImages();
+  // Loads the images for all the child views.
+  void LoadImages();
 
   // Runs various menus.
   void RunPageMenu(const gfx::Point& pt);

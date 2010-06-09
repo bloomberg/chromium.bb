@@ -92,10 +92,8 @@ ToolbarView::ToolbarView(Browser* browser)
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
 
-  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
-    display_mode_ = DISPLAYMODE_NORMAL;
-  else
-    display_mode_ = DISPLAYMODE_LOCATION;
+  display_mode_ = browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
+      DISPLAYMODE_NORMAL : DISPLAYMODE_LOCATION;
 
   if (!kPopupBackgroundEdge) {
     kPopupBackgroundEdge = ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -103,15 +101,19 @@ ToolbarView::ToolbarView(Browser* browser)
   }
 
   if (!Singleton<UpgradeDetector>::get()->notify_upgrade()) {
-    registrar_.Add(this,
-        NotificationType::UPGRADE_RECOMMENDED,
-        NotificationService::AllSources());
+    registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
+                   NotificationService::AllSources());
   }
 }
 
 ToolbarView::~ToolbarView() {
   if (destroyed_flag_)
     *destroyed_flag_ = true;
+
+  // NOTE: Don't remove the command observers here.  This object gets destroyed
+  // after the Browser (which owns the CommandUpdater), so the CommandUpdater is
+  // already gone.
+
   if (menu_bar_emulation_mode_) {
     focus_manager_->UnregisterAccelerators(this);
     focus_manager_->RemoveFocusChangeListener(this);
@@ -124,27 +126,98 @@ void ToolbarView::Init(Profile* profile) {
   forward_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::FORWARD_MENU));
 
-  // Create all the individual Views in the Toolbar.
-  CreateLeftSideControls();
-  CreateCenterStack(profile);
-  CreateRightSideControls(profile);
+  back_ = new views::ButtonDropDown(this, back_menu_model_.get());
+  back_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                     views::Event::EF_MIDDLE_BUTTON_DOWN);
+  back_->set_tag(IDC_BACK);
+  back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
+                           views::ImageButton::ALIGN_TOP);
+  back_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_BACK));
+  back_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_BACK));
+  back_->SetID(VIEW_ID_BACK_BUTTON);
 
+  forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
+  forward_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                        views::Event::EF_MIDDLE_BUTTON_DOWN);
+  forward_->set_tag(IDC_FORWARD);
+  forward_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_FORWARD));
+  forward_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_FORWARD));
+  forward_->SetID(VIEW_ID_FORWARD_BUTTON);
+
+  home_ = new views::ImageButton(this);
+  home_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                     views::Event::EF_MIDDLE_BUTTON_DOWN);
+  home_->set_tag(IDC_HOME);
+  home_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_HOME));
+  home_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_HOME));
+  home_->SetID(VIEW_ID_HOME_BUTTON);
+
+  reload_ = new views::ImageButton(this);
+  reload_->set_tag(IDC_RELOAD);
+  reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
+  reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
+  reload_->SetID(VIEW_ID_RELOAD_BUTTON);
+
+  location_bar_ = new LocationBarView(profile, browser_->command_updater(),
+      model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
+          LocationBarView::POPUP : LocationBarView::NORMAL);
+  location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
+
+  go_ = new GoButton(location_bar_, browser_);
+  go_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_GO));
+  go_->SetID(VIEW_ID_GO_BUTTON);
+
+  browser_actions_ = new BrowserActionsContainer(browser_, this, true);
+
+  page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
+  page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
+  page_menu_->SetID(VIEW_ID_PAGE_MENU);
+
+  app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  app_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_APP));
+  app_menu_->SetTooltipText(l10n_util::GetStringF(IDS_APPMENU_TOOLTIP,
+      l10n_util::GetString(IDS_PRODUCT_NAME)));
+  app_menu_->SetID(VIEW_ID_APP_MENU);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kBookmarkMenu)) {
+    bookmark_menu_ = new BookmarkMenuButton(browser_);
+    AddChildView(bookmark_menu_);
+  } else {
+    bookmark_menu_ = NULL;
+  }
+
+  LoadImages();
+
+  AddChildView(back_);
+  AddChildView(forward_);
+  AddChildView(home_);
+  AddChildView(reload_);
+  AddChildView(location_bar_);
+  AddChildView(go_);
+  AddChildView(browser_actions_);
+  AddChildView(page_menu_);
+  AddChildView(app_menu_);
+
+  location_bar_->Init();
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
+  // Catch the case where the window is created after we detect a new version.
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
+    ShowUpgradeReminder();
+
   SetProfile(profile);
-  if (!app_menu_model_.get()) {
+  if (!app_menu_model_.get())
     SetAppMenuModel(new AppMenuModel(this, browser_));
-  }
 
   focus_manager_ = GetFocusManager();
 }
 
 void ToolbarView::SetProfile(Profile* profile) {
-  if (profile == profile_)
-    return;
-
-  profile_ = profile;
-  location_bar_->SetProfile(profile);
+  if (profile != profile_) {
+    profile_ = profile;
+    location_bar_->SetProfile(profile);
+  }
 }
 
 void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
@@ -205,14 +278,12 @@ void ToolbarView::AddMenuListener(views::MenuListener* listener) {
 }
 
 void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
-  for (std::vector<views::MenuListener*>::iterator iter =
-      menu_listeners_.begin();
-    iter != menu_listeners_.end();
-    ++iter) {
-      if (*iter == listener) {
-        menu_listeners_.erase(iter);
-        return;
-      }
+  for (std::vector<views::MenuListener*>::iterator i(menu_listeners_.begin());
+       i != menu_listeners_.end(); ++i) {
+    if (*i == listener) {
+      menu_listeners_.erase(i);
+      return;
+    }
   }
 }
 
@@ -239,9 +310,8 @@ void ToolbarView::FocusWillChange(views::View* focused_before,
                                   views::View* focused_now) {
   // If the focus is switching to something outside the menu bar,
   // take it out of the focus traversal.
-  if (focused_now != NULL &&
-      focused_now != page_menu_ &&
-      focused_now != app_menu_) {
+  if ((focused_now != NULL) && (focused_now != page_menu_) &&
+      (focused_now != app_menu_)) {
     // Post ExitMenuBarEmulationMode to the queue rather than running it
     // right away, because otherwise we'll remove ourselves from the
     // list of listeners while FocusManager is in the middle of iterating
@@ -375,9 +445,8 @@ void ToolbarView::Observe(NotificationType type,
 // ToolbarView, menus::SimpleMenuModel::Delegate implementation:
 
 bool ToolbarView::IsCommandIdChecked(int command_id) const {
-  if (command_id == IDC_SHOW_BOOKMARK_BAR)
-    return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
-  return false;
+  return (command_id == IDC_SHOW_BOOKMARK_BAR) &&
+      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
 bool ToolbarView::IsCommandIdEnabled(int command_id) const {
@@ -428,10 +497,7 @@ bool ToolbarView::AcceleratorPressed(
       return true;
     case base::VKEY_LEFT:
     case base::VKEY_RIGHT:
-      if (menu == app_menu_)
-        page_menu_->RequestFocus();
-      else
-        app_menu_->RequestFocus();
+      ((menu == app_menu_) ? page_menu_ : app_menu_)->RequestFocus();
       return true;
     case base::VKEY_UP:
     case base::VKEY_DOWN:
@@ -440,7 +506,6 @@ bool ToolbarView::AcceleratorPressed(
       // Hide the tooltip before activating a menu button.
       if (GetWidget()->GetTooltipManager())
         GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
-
       ActivateMenuButton(menu);
       return true;
     default:
@@ -468,10 +533,8 @@ gfx::Size ToolbarView::GetPreferredSize() {
       normal_background = *rb.GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
     }
 
-    if (collapsed_)
-      return gfx::Size(min_width, kCollapsedToolbarHeight);
-    else
-      return gfx::Size(min_width, normal_background.height());
+    return gfx::Size(min_width,
+        collapsed_ ? kCollapsedToolbarHeight : normal_background.height());
   }
 
   int vertical_spacing = PopupTopSpacing() +
@@ -501,7 +564,7 @@ void ToolbarView::Layout() {
   int child_y = std::min(kControlVertOffset, height());
   // We assume all child elements are the same height.
   int child_height =
-      std::min(go_->GetPreferredSize().height(), height() - child_y);
+      std::min(back_->GetPreferredSize().height(), height() - child_y);
 
   // If the window is maximized, we extend the back button to the left so that
   // clicking on the left-most pixel will activate the back button.
@@ -548,20 +611,17 @@ void ToolbarView::Layout() {
 
   go_->SetBounds(location_bar_->x() + location_bar_->width(), child_y,
                  go_button_width, child_height);
-
   int next_menu_x = go_->x() + go_->width() + kMenuButtonOffset;
 
   browser_actions_->SetBounds(next_menu_x, 0, browser_actions_width, height());
-
   // The browser actions need to do a layout explicitly, because when an
   // extension is loaded/unloaded/changed, BrowserActionContainer removes and
   // re-adds everything, regardless of whether it has a page action. For a
   // page action, browser action bounds do not change, as a result of which
   // SetBounds does not do a layout at all.
-  // TODO(sidchat): Rework the above bahavior so that explicit layout is not
+  // TODO(sidchat): Rework the above behavior so that explicit layout is not
   //                required.
   browser_actions_->Layout();
-
   next_menu_x += browser_actions_width;
 
   if (bookmark_menu_) {
@@ -599,9 +659,7 @@ void ToolbarView::Paint(gfx::Canvas* canvas) {
 }
 
 void ToolbarView::ThemeChanged() {
-  LoadLeftSideControlsImages();
-  LoadCenterStackImages();
-  LoadRightSideControlsImages();
+  LoadImages();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -612,99 +670,7 @@ int ToolbarView::PopupTopSpacing() const {
       0 : kPopupTopSpacingNonGlass;
 }
 
-void ToolbarView::CreateLeftSideControls() {
-  back_ = new views::ButtonDropDown(this, back_menu_model_.get());
-  back_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                  views::Event::EF_MIDDLE_BUTTON_DOWN);
-  back_->set_tag(IDC_BACK);
-  back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
-                           views::ImageButton::ALIGN_TOP);
-  back_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_BACK));
-  back_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_BACK));
-  back_->SetID(VIEW_ID_BACK_BUTTON);
-
-  forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
-  forward_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                        views::Event::EF_MIDDLE_BUTTON_DOWN);
-  forward_->set_tag(IDC_FORWARD);
-  forward_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_FORWARD));
-  forward_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_FORWARD));
-  forward_->SetID(VIEW_ID_FORWARD_BUTTON);
-
-  home_ = new views::ImageButton(this);
-  home_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                  views::Event::EF_MIDDLE_BUTTON_DOWN);
-  home_->set_tag(IDC_HOME);
-  home_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_HOME));
-  home_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_HOME));
-  home_->SetID(VIEW_ID_HOME_BUTTON);
-
-  LoadLeftSideControlsImages();
-
-  AddChildView(back_);
-  AddChildView(forward_);
-  AddChildView(home_);
-}
-
-void ToolbarView::CreateCenterStack(Profile *profile) {
-  reload_ = new views::ImageButton(this);
-  reload_->set_tag(IDC_RELOAD);
-  reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
-  reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
-  reload_->SetID(VIEW_ID_RELOAD_BUTTON);
-
-  location_bar_ = new LocationBarView(profile, browser_->command_updater(),
-      model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
-          LocationBarView::POPUP : LocationBarView::NORMAL);
-
-  // The Go button.
-  go_ = new GoButton(location_bar_, browser_);
-  go_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_GO));
-  go_->SetID(VIEW_ID_GO_BUTTON);
-
-  LoadCenterStackImages();
-
-  AddChildView(reload_);
-  location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
-  AddChildView(location_bar_);
-  location_bar_->Init();
-  AddChildView(go_);
-}
-
-void ToolbarView::CreateRightSideControls(Profile* profile) {
-  browser_actions_ = new BrowserActionsContainer(browser_, this,
-                                                 true);  // should_save_size
-
-  page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
-  page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
-  page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
-  page_menu_->SetID(VIEW_ID_PAGE_MENU);
-
-  app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
-  app_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_APP));
-  app_menu_->SetTooltipText(l10n_util::GetStringF(IDS_APPMENU_TOOLTIP,
-      l10n_util::GetString(IDS_PRODUCT_NAME)));
-  app_menu_->SetID(VIEW_ID_APP_MENU);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kBookmarkMenu)) {
-    bookmark_menu_ = new BookmarkMenuButton(browser_);
-    AddChildView(bookmark_menu_);
-  } else {
-    bookmark_menu_ = NULL;
-  }
-
-  // Catch the case where the window is created after we detect a new version.
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
-    ShowUpgradeReminder();
-
-  LoadRightSideControlsImages();
-
-  AddChildView(browser_actions_);
-  AddChildView(page_menu_);
-  AddChildView(app_menu_);
-}
-
-void ToolbarView::LoadLeftSideControlsImages() {
+void ToolbarView::LoadImages() {
   ThemeProvider* tp = GetThemeProvider();
 
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
@@ -736,13 +702,6 @@ void ToolbarView::LoadLeftSideControlsImages() {
       tp->GetBitmapNamed(IDR_HOME_P));
   home_->SetBackground(color, background,
       tp->GetBitmapNamed(IDR_BUTTON_MASK));
-}
-
-void ToolbarView::LoadCenterStackImages() {
-  ThemeProvider* tp = GetThemeProvider();
-
-  SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
-  SkBitmap* background = tp->GetBitmapNamed(IDR_THEME_BUTTON_BACKGROUND);
 
   reload_->SetImage(views::CustomButton::BS_NORMAL,
       tp->GetBitmapNamed(IDR_RELOAD));
@@ -764,6 +723,13 @@ void ToolbarView::LoadCenterStackImages() {
       tp->GetBitmapNamed(IDR_STOP_P));
   go_->SetBackground(color, background,
       tp->GetBitmapNamed(IDR_GO_MASK));
+
+  // We use different menu button images if the locale is right-to-left.
+  page_menu_->SetIcon(*tp->GetBitmapNamed(
+      base::i18n::IsRTL() ? IDR_MENU_PAGE_RTL : IDR_MENU_PAGE));
+  app_menu_->SetIcon(GetAppMenuIcon());
+  if (bookmark_menu_ != NULL)
+    bookmark_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
 }
 
 void ToolbarView::ShowUpgradeReminder() {
@@ -785,13 +751,9 @@ void ToolbarView::PulsateUpgradeNotifier() {
 SkBitmap ToolbarView::GetAppMenuIcon() {
   ThemeProvider* tp = GetThemeProvider();
 
-  SkBitmap icon;
-
   // We use different menu button images if the locale is right-to-left.
-  if (base::i18n::IsRTL())
-    icon = *tp->GetBitmapNamed(IDR_MENU_CHROME_RTL);
-  else
-    icon = *tp->GetBitmapNamed(IDR_MENU_CHROME);
+  SkBitmap icon = *tp->GetBitmapNamed(
+      base::i18n::IsRTL() ? IDR_MENU_CHROME_RTL : IDR_MENU_CHROME);
 
   if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
     return icon;
@@ -802,7 +764,6 @@ SkBitmap ToolbarView::GetAppMenuIcon() {
   canvas->DrawBitmapInt(icon, 0, 0);
 
   SkBitmap badge;
-
   static bool has_faded_in = false;
   if (!has_faded_in) {
     SkBitmap* dot = tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE);
@@ -829,27 +790,11 @@ SkBitmap ToolbarView::GetAppMenuIcon() {
         value);
   }
 
-  int x_pos = kUpgradeDotOffset;
-  if (base::i18n::IsRTL())
-    x_pos = icon.width() - badge.width();
+  int x_pos = base::i18n::IsRTL() ?
+      (icon.width() - badge.width()) : kUpgradeDotOffset;
   canvas->DrawBitmapInt(badge, x_pos, icon.height() - badge.height());
 
   return canvas->ExtractBitmap();
-}
-
-void ToolbarView::LoadRightSideControlsImages() {
-  ThemeProvider* tp = GetThemeProvider();
-
-  // We use different menu button images if the locale is right-to-left.
-  if (base::i18n::IsRTL())
-    page_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_PAGE_RTL));
-  else
-    page_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_PAGE));
-
-  app_menu_->SetIcon(GetAppMenuIcon());
-
-  if (bookmark_menu_ != NULL)
-    bookmark_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
 }
 
 void ToolbarView::RunPageMenu(const gfx::Point& pt) {
@@ -880,27 +825,25 @@ void ToolbarView::RunAppMenu(const gfx::Point& pt) {
 
   if (app_menu_model_->BuildProfileSubMenu())
     app_menu_menu_->Rebuild();
-  for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
+  for (size_t i = 0; i < menu_listeners_.size(); i++)
     app_menu_menu_->AddMenuListener(menu_listeners_[i]);
-  }
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 
   if (destroyed_flag)
     return;
-
   destroyed_flag_ = NULL;
 
   // Stop pulsating the upgrade reminder on the app menu, if active.
   upgrade_reminder_pulse_timer_.Stop();
 
-  for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
+  for (size_t i = 0; i < menu_listeners_.size(); i++)
     app_menu_menu_->RemoveMenuListener(menu_listeners_[i]);
-  }
   SwitchToOtherMenuIfNeeded(app_menu_menu_.get(), page_menu_);
 }
 
 void ToolbarView::SwitchToOtherMenuIfNeeded(
-    views::Menu2* previous_menu, views::MenuButton* next_menu_button) {
+    views::Menu2* previous_menu,
+    views::MenuButton* next_menu_button) {
   // If the user tried to move to the right or left, switch from the
   // app menu to the page menu. Switching to the next menu is delayed
   // until the next event loop so that the call stack that initiated
@@ -911,15 +854,18 @@ void ToolbarView::SwitchToOtherMenuIfNeeded(
   views::MenuWrapper::MenuAction action = previous_menu->GetMenuAction();
   if (action == views::MenuWrapper::MENU_ACTION_NEXT ||
       action == views::MenuWrapper::MENU_ACTION_PREVIOUS) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, method_factory_.NewRunnableMethod(
-            &ToolbarView::ActivateMenuButton,
-            next_menu_button));
+    MessageLoop::current()->PostTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(&ToolbarView::ActivateMenuButton,
+                                          next_menu_button));
   }
 }
 
 void ToolbarView::ActivateMenuButton(views::MenuButton* menu_button) {
-#if defined(OS_LINUX)
+#if defined(OS_WIN)
+  // On Windows, we have to explicitly clear the focus before opening
+  // the pop-up menu, then set the focus again when it closes.
+  GetFocusManager()->ClearFocus();
+#elif defined(OS_LINUX)
   // Under GTK, opening a pop-up menu causes the main window to lose focus.
   // Focus is automatically returned when the menu closes.
   //
@@ -930,12 +876,6 @@ void ToolbarView::ActivateMenuButton(views::MenuButton* menu_button) {
     menu_button->RequestFocus();
     GetFocusManager()->StoreFocusedView();
   }
-#endif
-
-#if defined(OS_WIN)
-  // On Windows, we have to explicitly clear the focus before opening
-  // the pop-up menu, then set the focus again when it closes.
-  GetFocusManager()->ClearFocus();
 #endif
 
   // Tell the menu button to activate, opening its pop-up menu.
