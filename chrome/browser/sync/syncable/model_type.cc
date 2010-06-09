@@ -101,4 +101,22 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   return UNSPECIFIED;
 }
 
+std::string ModelTypeToString(ModelType model_type) {
+  switch (model_type) {
+    case BOOKMARKS:
+      return "Bookmarks";
+    case PREFERENCES:
+      return "Preferences";
+    case AUTOFILL:
+      return "Autofill";
+    case THEMES:
+      return "Themes";
+    case TYPED_URLS:
+      return "Typed URLs";
+    default:
+      NOTREACHED() << "No known extension for model type.";
+      return "INVALID";
+  }
+}
+
 }  // namespace syncable

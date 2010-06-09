@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_ENGINE_MODEL_SAFE_WORKER_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/ref_counted.h"
@@ -28,6 +29,8 @@ enum ModelSafeGroup {
                        // DB thread.
   MODEL_SAFE_GROUP_COUNT,
 };
+
+std::string ModelSafeGroupToString(ModelSafeGroup group);
 
 // The Syncer uses a ModelSafeWorker for all tasks that could potentially
 // modify syncable entries (e.g under a WriteTransaction). The ModelSafeWorker
@@ -63,7 +66,7 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
 
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
- 
+
   DISALLOW_COPY_AND_ASSIGN(ModelSafeWorker);
 };
 

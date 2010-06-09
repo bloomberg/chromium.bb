@@ -20,4 +20,20 @@ ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
   return it->second;
 }
 
+std::string ModelSafeGroupToString(ModelSafeGroup group) {
+  switch (group) {
+    case GROUP_UI:
+      return "GROUP_UI";
+    case GROUP_DB:
+      return "GROUP_DB";
+    case GROUP_HISTORY:
+      return "GROUP_HISTORY";
+    case GROUP_PASSIVE:
+      return "GROUP_PASSIVE";
+    default:
+      NOTREACHED();
+      return "INVALID";
+  }
+}
+
 }  // namespace browser_sync

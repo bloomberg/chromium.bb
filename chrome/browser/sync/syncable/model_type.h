@@ -11,6 +11,7 @@
 
 #include <bitset>
 #include <set>
+#include <string>
 
 #include "base/logging.h"
 
@@ -80,6 +81,8 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 // are some ModelTypes (like TOP_LEVEL_FOLDER) that can't be inferred this way;
 // prefer using GetModelType where possible.
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
+
+std::string ModelTypeToString(ModelType model_type);
 
 }  // namespace syncable
 

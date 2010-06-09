@@ -63,6 +63,15 @@ div#header h1 {
   background: url('gear.png') 12px 60% no-repeat;
   color: white;
 }
+
+.desc {
+  font-size: 84%;
+}
+
+.err {
+  color: red;
+}
+
 div#header p {
   font-size: 84%;
   font-style: italic;
@@ -81,6 +90,9 @@ table.list {
 }
 table.list:not([class*='filtered']) tr:nth-child(odd) td {
   background: #eff3ff;
+}
+table.list#details2 tr:nth-child(odd) td {
+  background: #ccffcc
 }
 
 table.list td {
@@ -112,10 +124,10 @@ table.list .number {
   text-align: right;
 }
 
-table.list#details tr:not([class*='firstRow']) > *:nth-child(1),
-table.list#details tr:not([class*='firstRow']) > *:nth-child(4),
-table.list#details tr.firstRow th:nth-child(1),
-table.list#details tr.firstRow th:nth-child(2) {
+table.list tr:not([class*='firstRow']) > *:nth-child(1),
+table.list tr:not([class*='firstRow']) > *:nth-child(4),
+table.list tr.firstRow th:nth-child(1),
+table.list tr.firstRow th:nth-child(2) {
   border-right: 1px solid #b5c6de;
 }
 table.list#details .name {
@@ -131,33 +143,65 @@ table.list#details .name {
     <p> Sync engine diagnostic data</p>
   </div>
   <div id='content'>
-    <h2> Summary </h2>
-    <strong jscontent="summary"></strong>
+    <table width="100%">
+      <tr>
+        <td width="20%">
+          <span class="desc"><h2> Summary </h2></span>
+          <strong jscontent="summary"></strong>
+        </td>
+        <td>
+          <div class="desc" jsdisplay="unrecoverable_error_detected">
+            <span class="err">Unrecoverable Error Detected!</span>
+            <div jscontent="unrecoverable_error_message"></div>
+            <div jscontent="unrecoverable_error_location"></div>
+          </div>
+        </td>
+      </tr>
+    </table>
     <br /><br /><br />
-    <h2> Details </h2>
-    <table class='list' id='details'>
+    <h2>  </h2>
+    <table>
       <tr>
-        <td class='name'> Authenticated </td>
-        <td class='number'>
-          <div jscontent="authenticated"> </div>
-          <div jsdisplay="!authenticated"
-               style="color:red"
-               jscontent="auth_problem"></div>
-        </td>
-      </tr>
-      </tr>
-      <tr>
-        <td class='name'>Last Synced</td>
-        <td class='number' jscontent="time_since_sync"> </td>
-      </tr>
-      <tr jsselect="details">
-        <td class='name'>
-  	  <div jscontent="stat_name"></div>
-        </td>
-	<td class='number'>
-  	  <div jscontent="stat_value"></div>
-    	</td>
-      </tr>
+        <td>
+        <div class="desc"><h2> Details </h2></div>
+        <table class='list' id='details'>
+          <tr>
+            <td class='name'> Authenticated </td>
+            <td class='number'>
+              <div jscontent="authenticated"> </div>
+              <div jsdisplay="!authenticated"
+                   style="color:red"
+                   jscontent="auth_problem"></div>
+            </td>
+          </tr>
+          </tr>
+          <tr>
+            <td class='name'>Last Synced</td>
+            <td class='number' jscontent="time_since_sync"> </td>
+          </tr>
+          <tr jsselect="details">
+            <td class='name'>
+              <div jscontent="stat_name"></div>
+            </td>
+            <td class='number'>
+              <div jscontent="stat_value"></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td valign="top">
+        <div class="desc"><h2> Routing Info </h2></div>
+        <table class='list' id='details2'>
+          <tr jsselect="routing_info">
+            <td class ='name'>
+              <div jscontent="model_type"></div>
+            </td>
+            <td class='number'>
+              <div jscontent="group"></div>
+            </td>
+          </tr>
+        </table>
+      </td>
     </table>
   </div>
 </body>

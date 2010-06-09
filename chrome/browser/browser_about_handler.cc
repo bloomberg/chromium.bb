@@ -642,6 +642,28 @@ std::string AboutSync() {
     AddBoolSyncDetail(details, L"Invalid Store", full_status.invalid_store);
     AddIntSyncDetail(details, L"Max Consecutive Errors",
                      full_status.max_consecutive_errors);
+
+    if (service->unrecoverable_error_detected()) {
+      strings.Set(L"unrecoverable_error_detected", new FundamentalValue(true));
+      strings.SetString(L"unrecoverable_error_message",
+                        service->unrecoverable_error_message());
+      tracked_objects::Location loc(service->unrecoverable_error_location());
+      std::string location_str;
+      loc.Write(true, true, &location_str);
+      strings.SetString(L"unrecoverable_error_location", location_str);
+    }
+
+    browser_sync::ModelSafeRoutingInfo routes;
+    service->backend()->GetModelSafeRoutingInfo(&routes);
+    ListValue* routing_info = new ListValue();
+    strings.Set(L"routing_info", routing_info);
+    browser_sync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
+    for (; it != routes.end(); ++it) {
+      DictionaryValue* val = new DictionaryValue;
+      val->SetString(L"model_type", ModelTypeToString(it->first));
+      val->SetString(L"group", ModelSafeGroupToString(it->second));
+      routing_info->Append(val);
+    }
   }
 
   static const base::StringPiece sync_html(
