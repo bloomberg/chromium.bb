@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -159,7 +160,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
 
   // Holds strings needed by the external importer because the resource
   // bundle isn't available to the external process.
-  const DictionaryValue& localized_strings_;
+  scoped_ptr<DictionaryValue> localized_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProcessImporterBridge);
 };

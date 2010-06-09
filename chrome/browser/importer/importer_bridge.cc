@@ -77,6 +77,7 @@ void InProcessImporterBridge::SetKeywords(
 
 void InProcessImporterBridge::SetPasswordForm(
     const webkit_glue::PasswordForm& form) {
+  LOG(ERROR) << "IPImporterBridge::SetPasswordForm";
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(writer_, &ProfileWriter::AddPasswordForm, form));
@@ -113,8 +114,11 @@ std::wstring InProcessImporterBridge::GetLocalizedString(int message_id) {
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
     ProfileImportThread* profile_import_thread,
     const DictionaryValue& localized_strings)
-    : profile_import_thread_(profile_import_thread),
-      localized_strings_(localized_strings) {
+    : profile_import_thread_(profile_import_thread) {
+  // Bridge needs to make its own copy because OS 10.6 autoreleases the
+  // localized_strings value that is passed in (see http://crbug.com/46003 ).
+  localized_strings_.reset(
+      static_cast<DictionaryValue*>(localized_strings.DeepCopy()));
 }
 
 void ExternalProcessImporterBridge::AddBookmarkEntries(
@@ -157,8 +161,7 @@ void ExternalProcessImporterBridge::SetKeywords(
 
 void ExternalProcessImporterBridge::SetPasswordForm(
     const webkit_glue::PasswordForm& form) {
-  // TODO(mirandac): http://crbug.com/18775
-  NOTIMPLEMENTED();
+  profile_import_thread_->NotifyPasswordFormReady(form);
 }
 
 void ExternalProcessImporterBridge::NotifyItemStarted(
@@ -181,7 +184,7 @@ void ExternalProcessImporterBridge::NotifyEnded() {
 std::wstring ExternalProcessImporterBridge::GetLocalizedString(
     int message_id) {
   std::wstring message;
-  localized_strings_.GetString(IntToWString(message_id), &message);
+  localized_strings_->GetString(IntToWString(message_id), &message);
   return message;
 }
 
