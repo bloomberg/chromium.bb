@@ -95,11 +95,13 @@ void NotificationProvider::OnNavigate() {
 
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
-  // Disallow HTML notifications from non-HTTP schemes.
+  // Disallow HTML notifications from unwanted schemes.  javascript:
+  // in particular allows unwanted cross-domain access.
   GURL url = notification.url();
   if (!url.SchemeIs(chrome::kHttpScheme) &&
       !url.SchemeIs(chrome::kHttpsScheme) &&
-      !url.SchemeIs(chrome::kExtensionScheme))
+      !url.SchemeIs(chrome::kExtensionScheme) &&
+      !url.SchemeIs(chrome::kDataScheme))
     return false;
 
   DCHECK(notification.isHTML());
