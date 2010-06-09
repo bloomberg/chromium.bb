@@ -32,7 +32,7 @@
 #elif defined(OS_LINUX)
 #include "remoting/host/capturer_linux.h"
 #include "remoting/host/event_executor_linux.h"
-#elif defined(OS_MAC)
+#elif defined(OS_MACOSX)
 #include "remoting/host/capturer_mac.h"
 #include "remoting/host/event_executor_mac.h"
 #endif
@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 #elif defined(OS_LINUX)
   capturer.reset(new remoting::CapturerLinux());
   executor.reset(new remoting::EventExecutorLinux());
-#elif defined(OS_MAC)
+#elif defined(OS_MACOSX)
   capturer.reset(new remoting::CapturerMac());
   executor.reset(new remoting::EventExecutorMac());
 #endif
