@@ -4,17 +4,16 @@
 
 // This file implements the NativeViewGLContext and PbufferGLContext classes.
 
-#include <GL/glew.h>
-#include <GL/osmew.h>
-#include <GL/wglew.h>
-#include <windows.h>
-
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_context_egl.h"
 #include "app/gfx/gl/gl_context_osmesa.h"
+#include "app/gfx/gl/gl_context_stub.h"
+#include "app/gfx/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -100,7 +99,7 @@ class PbufferGLContext : public GLContext {
   }
 
   // Initializes the GL context.
-  bool Initialize(void* shared_handle);
+  bool Initialize(GLContext* shared_context);
 
   virtual void Destroy();
   virtual bool MakeCurrent();
@@ -118,8 +117,13 @@ class PbufferGLContext : public GLContext {
   DISALLOW_COPY_AND_ASSIGN(PbufferGLContext);
 };
 
+static HWND g_window;
 static int g_regular_pixel_format = 0;
 static int g_multisampled_pixel_format = 0;
+
+// When using ANGLE we still need a window for D3D. This context creates the
+// D3D device.
+static BaseEGLContext* g_default_context;
 
 const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
   sizeof(kPixelFormatDescriptor),    // Size of structure.
@@ -155,94 +159,103 @@ static bool InitializeOneOff() {
   if (initialized)
     return true;
 
-  osmewInit();
-  if (!OSMesaCreateContext) {
-    // We must initialize a GL context before we can determine the multi-
-    // sampling supported on the current hardware, so we create an intermediate
-    // window and context here.
-    HINSTANCE module_handle;
-    if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
-                             GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                             reinterpret_cast<wchar_t*>(IntermediateWindowProc),
-                             &module_handle)) {
-      return false;
-    }
-
-    WNDCLASS intermediate_class;
-    intermediate_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    intermediate_class.lpfnWndProc = IntermediateWindowProc;
-    intermediate_class.cbClsExtra = 0;
-    intermediate_class.cbWndExtra = 0;
-    intermediate_class.hInstance = module_handle;
-    intermediate_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    intermediate_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-    intermediate_class.hbrBackground = NULL;
-    intermediate_class.lpszMenuName = NULL;
-    intermediate_class.lpszClassName = L"Intermediate GL Window";
-
-    ATOM class_registration = ::RegisterClass(&intermediate_class);
-    if (!class_registration) {
-      return false;
-    }
-
-    HWND intermediate_window = ::CreateWindow(
-        reinterpret_cast<wchar_t*>(class_registration),
-        L"",
-        WS_OVERLAPPEDWINDOW,
-        0, 0,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        NULL,
-        NULL,
-        NULL,
-        NULL);
-
-    if (!intermediate_window) {
-      ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                        module_handle);
-      return false;
-    }
-
-    HDC intermediate_dc = ::GetDC(intermediate_window);
-    g_regular_pixel_format = ::ChoosePixelFormat(intermediate_dc,
-                                                 &kPixelFormatDescriptor);
-    if (g_regular_pixel_format == 0) {
-      DLOG(ERROR) << "Unable to get the pixel format for GL context.";
-      ::ReleaseDC(intermediate_window, intermediate_dc);
-      ::DestroyWindow(intermediate_window);
-      ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                        module_handle);
-      return false;
-    }
-    if (!::SetPixelFormat(intermediate_dc, g_regular_pixel_format,
-                          &kPixelFormatDescriptor)) {
-      DLOG(ERROR) << "Unable to set the pixel format for GL context.";
-      ::ReleaseDC(intermediate_window, intermediate_dc);
-      ::DestroyWindow(intermediate_window);
-      ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                        module_handle);
-      return false;
-    }
-
-    // Create a temporary GL context to query for multisampled pixel formats.
-    HGLRC gl_context = ::wglCreateContext(intermediate_dc);
-    if (::wglMakeCurrent(intermediate_dc, gl_context)) {
-      // GL context was successfully created and applied to the window's DC.
-      // Startup GLEW, the GL extensions wrangler.
-      if (InitializeGLEW()) {
-        DLOG(INFO) << "Initialized GLEW " << glewGetString(GLEW_VERSION);
-      } else {
-        ::wglMakeCurrent(intermediate_dc, NULL);
-        ::wglDeleteContext(gl_context);
-        ::ReleaseDC(intermediate_window, intermediate_dc);
-        ::DestroyWindow(intermediate_window);
-        ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                          module_handle);
+  if (!InitializeGLBindings(kGLImplementationOSMesaGL)) {
+    if (!InitializeGLBindings(kGLImplementationEGLGLES2)) {
+      if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
+        LOG(ERROR) << "Could not initialize GL.";
         return false;
       }
+    }
+  }
 
-      // If the multi-sample extensions are present, query the api to determine
-      // the pixel format.
-      if (WGLEW_ARB_pixel_format && WGLEW_ARB_multisample) {
+
+  // We must initialize a GL context before we can determine the multi-
+  // sampling supported on the current hardware, so we create an intermediate
+  // window and context here.
+  HINSTANCE module_handle;
+  if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
+                           GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                           reinterpret_cast<wchar_t*>(IntermediateWindowProc),
+                           &module_handle)) {
+    return false;
+  }
+
+  WNDCLASS intermediate_class;
+  intermediate_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+  intermediate_class.lpfnWndProc = IntermediateWindowProc;
+  intermediate_class.cbClsExtra = 0;
+  intermediate_class.cbWndExtra = 0;
+  intermediate_class.hInstance = module_handle;
+  intermediate_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+  intermediate_class.hCursor = LoadCursor(NULL, IDC_ARROW);
+  intermediate_class.hbrBackground = NULL;
+  intermediate_class.lpszMenuName = NULL;
+  intermediate_class.lpszClassName = L"Intermediate GL Window";
+
+  ATOM class_registration = ::RegisterClass(&intermediate_class);
+  if (!class_registration) {
+    return false;
+  }
+
+  g_window = ::CreateWindow(
+      reinterpret_cast<wchar_t*>(class_registration),
+      L"",
+      WS_OVERLAPPEDWINDOW,
+      0, 0,
+      100, 100,
+      NULL,
+      NULL,
+      NULL,
+      NULL);
+
+  if (!g_window) {
+    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                      module_handle);
+    return false;
+  }
+
+  // Early out if OSMesa offscreen renderer or EGL is present.
+  if (GetGLImplementation() != kGLImplementationDesktopGL) {
+    initialized = true;
+    return true;
+  }
+
+  HDC intermediate_dc = ::GetDC(g_window);
+  g_regular_pixel_format = ::ChoosePixelFormat(intermediate_dc,
+                                               &kPixelFormatDescriptor);
+  if (g_regular_pixel_format == 0) {
+    DLOG(ERROR) << "Unable to get the pixel format for GL context.";
+    ::ReleaseDC(g_window, intermediate_dc);
+    ::DestroyWindow(g_window);
+    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                      module_handle);
+    return false;
+  }
+  if (!::SetPixelFormat(intermediate_dc, g_regular_pixel_format,
+                        &kPixelFormatDescriptor)) {
+    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+    ::ReleaseDC(g_window, intermediate_dc);
+    ::DestroyWindow(g_window);
+    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                      module_handle);
+    return false;
+  }
+
+  // Create a temporary GL context to query for multisampled pixel formats.
+  HGLRC gl_context = wglCreateContext(intermediate_dc);
+  if (wglMakeCurrent(intermediate_dc, gl_context)) {
+    // Get bindings to extension functions that cannot be acquired without a
+    // current context.
+    InitializeGLBindingsGL();
+    InitializeGLBindingsWGL();
+
+    // If the multi-sample extensions are present, query the api to determine
+    // the pixel format.
+    if (wglGetExtensionsStringARB) {
+      std::string extensions =
+          std::string(wglGetExtensionsStringARB(intermediate_dc));
+      extensions += std::string(" ");
+      if (extensions.find("WGL_ARB_pixel_format ")) {
         int pixel_attributes[] = {
           WGL_SAMPLES_ARB, 4,
           WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -264,28 +277,26 @@ static bool InitializeOneOff() {
         static const int kNumSamples = 2;
         for (int sample = 0; sample < kNumSamples; ++sample) {
           pixel_attributes[1] = kSampleCount[sample];
-          if (GL_TRUE == ::wglChoosePixelFormatARB(intermediate_dc,
-                                                   pixel_attributes,
-                                                   pixel_attributes_f,
-                                                   1,
-                                                   &g_multisampled_pixel_format,
-                                                   &num_formats)) {
+          if (GL_TRUE == wglChoosePixelFormatARB(intermediate_dc,
+                                                 pixel_attributes,
+                                                 pixel_attributes_f,
+                                                 1,
+                                                 &g_multisampled_pixel_format,
+                                                 &num_formats)) {
             break;
           }
         }
       }
     }
-
-    ::wglMakeCurrent(intermediate_dc, NULL);
-    ::wglDeleteContext(gl_context);
-    ::ReleaseDC(intermediate_window, intermediate_dc);
-    ::DestroyWindow(intermediate_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
   }
 
-  initialized = true;
+  wglMakeCurrent(intermediate_dc, NULL);
+  wglDeleteContext(gl_context);
+  ReleaseDC(g_window, intermediate_dc);
+  UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                  module_handle);
 
+  initialized = true;
   return true;
 }
 
@@ -348,11 +359,6 @@ bool NativeViewGLContext::Initialize(bool multisampled) {
   }
 
   if (!MakeCurrent()) {
-    Destroy();
-    return false;
-  }
-
-  if (!InitializeGLEW()) {
     Destroy();
     return false;
   }
@@ -510,7 +516,7 @@ void* OSMesaViewGLContext::GetHandle() {
 void OSMesaViewGLContext::UpdateSize() {
   // Change back buffer size to that of window.
   RECT rect;
-  GetWindowRect(window_, &rect);
+  GetClientRect(window_, &rect);
   gfx::Size window_size = gfx::Size(
     std::max(1, static_cast<int>(rect.right - rect.left)),
     std::max(1, static_cast<int>(rect.bottom - rect.top)));
@@ -522,24 +528,38 @@ GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
   if (!InitializeOneOff())
     return NULL;
 
-  if (OSMesaCreateContext) {
-    scoped_ptr<OSMesaViewGLContext> context(new OSMesaViewGLContext(window));
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL: {
+      scoped_ptr<OSMesaViewGLContext> context(new OSMesaViewGLContext(window));
+      if (!context->Initialize())
+        return NULL;
 
-    if (!context->Initialize())
+      return context.release();
+    }
+    case kGLImplementationEGLGLES2: {
+      scoped_ptr<NativeViewEGLContext> context(
+          new NativeViewEGLContext(window));
+      if (!context->Initialize())
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationDesktopGL: {
+      scoped_ptr<NativeViewGLContext> context(new NativeViewGLContext(window));
+      if (!context->Initialize(multisampled))
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationMockGL:
+      return new StubGLContext;
+    default:
+      NOTREACHED();
       return NULL;
-
-    return context.release();
-  } else {
-    scoped_ptr<NativeViewGLContext> context(new NativeViewGLContext(window));
-
-    if (!context->Initialize(multisampled))
-      return NULL;
-
-    return context.release();
   }
 }
 
-bool PbufferGLContext::Initialize(void* shared_handle) {
+bool PbufferGLContext::Initialize(GLContext* shared_context) {
   // Create a device context compatible with the primary display.
   HDC display_device_context = ::CreateDC(L"DISPLAY", NULL, NULL, NULL);
 
@@ -547,10 +567,10 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
   // a stepping stone towards creating a frame buffer object. It doesn't
   // matter what size it is.
   const int kNoAttributes[] = { 0 };
-  pbuffer_ = ::wglCreatePbufferARB(display_device_context,
-                                   g_regular_pixel_format,
-                                   1, 1,
-                                   kNoAttributes);
+  pbuffer_ = wglCreatePbufferARB(display_device_context,
+                                 g_regular_pixel_format,
+                                 1, 1,
+                                 kNoAttributes);
   ::DeleteDC(display_device_context);
   if (!pbuffer_) {
     DLOG(ERROR) << "Unable to create pbuffer.";
@@ -558,22 +578,23 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
     return false;
   }
 
-  device_context_ = ::wglGetPbufferDCARB(pbuffer_);
+  device_context_ = wglGetPbufferDCARB(pbuffer_);
   if (!device_context_) {
     DLOG(ERROR) << "Unable to get pbuffer device context.";
     Destroy();
     return false;
   }
 
-  context_ = ::wglCreateContext(device_context_);
+  context_ = wglCreateContext(device_context_);
   if (!context_) {
     DLOG(ERROR) << "Failed to create GL context.";
     Destroy();
     return false;
   }
 
-  if (shared_handle) {
-    if (!wglShareLists(static_cast<GLContextHandle>(shared_handle), context_)) {
+  if (shared_context) {
+    if (!wglShareLists(
+        static_cast<GLContextHandle>(shared_context->GetHandle()), context_)) {
       DLOG(ERROR) << "Could not share GL contexts.";
       Destroy();
       return false;
@@ -581,11 +602,6 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
   }
 
   if (!MakeCurrent()) {
-    Destroy();
-    return false;
-  }
-
-  if (!InitializeGLEW()) {
     Destroy();
     return false;
   }
@@ -649,23 +665,50 @@ void* PbufferGLContext::GetHandle() {
   return context_;
 }
 
-GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
+GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
   if (!InitializeOneOff())
     return NULL;
 
-  if (OSMesaCreateContext) {
-    scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL: {
+      scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+      if (!context->Initialize(shared_context))
+        return NULL;
 
-    if (!context->Initialize(shared_handle))
+      return context.release();
+    }
+    case kGLImplementationEGLGLES2: {
+      if (!shared_context) {
+        if (!g_default_context) {
+          scoped_ptr<NativeViewEGLContext> default_context(
+              new NativeViewEGLContext(g_window));
+          if (!default_context->Initialize())
+            return NULL;
+
+          g_default_context = default_context.release();
+        }
+        shared_context = g_default_context;
+      }
+
+      scoped_ptr<SecondaryEGLContext> context(
+          new SecondaryEGLContext());
+      if (!context->Initialize(shared_context))
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationDesktopGL: {
+      scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
+      if (!context->Initialize(shared_context))
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationMockGL:
+      return new StubGLContext;
+    default:
+      NOTREACHED();
       return NULL;
-
-    return context.release();
-  } else {
-    scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
-    if (!context->Initialize(shared_handle))
-      return NULL;
-
-    return context.release();
   }
 }
 

@@ -12,8 +12,6 @@
 
 namespace gfx {
 
-bool InitializeGLEW();
-
 // Encapsulates an OpenGL context, hiding platform specific management.
 class GLContext {
  public:
@@ -50,7 +48,7 @@ class GLContext {
 
   // Create a GL context used for offscreen rendering. It is initially backed by
   // a 1x1 pbuffer. Use it to create an FBO to do useful rendering.
-  static GLContext* CreateOffscreenGLContext(void* shared_handle);
+  static GLContext* CreateOffscreenGLContext(GLContext* shared_context);
 
  protected:
   bool InitializeCommon();

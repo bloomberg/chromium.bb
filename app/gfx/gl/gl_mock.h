@@ -1,17 +1,17 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file implements mock GL Interface for unit testing. It has to mock
 // Desktop GL, not GLES2 as it is used to test the service side code.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GL_MOCK_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GL_MOCK_H_
+#ifndef APP_GFX_GL_GL_MOCK_H_
+#define APP_GFX_GL_GL_MOCK_H_
 
-#include "gpu/command_buffer/service/gl_interface.h"
+#include "app/gfx/gl/gl_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gles2 {
+namespace gfx {
 
 class MockGLInterface : public GLInterface {
  public:
@@ -58,7 +58,9 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD4(ClearColor, void(
       GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha));
 
-  MOCK_METHOD1(ClearDepth, void(GLclampf depth));
+  MOCK_METHOD1(ClearDepth, void(GLclampd depth));
+
+  MOCK_METHOD1(ClearDepthf, void(GLclampf depth));
 
   MOCK_METHOD1(ClearStencil, void(GLint s));
 
@@ -107,7 +109,9 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD1(DepthMask, void(GLboolean flag));
 
-  MOCK_METHOD2(DepthRange, void(GLclampf zNear, GLclampf zFar));
+  MOCK_METHOD2(DepthRange, void(GLclampd zNear, GLclampd zFar));
+
+  MOCK_METHOD2(DepthRangef, void(GLclampf zNear, GLclampf zFar));
 
   MOCK_METHOD2(DetachShader, void(GLuint program, GLuint shader));
 
@@ -381,9 +385,9 @@ class MockGLInterface : public GLInterface {
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset));
 };
 
-}  // namespace gles2
+}  // namespace gfx
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GL_MOCK_H_
+#endif  // APP_GFX_GL_GL_MOCK_H_
 
 
 

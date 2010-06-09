@@ -4,6 +4,7 @@
 
 #include "app/surface/accelerated_surface_mac.h"
 
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
 #include "gfx/rect.h"

@@ -4,19 +4,14 @@
 
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
-#include <dlfcn.h>
-#include <GL/glew.h>
-#include <GL/glxew.h>
-#include <GL/glx.h>
-#include <GL/osmew.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 #include "app/x11_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_context_osmesa.h"
+#include "app/gfx/gl/gl_context_stub.h"
+#include "app/gfx/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -62,7 +57,7 @@ class PbufferGLContext : public GLContext {
   }
 
   // Initializes the GL context.
-  bool Initialize(void* shared_handle);
+  bool Initialize(GLContext* shared_context);
 
   virtual void Destroy();
   virtual bool MakeCurrent();
@@ -89,7 +84,7 @@ class PixmapGLContext : public GLContext {
   }
 
   // Initializes the GL context.
-  bool Initialize(void* shared_handle);
+  bool Initialize(GLContext* shared_context);
 
   virtual void Destroy();
   virtual bool MakeCurrent();
@@ -117,39 +112,23 @@ class ScopedPtrXFree {
   }
 };
 
-// Some versions of NVIDIA's GL libGL.so include a broken version of
-// dlopen/dlsym, and so linking it into chrome breaks it. So we dynamically
-// load it, and use glew to dynamically resolve symbols.
-// See http://code.google.com/p/chromium/issues/detail?id=16800
-
 static bool InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
     return true;
 
-  osmewInit();
-  if (!OSMesaCreateContext) {
-    void* handle = dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
-    if (!handle) {
-      LOG(ERROR) << "Could not find libGL.so.1";
-      return false;
-    }
+  // Initialize the GL bindings if they haven't already been initialized. If
+  // the GPU unit tests are running, the mock GL implementation will already
+  // have been initialized.
+  if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
+    LOG(ERROR) << "Could not initialize GL.";
+    return false;
+  }
 
-    // Initializes context-independent parts of GLEW
-    if (glxewInit() != GLEW_OK) {
-      LOG(ERROR) << "glxewInit failed";
-      return false;
-    }
-    // glxewContextInit really only needs a display connection to
-    // complete, and we don't want to have to create an OpenGL context
-    // just to get access to GLX 1.3 entry points to create pbuffers.
-    // We therefore added a glxewContextInitWithDisplay entry point.
+  // Only check the GLX version if we are in fact using GLX. We might actually
+  // be using the mock GL implementation.
+  if (GetGLImplementation() == kGLImplementationDesktopGL) {
     Display* display = x11_util::GetXDisplay();
-    if (glxewContextInitWithDisplay(display) != GLEW_OK) {
-      LOG(ERROR) << "glxewContextInit failed";
-      return false;
-    }
-
     int major, minor;
     if (!glXQueryVersion(display, &major, &minor)) {
       LOG(ERROR) << "glxQueryVersion failed";
@@ -199,11 +178,6 @@ bool ViewGLContext::Initialize(bool multisampled) {
     return false;
   }
 
-  if (!InitializeGLEW()) {
-    Destroy();
-    return false;
-  }
-
   if (!InitializeCommon()) {
     Destroy();
     return false;
@@ -214,7 +188,7 @@ bool ViewGLContext::Initialize(bool multisampled) {
 
 void ViewGLContext::Destroy() {
   Display* display = x11_util::GetXDisplay();
-  Bool result = glXMakeCurrent(display, 0, 0);
+  bool result = glXMakeCurrent(display, 0, 0);
 
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
   // we have pending draws on an invalid window - which shouldn't be the case
@@ -272,29 +246,24 @@ GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
   if (!InitializeOneOff())
     return NULL;
 
-  if (OSMesaCreateContext) {
-    // TODO(apatrick): Support OSMesa rendering to a window on Linux.
-    NOTREACHED() << "OSMesa rendering to a window is not yet implemented.";
-    return NULL;
-  } else {
-    scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL: {
+      scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
 
-    if (!context->Initialize(multisampled))
+      if (!context->Initialize(multisampled))
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationMockGL:
+      return new StubGLContext;
+    default:
+      NOTREACHED();
       return NULL;
-
-    return context.release();
   }
 }
 
-bool PbufferGLContext::Initialize(void* shared_handle) {
-  if (!glXChooseFBConfig ||
-      !glXCreateNewContext ||
-      !glXCreatePbuffer ||
-      !glXDestroyPbuffer) {
-    LOG(ERROR) << "Pbuffer support not available.";
-    return false;
-  }
-
+bool PbufferGLContext::Initialize(GLContext* shared_context) {
   static const int config_attributes[] = {
     GLX_DRAWABLE_TYPE,
     GLX_PBUFFER_BIT,
@@ -319,10 +288,15 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
     LOG(ERROR) << "glXChooseFBConfig returned 0 elements.";
     return false;
   }
+
+  GLContextHandle shared_handle = NULL;
+  if (shared_context)
+    shared_handle = static_cast<GLContextHandle>(shared_context->GetHandle());
+
   context_ = glXCreateNewContext(display,
                                  config.get()[0],
                                  GLX_RGBA_TYPE,
-                                 static_cast<GLContextHandle>(shared_handle),
+                                 shared_handle,
                                  True);
   if (!context_) {
     LOG(ERROR) << "glXCreateNewContext failed.";
@@ -349,11 +323,6 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
     return false;
   }
 
-  if (!InitializeGLEW()) {
-    Destroy();
-    return false;
-  }
-
   if (!InitializeCommon()) {
     Destroy();
     return false;
@@ -364,7 +333,7 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
 
 void PbufferGLContext::Destroy() {
   Display* display = x11_util::GetXDisplay();
-  Bool result = glXMakeCurrent(display, 0, 0);
+  bool result = glXMakeCurrent(display, 0, 0);
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
   // we have pending draws on an invalid window - which shouldn't be the case
   // here.
@@ -417,14 +386,8 @@ void* PbufferGLContext::GetHandle() {
   return context_;
 }
 
-bool PixmapGLContext::Initialize(void* shared_handle) {
+bool PixmapGLContext::Initialize(GLContext* shared_context) {
   LOG(INFO) << "GL context: using pixmaps.";
-  if (!glXChooseVisual ||
-      !glXCreateGLXPixmap ||
-      !glXDestroyGLXPixmap) {
-    LOG(ERROR) << "Pixmap support not available.";
-    return false;
-  }
 
   static int attributes[] = {
     GLX_RGBA,
@@ -441,9 +404,12 @@ bool PixmapGLContext::Initialize(void* shared_handle) {
     LOG(ERROR) << "glXChooseVisual failed.";
     return false;
   }
-  context_ = glXCreateContext(display, visual_info.get(),
-                              static_cast<GLContextHandle>(shared_handle),
-                              True);
+
+  GLContextHandle shared_handle = NULL;
+  if (shared_context)
+    shared_handle = static_cast<GLContextHandle>(shared_context->GetHandle());
+
+  context_ = glXCreateContext(display, visual_info.get(), shared_handle, True);
   if (!context_) {
     LOG(ERROR) << "glXCreateContext failed.";
     return false;
@@ -468,11 +434,6 @@ bool PixmapGLContext::Initialize(void* shared_handle) {
     return false;
   }
 
-  if (!InitializeGLEW()) {
-    Destroy();
-    return false;
-  }
-
   if (!InitializeCommon()) {
     Destroy();
     return false;
@@ -483,7 +444,7 @@ bool PixmapGLContext::Initialize(void* shared_handle) {
 
 void PixmapGLContext::Destroy() {
   Display* display = x11_util::GetXDisplay();
-  Bool result = glXMakeCurrent(display, 0, 0);
+  bool result = glXMakeCurrent(display, 0, 0);
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
   // we have pending draws on an invalid window - which shouldn't be the case
   // here.
@@ -541,27 +502,27 @@ void* PixmapGLContext::GetHandle() {
   return context_;
 }
 
-GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
+GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
   if (!InitializeOneOff())
     return NULL;
 
-  if (OSMesaCreateContext) {
-    scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL: {
+      scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
+      if (context->Initialize(shared_context))
+        return context.release();
 
-    if (!context->Initialize(shared_handle))
+      scoped_ptr<PixmapGLContext> context_pixmap(new PixmapGLContext);
+      if (context_pixmap->Initialize(shared_context))
+        return context_pixmap.release();
+
       return NULL;
-
-    return context.release();
-  } else {
-    scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
-    if (context->Initialize(shared_handle))
-      return context.release();
-
-    scoped_ptr<PixmapGLContext> context_pixmap(new PixmapGLContext);
-    if (context_pixmap->Initialize(shared_handle))
-      return context_pixmap.release();
-
-    return NULL;
+    }
+    case kGLImplementationMockGL:
+      return new StubGLContext;
+    default:
+      NOTREACHED();
+      return NULL;
   }
 }
 

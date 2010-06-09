@@ -4,8 +4,7 @@
 
 #include "chrome/gpu/gpu_backing_store_glx.h"
 
-#include <GL/glew.h>
-
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/surface/transport_dib.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_messages.h"
@@ -31,7 +30,8 @@ GpuBackingStoreGLX::GpuBackingStoreGLX(GpuViewX* view,
   glGenTextures(1, &texture_id_);
   glBindTexture(GL_TEXTURE_2D, texture_id_);
 
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  // TODO(apatrick): This function are not available in GLES2.
+  // glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
@@ -92,28 +92,33 @@ void GpuBackingStoreGLX::OnScrollBackingStore(int dx, int dy,
 
   // Set up the the tranform so we can paint exact pixels to the screen, with
   // (0, 0) at the bottom left.
-  float w = static_cast<float>(size_.width());
-  float h = static_cast<float>(size_.height());
+  // TODO(apatrick): Commenting out because these variables were only used by
+  // code that is now commented out.
+  // float w = static_cast<float>(size_.width());
+  // float h = static_cast<float>(size_.height());
   glViewport(0, 0, size_.width(), size_.height());
-  glLoadIdentity();
-  glOrtho(0.0, w, 0.0, h, -1.0, 1.0);
+
+  // TODO(apatrick): These functions are not available in GLES2.
+  // glLoadIdentity();
+  // glOrtho(0.0, w, 0.0, h, -1.0, 1.0);
 
   // Paint the non-scrolled background of the page. Note that we try to avoid
   // this if the entire thing is scrolling, which is a common case.
   if (view_size != clip_rect.size()) {
-    glBegin(GL_QUADS);
-      glTexCoord2f(0.0f, 0.0f);
-      glVertex2f(0.0, 0.0);
+    // TODO(apatrick): These functions are not available in GLES2.
+    // glBegin(GL_QUADS);
+    //  glTexCoord2f(0.0f, 0.0f);
+    //  glVertex2f(0.0, 0.0);
 
-      glTexCoord2f(0.0f, 1.0f);
-      glVertex2f(0.0, h);
+    //  glTexCoord2f(0.0f, 1.0f);
+    //  glVertex2f(0.0, h);
 
-      glTexCoord2f(1.0f, 1.0f);
-      glVertex2f(w, h);
+    //  glTexCoord2f(1.0f, 1.0f);
+    //  glVertex2f(w, h);
 
-      glTexCoord2f(1.0f, 0.0f);
-      glVertex2f(w, 0.0);
-    glEnd();
+    //  glTexCoord2f(1.0f, 0.0f);
+    //  glVertex2f(w, 0.0);
+    // glEnd();
   }
 
   // Constrain the painting to only the area we're scrolling.  Compute the clip
@@ -126,20 +131,21 @@ void GpuBackingStoreGLX::OnScrollBackingStore(int dx, int dy,
             gl_clip_rect.width(), gl_clip_rect.height());
 
   // Paint the offset texture.
-  glTranslatef(static_cast<float>(dx), static_cast<float>(dy), 0.0f);
-  glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(0.0, 0.0);
+  // TODO(apatrick): These functions are not available in GLES2.
+  // glTranslatef(static_cast<float>(dx), static_cast<float>(dy), 0.0f);
+  // glBegin(GL_QUADS);
+  //  glTexCoord2f(0.0f, 0.0f);
+  //  glVertex2f(0.0, 0.0);
 
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(0.0, h);
+  //  glTexCoord2f(0.0f, 1.0f);
+  //  glVertex2f(0.0, h);
 
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(w, h);
+  //  glTexCoord2f(1.0f, 1.0f);
+  //  glVertex2f(w, h);
 
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(w, 0.0);
-  glEnd();
+  //  glTexCoord2f(1.0f, 0.0f);
+  //  glVertex2f(w, 0.0);
+  // glEnd();
   glDisable(GL_SCISSOR_TEST);
 
   glBindTexture(GL_TEXTURE_2D, 0);

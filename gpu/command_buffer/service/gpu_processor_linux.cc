@@ -27,9 +27,6 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
 
     parent_context = parent_decoder->GetGLContext();
     DCHECK(parent_context);
-
-    parent_handle = parent_context->GetHandle();
-    DCHECK(parent_handle);
   }
 
   // Create either a view or pbuffer based GLContext.
@@ -39,7 +36,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
     // TODO(apatrick): support multisampling.
     context_.reset(gfx::GLContext::CreateViewGLContext(window, false));
   } else {
-    context_.reset(gfx::GLContext::CreateOffscreenGLContext(parent_handle));
+    context_.reset(gfx::GLContext::CreateOffscreenGLContext(parent_context));
   }
 
   if (!context_.get())

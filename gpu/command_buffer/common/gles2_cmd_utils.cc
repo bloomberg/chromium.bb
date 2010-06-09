@@ -5,6 +5,8 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
+#include <GLES2/gl2.h>
+
 #include "../common/gles2_cmd_utils.h"
 #include "../common/gles2_cmd_format.h"
 

@@ -593,6 +593,7 @@
       'type': '<(library)',
       'msvs_guid': 'F10F1ECD-D84D-4C33-8468-9DDFE19F4D8A',
       'dependencies': [
+        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         'common',
         '../skia/skia.gyp:skia',
@@ -634,9 +635,6 @@
             'gpu/x_util.h',
             'gpu/gpu_video_layer_glx.cc',
             'gpu/gpu_video_layer_glx.h',
-          ],
-          'dependencies': [
-            '../gpu/gpu.gyp:gl_libs',
           ],
         }],
         ['enable_gpu==1', {

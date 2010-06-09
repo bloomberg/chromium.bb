@@ -4,15 +4,15 @@
 
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
-#include <GL/glew.h>
-#include <GL/osmew.h>
 #include <OpenGL/OpenGL.h>
 
 #include "app/surface/accelerated_surface_mac.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context.h"
-#include "app/gfx/gl/gl_context_osmesa.h"
+#include "app/gfx/gl/gl_context_stub.h"
+#include "app/gfx/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -30,7 +30,7 @@ class PbufferGLContext : public GLContext {
   }
 
   // Initializes the GL context.
-  bool Initialize(void* shared_handle);
+  bool Initialize(GLContext* shared_context);
 
   virtual void Destroy();
   virtual bool MakeCurrent();
@@ -52,12 +52,16 @@ static bool InitializeOneOff() {
   if (initialized)
     return true;
 
-  osmewInit();
+  if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
+    LOG(ERROR) << "Could not initialize GL.";
+    return false;
+  }
+
   initialized = true;
   return true;
 }
 
-bool PbufferGLContext::Initialize(void* shared_handle) {
+bool PbufferGLContext::Initialize(GLContext* shared_context) {
   // Create a 1x1 pbuffer and associated context to bootstrap things.
   static const CGLPixelFormatAttribute attribs[] = {
     (CGLPixelFormatAttribute) kCGLPFAPBuffer,
@@ -75,9 +79,12 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
   if (!pixel_format) {
     return false;
   }
-  CGLError res = CGLCreateContext(pixel_format,
-                                  static_cast<GLContextHandle>(shared_handle),
-                                  &context_);
+
+  GLContextHandle shared_handle = NULL;
+  if (shared_context)
+    shared_handle = static_cast<GLContextHandle>(shared_context->GetHandle());
+
+  CGLError res = CGLCreateContext(pixel_format, shared_handle, &context_);
   CGLDestroyPixelFormat(pixel_format);
   if (res != kCGLNoError) {
     DLOG(ERROR) << "Error creating context.";
@@ -100,11 +107,6 @@ bool PbufferGLContext::Initialize(void* shared_handle) {
   if (!MakeCurrent()) {
     Destroy();
     DLOG(ERROR) << "Couldn't make context current for initialization.";
-    return false;
-  }
-
-  if (!InitializeGLEW()) {
-    Destroy();
     return false;
   }
 
@@ -160,23 +162,23 @@ void* PbufferGLContext::GetHandle() {
   return context_;
 }
 
-GLContext* GLContext::CreateOffscreenGLContext(void* shared_handle) {
+GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
   if (!InitializeOneOff())
     return NULL;
 
-  if (OSMesaCreateContext) {
-    scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL: {
+      scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
+      if (!context->Initialize(shared_context))
+        return NULL;
 
-    if (!context->Initialize(shared_handle))
+      return context.release();
+    }
+    case kGLImplementationMockGL:
+      return new StubGLContext;
+    default:
+      NOTREACHED();
       return NULL;
-
-    return context.release();
-  } else {
-    scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
-    if (!context->Initialize(shared_handle))
-      return NULL;
-
-    return context.release();
   }
 }
 

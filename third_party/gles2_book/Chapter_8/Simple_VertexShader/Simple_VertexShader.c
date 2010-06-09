@@ -59,7 +59,7 @@ int svsInit ( ESContext *esContext )
    glBufferData ( GL_ARRAY_BUFFER, 3 * numVertices * sizeof(GLfloat),
                   vertices, GL_STATIC_DRAW );
    glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, userData->vboIds[1] );
-   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, userData->numIndices * sizeof(GL_UNSIGNED_SHORT),
+   glBufferData ( GL_ELEMENT_ARRAY_BUFFER, userData->numIndices * sizeof(GLushort),
                   indices, GL_STATIC_DRAW );
    if ( vertices != NULL ) free ( vertices );
    if ( indices != NULL ) free ( indices );

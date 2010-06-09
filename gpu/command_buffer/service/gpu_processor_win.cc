@@ -22,26 +22,22 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   // Get the parent decoder and the GLContext to share IDs with, if any.
   gles2::GLES2Decoder* parent_decoder = NULL;
   gfx::GLContext* parent_context = NULL;
-  void* parent_handle = NULL;
   if (parent) {
     parent_decoder = parent->decoder_.get();
     DCHECK(parent_decoder);
 
     parent_context = parent_decoder->GetGLContext();
     DCHECK(parent_context);
-
-    parent_handle = parent_context->GetHandle();
-    DCHECK(parent_handle);
   }
 
   // Create either a view or pbuffer based GLContext.
   if (window) {
-    DCHECK(!parent_handle);
+    DCHECK(!parent_context);
 
     // TODO(apatrick): support multisampling.
     context_.reset(gfx::GLContext::CreateViewGLContext(window, false));
   } else {
-    context_.reset(gfx::GLContext::CreateOffscreenGLContext(parent_handle));
+    context_.reset(gfx::GLContext::CreateOffscreenGLContext(parent_context));
   }
 
   if (!context_.get())

@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
+#include "app/gfx/gl/gl_mock.h"
 #include "base/string_util.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/service/gl_mock.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::gles2::MockGLInterface;
+using ::gfx::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -29,7 +29,7 @@ namespace gles2 {
 
 void GLES2DecoderTestBase::SetUp() {
   gl_.reset(new StrictMock<MockGLInterface>());
-  ::gles2::GLInterface::SetGLInterface(gl_.get());
+  ::gfx::GLInterface::SetGLInterface(gl_.get());
 
   InSequence sequence;
 
@@ -148,7 +148,7 @@ void GLES2DecoderTestBase::SetUp() {
       shared_memory_offset_;
   shared_memory_id_ = kSharedMemoryId;
 
-  context_.reset(gfx::GLContext::CreateOffscreenGLContext(NULL));
+  context_.reset(new gfx::StubGLContext);
 
   decoder_.reset(GLES2Decoder::Create(&group_));
   decoder_->Initialize(context_.get(), gfx::Size(), NULL, 0);
@@ -202,7 +202,7 @@ void GLES2DecoderTestBase::TearDown() {
   decoder_->Destroy();
   decoder_.reset();
   engine_.reset();
-  ::gles2::GLInterface::SetGLInterface(NULL);
+  ::gfx::GLInterface::SetGLInterface(NULL);
   gl_.reset();
 }
 

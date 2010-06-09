@@ -4,6 +4,7 @@
 
 #include "chrome/gpu/gpu_view_x.h"
 
+#include "app/gfx/gl/gl_bindings.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_backing_store_glx.h"
@@ -13,7 +14,6 @@
 
 // X stuff must be last since it does "#define Status int" which messes up some
 // of the header files we indirectly pull in.
-#include <GL/glxew.h>
 #include <X11/Xutil.h>
 
 GpuViewX::GpuViewX(GpuThread* gpu_thread,
@@ -63,8 +63,9 @@ void GpuViewX::Repaint() {
 
   glViewport(0, 0, size.width(), size.height());
 
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  // TODO(apatrick): These functions are not available in GLES2.
+  // glMatrixMode(GL_MODELVIEW);
+  // glLoadIdentity();
 
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, backing_store_->texture_id());
@@ -72,19 +73,20 @@ void GpuViewX::Repaint() {
   // TODO(brettw) use vertex buffers.
   // TODO(brettw) make this so we use the texture size rather than the whole
   // area size so we don't stretch bitmaps.
-  glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(-1.0, 1.0);
+  // TODO(apatrick): These functions are not available in GLES2.
+  // glBegin(GL_QUADS);
+  //  glTexCoord2f(0.0f, 0.0f);
+  //  glVertex2f(-1.0, 1.0);
 
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(-1.0, -1.0);
+  //  glTexCoord2f(0.0f, 1.0f);
+  //  glVertex2f(-1.0, -1.0);
 
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(1.0, -1.0);
+  //  glTexCoord2f(1.0f, 1.0f);
+  //  glVertex2f(1.0, -1.0);
 
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(1.0, 1.0);
-  glEnd();
+  //  glTexCoord2f(1.0f, 0.0f);
+  //  glVertex2f(1.0, 1.0);
+  // glEnd();
   DCHECK(glGetError() == GL_NO_ERROR);
 
   if (video_layer_.get()) {

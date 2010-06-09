@@ -5,9 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 
+#include <GLES2/gl2.h>
+
 #include <map>
 #include <string>
 #include <vector>
+
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
 #include "../client/gles2_cmd_helper.h"

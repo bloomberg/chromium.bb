@@ -8,82 +8,25 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
-#include <build/build_config.h>
+#include "build/build_config.h"
+#include "app/gfx/gl/gl_bindings.h"
 
-#if defined(UNIT_TEST)
-  #include "gpu/command_buffer/service/gl_mock.h"
-  // OpenGL constants not defined in OpenGL ES 2.0 needed when compiling
-  // unit tests. For native OpenGL ES 2.0 backend these are not used. For OpenGL
-  // backend these must be defined by the local system.
-  #if !defined(GL_VERTEX_PROGRAM_POINT_SIZE)
-    #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
-  #endif
-  #define GL_MAX_FRAGMENT_UNIFORM_COMPONENTS 0x8B49
-  #define GL_MAX_VERTEX_UNIFORM_COMPONENTS 0x8B4A
-  #define GL_MAX_VARYING_FLOATS 0x8B4B
-#else
-  #if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-    #include <GLES2/gl2.h>  // NOLINT
-
-    #define glClearDepth glClearDepthf
-    #define glDepthRange glDepthRangef
-
-    // Buffer Objects
-    #define glBindBufferARB glBindBuffer
-    #define glBufferDataARB glBufferData
-    #define glBufferSubDataARB glBufferSubData
-    #define glDeleteBuffersARB glDeleteBuffers
-    #define glGenBuffersARB glGenBuffers
-
-    // Framebuffer Objects
-    #define glBindFramebufferEXT glBindFramebuffer
-    #define glBindRenderbufferEXT glBindRenderbuffer
-    #define glCheckFramebufferStatusEXT glCheckFramebufferStatus
-    #define glDeleteFramebuffersEXT glDeleteFramebuffers
-    #define glDeleteRenderbuffersEXT glDeleteRenderbuffers
-    #define glFramebufferRenderbufferEXT glFramebufferRenderbuffer
-    #define glFramebufferTexture2DEXT glFramebufferTexture2D
-    #define glGenFramebuffersEXT glGenFramebuffers
-    #define glGenRenderbuffersEXT glGenRenderbuffers
-    #define glGetFramebufferAttachmentParameterivEXT \
-        glGetFramebufferAttachmentParameteriv
-    #define glGetRenderbufferParameterivEXT glGetRenderbufferParameteriv
-    #define glIsFramebufferEXT glIsFramebuffer
-    #define glIsRenderbufferEXT glIsFramebuffer
-    #define glRenderbufferStorageEXT glRenderbufferStorage
-
-    // Texture Objects
-    #define glGenerateMipmapEXT glGenerateMipmap
-
-  #else  // !GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
-    #include <GL/glew.h>  // NOLINT
-    #include <GL/osmew.h>
-    #if defined(OS_WIN)
-      #include <GL/wglew.h>  // NOLINT
-    #elif defined(OS_LINUX)
-      #include <GL/glxew.h>  // NOLINT
-    #endif  // OS_WIN
-
-    // GLES2 defines not part of Desktop GL
-    // Shader Precision-Specified Types
-    #define GL_LOW_FLOAT                      0x8DF0
-    #define GL_MEDIUM_FLOAT                   0x8DF1
-    #define GL_HIGH_FLOAT                     0x8DF2
-    #define GL_LOW_INT                        0x8DF3
-    #define GL_MEDIUM_INT                     0x8DF4
-    #define GL_HIGH_INT                       0x8DF5
-    #define GL_IMPLEMENTATION_COLOR_READ_TYPE   0x8B9A
-    #define GL_IMPLEMENTATION_COLOR_READ_FORMAT 0x8B9B
-    #define GL_MAX_FRAGMENT_UNIFORM_VECTORS     0x8DFD
-    #define GL_MAX_VERTEX_UNIFORM_VECTORS       0x8DFB
-    #define GL_MAX_VARYING_VECTORS              0x8DFC
-    #define GL_SHADER_BINARY_FORMATS          0x8DF8
-    #define GL_NUM_SHADER_BINARY_FORMATS      0x8DF9
-    #define GL_SHADER_COMPILER                0x8DFA
-
-  #endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
-
-#endif  // UNIT_TEST
+// GLES2 defines not part of Desktop GL
+// Shader Precision-Specified Types
+#define GL_LOW_FLOAT                      0x8DF0
+#define GL_MEDIUM_FLOAT                   0x8DF1
+#define GL_HIGH_FLOAT                     0x8DF2
+#define GL_LOW_INT                        0x8DF3
+#define GL_MEDIUM_INT                     0x8DF4
+#define GL_HIGH_INT                       0x8DF5
+#define GL_IMPLEMENTATION_COLOR_READ_TYPE   0x8B9A
+#define GL_IMPLEMENTATION_COLOR_READ_FORMAT 0x8B9B
+#define GL_MAX_FRAGMENT_UNIFORM_VECTORS     0x8DFD
+#define GL_MAX_VERTEX_UNIFORM_VECTORS       0x8DFB
+#define GL_MAX_VARYING_VECTORS              0x8DFC
+#define GL_SHADER_BINARY_FORMATS          0x8DF8
+#define GL_NUM_SHADER_BINARY_FORMATS      0x8DF9
+#define GL_SHADER_COMPILER                0x8DFA
 
 #define GL_GLEXT_PROTOTYPES 1
 

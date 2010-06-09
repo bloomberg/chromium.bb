@@ -6,7 +6,6 @@
 #define APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <OpenGL/OpenGL.h>
 
 #include "app/surface/transport_dib.h"
 #include "base/callback.h"
@@ -14,6 +13,13 @@
 #include "base/scoped_ptr.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+
+// Should not include GL headers in a header file. Forward declare these types
+// instead.
+typedef struct _CGLContextObject* CGLContextObj;
+typedef struct _CGLPBufferObject* CGLPBufferObj;
+typedef unsigned int GLenum;
+typedef unsigned int GLuint;
 
 namespace gfx {
 class Rect;

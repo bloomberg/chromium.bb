@@ -19,7 +19,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
-#if defined(OS_MACOSX) && !defined(UNIT_TEST)
+#if defined(OS_MACOSX)
 #include "app/surface/accelerated_surface_mac.h"
 #endif
 
@@ -103,7 +103,7 @@ class GPUProcessor : public CommandBufferEngine {
   scoped_ptr<CommandParser> parser_;
   scoped_ptr<gfx::GLContext> context_;
 
-#if defined(OS_MACOSX) && !defined(UNIT_TEST)
+#if defined(OS_MACOSX)
   scoped_ptr<AcceleratedSurface> surface_;
 #endif
 

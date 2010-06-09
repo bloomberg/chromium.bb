@@ -4,13 +4,12 @@
 
 #include "chrome/gpu/gpu_backing_store_glx_context.h"
 
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/x11_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/gpu/gpu_thread.h"
 
 // Must be last.
-#include <GL/glew.h>
-#include <GL/glxew.h>
 #include <X11/Xutil.h>
 
 GpuBackingStoreGLXContext::GpuBackingStoreGLXContext(GpuThread* gpu_thread)
@@ -30,7 +29,7 @@ GpuBackingStoreGLXContext::~GpuBackingStoreGLXContext() {
   }
 
   if (frame_buffer_for_scrolling_)
-    glDeleteFramebuffers(1, &frame_buffer_for_scrolling_);
+    glDeleteFramebuffersEXT(1, &frame_buffer_for_scrolling_);
 
   if (context_)
     glXDestroyContext(gpu_thread_->display(), context_);
@@ -43,8 +42,8 @@ GLXContext GpuBackingStoreGLXContext::BindContext(XID window_id) {
     if (!context_)
       return NULL;
     if (!previous_window_id_ || previous_window_id_ != window_id) {
-      bool success = ::glXMakeCurrent(gpu_thread_->display(), window_id,
-                                      context_);
+      bool success = glXMakeCurrent(gpu_thread_->display(), window_id,
+                                    context_);
       DCHECK(success);
     }
     previous_window_id_ = window_id;
@@ -52,18 +51,16 @@ GLXContext GpuBackingStoreGLXContext::BindContext(XID window_id) {
   }
   tried_to_init_ = true;
 
-  int attrib_list[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
+  int attrib_list[] = { GLX_RGBA, GLX_DOUBLEBUFFER, 0 };
   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info(
-      ::glXChooseVisual(gpu_thread_->display(), 0, attrib_list));
+      glXChooseVisual(gpu_thread_->display(), 0, attrib_list));
   if (!visual_info.get())
     return NULL;
 
-  context_ = ::glXCreateContext(gpu_thread_->display(), visual_info.get(),
-                                NULL, True);
-  bool success = ::glXMakeCurrent(gpu_thread_->display(), window_id, context_);
+  context_ = glXCreateContext(gpu_thread_->display(), visual_info.get(),
+                              NULL, True);
+  bool success = glXMakeCurrent(gpu_thread_->display(), window_id, context_);
   DCHECK(success);
-  glewInit();
-  glewInitGL2Hack();  // Work around for I915.  See gpu_video_layer_glx.cc.
   return context_;
 }
 
@@ -95,13 +92,13 @@ bool GpuBackingStoreGLXContext::BindTextureForScrolling(
   }
 
   if (!frame_buffer_for_scrolling_)
-    glGenFramebuffers(1, &frame_buffer_for_scrolling_);
-  glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_for_scrolling_);
+    glGenFramebuffersEXT(1, &frame_buffer_for_scrolling_);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, frame_buffer_for_scrolling_);
   is_frame_buffer_bound_ = true;
 
   // Release our color attachment.
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         temp_scroll_texture_id_, 0);
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                            temp_scroll_texture_id_, 0);
 
   DCHECK(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) ==
          GL_FRAMEBUFFER_COMPLETE_EXT);
@@ -113,7 +110,7 @@ unsigned int GpuBackingStoreGLXContext::SwapTextureForScrolling(
     const gfx::Size& old_size) {
   // Unbind the framebuffer, which we expect to be bound.
   DCHECK(is_frame_buffer_bound_);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
   is_frame_buffer_bound_ = false;
 
   DCHECK(temp_scroll_texture_id_);

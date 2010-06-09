@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
@@ -17,9 +18,6 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
-#elif defined(GPU_USE_GLX)
-#include <dlfcn.h>
-#include <GL/glxew.h>
 #endif
 
 // Main function for starting the Gpu process.
@@ -40,8 +38,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;
 #elif defined(GPU_USE_GLX)
-  dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
-  glxewInit();
+  gfx::InitializeGLBindings(gfx::kGLImplementationDesktopGL);
 #endif
 
   GpuProcess gpu_process;

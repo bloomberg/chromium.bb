@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,35 +6,12 @@
 // testing. It has to be Desktop GL, not GLES2 as it is used to test the service
 // side code.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GL_INTERFACE_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GL_INTERFACE_H_
+#ifndef APP_GFX_GL_GL_INTERFACE_H_
+#define APP_GFX_GL_GL_INTERFACE_H_
 
-#include <GLES2/gl2types.h>
+#include "app/gfx/gl/gl_bindings.h"
 
-// These are Desktop GL constants that we want to test that our GLES2
-// implemenation does not let through.
-#define GL_PROXY_TEXTURE_CUBE_MAP 0x851B
-#define GL_BGR 0x80E0
-#define GL_BGRA 0x80E1
-#define GL_UNPACK_SWAP_BYTES 0x0CF0
-#define GL_PACK_SWAP_BYTES 0x0D00
-#define GL_PERSPECTIVE_CORRECTION_HINT 0x0C50
-#define GL_QUADS 0x0007
-#define GL_POLYGON 0x0009
-#define GL_FOG 0x0B60
-#define GL_CLIP_PLANE0 0x3000
-#define GL_GENERATE_MIPMAP 0x8191
-#define GL_PIXEL_PACK_BUFFER 0x88EB
-#define GL_POINT_SPRITE 0x8861
-#define GL_MIN 0x8007
-#define GL_MAX 0x8008
-#define GL_TEXTURE_1D 0x0DE0
-#define GL_TEXTURE_3D 0x806F
-#define GL_DOUBLE 0x140A
-#define GL_GEOMETRY_SHADER 0x8DD9
-#define GL_FOG_HINT 0x0C54
-
-namespace gles2 {
+namespace gfx {
 
 class GLInterface {
  public:
@@ -85,7 +62,9 @@ class GLInterface {
   virtual void ClearColor(
       GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) = 0;
 
-  virtual void ClearDepth(GLclampf depth) = 0;
+  virtual void ClearDepth(GLclampd depth) = 0;
+
+  virtual void ClearDepthf(GLclampf depth) = 0;
 
   virtual void ClearStencil(GLint s) = 0;
 
@@ -133,7 +112,9 @@ class GLInterface {
 
   virtual void DepthMask(GLboolean flag) = 0;
 
-  virtual void DepthRange(GLclampf zNear, GLclampf zFar) = 0;
+  virtual void DepthRange(GLclampd zNear, GLclampd zFar) = 0;
+
+  virtual void DepthRangef(GLclampf zNear, GLclampf zFar) = 0;
 
   virtual void DetachShader(GLuint program, GLuint shader) = 0;
 
@@ -407,157 +388,9 @@ class GLInterface {
   static GLInterface* interface_;
 };
 
-}  // namespace gles2
+}  // namespace gfx
 
-#define GL_IFACE_GET_FUN(name) ::gles2::GLInterface::GetGLInterface()->name
-
-#define glActiveTexture GL_IFACE_GET_FUN(ActiveTexture)
-#define glAttachShader GL_IFACE_GET_FUN(AttachShader)
-#define glBindAttribLocation GL_IFACE_GET_FUN(BindAttribLocation)
-#define glBindBuffer GL_IFACE_GET_FUN(BindBuffer)
-#define glBindFramebufferEXT GL_IFACE_GET_FUN(BindFramebufferEXT)
-#define glBindRenderbufferEXT GL_IFACE_GET_FUN(BindRenderbufferEXT)
-#define glBindTexture GL_IFACE_GET_FUN(BindTexture)
-#define glBlendColor GL_IFACE_GET_FUN(BlendColor)
-#define glBlendEquation GL_IFACE_GET_FUN(BlendEquation)
-#define glBlendEquationSeparate GL_IFACE_GET_FUN(BlendEquationSeparate)
-#define glBlendFunc GL_IFACE_GET_FUN(BlendFunc)
-#define glBlendFuncSeparate GL_IFACE_GET_FUN(BlendFuncSeparate)
-#define glBufferData GL_IFACE_GET_FUN(BufferData)
-#define glBufferSubData GL_IFACE_GET_FUN(BufferSubData)
-#define glCheckFramebufferStatusEXT GL_IFACE_GET_FUN(CheckFramebufferStatusEXT)
-#define glClear GL_IFACE_GET_FUN(Clear)
-#define glClearColor GL_IFACE_GET_FUN(ClearColor)
-#define glClearDepth GL_IFACE_GET_FUN(ClearDepth)
-#define glClearStencil GL_IFACE_GET_FUN(ClearStencil)
-#define glColorMask GL_IFACE_GET_FUN(ColorMask)
-#define glCompileShader GL_IFACE_GET_FUN(CompileShader)
-#define glCompressedTexImage2D GL_IFACE_GET_FUN(CompressedTexImage2D)
-#define glCompressedTexSubImage2D GL_IFACE_GET_FUN(CompressedTexSubImage2D)
-#define glCopyTexImage2D GL_IFACE_GET_FUN(CopyTexImage2D)
-#define glCopyTexSubImage2D GL_IFACE_GET_FUN(CopyTexSubImage2D)
-#define glCreateProgram GL_IFACE_GET_FUN(CreateProgram)
-#define glCreateShader GL_IFACE_GET_FUN(CreateShader)
-#define glCullFace GL_IFACE_GET_FUN(CullFace)
-#define glDeleteBuffersARB GL_IFACE_GET_FUN(DeleteBuffersARB)
-#define glDeleteFramebuffersEXT GL_IFACE_GET_FUN(DeleteFramebuffersEXT)
-#define glDeleteProgram GL_IFACE_GET_FUN(DeleteProgram)
-#define glDeleteRenderbuffersEXT GL_IFACE_GET_FUN(DeleteRenderbuffersEXT)
-#define glDeleteShader GL_IFACE_GET_FUN(DeleteShader)
-#define glDeleteTextures GL_IFACE_GET_FUN(DeleteTextures)
-#define glDepthFunc GL_IFACE_GET_FUN(DepthFunc)
-#define glDepthMask GL_IFACE_GET_FUN(DepthMask)
-#define glDepthRange GL_IFACE_GET_FUN(DepthRange)
-#define glDetachShader GL_IFACE_GET_FUN(DetachShader)
-#define glDisable GL_IFACE_GET_FUN(Disable)
-#define glDisableVertexAttribArray GL_IFACE_GET_FUN(DisableVertexAttribArray)
-#define glDrawArrays GL_IFACE_GET_FUN(DrawArrays)
-#define glDrawElements GL_IFACE_GET_FUN(DrawElements)
-#define glEnable GL_IFACE_GET_FUN(Enable)
-#define glEnableVertexAttribArray GL_IFACE_GET_FUN(EnableVertexAttribArray)
-#define glFinish GL_IFACE_GET_FUN(Finish)
-#define glFlush GL_IFACE_GET_FUN(Flush)
-#define glFramebufferRenderbufferEXT \
-    GL_IFACE_GET_FUN(FramebufferRenderbufferEXT)
-#define glFramebufferTexture2DEXT GL_IFACE_GET_FUN(FramebufferTexture2DEXT)
-#define glFrontFace GL_IFACE_GET_FUN(FrontFace)
-#define glGenBuffersARB GL_IFACE_GET_FUN(GenBuffersARB)
-#define glGenerateMipmapEXT GL_IFACE_GET_FUN(GenerateMipmapEXT)
-#define glGenFramebuffersEXT GL_IFACE_GET_FUN(GenFramebuffersEXT)
-#define glGenRenderbuffersEXT GL_IFACE_GET_FUN(GenRenderbuffersEXT)
-#define glGenTextures GL_IFACE_GET_FUN(GenTextures)
-#define glGetActiveAttrib GL_IFACE_GET_FUN(GetActiveAttrib)
-#define glGetActiveUniform GL_IFACE_GET_FUN(GetActiveUniform)
-#define glGetAttachedShaders GL_IFACE_GET_FUN(GetAttachedShaders)
-#define glGetAttribLocation GL_IFACE_GET_FUN(GetAttribLocation)
-#define glGetBooleanv GL_IFACE_GET_FUN(GetBooleanv)
-#define glGetBufferParameteriv GL_IFACE_GET_FUN(GetBufferParameteriv)
-#define glGetError GL_IFACE_GET_FUN(GetError)
-#define glGetFloatv GL_IFACE_GET_FUN(GetFloatv)
-#define glGetFramebufferAttachmentParameterivEXT \
-    GL_IFACE_GET_FUN(GetFramebufferAttachmentParameterivEXT)
-#define glGetIntegerv GL_IFACE_GET_FUN(GetIntegerv)
-#define glGetProgramiv GL_IFACE_GET_FUN(GetProgramiv)
-#define glGetProgramInfoLog GL_IFACE_GET_FUN(GetProgramInfoLog)
-#define glGetRenderbufferParameterivEXT \
-    GL_IFACE_GET_FUN(GetRenderbufferParameterivEXT)
-#define glGetShaderiv GL_IFACE_GET_FUN(GetShaderiv)
-#define glGetShaderInfoLog GL_IFACE_GET_FUN(GetShaderInfoLog)
-#define glGetShaderPrecisionFormat GL_IFACE_GET_FUN(GetShaderPrecisionFormat)
-#define glGetShaderSource GL_IFACE_GET_FUN(GetShaderSource)
-#define glGetString GL_IFACE_GET_FUN(GetString)
-#define glGetTexParameterfv GL_IFACE_GET_FUN(GetTexParameterfv)
-#define glGetTexParameteriv GL_IFACE_GET_FUN(GetTexParameteriv)
-#define glGetUniformfv GL_IFACE_GET_FUN(GetUniformfv)
-#define glGetUniformiv GL_IFACE_GET_FUN(GetUniformiv)
-#define glGetUniformLocation GL_IFACE_GET_FUN(GetUniformLocation)
-#define glGetVertexAttribfv GL_IFACE_GET_FUN(GetVertexAttribfv)
-#define glGetVertexAttribiv GL_IFACE_GET_FUN(GetVertexAttribiv)
-#define glGetVertexAttribPointerv GL_IFACE_GET_FUN(GetVertexAttribPointerv)
-#define glHint GL_IFACE_GET_FUN(Hint)
-#define glIsBuffer GL_IFACE_GET_FUN(IsBuffer)
-#define glIsEnabled GL_IFACE_GET_FUN(IsEnabled)
-#define glIsFramebufferEXT GL_IFACE_GET_FUN(IsFramebufferEXT)
-#define glIsProgram GL_IFACE_GET_FUN(IsProgram)
-#define glIsRenderbufferEXT GL_IFACE_GET_FUN(IsRenderbufferEXT)
-#define glIsShader GL_IFACE_GET_FUN(IsShader)
-#define glIsTexture GL_IFACE_GET_FUN(IsTexture)
-#define glLineWidth GL_IFACE_GET_FUN(LineWidth)
-#define glLinkProgram GL_IFACE_GET_FUN(LinkProgram)
-#define glPixelStorei GL_IFACE_GET_FUN(PixelStorei)
-#define glPolygonOffset GL_IFACE_GET_FUN(PolygonOffset)
-#define glReadPixels GL_IFACE_GET_FUN(ReadPixels)
-#define glReleaseShaderCompiler GL_IFACE_GET_FUN(ReleaseShaderCompiler)
-#define glRenderbufferStorageEXT GL_IFACE_GET_FUN(RenderbufferStorageEXT)
-#define glSampleCoverage GL_IFACE_GET_FUN(SampleCoverage)
-#define glScissor GL_IFACE_GET_FUN(Scissor)
-#define glShaderBinary GL_IFACE_GET_FUN(ShaderBinary)
-#define glShaderSource GL_IFACE_GET_FUN(ShaderSource)
-#define glStencilFunc GL_IFACE_GET_FUN(StencilFunc)
-#define glStencilFuncSeparate GL_IFACE_GET_FUN(StencilFuncSeparate)
-#define glStencilMask GL_IFACE_GET_FUN(StencilMask)
-#define glStencilMaskSeparate GL_IFACE_GET_FUN(StencilMaskSeparate)
-#define glStencilOp GL_IFACE_GET_FUN(StencilOp)
-#define glStencilOpSeparate GL_IFACE_GET_FUN(StencilOpSeparate)
-#define glTexImage2D GL_IFACE_GET_FUN(TexImage2D)
-#define glTexParameterf GL_IFACE_GET_FUN(TexParameterf)
-#define glTexParameterfv GL_IFACE_GET_FUN(TexParameterfv)
-#define glTexParameteri GL_IFACE_GET_FUN(TexParameteri)
-#define glTexParameteriv GL_IFACE_GET_FUN(TexParameteriv)
-#define glTexSubImage2D GL_IFACE_GET_FUN(TexSubImage2D)
-#define glUniform1f GL_IFACE_GET_FUN(Uniform1f)
-#define glUniform1fv GL_IFACE_GET_FUN(Uniform1fv)
-#define glUniform1i GL_IFACE_GET_FUN(Uniform1i)
-#define glUniform1iv GL_IFACE_GET_FUN(Uniform1iv)
-#define glUniform2f GL_IFACE_GET_FUN(Uniform2f)
-#define glUniform2fv GL_IFACE_GET_FUN(Uniform2fv)
-#define glUniform2i GL_IFACE_GET_FUN(Uniform2i)
-#define glUniform2iv GL_IFACE_GET_FUN(Uniform2iv)
-#define glUniform3f GL_IFACE_GET_FUN(Uniform3f)
-#define glUniform3fv GL_IFACE_GET_FUN(Uniform3fv)
-#define glUniform3i GL_IFACE_GET_FUN(Uniform3i)
-#define glUniform3iv GL_IFACE_GET_FUN(Uniform3iv)
-#define glUniform4f GL_IFACE_GET_FUN(Uniform4f)
-#define glUniform4fv GL_IFACE_GET_FUN(Uniform4fv)
-#define glUniform4i GL_IFACE_GET_FUN(Uniform4i)
-#define glUniform4iv GL_IFACE_GET_FUN(Uniform4iv)
-#define glUniformMatrix2fv GL_IFACE_GET_FUN(UniformMatrix2fv)
-#define glUniformMatrix3fv GL_IFACE_GET_FUN(UniformMatrix3fv)
-#define glUniformMatrix4fv GL_IFACE_GET_FUN(UniformMatrix4fv)
-#define glUseProgram GL_IFACE_GET_FUN(UseProgram)
-#define glValidateProgram GL_IFACE_GET_FUN(ValidateProgram)
-#define glVertexAttrib1f GL_IFACE_GET_FUN(VertexAttrib1f)
-#define glVertexAttrib1fv GL_IFACE_GET_FUN(VertexAttrib1fv)
-#define glVertexAttrib2f GL_IFACE_GET_FUN(VertexAttrib2f)
-#define glVertexAttrib2fv GL_IFACE_GET_FUN(VertexAttrib2fv)
-#define glVertexAttrib3f GL_IFACE_GET_FUN(VertexAttrib3f)
-#define glVertexAttrib3fv GL_IFACE_GET_FUN(VertexAttrib3fv)
-#define glVertexAttrib4f GL_IFACE_GET_FUN(VertexAttrib4f)
-#define glVertexAttrib4fv GL_IFACE_GET_FUN(VertexAttrib4fv)
-#define glVertexAttribPointer GL_IFACE_GET_FUN(VertexAttribPointer)
-#define glViewport GL_IFACE_GET_FUN(Viewport)
-
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GL_INTERFACE_H_
+#endif  // APP_GFX_GL_GL_INTERFACE_H_
 
 
 

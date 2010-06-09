@@ -4,8 +4,7 @@
 
 #include "chrome/gpu/gpu_video_layer_glx.h"
 
-#include <GL/glew.h>
-
+#include "app/gfx/gl/gl_bindings.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_thread.h"
 #include "chrome/gpu/gpu_view_x.h"
@@ -107,7 +106,8 @@ GpuVideoLayerGLX::GpuVideoLayerGLX(GpuViewX* view,
 
   view_->BindContext();  // Must do this before issuing OpenGl.
 
-  glMatrixMode(GL_MODELVIEW);
+  // TODO(apatrick): These functions are not available in GLES2.
+  // glMatrixMode(GL_MODELVIEW);
 
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.

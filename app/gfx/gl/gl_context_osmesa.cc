@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <GL/glew.h>
-#include <GL/osmew.h>
-
 #include <algorithm>
 
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context_osmesa.h"
 
 namespace gfx {
@@ -18,23 +16,21 @@ OSMesaGLContext::OSMesaGLContext() : context_(NULL)
 OSMesaGLContext::~OSMesaGLContext() {
 }
 
-bool OSMesaGLContext::Initialize(void* shared_handle) {
+bool OSMesaGLContext::Initialize(GLContext* shared_context) {
   DCHECK(!context_);
 
   size_ = gfx::Size(1, 1);
   buffer_.reset(new int32[1]);
 
-  context_ = OSMesaCreateContext(GL_RGBA,
-                                 static_cast<OSMesaContext>(shared_handle));
+  OSMesaContext shared_handle = NULL;
+  if (shared_context)
+    shared_handle = static_cast<OSMesaContext>(shared_context->GetHandle());
+
+  context_ = OSMesaCreateContext(GL_RGBA, shared_handle);
   if (!context_)
     return false;
 
   if (!MakeCurrent()) {
-    Destroy();
-    return false;
-  }
-
-  if (!InitializeGLEW()) {
     Destroy();
     return false;
   }

@@ -4,41 +4,31 @@
 
 // This file implements the StubGLContext.
 
-#include "build/build_config.h"
+#ifndef APP_GFX_GL_GL_CONTEXT_STUB_H_
+#define APP_GFX_GL_GL_CONTEXT_STUB_H_
+
 #include "app/gfx/gl/gl_context.h"
 
-namespace gpu {
+namespace gfx {
 
 // A GLContext that does nothing for unit tests.
 class StubGLContext : public gfx::GLContext {
  public:
-
   // Implement GLContext.
   virtual void Destroy() {}
   virtual bool MakeCurrent() { return true; }
   virtual bool IsCurrent() { return true; }
-  virtual bool IsOffscreen() { return true; }
+  virtual bool IsOffscreen() { return false; }
   virtual void SwapBuffers() {}
-  virtual gfx::Size GetSize() { return gfx::Size(); }
+  virtual gfx::Size GetSize() { return size_; }
   virtual void* GetHandle() { return NULL; }
+
+  void SetSize(const gfx::Size& size) { size_ = size; }
+
+ private:
+  gfx::Size size_;
 };
 
-}  // namespace gpu
-
-namespace gfx {
-
-#if !defined(OS_MACOSX)
-
-GLContext* GLContext::CreateViewGLContext(PluginWindowHandle /* window */,
-                                          bool /* multisampled */) {
-  return new gpu::StubGLContext;
-}
-
-#endif  // OS_MACOSX
-
-GLContext* GLContext::CreateOffscreenGLContext(
-    void* /* shared_handle */) {
-  return new gpu::StubGLContext;
-}
-
 }  // namespace gfx
+
+#endif  // APP_GFX_GL_GL_CONTEXT_STUB_H_

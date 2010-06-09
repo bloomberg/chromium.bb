@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/program_manager.h"
+#include "app/gfx/gl/gl_mock.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "gpu/command_buffer/service/gl_mock.h"
 
-using ::gles2::MockGLInterface;
+using ::gfx::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -120,8 +120,8 @@ class ProgramManagerWithShaderTest : public testing::Test {
   };
 
   virtual void SetUp() {
-    gl_.reset(new StrictMock<MockGLInterface>());
-    ::gles2::GLInterface::SetGLInterface(gl_.get());
+    gl_.reset(new StrictMock<gfx::MockGLInterface>());
+    ::gfx::GLInterface::SetGLInterface(gl_.get());
 
     SetupDefaultShaderExpectations();
 
@@ -217,12 +217,13 @@ class ProgramManagerWithShaderTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    ::gfx::GLInterface::SetGLInterface(NULL);
   }
 
   static AttribInfo kAttribs[];
   static UniformInfo kUniforms[];
 
-  scoped_ptr<StrictMock<MockGLInterface> > gl_;
+  scoped_ptr<StrictMock<gfx::MockGLInterface> > gl_;
 
   ProgramManager manager_;
 

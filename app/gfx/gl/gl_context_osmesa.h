@@ -20,7 +20,7 @@ class OSMesaGLContext : public GLContext {
   virtual ~OSMesaGLContext();
 
   // Initialize an OSMesa GL context with the default 1 x 1 initial size.
-  bool Initialize(void* shared_handle);
+  bool Initialize(GLContext* shared_context);
 
   // Implement GLContext.
   virtual void Destroy();
@@ -40,11 +40,9 @@ class OSMesaGLContext : public GLContext {
   }
 
  private:
-#if !defined(UNIT_TEST)
   gfx::Size size_;
   scoped_array<int32> buffer_;
   OSMesaContext context_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(OSMesaGLContext);
 };
