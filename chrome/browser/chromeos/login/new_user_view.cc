@@ -390,6 +390,7 @@ bool NewUserView::HandleKeystroke(views::Textfield* s,
 }
 
 void NewUserView::EnableInputControls(bool enabled) {
+  languages_menubutton_->SetEnabled(enabled);
   username_field_->SetEnabled(enabled);
   password_field_->SetEnabled(enabled);
   sign_in_button_->SetEnabled(enabled);
