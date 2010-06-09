@@ -6,6 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "build/build_config.h"
+#include "remoting/base/constants.h"
 #include "remoting/base/protocol_decoder.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/jingle_glue/jingle_channel.h"
@@ -13,14 +14,14 @@
 namespace remoting {
 
 SimpleHost::SimpleHost(const std::string& username,
-                       const std::string& password,
+                       const std::string& auth_token,
                        Capturer* capturer,
                        Encoder* encoder,
                        EventExecutor* executor)
       : capture_thread_("CaptureThread"),
         encode_thread_("EncodeThread"),
         username_(username),
-        password_(password),
+        auth_token_(auth_token),
         capturer_(capturer),
         encoder_(encoder),
         executor_(executor) {
@@ -59,7 +60,8 @@ void SimpleHost::RegisterHost() {
 
   // Connect to the talk network with a JingleClient.
   jingle_client_ = new JingleClient();
-  jingle_client_->Init(username_, password_, this);
+  jingle_client_->Init(username_, auth_token_,
+                       kChromotingTokenServiceName, this);
 }
 
 // This method is called if a client is connected to this object.

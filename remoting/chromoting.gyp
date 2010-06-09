@@ -238,6 +238,8 @@
       'target_name': 'chromoting_jingle_glue',
       'type': '<(library)',
       'dependencies': [
+        # TODO(sergeyu): move all code that is shared between notifier and
+        # jingle_glue to a separate library and use it here.
         '../chrome/chrome.gyp:notifier',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
@@ -266,6 +268,7 @@
       'target_name': 'chromoting_jingle_test_client',
       'type': 'executable',
       'dependencies': [
+        'chromoting_base',
         'chromoting_jingle_glue',
         '../media/media.gyp:media',
       ],

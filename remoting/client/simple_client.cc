@@ -176,19 +176,16 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  // Get password (with console echo turned off).
-  std::string password;
-  SetConsoleEcho(false);
-  std::cout << "Password: ";
-  getline(std::cin, password);
-  SetConsoleEcho(true);
-  std::cout << std::endl;
+  // Get auth token.
+  std::string auth_token;
+  std::cout << "Auth Token: ";
+  getline(std::cin, auth_token);
 
   // The message loop that everything runs on.
   MessageLoop main_loop;
   SimpleHostEventHandler handler(&main_loop);
   HostConnection connection(new ProtocolDecoder(), &handler);
-  connection.Connect(username, password, host_jid);
+  connection.Connect(username, auth_token, host_jid);
 
   // Run the message.
   main_loop.Run();

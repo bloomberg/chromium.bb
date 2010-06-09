@@ -15,11 +15,13 @@ extern "C" {
 
 #include "base/at_exit.h"
 #include "media/base/data_buffer.h"
+#include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 #include "remoting/jingle_glue/jingle_client.h"
 
 using remoting::JingleClient;
 using remoting::JingleChannel;
+using remoting::kChromotingTokenServiceName;
 
 void SetConsoleEcho(bool on) {
 #if defined(OS_WIN)
@@ -51,10 +53,10 @@ class JingleTestClient : public JingleChannel::Callback,
  public:
   virtual ~JingleTestClient() {}
 
-  void Run(const std::string& username, const std::string& password,
+  void Run(const std::string& username, const std::string& auth_token,
            const std::string& host_jid) {
     client_ = new JingleClient();
-    client_->Init(username, password, this);
+    client_->Init(username, auth_token, kChromotingTokenServiceName, this);
 
     if (host_jid != "") {
       scoped_refptr<JingleChannel> channel = client_->Connect(host_jid, this);
@@ -144,16 +146,13 @@ int main(int argc, char** argv) {
   std::cout << "JID: ";
   std::cin >> username;
 
-  std::string password;
-  SetConsoleEcho(false);
-  std::cout << "Password: ";
-  std::cin >> password;
-  SetConsoleEcho(true);
-  std::cout << std::endl;
+  std::string auth_token;
+  std::cout << "Auth token: ";
+  std::cin >> auth_token;
 
   JingleTestClient client;
 
-  client.Run(username, password, host_jid);
+  client.Run(username, auth_token, host_jid);
 
   return 0;
 }

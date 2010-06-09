@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/waitable_event.h"
 #include "base/message_loop.h"
+#include "chrome/common/net/notifier/communicator/gaia_token_pre_xmpp_auth.h"
 #include "chrome/common/net/notifier/communicator/xmpp_socket_adapter.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/relay_port_allocator.h"
@@ -18,6 +19,8 @@
 #include "talk/session/tunnel/securetunnelsessionclient.h"
 #endif
 #include "talk/session/tunnel/tunnelsessionclient.h"
+#include "talk/xmpp/prexmppauth.h"
+#include "talk/xmpp/saslcookiemechanism.h"
 
 namespace remoting {
 
@@ -30,22 +33,20 @@ JingleClient::~JingleClient() {
   DCHECK(state_ == CLOSED);
 }
 
-void JingleClient::Init(const std::string& username,
-                        const std::string& password,
-                        Callback* callback) {
+void JingleClient::Init(
+    const std::string& username, const std::string& auth_token,
+    const std::string& auth_token_service, Callback* callback) {
   DCHECK(username != "");
   DCHECK(callback != NULL);
   DCHECK(thread_ == NULL);  // Init() can be called only once.
 
   callback_ = callback;
 
-  username_ = username;
-  password_ = password;
-
   thread_.reset(new JingleThread());
   thread_->Start();
   thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize));
+      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize,
+                                   username, auth_token, auth_token_service));
 }
 
 class JingleClient::ConnectRequest {
@@ -108,27 +109,28 @@ void JingleClient::DoClose() {
   UpdateState(CLOSED);
 }
 
-void JingleClient::DoInitialize() {
-  buzz::Jid login_jid(username_);
-  talk_base::InsecureCryptStringImpl password;
-  password.password() = password_;
+void JingleClient::DoInitialize(const std::string& username,
+                                const std::string& auth_token,
+                                const std::string& auth_token_service) {
+  buzz::Jid login_jid(username);
 
-  buzz::XmppClientSettings xcs;
-  xcs.set_user(login_jid.node());
-  xcs.set_host(login_jid.domain());
-  xcs.set_resource("chromoting");
-  xcs.set_use_tls(true);
-  xcs.set_pass(talk_base::CryptString(password));
-  xcs.set_server(talk_base::SocketAddress("talk.google.com", 5222));
+  buzz::XmppClientSettings settings;
+  settings.set_user(login_jid.node());
+  settings.set_host(login_jid.domain());
+  settings.set_resource("chromoting");
+  settings.set_use_tls(true);
+  settings.set_token_service(auth_token_service);
+  settings.set_auth_cookie(auth_token);
+  settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));
 
   client_ = new buzz::XmppClient(thread_->task_pump());
   client_->SignalStateChange.connect(
       this, &JingleClient::OnConnectionStateChanged);
 
   buzz::AsyncSocket* socket =
-      new notifier::XmppSocketAdapter(xcs, false);
+      new notifier::XmppSocketAdapter(settings, false);
 
-  client_->Connect(xcs, "", socket, NULL);
+  client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
   client_->Start();
 
   network_manager_.reset(new talk_base::NetworkManager());
@@ -222,6 +224,13 @@ void JingleClient::UpdateState(State new_state) {
     if (callback_)
       callback_->OnStateChange(this, new_state);
   }
+}
+
+buzz::PreXmppAuth* JingleClient::CreatePreXmppAuth(
+    const buzz::XmppClientSettings& settings) {
+  buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
+  return new notifier::GaiaTokenPreXmppAuth(jid.Str(), settings.auth_cookie(),
+                                            settings.token_service());
 }
 
 }  // namespace remoting

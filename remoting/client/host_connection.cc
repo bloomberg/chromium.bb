@@ -4,6 +4,8 @@
 
 #include "remoting/client/host_connection.h"
 
+#include "remoting/base/constants.h"
+
 namespace remoting {
 
 HostConnection::HostConnection(ProtocolDecoder* decoder,
@@ -16,10 +18,10 @@ HostConnection::~HostConnection() {
 }
 
 void HostConnection::Connect(const std::string& username,
-                             const std::string& password,
+                             const std::string& auth_token,
                              const std::string& host_jid) {
   jingle_client_ = new JingleClient();
-  jingle_client_->Init(username, password, this);
+  jingle_client_->Init(username, auth_token, kChromotingTokenServiceName, this);
   jingle_channel_ = jingle_client_->Connect(host_jid, this);
 }
 
