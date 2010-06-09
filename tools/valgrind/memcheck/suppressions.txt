@@ -115,6 +115,18 @@
    fun:FcConfigSubstitute
 }
 {
+  bug_46177
+  Memcheck:Leak
+  ...
+  fun:FcCharSetFindLeafCreate
+  fun:FcCharSetAddLeaf
+  fun:FcCharSetOperate
+  fun:FcFontSetSort
+  fun:FcFontSort
+  ...
+  fun:pango_layout_get_pixel_size
+}
+{
    dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
    Memcheck:Value4
    ...
