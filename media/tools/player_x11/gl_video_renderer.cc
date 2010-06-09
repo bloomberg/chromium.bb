@@ -18,8 +18,8 @@ GlVideoRenderer* GlVideoRenderer::instance_ = NULL;
 GlVideoRenderer::GlVideoRenderer(Display* display, Window window)
     : display_(display),
       window_(window),
-      new_frame_(false),
-      gl_context_(NULL) {
+      gl_context_(NULL),
+      glx_thread_message_loop_(NULL) {
 }
 
 GlVideoRenderer::~GlVideoRenderer() {
@@ -263,22 +263,13 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 }
 
 void GlVideoRenderer::OnFrameAvailable() {
-  AutoLock auto_lock(lock_);
-  new_frame_ = true;
+  if (glx_thread_message_loop()) {
+    glx_thread_message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &GlVideoRenderer::Paint));
+  }
 }
 
 void GlVideoRenderer::Paint() {
-  // Use |new_frame_| to prevent overdraw since Paint() is called more
-  // often than needed. It is OK to lock only this flag and we don't
-  // want to lock the whole function because this method takes a long
-  // time to complete.
-  {
-    AutoLock auto_lock(lock_);
-    if (!new_frame_)
-      return;
-    new_frame_ = false;
-  }
-
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
 

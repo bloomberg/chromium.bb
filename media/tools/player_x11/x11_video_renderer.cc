@@ -57,9 +57,9 @@ X11VideoRenderer::X11VideoRenderer(Display* display, Window window)
     : display_(display),
       window_(window),
       image_(NULL),
-      new_frame_(false),
       picture_(0),
-      use_render_(false) {
+      use_render_(false),
+      glx_thread_message_loop_(NULL) {
 }
 
 X11VideoRenderer::~X11VideoRenderer() {
@@ -132,22 +132,13 @@ bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 }
 
 void X11VideoRenderer::OnFrameAvailable() {
-  AutoLock auto_lock(lock_);
-  new_frame_ = true;
+  if (glx_thread_message_loop()) {
+    glx_thread_message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &X11VideoRenderer::Paint));
+  }
 }
 
 void X11VideoRenderer::Paint() {
-  // Use |new_frame_| to prevent overdraw since Paint() is called more
-  // often than needed. It is OK to lock only this flag and we don't
-  // want to lock the whole function because this method takes a long
-  // time to complete.
-  {
-    AutoLock auto_lock(lock_);
-    if (!new_frame_)
-      return;
-    new_frame_ = false;
-  }
-
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
 

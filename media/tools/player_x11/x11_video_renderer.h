@@ -31,6 +31,14 @@ class X11VideoRenderer : public media::VideoRendererBase {
 
   static X11VideoRenderer* instance() { return instance_; }
 
+  void set_glx_thread_message_loop(MessageLoop* message_loop) {
+    glx_thread_message_loop_ = message_loop;
+  }
+
+  MessageLoop* glx_thread_message_loop() {
+    return glx_thread_message_loop_;
+  }
+
  protected:
   // VideoRendererBase implementation.
   virtual bool OnInitialize(media::VideoDecoder* decoder);
@@ -52,16 +60,13 @@ class X11VideoRenderer : public media::VideoRendererBase {
   // Image in heap that contains the RGBA data of the video frame.
   XImage* image_;
 
-  // Protects |new_frame_|.
-  Lock lock_;
-  bool new_frame_;
-
   // Picture represents the paint target. This is a picture located
   // in the server.
   unsigned long picture_;
 
   bool use_render_;
 
+  MessageLoop* glx_thread_message_loop_;
   static X11VideoRenderer* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(X11VideoRenderer);

@@ -23,10 +23,10 @@ GlesVideoRenderer::GlesVideoRenderer(Display* display, Window window)
       egl_destroy_image_khr_(NULL),
       display_(display),
       window_(window),
-      new_frame_(false),
       egl_display_(NULL),
       egl_surface_(NULL),
-      egl_context_(NULL) {
+      egl_context_(NULL),
+      glx_thread_message_loop_(NULL) {
 }
 
 GlesVideoRenderer::~GlesVideoRenderer() {
@@ -149,22 +149,13 @@ bool GlesVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 }
 
 void GlesVideoRenderer::OnFrameAvailable() {
-  AutoLock auto_lock(lock_);
-  new_frame_ = true;
+  if (glx_thread_message_loop()) {
+    glx_thread_message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &GlesVideoRenderer::Paint));
+  }
 }
 
 void GlesVideoRenderer::Paint() {
-  // Use |new_frame_| to prevent overdraw since Paint() is called more
-  // often than needed. It is OK to lock only this flag and we don't
-  // want to lock the whole function because this method takes a long
-  // time to complete.
-  {
-    AutoLock auto_lock(lock_);
-    if (!new_frame_)
-      return;
-    new_frame_ = false;
-  }
-
   // Initialize GLES here to avoid context switching. Some drivers doesn't
   // like switching context between threads.
   static bool initialized = false;

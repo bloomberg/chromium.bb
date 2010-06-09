@@ -123,6 +123,33 @@ void TerminateHandler(int signal) {
   g_running = false;
 }
 
+void PeriodicalUpdate(MessageLoop* message_loop, bool audio_only) {
+  if (!g_running) {
+    message_loop->Quit();
+    return;
+  }
+
+  // Consume all the X events
+  while (XPending(g_display)) {
+    XEvent e;
+    XNextEvent(g_display, &e);
+    if (e.type == Expose) {
+      if (!audio_only) {
+        // Tell the renderer to paint.
+        DCHECK(Renderer::instance());
+        Renderer::instance()->Paint();
+      }
+    } else if (e.type == ButtonPress) {
+      g_running = false;
+      message_loop->Quit();
+      return;
+    }
+  }
+
+  message_loop->PostDelayedTask(FROM_HERE,
+      NewRunnableFunction(PeriodicalUpdate, message_loop, audio_only), 10);
+}
+
 int main(int argc, char** argv) {
   // Read arguments.
   if (argc == 1) {
@@ -164,32 +191,17 @@ int main(int argc, char** argv) {
     // Check if video is present.
     audio_only = !pipeline->IsRendered(media::mime_type::kMajorTypeVideo);
 
-    while (g_running) {
-      if (XPending(g_display)) {
-        XEvent e;
-        XNextEvent(g_display, &e);
-        if (e.type == Expose) {
-          if (!audio_only) {
-            // Tell the renderer to paint.
-            DCHECK(Renderer::instance());
-            Renderer::instance()->Paint();
-          }
-        } else if (e.type == ButtonPress) {
-          // Stop the playback.
-          break;
-        }
-      } else {
-        // If there's no event in the queue, make an expose event.
-        XEvent event;
-        event.type = Expose;
-        XSendEvent(g_display, g_window, true, ExposureMask, &event);
-
-        // TODO(hclam): It is rather arbitrary to sleep for 10ms and wait
-        // for the next event. We should submit an expose event when
-        // a frame is available but not firing an expose event every 10ms.
-        usleep(10000);
-      }
+    MessageLoop message_loop;
+    if (!audio_only) {
+      // Tell the renderer to paint.
+      DCHECK(Renderer::instance());
+      Renderer::instance()->set_glx_thread_message_loop(&message_loop);
     }
+
+    message_loop.PostTask(FROM_HERE,
+        NewRunnableFunction(PeriodicalUpdate, &message_loop, audio_only));
+    message_loop.Run();
+
     pipeline->Stop(NULL);
   } else{
     std::cout << "Pipeline initialization failed..." << std::endl;

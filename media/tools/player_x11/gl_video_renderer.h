@@ -32,6 +32,14 @@ class GlVideoRenderer : public media::VideoRendererBase {
 
   static GlVideoRenderer* instance() { return instance_; }
 
+  void set_glx_thread_message_loop(MessageLoop* message_loop) {
+    glx_thread_message_loop_ = message_loop;
+  }
+
+  MessageLoop* glx_thread_message_loop() {
+    return glx_thread_message_loop_;
+  }
+
  protected:
   // VideoRendererBase implementation.
   virtual bool OnInitialize(media::VideoDecoder* decoder);
@@ -50,16 +58,13 @@ class GlVideoRenderer : public media::VideoRendererBase {
   Display* display_;
   Window window_;
 
-  // Protects |new_frame_|.
-  Lock lock_;
-  bool new_frame_;
-
   // GL context.
   GLXContext gl_context_;
 
   // 3 textures, one for each plane.
   GLuint textures_[3];
 
+  MessageLoop* glx_thread_message_loop_;
   static GlVideoRenderer* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(GlVideoRenderer);
