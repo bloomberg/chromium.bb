@@ -246,6 +246,10 @@ class MenuItemView : public View {
   // Sizes any child views.
   virtual void Layout();
 
+  // Returns the amount of space needed to accomodate the accelerator. The
+  // space needed for the accelerator is NOT included in the preferred width.
+  int GetAcceleratorTextWidth();
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -289,9 +293,15 @@ class MenuItemView : public View {
   // are not rendered.
   void Paint(gfx::Canvas* canvas, bool for_drag);
 
+  // Paints the accelerator.
+  void PaintAccelerator(gfx::Canvas* canvas);
+
   // Destroys the window used to display this menu and recursively destroys
   // the windows used to display all descendants.
   void DestroyAllMenuHosts();
+
+  // Returns the accelerator text.
+  std::wstring GetAcceleratorText();
 
   // Returns the various margins.
   int GetTopMargin();

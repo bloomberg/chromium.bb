@@ -72,9 +72,10 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   SkColor fg_color =
       IsEnabled() ? TextButton::kEnabledColor : TextButton::kDisabledColor;
 #endif
-  int width = this->width() - item_right_margin_ - label_start_;
   const gfx::Font& font = GetChildViewCount() > 0 ?
       MenuConfig::instance().font_with_controls : MenuConfig::instance().font;
+  int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
+  int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   gfx::Rect text_bounds(label_start_, top_margin +
                         (available_height - font.height()) / 2, width,
                         font.height());
@@ -83,6 +84,8 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
                         text_bounds.x(), text_bounds.y(), text_bounds.width(),
                         text_bounds.height(),
                         GetRootMenuItem()->GetDrawStringFlags());
+
+  PaintAccelerator(canvas);
 
   // Render the icon.
   if (icon_.width() > 0) {

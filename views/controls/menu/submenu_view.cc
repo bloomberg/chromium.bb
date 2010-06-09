@@ -5,6 +5,7 @@
 #include "views/controls/menu/submenu_view.h"
 
 #include "gfx/canvas.h"
+#include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_host.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
@@ -26,7 +27,8 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       host_(NULL),
       drop_item_(NULL),
       drop_position_(MenuDelegate::DROP_NONE),
-      scroll_view_container_(NULL) {
+      scroll_view_container_(NULL),
+      max_accelerator_width_(0) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_parent_owned(false);
@@ -91,6 +93,7 @@ gfx::Size SubmenuView::GetPreferredSize() {
   if (GetChildViewCount() == 0)
     return gfx::Size();
 
+  max_accelerator_width_ = 0;
   int max_width = 0;
   int height = 0;
   for (int i = 0; i < GetChildViewCount(); ++i) {
@@ -98,9 +101,19 @@ gfx::Size SubmenuView::GetPreferredSize() {
     gfx::Size child_pref_size = child->GetPreferredSize();
     max_width = std::max(max_width, child_pref_size.width());
     height += child_pref_size.height();
+    if (child->GetID() == MenuItemView::kMenuItemViewID) {
+      MenuItemView* menu = static_cast<MenuItemView*>(child);
+      max_accelerator_width_ =
+          std::max(max_accelerator_width_, menu->GetAcceleratorTextWidth());
+    }
+  }
+  if (max_accelerator_width_ > 0) {
+    max_accelerator_width_ +=
+        MenuConfig::instance().label_to_accelerator_padding;
   }
   gfx::Insets insets = GetInsets();
-  return gfx::Size(max_width + insets.width(), height + insets.height());
+  return gfx::Size(max_width + max_accelerator_width_ + insets.width(),
+                   height + insets.height());
 }
 
 void SubmenuView::DidChangeBounds(const gfx::Rect& previous,

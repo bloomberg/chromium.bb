@@ -125,6 +125,10 @@ class SubmenuView : public View {
   // references to the MenuHost as the MenuHost is about to be deleted.
   void MenuHostDestroyed();
 
+  // Max width of accelerators in child menu items. This doesn't include
+  // children's children, only direct children.
+  int max_accelerator_width() const { return max_accelerator_width_; }
+
   // Padding around the edges of the submenu.
   static const int kSubmenuBorderSize;
 
@@ -158,6 +162,9 @@ class SubmenuView : public View {
 
   // Ancestor of the SubmenuView, lazily created.
   MenuScrollViewContainer* scroll_view_container_;
+
+  // See description above getter.
+  int max_accelerator_width_;
 
   DISALLOW_COPY_AND_ASSIGN(SubmenuView);
 };

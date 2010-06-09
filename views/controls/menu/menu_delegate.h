@@ -55,6 +55,12 @@ class MenuDelegate : Controller {
     return std::wstring();
   }
 
+  // If there is an accelerator for the menu item with id |id| it is set in
+  // |accelerator| and true is returned.
+  virtual bool GetAccelerator(int id, Accelerator* accelerator) {
+    return false;
+  }
+
   // Shows the context menu with the specified id. This is invoked when the
   // user does the appropriate gesture to show a context menu. The id
   // identifies the id of the menu to show the context menu for.

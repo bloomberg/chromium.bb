@@ -6,12 +6,15 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_LINUX)
+#include <gdk/gdk.h>
 #endif
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
 
 namespace views {
@@ -81,7 +84,13 @@ std::wstring Accelerator::GetShortcutText() const {
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
     shortcut += key;
 #elif defined(OS_LINUX)
-    NOTIMPLEMENTED();
+    gchar* name = gdk_keyval_name(gdk_keyval_to_lower(key_code_));
+    if (name) {
+      if (name[0] != 0 && name[1] == 0)
+        shortcut += static_cast<wchar_t>(g_ascii_toupper(name[0]));
+      else
+        shortcut += UTF8ToWide(name);
+    }
 #endif
   } else {
     shortcut = l10n_util::GetString(string_id);

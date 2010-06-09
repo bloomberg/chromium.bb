@@ -20,6 +20,8 @@ namespace views {
 
 class Accelerator : public menus::Accelerator {
  public:
+  Accelerator() : menus::Accelerator() {}
+
   Accelerator(base::KeyboardCode keycode,
               bool shift_pressed, bool ctrl_pressed, bool alt_pressed) {
     key_code_ = keycode;

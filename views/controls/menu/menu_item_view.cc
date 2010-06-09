@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_separator.h"
@@ -24,8 +25,8 @@ namespace {
 
 class EmptyMenuMenuItem : public MenuItemView {
  public:
-  explicit EmptyMenuMenuItem(MenuItemView* parent) :
-      MenuItemView(parent, 0, NORMAL) {
+  explicit EmptyMenuMenuItem(MenuItemView* parent)
+      : MenuItemView(parent, 0, NORMAL) {
     SetTitle(l10n_util::GetString(IDS_APP_MENU_EMPTY_SUBMENU));
     // Set this so that we're not identified as a normal menu item.
     SetID(kEmptyMenuItemViewID);
@@ -312,6 +313,11 @@ void MenuItemView::Layout() {
   }
 }
 
+int MenuItemView::GetAcceleratorTextWidth() {
+  std::wstring text = GetAcceleratorText();
+  return text.empty() ? 0 : MenuConfig::instance().font.GetStringWidth(text);
+}
+
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type) {
@@ -452,6 +458,31 @@ void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
   rect->set_x(MirroredLeftPointForRect(*rect));
 }
 
+void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
+  std::wstring accel_text = GetAcceleratorText();
+  if (accel_text.empty())
+    return;
+
+  const gfx::Font& font = MenuConfig::instance().font;
+  int available_height = height() - GetTopMargin() - GetBottomMargin();
+  int max_accel_width =
+      parent_menu_item_->GetSubmenu()->max_accelerator_width();
+  gfx::Rect accel_bounds(width() - item_right_margin_ - max_accel_width,
+                         GetTopMargin(), max_accel_width, available_height);
+  accel_bounds.set_x(MirroredLeftPointForRect(accel_bounds));
+  int flags = GetRootMenuItem()->GetDrawStringFlags() |
+      gfx::Canvas::TEXT_VALIGN_MIDDLE;
+  flags &= ~(gfx::Canvas::TEXT_ALIGN_RIGHT | gfx::Canvas::TEXT_ALIGN_LEFT);
+  if (base::i18n::IsRTL())
+    flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
+  else
+    flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
+  canvas->DrawStringInt(
+      accel_text, font, TextButton::kDisabledColor, accel_bounds.x(),
+      accel_bounds.y(), accel_bounds.width(), accel_bounds.height(),
+      flags);
+}
+
 void MenuItemView::DestroyAllMenuHosts() {
   if (!HasSubmenu())
     return;
@@ -489,6 +520,13 @@ int MenuItemView::GetChildPreferredWidth() {
     width += GetChildViewAt(i)->GetPreferredSize().width();
   }
   return width;
+}
+
+std::wstring MenuItemView::GetAcceleratorText() {
+  Accelerator accelerator;
+  return (GetDelegate() &&
+          GetDelegate()->GetAccelerator(GetCommand(), &accelerator)) ?
+      accelerator.GetShortcutText() : std::wstring();
 }
 
 }  // namespace views
