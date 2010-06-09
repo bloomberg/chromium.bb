@@ -12,28 +12,33 @@
 
 class OptionsLayoutBuilderGtk {
  public:
-  explicit OptionsLayoutBuilderGtk();
-
   GtkWidget* get_page_widget() {
     return page_;
   }
 
-  // Adds an option group to the table.  Handles layout and labels the group
-  // with the given title.  If expandable is true, the content widget will be
-  // allowed to expand and fill any extra space when the dialog is resized.
-  void AddOptionGroup(const std::string& title, GtkWidget* content,
-                      bool expandable);
+  // Adds an option group to the table.  Handles layout and the placing of
+  // separators between groups.  If expandable is true, the content widget will
+  // be allowed to expand and fill any extra space when the dialog is resized.
+  virtual void AddOptionGroup(const std::string& title, GtkWidget* content,
+                              bool expandable) = 0;
 
   // Adds a widget without title or special layout.  If expandable is true, the
   // content widget will be allowed to expand and fill any extra space when the
   // dialog is resized.
-  void AddWidget(GtkWidget* content, bool expandable);
+  virtual void AddWidget(GtkWidget* content, bool expandable) = 0;
 
- private:
+  // Creates a default option layout builder. The default layout builder
+  // follows the GNOME HIG.
+  static OptionsLayoutBuilderGtk* Create();
+
+  // Creates a compact option layout builder, if the screen is compact.
+  // Otherwise, creates a default one.
+  static OptionsLayoutBuilderGtk* CreateOptionallyCompactLayout();
+
+ protected:
   // The parent widget
   GtkWidget* page_;
 
-  DISALLOW_COPY_AND_ASSIGN(OptionsLayoutBuilderGtk);
 };
 
 #endif  // CHROME_BROWSER_GTK_OPTIONS_OPTIONS_LAYOUT_GTK_H_

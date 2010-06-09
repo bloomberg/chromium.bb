@@ -43,8 +43,8 @@ FontsPageGtk::~FontsPageGtk() {
 }
 
 void FontsPageGtk::Init() {
-  OptionsLayoutBuilderGtk options_builder;
-
+  scoped_ptr<OptionsLayoutBuilderGtk>
+    options_builder(OptionsLayoutBuilderGtk::Create());
   serif_font_button_ = gtk_font_button_new();
   gtk_font_button_set_use_font(GTK_FONT_BUTTON(serif_font_button_), TRUE);
   gtk_font_button_set_use_size(GTK_FONT_BUTTON(serif_font_button_), TRUE);
@@ -75,7 +75,7 @@ void FontsPageGtk::Init() {
       fixed_font_button_,
       NULL);
 
-  options_builder.AddOptionGroup(l10n_util::GetStringUTF8(
+  options_builder->AddOptionGroup(l10n_util::GetStringUTF8(
         IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE),
       font_controls, false);
 
@@ -86,11 +86,11 @@ void FontsPageGtk::Init() {
       encoding_group_description.c_str(),
       default_encoding_combobox_,
       NULL);
-  options_builder.AddOptionGroup(l10n_util::GetStringUTF8(
+  options_builder->AddOptionGroup(l10n_util::GetStringUTF8(
         IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE),
       encoding_controls, false);
 
-  page_ = options_builder.get_page_widget();
+  page_ = options_builder->get_page_widget();
 
   serif_name_.Init(prefs::kWebKitSerifFontFamily, profile()->GetPrefs(), this);
   sans_serif_name_.Init(prefs::kWebKitSansSerifFontFamily,

@@ -87,27 +87,28 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
   }
 
   // Prepare the group options layout.
-  OptionsLayoutBuilderGtk options_builder;
+  scoped_ptr<OptionsLayoutBuilderGtk>
+    options_builder(OptionsLayoutBuilderGtk::CreateOptionallyCompactLayout());
   if (sync_service_) {
-    options_builder.AddOptionGroup(
+    options_builder->AddOptionGroup(
         l10n_util::GetStringUTF8(IDS_SYNC_OPTIONS_GROUP_NAME),
         InitSyncGroup(), false);
     UpdateSyncControls();
   }
 
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_GROUP_NAME),
       InitPasswordSavingGroup(), false);
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME),
       InitFormAutoFillGroup(), false);
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),
       InitBrowsingDataGroup(), false);
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_APPEARANCE_GROUP_NAME),
       InitThemesGroup(), false);
-  page_ = options_builder.get_page_widget();
+  page_ = options_builder->get_page_widget();
 
   // Add preferences observers.
   ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,

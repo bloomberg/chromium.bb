@@ -1193,37 +1193,38 @@ AdvancedContentsGtk::~AdvancedContentsGtk() {
 }
 
 void AdvancedContentsGtk::Init() {
-  OptionsLayoutBuilderGtk options_builder;
+  scoped_ptr<OptionsLayoutBuilderGtk>
+    options_builder(OptionsLayoutBuilderGtk::Create());
 
   privacy_section_.reset(new PrivacySection(profile_));
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY),
       privacy_section_->get_page_widget(), false);
 
   network_section_.reset(new NetworkSection(profile_));
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK),
       network_section_->get_page_widget(), false);
 
   translate_section_.reset(new TranslateSection(profile_));
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE),
       translate_section_->get_page_widget(), false);
 
   download_section_.reset(new DownloadSection(profile_));
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME),
       download_section_->get_page_widget(), false);
 
   web_content_section_.reset(new WebContentSection(profile_));
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT),
       web_content_section_->get_page_widget(), false);
 
   security_section_.reset(new SecuritySection(profile_));
-  options_builder.AddOptionGroup(
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY),
       security_section_->get_page_widget(), false);
 
-  page_ = options_builder.get_page_widget();
+  page_ = options_builder->get_page_widget();
 }

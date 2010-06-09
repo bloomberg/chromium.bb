@@ -33,11 +33,12 @@ GtkWidget* WrapInHBox(GtkWidget* widget) {
 CookieFilterPageGtk::CookieFilterPageGtk(Profile* profile)
     : OptionsPageBase(profile),
       initializing_(true) {
-  OptionsLayoutBuilderGtk options_builder;
-  options_builder.AddOptionGroup(
+  scoped_ptr<OptionsLayoutBuilderGtk>
+    options_builder(OptionsLayoutBuilderGtk::Create());
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_MODIFY_COOKIE_STORING_LABEL),
       InitCookieStoringGroup(), true);
-  page_ = options_builder.get_page_widget();
+  page_ = options_builder->get_page_widget();
 
   clear_site_data_on_exit_.Init(prefs::kClearSiteDataOnExit,
                                 profile->GetPrefs(), NULL);

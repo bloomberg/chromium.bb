@@ -35,11 +35,13 @@ ContentFilterPageGtk::ContentFilterPageGtk(Profile* profile,
   };
   COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kTitleIDs_IncorrectSize);
-  OptionsLayoutBuilderGtk options_builder;
-  options_builder.AddOptionGroup(
+
+  scoped_ptr<OptionsLayoutBuilderGtk>
+    options_builder(OptionsLayoutBuilderGtk::Create());
+  options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(kTitleIDs[content_type_]),
       InitGroup(), true);
-  page_ = options_builder.get_page_widget();
+  page_ = options_builder->get_page_widget();
 }
 
 ContentFilterPageGtk::~ContentFilterPageGtk() {
