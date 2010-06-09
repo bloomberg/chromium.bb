@@ -987,6 +987,8 @@ class NotificationType {
     // are a ChromeCookieDetails object.
     COOKIE_CHANGED,
 
+    // Misc --------------------------------------------------------------------
+
 #if defined(OS_CHROMEOS)
     // Sent when a chromium os user logs in.
     LOGIN_USER_CHANGED,
@@ -1015,6 +1017,11 @@ class NotificationType {
     // tests that the context menu has been created and shown.
     BOOKMARK_CONTEXT_MENU_SHOWN,
 #endif
+
+    // Sent when the zoom level changes. The source is the profile, details the
+    // host as a std::string (see HostZoomMap::GetZoomLevel for details on the
+    // host as it not always just the host).
+    ZOOM_LEVEL_CHANGED,
 
     // Password Store ----------------------------------------------------------
     // This notification is sent whenenever login entries stored in the password

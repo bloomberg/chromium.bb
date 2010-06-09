@@ -10,6 +10,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/scoped_pref_update.h"
 #include "chrome/common/notification_details.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -77,6 +78,11 @@ void HostZoomMap::SetZoomLevel(const GURL& url, int level) {
     else
       host_zoom_levels_[host] = level;
   }
+
+  Details<std::string> details(&host);
+  NotificationService::current()->Notify(NotificationType::ZOOM_LEVEL_CHANGED,
+                                         Source<Profile>(profile_),
+                                         details);
 
   // If we're in incognito mode, don't persist changes to the prefs.  We'll keep
   // them in memory only so they will be forgotten on exiting incognito.
