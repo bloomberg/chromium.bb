@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 #include <vector>
+
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
@@ -26,7 +28,7 @@ class Profile;
 // A window controller for managing the autofill options dialog.
 // Application modally presents a dialog allowing the user to store
 // personal address and credit card information.
-@interface AutoFillDialogController : NSWindowController {
+@interface AutoFillDialogController : NSWindowController <NSTableViewDelegate> {
  @private
   // Outlet to the main NSTableView object listing both addresses and credit
   // cards with section headers for both.
