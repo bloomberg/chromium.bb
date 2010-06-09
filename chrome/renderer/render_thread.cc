@@ -904,7 +904,6 @@ void RenderThread::IdleHandler() {
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 
-  LOG(INFO) << "RenderThread calling v8 IdleNotification for " << this;
   v8::V8::IdleNotification();
 
   // Schedule next invocation.
