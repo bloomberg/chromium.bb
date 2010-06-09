@@ -35,26 +35,33 @@ void AlternateNavURLFetcher::Observe(NotificationType type,
                                      const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::NAV_ENTRY_PENDING:
-      controller_ = Source<NavigationController>(source).ptr();
-      DCHECK(controller_->pending_entry());
+      // If we've already received a notification for the same controller, we
+      // should delete ourselves as that indicates that the page is being
+      // re-loaded so this instance is now stale.
+      // http://crbug.com/43378
+      if (!infobar_contents_ &&
+          controller_ == Source<NavigationController>(source).ptr()) {
+        delete this;
+      } else if (!controller_) {
+        controller_ = Source<NavigationController>(source).ptr();
+        DCHECK(controller_->pending_entry());
 
-      // Unregister for this notification now that we're pending, and start
-      // listening for the corresponding commit. We also need to listen for the
-      // tab close command since that means the load will never commit!
-      registrar_.Remove(this, NotificationType::NAV_ENTRY_PENDING,
-                        NotificationService::AllSources());
-      registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                     Source<NavigationController>(controller_));
-      registrar_.Add(this, NotificationType::TAB_CLOSED,
-                     Source<NavigationController>(controller_));
+        // Start listening for the commit notification. We also need to listen
+        // for the tab close command since that means the load will never
+        // commit!
+        registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                       Source<NavigationController>(controller_));
+        registrar_.Add(this, NotificationType::TAB_CLOSED,
+                       Source<NavigationController>(controller_));
 
-      DCHECK_EQ(NOT_STARTED, state_);
-      state_ = IN_PROGRESS;
-      fetcher_.reset(new URLFetcher(GURL(alternate_nav_url_), URLFetcher::HEAD,
-                                    this));
-      fetcher_->set_request_context(
-          controller_->profile()->GetRequestContext());
-      fetcher_->Start();
+        DCHECK_EQ(NOT_STARTED, state_);
+        state_ = IN_PROGRESS;
+        fetcher_.reset(new URLFetcher(GURL(alternate_nav_url_),
+                                      URLFetcher::HEAD, this));
+        fetcher_->set_request_context(
+            controller_->profile()->GetRequestContext());
+        fetcher_->Start();
+      }
       break;
 
     case NotificationType::NAV_ENTRY_COMMITTED:
