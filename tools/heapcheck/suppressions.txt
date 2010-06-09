@@ -155,7 +155,7 @@
    ...
    fun:IPC::ChannelProxy::Context::OnChannelError
    fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
-   fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
+   ...
    fun:base::MessagePumpLibevent::OnLibeventNotification
    fun:event_process_active
    fun:event_base_loop
