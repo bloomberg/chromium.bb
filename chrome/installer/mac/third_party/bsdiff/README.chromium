@@ -1,0 +1,14 @@
+Name: BSDiff
+URL: http://www.daemonology.net/bsdiff/
+Source URL: http://www.daemonology.net/bsdiff/bsdiff-4.3.tar.gz
+Version: 4.3
+License: BSD
+License File: LICENSE
+
+Description:
+Binary diff/patch utility. There are other copies of BSDiff in the Chromium
+repository, but they're all different. The other copies are based on Mozilla's
+fork of BSDiff, which serves a different set of needs.
+
+Local Modifications:
+ - Added LICENSE file by copying the license block from bsdiff.c and bspatch.c.
