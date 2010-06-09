@@ -44,6 +44,8 @@ bool GlesVideoRenderer::IsMediaFormatSupported(
 void GlesVideoRenderer::OnStop() {
   // TODO(hclam): Context switching seems to be broek so the following
   // calls may fail. Need to fix them.
+  eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
+                 EGL_NO_SURFACE, EGL_NO_CONTEXT);
   for (size_t i = 0; i < egl_frames_.size(); ++i) {
     scoped_refptr<media::VideoFrame> frame = egl_frames_[i].first;
     if (frame->private_buffer())
@@ -52,8 +54,6 @@ void GlesVideoRenderer::OnStop() {
       glDeleteTextures(1, &egl_frames_[i].second);
   }
   egl_frames_.clear();
-  eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
-                 EGL_NO_SURFACE, EGL_NO_CONTEXT);
   eglDestroyContext(egl_display_, egl_context_);
   eglDestroySurface(egl_display_, egl_surface_);
 }
@@ -175,12 +175,14 @@ void GlesVideoRenderer::Paint() {
 
   if (uses_egl_image_) {
     if (media::VideoFrame::TYPE_EGL_IMAGE == video_frame->type()) {
-      glActiveTexture(GL_TEXTURE0);
-      EGLImageKHR egl_image =
-          reinterpret_cast<EGLImageKHR>(video_frame->private_buffer());
-      gl_eglimage_target_texture2d_oes_(GL_TEXTURE_2D, egl_image);
-      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-      eglSwapBuffers(egl_display_, egl_surface_);
+
+      GLuint texture = FindTexture(video_frame);
+      if (texture) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        eglSwapBuffers(egl_display_, egl_surface_);
+      }
     }
     return;
   }
@@ -231,6 +233,17 @@ void GlesVideoRenderer::Paint() {
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   eglSwapBuffers(egl_display_, egl_surface_);
+}
+
+// find if texture exists corresponding to video_frame
+GLuint GlesVideoRenderer::FindTexture(
+    scoped_refptr<media::VideoFrame> video_frame) {
+  for (size_t i = 0; i < egl_frames_.size(); ++i) {
+    scoped_refptr<media::VideoFrame> frame = egl_frames_[i].first;
+    if (video_frame->private_buffer() == frame->private_buffer())
+      return egl_frames_[i].second;
+  }
+  return NULL;
 }
 
 bool GlesVideoRenderer::InitializeGles() {
@@ -373,24 +386,12 @@ void GlesVideoRenderer::LinkProgram(GLuint program) {
 }
 
 void GlesVideoRenderer::CreateTextureAndProgramEgl() {
-  if (!egl_create_image_khr_) {
+  if (!egl_create_image_khr_)
     egl_create_image_khr_ = reinterpret_cast<PFNEGLCREATEIMAGEKHRPROC>
                             (eglGetProcAddress("eglCreateImageKHR"));
-    CHECK(egl_create_image_khr_);
-  }
-  if (!egl_destroy_image_khr_) {
+  if (!egl_destroy_image_khr_)
     egl_destroy_image_khr_ = reinterpret_cast<PFNEGLDESTROYIMAGEKHRPROC>
                              (eglGetProcAddress("eglDestroyImageKHR"));
-    CHECK(egl_destroy_image_khr_);
-  }
-
-  if (!gl_eglimage_target_texture2d_oes_) {
-    gl_eglimage_target_texture2d_oes_ =
-        reinterpret_cast<PFNGLEGLIMAGETARGETTEXTURE2DOESPROC>
-            (eglGetProcAddress("glEGLImageTargetTexture2DOES"));
-    CHECK(gl_eglimage_target_texture2d_oes_);
-  }
-
   // TODO(wjia): get count from decoder.
   for (int i = 0; i < 4; i++) {
     GLuint texture;
