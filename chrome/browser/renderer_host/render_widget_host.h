@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_H_
 
 #include <deque>
+#include <string>
+#include <vector>
 
 #include "app/surface/transport_dib.h"
 #include "base/gtest_prod_util.h"
@@ -370,6 +372,14 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Requests a snapshot of an accessible DOM tree from the renderer.
   void RequestAccessibilityTree();
 
+  // Aid for determining when an accessibility tree request can be made. Set by
+  // TabContents to true on document load and to false on page nativigation.
+  void SetDocumentLoaded(bool document_loaded);
+
+  // Enable renderer accessibility. This should only be called when a
+  // screenreader is detected.
+  void EnableRendererAccessibility();
+
   // Relays a request from assistive technology to set focus to the
   // node with this accessibility object id.
   void SetAccessibilityFocus(int acc_obj_id);
@@ -530,6 +540,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // input messages to be coalesced.
   void ProcessWheelAck();
 
+  // True if renderer accessibility is enabled. This should only be set when a
+  // screenreader is detected as it can potentially slow down Chrome.
+  static bool renderer_accessible_;
+
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
@@ -666,6 +680,14 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
+
+  // Keep track of if we have a loaded document so that we can request an
+  // accessibility tree on demand when renderer accessibility is enabled.
+  bool document_loaded_;
+
+  // Keep track of if we've already requested the accessibility tree so
+  // we don't do it more than once.
+  bool requested_accessibility_tree_;
 
   // Optional video YUV layer for used for out-of-process compositing.
   scoped_ptr<VideoLayer> video_layer_;

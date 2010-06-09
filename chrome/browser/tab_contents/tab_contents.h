@@ -1282,15 +1282,6 @@ class TabContents : public PageNavigator,
   // Manages information about Geolocation API usage in this page.
   GeolocationSettingsState geolocation_settings_state_;
 
-  // Whether the renderer is made accessible.
-  // TODO(dmazzoni): http://crbug.com/25564 This is a temporary work-around
-  // until that bug is fixed.
-  bool renderer_accessible_;
-
-  // Keep track of if we've already requested the accessibility tree so
-  // we don't do it more than once.
-  bool requested_accessibility_tree_;
-
   // See description above setter.
   bool closed_by_user_gesture_;
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/video_layer.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/glue/webcursor.h"
@@ -57,6 +59,9 @@ static const int kHungRendererDelayMs = 20000;
 // smoothness of scrolling with a risk of falling behind the events, resulting
 // in trailing scrolls after the user ends their input.
 static const int kMaxTimeBetweenWheelMessagesMs = 250;
+
+// static
+bool RenderWidgetHost::renderer_accessible_ = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHost
@@ -1109,6 +1114,35 @@ void RenderWidgetHost::AdvanceToNextMisspelling() {
 
 void RenderWidgetHost::RequestAccessibilityTree() {
   Send(new ViewMsg_GetAccessibilityTree(routing_id()));
+}
+
+void RenderWidgetHost::SetDocumentLoaded(bool document_loaded) {
+  document_loaded_ = document_loaded;
+
+  if (!document_loaded_)
+    requested_accessibility_tree_ = false;
+
+  if (renderer_accessible_ && document_loaded_) {
+    RequestAccessibilityTree();
+    requested_accessibility_tree_ = true;
+  }
+}
+
+void RenderWidgetHost::EnableRendererAccessibility() {
+  if (renderer_accessible_)
+    return;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
+    return;
+  }
+
+  renderer_accessible_ = true;
+
+  if (document_loaded_ && !requested_accessibility_tree_) {
+    RequestAccessibilityTree();
+    requested_accessibility_tree_ = true;
+  }
 }
 
 void RenderWidgetHost::SetAccessibilityFocus(int acc_obj_id) {
