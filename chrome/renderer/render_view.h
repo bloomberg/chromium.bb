@@ -432,9 +432,6 @@ class RenderView : public RenderWidget,
       std::string* json_retval);
   virtual WebKit::WebCookieJar* GetCookieJar();
 
-  // Do not delete directly.  This class is reference counted.
-  virtual ~RenderView();
-
   // Called when a plugin has crashed.
   void PluginCrashed(const FilePath& plugin_path);
 
@@ -585,6 +582,9 @@ class RenderView : public RenderWidget,
   explicit RenderView(RenderThreadBase* render_thread,
                       const WebPreferences& webkit_preferences,
                       int64 session_storage_namespace_id);
+
+  // Do not delete directly.  This class is reference counted.
+  virtual ~RenderView();
 
   // Initializes this view with the given parent and ID. The |routing_id| can be
   // set to 'MSG_ROUTING_NONE' if the true ID is not yet known. In this case,
