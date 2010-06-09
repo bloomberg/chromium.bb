@@ -342,7 +342,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
-          new GeolocationDispatcherHost(
+          GeolocationDispatcherHost::New(
               this->id(), profile->GetGeolocationPermissionContext()))) {
   DCHECK(request_context_);
   DCHECK(media_request_context_);
