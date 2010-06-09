@@ -40,3 +40,6 @@ fun_r:*SensitiveAllocator*free*
 # TODO(glider): replace all the CoreFoundation suppressions with ignores.
 fun_r:CFBag*
 fun_r:CFDictionary*
+
+# see crbug.com/46138
+fun_r:__CFRunLoopDeallocate
