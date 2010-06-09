@@ -50,6 +50,7 @@ void OpenItem(const FilePath& full_path) {
       ext == ".jpeg" ||
       ext == ".png" ||
       ext == ".gif" ||
+      ext == ".txt" ||
       ext == ".html" ||
       ext == ".htm") {
     std::string path;
@@ -69,6 +70,7 @@ void OpenItem(const FilePath& full_path) {
     return;
   }
   if (ext == ".avi" ||
+      ext == ".wav" ||
       ext == ".mp4" ||
       ext == ".mp3" ||
       ext == ".mkv" ||

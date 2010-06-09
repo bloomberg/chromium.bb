@@ -7,7 +7,7 @@ function pathIsVideoFile(path) {
 }
 
 function pathIsAudioFile(path) {
-  return /\.(mp3|m4a)$/i.test(path);
+  return /\.(mp3|m4a|wav)$/i.test(path);
 }
 
 function pathIsImageFile(path) {
@@ -15,5 +15,5 @@ function pathIsImageFile(path) {
 }
 
 function pathIsHtmlFile(path) {
-  return /\.(htm|html)$/i.test(path);
+  return /\.(htm|html|txt)$/i.test(path);
 }
