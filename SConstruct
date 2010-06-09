@@ -937,14 +937,15 @@ base_env.Append(
 # TODO(adonovan): re-enable this and test it once the build is fixed.
 # CheckPlatformPreconditions()
 
-if base_env['TARGET_ARCHITECTURE'] == 'arm':
+# The ARM validator can be built for any target that doesn't use ELFCLASS64.
+if not (base_env['TARGET_ARCHITECTURE'] == 'x86' and
+        base_env['TARGET_SUBARCH'] == '64'):
   base_env.Append(
       BUILD_SCONSCRIPTS = [
         'src/trusted/validator_arm/v2/build.scons',
       ])
-elif base_env['TARGET_ARCHITECTURE'] == 'x86':
-  pass
-else:
+
+if base_env['TARGET_ARCHITECTURE'] not in ('arm', 'x86'):
   Banner("unknown TARGET_ARCHITECTURE %s" % base_env['TARGET_ARCHITECTURE'])
 
 
