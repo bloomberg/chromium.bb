@@ -12,6 +12,7 @@
 #include "chrome/common/net/notifier/communicator/connection_options.h"
 #include "chrome/common/net/notifier/communicator/connection_settings.h"
 #include "chrome/common/net/notifier/communicator/const_communicator.h"
+#include "chrome/common/net/notifier/communicator/gaia_token_pre_xmpp_auth.h"
 #include "chrome/common/net/notifier/communicator/login_failure.h"
 #include "chrome/common/net/notifier/communicator/login_settings.h"
 #include "chrome/common/net/notifier/communicator/product_info.h"
@@ -23,8 +24,6 @@
 #include "talk/base/taskrunner.h"
 #include "talk/base/win32socketinit.h"
 #include "talk/xmllite/xmlelement.h"
-#include "talk/xmpp/prexmppauth.h"
-#include "talk/xmpp/saslcookiemechanism.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "talk/xmpp/constants.h"
@@ -51,91 +50,6 @@ static void GetClientErrorInformation(
     }
   }
 }
-
-namespace {
-
-const char kGaiaAuthMechanism[] = "X-GOOGLE-TOKEN";
-
-// This class looks for the X-GOOGLE-TOKEN auth mechanism and uses
-// that instead of the default auth mechanism (PLAIN).
-class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
- public:
-  GaiaTokenPreXmppAuth(
-      const std::string& username,
-      const std::string& token,
-      const std::string& token_service)
-      : username_(username),
-        token_(token),
-        token_service_(token_service) {}
-
-  virtual ~GaiaTokenPreXmppAuth() {}
-
-  // buzz::PreXmppAuth (-buzz::SaslHandler) implementation.  We stub
-  // all the methods out as we don't actually do any authentication at
-  // this point.
-
-  virtual void StartPreXmppAuth(
-      const buzz::Jid& jid,
-      const talk_base::SocketAddress& server,
-      const talk_base::CryptString& pass,
-      const std::string& auth_cookie) {
-    SignalAuthDone();
-  }
-
-  virtual bool IsAuthDone() const { return true; }
-
-  virtual bool IsAuthorized() const { return true; }
-
-  virtual bool HadError() const { return false; }
-
-  virtual int GetError() const { return 0; }
-
-  virtual buzz::CaptchaChallenge GetCaptchaChallenge() const {
-    return buzz::CaptchaChallenge();
-  }
-
-  virtual std::string GetAuthCookie() const { return std::string(); }
-
-  // buzz::SaslHandler implementation.
-
-  virtual std::string ChooseBestSaslMechanism(
-      const std::vector<std::string> & mechanisms, bool encrypted) {
-    return (std::find(mechanisms.begin(),
-                      mechanisms.end(), kGaiaAuthMechanism) !=
-            mechanisms.end()) ? kGaiaAuthMechanism : "";
-  }
-
-  virtual buzz::SaslMechanism* CreateSaslMechanism(
-      const std::string& mechanism) {
-    return
-        (mechanism == kGaiaAuthMechanism) ?
-        new buzz::SaslCookieMechanism(
-            kGaiaAuthMechanism, username_, token_, token_service_)
-        : NULL;
-  }
-
-  // TODO(akalin): remove this code.
-  virtual bool GetTlsServerInfo(const talk_base::SocketAddress& server,
-                                std::string* tls_server_hostname,
-                                std::string* tls_server_domain) const {
-    std::string server_ip = server.IPAsString();
-    if ((server_ip == buzz::STR_TALK_GOOGLE_COM) ||
-        (server_ip == buzz::STR_TALKX_L_GOOGLE_COM)) {
-      // For Gaia auth, the talk.google.com server expects you to use
-      // "gmail.com" in the stream, and expects the domain certificate
-      // to be "gmail.com" as well.
-      *tls_server_hostname = buzz::STR_GMAIL_COM;
-      *tls_server_domain = buzz::STR_GMAIL_COM;
-      return true;
-    }
-    return false;
-  }
-
- private:
-  std::string username_, token_, token_service_;
-};
-
-}  // namespace
 
 SingleLoginAttempt::SingleLoginAttempt(talk_base::TaskParent* parent,
                                        LoginSettings* login_settings,

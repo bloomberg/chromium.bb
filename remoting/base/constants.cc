@@ -8,4 +8,7 @@ namespace remoting {
 
 const std::string kChromotingBotJid("chromoting@bot.talk.google.com");
 
+// TODO(sergeyu): Use chromoting's own service name here instead of sync.
+const std::string kChromotingTokenServiceName("chromiumsync");
+
 }  // namespace remoting
