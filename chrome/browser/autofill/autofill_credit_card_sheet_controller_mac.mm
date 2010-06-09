@@ -66,7 +66,7 @@
   [expirationYearPopup_ setAutoenablesItems:NO];
 
   // Set the caption based on the mode.
-  NSString* caption;
+  NSString* caption = @"";
   if (mode_ == kAutoFillCreditCardAddMode)
     caption = l10n_util::GetNSString(IDS_AUTOFILL_ADD_CREDITCARD_CAPTION);
   else if (mode_ == kAutoFillCreditCardEditMode)

@@ -38,7 +38,7 @@
 }
 
 - (void)awakeFromNib {
-  NSString* caption;
+  NSString* caption = @"";
   if (mode_ == kAutoFillAddressAddMode)
     caption = l10n_util::GetNSString(IDS_AUTOFILL_ADD_ADDRESS_CAPTION);
   else if (mode_ == kAutoFillAddressEditMode)
