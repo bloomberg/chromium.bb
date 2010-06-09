@@ -65,8 +65,8 @@ class ScreenLocker : public LoginStatusConsumer,
   // Exit the chrome, which will sign out the current session.
   void Signout();
 
-  // Called when the screen locker is ready.
-  void ScreenLockReady();
+  // Called when the all inputs are grabbed.
+  void OnGrabInputs();
 
   // Returns the user to authenticate.
   const UserManager::User& user() const {
@@ -99,6 +99,12 @@ class ScreenLocker : public LoginStatusConsumer,
   // Sets the authenticator.
   void SetAuthenticator(Authenticator* authenticator);
 
+  // Called when the screen lock is ready.
+  void ScreenLockReady();
+
+  // Event handler for map-event.
+  CHROMEGTK_CALLBACK_1(ScreenLocker, void, OnMap, GdkEvent*);
+
   // The screen locker window.
   views::WidgetGtk* lock_window_;
 
@@ -122,6 +128,12 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // An info bubble to display login failure message.
   MessageBubble* error_info_;
+
+  // True if the screen locker's window is mapped.
+  bool mapped_;
+
+  // True if both mouse input and keyboard input are grabbed.
+  bool input_grabbed_;
 
   // Reference to the single instance of the screen locker object.
   // This is used to make sure there is only one screen locker instance.

@@ -131,7 +131,6 @@ class GrabWidget : public views::WidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(GrabWidget);
 };
 
-
 void GrabWidget::TryGrabAllInputs() {
   if (kbd_grab_status_ != GDK_GRAB_SUCCESS)
     kbd_grab_status_ = gdk_keyboard_grab(window_contents()->window, FALSE,
@@ -162,7 +161,7 @@ void GrabWidget::TryGrabAllInputs() {
     CHECK_EQ(GDK_GRAB_SUCCESS, mouse_grab_status_)
         << "Failed to grab pointer input:" << mouse_grab_status_;
     DLOG(INFO) << "Grab Success";
-    screen_locker_->ScreenLockReady();
+    screen_locker_->OnGrabInputs();
   }
 }
 
@@ -231,24 +230,19 @@ class MouseEventRelay : public MessageLoopForUI::Observer {
 
 namespace chromeos {
 
+////////////////////////////////////////////////////////////////////////////////
+// ScreenLocker, public:
+
 ScreenLocker::ScreenLocker(const UserManager::User& user)
     : lock_window_(NULL),
       lock_widget_(NULL),
       screen_lock_view_(NULL),
       user_(user),
-      error_info_(NULL) {
+      error_info_(NULL),
+      mapped_(false),
+      input_grabbed_(false) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
-}
-
-ScreenLocker::~ScreenLocker() {
-  ClearErrors();
-  DCHECK(lock_window_);
-  lock_window_->Close();
-  // lock_widget_ will be deleted by gtk's destroy signal.
-  screen_locker_ = NULL;
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
 }
 
 void ScreenLocker::Init(const gfx::Rect& bounds) {
@@ -256,6 +250,10 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
   views::View* screen = new BackgroundView();
   lock_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
   lock_window_->Init(NULL, bounds);
+  g_signal_connect(lock_window_->GetNativeView(),
+                   "map-event",
+                   G_CALLBACK(&OnMapThunk),
+                   this);
   DCHECK(GTK_WIDGET_REALIZED(lock_window_->GetNativeView()));
   WmIpc::instance()->SetWindowType(
       lock_window_->GetNativeView(),
@@ -263,7 +261,6 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
       NULL);
   lock_window_->SetContentsView(screen);
   lock_window_->Show();
-
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   screen_lock_view_ = new ScreenLockView(this);
   screen_lock_view_->Init();
@@ -280,10 +277,6 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
   lock_widget_->SetContentsView(screen_lock_view_);
   lock_widget_->GetRootView()->SetVisible(false);
   lock_widget_->Show();
-}
-
-void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
-  authenticator_ = authenticator;
 }
 
 void ScreenLocker::OnLoginFailure(const std::string& error) {
@@ -370,12 +363,11 @@ void ScreenLocker::Signout() {
   }
 }
 
-void ScreenLocker::ScreenLockReady() {
-  // Don't show the password field until we grab all inputs.
-  lock_widget_->GetRootView()->SetVisible(true);
-  EnableInput();
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
+void ScreenLocker::OnGrabInputs() {
+  DLOG(INFO) << "OnGrabInputs";
+  input_grabbed_ = true;
+  if (mapped_)
+    ScreenLockReady();
 }
 
 // static
@@ -419,6 +411,39 @@ void ScreenLocker::UnlockScreenFailed() {
 // static
 void ScreenLocker::InitClass() {
   Singleton<ScreenLockObserver>::get();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ScreenLocker, private:
+
+ScreenLocker::~ScreenLocker() {
+  ClearErrors();
+  DCHECK(lock_window_);
+  lock_window_->Close();
+  // lock_widget_ will be deleted by gtk's destroy signal.
+  screen_locker_ = NULL;
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
+}
+
+void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
+  authenticator_ = authenticator;
+}
+
+void ScreenLocker::ScreenLockReady() {
+  DLOG(INFO) << "ScreenLockReady";
+  // Don't show the password field until we grab all inputs.
+  lock_widget_->GetRootView()->SetVisible(true);
+  EnableInput();
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
+}
+
+void ScreenLocker::OnMap(GtkWidget* widget, GdkEvent* event) {
+  DLOG(INFO) << "OnMap";
+  mapped_ = true;
+  if (input_grabbed_)
+    ScreenLockReady();
 }
 
 }  // namespace chromeos
