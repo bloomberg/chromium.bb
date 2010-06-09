@@ -228,9 +228,8 @@ ConfigureAndBuildLlvm() {
   Run "Untaring" tar jxf ${LLVM_TARBALL}
   cd llvm
 
-  # TODO(espindola): This is already in hg, but we use that to build
-  # llc-sfi only. Remove this once llc and llc-sfi are merged.
-  Run "Patching" patch -p2 < ${LLVM_UPDATE_PLUGIN_PATCH}
+  Run "Patching" patch -p2 < ${LLVM_SFI_PATCH}
+  Run "Patching hack" patch -p1 < ${LLVM_HACK_SFI_PATCH}
 
   # The --with-binutils-include is to allow llvm to build the gold plugin
   local binutils_include="${TMP}/binutils.nacl/src/binutils-2.20/include"
@@ -257,6 +256,9 @@ ConfigureAndBuildLlvm() {
 
   RunWithLog "Installing LLVM" ${TMP}/llvm-install.log \
        make ${MAKE_OPTS} install
+
+  Run "Linking llc-sfi" ln -s \
+           llc ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm/bin/llc-sfi
 
   cd ${saved_dir}
 }
@@ -622,47 +624,6 @@ ConfigureAndBuildGccStage3() {
   cd ${saved_dir}
 }
 
-# Build a sfi version of llvm's llc backend
-# The mygcc32 and myg++32 trickery ensures that all binaries
-# are statically linked and 32-bit.
-UntarPatchConfigureAndBuildSfiLlc() {
-  local saved_dir=$(pwd)
-  local tmpdir=${TMP}/llvm.sfi
-  Banner "Building sfi lcc in ${tmpdir}"
-  rm -rf ${tmpdir}
-  mkdir ${tmpdir}
-  cd ${tmpdir}
-
-  Run "Untaring" tar jxf  ${LLVM_TARBALL}
-  cd llvm
-
-  Run "Patching" patch -p2 < ${LLVM_SFI_PATCH}
-  Run "Patching hack" patch -p1 < ${LLVM_HACK_SFI_PATCH}
-
-  RunWithLog "Configure" ${TMP}/llvm.sfi.configure.log\
-      env -i PATH=/usr/bin/:/bin \
-             MAKE_OPTS=${MAKE_OPTS} \
-             CC=${CC32} \
-             CXX=${CXX32} \
-             ./configure \
-             --disable-jit \
-             --enable-optimized \
-             --enable-targets=x86,x86_64,arm \
-             --target=arm-none-linux-gnueabi
-
-  RunWithLog "Make" ${TMP}/llvm.sfi.make.log \
-      env -i PATH=/usr/bin/:/bin \
-             MAKE_OPTS=${MAKE_OPTS} \
-             CC=${CC32} \
-             CXX=${CXX32} \
-             make ${MAKE_OPTS} tools-only
-
-  SubBanner "Install"
-  cp Release/bin/llc ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm/bin/llc-sfi
-  cd ${saved_dir}
-}
-
-
 # We need to adjust the start address and aligment of nacl arm modules
 InstallUntrustedLinkerScript() {
    Banner "installing untrusted ld script"
@@ -945,7 +906,6 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   BuildAndInstallBinutils
 
   ConfigureAndBuildLlvm
-  UntarPatchConfigureAndBuildSfiLlc
 
   UntarAndPatchNewlib
   SetupSysRoot
