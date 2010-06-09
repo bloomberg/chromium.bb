@@ -237,6 +237,8 @@ extern const wchar_t kDownloadDirUpgraded[];
 
 extern const wchar_t kSaveFileDefaultDirectory[];
 
+extern const wchar_t kSelectFileLastDirectory[];
+
 extern const wchar_t kHungPluginDetectFrequency[];
 extern const wchar_t kPluginMessageResponseTimeout[];
 

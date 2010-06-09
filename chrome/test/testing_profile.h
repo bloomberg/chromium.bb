@@ -265,6 +265,13 @@ class TestingProfile : public Profile {
   virtual DesktopNotificationService* GetDesktopNotificationService() {
     return NULL;
   }
+  virtual FilePath last_selected_directory() {
+    return last_selected_directory_;
+  }
+  virtual void set_last_selected_directory(const FilePath& path) {
+    last_selected_directory_ = path;
+  }
+
 
   // Schedules a task on the history backend and runs a nested loop until the
   // task is processed.  This has the effect of blocking the caller until the
@@ -355,6 +362,8 @@ class TestingProfile : public Profile {
 
   // Find bar state.  Created lazily by GetFindBarState().
   scoped_ptr<FindBarState> find_bar_state_;
+
+  FilePath last_selected_directory_;
 };
 
 // A profile that derives from another profile.  This does not actually

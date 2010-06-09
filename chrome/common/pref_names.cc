@@ -660,6 +660,10 @@ const wchar_t kDownloadDirUpgraded[] = L"download.directory_upgrade";
 // String which specifies where to save html files to by default.
 const wchar_t kSaveFileDefaultDirectory[] = L"savefile.default_directory";
 
+// String which specifies the last directory that was chosen for uploading
+// or opening a file.
+extern const wchar_t kSelectFileLastDirectory[] = L"selectfile.last_directory";
+
 // Extensions which should be opened upon completion.
 const wchar_t kDownloadExtensionsToOpen[] = L"download.extensions_to_open";
 

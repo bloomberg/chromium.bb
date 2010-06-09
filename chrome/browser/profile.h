@@ -417,6 +417,10 @@ class Profile {
   // Returns the new tab page resource cache.
   virtual NTPResourceCache* GetNTPResourceCache() = 0;
 
+  // Returns the last directory that was chosen for uploading or opening a file.
+  virtual FilePath last_selected_directory() = 0;
+  virtual void set_last_selected_directory(const FilePath& path) = 0;
+
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!
   static void set_default_request_context(URLRequestContextGetter* c) {
@@ -537,6 +541,8 @@ class ProfileImpl : public Profile,
   virtual void InitExtensions();
   virtual void InitWebResources();
   virtual NTPResourceCache* GetNTPResourceCache();
+  virtual FilePath last_selected_directory();
+  virtual void set_last_selected_directory(const FilePath& path);
   virtual ProfileSyncService* GetProfileSyncService();
   void InitSyncService();
   virtual CloudPrintProxyService* GetCloudPrintProxyService();

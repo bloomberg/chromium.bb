@@ -2589,8 +2589,11 @@ void TabContents::RunFileChooser(
       dialog_type = SelectFileDialog::SELECT_OPEN_FILE;  // Prevent warning.
       NOTREACHED();
   }
+  FilePath default_file_name = params.default_file_name;
+  if (default_file_name.empty())
+    default_file_name = profile()->last_selected_directory();
   select_file_dialog_->SelectFile(dialog_type, params.title,
-                                  params.default_file_name,
+                                  default_file_name,
                                   NULL, 0, FILE_PATH_LITERAL(""),
                                   view_->GetTopLevelNativeWindow(), NULL);
 }
@@ -2851,6 +2854,7 @@ void TabContents::FocusedNodeChanged() {
 
 void TabContents::FileSelected(const FilePath& path,
                                int index, void* params) {
+  profile()->set_last_selected_directory(path.DirName());
   std::vector<FilePath> files;
   files.push_back(path);
   render_view_host()->FilesSelectedInChooser(files);
@@ -2858,6 +2862,8 @@ void TabContents::FileSelected(const FilePath& path,
 
 void TabContents::MultiFilesSelected(const std::vector<FilePath>& files,
                                      void* params) {
+  if (!files.empty())
+    profile()->set_last_selected_directory(files[0].DirName());
   render_view_host()->FilesSelectedInChooser(files);
 }
 

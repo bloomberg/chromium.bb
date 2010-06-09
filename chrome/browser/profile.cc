@@ -215,6 +215,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeTints);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties);
   prefs->RegisterBooleanPref(prefs::kDisableExtensions, false);
+  prefs->RegisterStringPref(prefs::kSelectFileLastDirectory, L"");
 }
 
 // static
@@ -583,6 +584,18 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetNTPResourceCache();
   }
 
+  virtual FilePath last_selected_directory() {
+    const FilePath& directory = last_selected_directory_;
+    if (directory.empty()) {
+      return profile_->last_selected_directory();
+    }
+    return directory;
+  }
+
+  virtual void set_last_selected_directory(const FilePath& path) {
+    last_selected_directory_ = path;
+  }
+
   virtual void ExitedOffTheRecordMode() {
     // Drop our download manager so we forget about all the downloads made
     // in off-the-record mode.
@@ -647,6 +660,8 @@ class OffTheRecordProfileImpl : public Profile,
   // The main database tracker for this profile.
   // Should be used only on the file thread.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+
+  FilePath last_selected_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
@@ -822,6 +837,14 @@ NTPResourceCache* ProfileImpl::GetNTPResourceCache() {
   if (!ntp_resource_cache_.get())
     ntp_resource_cache_.reset(new NTPResourceCache(this));
   return ntp_resource_cache_.get();
+}
+
+FilePath ProfileImpl::last_selected_directory() {
+  return GetPrefs()->GetFilePath(prefs::kSelectFileLastDirectory);
+}
+
+void ProfileImpl::set_last_selected_directory(const FilePath& path) {
+  GetPrefs()->SetFilePath(prefs::kSelectFileLastDirectory, path);
 }
 
 ProfileImpl::~ProfileImpl() {

@@ -1268,7 +1268,8 @@ void SavePackage::ContinueSave(SavePackageParam* param,
   save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);
   // If user change the default saving directory, we will remember it just
   // like IE and FireFox.
-  if (save_file_path.GetValue() != param->dir.ToWStringHack())
+  if (!tab_contents_->profile()->IsOffTheRecord() &&
+      save_file_path.GetValue() != param->dir.ToWStringHack())
     save_file_path.SetValue(param->dir.ToWStringHack());
 
   param->save_type = (index == 1) ? SavePackage::SAVE_AS_ONLY_HTML :

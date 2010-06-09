@@ -1583,10 +1583,12 @@ void Browser::OpenFile() {
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
 
+  const FilePath directory = profile_->last_selected_directory();
+
   // TODO(beng): figure out how to juggle this.
   gfx::NativeWindow parent_window = window_->GetNativeHandle();
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
-                                  string16(), FilePath(),
+                                  string16(), directory,
                                   NULL, 0, FILE_PATH_LITERAL(""),
                                   parent_window, NULL);
 #endif
@@ -2855,6 +2857,7 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
 // Browser, SelectFileDialog::Listener implementation:
 
 void Browser::FileSelected(const FilePath& path, int index, void* params) {
+  profile_->set_last_selected_directory(path.DirName());
   GURL file_url = net::FilePathToFileURL(path);
   if (!file_url.is_empty())
     OpenURL(file_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
