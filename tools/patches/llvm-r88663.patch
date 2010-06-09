@@ -99,6 +99,41 @@ diff -r c06933b0e3e6 llvm-trunk/lib/CodeGen/SelectionDAG/DAGCombiner.cpp
            (TLI.getOperationAction(ISD::ConstantFP, N2.getValueType()) !=
             TargetLowering::Legal) &&
            // If both constants have multiple uses, then we won't need to do an
+diff -r c06933b0e3e6 llvm-trunk/lib/Linker/LinkArchives.cpp
+--- a/llvm-trunk/lib/Linker/LinkArchives.cpp
++++ b/llvm-trunk/lib/Linker/LinkArchives.cpp
+@@ -18,9 +18,22 @@
+ #include "llvm/ADT/SetOperations.h"
+ #include "llvm/Bitcode/Archive.h"
+ #include "llvm/Config/config.h"
++
++#include "llvm/Support/CommandLine.h" // @LOCALMOD
++
+ #include <memory>
+ #include <set>
++
+ using namespace llvm;
++
++// @LOCALMOD-START
++static cl::list<std::string>
++ UndefList("referenced-list", cl::value_desc("list"),
++         cl::desc("A list of symbols assumed to be referenced"),
++         cl::CommaSeparated);
++
++// @LOCALMOD-END
++
+ 
+ /// GetAllUndefinedSymbols - calculates the set of undefined symbols that still
+ /// exist in an LLVM module. This is a bit tricky because there may be two
+@@ -39,6 +52,8 @@
+   std::set<std::string> DefinedSymbols;
+   UndefinedSymbols.clear();
+ 
++  UndefinedSymbols.insert(UndefList.begin(), UndefList.end()); // @LOCALMOD
++  
+   // If the program doesn't define a main, try pulling one in from a .a file.
+   // This is needed for programs where the main function is defined in an
+   // archive, such f2c'd programs.
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARM.h
 --- a/llvm-trunk/lib/Target/ARM/ARM.h
 +++ b/llvm-trunk/lib/Target/ARM/ARM.h
@@ -1108,30 +1143,15 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMISelLowering.h
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
 --- a/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
 +++ b/llvm-trunk/lib/Target/ARM/ARMInstrInfo.cpp
-@@ -22,7 +22,22 @@
- #include "llvm/CodeGen/MachineInstrBuilder.h"
+@@ -23,6 +23,7 @@
  #include "llvm/CodeGen/MachineJumpTableInfo.h"
  #include "llvm/MC/MCAsmInfo.h"
-+#include "llvm/Support/CommandLine.h" // @LOCALMOD
  using namespace llvm;
-+
-+
-+// @LOCALMOD-START
-+cl::opt<bool> FlagSfiStore("sfi-store",
-+                       cl::desc("SFI store"));
-+
-+cl::opt<bool> FlagSfiStack("sfi-stack",
-+                       cl::desc("SFI stack"));
-+
-+cl::opt<bool> FlagSfiBranch("sfi-branch",
-+                        cl::desc("SFI branch"));
-+
-+// @LOCALMOD-END
 +
  
  ARMInstrInfo::ARMInstrInfo(const ARMSubtarget &STI)
    : ARMBaseInstrInfo(STI), RI(*this, STI) {
-@@ -102,4 +117,3 @@
+@@ -102,4 +103,3 @@
  
    return ARMBaseInstrInfo::reMaterialize(MBB, I, DestReg, SubIdx, Orig);
  }
@@ -1151,143 +1171,57 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
  // addrmode4 := reg, <mode|W>
  //
  def addrmode4 : Operand<i32>,
-@@ -568,6 +573,17 @@
+@@ -568,6 +573,40 @@
             [(ARMcallseq_start timm:$amt)]>;
  }
  
-+def SFISTRMASK :
++// @LOCALMOD-START
++def SFI_GUARD_STORE :
 +PseudoInst<(outs GPR:$dst), (ins GPR:$a, pred:$p), NoItinerary,
 +           "sfi_store_preamble $dst, $p",
 +           []>;
 +
 +let Defs = [CPSR] in
-+def SFISTRTST :
++def SFI_GUARD_STORE_TST :
 +PseudoInst<(outs GPR:$dst), (ins GPR:$a), NoItinerary,
 +           "sfi_cstore_preamble $dst",
 +           []>;
 +
++def SFI_GUARD_INDIRECT_CALL :
++PseudoInst<(outs GPR:$dst), (ins GPR:$a, pred:$p), NoItinerary,
++           "sfi_indirect_call_preamble $dst, $p",
++           []>;
++
++def SFI_GUARD_INDIRECT_JMP :
++PseudoInst<(outs GPR:$dst), (ins GPR:$a, pred:$p), NoItinerary,
++           "sfi_indirect_jump_preamble $dst, $p",
++           []>;
++
++def SFI_GUARD_CALL :
++PseudoInst<(outs), (ins pred:$p), NoItinerary,
++           "sfi_call_preamble $p",
++           []>;
++
++// NOTE: the BX_RET instruction hardcodes lr as well
++def SFI_GUARD_RETURN :
++PseudoInst<(outs), (ins pred:$p), NoItinerary,
++           "sfi_return_preamble lr, $p",
++           []>;
++// @LOCALMOD-END
++
  def DWARF_LOC :
  PseudoInst<(outs), (ins i32imm:$line, i32imm:$col, i32imm:$file), NoItinerary,
             ".loc $file, $line, $col",
-@@ -645,8 +661,12 @@
- //
- 
- let isReturn = 1, isTerminator = 1, isBarrier = 1 in
-+// @LOCALMOD-START
-   def BX_RET : AI<(outs), (ins), BrMiscFrm, IIC_Br, 
--                  "bx", "\tlr", [(ARMretflag)]> {
-+//                  "bx", "\tlr", [(ARMretflag)]> {
-+                  "sfi_bx", "\tlr", [(ARMretflag)]> {
-+
-+// @LOCALMOD-END
-   let Inst{7-4}   = 0b0001;
-   let Inst{19-8}  = 0b111111111111;
-   let Inst{27-20} = 0b00010010;
-@@ -654,7 +674,11 @@
+@@ -654,7 +693,7 @@
  
  // Indirect branches
  let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 1 in {
 -  def BRIND : AXI<(outs), (ins GPR:$dst), BrMiscFrm, IIC_Br, "bx\t$dst",
-+    // @LOCALMOD-START
-+    //  def BRIND : AXI<(outs), (ins GPR:$dst), BrMiscFrm, IIC_Br, "bx\t$dst",
-+    def BRIND : AXI<(outs), (ins GPR:$dst), BrMiscFrm, IIC_Br,
-+    "sfi_indirect_jump_preamble $dst\n\tbx\t$dst",
-+    // @LOCALMOD-END
++    def BRIND : AXI<(outs), (ins GPR:$dst), BrMiscFrm, IIC_Br, "bx\t$dst",
                    [(brind GPR:$dst)]> {
      let Inst{7-4}   = 0b0001;
      let Inst{19-8}  = 0b111111111111;
-@@ -678,20 +702,29 @@
-           D16, D17, D18, D19, D20, D21, D22, D23,
-           D24, D25, D26, D27, D28, D29, D30, D31, CPSR, FPSCR] in {
-   def BL  : ABXI<0b1011, (outs), (ins i32imm:$func, variable_ops),
--                IIC_Br, "bl\t${func:call}",
-+// @LOCALMOD-START
-+//                IIC_Br, "bl\t${func:call}",
-+                IIC_Br, "sfi_call_preamble\n\tbl\t${func:call}",
-+// @LOCALMOD-END
-                 [(ARMcall tglobaladdr:$func)]>,
-             Requires<[IsARM, IsNotDarwin]> {
-     let Inst{31-28} = 0b1110;
-   }
- 
-   def BL_pred : ABI<0b1011, (outs), (ins i32imm:$func, variable_ops),
--                   IIC_Br, "bl", "\t${func:call}",
-+// @LOCALMOD-START
-+//                   IIC_Br, "bl", "\t${func:call}",
-+                   IIC_Br, "sfi_call_preamble\n\tbl", "\t${func:call}",
-+// @LOCALMOD-END
-                    [(ARMcall_pred tglobaladdr:$func)]>,
-                 Requires<[IsARM, IsNotDarwin]>;
- 
-   // ARMv5T and above
-   def BLX : AXI<(outs), (ins GPR:$func, variable_ops), BrMiscFrm,
--                IIC_Br, "blx\t$func",
-+// @LOCALMOD-START
-+//                IIC_Br, "blx\t$func",
-+                IIC_Br, "sfi_indirect_call_preamble $func\n\tblx\t$func",
-+// @LOCALMOD-END
-                 [(ARMcall GPR:$func)]>,
-             Requires<[IsARM, HasV5T, IsNotDarwin]> {
-     let Inst{7-4}   = 0b0011;
-@@ -701,7 +734,11 @@
- 
-   // ARMv4T
-   def BX : ABXIx2<(outs), (ins GPR:$func, variable_ops),
--                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
-+// @LOCALMOD-START
-+//                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
-+// TODO(robertm): this does not quite work
-+                  IIC_Br, "sfi_call_preamble\n\tmov\tlr, pc\n\tbx\t$func",
-+// @LOCALMOD-END
-                   [(ARMcall_nolink GPR:$func)]>,
-            Requires<[IsARM, IsNotDarwin]> {
-     let Inst{7-4}   = 0b0001;
-@@ -717,19 +754,28 @@
-           D16, D17, D18, D19, D20, D21, D22, D23,
-           D24, D25, D26, D27, D28, D29, D30, D31, CPSR, FPSCR] in {
-   def BLr9  : ABXI<0b1011, (outs), (ins i32imm:$func, variable_ops),
--                IIC_Br, "bl\t${func:call}",
-+// @LOCALMOD-START
-+//                IIC_Br, "bl\t${func:call}",
-+                IIC_Br, "sfi_call_preamble\n\tbl\t${func:call}",
-+// @LOCALMOD-END
-                 [(ARMcall tglobaladdr:$func)]>, Requires<[IsARM, IsDarwin]> {
-     let Inst{31-28} = 0b1110;
-   }
- 
-   def BLr9_pred : ABI<0b1011, (outs), (ins i32imm:$func, variable_ops),
--                   IIC_Br, "bl", "\t${func:call}",
-+// @LOCALMOD-START
-+//                   IIC_Br, "bl", "\t${func:call}",
-+                   IIC_Br, "sfi_call_preamble\n\tbl", "\t${func:call}",
-+// @LOCALMOD-END
-                    [(ARMcall_pred tglobaladdr:$func)]>,
-                   Requires<[IsARM, IsDarwin]>;
- 
-   // ARMv5T and above
-   def BLXr9 : AXI<(outs), (ins GPR:$func, variable_ops), BrMiscFrm,
--                IIC_Br, "blx\t$func",
-+// @LOCALMOD-START
-+//                IIC_Br, "blx\t$func",
-+                IIC_Br, "sfi_indirect_call_preamble $func\n\tblx\t$func",
-+// @LOCALMOD-END
-                 [(ARMcall GPR:$func)]>, Requires<[IsARM, HasV5T, IsDarwin]> {
-     let Inst{7-4}   = 0b0011;
-     let Inst{19-8}  = 0b111111111111;
-@@ -738,7 +784,11 @@
- 
-   // ARMv4T
-   def BXr9 : ABXIx2<(outs), (ins GPR:$func, variable_ops),
--                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
-+// @LOCALMOD-START
-+//                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
-+// TODO(robertm): this does not quite work
-+                  IIC_Br, "sfi_call_preamble\n\tmov\tlr, pc\n\tbx\t$func",
-+// @LOCALMOD-END
-                   [(ARMcall_nolink GPR:$func)]>, Requires<[IsARM, IsDarwin]> {
-     let Inst{7-4}   = 0b0001;
-     let Inst{19-8}  = 0b111111111111;
-@@ -874,6 +924,7 @@
+@@ -874,6 +913,7 @@
  
  // Store
  def STR  : AI2stw<(outs), (ins GPR:$src, addrmode2:$addr), StFrm, IIC_iStorer,
@@ -1295,7 +1229,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                 "str", "\t$src, $addr",
                 [(store GPR:$src, addrmode2:$addr)]>;
  
-@@ -948,7 +999,11 @@
+@@ -948,7 +988,11 @@
  let mayStore = 1, hasExtraSrcRegAllocReq = 1 in
  def STM : AXI4st<(outs),
                 (ins addrmode4:$addr, pred:$p, reglist:$wb, variable_ops),
@@ -1308,7 +1242,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
                 []>;
  
  //===----------------------------------------------------------------------===//
-@@ -1087,6 +1142,17 @@
+@@ -1087,6 +1131,17 @@
  defm SUB  : AsI1_bin_irs<0b0010, "sub",
                           BinOpFrag<(sub  node:$LHS, node:$RHS)>>;
  
@@ -1326,18 +1260,6 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrInfo.td
  // ADD and SUB with 's' bit set.
  defm ADDS : AI1_bin_s_irs<0b0100, "adds",
                            BinOpFrag<(addc node:$LHS, node:$RHS)>, 1>;
-@@ -1551,7 +1617,10 @@
- let isCall = 1,
-   Defs = [R0, R12, LR, CPSR] in {
-   def TPsoft : ABXI<0b1011, (outs), (ins), IIC_Br,
--               "bl\t__aeabi_read_tp",
-+// @LOCALMOD-START
-+//               "bl\t__aeabi_read_tp",
-+               "sfi_call_preamble\n\tbl\t__aeabi_read_tp",
-+// @LOCALMOD-END
-                [(set R0, ARMthread_pointer)]>;
- }
- 
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
 --- a/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
 +++ b/llvm-trunk/lib/Target/ARM/ARMInstrVFP.td
@@ -1420,7 +1342,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMLoadStoreOptimizer.cpp
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 --- /dev/null
 +++ b/llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
-@@ -0,0 +1,252 @@
+@@ -0,0 +1,384 @@
 +//===-- ARMSFIPlacement.cpp - Place SFI mask instructions ---------*- C++ -*-=//
 +//
 +//                     The LLVM Compiler Infrastructure
@@ -1441,11 +1363,21 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 +#include "ARMBaseInstrInfo.h"
 +#include "llvm/CodeGen/MachineFunctionPass.h"
 +#include "llvm/CodeGen/MachineInstrBuilder.h"
++#include "llvm/Support/CommandLine.h"
 +
 +#include <set>
 +#include <stdio.h>
 +
 +using namespace llvm;
++
++cl::opt<bool> FlagSfiStore("sfi-store",
++                           cl::desc("enable sandboxing for stores"));
++
++cl::opt<bool> FlagSfiStack("sfi-stack",
++                           cl::desc("enable sandboxing for stack changes"));
++
++cl::opt<bool> FlagSfiBranch("sfi-branch",
++                            cl::desc("enable sandboxing for branches"));
 +
 +namespace {
 +  class ARMSFIPlacement : public MachineFunctionPass {
@@ -1464,6 +1396,8 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 +
 +  private:
 +    bool PlaceMBB(MachineBasicBlock &MBB);
++    bool PassStoreSandboxing(MachineBasicBlock &MBB);
++    bool PassBranchSandboxing(MachineBasicBlock &MBB);
 +    void SandboxStore(MachineBasicBlock &MBB,
 +                      MachineBasicBlock::iterator MBBI,
 +                      MachineInstr &MI,
@@ -1527,14 +1461,14 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 +
 +    // Instruction can be predicated -- use the new sandbox.
 +    BuildMI(MBB, MBBI, MI.getDebugLoc(),
-+            TII->get(ARM::SFISTRTST))
++            TII->get(ARM::SFI_GUARD_STORE_TST))
 +      .addOperand(Addr)   // rD
 +      .addReg(0);         // apparently unused source register?
 +  } else {
 +    // Use the older BIC sandbox, which is universal, but incurs a stall.
 +    ARMCC::CondCodes Pred = GetPredicate(MI);
 +    BuildMI(MBB, MBBI, MI.getDebugLoc(),
-+            TII->get(ARM::SFISTRMASK))
++            TII->get(ARM::SFI_GUARD_STORE))
 +      .addOperand(Addr)        // rD
 +      .addReg(0)               // apparently unused source register?
 +      .addImm((int64_t) Pred)  // predicate condition
@@ -1557,6 +1491,59 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 +     */
 +  }
 +}
++
++
++static bool IsDirectCall(const MachineInstr &MI) {
++  switch (MI.getOpcode()) {
++   default: return false;
++
++   case ARM::BLr9:
++   case ARM::BLr9_pred:
++    assert(0 && "This should not have happend. We do not support usage of r9.");
++    return true;
++
++   case ARM::BL:
++   case ARM::BL_pred:
++   case ARM::TPsoft:
++    return true;
++  }
++}
++
++
++static bool IsIndirectCall(const MachineInstr &MI) {
++  switch (MI.getOpcode()) {
++   default: return false;
++
++   case ARM::BLXr9:
++    assert(0 && "we do not support usage of r9");
++
++   case ARM::BLX:
++    return true;
++  }
++}
++
++
++static bool IsIndirectJump(const MachineInstr &MI) {
++  switch (MI.getOpcode()) {
++   default: return false;
++
++   case ARM::BRIND:
++    return true;
++  }
++}
++
++
++static bool IsReturn(const MachineInstr &MI) {
++  switch (MI.getOpcode()) {
++   default: return false;
++
++   case ARM::BX_RET:
++    return true;
++  }
++}
++
++
++
 +
 +static bool IsDangerousStore(const MachineInstr &MI, int *AddrIdx) {
 +  unsigned Opcode = MI.getOpcode();
@@ -1610,13 +1597,13 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 +  return false;
 +}
 +
-+bool ARMSFIPlacement::PlaceMBB(MachineBasicBlock &MBB) {
++bool ARMSFIPlacement::PassStoreSandboxing(MachineBasicBlock &MBB) {
 +  /*
 +   * This is a simple local reverse-dataflow analysis to determine where CPSR
 +   * is live.  We cannot use the conditional store sequence anywhere that CPSR
 +   * is live, or we'd affect correctness.  The existing liveness analysis passes
 +   * barf when applied pre-emit, after allocation, so we must do it ourselves.
-+   */ 
++   */
 +
 +  bool CPSRLive = IsCPSRLiveOut(MBB);
 +
@@ -1645,11 +1632,11 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 +       MBBI != E;
 +       ++MBBI) {
 +    MachineInstr &MI = *MBBI;
-+
 +    int AddrIdx;
++
 +    if (IsDangerousStore(MI, &AddrIdx)) {
 +      bool CPSRLive =
-+          (InstrsWhereCPSRLives.find(&MI) != InstrsWhereCPSRLives.end());
++        (InstrsWhereCPSRLives.find(&MI) != InstrsWhereCPSRLives.end());
 +      SandboxStore(MBB, MBBI, MI, AddrIdx, CPSRLive);
 +      Modified = true;
 +    }
@@ -1657,6 +1644,73 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSFIPlacement.cpp
 +
 +  return Modified;
 +}
++
++bool ARMSFIPlacement::PassBranchSandboxing(MachineBasicBlock &MBB) {
++  bool Modified = false;
++
++  for (MachineBasicBlock::iterator MBBI = MBB.begin(), E = MBB.end();
++       MBBI != E;
++       ++MBBI) {
++    MachineInstr &MI = *MBBI;
++
++    if (IsReturn(MI)) {
++      ARMCC::CondCodes Pred = GetPredicate(MI);
++      BuildMI(MBB, MBBI, MI.getDebugLoc(),
++              TII->get(ARM::SFI_GUARD_RETURN))
++        .addImm((int64_t) Pred)  // predicate condition
++        .addReg(ARM::CPSR);      // predicate source register (CPSR)
++      Modified = true;
++    }
++
++    if (IsIndirectJump(MI)) {
++      MachineOperand &Addr = MI.getOperand(0);
++      ARMCC::CondCodes Pred = GetPredicate(MI);
++      BuildMI(MBB, MBBI, MI.getDebugLoc(),
++              TII->get(ARM::SFI_GUARD_INDIRECT_JMP))
++        .addOperand(Addr)        // rD
++        .addReg(0)               // apparently unused source register?
++        .addImm((int64_t) Pred)  // predicate condition
++        .addReg(ARM::CPSR);      // predicate source register (CPSR)
++      Modified = true;
++    }
++
++    if (IsDirectCall(MI)) {
++      ARMCC::CondCodes Pred = GetPredicate(MI);
++      BuildMI(MBB, MBBI, MI.getDebugLoc(),
++              TII->get(ARM::SFI_GUARD_CALL))
++        .addImm((int64_t) Pred)  // predicate condition
++        .addReg(ARM::CPSR);      // predicate source register (CPSR)
++      Modified = true;
++    }
++
++    if (IsIndirectCall(MI)) {
++      MachineOperand &Addr = MI.getOperand(0);
++      ARMCC::CondCodes Pred = GetPredicate(MI);
++      BuildMI(MBB, MBBI, MI.getDebugLoc(),
++              TII->get(ARM::SFI_GUARD_INDIRECT_CALL))
++        .addOperand(Addr)        // rD
++        .addReg(0)               // apparently unused source register?
++        .addImm((int64_t) Pred)  // predicate condition
++        .addReg(ARM::CPSR);      // predicate source register (CPSR)
++        Modified = true;
++    }
++  }
++
++  return Modified;
++}
++
++bool ARMSFIPlacement::PlaceMBB(MachineBasicBlock &MBB) {
++  bool Modified = false;
++  if (FlagSfiStore) {
++    Modified |= PassStoreSandboxing(MBB);
++  }
++
++  if (FlagSfiBranch) {
++    Modified |= PassBranchSandboxing(MBB);
++  }
++  return Modified;
++}
++
 +
 +bool ARMSFIPlacement::runOnMachineFunction(MachineFunction &MF) {
 +  TII = MF.getTarget().getInstrInfo();
@@ -1738,34 +1792,43 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMSubtarget.h
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/ARMTargetMachine.cpp
 --- a/llvm-trunk/lib/Target/ARM/ARMTargetMachine.cpp
 +++ b/llvm-trunk/lib/Target/ARM/ARMTargetMachine.cpp
-@@ -19,7 +19,11 @@
+@@ -19,7 +19,13 @@
  #include "llvm/Support/FormattedStream.h"
  #include "llvm/Target/TargetOptions.h"
  #include "llvm/Target/TargetRegistry.h"
 +#include "llvm/Support/CommandLine.h" // @LOCALMOD
  using namespace llvm;
 +
-+extern cl::opt<bool> FlagSfiStore; // @LOCALMOD
-+
++// @LOCALMOD-START
++extern cl::opt<bool> FlagSfiStore;
++extern cl::opt<bool> FlagSfiBranch;
++// @LOCALMOD-END
  
  static const MCAsmInfo *createMCAsmInfo(const Target &T, StringRef TT) {
    Triple TheTriple(TT);
-@@ -128,6 +132,11 @@
+@@ -128,6 +134,13 @@
    }
  
    PM.add(createARMConstantIslandPass());
 +
-+  if (FlagSfiStore) {
++  // @LOCALMOD-START
++  if (FlagSfiStore || FlagSfiBranch) {
 +    PM.add(createARMSFIPlacementPass());
 +  }
++  // @LOCALMOD-END
 +
    return true;
  }
  
+@@ -190,4 +203,3 @@
+   PM.add(createARMObjectCodeEmitterPass(*this, OCE));
+   return false;
+ }
+-
 diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 --- a/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +++ b/llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
-@@ -51,7 +51,13 @@
+@@ -51,7 +51,22 @@
  #include "llvm/Support/Mangler.h"
  #include "llvm/Support/MathExtras.h"
  #include <cctype>
@@ -1775,11 +1838,20 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +
 +// @LOCALMOD
 +cl::opt<bool> FlagSfiZeroMask("sfi-zero-mask");
++
++extern cl::opt<bool> FlagSfiStore;
++extern cl::opt<bool> FlagSfiStack;
++extern cl::opt<bool> FlagSfiBranch;
++cl::opt<bool> FlagSfiData("sfi-data",
++                        cl::desc("use illegal at data bundle beginning"));
++// @LOCALMOD-END
++
++
 +// @LOCALMOD
  
  STATISTIC(EmittedInsts, "Number of machine instrs printed");
  
-@@ -94,10 +100,12 @@
+@@ -94,10 +109,12 @@
  
      void printOperand(const MachineInstr *MI, int OpNum,
                        const char *Modifier = 0);
@@ -1792,7 +1864,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
      void printAddrMode2OffsetOperand(const MachineInstr *MI, int OpNum);
      void printAddrMode3Operand(const MachineInstr *MI, int OpNum);
      void printAddrMode3OffsetOperand(const MachineInstr *MI, int OpNum);
-@@ -170,6 +178,7 @@
+@@ -170,6 +187,7 @@
      /// EmitMachineConstantPoolValue - Print a machine constantpool value to
      /// the .s file.
      virtual void EmitMachineConstantPoolValue(MachineConstantPoolValue *MCPV) {
@@ -1800,7 +1872,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        printDataDirective(MCPV->getType());
  
        ARMConstantPoolValue *ACPV = static_cast<ARMConstantPoolValue*>(MCPV);
-@@ -180,6 +189,10 @@
+@@ -180,6 +198,10 @@
          raw_svector_ostream(LSDAName) << MAI->getPrivateGlobalPrefix() <<
            "_LSDA_" << getFunctionNumber();
          Name = LSDAName.str();
@@ -1811,23 +1883,15 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        } else if (ACPV->isBlockAddress()) {
          Name = GetBlockAddressSymbol(ACPV->getBlockAddress())->getName();
        } else if (ACPV->isGlobalValue()) {
-@@ -231,6 +244,15 @@
+@@ -231,6 +253,7 @@
    };
  } // end of anonymous namespace
  
-+// @LOCALMOD-START
-+extern cl::opt<bool> FlagSfiStore;
-+extern cl::opt<bool> FlagSfiStack;
-+extern cl::opt<bool> FlagSfiBranch;
-+cl::opt<bool> FlagSfiData("sfi-data",
-+                        cl::desc("use illegal at data bundle beginning"));
-+// @LOCALMOD-END
-+
 +
  #include "ARMGenAsmWriter.inc"
  
  /// runOnMachineFunction - This uses the printInstruction()
-@@ -247,7 +269,6 @@
+@@ -247,7 +270,6 @@
  
    // NOTE: we don't print out constant pools here, they are handled as
    // instructions.
@@ -1835,7 +1899,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    O << '\n';
  
    // Print out labels for the function.
-@@ -287,7 +308,15 @@
+@@ -287,7 +309,15 @@
        O << "\t" << CurrentFnName;
      O << "\n";
    } else {
@@ -1852,7 +1916,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    }
  
    O << CurrentFnName << ":\n";
-@@ -304,6 +333,46 @@
+@@ -304,6 +334,46 @@
        O << "\tnop\n";
    }
  
@@ -1899,7 +1963,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    // Print out code for the function.
    for (MachineFunction::const_iterator I = MF.begin(), E = MF.end();
         I != E; ++I) {
-@@ -319,6 +388,12 @@
+@@ -319,6 +389,12 @@
  
    if (MAI->hasDotTypeDotSizeDirective())
      O << "\t.size " << CurrentFnName << ", .-" << CurrentFnName << "\n";
@@ -1912,7 +1976,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  
    // Emit post-function debug information.
    DW->EndFunction(&MF);
-@@ -588,6 +663,10 @@
+@@ -588,6 +664,10 @@
      ARM_AM::AMSubMode Mode = ARM_AM::getAM4SubMode(MO2.getImm());
      if (Mode == ARM_AM::ia)
        O << ".w";
@@ -1923,7 +1987,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    } else {
      printOperand(MI, Op);
      if (ARM_AM::getAM4WBFlag(MO2.getImm()))
-@@ -618,6 +697,14 @@
+@@ -618,6 +698,14 @@
        O << "!";
      return;
    }
@@ -1938,7 +2002,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  
    O << "[" << getRegisterName(MO1.getReg());
  
-@@ -880,7 +967,25 @@
+@@ -880,7 +968,25 @@
    assert(Modifier && "This operand only works with a modifier!");
    // There are two aspects to a CONSTANTPOOL_ENTRY operand, the label and the
    // data itself.
@@ -1964,7 +2028,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
      unsigned ID = MI->getOperand(OpNum).getImm();
      O << MAI->getPrivateGlobalPrefix() << "CPI" << getFunctionNumber()
        << '_' << ID << ":\n";
-@@ -891,6 +996,9 @@
+@@ -891,6 +997,9 @@
      const MachineConstantPoolEntry &MCPE = MCP->getConstants()[CPI];
  
      if (MCPE.isMachineConstantPoolEntry()) {
@@ -1974,7 +2038,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
        EmitMachineConstantPoolValue(MCPE.Val.MachineCPVal);
      } else {
        EmitGlobalConstant(MCPE.Val.ConstVal);
-@@ -915,6 +1023,7 @@
+@@ -915,6 +1024,7 @@
    const std::vector<MachineBasicBlock*> &JTBBs = JT[JTI].MBBs;
    bool UseSet= MAI->getSetDirective() && TM.getRelocationModel() == Reloc::PIC_;
    SmallPtrSet<MachineBasicBlock*, 8> JTSets;
@@ -1982,7 +2046,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    for (unsigned i = 0, e = JTBBs.size(); i != e; ++i) {
      MachineBasicBlock *MBB = JTBBs[i];
      bool isNew = JTSets.insert(MBB);
-@@ -1158,6 +1267,271 @@
+@@ -1158,6 +1268,235 @@
  
      // FIXME: Should we signal R9 usage?
    }
@@ -2036,7 +2100,6 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +    "\n\n";
 +
 +  O << " @ ========================================\n";
-+
 +  if (FlagSfiZeroMask) {
 +    O <<
 +      "\t.macro sfi_data_mask reg cond\n"
@@ -2073,30 +2136,35 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +  O << " @ ========================================\n";
 +  if (FlagSfiBranch) {
 +    O <<
-+      "\t.macro sfi_call_preamble\n"
++      "\t.macro sfi_call_preamble cond=\n"
 +      "\tsfi_nops_to_force_slot3\n"
 +      "\t.endm\n"
 +      "\n\n";
 +
 +    O <<
-+      "\t.macro sfi_return_alignment_and_code_mask reg cond=\n"
++      "\t.macro sfi_return_preamble reg cond=\n"
 +      "\tsfi_nop_if_at_bundle_end\n"
 +      "\tsfi_code_mask \\reg \\cond\n"
 +      "\t.endm\n"
 +      "\n\n";
-+
-+  } else {
++    
++    // This is used just before "bx rx"
 +    O <<
-+      "\t.macro sfi_call_preamble\n"
++      "\t.macro sfi_indirect_jump_preamble link cond=\n"
++      "\tsfi_nop_if_at_bundle_end\n"
++      "\tsfi_code_mask \\link \\cond\n"
 +      "\t.endm\n"
 +      "\n\n";
 +
++    // This is use just before "blx rx"
 +    O <<
-+      "\t.macro sfi_return_alignment_and_code_mask reg cond=\n"
++      "\t.macro sfi_indirect_call_preamble link cond=\n"
++      "\tsfi_nops_to_force_slot2\n"
++      "\tsfi_code_mask \\link \\cond\n"
 +      "\t.endm\n"
 +      "\n\n";
++
 +  }
-+
 +
 +  if (FlagSfiStore) {
 +    O << " @ ========================================\n";
@@ -2204,57 +2272,17 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +    }
 +
 +  } // FlagSfiStack
-+
-+
-+  O << " @ ========================================\n";
-+
-+  O <<
-+    "\t.macro sfi_bx link\n"
-+    "\tsfi_return_alignment_and_code_mask \\link\n"
-+    "\tbx \\link\n"
-+    "\t.endm\n"
-+    "\n\n";
-+
-+
-+  for (int p=0; kPreds[p] != NULL; ++ p) {
-+    O <<
-+      "\t.macro sfi_bx" << kPreds[p] << " link\n"
-+      "\tsfi_return_alignment_and_code_mask \\link " << kPreds[p] << "\n"
-+      "\tbx" << kPreds[p] << " \\link\n"
-+      "\t.endm\n"
-+      "\n\n";
-+  }
-+
-+
-+  O << " @ ========================================\n";
-+
-+  // This is use just before "mov pc, rx"
-+  // TODO: make it possible to turn this off
-+  O <<
-+    "\t.macro sfi_indirect_jump_preamble link\n"
-+    "\tsfi_nop_if_at_bundle_end\n"
-+    "\tsfi_code_mask \\link\n"
-+    "\t.endm\n"
-+    "\n\n";
-+
-+  // This is use just before "blx rx"
-+  // TODO: make it possible to turn this off
-+  O <<
-+    "\t.macro sfi_indirect_call_preamble link\n"
-+    "\tsfi_nops_to_force_slot2\n"
-+    "\tsfi_code_mask \\link\n"
-+    "\t.endm\n"
-+    "\n\n";
-+
++  
 +  O << " @ ========================================\n";
 +  O << "\t.text\n";
++
 +
 +  // @LOCALMOD-END
 +
  }
  
  void ARMAsmPrinter::PrintGlobalVariable(const GlobalVariable* GVar) {
-@@ -1345,6 +1719,7 @@
+@@ -1345,6 +1684,7 @@
      // generates code that does this, it is always safe to set.
      OutStreamer.EmitAssemblerFlag(MCStreamer::SubsectionsViaSymbols);
    }
@@ -2262,7 +2290,7 @@ diff -r c06933b0e3e6 llvm-trunk/lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  //===----------------------------------------------------------------------===//
-@@ -1519,4 +1894,3 @@
+@@ -1519,4 +1859,3 @@
    TargetRegistry::RegisterMCInstPrinter(TheARMTarget, createARMMCInstPrinter);
    TargetRegistry::RegisterMCInstPrinter(TheThumbTarget, createARMMCInstPrinter);
  }
