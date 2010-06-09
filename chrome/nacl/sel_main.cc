@@ -89,7 +89,7 @@ int SelMain(const int desc, const NaClHandle handle) {
 
   if (!NaClAppCtor(&state)) {
     fprintf(stderr, "Error while constructing app state\n");
-    goto done_file_dtor;
+    goto done;
   }
 
   state.restrict_to_main_thread = main_thread_only;
@@ -190,11 +190,6 @@ int SelMain(const int desc, const NaClHandle handle) {
   return ret_code;
 
  done:
-  fflush(stdout);
-
-  NaClAppDtor(&state);
-
- done_file_dtor:
   fflush(stdout);
 
   NaClAllModulesFini();
