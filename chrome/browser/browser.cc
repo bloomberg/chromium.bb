@@ -2969,7 +2969,10 @@ void Browser::Observe(NotificationType type,
       break;
 
     case NotificationType::EXTENSION_READY_FOR_INSTALL: {
-      if (BrowserList::GetLastActive() != this)
+      // Handle EXTENSION_READY_FOR_INSTALL for last active normal browser.
+      if (BrowserList::FindBrowserWithType(profile(),
+                                           Browser::TYPE_NORMAL,
+                                           false) != this)
         break;
 
       // We only want to show the loading dialog for themes, but we don't want

@@ -1476,7 +1476,9 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
     }
   } else {
     TabContents* contents = NULL;
-    Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
+    // Get last active normal browser of profile.
+    Browser* last_active = BrowserList::FindBrowserWithType(profile_,
+        Browser::TYPE_NORMAL, false);
     if (last_active)
       contents = last_active->GetSelectedTabContents();
     if (contents) {

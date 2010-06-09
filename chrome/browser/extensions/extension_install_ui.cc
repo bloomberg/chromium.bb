@@ -305,7 +305,10 @@ void ExtensionInstallUI::ShowThemeInfoBar(
   if (!new_theme->IsTheme())
     return;
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  // Get last active normal browser of profile.
+  Browser* browser = BrowserList::FindBrowserWithType(profile,
+                                                      Browser::TYPE_NORMAL,
+                                                      false);
   if (!browser)
     return;
 
