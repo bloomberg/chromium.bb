@@ -43,24 +43,24 @@ string16 DesktopNotificationService::CreateDataUrl(
   int resource;
   string16 line_name;
   string16 line;
-  std::vector<string16> subst;
+  std::vector<std::string> subst;
   if (icon_url.is_valid()) {
     resource = IDR_NOTIFICATION_ICON_HTML;
-    subst.push_back(UTF8ToUTF16(icon_url.spec()));
-    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(title))));
-    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
+    subst.push_back(icon_url.spec());
+    subst.push_back(EscapeForHTML(UTF16ToUTF8(title)));
+    subst.push_back(EscapeForHTML(UTF16ToUTF8(body)));
   } else if (title.empty() || body.empty()) {
     resource = IDR_NOTIFICATION_1LINE_HTML;
     line = title.empty() ? body : title;
     // Strings are div names in the template file.
     line_name = title.empty() ? ASCIIToUTF16("description")
                               : ASCIIToUTF16("title");
-    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(line_name))));
-    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(line))));
+    subst.push_back(EscapeForHTML(UTF16ToUTF8(line_name)));
+    subst.push_back(EscapeForHTML(UTF16ToUTF8(line)));
   } else {
     resource = IDR_NOTIFICATION_2LINE_HTML;
-    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(title))));
-    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
+    subst.push_back(EscapeForHTML(UTF16ToUTF8(title)));
+    subst.push_back(EscapeForHTML(UTF16ToUTF8(body)));
   }
 
   const base::StringPiece template_html(
@@ -72,9 +72,9 @@ string16 DesktopNotificationService::CreateDataUrl(
     return string16();
   }
 
-  string16 format_string = ASCIIToUTF16("data:text/html;charset=utf-8,"
-                                        + template_html.as_string());
-  return ReplaceStringPlaceholders(format_string, subst, NULL);
+  std::string data = ReplaceStringPlaceholders(template_html, subst, NULL);
+  return UTF8ToUTF16("data:text/html;charset=utf-8," +
+                      EscapeQueryParamValue(data, false));
 }
 
 // A task object which calls the renderer to inform the web page that the

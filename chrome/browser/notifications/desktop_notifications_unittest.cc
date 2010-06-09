@@ -281,7 +281,7 @@ TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
       GURL("http://www.google.com"),
       GURL("/icon.png"),
       ASCIIToUTF16("<script>window.alert('uh oh');</script>"),
-      ASCIIToUTF16("<i>this text is in italics</i>"),
+      ASCIIToUTF16("<i>this text is in italics</i>, as is %3ci%3ethis%3c/i%3e"),
       0, 0, DesktopNotificationService::PageNotification, 1));
 
   MessageLoopForUI::current()->RunAllPending();
@@ -290,4 +290,7 @@ TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
   GURL data_url = balloon->notification().content_url();
   EXPECT_EQ(std::string::npos, data_url.spec().find("<script>"));
   EXPECT_EQ(std::string::npos, data_url.spec().find("<i>"));
+  // URL-encoded versions of tags should also not be found.
+  EXPECT_EQ(std::string::npos, data_url.spec().find("%3cscript%3e"));
+  EXPECT_EQ(std::string::npos, data_url.spec().find("%3ci%3e"));
 }
