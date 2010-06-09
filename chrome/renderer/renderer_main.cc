@@ -236,8 +236,7 @@ int RendererMain(const MainFunctionParams& parameters) {
               MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
 #endif
 
-  std::wstring app_name = chrome::kBrowserAppName;
-  PlatformThread::SetName(WideToASCII(app_name + L"_RendererMain").c_str());
+  PlatformThread::SetName("CrRendererMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;

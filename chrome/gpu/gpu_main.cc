@@ -35,8 +35,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   }
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-  std::wstring app_name = chrome::kBrowserAppName;
-  PlatformThread::SetName(WideToASCII(app_name + L"_GpuMain").c_str());
+  PlatformThread::SetName("CrGpuMain");
 
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;

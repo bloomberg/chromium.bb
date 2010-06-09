@@ -34,8 +34,7 @@
 int NaClBrokerMain(const MainFunctionParams& parameters) {
   // The main thread of the broker.
   MessageLoopForIO main_message_loop;
-  std::wstring app_name = chrome::kNaClAppName;
-  PlatformThread::SetName(WideToASCII(app_name + L"_NaClBrokerMain").c_str());
+  PlatformThread::SetName("CrNaClBrokerMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
@@ -122,13 +121,7 @@ int NaClMain(const MainFunctionParams& parameters) {
 
   // The main thread of the plugin services IO.
   MessageLoopForIO main_message_loop;
-  // NaCl code runs in a different binary on Win64.
-#ifdef _WIN64
-  std::wstring app_name = chrome::kNaClAppName;
-#else
-  std::wstring app_name = chrome::kBrowserAppName;
-#endif
-  PlatformThread::SetName(WideToASCII(app_name + L"_NaClMain").c_str());
+  PlatformThread::SetName("CrNaClMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;

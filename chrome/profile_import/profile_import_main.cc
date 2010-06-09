@@ -16,9 +16,7 @@
 int ProfileImportMain(const MainFunctionParams& parameters) {
   // The main message loop of the profile import process.
   MessageLoop main_message_loop;
-  std::wstring app_name = chrome::kBrowserAppName;
-  PlatformThread::SetName(WideToASCII(
-      app_name + L"_ProfileImportMain").c_str());
+  PlatformThread::SetName("CrProfileImportMain");
 
   ChildProcess profile_import_process;
   profile_import_process.set_main_thread(new ProfileImportThread());

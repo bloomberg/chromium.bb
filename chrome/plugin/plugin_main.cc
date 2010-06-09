@@ -60,8 +60,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   InitializeChromeApplication();
 #endif
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-  std::wstring app_name = chrome::kBrowserAppName;
-  PlatformThread::SetName(WideToASCII(app_name + L"_PluginMain").c_str());
+  PlatformThread::SetName("CrPluginMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager high_resolution_timer_manager;

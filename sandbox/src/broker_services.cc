@@ -138,7 +138,7 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
   if (NULL == param)
     return 1;
 
-  PlatformThread::SetName("BrokerEventThread");
+  PlatformThread::SetName("BrokerEvent");
 
   BrokerServicesBase* broker = reinterpret_cast<BrokerServicesBase*>(param);
   HANDLE port = broker->job_port_;

@@ -823,12 +823,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
-  std::wstring app_name = chrome::kBrowserAppName;
-  std::string thread_name_string = WideToASCII(app_name + L"_BrowserMain");
-
-  const char* thread_name = thread_name_string.c_str();
-  PlatformThread::SetName(thread_name);
-  main_message_loop.set_thread_name(thread_name);
+  const char* kThreadName = "CrBrowserMain";
+  PlatformThread::SetName(kThreadName);
+  main_message_loop.set_thread_name(kThreadName);
 
   // Register the main thread by instantiating it, but don't call any methods.
   ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());

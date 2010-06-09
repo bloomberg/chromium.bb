@@ -15,8 +15,7 @@
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const MainFunctionParams& parameters) {
   MessageLoopForUI main_message_loop;
-  std::wstring app_name = chrome::kBrowserAppName;
-  PlatformThread::SetName(WideToASCII(app_name + L"_ServiceMain").c_str());
+  PlatformThread::SetName("CrServiceMain");
 
   ServiceProcess service_process;
   service_process.Initialize();

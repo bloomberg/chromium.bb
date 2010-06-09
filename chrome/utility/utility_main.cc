@@ -25,8 +25,7 @@
 int UtilityMain(const MainFunctionParams& parameters) {
   // The main message loop of the utility process.
   MessageLoop main_message_loop;
-  std::wstring app_name = chrome::kBrowserAppName;
-  PlatformThread::SetName(WideToASCII(app_name + L"_UtilityMain").c_str());
+  PlatformThread::SetName("CrUtilityMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
