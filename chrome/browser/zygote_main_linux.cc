@@ -299,7 +299,7 @@ class Zygote {
       // The fork() request is handled further up the call stack.
       return true;
     } else if (child < 0) {
-      LOG(ERROR) << "Zygote could not fork";
+      LOG(ERROR) << "Zygote could not fork: " << errno;
       goto error;
     }
 
