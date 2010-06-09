@@ -57,12 +57,12 @@ void ExtensionInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-#if !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar() {
   NOTIMPLEMENTED();
   return NULL;
 }
-#endif  // !TOOLKIT_VIEWS
+#endif  // OS_MACOSX
 
 void ExtensionInfoBarDelegate::Observe(NotificationType type,
                                        const NotificationSource& source,

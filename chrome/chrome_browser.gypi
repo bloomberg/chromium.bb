@@ -1317,6 +1317,8 @@
         'browser/gtk/download_started_animation_gtk.cc',
         'browser/gtk/edit_search_engine_dialog.cc',
         'browser/gtk/edit_search_engine_dialog.h',
+        'browser/gtk/extension_infobar_gtk.cc',
+        'browser/gtk/extension_infobar_gtk.h',
         'browser/gtk/extension_install_prompt_gtk.cc',
         'browser/gtk/extension_install_prompt2_gtk.cc',
         'browser/gtk/extension_installed_bubble_gtk.cc',
