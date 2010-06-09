@@ -550,7 +550,7 @@ ConfigureAndBuildGccStage2() {
   RunWithLog "Configure" ${TMP}/llvm-gcc.configure.log \
       env -i PATH=/usr/bin/:/bin \
              CC=${CC:-} \
-             CXX=${CXX:-} \
+             CXX=${CXX:-g++} \
              CFLAGS="-Dinhibit_libc" \
              CXXFLAGS="-Dinhibit_libc" \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
