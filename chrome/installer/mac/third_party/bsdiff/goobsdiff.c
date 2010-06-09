@@ -33,10 +33,23 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bsdiff/bsdiff.c,v 1.1 2005/08/06 01:59:05
 #include <bzlib.h>
 #include <err.h>
 #include <fcntl.h>
+#include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <zlib.h>
+
+#if defined(__APPLE__)
+#include <libkern/OSByteOrder.h>
+#define htole64(x) OSSwapHostToLittleInt64(x)
+#elif defined(__linux__)
+#include <endian.h>
+#elif defined(_WIN32) && (defined(_M_IX86) || defined(_M_X64))
+#define htole64(x) (x)
+#else
+#error Provide htole64 for this platform
+#endif
 
 #define MIN(x,y) (((x)<(y)) ? (x) : (y))
 
@@ -175,22 +188,112 @@ static off_t search(off_t *I,u_char *old,off_t oldsize,
 	};
 }
 
-static void offtout(off_t x,u_char *buf)
+static inline void offtout(off_t x,u_char *buf)
 {
-	off_t y;
+	*((off_t*)buf) = htole64(x);
+}
 
-	if(x<0) y=-x; else y=x;
+/* zlib provides compress2, which deflates to deflate (zlib) format. This is
+ * unfortunately distinct from gzip format in that the headers wrapping the
+ * decompressed data are different. gbspatch reads gzip-compressed data using
+ * the file-oriented gzread interface, which only supports gzip format.
+ * compress2gzip is identical to zlib's compress2 except that it produces gzip
+ * output compatible with gzread. This change is achieved by calling
+ * deflateInit2 instead of deflateInit and specifying 31 for windowBits;
+ * numbers greater than 15 cause the addition of a gzip wrapper. */
+static int compress2gzip(Bytef *dest, uLongf *destLen,
+                         const Bytef *source, uLong sourceLen, int level)
+{
+	z_stream stream;
+	int err;
 
-		buf[0]=y%256;y-=buf[0];
-	y=y/256;buf[1]=y%256;y-=buf[1];
-	y=y/256;buf[2]=y%256;y-=buf[2];
-	y=y/256;buf[3]=y%256;y-=buf[3];
-	y=y/256;buf[4]=y%256;y-=buf[4];
-	y=y/256;buf[5]=y%256;y-=buf[5];
-	y=y/256;buf[6]=y%256;y-=buf[6];
-	y=y/256;buf[7]=y%256;
+	stream.next_in = (Bytef*)source;
+	stream.avail_in = (uInt)sourceLen;
 
-	if(x<0) buf[7]|=0x80;
+	stream.next_out = dest;
+	stream.avail_out = (uInt)*destLen;
+	if ((uLong)stream.avail_out != *destLen) return Z_BUF_ERROR;
+
+	stream.zalloc = (alloc_func)0;
+	stream.zfree = (free_func)0;
+	stream.opaque = (voidpf)0;
+
+	err = deflateInit2(&stream,
+	                   level, Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY);
+	if (err != Z_OK) return err;
+
+	err = deflate(&stream, Z_FINISH);
+	if (err != Z_STREAM_END) {
+		deflateEnd(&stream);
+		return err == Z_OK ? Z_BUF_ERROR : err;
+	}
+	*destLen = stream.total_out;
+
+	err = deflateEnd(&stream);
+	return err;
+}
+
+/* Recompress buf of size buf_len using bzip2 or gzip. The smallest version is
+ * used. The original uncompressed variant may be the smallest. Returns a
+ * number identifying the encoding, 1 for uncompressed, 2 for bzip2, and 3 for
+ * gzip. If the original uncompressed variant is not smallest, it is freed.
+ * The caller must free any buf after this function returns. */
+static char make_small(u_char **buf, off_t *buf_len)
+{
+	u_char *source = *buf;
+	off_t source_len = *buf_len;
+	u_char *bz2, *gz;
+	unsigned int bz2_len;
+	unsigned long gz_len;
+	int zerr;
+	char smallest;
+
+	smallest = 1;
+
+	bz2_len = source_len + 1;
+	bz2 = malloc(bz2_len);
+	zerr = BZ2_bzBuffToBuffCompress((char*)bz2, &bz2_len, (char*)source,
+	                                source_len, 9, 0, 0);
+	if (zerr == BZ_OK) {
+		if (bz2_len < *buf_len) {
+			smallest = 2;
+			*buf = bz2;
+			*buf_len = bz2_len;
+		} else {
+			free(bz2);
+			bz2 = NULL;
+		}
+	} else if (zerr == BZ_OUTBUFF_FULL) {
+		free(bz2);
+		bz2 = NULL;
+	} else {
+		errx(1, "BZ2_bzBuffToBuffCompress: %d", zerr);
+	}
+
+	gz_len = source_len + 1;
+	gz = malloc(gz_len);
+	zerr = compress2gzip(gz, &gz_len, source, source_len, 9);
+	if (zerr == Z_OK) {
+		if (gz_len < *buf_len) {
+			smallest = 3;
+			*buf = gz;
+			*buf_len = gz_len;
+		} else {
+			free(gz);
+			gz = NULL;
+		}
+	} else if (zerr == Z_BUF_ERROR) {
+		free(gz);
+		gz = NULL;
+	} else {
+		errx(1, "compress2gzip: %d", zerr);
+	}
+
+	if (smallest != 1) {
+		free(source);
+	}
+
+	return smallest;
 }
 
 int main(int argc,char *argv[])
@@ -205,15 +308,12 @@ int main(int argc,char *argv[])
 	off_t s,Sf,lenf,Sb,lenb;
 	off_t overlap,Ss,lens;
 	off_t i;
-	off_t dblen,eblen;
-	u_char *db,*eb;
-	u_char buf[8];
-	u_char header[32];
+	off_t cblen, dblen, eblen;
+	u_char *cb, *db, *eb;
+	u_char header[96];
 	FILE * pf;
-	BZFILE * pfbz2;
-	int bz2err;
 
-	if(argc!=4) errx(1,"usage: %s oldfile newfile patchfile\n",argv[0]);
+	if(argc!=4) errx(1,"usage: %s oldfile newfile patchfile",argv[0]);
 
 	/* Allocate oldsize+1 bytes instead of oldsize bytes to ensure
 		that we never try to malloc(0) and get a NULL pointer */
@@ -240,35 +340,44 @@ int main(int argc,char *argv[])
 		(read(fd,new,newsize)!=newsize) ||
 		(close(fd)==-1)) err(1,"%s",argv[2]);
 
-	if(((db=malloc(newsize+1))==NULL) ||
+	if(((cb=malloc(newsize+1))==NULL) ||
+		((db=malloc(newsize+1))==NULL) ||
 		((eb=malloc(newsize+1))==NULL)) err(1,NULL);
+	cblen=0;
 	dblen=0;
 	eblen=0;
 
 	/* Create the patch file */
-	if ((pf = fopen(argv[3], "w")) == NULL)
+	if ((pf = fopen(argv[3], "wb")) == NULL)
 		err(1, "%s", argv[3]);
 
-	/* Header is
-		0	8	 "BSDIFF40"
-		8	8	length of bzip2ed ctrl block
-		16	8	length of bzip2ed diff block
-		24	8	length of new file */
-	/* File is
-		0	32	Header
-		32	??	Bzip2ed ctrl block
-		??	??	Bzip2ed diff block
-		??	??	Bzip2ed extra block */
-	memcpy(header,"BSDIFF40",8);
-	offtout(0, header + 8);
-	offtout(0, header + 16);
-	offtout(newsize, header + 24);
-	if (fwrite(header, 32, 1, pf) != 1)
+	/* File format:
+		0	8	"BSDIFF4G"
+		8	8	length of compressed control block (x)
+		16	8	length of compressed diff block (y)
+		24	8	length of compressed extra block (z)
+		32	8	length of old file
+		40	8	length of new file
+		48	20	SHA1 of old file
+		68	20	SHA1 of new file
+		88	1	encoding of control block
+		89	1	encoding of diff block
+		90	1	encoding of extra block
+		91	5	unused
+		96	x	compressed control block
+		96+x	y	compressed diff block
+		96+x+y	z	compressed extra block
+	Encodings are 1 (uncompressed), 2 (bzip2), and 3 (gzip). */
+	memset(header, 0, sizeof(header));
+	if (fwrite(header, sizeof(header), 1, pf) != 1)
 		err(1, "fwrite(%s)", argv[3]);
+	memcpy(header, "BSDIFF4G", 8);
+	offtout(oldsize, header + 32);
+	offtout(newsize, header + 40);
+	SHA1(old, oldsize, header + 48);
+	SHA1(new, newsize, header + 68);
 
-	/* Compute the differences, writing ctrl as we go */
-	if ((pfbz2 = BZ2_bzWriteOpen(&bz2err, pf, 9, 0, 0)) == NULL)
-		errx(1, "BZ2_bzWriteOpen, bz2err = %d", bz2err);
+	/* Compute the differences */
 	scan=0;len=0;
 	lastscan=0;lastpos=0;lastoffset=0;
 	while(scan<newsize) {
@@ -331,69 +440,46 @@ int main(int argc,char *argv[])
 			dblen+=lenf;
 			eblen+=(scan-lenb)-(lastscan+lenf);
 
-			offtout(lenf,buf);
-			BZ2_bzWrite(&bz2err, pfbz2, buf, 8);
-			if (bz2err != BZ_OK)
-				errx(1, "BZ2_bzWrite, bz2err = %d", bz2err);
+			offtout(lenf, cb + cblen);
+			cblen += 8;
 
-			offtout((scan-lenb)-(lastscan+lenf),buf);
-			BZ2_bzWrite(&bz2err, pfbz2, buf, 8);
-			if (bz2err != BZ_OK)
-				errx(1, "BZ2_bzWrite, bz2err = %d", bz2err);
+			offtout((scan - lenb) - (lastscan + lenf), cb + cblen);
+			cblen += 8;
 
-			offtout((pos-lenb)-(lastpos+lenf),buf);
-			BZ2_bzWrite(&bz2err, pfbz2, buf, 8);
-			if (bz2err != BZ_OK)
-				errx(1, "BZ2_bzWrite, bz2err = %d", bz2err);
+			offtout((pos - lenb) - (lastpos + lenf), cb + cblen);
+			cblen += 8;
 
 			lastscan=scan-lenb;
 			lastpos=pos-lenb;
 			lastoffset=pos-scan;
 		};
 	};
-	BZ2_bzWriteClose(&bz2err, pfbz2, 0, NULL, NULL);
-	if (bz2err != BZ_OK)
-		errx(1, "BZ2_bzWriteClose, bz2err = %d", bz2err);
 
-	/* Compute size of compressed ctrl data */
-	if ((len = ftello(pf)) == -1)
-		err(1, "ftello");
-	offtout(len-32, header + 8);
+	header[88] = make_small(&cb, &cblen);
+	header[89] = make_small(&db, &dblen);
+	header[90] = make_small(&eb, &eblen);
 
-	/* Write compressed diff data */
-	if ((pfbz2 = BZ2_bzWriteOpen(&bz2err, pf, 9, 0, 0)) == NULL)
-		errx(1, "BZ2_bzWriteOpen, bz2err = %d", bz2err);
-	BZ2_bzWrite(&bz2err, pfbz2, db, dblen);
-	if (bz2err != BZ_OK)
-		errx(1, "BZ2_bzWrite, bz2err = %d", bz2err);
-	BZ2_bzWriteClose(&bz2err, pfbz2, 0, NULL, NULL);
-	if (bz2err != BZ_OK)
-		errx(1, "BZ2_bzWriteClose, bz2err = %d", bz2err);
+	if (fwrite(cb, 1, cblen, pf) != cblen)
+		err(1, "fwrite");
+	if (fwrite(db, 1, dblen, pf) != dblen)
+		err(1, "fwrite");
+	if (fwrite(eb, 1, eblen, pf) != eblen)
+		err(1, "fwrite");
 
-	/* Compute size of compressed diff data */
-	if ((newsize = ftello(pf)) == -1)
-		err(1, "ftello");
-	offtout(newsize - len, header + 16);
-
-	/* Write compressed extra data */
-	if ((pfbz2 = BZ2_bzWriteOpen(&bz2err, pf, 9, 0, 0)) == NULL)
-		errx(1, "BZ2_bzWriteOpen, bz2err = %d", bz2err);
-	BZ2_bzWrite(&bz2err, pfbz2, eb, eblen);
-	if (bz2err != BZ_OK)
-		errx(1, "BZ2_bzWrite, bz2err = %d", bz2err);
-	BZ2_bzWriteClose(&bz2err, pfbz2, 0, NULL, NULL);
-	if (bz2err != BZ_OK)
-		errx(1, "BZ2_bzWriteClose, bz2err = %d", bz2err);
+	offtout(cblen, header + 8);
+	offtout(dblen, header + 16);
+	offtout(eblen, header + 24);
 
 	/* Seek to the beginning, write the header, and close the file */
 	if (fseeko(pf, 0, SEEK_SET))
 		err(1, "fseeko");
-	if (fwrite(header, 32, 1, pf) != 1)
+	if (fwrite(header, sizeof(header), 1, pf) != 1)
 		err(1, "fwrite(%s)", argv[3]);
 	if (fclose(pf))
 		err(1, "fclose");
 
 	/* Free the memory we used */
+	free(cb);
 	free(db);
 	free(eb);
 	free(I);
