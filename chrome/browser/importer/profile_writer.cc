@@ -8,6 +8,7 @@
 #include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -25,7 +26,7 @@ bool ProfileWriter::TemplateURLModelIsLoaded() const {
 }
 
 void ProfileWriter::AddPasswordForm(const PasswordForm& form) {
-  profile_->GetWebDataService(Profile::EXPLICIT_ACCESS)->AddLogin(form);
+  profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS)->AddLogin(form);
 }
 
 #if defined(OS_WIN)
