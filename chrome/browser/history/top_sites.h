@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/thumbnail_score.h"
 #include "googleurl/src/gurl.h"
 
@@ -43,7 +44,8 @@ typedef std::vector<MostVisitedURL> MostVisitedURLList;
 // new tab page requests on the I/O thread without proxying to the UI thread is
 // a nontrivial performance win, especially when the browser is starting and
 // the UI thread is busy.
-class TopSites : public base::RefCountedThreadSafe<TopSites> {
+class TopSites : public NotificationObserver,
+                 public base::RefCountedThreadSafe<TopSites> {
  public:
   explicit TopSites(Profile* profile);
 
@@ -66,7 +68,7 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   };
 
   // Initializes TopSites.
-  void Init();
+  void Init(const FilePath& db_name);
 
   // Sets the given thumbnail for the given URL. Returns true if the thumbnail
   // was updated. False means either the URL wasn't known to us, or we felt
@@ -88,6 +90,8 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   friend class TopSitesTest_GetMostVisited_Test;
   friend class TopSitesTest_RealDatabase_Test;
   friend class TopSitesTest_MockDatabase_Test;
+  friend class TopSitesTest_DeleteNotifications_Test;
+  friend class TopSitesTest_GetUpdateDelay_Test;
 
   ~TopSites();
 
@@ -150,6 +154,15 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   // For testing with a HistoryService mock.
   void SetMockHistoryService(MockHistoryService* mhs);
 
+  // Implementation of NotificationObserver.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // Returns the delay until the next update of history is needed.
+  // Uses num_urls_changed
+  base::TimeDelta GetUpdateDelay();
+
   Profile* profile_;
   // A mockup to use for testing. If NULL, use the real HistoryService
   // from the profile_. See SetMockHistoryService.
@@ -174,6 +187,12 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   base::OneShotTimer<TopSites> timer_;
 
   scoped_ptr<TopSitesDatabase> db_;
+  FilePath db_path_;
+
+  NotificationRegistrar registrar_;
+
+  // The number of URLs changed on the last update.
+  size_t last_num_urls_changed_;
 
   // TODO(brettw): use the blacklist.
   // std::set<GURL> blacklist_;

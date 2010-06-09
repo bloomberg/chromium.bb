@@ -21,7 +21,7 @@ bool TopSitesDatabaseImpl::Init(const FilePath& db_name) {
 
   if (!db_.Open(db_name)) {
     LOG(WARNING) << db_.GetErrorMessage();
-    return sql::INIT_FAILURE;
+    return false;
   }
 
   return InitThumbnailTable();
@@ -247,4 +247,3 @@ bool TopSitesDatabaseImpl::RemoveURL(const MostVisitedURL& url) {
 }
 
 }  // namespace history
-

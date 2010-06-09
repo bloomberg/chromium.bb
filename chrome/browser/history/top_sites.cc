@@ -4,9 +4,13 @@
 
 #include "chrome/browser/history/top_sites.h"
 
+#include <algorithm>
+
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/history/top_sites_database.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -16,19 +20,30 @@ namespace history {
 // How many top sites to store in the cache.
 static const int kTopSitesNumber = 20;
 static const int kDaysOfHistory = 90;
-static const int64 kUpdateIntervalSecs = 15;  // TODO(Nik): come up
-                                              // with an algorithm for timing.
+static const int64 kUpdateIntervalSecs = 15;  // Time from startup to DB query.
+// Intervals between requests to HistoryService.
+static const int64 kMinUpdateIntervalMinutes = 1;
+static const int64 kMaxUpdateIntervalMinutes = 60;
+
 
 TopSites::TopSites(Profile* profile) : profile_(profile),
-                                       mock_history_service_(NULL) {
+                                       mock_history_service_(NULL),
+                                       last_num_urls_changed_(0) {
+  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+                 Source<Profile>(profile_));
 }
 
 TopSites::~TopSites() {
+  timer_.Stop();
 }
 
-void TopSites::Init() {
-  if (db_.get())
-    ReadDatabase();
+void TopSites::Init(const FilePath& db_name) {
+  db_path_ = db_name;
+  db_.reset(new TopSitesDatabaseImpl());
+  if (!db_->Init(db_name))
+    return;
+
+  ReadDatabase();
 
   // Start the one-shot timer.
   timer_.Start(base::TimeDelta::FromSeconds(kUpdateIntervalSecs), this,
@@ -139,6 +154,9 @@ void TopSites::UpdateMostVisited(MostVisitedURLList* most_visited) {
     std::vector<size_t> deleted;  // Indices into top_sites_.
     std::vector<size_t> moved;    // Indices into most_visited.
     DiffMostVisited(top_sites_, *most_visited, &added, &deleted, &moved);
+
+    // #added == #deleted; #added + #moved = total.
+    last_num_urls_changed_ = added.size() + moved.size();
 
     // Process the diff: delete from images and disk, add to disk.
     // Delete all the thumbnails associated with URLs that were deleted.
@@ -262,7 +280,7 @@ void TopSites::DiffMostVisited(const MostVisitedURLList& old_list,
 void TopSites::StartQueryForMostVisited() {
   if (mock_history_service_) {
     // Testing with a mockup.
-    // QuerySegmentUsageSince is not virtual, so we have to duplicate the code.
+    // QueryMostVisitedURLs is not virtual, so we have to duplicate the code.
     mock_history_service_->QueryMostVisitedURLs(
         kTopSitesNumber,
         kDaysOfHistory,
@@ -281,6 +299,17 @@ void TopSites::StartQueryForMostVisited() {
       LOG(INFO) << "History Service not available.";
     }
   }
+
+  timer_.Stop();
+  timer_.Start(GetUpdateDelay(), this,
+               &TopSites::StartQueryForMostVisited);
+}
+
+base::TimeDelta TopSites::GetUpdateDelay() {
+  int64 range = kMaxUpdateIntervalMinutes - kMinUpdateIntervalMinutes;
+  int64 minutes = kMaxUpdateIntervalMinutes -
+      last_num_urls_changed_ * range / kTopSitesNumber;
+  return base::TimeDelta::FromMinutes(minutes);
 }
 
 void TopSites::OnTopSitesAvailable(
@@ -292,6 +321,27 @@ void TopSites::OnTopSitesAvailable(
 
 void TopSites::SetMockHistoryService(MockHistoryService* mhs) {
   mock_history_service_ = mhs;
+}
+
+void TopSites::Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+  if (type != NotificationType::HISTORY_URLS_DELETED) {
+    NOTREACHED();
+    return;
+  }
+
+  Details<history::URLsDeletedDetails> deleted_details(details);
+  if (deleted_details->all_history) {
+    db_.reset(new TopSitesDatabaseImpl());
+    // TODO(nshkrob): delete file in background (FILE) thread.
+    file_util::Delete(db_path_, false);
+    if (!db_->Init(db_path_)) {
+      NOTREACHED() << "Failed to initialize database.";
+      return;
+    }
+  }
+  StartQueryForMostVisited();
 }
 
 }  // namespace history

@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "app/sql/connection.h"
-#include "app/sql/init_status.h"
-#include "app/sql/meta_table.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
@@ -31,6 +29,9 @@ namespace history {
 class TopSitesDatabase {
  public:
   virtual ~TopSitesDatabase() {}
+  virtual bool Init(const FilePath& filename) {
+    return true;
+  }
 
   // Returns a list of all URLs currently in the table.
   virtual MostVisitedURLList GetTopURLs() = 0;
@@ -51,14 +52,14 @@ class TopSitesDatabase {
   virtual bool RemoveURL(const MostVisitedURL& url) = 0;
 };
 
-class TopSitesDatabaseImpl: public TopSitesDatabase {
+class TopSitesDatabaseImpl : public TopSitesDatabase {
  public:
   TopSitesDatabaseImpl();
   ~TopSitesDatabaseImpl() {}
 
   // Must be called after creation but before any other methods are called.
   // Returns true on success. If false, no other functions should be called.
-  bool Init(const FilePath& db_name);
+  virtual bool Init(const FilePath& db_name);
 
   // Thumbnails ----------------------------------------------------------------
 

@@ -7,6 +7,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/browser/history/top_sites_database.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "gfx/codec/jpeg_codec.h"
@@ -28,6 +29,7 @@ class TopSitesTest : public testing::Test {
   }
 
   TopSites& top_sites() { return *top_sites_; }
+  Profile& profile() {return *profile_;}
   FilePath& file_name() { return file_name_; }
   RefCountedBytes* google_thumbnail() { return google_thumbnail_; }
   RefCountedBytes* random_thumbnail() { return random_thumbnail_; }
@@ -88,6 +90,7 @@ class TopSitesTest : public testing::Test {
   scoped_refptr<RefCountedBytes> google_thumbnail_;
   scoped_refptr<RefCountedBytes> random_thumbnail_;
   scoped_refptr<RefCountedBytes> weewar_thumbnail_;
+  MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };
@@ -115,6 +118,11 @@ class MockHistoryServiceImpl : public TopSites::MockHistoryService {
     page.redirects = RedirectList();
     page.redirects.push_back(url);
     most_visited_urls_.push_back(page);
+  }
+
+  // Removes the last URL in the list.
+  void RemoveMostVisitedURL() {
+    most_visited_urls_.pop_back();
   }
 
  private:
@@ -605,6 +613,59 @@ TEST_F(TopSitesTest, RealDatabase) {
   db->GetPageThumbnail(url2, &out_2);
   EXPECT_TRUE(ThumbnailsAreEqual(out_1, out_2.thumbnail));
   EXPECT_TRUE(high_score.Equals(out_2.thumbnail_score));
+}
+
+TEST_F(TopSitesTest, DeleteNotifications) {
+  GURL google1_url("http://google.com");
+  GURL google2_url("http://google.com/redirect");
+  GURL google3_url("http://www.google.com");
+  string16 google_title(ASCIIToUTF16("Google"));
+  GURL news_url("http://news.google.com");
+  string16 news_title(ASCIIToUTF16("Google News"));
+
+  MockHistoryServiceImpl hs;
+
+  top_sites().Init(file_name());
+
+  hs.AppendMockPage(google1_url, google_title);
+  hs.AppendMockPage(news_url, news_title);
+  top_sites().SetMockHistoryService(&hs);
+
+  top_sites().StartQueryForMostVisited();
+
+  MostVisitedURLList result = top_sites().GetMostVisitedURLs();
+  ASSERT_EQ(2u, result.size());
+
+  hs.RemoveMostVisitedURL();
+
+  history::URLsDeletedDetails details;
+  details.all_history = false;
+  top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
+                      Source<Profile> (&profile()),
+                      (const NotificationDetails&)details);
+
+  result = top_sites().GetMostVisitedURLs();
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(google_title, result[0].title);
+
+  hs.RemoveMostVisitedURL();
+  details.all_history = true;
+  top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
+                      Source<Profile> (&profile()),
+                      (const NotificationDetails&)details);
+  result = top_sites().GetMostVisitedURLs();
+  ASSERT_EQ(0u, result.size());
+}
+
+TEST_F(TopSitesTest, GetUpdateDelay) {
+  top_sites().last_num_urls_changed_ = 0;
+  EXPECT_EQ(60, top_sites().GetUpdateDelay().InMinutes());
+
+  top_sites().last_num_urls_changed_ = 3;
+  EXPECT_EQ(52, top_sites().GetUpdateDelay().InMinutes());
+
+  top_sites().last_num_urls_changed_ = 20;
+  EXPECT_EQ(1, top_sites().GetUpdateDelay().InMinutes());
 }
 
 }  // namespace history

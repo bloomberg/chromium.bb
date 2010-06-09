@@ -53,6 +53,7 @@ extern const FilePath::CharType kSingletonSocketFilename[];
 extern const FilePath::CharType kSingletonLockFilename[];
 extern const FilePath::CharType kThumbnailsFilename[];
 extern const FilePath::CharType kNewTabThumbnailsFilename[];
+extern const FilePath::CharType kTopSitesFilename[];
 extern const wchar_t kUserDataDirname[];
 extern const FilePath::CharType kUserScriptsDirname[];
 extern const FilePath::CharType kWebDataFilename[];
