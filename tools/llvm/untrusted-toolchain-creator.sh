@@ -77,8 +77,13 @@ readonly TMP=/tmp/crosstool-untrusted
 
 
 # These are simple compiler wrappers to force 32bit builds
-readonly  CC32=$(readlink -f tools/llvm/mygcc32)
-readonly  CXX32=$(readlink -f tools/llvm/myg++32)
+# They are unused now. Instead we make sure that the toolchains that we
+# distribute are created on the oldest system we care to support. Currently
+# that is a 32 bit hardy. The advantage of this is that we can build
+# the toolchaing shared, reducing its size and allowing the use of
+# plugins.
+# readonly  CC32=$(readlink -f tools/llvm/mygcc32)
+# readonly  CXX32=$(readlink -f tools/llvm/myg++32)
 
 readonly CROSS_TARGET_AR=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ar
 readonly CROSS_TARGET_AS=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-as
@@ -236,8 +241,8 @@ ConfigureAndBuildLlvm() {
   RunWithLog "Configure" ${TMP}/llvm.configure.log\
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
-             CC=${CC32} \
-             CXX=${CXX32} \
+             CC=${CC:-} \
+             CXX=${CXX:-} \
              ./configure \
              --disable-jit \
              --enable-optimized \
@@ -250,8 +255,8 @@ ConfigureAndBuildLlvm() {
   RunWithLog "Make" ${TMP}/llvm.make.log \
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS=${MAKE_OPTS} \
-           CC=${CC32} \
-           CXX=${CXX32} \
+           CC=${CC:-} \
+           CXX=${CXX:-} \
            make ${MAKE_OPTS} all
 
   RunWithLog "Installing LLVM" ${TMP}/llvm-install.log \
@@ -363,8 +368,8 @@ ConfigureAndBuildGccStage1() {
   # TODO(robertm): do we really need CROSS_TARGET_*
   RunWithLog "Configure" ${TMP}/llvm-pregcc.configure.log \
       env -i PATH=/usr/bin/:/bin \
-             CC=${CC32} \
-             CXX=${CXX32} \
+             CC=${CC:-} \
+             CXX=${CXX:-} \
              CFLAGS="-Dinhibit_libc" \
              ../llvm-gcc-4.2/configure \
                --prefix=${LLVMGCC_INSTALL_DIR} \
@@ -386,16 +391,16 @@ ConfigureAndBuildGccStage1() {
  # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
  RunWithLog "Make" ${TMP}/llvm-pregcc.make.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
-             CC=${CC32} \
-             CXX=${CXX32} \
+             CC=${CC:-} \
+             CXX=${CXX:-} \
              CFLAGS="-Dinhibit_libc" \
              make ${MAKE_OPTS} all
 
  # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
  RunWithLog "Install" ${TMP}/llvm-pregcc.install.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
-             CC=${CC32} \
-             CXX=${CXX32} \
+             CC=${CC:-} \
+             CXX=${CXX:-} \
              CFLAGS="-Dinhibit_libc" \
              make ${MAKE_OPTS} install
 
@@ -544,8 +549,8 @@ ConfigureAndBuildGccStage2() {
   # TODO(robertm): do we really need CROSS_TARGET_*
   RunWithLog "Configure" ${TMP}/llvm-gcc.configure.log \
       env -i PATH=/usr/bin/:/bin \
-             CC=${CC32} \
-             CXX=${CXX32} \
+             CC=${CC:-} \
+             CXX=${CXX:-} \
              CFLAGS="-Dinhibit_libc" \
              CXXFLAGS="-Dinhibit_libc" \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
@@ -728,8 +733,8 @@ BuildAndInstallBinutils() {
   RunWithLog "Configuring binutils"  ${TMP}/binutils.configure.log \
     env -i \
     PATH="/usr/bin:/bin" \
-    CC=${CC32} \
-    CXX=${CXX32} \
+    CC=${CC:-} \
+    CXX=${CXX:-} \
     ../src/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
                                    --target=${CROSS_TARGET} \
                                    --enable-checking \
