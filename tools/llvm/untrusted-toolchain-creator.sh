@@ -369,7 +369,7 @@ ConfigureAndBuildGccStage1() {
   RunWithLog "Configure" ${TMP}/llvm-pregcc.configure.log \
       env -i PATH=/usr/bin/:/bin \
              CC=${CC:-} \
-             CXX=${CXX:-} \
+             CXX=${CXX:-g++} \
              CFLAGS="-Dinhibit_libc" \
              ../llvm-gcc-4.2/configure \
                --prefix=${LLVMGCC_INSTALL_DIR} \
@@ -392,7 +392,7 @@ ConfigureAndBuildGccStage1() {
  RunWithLog "Make" ${TMP}/llvm-pregcc.make.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              CC=${CC:-} \
-             CXX=${CXX:-} \
+             CXX=${CXX:-g++} \
              CFLAGS="-Dinhibit_libc" \
              make ${MAKE_OPTS} all
 
@@ -400,7 +400,7 @@ ConfigureAndBuildGccStage1() {
  RunWithLog "Install" ${TMP}/llvm-pregcc.install.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              CC=${CC:-} \
-             CXX=${CXX:-} \
+             CXX=${CXX:-g++} \
              CFLAGS="-Dinhibit_libc" \
              make ${MAKE_OPTS} install
 
