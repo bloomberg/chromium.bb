@@ -103,7 +103,8 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
 
 // Tests if a plugin executing a self deleting script using Invoke with
 // a modal dialog showing works without crashing or hanging
-TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeAlert) {
+// Disabled, flakily exceeds timeout, http://crbug.com/46257.
+TEST_F(NPAPIVisiblePluginTester, DISABLED_SelfDeletePluginInvokeAlert) {
   const FilePath test_case(
       FILE_PATH_LITERAL("self_delete_plugin_invoke_alert.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
