@@ -172,6 +172,7 @@ void PopulateURLResponse(
   response->setAppCacheManifestURL(info.appcache_manifest_url);
   response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->setWasNpnNegotiated(info.was_npn_negotiated);
+  response->setWasFetchedViaProxy(info.was_fetched_via_proxy);
 
   const net::HttpResponseHeaders* headers = info.headers;
   if (!headers)

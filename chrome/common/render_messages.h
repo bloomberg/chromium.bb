@@ -1350,6 +1350,7 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     WriteParam(m, p.appcache_manifest_url);
     WriteParam(m, p.was_fetched_via_spdy);
     WriteParam(m, p.was_npn_negotiated);
+    WriteParam(m, p.was_fetched_via_proxy);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     return
@@ -1363,7 +1364,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
       ReadParam(m, iter, &r->appcache_id) &&
       ReadParam(m, iter, &r->appcache_manifest_url) &&
       ReadParam(m, iter, &r->was_fetched_via_spdy) &&
-      ReadParam(m, iter, &r->was_npn_negotiated);
+      ReadParam(m, iter, &r->was_npn_negotiated) &&
+      ReadParam(m, iter, &r->was_fetched_via_proxy);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -1386,8 +1388,10 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     LogParam(p.appcache_manifest_url, l);
     l->append(L", ");
     LogParam(p.was_fetched_via_spdy, l);
-    l->append(L",");
+    l->append(L", ");
     LogParam(p.was_npn_negotiated, l);
+    l->append(L", ");
+    LogParam(p.was_fetched_via_proxy, l);
     l->append(L")");
   }
 };

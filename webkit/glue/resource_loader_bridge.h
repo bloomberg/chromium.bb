@@ -127,6 +127,11 @@ class ResourceLoaderBridge {
 
     // True if the response was delivered after NPN is negotiated.
     bool was_npn_negotiated;
+
+    // True if the response was fetched via an explicit proxy (as opposed to a
+    // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
+    // Note: we cannot tell if a transparent proxy may have been involved.
+    bool was_fetched_via_proxy;
   };
 
   // See the SyncLoad method declared below.  (The name of this struct is not

@@ -2970,15 +2970,10 @@ void RenderView::didReceiveResponse(
       NavigationState::FromDataSource(frame->provisionalDataSource());
   CHECK(navigation_state);
 
-  // Record that this was a page loaded over SPDY.
-  if (response.wasFetchedViaSPDY()) {
-    navigation_state->set_was_fetched_via_spdy(true);
-  }
-
-  // Record that npn protocol was negotiated when fetching this page.
-  if (response.wasNpnNegotiated()) {
-    navigation_state->set_was_npn_negotiated(true);
-  }
+  // Record page load flags.
+  navigation_state->set_was_fetched_via_spdy(response.wasFetchedViaSPDY());
+  navigation_state->set_was_npn_negotiated(response.wasNpnNegotiated());
+  navigation_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());
 
   // Consider loading an alternate error page for 404 responses.
   if (response.httpStatusCode() != 404)
@@ -4705,6 +4700,38 @@ void RenderView::DumpLoadHistograms() const {
     UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.RequestToFinish",
         finish - request, kBeginToFinishMin,
         kBeginToFinishMax, kBeginToFinishBucketCount);
+
+  // Record page load time and abandonment rates for proxy cases.
+  GURL url = GURL(main_frame->url());
+  if (navigation_state->was_fetched_via_proxy()) {
+    if (url.SchemeIs("https")) {
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.Proxy.https",
+          finish - start, kBeginToFinishMin,
+          kBeginToFinishMax, kBeginToFinishBucketCount);
+      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.Proxy.https",
+          abandoned_page ? 1 : 0, 2);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.Proxy.http",
+          finish - start, kBeginToFinishMin,
+          kBeginToFinishMax, kBeginToFinishBucketCount);
+      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.Proxy.http",
+          abandoned_page ? 1 : 0, 2);
+    }
+  } else {
+    if (url.SchemeIs("https")) {
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.NoProxy.https",
+          finish - start, kBeginToFinishMin,
+          kBeginToFinishMax, kBeginToFinishBucketCount);
+      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.NoProxy.https",
+          abandoned_page ? 1 : 0, 2);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.NoProxy.http",
+          finish - start, kBeginToFinishMin,
+          kBeginToFinishMax, kBeginToFinishBucketCount);
+      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.NoProxy.http",
+          abandoned_page ? 1 : 0, 2);
+    }
+  }
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.CommitToFinish", finish - commit);
 
