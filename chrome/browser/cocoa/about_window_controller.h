@@ -28,9 +28,6 @@ class Profile;
   // button.
   IBOutlet NSView* updateBlock_;
 
-  // promotionBlock_ holds the Keystone ticket promotion text and button.
-  IBOutlet NSView* promotionBlock_;
-
   IBOutlet NSProgressIndicator* spinner_;
   IBOutlet NSImageView* updateStatusIndicator_;
   IBOutlet NSTextField* updateText_;

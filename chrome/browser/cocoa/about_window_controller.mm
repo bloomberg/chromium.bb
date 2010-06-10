@@ -277,29 +277,13 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
 - (void)setAllowsUpdate:(bool)update allowsPromotion:(bool)promotion {
   bool oldUpdate = ![updateBlock_ isHidden];
-  bool oldPromotion = ![promotionBlock_ isHidden];
+  bool oldPromotion = ![promoteButton_ isHidden];
 
   if (promotion == oldPromotion && update == oldUpdate) {
     return;
   }
 
   NSRect updateFrame = [updateBlock_ frame];
-  NSRect promotionFrame = [promotionBlock_ frame];
-
-  // This routine assumes no space between the update and promotion blocks.
-  DCHECK_EQ(NSMinY(updateFrame), NSMaxY(promotionFrame));
-
-  bool promotionOnly = !update && promotion;
-  bool oldPromotionOnly = !oldUpdate && oldPromotion;
-  if (promotionOnly != oldPromotionOnly) {
-    // The window is transitioning from having a promotion block and no update
-    // block to any other state, or the other way around.  Move the promotion
-    // frame up so that its top edge is in the same position as the update
-    // frame's top edge, or move it back down to its original location.
-    promotionFrame.origin.y += (promotionOnly ? 1.0 : -1.0) *
-                               NSHeight(updateFrame);
-  }
-
   CGFloat delta = 0.0;
 
   if (update != oldUpdate) {
@@ -308,28 +292,10 @@ static BOOL recentShownUserActionFailedStatus = NO;
   }
 
   if (promotion != oldPromotion) {
-    [promotionBlock_ setHidden:!promotion];
-    delta += (promotion ? 1.0 : -1.0) * NSHeight(promotionFrame);
+    [promoteButton_ setHidden:!promotion];
   }
 
   NSRect legalFrame = [legalBlock_ frame];
-
-  bool updateOrPromotion = update || promotion;
-  bool oldUpdateOrPromotion = oldUpdate || oldPromotion;
-  if (updateOrPromotion != oldUpdateOrPromotion) {
-    // The window is transitioning from having an update or promotion block or
-    // both to not having either, or the other way around.  Adjust delta to
-    // account for the space between the legal block and the update or
-    // promotion block.  When the update and promotion blocks are not visible,
-    // this extra spacing is not used.
-    delta += (updateOrPromotion ? 1.0 : -1.0) *
-             (NSMinY(legalFrame) - NSMaxY(updateFrame));
-  }
-
-  // The promotion frame may have changed even if delta is 0, so always reset
-  // its frame.
-  promotionFrame.origin.y += delta;
-  [promotionBlock_ setFrame:promotionFrame];
 
   if (delta) {
     updateFrame.origin.y += delta;
