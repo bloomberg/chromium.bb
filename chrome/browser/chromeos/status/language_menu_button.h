@@ -52,6 +52,7 @@ class LanguageMenuButton : public views::MenuButton,
   // LanguageLibrary::Observer implementation.
   virtual void InputMethodChanged(LanguageLibrary* obj);
   virtual void ImePropertiesChanged(LanguageLibrary* obj);
+  virtual void ActiveInputMethodsChanged(LanguageLibrary* obj);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -68,6 +69,10 @@ class LanguageMenuButton : public views::MenuButton,
 
   // Updates the status area with |name| and tooltip with |tooltip|.
   void UpdateIcon(const std::wstring& name, const std::wstring& tooltip);
+
+  // Updates the status area from the given input method.
+  void UpdateIconFromInputMethod(
+      const InputMethodDescriptor& input_method);
 
   // Rebuilds |model_|. This function should be called whenever
   // |input_method_descriptors_| is updated, or ImePropertiesChanged() is
