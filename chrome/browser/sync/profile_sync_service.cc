@@ -575,6 +575,13 @@ void ProfileSyncService::OnUserSubmittedAuth(
   backend_->Authenticate(username, password, captcha);
 }
 
+void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
+    const syncable::ModelTypeSet& data_types) {
+  // TODO(dantasse): save sync_everything to prefs
+  // call StartSyncing(data_types)
+  // call ChangePreferredDataTypes(data_types)
+}
+
 void ProfileSyncService::OnUserCancelledDialog() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     // A sync dialog was aborted before authentication.

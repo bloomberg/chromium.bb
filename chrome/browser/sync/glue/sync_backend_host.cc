@@ -124,6 +124,11 @@ void SyncBackendHost::Authenticate(const std::string& username,
                         username, password, captcha));
 }
 
+void SyncBackendHost::StartSyncing() {
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
+}
+
 void SyncBackendHost::Shutdown(bool sync_disabled) {
   // Thread shutdown should occur in the following order:
   // - SyncerThread
@@ -380,7 +385,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   // TODO(dantasse): this call is in a temporary position in order to enable
   // the new sync setup/passphrase UI.  http://crbug.com/45869
-  syncapi_->StartSyncing();
+  DoStartSyncing();
 }
 
 void SyncBackendHost::Core::DoAuthenticate(const std::string& username,
@@ -388,6 +393,11 @@ void SyncBackendHost::Core::DoAuthenticate(const std::string& username,
                                            const std::string& captcha) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
   syncapi_->Authenticate(username.c_str(), password.c_str(), captcha.c_str());
+}
+
+void SyncBackendHost::Core::DoStartSyncing() {
+  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  syncapi_->StartSyncing();
 }
 
 UIModelWorker* SyncBackendHost::ui_worker() {

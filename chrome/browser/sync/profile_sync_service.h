@@ -167,6 +167,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                                    const std::string& password,
                                    const std::string& captcha);
 
+  // Called when a user chooses which data types to sync as part of the sync
+  // setup wizard.  |sync_everything| represents whether they chose the
+  // "keep everything synced" option; if true, data_types will be ignored and
+  // all data types will be synced.  |sync_everything| means "sync all current
+  // and future data types."
+  virtual void OnUserChoseDatatypes(bool sync_everything,
+      const syncable::ModelTypeSet& data_types);
+
   // Called when a user cancels any setup dialog (login, etc).
   virtual void OnUserCancelledDialog();
 

@@ -113,6 +113,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void Authenticate(const std::string& username, const std::string& password,
                     const std::string& captcha);
 
+  // Called on |frontend_loop_| to start syncing.
+  void StartSyncing();
+
   // Called on |frontend_loop_| to kick off shutdown.
   // |sync_disabled| indicates if syncing is being disabled or not.
   // See the implementation and Core::DoShutdown for details.
@@ -276,6 +279,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoAuthenticate(const std::string& username,
                         const std::string& password,
                         const std::string& captcha);
+
+    // Called on the SyncBackendHost core_thread_ to tell the syncapi to start
+    // syncing (generally after initialization and authentication).
+    void DoStartSyncing();
 
     // The shutdown order is a bit complicated:
     // 1) From |core_thread_|, invoke the syncapi Shutdown call to do a final
