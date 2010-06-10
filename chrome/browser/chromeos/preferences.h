@@ -96,6 +96,7 @@ class Preferences : public NotificationObserver {
   BooleanPrefMember language_pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];
   IntegerPrefMember language_pinyin_int_prefs_[kNumPinyinIntegerPrefs];
   IntegerPrefMember language_pinyin_double_pinyin_schema_;
+  BooleanPrefMember language_mozc_boolean_prefs_[kNumMozcBooleanPrefs];
   StringPrefMember language_mozc_multiple_choice_prefs_[
       kNumMozcMultipleChoicePrefs];
 

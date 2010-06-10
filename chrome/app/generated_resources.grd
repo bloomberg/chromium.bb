@@ -8050,6 +8050,38 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The combobox value for the Mozc input method preference">
 	Direct input
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_INCOGNITO_MODE"
+               desc="The checkbox label for a Mozc input method preference">
+        Temporarily disable conversion personalization, history-based suggestions and user dictionary
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_AUTO_IME_TURN_OFF"
+               desc="The checkbox label for a Mozc input method preference">
+        Automatically switch to halfwidth
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_DATE_CONVERSION"
+               desc="The checkbox label for a Mozc input method preference">
+        Date/time conversion
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_SINGLE_KANJI_CONVERSION"
+               desc="The checkbox label for a Mozc input method preference">
+        Single kanji dictionary
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_SYMBOL_CONVERSION"
+               desc="The checkbox label for a Mozc input method preference">
+        Symbol dictionary
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_NUMBER_CONVERSION"
+               desc="The checkbox label for a Mozc input method preference">
+        Special number conversion
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_HISTORY_SUGGEST"
+               desc="The checkbox label for a Mozc input method preference">
+        Use input history
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_DICTIONARY_SUGGEST"
+               desc="The checkbox label for a Mozc input method preference">
+        Use system dictionary
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
                desc="The label for the configure button for input methods">
         Configure...

@@ -26,6 +26,13 @@ struct LanguageMultipleChoicePreference {
   int label_message_id;  // Resource grd ID for the label.
 };
 
+struct LanguageBooleanPrefs {
+  const wchar_t* pref_name;  // Chrome preference name.
+  bool default_pref_value;
+  const char* ibus_config_name;
+  int message_id;
+};
+
 // For ibus-daemon
 const char kGeneralSectionName[] = "general";
 const char kHotKeySectionName[] = "general/hotkey";
@@ -53,12 +60,7 @@ const char kChewingSectionName[] = "engine/Chewing";
 
 // We have to sync the |ibus_config_name|s with those in
 // ibus-chewing/files/src/Config.cc.
-const struct {
-  const wchar_t* pref_name;  // Chrome preference name.
-  bool default_pref_value;
-  const char* ibus_config_name;
-  int message_id;
-} kChewingBooleanPrefs[] = {
+const LanguageBooleanPrefs kChewingBooleanPrefs[] = {
   { prefs::kLanguageChewingAutoShiftCur, false, "autoShiftCur",
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_AUTO_SHIFT_CUR},
   { prefs::kLanguageChewingAddPhraseDirection, false, "addPhraseDirection",
@@ -173,12 +175,7 @@ const char kPinyinSectionName[] = "engine/Pinyin";
 
 // We have to sync the |ibus_config_name|s with those in
 // ibus-pinyin/files/src/Config.cc.
-const struct {
-  const wchar_t* pref_name;  // Chrome preference name.
-  bool default_pref_value;
-  const char* ibus_config_name;
-  int message_id;
-} kPinyinBooleanPrefs[] = {
+const LanguageBooleanPrefs kPinyinBooleanPrefs[] = {
   { prefs::kLanguagePinyinCorrectPinyin, true, "CorrectPinyin",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN },
   { prefs::kLanguagePinyinFuzzyPinyin, false, "FuzzyPinyin",
@@ -237,6 +234,50 @@ const char kMozcSectionName[] = "engine/Mozc";
 
 #define IDS_MOZC(suffix) \
     IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_##suffix
+
+const LanguageBooleanPrefs kMozcBooleanPrefs[] = {
+  { prefs::kLanguageMozcIncognitoMode,
+    false,
+    "incognito_mode",
+    IDS_MOZC(INCOGNITO_MODE)
+  },
+  { prefs::kLanguageMozcUseAutoImeTurnOff,
+    true,
+    "use_auto_ime_turn_off",
+    IDS_MOZC(USE_AUTO_IME_TURN_OFF)
+  },
+  { prefs::kLanguageMozcUseDateConversion,
+    true,
+    "use_date_conversion",
+    IDS_MOZC(USE_DATE_CONVERSION)
+  },
+  { prefs::kLanguageMozcUseSingleKanjiConversion,
+    true,
+    "use_single_kanji_conversion",
+    IDS_MOZC(USE_SINGLE_KANJI_CONVERSION)
+  },
+  { prefs::kLanguageMozcUseSymbolConversion,
+    true,
+    "use_symbol_conversion",
+    IDS_MOZC(USE_SYMBOL_CONVERSION)
+  },
+  { prefs::kLanguageMozcUseNumberConversion,
+    true,
+    "use_number_conversion",
+    IDS_MOZC(USE_NUMBER_CONVERSION)
+  },
+  { prefs::kLanguageMozcUseHistorySuggest,
+    true,
+    "use_history_suggest",
+    IDS_MOZC(USE_HISTORY_SUGGEST)
+  },
+  { prefs::kLanguageMozcUseDictionarySuggest,
+    true,
+    "use_dictionary_suggest",
+    IDS_MOZC(USE_DICTIONARY_SUGGEST)
+  },
+};
+const size_t kNumMozcBooleanPrefs = ARRAYSIZE_UNSAFE(kMozcBooleanPrefs);
 
 const LanguageMultipleChoicePreference<const char*>
     kMozcMultipleChoicePrefs[] = {

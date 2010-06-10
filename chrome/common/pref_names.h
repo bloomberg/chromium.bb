@@ -115,6 +115,14 @@ extern const wchar_t kLanguageMozcHistoryLearningLevel[];
 extern const wchar_t kLanguageMozcSelectionShortcut[];
 extern const wchar_t kLanguageMozcShiftKeyModeSwitch[];
 extern const wchar_t kLanguageMozcNumpadCharacterForm[];
+extern const wchar_t kLanguageMozcIncognitoMode[];
+extern const wchar_t kLanguageMozcUseAutoImeTurnOff[];
+extern const wchar_t kLanguageMozcUseDateConversion[];
+extern const wchar_t kLanguageMozcUseSingleKanjiConversion[];
+extern const wchar_t kLanguageMozcUseSymbolConversion[];
+extern const wchar_t kLanguageMozcUseNumberConversion[];
+extern const wchar_t kLanguageMozcUseHistorySuggest[];
+extern const wchar_t kLanguageMozcUseDictionarySuggest[];
 extern const wchar_t kAccessibilityEnabled[];
 #endif
 extern const wchar_t kIpcDisabledMessages[];

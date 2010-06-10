@@ -62,6 +62,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(kPinyinDoublePinyinSchema.pref_name,
                              kPinyinDoublePinyinSchema.default_pref_value);
 
+  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+    prefs->RegisterBooleanPref(kMozcBooleanPrefs[i].pref_name,
+                               kMozcBooleanPrefs[i].default_pref_value);
+  }
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         kMozcMultipleChoicePrefs[i].pref_name,
@@ -106,6 +110,10 @@ void Preferences::Init(PrefService* prefs) {
   }
   language_pinyin_double_pinyin_schema_.Init(
       kPinyinDoublePinyinSchema.pref_name, prefs, this);
+  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+    language_mozc_boolean_prefs_[i].Init(
+        kMozcBooleanPrefs[i].pref_name, prefs, this);
+  }
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     language_mozc_multiple_choice_prefs_[i].Init(
         kMozcMultipleChoicePrefs[i].pref_name, prefs, this);
@@ -215,6 +223,13 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
         kPinyinSectionName,
         kPinyinDoublePinyinSchema.ibus_config_name,
         language_pinyin_double_pinyin_schema_.GetValue());
+  }
+  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+    if (!pref_name || *pref_name == kMozcBooleanPrefs[i].pref_name) {
+      SetLanguageConfigBoolean(kMozcSectionName,
+                               kMozcBooleanPrefs[i].ibus_config_name,
+                               language_mozc_boolean_prefs_[i].GetValue());
+    }
   }
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     if (!pref_name || *pref_name == kMozcMultipleChoicePrefs[i].pref_name) {

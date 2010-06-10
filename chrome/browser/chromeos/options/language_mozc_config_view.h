@@ -16,6 +16,10 @@
 #include "views/controls/label.h"
 #include "views/window/dialog_delegate.h"
 
+namespace views {
+class Checkbox;
+}
+
 namespace chromeos {
 
 class LanguageCombobox;
@@ -23,12 +27,16 @@ template <typename DataType>
 class LanguageComboboxModel;
 
 // A dialog box for showing Mozc (Japanese input method) preferences.
-class LanguageMozcConfigView : public views::Combobox::Listener,
+class LanguageMozcConfigView : public views::ButtonListener,
+                               public views::Combobox::Listener,
                                public views::DialogDelegate,
                                public OptionsPageView {
  public:
   explicit LanguageMozcConfigView(Profile* profile);
   virtual ~LanguageMozcConfigView();
+
+  // views::ButtonListener overrides.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::Combobox::Listener overrides.
   virtual void ItemChanged(views::Combobox* sender,
@@ -57,6 +65,11 @@ class LanguageMozcConfigView : public views::Combobox::Listener,
   void NotifyPrefChanged();
 
   views::View* contents_;
+
+  struct MozcPrefAndAssociatedCheckbox {
+    BooleanPrefMember boolean_pref;
+    views::Checkbox* checkbox;
+  } prefs_and_checkboxes_[kNumMozcBooleanPrefs];
 
   struct MozcPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;

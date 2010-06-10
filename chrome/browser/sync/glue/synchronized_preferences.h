@@ -125,6 +125,14 @@ static const wchar_t* kSynchronizedPreferences[] = {
   //   prefs::kLanguageMozcSelectionShortcut;
   //   prefs::kLanguageMozcShiftKeyModeSwitch;
   //   prefs::kLanguageMozcNumpadCharacterForm;
+  //   prefs::kLanguageMozcIncognitoMode,
+  //   prefs::kLanguageMozcUseAutoImeTurnOff,
+  //   prefs::kLanguageMozcUseDateConversion,
+  //   prefs::kLanguageMozcUseSingleKanjiConversion,
+  //   prefs::kLanguageMozcUseSymbolConversion,
+  //   prefs::kLanguageMozcUseNumberConversion,
+  //   prefs::kLanguageMozcUseHistorySuggest,
+  //   prefs::kLanguageMozcUseDictionarySuggest,
   //
   // We don't sync the following IME prefs since they are not user-configurable
   // (yet):

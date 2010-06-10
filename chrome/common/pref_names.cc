@@ -305,6 +305,22 @@ const wchar_t kLanguageMozcShiftKeyModeSwitch[] =
     L"settings.language.mozc_shift_key_mode_switch";
 const wchar_t kLanguageMozcNumpadCharacterForm[] =
     L"settings.language.mozc_numpad_character_form";
+const wchar_t kLanguageMozcIncognitoMode[] =
+    L"settings.language.mozc_incognito_mode";
+const wchar_t kLanguageMozcUseAutoImeTurnOff[] =
+    L"settings.language.mozc_use_auto_ime_turn_off";
+const wchar_t kLanguageMozcUseDateConversion[] =
+    L"settings.language.mozc_use_date_conversion";
+const wchar_t kLanguageMozcUseSingleKanjiConversion[] =
+    L"settings.language.mozc_use_single_kanji_conversion";
+const wchar_t kLanguageMozcUseSymbolConversion[] =
+    L"settings.language.mozc_use_symbol_conversion";
+const wchar_t kLanguageMozcUseNumberConversion[] =
+    L"settings.language.mozc_use_number_conversion";
+const wchar_t kLanguageMozcUseHistorySuggest[] =
+    L"settings.language.mozc_use_history_suggest";
+const wchar_t kLanguageMozcUseDictionarySuggest[] =
+    L"settings.language.mozc_use_dictionary_suggest";
 
 // A boolean pref which determines whether accessibility is enabled.
 const wchar_t kAccessibilityEnabled[] = L"settings.accessibility";

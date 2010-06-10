@@ -384,7 +384,7 @@ void LanguageConfigView::AddInputMethodSection(
         input_method_id);
     layout->StartRow(0, kPerLanguageDoubleColumnSetId);
     InputMethodCheckbox* checkbox
-        = new InputMethodCheckbox(UTF8ToWide(display_name),
+        = new InputMethodCheckbox(UTF8ToWide(display_name).substr(0, 4),
                                   input_method_id);
     checkbox->set_listener(this);
     checkbox->set_tag(kSelectInputMethodButton);
@@ -545,8 +545,8 @@ void LanguageConfigView::InitInputMethodConfigViewMap() {
 
   // TODO(yusukes): Enable the following two mappings when ibus-mozc starts
   //                supporting IBus style configs.
-  // input_method_config_view_map_["mozc"] = CreateLanguageMozcConfigView;
-  // input_method_config_view_map_["mozc-jp"] = CreateLanguageMozcConfigView;
+  input_method_config_view_map_["mozc"] = CreateLanguageMozcConfigView;
+  input_method_config_view_map_["mozc-jp"] = CreateLanguageMozcConfigView;
 }
 
 void LanguageConfigView::InitInputMethodIdMapsAndVectors() {
