@@ -25,12 +25,9 @@ const wchar_t kKeyName[] = L"Software\\Google\\Common\\Rlz\\Events\\C";
 }  // namespace
 
 TEST(RlzLibTest, RecordProductEvent) {
-  if (!RLZTracker::InitRlz(base::DIR_EXE))
-    return;
-
   DWORD recorded_value = 0;
-  EXPECT_TRUE(RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-      RLZTracker::CHROME_OMNIBOX, RLZTracker::FIRST_SEARCH));
+  EXPECT_TRUE(RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+      rlz_lib::CHROME_OMNIBOX, rlz_lib::FIRST_SEARCH));
   const wchar_t kEvent1[] = L"C1F";
   RegKey key1;
   EXPECT_TRUE(key1.Open(HKEY_CURRENT_USER, kKeyName, KEY_READ));
@@ -38,8 +35,8 @@ TEST(RlzLibTest, RecordProductEvent) {
   EXPECT_EQ(1, recorded_value);
   EXPECT_TRUE(CleanValue(kKeyName, kEvent1));
 
-  EXPECT_TRUE(RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-      RLZTracker::CHROME_HOME_PAGE, RLZTracker::SET_TO_GOOGLE));
+  EXPECT_TRUE(RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+      rlz_lib::CHROME_HOME_PAGE, rlz_lib::SET_TO_GOOGLE));
   const wchar_t kEvent2[] = L"C2S";
   RegKey key2;
   EXPECT_TRUE(key2.Open(HKEY_CURRENT_USER, kKeyName, KEY_READ));
@@ -50,18 +47,15 @@ TEST(RlzLibTest, RecordProductEvent) {
 }
 
 TEST(RlzLibTest, CleanProductEvents) {
-  if (!RLZTracker::InitRlz(base::DIR_EXE))
-    return;
-
   DWORD recorded_value = 0;
-  EXPECT_TRUE(RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-      RLZTracker::CHROME_OMNIBOX, RLZTracker::FIRST_SEARCH));
+  EXPECT_TRUE(RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+      rlz_lib::CHROME_OMNIBOX, rlz_lib::FIRST_SEARCH));
   const wchar_t kEvent1[] = L"C1F";
   RegKey key1;
   EXPECT_TRUE(key1.Open(HKEY_CURRENT_USER, kKeyName, KEY_READ));
   EXPECT_TRUE(key1.ReadValueDW(kEvent1, &recorded_value));
   EXPECT_EQ(1, recorded_value);
 
-  EXPECT_TRUE(RLZTracker::ClearAllProductEvents(RLZTracker::CHROME));
+  EXPECT_TRUE(RLZTracker::ClearAllProductEvents(rlz_lib::CHROME));
   EXPECT_FALSE(CleanValue(kKeyName, kEvent1));
 }

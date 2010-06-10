@@ -1199,8 +1199,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
-  RLZTracker::InitRlzDelayed(base::DIR_MODULE, is_first_run,
-                             master_prefs.ping_delay);
+  RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay);
 #endif
 
   // Configure the network module so it has access to resources.

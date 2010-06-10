@@ -200,6 +200,9 @@ deps_os = {
     "src/third_party/mingw-w64/mingw/bin":
       ("http://nativeclient.googlecode.com/svn/trunk/src/third_party/mingw-w64/mingw/bin@" +
        Var("nacl_revision")),
+
+    "src/rlz":
+      "http://rlz.googlecode.com/svn/trunk@4",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
@@ -251,6 +254,7 @@ include_rules = [
   "+base",
   "+build",
   "+ipc",
+  "+rlz",
 
   # For now, we allow ICU to be included by specifying "unicode/...", although
   # this should probably change.

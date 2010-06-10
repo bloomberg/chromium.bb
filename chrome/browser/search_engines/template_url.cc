@@ -341,7 +341,7 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
         // NOTREACHED below.)
 #if defined(OS_WIN)
         std::wstring rlz_string;
-        RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
+        RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
         if (!rlz_string.empty()) {
           rlz_string = L"rlz=" + rlz_string + L"&";
           url.insert(i->index, rlz_string);

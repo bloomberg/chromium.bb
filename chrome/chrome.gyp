@@ -1425,7 +1425,7 @@
             '../breakpad/breakpad.gyp:*',
             '../courgette/courgette.gyp:*',
             '../gears/gears.gyp:*',
-            # '../rlz/rlz.gyp:*',  // temporary, back with open source rlz
+            '../rlz/rlz.gyp:*',
             '../sandbox/sandbox.gyp:*',
             '../tools/memory_watcher/memory_watcher.gyp:*',
             '../v8/tools/gyp/v8.gyp:v8_shell',

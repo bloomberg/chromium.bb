@@ -34,10 +34,6 @@ namespace {
 // The maximum length of an access points RLZ in wide chars.
 const DWORD kMaxRlzLength = 64;
 
-// The RLZ is a DLL that might not be present in the system. We load it
-// as needed but never unload it.
-volatile HMODULE rlz_dll = NULL;
-
 enum {
   ACCESS_VALUES_STALE,      // Possibly new values available.
   ACCESS_VALUES_FRESH       // The cached values are current.
@@ -47,83 +43,18 @@ enum {
 // decide if we need to refresh the some cached strings.
 volatile int access_values_state = ACCESS_VALUES_STALE;
 
-extern "C" {
-typedef bool (*RecordProductEventFn)(RLZTracker::Product product,
-                                     RLZTracker::AccessPoint point,
-                                     RLZTracker::Event event_id,
-                                     void* reserved);
+bool SendFinancialPing(const std::wstring& brand, const std::wstring& lang,
+                       const std::wstring& referral, bool exclude_id) {
+  rlz_lib::AccessPoint points[] = {rlz_lib::CHROME_OMNIBOX,
+                                   rlz_lib::CHROME_HOME_PAGE,
+                                   rlz_lib::NO_ACCESS_POINT};
+  std::string brand_ascii(WideToASCII(brand));
+  std::string lang_ascii(WideToASCII(lang));
+  std::string referral_ascii(WideToASCII(referral));
 
-typedef bool (*GetAccessPointRlzFn)(RLZTracker::AccessPoint point,
-                                    wchar_t* rlz,
-                                    DWORD rlz_size,
-                                    void* reserved);
-
-typedef bool (*ClearAllProductEventsFn)(RLZTracker::Product product,
-                                        void* reserved);
-
-typedef bool (*SendFinancialPingNoDelayFn)(RLZTracker::Product product,
-                                           RLZTracker::AccessPoint* access_points,
-                                           const WCHAR* product_signature,
-                                           const WCHAR* product_brand,
-                                           const WCHAR* product_id,
-                                           const WCHAR* product_lang,
-                                           bool exclude_id,
-                                           void* reserved);
-}  // extern "C".
-
-RecordProductEventFn record_event = NULL;
-GetAccessPointRlzFn get_access_point = NULL;
-ClearAllProductEventsFn clear_all_events = NULL;
-SendFinancialPingNoDelayFn send_ping_no_delay = NULL;
-
-template <typename FuncT>
-FuncT WireExport(HMODULE module, const char* export_name) {
-  if (!module)
-    return NULL;
-  void* entry_point = ::GetProcAddress(module, export_name);
-  return reinterpret_cast<FuncT>(entry_point);
-}
-
-HMODULE LoadRLZLibraryInternal(int directory_key) {
-  FilePath rlz_path;
-  if (!PathService::Get(directory_key, &rlz_path))
-    return NULL;
-  rlz_path = rlz_path.AppendASCII("rlz.dll");
-  return ::LoadLibraryW(rlz_path.value().c_str());
-}
-
-bool LoadRLZLibrary(int directory_key) {
-  rlz_dll = LoadRLZLibraryInternal(directory_key);
-  if (!rlz_dll) {
-    // As a last resort we can try the EXE directory.
-    if (directory_key != base::DIR_EXE)
-      rlz_dll = LoadRLZLibraryInternal(base::DIR_EXE);
-  }
-  if (rlz_dll) {
-    record_event =
-        WireExport<RecordProductEventFn>(rlz_dll, "RecordProductEvent");
-    get_access_point =
-        WireExport<GetAccessPointRlzFn>(rlz_dll, "GetAccessPointRlz");
-    clear_all_events =
-        WireExport<ClearAllProductEventsFn>(rlz_dll, "ClearAllProductEvents");
-    send_ping_no_delay =
-        WireExport<SendFinancialPingNoDelayFn>(rlz_dll,
-                                               "SendFinancialPingNoDelay");
-    return (record_event && get_access_point && clear_all_events &&
-            send_ping_no_delay);
-  }
-  return false;
-}
-
-bool SendFinancialPing(const wchar_t* brand, const wchar_t* lang,
-                       const wchar_t* referral, bool exclude_id) {
-  RLZTracker::AccessPoint points[] = {RLZTracker::CHROME_OMNIBOX,
-                                      RLZTracker::CHROME_HOME_PAGE,
-                                      RLZTracker::NO_ACCESS_POINT};
-  if (!send_ping_no_delay)
-    return false;
-  return send_ping_no_delay(RLZTracker::CHROME, points, L"chrome", brand,
-                            referral, lang, exclude_id, NULL);
+  return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
+                                    brand_ascii.c_str(), referral_ascii.c_str(),
+                                    lang_ascii.c_str(), exclude_id, NULL, true);
 }
 
 // This class leverages the AutocompleteEditModel notification to know when
@@ -143,9 +74,9 @@ class OmniBoxUsageObserver : public NotificationObserver {
                        const NotificationDetails& details) {
     // Try to record event now, else set the flag to try later when we
     // attempt the ping.
-    if (!RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-                                        RLZTracker::CHROME_OMNIBOX,
-                                        RLZTracker::FIRST_SEARCH))
+    if (!RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+                                        rlz_lib::CHROME_OMNIBOX,
+                                        rlz_lib::FIRST_SEARCH))
       omnibox_used_ = true;
     delete this;
   }
@@ -202,8 +133,7 @@ class DailyPingTask : public Task {
     GoogleUpdateSettings::GetBrand(&brand);
     std::wstring referral;
     GoogleUpdateSettings::GetReferral(&referral);
-    if (SendFinancialPing(brand.c_str(), lang.c_str(), referral.c_str(),
-                          is_organic(brand))) {
+    if (SendFinancialPing(brand, lang, referral, is_organic(brand))) {
       access_values_state = ACCESS_VALUES_STALE;
       GoogleUpdateSettings::ClearReferral();
     }
@@ -219,8 +149,8 @@ class DailyPingTask : public Task {
 // This task needs to run on the UI thread.
 class DelayedInitTask : public Task {
  public:
-  explicit DelayedInitTask(int directory_key, bool first_run)
-      : directory_key_(directory_key), first_run_(first_run) {
+  explicit DelayedInitTask(bool first_run)
+      : first_run_(first_run) {
   }
   virtual ~DelayedInitTask() {
   }
@@ -238,34 +168,32 @@ class DelayedInitTask : public Task {
     if (is_strict_organic(brand))
       return;
 
-    if (!LoadRLZLibrary(directory_key_))
-      return;
     // Do the initial event recording if is the first run or if we have an
     // empty rlz which means we haven't got a chance to do it.
     std::wstring omnibox_rlz;
-    RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &omnibox_rlz);
+    RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &omnibox_rlz);
 
     if (first_run_ || omnibox_rlz.empty()) {
       // Record the installation of chrome.
-      RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-                                     RLZTracker::CHROME_OMNIBOX,
-                                     RLZTracker::INSTALL);
-      RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-                                     RLZTracker::CHROME_HOME_PAGE,
-                                     RLZTracker::INSTALL);
+      RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+                                     rlz_lib::CHROME_OMNIBOX,
+                                     rlz_lib::INSTALL);
+      RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+                                     rlz_lib::CHROME_HOME_PAGE,
+                                     rlz_lib::INSTALL);
       // Record if google is the initial search provider.
       if (IsGoogleDefaultSearch()) {
-        RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-                                       RLZTracker::CHROME_OMNIBOX,
-                                       RLZTracker::SET_TO_GOOGLE);
+        RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+                                       rlz_lib::CHROME_OMNIBOX,
+                                       rlz_lib::SET_TO_GOOGLE);
       }
     }
     // Record first user interaction with the omnibox. We call this all the
     // time but the rlz lib should ingore all but the first one.
     if (OmniBoxUsageObserver::used()) {
-      RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-                                     RLZTracker::CHROME_OMNIBOX,
-                                     RLZTracker::FIRST_SEARCH);
+      RLZTracker::RecordProductEvent(rlz_lib::CHROME,
+                                     rlz_lib::CHROME_OMNIBOX,
+                                     rlz_lib::FIRST_SEARCH);
     }
     // Schedule the daily RLZ ping.
     base::Thread* thread = g_browser_process->file_thread();
@@ -312,18 +240,13 @@ class DelayedInitTask : public Task {
     return false;
   }
 
-  int directory_key_;
   bool first_run_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(DelayedInitTask);
 };
 
 }  // namespace
 
-bool RLZTracker::InitRlz(int directory_key) {
-  return LoadRLZLibrary(directory_key);
-}
-
-bool RLZTracker::InitRlzDelayed(int directory_key, bool first_run, int delay) {
+bool RLZTracker::InitRlzDelayed(bool first_run, int delay) {
   // Maximum and minimum delay we would allow to be set through master
   // preferences. Somewhat arbitrary, may need to be adjusted in future.
   const int kMaxDelay = 200 * 1000;
@@ -338,40 +261,40 @@ bool RLZTracker::InitRlzDelayed(int directory_key, bool first_run, int delay) {
 
   // Schedule the delayed init items.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      new DelayedInitTask(directory_key, first_run), delay);
+      new DelayedInitTask(first_run), delay);
   return true;
 }
 
-bool RLZTracker::RecordProductEvent(Product product, AccessPoint point,
-                                    Event event) {
-  return (record_event) ? record_event(product, point, event, NULL) : false;
+bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
+                                    rlz_lib::AccessPoint point,
+                                    rlz_lib::Event event_id) {
+  return rlz_lib::RecordProductEvent(product, point, event_id);
 }
 
-bool RLZTracker::ClearAllProductEvents(Product product) {
-  return (clear_all_events) ? clear_all_events(product, NULL) : false;
+bool RLZTracker::ClearAllProductEvents(rlz_lib::Product product) {
+  return rlz_lib::ClearAllProductEvents(product);
 }
 
 // We implement caching of the answer of get_access_point() if the request
 // is for CHROME_OMNIBOX. If we had a successful ping, then we update the
 // cached value.
 
-bool RLZTracker::GetAccessPointRlz(AccessPoint point, std::wstring* rlz) {
+bool RLZTracker::GetAccessPointRlz(rlz_lib::AccessPoint point,
+                                   std::wstring* rlz) {
   static std::wstring cached_ommibox_rlz;
-  if (!get_access_point)
-    return false;
-  if ((CHROME_OMNIBOX == point) &&
+  if ((rlz_lib::CHROME_OMNIBOX == point) &&
       (access_values_state == ACCESS_VALUES_FRESH)) {
     *rlz = cached_ommibox_rlz;
     return true;
   }
-  wchar_t str_rlz[kMaxRlzLength];
-  if (!get_access_point(point, str_rlz, kMaxRlzLength, NULL))
+  char str_rlz[kMaxRlzLength + 1];
+  if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength, NULL))
     return false;
-  if (CHROME_OMNIBOX == point) {
+  *rlz = ASCIIToWide(std::string(str_rlz));
+  if (rlz_lib::CHROME_OMNIBOX == point) {
     access_values_state = ACCESS_VALUES_FRESH;
-    cached_ommibox_rlz.assign(str_rlz);
+    cached_ommibox_rlz.assign(*rlz);
   }
-  *rlz = str_rlz;
   return true;
 }
 

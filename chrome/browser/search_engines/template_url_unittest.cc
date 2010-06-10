@@ -327,9 +327,8 @@ TEST_F(TemplateURLTest, Suggestions) {
 
 #if defined(OS_WIN)
 TEST_F(TemplateURLTest, RLZ) {
-  RLZTracker::InitRlz(base::DIR_EXE);
   std::wstring rlz_string;
-  RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
+  RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
 
   TemplateURL t_url;
   TemplateURLRef ref(L"http://bar/?{google:RLZ}{searchTerms}", 1, 2);

@@ -2914,6 +2914,7 @@
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../views/views.gyp:views',
+            '../rlz/rlz.gyp:rlz_lib',
             '<(allocator_target)',
           ],
           'export_dependent_settings': [
