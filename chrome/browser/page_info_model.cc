@@ -102,7 +102,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
       }
     }
   } else {
-    // Bad HTTPS.
+    // HTTP or bad HTTPS.
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
     state = false;
