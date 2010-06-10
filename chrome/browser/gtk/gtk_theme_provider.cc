@@ -446,6 +446,26 @@ CairoCachedSurface* GtkThemeProvider::GetSurfaceNamed(
   return surface;
 }
 
+CairoCachedSurface* GtkThemeProvider::GetUnthemedSurfaceNamed(
+    int id, GtkWidget* widget_on_display) {
+  GdkDisplay* display = gtk_widget_get_display(widget_on_display);
+  CairoCachedSurfaceMap& surface_map = per_display_unthemed_surfaces_[display];
+
+  // Check to see if we already have the pixbuf in the cache.
+  CairoCachedSurfaceMap::const_iterator found = surface_map.find(id);
+  if (found != surface_map.end())
+    return found->second;
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GdkPixbuf* pixbuf = rb.GetPixbufNamed(id);
+  CairoCachedSurface* surface = new CairoCachedSurface;
+  surface->UsePixbuf(pixbuf);
+
+  surface_map[id] = surface;
+
+  return surface;
+}
+
 // static
 GdkPixbuf* GtkThemeProvider::GetFolderIcon(bool native) {
   if (native) {
@@ -530,7 +550,8 @@ void GtkThemeProvider::NotifyThemeChanged(Extension* extension) {
 
 void GtkThemeProvider::FreePlatformCaches() {
   BrowserThemeProvider::FreePlatformCaches();
-  FreePerDisplaySurfaces();
+  FreePerDisplaySurfaces(&per_display_surfaces_);
+  FreePerDisplaySurfaces(&per_display_unthemed_surfaces_);
   STLDeleteValues(&gtk_images_);
 }
 
@@ -769,15 +790,16 @@ void GtkThemeProvider::SetTintToExactColor(int id, const GdkColor* color) {
   tints_[id] = hsl;
 }
 
-void GtkThemeProvider::FreePerDisplaySurfaces() {
-  for (PerDisplaySurfaceMap::iterator it = per_display_surfaces_.begin();
-       it != per_display_surfaces_.end(); ++it) {
+void GtkThemeProvider::FreePerDisplaySurfaces(
+    PerDisplaySurfaceMap* per_display_map) {
+  for (PerDisplaySurfaceMap::iterator it = per_display_map->begin();
+       it != per_display_map->end(); ++it) {
     for (CairoCachedSurfaceMap::iterator jt = it->second.begin();
          jt != it->second.end(); ++jt) {
       delete jt->second;
     }
   }
-  per_display_surfaces_.clear();
+  per_display_map->clear();
 }
 
 SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {

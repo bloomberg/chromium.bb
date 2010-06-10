@@ -556,18 +556,12 @@ void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
       browser()->profile());
 
-  // In popups, we use the tab images for the background, as that's legible
-  // for text to be written on.
-  int image_name;
-  if (IsActive()) {
-    image_name = IDR_THEME_TOOLBAR;
-  } else {
-    bool off_the_record = browser()->profile()->IsOffTheRecord();
-    image_name = off_the_record ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
-                 IDR_THEME_TAB_BACKGROUND;
-  }
-
-  CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
+  // Like DrawCustomFrame(), except that we use the unthemed resources to draw
+  // the background. We do this because we can't rely on sane images in the
+  // theme that we can draw text on. (We tried using the tab background, but
+  // that has inverse saturation from what the user usually expects).
+  int image_name = GetThemeFrameResource();
+  CairoCachedSurface* surface = theme_provider->GetUnthemedSurfaceNamed(
       image_name, widget);
   if (event->area.y < surface->Height()) {
     surface->SetSource(cr,
@@ -586,14 +580,7 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
       browser()->profile());
 
-  bool off_the_record = browser()->profile()->IsOffTheRecord();
-  int image_name;
-  if (IsActive()) {
-    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-  } else {
-    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO_INACTIVE :
-                 IDR_THEME_FRAME_INACTIVE;
-  }
+  int image_name = GetThemeFrameResource();
 
   CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
       image_name, widget);
@@ -609,13 +596,26 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   }
 
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
-      !off_the_record) {
+      !browser()->profile()->IsOffTheRecord()) {
     CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
         IsActive() ? IDR_THEME_FRAME_OVERLAY
         : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
     theme_overlay->SetSource(cr, 0, 0);
     cairo_paint(cr);
   }
+}
+
+int BrowserWindowGtk::GetThemeFrameResource() {
+  bool off_the_record = browser()->profile()->IsOffTheRecord();
+  int image_name;
+  if (IsActive()) {
+    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+  } else {
+    image_name = off_the_record ? IDR_THEME_FRAME_INCOGNITO_INACTIVE :
+                 IDR_THEME_FRAME_INACTIVE;
+  }
+
+  return image_name;
 }
 
 void BrowserWindowGtk::Show() {

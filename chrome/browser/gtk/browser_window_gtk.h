@@ -279,6 +279,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // Draws the normal custom frame using theme_frame.
   void DrawCustomFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
 
+  // Returns which frame image we should use based on the window's current
+  // activation state / incognito state.
+  int GetThemeFrameResource();
+
   // Callback for accelerator activation. |user_data| stores the command id
   // of the matched accelerator.
   static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,

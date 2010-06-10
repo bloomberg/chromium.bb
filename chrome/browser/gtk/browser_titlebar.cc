@@ -544,38 +544,36 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
 }
 
 void BrowserTitlebar::UpdateTextColor() {
-  if (app_mode_title_ && theme_provider_) {
-    if (theme_provider_->UseGtkTheme()) {
-      // We don't really have any good options here.
-      //
-      // Colors from window manager themes aren't exposed in GTK; the window
-      // manager is a separate component and when there is information sharing
-      // (in the case of metacity), it's one way where the window manager reads
-      // data from the GTK theme (which allows us to do a decent job with
-      // picking the frame color).
-      //
-      // We probably won't match in the majority of cases, but we can at the
-      // very least make things legible. The default metacity and xfwm themes
-      // on ubuntu have white text hardcoded. Determine whether black or white
-      // has more luminosity contrast and then set that color as the text
-      // color.
-      GdkColor frame_color;
-      if (window_has_focus_) {
-        frame_color = theme_provider_->GetGdkColor(
+  if (!app_mode_title_)
+    return;
+
+  if (theme_provider_ && theme_provider_->UseGtkTheme()) {
+    // We don't really have any good options here.
+    //
+    // Colors from window manager themes aren't exposed in GTK; the window
+    // manager is a separate component and when there is information sharing
+    // (in the case of metacity), it's one way where the window manager reads
+    // data from the GTK theme (which allows us to do a decent job with
+    // picking the frame color).
+    //
+    // We probably won't match in the majority of cases, but we can at the
+    // very least make things legible. The default metacity and xfwm themes
+    // on ubuntu have white text hardcoded. Determine whether black or white
+    // has more luminosity contrast and then set that color as the text
+    // color.
+    GdkColor frame_color;
+    if (window_has_focus_) {
+      frame_color = theme_provider_->GetGdkColor(
           BrowserThemeProvider::COLOR_FRAME);
-      } else {
-        frame_color = theme_provider_->GetGdkColor(
-          BrowserThemeProvider::COLOR_FRAME_INACTIVE);
-      }
-      GdkColor text_color = PickLuminosityContrastingColor(
-          &frame_color, &gfx::kGdkWhite, &gfx::kGdkBlack);
-      gtk_util::SetLabelColor(app_mode_title_, &text_color);
     } else {
-      GdkColor text_color = theme_provider_->GetGdkColor(window_has_focus_ ?
-          BrowserThemeProvider::COLOR_TAB_TEXT :
-          BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
-      gtk_util::SetLabelColor(app_mode_title_, &text_color);
+      frame_color = theme_provider_->GetGdkColor(
+          BrowserThemeProvider::COLOR_FRAME_INACTIVE);
     }
+    GdkColor text_color = PickLuminosityContrastingColor(
+        &frame_color, &gfx::kGdkWhite, &gfx::kGdkBlack);
+    gtk_util::SetLabelColor(app_mode_title_, &text_color);
+  } else {
+    gtk_util::SetLabelColor(app_mode_title_, &gfx::kGdkWhite);
   }
 }
 

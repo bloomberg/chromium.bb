@@ -84,6 +84,11 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // to send the image to the server on each expose.
   CairoCachedSurface* GetSurfaceNamed(int id, GtkWidget* widget_on_display);
 
+  // Returns a CairoCachedSurface for a particular Display for an image
+  // resource that's unthemed.
+  CairoCachedSurface* GetUnthemedSurfaceNamed(
+      int id, GtkWidget* widget_on_display);
+
   // Returns colors that we pass to webkit to match the system theme.
   const SkColor& get_focus_ring_color() const { return focus_ring_color_; }
   const SkColor& get_thumb_active_color() const { return thumb_active_color_; }
@@ -117,6 +122,8 @@ class GtkThemeProvider : public BrowserThemeProvider,
   typedef std::map<int, SkColor> ColorMap;
   typedef std::map<int, color_utils::HSL> TintMap;
   typedef std::map<int, SkBitmap*> ImageCache;
+  typedef std::map<int, CairoCachedSurface*> CairoCachedSurfaceMap;
+  typedef std::map<GdkDisplay*, CairoCachedSurfaceMap> PerDisplaySurfaceMap;
 
   // Clears all the GTK color overrides.
   virtual void ClearAllThemeData();
@@ -147,7 +154,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // FreePlatformCaches() is called from the BrowserThemeProvider's destructor,
   // but by the time ~BrowserThemeProvider() is run, the vtable no longer
   // points to GtkThemeProvider's version.
-  void FreePerDisplaySurfaces();
+  void FreePerDisplaySurfaces(PerDisplaySurfaceMap* per_display_map);
 
   // Lazily generates each bitmap used in the gtk theme.
   SkBitmap* GenerateGtkThemeBitmap(int id) const;
@@ -226,9 +233,8 @@ class GtkThemeProvider : public BrowserThemeProvider,
   mutable ImageCache gtk_images_;
 
   // Cairo surfaces for each GdkDisplay.
-  typedef std::map<int, CairoCachedSurface*> CairoCachedSurfaceMap;
-  typedef std::map<GdkDisplay*, CairoCachedSurfaceMap> PerDisplaySurfaceMap;
   PerDisplaySurfaceMap per_display_surfaces_;
+  PerDisplaySurfaceMap per_display_unthemed_surfaces_;
 
   // This is a dummy widget that only exists so we have something to pass to
   // gtk_widget_render_icon().
