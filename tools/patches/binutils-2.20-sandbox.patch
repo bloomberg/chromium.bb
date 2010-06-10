@@ -1,0 +1,333 @@
+diff -ru binutils-2.20/bfd/bfdio.c nacl-binutils-2.20/bfd/bfdio.c
+--- binutils-2.20/bfd/bfdio.c	2010-06-10 13:29:49.000000000 -0700
++++ nacl-binutils-2.20/bfd/bfdio.c	2010-06-10 13:53:00.000000000 -0700
+@@ -71,15 +71,6 @@
+ static FILE *
+ close_on_exec (FILE *file)
+ {
+-#if defined (HAVE_FILENO) && defined (F_GETFD)
+-  if (file)
+-    {
+-      int fd = fileno (file);
+-      int old = fcntl (fd, F_GETFD, 0);
+-      if (old >= 0)
+-	fcntl (fd, F_SETFD, old | FD_CLOEXEC);
+-    }
+-#endif
+   return file;
+ }
+ 
+diff -ru binutils-2.20/bfd/opncls.c nacl-binutils-2.20/bfd/opncls.c
+--- binutils-2.20/bfd/opncls.c	2010-06-10 13:29:49.000000000 -0700
++++ nacl-binutils-2.20/bfd/opncls.c	2010-06-10 13:47:28.000000000 -0700
+@@ -629,32 +629,6 @@
+   return nbfd;
+ }
+ 
+-static inline void
+-_maybe_make_executable (bfd * abfd)
+-{
+-  /* If the file was open for writing and is now executable,
+-     make it so.  */
+-  if (abfd->direction == write_direction
+-      && abfd->flags & EXEC_P)
+-    {
+-      struct stat buf;
+-
+-      if (stat (abfd->filename, &buf) == 0
+-	  /* Do not attempt to change non-regular files.  This is
+-	     here especially for configure scripts and kernel builds
+-	     which run tests with "ld [...] -o /dev/null".  */
+-	  && S_ISREG(buf.st_mode))
+-	{
+-	  unsigned int mask = umask (0);
+-
+-	  umask (mask);
+-	  chmod (abfd->filename,
+-		 (0777
+-		  & (buf.st_mode | ((S_IXUSR | S_IXGRP | S_IXOTH) &~ mask))));
+-	}
+-    }
+-}
+-
+ /*
+ 
+ FUNCTION
+@@ -718,9 +692,6 @@
+   else
+     ret = abfd->iovec->bclose (abfd);
+ 
+-  if (ret)
+-    _maybe_make_executable (abfd);
+-
+   _bfd_delete_bfd (abfd);
+ 
+   return ret;
+@@ -755,9 +726,6 @@
+ 
+   ret = bfd_cache_close (abfd);
+ 
+-  if (ret)
+-    _maybe_make_executable (abfd);
+-
+   _bfd_delete_bfd (abfd);
+ 
+   return ret;
+diff -ru binutils-2.20/config.sub nacl-binutils-2.20/config.sub
+--- binutils-2.20/config.sub	2010-06-10 13:29:49.000000000 -0700
++++ nacl-binutils-2.20/config.sub	2010-06-10 13:37:48.000000000 -0700
+@@ -234,6 +234,10 @@
+ 		basic_machine=m68k-atari
+ 		os=-mint
+ 		;;
++	-nacl*)
++        	basic_machine=i686-pc
++	        os=-nacl
++        	;;
+ esac
+ 
+ # Decode aliases for certain CPU-COMPANY combinations.
+diff -ru binutils-2.20/libiberty/getcwd.c nacl-binutils-2.20/libiberty/getcwd.c
+--- binutils-2.20/libiberty/getcwd.c	2010-06-10 13:29:48.000000000 -0700
++++ nacl-binutils-2.20/libiberty/getcwd.c	2010-06-10 14:07:41.000000000 -0700
+@@ -30,7 +30,6 @@
+ #include <stdlib.h>
+ #endif
+ 
+-extern char *getwd ();
+ extern int errno;
+ 
+ #ifndef MAXPATHLEN
+@@ -40,23 +39,5 @@
+ char *
+ getcwd (char *buf, size_t len)
+ {
+-  char ourbuf[MAXPATHLEN];
+-  char *result;
+-
+-  result = getwd (ourbuf);
+-  if (result) {
+-    if (strlen (ourbuf) >= len) {
+-      errno = ERANGE;
+-      return 0;
+-    }
+-    if (!buf) {
+-       buf = (char*)malloc(len);
+-       if (!buf) {
+-           errno = ENOMEM;
+-	   return 0;
+-       }
+-    }
+-    strcpy (buf, ourbuf);
+-  }
+   return buf;
+ }
+diff -ru binutils-2.20/libiberty/getpagesize.c nacl-binutils-2.20/libiberty/getpagesize.c
+--- binutils-2.20/libiberty/getpagesize.c	2010-06-10 13:29:48.000000000 -0700
++++ nacl-binutils-2.20/libiberty/getpagesize.c	2010-06-10 13:40:18.000000000 -0700
+@@ -60,7 +60,7 @@
+ # endif /* PAGESIZE */
+ #endif /* GNU_OUR_PAGESIZE */
+ 
+-int
++size_t
+ getpagesize (void)
+ {
+   return (GNU_OUR_PAGESIZE);
+diff -ru binutils-2.20/libiberty/make-relative-prefix.c nacl-binutils-2.20/libiberty/make-relative-prefix.c
+--- binutils-2.20/libiberty/make-relative-prefix.c	2010-06-10 13:29:48.000000000 -0700
++++ nacl-binutils-2.20/libiberty/make-relative-prefix.c	2010-06-10 14:12:29.000000000 -0700
+@@ -224,164 +224,7 @@
+ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
+ 			const char *prefix, const int resolve_links)
+ {
+-  char **prog_dirs = NULL, **bin_dirs = NULL, **prefix_dirs = NULL;
+-  int prog_num, bin_num, prefix_num;
+-  int i, n, common;
+-  int needed_len;
+-  char *ret = NULL, *ptr, *full_progname;
+-
+-  if (progname == NULL || bin_prefix == NULL || prefix == NULL)
+-    return NULL;
+-
+-  /* If there is no full pathname, try to find the program by checking in each
+-     of the directories specified in the PATH environment variable.  */
+-  if (lbasename (progname) == progname)
+-    {
+-      char *temp;
+-
+-      temp = getenv ("PATH");
+-      if (temp)
+-	{
+-	  char *startp, *endp, *nstore;
+-	  size_t prefixlen = strlen (temp) + 1;
+-	  if (prefixlen < 2)
+-	    prefixlen = 2;
+-
+-	  nstore = (char *) alloca (prefixlen + strlen (progname) + 1);
+-
+-	  startp = endp = temp;
+-	  while (1)
+-	    {
+-	      if (*endp == PATH_SEPARATOR || *endp == 0)
+-		{
+-		  if (endp == startp)
+-		    {
+-		      nstore[0] = '.';
+-		      nstore[1] = DIR_SEPARATOR;
+-		      nstore[2] = '\0';
+-		    }
+-		  else
+-		    {
+-		      strncpy (nstore, startp, endp - startp);
+-		      if (! IS_DIR_SEPARATOR (endp[-1]))
+-			{
+-			  nstore[endp - startp] = DIR_SEPARATOR;
+-			  nstore[endp - startp + 1] = 0;
+-			}
+-		      else
+-			nstore[endp - startp] = 0;
+-		    }
+-		  strcat (nstore, progname);
+-		  if (! access (nstore, X_OK)
+-#ifdef HAVE_HOST_EXECUTABLE_SUFFIX
+-                      || ! access (strcat (nstore, HOST_EXECUTABLE_SUFFIX), X_OK)
+-#endif
+-		      )
+-		    {
+-		      progname = nstore;
+-		      break;
+-		    }
+-
+-		  if (*endp == 0)
+-		    break;
+-		  endp = startp = endp + 1;
+-		}
+-	      else
+-		endp++;
+-	    }
+-	}
+-    }
+-
+-  if (resolve_links)
+-    full_progname = lrealpath (progname);
+-  else
+-    full_progname = strdup (progname);
+-  if (full_progname == NULL)
+-    return NULL;
+-
+-  prog_dirs = split_directories (full_progname, &prog_num);
+-  free (full_progname);
+-  if (prog_dirs == NULL)
+-    return NULL;
+-
+-  bin_dirs = split_directories (bin_prefix, &bin_num);
+-  if (bin_dirs == NULL)
+-    goto bailout;
+-
+-  /* Remove the program name from comparison of directory names.  */
+-  prog_num--;
+-
+-  /* If we are still installed in the standard location, we don't need to
+-     specify relative directories.  Also, if argv[0] still doesn't contain
+-     any directory specifiers after the search above, then there is not much
+-     we can do.  */
+-  if (prog_num == bin_num)
+-    {
+-      for (i = 0; i < bin_num; i++)
+-	{
+-	  if (strcmp (prog_dirs[i], bin_dirs[i]) != 0)
+-	    break;
+-	}
+-
+-      if (prog_num <= 0 || i == bin_num)
+-	goto bailout;
+-    }
+-
+-  prefix_dirs = split_directories (prefix, &prefix_num);
+-  if (prefix_dirs == NULL)
+-    goto bailout;
+-
+-  /* Find how many directories are in common between bin_prefix & prefix.  */
+-  n = (prefix_num < bin_num) ? prefix_num : bin_num;
+-  for (common = 0; common < n; common++)
+-    {
+-      if (strcmp (bin_dirs[common], prefix_dirs[common]) != 0)
+-	break;
+-    }
+-
+-  /* If there are no common directories, there can be no relative prefix.  */
+-  if (common == 0)
+-    goto bailout;
+-
+-  /* Two passes: first figure out the size of the result string, and
+-     then construct it.  */
+-  needed_len = 0;
+-  for (i = 0; i < prog_num; i++)
+-    needed_len += strlen (prog_dirs[i]);
+-  needed_len += sizeof (DIR_UP) * (bin_num - common);
+-  for (i = common; i < prefix_num; i++)
+-    needed_len += strlen (prefix_dirs[i]);
+-  needed_len += 1; /* Trailing NUL.  */
+-
+-  ret = (char *) malloc (needed_len);
+-  if (ret == NULL)
+-    goto bailout;
+-
+-  /* Build up the pathnames in argv[0].  */
+-  *ret = '\0';
+-  for (i = 0; i < prog_num; i++)
+-    strcat (ret, prog_dirs[i]);
+-
+-  /* Now build up the ..'s.  */
+-  ptr = ret + strlen(ret);
+-  for (i = common; i < bin_num; i++)
+-    {
+-      strcpy (ptr, DIR_UP);
+-      ptr += sizeof (DIR_UP) - 1;
+-      *(ptr++) = DIR_SEPARATOR;
+-    }
+-  *ptr = '\0';
+-
+-  /* Put in directories to move over to prefix.  */
+-  for (i = common; i < prefix_num; i++)
+-    strcat (ret, prefix_dirs[i]);
+-
+- bailout:
+-  free_split_directories (prog_dirs);
+-  free_split_directories (bin_dirs);
+-  free_split_directories (prefix_dirs);
+-
+-  return ret;
++  return NULL;
+ }
+ 
+ 
+diff -ru binutils-2.20/libiberty/unlink-if-ordinary.c nacl-binutils-2.20/libiberty/unlink-if-ordinary.c
+--- binutils-2.20/libiberty/unlink-if-ordinary.c	2010-06-10 13:29:48.000000000 -0700
++++ nacl-binutils-2.20/libiberty/unlink-if-ordinary.c	2010-06-10 13:52:46.000000000 -0700
+@@ -62,11 +62,5 @@
+ int
+ unlink_if_ordinary (const char *name)
+ {
+-  struct stat st;
+-
+-  if (lstat (name, &st) == 0
+-      && (S_ISREG (st.st_mode) || S_ISLNK (st.st_mode)))
+-    return unlink (name);
+-
+-  return 1;
++  return 0;
+ }
+diff -ru binutils-2.20/opcodes/Makefile.in nacl-binutils-2.20/opcodes/Makefile.in
+--- binutils-2.20/opcodes/Makefile.in	2010-06-10 13:29:48.000000000 -0700
++++ nacl-binutils-2.20/opcodes/Makefile.in	2010-06-10 13:49:32.000000000 -0700
+@@ -1293,7 +1293,7 @@
+ 		archfile=$(CPUDIR)/xc16x.cpu opcfile=$(CPUDIR)/xc16x.opc extrafiles=
+ 
+ i386-gen$(EXEEXT_FOR_BUILD): i386-gen.o $(BUILD_LIB_DEPS)
+-	$(LINK_FOR_BUILD) i386-gen.o $(BUILD_LIBS)
++	$(LINK_FOR_BUILD) i386-gen.o -L . $(BUILD_LIBS)
+ 
+ i386-gen.o: i386-gen.c i386-opc.h $(srcdir)/../include/opcode/i386.h \
+ 	$(INCDIR)/ansidecl.h $(INCDIR)/getopt.h $(INCDIR)/hashtab.h \
