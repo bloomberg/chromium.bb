@@ -112,7 +112,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
     // There are some conditions we don't want to enqueue, for example when
     // the last buffer is an end-of-stream buffer, when we have stopped, and
     // when we have received an error.
-    bool eos = buffer->IsEndOfStream();
+    bool eos = buffer.get() && buffer->IsEndOfStream();
     if (!eos && !stopped_ && !error_)
       FeedInputBuffer();
   }
@@ -163,9 +163,6 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
                         NewCallback(this, &TestApp::DecodeDoneCallback),
                         NewRunnableMethod(this,
                                           &TestApp::InitializeDoneCallback));
-
-    for (int i = 0; i < 20; ++i)
-      FeedInputBuffer();
 
     // Execute the message loop so that we can run tasks on it. This call
     // will return when we call message_loop_.Quit().

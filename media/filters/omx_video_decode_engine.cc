@@ -37,6 +37,7 @@ OmxVideoDecodeEngine::OmxVideoDecodeEngine()
       input_buffer_count_(0),
       input_buffer_size_(0),
       input_port_(0),
+      input_buffers_at_component_(0),
       input_queue_has_eos_(false),
       input_has_fed_eos_(false),
       output_buffer_count_(0),
@@ -47,6 +48,7 @@ OmxVideoDecodeEngine::OmxVideoDecodeEngine()
       expected_il_state_(kIlNone),
       client_state_(kClientNotInitialized),
       component_handle_(NULL),
+      need_free_input_buffers_(false),
       output_frames_allocated_(false),
       need_setup_output_port_(false) {
   // TODO(wjia): change uses_egl_image_ to runtime setup
@@ -64,16 +66,13 @@ OmxVideoDecodeEngine::~OmxVideoDecodeEngine() {
   DCHECK_EQ(il_state_, kIlNone);
   DCHECK_EQ(0u, input_buffers_.size());
   DCHECK_EQ(0u, output_buffers_.size());
+  DCHECK(free_input_buffers_.empty());
   DCHECK(available_input_buffers_.empty());
-  DCHECK(pending_input_queue_.empty());
+  DCHECK_EQ(0, input_buffers_at_component_);
   DCHECK(output_frames_.empty());
   DCHECK(available_output_frames_.empty());
   DCHECK(output_frames_ready_.empty());
 }
-
-#if !defined(COMPILER_MSVC)
-int const OmxVideoDecodeEngine::kEosBuffer;
-#endif
 
 template <typename T>
 static void ResetParamHeader(const OmxVideoDecodeEngine& dec, T* param) {
@@ -114,6 +113,7 @@ void OmxVideoDecodeEngine::Initialize(
 // This method handles only input buffer, without coupling with output
 void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(!free_input_buffers_.empty());
 
   if (!CanAcceptInput()) {
     FinishEmptyBuffer(buffer);
@@ -125,8 +125,18 @@ void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
     input_queue_has_eos_ = true;
   }
 
-  // Queue this input buffer.
-  pending_input_queue_.push(buffer);
+  OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
+  free_input_buffers_.pop();
+
+  // setup |omx_buffer|.
+  omx_buffer->pBuffer = const_cast<OMX_U8*>(buffer->GetData());
+  omx_buffer->nFilledLen = buffer->GetDataSize();
+  omx_buffer->nAllocLen = omx_buffer->nFilledLen;
+  omx_buffer->nFlags |= input_queue_has_eos_ ? OMX_BUFFERFLAG_EOS : 0;
+  omx_buffer->nTimeStamp = buffer->GetTimestamp().InMicroseconds();
+  omx_buffer->pAppPrivate = buffer.get();
+  buffer->AddRef();
+  available_input_buffers_.push(omx_buffer);
 
   // Try to feed buffers into the decoder.
   EmptyBufferTask();
@@ -478,6 +488,9 @@ void OmxVideoDecodeEngine::DoneSetStateIdle(OMX_STATETYPE state) {
   DLOG(INFO) << "OMX video decode engine is in Idle";
 
   il_state_ = kIlIdle;
+
+  // start reading bit stream
+  InitialReadBuffer();
   OnStateSetEventFunc = &OmxVideoDecodeEngine::DoneSetStateExecuting;
   if (!TransitionToState(OMX_StateExecuting)) {
     StopOnError();
@@ -496,10 +509,6 @@ void OmxVideoDecodeEngine::DoneSetStateExecuting(OMX_STATETYPE state) {
   il_state_ = kIlExecuting;
   client_state_ = kClientRunning;
   OnStateSetEventFunc = NULL;
-  // TODO(wjia): The engine should be the driving force to read input buffers.
-  // After video decoder decouples input and output handling, this initial
-  // filling should be changed to call empty_buffer_callback with NULL to pull
-  // bitstream from decoder.
   EmptyBufferTask();
   InitialFillBuffer();
   if (kClientError == client_state_) {
@@ -678,8 +687,6 @@ void OmxVideoDecodeEngine::StopTask(Callback* callback) {
     return;
   }
 
-  FreeInputQueue();
-
   // TODO(wjia): add more state checking
   if (kClientRunning == client_state_) {
     client_state_ = kClientStopping;
@@ -706,7 +713,11 @@ void OmxVideoDecodeEngine::DeinitFromIdle(OMX_STATETYPE state) {
   TransitionToState(OMX_StateLoaded);
   expected_il_state_ = kIlLoaded;
 
-  FreeInputBuffers();
+  if (!input_buffers_at_component_)
+    FreeInputBuffers();
+  else
+    need_free_input_buffers_ = true;
+
   FreeOutputBuffers();
 }
 
@@ -734,7 +745,6 @@ void OmxVideoDecodeEngine::StopOnError() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   client_state_ = kClientStopping;
-  FreeInputQueue();
 
   if (kIlExecuting == expected_il_state_) {
     DeinitFromExecuting(OMX_StateExecuting);
@@ -764,7 +774,7 @@ bool OmxVideoDecodeEngine::AllocateInputBuffers() {
     buffer->nOffset = 0;
     buffer->nFlags = 0;
     input_buffers_.push_back(buffer);
-    available_input_buffers_.push(buffer);
+    free_input_buffers_.push(buffer);
   }
   return true;
 }
@@ -810,15 +820,23 @@ bool OmxVideoDecodeEngine::AllocateOutputBuffers() {
 void OmxVideoDecodeEngine::FreeInputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
+  // Empty available buffer queue.
+  while (!free_input_buffers_.empty()) {
+    free_input_buffers_.pop();
+  }
+
+  while (!available_input_buffers_.empty()) {
+    OMX_BUFFERHEADERTYPE* omx_buffer = available_input_buffers_.front();
+    available_input_buffers_.pop();
+    Buffer* stored_buffer = static_cast<Buffer*>(omx_buffer->pAppPrivate);
+    FinishEmptyBuffer(stored_buffer);
+    stored_buffer->Release();
+  }
+
   // Calls to OMX to free buffers.
   for (size_t i = 0; i < input_buffers_.size(); ++i)
     OMX_FreeBuffer(component_handle_, input_port_, input_buffers_[i]);
   input_buffers_.clear();
-
-  // Empty available buffer queue.
-  while (!available_input_buffers_.empty()) {
-    available_input_buffers_.pop();
-  }
 }
 
 void OmxVideoDecodeEngine::FreeOutputBuffers() {
@@ -837,16 +855,6 @@ void OmxVideoDecodeEngine::FreeOutputBuffers() {
     for (size_t i = 0; i < output_buffers_.size(); ++i)
       OMX_FreeBuffer(component_handle_, output_port_, output_buffers_[i]);
     output_buffers_.clear();
-  }
-}
-
-void OmxVideoDecodeEngine::FreeInputQueue() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  while (!pending_input_queue_.empty()) {
-    scoped_refptr<Buffer> buffer = pending_input_queue_.front();
-    FinishEmptyBuffer(buffer);
-    pending_input_queue_.pop();
   }
 }
 
@@ -931,30 +939,18 @@ void OmxVideoDecodeEngine::EmptyBufferTask() {
 
   // Loop for all available input data and input buffer for the
   // decoder. When input has reached EOS  we need to stop.
-  while (!pending_input_queue_.empty() &&
-         !available_input_buffers_.empty() &&
+  while (!available_input_buffers_.empty() &&
          !input_has_fed_eos_) {
-    scoped_refptr<Buffer> buffer = pending_input_queue_.front();
-    pending_input_queue_.pop();
-    buffer->AddRef();
-
     OMX_BUFFERHEADERTYPE* omx_buffer = available_input_buffers_.front();
     available_input_buffers_.pop();
 
-    input_has_fed_eos_ = buffer->IsEndOfStream();
+    input_has_fed_eos_ = omx_buffer->nFlags & OMX_BUFFERFLAG_EOS;
     if (input_has_fed_eos_) {
       DLOG(INFO) << "Input has fed EOS";
     }
 
-    // setup |omx_buffer|.
-    omx_buffer->pBuffer = const_cast<OMX_U8*>(buffer.get()->GetData());
-    omx_buffer->nFilledLen = buffer.get()->GetDataSize();
-    omx_buffer->nAllocLen = omx_buffer->nFilledLen;
-    omx_buffer->nFlags |= input_has_fed_eos_ ? OMX_BUFFERFLAG_EOS : 0;
-    omx_buffer->nTimeStamp = buffer->GetTimestamp().InMicroseconds();
-    omx_buffer->pAppPrivate = buffer.get();
-
     // Give this buffer to OMX.
+    input_buffers_at_component_++;
     OMX_ERRORTYPE ret = OMX_EmptyThisBuffer(component_handle_, omx_buffer);
     if (ret != OMX_ErrorNone) {
       LOG(ERROR) << "OMX_EmptyThisBuffer() failed with result " << ret;
@@ -982,6 +978,13 @@ void OmxVideoDecodeEngine::FulfillOneRead() {
       if (!uses_egl_image_) SendOutputBufferToComponent(buffer);
     }
   }
+}
+
+void OmxVideoDecodeEngine::InitialReadBuffer() {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  for (size_t i = 0; i < free_input_buffers_.size(); i++)
+    FinishEmptyBuffer(NULL);
 }
 
 void OmxVideoDecodeEngine::InitialFillBuffer() {
@@ -1091,14 +1094,19 @@ bool OmxVideoDecodeEngine::TransitionToState(OMX_STATETYPE new_state) {
 
 void OmxVideoDecodeEngine::EmptyBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_GT(input_buffers_at_component_, 0);
 
   Buffer* stored_buffer = static_cast<Buffer*>(buffer->pAppPrivate);
   buffer->pAppPrivate = NULL;
   FinishEmptyBuffer(stored_buffer);
   stored_buffer->Release();
 
-  // Enqueue the available buffer beacuse the decoder has consumed it.
-  available_input_buffers_.push(buffer);
+  // Enqueue the available buffer because the decoder has consumed it.
+  free_input_buffers_.push(buffer);
+  input_buffers_at_component_--;
+
+  if (need_free_input_buffers_ && !input_buffers_at_component_)
+    FreeInputBuffers();
 
   // Try to feed more data into the decoder.
   EmptyBufferTask();

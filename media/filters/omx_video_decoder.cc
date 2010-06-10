@@ -144,8 +144,6 @@ void OmxVideoDecoder::InitCompleteTask(FilterCallback* callback) {
   // Check the status of the decode engine.
   if (omx_engine_->state() == VideoDecodeEngine::kError)
     host()->SetError(PIPELINE_ERROR_DECODE);
-  else
-    InitialDemux();
 
   callback->Run();
   delete callback;
@@ -159,21 +157,6 @@ void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
       FROM_HERE,
       NewRunnableMethod(omx_engine_.get(),
                         &OmxVideoDecodeEngine::EmptyThisBuffer, ref_buffer));
-}
-
-void OmxVideoDecoder::InitialDemux() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // This is the right time to issue read to the demuxer. The first thing we
-  // need to do here is to determine how many we should read from the
-  // demuxer.
-  // TODO(hclam): Query this number from |omx_engine_|.
-  const int kDemuxPackets = 2;
-  DCHECK(demuxer_stream_);
-  for (int i = 0; i < kDemuxPackets; ++i) {
-    demuxer_stream_->Read(
-        NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
-  }
 }
 
 }  // namespace media

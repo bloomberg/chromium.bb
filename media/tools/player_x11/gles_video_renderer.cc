@@ -483,7 +483,7 @@ void GlesVideoRenderer::CreateTextureAndProgramYuv2Rgb() {
   CreateShader(program, GL_VERTEX_SHADER,
                kVertexShader, sizeof(kVertexShader));
   CreateShader(program, GL_FRAGMENT_SHADER,
-               kFragmentShaderEgl, sizeof(kFragmentShader));
+               kFragmentShader, sizeof(kFragmentShader));
   LinkProgram(program);
 
   // Bind parameters.

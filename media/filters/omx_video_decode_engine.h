@@ -59,8 +59,6 @@ class OmxVideoDecodeEngine :
   virtual int current_omx_spec_version() const { return 0x00000101; }
 
  private:
-  static const int kEosBuffer = -1;
-
   enum OmxIlState {
     kIlNone,
     kIlLoaded,
@@ -146,7 +144,10 @@ class OmxVideoDecodeEngine :
   // Take one decoded buffer to fulfill one read request.
   void FulfillOneRead();
 
-  // Method doing initial reads to kick start the decoding process.
+  // Method doing initial reads to get bit stream from demuxer.
+  void InitialReadBuffer();
+
+  // Method doing initial fills to kick start the decoding process.
   void InitialFillBuffer();
 
   // helper functions
@@ -199,6 +200,7 @@ class OmxVideoDecodeEngine :
   int input_buffer_count_;
   int input_buffer_size_;
   int input_port_;
+  int input_buffers_at_component_;
   bool input_queue_has_eos_;
   bool input_has_fed_eos_;
 
@@ -226,15 +228,16 @@ class OmxVideoDecodeEngine :
 
   scoped_ptr<Callback> stop_callback_;
 
-  typedef scoped_refptr<Buffer> InputUnit;
-
-  // Input queue for encoded data.
-  // The input buffers will be sent to OMX component via OMX_EmptyThisBuffer()
-  std::queue<InputUnit> pending_input_queue_;
+  // Free input OpenMAX buffers that can be used to take input bitstream from
+  // demuxer.
+  std::queue<OMX_BUFFERHEADERTYPE*> free_input_buffers_;
 
   // Available input OpenMAX buffers that we can use to issue
   // OMX_EmptyThisBuffer() call.
   std::queue<OMX_BUFFERHEADERTYPE*> available_input_buffers_;
+
+  // flag for freeing input buffers
+  bool need_free_input_buffers_;
 
   // For output buffer recycling cases.
   typedef std::pair<scoped_refptr<VideoFrame>,
@@ -243,8 +246,10 @@ class OmxVideoDecodeEngine :
   std::queue<OMX_BUFFERHEADERTYPE*> available_output_frames_;
   std::queue<OMX_BUFFERHEADERTYPE*> output_frames_ready_;
   bool output_frames_allocated_;
-  bool need_setup_output_port_;
+
+  // port related
   bool input_port_enabled_;
+  bool need_setup_output_port_;
   OmxIlPortState output_port_state_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecodeEngine);

@@ -149,7 +149,8 @@ class TestBuffer : public media::Buffer {
 class OmxCodecTest : public testing::Test {
  public:
   OmxCodecTest ()
-      : got_eos_(false),
+      : input_buffer_count_(0),
+        got_eos_(false),
         omx_engine_(new OmxVideoDecodeEngine()) {
     av_stream_.codec = &av_codec_context_;
     av_codec_context_.width = 16;
@@ -302,20 +303,19 @@ class OmxCodecTest : public testing::Test {
   }
 
   void EmptyBufferDoneCallback(scoped_refptr<Buffer> buffer) {
-    input_units_.push_back(buffer);
+    if (buffer.get()) {
+      input_units_.push_back(buffer);
+    } else {
+      input_buffer_count_++;
+      scoped_refptr<Buffer> buffer_ref = new TestBuffer(input_buffer_count_);
+      input_units_.push_back(buffer_ref);
+    }
   }
 
   void FillBufferDoneCallback(scoped_refptr<VideoFrame> frame) {
     output_units_.push_back(frame);
     if (frame->IsEndOfStream())
       got_eos_ = true;
-  }
-
-  void InitializeInputBuffers(int count) {
-    for (int i = 0; i < count; ++i) {
-      scoped_refptr<Buffer> buffer_ref = new TestBuffer(i + 1);
-      input_units_.push_back(buffer_ref);
-    }
   }
 
   void MakeEmptyBufferRequest() {
@@ -334,6 +334,8 @@ class OmxCodecTest : public testing::Test {
     MakeEmptyBufferRequest();
     message_loop_.RunAllPending();
   }
+
+  int input_buffer_count_;
 
   std::deque<scoped_refptr<Buffer> > input_units_;
   std::deque<scoped_refptr<VideoFrame> > output_units_;
@@ -369,6 +371,7 @@ TEST_F(OmxCodecTest, SimpleStartAndStop) {
                           init_done_cb_task_.CreateTask());
   message_loop_.RunAllPending();
 
+  EXPECT_EQ(kBufferCount, input_buffer_count_);
   EXPECT_EQ(VideoDecodeEngine::kNormal, omx_engine_->state());
 
   ExpectStop();
@@ -386,10 +389,8 @@ TEST_F(OmxCodecTest, NormalFlow) {
                           init_done_cb_task_.CreateTask());
   message_loop_.RunAllPending();
 
+  EXPECT_EQ(kBufferCount, input_buffer_count_);
   EXPECT_EQ(VideoDecodeEngine::kNormal, omx_engine_->state());
-
-  // Allocate bitstream buffers.
-  InitializeInputBuffers(kBufferCount);
 
   // Make emptybuffer requests.
   EXPECT_EQ(0u, output_units_.size());
@@ -435,10 +436,8 @@ TEST_F(OmxCodecTest, RecycleInputBuffers) {
                           init_done_cb_task_.CreateTask());
   message_loop_.RunAllPending();
 
+  EXPECT_EQ(kBufferCount, input_buffer_count_);
   EXPECT_EQ(VideoDecodeEngine::kNormal, omx_engine_->state());
-
-  // Allocate bitstream buffers.
-  InitializeInputBuffers(kBufferCount);
 
   // Make emptybuffer requests, also recycle input buffers
   EXPECT_EQ(0u, output_units_.size());

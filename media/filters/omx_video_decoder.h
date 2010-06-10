@@ -21,8 +21,6 @@ class VideoFrame;
 
 class OmxVideoDecoder : public VideoDecoder {
  public:
-  typedef Callback1<VideoFrame*>::Type ReadCallback;
-
   static FilterFactory* CreateFactory();
   static bool IsMediaFormatSupported(const MediaFormat& media_format);
 
@@ -50,9 +48,6 @@ class OmxVideoDecoder : public VideoDecoder {
 
   // Calls |omx_engine_|'s EmptyThisBuffer() method on the right thread.
   void EmptyBufferTask(scoped_refptr<Buffer> buffer);
-
-  // Helper method to do the initial demuxing.
-  void InitialDemux();
 
   DemuxerStream* demuxer_stream_;
   bool supports_egl_image_;
