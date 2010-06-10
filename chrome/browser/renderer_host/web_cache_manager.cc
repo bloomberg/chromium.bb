@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
+#include "base/histogram.h"
 #include "base/singleton.h"
 #include "base/sys_info.h"
 #include "base/time.h"
@@ -39,6 +40,9 @@ int GetDefaultCacheSize() {
     default_cache_size *= 4;
   else if (mem_size_mb >= 512)  // With 512 MB, set a slightly larger default.
     default_cache_size *= 2;
+
+  UMA_HISTOGRAM_MEMORY_MB("Cache.MaxCacheSizeMB",
+                          default_cache_size / 1024 / 1024);
 
   return default_cache_size;
 }
@@ -306,6 +310,21 @@ void WebCacheManager::ReviseAllocationStrategy() {
   WebCache::UsageStats inactive;
   GatherStats(active_renderers_, &active);
   GatherStats(inactive_renderers_, &inactive);
+
+  UMA_HISTOGRAM_COUNTS_100("Cache.ActiveTabs", active_renderers_.size());
+  UMA_HISTOGRAM_COUNTS_100("Cache.InactiveTabs", inactive_renderers_.size());
+  UMA_HISTOGRAM_MEMORY_MB("Cache.ActiveCapacityMB",
+                          active.capacity / 1024 / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("Cache.ActiveDeadSizeMB",
+                          active.deadSize / 1024 / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("Cache.ActiveLiveSizeMB",
+                          active.liveSize / 1024 / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("Cache.InactiveCapacityMB",
+                          inactive.capacity / 1024 / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("Cache.InactiveDeadSizeMB",
+                          inactive.deadSize / 1024 / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("Cache.InactiveLiveSizeMB",
+                          inactive.liveSize / 1024 / 1024);
 
   // Compute an allocation strategy.
   //
