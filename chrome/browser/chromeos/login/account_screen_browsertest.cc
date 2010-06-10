@@ -67,7 +67,7 @@ static URLRequestJob* InspectorHook(URLRequest* request,
   return new URLRequestAboutJob(request);
 }
 
-IN_PROC_BROWSER_TEST_F(AccountScreenTest, TestSchemeInspector) {
+IN_PROC_BROWSER_TEST_F(AccountScreenTest, FLAKY_TestSchemeInspector) {
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kCrosScheme);
   URLRequestFilter::GetInstance()->AddHostnameHandler(chrome::kCrosScheme,
