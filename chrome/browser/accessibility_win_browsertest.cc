@@ -19,6 +19,13 @@
 namespace {
 
 class AccessibilityWinBrowserTest : public InProcessBrowserTest {
+ public:
+  void SetUpCommandLine(CommandLine* command_line) {
+    // Turns on the accessibility in the renderer. Off by default until
+    // http://crbug.com/25564 is fixed.
+    command_line->AppendSwitch(switches::kEnableRendererAccessibility);
+  }
+
  protected:
   IAccessible* GetRenderWidgetHostViewClientAccessible();
 };
@@ -174,20 +181,6 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestRendererAccessibilityTree) {
-  // By requesting an accessible chrome will believe a screen reader has been
-  // detected.
-  ScopedComPtr<IAccessible> document_accessible(
-      GetRenderWidgetHostViewClientAccessible());
-
-  // The initial accessible returned should have state STATE_SYSTEM_BUSY while
-  // the accessibility tree is being requested from the renderer.
-  VARIANT var_state;
-  HRESULT hr = document_accessible->
-      get_accState(CreateI4Variant(CHILDID_SELF), &var_state);
-  EXPECT_EQ(hr, S_OK);
-  EXPECT_EQ(V_VT(&var_state), VT_I4);
-  EXPECT_EQ(V_I4(&var_state), STATE_SYSTEM_BUSY);
-
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"
       "<body><input type='button' value='push' /><input type='checkbox' />"
@@ -196,7 +189,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
-  document_accessible = GetRenderWidgetHostViewClientAccessible();
+  ScopedComPtr<IAccessible> document_accessible(
+      GetRenderWidgetHostViewClientAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
 
   AccessibleChecker button_checker(L"push", ROLE_SYSTEM_PUSHBUTTON);
@@ -214,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that document accessible has a parent accessible.
   ScopedComPtr<IDispatch> parent_dispatch;
-  hr = document_accessible->get_accParent(parent_dispatch.Receive());
+  HRESULT hr = document_accessible->get_accParent(parent_dispatch.Receive());
   EXPECT_EQ(hr, S_OK);
   EXPECT_NE(parent_dispatch, reinterpret_cast<IDispatch*>(NULL));
 

@@ -10,8 +10,6 @@
 #include <atlcrack.h>
 #include <atlmisc.h>
 
-#include <vector>
-
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -251,9 +249,6 @@ class RenderWidgetHostViewWin
   // Whether the window should be activated.
   bool IsActivatable() const;
 
-  // MSAA IAccessible returned while page contents is loading.
-  ScopedComPtr<IAccessible> loading_accessible_;
-
   // The associated Model.
   RenderWidgetHost* render_widget_host_;
 
@@ -324,6 +319,11 @@ class RenderWidgetHostViewWin
   // not having anything to paint (empty backing store from renderer). This
   // value returns true for is_null() if we are not recording whiteout times.
   base::TimeTicks whiteout_start_time_;
+
+  // Whether the renderer is made accessible.
+  // TODO(jcampan): http://b/issue?id=1432077 This is a temporary work-around
+  // until that bug is fixed.
+  bool renderer_accessible_;
 
   // The time it took after this view was selected for it to be fully painted.
   base::TimeTicks tab_switch_paint_time_;

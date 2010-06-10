@@ -186,9 +186,6 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 // this option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";
 
-// Turns off the accessibility in the renderer.
-const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
-
 // Disable session storage.
 const char kDisableSessionStorage[]         = "disable-session-storage";
 
@@ -341,6 +338,10 @@ const char kEnablePrintPreview[]            = "enable-print-preview";
 
 // Enable Privacy Blacklists.
 const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
+
+// Turns on the accessibility in the renderer.  Off by default until
+// http://b/issue?id=1432077 is fixed.
+const char kEnableRendererAccessibility[]   = "enable-renderer-accessibility";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";

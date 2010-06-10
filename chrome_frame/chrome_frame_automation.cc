@@ -296,6 +296,8 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   command_line->AppendSwitch(switches::kNoErrorDialogs);
 #endif
 
+  command_line->AppendSwitch(switches::kEnableRendererAccessibility);
+
   // In headless mode runs like reliability test runs we want full crash dumps
   // from chrome.
   if (IsHeadlessMode())

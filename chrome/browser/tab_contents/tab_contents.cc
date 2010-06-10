@@ -296,6 +296,7 @@ TabContents::TabContents(Profile* profile,
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
       language_state_(&controller_),
       geolocation_settings_state_(profile),
+      requested_accessibility_tree_(false),
       closed_by_user_gesture_(false) {
   ClearBlockedContentSettings();
   renderer_preferences_util::UpdateFromSystemSettings(
@@ -354,6 +355,10 @@ TabContents::TabContents(Profile* profile,
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(profile))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
+
+  renderer_accessible_ =
+    CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableRendererAccessibility);
 }
 
 TabContents::~TabContents() {
@@ -2142,8 +2147,10 @@ void TabContents::DidFailProvisionalLoadWithError(
 
 void TabContents::DocumentLoadedInFrame() {
   controller_.DocumentLoadedInFrame();
-
-  render_view_host()->SetDocumentLoaded(true);
+  if (renderer_accessible_ && !requested_accessibility_tree_) {
+    render_view_host()->RequestAccessibilityTree();
+    requested_accessibility_tree_ = true;
+  }
 }
 
 void TabContents::OnContentBlocked(ContentSettingsType type) {
@@ -2313,7 +2320,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
                               const ViewHostMsg_FrameNavigate_Params& params) {
   int extra_invalidate_flags = 0;
 
-  render_view_host()->SetDocumentLoaded(false);
+  requested_accessibility_tree_ = false;
 
   if (PageTransition::IsMainFrame(params.transition)) {
     bool was_bookmark_bar_visible = ShouldShowBookmarkBar();

@@ -252,6 +252,7 @@ void DrawDeemphasized(const gfx::Rect& paint_rect,
                      paint_rect.width(), paint_rect.height());
   canvas.getTopPlatformDevice().drawToHDC(paint_dc, paint_rect.x(),
                                           paint_rect.y(), NULL);
+
 }
 
 }  // namespace
@@ -283,15 +284,12 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       is_loading_(false),
       visually_deemphasized_(false) {
   render_widget_host_->set_view(this);
+  renderer_accessible_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRendererAccessibility);
   registrar_.Add(this,
                  NotificationType::RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-
-  BOOL screenreader_running = FALSE;
-  if (SystemParametersInfo(SPI_GETSCREENREADER, 0, &screenreader_running, 0) &&
-      screenreader_running) {
-    render_widget_host_->EnableRendererAccessibility();
-  }
 }
 
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
@@ -1485,9 +1483,6 @@ void RenderWidgetHostViewWin::UpdateAccessibilityTree(
     const webkit_glue::WebAccessibility& tree) {
   browser_accessibility_manager_.reset(
       new BrowserAccessibilityManager(m_hWnd, tree, this));
-
-  ::NotifyWinEvent(
-      IA2_EVENT_DOCUMENT_LOAD_COMPLETE, m_hWnd, OBJID_CLIENT, CHILDID_SELF);
 }
 
 void RenderWidgetHostViewWin::OnAccessibilityFocusChange(int acc_obj_id) {
@@ -1547,46 +1542,18 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
-  if (lparam != OBJID_CLIENT) {
+  // TODO(dmazzoni): http://crbug.com/25564 Disabling accessibility in the
+  // renderer is a temporary work-around until that bug is fixed.
+  if (!renderer_accessible_) {
     handled = false;
     return static_cast<LRESULT>(0L);
   }
 
-  if (!browser_accessibility_manager_.get()) {
-    render_widget_host_->EnableRendererAccessibility();
-
-    if (!loading_accessible_.get()) {
-      // Create IAccessible to return while waiting for the accessibility tree
-      // from the renderer.
-      HRESULT hr = ::CreateStdAccessibleObject(
-          m_hWnd, OBJID_CLIENT, IID_IAccessible,
-          reinterpret_cast<void **>(&loading_accessible_));
-
-      // Annotate with STATE_SYSTEM_BUSY to indicate that the page is loading.
-      // We annotate the HWND, not the loading_accessible IAccessible, but the
-      // IAccessible will reflect the state annotation.
-      ScopedComPtr<IAccPropServices> pAccPropServices;
-      hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-          IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-      if (SUCCEEDED(hr)) {
-        VARIANT var;
-        var.vt = VT_I4;
-        var.lVal = STATE_SYSTEM_BUSY;
-        pAccPropServices->SetHwndProp(m_hWnd, OBJID_CLIENT,
-            CHILDID_SELF, PROPID_ACC_STATE, var);
-      }
-    }
-
-    if (loading_accessible_.get()) {
-      return LresultFromObject(
-          IID_IAccessible, wparam,
-          static_cast<IAccessible*>(loading_accessible_));
-    }
-  } else {
+  if (lparam == OBJID_CLIENT && browser_accessibility_manager_.get()) {
     BrowserAccessibility* root = browser_accessibility_manager_->GetRoot();
     if (root) {
       return LresultFromObject(IID_IAccessible, wparam,
-          static_cast<IAccessible*>(root->NewReference()));
+                               static_cast<IAccessible*>(root->NewReference()));
     }
   }
 
