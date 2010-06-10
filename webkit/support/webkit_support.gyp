@@ -7,6 +7,9 @@
     '../appcache/webkit_appcache.gypi',
     '../database/webkit_database.gypi',
     '../glue/webkit_glue.gypi',
+    # TODO(tkent): Merge npapi_layout_test_plugin into TestNetscapePlugIn
+    # of WebKit.
+    '../tools/npapi_layout_test_plugin/npapi_layout_test_plugin.gypi',
     'webkit_support.gypi',
   ],
 }

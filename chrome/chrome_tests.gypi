@@ -288,7 +288,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
         '../third_party/ppapi/ppapi.gyp:ppapi_tests',
-        '../webkit/webkit.gyp:npapi_layout_test_plugin',
+        '../webkit/support/webkit_support.gyp:npapi_layout_test_plugin',
         '../webkit/default_plugin/default_plugin.gyp:default_plugin',
       ],
       'include_dirs': [

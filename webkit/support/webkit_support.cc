@@ -24,8 +24,10 @@
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_impl.h"
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/support/platform_support.h"
@@ -82,10 +84,12 @@ class WebPluginImplWithPageDelegate
       public webkit_glue::WebPluginImpl {
  public:
   WebPluginImplWithPageDelegate(WebFrame* frame,
-                                const WebPluginParams& params)
+                                const WebPluginParams& params,
+                                const FilePath& path,
+                                const std::string& mime_type)
       : webkit_support::TestWebPluginPageDelegate(),
         webkit_glue::WebPluginImpl(
-            frame, params, FilePath(), params.mimeType.utf8(), AsWeakPtr()) {}
+            frame, params, path, mime_type, AsWeakPtr()) {}
   virtual ~WebPluginImplWithPageDelegate() {}
  private:
   DISALLOW_COPY_AND_ASSIGN(WebPluginImplWithPageDelegate);
@@ -144,7 +148,20 @@ WebKit::WebKitClient* GetWebKitClient() {
 
 WebPlugin* CreateWebPlugin(WebFrame* frame,
                            const WebPluginParams& params) {
-  return new WebPluginImplWithPageDelegate(frame, params);
+  const bool kAllowWildcard = true;
+  WebPluginInfo info;
+  std::string actual_mime_type;
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
+          params.url, params.mimeType.utf8(), kAllowWildcard, &info,
+          &actual_mime_type)) {
+    return NULL;
+  }
+
+  if (actual_mime_type.empty())
+    actual_mime_type = params.mimeType.utf8();
+
+  return new WebPluginImplWithPageDelegate(
+      frame, params, info.path, actual_mime_type);
 }
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,

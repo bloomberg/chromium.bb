@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
 
 namespace webkit_support {
@@ -18,7 +19,11 @@ class TestWebPluginPageDelegate : public webkit_glue::WebPluginPageDelegate {
 
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& file_path,
-      const std::string& mime_type) { return NULL; }
+      const std::string& mime_type) {
+    // We don't need a valid native window handle in layout tests.
+    // So just passing 0.
+    return WebPluginDelegateImpl::Create(file_path, mime_type, 0);
+  }
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) {}
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) {}
   virtual void DidMovePlugin(const webkit_glue::WebPluginGeometry& move) {}
