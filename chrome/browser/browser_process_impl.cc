@@ -86,6 +86,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_devtools_manager_(false),
       created_notification_ui_manager_(false),
       module_ref_count_(0),
+      did_start_(false),
       checked_for_new_frames_(false),
       using_new_frames_(false),
       have_inspector_files_(true) {
@@ -209,6 +210,7 @@ static void PostQuit(MessageLoop* message_loop) {
 
 unsigned int BrowserProcessImpl::AddRefModule() {
   DCHECK(CalledOnValidThread());
+  did_start_ = true;
   module_ref_count_++;
   return module_ref_count_;
 }

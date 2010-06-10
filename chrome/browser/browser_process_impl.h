@@ -171,7 +171,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   virtual bool IsShuttingDown() {
     DCHECK(CalledOnValidThread());
-    return 0 == module_ref_count_;
+    return did_start_ && 0 == module_ref_count_;
   }
 
   virtual printing::PrintJobManager* print_job_manager();
@@ -303,6 +303,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_ptr<NotificationService> main_notification_service_;
 
   unsigned int module_ref_count_;
+  bool did_start_;
 
   // Ensures that all the print jobs are finished before closing the browser.
   scoped_ptr<printing::PrintJobManager> print_job_manager_;

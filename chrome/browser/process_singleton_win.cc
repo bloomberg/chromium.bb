@@ -200,9 +200,7 @@ void ProcessSingleton::Cleanup() {
 
 LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
   // If locked, it means we are not ready to process this message because
-  // we are probably in a first run critical phase. We must do this before
-  // doing the IsShuttingDown() check since that returns true during first run
-  // (since g_browser_process hasn't been AddRefModule()d yet).
+  // we are probably in a first run critical phase.
   if (locked_) {
     // Attempt to place ourselves in the foreground / flash the task bar.
     if (IsWindow(foreground_window_))
