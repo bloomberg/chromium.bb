@@ -83,27 +83,6 @@ class GoogleUpdateSettings {
   // on success, channel contains one of "", "unknown", "dev" or "beta".
   static bool GetChromeChannel(bool system_install, std::wstring* channel);
 
-  static void UpdateDiffInstallStatus(bool system_install,
-                                      bool incremental_install,
-                                      int install_return_code,
-                                      const std::wstring& product_guid);
-
-  // This method generates the new value for Google Update "ap" key for Chrome
-  // based on whether we are doing incremental install (or not) and whether
-  // the install succeeded.
-  // - If install worked, remove the magic string (if present).
-  // - If incremental installer failed, append a magic string (if
-  //   not present already).
-  // - If full installer failed, still remove this magic
-  //   string (if it is present already).
-  //
-  // diff_install: tells whether this is incremental install or not.
-  // install_return_code: if 0, means installation was successful.
-  // value: current value of Google Update "ap" key.
-  static std::wstring GetNewGoogleUpdateApKey(bool diff_install,
-                                              int install_return_code,
-                                              const std::wstring& value);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);
 };

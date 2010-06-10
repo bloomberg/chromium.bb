@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/google_update_settings.h"
 
 #include "installer_util_strings.h"
 
@@ -108,7 +107,25 @@ bool ChromeFrameDistribution::CanSetAsDefault() {
 
 void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
     bool incremental_install, installer_util::InstallStatus install_status) {
-  GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
-      incremental_install, GetInstallReturnCode(install_status),
-      kChromeFrameGuid);
+  HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey key;
+  std::wstring ap_key_value;
+  std::wstring reg_key(google_update::kRegPathClientState);
+  reg_key.append(L"\\");
+  reg_key.append(kChromeFrameGuid);
+  if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
+      !key.ReadValue(google_update::kRegApField, &ap_key_value)) {
+    LOG(INFO) << "Application key not found.";
+  } else {
+    const char kMagicSuffix[] = "-full";
+    if (LowerCaseEqualsASCII(ap_key_value, kMagicSuffix)) {
+      key.DeleteValue(google_update::kRegApField);
+    } else {
+      size_t pos = ap_key_value.find(ASCIIToWide(kMagicSuffix));
+      if (pos != std::wstring::npos) {
+        ap_key_value.erase(pos, strlen(kMagicSuffix));
+        key.WriteValue(google_update::kRegApField, ap_key_value.c_str());
+      }
+    }
+  }
 }

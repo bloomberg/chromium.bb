@@ -742,7 +742,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     // Note that we allow the status installer_util::UNINSTALL_REQUIRES_REBOOT
     // to pass through, since this is only returned on uninstall which is never
     // invoked directly by Google Update.
-    return_code = dist->GetInstallReturnCode(install_status);
+    dist->GetInstallReturnCode(install_status);
   }
 
   LOG(INFO) << "Installation complete, returning: " << return_code;
