@@ -4,13 +4,19 @@
 
 #include "chrome/browser/chromeos/login/screen_locker.h"
 
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -32,6 +38,8 @@ namespace {
 // otherwise chromium process fails and the session is terminated.
 const int64 kRetryGrabIntervalMs = 500;
 const int kGrabFailureLimit = 60;
+// Each keyboard layout has a dummy input method ID which starts with "xkb:".
+const char kValidInputMethodPrefix[] = "xkb:";
 
 // Observer to start ScreenLocker when the screen lock
 class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
@@ -55,10 +63,12 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   }
 
   virtual void LockScreen(chromeos::ScreenLockLibrary* obj) {
+    SetupInputMethodsForScreenLocker();
     chromeos::ScreenLocker::Show();
   }
 
   virtual void UnlockScreen(chromeos::ScreenLockLibrary* obj) {
+    RestoreInputMethods();
     chromeos::ScreenLocker::Hide();
   }
 
@@ -67,7 +77,64 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   }
 
  private:
+  // Temporarily deactivates all input methods (e.g. Chinese, Japanese, Arabic)
+  // since they are not necessary to input a login password. Users are still
+  // able to use/switch active keyboard layouts (e.g. US qwerty, US dvorak,
+  // French).
+  void SetupInputMethodsForScreenLocker() {
+    if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
+        // The LockScreen function is also called when the OS is suspended, and
+        // in that case |saved_active_input_method_list_| might be non-empty.
+        saved_active_input_method_list_.empty()) {
+      chromeos::LanguageLibrary* language =
+          chromeos::CrosLibrary::Get()->GetLanguageLibrary();
+      saved_current_input_method_id_ = language->current_input_method().id;
+      // TODO(yusukes): save/restore previous input method ID.
+      scoped_ptr<chromeos::InputMethodDescriptors> active_input_method_list(
+          language->GetActiveInputMethods());
+
+      chromeos::ImeConfigValue value;
+      value.type = chromeos::ImeConfigValue::kValueTypeStringList;
+      for (size_t i = 0; i < active_input_method_list->size(); ++i) {
+        const std::string& input_method_id = active_input_method_list->at(i).id;
+        saved_active_input_method_list_.push_back(input_method_id);
+        // |active_input_method_list| contains both input method descriptions
+        // and keyboard layout descriptions.
+        if (!StartsWithASCII(input_method_id, kValidInputMethodPrefix, true))
+          continue;
+        value.string_list_value.push_back(input_method_id);
+      }
+      if (value.string_list_value.empty()) {
+        value.string_list_value.push_back(kFallbackInputMethodId);  // US qwerty
+      }
+      language->SetImeConfig(chromeos::kGeneralSectionName,
+                             chromeos::kPreloadEnginesConfigName,
+                             value);
+    }
+  }
+
+  void RestoreInputMethods() {
+    if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
+        !saved_active_input_method_list_.empty()) {
+      chromeos::LanguageLibrary* language =
+          chromeos::CrosLibrary::Get()->GetLanguageLibrary();
+
+      chromeos::ImeConfigValue value;
+      value.type = chromeos::ImeConfigValue::kValueTypeStringList;
+      value.string_list_value = saved_active_input_method_list_;
+      language->SetImeConfig(chromeos::kGeneralSectionName,
+                             chromeos::kPreloadEnginesConfigName,
+                             value);
+      language->ChangeInputMethod(saved_current_input_method_id_);
+
+      saved_current_input_method_id_.clear();
+      saved_active_input_method_list_.clear();
+    }
+  }
+
   NotificationRegistrar registrar_;
+  std::string saved_current_input_method_id_;
+  std::vector<std::string> saved_active_input_method_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
