@@ -5,25 +5,17 @@
 #ifndef REMOTING_CLIENT_HOST_CONNECTION_H_
 #define REMOTING_CLIENT_HOST_CONNECTION_H_
 
-#include <deque>
-#include <vector>
-
-#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/base/protocol_decoder.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
-#include "remoting/jingle_glue/jingle_channel.h"
-#include "remoting/jingle_glue/jingle_client.h"
 
 namespace remoting {
 
-class HostConnection : public JingleChannel::Callback,
-                       public JingleClient::Callback {
+class HostConnection {
  public:
-  class EventHandler {
+  class HostEventCallback {
    public:
-    virtual ~EventHandler() {}
+    virtual ~HostEventCallback() {}
 
     // Handles an event received by the HostConnection. Receiver will own the
     // HostMessages in HostMessageList and needs to delete them.
@@ -42,33 +34,18 @@ class HostConnection : public JingleChannel::Callback,
     virtual void OnConnectionFailed(HostConnection* conn) = 0;
   };
 
-  // Constructs a HostConnection object.
-  HostConnection(ProtocolDecoder* decoder, EventHandler* handler);
+  virtual ~HostConnection() {}
 
-  virtual ~HostConnection();
+  // TODO(ajwong): We need to generalize this API.
+  virtual void Connect(const std::string& username,
+                       const std::string& auth_token,
+                       const std::string& host_jid) = 0;
+  virtual void Disconnect() = 0;
 
-  void Connect(const std::string& username, const std::string& auth_token,
-               const std::string& host_jid);
-  void Disconnect();
-
-  // JingleChannel::Callback interface.
-  void OnStateChange(JingleChannel* channel, JingleChannel::State state);
-  void OnPacketReceived(JingleChannel* channel,
-                        scoped_refptr<media::DataBuffer> buffer);
-
-  // JingleClient::Callback interface.
-  void OnStateChange(JingleClient* client, JingleClient::State state);
-  bool OnAcceptConnection(JingleClient* client, const std::string& jid,
-                          JingleChannel::Callback** callback);
-  void OnNewConnection(JingleClient* client,
-                       scoped_refptr<JingleChannel> channel);
+ protected:
+  HostConnection() {}
 
  private:
-  scoped_refptr<JingleClient> jingle_client_;
-  scoped_refptr<JingleChannel> jingle_channel_;
-  scoped_ptr<ProtocolDecoder> decoder_;
-  EventHandler* handler_;
-
   DISALLOW_COPY_AND_ASSIGN(HostConnection);
 };
 

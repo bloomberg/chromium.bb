@@ -5,6 +5,7 @@
 #include "remoting/host/simple_host.h"
 
 #include "base/stl_util-inl.h"
+#include "base/waitable_event.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/protocol_decoder.h"
@@ -13,44 +14,51 @@
 
 namespace remoting {
 
-#if defined (OS_MACOSX)
-// The Mac depends on system callbacks to tell it what rectangles need to
-// be updated, so we need to use the system message loop.
-const MessageLoop::Type kSimpleHostMessageLoopType = MessageLoop::TYPE_UI;
-#else
-const MessageLoop::Type kSimpleHostMessageLoopType = MessageLoop::TYPE_DEFAULT;
-#endif //  defined (OS_MACOSX)
-
 SimpleHost::SimpleHost(const std::string& username,
                        const std::string& auth_token,
                        Capturer* capturer,
                        Encoder* encoder,
-                       EventExecutor* executor)
-      : main_loop_(kSimpleHostMessageLoopType),
+                       EventExecutor* executor,
+                       base::WaitableEvent* host_done)
+      : main_thread_("MainThread"),
         capture_thread_("CaptureThread"),
         encode_thread_("EncodeThread"),
         username_(username),
         auth_token_(auth_token),
         capturer_(capturer),
         encoder_(encoder),
-        executor_(executor) {
+        executor_(executor),
+        host_done_(host_done) {
+  // TODO(ajwong): The thread injection and object ownership is odd here.
+  // Fix so we do not start this thread in the constructor, so we only
+  // take in a session manager, don't let session manager own the
+  // capturer/encoder, and then associate the capturer and encoder threads with
+  // the capturer and encoder objects directly.  This will require a
+  // non-refcounted NewRunnableMethod.
+  main_thread_.StartWithOptions(
+      base::Thread::Options(MessageLoop::TYPE_UI, 0));
+  network_thread_.Start();
+}
+
+SimpleHost::~SimpleHost() {
+  // TODO(ajwong): We really need to inject these threads and get rid of these
+  // start/stops.
+  main_thread_.Stop();
+  network_thread_.Stop();
+  DCHECK(!encode_thread_.IsRunning());
+  DCHECK(!capture_thread_.IsRunning());
 }
 
 void SimpleHost::Run() {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
-
   // Submit a task to perform host registration. We'll also start
   // listening to connection if registration is done.
-  RegisterHost();
-
-  // Run the main message loop. This is the main loop of this host
-  // object.
-  main_loop_.Run();
+  message_loop()->PostTask(FROM_HERE,
+                           NewRunnableMethod(this, &SimpleHost::RegisterHost));
 }
 
 // This method is called when we need to destroy the host process.
 void SimpleHost::DestroySession() {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // First we tell the session to pause and then we wait until all
   // the tasks are done.
@@ -69,18 +77,18 @@ void SimpleHost::DestroySession() {
 // This method talks to the cloud to register the host process. If
 // successful we will start listening to network requests.
 void SimpleHost::RegisterHost() {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(!jingle_client_);
 
   // Connect to the talk network with a JingleClient.
-  jingle_client_ = new JingleClient();
+  jingle_client_ = new JingleClient(&network_thread_);
   jingle_client_->Init(username_, auth_token_,
                        kChromotingTokenServiceName, this);
 }
 
 // This method is called if a client is connected to this object.
 void SimpleHost::OnClientConnected(ClientConnection* client) {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Create a new RecordSession if there was none.
   if (!session_.get()) {
@@ -97,7 +105,7 @@ void SimpleHost::OnClientConnected(ClientConnection* client) {
     DCHECK(encoder_.get());
     session_ = new SessionManager(capture_thread_.message_loop(),
                                   encode_thread_.message_loop(),
-                                  &main_loop_,
+                                  message_loop(),
                                   capturer_.release(),
                                   encoder_.release());
 
@@ -112,7 +120,7 @@ void SimpleHost::OnClientConnected(ClientConnection* client) {
 }
 
 void SimpleHost::OnClientDisconnected(ClientConnection* client) {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Remove the client from the session manager.
   if (session_.get())
@@ -131,7 +139,7 @@ void SimpleHost::OnClientDisconnected(ClientConnection* client) {
 // ClientConnection::EventHandler implementations
 void SimpleHost::HandleMessages(ClientConnection* client,
                                 ClientMessageList* messages) {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Delegate the messages to EventExecutor and delete the unhandled
   // messages.
@@ -141,7 +149,7 @@ void SimpleHost::HandleMessages(ClientConnection* client,
 }
 
 void SimpleHost::OnConnectionOpened(ClientConnection* client) {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Completes the client connection.
   LOG(INFO) << "Connection to client established.";
@@ -149,7 +157,7 @@ void SimpleHost::OnConnectionOpened(ClientConnection* client) {
 }
 
 void SimpleHost::OnConnectionClosed(ClientConnection* client) {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Completes the client connection.
   LOG(INFO) << "Connection to client closed.";
@@ -157,7 +165,7 @@ void SimpleHost::OnConnectionClosed(ClientConnection* client) {
 }
 
 void SimpleHost::OnConnectionFailed(ClientConnection* client) {
-  DCHECK_EQ(&main_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // The client has disconnected.
   LOG(ERROR) << "Connection failed unexpectedly.";
@@ -183,7 +191,8 @@ void SimpleHost::OnStateChange(JingleClient* jingle_client,
     heartbeat_sender_ = NULL;
 
     // Quit the message loop if disconected.
-    main_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    host_done_->Signal();
   }
 }
 
@@ -200,7 +209,7 @@ bool SimpleHost::OnAcceptConnection(
 
   // If we accept the connected then create a client object and set the
   // callback.
-  client_ = new ClientConnection(&main_loop_, new ProtocolDecoder(), this);
+  client_ = new ClientConnection(message_loop(), new ProtocolDecoder(), this);
   *channel_callback = client_.get();
   return true;
 }
@@ -213,6 +222,10 @@ void SimpleHost::OnNewConnection(JingleClient* jingle_client,
   // the client directly. Note that we give the ownership of the channel
   // to the client.
   client_->set_jingle_channel(channel);
+}
+
+MessageLoop* SimpleHost::message_loop() {
+  return main_thread_.message_loop();
 }
 
 }  // namespace remoting

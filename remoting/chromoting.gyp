@@ -226,8 +226,9 @@
         'client/decoder.h',
         'client/decoder_verbatim.cc',
         'client/decoder_verbatim.h',
-        'client/host_connection.cc',
         'client/host_connection.h',
+        'client/jingle_host_connection.cc',
+        'client/jingle_host_connection.h',
       ],
     },  # end of target 'chromoting_client'
 

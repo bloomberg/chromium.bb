@@ -22,6 +22,7 @@
 #endif  // defined (OS_POSIX)
 
 #include "base/at_exit.h"
+#include "base/waitable_event.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/encoder_verbatim.h"
 #include "remoting/host/simple_host.h"
@@ -105,11 +106,14 @@ int main(int argc, char** argv) {
 
   // Construct a simple host with username and auth_token.
   // TODO(hclam): Allow the host to load saved credentials.
+  base::WaitableEvent host_done(false, false);
   scoped_refptr<remoting::SimpleHost> host
       = new remoting::SimpleHost(username, auth_token,
                                  capturer.release(),
                                  encoder.release(),
-                                 executor.release());
+                                 executor.release(),
+                                 &host_done);
   host->Run();
+  host_done.Wait();
   return 0;
 }

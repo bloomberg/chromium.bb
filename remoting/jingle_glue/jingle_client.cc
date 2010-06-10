@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(ajwong): Check the initialization sentinels.  Can we base it off of
+// state_ instead of a member variable?  Also, we assign and read from a few of
+// the member variables on two threads.  We need to audit this for thread
+// safety.
+
 #include "remoting/jingle_glue/jingle_client.h"
 
 #include "base/logging.h"
@@ -24,9 +29,12 @@
 
 namespace remoting {
 
-JingleClient::JingleClient()
-    : callback_(NULL),
-      state_(START) { }
+JingleClient::JingleClient(JingleThread* thread)
+    : client_(NULL),
+      thread_(thread),
+      state_(START),
+      callback_(NULL) {
+}
 
 JingleClient::~JingleClient() {
   // JingleClient can be destroyed only after it's closed.
@@ -38,67 +46,46 @@ void JingleClient::Init(
     const std::string& auth_token_service, Callback* callback) {
   DCHECK(username != "");
   DCHECK(callback != NULL);
-  DCHECK(thread_ == NULL);  // Init() can be called only once.
+  DCHECK(callback_ == NULL);  // Init() can be called only once.
 
   callback_ = callback;
 
-  thread_.reset(new JingleThread());
-  thread_->Start();
-  thread_->message_loop()->PostTask(
+  message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize,
                                    username, auth_token, auth_token_service));
 }
 
-class JingleClient::ConnectRequest {
- public:
-  ConnectRequest()
-      : completed_event_(true, false) { }
-
-  JingleChannel* Wait() {
-    completed_event_.Wait();
-    return channel_;
-  };
-
-  void Done(JingleChannel* channel) {
-    channel_ = channel;
-    completed_event_.Signal();
-  };
-
- private:
-  base::WaitableEvent completed_event_;
-  JingleChannel* channel_;
-};
-
 JingleChannel* JingleClient::Connect(const std::string& host_jid,
                                      JingleChannel::Callback* callback) {
-  ConnectRequest request;
-  thread_->message_loop()->PostTask(
+  // Ownership if channel is given to DoConnect.
+  scoped_refptr<JingleChannel> channel = new JingleChannel(callback);
+  message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleClient::DoConnect,
-                                   &request, host_jid, callback));
-  return request.Wait();
+                                   channel, host_jid, callback));
+  return channel;
 }
 
-void JingleClient::DoConnect(ConnectRequest* request,
+void JingleClient::DoConnect(scoped_refptr<JingleChannel> channel,
                              const std::string& host_jid,
                              JingleChannel::Callback* callback) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
   talk_base::StreamInterface* stream =
       tunnel_session_client_->CreateTunnel(buzz::Jid(host_jid), "");
   DCHECK(stream != NULL);
 
-  JingleChannel* channel = new JingleChannel(callback);
-  channel->Init(thread_.get(), stream, host_jid);
-  request->Done(channel);
+  channel->Init(thread_, stream, host_jid);
 }
 
 void JingleClient::Close() {
-  DCHECK(thread_ != NULL);  // Close() be called only after Init().
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleClient::DoClose));
-  thread_->Stop();
-  thread_.reset(NULL);
 }
 
 void JingleClient::DoClose() {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK(callback_ != NULL);  // Close() should only be called after Init().
+
   client_->Disconnect();
   // Client is deleted by TaskRunner.
   client_ = NULL;
@@ -112,6 +99,8 @@ void JingleClient::DoClose() {
 void JingleClient::DoInitialize(const std::string& username,
                                 const std::string& auth_token,
                                 const std::string& auth_token_service) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
   buzz::Jid login_jid(username);
 
   buzz::XmppClientSettings settings;
@@ -154,9 +143,10 @@ void JingleClient::DoInitialize(const std::string& username,
                                        session_manager_.get()));
 #endif  // USE_SSL_TUNNEL
 
-  receiver_ = new cricket::SessionManagerTask(client_, session_manager_.get());
-  receiver_->EnableOutgoingMessages();
-  receiver_->Start();
+  cricket::SessionManagerTask* receiver =
+      new cricket::SessionManagerTask(client_, session_manager_.get());
+  receiver->EnableOutgoingMessages();
+  receiver->Start();
 
   tunnel_session_client_->SignalIncomingTunnel.connect(
       this, &JingleClient::OnIncomingTunnel);
@@ -168,9 +158,6 @@ std::string JingleClient::GetFullJid() {
 }
 
 MessageLoop* JingleClient::message_loop() {
-  if (thread_ == NULL) {
-    return NULL;
-  }
   return thread_->message_loop();
 }
 
@@ -210,7 +197,7 @@ void JingleClient::OnIncomingTunnel(
     talk_base::StreamInterface* stream =
         client->AcceptTunnel(session);
     scoped_refptr<JingleChannel> channel(new JingleChannel(channel_callback));
-    channel->Init(thread_.get(), stream, jid.Str());
+    channel->Init(thread_, stream, jid.Str());
     callback_->OnNewConnection(this, channel);
   } else {
     client->DeclineTunnel(session);

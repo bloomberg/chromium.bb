@@ -15,6 +15,11 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/jingle_glue/jingle_thread.h"
+
+namespace base {
+class WaitableEvent;
+}  // namespace base
 
 namespace remoting {
 
@@ -48,7 +53,9 @@ class SimpleHost : public base::RefCountedThreadSafe<SimpleHost>,
                    public JingleClient::Callback {
  public:
   SimpleHost(const std::string& username, const std::string& auth_token,
-             Capturer* capturer, Encoder* encoder, EventExecutor* executor);
+             Capturer* capturer, Encoder* encoder, EventExecutor* executor,
+             base::WaitableEvent* host_done);
+  virtual ~SimpleHost();
 
   // Run the host porcess. This method returns only after the message loop
   // of the host process exits.
@@ -87,7 +94,13 @@ class SimpleHost : public base::RefCountedThreadSafe<SimpleHost>,
 
  private:
   // The message loop that this class runs on.
-  MessageLoop main_loop_;
+  MessageLoop* message_loop();
+
+  // The main thread that this object runs on.
+  base::Thread main_thread_;
+
+  // Used to handle the Jingle connection.
+  JingleThread network_thread_;
 
   // A thread that hosts capture operations.
   base::Thread capture_thread_;
@@ -122,6 +135,9 @@ class SimpleHost : public base::RefCountedThreadSafe<SimpleHost>,
 
   // Session manager for the host process.
   scoped_refptr<SessionManager> session_;
+
+  // Signals the host is ready to be destroyed.
+  base::WaitableEvent* host_done_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleHost);
 };

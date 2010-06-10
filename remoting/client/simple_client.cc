@@ -1,8 +1,8 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A simple client implements a minimalize Chromoting client and shows
+
+// A simple client implements a minimal Chromoting client and shows
 // network traffic for debugging.
 
 #include <iostream>
@@ -11,9 +11,14 @@
 #include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
+
+#include "base/waitable_event.h"
+#include "media/base/data_buffer.h"
 #include "remoting/base/protocol_decoder.h"
 #include "remoting/client/client_util.h"
-#include "remoting/client/host_connection.h"
+#include "remoting/client/jingle_host_connection.h"
+#include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/jingle_glue/jingle_thread.h"
 
 using remoting::BeginUpdateStreamMessage;
 using remoting::EndUpdateStreamMessage;
@@ -22,14 +27,16 @@ using remoting::HostMessage;
 using remoting::HostMessageList;
 using remoting::InitClientMessage;
 using remoting::JingleClient;
-using remoting::JingleChannel;
+using remoting::JingleHostConnection;
+using remoting::JingleThread;
 using remoting::ProtocolDecoder;
 using remoting::UpdateStreamPacketMessage;
 
-class SimpleHostEventHandler : public HostConnection::EventHandler {
+class SimpleHostEventCallback : public HostConnection::HostEventCallback {
  public:
-  SimpleHostEventHandler(MessageLoop* loop)
-      : main_loop_(loop) {
+  explicit SimpleHostEventCallback(MessageLoop* loop,
+                                   base::WaitableEvent* client_done)
+      : main_loop_(loop), client_done_(client_done) {
   }
 
   virtual void HandleMessages(HostConnection* conn,
@@ -57,18 +64,12 @@ class SimpleHostEventHandler : public HostConnection::EventHandler {
 
   virtual void OnConnectionClosed(HostConnection* conn) {
     std::cout << "Connection closed." << std::endl;
-
-    // Quit the message if the connection has closed.
-    DCHECK(main_loop_);
-    main_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    client_done_->Signal();
   }
 
   virtual void OnConnectionFailed(HostConnection* conn) {
     std::cout << "Conection failed." << std::endl;
-
-    // Quit the message if the connection has failed.
-    DCHECK(main_loop_);
-    main_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    client_done_->Signal();
   }
 
  private:
@@ -104,26 +105,39 @@ class SimpleHostEventHandler : public HostConnection::EventHandler {
   }
 
   MessageLoop* main_loop_;
+  base::WaitableEvent* client_done_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleHostEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(SimpleHostEventCallback);
 };
 
 int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
-  std::string host_jid, username, auth_token;
+  std::string host_jid;
+  std::string username;
+  std::string auth_token;
 
-  if (remoting::GetLoginInfo(host_jid, username, auth_token)) {
+  if (!remoting::GetLoginInfo(&host_jid, &username, &auth_token)) {
     std::cerr << "Cannot get valid login info." << std::endl;
     return 1;
   }
 
-  // The message loop that everything runs on.
-  MessageLoop main_loop;
-  SimpleHostEventHandler handler(&main_loop);
-  HostConnection connection(new ProtocolDecoder(), &handler);
-  connection.Connect(username, auth_token, host_jid);
+  // Start up a thread to run everything.
+  JingleThread network_thread;
+  network_thread.Start();
 
-  // Run the message.
-  main_loop.Run();
+  base::WaitableEvent client_done(false, false);
+  SimpleHostEventCallback handler(network_thread.message_loop(), &client_done);
+  scoped_refptr<JingleHostConnection> connection =
+      new JingleHostConnection(&network_thread, &handler);
+  connection->Connect(username, auth_token, host_jid);
+
+  // Wait until the mainloop has been signaled to exit.
+  client_done.Wait();
+
+  connection->Disconnect();
+  network_thread.message_loop()->PostTask(FROM_HERE,
+                                          new MessageLoop::QuitTask());
+  network_thread.Stop();
+
   return 0;
 }

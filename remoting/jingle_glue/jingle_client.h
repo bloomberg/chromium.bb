@@ -60,13 +60,15 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                                  scoped_refptr<JingleChannel> channel) = 0;
   };
 
-  JingleClient();
+  // Creates a JingleClient object that executes on |thread|.  This does not
+  // take ownership of |thread| and expects that the thread is started before
+  // the constructor is called, and only stopped after the JingleClient object
+  // has been destructed.
+  JingleClient(JingleThread* thread);
   virtual ~JingleClient();
 
-  // Starts jingle thread and XMPP connection inialization. Must be called
-  // only once. message_loop() is guaranteed to exist after this method returns,
-  // but the connection may not be open yet. |callback| specifies callback
-  // object for the client and must not be NULL.
+  // Starts the XMPP connection inialization. Must be called only once.
+  // |callback| specifies callback object for the client and must not be NULL.
   void Init(const std::string& username, const std::string& auth_token,
             const std::string& auth_token_service, Callback* callback);
 
@@ -92,13 +94,10 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // Returns XmppClient object for the xmpp connection or NULL if not connected.
   buzz::XmppClient* xmpp_client() { return client_; }
 
-  // Message loop for the jingle thread or NULL if the thread is not started.
+  // Message loop used by this object to execute tasks.
   MessageLoop* message_loop();
 
  private:
-  // Used by Connect().
-  class ConnectRequest;
-
   void OnConnectionStateChanged(buzz::XmppEngine::State state);
 
   void OnIncomingTunnel(cricket::TunnelSessionClient* client, buzz::Jid jid,
@@ -109,7 +108,7 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                     const std::string& auth_token_service);
 
   // Used by Connect().
-  void DoConnect(ConnectRequest* request,
+  void DoConnect(scoped_refptr<JingleChannel> channel,
                  const std::string& host_jid,
                  JingleChannel::Callback* callback);
 
@@ -123,9 +122,8 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& settings);
 
-
   buzz::XmppClient* client_;
-  scoped_ptr<JingleThread> thread_;
+  JingleThread* thread_;
   State state_;
   Callback* callback_;
 
@@ -136,7 +134,6 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   scoped_ptr<cricket::BasicPortAllocator> port_allocator_;
   scoped_ptr<cricket::SessionManager> session_manager_;
   scoped_ptr<cricket::TunnelSessionClient> tunnel_session_client_;
-  cricket::SessionManagerTask* receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleClient);
 };

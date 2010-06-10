@@ -9,10 +9,10 @@
 
 namespace remoting {
 
-// Get the login info from the console and writes into |host_jid|, |username|
+// Get the login info from the console and writes into |host_jid|, |username|,
 // and |auth_token|. Return true if successful.
-bool GetLoginInfo(std::string& host_jid, std::string& username,
-                  std::string& auth_token);
+bool GetLoginInfo(std::string* host_jid, std::string* username,
+                  std::string* auth_token);
 
 }  // namespace remoting
 
