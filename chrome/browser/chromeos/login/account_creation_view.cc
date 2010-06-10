@@ -66,6 +66,8 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents,
     return false;
   }
 
+  virtual void ShowAutoFillDialog() {}
+
  private:
   AccountCreationViewDelegate* delegate_;
 
