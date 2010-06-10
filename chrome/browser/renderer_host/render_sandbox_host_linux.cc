@@ -4,9 +4,11 @@
 
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 
+#include <fcntl.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/uio.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
 #include <time.h>
@@ -369,8 +371,15 @@ class SandboxIPCProcess  {
     char control_buffer[CMSG_SPACE(sizeof(int))];
 
     if (reply_fd != -1) {
-      struct cmsghdr *cmsg;
+      struct stat st;
+      if (fstat(reply_fd, &st) == 0 && S_ISDIR(st.st_mode)) {
+        LOG(FATAL) << "Tried to send a directory descriptor over sandbox IPC";
+        // We must never send directory descriptors to a sandboxed process
+        // because they can use openat with ".." elements in the path in order
+        // to escape the sandbox and reach the real filesystem.
+      }
 
+      struct cmsghdr *cmsg;
       msg.msg_control = control_buffer;
       msg.msg_controllen = sizeof(control_buffer);
       cmsg = CMSG_FIRSTHDR(&msg);

@@ -4,6 +4,9 @@
 
 #include "ipc/file_descriptor_set_posix.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 
@@ -92,6 +95,18 @@ void FileDescriptorSet::GetDescriptors(int* buffer) const {
        i = descriptors_.begin(); i != descriptors_.end(); ++i) {
     *(buffer++) = i->fd;
   }
+}
+
+bool FileDescriptorSet::ContainsDirectoryDescriptor() const {
+  struct stat st;
+
+  for (std::vector<base::FileDescriptor>::const_iterator
+       i = descriptors_.begin(); i != descriptors_.end(); ++i) {
+    if (fstat(i->fd, &st) == 0 && S_ISDIR(st.st_mode))
+      return true;
+  }
+
+  return false;
 }
 
 void FileDescriptorSet::CommitAll() {

@@ -74,6 +74,9 @@ class FileDescriptorSet : public base::RefCountedThreadSafe<FileDescriptorSet> {
   // GetDescriptors. It marks all the descriptors as consumed and closes those
   // which are auto-close.
   void CommitAll();
+  // Returns true if any contained file descriptors appear to be handles to a
+  // directory.
+  bool ContainsDirectoryDescriptor() const;
 
   // ---------------------------------------------------------------------------
 

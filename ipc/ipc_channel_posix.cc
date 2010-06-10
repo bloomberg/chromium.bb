@@ -791,6 +791,15 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       const unsigned num_fds = msg->file_descriptor_set()->size();
 
       DCHECK_LE(num_fds, FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE);
+      if (msg->file_descriptor_set()->ContainsDirectoryDescriptor()) {
+        LOG(FATAL) << "Panic: attempting to transport directory descriptor over"
+                      " IPC. Aborting to maintain sandbox isolation.";
+        // If you have hit this then something tried to send a file descriptor
+        // to a directory over an IPC channel. Since IPC channels span
+        // sandboxes this is very bad: the receiving process can use openat
+        // with ".." elements in the path in order to reach the real
+        // filesystem.
+      }
 
       msgh.msg_control = buf;
       msgh.msg_controllen = CMSG_SPACE(sizeof(int) * num_fds);
