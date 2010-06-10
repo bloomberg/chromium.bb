@@ -214,9 +214,6 @@ class FakeRepos(object):
     # Quick hack.
     if '-v' in sys.argv:
       logging.basicConfig(level=logging.DEBUG)
-    if '-l' in sys.argv:
-      self.SHOULD_LEAK = True
-      sys.argv.remove('-l')
     elif leak is not None:
       self.SHOULD_LEAK = leak
     if host:
@@ -341,27 +338,30 @@ class FakeRepos(object):
     # - var
     # - hooks
     # TODO(maruel):
+    # - From
     # - File
     # - $matching_files
     # - use_relative_paths
-    self._commit_svn(file_system(1, """
+    fs = file_system(1, """
 vars = {
   'DummyVariable': 'third_party',
 }
 deps = {
-  'src/other': 'svn://%(host)s/svn/trunk/other',
+  'src/other': 'svn://%(host)s/svn/trunk/other@1',
   'src/third_party/fpp': '/trunk/' + Var('DummyVariable') + '/foo',
 }
 deps_os = {
   'mac': {
     'src/third_party/prout': '/trunk/third_party/prout',
   },
-}""" % { 'host': self.HOST }))
+}""" % { 'host': self.HOST })
+    self._commit_svn(fs)
 
-    self._commit_svn(file_system(2, """
+    fs = file_system(2, """
 deps = {
   'src/other': 'svn://%(host)s/svn/trunk/other',
   'src/third_party/foo': '/trunk/third_party/foo@1',
+  #'src/third_party/foo': From('src/other', 'foo/bar'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
@@ -378,7 +378,13 @@ hooks = [
                'open(\\'src/svn_hooked2\\', \\'w\\').write(\\'svn_hooked2\\')'],
   },
 ]
-""" % { 'host': self.HOST }))
+""" % { 'host': self.HOST })
+    fs['trunk/other/DEPS'] = """
+deps = {
+  'foo/bar': '/trunk/third_party/foo@1',
+}
+"""
+    self._commit_svn(fs)
 
   def setUpGIT(self):
     """Creates git repositories and start the servers."""
@@ -400,9 +406,18 @@ hooks = [
     # - var
     # - hooks
     # TODO(maruel):
+    # - From
     # - File
     # - $matching_files
     # - use_relative_paths
+    self._commit_git('repo_3', {
+      'origin': 'git/repo_3@1\n',
+    })
+
+    self._commit_git('repo_3', {
+      'origin': 'git/repo_3@2\n',
+    })
+
     self._commit_git('repo_1', {
       'DEPS': """
 vars = {
@@ -410,38 +425,42 @@ vars = {
 }
 deps = {
   'src/repo2': 'git://%(host)s/git/repo_2',
-  'src/repo2/repo3': '/' + Var('DummyVariable') + '_3',
+  'src/repo2/repo3': '/' + Var('DummyVariable') + '_3@%(hash3)s',
 }
 deps_os = {
   'mac': {
     'src/repo4': '/repo_4',
   },
-}""" % { 'host': self.HOST },
-      'origin': 'git/repo_1@1\n',
+}""" % {
+            'host': self.HOST,
+            # See self.__init__() for the format. Grab's the hash of the first
+            # commit in repo_2. Only keep the first 7 character because of:
+            # TODO(maruel): http://crosbug.com/3591 We need to strip the hash..
+            # duh.
+            'hash3': self.git_hashes['repo_3'][1][0][:7]
+        },
+        'origin': 'git/repo_1@1\n',
     })
 
     self._commit_git('repo_2', {
-      'origin': "git/repo_2@1\n"
+      'origin': 'git/repo_2@1\n',
+      'DEPS': """
+deps = {
+  'foo/bar': '/repo_3',
+}
+""",
     })
 
     self._commit_git('repo_2', {
-      'origin': "git/repo_2@2\n"
-    })
-
-    self._commit_git('repo_3', {
-      'origin': "git/repo_3@1\n"
-    })
-
-    self._commit_git('repo_3', {
-      'origin': "git/repo_3@2\n"
+      'origin': 'git/repo_2@2\n',
     })
 
     self._commit_git('repo_4', {
-      'origin': "git/repo_4@1\n"
+      'origin': 'git/repo_4@1\n',
     })
 
     self._commit_git('repo_4', {
-      'origin': "git/repo_4@2\n"
+      'origin': 'git/repo_4@2\n',
     })
 
     self._commit_git('repo_1', {
@@ -449,6 +468,7 @@ deps_os = {
 deps = {
   'src/repo2': 'git://%(host)s/git/repo_2@%(hash)s',
   'src/repo2/repo_renamed': '/repo_3',
+  #'src/repo2/repo_renamed': From('src/repo2', 'foo/bar'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
@@ -472,7 +492,7 @@ hooks = [
         # TODO(maruel): http://crosbug.com/3591 We need to strip the hash.. duh.
         'hash': self.git_hashes['repo_2'][1][0][:7]
       },
-      'origin': "git/repo_1@2\n"
+      'origin': 'git/repo_1@2\n',
     })
 
     # Start the daemon.
@@ -511,8 +531,13 @@ class FakeReposTestBase(unittest.TestCase):
   # Replace this in your subclass.
   CLASS_ROOT_DIR = None
 
-  # static FakeRepos instance.
-  FAKE_REPOS = FakeRepos()
+  # static FakeRepos instance. Lazy loaded.
+  FAKE_REPOS = None
+
+  def __init__(self, *args, **kwargs):
+    unittest.TestCase.__init__(self, *args, **kwargs)
+    if not FakeReposTestBase.FAKE_REPOS:
+      FakeReposTestBase.FAKE_REPOS = FakeRepos()
 
   def setUp(self):
     unittest.TestCase.setUp(self)
@@ -604,6 +629,12 @@ def main(argv):
   except KeyboardInterrupt:
     fake.SHOULD_LEAK = True
   return 0
+
+
+# Kind of hack.
+if '-l' in sys.argv:
+  FakeRepos.SHOULD_LEAK = True
+  sys.argv.remove('-l')
 
 
 if __name__ == '__main__':

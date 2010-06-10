@@ -218,7 +218,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree = self.mangle_svn_tree(
         ('trunk/src@1', 'src'),
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
-        ('trunk/other@2', 'src/other'),
+        ('trunk/other@1', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
@@ -256,7 +256,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree = self.mangle_svn_tree(
         ('trunk/src@1', 'src'),
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
-        ('trunk/other@2', 'src/other'),
+        ('trunk/other@1', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
     self.assertTree(tree)
 
@@ -346,7 +346,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree = self.mangle_svn_tree(
         ('trunk/src@1', 'src'),
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
-        ('trunk/other@2', 'src/other'),
+        ('trunk/other@1', 'src/other'),
         ('trunk/third_party/prout@2', 'src/third_party/prout'))
     self.assertTree(tree)
 
@@ -424,7 +424,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEquals(0, results[2])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
-                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
@@ -435,7 +435,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEquals(0, results[2])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
-                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'),
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked1'] = 'git_hooked1'
@@ -481,7 +481,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEquals(0, results[2])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
-                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
     self.assertTree(tree)
 
@@ -622,12 +622,12 @@ class GClientSmokeBoth(GClientSmokeBase):
     self.assertEquals(0, results[2])
     tree = self.mangle_git_tree(('repo_1@1', 'src-git'),
                                 ('repo_2@2', 'src/repo2'),
-                                ('repo_3@2', 'src/repo2/repo3'),
+                                ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
     tree.update(self.mangle_svn_tree(
         ('trunk/src@1', 'src'),
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
-        ('trunk/other@2', 'src/other'),
+        ('trunk/other@1', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout')))
     self.assertTree(tree)
 
