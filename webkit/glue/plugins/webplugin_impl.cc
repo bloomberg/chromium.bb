@@ -109,6 +109,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
     // as regular resources requested by plugins to prevent reentrancy.
     resource_client_->DidReceiveData(
         data, data_size, byte_range_lower_bound_);
+    byte_range_lower_bound_ += data_size;
   }
 
   virtual void didFinishLoading(WebURLLoader*) {}
