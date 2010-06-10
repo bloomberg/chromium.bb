@@ -12,11 +12,17 @@
 // This is useful for testing the Chromoting plugin while we wait for
 // updated mimetype support to be added to Chrome.
 
+#include "build/build_config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
+
+#if defined (OS_POSIX)
+#include <unistd.h>
+#endif //  OS_POSIX
 
 #define PORT 8080
 
