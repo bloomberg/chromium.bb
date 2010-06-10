@@ -859,9 +859,11 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 
 	/* Unreference all the target buffers */
 	for (i = 0; i < bo_gem->reloc_count; i++) {
-		drm_intel_gem_bo_unreference_locked_timed(bo_gem->
-							  reloc_target_info[i].bo,
-							  time);
+		if (bo_gem->reloc_target_info[i].bo != bo) {
+			drm_intel_gem_bo_unreference_locked_timed(bo_gem->
+								  reloc_target_info[i].bo,
+								  time);
+		}
 	}
 	bo_gem->reloc_count = 0;
 	bo_gem->used_as_reloc_target = 0;
@@ -1345,7 +1347,8 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset;
 
 	bo_gem->reloc_target_info[bo_gem->reloc_count].bo = target_bo;
-	drm_intel_gem_bo_reference(target_bo);
+	if (target_bo != bo)
+		drm_intel_gem_bo_reference(target_bo);
 	if (need_fence)
 		bo_gem->reloc_target_info[bo_gem->reloc_count].flags =
 			DRM_INTEL_RELOC_FENCE;
@@ -1967,6 +1970,8 @@ _drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
 	for (i = 0; i < bo_gem->reloc_count; i++) {
 		if (bo_gem->reloc_target_info[i].bo == target_bo)
 			return 1;
+		if (bo == bo_gem->reloc_target_info[i].bo)
+			continue;
 		if (_drm_intel_gem_bo_references(bo_gem->reloc_target_info[i].bo,
 						target_bo))
 			return 1;
