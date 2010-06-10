@@ -22,6 +22,7 @@
 @synthesize preferencesRegistered = preferencesRegistered_;
 @synthesize autofillRegistered = autofillRegistered_;
 @synthesize themesRegistered = themesRegistered_;
+@synthesize extensionsRegistered = extensionsRegistered_;
 
 // If you add another ***Preferred variable, you must update okEnabled and
 // keyPathsForValuesAffectingOkEnabled below.
@@ -29,19 +30,21 @@
 @synthesize preferencesPreferred = preferencesPreferred_;
 @synthesize autofillPreferred = autofillPreferred_;
 @synthesize themesPreferred = themesPreferred_;
+@synthesize extensionsPreferred = extensionsPreferred_;
 
 // The OK button should be clickable if and only if there's at least one
 // datatype chosen to sync.
 - (BOOL)okEnabled {
   return bookmarksPreferred_ || preferencesPreferred_ || autofillPreferred_ ||
-      themesPreferred_;
+      themesPreferred_ || extensionsPreferred_;
 }
 
 // Naming convention; makes okEnabled get updated whenever any of the below
 // "Preferred" variables are updated.
 + (NSSet*)keyPathsForValuesAffectingOkEnabled {
   return [NSSet setWithObjects:@"bookmarksPreferred", @"preferencesPreferred",
-          @"autofillPreferred", @"themesPreferred", nil];
+                @"autofillPreferred", @"themesPreferred",
+                @"extensionsPreferred", nil];
 }
 
 - (id)initWithProfileSyncService:(ProfileSyncService*)syncService {
@@ -100,6 +103,7 @@
     syncable::PREFERENCES,
     syncable::AUTOFILL,
     syncable::THEMES,
+    syncable::EXTENSIONS,
   };
   DCHECK(std::includes(expected_types,
                        expected_types + arraysize(expected_types),
@@ -114,6 +118,8 @@
                                           syncable::AUTOFILL)];
   [self setThemesRegistered:ContainsKey(registered_types,
                                         syncable::THEMES)];
+  [self setExtensionsRegistered:ContainsKey(registered_types,
+                                            syncable::EXTENSIONS)];
 
   syncable::ModelTypeSet preferred_types;
   syncService_->GetPreferredDataTypes(&preferred_types);
@@ -128,6 +134,8 @@
                                          syncable::AUTOFILL)];
   [self setThemesPreferred:ContainsKey(preferred_types,
                                        syncable::THEMES)];
+  [self setExtensionsPreferred:ContainsKey(preferred_types,
+                                           syncable::EXTENSIONS)];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -157,6 +165,9 @@
   }
   if ([self themesPreferred]) {
     preferred_types.insert(syncable::THEMES);
+  }
+  if ([self extensionsPreferred]) {
+    preferred_types.insert(syncable::EXTENSIONS);
   }
   syncService_->ChangePreferredDataTypes(preferred_types);
   [self endSheet];

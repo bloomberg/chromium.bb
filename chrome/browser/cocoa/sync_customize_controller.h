@@ -28,6 +28,7 @@ class ProfileSyncService;
   BOOL preferencesRegistered_;
   BOOL autofillRegistered_;
   BOOL themesRegistered_;
+  BOOL extensionsRegistered_;
 
   // The preferred flags indicate which model types the user would
   // like to sync.
@@ -35,6 +36,7 @@ class ProfileSyncService;
   BOOL preferencesPreferred_;
   BOOL autofillPreferred_;
   BOOL themesPreferred_;
+  BOOL extensionsPreferred_;
 }
 
 // syncService cannot be NULL.
@@ -54,11 +56,13 @@ class ProfileSyncService;
 @property(assign) BOOL preferencesRegistered;
 @property(assign) BOOL autofillRegistered;
 @property(assign) BOOL themesRegistered;
+@property(assign) BOOL extensionsRegistered;
 
 @property(assign) BOOL bookmarksPreferred;
 @property(assign) BOOL preferencesPreferred;
 @property(assign) BOOL autofillPreferred;
 @property(assign) BOOL themesPreferred;
+@property(assign) BOOL extensionsPreferred;
 
 @property(readonly) BOOL okEnabled;
 
