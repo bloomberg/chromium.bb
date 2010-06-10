@@ -91,6 +91,33 @@
       ],  # end of Client targets
     }],  # end of OS conditions for Client targets
 
+    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="mac"', {
+      'targets': [
+        {
+          'target_name': 'chromoting_x11_client',
+          'type': 'executable',
+          'dependencies': [
+            'chromoting_base',
+            'chromoting_client',
+            'chromoting_jingle_glue',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-ldl',
+              '-lX11',
+              '-lXrender',
+              '-lXext',
+            ],
+          },
+          'sources': [
+            'client/x11_client.cc',
+            'client/x11_view.cc',
+            'client/x11_view.h',
+          ],
+        },  # end of target 'chromoting_x11_client'
+      ],
+    }],  # end of OS conditions for x11 client
+
   ],  # end of 'conditions'
 
   'targets': [
@@ -237,29 +264,6 @@
     },  # end of target 'chromoting_simple_client'
 
     {
-      'target_name': 'chromoting_x11_client',
-      'type': 'executable',
-      'dependencies': [
-        'chromoting_base',
-        'chromoting_client',
-        'chromoting_jingle_glue',
-      ],
-      'link_settings': {
-        'libraries': [
-          '-ldl',
-          '-lX11',
-          '-lXrender',
-          '-lXext',
-        ],
-      },
-      'sources': [
-        'client/x11_client.cc',
-        'client/x11_view.cc',
-        'client/x11_view.h',
-      ],
-    },  # end of target 'chromoting_x11_client'
-
-    {
       'target_name': 'chromoting_jingle_glue',
       'type': '<(library)',
       'dependencies': [
@@ -374,7 +378,6 @@
         }],
       ],  # end of 'conditions'
     },  # end of target 'chromoting_unittests'
-
   ],  # end of targets
 }
 
