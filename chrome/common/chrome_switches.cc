@@ -640,6 +640,10 @@ const char kProcessPerSite[]                = "process-per-site";
 // script connections to each other).
 const char kProcessPerTab[]                 = "process-per-tab";
 
+// Output the product version information and quit. Used as an internal api to
+// detect the installed version of Chrome on Linux.
+const char kProductVersion[]                = "product-version";
+
 // Causes the process to run as a profile import subprocess.
 const char kProfileImportProcess[]          = "profile-import";
 
@@ -834,9 +838,8 @@ const char kUtilityProcess[]                = "utility";
 // specifies the directory that can be accessed.
 const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 
-// Output the product version information and quit. Used as an internal api to
-// detect the installed version of Chrome on Linux.
-const char kProductVersion[]                       = "product-version";
+// Print version information and quit.
+const char kVersion[]                       = "version";
 
 // Will add kWaitForDebugger to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the

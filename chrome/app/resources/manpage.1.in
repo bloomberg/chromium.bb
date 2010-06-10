@@ -50,7 +50,7 @@ Where <proxy-scheme> is the protocol of the proxy server, and is one of:
 If the <proxy-scheme> is omitted, it defaults to "http". Also note that
 "socks" is equivlent to "socks4".
 
-Examples: 
+Examples:
 
   --proxy-server="foopy:99"
       Use the HTTP proxy "foopy:99" to load all URLs.
@@ -84,6 +84,10 @@ or settings picked via the options dialog.
 \fB\-\-proxy-pac-url\fR=\fIURL\fR
 Specify proxy autoconfiguration URL.  Overrides any environment variables
 or settings picked via the options dialog.
+
+.TP
+\fB\-\-version\fR
+Show version information.
 
 .PP
 As a GTK+ app, @@NAME@@ also obeys GTK+ command-line flags, such

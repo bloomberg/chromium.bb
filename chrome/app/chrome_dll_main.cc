@@ -46,9 +46,11 @@
 #include "base/stats_counters.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_descriptors.h"
@@ -482,6 +484,17 @@ int ChromeMain(int argc, char** argv) {
   if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
     scoped_ptr<FileVersionInfo> version(chrome_app::GetChromeVersionInfo());
     printf("%s\n", WideToASCII(version->product_version()).c_str());
+    return 0;
+  }
+#endif
+
+#if defined(OS_POSIX)
+  if (parsed_command_line.HasSwitch(switches::kVersion)) {
+    scoped_ptr<FileVersionInfo> version(chrome_app::GetChromeVersionInfo());
+    printf("%s %s %s\n",
+           WideToUTF8(version->product_name()).c_str(),
+           WideToASCII(version->product_version()).c_str(),
+           UTF16ToUTF8(platform_util::GetVersionStringModifier()).c_str());
     return 0;
   }
 #endif
