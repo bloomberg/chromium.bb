@@ -85,6 +85,10 @@ AutoFillProfilesView::AutoFillProfilesView(
 }
 
 AutoFillProfilesView::~AutoFillProfilesView() {
+  // Clear model as it gets deleted before the view.
+  if (scroll_view_)
+    scroll_view_->SetModel(NULL);
+
   // Removes observer if we are observing Profile load. Does nothing otherwise.
   if (personal_data_manager_)
     personal_data_manager_->RemoveObserver(this);
