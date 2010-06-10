@@ -17,7 +17,6 @@
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/cros/chromeos_keyboard.h"
 
 // The language menu consists of 3 parts (in this order):
 //
@@ -162,11 +161,6 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // is available, but Chrome preferences are not available (for example,
   // initial OS boot).
   UpdateIcon(L"EN", L"");
-
-  // Use the same keyboard layout on all windows.
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    SetKeyboardLayoutPerWindow(false);
-  }
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
   // InputMethodChanged() will be called soon and the indicator will be updated.
