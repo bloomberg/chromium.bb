@@ -6,37 +6,12 @@
 
 #include <iostream>
 
-static void SetConsoleEcho(bool on) {
-#ifdef WIN32
-  HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-  if ((hIn == INVALID_HANDLE_VALUE) || (hIn == NULL))
-    return;
-
-  DWORD mode;
-  if (!GetConsoleMode(hIn, &mode))
-    return;
-
-  if (on) {
-    mode = mode | ENABLE_ECHO_INPUT;
-  } else {
-    mode = mode & ~ENABLE_ECHO_INPUT;
-  }
-
-  SetConsoleMode(hIn, mode);
-#else
-  if (on)
-    system("stty echo");
-  else
-    system("stty -echo");
-#endif
-}
-
 namespace remoting {
 
 // Get host JID from command line arguments, or stdin if not specified.
 bool GetLoginInfo(std::string& host_jid,
                   std::string& username,
-                  std::string& password) {
+                  std::string& auth_token) {
   std::cout << "Host JID: ";
   std::cin >> host_jid;
   std::cin.ignore();  // Consume the leftover '\n'
@@ -64,11 +39,9 @@ bool GetLoginInfo(std::string& host_jid,
     return 1;
   }
 
-  // Get password (with console echo turned off).
-  SetConsoleEcho(false);
-  std::cout << "Password: ";
-  getline(std::cin, password);
-  SetConsoleEcho(true);
+  // Get authenication token (with console echo turned off).
+  std::cout << "Auth token: ";
+  getline(std::cin, auth_token);
   std::cout << std::endl;
   return true;
 }

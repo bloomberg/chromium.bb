@@ -11,7 +11,7 @@ namespace remoting {
 // 3780 pixels per meter is equivalent to 96 DPI, typical on desktop monitors.
 static const int kPixelsPerMeter = 3780;
 // 24 bit RGB is 3 bytes per pixel.
-static const int kBytesPerPixel = 3;
+static const int kBytesPerPixel = 4;
 
 CapturerGdi::CapturerGdi()
     : initialized_(false) {
@@ -84,7 +84,7 @@ void CapturerGdi::InitializeBuffers() {
   int rounded_width = (width_ + 3) & (~3);
 
   // Dimensions of screen.
-  pixel_format_ = PixelFormatRgb24;
+  pixel_format_ = PixelFormatRgb32;
   bytes_per_pixel_ = kBytesPerPixel;
   bytes_per_row_ = rounded_width * bytes_per_pixel_;
 
