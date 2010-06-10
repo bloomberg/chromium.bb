@@ -19,6 +19,7 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -172,10 +173,15 @@ void ToolbarView::Init(Profile* profile) {
 
   browser_actions_ = new BrowserActionsContainer(browser_, this, true);
 
-  page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
-  page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
-  page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
-  page_menu_->SetID(VIEW_ID_PAGE_MENU);
+  bool use_wrench_menu =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewWrenchMenu);
+  if (!use_wrench_menu) {
+    page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+    page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
+    page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
+    page_menu_->SetID(VIEW_ID_PAGE_MENU);
+    AddChildView(page_menu_);
+  }
 
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
   app_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_APP));
@@ -199,7 +205,6 @@ void ToolbarView::Init(Profile* profile) {
   AddChildView(location_bar_);
   AddChildView(go_);
   AddChildView(browser_actions_);
-  AddChildView(page_menu_);
   AddChildView(app_menu_);
 
   location_bar_->Init();
@@ -210,8 +215,13 @@ void ToolbarView::Init(Profile* profile) {
     ShowUpgradeReminder();
 
   SetProfile(profile);
-  if (!app_menu_model_.get())
-    SetAppMenuModel(new AppMenuModel(this, browser_));
+  if (!app_menu_model_.get()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewWrenchMenu)) {
+      SetAppMenuModel(new WrenchMenuModel(this, browser_));
+    } else {
+      SetAppMenuModel(new AppMenuModel(this, browser_));
+    }
+  }
 
   focus_manager_ = GetFocusManager();
 }
@@ -231,7 +241,7 @@ void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
     browser_actions_->RefreshBrowserActionViews();
 }
 
-void ToolbarView::SetAppMenuModel(AppMenuModel* model) {
+void ToolbarView::SetAppMenuModel(menus::SimpleMenuModel* model) {
   app_menu_model_.reset(model);
   app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
 }
@@ -509,8 +519,11 @@ bool ToolbarView::AcceleratorPressed(
       return true;
     case base::VKEY_LEFT:
     case base::VKEY_RIGHT:
-      ((menu == app_menu_) ? page_menu_ : app_menu_)->RequestFocus();
-      return true;
+      if (page_menu_) {
+        ((menu == app_menu_) ? page_menu_ : app_menu_)->RequestFocus();
+        return true;
+      }
+      return false;
     case base::VKEY_UP:
     case base::VKEY_DOWN:
     case base::VKEY_RETURN:
@@ -536,7 +549,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
         go_->GetPreferredSize().width() +
         kMenuButtonOffset +
         (bookmark_menu_ ? bookmark_menu_->GetPreferredSize().width() : 0) +
-        page_menu_->GetPreferredSize().width() +
+        (page_menu_ ? page_menu_->GetPreferredSize().width() : 0) +
         app_menu_->GetPreferredSize().width() + kPaddingRight;
 
     static SkBitmap normal_background;
@@ -609,7 +622,8 @@ void ToolbarView::Layout() {
 
   int go_button_width = go_->GetPreferredSize().width();
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
-  int page_menu_width = page_menu_->GetPreferredSize().width();
+  int page_menu_width =
+      page_menu_ ? page_menu_->GetPreferredSize().width() : 0;
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int bookmark_menu_width = bookmark_menu_ ?
       bookmark_menu_->GetPreferredSize().width() : 0;
@@ -642,8 +656,10 @@ void ToolbarView::Layout() {
     next_menu_x += bookmark_menu_width;
   }
 
-  page_menu_->SetBounds(next_menu_x, child_y, page_menu_width, child_height);
-  next_menu_x += page_menu_width;
+  if (page_menu_) {
+    page_menu_->SetBounds(next_menu_x, child_y, page_menu_width, child_height);
+    next_menu_x += page_menu_width;
+  }
 
   app_menu_->SetBounds(next_menu_x, child_y, app_menu_width, child_height);
 }
@@ -737,8 +753,10 @@ void ToolbarView::LoadImages() {
       tp->GetBitmapNamed(IDR_GO_MASK));
 
   // We use different menu button images if the locale is right-to-left.
-  page_menu_->SetIcon(*tp->GetBitmapNamed(
-      base::i18n::IsRTL() ? IDR_MENU_PAGE_RTL : IDR_MENU_PAGE));
+  if (page_menu_) {
+    page_menu_->SetIcon(*tp->GetBitmapNamed(
+        base::i18n::IsRTL() ? IDR_MENU_PAGE_RTL : IDR_MENU_PAGE));
+  }
   app_menu_->SetIcon(GetAppMenuIcon());
   if (bookmark_menu_ != NULL)
     bookmark_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
@@ -848,7 +866,8 @@ void ToolbarView::RunAppMenu(const gfx::Point& pt) {
 
   for (size_t i = 0; i < menu_listeners_.size(); i++)
     app_menu_menu_->RemoveMenuListener(menu_listeners_[i]);
-  SwitchToOtherMenuIfNeeded(app_menu_menu_.get(), page_menu_);
+  if (page_menu_)
+    SwitchToOtherMenuIfNeeded(app_menu_menu_.get(), page_menu_);
 }
 
 void ToolbarView::SwitchToOtherMenuIfNeeded(
@@ -897,12 +916,13 @@ void ToolbarView::ActivateMenuButton(views::MenuButton* menu_button) {
 }
 
 void ToolbarView::ExitMenuBarEmulationMode() {
-  if (page_menu_->HasFocus() || app_menu_->HasFocus())
+  if ((page_menu_ && page_menu_->HasFocus()) || app_menu_->HasFocus())
     RestoreLastFocusedView();
 
   focus_manager_->UnregisterAccelerators(this);
   focus_manager_->RemoveFocusChangeListener(this);
-  page_menu_->SetFocusable(false);
+  if (page_menu_)
+    page_menu_->SetFocusable(false);
   app_menu_->SetFocusable(false);
   menu_bar_emulation_mode_ = false;
 }

@@ -61,7 +61,7 @@ class ToolbarView : public AccessibleToolbarView,
   void Update(TabContents* tab, bool should_restore_state);
 
   // Sets the app menu model.
-  void SetAppMenuModel(AppMenuModel* model);
+  void SetAppMenuModel(menus::SimpleMenuModel* model);
 
   // Focuses the page menu and enters a special mode where the page
   // and app menus are focusable and allow for keyboard navigation just
