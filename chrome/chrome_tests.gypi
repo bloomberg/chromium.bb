@@ -1882,6 +1882,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/bzip2/bzip2.gyp:bzip2',        
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'profile_import',
         'syncapi',
