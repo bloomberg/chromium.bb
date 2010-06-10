@@ -367,8 +367,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 
-#if defined(OS_WIN)
-// Disabled because it times out. See http://crbug.com/45080
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Disabled on WIN because it times out. See http://crbug.com/45080
+// Disabled on Linux as well after WebKit r60965, See http://crbug.com/46299
 #define MAYBE_TestStepOver DISABLED_TestStepOver
 #else
 #define MAYBE_TestStepOver TestStepOver
@@ -378,10 +379,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOver) {
   RunTest("testStepOver", kDebuggerStepTestPage);
 }
 
-#if defined(OS_WIN)
-// Disabled because it times out. See http://crbug.com/45080
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Disabled on WIN because it times out. See http://crbug.com/45080
+// Disabled on Linux as well after WebKit r60965, See http://crbug.com/46299
 #define MAYBE_TestStepOut DISABLED_TestStepOut
-#elif defined(OS_CHROMEOS) || defined(OS_LINUX)
+#elif defined(OS_CHROMEOS)
 // See http://crbug.com/43479
 #define MAYBE_TestStepOut FLAKY_TestStepOut
 #else
@@ -392,8 +394,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
-#if defined(OS_WIN)
-// Disabled because it times out. See http://crbug.com/45080
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Disabled on WIN because it times out. See http://crbug.com/45080
+// Disabled on Linux as well after WebKit r60965, See http://crbug.com/46299
 #define MAYBE_TestStepIn DISABLED_TestStepIn
 #elif defined(OS_CHROMEOS)
 // See http://crbug.com/43479
