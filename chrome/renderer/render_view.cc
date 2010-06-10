@@ -577,8 +577,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
   }
 
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_CaptureThumbnail, SendThumbnail)
-    IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, SendSnapshot)
+    IPC_MESSAGE_HANDLER(ViewMsg_CaptureThumbnail, OnCaptureThumbnail)
+    IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
@@ -642,11 +642,11 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_GetApplicationInfo, OnGetApplicationInfo)
-    IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnMsgShouldClose)
+    IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnShouldClose)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_HandleMessageFromExternalHost,
-                        OnMessageFromExternalHost)
+                        OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ViewMsg_DisassociateFromPopupCount,
                         OnDisassociateFromPopupCount)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
@@ -697,7 +697,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void RenderView::SendThumbnail() {
+void RenderView::OnCaptureThumbnail() {
   WebFrame* main_frame = webview()->mainFrame();
   if (!main_frame)
     return;
@@ -720,7 +720,7 @@ void RenderView::SendThumbnail() {
   Send(new ViewHostMsg_Thumbnail(routing_id_, url, score, thumbnail));
 }
 
-void RenderView::SendSnapshot() {
+void RenderView::OnCaptureSnapshot() {
   SkBitmap snapshot;
   bool error = false;
 
@@ -805,8 +805,7 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
                                       language));
   }
 
-  // thumbnail
-  SendThumbnail();
+  OnCaptureThumbnail();
 }
 
 void RenderView::CaptureText(WebFrame* frame, std::wstring* contents) {
@@ -3601,10 +3600,6 @@ void RenderView::ClearBlockedContentSettings() {
     content_blocked_[i] = false;
 }
 
-void RenderView::DnsPrefetch(const std::vector<std::string>& host_names) {
-  Send(new ViewHostMsg_DnsPrefetch(host_names));
-}
-
 void RenderView::OnZoom(PageZoom::Function function) {
   if (!webview())  // Not sure if this can happen, but no harm in being safe.
     return;
@@ -4060,7 +4055,7 @@ void RenderView::didSerializeDataForFrame(const WebURL& frame_url,
     static_cast<int32>(status)));
 }
 
-void RenderView::OnMsgShouldClose() {
+void RenderView::OnShouldClose() {
   bool should_close = webview()->dispatchBeforeUnloadEvent();
   Send(new ViewHostMsg_ShouldClose_ACK(routing_id_, should_close));
 }
@@ -4103,12 +4098,11 @@ void RenderView::OnThemeChanged() {
 #endif
 }
 
-void RenderView::OnMessageFromExternalHost(const std::string& message,
-                                           const std::string& origin,
-                                           const std::string& target) {
+void RenderView::OnHandleMessageFromExternalHost(const std::string& message,
+                                                 const std::string& origin,
+                                                 const std::string& target) {
   if (message.empty())
     return;
-
   external_host_bindings_.ForwardMessageFromExternalHost(message, origin,
                                                          target);
 }
