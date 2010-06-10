@@ -10,7 +10,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/histogram.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/google_util.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -63,20 +63,6 @@ static const char* const kLearnMoreCommand = "learnMore";
 static const char* const kProceedCommand = "proceed";
 static const char* const kTakeMeBackCommand = "takeMeBack";
 
-namespace {
-
-enum SafeBrowsingBlockingPageEvent {
-  SHOW,
-  PROCEED,
-  DONT_PROCEED,
-  UNUSED_ENUM,
-};
-
-void RecordSafeBrowsingBlockingPageStats(SafeBrowsingBlockingPageEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("interstial.safe_browsing", event, UNUSED_ENUM);
-}
-
-}  // namespace
 // static
 SafeBrowsingBlockingPageFactory* SafeBrowsingBlockingPage::factory_ = NULL;
 
@@ -111,7 +97,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       sb_service_(sb_service),
       is_main_frame_(IsMainPage(unsafe_resources)),
       unsafe_resources_(unsafe_resources) {
-  RecordSafeBrowsingBlockingPageStats(SHOW);
+  RecordUserAction(SHOW);
   if (!is_main_frame_) {
     navigation_entry_index_to_remove_ =
         tab()->controller().last_committed_entry_index();
@@ -385,7 +371,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 }
 
 void SafeBrowsingBlockingPage::Proceed() {
-  RecordSafeBrowsingBlockingPageStats(PROCEED);
+  RecordUserAction(PROCEED);
 
   NotifySafeBrowsingService(sb_service_, unsafe_resources_, true);
 
@@ -422,7 +408,7 @@ void SafeBrowsingBlockingPage::DontProceed() {
     return;
   }
 
-  RecordSafeBrowsingBlockingPageStats(DONT_PROCEED);
+  RecordUserAction(DONT_PROCEED);
 
   NotifySafeBrowsingService(sb_service_, unsafe_resources_, false);
 
@@ -445,6 +431,44 @@ void SafeBrowsingBlockingPage::DontProceed() {
   }
   InterstitialPage::DontProceed();
   // We are now deleted.
+}
+
+void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
+  // Determine the interstitial type from the blocked resources.
+  // This is the same logic that is used to actually construct the
+  // page contents; we can look at the title to see which type of
+  // interstitial is being displayed.
+  DictionaryValue strings;
+  PopulateMultipleThreatStringDictionary(&strings);
+
+  std::wstring title;
+  DCHECK(strings.GetString(L"title", &title));
+
+  std::string action = "SBInterstitial";
+  if (title == l10n_util::GetString(IDS_SAFE_BROWSING_MULTI_THREAT_TITLE)) {
+    action.append("Multiple");
+  } else if (title == l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_TITLE)) {
+    action.append("Malware");
+  } else {
+    DCHECK_EQ(title, l10n_util::GetString(IDS_SAFE_BROWSING_PHISHING_TITLE));
+    action.append("Phishing");
+  }
+
+  switch (event) {
+    case SHOW:
+      action.append("Show");
+      break;
+    case PROCEED:
+      action.append("Proceed");
+      break;
+    case DONT_PROCEED:
+      action.append("DontProceed");
+      break;
+    default:
+      NOTREACHED() << "Unexpected event: " << event;
+  }
+
+  UserMetrics::RecordComputedAction(action);
 }
 
 // static

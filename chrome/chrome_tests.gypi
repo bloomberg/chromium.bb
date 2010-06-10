@@ -1241,7 +1241,6 @@
             'browser/login_prompt_unittest.cc',
             'browser/printing/print_job_unittest.cc',
             'browser/rlz/rlz_unittest.cc',
-            'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
             'browser/translate/translate_manager2_unittest.cc',
             'browser/views/bookmark_editor_view_unittest.cc',

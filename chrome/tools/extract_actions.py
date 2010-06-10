@@ -35,14 +35,15 @@ from google import path_utils
 # they require special handling code in this script.
 # To add a new file, add it to this list and add the appropriate logic to
 # generate the known actions to AddComputedActions() below.
-KNOWN_COMPUTED_USERS = [
+KNOWN_COMPUTED_USERS = (
   'back_forward_menu_model.cc',
   'options_page_view.cc',
   'render_view_host.cc',  # called using webkit identifiers
   'user_metrics.cc',  # method definition
   'new_tab_ui.cc',  # most visited clicks 1-9
   'extension_metrics_module.cc', # extensions hook for user metrics
-]
+  'safe_browsing_blocking_page.cc', # various interstitial types and actions
+)
 
 number_of_files_total = 0
 
@@ -55,7 +56,7 @@ def AddComputedActions(actions):
   """
 
   # Actions for back_forward_menu_model.cc.
-  for dir in ['BackMenu_', 'ForwardMenu_']:
+  for dir in ('BackMenu_', 'ForwardMenu_'):
     actions.add(dir + 'ShowFullHistory')
     actions.add(dir + 'Popup')
     for i in range(1, 20):
@@ -65,6 +66,11 @@ def AddComputedActions(actions):
   # Actions for new_tab_ui.cc.
   for i in range(1, 10):
     actions.add('MostVisited%d' % i)
+
+  # Actions for safe_browsing_blocking_page.cc.
+  for interstitial in ('Phishing', 'Malware', 'Multiple'):
+    for action in ('Show', 'Proceed', 'DontProceed'):
+      actions.add('SBInterstitial%s%s' % (interstitial, action))
 
 def AddWebKitEditorActions(actions):
   """Add editor actions from editor_client_impl.cc.
