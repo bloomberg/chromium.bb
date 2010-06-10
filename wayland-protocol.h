@@ -23,6 +23,10 @@
 #ifndef WAYLAND_PROTOCOL_H
 #define WAYLAND_PROTOCOL_H
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #define WL_DISPLAY_INVALID_OBJECT	0
@@ -67,5 +71,9 @@ extern const struct wl_interface wl_output_interface;
 
 
 extern const struct wl_interface wl_visual_interface;
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif

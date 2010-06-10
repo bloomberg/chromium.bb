@@ -23,6 +23,10 @@
 #ifndef WAYLAND_H
 #define WAYLAND_H
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "wayland-util.h"
 
@@ -150,5 +154,9 @@ void
 wl_display_post_frame(struct wl_display *display,
 		      struct wl_compositor *compositor,
 		      uint32_t frame, uint32_t msecs);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif

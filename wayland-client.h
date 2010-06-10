@@ -23,6 +23,10 @@
 #ifndef _WAYLAND_CLIENT_H
 #define _WAYLAND_CLIENT_H
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 struct wl_object;
 struct wl_display;
 struct wl_surface;
@@ -148,4 +152,9 @@ void wl_display_write(struct wl_display *display,
 		      size_t count);
 void wl_display_advertise_global(struct wl_display *display,
 				 struct wl_object *object);
+
+#ifdef  __cplusplus
+}
+#endif
+
 #endif
