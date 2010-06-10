@@ -71,7 +71,7 @@ base::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
   if (!file_util::PathExists(private_key_path)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS);
-    return false;
+    return NULL;
   }
 
   std::string private_key_contents;
@@ -79,7 +79,7 @@ base::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
       &private_key_contents)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_READ);
-    return false;
+    return NULL;
   }
 
   std::string private_key_bytes;
@@ -87,7 +87,7 @@ base::RSAPrivateKey* ExtensionCreator::ReadInputKey(const FilePath&
        &private_key_bytes)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_PRIVATE_KEY_INVALID);
-    return false;
+    return NULL;
   }
 
   return base::RSAPrivateKey::CreateFromPrivateKeyInfo(

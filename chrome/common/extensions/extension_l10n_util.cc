@@ -283,7 +283,7 @@ ExtensionMessageBundle* LoadMessageCatalogs(
     if (!catalog.get()) {
       // If locale is valid, but messages.json is corrupted or missing, return
       // an error.
-      return false;
+      return NULL;
     } else {
       catalogs.push_back(catalog);
     }
