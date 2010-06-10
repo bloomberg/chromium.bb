@@ -43,13 +43,13 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h" // for FRIEND_TEST
 
 namespace browser_sync {
 class ModelSafeWorkerRegistrar;
@@ -232,7 +232,7 @@ class BaseNode {
   void* operator new(size_t size);
 
   friend class SyncApiTest;
-  FRIEND_TEST(SyncApiTest, GenerateSyncableHash);
+  FRIEND_TEST_ALL_PREFIXES(SyncApiTest, GenerateSyncableHash);
 
   DISALLOW_COPY_AND_ASSIGN(BaseNode);
 };

@@ -15,6 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/condition_variable.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
@@ -26,7 +27,6 @@
 #endif
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 class EventListenerHookup;
 
@@ -47,13 +47,13 @@ struct SyncerShutdownEvent;
 
 class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
                      public sessions::SyncSession::Delegate {
-  FRIEND_TEST(SyncerThreadTest, CalculateSyncWaitTime);
-  FRIEND_TEST(SyncerThreadTest, CalculatePollingWaitTime);
-  FRIEND_TEST(SyncerThreadWithSyncerTest, Polling);
-  FRIEND_TEST(SyncerThreadWithSyncerTest, Nudge);
-  FRIEND_TEST(SyncerThreadWithSyncerTest, Throttling);
-  FRIEND_TEST(SyncerThreadWithSyncerTest, AuthInvalid);
-  FRIEND_TEST(SyncerThreadWithSyncerTest, DISABLED_Pause);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculateSyncWaitTime);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculatePollingWaitTime);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Polling);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Nudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Throttling);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, AuthInvalid);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Pause);
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
  public:

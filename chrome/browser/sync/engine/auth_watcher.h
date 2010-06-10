@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/atomicops.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {
 struct DirectoryManagerEvent;
@@ -77,7 +77,7 @@ struct AuthWatcherEvent {
 // invoked authentication.
 class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
  friend class AuthWatcherTest;
- FRIEND_TEST(AuthWatcherTest, Construction);
+ FRIEND_TEST_ALL_PREFIXES(AuthWatcherTest, Construction);
  public:
   // Normal progression is local -> gaia -> token.
   enum Status { LOCALLY_AUTHENTICATED, GAIA_AUTHENTICATED, NOT_AUTHENTICATED };

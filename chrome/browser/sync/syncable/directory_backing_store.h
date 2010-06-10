@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 extern "C" {
 struct sqlite3;
@@ -76,13 +76,13 @@ class DirectoryBackingStore {
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot);
 
  private:
-  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion67To68);
-  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion68To69);
-  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion69To70);
-  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion70To71);
-  FRIEND_TEST(DirectoryBackingStoreTest, ModelTypeIds);
-  FRIEND_TEST(DirectoryBackingStoreTest, Corruption);
-  FRIEND_TEST(MigrationTest, ToCurrentVersion);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion67To68);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion68To69);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion69To70);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion70To71);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
+  FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
 
   // General Directory initialization and load helpers.
   DirOpenResult InitializeTables();

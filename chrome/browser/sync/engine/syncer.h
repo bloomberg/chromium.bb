@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {
 class Directory;
@@ -166,21 +166,23 @@ class Syncer {
   Closure* pre_conflict_resolution_closure_;
 
   friend class SyncerTest;
-  FRIEND_TEST(SyncerTest, NameClashWithResolver);
-  FRIEND_TEST(SyncerTest, IllegalAndLegalUpdates);
-  FRIEND_TEST(SusanDeletingTest,
-              NewServerItemInAFolderHierarchyWeHaveDeleted3);
-  FRIEND_TEST(SyncerTest, TestCommitListOrderingAndNewParent);
-  FRIEND_TEST(SyncerTest, TestCommitListOrderingAndNewParentAndChild);
-  FRIEND_TEST(SyncerTest, TestCommitListOrderingCounterexample);
-  FRIEND_TEST(SyncerTest, TestCommitListOrderingWithNesting);
-  FRIEND_TEST(SyncerTest, TestCommitListOrderingWithNewItems);
-  FRIEND_TEST(SyncerTest, TestGetUnsyncedAndSimpleCommit);
-  FRIEND_TEST(SyncerTest, UnappliedUpdateDuringCommit);
-  FRIEND_TEST(SyncerTest, DeletingEntryInFolder);
-  FRIEND_TEST(SyncerTest, LongChangelistCreatesFakeOrphanedEntries);
-  FRIEND_TEST(SyncerTest, QuicklyMergeDualCreatedHierarchy);
-  FRIEND_TEST(SyncerTest, LongChangelistWithApplicationConflict);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, NameClashWithResolver);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, IllegalAndLegalUpdates);
+  FRIEND_TEST_ALL_PREFIXES(SusanDeletingTest,
+                           NewServerItemInAFolderHierarchyWeHaveDeleted3);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingAndNewParent);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
+                           TestCommitListOrderingAndNewParentAndChild);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingCounterexample);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingWithNesting);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestCommitListOrderingWithNewItems);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, TestGetUnsyncedAndSimpleCommit);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, UnappliedUpdateDuringCommit);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, DeletingEntryInFolder);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
+                           LongChangelistCreatesFakeOrphanedEntries);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, QuicklyMergeDualCreatedHierarchy);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest, LongChangelistWithApplicationConflict);
 
   DISALLOW_COPY_AND_ASSIGN(Syncer);
 };

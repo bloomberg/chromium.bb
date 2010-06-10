@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -23,7 +24,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class NotificationDetails;
 class NotificationSource;
@@ -337,8 +337,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   friend class ProfileSyncServiceTest;
   friend class ProfileSyncServicePreferenceTest;
   friend class ProfileSyncServiceTestHarness;
-  FRIEND_TEST(ProfileSyncServiceTest, InitialState);
-  FRIEND_TEST(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest,
+                           UnrecoverableErrorSuspendsService);
 
   // Initializes the various settings from the command line.
   void InitSettings();

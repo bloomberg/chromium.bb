@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -22,7 +23,6 @@
 #endif
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FlowHandler;
 class SyncSetupFlowContainer;
@@ -128,12 +128,12 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   }
 
  private:
-  FRIEND_TEST(SyncSetupWizardTest, InitialStepLogin);
-  FRIEND_TEST(SyncSetupWizardTest, InitialStepMergeAndSync);
-  FRIEND_TEST(SyncSetupWizardTest, DialogCancelled);
-  FRIEND_TEST(SyncSetupWizardTest, InvalidTransitions);
-  FRIEND_TEST(SyncSetupWizardTest, FullSuccessfulRunSetsPref);
-  FRIEND_TEST(SyncSetupWizardTest, DiscreteRun);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepMergeAndSync);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DialogCancelled);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InvalidTransitions);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, FullSuccessfulRunSetsPref);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRun);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,

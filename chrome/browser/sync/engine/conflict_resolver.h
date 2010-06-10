@@ -12,9 +12,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/common/deprecated/event_sys.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {
 class BaseTransaction;
@@ -31,7 +31,8 @@ class StatusController;
 
 class ConflictResolver {
   friend class SyncerTest;
-  FRIEND_TEST(SyncerTest, ConflictResolverMergeOverwritesLocalEntry);
+  FRIEND_TEST_ALL_PREFIXES(SyncerTest,
+                           ConflictResolverMergeOverwritesLocalEntry);
  public:
   ConflictResolver();
   ~ConflictResolver();

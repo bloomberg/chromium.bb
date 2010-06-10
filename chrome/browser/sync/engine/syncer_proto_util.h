@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/sync_types.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {
 class Directory;
@@ -109,11 +109,9 @@ class SyncerProtoUtil {
                                     sync_pb::ClientToServerResponse* response);
 
   friend class SyncerProtoUtilTest;
-
-  FRIEND_TEST(SyncerProtoUtilTest, AddRequestBirthday);
-  FRIEND_TEST(SyncerProtoUtilTest, PostAndProcessHeaders);
-  FRIEND_TEST(SyncerProtoUtilTest, VerifyResponseBirthday);
-
+  FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, AddRequestBirthday);
+  FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, PostAndProcessHeaders);
+  FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, VerifyResponseBirthday);
 
   DISALLOW_COPY_AND_ASSIGN(SyncerProtoUtil);
 };

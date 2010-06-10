@@ -17,6 +17,7 @@
 #include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/time.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/sync/util/row_iterator.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 struct PurgeInfo;
 
@@ -668,8 +668,10 @@ class Directory {
   friend class ScopedKernelUnlock;
   friend class WriteTransaction;
   friend class SyncableDirectoryTest;
-  FRIEND_TEST(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest);
-  FRIEND_TEST(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
+                           TakeSnapshotGetsAllDirtyHandlesTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
+                           TakeSnapshotGetsOnlyDirtyHandlesTest);
 
  public:
   // Various data that the Directory::Kernel we are backing (persisting data
