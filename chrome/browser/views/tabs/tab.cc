@@ -331,7 +331,6 @@ void Tab::Layout() {
   // instance) are automatically mirrored by the mirroring infrastructure in
   // views. The elements Tab draws directly on the canvas need to be manually
   // mirrored if the View's layout is right-to-left.
-  favicon_bounds_.set_x(MirroredLeftPointForRect(favicon_bounds_));
   title_bounds_.set_x(MirroredLeftPointForRect(title_bounds_));
 }
 
