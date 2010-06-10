@@ -56,8 +56,6 @@
           'common/main_function_params.h',
           'common/message_router.cc',
           'common/message_router.h',
-          'common/metrics_helpers.cc',
-          'common/metrics_helpers.h',          
           'common/nacl_cmd_line.cc',
           'common/nacl_cmd_line.h',
           'common/nacl_messages.h',
@@ -369,7 +367,6 @@
             '../app/app.gyp:app_resources',
             '../base/base.gyp:base_nacl_win64',
             '../ipc/ipc.gyp:ipc_win64',
-            '../third_party/libxml/libxml.gyp:libxml',            
           ],
           'include_dirs': [
             '../third_party/npapi',

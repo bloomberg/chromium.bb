@@ -26,21 +26,350 @@
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
+using base::Time;
+using base::TimeDelta;
+
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 #if defined(OS_WIN)
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
-MetricsLog::MetricsLog(const std::string& client_id, int session_id)
-    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()) {}
+// static
+std::string MetricsLog::version_extension_;
 
-MetricsLog::~MetricsLog() {}
+// libxml take xmlChar*, which is unsigned char*
+inline const unsigned char* UnsignedChar(const char* input) {
+  return reinterpret_cast<const unsigned char*>(input);
+}
 
 // static
 void MetricsLog::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterListPref(prefs::kStabilityPluginStats);
 }
 
+MetricsLog::MetricsLog(const std::string& client_id, int session_id)
+    : start_time_(Time::Now()),
+      client_id_(client_id),
+      session_id_(IntToString(session_id)),
+      locked_(false),
+      doc_(NULL),
+      buffer_(NULL),
+      writer_(NULL),
+      num_events_(0) {
+
+  buffer_ = xmlBufferCreate();
+  DCHECK(buffer_);
+
+#if defined(OS_CHROMEOS)
+  writer_ = xmlNewTextWriterDoc(&doc_, /* compression */ 0);
+#else
+  writer_ = xmlNewTextWriterMemory(buffer_, /* compression */ 0);
+#endif  // OS_CHROMEOS
+  DCHECK(writer_);
+
+  int result = xmlTextWriterSetIndent(writer_, 2);
+  DCHECK_EQ(0, result);
+
+  StartElement("log");
+  WriteAttribute("clientid", client_id_);
+  WriteInt64Attribute("buildtime", GetBuildTime());
+  WriteAttribute("appversion", GetVersionString());
+}
+
+MetricsLog::~MetricsLog() {
+  FreeDocWriter();
+
+  if (buffer_) {
+    xmlBufferFree(buffer_);
+    buffer_ = NULL;
+  }
+}
+
+void MetricsLog::CloseLog() {
+  DCHECK(!locked_);
+  locked_ = true;
+
+  int result = xmlTextWriterEndDocument(writer_);
+  DCHECK_GE(result, 0);
+
+  result = xmlTextWriterFlush(writer_);
+  DCHECK_GE(result, 0);
+
+#if defined(OS_CHROMEOS)
+  xmlNodePtr root = xmlDocGetRootElement(doc_);
+  if (!hardware_class_.empty()) {
+    // The hardware class is determined after the first ongoing log is
+    // constructed, so this adds the root element's "hardwareclass"
+    // attribute when the log is closed instead.
+    xmlNewProp(root, UnsignedChar("hardwareclass"),
+               UnsignedChar(hardware_class_.c_str()));
+  }
+
+  // Flattens the XML tree into a character buffer.
+  PerfTimer dump_timer;
+  result = xmlNodeDump(buffer_, doc_, root, /* level */ 0, /* format */ 1);
+  DCHECK_GE(result, 0);
+  UMA_HISTOGRAM_TIMES("UMA.XMLNodeDumpTime", dump_timer.Elapsed());
+
+  PerfTimer free_timer;
+  FreeDocWriter();
+  UMA_HISTOGRAM_TIMES("UMA.XMLWriterDestructionTime", free_timer.Elapsed());
+#endif  // OS_CHROMEOS
+}
+
+int MetricsLog::GetEncodedLogSize() {
+  DCHECK(locked_);
+  return buffer_->use;
+}
+
+bool MetricsLog::GetEncodedLog(char* buffer, int buffer_size) {
+  DCHECK(locked_);
+  if (buffer_size < GetEncodedLogSize())
+    return false;
+
+  memcpy(buffer, buffer_->content, GetEncodedLogSize());
+  return true;
+}
+
+int MetricsLog::GetElapsedSeconds() {
+  return static_cast<int>((Time::Now() - start_time_).InSeconds());
+}
+
+std::string MetricsLog::CreateHash(const std::string& value) {
+  MD5Context ctx;
+  MD5Init(&ctx);
+  MD5Update(&ctx, value.data(), value.length());
+
+  MD5Digest digest;
+  MD5Final(&digest, &ctx);
+
+  uint64 reverse_uint64;
+  // UMA only uses first 8 chars of hash. We use the above uint64 instead
+  // of a unsigned char[8] so that we don't run into strict aliasing issues
+  // in the LOG statement below when trying to interpret reverse as a uint64.
+  unsigned char* reverse = reinterpret_cast<unsigned char *>(&reverse_uint64);
+  DCHECK(arraysize(digest.a) >= sizeof(reverse_uint64));
+  for (size_t i = 0; i < sizeof(reverse_uint64); ++i)
+    reverse[i] = digest.a[sizeof(reverse_uint64) - i - 1];
+  // The following log is VERY helpful when folks add some named histogram into
+  // the code, but forgot to update the descriptive list of histograms.  When
+  // that happens, all we get to see (server side) is a hash of the histogram
+  // name.  We can then use this logging to find out what histogram name was
+  // being hashed to a given MD5 value by just running the version of Chromium
+  // in question with --enable-logging.
+  LOG(INFO) << "Metrics: Hash numeric [" << value << "]=["
+      << reverse_uint64 << "]";
+  return std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
+}
+
+std::string MetricsLog::CreateBase64Hash(const std::string& string) {
+  std::string encoded_digest;
+  if (base::Base64Encode(CreateHash(string), &encoded_digest)) {
+    DLOG(INFO) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
+    return encoded_digest;
+  }
+  return std::string();
+}
+
+void MetricsLog::RecordUserAction(const char* key) {
+  DCHECK(!locked_);
+
+  std::string command_hash = CreateBase64Hash(key);
+  if (command_hash.empty()) {
+    NOTREACHED() << "Unable generate encoded hash of command: " << key;
+    return;
+  }
+
+  OPEN_ELEMENT_FOR_SCOPE("uielement");
+  WriteAttribute("action", "command");
+  WriteAttribute("targetidhash", command_hash);
+
+  // TODO(jhughes): Properly track windows.
+  WriteIntAttribute("window", 0);
+  WriteCommonEventAttributes();
+
+  ++num_events_;
+}
+
+void MetricsLog::RecordLoadEvent(int window_id,
+                                 const GURL& url,
+                                 PageTransition::Type origin,
+                                 int session_index,
+                                 TimeDelta load_time) {
+  DCHECK(!locked_);
+
+  OPEN_ELEMENT_FOR_SCOPE("document");
+  WriteAttribute("action", "load");
+  WriteIntAttribute("docid", session_index);
+  WriteIntAttribute("window", window_id);
+  WriteAttribute("loadtime", Int64ToString(load_time.InMilliseconds()));
+
+  std::string origin_string;
+
+  switch (PageTransition::StripQualifier(origin)) {
+    // TODO(jhughes): Some of these mappings aren't right... we need to add
+    // some values to the server's enum.
+    case PageTransition::LINK:
+    case PageTransition::MANUAL_SUBFRAME:
+      origin_string = "link";
+      break;
+
+    case PageTransition::TYPED:
+      origin_string = "typed";
+      break;
+
+    case PageTransition::AUTO_BOOKMARK:
+      origin_string = "bookmark";
+      break;
+
+    case PageTransition::AUTO_SUBFRAME:
+    case PageTransition::RELOAD:
+      origin_string = "refresh";
+      break;
+
+    case PageTransition::GENERATED:
+    case PageTransition::KEYWORD:
+      origin_string = "global-history";
+      break;
+
+    case PageTransition::START_PAGE:
+      origin_string = "start-page";
+      break;
+
+    case PageTransition::FORM_SUBMIT:
+      origin_string = "form-submit";
+      break;
+
+    default:
+      NOTREACHED() << "Received an unknown page transition type: " <<
+                       PageTransition::StripQualifier(origin);
+  }
+  if (!origin_string.empty())
+    WriteAttribute("origin", origin_string);
+
+  WriteCommonEventAttributes();
+
+  ++num_events_;
+}
+
+void MetricsLog::RecordWindowEvent(WindowEventType type,
+                                   int window_id,
+                                   int parent_id) {
+  DCHECK(!locked_);
+
+  OPEN_ELEMENT_FOR_SCOPE("window");
+  WriteAttribute("action", WindowEventTypeToString(type));
+  WriteAttribute("windowid", IntToString(window_id));
+  if (parent_id >= 0)
+    WriteAttribute("parent", IntToString(parent_id));
+  WriteCommonEventAttributes();
+
+  ++num_events_;
+}
+
+std::string MetricsLog::GetCurrentTimeString() {
+  return Uint64ToString(Time::Now().ToTimeT());
+}
+
+// These are the attributes that are common to every event.
+void MetricsLog::WriteCommonEventAttributes() {
+  WriteAttribute("session", session_id_);
+  WriteAttribute("time", GetCurrentTimeString());
+}
+
+void MetricsLog::WriteAttribute(const std::string& name,
+                                const std::string& value) {
+  DCHECK(!locked_);
+  DCHECK(!name.empty());
+
+  int result = xmlTextWriterWriteAttribute(writer_,
+                                           UnsignedChar(name.c_str()),
+                                           UnsignedChar(value.c_str()));
+  DCHECK_GE(result, 0);
+}
+
+void MetricsLog::WriteIntAttribute(const std::string& name, int value) {
+  WriteAttribute(name, IntToString(value));
+}
+
+void MetricsLog::WriteInt64Attribute(const std::string& name, int64 value) {
+  WriteAttribute(name, Int64ToString(value));
+}
+
+// static
+const char* MetricsLog::WindowEventTypeToString(WindowEventType type) {
+  switch (type) {
+    case WINDOW_CREATE:  return "create";
+    case WINDOW_OPEN:    return "open";
+    case WINDOW_CLOSE:   return "close";
+    case WINDOW_DESTROY: return "destroy";
+
+    default:
+      NOTREACHED();
+      return "unknown";  // Can't return NULL as this is used in a required
+                         // attribute.
+  }
+}
+
+void MetricsLog::FreeDocWriter() {
+  if (writer_) {
+    xmlFreeTextWriter(writer_);
+    writer_ = NULL;
+  }
+
+  if (doc_) {
+    xmlFreeDoc(doc_);
+    doc_ = NULL;
+  }
+}
+
+void MetricsLog::StartElement(const char* name) {
+  DCHECK(!locked_);
+  DCHECK(name);
+
+  int result = xmlTextWriterStartElement(writer_, UnsignedChar(name));
+  DCHECK_GE(result, 0);
+}
+
+void MetricsLog::EndElement() {
+  DCHECK(!locked_);
+
+  int result = xmlTextWriterEndElement(writer_);
+  DCHECK_GE(result, 0);
+}
+
+// static
+std::string MetricsLog::GetVersionString() {
+  scoped_ptr<FileVersionInfo> version_info(
+      chrome_app::GetChromeVersionInfo());
+  if (version_info.get()) {
+    std::string version = WideToUTF8(version_info->product_version());
+    if (!version_extension_.empty())
+      version += version_extension_;
+    if (!version_info->is_official_build())
+      version.append("-devel");
+    return version;
+  } else {
+    NOTREACHED() << "Unable to retrieve version string.";
+  }
+
+  return std::string();
+}
+
+// static
+int64 MetricsLog::GetBuildTime() {
+  static int64 integral_build_time = 0;
+  if (!integral_build_time) {
+    Time time;
+    const char* kDateTime = __DATE__ " " __TIME__ " GMT";
+    bool result = Time::FromString(ASCIIToWide(kDateTime).c_str(), &time);
+    DCHECK(result);
+    integral_build_time = static_cast<int64>(time.ToTimeT());
+  }
+  return integral_build_time;
+}
+
+// static
 int64 MetricsLog::GetIncrementalUptime(PrefService* pref) {
   base::TimeTicks now = base::TimeTicks::Now();
   static base::TimeTicks last_updated_time(now);
@@ -64,24 +393,6 @@ std::string MetricsLog::GetInstallDate() const {
     NOTREACHED();
     return "0";
   }
-}
-
-// static
-std::string MetricsLog::GetVersionString() {
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
-  if (version_info.get()) {
-    std::string version = WideToUTF8(version_info->product_version());
-    if (!version_extension_.empty())
-      version += version_extension_;
-    if (!version_info->is_official_build())
-      version.append("-devel");
-    return version;
-  } else {
-    NOTREACHED() << "Unable to retrieve version string.";
-  }
-
-  return std::string();
 }
 
 void MetricsLog::RecordIncrementalStabilityElements() {
@@ -439,4 +750,33 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   }
 
   ++num_events_;
+}
+
+// TODO(JAR): A The following should really be part of the histogram class.
+// Internal state is being needlessly exposed, and it would be hard to reuse
+// this code. If we moved this into the Histogram class, then we could use
+// the same infrastructure for logging StatsCounters, RatesCounters, etc.
+void MetricsLog::RecordHistogramDelta(const Histogram& histogram,
+                                      const Histogram::SampleSet& snapshot) {
+  DCHECK(!locked_);
+  DCHECK_NE(0, snapshot.TotalCount());
+  snapshot.CheckSize(histogram);
+
+  // We will ignore the MAX_INT/infinite value in the last element of range[].
+
+  OPEN_ELEMENT_FOR_SCOPE("histogram");
+
+  WriteAttribute("name", CreateBase64Hash(histogram.histogram_name()));
+
+  WriteInt64Attribute("sum", snapshot.sum());
+  WriteInt64Attribute("sumsquares", snapshot.square_sum());
+
+  for (size_t i = 0; i < histogram.bucket_count(); i++) {
+    if (snapshot.counts(i)) {
+      OPEN_ELEMENT_FOR_SCOPE("histogrambucket");
+      WriteIntAttribute("min", histogram.ranges(i));
+      WriteIntAttribute("max", histogram.ranges(i + 1));
+      WriteIntAttribute("count", snapshot.counts(i));
+    }
+  }
 }

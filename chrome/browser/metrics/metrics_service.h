@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/common/child_process_info.h"
-#include "chrome/common/metrics_helpers.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/glue/plugins/webplugininfo.h"
@@ -71,8 +70,7 @@ struct ChildProcessStats {
 };
 
 class MetricsService : public NotificationObserver,
-                       public URLFetcher::Delegate,
-                       public MetricsServiceBase {
+                       public URLFetcher::Delegate {
  public:
   MetricsService();
   virtual ~MetricsService();
@@ -152,6 +150,9 @@ class MetricsService : public NotificationObserver,
     SENDING_CURRENT_LOGS,   // Sending standard current logs as they acrue.
   };
 
+  // Maintain a map of histogram names to the sample stats we've sent.
+  typedef std::map<std::string, Histogram::SampleSet> LoggedSampleMap;
+
   class InitTask;
   class InitTaskComplete;
 
@@ -217,7 +218,7 @@ class MetricsService : public NotificationObserver,
   // Called to stop recording user experience metrics.  The caller takes
   // ownership of the resulting MetricsLog object via the log parameter,
   // or passes in NULL to indicate that the log should simply be deleted.
-  void StopRecording(MetricsLogBase** log);
+  void StopRecording(MetricsLog** log);
 
   // Deletes pending_log_ and current_log_, and pushes their text into the
   // appropriate unsent_log vectors.  Called when Chrome shuts down.
@@ -249,6 +250,10 @@ class MetricsService : public NotificationObserver,
   // TryToStartTransmission.
   bool TransmissionPermitted() const;
 
+  // Check to see if there is a log that needs to be, or is being, transmitted.
+  bool pending_log() const {
+    return pending_log_ || !pending_log_text_.empty();
+  }
   // Check to see if there are any unsent logs from previous sessions.
   bool unsent_logs() const {
     return !unsent_initial_logs_.empty() || !unsent_ongoing_logs_.empty();
@@ -265,6 +270,11 @@ class MetricsService : public NotificationObserver,
   // a compressed copy of the pending log.
   void PrepareFetchWithPendingLog();
 
+  // Discard pending_log_, and clear pending_log_text_. Called after processing
+  // of this log is complete.
+  void DiscardPendingLog();
+  // Compress the report log in input using bzip2, store the result in output.
+  bool Bzip2Compress(const std::string& input, std::string* output);
   // Implementation of URLFetcher::Delegate. Called after transmission
   // completes (either successfully or with failure).
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -377,6 +387,13 @@ class MetricsService : public NotificationObserver,
   // collecting stats from renderers.
   void CollectRendererHistograms();
 
+  // Record complete list of histograms into the current log.
+  // Called when we close a log.
+  void RecordCurrentHistograms();
+
+  // Record a specific histogram .
+  void RecordHistogram(const Histogram& histogram);
+
   // Logs the initiation of a page load
   void LogLoadStarted();
 
@@ -424,8 +441,19 @@ class MetricsService : public NotificationObserver,
   // The list of plugins which was retrieved on the file thread.
   std::vector<WebPluginInfo> plugins_;
 
+  // A log that we are currently transmiting, or about to try to transmit.
+  MetricsLog* pending_log_;
+
+  // An alternate form of pending_log_.  We persistently save this text version
+  // into prefs if we can't transmit it.  As a result, sometimes all we have is
+  // the text version (recalled from a previous session).
+  std::string pending_log_text_;
+
   // The outstanding transmission appears as a URL Fetch operation.
   scoped_ptr<URLFetcher> current_fetch_;
+
+  // The log that we are still appending to.
+  MetricsLog* current_log_;
 
   // The URL for the metrics server.
   std::wstring server_url_;
@@ -467,6 +495,10 @@ class MetricsService : public NotificationObserver,
   // Dictionary containing all the profile specific metrics. This is set
   // at creation time from the prefs.
   scoped_ptr<DictionaryValue> profile_dictionary_;
+
+  // For histograms, record what we've already logged (as a sample for each
+  // histogram) so that we can send only the delta with the next log.
+  MetricsService::LoggedSampleMap logged_samples_;
 
   // The interval between consecutive log transmissions (to avoid hogging the
   // outbound network link).  This is usually also the duration for which we
