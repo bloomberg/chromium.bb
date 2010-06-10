@@ -54,7 +54,6 @@ class GeolocationArbitratorImpl
 
   // ListenerInterface
   virtual void LocationUpdateAvailable(LocationProviderBase* provider);
-  virtual void MovementDetected(LocationProviderBase* provider);
 
   void OnAccessTokenStoresLoaded(
       AccessTokenStore::AccessTokenSet access_token_store);
@@ -200,11 +199,6 @@ void GeolocationArbitratorImpl::LocationUpdateAvailable(
     ++it;
     delegate->OnLocationUpdate(position_);
   }
-}
-
-void GeolocationArbitratorImpl::MovementDetected(
-    LocationProviderBase* provider) {
-  DCHECK(CalledOnValidThread());
 }
 
 void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(

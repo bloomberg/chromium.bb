@@ -35,11 +35,6 @@ class MessageLoopQuitListener
     updated_provider_ = provider;
     client_message_loop_->Quit();
   }
-  virtual void MovementDetected(LocationProviderBase* provider) {
-    EXPECT_EQ(client_message_loop_, MessageLoop::current());
-    movement_provider_ = provider;
-    client_message_loop_->Quit();
-  }
   MessageLoop* client_message_loop_;
   LocationProviderBase* updated_provider_;
   LocationProviderBase* movement_provider_;
