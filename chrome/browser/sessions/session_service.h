@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/time.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/defaults.h"
@@ -168,6 +169,10 @@ class SessionService : public BaseSessionService,
   // SessionCommands to browser state, then notify the callback.
   Handle GetCurrentSession(CancelableRequestConsumerBase* consumer,
                            SessionCallback* callback);
+
+  // Overridden from BaseSessionService because we want some UMA reporting on
+  // session update activities.
+  virtual void Save();
 
  private:
   typedef std::map<SessionID::id_type,std::pair<int,int> > IdToRange;
@@ -374,7 +379,10 @@ class SessionService : public BaseSessionService,
     return !has_open_trackable_browsers_ &&
         (!browser_defaults::kBrowserAliveWithNoWindows ||
          BrowserList::size() > 1);
-    }
+  }
+
+  // Call when a Save() occurs to record this in UMA stats.
+  void RecordSaveHistogramData();
 
   // Convert back/forward between the Browser and SessionService DB window
   // types.
@@ -420,6 +428,9 @@ class SessionService : public BaseSessionService,
   // is made the previous session. See description above class for details on
   // current/previous session.
   bool move_on_new_browser_;
+
+  // Used for reporting frequency of Save() operations.
+  base::TimeTicks last_save_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionService);
 };

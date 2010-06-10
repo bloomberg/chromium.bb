@@ -428,6 +428,14 @@ SessionService::Handle SessionService::GetCurrentSession(
   }
 }
 
+void SessionService::Save() {
+  bool had_commands = !pending_commands().empty();
+  BaseSessionService::Save();
+  if (had_commands)
+    RecordSaveHistogramData();
+}
+
+
 void SessionService::Init() {
   // Register for the notifications we're interested in.
   registrar_.Add(this, NotificationType::TAB_PARENTED,
@@ -1308,4 +1316,29 @@ Browser::Type SessionService::BrowserTypeForWindowType(
     default:
       return Browser::TYPE_NORMAL;
   }
+}
+
+void SessionService::RecordSaveHistogramData() {
+  if (!last_save_time_.is_null()) {
+    base::TimeDelta delta = base::TimeTicks::Now() - last_save_time_;
+    // We're interested in frequent updates, and group all periods longer than
+    // 10 minutes together.
+    UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.SavePeriod",
+        delta,
+        // 2500ms is the default save delay for coaelescing.  This parameter
+        // only impacts histogram creation, and not steady-state sampling.
+        base::TimeDelta::FromMilliseconds(2500),
+        base::TimeDelta::FromMinutes(10),
+        50);
+
+    if (delta >= base::TimeDelta::FromMinutes(10)) {
+      UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.LongSavePeriod",
+          delta,
+          base::TimeDelta::FromMinutes(10),
+          base::TimeDelta::FromHours(8),
+          50);
+    }
+  }
+
+  last_save_time_ = base::TimeTicks::Now();
 }
