@@ -649,6 +649,11 @@ void ProfileSyncService::GetRegisteredDataTypes(
   }
 }
 
+bool ProfileSyncService::IsCryptographerReady() const {
+  // TODO(albertb): Replace this once the crypto patch lands.
+  return true;
+}
+
 void ProfileSyncService::StartProcessingChangesIfReady() {
   DCHECK(backend_initialized_);
 

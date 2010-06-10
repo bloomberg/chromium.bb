@@ -42,6 +42,12 @@ void PasswordDataTypeController::Start(StartCallback* start_callback) {
     return;
   }
 
+  if (!sync_service_->IsCryptographerReady()) {
+    start_callback->Run(NEEDS_CRYPTO);
+    delete start_callback;
+    return;
+  }
+
   start_callback_.reset(start_callback);
 
   set_state(ASSOCIATING);

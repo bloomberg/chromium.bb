@@ -45,6 +45,8 @@ class DataTypeController
     ASSOCIATION_FAILED,   // An error occurred during model association.
     ABORTED,              // Start was aborted by calling Stop().
     UNRECOVERABLE_ERROR,  // An unrecoverable error occured.
+    NEEDS_CRYPTO,         // The data type cannot be started yet because it
+                          // depends on the cryptographer.
     MAX_START_RESULT
   };
 

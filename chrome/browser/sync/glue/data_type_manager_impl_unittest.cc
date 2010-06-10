@@ -76,6 +76,14 @@ class DataTypeManagerImplTest : public testing::Test {
     return dtc;
   }
 
+  DataTypeControllerMock* MakePasswordDTC() {
+    DataTypeControllerMock* dtc = new DataTypeControllerMock();
+    EXPECT_CALL(*dtc, enabled()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*dtc, type()).WillRepeatedly(Return(syncable::PASSWORDS));
+    EXPECT_CALL(*dtc, name()).WillRepeatedly(Return("passwords"));
+    return dtc;
+  }
+
   void SetStartStopExpectations(DataTypeControllerMock* mock_dtc) {
     InSequence seq;
     EXPECT_CALL(*mock_dtc, state()).
@@ -150,6 +158,29 @@ TEST_F(DataTypeManagerImplTest, ConfigureOne) {
   dtm.Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
+
+TEST_F(DataTypeManagerImplTest, OneWaitingForCrypto) {
+  DataTypeControllerMock* password_dtc = MakePasswordDTC();
+  EXPECT_CALL(*password_dtc, state()).
+      WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
+  EXPECT_CALL(*password_dtc, Start(_)).
+      WillOnce(InvokeCallback((DataTypeController::NEEDS_CRYPTO)));
+  EXPECT_CALL(*password_dtc, state()).
+      WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
+
+  controllers_[syncable::PASSWORDS] = password_dtc;
+  SetBackendExpectations(1);
+
+  DataTypeManagerImpl dtm(&backend_, controllers_);
+  types_.insert(syncable::PASSWORDS);
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  dtm.Configure(types_);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+  dtm.Stop();
+  EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
+}
+
 
 TEST_F(DataTypeManagerImplTest, ConfigureOneThenAnother) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();

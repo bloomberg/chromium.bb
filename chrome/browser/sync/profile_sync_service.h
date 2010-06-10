@@ -299,6 +299,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void GetRegisteredDataTypes(
       syncable::ModelTypeSet* registered_types) const;
 
+  // Checks whether the Cryptographer is ready to encrypt and decrypt updates
+  // for sensitive data types.
+  virtual bool IsCryptographerReady() const;
+
  protected:
   // Used by ProfileSyncServiceMock only.
   //

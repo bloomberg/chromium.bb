@@ -231,6 +231,14 @@ void DataTypeManagerImpl::TypeStartCallback(
     return;
   }
 
+  // If the type is waiting for the cryptographer, continue to the next type.
+  // Once the cryptographer is ready, we'll attempt to restart this type.
+  if (result == DataTypeController::NEEDS_CRYPTO) {
+    LOG(INFO) << "Waiting for crypto " << started_dtc->name();
+    StartNextType();
+    return;
+  }
+
   // If the type started normally, continue to the next type.
   if (result == DataTypeController::OK ||
       result == DataTypeController::OK_FIRST_RUN) {
