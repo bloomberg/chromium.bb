@@ -304,7 +304,6 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
   // Check if this is an X.509 certificate, if yes, let it be handled
   // by X509UserCertResourceHandler.
   if (mime_type == "application/x-x509-user-cert") {
-
     // This is entirely similar to how DownloadThrottlingResourceHandler
     // works except we are doing it for an X.509 client certificates.
 
@@ -456,6 +455,11 @@ void BufferedResourceHandler::UseAlternateResourceHandler(
   real_handler_->OnResponseStarted(info->request_id(), response_);
   URLRequestStatus status(URLRequestStatus::HANDLED_EXTERNALLY, 0);
   real_handler_->OnResponseCompleted(info->request_id(), status, std::string());
+
+  // Remove the non-owning pointer to the CrossSiteResourceHandler, if any,
+  // from the extra request info because the CrossSiteResourceHandler (part of
+  // the original ResourceHandler chain) will be deleted by the next statement.
+  info->set_cross_site_handler(NULL);
 
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.
