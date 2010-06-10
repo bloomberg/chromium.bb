@@ -50,7 +50,7 @@ class DifferTest : public testing::Test {
     // Offset from upper-left of buffer to upper-left of requested block.
     int block_offset = ((block_y * stride_) + (block_x * bytes_per_pixel_))
                         * kBlockSize;
-    differ_->DiffBlock(prev_.get() + block_offset,
+    return differ_->DiffBlock(prev_.get() + block_offset,
                               curr_.get() + block_offset,
                               stride_);
   }
