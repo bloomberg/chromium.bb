@@ -712,12 +712,6 @@ each locale. -->
         <message name="IDS_NEW_WINDOW" desc="The text label of the New Window menu item">
           &amp;New window
         </message>
-        <message name="IDS_PROFILE_MENU" desc="The text label of the New profile Window menu item">
-          New window in &amp;profile
-        </message>
-        <message name="IDS_SELECT_PROFILE" desc="The text label of the menu item to select a profile other than the ones displayed directly in the Profile submenu.">
-          Other...
-        </message>
         <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
           New &amp;incognito window
         </message>
@@ -776,12 +770,6 @@ each locale. -->
         </message>
         <message name="IDS_NEW_WINDOW" desc="In Title Case: The text label of the New Window menu item">
           &amp;New Window
-        </message>
-        <message name="IDS_PROFILE_MENU" desc="In Title Case: The text label of the New profile Window menu item">
-          New Window in &amp;Profile
-        </message>
-        <message name="IDS_SELECT_PROFILE" desc="In Title Case: The text label of the menu item to select a profile other than the ones displayed directly in the Profile submenu.">
-          Other...
         </message>
         <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of the New incognito window menu item">
           New &amp;Incognito Window
@@ -6022,17 +6010,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
         New Tab
       </message>
-      <message name="IDS_NEW_TAB_TITLE_WITH_PROFILE_NAME"
-               desc="Title of the new tab page with profile name, this is only shown while loading, then the title comes from the page">
-        New Tab [<ph name="PROFILE_NAME">$1</ph>]
-      </message>
       <message name="IDS_NEW_TAB_MOST_VISITED"
                desc="The 'Most Visited' heading on the new tab page">
         Most visited
-      </message>
-      <message name="IDS_NEW_TAB_MOST_VISITED_WITH_PROFILE_NAME"
-               desc="The 'Most Visited' heading on the new tab page">
-        Most visited [<ph name="PROFILE_NAME">$1</ph>]
       </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK"
          desc="The link that restores previously removed thumbnails">
@@ -6472,31 +6452,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON" desc="Text on button that opens another dialog to choose a new directory for user data.">
         Choose Another Directory...
-      </message>
-
-      <!-- User data directory profiles dialog -->
-      <message name="IDS_SELECT_PROFILE_DIALOG_TITLE" desc="Title of the dialog that lets the user select a profile to open a new window.">
-        Select a Profile
-      </message>
-      <message name="IDS_SELECT_PROFILE_DIALOG_LABEL_TEXT" desc="The label for the combo box that shows all the available profiles.">
-        Select a profile to open a new window
-      </message>
-      <message name="IDS_SELECT_PROFILE_DIALOG_NEW_PROFILE_ENTRY" desc="Text for an extra entry in the profiles combo box. The user can select this entry to create a new profile.">
-        &lt;New Profile&gt;...
-      </message>
-      <message name="IDS_START_IN_PROFILE_SHORTCUT_NAME" desc="Name of the desktop shortcut to start the application in a specific profile.">
-        <ph name="app_name">$1<ex>Google Chrome</ex></ph> for <ph name="profile_name">$2<ex>My Second Profile</ex></ph>
-      </message>
-
-      <!-- User data directory new profile dialog -->
-      <message name="IDS_NEW_PROFILE_DIALOG_TITLE" desc="Title of dialog that lets the user enter a new profile name to open new window.">
-        Enter a Profile Name
-      </message>
-      <message name="IDS_NEW_PROFILE_DIALOG_LABEL_TEXT" desc="The label for the text box that lets the user enter a new profile name.">
-        Enter a new profile name
-      </message>
-      <message name="IDS_NEW_PROFILE_DIALOG_CREATE_SHORTCUT_TEXT" desc="The label for the text box that lets the user enter a new profile name.">
-        Create a desktop shortcut for this profile
       </message>
 
       <!-- Advanced Section Titles -->

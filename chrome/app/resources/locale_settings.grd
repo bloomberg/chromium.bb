@@ -539,20 +539,6 @@
         52
       </message>
 
-      <!-- The width and height of the Select Profile dialog in characters and lines -->
-      <!-- (See above). -->
-      <message name="IDS_SELECT_PROFILE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-      <message name="IDS_SELECT_PROFILE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        5
-      </message>
-
-      <!-- The width of the New Profile dialog in characters (See above). -->
-      <message name="IDS_NEW_PROFILE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-
       <!-- The URL for Chromium project used in About dialog. -->
       <message name="IDS_CHROMIUM_PROJECT_URL" translateable="false">
         http://code.google.com/chromium/?hl=[GRITLANGCODE]

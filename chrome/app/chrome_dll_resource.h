@@ -81,19 +81,6 @@
 // Window management commands
 #define IDC_NEW_WINDOW                  34000
 #define IDC_NEW_INCOGNITO_WINDOW        34001
-#define IDC_PROFILE_MENU                34002
-// Insert any additional profile values before _LAST; these have to be
-// consecutive.
-#define IDC_NEW_WINDOW_PROFILE_0        34003
-#define IDC_NEW_WINDOW_PROFILE_1        34004
-#define IDC_NEW_WINDOW_PROFILE_2        34005
-#define IDC_NEW_WINDOW_PROFILE_3        34006
-#define IDC_NEW_WINDOW_PROFILE_4        34007
-#define IDC_NEW_WINDOW_PROFILE_5        34008
-#define IDC_NEW_WINDOW_PROFILE_6        34009
-#define IDC_NEW_WINDOW_PROFILE_7        34010
-#define IDC_NEW_WINDOW_PROFILE_8        34011
-#define IDC_NEW_WINDOW_PROFILE_LAST     IDC_NEW_WINDOW_PROFILE_8
 #define IDC_CLOSE_WINDOW                34012
 #define IDC_ALWAYS_ON_TOP               34013
 #define IDC_NEW_TAB                     34014
@@ -202,8 +189,6 @@
 #define IDC_DEV_TOOLS                   40003
 #define IDC_DEV_TOOLS_CONSOLE           40004
 #define IDC_TASK_MANAGER                40005
-#define IDC_SELECT_PROFILE              40006
-#define IDC_NEW_PROFILE                 40007
 #define IDC_REPORT_BUG                  40008
 #define IDC_SHOW_BOOKMARK_BAR           40009
 #define IDC_SHOW_HISTORY                40010

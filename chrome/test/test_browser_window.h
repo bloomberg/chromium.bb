@@ -80,8 +80,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowImportDialog() {}
   virtual void ShowSearchEnginesDialog() {}
   virtual void ShowPasswordManager() {}
-  virtual void ShowSelectProfileDialog() {}
-  virtual void ShowNewProfileDialog() {}
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
                                          Profile* profile) {}

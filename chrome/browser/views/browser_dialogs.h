@@ -48,9 +48,6 @@ void ShowBugReportView(views::Window* parent,
 void ShowClearBrowsingDataView(gfx::NativeWindow parent,
                                Profile* profile);
 
-// Shows the "Select profile" dialog. See SelectProfileDialog.
-void ShowSelectProfileDialog();
-
 // Shows the "Importer" dialog. See ImporterView.
 void ShowImporterView(views::Widget* parent,
                       Profile* profile);

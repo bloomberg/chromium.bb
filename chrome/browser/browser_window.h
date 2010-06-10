@@ -214,12 +214,6 @@ class BrowserWindow {
   // Shows the Password Manager dialog box.
   virtual void ShowPasswordManager() = 0;
 
-  // Shows the Select Profile dialog box.
-  virtual void ShowSelectProfileDialog() = 0;
-
-  // Shows the New Profile dialog box.
-  virtual void ShowNewProfileDialog() = 0;
-
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
 

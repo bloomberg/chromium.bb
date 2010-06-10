@@ -307,14 +307,6 @@ void BrowserWindowCocoa::ShowPasswordManager() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowSelectProfileDialog() {
-  NOTIMPLEMENTED();
-}
-
-void BrowserWindowCocoa::ShowNewProfileDialog() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
   RepostFormWarningMac::Create(GetNativeHandle(), tab_contents);

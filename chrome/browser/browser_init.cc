@@ -37,7 +37,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
-#include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1009,14 +1008,6 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     std::wstring allowed_ports =
       command_line.GetSwitchValue(switches::kExplicitlyAllowedPorts);
     net::SetExplicitlyAllowedPorts(allowed_ports);
-  }
-
-  if (command_line.HasSwitch(switches::kEnableUserDataDirProfiles)) {
-    // Update user data dir profiles when kEnableUserDataDirProfiles is enabled.
-    // Profile enumeration would be scheduled on file thread and when
-    // enumeration is done, the profile list in BrowserProcess would be
-    // updated on ui thread.
-    UserDataManager::Get()->RefreshUserDataDirProfiles();
   }
 
 #if defined(OS_CHROMEOS)

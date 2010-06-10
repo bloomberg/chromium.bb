@@ -62,28 +62,6 @@ BEGIN
     "N",            IDC_NEW_INCOGNITO_WINDOW,   VIRTKEY, CONTROL, SHIFT
     "T",            IDC_NEW_TAB,                VIRTKEY, CONTROL
     "N",            IDC_NEW_WINDOW,             VIRTKEY, CONTROL
-    // NOTE: IDC_NEW_WINDOW_PROFILE_N is bound to the key ctrl-shift-(N+1), and
-    // opens a new window using profile number N. For example,
-    // IDC_NEW_WINDOW_PROFILE_0 is bound to ctrl-shift-1, and opens a window in
-    // profile 0.
-    "1",            IDC_NEW_WINDOW_PROFILE_0,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD1,     IDC_NEW_WINDOW_PROFILE_0,   VIRTKEY, CONTROL, SHIFT
-    "2",            IDC_NEW_WINDOW_PROFILE_1,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD2,     IDC_NEW_WINDOW_PROFILE_1,   VIRTKEY, CONTROL, SHIFT
-    "3",            IDC_NEW_WINDOW_PROFILE_2,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD3,     IDC_NEW_WINDOW_PROFILE_2,   VIRTKEY, CONTROL, SHIFT
-    "4",            IDC_NEW_WINDOW_PROFILE_3,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD4,     IDC_NEW_WINDOW_PROFILE_3,   VIRTKEY, CONTROL, SHIFT
-    "5",            IDC_NEW_WINDOW_PROFILE_4,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD5,     IDC_NEW_WINDOW_PROFILE_4,   VIRTKEY, CONTROL, SHIFT
-    "6",            IDC_NEW_WINDOW_PROFILE_5,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD6,     IDC_NEW_WINDOW_PROFILE_5,   VIRTKEY, CONTROL, SHIFT
-    "7",            IDC_NEW_WINDOW_PROFILE_6,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD7,     IDC_NEW_WINDOW_PROFILE_6,   VIRTKEY, CONTROL, SHIFT
-    "8",            IDC_NEW_WINDOW_PROFILE_7,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD8,     IDC_NEW_WINDOW_PROFILE_7,   VIRTKEY, CONTROL, SHIFT
-    "9",            IDC_NEW_WINDOW_PROFILE_8,   VIRTKEY, CONTROL, SHIFT
-    VK_NUMPAD9,     IDC_NEW_WINDOW_PROFILE_8,   VIRTKEY, CONTROL, SHIFT
     "O",            IDC_OPEN_FILE,              VIRTKEY, CONTROL
     "P",            IDC_PRINT,                  VIRTKEY, CONTROL
     "R",            IDC_RELOAD,                 VIRTKEY, CONTROL
@@ -100,7 +78,6 @@ BEGIN
     VK_NEXT,        IDC_SELECT_NEXT_TAB,        VIRTKEY, CONTROL
     VK_TAB,         IDC_SELECT_PREVIOUS_TAB,    VIRTKEY, CONTROL, SHIFT
     VK_PRIOR,       IDC_SELECT_PREVIOUS_TAB,    VIRTKEY, CONTROL
-    "M",            IDC_SELECT_PROFILE,         VIRTKEY, CONTROL
     // NOTE: IDC_SELECT_TAB_N is bound to the key ctrl-(N+1), and selects the
     // tab at index N. For example, IDC_SELECT_TAB_0 is bound to ctrl-1, and
     // selects the tab at index 0.

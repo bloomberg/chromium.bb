@@ -928,14 +928,6 @@ void BrowserWindowGtk::ShowPasswordManager() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::ShowSelectProfileDialog() {
-  NOTIMPLEMENTED();
-}
-
-void BrowserWindowGtk::ShowNewProfileDialog() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowGtk::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   new RepostFormWarningGtk(GetNativeHandle(), tab_contents);
 }

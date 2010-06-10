@@ -215,8 +215,8 @@ class ToolbarView : public AccessibleToolbarView,
   DisplayMode display_mode_;
 
   // The contents of the various menus.
-  scoped_ptr<PageMenuModel> page_menu_model_;
-  scoped_ptr<AppMenuModel> app_menu_model_;
+  scoped_ptr<menus::SimpleMenuModel> page_menu_model_;
+  scoped_ptr<menus::SimpleMenuModel> app_menu_model_;
 
   // TODO(beng): build these into MenuButton.
   scoped_ptr<views::Menu2> page_menu_menu_;

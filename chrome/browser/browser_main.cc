@@ -61,7 +61,6 @@
 #else
 #include "chrome/browser/translate/translate_manager2.h"
 #endif
-#include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -973,9 +972,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // will not be deleted after the Task is executed.
   scoped_refptr<HistogramSynchronizer> histogram_synchronizer =
       new HistogramSynchronizer();
-
-  // Initialize the shared instance of user data manager.
-  scoped_ptr<UserDataManager> user_data_manager(UserDataManager::Create());
 
   // Initialize the prefs of the local state.
   browser::RegisterLocalState(local_state);

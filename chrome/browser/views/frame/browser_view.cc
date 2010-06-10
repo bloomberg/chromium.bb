@@ -1037,14 +1037,6 @@ void BrowserView::ShowPasswordManager() {
   browser::ShowPasswordsExceptionsWindowView(browser_->profile());
 }
 
-void BrowserView::ShowSelectProfileDialog() {
-  browser::ShowSelectProfileDialog();
-}
-
-void BrowserView::ShowNewProfileDialog() {
-  browser::ShowNewProfileDialog();
-}
-
 void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
 }

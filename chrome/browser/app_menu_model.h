@@ -11,7 +11,6 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/user_data_manager.h"
 
 class Browser;
 
@@ -28,21 +27,12 @@ class AppMenuModel : public menus::SimpleMenuModel {
   virtual bool HasIcons() const { return true; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
 
-  // Build/update profile submenu. Return true if profiles submenu is built or
-  // updated. False otherwise.
-  bool BuildProfileSubMenu();
-
  private:
   void Build();
-
-  bool ProfilesChanged(const std::vector<std::wstring>& profiles) const;
 
   string16 GetSyncMenuLabel() const;
   string16 GetAboutEntryMenuLabel() const;
   bool IsDynamicItem(int index) const;
-
-  // Contents of the profiles menu to populate with profile names.
-  scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
 
   // Profile names that are in profiles_menu_contents_. This is used to
   // detect profile change.

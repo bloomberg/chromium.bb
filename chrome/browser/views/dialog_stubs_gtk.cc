@@ -30,12 +30,6 @@ void ShowClearBrowsingDataView(views::Widget* parent,
                                    profile);
 }
 
-void ShowSelectProfileDialog() {
-  // Only matters if we're going to support profile switching
-  // (switches::kEnableUserDataDirProfiles).
-  NOTIMPLEMENTED();
-}
-
 void ShowImporterView(views::Widget* parent, Profile* profile) {
   // Import currently doesn't matter.
   NOTIMPLEMENTED();

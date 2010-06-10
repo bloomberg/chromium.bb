@@ -65,18 +65,6 @@ void AppMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
-  // Enumerate profiles asynchronously and then create the parent menu item.
-  // We will create the child menu items for this once the asynchronous call is
-  // done.  See OnGetProfilesDone().
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableUserDataDirProfiles)) {
-    if (!profiles_menu_contents_.get()) {
-      profiles_menu_contents_.reset(new menus::SimpleMenuModel(delegate()));
-      BuildProfileSubMenu();
-    }
-    AddSubMenuWithStringId(IDC_PROFILE_MENU, IDS_PROFILE_MENU,
-                           profiles_menu_contents_.get());
-  }
 
   AddSeparator();
   AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
@@ -123,60 +111,6 @@ void AppMenuModel::Build() {
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
 #endif
   }
-}
-
-bool AppMenuModel::BuildProfileSubMenu() {
-  // Nothing to do if the menu has gone away.
-  if (!profiles_menu_contents_.get())
-    return false;
-
-  // Triggers profile list refresh in case it's changed.
-  UserDataManager::Get()->RefreshUserDataDirProfiles();
-
-  // Use the list of profiles in the browser.
-  const std::vector<std::wstring>& profiles =
-      browser_->user_data_dir_profiles();
-
-  // Check if profiles have changed.
-  if (!ProfilesChanged(profiles))
-    return false;
-
-  // Update known profiles.
-  known_profiles_.assign(profiles.begin(), profiles.end());
-
-  // Clear old profile menu items.
-  profiles_menu_contents_->Clear();
-
-  // Add direct submenu items for profiles.
-  std::vector<std::wstring>::const_iterator iter = profiles.begin();
-  for (int i = IDC_NEW_WINDOW_PROFILE_0;
-       i <= IDC_NEW_WINDOW_PROFILE_LAST && iter != profiles.end();
-       ++i, ++iter)
-    profiles_menu_contents_->AddItem(i, WideToUTF16Hack(*iter));
-
-  // If there are more profiles then show "Other" link.
-  if (iter != profiles.end()) {
-    profiles_menu_contents_->AddSeparator();
-    profiles_menu_contents_->AddItemWithStringId(IDC_SELECT_PROFILE,
-                                                 IDS_SELECT_PROFILE);
-  }
-
-  // Always show a link to select a new profile.
-  profiles_menu_contents_->AddSeparator();
-  profiles_menu_contents_->AddItemWithStringId(
-      IDC_NEW_PROFILE,
-      IDS_SELECT_PROFILE_DIALOG_NEW_PROFILE_ENTRY);
-
-  return true;
-}
-
-bool AppMenuModel::ProfilesChanged(
-    const std::vector<std::wstring>& profiles) const {
-  if (profiles.size() != known_profiles_.size())
-    return true;
-
-  return !std::equal(profiles.begin(), profiles.end(),
-                     known_profiles_.begin());
 }
 
 string16 AppMenuModel::GetSyncMenuLabel() const {

@@ -372,10 +372,6 @@ const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 // Whether or not the touch events API is exposed.
 const char kEnableTouch[]                   = "enable-touch";
 
-// Whether the multiple profiles feature based on the user-data-dir flag is
-// enabled or not.
-const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";
-
 // Enables the option to show tabs as a vertical stack down the side of the
 // browser window.
 const char kEnableVerticalTabs[]            = "enable-vertical-tabs";

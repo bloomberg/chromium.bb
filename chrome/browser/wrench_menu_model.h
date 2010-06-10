@@ -11,7 +11,6 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/user_data_manager.h"
 
 class Browser;
 class EncodingMenuModel;
@@ -58,10 +57,6 @@ class WrenchMenuModel : public menus::SimpleMenuModel {
   string16 GetSyncMenuLabel() const;
   string16 GetAboutEntryMenuLabel() const;
   bool IsDynamicItem(int index) const;
-
-  // Profile names that are in profiles_menu_contents_. This is used to
-  // detect profile change.
-  std::vector<std::wstring> known_profiles_;
 
   // Tools menu.
   scoped_ptr<ToolsMenuModel> tools_menu_model_;

@@ -101,7 +101,6 @@
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/task_manager.h"
-#include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
@@ -1024,7 +1023,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
 
   // Window management commands
-  command_updater_.UpdateCommandEnabled(IDC_PROFILE_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_AS_TAB,
       (type() & TYPE_POPUP) && !is_fullscreen);
 
@@ -1038,7 +1036,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_PROFILE, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
@@ -1242,17 +1239,6 @@ void Browser::NewWindow() {
 void Browser::NewIncognitoWindow() {
   UserMetrics::RecordAction(UserMetricsAction("NewIncognitoWindow"), profile_);
   Browser::OpenEmptyWindow(profile_->GetOffTheRecordProfile());
-}
-
-void Browser::NewProfileWindowByIndex(int index) {
-#if defined(OS_WIN)
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableUserDataDirProfiles))
-    return;
-  UserMetrics::RecordAction(UserMetricsAction("NewProfileWindowByIndex"),
-                            profile_);
-  UserDataManager::Get()->LaunchChromeForProfile(index);
-#endif
 }
 
 void Browser::CloseWindow() {
@@ -1620,22 +1606,6 @@ void Browser::OpenTaskManager() {
   window_->ShowTaskManager();
 }
 
-void Browser::OpenSelectProfileDialog() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableUserDataDirProfiles))
-    return;
-  UserMetrics::RecordAction(UserMetricsAction("SelectProfile"), profile_);
-  window_->ShowSelectProfileDialog();
-}
-
-void Browser::OpenNewProfileDialog() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableUserDataDirProfiles))
-    return;
-  UserMetrics::RecordAction(UserMetricsAction("CreateProfile"), profile_);
-  window_->ShowNewProfileDialog();
-}
-
 void Browser::OpenBugReportDialog() {
 #if defined(OS_CHROMEOS)
   UserMetrics::RecordAction(UserMetricsAction("ReportBug"), profile_);
@@ -1919,17 +1889,6 @@ void Browser::ExecuteCommandWithDisposition(
      // Window management commands
     case IDC_NEW_WINDOW:            NewWindow();                      break;
     case IDC_NEW_INCOGNITO_WINDOW:  NewIncognitoWindow();             break;
-    case IDC_NEW_WINDOW_PROFILE_0:
-    case IDC_NEW_WINDOW_PROFILE_1:
-    case IDC_NEW_WINDOW_PROFILE_2:
-    case IDC_NEW_WINDOW_PROFILE_3:
-    case IDC_NEW_WINDOW_PROFILE_4:
-    case IDC_NEW_WINDOW_PROFILE_5:
-    case IDC_NEW_WINDOW_PROFILE_6:
-    case IDC_NEW_WINDOW_PROFILE_7:
-    case IDC_NEW_WINDOW_PROFILE_8:
-        NewProfileWindowByIndex(id - IDC_NEW_WINDOW_PROFILE_0);
-        break;
     case IDC_CLOSE_WINDOW:          CloseWindow();                    break;
     case IDC_NEW_TAB:               NewTab();                         break;
     case IDC_CLOSE_TAB:             CloseTab();                       break;
@@ -2032,8 +1991,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_DEV_TOOLS:             ToggleDevToolsWindow(false);      break;
     case IDC_DEV_TOOLS_CONSOLE:     ToggleDevToolsWindow(true);       break;
     case IDC_TASK_MANAGER:          OpenTaskManager();                break;
-    case IDC_SELECT_PROFILE:        OpenSelectProfileDialog();        break;
-    case IDC_NEW_PROFILE:           OpenNewProfileDialog();           break;
     case IDC_REPORT_BUG:            OpenBugReportDialog();            break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
@@ -3009,17 +2966,6 @@ void Browser::InitCommandState() {
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW, true);
-  // TODO(pkasting): Perhaps the code that populates this submenu should do
-  // this?
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_0, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_1, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_2, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_3, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_4, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_5, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_6, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_7, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW_PROFILE_8, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
@@ -3088,7 +3034,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS, true);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE, true);
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_EXTENSION_SHELF, true);

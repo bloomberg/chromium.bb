@@ -835,8 +835,6 @@ void ToolbarView::RunAppMenu(const gfx::Point& pt) {
   bool destroyed_flag = false;
   destroyed_flag_ = &destroyed_flag;
 
-  if (app_menu_model_->BuildProfileSubMenu())
-    app_menu_menu_->Rebuild();
   for (size_t i = 0; i < menu_listeners_.size(); i++)
     app_menu_menu_->AddMenuListener(menu_listeners_[i]);
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);

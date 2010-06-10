@@ -23,7 +23,6 @@
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -241,21 +240,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 void NTPResourceCache::CreateNewTabHTML() {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
-  std::wstring title;
-  std::wstring most_visited;
-  if (UserDataManager::Get()->is_current_profile_default()) {
-    title = l10n_util::GetString(IDS_NEW_TAB_TITLE);
-    most_visited = l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED);
-  } else {
-    // Get the current profile name.
-    std::wstring profile_name =
-      UserDataManager::Get()->current_profile_name();
-    title = l10n_util::GetStringF(IDS_NEW_TAB_TITLE_WITH_PROFILE_NAME,
-                                  profile_name);
-    most_visited = l10n_util::GetStringF(
-        IDS_NEW_TAB_MOST_VISITED_WITH_PROFILE_NAME,
-        profile_name);
-  }
+  std::wstring title = l10n_util::GetString(IDS_NEW_TAB_TITLE);
+  std::wstring most_visited = l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED);
   DictionaryValue localized_strings;
   localized_strings.SetString(L"bookmarkbarattached",
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?

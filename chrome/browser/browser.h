@@ -440,7 +440,6 @@ class Browser : public TabStripModelDelegate,
   // Window management commands
   void NewWindow();
   void NewIncognitoWindow();
-  void NewProfileWindowByIndex(int index);
   void CloseWindow();
   void NewTab();
   void CloseTab();
@@ -509,8 +508,6 @@ class Browser : public TabStripModelDelegate,
   void OpenCreateShortcutsDialog();
   void ToggleDevToolsWindow(bool open_console);
   void OpenTaskManager();
-  void OpenSelectProfileDialog();
-  void OpenNewProfileDialog();
   void OpenBugReportDialog();
 
   void ToggleBookmarkBar();
