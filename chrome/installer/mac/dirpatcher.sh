@@ -96,6 +96,25 @@ readonly BZ2_SUFFIX='$bz2'
 readonly GZ_SUFFIX='$gz'
 readonly PLAIN_SUFFIX='$raw'
 
+declare -a g_cleanup
+
+cleanup() {
+  local status=${?}
+
+  trap - EXIT
+  trap '' HUP INT QUIT TERM
+
+  if [[ ${status} -ge 128 ]]; then
+    err "Caught signal $((${status} - 128))"
+  fi
+
+  if [[ "${#g_cleanup[@]}" -gt 0 ]]; then
+    rm -rf "${g_cleanup[@]}"
+  fi
+
+  exit ${status}
+}
+
 err() {
   local error="${1}"
 
@@ -289,6 +308,8 @@ main() {
   patch_dir="$(shell_safe_path "${2}")"
   new_dir="$(shell_safe_path "${3}")"
 
+  trap cleanup EXIT HUP INT QUIT TERM
+
   if ! [[ -d "${old_dir}" ]] || ! [[ -d "${patch_dir}" ]]; then
     err "old_dir and patch_dir must exist and be directories"
     usage
@@ -323,7 +344,12 @@ main() {
     exit 6
   fi
 
+  g_cleanup[${#g_cleanup[@]}]="${new_dir}"
+
   patch_dir "${old_dir}" "${patch_dir}" "${new_dir}"
+
+  unset g_cleanup[${#g_cleanup[@]}]
+  trap - EXIT
 }
 
 if [[ ${#} -ne 3 ]]; then

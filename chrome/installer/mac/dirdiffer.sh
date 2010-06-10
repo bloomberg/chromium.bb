@@ -138,6 +138,25 @@ readonly BZ2_SUFFIX='$bz2'
 readonly GZ_SUFFIX='$gz'
 readonly PLAIN_SUFFIX='$raw'
 
+declare -a g_cleanup
+
+cleanup() {
+  local status=${?}
+
+  trap - EXIT
+  trap '' HUP INT QUIT TERM
+
+  if [[ ${status} -ge 128 ]]; then
+    err "Caught signal $((${status} - 128))"
+  fi
+
+  if [[ "${#g_cleanup[@]}" -gt 0 ]]; then
+    rm -rf "${g_cleanup[@]}"
+  fi
+
+  exit ${status}
+}
+
 err() {
   local error="${1}"
 
@@ -309,11 +328,11 @@ verify_patch_dir() {
 
   local verify_temp_dir verify_dir
   verify_temp_dir="$(mktemp -d -t "${ME}")"
+  g_cleanup[${#g_cleanup[@]}]="${verify_temp_dir}"
   verify_dir="${verify_temp_dir}/patched"
 
   if ! "${DIRPATCHER}" "${old_dir}" "${patch_dir}" "${verify_dir}"; then
     err "patch application for verification failed"
-    rm -rf "${verify_temp_dir}"
     exit 15
   fi
 
@@ -324,11 +343,11 @@ verify_patch_dir() {
   if ! rsync_output="$(rsync -clprt --delete --out-format=%n \
                        "${new_dir}/" "${verify_dir}")"; then
     err "rsync for verification failed"
-    rm -rf "${verify_temp_dir}"
     exit 15
   fi
 
   rm -rf "${verify_temp_dir}"
+  unset g_cleanup[${#g_cleanup[@]}]
 
   if [[ -n "${rsync_output}" ]]; then
     err "verification failed"
@@ -370,6 +389,8 @@ main() {
   new_dir="$(shell_safe_path "${2}")"
   patch_dir="$(shell_safe_path "${3}")"
 
+  trap cleanup EXIT HUP INT QUIT TERM
+
   if ! [[ -d "${old_dir}" ]] || ! [[ -d "${new_dir}" ]]; then
     err "old_dir and new_dir must exist and be directories"
     usage
@@ -404,9 +425,14 @@ main() {
     exit 6
   fi
 
+  g_cleanup[${#g_cleanup[@]}]="${patch_dir}"
+
   make_patch_dir "${old_dir}" "${new_dir}" "${patch_dir}"
 
   verify_patch_dir "${old_dir}" "${new_dir}" "${patch_dir}"
+
+  unset g_cleanup[${#g_cleanup[@]}]
+  trap - EXIT
 }
 
 if [[ ${#} -ne 3 ]]; then
