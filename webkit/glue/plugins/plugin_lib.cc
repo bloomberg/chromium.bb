@@ -61,11 +61,12 @@ void PluginLib::ShutdownAllPlugins() {
 PluginLib::PluginLib(const WebPluginInfo& info,
                      const PluginEntryPoints* entry_points)
     : web_plugin_info_(info),
-      library_(0),
+      library_(NULL),
       initialized_(false),
       saved_data_(0),
       instance_count_(0),
-      skip_unload_(false) {
+      skip_unload_(false),
+      always_loaded_(false) {
   StatsCounter(kPluginLibrariesLoadedCounter).Increment();
   memset((void*)&plugin_funcs_, 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(this);
@@ -132,6 +133,11 @@ void PluginLib::PreventLibraryUnload() {
   skip_unload_ = true;
 }
 
+void PluginLib::EnsureAlwaysLoaded() {
+  always_loaded_ = true;
+  Load();
+}
+
 PluginInstance* PluginLib::CreateInstance(const std::string& mime_type) {
   PluginInstance* new_instance = new PluginInstance(this, mime_type);
   instance_count_++;
@@ -145,30 +151,18 @@ void PluginLib::CloseInstance() {
   instance_count_--;
   // If a plugin is running in its own process it will get unloaded on process
   // shutdown.
-  if ((instance_count_ == 0) &&
-       webkit_glue::IsPluginRunningInRendererProcess()) {
+  if ((instance_count_ == 0) && webkit_glue::IsPluginRunningInRendererProcess())
     Unload();
-    for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
-      if ((*g_loaded_libs)[i].get() == this) {
-        g_loaded_libs->erase(g_loaded_libs->begin() + i);
-        break;
-      }
-    }
-    if (g_loaded_libs->empty()) {
-      delete g_loaded_libs;
-      g_loaded_libs = NULL;
-    }
-  }
 }
 
 bool PluginLib::Load() {
+  if (library_)
+    return true;
+
   bool rv = false;
   base::NativeLibrary library = 0;
 
   if (!internal_) {
-    if (library_ != 0)
-      return rv;
-
     library = base::LoadNativeLibrary(web_plugin_info_.path);
     if (library == 0)
       return rv;
@@ -254,6 +248,9 @@ class FreePluginLibraryTask : public Task {
 };
 
 void PluginLib::Unload() {
+  if (always_loaded_)
+    return;
+
   if (!internal_ && library_) {
     // In case of single process mode, a plugin can delete itself
     // by executing a script. So delay the unloading of the library
@@ -281,6 +278,17 @@ void PluginLib::Unload() {
     }
 
     library_ = 0;
+  }
+
+  for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
+    if ((*g_loaded_libs)[i].get() == this) {
+      g_loaded_libs->erase(g_loaded_libs->begin() + i);
+      break;
+    }
+  }
+  if (g_loaded_libs->empty()) {
+    delete g_loaded_libs;
+    g_loaded_libs = NULL;
   }
 }
 
