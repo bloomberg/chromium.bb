@@ -13,8 +13,6 @@ on 11 May 2010.
 The LICENSE from the header has been copied here.
 
 Local Modifications:
-There are no local changes to the code itself, other than a
-namespace change.  Please note that our local changes are
-marked with the "BEGIN GOOGLE MODIFICATIONS" comments.
+There are no local changes to the code itself.
 
 A gssapi.gyp file has been added for building with Chromium.

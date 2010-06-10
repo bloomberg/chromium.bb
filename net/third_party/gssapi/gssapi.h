@@ -95,10 +95,6 @@
 #endif
 #endif
 
-// BEGIN GOOGLE MODIFICATIONS
-namespace gssapi {
-// END GOOGLE MODIFICATIONS
-
 EXTERN_C_BEGIN
 
 /*
@@ -241,16 +237,14 @@ typedef struct gss_channel_bindings_struct {
 /*
  * Various Null values
  */
-// BEGIN GOOGLE MODIFICATIONS
-#define GSS_C_NO_NAME ((gssapi::gss_name_t) 0)
-#define GSS_C_NO_BUFFER ((gssapi::gss_buffer_t) 0)
-#define GSS_C_NO_OID ((gssapi::gss_OID) 0)
-#define GSS_C_NO_OID_SET ((gssapi::gss_OID_set) 0)
-#define GSS_C_NO_CONTEXT ((gssapi::gss_ctx_id_t) 0)
-#define GSS_C_NO_CREDENTIAL ((gssapi::gss_cred_id_t) 0)
-#define GSS_C_NO_CHANNEL_BINDINGS ((gssapi::gss_channel_bindings_t) 0)
+#define GSS_C_NO_NAME ((gss_name_t) 0)
+#define GSS_C_NO_BUFFER ((gss_buffer_t) 0)
+#define GSS_C_NO_OID ((gss_OID) 0)
+#define GSS_C_NO_OID_SET ((gss_OID_set) 0)
+#define GSS_C_NO_CONTEXT ((gss_ctx_id_t) 0)
+#define GSS_C_NO_CREDENTIAL ((gss_cred_id_t) 0)
+#define GSS_C_NO_CHANNEL_BINDINGS ((gss_channel_bindings_t) 0)
 #define GSS_C_EMPTY_BUFFER {0, NULL}
-// END GOOGLE MODIFICATIONS
 
 /*
  * Some alternate names for a couple of the above
@@ -845,10 +839,6 @@ GSS_CALLCONV GSS_FUNC(gss_duplicate_name)
 
 
 EXTERN_C_END
-
-// BEGIN GOOGLE MODIFICATIONS
-}  // namespace gssapi
-// END GOOGLE MODIFICATIONS
 
 #endif /* GSSAPI_H_ */
 
