@@ -9,6 +9,7 @@
 #include "app/surface/transport_dib.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/sys_info.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -22,6 +23,19 @@
 // our backing store in a CGLayer that can get cached in GPU memory.  This
 // allows acclerated drawing into the layer and lets scrolling and such happen
 // all or mostly on the GPU, which is good for performance.
+
+namespace {
+
+// Returns whether this version of OS X has broken CGLayers, see
+// http://crbug.com/45553 , comments 5 and 6.
+bool NeedsLayerWorkaround() {
+  int32 os_major, os_minor, os_bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(
+      &os_major, &os_minor, &os_bugfix);
+  return os_major == 10 && os_minor == 5;
+}
+
+}  // namespace
 
 BackingStoreMac::BackingStoreMac(RenderWidgetHost* widget,
                                  const gfx::Size& size)
@@ -144,13 +158,23 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
 
   if ((dx || dy) && abs(dx) < size().width() && abs(dy) < size().height()) {
     if (cg_layer()) {
-      scoped_cftyperef<CGLayerRef> new_layer(CreateCGLayer());
+      // See http://crbug.com/45553 , comments 5 and 6.
+      static bool needs_layer_workaround = NeedsLayerWorkaround();
 
-      // If the current view is in a window, the replacement must be too.
-      DCHECK(new_layer);
+      scoped_cftyperef<CGLayerRef> new_layer;
+      CGContextRef layer;
 
-      CGContextRef layer = CGLayerGetContext(new_layer);
-      CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
+      if (needs_layer_workaround) {
+        new_layer.reset(CreateCGLayer());
+        // If the current view is in a window, the replacement must be too.
+        DCHECK(new_layer);
+
+        layer = CGLayerGetContext(new_layer);
+        CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
+      } else {
+        layer = CGLayerGetContext(cg_layer());
+      }
+
       CGContextSaveGState(layer);
       CGContextClipToRect(layer,
                           CGRectMake(clip_rect.x(),
@@ -159,26 +183,23 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
                                      clip_rect.height()));
       CGContextDrawLayerAtPoint(layer, CGPointMake(dx, -dy), cg_layer());
       CGContextRestoreGState(layer);
-      cg_layer_.swap(new_layer);
+
+      if (needs_layer_workaround)
+        cg_layer_.swap(new_layer);
     } else {
       // We don't have a layer, so scroll the contents of the CGBitmapContext.
-      scoped_cftyperef<CGContextRef> new_bitmap(CreateCGBitmapContext());
       scoped_cftyperef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));
-      CGContextDrawImage(new_bitmap,
-                         CGRectMake(0, 0, size().width(), size().height()),
-                         bitmap_image);
-      CGContextSaveGState(new_bitmap);
-      CGContextClipToRect(new_bitmap,
+      CGContextSaveGState(cg_bitmap_);
+      CGContextClipToRect(cg_bitmap_,
                           CGRectMake(clip_rect.x(),
                                      size().height() - clip_rect.bottom(),
                                      clip_rect.width(),
                                      clip_rect.height()));
-      CGContextDrawImage(new_bitmap,
+      CGContextDrawImage(cg_bitmap_,
                          CGRectMake(dx, -dy, size().width(), size().height()),
                          bitmap_image);
-      CGContextRestoreGState(new_bitmap);
-      cg_bitmap_.swap(new_bitmap);
+      CGContextRestoreGState(cg_bitmap_);
     }
   }
 }
