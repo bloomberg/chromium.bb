@@ -180,7 +180,7 @@ class ChromeTests:
             if line.startswith("#") or line.startswith("//") or line.isspace():
               continue
             line = line.rstrip()
-            test_prefixes = ["FLAKY", "FAILS"]
+            test_prefixes = ["FLAKY", "FAILS", "MAYBE"]
             for p in test_prefixes:
               # Strip prefixes from the test names.
               line = line.replace(".%s_" % p, ".")
