@@ -57,7 +57,7 @@ function readCookie(name) {
 function expectValidCookie(cookie) {
   chrome.test.assertTrue(cookie != null, 'Expected cookie not set.');
 }
-              
+
 function expectNullCookie(cookie) {
   chrome.test.assertEq(null, cookie);
 }
@@ -295,4 +295,3 @@ chrome.test.runTests([
   }
 ]);
 </script>
-

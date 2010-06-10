@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_data_deleter.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -178,6 +179,7 @@ void ExtensionsService::InitEventRouters() {
   ExtensionBrowserEventRouter::GetInstance()->Init();
   ExtensionBookmarkEventRouter::GetSingleton()->Observe(
       profile_->GetBookmarkModel());
+  ExtensionCookiesEventRouter::GetInstance()->Init();
 }
 
 void ExtensionsService::Init() {

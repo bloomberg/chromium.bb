@@ -10,5 +10,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Cookies) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("cookies")) << message_;
+  ASSERT_TRUE(RunExtensionTest("cookies/api")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CookiesEvents) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  ASSERT_TRUE(RunExtensionTest("cookies/events")) << message_;
 }

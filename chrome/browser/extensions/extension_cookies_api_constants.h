@@ -10,6 +10,7 @@
 namespace extension_cookies_api_constants {
 
 // Keys.
+extern const wchar_t kCookieKey[];
 extern const wchar_t kDomainKey[];
 extern const wchar_t kExpirationDateKey[];
 extern const wchar_t kHostOnlyKey[];
@@ -17,6 +18,7 @@ extern const wchar_t kHttpOnlyKey[];
 extern const wchar_t kIdKey[];
 extern const wchar_t kNameKey[];
 extern const wchar_t kPathKey[];
+extern const wchar_t kRemovedKey[];
 extern const wchar_t kSecureKey[];
 extern const wchar_t kSessionKey[];
 extern const wchar_t kStoreIdKey[];
@@ -24,7 +26,8 @@ extern const wchar_t kTabIdsKey[];
 extern const wchar_t kUrlKey[];
 extern const wchar_t kValueKey[];
 
-// TODO(cindylau): kOnChanged is not yet implemented.
+// Events.
+extern const char kOnChanged[];
 
 // Errors.
 extern const char kCookieSetFailedError[];

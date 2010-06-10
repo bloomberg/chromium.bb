@@ -10,11 +10,51 @@
 
 #include <string>
 
+#include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/common/notification_registrar.h"
 
 namespace net {
 class CookieStore;
 }  // namespace net
+
+// Observes CookieMonster notifications and routes them as events to the
+// extension system.
+class ExtensionCookiesEventRouter : public NotificationObserver {
+ public:
+  // Single instance of the event router.
+  static ExtensionCookiesEventRouter* GetInstance();
+
+  void Init();
+
+ private:
+  friend struct DefaultSingletonTraits<ExtensionCookiesEventRouter>;
+
+  ExtensionCookiesEventRouter() {}
+  virtual ~ExtensionCookiesEventRouter() {}
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // Handler for the COOKIE_CHANGED event. The method takes the details of such
+  // an event and constructs a suitable JSON formatted extension event from it.
+  void CookieChanged(Profile* profile,
+                     ChromeCookieDetails* details);
+
+  // This method dispatches events to the extension message service.
+  void DispatchEvent(Profile* context,
+                     const char* event_name,
+                     const std::string& json_args,
+                     GURL& cookie_domain);
+
+  // Used for tracking registrations to CookieMonster notifications.
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionCookiesEventRouter);
+};
 
 // Serves as a base class for all cookies API functions, and defines some
 // common functionality for parsing cookies API function arguments.

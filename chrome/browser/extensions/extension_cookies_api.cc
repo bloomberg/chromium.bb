@@ -6,15 +6,77 @@
 
 #include "chrome/browser/extensions/extension_cookies_api.h"
 
+#include "base/json/json_writer.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/notification_service.h"
 #include "net/base/cookie_monster.h"
 
 namespace keys = extension_cookies_api_constants;
+
+// static
+ExtensionCookiesEventRouter* ExtensionCookiesEventRouter::GetInstance() {
+  return Singleton<ExtensionCookiesEventRouter>::get();
+}
+
+void ExtensionCookiesEventRouter::Init() {
+  if (registrar_.IsEmpty()) {
+    registrar_.Add(this,
+                   NotificationType::COOKIE_CHANGED,
+                   NotificationService::AllSources());
+  }
+}
+
+void ExtensionCookiesEventRouter::Observe(NotificationType type,
+                                          const NotificationSource& source,
+                                          const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::COOKIE_CHANGED:
+      CookieChanged(
+          Source<Profile>(source).ptr(),
+          Details<ChromeCookieDetails>(details).ptr());
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
+void ExtensionCookiesEventRouter::CookieChanged(
+    Profile* profile,
+    ChromeCookieDetails* details) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetBoolean(keys::kRemovedKey, details->removed);
+  dict->Set(
+      keys::kCookieKey,
+      extension_cookies_helpers::CreateCookieValue(*details->cookie_pair,
+          extension_cookies_helpers::GetStoreIdFromProfile(profile)));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  GURL cookie_domain =
+      extension_cookies_helpers::GetURLFromCookiePair(*details->cookie_pair);
+  LOG(WARNING) << "Sending cookie " << json_args;
+  DispatchEvent(profile, keys::kOnChanged, json_args, cookie_domain);
+}
+
+void ExtensionCookiesEventRouter::DispatchEvent(Profile* profile,
+                                                const char* event_name,
+                                                const std::string& json_args,
+                                                GURL& cookie_domain) {
+  if (profile && profile->GetExtensionMessageService()) {
+    profile->GetExtensionMessageService()->DispatchEventToRenderers(
+        event_name, json_args, profile->IsOffTheRecord(), cookie_domain);
+  }
+}
 
 bool CookiesFunction::ParseUrl(const DictionaryValue* details, GURL* url,
                                bool check_host_permissions) {
