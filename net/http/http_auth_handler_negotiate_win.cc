@@ -31,18 +31,17 @@ HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() {
 }
 
-int HttpAuthHandlerNegotiate::GenerateAuthToken(
-    const std::wstring& username,
-    const std::wstring& password,
+int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
+    const std::wstring* username,
+    const std::wstring* password,
     const HttpRequestInfo* request,
-    const ProxyInfo* proxy,
+    CompletionCallback* callback,
     std::string* auth_token) {
   return auth_sspi_.GenerateAuthToken(
-      &username,
-      &password,
+      username,
+      password,
       spn_,
       request,
-      proxy,
       auth_token);
 }
 
@@ -163,19 +162,6 @@ std::wstring HttpAuthHandlerNegotiate::CreateSPN(
   } else {
     return ASCIIToWide(StringPrintf("HTTP/%s", server.c_str()));
   }
-}
-
-int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
-    const HttpRequestInfo* request,
-    const ProxyInfo* proxy,
-    std::string* auth_token) {
-  return auth_sspi_.GenerateAuthToken(
-      NULL,  // username
-      NULL,  // password
-      spn_,
-      request,
-      proxy,
-      auth_token);
 }
 
 HttpAuthHandlerNegotiate::Factory::Factory()

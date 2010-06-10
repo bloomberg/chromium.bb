@@ -45,20 +45,11 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuth::ChallengeTokenizer* tok) {
   return false;
 }
 
-int HttpAuthHandlerNegotiate::GenerateAuthToken(
-    const std::wstring& username,
-    const std::wstring& password,
+int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
+    const std::wstring* username,
+    const std::wstring* password,
     const HttpRequestInfo* request,
-    const ProxyInfo* proxy,
-    std::string* auth_token) {
-  NOTREACHED();
-  LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
-  return ERR_NOT_IMPLEMENTED;
-}
-
-int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
-    const HttpRequestInfo* request,
-    const ProxyInfo* proxy,
+    CompletionCallback* callback,
     std::string* auth_token) {
   NOTREACHED();
   LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
