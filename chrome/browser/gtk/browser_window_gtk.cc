@@ -1331,14 +1331,14 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
 }
 
 void BrowserWindowGtk::UnMaximize() {
+  gtk_window_unmaximize(window_);
+
   // It can happen that you end up with a window whose restore size is the same
   // as the size of the screen, so unmaximizing it merely remaximizes it due to
   // the same WM feature that SetWindowSize() works around.  We try to detect
   // this and resize the window to work around the issue.
   if (bounds_.size() == restored_bounds_.size())
     gtk_window_resize(window_, bounds_.width(), bounds_.height() - 1);
-  else
-    gtk_window_unmaximize(window_);
 }
 
 bool BrowserWindowGtk::CanClose() const {
