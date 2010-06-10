@@ -147,8 +147,7 @@ std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
 
 LanguageLibraryImpl::LanguageLibraryImpl()
     : input_method_status_connection_(NULL),
-      current_input_method_("", "", "", ""),
-      is_focused_(false) {
+      current_input_method_("", "", "", "") {
   scoped_ptr<InputMethodDescriptors> input_method_descriptors(
       CreateFallbackInputMethodDescriptors());
   current_input_method_ = input_method_descriptors->at(0);
@@ -300,9 +299,8 @@ void LanguageLibraryImpl::UpdatePropertyHandler(
 
 // static
 void LanguageLibraryImpl::FocusChangedHandler(void* object, bool is_focused) {
-  LanguageLibraryImpl* language_library =
-      static_cast<LanguageLibraryImpl*>(object);
-  language_library->FocusChanged(is_focused);
+  // TODO(yusukes): Remove this function. Modify MonitorInputMethodStatuslibcros
+  // API as well.
 }
 
 bool LanguageLibraryImpl::EnsureStarted() {
@@ -378,19 +376,6 @@ void LanguageLibraryImpl::UpdateProperty(const ImePropertyList& prop_list) {
     FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
   }
   FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
-}
-
-void LanguageLibraryImpl::FocusChanged(bool is_focused) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &LanguageLibraryImpl::FocusChanged, is_focused));
-    return;
-  }
-
-  is_focused_ = is_focused;
-  FOR_EACH_OBSERVER(Observer, observers_, FocusChanged(this));
 }
 
 }  // namespace chromeos

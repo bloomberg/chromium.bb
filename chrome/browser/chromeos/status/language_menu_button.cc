@@ -149,12 +149,6 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
-
-  // TODO(yusukes): Make the initial state "enabled" and delete SetDisabledColor
-  // when crosbug.com/3683 is fixed.
-  SetDisabledColor(0x4DFFFFFF);  // White with 30% Alpha
-  SetEnabled(false);  // Disable the button until the first FocusIn comes in.
-
   SetShowHighlighted(false);
   // Update the model
   RebuildModel();
@@ -431,16 +425,6 @@ void LanguageMenuButton::LocaleChanged() {
   UpdateIcon(name, tooltip);
   Layout();
   SchedulePaint();
-}
-
-void LanguageMenuButton::FocusChanged(LanguageLibrary* obj) {
-  // TODO(yusukes): Remove this function when crosbug.com/3683 is fixed.
-  LanguageLibrary* language_library = CrosLibrary::Get()->GetLanguageLibrary();
-  if (language_library->is_focused() && !IsEnabled()) {
-    // Enable the button on the first FocusIn event.
-    SetEnabled(true);
-    SchedulePaint();
-  }
 }
 
 void LanguageMenuButton::UpdateIcon(

@@ -52,7 +52,6 @@ class LanguageMenuButton : public views::MenuButton,
   // LanguageLibrary::Observer implementation.
   virtual void InputMethodChanged(LanguageLibrary* obj);
   virtual void ImePropertiesChanged(LanguageLibrary* obj);
-  virtual void FocusChanged(LanguageLibrary* obj);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

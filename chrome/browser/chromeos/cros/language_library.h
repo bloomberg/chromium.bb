@@ -26,7 +26,6 @@ class LanguageLibrary {
     virtual ~Observer() = 0;
     virtual void InputMethodChanged(LanguageLibrary* obj) = 0;
     virtual void ImePropertiesChanged(LanguageLibrary* obj) = 0;
-    virtual void FocusChanged(LanguageLibrary* obj) = 0;
   };
   virtual ~LanguageLibrary() {}
 
@@ -80,7 +79,6 @@ class LanguageLibrary {
   virtual const InputMethodDescriptor& current_input_method() const = 0;
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
-  virtual bool is_focused() const = 0;
 
   // Normalizes the language code and returns the normalized version.  The
   // function normalizes the given language code to be compatible with the
@@ -144,10 +142,6 @@ class LanguageLibraryImpl : public LanguageLibrary {
     return current_ime_properties_;
   }
 
-  virtual bool is_focused() const {
-    return is_focused_;
-  }
-
  private:
   // This method is called when there's a change in input method status.
   static void InputMethodChangedHandler(
@@ -187,9 +181,6 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // Called by the handler to update input method properties.
   void UpdateProperty(const ImePropertyList& prop_list);
 
-  // Called by the handler to notify focus changes.
-  void FocusChanged(bool is_focused);
-
   // Tries to send all pending SetImeConfig requests to the input method config
   // daemon.
   void FlushImeConfig();
@@ -205,9 +196,6 @@ class LanguageLibraryImpl : public LanguageLibrary {
   // The input method properties which the current input method uses. The list
   // might be empty when no input method is used.
   ImePropertyList current_ime_properties_;
-
-  // true if a text input area in Chrome is focused.
-  bool is_focused_;
 
   typedef std::pair<std::string, std::string> ConfigKeyType;
   typedef std::map<ConfigKeyType, ImeConfigValue> InputMethodConfigRequests;
