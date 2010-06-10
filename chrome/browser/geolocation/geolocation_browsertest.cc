@@ -302,9 +302,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void WaitForJSPrompt() {
     LOG(WARNING) << "will block for JS prompt";
     AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-    LOG(WARNING) << "JS prompt received";
     ASSERT_TRUE(alert);
-    LOG(WARNING) << "will close JS prompt";
+    LOG(WARNING) << "JS prompt received, will close";
     alert->CloseModalDialog();
     LOG(WARNING) << "closed JS prompt";
   }
@@ -544,4 +543,32 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe1_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
+}
+
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
+  html_for_tests_ = "files/geolocation/two_watches.html";
+  ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  // First, set the JavaScript to popup an alert when it receives
+  // |final_position|.
+  const Geoposition final_position = GeopositionFromLatLong(3.17, 4.23);
+  std::string script = StringPrintf(
+      "window.domAutomationController.send(geoSetFinalPosition(%f, %f))",
+      final_position.latitude, final_position.longitude);
+  std::string js_result;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+      current_browser_->GetSelectedTabContents()->render_view_host(),
+      L"", UTF8ToWide(script), &js_result));
+  EXPECT_EQ(js_result, "ok");
+
+  // Send a position which both geolocation watches will receive.
+  AddGeolocationWatch(true);
+  SetInfobarResponse(current_url_, true);
+  CheckGeoposition(MockLocationProvider::instance_->position_);
+
+  // The second watch will now have cancelled. Ensure an update still makes
+  // its way through to the first watcher.
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, NewRunnableFunction(
+      &NotifyGeopositionOnIOThread, final_position));
+  WaitForJSPrompt();
+  CheckGeoposition(final_position);
 }
