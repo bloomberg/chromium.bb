@@ -87,10 +87,11 @@ class FormManager {
 
   // Fills the form represented by |form|.  |form| should have the name set to
   // the name of the form to fill out, and the number of elements and values
-  // must match the number of stored elements in the form.
+  // must match the number of stored elements in the form. |node| is the form
+  // control element that initiated the auto-fill process.
   // TODO(jhawkins): Is matching on name alone good enough?  It's possible to
   // store multiple forms with the same names from different frames.
-  bool FillForm(const webkit_glue::FormData& form);
+  bool FillForm(const webkit_glue::FormData& form, const WebKit::WebNode& node);
 
   // Previews the form represented by |form|.  Same conditions as FillForm.
   bool PreviewForm(const webkit_glue::FormData& form);
@@ -98,9 +99,6 @@ class FormManager {
   // Clears the placeholder values and the auto-filled background for any fields
   // in |form| that have been previewed.
   void ClearPreviewedForm(const webkit_glue::FormData& form);
-
-  // Fills all of the forms in the cache with form data from |forms|.
-  void FillForms(const std::vector<webkit_glue::FormData>& forms);
 
   // Resets the stored set of forms.
   void Reset();
@@ -144,9 +142,11 @@ class FormManager {
 
   // For each field in |data| that matches the corresponding field in |form|
   // and meets the |requirements|, |callback| is called with the actual
-  // WebFormControlElement and the FormField data from |form|. This method owns
-  // |callback|.
+  // WebFormControlElement and the FormField data from |form|. The field that
+  // matches |node| is not required to be empty if |requirements| includes
+  // REQUIRE_EMPTY.  This method owns |callback|.
   void ForEachMatchingFormField(FormElement* form,
+                                const WebKit::WebNode& node,
                                 RequirementsMask requirements,
                                 const webkit_glue::FormData& data,
                                 Callback* callback);

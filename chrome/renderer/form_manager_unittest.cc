@@ -9,6 +9,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/form_data.h"
@@ -18,6 +19,7 @@ using WebKit::WebElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
+using WebKit::WebNode;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -420,7 +422,7 @@ TEST_F(FormManagerTest, FillForm) {
   form.fields[3].set_value(ASCIIToUTF16("Beta"));
   form.fields[4].set_value(ASCIIToUTF16("Gamma"));
   form.fields[5].set_value(ASCIIToUTF16("Delta"));
-  EXPECT_TRUE(form_manager.FillForm(form));
+  EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Verify the filled elements.
   WebDocument document = web_frame->document();
@@ -1271,7 +1273,7 @@ TEST_F(FormManagerTest, FillFormMaxLength) {
   // Fill the form.
   form.fields[0].set_value(ASCIIToUTF16("Brother"));
   form.fields[1].set_value(ASCIIToUTF16("Jonathan"));
-  EXPECT_TRUE(form_manager.FillForm(form));
+  EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
@@ -1359,7 +1361,7 @@ TEST_F(FormManagerTest, FillFormNegativeMaxLength) {
   // Fill the form.
   form.fields[0].set_value(ASCIIToUTF16("Brother"));
   form.fields[1].set_value(ASCIIToUTF16("Jonathan"));
-  EXPECT_TRUE(form_manager.FillForm(form));
+  EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
@@ -1459,7 +1461,7 @@ TEST_F(FormManagerTest, FillFormMoreFormDataFields) {
   form->fields[4].set_value(ASCIIToUTF16("Beta"));
   form->fields[5].set_value(ASCIIToUTF16("Jonathan"));
   form->fields[6].set_value(ASCIIToUTF16("Omega"));
-  EXPECT_TRUE(form_manager.FillForm(*form));
+  EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
   // Get the input element we want to find.
   WebElement element = web_frame->document().getElementById("firstname");
@@ -1537,7 +1539,7 @@ TEST_F(FormManagerTest, FillFormFewerFormDataFields) {
   form->fields[0].set_value(ASCIIToUTF16("Brother"));
   form->fields[1].set_value(ASCIIToUTF16("Joseph"));
   form->fields[2].set_value(ASCIIToUTF16("Jonathan"));
-  EXPECT_TRUE(form_manager.FillForm(*form));
+  EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
   // Get the input element we want to find.
   WebElement element = web_frame->document().getElementById("firstname");
@@ -1632,7 +1634,7 @@ TEST_F(FormManagerTest, FillFormChangedFormDataFields) {
   form->fields[1].set_label(ASCIIToUTF16("bogus"));
   form->fields[1].set_name(ASCIIToUTF16("bogus"));
 
-  EXPECT_TRUE(form_manager.FillForm(*form));
+  EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
   // Get the input element we want to find.
   WebElement element = web_frame->document().getElementById("firstname");
@@ -1704,7 +1706,7 @@ TEST_F(FormManagerTest, FillFormExtraFieldInCache) {
   form->fields[0].set_value(ASCIIToUTF16("Brother"));
   form->fields[1].set_value(ASCIIToUTF16("Joseph"));
   form->fields[2].set_value(ASCIIToUTF16("Jonathan"));
-  EXPECT_TRUE(form_manager.FillForm(*form));
+  EXPECT_TRUE(form_manager.FillForm(*form, WebNode()));
 
   // Get the input element we want to find.
   WebElement element = web_frame->document().getElementById("firstname");
@@ -1801,7 +1803,7 @@ TEST_F(FormManagerTest, FillFormEmptyName) {
   // Fill the form.
   form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
   form.fields[1].set_value(ASCIIToUTF16("Earp"));
-  EXPECT_TRUE(form_manager.FillForm(form));
+  EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
@@ -1893,7 +1895,7 @@ TEST_F(FormManagerTest, FillFormEmptyFormNames) {
   // Fill the form.
   form.fields[0].set_value(ASCIIToUTF16("Red"));
   form.fields[1].set_value(ASCIIToUTF16("Yellow"));
-  EXPECT_TRUE(form_manager.FillForm(form));
+  EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
 
   // Find the newly-filled form that contains the input element.
   FormData form2;
@@ -2068,6 +2070,98 @@ TEST_F(FormManagerTest, SizeFields) {
                       ASCIIToUTF16("submit"),
                       0),
             fields[6]);
+}
+
+// This test re-creates the experience of typing in a field then selecting a
+// profile from the AutoFill suggestions popup.  The field that is being typed
+// into should be filled even though it's not technically empty.
+TEST_F(FormManagerTest, FillFormNonEmptyField) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"submit\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Get the input element we want to find.
+  WebElement element = web_frame->document().getElementById("firstname");
+  WebInputElement input_element = element.to<WebInputElement>();
+
+  // Simulate typing by modifying the field value.
+  input_element.setValue(ASCIIToUTF16("Wy"));
+
+  // Find the form that contains the input element.
+  FormData form;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      string16(),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      string16(),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit"),
+                      0),
+            fields[2]);
+
+  // Fill the form.
+  form.fields[0].set_value(ASCIIToUTF16("Wyatt"));
+  form.fields[1].set_value(ASCIIToUTF16("Earp"));
+  EXPECT_TRUE(form_manager.FillForm(form, input_element));
+
+  // Find the newly-filled form that contains the input element.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      input_element, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form2.action);
+
+  const std::vector<FormField>& fields2 = form2.fields;
+  ASSERT_EQ(3U, fields2.size());
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("Wyatt"),
+                      ASCIIToUTF16("text"),
+                      20),
+                      fields2[0]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Earp"),
+                      ASCIIToUTF16("text"),
+                      20),
+                      fields2[1]);
+  EXPECT_EQ(FormField(string16(),
+                      string16(),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit"),
+                      0),
+                      fields2[2]);
 }
 
 }  // namespace

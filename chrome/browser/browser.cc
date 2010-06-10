@@ -1761,14 +1761,6 @@ void Browser::OpenInternetOptionsDialog() {
 }
 #endif
 
-void Browser::AutoFillDefaultProfile() {
-  TabContents* current_tab = GetSelectedTabContents();
-  if (!current_tab)  // May be NULL during tab restore.
-    return;
-
-  current_tab->GetAutoFillManager()->FillDefaultProfile();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 // static
@@ -2019,9 +2011,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
     case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
 #endif
-
-    // AutoFill
-    case IDC_AUTOFILL_DEFAULT:      AutoFillDefaultProfile();         break;
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;

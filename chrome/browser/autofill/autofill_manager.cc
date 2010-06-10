@@ -379,58 +379,6 @@ void AutoFillManager::UploadFormData() {
   //                                      form_is_autofilled);
 }
 
-void AutoFillManager::FillDefaultProfile() {
-  if (!IsAutoFillEnabled())
-    return;
-
-  RenderViewHost* host = tab_contents_->render_view_host();
-  if (!host)
-    return;
-
-  // TODO(jhawkins): Do we need to wait for the profiles to be loaded?
-  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
-  if (profiles.empty())
-    return;
-
-  AutoFillProfile* profile = NULL;
-  int default_profile = personal_data_->DefaultProfile();
-  if (default_profile != -1)
-    profile = profiles[default_profile];
-
-  // If we have any profiles, at least one of them must be the default.
-  DCHECK(profile);
-
-  std::vector<FormData> forms;
-  for (std::vector<FormStructure*>::const_iterator iter =
-           form_structures_.begin();
-       iter != form_structures_.end(); ++iter) {
-    const FormStructure* form_structure = *iter;
-
-    // Don't fill the form if it's not auto-fillable.
-    if (!form_structure->IsAutoFillable())
-      continue;
-
-    FormData form = form_structure->ConvertToFormData();
-    DCHECK_EQ(form_structure->field_count(), form.fields.size());
-
-    for (size_t i = 0; i < form_structure->field_count(); ++i) {
-      const AutoFillField* field = form_structure->field(i);
-      AutoFillType type(field->type());
-
-      // Don't AutoFill credit card information.
-      if (type.group() == AutoFillType::CREDIT_CARD)
-        continue;
-
-      form.fields[i].set_value(profile->GetFieldText(type));
-    }
-
-    forms.push_back(form);
-  }
-
-  if (!forms.empty())
-    host->AutoFillForms(forms);
-}
-
 AutoFillManager::AutoFillManager()
     : tab_contents_(NULL),
       personal_data_(NULL),

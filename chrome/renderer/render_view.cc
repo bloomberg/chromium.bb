@@ -682,7 +682,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnDisassociateFromPopupCount)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
                         OnAutoFillSuggestionsReturned)
-    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillForms, OnAutoFillForms)
     IPC_MESSAGE_HANDLER(ViewMsg_AutocompleteSuggestionsReturned,
                         OnAutocompleteSuggestionsReturned)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled,
@@ -1515,12 +1514,6 @@ void RenderView::OnAutoFillSuggestionsReturned(
     webview()->applyAutoFillSuggestions(
         autofill_query_node_, values, labels, default_suggestion_index);
   }
-  autofill_query_node_.reset();
-}
-
-void RenderView::OnAutoFillForms(
-    const std::vector<webkit_glue::FormData>& forms) {
-  form_manager_.FillForms(forms);
 }
 
 void RenderView::OnAutocompleteSuggestionsReturned(
@@ -1531,7 +1524,6 @@ void RenderView::OnAutocompleteSuggestionsReturned(
     webview()->applyAutocompleteSuggestions(
         autofill_query_node_, suggestions, default_suggestion_index);
   }
-  autofill_query_node_.reset();
 }
 
 void RenderView::OnAutoFillFormDataFilled(int query_id,
@@ -1542,7 +1534,7 @@ void RenderView::OnAutoFillFormDataFilled(int query_id,
   DCHECK_NE(AUTOFILL_NONE, autofill_action_);
 
   if (autofill_action_ == AUTOFILL_FILL)
-    form_manager_.FillForm(form);
+    form_manager_.FillForm(form, autofill_query_node_);
   else if (autofill_action_ == AUTOFILL_PREVIEW)
     form_manager_.PreviewForm(form);
 

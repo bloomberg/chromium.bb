@@ -88,12 +88,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Uploads the form data to the AutoFill server.
   void UploadFormData();
 
-  // Fills all the forms in the page with the default profile.  Credit card
-  // fields are not filled out.
-  // TODO(jhawkins): Do we really want to fill all of the forms on the page?
-  // Check how toolbar handles this case.
-  void FillDefaultProfile();
-
  protected:
   // For tests.
   AutoFillManager();

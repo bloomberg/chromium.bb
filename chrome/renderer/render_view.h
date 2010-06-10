@@ -683,7 +683,6 @@ class RenderView : public RenderWidget,
       int default_suggestions_index);
   void OnAutoFillFormDataFilled(int query_id,
                                 const webkit_glue::FormData& form);
-  void OnAutoFillForms(const std::vector<webkit_glue::FormData>& forms);
   void OnAutoFillSuggestionsReturned(
       int query_id,
       const std::vector<string16>& values,
@@ -1136,12 +1135,12 @@ class RenderView : public RenderWidget,
 
   // Autofill ------------------------------------------------------------------
 
-  // The id of the last request sent for form field autofill.  Used to ignore
+  // The id of the last request sent for form field AutoFill.  Used to ignore
   // out of date responses.
   int autofill_query_id_;
 
   // The id of the node corresponding to the last request sent for form field
-  // autofill.
+  // AutoFill.
   WebKit::WebNode autofill_query_node_;
 
   // The action to take when receiving AutoFill data from the AutoFillManager.

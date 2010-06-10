@@ -641,9 +641,6 @@ IPC_BEGIN_MESSAGES(View)
                       std::vector<string16> /* labels */,
                       int /* index of default suggestion */)
 
-  IPC_MESSAGE_ROUTED1(ViewMsg_AutoFillForms,
-                      std::vector<webkit_glue::FormData> /* forms */)
-
   // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the
   // autocomplete suggestions.
   IPC_MESSAGE_ROUTED3(ViewMsg_AutocompleteSuggestionsReturned,

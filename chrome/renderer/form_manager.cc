@@ -514,7 +514,7 @@ bool FormManager::FindFormWithFormControlElement(
   return false;
 }
 
-bool FormManager::FillForm(const FormData& form) {
+bool FormManager::FillForm(const FormData& form, const WebKit::WebNode& node) {
   FormElement* form_element = NULL;
   if (!FindCachedFormElement(form, &form_element))
     return false;
@@ -522,6 +522,7 @@ bool FormManager::FillForm(const FormData& form) {
   RequirementsMask requirements = static_cast<RequirementsMask>(
       REQUIRE_AUTOCOMPLETE | REQUIRE_ENABLED | REQUIRE_EMPTY);
   ForEachMatchingFormField(form_element,
+                           node,
                            requirements,
                            form,
                            NewCallback(this, &FormManager::FillFormField));
@@ -537,6 +538,7 @@ bool FormManager::PreviewForm(const FormData& form) {
   RequirementsMask requirements = static_cast<RequirementsMask>(
       REQUIRE_AUTOCOMPLETE | REQUIRE_ENABLED | REQUIRE_EMPTY);
   ForEachMatchingFormField(form_element,
+                           WebNode(),
                            requirements,
                            form,
                            NewCallback(this, &FormManager::PreviewFormField));
@@ -564,13 +566,6 @@ void FormManager::ClearPreviewedForm(const FormData& form) {
 
     input_element.setPlaceholder(string16());
     input_element.setAutofilled(false);
-  }
-}
-
-void FormManager::FillForms(const std::vector<FormData>& forms) {
-  for (std::vector<FormData>::const_iterator iter = forms.begin();
-       iter != forms.end(); ++iter) {
-    FillForm(*iter);
   }
 }
 
@@ -682,6 +677,7 @@ bool FormManager::FindCachedFormElement(const FormData& form,
 }
 
 void FormManager::ForEachMatchingFormField(FormElement* form,
+                                           const WebKit::WebNode& node,
                                            RequirementsMask requirements,
                                            const FormData& data,
                                            Callback* callback) {
@@ -723,7 +719,12 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
       if (requirements & REQUIRE_AUTOCOMPLETE && !input_element.autoComplete())
         continue;
 
-      if (requirements & REQUIRE_EMPTY && !input_element.value().isEmpty())
+      // Don't require the node that initiated the auto-fill process to be
+      // empty.  The user is typing in this field and we should complete the
+      // value when the user selects a value to fill out.
+      if (requirements & REQUIRE_EMPTY &&
+          input_element != node &&
+          !input_element.value().isEmpty())
         continue;
     }
 
