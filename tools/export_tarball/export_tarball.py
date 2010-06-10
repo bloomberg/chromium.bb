@@ -32,6 +32,7 @@ NONESSENTIAL_DIRS = (
     'src/chrome/test/data',
     'o3d/documentation',
     'o3d/samples',
+    'third_party/hunspell_dictionaries',
     'third_party/lighttpd',
     'third_party/vc_80',
     'third_party/WebKit/LayoutTests',
