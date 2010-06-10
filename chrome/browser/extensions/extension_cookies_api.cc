@@ -64,7 +64,6 @@ void ExtensionCookiesEventRouter::CookieChanged(
   base::JSONWriter::Write(&args, false, &json_args);
   GURL cookie_domain =
       extension_cookies_helpers::GetURLFromCookiePair(*details->cookie_pair);
-  LOG(WARNING) << "Sending cookie " << json_args;
   DispatchEvent(profile, keys::kOnChanged, json_args, cookie_domain);
 }
 
