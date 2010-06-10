@@ -195,14 +195,19 @@ void CompactLocationBarView::Focus() {
 void CompactLocationBarView::ButtonPressed(views::Button* sender,
                                            const views::Event& event) {
   int id = sender->tag();
-  // Shift-clicking or Ctrl-clicking the reload button means we should
+  int flags = sender->mouse_event_flags();
+  // Shift-clicking or ctrl-clicking the reload button means we should
   // ignore any cached content.
   // TODO(avayvod): eliminate duplication of this logic in
   // CompactLocationBarView.
-  if (id == IDC_RELOAD && (event.IsShiftDown() || event.IsControlDown()))
+  if (id == IDC_RELOAD && (event.IsShiftDown() || event.IsControlDown())) {
     id = IDC_RELOAD_IGNORING_CACHE;
+    // Mask off shift/ctrl so they aren't interpreted as affecting the
+    // disposition below.
+    flags &= ~(views::Event::EF_SHIFT_DOWN | views::Event::EF_CONTROL_DOWN);
+  }
   browser()->ExecuteCommandWithDisposition(
-      id, event_utils::DispositionFromEventFlags(sender->mouse_event_flags()));
+      id, event_utils::DispositionFromEventFlags(flags));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

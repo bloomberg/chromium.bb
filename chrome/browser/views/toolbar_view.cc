@@ -87,6 +87,7 @@ ToolbarView::ToolbarView(Browser* browser)
       destroyed_flag_(NULL),
       collapsed_(false) {
   SetID(VIEW_ID_TOOLBAR);
+
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
@@ -153,6 +154,8 @@ void ToolbarView::Init(Profile* profile) {
   home_->SetID(VIEW_ID_HOME_BUTTON);
 
   reload_ = new views::ImageButton(this);
+  reload_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                       views::Event::EF_MIDDLE_BUTTON_DOWN);
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
@@ -403,25 +406,34 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 
 void ToolbarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
-  int id = sender->tag();
-  switch (id) {
+  int command = sender->tag();
+  int flags = sender->mouse_event_flags();
+  // Shift-clicking or Ctrl-clicking the reload button means we should ignore
+  // any cached content.
+  // TODO(avayvod): eliminate duplication of this logic in
+  // CompactLocationBarView.
+  if ((command == IDC_RELOAD) &&
+      (event.IsShiftDown() || event.IsControlDown())) {
+    command = IDC_RELOAD_IGNORING_CACHE;
+    // Mask off shift/ctrl so they aren't interpreted as affecting the
+    // disposition below.
+    flags &= ~(views::Event::EF_SHIFT_DOWN | views::Event::EF_CONTROL_DOWN);
+  }
+  WindowOpenDisposition disposition =
+      event_utils::DispositionFromEventFlags(flags);
+  switch (command) {
     case IDC_BACK:
     case IDC_FORWARD:
     case IDC_RELOAD:
-      // Forcibly reset the location bar, since otherwise it won't discard any
-      // ongoing user edits, since it doesn't realize this is a user-initiated
-      // action.
-      location_bar_->Revert();
-      // Shift-clicking or Ctrl-clicking the reload button means we should
-      // ignore any cached content.
-      // TODO(avayvod): eliminate duplication of this logic in
-      // CompactLocationBarView.
-      if (id == IDC_RELOAD && (event.IsShiftDown() || event.IsControlDown()))
-        id = IDC_RELOAD_IGNORING_CACHE;
-      break;
+    case IDC_RELOAD_IGNORING_CACHE:
+      if (disposition == CURRENT_TAB) {
+        // Forcibly reset the location bar, since otherwise it won't discard any
+        // ongoing user edits, since it doesn't realize this is a user-initiated
+        // action.
+        location_bar_->Revert();
+      }
   }
-  browser_->ExecuteCommandWithDisposition(
-      id, event_utils::DispositionFromEventFlags(sender->mouse_event_flags()));
+  browser_->ExecuteCommandWithDisposition(command, disposition);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

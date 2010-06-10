@@ -738,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
   ui_test_utils::RunAllPendingInMessageLoop();
 
-  browser()->Reload();
+  browser()->Reload(CURRENT_TAB);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should stay on the location bar.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
@@ -747,7 +747,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ui_test_utils::NavigateToURL(browser(), server->TestServerPage(kSimplePage));
   browser()->FocusLocationBar();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
-  browser()->Reload();
+  browser()->Reload(CURRENT_TAB);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
@@ -761,7 +761,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   // Open a regular page, crash, reload.
   ui_test_utils::NavigateToURL(browser(), server->TestServerPage(kSimplePage));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
-  browser()->Reload();
+  browser()->Reload(CURRENT_TAB);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();

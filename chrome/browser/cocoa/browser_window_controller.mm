@@ -918,25 +918,8 @@
   if ([sender respondsToSelector:@selector(window)])
     targetController = [[sender window] windowController];
   DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
-  NSInteger tag = [sender tag];
-  switch (tag) {
-    case IDC_RELOAD:
-      if ([sender isKindOfClass:[NSButton class]]) {
-        // We revert the bar when the reload button is pressed, but don't when
-        // Command+r is pressed (Issue 15464). Unlike the event handler function
-        // for Windows (ToolbarView::ButtonPressed()), this function handles
-        // both reload button press event and Command+r press event. Thus the
-        // 'isKindofClass' check is necessary.
-        [targetController locationBarBridge]->Revert();
-      }
-      NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
-      if (modifierFlags & NSShiftKeyMask) {
-        tag = IDC_RELOAD_IGNORING_CACHE;
-      }
-      break;
-  }
   DCHECK(targetController->browser_.get());
-  targetController->browser_->ExecuteCommand(tag);
+  targetController->browser_->ExecuteCommand([sender tag]);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -949,17 +932,37 @@
   if ([sender respondsToSelector:@selector(window)])
     targetController = [[sender window] windowController];
   DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
-  NSInteger tag = [sender tag];
-  DCHECK(targetController->browser_.get());
+  NSInteger command = [sender tag];
   NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+  if ((command == IDC_RELOAD) && (modifierFlags & NSShiftKeyMask)) {
+    command = IDC_RELOAD_IGNORING_CACHE;
+    // Mask off shift so it isn't interpreted as affecting the disposition
+    // below.
+    modifierFlags &= ~NSShiftKeyMask;
+  }
   if (![[sender window] isMainWindow]) {
     // Remove the command key from the flags, it means "keep the window in
     // the background" in this case.
     modifierFlags &= ~NSCommandKeyMask;
   }
-  targetController->browser_->ExecuteCommandWithDisposition(tag,
+  WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEventWithFlags(
-          [NSApp currentEvent], modifierFlags));
+          [NSApp currentEvent], modifierFlags);
+  switch (command) {
+    case IDC_BACK:
+    case IDC_FORWARD:
+    case IDC_RELOAD:
+    case IDC_RELOAD_IGNORING_CACHE:
+      if (disposition == CURRENT_TAB) {
+        // Forcibly reset the location bar, since otherwise it won't discard any
+        // ongoing user edits, since it doesn't realize this is a user-initiated
+        // action.
+        [targetController locationBarBridge]->Revert();
+      }
+  }
+  DCHECK(targetController->browser_.get());
+  targetController->browser_->ExecuteCommandWithDisposition(command,
+                                                            disposition);
 }
 
 // Called when another part of the internal codebase needs to execute a

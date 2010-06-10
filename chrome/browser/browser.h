@@ -431,8 +431,8 @@ class Browser : public TabStripModelDelegate,
   // Navigation commands
   void GoBack(WindowOpenDisposition disposition);
   void GoForward(WindowOpenDisposition disposition);
-  void Reload();
-  void ReloadIgnoringCache();  // AKA shift-reload.
+  void Reload(WindowOpenDisposition disposition);
+  void ReloadIgnoringCache(WindowOpenDisposition disposition);  // Shift-reload.
   void Home(WindowOpenDisposition disposition);
   void OpenCurrentURL();
   void Go(WindowOpenDisposition disposition);
@@ -894,15 +894,14 @@ class Browser : public TabStripModelDelegate,
   static void RegisterAppPrefs(const std::wstring& app_name);
 
   // Shared code between Reload() and ReloadAll().
-  void ReloadInternal(bool ignore_cache);
+  void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
 
   // Return true if the window dispositions means opening a new tab.
   bool ShouldOpenNewTabForWindowDisposition(WindowOpenDisposition disposition);
 
-  // Depending on the disposition, return the |NavigationController| for the
-  // current tab or clone the current tab and return its |NavigationController|.
-  NavigationController& GetOrCloneNavigationControllerForDisposition(
-       WindowOpenDisposition disp);
+  // Depending on the disposition, return the current tab or a clone of the
+  // current tab.
+  TabContents* GetOrCloneTabForDisposition(WindowOpenDisposition disposition);
 
   // Sets the insertion policy of the tabstrip based on whether vertical tabs
   // are enabled.

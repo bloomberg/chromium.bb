@@ -699,29 +699,35 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
 }
 
 void BrowserToolbarGtk::OnButtonClick(GtkWidget* button) {
-  if ((button == back_->widget()) ||
-      (button == forward_->widget())) {
-    location_bar_->Revert();
+  if ((button == back_->widget()) || (button == forward_->widget())) {
+    if (gtk_util::DispositionForCurrentButtonPressEvent() == CURRENT_TAB)
+      location_bar_->Revert();
     return;
   }
 
-  int tag = -1;
+  int command = -1;
+  GdkModifierType modifier_state;
+  gtk_get_current_event_state(&modifier_state);
+  guint modifier_state_uint = modifier_state;
   if (button == reload_->widget()) {
-    GdkModifierType modifier_state;
-    if (gtk_get_current_event_state(&modifier_state) &&
-        modifier_state & GDK_SHIFT_MASK) {
-      tag = IDC_RELOAD_IGNORING_CACHE;
+    if (modifier_state_uint & GDK_SHIFT_MASK) {
+      command = IDC_RELOAD_IGNORING_CACHE;
+      // Mask off shift so it isn't interpreted as affecting the disposition
+      // below.
+      modifier_state_uint &= ~GDK_SHIFT_MASK;
     } else {
-      tag = IDC_RELOAD;
+      command = IDC_RELOAD;
     }
-    location_bar_->Revert();
+    if (event_utils::DispositionFromEventFlags(modifier_state_uint) ==
+        CURRENT_TAB)
+      location_bar_->Revert();
   } else if (home_.get() && button == home_->widget()) {
-    tag = IDC_HOME;
+    command = IDC_HOME;
   }
 
-  DCHECK_NE(tag, -1) << "Unexpected button click callback";
-  browser_->ExecuteCommandWithDisposition(tag,
-      gtk_util::DispositionForCurrentButtonPressEvent());
+  DCHECK_NE(command, -1) << "Unexpected button click callback";
+  browser_->ExecuteCommandWithDisposition(command,
+      event_utils::DispositionFromEventFlags(modifier_state_uint));
 }
 
 gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,

@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   EXPECT_TRUE(fully_visible);
 
   // Reload the tab and make sure Find window doesn't go away.
-  browser()->Reload();
+  browser()->Reload(CURRENT_TAB);
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
 
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));

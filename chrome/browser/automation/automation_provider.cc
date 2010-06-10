@@ -709,7 +709,7 @@ void AutomationProvider::Reload(int handle, IPC::Message* reply_message) {
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
       AddNavigationStatusListener(tab, reply_message, 1, false);
-      browser->Reload();
+      browser->Reload(CURRENT_TAB);
       return;
     }
   }
@@ -2079,11 +2079,11 @@ void AutomationProvider::OmniboxMovePopupSelection(
 void AutomationProvider::OmniboxAcceptInput(Browser* browser,
                                             DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  NavigationController& tab =
-      browser->GetOrCloneNavigationControllerForDisposition(CURRENT_TAB);
+  NavigationController& controller =
+      browser->GetSelectedTabContents()->controller();
   // Setup observer to wait until the selected item loads.
   NotificationObserver* observer =
-      new OmniboxAcceptNotificationObserver(&tab, this, reply_message);
+      new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
   notification_observer_list_.AddObserver(observer);
 
   browser->window()->GetLocationBar()->AcceptInput();

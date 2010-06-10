@@ -982,14 +982,11 @@ bool Browser::CanRestoreTab() {
 bool Browser::NavigateToIndexWithDisposition(int index,
                                              WindowOpenDisposition disp) {
   NavigationController& controller =
-      GetOrCloneNavigationControllerForDisposition(disp);
-
-  if (index >= 0 && index < controller.entry_count()) {
-    controller.GoToIndex(index);
-    return true;
-  } else {
+      GetOrCloneTabForDisposition(disp)->controller();
+  if (index < 0 || index >= controller.entry_count())
     return false;
-  }
+  controller.GoToIndex(index);
+  return true;
 }
 
 void Browser::ShowSingletonTab(const GURL& url) {
@@ -1076,19 +1073,15 @@ bool Browser::ShouldOpenNewTabForWindowDisposition(
           disposition == NEW_BACKGROUND_TAB);
 }
 
-NavigationController& Browser::GetOrCloneNavigationControllerForDisposition(
+TabContents* Browser::GetOrCloneTabForDisposition(
        WindowOpenDisposition disposition) {
   TabContents* current_tab = GetSelectedTabContents();
   if (ShouldOpenNewTabForWindowDisposition(disposition)) {
-    TabContents* cloned = current_tab->Clone();
-    tabstrip_model_.AddTabContents(cloned, -1, false,
-                                   PageTransition::LINK,
+    current_tab = current_tab->Clone();
+    tabstrip_model_.AddTabContents(current_tab, -1, false, PageTransition::LINK,
                                    disposition == NEW_FOREGROUND_TAB);
-    return cloned->controller();
-  } else {
-    // Default disposition is CURRENT_TAB.
-    return current_tab->controller();
   }
+  return current_tab;
 }
 
 void Browser::UpdateTabStripModelInsertionPolicy() {
@@ -1148,56 +1141,50 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
 
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab->controller().CanGoBack()) {
-    NavigationController& controller =
-        GetOrCloneNavigationControllerForDisposition(disposition);
+    TabContents* new_tab = GetOrCloneTabForDisposition(disposition);
     // If we are on an interstitial page and clone the tab, it won't be copied
     // to the new tab, so we don't need to go back.
-    if (current_tab->interstitial_page() &&
-        ShouldOpenNewTabForWindowDisposition(disposition)) {
+    if (current_tab->showing_interstitial_page() && (new_tab != current_tab))
       return;
-    }
-    controller.GoBack();
+    new_tab->controller().GoBack();
   }
 }
 
 void Browser::GoForward(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Forward"), profile_);
-  if (GetSelectedTabContents()->controller().CanGoForward()) {
-    NavigationController& controller =
-        GetOrCloneNavigationControllerForDisposition(disposition);
-    controller.GoForward();
-  }
+  if (GetSelectedTabContents()->controller().CanGoForward())
+    GetOrCloneTabForDisposition(disposition)->controller().GoForward();
 }
 
-void Browser::Reload() {
+void Browser::Reload(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Reload"), profile_);
-  ReloadInternal(false);
+  ReloadInternal(disposition, false);
 }
 
-void Browser::ReloadIgnoringCache() {
+void Browser::ReloadIgnoringCache(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("ReloadIgnoringCache"), profile_);
-  ReloadInternal(true);
+  ReloadInternal(disposition, true);
 }
 
-void Browser::ReloadInternal(bool ignore_cache) {
+void Browser::ReloadInternal(WindowOpenDisposition disposition,
+                             bool ignore_cache) {
   // If we are showing an interstitial, treat this as an OpenURL.
   TabContents* current_tab = GetSelectedTabContents();
-  if (current_tab) {
-    if (current_tab->showing_interstitial_page()) {
-      NavigationEntry* entry = current_tab->controller().GetActiveEntry();
-      DCHECK(entry);  // Should exist if interstitial is showing.
-      OpenURL(entry->url(), GURL(), CURRENT_TAB, PageTransition::RELOAD);
-      return;
-    }
-
-    // As this is caused by a user action, give the focus to the page.
-    if (!current_tab->FocusLocationBarByDefault())
-      current_tab->Focus();
-    if (ignore_cache)
-      current_tab->controller().ReloadIgnoringCache(true);
-    else
-      current_tab->controller().Reload(true);
+  if (current_tab && current_tab->showing_interstitial_page()) {
+    NavigationEntry* entry = current_tab->controller().GetActiveEntry();
+    DCHECK(entry);  // Should exist if interstitial is showing.
+    OpenURL(entry->url(), GURL(), disposition, PageTransition::RELOAD);
+    return;
   }
+
+  // As this is caused by a user action, give the focus to the page.
+  current_tab = GetOrCloneTabForDisposition(disposition);
+  if (!current_tab->FocusLocationBarByDefault())
+    current_tab->Focus();
+  if (ignore_cache)
+    current_tab->controller().ReloadIgnoringCache(true);
+  else
+    current_tab->controller().Reload(true);
 }
 
 void Browser::Home(WindowOpenDisposition disposition) {
@@ -1920,18 +1907,18 @@ void Browser::ExecuteCommandWithDisposition(
   // declaration order in browser.h!
   switch (id) {
     // Navigation commands
-    case IDC_BACK:                  GoBack(disposition);           break;
-    case IDC_FORWARD:               GoForward(disposition);        break;
-    case IDC_RELOAD:                Reload();                      break;
-    case IDC_RELOAD_IGNORING_CACHE: ReloadIgnoringCache();         break;
-    case IDC_HOME:                  Home(disposition);             break;
-    case IDC_OPEN_CURRENT_URL:      OpenCurrentURL();              break;
-    case IDC_GO:                    Go(disposition);               break;
-    case IDC_STOP:                  Stop();                        break;
+    case IDC_BACK:                  GoBack(disposition);              break;
+    case IDC_FORWARD:               GoForward(disposition);           break;
+    case IDC_RELOAD:                Reload(disposition);              break;
+    case IDC_RELOAD_IGNORING_CACHE: ReloadIgnoringCache(disposition); break;
+    case IDC_HOME:                  Home(disposition);                break;
+    case IDC_OPEN_CURRENT_URL:      OpenCurrentURL();                 break;
+    case IDC_GO:                    Go(disposition);                  break;
+    case IDC_STOP:                  Stop();                           break;
 
      // Window management commands
-    case IDC_NEW_WINDOW:            NewWindow();                   break;
-    case IDC_NEW_INCOGNITO_WINDOW:  NewIncognitoWindow();          break;
+    case IDC_NEW_WINDOW:            NewWindow();                      break;
+    case IDC_NEW_INCOGNITO_WINDOW:  NewIncognitoWindow();             break;
     case IDC_NEW_WINDOW_PROFILE_0:
     case IDC_NEW_WINDOW_PROFILE_1:
     case IDC_NEW_WINDOW_PROFILE_2:
@@ -1943,13 +1930,13 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_NEW_WINDOW_PROFILE_8:
         NewProfileWindowByIndex(id - IDC_NEW_WINDOW_PROFILE_0);
         break;
-    case IDC_CLOSE_WINDOW:          CloseWindow();                 break;
-    case IDC_NEW_TAB:               NewTab();                      break;
-    case IDC_CLOSE_TAB:             CloseTab();                    break;
-    case IDC_SELECT_NEXT_TAB:       SelectNextTab();               break;
-    case IDC_SELECT_PREVIOUS_TAB:   SelectPreviousTab();           break;
-    case IDC_MOVE_TAB_NEXT:         MoveTabNext();                 break;
-    case IDC_MOVE_TAB_PREVIOUS:     MoveTabPrevious();             break;
+    case IDC_CLOSE_WINDOW:          CloseWindow();                    break;
+    case IDC_NEW_TAB:               NewTab();                         break;
+    case IDC_CLOSE_TAB:             CloseTab();                       break;
+    case IDC_SELECT_NEXT_TAB:       SelectNextTab();                  break;
+    case IDC_SELECT_PREVIOUS_TAB:   SelectPreviousTab();              break;
+    case IDC_MOVE_TAB_NEXT:         MoveTabNext();                    break;
+    case IDC_MOVE_TAB_PREVIOUS:     MoveTabPrevious();                break;
     case IDC_SELECT_TAB_0:
     case IDC_SELECT_TAB_1:
     case IDC_SELECT_TAB_2:
@@ -1958,28 +1945,28 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SELECT_TAB_5:
     case IDC_SELECT_TAB_6:
     case IDC_SELECT_TAB_7:          SelectNumberedTab(id - IDC_SELECT_TAB_0);
-                                                                   break;
-    case IDC_SELECT_LAST_TAB:       SelectLastTab();               break;
-    case IDC_DUPLICATE_TAB:         DuplicateTab();                break;
-    case IDC_RESTORE_TAB:           RestoreTab();                  break;
-    case IDC_COPY_URL:              WriteCurrentURLToClipboard();  break;
-    case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser(); break;
-    case IDC_FULLSCREEN:            ToggleFullscreenMode();        break;
-    case IDC_EXIT:                  Exit();                        break;
-    case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();       break;
+                                                                      break;
+    case IDC_SELECT_LAST_TAB:       SelectLastTab();                  break;
+    case IDC_DUPLICATE_TAB:         DuplicateTab();                   break;
+    case IDC_RESTORE_TAB:           RestoreTab();                     break;
+    case IDC_COPY_URL:              WriteCurrentURLToClipboard();     break;
+    case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser();    break;
+    case IDC_FULLSCREEN:            ToggleFullscreenMode();           break;
+    case IDC_EXIT:                  Exit();                           break;
+    case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();          break;
 #if defined(OS_CHROMEOS)
-    case IDC_COMPACT_NAVBAR:        ToggleCompactNavigationBar();  break;
-    case IDC_SEARCH:                Search();                      break;
+    case IDC_COMPACT_NAVBAR:        ToggleCompactNavigationBar();     break;
+    case IDC_SEARCH:                Search();                         break;
 #endif
 
     // Page-related commands
-    case IDC_SAVE_PAGE:             SavePage();                    break;
-    case IDC_BOOKMARK_PAGE:         BookmarkCurrentPage();         break;
-    case IDC_BOOKMARK_ALL_TABS:     BookmarkAllTabs();             break;
-    case IDC_VIEW_SOURCE:           ViewSource();                  break;
-    case IDC_EMAIL_PAGE_LOCATION:   EmailPageLocation();           break;
-    case IDC_PRINT:                 Print();                       break;
-    case IDC_ENCODING_AUTO_DETECT:  ToggleEncodingAutoDetect();    break;
+    case IDC_SAVE_PAGE:             SavePage();                       break;
+    case IDC_BOOKMARK_PAGE:         BookmarkCurrentPage();            break;
+    case IDC_BOOKMARK_ALL_TABS:     BookmarkAllTabs();                break;
+    case IDC_VIEW_SOURCE:           ViewSource();                     break;
+    case IDC_EMAIL_PAGE_LOCATION:   EmailPageLocation();              break;
+    case IDC_PRINT:                 Print();                          break;
+    case IDC_ENCODING_AUTO_DETECT:  ToggleEncodingAutoDetect();       break;
     case IDC_ENCODING_UTF8:
     case IDC_ENCODING_UTF16LE:
     case IDC_ENCODING_ISO88591:
@@ -2016,68 +2003,68 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_ENCODING_ISO88598:
     case IDC_ENCODING_ISO88598I:
     case IDC_ENCODING_WINDOWS1255:
-    case IDC_ENCODING_WINDOWS1258:  OverrideEncoding(id);          break;
+    case IDC_ENCODING_WINDOWS1258:  OverrideEncoding(id);             break;
 
     // Clipboard commands
-    case IDC_CUT:                   Cut();                         break;
-    case IDC_COPY:                  Copy();                        break;
-    case IDC_PASTE:                 Paste();                       break;
+    case IDC_CUT:                   Cut();                            break;
+    case IDC_COPY:                  Copy();                           break;
+    case IDC_PASTE:                 Paste();                          break;
 
     // Find-in-page
-    case IDC_FIND:                  Find();                        break;
-    case IDC_FIND_NEXT:             FindNext();                    break;
-    case IDC_FIND_PREVIOUS:         FindPrevious();                break;
+    case IDC_FIND:                  Find();                           break;
+    case IDC_FIND_NEXT:             FindNext();                       break;
+    case IDC_FIND_PREVIOUS:         FindPrevious();                   break;
 
     // Zoom
-    case IDC_ZOOM_PLUS:             Zoom(PageZoom::ZOOM_IN);       break;
-    case IDC_ZOOM_NORMAL:           Zoom(PageZoom::RESET);         break;
-    case IDC_ZOOM_MINUS:            Zoom(PageZoom::ZOOM_OUT);      break;
+    case IDC_ZOOM_PLUS:             Zoom(PageZoom::ZOOM_IN);          break;
+    case IDC_ZOOM_NORMAL:           Zoom(PageZoom::RESET);            break;
+    case IDC_ZOOM_MINUS:            Zoom(PageZoom::ZOOM_OUT);         break;
 
     // Focus various bits of UI
-    case IDC_FOCUS_TOOLBAR:         FocusToolbar();                break;
-    case IDC_FOCUS_LOCATION:        FocusLocationBar();            break;
-    case IDC_FOCUS_SEARCH:          FocusSearch();                 break;
-    case IDC_FOCUS_MENU_BAR:        FocusPageAndAppMenus();        break;
+    case IDC_FOCUS_TOOLBAR:         FocusToolbar();                   break;
+    case IDC_FOCUS_LOCATION:        FocusLocationBar();               break;
+    case IDC_FOCUS_SEARCH:          FocusSearch();                    break;
+    case IDC_FOCUS_MENU_BAR:        FocusPageAndAppMenus();           break;
 
     // Show various bits of UI
-    case IDC_OPEN_FILE:             OpenFile();                    break;
-    case IDC_CREATE_SHORTCUTS:      OpenCreateShortcutsDialog();   break;
-    case IDC_DEV_TOOLS:             ToggleDevToolsWindow(false);   break;
-    case IDC_DEV_TOOLS_CONSOLE:     ToggleDevToolsWindow(true);    break;
-    case IDC_TASK_MANAGER:          OpenTaskManager();             break;
-    case IDC_SELECT_PROFILE:        OpenSelectProfileDialog();     break;
-    case IDC_NEW_PROFILE:           OpenNewProfileDialog();        break;
-    case IDC_REPORT_BUG:            OpenBugReportDialog();         break;
+    case IDC_OPEN_FILE:             OpenFile();                       break;
+    case IDC_CREATE_SHORTCUTS:      OpenCreateShortcutsDialog();      break;
+    case IDC_DEV_TOOLS:             ToggleDevToolsWindow(false);      break;
+    case IDC_DEV_TOOLS_CONSOLE:     ToggleDevToolsWindow(true);       break;
+    case IDC_TASK_MANAGER:          OpenTaskManager();                break;
+    case IDC_SELECT_PROFILE:        OpenSelectProfileDialog();        break;
+    case IDC_NEW_PROFILE:           OpenNewProfileDialog();           break;
+    case IDC_REPORT_BUG:            OpenBugReportDialog();            break;
 
-    case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();           break;
-    case IDC_SHOW_EXTENSION_SHELF:  ToggleExtensionShelf();        break;
+    case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
+    case IDC_SHOW_EXTENSION_SHELF:  ToggleExtensionShelf();           break;
 
-    case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();         break;
-    case IDC_SHOW_APP_MENU:         ShowAppMenu();                 break;
-    case IDC_SHOW_PAGE_MENU:        ShowPageMenu();                break;
-    case IDC_SHOW_HISTORY:          ShowHistoryTab();              break;
-    case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();            break;
-    case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();           break;
-    case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();   break;
-    case IDC_OPTIONS:               OpenOptionsDialog();           break;
-    case IDC_EDIT_SEARCH_ENGINES:   OpenKeywordEditor();           break;
-    case IDC_VIEW_PASSWORDS:        OpenPasswordManager();         break;
-    case IDC_CLEAR_BROWSING_DATA:   OpenClearBrowsingDataDialog(); break;
-    case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();    break;
+    case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();            break;
+    case IDC_SHOW_APP_MENU:         ShowAppMenu();                    break;
+    case IDC_SHOW_PAGE_MENU:        ShowPageMenu();                   break;
+    case IDC_SHOW_HISTORY:          ShowHistoryTab();                 break;
+    case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();               break;
+    case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();              break;
+    case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();      break;
+    case IDC_OPTIONS:               OpenOptionsDialog();              break;
+    case IDC_EDIT_SEARCH_ENGINES:   OpenKeywordEditor();              break;
+    case IDC_VIEW_PASSWORDS:        OpenPasswordManager();            break;
+    case IDC_CLEAR_BROWSING_DATA:   OpenClearBrowsingDataDialog();    break;
+    case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();       break;
     case IDC_ABOUT:
       if (Singleton<UpgradeDetector>::get()->notify_upgrade())
         OpenUpdateChromeDialog();
       else
         OpenAboutChromeDialog();
       break;
-    case IDC_HELP_PAGE:             OpenHelpTab();                 break;
+    case IDC_HELP_PAGE:             OpenHelpTab();                    break;
 #if defined(OS_CHROMEOS)
-    case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();     break;
-    case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();   break;
+    case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
+    case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
 #endif
 
     // AutoFill
-    case IDC_AUTOFILL_DEFAULT:      AutoFillDefaultProfile();      break;
+    case IDC_AUTOFILL_DEFAULT:      AutoFillDefaultProfile();         break;
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
