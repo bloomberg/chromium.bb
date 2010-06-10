@@ -1798,12 +1798,10 @@
         'browser/password_manager/password_store.h',
         'browser/password_manager/password_store_default.cc',
         'browser/password_manager/password_store_default.h',
-        # Temporarily disabled while we figure some stuff out.
-        # http://code.google.com/p/chromium/issues/detail?id=12351
-        # 'browser/password_manager/password_store_gnome.h',
-        # 'browser/password_manager/password_store_gnome.cc',
-        # 'browser/password_manager/password_store_kwallet.h',
-        # 'browser/password_manager/password_store_kwallet.cc',
+        'browser/password_manager/password_store_gnome.h',
+        'browser/password_manager/password_store_gnome.cc',
+        'browser/password_manager/password_store_kwallet.h',
+        'browser/password_manager/password_store_kwallet.cc',
         'browser/password_manager/password_store_mac_internal.h',
         'browser/password_manager/password_store_mac.h',
         'browser/password_manager/password_store_mac.cc',
@@ -1834,7 +1832,7 @@
         'browser/pref_service.h',
         'browser/pref_store.h',
         'browser/pref_value_store.cc',
-        'browser/pref_value_store.h', 
+        'browser/pref_value_store.h',
         'browser/printing/print_dialog_gtk.cc',
         'browser/printing/print_dialog_gtk.h',
         'browser/printing/print_dialog_cloud.cc',
@@ -2655,6 +2653,10 @@
         }],
         ['chromeos==1', {
           'sources!': [
+            'browser/password_manager/password_store_gnome.h',
+            'browser/password_manager/password_store_gnome.cc',
+            'browser/password_manager/password_store_kwallet.h',
+            'browser/password_manager/password_store_kwallet.cc',
             'browser/platform_util_linux.cc',
           ],
           'link_settings': {
@@ -2667,9 +2669,6 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gconf',
-            # Temporarily disabled while we figure some stuff out.
-            # http://code.google.com/p/chromium/issues/detail?id=12351
-            # '../build/linux/system.gyp:gnome-keyring',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
@@ -2703,6 +2702,11 @@
             'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
           ],
           'conditions': [
+            ['chromeos==0', {
+              'dependencies': [
+                '../build/linux/system.gyp:gnome-keyring',
+              ],
+            }],
             ['linux_breakpad==1', {
               'sources': [
                 'app/breakpad_linux.cc',
