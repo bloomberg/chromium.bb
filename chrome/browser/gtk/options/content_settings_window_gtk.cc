@@ -90,36 +90,27 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
 
   notebook_ = gtk_notebook_new();
 
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      cookie_page_.get_page_widget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_COOKIES_TAB_LABEL).c_str()));
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      image_page_.get_page_widget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_IMAGES_TAB_LABEL).c_str()));
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      javascript_page_.get_page_widget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_JAVASCRIPT_TAB_LABEL).c_str()));
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      plugin_page_.get_page_widget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_PLUGIN_TAB_LABEL).c_str()));
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      popup_page_.get_page_widget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_POPUP_TAB_LABEL).c_str()));
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      geolocation_page_.get_page_widget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_GEOLOCATION_TAB_LABEL).c_str()));
+  const struct {
+    int message_id;
+    GtkWidget* widget;
+  } kNotebookPages[] = {
+    { IDS_COOKIES_TAB_LABEL, cookie_page_.get_page_widget() },
+    { IDS_IMAGES_TAB_LABEL, image_page_.get_page_widget() },
+    { IDS_JAVASCRIPT_TAB_LABEL, javascript_page_.get_page_widget() },
+    { IDS_PLUGIN_TAB_LABEL, plugin_page_.get_page_widget() },
+    { IDS_POPUP_TAB_LABEL, popup_page_.get_page_widget() },
+    { IDS_GEOLOCATION_TAB_LABEL, geolocation_page_.get_page_widget() },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNotebookPages); ++i) {
+    std::string label = l10n_util::GetStringUTF8(kNotebookPages[i].message_id);
+    // Since the tabs are on the side, add some padding space to the label.
+    gtk_notebook_append_page(
+        GTK_NOTEBOOK(notebook_),
+        kNotebookPages[i].widget,
+        gtk_label_new((" " + label + " ").c_str()));
+  }
+
+  gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook_), GTK_POS_LEFT);
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
