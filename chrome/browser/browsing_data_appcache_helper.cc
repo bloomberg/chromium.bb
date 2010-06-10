@@ -16,7 +16,6 @@ using appcache::AppCacheDatabase;
 BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(Profile* profile)
     : request_context_getter_(profile->GetRequestContext()),
       is_fetching_(false) {
-  DCHECK(request_context_getter_.get());
 }
 
 void BrowsingDataAppCacheHelper::StartFetching(Callback0::Type* callback) {
@@ -98,4 +97,26 @@ ChromeAppCacheService* BrowsingDataAppCacheHelper::GetAppCacheService() {
           request_context_getter_->GetURLRequestContext());
   return request_context ? request_context->appcache_service()
                          : NULL;
+}
+
+CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(
+    Profile* profile)
+    : BrowsingDataAppCacheHelper(profile) {
+  info_collection_ = new appcache::AppCacheInfoCollection;
+}
+
+void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
+  typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
+  InfoByOrigin& origin_map = info_collection_->infos_by_origin;
+  origin_map[manifest_url.GetOrigin()].push_back(
+      appcache::AppCacheInfo(manifest_url,
+                             0,
+                             base::Time(),
+                             base::Time(),
+                             base::Time()));
+}
+
+void CannedBrowsingDataAppCacheHelper::StartFetching(
+    Callback0::Type* completion_callback) {
+  completion_callback->Run();
 }

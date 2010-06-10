@@ -5,8 +5,9 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
 #include "base/file_util.h"
-#include "base/string_util.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
@@ -114,4 +115,31 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   profile_->GetWebKitContext()->dom_storage_context()->DeleteLocalStorageFile(
       file_path);
+}
+
+CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
+    Profile* profile)
+    : BrowsingDataLocalStorageHelper(profile) {
+}
+
+void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
+    const GURL& origin) {
+  WebKit::WebSecurityOrigin web_security_origin =
+      WebKit::WebSecurityOrigin::createFromString(
+          UTF8ToUTF16(origin.spec()));
+  local_storage_info_.push_back(LocalStorageInfo(
+      web_security_origin.protocol().utf8(),
+      web_security_origin.host().utf8(),
+      web_security_origin.port(),
+      web_security_origin.databaseIdentifier().utf8(),
+      web_security_origin.toString().utf8(),
+      profile_->GetWebKitContext()->dom_storage_context()->
+          GetLocalStorageFilePath(web_security_origin.databaseIdentifier()),
+      0,
+      base::Time()));
+}
+
+void CannedBrowsingDataLocalStorageHelper::StartFetching(
+    Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
+  callback->Run(local_storage_info_);
 }

@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 
 class Profile;
 
@@ -75,11 +76,16 @@ class BrowsingDataLocalStorageHelper
   // Requests a single local storage file to be deleted in the WEBKIT thread.
   virtual void DeleteLocalStorageFile(const FilePath& file_path);
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<BrowsingDataLocalStorageHelper>;
-  friend class MockBrowsingDataLocalStorageHelper;
   virtual ~BrowsingDataLocalStorageHelper();
 
+  Profile* profile_;
+
+  // This only mutates in the WEBKIT thread.
+  std::vector<LocalStorageInfo> local_storage_info_;
+
+ private:
   // Enumerates all local storage files in the WEBKIT thread.
   void FetchLocalStorageInfoInWebKitThread();
   // Notifies the completion callback in the UI thread.
@@ -87,7 +93,6 @@ class BrowsingDataLocalStorageHelper
   // Delete a single local storage file in the WEBKIT thread.
   void DeleteLocalStorageFileInWebKitThread(const FilePath& file_path);
 
-  Profile* profile_;
   // This only mutates on the UI thread.
   scoped_ptr<Callback1<const std::vector<LocalStorageInfo>& >::Type >
       completion_callback_;
@@ -96,10 +101,31 @@ class BrowsingDataLocalStorageHelper
   // after we notified the callback in the UI thread.
   // This only mutates on the UI thread.
   bool is_fetching_;
-  // This only mutates in the WEBKIT thread.
-  std::vector<LocalStorageInfo> local_storage_info_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
+};
+
+// This class is a thin wrapper around BrowsingDataLocalStorageHelper that does
+// not fetch its information from the local storage tracker, but gets them
+// passed as a parameter during construction.
+class CannedBrowsingDataLocalStorageHelper
+    : public BrowsingDataLocalStorageHelper {
+ public:
+  explicit CannedBrowsingDataLocalStorageHelper(Profile* profile);
+
+  // Add a local storage to the set of canned local storages that is returned
+  // by this helper.
+  void AddLocalStorage(const GURL& origin);
+
+  // BrowsingDataLocalStorageHelper methods.
+  virtual void StartFetching(
+      Callback1<const std::vector<LocalStorageInfo>& >::Type* callback);
+  virtual void CancelNotification() {}
+
+ private:
+  virtual ~CannedBrowsingDataLocalStorageHelper() {}
+
+  DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataLocalStorageHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_

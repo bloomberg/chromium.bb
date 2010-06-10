@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_BROWSING_DATA_APPCACHE_HELPER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "googleurl/src/gurl.h"
 
 class Profile;
 
@@ -31,23 +31,44 @@ class BrowsingDataAppCacheHelper
     return info_collection_;
   }
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<BrowsingDataAppCacheHelper>;
-  friend class MockBrowsingDataAppCacheHelper;
-
   virtual ~BrowsingDataAppCacheHelper() {}
 
+  scoped_ptr<Callback0::Type> completion_callback_;
+  scoped_refptr<appcache::AppCacheInfoCollection> info_collection_;
+
+ private:
   void OnFetchComplete(int rv);
   ChromeAppCacheService* GetAppCacheService();
 
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
   bool is_fetching_;
-  scoped_ptr<Callback0::Type> completion_callback_;
-  scoped_refptr<appcache::AppCacheInfoCollection> info_collection_;
   scoped_refptr<net::CancelableCompletionCallback<BrowsingDataAppCacheHelper> >
       appcache_info_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);
+};
+
+// This class is a thin wrapper around BrowsingDataAppCacheHelper that does not
+// fetch its information from the appcache service, but gets them passed as
+// a parameter during construction.
+class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
+ public:
+  explicit CannedBrowsingDataAppCacheHelper(Profile* profile);
+
+  // Add an appcache to the set of canned caches that is returned by this
+  // helper.
+  void AddAppCache(const GURL& manifest_url);
+
+  // BrowsingDataAppCacheHelper methods.
+  virtual void StartFetching(Callback0::Type* completion_callback);
+  virtual void CancelNotification() {}
+
+ private:
+  virtual ~CannedBrowsingDataAppCacheHelper() {}
+
+  DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataAppCacheHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_APPCACHE_HELPER_H_

@@ -110,3 +110,29 @@ void BrowsingDataDatabaseHelper::DeleteDatabaseInFileThread(
     return;
   tracker_->DeleteDatabase(UTF8ToUTF16(origin), UTF8ToUTF16(name), NULL);
 }
+
+CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
+    Profile* profile)
+    : BrowsingDataDatabaseHelper(profile) {
+}
+
+void CannedBrowsingDataDatabaseHelper::AddDatabase(
+    const GURL& origin,
+    const std::string& name,
+    const std::string& description) {
+  WebKit::WebSecurityOrigin web_security_origin =
+      WebKit::WebSecurityOrigin::createFromString(
+          UTF8ToUTF16(origin.spec()));
+  database_info_.push_back(DatabaseInfo(
+        web_security_origin.host().utf8(),
+        name,
+        web_security_origin.databaseIdentifier().utf8(),
+        description,
+        0,
+        base::Time()));
+}
+
+void CannedBrowsingDataDatabaseHelper::StartFetching(
+    Callback1<const std::vector<DatabaseInfo>& >::Type* callback) {
+  callback->Run(database_info_);
+}
