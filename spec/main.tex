@@ -125,7 +125,7 @@ created by the client
 \item set cursor
 \end{itemize}
 
-\subsection{Input Group}
+\subsection{Input}
 
 global object
 
@@ -138,6 +138,29 @@ global object
 \item multi pointer wayland
 \end{itemize}
 
+A surface can change the pointer image when the surface is the pointer
+focus of the input device.  Wayland doesn't automatically change the
+pointer image when a pointer enters a surface, but expects the
+application to set the cursor it wants in response the the motion
+event.  The rationale is that a client has to manage changing pointer
+images for UI elements within the surface in response to motion events
+anyway, so we'll make that the only mechanism for setting changing the
+pointer image.  If the server receives a request to set the pointer
+image after the surface loses pointer focus, the request is ignored.
+To the client this will look like it successfully set the pointer
+image.
+
+The compositor will revert the pointer image back to a default image
+when no surface has the pointer focus for that device.  Clients can
+revert the pointer image back to the default image by setting a NULL
+image.
+
+What if the pointer moves from one window which has set a special
+pointer image to a surface that doesn't set an image in response to
+the motion event?  The new surface will be stuck with the special
+pointer image.  We can't just revert the pointer image on leaving a
+surface, since if we immediately enter a surface that sets a different
+image, the image will flicker.  Broken app, I suppose.
 
 \subsection{Output}
 
@@ -182,36 +205,36 @@ Issues:
 
 New objects, requests and events:
 
-  - New toplevel dnd global.  One method, creates a drag object:
+\begin{itemize}
+\item New toplevel dnd global.  One method, creates a drag object:
+  \texttt{dnd.start(new object id, surface, input device, mime
+    types)}. Starts drag for the device, if it's grabbed by the
+  surface. drag ends when button is released.  Caller is responsible
+  for destroying the drag object.
 
-	dnd.start(new object id, surface, input device, mime types), 
+\item Drag object methods:
 
-    Starts drag for the device, if it's grabbed by the surface. drag
-    ends when button is released.  Caller is responsible for
-    destroying the drag object.
+  \texttt{drag.destroy(id)}, destroy drag object.
 
-  - Drag object methods:
+  \texttt{drag.send(id, data)}, send drag data.
 
-	drag.destroy(id), destroy drag object.
+  \texttt{drag.accept(id, mime type)}, accept drag offer, called by
+  target surface.
 
-	drag.send(id, data), send drag data.
+\item Drag object events:
 
-	drag.accept(id, mime type), accept drag offer, called by
-	target surface.
+  \texttt{drag.offer(id, mime-types)}, sent to potential destination
+  surfaces to offer drag data.  If the device leaves the window or the
+  originator cancels the drag, this event is sent with mime-types =
+  NULL.
 
-  - drag object events:
+  \texttt{drag.target(id, mime-type)}, sent to drag originator when a
+  target surface has accepted the offer. if a previous target goes
+  away, this event is sent with mime-type = NULL.
 
-	drag.offer(id, mime-types), sent to potential destination
-	surfaces to offer drag data.  If the device leaves the window
-	or the originator cancels the drag, this event is sent with
-	mime-types = NULL.
-
-	drag.target(id, mime-type), sent to drag originator when a
-	target surface has accepted the offer. if a previous target
-	goes away, this event is sent with mime-type = NULL.
-
-	drag.data(id, data), sent to target, contains dragged data.
-	ends transaction on the target side.
+  \texttt{drag.data(id, data)}, sent to target, contains dragged data.
+  ends transaction on the target side.
+\end{itemize}
 
 Sequence of events:
 
@@ -222,17 +245,18 @@ Sequence of events:
   application to decide whether or not a draggable object within the
   surface was clicked.
 
-\item The initiator creates a drag object by calling the create\_drag
-  method on the dnd global object.  As for any client created object,
-  the client allocates the id.  The create\_drag method also takes the
-  originating surface, the device that's dragging and the mime-types
-  supported.  If the surface has indeed grabbed the device passed in,
-  the server will create an active drag object for the device.  If the
-  grab was released in the meantime, the drag object will be
-  in-active, that is, the same state as when the grab is released.  In
-  that case, the client will receive a button up event, which will let
-  it know that the drag finished.  To the client it will look like the
-  drag was immediately cancelled by the grab ending.
+\item The initiator creates a drag object by calling the
+  \texttt{create\_drag} method on the dnd global object.  As for any
+  client created object, the client allocates the id.  The
+  \texttt{create\_drag} method also takes the originating surface, the
+  device that's dragging and the mime-types supported.  If the surface
+  has indeed grabbed the device passed in, the server will create an
+  active drag object for the device.  If the grab was released in the
+  meantime, the drag object will be in-active, that is, the same state
+  as when the grab is released.  In that case, the client will receive
+  a button up event, which will let it know that the drag finished.
+  To the client it will look like the drag was immediately cancelled
+  by the grab ending.
 
   The special mime-type application/x-root-target indicates that the
   initiator is looking for drag events to the root window as well.
@@ -240,53 +264,56 @@ Sequence of events:
 \item To indicate the object being dragged, the initiator can replace
   the pointer image with an larger image representing the data being
   dragged with the cursor image overlaid.  The pointer image will
-  remain in place as long as the grab is in effect, since no other
-  surfaces receive enter/leave events.
+  remain in place as long as the grab is in effect, since the
+  initiating surface keeps pointer focus, and no other surface
+  receives enter events.
 
 \item As long as the grab is active (or until the initiator cancels
   the drag by destroying the drag object), the drag object will send
-  "offer" events to surfaces it moves across. As for motion events,
-  these events contain the surface local coordinates of the device as
-  well as the list of mime-types offered.  When a device leaves a
-  surface, it will send an offer event with an empty list of
-  mime-types to indicate that the device left the surface.
+  \texttt{offer} events to surfaces it moves across. As for motion
+  events, these events contain the surface local coordinates of the
+  device as well as the list of mime-types offered.  When a device
+  leaves a surface, it will send an \texttt{offer} event with an empty
+  list of mime-types to indicate that the device left the surface.
 
 \item If a surface receives an offer event and decides that it's in an
-  area that can accept a drag event, it should call the accept method
-  on the drag object in the event.  The surface passes a mime-type in
-  the request, picked from the list in the offer event, to indicate
-  which of the types it wants.  At this point, the surface can update
-  the appearance of the drop target to give feedback to the user that
-  the drag has a valid target.  If the offer event moves to a
-  different drop target (the surface decides the offer coordinates is
-  outside the drop target) or leaves the surface (the offer event has
-  an empty list of mime-types) it should revert the appearance of the
-  drop target to the inactive state.  A surface can also decide to
-  retract its drop target (if the drop target disappears or moves, for
-  example), by calling the accept method with a NULL mime-type.
+  area that can accept a drag event, it should call the
+  \texttt{accept} method on the drag object in the event.  The surface
+  passes a mime-type in the request, picked from the list in the offer
+  event, to indicate which of the types it wants.  At this point, the
+  surface can update the appearance of the drop target to give
+  feedback to the user that the drag has a valid target.  If the
+  \texttt{offer} event moves to a different drop target (the surface
+  decides the offer coordinates is outside the drop target) or leaves
+  the surface (the offer event has an empty list of mime-types) it
+  should revert the appearance of the drop target to the inactive
+  state.  A surface can also decide to retract its drop target (if the
+  drop target disappears or moves, for example), by calling the accept
+  method with a NULL mime-type.
 
-\item When a target surface sends an accept request, the drag object
-  will send a target event to the initiator surface.  This tells the
-  initiator that the drag currently has a potential target and which
-  of the offered mime-types the target wants.  The initiator can
-  change the pointer image or drag source appearance to reflect this
-  new state.  If the target surface retracts its drop target of if the
-  surface disappears, a target event with a NULL mime-type will be
-  sent.
+\item When a target surface sends an \texttt{accept} request, the drag
+  object will send a \texttt{target} event to the initiator surface.
+  This tells the initiator that the drag currently has a potential
+  target and which of the offered mime-types the target wants.  The
+  initiator can change the pointer image or drag source appearance to
+  reflect this new state.  If the target surface retracts its drop
+  target of if the surface disappears, a \texttt{target} event with a
+  NULL mime-type will be sent.
 
   If the initiator listed application/x-root-target as a valid
   mime-type, dragging into the root window will make the drag object
-  send a target event with the application/x-root-target mime-type.
+  send a \texttt{target} event with the application/x-root-target
+  mime-type.
 
 \item When the grab is released (indicated by the button release
   event), if the drag has an active target, the initiator calls the
-  send method on the drag object to send the data to be transferred by
-  the drag operation, in the format requested by the target.  The
-  initiator can then destroy the drag object by calling the destroy
-  method.
+  \texttt{send} method on the drag object to send the data to be
+  transferred by the drag operation, in the format requested by the
+  target.  The initiator can then destroy the drag object by calling
+  the \texttt{destroy} method.
 
-\item The drop target receives a data event from the drag object with
-  the requested data.
+\item The drop target receives a \texttt{data} event from the drag
+  object with the requested data.
 \end{itemize}
 
 MIME is defined in RFC's 2045-2049. A registry of MIME types is
@@ -380,6 +407,7 @@ what's currently implemented
 
 \subsection{Wayland System Compositor}
 
+\begin{itemize}
 \item implementation of the system compositor
 
 \item uses libudev, eagle (egl), evdev and drm
