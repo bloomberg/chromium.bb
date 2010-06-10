@@ -13,6 +13,7 @@ import os
 import platform
 import SimpleHTTPServer
 import select
+import signal
 import socket
 import SocketServer
 import subprocess
@@ -484,7 +485,7 @@ class SeleniumRemoteControl(threading.Thread):
       assert colon > 0
       self._port = int(msg[colon + 1:])
 
-    logging.info("seleniun thread terminating")
+    logging.info("selenium thread terminating")
 
 ######################################################################
 # poor man's atexit to be called from signal handler
@@ -492,18 +493,34 @@ class SeleniumRemoteControl(threading.Thread):
 
 GlobalCleanupList = []
 
+def CleanupAlarmHandler(signum, frame):
+  """Raises a RuntimeError if the alarm fires. Selenium sometimes hangs while
+  trying to kill Firefox with a "Killing Firefox..." message as the last
+  thing logged. Eventually the entire test gets killed with a failure status
+  which closes the tree. Since we're just trying to shutdown Selenium at this
+  point, it seems silly for errors to be considered so serious.
+  """
+  logging.error('Cleanup() timed out.')
+  raise RuntimeError('Cleanup() timed out.')
+
 def Cleanup():
   global GlobalCleanupList
   logging.info('#' * 60)
   logging.info('Cleanup')
   logging.info('#' * 60)
 
+  old_handler = signal.signal(signal.SIGALRM, CleanupAlarmHandler)
+  signal.alarm(30)
+
   GlobalCleanupList.reverse()
   for s in GlobalCleanupList:
+    logging.info('Cleanup: %s' % str(s))
     try:
       s()
     except Exception, err:
       logging.info(str(err))
+
+  signal.signal(signal.SIGALRM, old_handler)
   return
 
 ######################################################################
