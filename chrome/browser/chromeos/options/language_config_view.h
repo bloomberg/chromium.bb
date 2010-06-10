@@ -136,9 +136,15 @@ class LanguageConfigView : public TableModel,
       const std::string& language_code);
 
   // Sorts the given language codes by their corresponding language names,
-  // using the unicode string comparator.
+  // using the unicode string comparator. Uses unstable sorting.
   static void SortLanguageCodesByNames(
       std::vector<std::string>* language_codes);
+
+  // Sorts the given input method ids by their corresponding language names,
+  // using the unicode string comparator. Uses stable sorting.
+  static void SortInputMethodIdsByNames(
+      const std::map<std::string, std::string>& id_to_language_code_map,
+      std::vector<std::string>* input_method_ids);
 
   // Reorders the given input method ids for the language code. For
   // example, if |language_codes| is "fr" and |input_method_ids| contains

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
+
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
@@ -29,6 +32,9 @@ TEST(LanguageConfigViewTest, GetLanguageDisplayNameFromCode) {
 
 TEST(LanguageConfigViewTest, SortLanguageCodesByNames) {
   std::vector<std::string> language_codes;
+  // Check if this function can handle an empty list.
+  LanguageConfigView::SortLanguageCodesByNames(&language_codes);
+
   language_codes.push_back("ja");
   language_codes.push_back("fr");
   language_codes.push_back("t");
@@ -46,6 +52,51 @@ TEST(LanguageConfigViewTest, SortLanguageCodesByNames) {
   ASSERT_EQ("ja", language_codes[1]);  // Japanese
   ASSERT_EQ("ja", language_codes[2]);  // Japanese
   ASSERT_EQ("t",  language_codes[3]);  // Others
+}
+
+TEST(LanguageConfigViewTest, SortInputMethodIdsByNames) {
+  std::map<std::string, std::string> id_to_language_code_map;
+  id_to_language_code_map.insert(std::make_pair("mozc", "ja"));
+  id_to_language_code_map.insert(std::make_pair("mozc-jp", "ja"));
+  id_to_language_code_map.insert(std::make_pair("xkb:jp::jpn", "ja"));
+  id_to_language_code_map.insert(std::make_pair("xkb:fr::fra", "fr"));
+  id_to_language_code_map.insert(std::make_pair("m17n:latn-pre", "t"));
+
+  std::vector<std::string> input_method_ids;
+  // Check if this function can handle an empty list.
+  LanguageConfigView::SortInputMethodIdsByNames(id_to_language_code_map,
+                                                &input_method_ids);
+
+  input_method_ids.push_back("mozc");           // Japanese
+  input_method_ids.push_back("xkb:fr::fra");    // French
+  input_method_ids.push_back("m17n:latn-pre");  // Others
+  LanguageConfigView::SortInputMethodIdsByNames(id_to_language_code_map,
+                                                &input_method_ids);
+  ASSERT_EQ(3, static_cast<int>(input_method_ids.size()));
+  ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
+  ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
+  ASSERT_EQ("m17n:latn-pre",  input_method_ids[2]);  // Others
+
+  // Add a duplicate entry and see if it works.
+  // Note that SortInputMethodIdsByNames uses std::stable_sort.
+  input_method_ids.push_back("xkb:jp::jpn");  // also Japanese
+  LanguageConfigView::SortInputMethodIdsByNames(id_to_language_code_map,
+                                                &input_method_ids);
+  ASSERT_EQ(4, static_cast<int>(input_method_ids.size()));
+  ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
+  ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
+  ASSERT_EQ("xkb:jp::jpn", input_method_ids[2]);     // Japanese
+  ASSERT_EQ("m17n:latn-pre",  input_method_ids[3]);  // Others
+
+  input_method_ids.push_back("mozc-jp");  // also Japanese
+  LanguageConfigView::SortInputMethodIdsByNames(id_to_language_code_map,
+                                                &input_method_ids);
+  ASSERT_EQ(5, static_cast<int>(input_method_ids.size()));
+  ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
+  ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
+  ASSERT_EQ("xkb:jp::jpn", input_method_ids[2]);     // Japanese
+  ASSERT_EQ("mozc-jp", input_method_ids[3]);         // Japanese
+  ASSERT_EQ("m17n:latn-pre",  input_method_ids[4]);  // Others
 }
 
 TEST(LanguageConfigViewTest, ReorderInputMethodIdsForLanguageCode_DE) {

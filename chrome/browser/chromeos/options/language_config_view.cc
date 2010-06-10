@@ -825,6 +825,11 @@ void LanguageConfigView::SetInputMethodActivated(
   // Update Chrome's preference.
   std::vector<std::string> new_input_method_ids(input_method_id_set.begin(),
                                                 input_method_id_set.end());
+
+  // Note: Since |new_input_method_ids| is alphabetically sorted and the sort
+  // function below uses stable sort, the relateve order of input methods that
+  // belong to the same language (e.g. "mozc" and "xkb:jp::jpn") is maintained.
+  SortInputMethodIdsByNames(id_to_language_code_map_, &new_input_method_ids);
   preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
 }
 
@@ -940,12 +945,12 @@ std::wstring LanguageConfigView::GetLanguageDisplayNameFromCode(
 }
 
 namespace {
+
 // The comparator is used for sorting language codes by their
 // corresponding language names, using the ICU collator.
-struct CompareByLanguageName : std::binary_function<const std::string&,
-                                                    const std::string&,
-                                                    bool> {
-  CompareByLanguageName(icu::Collator* collator)
+struct CompareLanguageCodesByLanguageName
+    : std::binary_function<const std::string&, const std::string&, bool> {
+  explicit CompareLanguageCodesByLanguageName(icu::Collator* collator)
       : collator_(collator) {
   }
 
@@ -959,8 +964,40 @@ struct CompareByLanguageName : std::binary_function<const std::string&,
             LanguageConfigView::GetLanguageDisplayNameFromCode(s2);
     return l10n_util::StringComparator<std::wstring>(collator_)(key1, key2);
   }
+
   icu::Collator* collator_;
 };
+
+// The comparator is used for sorting input method ids by their
+// corresponding language names, using the ICU collator.
+struct CompareInputMethodIdsByLanguageName
+    : std::binary_function<const std::string&, const std::string&, bool> {
+  CompareInputMethodIdsByLanguageName(
+      icu::Collator* collator,
+      const std::map<std::string, std::string>& id_to_language_code_map)
+      : comparator_(collator),
+        id_to_language_code_map_(id_to_language_code_map) {
+  }
+
+  bool operator()(const std::string& s1, const std::string& s2) const {
+    std::string language_code_1;
+    std::map<std::string, std::string>::const_iterator iter =
+        id_to_language_code_map_.find(s1);
+    if (iter != id_to_language_code_map_.end()) {
+      language_code_1 = iter->second;
+    }
+    std::string language_code_2;
+    iter = id_to_language_code_map_.find(s2);
+    if (iter != id_to_language_code_map_.end()) {
+      language_code_2 = iter->second;
+    }
+    return comparator_(language_code_1, language_code_2);
+  }
+
+  const CompareLanguageCodesByLanguageName comparator_;
+  const std::map<std::string, std::string>& id_to_language_code_map_;
+};
+
 }  // namespace
 
 void LanguageConfigView::SortLanguageCodesByNames(
@@ -971,10 +1008,26 @@ void LanguageConfigView::SortLanguageCodesByNames(
   icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
   scoped_ptr<icu::Collator> collator(
       icu::Collator::createInstance(locale, error));
-  if (U_FAILURE(error))
+  if (U_FAILURE(error)) {
     collator.reset();
+  }
   std::sort(language_codes->begin(), language_codes->end(),
-            CompareByLanguageName(collator.get()));
+            CompareLanguageCodesByLanguageName(collator.get()));
+}
+
+void LanguageConfigView::SortInputMethodIdsByNames(
+    const std::map<std::string, std::string>& id_to_language_code_map,
+    std::vector<std::string>* input_method_ids) {
+  UErrorCode error = U_ZERO_ERROR;
+  icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
+  scoped_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(locale, error));
+  if (U_FAILURE(error)) {
+    collator.reset();
+  }
+  std::stable_sort(input_method_ids->begin(), input_method_ids->end(),
+                   CompareInputMethodIdsByLanguageName(
+                       collator.get(), id_to_language_code_map));
 }
 
 void LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
