@@ -82,12 +82,6 @@ void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::SetInitialFocus(const IPC::Message& message,
-                                         int handle, bool reverse,
-                                         bool restore_focus_to_view) {
-  NOTIMPLEMENTED();
-}
-
 // This task sends a WindowDragResponse message with the appropriate
 // routing ID to the automation proxy.  This is implemented as a task so that
 // we know that the mouse events (and any tasks that they spawn on the message

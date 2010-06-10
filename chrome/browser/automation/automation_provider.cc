@@ -25,11 +25,9 @@
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
-#include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/automation/automation_extension_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
-#include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -399,29 +397,12 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditForBrowser,
                         GetAutocompleteEditForBrowser)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserForWindow, GetBrowserForWindow)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
-#endif
-    IPC_MESSAGE_HANDLER(AutomationMsg_NavigateInExternalTab,
-                        NavigateInExternalTab)
-    IPC_MESSAGE_HANDLER(AutomationMsg_NavigateExternalTabAtIndex,
-                        NavigateExternalTabAtIndex)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ShowInterstitialPage,
                                     ShowInterstitialPage)
     IPC_MESSAGE_HANDLER(AutomationMsg_HideInterstitialPage,
                         HideInterstitialPage)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ProcessUnhandledAccelerator,
-                        ProcessUnhandledAccelerator)
-#endif
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabToBeRestored,
                                     WaitForTabToBeRestored)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetInitialFocus, SetInitialFocus)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_TabReposition, OnTabReposition)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ForwardContextMenuCommandToChrome,
-                        OnForwardContextMenuCommandToChrome)
-#endif
     IPC_MESSAGE_HANDLER(AutomationMsg_GetSecurityState, GetSecurityState)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetPageType, GetPageType)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetMetricEventDuration,
@@ -444,8 +425,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         AutocompleteEditGetMatches)
     IPC_MESSAGE_HANDLER(AutomationMsg_OpenFindInPage,
                         HandleOpenFindInPageRequest)
-    IPC_MESSAGE_HANDLER(AutomationMsg_HandleMessageFromExternalHost,
-                        OnMessageFromExternalHost)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Find, HandleFindRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindWindowVisibility,
                         GetFindWindowVisibility)
@@ -494,11 +473,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SavePackageShouldPromptUser,
                         SavePackageShouldPromptUser)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowTitle, GetWindowTitle)
-#if defined(OS_WIN)
-    // Depends on ExternalTabContainer, so Windows-only
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetEnableExtensionAutomation,
-                        SetEnableExtensionAutomation)
-#endif
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_SelectAll, SelectAll)
@@ -519,9 +493,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_GoForwardBlockUntilNavigationsComplete,
         GoForwardBlockUntilNavigationsComplete)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ConnectExternalTab, ConnectExternalTab)
-#endif
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InstallExtension,
                                     InstallExtension)
@@ -568,6 +539,25 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     WaitForPopupMenuToOpen)
 #endif
     IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
+#if defined(OS_WIN)
+    // These are for use with external tabs.
+    IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ProcessUnhandledAccelerator,
+                        ProcessUnhandledAccelerator)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetInitialFocus, SetInitialFocus)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabReposition, OnTabReposition)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ForwardContextMenuCommandToChrome,
+                        OnForwardContextMenuCommandToChrome)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigateInExternalTab,
+                        NavigateInExternalTab)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigateExternalTabAtIndex,
+                        NavigateExternalTabAtIndex)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ConnectExternalTab, ConnectExternalTab)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetEnableExtensionAutomation,
+                        SetEnableExtensionAutomation)
+    IPC_MESSAGE_HANDLER(AutomationMsg_HandleMessageFromExternalHost,
+                        OnMessageFromExternalHost)
+#endif
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2516,30 +2506,6 @@ void AutomationProvider::CloseBrowserAsync(int browser_handle) {
   }
 }
 
-void AutomationProvider::NavigateInExternalTab(
-    int handle, const GURL& url, const GURL& referrer,
-    AutomationMsg_NavigationResponseValues* status) {
-  *status = AUTOMATION_MSG_NAVIGATION_ERROR;
-
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    tab->LoadURL(url, referrer, PageTransition::TYPED);
-    *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
-  }
-}
-
-void AutomationProvider::NavigateExternalTabAtIndex(
-    int handle, int navigation_index,
-    AutomationMsg_NavigationResponseValues* status) {
-  *status = AUTOMATION_MSG_NAVIGATION_ERROR;
-
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    tab->GoToIndex(navigation_index);
-    *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
-  }
-}
-
 void AutomationProvider::WaitForTabToBeRestored(int tab_handle,
                                                 IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
@@ -2737,77 +2703,7 @@ void AutomationProvider::AutocompleteEditIsQueryInProgress(
 }
 
 #if !defined(OS_MACOSX)
-void AutomationProvider::OnMessageFromExternalHost(int handle,
-                                                   const std::string& message,
-                                                   const std::string& origin,
-                                                   const std::string& target) {
-  RenderViewHost* view_host = GetViewForTab(handle);
-  if (!view_host) {
-    return;
-  }
 
-  if (AutomationExtensionFunction::InterceptMessageFromExternalHost(
-      view_host, message, origin, target)) {
-    // Message was diverted.
-    return;
-  }
-
-  if (ExtensionPortContainer::InterceptMessageFromExternalHost(message,
-      origin, target, this, view_host, handle)) {
-    // Message was diverted.
-    return;
-  }
-
-  if (InterceptBrowserEventMessageFromExternalHost(message, origin, target)) {
-    // Message was diverted.
-    return;
-  }
-
-  view_host->ForwardMessageFromExternalHost(message, origin, target);
-}
-
-bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
-      const std::string& message, const std::string& origin,
-      const std::string& target) {
-  if (target !=
-      extension_automation_constants::kAutomationBrowserEventRequestTarget)
-    return false;
-
-  if (origin != extension_automation_constants::kAutomationOrigin) {
-    LOG(WARNING) << "Wrong origin on automation browser event " << origin;
-    return false;
-  }
-
-  // The message is a JSON-encoded array with two elements, both strings. The
-  // first is the name of the event to dispatch.  The second is a JSON-encoding
-  // of the arguments specific to that event.
-  scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
-  if (!message_value.get() || !message_value->IsType(Value::TYPE_LIST)) {
-    LOG(WARNING) << "Invalid browser event specified through automation";
-    return false;
-  }
-
-  const ListValue* args = static_cast<const ListValue*>(message_value.get());
-
-  std::string event_name;
-  if (!args->GetString(0, &event_name)) {
-    LOG(WARNING) << "No browser event name specified through automation";
-    return false;
-  }
-
-  std::string json_args;
-  if (!args->GetString(1, &json_args)) {
-    LOG(WARNING) << "No browser event args specified through automation";
-    return false;
-  }
-
-  if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->DispatchEventToRenderers(
-        event_name, json_args, profile()->IsOffTheRecord(), GURL());
-  }
-
-  return true;
-}
 #endif  // !defined(OS_MACOSX)
 
 TabContents* AutomationProvider::GetTabContentsForHandle(

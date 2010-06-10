@@ -138,8 +138,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // the handle is simply returned.
   int AddExtension(Extension* extension);
 
+#if defined(OS_WIN)
   // Adds the external tab passed in to the tab tracker.
   bool AddExternalTab(ExternalTabContainer* external_tab);
+#endif
 
  protected:
   friend class base::RefCounted<AutomationProvider>;
@@ -469,17 +471,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                             IPC::Message* reply_message);
   void HideInterstitialPage(int tab_handle, bool* success);
 
-  void CreateExternalTab(const IPC::ExternalTabSettings& settings,
-                         gfx::NativeWindow* tab_container_window,
-                         gfx::NativeWindow* tab_window,
-                         int* tab_handle);
-
-  void ConnectExternalTab(uint64 cookie,
-                          bool allow,
-                          gfx::NativeWindow* tab_container_window,
-                          gfx::NativeWindow* tab_window,
-                          int* tab_handle);
-
   void OnSetPageFontSize(int tab_handle, int font_size);
 
   // See browsing_data_remover.h for explanation of bitmap fields.
@@ -523,33 +514,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                             bool* success,
                             std::string* value);
 
-  void NavigateInExternalTab(
-      int handle, const GURL& url, const GURL& referrer,
-      AutomationMsg_NavigationResponseValues* status);
-  void NavigateExternalTabAtIndex(
-      int handle, int index, AutomationMsg_NavigationResponseValues* status);
-
-// TODO(port): remove windowisms.
-#if defined(OS_WIN)
-  // The container of an externally hosted tab calls this to reflect any
-  // accelerator keys that it did not process. This gives the tab a chance
-  // to handle the keys
-  void ProcessUnhandledAccelerator(const IPC::Message& message, int handle,
-                                   const MSG& msg);
-#endif
-
-  void SetInitialFocus(const IPC::Message& message, int handle, bool reverse,
-                       bool restore_focus_to_view);
 
   // See comment in AutomationMsg_WaitForTabToBeRestored.
   void WaitForTabToBeRestored(int tab_handle, IPC::Message* reply_message);
-
-// TODO(port): remove windowisms.
-#if defined(OS_WIN)
-  void OnTabReposition(int tab_handle,
-                       const IPC::Reposition_Params& params);
-  void OnForwardContextMenuCommandToChrome(int tab_handle, int command);
-#endif  // defined(OS_WIN)
 
   // Gets the security state for the tab associated to the specified |handle|.
   void GetSecurityState(int handle, bool* success,
@@ -612,10 +579,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                   bool* success,
                                   std::vector<AutocompleteMatchData>* matches);
 
-  // Handler for a message sent by the automation client.
-  void OnMessageFromExternalHost(int handle, const std::string& message,
-                                 const std::string& origin,
-                                 const std::string& target);
 
   // Retrieves the number of info-bars currently showing in |count|.
   void GetInfoBarCount(int handle, int* count);
@@ -714,8 +677,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // is not of the TabContents type.
   TabContents* GetTabContentsForHandle(int handle, NavigationController** tab);
 
-  ExternalTabContainer* GetExternalTabForHandle(int handle);
-
 #if defined(OS_CHROMEOS)
   // Logs in through the Chrome OS Login Wizard with given |username| and
   // password.  Returns true via |reply_message| on success.
@@ -730,12 +691,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       GURL from_url,
       bool success,
       history::RedirectList* redirects);
-
-  // Determine if the message from the external host represents a browser
-  // event, and if so dispatch it.
-  bool InterceptBrowserEventMessageFromExternalHost(const std::string& message,
-                                                    const std::string& origin,
-                                                    const std::string& target);
 
   // Returns the associated view for the tab handle passed in.
   // Returns NULL on failure.
@@ -768,6 +723,55 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Method called by the popup menu tracker when a popup menu is opened.
   void NotifyPopupMenuOpened();
+
+#if defined(OS_WIN)
+  // The functions in this block are for use with external tabs, so they are
+  // Windows only.
+
+  // The container of an externally hosted tab calls this to reflect any
+  // accelerator keys that it did not process. This gives the tab a chance
+  // to handle the keys
+  void ProcessUnhandledAccelerator(const IPC::Message& message, int handle,
+                                   const MSG& msg);
+
+  void SetInitialFocus(const IPC::Message& message, int handle, bool reverse,
+                       bool restore_focus_to_view);
+
+  void OnTabReposition(int tab_handle,
+                       const IPC::Reposition_Params& params);
+
+  void OnForwardContextMenuCommandToChrome(int tab_handle, int command);
+
+  void CreateExternalTab(const IPC::ExternalTabSettings& settings,
+                         gfx::NativeWindow* tab_container_window,
+                         gfx::NativeWindow* tab_window,
+                         int* tab_handle);
+
+  void ConnectExternalTab(uint64 cookie,
+                          bool allow,
+                          gfx::NativeWindow* tab_container_window,
+                          gfx::NativeWindow* tab_window,
+                          int* tab_handle);
+
+  void NavigateInExternalTab(
+      int handle, const GURL& url, const GURL& referrer,
+      AutomationMsg_NavigationResponseValues* status);
+  void NavigateExternalTabAtIndex(
+      int handle, int index, AutomationMsg_NavigationResponseValues* status);
+
+  // Handler for a message sent by the automation client.
+  void OnMessageFromExternalHost(int handle, const std::string& message,
+                                 const std::string& origin,
+                                 const std::string& target);
+
+  // Determine if the message from the external host represents a browser
+  // event, and if so dispatch it.
+  bool InterceptBrowserEventMessageFromExternalHost(const std::string& message,
+                                                    const std::string& origin,
+                                                    const std::string& target);
+
+  ExternalTabContainer* GetExternalTabForHandle(int handle);
+#endif
 
   typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;

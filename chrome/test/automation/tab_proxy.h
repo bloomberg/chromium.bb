@@ -134,15 +134,6 @@ class TabProxy : public AutomationResourceProxy,
       NavigateToURLBlockUntilNavigationsComplete(
           const GURL& url, int number_of_navigations) WARN_UNUSED_RESULT;
 
-  // Navigates to a url in an externally hosted tab.
-  // This method accepts the same kinds of URL input that
-  // can be passed to Chrome on the command line. This is a synchronous call and
-  // hence blocks until the navigation completes.
-  AutomationMsg_NavigationResponseValues NavigateInExternalTab(
-      const GURL& url, const GURL& referrer) WARN_UNUSED_RESULT;
-
-  AutomationMsg_NavigationResponseValues NavigateExternalTabAtIndex(
-      int index) WARN_UNUSED_RESULT;
 
   // Navigates to a url. This is an asynchronous version of NavigateToURL.
   // The function returns immediately after sending the LoadURL notification
@@ -287,19 +278,35 @@ class TabProxy : public AutomationResourceProxy,
   bool HideInterstitialPage() WARN_UNUSED_RESULT;
 
 #if defined(OS_WIN)
-  // TODO(port): Use something portable.
+  // The functions in this block are for external tabs, hence Windows only.
 
   // The container of an externally hosted tab calls this to reflect any
   // accelerator keys that it did not process. This gives the tab a chance
   // to handle the keys
   bool ProcessUnhandledAccelerator(const MSG& msg) WARN_UNUSED_RESULT;
-#endif  // defined(OS_WIN)
 
   // Ask the tab to set focus to either the first or last element on the page.
   // When the restore_focus_to_view parameter is true, the render view
   // associated with the current tab is informed that it is receiving focus.
+  // For external tabs only.
   bool SetInitialFocus(bool reverse, bool restore_focus_to_view)
       WARN_UNUSED_RESULT;
+
+  // Navigates to a url in an externally hosted tab.
+  // This method accepts the same kinds of URL input that
+  // can be passed to Chrome on the command line. This is a synchronous call and
+  // hence blocks until the navigation completes.
+  AutomationMsg_NavigationResponseValues NavigateInExternalTab(
+      const GURL& url, const GURL& referrer) WARN_UNUSED_RESULT;
+
+  AutomationMsg_NavigationResponseValues NavigateExternalTabAtIndex(
+      int index) WARN_UNUSED_RESULT;
+
+  // Posts a message to the external tab.
+  void HandleMessageFromExternalHost(const std::string& message,
+                                     const std::string& origin,
+                                     const std::string& target);
+#endif  // defined(OS_WIN)
 
   // Waits for the tab to finish being restored. Returns true on success.
   // timeout_ms gives the max amount of time to wait for restore to complete.
@@ -330,11 +337,6 @@ class TabProxy : public AutomationResourceProxy,
   // which type we're saving as: HTML only or the complete web page.
   bool SavePage(const FilePath& file_name, const FilePath& dir_path,
                 SavePackage::SavePackageType type) WARN_UNUSED_RESULT;
-
-  // Posts a message to the external tab.
-  void HandleMessageFromExternalHost(const std::string& message,
-                                     const std::string& origin,
-                                     const std::string& target);
 
   // Retrieves the number of info-bars currently showing in |count|.
   bool GetInfoBarCount(int* count) WARN_UNUSED_RESULT;

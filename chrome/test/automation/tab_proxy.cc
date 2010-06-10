@@ -97,28 +97,6 @@ AutomationMsg_NavigationResponseValues
   return navigate_response;
 }
 
-AutomationMsg_NavigationResponseValues TabProxy::NavigateInExternalTab(
-    const GURL& url, const GURL& referrer) {
-  if (!is_valid())
-    return AUTOMATION_MSG_NAVIGATION_ERROR;
-
-  AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_NavigateInExternalTab(0, handle_, url,
-                                                        referrer, &rv));
-  return rv;
-}
-
-AutomationMsg_NavigationResponseValues TabProxy::NavigateExternalTabAtIndex(
-    int index) {
-  if (!is_valid())
-    return AUTOMATION_MSG_NAVIGATION_ERROR;
-
-  AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_NavigateExternalTabAtIndex(0, handle_, index,
-                                                             &rv));
-  return rv;
-}
-
 bool TabProxy::SetAuth(const std::wstring& username,
                        const std::wstring& password) {
   if (!is_valid())
@@ -537,24 +515,58 @@ bool TabProxy::Close(bool wait_until_closed) {
 }
 
 #if defined(OS_WIN)
-// TODO(port): Remove windowsisms.
 bool TabProxy::ProcessUnhandledAccelerator(const MSG& msg) {
   if (!is_valid())
     return false;
+
   return sender_->Send(
       new AutomationMsg_ProcessUnhandledAccelerator(0, handle_, msg));
   // This message expects no response
 }
-#endif  // defined(OS_WIN)
 
 bool TabProxy::SetInitialFocus(bool reverse, bool restore_focus_to_view) {
   if (!is_valid())
     return false;
+
   return sender_->Send(
       new AutomationMsg_SetInitialFocus(0, handle_, reverse,
                                         restore_focus_to_view));
   // This message expects no response
 }
+
+AutomationMsg_NavigationResponseValues TabProxy::NavigateInExternalTab(
+    const GURL& url, const GURL& referrer) {
+  if (!is_valid())
+    return AUTOMATION_MSG_NAVIGATION_ERROR;
+
+  AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
+  sender_->Send(new AutomationMsg_NavigateInExternalTab(0, handle_, url,
+                                                        referrer, &rv));
+  return rv;
+}
+
+AutomationMsg_NavigationResponseValues TabProxy::NavigateExternalTabAtIndex(
+    int index) {
+  if (!is_valid())
+    return AUTOMATION_MSG_NAVIGATION_ERROR;
+
+  AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
+  sender_->Send(new AutomationMsg_NavigateExternalTabAtIndex(0, handle_, index,
+                                                             &rv));
+  return rv;
+}
+
+void TabProxy::HandleMessageFromExternalHost(const std::string& message,
+                                             const std::string& origin,
+                                             const std::string& target) {
+  if (!is_valid())
+    return;
+
+  sender_->Send(
+      new AutomationMsg_HandleMessageFromExternalHost(
+          0, handle_, message, origin, target));
+}
+#endif  // defined(OS_WIN)
 
 bool TabProxy::WaitForTabToBeRestored(uint32 timeout_ms) {
   if (!is_valid())
@@ -629,18 +641,6 @@ bool TabProxy::SavePage(const FilePath& file_name,
                                            static_cast<int>(type),
                                            &succeeded));
   return succeeded;
-}
-
-void TabProxy::HandleMessageFromExternalHost(const std::string& message,
-                                             const std::string& origin,
-                                             const std::string& target) {
-  if (!is_valid())
-    return;
-
-  bool succeeded =
-      sender_->Send(new AutomationMsg_HandleMessageFromExternalHost(0, handle_,
-          message, origin, target));
-  DCHECK(succeeded);
 }
 
 bool TabProxy::GetInfoBarCount(int* count) {

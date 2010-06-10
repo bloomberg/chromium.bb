@@ -4,11 +4,17 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
+#include "base/json/json_reader.h"
 #include "base/keyboard_codes.h"
+#include "chrome/browser/automation/automation_extension_function.h"
+#include "chrome/browser/automation/extension_automation_constants.h"
+#include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/external_tab_container.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/test/automation/automation_messages.h"
@@ -494,4 +500,99 @@ void AutomationProvider::GetWindowTitle(int handle, string16* text) {
   int length = ::GetWindowTextLength(window) + 1;
   ::GetWindowText(window, WriteInto(&result, length), length);
   text->assign(WideToUTF16(result));
+}
+
+void AutomationProvider::OnMessageFromExternalHost(int handle,
+                                                   const std::string& message,
+                                                   const std::string& origin,
+                                                   const std::string& target) {
+  RenderViewHost* view_host = GetViewForTab(handle);
+  if (!view_host)
+    return;
+
+  if (AutomationExtensionFunction::InterceptMessageFromExternalHost(
+          view_host, message, origin, target)) {
+    // Message was diverted.
+    return;
+  }
+
+  if (ExtensionPortContainer::InterceptMessageFromExternalHost(
+          message, origin, target, this, view_host, handle)) {
+    // Message was diverted.
+    return;
+  }
+
+  if (InterceptBrowserEventMessageFromExternalHost(message, origin, target)) {
+    // Message was diverted.
+    return;
+  }
+
+  view_host->ForwardMessageFromExternalHost(message, origin, target);
+}
+
+bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
+      const std::string& message, const std::string& origin,
+      const std::string& target) {
+  if (target !=
+      extension_automation_constants::kAutomationBrowserEventRequestTarget)
+    return false;
+
+  if (origin != extension_automation_constants::kAutomationOrigin) {
+    LOG(WARNING) << "Wrong origin on automation browser event " << origin;
+    return false;
+  }
+
+  // The message is a JSON-encoded array with two elements, both strings. The
+  // first is the name of the event to dispatch.  The second is a JSON-encoding
+  // of the arguments specific to that event.
+  scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
+  if (!message_value.get() || !message_value->IsType(Value::TYPE_LIST)) {
+    LOG(WARNING) << "Invalid browser event specified through automation";
+    return false;
+  }
+
+  const ListValue* args = static_cast<const ListValue*>(message_value.get());
+
+  std::string event_name;
+  if (!args->GetString(0, &event_name)) {
+    LOG(WARNING) << "No browser event name specified through automation";
+    return false;
+  }
+
+  std::string json_args;
+  if (!args->GetString(1, &json_args)) {
+    LOG(WARNING) << "No browser event args specified through automation";
+    return false;
+  }
+
+  if (profile()->GetExtensionMessageService()) {
+    profile()->GetExtensionMessageService()->DispatchEventToRenderers(
+        event_name, json_args, profile()->IsOffTheRecord(), GURL());
+  }
+
+  return true;
+}
+
+void AutomationProvider::NavigateInExternalTab(
+    int handle, const GURL& url, const GURL& referrer,
+    AutomationMsg_NavigationResponseValues* status) {
+  *status = AUTOMATION_MSG_NAVIGATION_ERROR;
+
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    tab->LoadURL(url, referrer, PageTransition::TYPED);
+    *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
+  }
+}
+
+void AutomationProvider::NavigateExternalTabAtIndex(
+    int handle, int navigation_index,
+    AutomationMsg_NavigationResponseValues* status) {
+  *status = AUTOMATION_MSG_NAVIGATION_ERROR;
+
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    tab->GoToIndex(navigation_index);
+    *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
+  }
 }

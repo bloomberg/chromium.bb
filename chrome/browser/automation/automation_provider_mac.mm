@@ -70,19 +70,6 @@ void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::OnMessageFromExternalHost(int handle,
-                                                   const std::string& message,
-                                                   const std::string& origin,
-                                                   const std::string& target) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::SetInitialFocus(const IPC::Message& message,
-                                         int handle, bool reverse,
-                                         bool restore_focus_to_view) {
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::WindowSimulateDrag(int handle,
                                             std::vector<gfx::Point> drag_path,
                                             int flags,
