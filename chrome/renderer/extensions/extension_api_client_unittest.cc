@@ -213,7 +213,13 @@ TEST_F(ExtensionAPIClientTest, DISABLED_GetAllWindows) {
                "windows.getAll", "null");
 }
 
-TEST_F(ExtensionAPIClientTest, CreateWindow) {
+// Flaky on Windows. http://crosbug.com/46217
+#if defined(OS_WIN)
+#define MAYBE_CreateWindow FLAKY_CreateWindow
+#else
+#define MAYBE_CreateWindow CreateWindow
+#endif
+TEST_F(ExtensionAPIClientTest, MAYBE_CreateWindow) {
   ExpectJsFail("chrome.windows.create({url: 1}, function(){});",
                "Uncaught Error: Invalid value for argument 0. Property "
                "'url': Expected 'string' but got 'integer'.");
