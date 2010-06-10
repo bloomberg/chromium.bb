@@ -215,6 +215,8 @@ using WebKit::WebWindowFeatures;
 
 //-----------------------------------------------------------------------------
 
+typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
+
 // define to write the time necessary for thumbnail/DOM text retrieval,
 // respectively, into the system debug log
 // #define TIME_TEXT_RETRIEVAL
@@ -348,6 +350,37 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
   return (old_extension != new_extension);
 }
 
+// Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
+// if it failed.
+//
+// Note this only works on Windows at this time.  It always returns 'unknown'
+// on other platforms.
+static std::string DetermineTextLanguage(const std::wstring& text) {
+  // Text with less than 100 bytes will probably not provide good results.
+  // Report it as unknown language.
+  if (text.length() < 100)
+    return RenderView::kUnknownLanguageCode;
+
+  std::string language = RenderView::kUnknownLanguageCode;
+  int num_languages = 0;
+  bool is_reliable = false;
+  string16 input = WideToUTF16(text);
+  Language cld_language =
+      DetectLanguageOfUnicodeText(NULL, input.c_str(), true, &is_reliable,
+                                  &num_languages, NULL);
+  if (is_reliable && cld_language != NUM_LANGUAGES &&
+      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
+    // We should not use LanguageCode_ISO_639_1 because it does not cover all
+    // the languages CLD can detect. As a result, it'll return the invalid
+    // language code for tradtional Chinese among others.
+    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
+    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
+    // for Simplified Chinese.
+    language = LanguageCodeWithDialects(cld_language);
+  }
+  return language;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int32 RenderView::next_page_id_ = 1;
@@ -366,44 +399,42 @@ RenderView::RenderView(RenderThreadBase* render_thread,
                        const WebPreferences& webkit_preferences,
                        int64 session_storage_namespace_id)
     : RenderWidget(render_thread, WebKit::WebPopupTypeNone),
+      webkit_preferences_(webkit_preferences),
+      send_content_state_immediately_(false),
       enabled_bindings_(0),
-      target_url_status_(TARGET_NONE),
+      send_preferred_size_changes_(false),
+      script_can_close_(true),
       is_loading_(false),
       navigation_gesture_(NavigationGestureUnknown),
+      opened_by_user_gesture_(true),
+      opener_suppressed_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
       last_indexed_page_id_(-1),
-      opened_by_user_gesture_(true),
-      opener_suppressed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      devtools_agent_(NULL),
-      devtools_client_(NULL),
+      last_top_level_navigation_page_id_(-1),
       history_list_offset_(-1),
       history_list_length_(0),
       has_unload_listener_(false),
-      decrement_shared_popup_at_destruction_(false),
-      autofill_query_id_(0),
-      script_can_close_(true),
-      spelling_panel_visible_(false),
-      send_content_state_immediately_(false),
-      send_preferred_size_changes_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          notification_provider_(new NotificationProvider(this))),
-      view_type_(ViewType::INVALID),
-      browser_window_id_(-1),
-      last_top_level_navigation_page_id_(-1),
 #if defined(OS_MACOSX)
       has_document_tag_(false),
 #endif
       document_tag_(0),
-      webkit_preferences_(webkit_preferences),
-      session_storage_namespace_id_(session_storage_namespace_id),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       cross_origin_access_count_(0),
       same_origin_access_count_(0),
+      target_url_status_(TARGET_NONE),
+      spelling_panel_visible_(false),
+      view_type_(ViewType::INVALID),
+      browser_window_id_(-1),
+      autofill_query_id_(0),
+      autofill_action_(AUTOFILL_NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
-      autofill_action_(AUTOFILL_NONE) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          notification_provider_(new NotificationProvider(this))),
+      session_storage_namespace_id_(session_storage_namespace_id),
+      decrement_shared_popup_at_destruction_(false) {
   ClearBlockedContentSettings();
 }
 
@@ -1648,6 +1679,10 @@ void RenderView::didAddMessageToConsole(
 void RenderView::printPage(WebFrame* frame) {
   DCHECK(frame);
   Print(frame, true);
+}
+
+WebKit::WebNotificationPresenter* RenderView::notificationPresenter() {
+  return notification_provider_.get();
 }
 
 void RenderView::didStartLoading() {
@@ -3553,33 +3588,6 @@ void RenderView::OnFindReplyAck() {
     // Send the search result over to the browser process.
     Send(queued_find_reply_message_.release());
   }
-}
-
-// static
-std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
-  // Text with less than 100 bytes will probably not provide good results.
-  // Report it as unknown language.
-  if (text.length() < 100)
-    return kUnknownLanguageCode;
-
-  std::string language = kUnknownLanguageCode;
-  int num_languages = 0;
-  bool is_reliable = false;
-  string16 input = WideToUTF16(text);
-  Language cld_language =
-      DetectLanguageOfUnicodeText(NULL, input.c_str(), true, &is_reliable,
-                                  &num_languages, NULL);
-  if (is_reliable && cld_language != NUM_LANGUAGES &&
-      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
-    // We should not use LanguageCode_ISO_639_1 because it does not cover all
-    // the languages CLD can detect. As a result, it'll return the invalid
-    // language code for tradtional Chinese among others.
-    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
-    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
-    // for Simplified Chinese.
-    language = LanguageCodeWithDialects(cld_language);
-  }
-  return language;
 }
 
 bool RenderView::AllowContentType(ContentSettingsType settings_type) {
