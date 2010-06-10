@@ -149,7 +149,6 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
-  SetDisabledColor(0x00FFFFFF);  // White with 00% Alpha (invisible)
   SetShowHighlighted(false);
   // Update the model
   RebuildModel();
@@ -317,7 +316,7 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
   std::wstring name;
   if (IndexIsInInputMethodList(index)) {
     const std::string language_code =
-        LanguageLibrary::GetLanguageCodeFromDescriptor(
+        chromeos::LanguageLibrary::GetLanguageCodeFromDescriptor(
             input_method_descriptors_->at(index));
     bool need_method_name = (need_method_name_.count(language_code) > 0);
     name = FormatInputLanguage(input_method_descriptors_->at(index), true,
@@ -396,9 +395,11 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 // LanguageLibrary::Observer implementation:
 
 void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
-  const InputMethodDescriptor& input_method =
+  const chromeos::InputMethodDescriptor& input_method =
       obj->current_input_method();
-  UpdateIconFromInputMethod(input_method);
+  const std::wstring name = FormatInputLanguage(input_method, false, false);
+  const std::wstring tooltip = FormatInputLanguage(input_method, true, true);
+  UpdateIcon(name, tooltip);
   // Update Chrome prefs as well.
   if (GetPrefService(host_)) {
     const std::wstring& previous_input_method_id =
@@ -410,12 +411,6 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
   }
 }
 
-void LanguageMenuButton::ActiveInputMethodsChanged(LanguageLibrary* obj) {
-  // Update the icon if active input methods are changed. See also
-  // comments in UpdateIcon()
-  UpdateIconFromInputMethod(obj->current_input_method());
-}
-
 void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 }
 
@@ -423,9 +418,11 @@ void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 // views::View implementation:
 
 void LanguageMenuButton::LocaleChanged() {
-  const InputMethodDescriptor& input_method =
+  const chromeos::InputMethodDescriptor& input_method =
       CrosLibrary::Get()->GetLanguageLibrary()->current_input_method();
-  UpdateIconFromInputMethod(input_method);
+  const std::wstring name = FormatInputLanguage(input_method, false, false);
+  const std::wstring tooltip = FormatInputLanguage(input_method, true, true);
+  UpdateIcon(name, tooltip);
   Layout();
   SchedulePaint();
 }
@@ -435,30 +432,9 @@ void LanguageMenuButton::UpdateIcon(
   if (!tooltip.empty()) {
     SetTooltipText(tooltip);
   }
-  // Hide the button only if there is only one input method, and the input
-  // method is a XKB keyboard layout. We don't hide the button for other
-  // types of input methods as these might have intra input method modes,
-  // like Hiragana and Katakana modes in Japanese input methods.
-  scoped_ptr<InputMethodDescriptors> active_input_methods(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveInputMethods());
-  if (active_input_methods->size() == 1 &&
-      LanguageLibrary::IsKeyboardLayout(active_input_methods->at(0).id)) {
-    // As the disabled color is set to invisible, disabling makes the
-    // button disappear.
-    SetEnabled(false);
-  } else {
-    SetEnabled(true);
-  }
   SetText(name);
   set_alignment(TextButton::ALIGN_RIGHT);
   SchedulePaint();
-}
-
-void LanguageMenuButton::UpdateIconFromInputMethod(
-    const InputMethodDescriptor& input_method) {
-  const std::wstring name = FormatInputLanguage(input_method, false, false);
-  const std::wstring tooltip = FormatInputLanguage(input_method, true, true);
-  UpdateIcon(name, tooltip);
 }
 
 void LanguageMenuButton::RebuildModel() {
@@ -477,7 +453,7 @@ void LanguageMenuButton::RebuildModel() {
       model_->AddRadioItem(COMMAND_ID_INPUT_METHODS, dummy_label, i);
 
       const std::string language_code
-          = LanguageLibrary::GetLanguageCodeFromDescriptor(
+          = chromeos::LanguageLibrary::GetLanguageCodeFromDescriptor(
               input_method_descriptors_->at(i));
       // If there is more than one input method for this language, then we need
       // to display the method name.

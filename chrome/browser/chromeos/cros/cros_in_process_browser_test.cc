@@ -123,8 +123,8 @@ void CrosInProcessBrowserTest::SetLanguageLibraryStatusAreaExpectations() {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, GetActiveInputMethods())
-      .Times(AnyNumber())
-      .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
+      .Times(1)
+      .WillOnce(Return(CreateFallbackInputMethodDescriptors()))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, current_ime_properties())
       .Times(1)
