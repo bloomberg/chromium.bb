@@ -11,8 +11,6 @@
       'target_name': 'sync_listen_notifications',
       'type': 'executable',
       'sources': [
-	'sync_constants.cc',
-	'sync_constants.h',
         'sync_listen_notifications.cc',
         # We are directly including the sync_constants.cc and h files to avoid
         # pulling in browser.lib.

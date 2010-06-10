@@ -17,7 +17,6 @@
 #include "base/task.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/sync_constants.h"
-#include "chrome/browser/sync/tools/sync_constants.h"
 #include "chrome/common/net/notifier/base/task_pump.h"
 #include "chrome/common/net/notifier/communicator/xmpp_socket_adapter.h"
 #include "chrome/common/net/notifier/listener/listen_task.h"
@@ -754,11 +753,13 @@ int main(int argc, char* argv[]) {
   MessageLoopForIO message_loop;
 
   // TODO(akalin): Make this configurable.
+  // TODO(akalin): Store these constants in a header somewhere (maybe
+  // browser/sync/protocol).
   std::vector<std::string> data_types;
-  data_types.push_back(sync_tools::kAutoFillType);
-  data_types.push_back(sync_tools::kBookmarkType);
-  data_types.push_back(sync_tools::kThemeType);
-  data_types.push_back(sync_tools::kPreferenceType);
+  data_types.push_back("AUTOFILL");
+  data_types.push_back("BOOKMARK");
+  data_types.push_back("THEME");
+  data_types.push_back("PREFERENCE");
 
   // Connect and listen.
   LegacyNotifierDelegate legacy_notifier_delegate;
