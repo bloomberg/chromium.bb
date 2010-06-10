@@ -95,8 +95,9 @@ The format to create the disk image in.  Valid values for I<format> are:
      - UDZO - zlib-compressed, read-only; extension I<.dmg>
      - UDBZ - bzip2-compressed, read-only; extension I<.dmg>;
               create and use on 10.4 ("Tiger") and later only
-     - UDRW - read-write; extension I<.dmg>
-     - UDSP - read-write, sparse; extension I<.sparseimage>
+     - UDRO - uncompressed, read-only; extension I<.dmg>
+     - UDRW - uncompressed, read-write; extension I<.dmg>
+     - UDSP - uncompressed, read-write, sparse; extension I<.sparseimage>
 
 UDZO is the default format.
 
@@ -152,8 +153,8 @@ or to use formatted text, prepare a resource and use L<--resource>.
 
 =item B<--resource> I<file>
 
-A resource file to merge into I<target-image>.  If I<format> is UDZO or
-UDBZ, the disk image will be flattened to a single-fork file that contains
+A resource file to merge into I<target-image>.  If I<format> is UDZO, UDBZ,
+or UDRO, the disk image will be flattened to a single-fork file that contains
 the resource but may be freely transferred without any special encodings.
 I<file> must be in a format suitable for L<Rez(1)>.  See L<Rez(1)> for a
 description of the format, and L<hdiutil(1)> for a discussion on flattened
@@ -286,7 +287,7 @@ sub copyFiles($@);
 sub diskImageMaker($$$$$$$$);
 sub giveExtension($$);
 sub hdidMountImage($@);
-sub isFormatCompressed($);
+sub isFormatReadOnly($);
 sub licenseMaker($$);
 sub pathSplit($);
 sub setAttributes($@);
@@ -605,7 +606,7 @@ if(defined($iconFile)) {
   # It's pointless to set the attributes of the root when diskutil create
   # -srcfolder is being used.  In that case, the attributes will be set
   # later, after the image is already created.
-  if(isFormatCompressed($outputFormat) &&
+  if(isFormatReadOnly($outputFormat) &&
    (command($gConfig{'cmd_SetFile'}, '-a', 'C', $tempRoot) != 0)) {
     cleanupDie('SetFile failed');
   }
@@ -617,7 +618,7 @@ if(command($gConfig{'cmd_chmod'}, '-R', 'a+rX,a-st,u+w,go-w',
 }
 
 my($unflattenable);
-if(isFormatCompressed($outputFormat)) {
+if(isFormatReadOnly($outputFormat)) {
   $unflattenable = 1;
 }
 else {
@@ -922,7 +923,7 @@ sub diskImageMaker($$$$$$$$) {
    $tempDir, $tempMount);
   ($source, $destination, $format, $name, $tempDir, $tempMount,
    $baseName, $setRootIcon) = @_;
-  if(isFormatCompressed($format)) {
+  if(isFormatReadOnly($format)) {
     my($uncompressedImage);
 
     if($gConfig{'makehybrid'}) {
@@ -1023,7 +1024,8 @@ sub diskImageMaker($$$$$$$$) {
     # images in 10.5.  In 10.4, bzip2-level is harmlessly ignored, and the
     # default value of 1 is always used.
     if(command($gConfig{'cmd_hdiutil'}, 'convert', '-format', $format,
-     '-imagekey', ($format eq 'UDBZ' ? 'bzip2-level=9' : 'zlib-level=9'),
+     ($format eq 'UDZO' ? ('-imagekey', 'zlib-level=9') : ()),
+     ($format eq 'UDBZ' ? ('-imagekey', 'bzip2-level=9') : ()),
      (defined($gDarwinMajor) && $gDarwinMajor <= 6 ? () : ('-ov')),
      $uncompressedImage, '-o', $destination) != 0) {
       cleanupDie('hdiutil convert failed');
@@ -1309,14 +1311,14 @@ sub hdidMountImage($@) {
   return undef;
 }
 
-# isFormatCompressed($format)
+# isFormatReadOnly($format)
 #
-# Returns true if $format corresponds to a compressed disk image format.
+# Returns true if $format corresponds to a read-only disk image format.
 # Returns false otherwise.
-sub isFormatCompressed($) {
+sub isFormatReadOnly($) {
   my($format);
   ($format) = @_;
-  return $format eq 'UDZO' || $format eq 'UDBZ';
+  return $format eq 'UDZO' || $format eq 'UDBZ' || $format eq 'UDRO';
 }
 
 # licenseMaker($text, $resource)
