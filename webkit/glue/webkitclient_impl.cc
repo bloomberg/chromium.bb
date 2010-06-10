@@ -262,6 +262,10 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     { "linuxRadioOn", IDR_LINUX_RADIO_ON },
     { "linuxRadioDisabledOff", IDR_LINUX_RADIO_DISABLED_OFF },
     { "linuxRadioDisabledOn", IDR_LINUX_RADIO_DISABLED_ON },
+    { "linuxProgressBar", IDR_PROGRESS_BAR },
+    { "linuxProgressValue", IDR_PROGRESS_VALUE },
+    { "linuxProgressBorderLeft", IDR_PROGRESS_BORDER_LEFT },
+    { "linuxProgressBorderRight", IDR_PROGRESS_BORDER_RIGHT },
 #endif
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {

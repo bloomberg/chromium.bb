@@ -35,6 +35,10 @@
         <include name="IDR_LINUX_RADIO_ON" file="resources\linux-radio-on.png" type="BINDATA" />
         <include name="IDR_LINUX_RADIO_DISABLED_OFF" file="resources\linux-radio-disabled-off.png" type="BINDATA" />
         <include name="IDR_LINUX_RADIO_DISABLED_ON" file="resources\linux-radio-disabled-on.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BAR" file="resources\linux-progress-bar.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_VALUE" file="resources\linux-progress-value.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_LEFT" file="resources\linux-progress-border-left.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_RIGHT" file="resources\linux-progress-border-right.png" type="BINDATA" />
       </if>
 
       <include name="IDC_ALIAS" file="resources\aliasb.cur" type="CURSOR" />
