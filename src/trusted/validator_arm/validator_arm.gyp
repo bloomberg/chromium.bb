@@ -9,7 +9,7 @@
   # ----------------------------------------------------------------------
 
   'includes': [
-    '../../../../build/common.gypi',
+    '../../../build/common.gypi',
   ],
   'variables': {
     'validate_gen_out':
