@@ -218,23 +218,23 @@ void BackgroundView::OnBootTimes(
       "(firmware %.2fs, kernel %.2fs, system %.2fs, chrome %.2fs)";
   std::string boot_times_text;
 
-  if (boot_times.chrome_exec > 0) {
+  if (boot_times.chrome > 0) {
     boot_times_text =
         StringPrintf(
             kBootTimesChromeExec,
-            boot_times.firmware + boot_times.login_prompt_ready,
+            boot_times.total,
             boot_times.firmware,
             boot_times.pre_startup,
-            boot_times.chrome_exec - boot_times.pre_startup,
-            boot_times.login_prompt_ready - boot_times.chrome_exec);
+            boot_times.system,
+            boot_times.chrome);
   } else {
     boot_times_text =
         StringPrintf(
             kBootTimesNoChromeExec,
-            boot_times.firmware + boot_times.login_prompt_ready,
+            boot_times.total,
             boot_times.firmware,
             boot_times.pre_startup,
-            boot_times.login_prompt_ready - boot_times.pre_startup);
+            boot_times.system);
   }
   boot_times_label_->SetText(ASCIIToWide(boot_times_text));
 }

@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
@@ -88,6 +89,53 @@ static bool GetTime(const std::string& log, double* value) {
   return false;
 }
 
+// Converts double seconds to a TimeDelta object.
+static base::TimeDelta SecondsToTimeDelta(double seconds) {
+  double ms = seconds * base::Time::kMillisecondsPerSecond;
+  return base::TimeDelta::FromMilliseconds(static_cast<int64>(ms));
+}
+
+// Reports the collected boot times to UMA if they haven't been
+// reported yet and if metrics collection is enabled.
+static void SendBootTimesToUMA(const BootTimesLoader::BootTimes& boot_times) {
+  // Checks if the times for the most recent boot event have been
+  // reported already to avoid sending boot time histogram samples
+  // every time the user logs out.
+  static const char kBootTimesSent[] = "/tmp/boot-times-sent";
+  FilePath sent(kBootTimesSent);
+  if (file_util::PathExists(sent))
+    return;
+
+  UMA_HISTOGRAM_TIMES("BootTime.Total",
+                      SecondsToTimeDelta(boot_times.total));
+  UMA_HISTOGRAM_TIMES("BootTime.Firmware",
+                      SecondsToTimeDelta(boot_times.firmware));
+  UMA_HISTOGRAM_TIMES("BootTime.Kernel",
+                      SecondsToTimeDelta(boot_times.pre_startup));
+  UMA_HISTOGRAM_TIMES("BootTime.System",
+                      SecondsToTimeDelta(boot_times.system));
+  if (boot_times.chrome > 0) {
+    UMA_HISTOGRAM_TIMES("BootTime.Chrome",
+                        SecondsToTimeDelta(boot_times.chrome));
+  }
+
+  // Stores the boot times to a file in /tmp to indicate that the
+  // times for the most recent boot event have been reported
+  // already. The file will be deleted at system shutdown/reboot.
+  std::string boot_times_text = StringPrintf("total: %.2f\n"
+                                             "firmware: %.2f\n"
+                                             "kernel: %.2f\n"
+                                             "system: %.2f\n"
+                                             "chrome: %.2f\n",
+                                             boot_times.total,
+                                             boot_times.firmware,
+                                             boot_times.pre_startup,
+                                             boot_times.system,
+                                             boot_times.chrome);
+  file_util::WriteFile(sent, boot_times_text.data(), boot_times_text.size());
+  DCHECK(file_util::PathExists(sent));
+}
+
 void BootTimesLoader::Backend::GetBootTimes(
     scoped_refptr<GetBootTimesRequest> request) {
   const char* kFirmwareBootTime = "firmware-boot-time";
@@ -121,6 +169,16 @@ void BootTimesLoader::Backend::GetBootTimes(
   GetTime(uptime_prefix + kChromeExec, &boot_times.chrome_exec);
   GetTime(uptime_prefix + kChromeMain, &boot_times.chrome_main);
   GetTime(uptime_prefix + kLoginPromptReady, &boot_times.login_prompt_ready);
+
+  boot_times.total = boot_times.firmware + boot_times.login_prompt_ready;
+  if (boot_times.chrome_exec > 0) {
+    boot_times.system = boot_times.chrome_exec - boot_times.pre_startup;
+    boot_times.chrome = boot_times.login_prompt_ready - boot_times.chrome_exec;
+  } else {
+    boot_times.system = boot_times.login_prompt_ready - boot_times.pre_startup;
+  }
+
+  SendBootTimesToUMA(boot_times);
 
   request->ForwardResult(
       GetBootTimesCallback::TupleType(request->handle(), boot_times));

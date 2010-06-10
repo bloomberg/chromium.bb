@@ -35,13 +35,19 @@ class BootTimesLoader : public CancelableRequestProvider {
     double chrome_exec;        // Time session manager executed Chrome.
     double chrome_main;        // Time chrome's main() was called.
     double login_prompt_ready; // Time login (or OOB) panel is displayed.
+    double system;             // Time system took to start chrome.
+    double chrome;             // Time chrome took to display login panel.
+    double total;              // Time from power button to login panel.
 
     BootTimes() : firmware(0),
                   pre_startup(0),
                   x_started(0),
                   chrome_exec(0),
                   chrome_main(0),
-                  login_prompt_ready(0) {}
+                  login_prompt_ready(0),
+                  system(0),
+                  chrome(0),
+                  total(0) {}
   } BootTimes;
 
   // Signature
