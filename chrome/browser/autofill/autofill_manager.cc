@@ -166,9 +166,7 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   if (values.empty())
     return false;
 
-  // TODO(jhawkins): If the default profile is in this list, set it as the
-  // default suggestion index.
-  host->AutoFillSuggestionsReturned(query_id, values, labels, -1);
+  host->AutoFillSuggestionsReturned(query_id, values, labels);
   return true;
 }
 
@@ -279,6 +277,14 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
   return true;
 }
 
+void AutoFillManager::ShowAutoFillDialog() {
+  ::ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
+                       personal_data_,
+                       tab_contents_->profile()->GetOriginalProfile(),
+                       NULL,
+                       NULL);
+}
+
 void AutoFillManager::OnInfoBarClosed() {
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAutoFillEnabled, true);
@@ -299,11 +305,11 @@ void AutoFillManager::OnInfoBarAccepted() {
   // TODO(dhollowa) Now that we aren't immediately saving the imported form
   // data, we should store the profile and CC in the AFM instead of the PDM.
   personal_data_->GetImportedFormData(&profile, &credit_card);
-  ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
-                     personal_data_,
-                     tab_contents_->profile()->GetOriginalProfile(),
-                     profile,
-                     credit_card);
+  ::ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
+                       personal_data_,
+                       tab_contents_->profile()->GetOriginalProfile(),
+                       profile,
+                       credit_card);
 }
 
 void AutoFillManager::OnInfoBarCancelled() {

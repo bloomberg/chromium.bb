@@ -203,15 +203,13 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
 
   bool GetAutoFillSuggestionsMessage(int *page_id,
                                      std::vector<string16>* values,
-                                     std::vector<string16>* labels,
-                                     int* default_idx) {
+                                     std::vector<string16>* labels) {
     const uint32 kMsgID = ViewMsg_AutoFillSuggestionsReturned::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple4<int, std::vector<string16>, std::vector<string16>, int>
-        autofill_param;
+    Tuple3<int, std::vector<string16>, std::vector<string16> > autofill_param;
     ViewMsg_AutoFillSuggestionsReturned::Read(message, &autofill_param);
     if (page_id)
       *page_id = autofill_param.a;
@@ -219,8 +217,6 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
       *values = autofill_param.b;
     if (labels)
       *labels = autofill_param.c;
-    if (default_idx)
-      *default_idx = autofill_param.d;
     return true;
   }
 
@@ -267,8 +263,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   int page_id = 0;
   std::vector<string16> values;
   std::vector<string16> labels;
-  int idx = 0;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &idx));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -276,7 +271,6 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   ASSERT_EQ(2U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("Home"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Work"), labels[1]);
-  EXPECT_EQ(-1, idx);
 }
 
 TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
@@ -300,14 +294,12 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
   int page_id = 0;
   std::vector<string16> values;
   std::vector<string16> labels;
-  int idx = 0;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &idx));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
   ASSERT_EQ(1U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("Home"), labels[0]);
-  EXPECT_EQ(-1, idx);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
@@ -331,8 +323,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   int page_id = 0;
   std::vector<string16> values;
   std::vector<string16> labels;
-  int idx = 0;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &idx));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[0]);
@@ -340,7 +331,6 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   ASSERT_EQ(2U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("First"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Second"), labels[1]);
-  EXPECT_EQ(-1, idx);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
@@ -364,14 +354,12 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   int page_id = 0;
   std::vector<string16> values;
   std::vector<string16> labels;
-  int idx = 0;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &idx));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[0]);
   ASSERT_EQ(1U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("First"), labels[0]);
-  EXPECT_EQ(-1, idx);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
@@ -391,18 +379,17 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   int page_id = 0;
   std::vector<string16> values;
   std::vector<string16> labels;
-  int idx = 0;
   CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
   EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
-  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &idx));
+  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
 
   CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
   EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
-  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &idx));
+  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
 
   CreateTestFormField("", "ccyear", "", "text", &field);
   EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
-  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &idx));
+  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
 }
 
 TEST_F(AutoFillManagerTest, FillCreditCardForm) {

@@ -633,16 +633,15 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(AppCacheMsg_ContentBlocked,
                        int /* host_id */)
 
-  // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the
-  // autofill suggestions.
-  IPC_MESSAGE_ROUTED4(ViewMsg_AutoFillSuggestionsReturned,
+  // Reply to the ViewHostMsg_QueryFormFieldAutoFill message with the
+  // AutoFill suggestions.
+  IPC_MESSAGE_ROUTED3(ViewMsg_AutoFillSuggestionsReturned,
                       int /* id of the request message */,
                       std::vector<string16> /* names */,
-                      std::vector<string16> /* labels */,
-                      int /* index of default suggestion */)
+                      std::vector<string16> /* labels */)
 
   // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the
-  // autocomplete suggestions.
+  // Autocomplete suggestions.
   IPC_MESSAGE_ROUTED3(ViewMsg_AutocompleteSuggestionsReturned,
                       int /* id of the request message */,
                       std::vector<string16> /* suggestions */,
@@ -1852,14 +1851,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int /* host_id */,
                               bool /* success */)
 
-  // Returns the resizer box location in the window this widget is embeded.
+  // Returns the resizer box location in the window this widget is embedded.
   // Important for Mac OS X, but not Win or Linux.
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowResizerRect,
                              gfx::NativeViewId /* window */,
                              gfx::Rect /* Out: Window location */)
 
-  // Queries the browser for suggestion for autofill in a form input field.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_QueryFormFieldAutofill,
+  // Queries the browser for AutoFill suggestions for a form input field.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_QueryFormFieldAutoFill,
                       int /* id of this message */,
                       webkit_glue::FormField /* the form field */)
 
@@ -1871,11 +1870,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       string16 /* profile name */,
                       string16 /* profile label */)
 
-  // Instructs the browser to remove the specified autofill-entry from the
+  // Instructs the browser to remove the specified Autocomplete entry from the
   // database.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_RemoveAutofillEntry,
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_RemoveAutocompleteEntry,
                       string16 /* field name */,
                       string16 /* value */)
+
+  // Instructs the browser to show the AutoFill dialog.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_ShowAutoFillDialog)
 
   // Get the list of proxies to use for |url|, as a semicolon delimited list
   // of "<TYPE> <HOST>:<PORT>" | "DIRECT". See also

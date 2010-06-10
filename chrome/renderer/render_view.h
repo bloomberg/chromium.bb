@@ -379,9 +379,14 @@ class RenderView : public RenderWidget,
                                         const WebKit::WebString& value);
   virtual void removeAutofillSuggestions(const WebKit::WebString& name,
                                          const WebKit::WebString& value);
+  // DEPRECATED.
   virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                            const WebKit::WebString& value,
                                            const WebKit::WebString& label);
+  virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
+                                           const WebKit::WebString& value,
+                                           const WebKit::WebString& label,
+                                           unsigned index);
   virtual void didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                            const WebKit::WebString& value,
                                            const WebKit::WebString& label);
@@ -577,6 +582,7 @@ class RenderView : public RenderWidget,
 #endif
   FRIEND_TEST(RenderViewTest, JSBlockSentAfterPageLoad);
   FRIEND_TEST(RenderViewTest, UpdateTargetURLWithInvalidURL);
+  FRIEND_TEST(RenderViewTest, SendForms);
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, int> HostZoomLevels;
@@ -686,8 +692,7 @@ class RenderView : public RenderWidget,
   void OnAutoFillSuggestionsReturned(
       int query_id,
       const std::vector<string16>& values,
-      const std::vector<string16>& labels,
-      int default_suggestions_index);
+      const std::vector<string16>& labels);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage(const ViewMsg_ClosePage_Params& params);
@@ -1133,7 +1138,7 @@ class RenderView : public RenderWidget,
   // https://bugs.webkit.org/show_bug.cgi?id=32807.
   base::RepeatingTimer<RenderView> preferred_size_change_timer_;
 
-  // Autofill ------------------------------------------------------------------
+  // AutoFill ------------------------------------------------------------------
 
   // The id of the last request sent for form field AutoFill.  Used to ignore
   // out of date responses.
@@ -1145,6 +1150,9 @@ class RenderView : public RenderWidget,
 
   // The action to take when receiving AutoFill data from the AutoFillManager.
   AutoFillAction autofill_action_;
+
+  // The number of suggestions sent to the AutoFill popup in WebKit.
+  size_t suggestions_count_;
 
   // Plugins -------------------------------------------------------------------
 

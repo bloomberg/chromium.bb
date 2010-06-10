@@ -952,17 +952,11 @@ TEST_F(RenderViewTest, SendForms) {
   // loop, it will generate an update.
   view_->set_send_content_state_immediately(true);
 
-  LoadHTML("\
-    <html>\
-      <body>\
-        <form method=\"POST\">\
-          <input type=\"text\" id=\"firstname\" name=\"First Name\"/>\
-          <input type=\"text\" name=\"Middle Name\" autoComplete=\"off\"/>\
-          <input type=\"hidden\" name=\"Last Name\"/>\
-        </form>\
-      </body>\
-    </html>\
-  ");
+  LoadHTML("<form method=\"POST\">"
+           "  <input type=\"text\" id=\"firstname\"/>"
+           "  <input type=\"text\" id=\"middlename\" autoComplete=\"off\"/>"
+           "  <input type=\"hidden\" id=\"lastname\"/>"
+           "</form>");
 
   // Verify that "FormsSeen" sends the expected number of fields.
   ProcessPendingMessages();
@@ -976,19 +970,19 @@ TEST_F(RenderViewTest, SendForms) {
   ASSERT_EQ(3UL, forms[0].fields.size());
   EXPECT_TRUE(forms[0].fields[0].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("First Name"),
+                ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
                 20))) << forms[0].fields[0];
   EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("Middle Name"),
+                ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
                 20))) << forms[0].fields[1];
   EXPECT_TRUE(forms[0].fields[2].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("Last Name"),
+                ASCIIToUTF16("lastname"),
                 string16(),
                 ASCIIToUTF16("hidden"),
                 0))) << forms[0].fields[2];
@@ -999,9 +993,12 @@ TEST_F(RenderViewTest, SendForms) {
   WebDocument document = web_frame->document();
   WebInputElement firstname =
       document.getElementById("firstname").to<WebInputElement>();
+  // didAcceptAutoFillSuggestions expects a non-zero number of suggestions.
+  view_->suggestions_count_ = 1;
   view_->didAcceptAutoFillSuggestion(firstname,
-                                    WebKit::WebString(),
-                                    WebKit::WebString());
+                                     WebKit::WebString(),
+                                     WebKit::WebString(),
+                                     -1);
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
@@ -1013,19 +1010,19 @@ TEST_F(RenderViewTest, SendForms) {
   ASSERT_EQ(3UL, form2.fields.size());
   EXPECT_TRUE(form2.fields[0].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("First Name"),
+                ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
                 20))) << form2.fields[0];
   EXPECT_TRUE(form2.fields[1].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("Middle Name"),
+                ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
                 20))) << form2.fields[1];
   EXPECT_TRUE(form2.fields[2].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("Last Name"),
+                ASCIIToUTF16("lastname"),
                 string16(),
                 ASCIIToUTF16("hidden"),
                 0))) << form2.fields[2];

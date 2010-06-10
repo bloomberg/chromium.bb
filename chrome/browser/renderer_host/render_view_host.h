@@ -385,8 +385,7 @@ class RenderViewHost : public RenderWidgetHost {
   void AutoFillSuggestionsReturned(
       int query_id,
       const std::vector<string16>& values,
-      const std::vector<string16>& labels,
-      int default_suggestion_index);
+      const std::vector<string16>& labels);
 
   // Called by the AutocompleteHistoryManager when the list of suggestions is
   // ready.
@@ -601,10 +600,11 @@ class RenderViewHost : public RenderWidgetHost {
   void OnDidGetApplicationInfo(int32 page_id,
                                const webkit_glue::WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
-  void OnQueryFormFieldAutofill(int request_id,
+  void OnQueryFormFieldAutoFill(int request_id,
                                 const webkit_glue::FormField& field);
-  void OnRemoveAutofillEntry(const string16& field_name,
-                             const string16& value);
+  void OnRemoveAutocompleteEntry(const string16& field_name,
+                                 const string16& value);
+  void OnShowAutoFillDialog();
   void OnFillAutoFillFormData(int query_id,
                               const webkit_glue::FormData& form,
                               const string16& value,

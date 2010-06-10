@@ -54,6 +54,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                     const webkit_glue::FormData& form,
                                     const string16& value,
                                     const string16& label);
+  virtual void ShowAutoFillDialog();
 
   // Called by the AutoFillInfoBarDelegate when the user closes the infobar.
   virtual void OnInfoBarClosed();

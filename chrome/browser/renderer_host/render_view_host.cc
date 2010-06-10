@@ -806,10 +806,12 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_FORWARD(ViewHostMsg_JSOutOfMemory, delegate_,
                         RenderViewHostDelegate::OnJSOutOfMemory);
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_QueryFormFieldAutofill,
-                        OnQueryFormFieldAutofill)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutofillEntry,
-                        OnRemoveAutofillEntry)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_QueryFormFieldAutoFill,
+                        OnQueryFormFieldAutoFill)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutocompleteEntry,
+                        OnRemoveAutocompleteEntry)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowAutoFillDialog,
+                        OnShowAutoFillDialog)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FillAutoFillFormData,
                         OnFillAutoFillFormData)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
@@ -1580,7 +1582,7 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   }
 }
 
-void RenderViewHost::OnQueryFormFieldAutofill(
+void RenderViewHost::OnQueryFormFieldAutoFill(
     int query_id, const webkit_glue::FormField& field) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
@@ -1603,12 +1605,21 @@ void RenderViewHost::OnQueryFormFieldAutofill(
   AutocompleteSuggestionsReturned(query_id, std::vector<string16>(), -1);
 }
 
-void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
-                                           const string16& value) {
+void RenderViewHost::OnRemoveAutocompleteEntry(const string16& field_name,
+                                               const string16& value) {
   RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
       delegate_->GetAutocompleteDelegate();
   if (autocomplete_delegate)
     autocomplete_delegate->RemoveAutocompleteEntry(field_name, value);
+}
+
+void RenderViewHost::OnShowAutoFillDialog() {
+  RenderViewHostDelegate::AutoFill* autofill_delegate =
+      delegate_->GetAutoFillDelegate();
+  if (!autofill_delegate)
+    return;
+
+  autofill_delegate->ShowAutoFillDialog();
 }
 
 void RenderViewHost::OnFillAutoFillFormData(int query_id,
@@ -1626,10 +1637,9 @@ void RenderViewHost::OnFillAutoFillFormData(int query_id,
 void RenderViewHost::AutoFillSuggestionsReturned(
     int query_id,
     const std::vector<string16>& names,
-    const std::vector<string16>& labels,
-    int default_suggestion_index) {
+    const std::vector<string16>& labels) {
   Send(new ViewMsg_AutoFillSuggestionsReturned(
-      routing_id(), query_id, names, labels, default_suggestion_index));
+      routing_id(), query_id, names, labels));
 }
 
 void RenderViewHost::AutocompleteSuggestionsReturned(

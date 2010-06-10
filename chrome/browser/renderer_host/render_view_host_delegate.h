@@ -428,6 +428,10 @@ class RenderViewHostDelegate {
                                       const webkit_glue::FormData& form,
                                       const string16& value,
                                       const string16& label) = 0;
+
+    // Called when the user selects the 'AutoFill Options...' suggestions in the
+    // AutoFill popup.
+    virtual void ShowAutoFillDialog() = 0;
   };
 
   // BookmarkDrag --------------------------------------------------------------

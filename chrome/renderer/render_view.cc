@@ -427,6 +427,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       browser_window_id_(-1),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
+      suggestions_count_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
@@ -1508,11 +1509,15 @@ void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
 void RenderView::OnAutoFillSuggestionsReturned(
     int query_id,
     const std::vector<string16>& values,
-    const std::vector<string16>& labels,
-    int default_suggestion_index) {
+    const std::vector<string16>& labels) {
   if (webview() && query_id == autofill_query_id_) {
+    std::vector<string16> v(values);
+    std::vector<string16> l(labels);
+    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_MENU_ITEM));
+    l.push_back(string16());
+    suggestions_count_ = v.size();
     webview()->applyAutoFillSuggestions(
-        autofill_query_node_, values, labels, default_suggestion_index);
+        autofill_query_node_, v, l, v.size() - 1);
   }
 }
 
@@ -2055,19 +2060,35 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
   // data in FormManager.
   field.set_label(FormManager::LabelForElement(element));
 
-  Send(new ViewHostMsg_QueryFormFieldAutofill(
+  Send(new ViewHostMsg_QueryFormFieldAutoFill(
       routing_id_, autofill_query_id_, field));
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,
                                            const WebString& value) {
-  Send(new ViewHostMsg_RemoveAutofillEntry(routing_id_, name, value));
+  Send(new ViewHostMsg_RemoveAutocompleteEntry(routing_id_, name, value));
 }
 
 void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
                                              const WebKit::WebString& label) {
-  QueryAutoFillFormData(node, value, label, AUTOFILL_FILL);
+  // DEPRECATED
+  didAcceptAutoFillSuggestion(node, value, label, -1);
+}
+
+void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
+                                             const WebKit::WebString& value,
+                                             const WebKit::WebString& label,
+                                             unsigned index) {
+  DCHECK_NE(0U, suggestions_count_);
+
+  // User selected 'AutoFill Options...'.
+  if (index == suggestions_count_ - 1)
+    Send(new ViewHostMsg_ShowAutoFillDialog(routing_id_));
+  else
+    QueryAutoFillFormData(node, value, label, AUTOFILL_FILL);
+
+  suggestions_count_ = 0;
 }
 
 void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
