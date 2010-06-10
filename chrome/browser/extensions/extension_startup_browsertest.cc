@@ -138,7 +138,7 @@ class ExtensionsStartupTest : public ExtensionStartupTestBase {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
+IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_Test) {
   WaitForServicesToStart(4, true);  // 1 component extension and 3 others.
   TestInjection(true, true);
 }
@@ -160,7 +160,13 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
+// Flaky (times out) on Mac/Windows. http://crbug.com/46301.
+#if defined(OS_MAC) || defined(OS_WIN)
+#define MAYBE_Test FLAKY_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, MAYBE_Test) {
   WaitForServicesToStart(1, false);
   TestInjection(true, true);
 }
