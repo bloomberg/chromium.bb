@@ -408,15 +408,11 @@ MetricsService::MetricsService()
       user_permits_upload_(false),
       server_permits_upload_(true),
       state_(INITIALIZED),
-      pending_log_(NULL),
-      pending_log_text_(),
       current_fetch_(NULL),
-      current_log_(NULL),
       idle_since_last_transmission_(false),
       next_window_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(log_sender_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(state_saver_factory_(this)),
-      logged_samples_(),
       interlog_duration_(TimeDelta::FromSeconds(kInitialInterlogDuration)),
       log_event_limit_(kInitialEventLimit),
       timer_pending_(false) {
@@ -426,14 +422,6 @@ MetricsService::MetricsService()
 
 MetricsService::~MetricsService() {
   SetRecording(false);
-  if (pending_log_) {
-    delete pending_log_;
-    pending_log_ = NULL;
-  }
-  if (current_log_) {
-    delete current_log_;
-    current_log_ = NULL;
-  }
 }
 
 void MetricsService::SetUserPermitsUpload(bool enabled) {
@@ -597,10 +585,13 @@ void MetricsService::Observe(NotificationType type,
       LogKeywords(Source<TemplateURLModel>(source).ptr());
       break;
 
-    case NotificationType::OMNIBOX_OPENED_URL:
-      current_log_->RecordOmniboxOpenedURL(
+    case NotificationType::OMNIBOX_OPENED_URL: {
+      MetricsLog* current_log = current_log_->AsMetricsLog();
+      DCHECK(current_log);
+      current_log->RecordOmniboxOpenedURL(
           *Details<AutocompleteLog>(details).ptr());
       break;
+    }
 
     case NotificationType::BOOKMARK_MODEL_LOADED: {
       Profile* p = Source<Profile>(source).ptr();
@@ -848,11 +839,13 @@ void MetricsService::StartRecording() {
   }
 }
 
-void MetricsService::StopRecording(MetricsLog** log) {
+void MetricsService::StopRecording(MetricsLogBase** log) {
   if (!current_log_)
     return;
 
-  current_log_->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
+  MetricsLog* current_log = current_log_->AsMetricsLog();
+  DCHECK(current_log);
+  current_log->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
 
   // TODO(jar): Integrate bounds on log recording more consistently, so that we
   // can stop recording logs that are too big much sooner.
@@ -869,13 +862,13 @@ void MetricsService::StopRecording(MetricsLog** log) {
   // end of all log transmissions (initial log handles this separately).
   // Don't bother if we're going to discard current_log_.
   if (log) {
-    current_log_->RecordIncrementalStabilityElements();
+    current_log->RecordIncrementalStabilityElements();
     RecordCurrentHistograms();
   }
 
   current_log_->CloseLog();
   if (log)
-    *log = current_log_;
+    *log = current_log;
   else
     delete current_log_;
   current_log_ = NULL;
@@ -1141,7 +1134,7 @@ void MetricsService::PrepareInitialLog() {
   log->RecordEnvironment(plugins_, profile_dictionary_.get());
 
   // Histograms only get written to current_log_, so setup for the write.
-  MetricsLog* save_log = current_log_;
+  MetricsLogBase* save_log = current_log_;
   current_log_ = log;
   RecordCurrentHistograms();  // Into current_log_... which is really log.
   current_log_ = save_log;
@@ -1238,53 +1231,6 @@ void MetricsService::PrepareFetchWithPendingLog() {
                                       this));
   current_fetch_->set_request_context(Profile::GetDefaultRequestContext());
   current_fetch_->set_upload_data(kMetricsType, compressed_log);
-}
-
-void MetricsService::DiscardPendingLog() {
-  if (pending_log_) {  // Shutdown might have deleted it!
-    delete pending_log_;
-    pending_log_ = NULL;
-  }
-  pending_log_text_.clear();
-}
-
-// This implementation is based on the Firefox MetricsService implementation.
-bool MetricsService::Bzip2Compress(const std::string& input,
-                                   std::string* output) {
-  bz_stream stream = {0};
-  // As long as our input is smaller than the bzip2 block size, we should get
-  // the best compression.  For example, if your input was 250k, using a block
-  // size of 300k or 500k should result in the same compression ratio.  Since
-  // our data should be under 100k, using the minimum block size of 100k should
-  // allocate less temporary memory, but result in the same compression ratio.
-  int result = BZ2_bzCompressInit(&stream,
-                                  1,   // 100k (min) block size
-                                  0,   // quiet
-                                  0);  // default "work factor"
-  if (result != BZ_OK) {  // out of memory?
-    return false;
-  }
-
-  output->clear();
-
-  stream.next_in = const_cast<char*>(input.data());
-  stream.avail_in = static_cast<int>(input.size());
-  // NOTE: we don't need a BZ_RUN phase since our input buffer contains
-  //       the entire input
-  do {
-    output->resize(output->size() + 1024);
-    stream.next_out = &((*output)[stream.total_out_lo32]);
-    stream.avail_out = static_cast<int>(output->size()) - stream.total_out_lo32;
-    result = BZ2_bzCompress(&stream, BZ_FINISH);
-  } while (result == BZ_FINISH_OK);
-  if (result != BZ_STREAM_END)  // unknown failure?
-    return false;
-  result = BZ2_bzCompressEnd(&stream);
-  DCHECK(result == BZ_OK);
-
-  output->resize(stream.total_out_lo32);
-
-  return true;
 }
 
 static const char* StatusToString(const URLRequestStatus& status) {
@@ -1874,51 +1820,6 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
   pref->SetInt64(prefs::kStabilityLastTimestampSec, Time::Now().ToTimeT());
 
   RecordPluginChanges(pref);
-}
-
-void MetricsService::RecordCurrentHistograms() {
-  DCHECK(current_log_);
-
-  StatisticsRecorder::Histograms histograms;
-  StatisticsRecorder::GetHistograms(&histograms);
-  for (StatisticsRecorder::Histograms::iterator it = histograms.begin();
-       histograms.end() != it;
-       ++it) {
-         if ((*it)->flags() & Histogram::kUmaTargetedHistogramFlag)
-      // TODO(petersont): Only record historgrams if they are not precluded by
-      // the UMA response data.
-      // Bug http://code.google.com/p/chromium/issues/detail?id=2739.
-      RecordHistogram(**it);
-  }
-}
-
-void MetricsService::RecordHistogram(const Histogram& histogram) {
-  // Get up-to-date snapshot of sample stats.
-  Histogram::SampleSet snapshot;
-  histogram.SnapshotSample(&snapshot);
-
-  const std::string& histogram_name = histogram.histogram_name();
-
-  // Find the already sent stats, or create an empty set.
-  LoggedSampleMap::iterator it = logged_samples_.find(histogram_name);
-  Histogram::SampleSet* already_logged;
-  if (logged_samples_.end() == it) {
-    // Add new entry
-    already_logged = &logged_samples_[histogram.histogram_name()];
-    already_logged->Resize(histogram);  // Complete initialization.
-  } else {
-    already_logged = &(it->second);
-    // Deduct any stats we've already logged from our snapshot.
-    snapshot.Subtract(*already_logged);
-  }
-
-  // snapshot now contains only a delta to what we've already_logged.
-
-  if (snapshot.TotalCount() > 0) {
-    current_log_->RecordHistogramDelta(histogram, snapshot);
-    // Add new data into our running total.
-    already_logged->Add(snapshot);
-  }
 }
 
 static bool IsSingleThreaded() {

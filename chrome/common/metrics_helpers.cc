@@ -1,0 +1,457 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/common/metrics_helpers.h"
+
+#if defined(USE_SYSTEM_LIBBZ2)
+#include <bzlib.h>
+#else
+#include "third_party/bzip2/bzlib.h"
+#endif
+
+#include "base/base64.h"
+#include "base/time.h"
+#include "base/basictypes.h"
+#include "base/file_util.h"
+#include "base/md5.h"
+#include "base/scoped_ptr.h"
+#include "base/string_util.h"
+#include "base/sys_info.h"
+#include "base/utf_string_conversions.h"
+#include "base/third_party/nspr/prtime.h"
+#include "chrome/common/logging_chrome.h"
+#include "googleurl/src/gurl.h"
+
+#define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
+
+using base::Time;
+using base::TimeDelta;
+
+// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
+#if defined(OS_WIN)
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+#endif
+
+// static
+std::string MetricsLogBase::version_extension_;
+
+// libxml take xmlChar*, which is unsigned char*
+inline const unsigned char* UnsignedChar(const char* input) {
+  return reinterpret_cast<const unsigned char*>(input);
+}
+
+MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
+                               const std::string& version_string)
+    : start_time_(Time::Now()),
+      client_id_(client_id),
+      session_id_(IntToString(session_id)),
+      locked_(false),
+      buffer_(NULL),
+      writer_(NULL),
+      num_events_(0) {
+
+  buffer_ = xmlBufferCreate();
+  DCHECK(buffer_);
+
+  writer_ = xmlNewTextWriterMemory(buffer_, 0);
+  DCHECK(writer_);
+
+  int result = xmlTextWriterSetIndent(writer_, 2);
+  DCHECK_EQ(0, result);
+
+  StartElement("log");
+  WriteAttribute("clientid", client_id_);
+  WriteInt64Attribute("buildtime", GetBuildTime());
+  WriteAttribute("appversion", version_string);
+
+  DCHECK_GE(result, 0);
+}
+
+MetricsLogBase::~MetricsLogBase() {
+  if (writer_)
+    xmlFreeTextWriter(writer_);
+
+  if (buffer_)
+    xmlBufferFree(buffer_);
+}
+
+void MetricsLogBase::CloseLog() {
+  DCHECK(!locked_);
+  locked_ = true;
+
+  int result = xmlTextWriterEndDocument(writer_);
+  DCHECK_GE(result, 0);
+
+  result = xmlTextWriterFlush(writer_);
+  DCHECK_GE(result, 0);
+}
+
+int MetricsLogBase::GetEncodedLogSize() {
+  DCHECK(locked_);
+  return buffer_->use;
+}
+
+bool MetricsLogBase::GetEncodedLog(char* buffer, int buffer_size) {
+  DCHECK(locked_);
+  if (buffer_size < GetEncodedLogSize())
+    return false;
+
+  memcpy(buffer, buffer_->content, GetEncodedLogSize());
+  return true;
+}
+
+std::string MetricsLogBase::GetEncodedLogString() {
+  DCHECK(locked_);
+  return std::string(reinterpret_cast<char*>(buffer_->content));
+}
+
+int MetricsLogBase::GetElapsedSeconds() {
+  return static_cast<int>((Time::Now() - start_time_).InSeconds());
+}
+
+std::string MetricsLogBase::CreateHash(const std::string& value) {
+  MD5Context ctx;
+  MD5Init(&ctx);
+  MD5Update(&ctx, value.data(), value.length());
+
+  MD5Digest digest;
+  MD5Final(&digest, &ctx);
+
+  uint64 reverse_uint64;
+  // UMA only uses first 8 chars of hash. We use the above uint64 instead
+  // of a unsigned char[8] so that we don't run into strict aliasing issues
+  // in the LOG statement below when trying to interpret reverse as a uint64.
+  unsigned char* reverse = reinterpret_cast<unsigned char *>(&reverse_uint64);
+  DCHECK(arraysize(digest.a) >= sizeof(reverse_uint64));
+  for (size_t i = 0; i < sizeof(reverse_uint64); ++i)
+    reverse[i] = digest.a[sizeof(reverse_uint64) - i - 1];
+  // The following log is VERY helpful when folks add some named histogram into
+  // the code, but forgot to update the descriptive list of histograms.  When
+  // that happens, all we get to see (server side) is a hash of the histogram
+  // name.  We can then use this logging to find out what histogram name was
+  // being hashed to a given MD5 value by just running the version of Chromium
+  // in question with --enable-logging.
+  LOG(INFO) << "Metrics: Hash numeric [" << value << "]=["
+      << reverse_uint64 << "]";
+  return std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
+}
+
+std::string MetricsLogBase::CreateBase64Hash(const std::string& string) {
+  std::string encoded_digest;
+  if (base::Base64Encode(CreateHash(string), &encoded_digest)) {
+    DLOG(INFO) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
+    return encoded_digest;
+  }
+  return std::string();
+}
+
+void MetricsLogBase::RecordUserAction(const char* key) {
+  DCHECK(!locked_);
+
+  std::string command_hash = CreateBase64Hash(key);
+  if (command_hash.empty()) {
+    NOTREACHED() << "Unable generate encoded hash of command: " << key;
+    return;
+  }
+
+  OPEN_ELEMENT_FOR_SCOPE("uielement");
+  WriteAttribute("action", "command");
+  WriteAttribute("targetidhash", command_hash);
+
+  // TODO(jhughes): Properly track windows.
+  WriteIntAttribute("window", 0);
+  WriteCommonEventAttributes();
+
+  ++num_events_;
+}
+
+void MetricsLogBase::RecordLoadEvent(int window_id,
+                                 const GURL& url,
+                                 PageTransition::Type origin,
+                                 int session_index,
+                                 TimeDelta load_time) {
+  DCHECK(!locked_);
+
+  OPEN_ELEMENT_FOR_SCOPE("document");
+  WriteAttribute("action", "load");
+  WriteIntAttribute("docid", session_index);
+  WriteIntAttribute("window", window_id);
+  WriteAttribute("loadtime", Int64ToString(load_time.InMilliseconds()));
+
+  std::string origin_string;
+
+  switch (PageTransition::StripQualifier(origin)) {
+    // TODO(jhughes): Some of these mappings aren't right... we need to add
+    // some values to the server's enum.
+    case PageTransition::LINK:
+    case PageTransition::MANUAL_SUBFRAME:
+      origin_string = "link";
+      break;
+
+    case PageTransition::TYPED:
+      origin_string = "typed";
+      break;
+
+    case PageTransition::AUTO_BOOKMARK:
+      origin_string = "bookmark";
+      break;
+
+    case PageTransition::AUTO_SUBFRAME:
+    case PageTransition::RELOAD:
+      origin_string = "refresh";
+      break;
+
+    case PageTransition::GENERATED:
+    case PageTransition::KEYWORD:
+      origin_string = "global-history";
+      break;
+
+    case PageTransition::START_PAGE:
+      origin_string = "start-page";
+      break;
+
+    case PageTransition::FORM_SUBMIT:
+      origin_string = "form-submit";
+      break;
+
+    default:
+      NOTREACHED() << "Received an unknown page transition type: " <<
+                       PageTransition::StripQualifier(origin);
+  }
+  if (!origin_string.empty())
+    WriteAttribute("origin", origin_string);
+
+  WriteCommonEventAttributes();
+
+  ++num_events_;
+}
+
+void MetricsLogBase::RecordWindowEvent(WindowEventType type,
+                                   int window_id,
+                                   int parent_id) {
+  DCHECK(!locked_);
+
+  OPEN_ELEMENT_FOR_SCOPE("window");
+  WriteAttribute("action", WindowEventTypeToString(type));
+  WriteAttribute("windowid", IntToString(window_id));
+  if (parent_id >= 0)
+    WriteAttribute("parent", IntToString(parent_id));
+  WriteCommonEventAttributes();
+
+  ++num_events_;
+}
+
+std::string MetricsLogBase::GetCurrentTimeString() {
+  return Uint64ToString(Time::Now().ToTimeT());
+}
+
+// These are the attributes that are common to every event.
+void MetricsLogBase::WriteCommonEventAttributes() {
+  WriteAttribute("session", session_id_);
+  WriteAttribute("time", GetCurrentTimeString());
+}
+
+void MetricsLogBase::WriteAttribute(const std::string& name,
+                                const std::string& value) {
+  DCHECK(!locked_);
+  DCHECK(!name.empty());
+
+  int result = xmlTextWriterWriteAttribute(writer_,
+                                           UnsignedChar(name.c_str()),
+                                           UnsignedChar(value.c_str()));
+  DCHECK_GE(result, 0);
+}
+
+void MetricsLogBase::WriteIntAttribute(const std::string& name, int value) {
+  WriteAttribute(name, IntToString(value));
+}
+
+void MetricsLogBase::WriteInt64Attribute(const std::string& name, int64 value) {
+  WriteAttribute(name, Int64ToString(value));
+}
+
+// static
+const char* MetricsLogBase::WindowEventTypeToString(WindowEventType type) {
+  switch (type) {
+    case WINDOW_CREATE:  return "create";
+    case WINDOW_OPEN:    return "open";
+    case WINDOW_CLOSE:   return "close";
+    case WINDOW_DESTROY: return "destroy";
+
+    default:
+      NOTREACHED();
+      return "unknown";  // Can't return NULL as this is used in a required
+                         // attribute.
+  }
+}
+
+void MetricsLogBase::StartElement(const char* name) {
+  DCHECK(!locked_);
+  DCHECK(name);
+
+  int result = xmlTextWriterStartElement(writer_, UnsignedChar(name));
+  DCHECK_GE(result, 0);
+}
+
+void MetricsLogBase::EndElement() {
+  DCHECK(!locked_);
+
+  int result = xmlTextWriterEndElement(writer_);
+  DCHECK_GE(result, 0);
+}
+
+// static
+int64 MetricsLogBase::GetBuildTime() {
+  static int64 integral_build_time = 0;
+  if (!integral_build_time) {
+    Time time;
+    const char* kDateTime = __DATE__ " " __TIME__ " GMT";
+    bool result = Time::FromString(ASCIIToWide(kDateTime).c_str(), &time);
+    DCHECK(result);
+    integral_build_time = static_cast<int64>(time.ToTimeT());
+  }
+  return integral_build_time;
+}
+
+// TODO(JAR): A The following should really be part of the histogram class.
+// Internal state is being needlessly exposed, and it would be hard to reuse
+// this code. If we moved this into the Histogram class, then we could use
+// the same infrastructure for logging StatsCounters, RatesCounters, etc.
+void MetricsLogBase::RecordHistogramDelta(const Histogram& histogram,
+                                      const Histogram::SampleSet& snapshot) {
+  DCHECK(!locked_);
+  DCHECK_NE(0, snapshot.TotalCount());
+  snapshot.CheckSize(histogram);
+
+  // We will ignore the MAX_INT/infinite value in the last element of range[].
+
+  OPEN_ELEMENT_FOR_SCOPE("histogram");
+
+  WriteAttribute("name", CreateBase64Hash(histogram.histogram_name()));
+
+  WriteInt64Attribute("sum", snapshot.sum());
+  WriteInt64Attribute("sumsquares", snapshot.square_sum());
+
+  for (size_t i = 0; i < histogram.bucket_count(); i++) {
+    if (snapshot.counts(i)) {
+      OPEN_ELEMENT_FOR_SCOPE("histogrambucket");
+      WriteIntAttribute("min", histogram.ranges(i));
+      WriteIntAttribute("max", histogram.ranges(i + 1));
+      WriteIntAttribute("count", snapshot.counts(i));
+    }
+  }
+}
+
+
+// MetricsServiceBase
+MetricsServiceBase::MetricsServiceBase()
+    : pending_log_(NULL),
+      pending_log_text_(),
+      current_log_(NULL),
+      logged_samples_() {
+}
+
+MetricsServiceBase::~MetricsServiceBase() {
+  if (pending_log_) {
+    delete pending_log_;
+    pending_log_ = NULL;
+  }
+  if (current_log_) {
+    delete current_log_;
+    current_log_ = NULL;
+  }
+}
+
+// This implementation is based on the Firefox MetricsService implementation.
+bool MetricsServiceBase::Bzip2Compress(const std::string& input,
+                                       std::string* output) {
+  bz_stream stream = {0};
+  // As long as our input is smaller than the bzip2 block size, we should get
+  // the best compression.  For example, if your input was 250k, using a block
+  // size of 300k or 500k should result in the same compression ratio.  Since
+  // our data should be under 100k, using the minimum block size of 100k should
+  // allocate less temporary memory, but result in the same compression ratio.
+  int result = BZ2_bzCompressInit(&stream,
+                                  1,   // 100k (min) block size
+                                  0,   // quiet
+                                  0);  // default "work factor"
+  if (result != BZ_OK) {  // out of memory?
+    return false;
+  }
+
+  output->clear();
+
+  stream.next_in = const_cast<char*>(input.data());
+  stream.avail_in = static_cast<int>(input.size());
+  // NOTE: we don't need a BZ_RUN phase since our input buffer contains
+  //       the entire input
+  do {
+    output->resize(output->size() + 1024);
+    stream.next_out = &((*output)[stream.total_out_lo32]);
+    stream.avail_out = static_cast<int>(output->size()) - stream.total_out_lo32;
+    result = BZ2_bzCompress(&stream, BZ_FINISH);
+  } while (result == BZ_FINISH_OK);
+  if (result != BZ_STREAM_END)  // unknown failure?
+    return false;
+  result = BZ2_bzCompressEnd(&stream);
+  DCHECK(result == BZ_OK);
+
+  output->resize(stream.total_out_lo32);
+
+  return true;
+}
+
+void MetricsServiceBase::RecordCurrentHistograms() {
+  DCHECK(current_log_);
+
+  StatisticsRecorder::Histograms histograms;
+  StatisticsRecorder::GetHistograms(&histograms);
+  for (StatisticsRecorder::Histograms::iterator it = histograms.begin();
+       histograms.end() != it;
+       ++it) {
+    if ((*it)->flags() & Histogram::kUmaTargetedHistogramFlag)
+      // TODO(petersont): Only record historgrams if they are not precluded by
+      // the UMA response data.
+      // Bug http://code.google.com/p/chromium/issues/detail?id=2739.
+      RecordHistogram(**it);
+  }
+}
+
+void MetricsServiceBase::RecordHistogram(const Histogram& histogram) {
+  // Get up-to-date snapshot of sample stats.
+  Histogram::SampleSet snapshot;
+  histogram.SnapshotSample(&snapshot);
+
+  const std::string& histogram_name = histogram.histogram_name();
+
+  // Find the already sent stats, or create an empty set.
+  LoggedSampleMap::iterator it = logged_samples_.find(histogram_name);
+  Histogram::SampleSet* already_logged;
+  if (logged_samples_.end() == it) {
+    // Add new entry
+    already_logged = &logged_samples_[histogram.histogram_name()];
+    already_logged->Resize(histogram);  // Complete initialization.
+  } else {
+    already_logged = &(it->second);
+    // Deduct any stats we've already logged from our snapshot.
+    snapshot.Subtract(*already_logged);
+  }
+
+  // snapshot now contains only a delta to what we've already_logged.
+
+  if (snapshot.TotalCount() > 0) {
+    current_log_->RecordHistogramDelta(histogram, snapshot);
+    // Add new data into our running total.
+    already_logged->Add(snapshot);
+  }
+}
+
+void MetricsServiceBase::DiscardPendingLog() {
+  if (pending_log_) {  // Shutdown might have deleted it!
+    delete pending_log_;
+    pending_log_ = NULL;
+  }
+  pending_log_text_.clear();
+}
+
