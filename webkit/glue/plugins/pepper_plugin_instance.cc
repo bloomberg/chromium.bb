@@ -19,6 +19,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
@@ -172,6 +173,15 @@ void PluginInstance::Paint(WebKit::WebCanvas* canvas,
     device_context_2d_->Paint(canvas, plugin_rect, paint_rect);
 }
 
+void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
+  if (!container_ || position_.IsEmpty())
+    return;  // Nothing to do.
+  if (rect.IsEmpty())
+    container_->invalidate();
+  else
+    container_->invalidateRect(rect);
+}
+
 PP_Var PluginInstance::GetWindowObject() {
   if (!container_)
     return PP_MakeVoid();
@@ -191,6 +201,16 @@ PP_Var PluginInstance::GetOwnerElementObject() {
 }
 
 bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
+  if (!device_id) {
+    // Special-case clearing the current device.
+    if (device_context_2d_) {
+      device_context_2d_->BindToInstance(NULL);
+      device_context_2d_ = NULL;
+      InvalidateRect(gfx::Rect());
+    }
+    return true;
+  }
+
   scoped_refptr<Resource> device_resource =
       ResourceTracker::Get()->GetResource(device_id);
   if (!device_resource.get())
@@ -198,8 +218,10 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
 
   DeviceContext2D* device_2d = device_resource->AsDeviceContext2D();
   if (device_2d) {
+    if (!device_2d->BindToInstance(this))
+      return false;  // Can't bind to more than one instance.
     device_context_2d_ = device_2d;
-    // TODO(brettw) repaint the plugin.
+    // BindToInstance will have invalidated the plugin if necessary.
   }
 
   return true;
@@ -270,10 +292,31 @@ PP_Var PluginInstance::GetInstanceObject() {
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
                                  const gfx::Rect& clip) {
+  position_ = position;
+  if (clip.IsEmpty()) {
+    // WebKit can give weird (x,y) positions for empty clip rects (since the
+    // position technically doesn't matter). But we want to make these
+    // consistent since this is given to the plugin, so force everything to 0
+    // in the "everything is clipped" case.
+    clip_ = gfx::Rect();
+  } else {
+    clip_ = clip;
+  }
+
   PP_Rect pp_position, pp_clip;
-  RectToPPRect(position, &pp_position);
-  RectToPPRect(clip, &pp_clip);
+  RectToPPRect(position_, &pp_position);
+  RectToPPRect(clip_, &pp_clip);
   instance_interface_->ViewChanged(GetPPInstance(), &pp_position, &pp_clip);
+}
+
+void PluginInstance::ViewInitiatedPaint() {
+  if (device_context_2d_)
+    device_context_2d_->ViewInitiatedPaint();
+}
+
+void PluginInstance::ViewFlushedPaint() {
+  if (device_context_2d_)
+    device_context_2d_->ViewFlushedPaint();
 }
 
 }  // namespace pepper

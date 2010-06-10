@@ -12,12 +12,13 @@
 
 namespace {
 
+// Platform-specific filename relative to the chrome executable.
 #if defined(OS_WIN)
 const wchar_t library_name[] = L"ppapi_tests.dll";
 #elif defined(OS_MACOSX)
 const char library_name[] = "ppapi_tests.plugin";
 #elif defined(OS_POSIX)
-const char library_name[] = "ppapi_tests.so";
+const char library_name[] = "libppapi_tests.so";
 #endif
 
 }  // namespace
@@ -69,10 +70,10 @@ class PPAPITest : public UITest {
   }
 };
 
-TEST_F(PPAPITest, DISABLED_DeviceContext2D) {
+TEST_F(PPAPITest, DeviceContext2D) {
   RunTest(FILE_PATH_LITERAL("test_device_context_2d.html"));
 }
 
-TEST_F(PPAPITest, DISABLED_ImageData) {
+TEST_F(PPAPITest, ImageData) {
   RunTest(FILE_PATH_LITERAL("test_image_data.html"));
 }

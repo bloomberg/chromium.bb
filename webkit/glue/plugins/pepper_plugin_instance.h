@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "gfx/rect.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
@@ -49,11 +50,21 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
 
+  const gfx::Rect& position() const { return position_; }
+  const gfx::Rect& clip() const { return clip_; }
+
   PP_Instance GetPPInstance();
 
+  // Paints the current backing store to the web page.
   void Paint(WebKit::WebCanvas* canvas,
              const gfx::Rect& plugin_rect,
              const gfx::Rect& paint_rect);
+
+  // Schedules a paint of the page for the given region. The coordinates are
+  // relative to the top-left of the plugin. This does nothing if the plugin
+  // has not yet been positioned. You can supply an empty gfx::Rect() to
+  // invalidate the entire plugin.
+  void InvalidateRect(const gfx::Rect& rect);
 
   // PPB_Instance implementation.
   PP_Var GetWindowObject();
@@ -70,6 +81,12 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PP_Var GetInstanceObject();
   void ViewChanged(const gfx::Rect& position, const gfx::Rect& clip);
 
+  // Notifications that the view has rendered the page and that it has been
+  // flushed to the screen. These messages are used to send Flush callbacks to
+  // the plugin for DeviceContext2D.
+  void ViewInitiatedPaint();
+  void ViewFlushedPaint();
+
  private:
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
@@ -77,6 +94,16 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // NULL until we have been initialized.
   WebKit::WebPluginContainer* container_;
+
+  // Position in the viewport (which moves as the page is scrolled) of this
+  // plugin. This will be a 0-sized rectangle if the plugin has not yet been
+  // laid out.
+  gfx::Rect position_;
+
+  // Current clip rect. This will be empty if the plugin is not currently
+  // visible. This is in the plugin's coordinate system, so fully visible will
+  // be (0, 0, w, h) regardless of scroll position.
+  gfx::Rect clip_;
 
   // The current device context for painting in 2D.
   scoped_refptr<DeviceContext2D> device_context_2d_;

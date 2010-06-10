@@ -4,7 +4,11 @@
 
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 
+#include <iterator>
+
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
@@ -14,6 +18,7 @@
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
+#include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 
@@ -70,6 +75,12 @@ PP_Resource Create(PP_Module module_id, int32_t width, int32_t height,
   return context->GetResource();
 }
 
+bool IsDeviceContext2D(PP_Resource resource) {
+  scoped_refptr<DeviceContext2D> context(
+      ResourceTracker::Get()->GetAsDeviceContext2D(resource));
+  return !!context.get();
+}
+
 bool Describe(PP_Resource device_context,
               int32_t* width, int32_t* height, bool* is_always_opaque) {
   scoped_refptr<DeviceContext2D> context(
@@ -120,6 +131,7 @@ bool Flush(PP_Resource device_context,
 
 const PPB_DeviceContext2D ppb_devicecontext2d = {
   &Create,
+  &IsDeviceContext2D,
   &Describe,
   &PaintImageData,
   &Scroll,
@@ -159,7 +171,21 @@ struct DeviceContext2D::QueuedOperation {
   scoped_refptr<ImageData> replace_image;
 };
 
-DeviceContext2D::DeviceContext2D(PluginModule* module) : Resource(module) {
+DeviceContext2D::FlushCallbackData::FlushCallbackData(
+    PPB_DeviceContext2D_FlushCallback c,
+    void* d)
+    : callback_(c),
+      callback_data_(d) {
+}
+
+void DeviceContext2D::FlushCallbackData::Execute(PP_Resource device_context) {
+  callback_(device_context, callback_data_);
+}
+
+DeviceContext2D::DeviceContext2D(PluginModule* module)
+    : Resource(module),
+      bound_instance_(NULL),
+      flushed_any_data_(false) {
 }
 
 DeviceContext2D::~DeviceContext2D() {
@@ -266,42 +292,57 @@ bool DeviceContext2D::ReplaceContents(PP_Resource image) {
 
 bool DeviceContext2D::Flush(PPB_DeviceContext2D_FlushCallback callback,
                             void* callback_data) {
+  // TODO(brettw) check that the current thread is not the main one and
+  // implement blocking flushes in this case.
+  if (!callback)
+    return false;
+
+  if (queued_operations_.empty())
+    return true;  // Nothing to do.
+
+  gfx::Rect changed_rect;
   for (size_t i = 0; i < queued_operations_.size(); i++) {
     QueuedOperation& operation = queued_operations_[i];
+    gfx::Rect op_rect;
     switch (operation.type) {
       case QueuedOperation::PAINT:
         ExecutePaintImageData(operation.paint_image.get(),
                               operation.paint_x, operation.paint_y,
-                              operation.paint_src_rect);
+                              operation.paint_src_rect,
+                              &op_rect);
         break;
       case QueuedOperation::SCROLL:
         ExecuteScroll(operation.scroll_clip_rect,
-                      operation.scroll_dx, operation.scroll_dy);
+                      operation.scroll_dx, operation.scroll_dy,
+                      &op_rect);
         break;
       case QueuedOperation::REPLACE:
-        ExecuteReplaceContents(operation.replace_image.get());
+        ExecuteReplaceContents(operation.replace_image.get(), &op_rect);
         break;
     }
+    changed_rect = changed_rect.Union(op_rect);
   }
   queued_operations_.clear();
- // TODO(brettw) implement invalidate and callbacks!
+  flushed_any_data_ = true;
 
-  // Cause the updated part of the screen to be repainted. This will happen
-  // asynchronously.
-  /*
-  gfx::Rect dest_gfx_rect(src_rect->left, src_rect->top,
-                          src_rect->right - src_rect->left,
-                          src_rect->bottom - src_rect->top);
+  // We need the rect to be in terms of the current clip rect of the plugin
+  // since that's what will actually be painted. If we issue an invalidate
+  // for a clipped-out region, WebKit will do nothing and we won't get any
+  // ViewInitiatedPaint/ViewFlushedPaint calls, leaving our callback stranded.
+  gfx::Rect visible_changed_rect;
+  if (bound_instance_ && !changed_rect.IsEmpty())
+    visible_changed_rect = bound_instance_->clip().Intersect(changed_rect);
 
-  plugin_delegate_->instance()->webplugin()->InvalidateRect(dest_gfx_rect);
-
-  // Save the callback to execute later. See |unpainted_flush_callbacks_| in
-  // the header file.
-  if (callback) {
-    unpainted_flush_callbacks_.push_back(
-        FlushCallbackData(callback, id, context, user_data));
+  if (bound_instance_ && !visible_changed_rect.IsEmpty()) {
+    unpainted_flush_callbacks_.push_back(FlushCallbackData(callback,
+                                                           callback_data));
+    bound_instance_->InvalidateRect(visible_changed_rect);
+  } else {
+    // There's nothing visible to invalidate so just schedule the callback to
+    // execute in the next round of the message loop.
+    ScheduleOffscreenCallback(
+        FlushCallbackData(callback, callback_data));
   }
-*/
   return true;
 }
 
@@ -342,6 +383,38 @@ bool DeviceContext2D::ReadImageData(PP_Resource image, int32_t x, int32_t y) {
   paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   dest_canvas->drawBitmapRect(*image_data_->GetMappedBitmap(),
                               &src_irect, dest_rect, &paint);
+  return true;
+}
+
+bool DeviceContext2D::BindToInstance(PluginInstance* new_instance) {
+  if (bound_instance_ == new_instance)
+    return true;  // Rebinding the same device, nothing to do.
+  if (bound_instance_ && new_instance)
+    return false;  // Can't change a bound device.
+
+  if (!new_instance) {
+    // When the device is detached, we'll not get any more paint callbacks so
+    // we need to clear the list, but we still want to issue any pending
+    // callbacks to the plugin.
+    for (size_t i = 0; i < unpainted_flush_callbacks_.size(); i++)
+      ScheduleOffscreenCallback(unpainted_flush_callbacks_[i]);
+    for (size_t i = 0; i < painted_flush_callbacks_.size(); i++)
+      ScheduleOffscreenCallback(painted_flush_callbacks_[i]);
+    unpainted_flush_callbacks_.clear();
+    painted_flush_callbacks_.clear();
+  } else if (flushed_any_data_) {
+    // Only schedule a paint if this backing store has had any data flushed to
+    // it. This is an optimization. A "normal" plugin will first allocated a
+    // backing store, bind it, and then execute their normal painting and
+    // update loop. If binding a device always invalidated, it would mean we
+    // would get one paint for the bind, and one for the first time the plugin
+    // actually painted something. By not bothering to schedule an invalidate
+    // when an empty device is initially bound, we can save an extra paint for
+    // many plugins during the critical page initialization phase.
+    new_instance->InvalidateRect(gfx::Rect());
+  }
+
+  bound_instance_ = new_instance;
   return true;
 }
 
@@ -389,26 +462,46 @@ void DeviceContext2D::Paint(WebKit::WebCanvas* canvas,
 #endif
 }
 
+void DeviceContext2D::ViewInitiatedPaint() {
+  // Move all "unpainted" callbacks to the painted state. See
+  // |unpainted_flush_callbacks_| in the header for more.
+  std::copy(unpainted_flush_callbacks_.begin(),
+            unpainted_flush_callbacks_.end(),
+            std::back_inserter(painted_flush_callbacks_));
+  unpainted_flush_callbacks_.clear();
+}
+
+void DeviceContext2D::ViewFlushedPaint() {
+  // Notify all "painted" callbacks. See |unpainted_flush_callbacks_| in the
+  // header for more.
+  for (size_t i = 0; i < painted_flush_callbacks_.size(); i++)
+    painted_flush_callbacks_[i].Execute(GetResource());
+  painted_flush_callbacks_.clear();
+}
+
 void DeviceContext2D::ExecutePaintImageData(ImageData* image,
                                             int x, int y,
-                                            const gfx::Rect& src_rect) {
+                                            const gfx::Rect& src_rect,
+                                            gfx::Rect* invalidated_rect) {
+  // Ensure the source image is mapped to read from it.
+  ImageDataAutoMapper auto_mapper(image);
+  if (!auto_mapper.is_valid())
+    return;
+
   // Portion within the source image to cut out.
   SkIRect src_irect = { src_rect.x(), src_rect.y(),
                         src_rect.right(), src_rect.bottom() };
 
   // Location within the backing store to copy to.
-  SkRect dest_rect = { SkIntToScalar(x + src_rect.x()),
-                       SkIntToScalar(y + src_rect.y()),
-                       SkIntToScalar(x + src_rect.right()),
-                       SkIntToScalar(y + src_rect.bottom()) };
+  *invalidated_rect = src_rect;
+  invalidated_rect->Offset(x, y);
+  SkRect dest_rect = { SkIntToScalar(invalidated_rect->x()),
+                       SkIntToScalar(invalidated_rect->y()),
+                       SkIntToScalar(invalidated_rect->right()),
+                       SkIntToScalar(invalidated_rect->bottom()) };
 
   // We're guaranteed to have a mapped canvas since we mapped it in Init().
   skia::PlatformCanvas* backing_canvas = image_data_->mapped_canvas();
-
-  // Ensure the source image is mapped to read from it.
-  ImageDataAutoMapper auto_mapper(image);
-  if (!auto_mapper.is_valid())
-    return;
 
   // We want to replace the contents of the bitmap rather than blend.
   SkPaint paint;
@@ -417,12 +510,29 @@ void DeviceContext2D::ExecutePaintImageData(ImageData* image,
                                  &src_irect, dest_rect, &paint);
 }
 
-void DeviceContext2D::ExecuteScroll(const gfx::Rect& clip, int dx, int dy) {
+void DeviceContext2D::ExecuteScroll(const gfx::Rect& clip, int dx, int dy,
+                                    gfx::Rect* invalidated_rect) {
   // FIXME(brettw)
 }
 
-void DeviceContext2D::ExecuteReplaceContents(ImageData* image) {
+void DeviceContext2D::ExecuteReplaceContents(ImageData* image,
+                                             gfx::Rect* invalidated_rect) {
   image_data_->Swap(image);
+  *invalidated_rect = gfx::Rect(0, 0,
+                                image_data_->width(), image_data_->height());
+}
+
+void DeviceContext2D::ScheduleOffscreenCallback(
+    const FlushCallbackData& callback) {
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &DeviceContext2D::ExecuteOffscreenCallback,
+                        callback));
+}
+
+void DeviceContext2D::ExecuteOffscreenCallback(FlushCallbackData data) {
+  data.Execute(GetResource());
 }
 
 }  // namespace pepper
