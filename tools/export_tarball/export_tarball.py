@@ -22,8 +22,10 @@ import sys
 import tarfile
 
 NONESSENTIAL_DIRS = (
+    'chrome/common/extensions/docs',
     'chrome/test/data',
     'chrome/tools/test/reference_build',
+    'courgette/testdata',
     'data',
     'gears/binaries',
     'native_client/src/trusted/service_runtime/testdata',
@@ -32,10 +34,13 @@ NONESSENTIAL_DIRS = (
     'src/chrome/test/data',
     'o3d/documentation',
     'o3d/samples',
+    'o3d/tests',
     'third_party/hunspell_dictionaries',
     'third_party/lighttpd',
+    'third_party/scons',
     'third_party/vc_80',
     'third_party/WebKit/LayoutTests',
+    'v8/test',
     'webkit/data/layout_tests',
     'webkit/tools/test/reference_build',
 )
