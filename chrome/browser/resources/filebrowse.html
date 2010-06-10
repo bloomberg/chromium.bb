@@ -1000,6 +1000,7 @@ function downloadUpdated(results) {
             no.onclick = partial(cancelDownload, results[x].id);
             no.textContent = localStrings.getString('confirmcancel');
             no.className = 'link';
+            pauseDiv.onclick = undefined;
             pauseDiv.appendChild(yes);
             pauseDiv.appendChild(no);
             progressDiv.textContent = '';
