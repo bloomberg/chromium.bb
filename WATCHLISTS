@@ -131,6 +131,9 @@
     'npapi_headers': {
       'filepath': 'third_party/npapi/bindings/.*',
     },
+    'remoting': {
+      'filepath': 'remoting/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -180,5 +183,8 @@
     'options_dialog_content': ['finnur+watch@chromium.org'],
     'chromeos': ['davemoore+watch@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
+    'remoting': ['ajwong@chromium.org', 'sergeyu@chromium.org',
+              	'hclam@chromium.org', 'dmaclach@chromium.org',
+	 	'garykac@chromium.org'],
   },
 }
