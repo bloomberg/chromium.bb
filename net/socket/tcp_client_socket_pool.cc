@@ -186,7 +186,7 @@ TCPClientSocketPool::TCPClientSocketPool(
             new TCPConnectJobFactory(client_socket_factory,
                                      host_resolver, net_log),
             network_change_notifier) {
-  base_.enable_backup_jobs();
+  base_.EnableBackupJobs();
 }
 
 TCPClientSocketPool::~TCPClientSocketPool() {}
