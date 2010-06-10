@@ -57,9 +57,9 @@ static const std::wstring kPropertyDirectory = L"isDirectory";
 static const std::string kPicasawebUserPrefix =
     "http://picasaweb.google.com/data/feed/api/user/";
 static const std::string kPicasawebDefault = "/albumid/default";
-static const std::string kPicasawebDropBox = "/DropBox";
+static const std::string kPicasawebDropBox = "/home";
 static const std::string kPicasawebBaseUrl = "http://picasaweb.google.com/";
-
+static const std::string kMediaPath = "/media";
 static const char* kFilebrowseURLHash = "chrome://filebrowse#";
 static const int kPopupLeft = 0;
 static const int kPopupTop = 0;
@@ -299,6 +299,13 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_FILEBROWSER_DELETE));
   localized_strings.SetString(L"enqueue",
       l10n_util::GetString(IDS_FILEBROWSER_ENQUEUE));
+  localized_strings.SetString(L"mediapath", kMediaPath);
+  FilePath default_download_path;
+  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                        &default_download_path)) {
+    NOTREACHED();
+  }
+  localized_strings.SetString(L"downloadpath", default_download_path.value());
   SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece filebrowse_html(
