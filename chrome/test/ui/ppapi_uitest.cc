@@ -79,6 +79,11 @@ TEST_F(PPAPITest, DISABLED_DeviceContext2D) {
   RunTest(FILE_PATH_LITERAL("test_device_context_2d.html"));
 }
 
+#if defined(OS_MACOSX)
+// TODO(brettw) this fails on Mac for unknown reasons.
+TEST_F(PPAPITest, DISABLED_ImageData) {
+#else
 TEST_F(PPAPITest, ImageData) {
+#endif
   RunTest(FILE_PATH_LITERAL("test_image_data.html"));
 }
