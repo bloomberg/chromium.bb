@@ -163,6 +163,11 @@ bool DownloadFile::Rename(const FilePath& new_path) {
 
 void DownloadFile::Close() {
   if (file_stream_.get()) {
+#if defined(OS_CHROMEOS)
+    // Currently we don't really care about the return value, since if it fails
+    // theres not much we can do.  But we might in the future.
+    file_stream_->Flush();
+#endif
     file_stream_->Close();
     file_stream_.reset();
   }

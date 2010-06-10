@@ -70,6 +70,16 @@ int WriteFile(base::PlatformFile file, const char* buf, int buf_len) {
   return res;
 }
 
+// FlushFile() is a simple wrapper around fsync() that handles EINTR signals and
+// calls MapErrorCode() to map errno to net error codes.  It tries to flush to
+// completion.
+int FlushFile(base::PlatformFile file) {
+  ssize_t res = HANDLE_EINTR(fsync(file));
+  if (res == -1)
+    return MapErrorCode(errno);
+  return res;
+}
+
 // BackgroundReadTask is a simple task that reads a file and then runs
 // |callback|.  AsyncContext will post this task to the WorkerPool.
 class BackgroundReadTask : public Task {
@@ -443,6 +453,13 @@ int FileStream::Write(
   } else {
     return WriteFile(file_, buf, buf_len);
   }
+}
+
+int FileStream::Flush() {
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  return FlushFile(file_);
 }
 
 int64 FileStream::Truncate(int64 bytes) {

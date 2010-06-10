@@ -302,6 +302,21 @@ int FileStream::Write(
   return rv;
 }
 
+int FileStream::Flush() {
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  DCHECK(open_flags_ & base::PLATFORM_FILE_WRITE);
+  if (FlushFileBuffers(file_)) {
+    return OK;
+  }
+
+  int rv;
+  DWORD error = GetLastError();
+  rv = MapErrorCode(error);
+  return rv;
+}
+
 int64 FileStream::Truncate(int64 bytes) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
