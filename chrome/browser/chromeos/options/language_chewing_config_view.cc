@@ -130,7 +130,7 @@ void LanguageChewingConfigView::InitControlLayout() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
                         GridLayout::USE_PREF, 0, 0);
 
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
