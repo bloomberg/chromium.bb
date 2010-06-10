@@ -348,17 +348,9 @@ div.iconmusic {
 }
 
 div.backbutton {
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
+  border-radius: 4px;
   left: 6px;
   top: 3px
-}
-
-div.fwdbutton {
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  left: 31px;
-  top: 3px;
 }
 
 div.playbackcontainer {
@@ -592,7 +584,7 @@ function partial(fn, var_args) {
   };
 }
 
-var pathArray = [];
+var currentSavedPath = '';
 var currentNode = -1;
 var menus = [];
 var currentImageMenu = '';
@@ -618,10 +610,18 @@ var kPauseDownload;
 var kResumeDownload;
 
 function goBackInList() {
-  if (currentNode > 0) {
-    currentNode--;
-    getDataForPath(pathArray[currentNode]);
+  currentNode--;
+  if (currentSavedPath == localStrings.getString('downloadpath')) {
+    currentSavedPath = 'roots'
+  } else {
+    var lastDirArray = currentSavedPath.split('/');
+    lastDirArray.splice(lastDirArray.length-1, 1);
+    currentSavedPath = lastDirArray.join('/');
   }
+  if (currentSavedPath == localStrings.getString('mediapath')) {
+    currentSavedPath = 'roots';
+  }
+  getDataForPath(currentSavedPath);
 }
 
 function toggleFullscreen() {
@@ -631,13 +631,6 @@ function toggleFullscreen() {
     } else {
       videoPlaybackElement.className = 'fullscreenplayback';
     }
-  }
-}
-
-function goForwardInList() {
-  if (currentNode < (pathArray.length - 1)) {
-    currentNode++;
-    getDataForPath(pathArray[currentNode]);
   }
 }
 
@@ -723,29 +716,6 @@ function moveScrollLeft() {
   main.scrollLeft += 10;
 }
 
-function setUpForPlayback(path) {
-   var mediapath = 'file://' + path;
-   var header = $('header');
-   document.body.removeChild(header);
-   var main = mainColumn;
-   main.className = 'playbackcontainer';
-   var elementType;
-   if (pathIsVideoFile(path)) {
-     elementType = 'video';
-   } else if (pathIsAudioFile(path)) {
-     elementType = 'audio';
-   } else {
-     // close because we can't deal with this.
-     return;
-   }
-   var element = document.createElement(elementType);
-   element.className = 'mediacontainer';
-   element.autoplay = true;
-   element.controls = true;
-   element.src = mediapath;
-   main.appendChild(element);
-}
-
 function getClassForPath(path, isDirectory) {
   if (isDirectory) {
     return 'icon iconfolder';
@@ -811,7 +781,7 @@ function dialogCancelClick() {
 function dialogSaveClick() {
   var filenameInput = $('filename');
   var filename = filenameInput.value;
-  var currentPath = pathArray[pathArray.length - 1];
+  var currentPath = currentSavedPath;
   if (currentPath == 'roots') {
     return;
   }
@@ -849,7 +819,7 @@ function createNewFormItem(initialName, isDirectory, id, blurcallback, keypressc
 };
 
 function createFolder(elementId) {
-  var currentPath = pathArray[pathArray.length - 1];
+  var currentPath = currentSavedPath;
   var element = $('newfoldername');
   if (element) {
     element.id = '';
@@ -1194,7 +1164,6 @@ function load() {
     main.appendChild(innerContainer);
     inFullMode = true;
     $('back').style.display = 'none';
-    $('fwd').style.display = 'none';
   }
 
   if (document.location.href.indexOf('#') != -1) {
@@ -1202,16 +1171,14 @@ function load() {
     var path = currentpathArray[1];
     if (path == 'scanningdevice') {
       setUpForScanning();
-    } else if (pathIsVideoFile(path) || pathIsAudioFile(path)) {
-      setUpForPlayback(path);
     } else {
       currentNode++;
-      pathArray.push(path);
+      currentSavedPath = path;
       getDataForPath(path);
     }
   } else {
     currentNode++;
-    pathArray.push('roots');
+    currentSavedPath = 'roots';
     getDataForPath('roots');
   }
   chrome.send("getDownloads", []);
@@ -1233,16 +1200,13 @@ function jumpToNode(nodeNumber) {
 }
 
 function descend(path, nodeNumber) {
-  if (pathArray.length <currentNode) {
-    pathArray = pathArray.slice(0, currentNode);
-  }
   jumpToNode(nodeNumber);
   currentNode++;
   if (selectFolder) {
     currentlySelectedPaths = [];
     currentlySelectedPaths.push(path);
   }
-  pathArray.push(path);
+  currentSavedPath = path;
   getDataForPath(path);
 }
 
@@ -1259,26 +1223,8 @@ function clearPreviewPane() {
 }
 
 function playMediaFile(path) {
-  if (inFullMode) {
-    if (videoPlaybackElement == null) {
-      videoPlaybackElement = document.createElement('video');
-      videoPlaybackElement.className = 'playbackelement';
-      videoPlaybackElement.autoplay = true;
-      videoPlaybackElement.controls = true;
-      videoPlaybackElement.src = 'file://' + path;
-      var toggleButton = document.createElement('div');
-      toggleButton.className = 'fullscreentoggle';
-      toggleButton.id = 'fullscreentoggle';
-      toggleButton.onclick = toggleFullscreen;
-      document.body.appendChild(toggleButton);
-      document.body.appendChild(videoPlaybackElement);
-    } else {
-      videoPlaybackElement.src = 'file://' + path;
-    }
-  } else {
-    var newPath = 'file://' + path;
-    chrome.send('playMediaFile', [newPath]);
-  }
+  var newPath = 'file://' + path;
+  chrome.send('playMediaFile', [newPath]);
 }
 
 function enqueueMediaFile(path) {
@@ -1306,7 +1252,6 @@ function showText(path) {
 }
 
 function clearMenus() {
-
   if (currentMenu) {
     currentMenu.firstChild.style.display = 'none';
     currentMenu.style.opacity = '';
@@ -1465,7 +1410,7 @@ function createNewItem(title, path, isDirectory) {
   element.appendChild(link);
 
   // Setup Menu
-  var currentPath = pathArray[pathArray.length - 1];
+  var currentPath = currentSavedPath;
   if (currentPath != 'roots') {
     var menuicon = document.createElement('div');
     var menu = document.createElement('div');
@@ -1562,9 +1507,6 @@ function createNewList(title, results, main, path) {
 <div id='header' class=''>
   <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
     <img src="../../app/theme/filebrowse_back.png" width='100%' height='100%'>
-  </div>
-  <div id='fwd' class='fwdbutton controlbutton' onclick='goForwardInList();return false;'>
-    <img src="../../app/theme/filebrowse_forward.png" width='100%' height='100%'>
   </div>
   <div id='currenttitle' class=''></div>
 </div><br>
