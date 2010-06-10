@@ -648,7 +648,8 @@ DictionaryValue* PrefService::GetMutableDictionary(const wchar_t* path) {
 
   DictionaryValue* dict = NULL;
   Value* tmp_value = NULL;
-  if (!pref_value_store_->GetValue(path, &tmp_value)) {
+  if (!pref_value_store_->GetValue(path, &tmp_value) ||
+      !tmp_value->IsType(Value::TYPE_DICTIONARY)) {
     dict = new DictionaryValue;
     pref_value_store_->SetUserPrefValue(path, dict);
   } else {
