@@ -18,6 +18,7 @@ namespace media {
 
 FFmpegVideoDecodeEngine::FFmpegVideoDecodeEngine()
     : codec_context_(NULL),
+      av_stream_(NULL),
       state_(kCreated) {
 }
 
@@ -50,8 +51,8 @@ void FFmpegVideoDecodeEngine::Initialize(
   static const int kMaxDecodeThreads = 16;
 
 
-  AVStream* stream = av_stream;
-  codec_context_ = stream->codec;
+  av_stream_ = av_stream;
+  codec_context_ = av_stream_->codec;
   codec_context_->flags2 |= CODEC_FLAG2_FAST;  // Enable faster H264 decode.
   // Enable motion vector search (potentially slow), strong deblocking filter
   // for damaged macroblocks, and set our error detection sensitivity.
@@ -172,8 +173,16 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   //   duration = (1 / fps) + (repeat_pict) / (2 * fps)
   //            = (2 + repeat_pict) / (2 * fps)
   DCHECK_LE(av_frame_->repeat_pict, 2);  // Sanity check.
-  AVRational doubled_time_base = codec_context_->time_base;
+  // Even frame rate is fixed, for some streams and codecs, the value of
+  // |codec_context_->time_base| and |av_stream_->time_base| are not the
+  // inverse of the |av_stream_->r_frame_rate|. They use 1 milli-second as
+  // time-base units and use increment of av_packet->pts which is not one.
+  // Use the inverse of |av_stream_->r_frame_rate| instead of time_base.
+  AVRational doubled_time_base;
+  doubled_time_base.den = av_stream_->r_frame_rate.num;
+  doubled_time_base.num = av_stream_->r_frame_rate.den;
   doubled_time_base.den *= 2;
+
   base::TimeDelta timestamp =
       base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque);
   base::TimeDelta duration =

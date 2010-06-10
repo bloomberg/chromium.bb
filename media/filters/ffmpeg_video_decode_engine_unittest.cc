@@ -45,6 +45,8 @@ class FFmpegVideoDecodeEngineTest : public testing::Test {
     memset(&codec_, 0, sizeof(codec_));
     memset(&stream_, 0, sizeof(stream_));
     stream_.codec = &codec_context_;
+    stream_.r_frame_rate.num = kTimeBase.den;
+    stream_.r_frame_rate.den = kTimeBase.num;
 
     buffer_ = new DataBuffer(1);
 

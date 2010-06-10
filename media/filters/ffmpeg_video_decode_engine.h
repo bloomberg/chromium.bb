@@ -46,6 +46,7 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   void DecodeFrame(scoped_refptr<Buffer> buffer);
 
   AVCodecContext* codec_context_;
+  AVStream* av_stream_;
   State state_;
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> av_frame_;
   scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;

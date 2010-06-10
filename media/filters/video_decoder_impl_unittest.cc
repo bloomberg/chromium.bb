@@ -77,7 +77,7 @@ class DecoderPrivateMock : public VideoDecoderImpl {
   MOCK_METHOD0(EnqueueEmptyFrame, void());
   MOCK_METHOD4(FindPtsAndDuration, TimeTuple(
       const AVRational& time_base,
-      const PtsHeap& pts_heap,
+      PtsHeap* pts_heap,
       const TimeTuple& last_pts,
       const VideoFrame* frame));
   MOCK_METHOD0(SignalPipelineError, void());
@@ -293,7 +293,7 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   video_frame_->SetTimestamp(StreamSample::kInvalidTimestamp);
   video_frame_->SetDuration(StreamSample::kInvalidTimestamp);
   VideoDecoderImpl::TimeTuple result_pts =
-      decoder_->FindPtsAndDuration(time_base, pts_heap,
+      decoder_->FindPtsAndDuration(time_base, &pts_heap,
                                    last_pts, video_frame_.get());
   EXPECT_EQ(StreamSample::kInvalidTimestamp.InMicroseconds(),
             result_pts.timestamp.InMicroseconds());
@@ -309,7 +309,7 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   video_frame_->SetTimestamp(StreamSample::kInvalidTimestamp);
   video_frame_->SetDuration(StreamSample::kInvalidTimestamp);
   result_pts =
-      decoder_->FindPtsAndDuration(time_base, pts_heap,
+      decoder_->FindPtsAndDuration(time_base, &pts_heap,
                                    last_pts, video_frame_.get());
   EXPECT_EQ(116, result_pts.timestamp.InMicroseconds());
   EXPECT_EQ(500000, result_pts.duration.InMicroseconds());
@@ -322,7 +322,7 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   // situation and set the timestamp to kInvalidTimestamp.
   video_frame_->SetTimestamp(base::TimeDelta::FromMicroseconds(0));
   result_pts =
-      decoder_->FindPtsAndDuration(time_base, pts_heap,
+      decoder_->FindPtsAndDuration(time_base,&pts_heap,
                                    last_pts, video_frame_.get());
   EXPECT_EQ(116, result_pts.timestamp.InMicroseconds());
   EXPECT_EQ(500000, result_pts.duration.InMicroseconds());
@@ -330,7 +330,7 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   // Add a pts to the |pts_heap| and make sure it overrides estimation.
   pts_heap.Push(base::TimeDelta::FromMicroseconds(123));
   result_pts = decoder_->FindPtsAndDuration(time_base,
-                                            pts_heap,
+                                            &pts_heap,
                                             last_pts,
                                             video_frame_.get());
   EXPECT_EQ(123, result_pts.timestamp.InMicroseconds());
@@ -341,7 +341,7 @@ TEST_F(VideoDecoderImplTest, FindPtsAndDuration) {
   video_frame_->SetTimestamp(base::TimeDelta::FromMicroseconds(456));
   video_frame_->SetDuration(base::TimeDelta::FromMicroseconds(789));
   result_pts = decoder_->FindPtsAndDuration(time_base,
-                                            pts_heap,
+                                            &pts_heap,
                                             last_pts,
                                             video_frame_.get());
   EXPECT_EQ(456, result_pts.timestamp.InMicroseconds());
@@ -355,6 +355,10 @@ ACTION_P2(DecodeComplete, decoder, video_frame) {
 ACTION_P2(DecodeNotComplete, decoder, video_frame) {
   scoped_refptr<VideoFrame> null_frame;
   decoder->OnDecodeComplete(null_frame);
+}
+
+ACTION_P(ConsumePTS, pts_heap) {
+  pts_heap->Pop();
 }
 
 TEST_F(VideoDecoderImplTest, DoDecode_TestStateTransition) {
@@ -382,10 +386,11 @@ TEST_F(VideoDecoderImplTest, DoDecode_TestStateTransition) {
       .WillOnce(DecodeComplete(mock_decoder.get(), video_frame_))
       .WillOnce(DecodeComplete(mock_decoder.get(), video_frame_))
       .WillOnce(DecodeNotComplete(mock_decoder.get(), video_frame_));
+  PtsHeap* pts_heap = &mock_decoder->pts_heap_;
   EXPECT_CALL(*mock_decoder, FindPtsAndDuration(_, _, _, _))
-      .WillOnce(Return(kTestPts1))
-      .WillOnce(Return(kTestPts2))
-      .WillOnce(Return(kTestPts1));
+      .WillOnce(DoAll(ConsumePTS(pts_heap), Return(kTestPts1)))
+      .WillOnce(DoAll(ConsumePTS(pts_heap), Return(kTestPts2)))
+      .WillOnce(DoAll(ConsumePTS(pts_heap), Return(kTestPts1)));
   EXPECT_CALL(*mock_decoder, EnqueueVideoFrame(_))
       .Times(3);
   EXPECT_CALL(*mock_decoder, EnqueueEmptyFrame())

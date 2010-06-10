@@ -39,7 +39,8 @@ void VideoDecoderImpl::DoInitialize(DemuxerStream* demuxer_stream,
   }
   AVStream* av_stream = av_stream_provider->GetAVStream();
 
-  *time_base_ = av_stream->time_base;
+  time_base_->den = av_stream->r_frame_rate.num;
+  time_base_->num = av_stream->r_frame_rate.den;
 
   // TODO(ajwong): We don't need these extra variables if |media_format_| has
   // them.  Remove.
@@ -138,7 +139,8 @@ void VideoDecoderImpl::DoDecode(Buffer* buffer) {
   //
   // TODO(ajwong): This push logic, along with the pop logic below needs to
   // be reevaluated to correctly handle decode errors.
-  if (state_ == kNormal) {
+  if (state_ == kNormal &&
+      buffer->GetTimestamp() != StreamSample::kInvalidTimestamp) {
     pts_heap_.Push(buffer->GetTimestamp());
   }
 
@@ -149,22 +151,8 @@ void VideoDecoderImpl::DoDecode(Buffer* buffer) {
 void VideoDecoderImpl::OnDecodeComplete(scoped_refptr<VideoFrame> video_frame) {
   if (video_frame.get()) {
     // If we actually got data back, enqueue a frame.
-    last_pts_ = FindPtsAndDuration(*time_base_, pts_heap_, last_pts_,
+    last_pts_ = FindPtsAndDuration(*time_base_, &pts_heap_, last_pts_,
                                    video_frame.get());
-
-    // Pop off a pts on a successful decode since we are "using up" one
-    // timestamp.
-    //
-    // TODO(ajwong): Do we need to pop off a pts when avcodec_decode_video2()
-    // returns < 0?  The rationale is that when get_picture_ptr == 0, we skip
-    // popping a pts because no frame was produced.  However, when
-    // avcodec_decode_video2() returns false, it is a decode error, which
-    // if it means a frame is dropped, may require us to pop one more time.
-    if (!pts_heap_.IsEmpty()) {
-      pts_heap_.Pop();
-    } else {
-      NOTREACHED() << "Attempting to decode more frames than were input.";
-    }
 
     video_frame->SetTimestamp(last_pts_.timestamp);
     video_frame->SetDuration(last_pts_.duration);
@@ -201,7 +189,7 @@ void VideoDecoderImpl::EnqueueEmptyFrame() {
 
 VideoDecoderImpl::TimeTuple VideoDecoderImpl::FindPtsAndDuration(
     const AVRational& time_base,
-    const PtsHeap& pts_heap,
+    PtsHeap* pts_heap,
     const TimeTuple& last_pts,
     const VideoFrame* frame) {
   TimeTuple pts;
@@ -218,9 +206,10 @@ VideoDecoderImpl::TimeTuple VideoDecoderImpl::FindPtsAndDuration(
   if (timestamp != StreamSample::kInvalidTimestamp &&
       timestamp.ToInternalValue() != 0) {
     pts.timestamp = timestamp;
-  } else if (!pts_heap.IsEmpty()) {
+  } else if (!pts_heap->IsEmpty()) {
     // If the frame did not have pts, try to get the pts from the |pts_heap|.
-    pts.timestamp = pts_heap.Top();
+    pts.timestamp = pts_heap->Top();
+    pts_heap->Pop();
   } else if (last_pts.timestamp != StreamSample::kInvalidTimestamp &&
              last_pts.duration != StreamSample::kInvalidTimestamp) {
     // Guess assuming this frame was the same as the last frame.

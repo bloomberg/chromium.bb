@@ -83,7 +83,7 @@ class VideoDecoderImpl : public DecoderBase<VideoDecoder, VideoFrame> {
   // by data from the packet stream.  Estimation based on the |last_pts| is
   // reserved as a last-ditch effort.
   virtual TimeTuple FindPtsAndDuration(const AVRational& time_base,
-                                       const PtsHeap& pts_heap,
+                                       PtsHeap* pts_heap,
                                        const TimeTuple& last_pts,
                                        const VideoFrame* frame);
 
