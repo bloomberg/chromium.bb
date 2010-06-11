@@ -94,10 +94,8 @@ EOF
 function make_new_dest() {
   DEST="${TEMPDIR}"/Dest.app
   rm -rf "${DEST}"
-  RSRCDIR="${DEST}/Contents/Versions/0/${FWKNAME}/Resources"
-  mkdir -p "${RSRCDIR}"
   defaults write "${DEST}/Contents/Info" CFBundleShortVersionString 0
-  defaults write "${RSRCDIR}/Info" KSVersion 0
+  defaults write "${DEST}/Contents/Info" KSVersion 0
   cat >"${TEMPDIR}"/ksadmin <<EOF
 #!/bin/sh
 if [ "\${1}" = "--ksadmin-version" ] ; then
@@ -122,9 +120,9 @@ function make_src() {
   mkdir -p "${RSRCDIR}"
   defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" \
       CFBundleShortVersionString "1"
-  defaults write "${RSRCDIR}/Info" \
+  defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" \
       KSProductID "com.google.Chrome"
-  defaults write "${RSRCDIR}/Info" \
+  defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" \
       KSVersion "2"
 }
 
@@ -146,24 +144,18 @@ make_basic_src_and_dest
 fail_installer "Was no KSUpdateURL in dest after copy"
 
 make_basic_src_and_dest
-defaults write \
-    "${TEMPDIR}/${APPNAME}/Contents/Versions/1/${FWKNAME}/Resources/Info" \
-    KSUpdateURL "http://foo.bar"
+defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" KSUpdateURL "http://foobar"
 export FAKE_SYSTEM_TICKET=1
 fail_installer "User and system ticket both present"
 export -n FAKE_SYSTEM_TICKET
 
 make_src
 make_old_dest
-defaults write \
-    "${TEMPDIR}/${APPNAME}/Contents/Versions/1/${FWKNAME}/Resources/Info" \
-    KSUpdateURL "http://foo.bar"
+defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" KSUpdateURL "http://foobar"
 pass_installer "Old-style update"
 
 make_basic_src_and_dest
-defaults write \
-    "${TEMPDIR}/${APPNAME}/Contents/Versions/1/${FWKNAME}/Resources/Info" \
-    KSUpdateURL "http://foo.bar"
+defaults write "${TEMPDIR}/${APPNAME}/Contents/Info" KSUpdateURL "http://foobar"
 pass_installer "ALL"
 
 cleanup_tempdir

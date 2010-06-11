@@ -809,7 +809,7 @@
               'destination': '<(mac_packaging_dir)',
               'files': [
                 # Pull over the known version of pkg-dmg to use.
-                'tools/build/mac/pkg-dmg',
+                'installer/mac/pkg-dmg',
               ],
               'conditions': [
                 ['mac_keystone==1', {
