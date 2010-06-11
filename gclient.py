@@ -217,7 +217,6 @@ solutions = [
       exec(content, self._config_dict)
     except SyntaxError, e:
       try:
-        __pychecker__ = 'no-objattrs'
         # Try to construct a human readable error message
         error_message = [
             'There is a syntax error in your configuration file.',
@@ -231,13 +230,13 @@ solutions = [
         raise gclient_utils.Error('\n'.join(error_message))
 
   def SaveConfig(self):
-    gclient_utils.FileWrite(os.path.join(self._root_dir,
+    gclient_utils.FileWrite(os.path.join(self.root_dir(),
                                          self._options.config_filename),
                             self.config_content)
 
   def _LoadConfig(self):
     client_source = gclient_utils.FileRead(
-        os.path.join(self._root_dir, self._options.config_filename))
+        os.path.join(self.root_dir(), self._options.config_filename))
     self.SetConfig(client_source)
 
   def GetVar(self, key, default=None):
@@ -285,7 +284,7 @@ solutions = [
     if result.startswith('{\''):
       result = '{ \'' + result[2:]
     text = "entries = \\\n" + result + '\n'
-    file_path = os.path.join(self._root_dir, self._options.entries_filename)
+    file_path = os.path.join(self.root_dir(), self._options.entries_filename)
     gclient_utils.FileWrite(file_path, text)
 
   def _ReadEntries(self):
@@ -299,7 +298,7 @@ solutions = [
       entries file hasn't been created yet.
     """
     scope = {}
-    filename = os.path.join(self._root_dir, self._options.entries_filename)
+    filename = os.path.join(self.root_dir(), self._options.entries_filename)
     if not os.path.exists(filename):
       return []
     exec(gclient_utils.FileRead(filename), scope)
@@ -435,7 +434,7 @@ solutions = [
                 raise gclient_utils.Error(
                     "relative DEPS entry \"%s\" must begin with a slash" % d)
               # Create a scm just to query the full url.
-              scm = gclient_scm.CreateSCM(solution["url"], self._root_dir,
+              scm = gclient_scm.CreateSCM(solution["url"], self.root_dir(),
                                            None)
               url = scm.FullUrlForRelativeUrl(url)
         if d in deps and deps[d] != url:
@@ -467,7 +466,7 @@ solutions = [
     # Use a discrete exit status code of 2 to indicate that a hook action
     # failed.  Users of this script may wish to treat hook action failures
     # differently from VC failures.
-    gclient_utils.SubprocessCall(command, self._root_dir, fail_status=2)
+    gclient_utils.SubprocessCall(command, self.root_dir(), fail_status=2)
 
   def _RunHooks(self, command, file_list, is_using_git):
     """Evaluates all hooks, running actions as needed.
@@ -574,13 +573,13 @@ solutions = [
       entries[name] = url
       if run_scm and url:
         self._options.revision = revision_overrides.get(name)
-        scm = gclient_scm.CreateSCM(url, self._root_dir, name)
+        scm = gclient_scm.CreateSCM(url, self.root_dir(), name)
         scm.RunCommand(command, self._options, args, file_list)
         file_list = [os.path.join(name, f.strip()) for f in file_list]
         self._options.revision = None
       try:
         deps_content = gclient_utils.FileRead(
-            os.path.join(self._root_dir, name, deps_file))
+            os.path.join(self.root_dir(), name, deps_file))
       except IOError, e:
         if e.errno != errno.ENOENT:
           raise
@@ -604,14 +603,14 @@ solutions = [
         entries[d] = url
         if run_scm:
           self._options.revision = revision_overrides.get(d)
-          scm = gclient_scm.CreateSCM(url, self._root_dir, d)
+          scm = gclient_scm.CreateSCM(url, self.root_dir(), d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
       elif isinstance(deps[d], self.FileImpl):
         file_dep = deps[d]
         self._options.revision = file_dep.GetRevision()
         if run_scm:
-          scm = gclient_scm.CreateSCM(file_dep.GetPath(), self._root_dir, d)
+          scm = gclient_scm.CreateSCM(file_dep.GetPath(), self.root_dir(), d)
           scm.RunCommand("updatesingle", self._options,
                          args + [file_dep.GetFilename()], file_list)
 
@@ -621,7 +620,7 @@ solutions = [
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
       if isinstance(deps[d], self.FromImpl):
-        filename = os.path.join(self._root_dir,
+        filename = os.path.join(self.root_dir(),
                                 deps[d].module_name,
                                 self.DEPS_FILE)
         content =  gclient_utils.FileRead(filename)
@@ -631,11 +630,11 @@ solutions = [
         # a File() or having to resolve a relative URL.  To resolve relative
         # URLs, we need to pass in the orignal sub deps URL.
         sub_deps_base_url = deps[deps[d].module_name]
-        url = deps[d].GetUrl(d, sub_deps_base_url, self._root_dir, sub_deps)
+        url = deps[d].GetUrl(d, sub_deps_base_url, self.root_dir(), sub_deps)
         entries[d] = url
         if run_scm:
           self._options.revision = revision_overrides.get(d)
-          scm = gclient_scm.CreateSCM(url, self._root_dir, d)
+          scm = gclient_scm.CreateSCM(url, self.root_dir(), d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
 
@@ -646,7 +645,7 @@ solutions = [
       if not os.path.isabs(file_list[i]):
         continue
 
-      prefix = os.path.commonprefix([self._root_dir.lower(),
+      prefix = os.path.commonprefix([self.root_dir().lower(),
                                      file_list[i].lower()])
       file_list[i] = file_list[i][len(prefix):]
 
@@ -654,7 +653,7 @@ solutions = [
       while file_list[i].startswith('\\') or file_list[i].startswith('/'):
         file_list[i] = file_list[i][1:]
 
-    is_using_git = gclient_utils.IsUsingGit(self._root_dir, entries.keys())
+    is_using_git = gclient_utils.IsUsingGit(self.root_dir(), entries.keys())
     self._RunHooks(command, file_list, is_using_git)
 
     if command == 'update':
@@ -665,7 +664,7 @@ solutions = [
       for entry in prev_entries:
         # Fix path separator on Windows.
         entry_fixed = entry.replace('/', os.path.sep)
-        e_dir = os.path.join(self._root_dir, entry_fixed)
+        e_dir = os.path.join(self.root_dir(), entry_fixed)
         # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
           modified_files = False
@@ -674,7 +673,7 @@ solutions = [
             modified_files = gclient_scm.scm.SVN.CaptureStatus(e_dir)
           else:
             file_list = []
-            scm = gclient_scm.CreateSCM(prev_entries[entry], self._root_dir,
+            scm = gclient_scm.CreateSCM(prev_entries[entry], self.root_dir(),
                                         entry_fixed)
             scm.status(self._options, [], file_list)
             modified_files = file_list != []
@@ -687,7 +686,7 @@ solutions = [
           else:
             # Delete the entry
             print("\n________ deleting \'%s\' " +
-                  "in \'%s\'") % (entry_fixed, self._root_dir)
+                  "in \'%s\'") % (entry_fixed, self.root_dir())
             gclient_utils.RemoveDirectory(e_dir)
       # record the current list of entries for next time
       self._SaveEntries(entries)
@@ -711,7 +710,7 @@ solutions = [
     # Inner helper to generate base url and rev tuple
     def GetURLAndRev(name, original_url):
       url, _ = gclient_utils.SplitUrlRevision(original_url)
-      scm = gclient_scm.CreateSCM(original_url, self._root_dir, name)
+      scm = gclient_scm.CreateSCM(original_url, self.root_dir(), name)
       return (url, scm.revinfo(self._options, [], None))
 
     # text of the snapshot gclient file
@@ -735,7 +734,7 @@ solutions = [
                                   'filename.')
       try:
         deps_content = gclient_utils.FileRead(
-            os.path.join(self._root_dir, name, deps_file))
+            os.path.join(self.root_dir(), name, deps_file))
       except IOError, e:
         if e.errno != errno.ENOENT:
           raise
@@ -762,7 +761,7 @@ solutions = [
           raise gclient_utils.Error("From %s missing revisioned url" %
                                         deps[d].module_name)
         content =  gclient_utils.FileRead(os.path.join(
-                                            self._root_dir,
+                                            self.root_dir(),
                                             deps[d].module_name,
                                             self.DEPS_FILE))
         sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
@@ -789,9 +788,12 @@ solutions = [
     # Print the snapshot configuration file
     if self._options.snapshot:
       config = self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient}
-      snapclient = GClient(self._root_dir, self._options)
+      snapclient = GClient(self.root_dir(), self._options)
       snapclient.SetConfig(config)
       print(snapclient.config_content)
+
+  def root_dir(self):
+    return self._root_dir
 
 
 #### gclient commands.
