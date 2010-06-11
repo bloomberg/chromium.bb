@@ -3224,6 +3224,7 @@
 {
    bug_46343_b
    Memcheck:Leak
+   ...
    fun:realloc
    fun:_ZN6Pickle6ResizeEj
    fun:_ZN6Pickle10BeginWriteEj
