@@ -1539,6 +1539,10 @@ std::set<FilePath> Extension::GetBrowserImages() {
   return image_paths;
 }
 
+bool Extension::IsApp() const {
+  return !GetFullLaunchURL().is_empty();
+}
+
 GURL Extension::GetFullLaunchURL() const {
   if (!launch_local_path_.empty()) {
     return extension_url_.Resolve(launch_local_path_);

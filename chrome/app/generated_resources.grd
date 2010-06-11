@@ -2046,7 +2046,7 @@ each locale. -->
       </message>
       <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION"
          desc="Message shown to the user to validate the download of an extension file.">
-        Extensions and themes can harm your computer. Are you sure you want to continue?
+        Extensions, apps, and themes can harm your computer. Are you sure you want to continue?
       </message>
       <message name="IDS_SAVE_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">
@@ -3338,6 +3338,9 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension installation prompt. Note that the exact wording is important. This should mean that the extension _can_ access the listed privileges, but not necessarily that it will or needs to.">
         This extension can access:
       </message>
+      <message name="IDS_EXTENSION_PROMPT2_APP_WILL_HAVE_ACCESS_TO" desc="The same as IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO, but replace 'extension' with 'app'">
+        This app can access:
+      </message>
       <message name="IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
         All data on your computer and the websites you visit
       </message>
@@ -3359,7 +3362,7 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
         Your browsing history
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION" desc="Permissin string for access to geolocation.">
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION" desc="Permisson string for access to geolocation.">
         Your physical location
       </message>
 

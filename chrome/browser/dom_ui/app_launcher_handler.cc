@@ -25,10 +25,6 @@
 
 namespace {
 
-bool TreatAsApp(const Extension* extension) {
-  return !extension->GetFullLaunchURL().is_empty();
-}
-
 // This extracts an int from a ListValue at the given |index|.
 bool ExtractInt(const ListValue* list, size_t index, int* out_int) {
   std::string string_value;
@@ -119,7 +115,7 @@ void AppLauncherHandler::HandleGetApps(const Value* value) {
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-     if (TreatAsApp(*it)) {
+     if ((*it)->IsApp()) {
        DictionaryValue* app_info = new DictionaryValue();
        CreateAppInfo(*it, app_info);
        list->Append(app_info);

@@ -329,6 +329,9 @@ class Extension {
 
   const std::string omnibox_keyword() const { return omnibox_keyword_; }
 
+  // Is this extension an App?
+  bool IsApp() const;
+
   bool web_content_enabled() const { return web_content_enabled_; }
   const ExtensionExtent& web_extent() const { return web_extent_; }
 
