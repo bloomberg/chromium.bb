@@ -7270,7 +7270,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Update Recommended dialog -->
     <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
-      Old school's not cool. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is woefully out of date because it hasn't crashed or restarted in at least two weeks. Restart to apply update.
+      Old school's not cool. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is woefully out of date because it hasn't crashed or restarted in a while. Restart to apply update.
     </message>
     <message name="IDS_RESTART_AND_UPDATE" desc="The button label for restarting and updating Chrome.">
       Restart and update
