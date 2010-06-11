@@ -301,16 +301,17 @@ def IsUsingGit(root, paths):
       return True
   return False
 
-def FindGclientRoot(from_dir):
+def FindGclientRoot(from_dir, filename='.gclient'):
   """Tries to find the gclient root."""
   path = os.path.realpath(from_dir)
-  while not os.path.exists(os.path.join(path, '.gclient')):
+  while not os.path.exists(os.path.join(path, filename)):
     next = os.path.split(path)
     if not next[1]:
       return None
     path = next[0]
   logging.info('Found gclient root at ' + path)
   return path
+
 
 def PathDifference(root, subpath):
   """Returns the difference subpath minus root."""

@@ -55,22 +55,28 @@ class DiffFilterer(object):
 
 # Factory Method for SCM wrapper creation
 
-def CreateSCM(url=None, root_dir=None, relpath=None, scm_name='svn'):
-  scm_map = {
+def GetScmName(url):
+  if url:
+    url, _ = gclient_utils.SplitUrlRevision(url)
+    if (url.startswith('git://') or url.startswith('ssh://') or
+        url.endswith('.git')):
+      return 'git'
+    elif (url.startswith('http://') or url.startswith('svn://') or
+          url.startswith('ssh+svn://')):
+      return 'svn'
+  return None
+
+
+def CreateSCM(url, root_dir=None, relpath=None):
+  SCM_MAP = {
     'svn' : SVNWrapper,
     'git' : GitWrapper,
   }
 
-  orig_url = url
-
-  if url:
-    url, _ = gclient_utils.SplitUrlRevision(url)
-    if url.startswith('git:') or url.startswith('ssh:') or url.endswith('.git'):
-      scm_name = 'git'
-
-  if not scm_name in scm_map:
-    raise gclient_utils.Error('Unsupported scm %s' % scm_name)
-  return scm_map[scm_name](orig_url, root_dir, relpath, scm_name)
+  scm_name = GetScmName(url)
+  if not scm_name in SCM_MAP:
+    raise gclient_utils.Error('No SCM found for url %s' % url)
+  return SCM_MAP[scm_name](url, root_dir, relpath)
 
 
 # SCMWrapper base class
@@ -80,9 +86,7 @@ class SCMWrapper(object):
 
   This is the abstraction layer to bind to different SCM.
   """
-  def __init__(self, url=None, root_dir=None, relpath=None,
-               scm_name='svn'):
-    self.scm_name = scm_name
+  def __init__(self, url=None, root_dir=None, relpath=None):
     self.url = url
     self._root_dir = root_dir
     if self._root_dir:
@@ -106,7 +110,7 @@ class SCMWrapper(object):
 
     if not command in dir(self):
       raise gclient_utils.Error('Command %s not implemented in %s wrapper' % (
-          command, self.scm_name))
+          command, self.__class__.__name__))
 
     return getattr(self, command)(options, args, file_list)
 
@@ -671,9 +675,12 @@ class SVNWrapper(SCMWrapper):
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
+    path = os.path.join(self._root_dir, self.relpath)
+    if not os.path.isdir(path):
+      raise gclient_utils.Error('Directory %s is not present.' % path)
     command = ['diff']
     command.extend(args)
-    scm.SVN.Run(command, os.path.join(self._root_dir, self.relpath))
+    scm.SVN.Run(command, path)
 
   def export(self, options, args, file_list):
     """Export a clean directory tree into the given path."""
@@ -692,6 +699,8 @@ class SVNWrapper(SCMWrapper):
     """Generates a patch file which can be applied to the root of the
     repository."""
     path = os.path.join(self._root_dir, self.relpath)
+    if not os.path.isdir(path):
+      raise gclient_utils.Error('Directory %s is not present.' % path)
     command = ['diff']
     command.extend(args)
 

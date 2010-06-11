@@ -157,6 +157,7 @@ class GClientKeywords(object):
 
 class GClient(GClientKeywords):
   """Object that represent a gclient checkout."""
+  DEPS_FILE = 'DEPS'
 
   SUPPORTED_COMMANDS = [
     'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
@@ -173,8 +174,6 @@ class GClient(GClientKeywords):
     "linux": "unix",
     "linux2": "unix",
   }
-
-  DEPS_FILE = 'DEPS'
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
 solutions = [
@@ -1040,14 +1039,22 @@ def CMDrunhooks(parser, args):
 
 
 def CMDrevinfo(parser, args):
-  """Outputs details for every dependencies."""
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
-  parser.add_option("-s", "--snapshot", action="store_true",
-                    help="create a snapshot file of the current "
-                         "version of all repositories")
+  """Output revision info mapping for the client and its dependencies.
+
+  This allows the capture of an overall "revision" for the source tree that
+  can be used to reproduce the same tree in the future. It is only useful for
+  "unpinned dependencies", i.e. DEPS/deps references without a svn revision
+  number or a git hash. A git branch name isn't "pinned" since the actual
+  commit can change.
+  """
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
+  parser.add_option('-s', '--snapshot', action='store_true',
+                    help='creates a snapshot .gclient file of the current '
+                         'version of all repositories to reproduce the tree, '
+                         'implies -a')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:

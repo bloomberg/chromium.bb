@@ -70,18 +70,17 @@ class SVNWrapperTestCase(BaseTestCase):
     members = [
         'AddAdditionalFlags', 'FullUrlForRelativeUrl', 'RunCommand',
         'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
-        'revinfo', 'runhooks', 'scm_name', 'status', 'update',
+        'revinfo', 'runhooks', 'status', 'update',
         'updatesingle', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
-    self.compareMembers(self._scm_wrapper(), members)
+    self.compareMembers(self._scm_wrapper('svn://a'), members)
 
   def testUnsupportedSCM(self):
-    args = [self.url, self.root_dir, self.relpath]
-    kwargs = {'scm_name' : 'foo'}
-    exception_msg = 'Unsupported scm %(scm_name)s' % kwargs
-    self.assertRaisesError(exception_msg, self._scm_wrapper, *args, **kwargs)
+    args = ['gopher://foo', self.root_dir, self.relpath]
+    exception_msg = 'No SCM found for url gopher://foo'
+    self.assertRaisesError(exception_msg, self._scm_wrapper, *args)
 
   def testSVNFullUrlForRelativeUrl(self):
     self.url = 'svn://a/b/c/d'
@@ -528,7 +527,7 @@ from :3
     members = [
         'FullUrlForRelativeUrl', 'RunCommand',
         'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
-        'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
+        'revinfo', 'runhooks', 'status', 'update', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
