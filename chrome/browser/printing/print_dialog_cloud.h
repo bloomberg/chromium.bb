@@ -20,7 +20,7 @@ class PrintDialogCloud {
   static void CreatePrintDialogForPdf(const FilePath& path_to_pdf);
 
  private:
-  friend class PrintDialogCloudTest;
+  FRIEND_TEST(PrintDialogCloudTest, HandlersRegistered);
 
   explicit PrintDialogCloud(const FilePath& path_to_pdf);
   ~PrintDialogCloud();
