@@ -20,6 +20,10 @@
    end of the static code segment more accurately.  The value below is
    an approximation. */
 #define DYNAMIC_CODE_SEGMENT_START 0x80000
+/* TODO(mseaborn): Add a symbol to the linker script for finding the
+   end of the dynamic code region.  The value below is duplicated in
+   nacl.scons, passed via --section-start. */
+#define DYNAMIC_CODE_SEGMENT_END 0x1000000
 
 
 int nacl_load_code(void *dest, void *src, int size) {
@@ -35,6 +39,7 @@ char *next_addr = (char *) DYNAMIC_CODE_SEGMENT_START;
 char *allocate_code_space(int pages) {
   char *addr = next_addr;
   next_addr += 0x10000 * pages;
+  assert(next_addr < (char *) DYNAMIC_CODE_SEGMENT_END);
   return addr;
 }
 
@@ -273,6 +278,32 @@ void test_branches_outside_chunk() {
   assert(rc == 0);
 }
 
+void test_end_of_code_region() {
+  int rc;
+  void *dest;
+  uint8_t data[32];
+  fill_nops(data, sizeof(data));
+
+  /* This tries to load into the data segment, which is definitely not
+     allowed. */
+  dest = (uint8_t *) DYNAMIC_CODE_SEGMENT_END;
+  rc = nacl_load_code(dest, data, sizeof(data));
+  assert(rc == -EFAULT);
+
+  /* This tries to load into the last bundle of the code region, which
+     sel_ldr disallows just in case there is some CPU bug in which the
+     CPU fails to check for running off the end of an x86 code
+     segment.  This is applied to other architectures for
+     consistency. */
+  dest = (uint8_t *) DYNAMIC_CODE_SEGMENT_END - sizeof(data);
+  rc = nacl_load_code(dest, data, sizeof(data));
+  assert(rc == -EFAULT);
+
+  dest = (uint8_t *) DYNAMIC_CODE_SEGMENT_END - sizeof(data) * 2;
+  rc = nacl_load_code(dest, data, sizeof(data));
+  assert(rc == 0);
+}
+
 
 int main() {
   test_loading_code();
@@ -287,6 +318,7 @@ int main() {
   test_allowed_overwrite();
   test_fail_on_mmap_to_dyncode_area();
   test_branches_outside_chunk();
+  test_end_of_code_region();
 
   /* Test again to make sure we didn't run out of space. */
   test_loading_code();

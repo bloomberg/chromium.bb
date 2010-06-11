@@ -41,6 +41,35 @@
 #endif
 
 
+/*
+ * Fill from static_text_end to end of that page with halt
+ * instruction, which is NACL_HALT_LEN in size.  Does not touch
+ * dynamic text region, which should be pre-filled with HLTs.
+ */
+void NaClFillEndOfTextRegion(struct NaClApp *nap) {
+  size_t page_pad;
+
+  /*
+   * By adding NACL_HALT_SLED_SIZE, we ensure that the code region
+   * ends with HLTs, just in case the CPU has a bug in which it fails
+   * to check for running off the end of the x86 code segment.
+   */
+  page_pad = (NaClRoundAllocPage(nap->static_text_end + NACL_HALT_SLED_SIZE)
+              - nap->static_text_end);
+  CHECK(page_pad >= NACL_HALT_SLED_SIZE);
+  CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
+
+  NaClLog(4,
+          "Filling with halts: %08"NACL_PRIxPTR", %08"NACL_PRIxS" bytes\n",
+          nap->mem_start + nap->static_text_end,
+          page_pad);
+
+  NaClFillMemoryRegionWithHalt((void *)(nap->mem_start + nap->static_text_end),
+                               page_pad);
+
+  nap->static_text_end += page_pad;
+}
+
 NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
                               struct NaClApp   *nap,
                               enum NaClAbiCheckOption check_abi) {

@@ -50,32 +50,6 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
   NaClFillMemoryRegionWithHalt((void *) nap->mem_start, NACL_TRAMPOLINE_END);
 }
 
-
-/*
- * Fill from static_text_end to end of that page with halt
- * instruction, which is NACL_HALT_LEN in size.  Does not touch
- * dynamic text region, which should be pre-filled with HLTs.
- */
-void NaClFillEndOfTextRegion(struct NaClApp *nap) {
-  size_t page_pad;
-
-  page_pad = (NaClRoundAllocPage(nap->static_text_end + NACL_HALT_SLED_SIZE)
-              - nap->static_text_end);
-  CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
-
-  NaClLog(4,
-          "Filling with halts: %08"NACL_PRIxPTR", %08"NACL_PRIxS" bytes\n",
-          nap->mem_start + nap->static_text_end,
-          page_pad);
-
-  NaClFillMemoryRegionWithHalt((void *) (nap->mem_start +
-                                         nap->static_text_end),
-                               page_pad);
-
-  NaClLog(4, "Done.  Bumping static_text_end by 0x%"NACL_PRIxPTR"\n", page_pad);
-  nap->static_text_end += page_pad;
-}
-
 void NaClLoadSpringboard(struct NaClApp  *nap) {
   /*
    * There is no springboard for x86-64.

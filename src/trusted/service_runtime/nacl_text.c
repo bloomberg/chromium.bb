@@ -377,7 +377,11 @@ int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
     NaClLog(1, "NaClTextSysDyncode_Copy: Below dynamic code area\n");
     return -NACL_ABI_EFAULT;
   }
-  if (dest + size > nap->dynamic_text_end) {
+  /*
+   * We ensure that the final HLTs of the dynamic code region cannot
+   * be overwritten, just in case of CPU bugs.
+   */
+  if (dest + size > nap->dynamic_text_end - NACL_HALT_SLED_SIZE) {
     NaClLog(1, "NaClTextSysDyncode_Copy: Above dynamic code area\n");
     return -NACL_ABI_EFAULT;
   }
