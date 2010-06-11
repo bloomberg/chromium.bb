@@ -34,6 +34,9 @@
       <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG" file="locationbg.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_C" file="locationbg_c.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_L" file="locationbg_l.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_R" file="locationbg_r.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="location_bar_keyword_search_c.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="location_bar_keyword_search_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="location_bar_keyword_search_r.png" type="BINDATA" />

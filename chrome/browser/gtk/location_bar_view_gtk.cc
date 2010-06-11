@@ -35,6 +35,7 @@
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/location_bar_util.h"
@@ -106,10 +107,6 @@ void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarViewGtk
-
-// static
-const GdkColor LocationBarViewGtk::kBackgroundColor =
-    GDK_COLOR_RGB(255, 255, 255);
 
 LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
     : star_image_(NULL),
@@ -746,38 +743,23 @@ void LocationBarViewGtk::Observe(NotificationType type,
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
                                           GdkEventExpose* event) {
-  GdkRectangle* alloc_rect = &hbox_->allocation;
-
   // If we're not using GTK theming, draw our own border over the edge pixels
   // of the background.
   if (!profile_ ||
       !GtkThemeProvider::GetFrom(profile_)->UseGtkTheme()) {
-    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event->window));
-    gdk_cairo_rectangle(cr, &event->area);
-    cairo_clip(cr);
-    CairoCachedSurface* background = theme_provider_->GetSurfaceNamed(
-        popup_window_mode_ ? IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG,
-        widget);
+    int left, center, right;
+    if (popup_window_mode_) {
+      left = right = IDR_LOCATIONBG_POPUPMODE_EDGE;
+      center = IDR_LOCATIONBG_POPUPMODE_CENTER;
+    } else {
+      left = IDR_LOCATIONBG_L;
+      center = IDR_LOCATIONBG_C;
+      right = IDR_LOCATIONBG_R;
+    }
 
-    // We paint the source to the "outer" rect, which is the size of the hbox's
-    // allocation. This image blends with whatever is behind it as the top and
-    // bottom fade out.
-    background->SetSource(cr, alloc_rect->x, alloc_rect->y);
-    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-    gdk_cairo_rectangle(cr, alloc_rect);
-    cairo_fill(cr);
-
-    // But on top of that, we also need to draw the "inner" rect, which is all
-    // the color that the background should be.
-    cairo_rectangle(cr, alloc_rect->x,
-                    alloc_rect->y + kTopMargin + kBorderThickness,
-                    alloc_rect->width,
-                    alloc_rect->height - kTopMargin -
-                    kBottomMargin - 2 * kBorderThickness);
-    gdk_cairo_set_source_color(cr, const_cast<GdkColor*>(&kBackgroundColor));
-    cairo_fill(cr);
-
-    cairo_destroy(cr);
+    NineBox background(left, center, right,
+                       0, 0, 0, 0, 0, 0);
+    background.RenderToWidget(widget);
   }
 
   return FALSE;  // Continue propagating the expose.
