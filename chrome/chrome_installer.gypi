@@ -769,6 +769,9 @@
         {
           'target_name': 'installer_packaging',
           'type': 'none',
+          'dependencies': [
+            'installer/mac/third_party/bsdiff/goobsdiff.gyp:*',
+          ],
           'conditions': [
             ['buildtype=="Official"', {
               'actions': [
@@ -803,11 +806,15 @@
           ],  # conditions
           'copies': [
             {
-              # Put the files where the packaging system will find them.
-              # The packager will use these when building the disk image.
+              # Put the files where the packaging system will find them. The
+              # packager will use these when building the "full installer"
+              # disk images and delta/differential update disk images.
               'destination': '<(mac_packaging_dir)',
               'files': [
-                # Pull over the known version of pkg-dmg to use.
+                '<(PRODUCT_DIR)/goobsdiff',
+                '<(PRODUCT_DIR)/goobspatch',
+                'installer/mac/dirdiffer.sh',
+                'installer/mac/dirpatcher.sh',
                 'installer/mac/pkg-dmg',
               ],
               'conditions': [
