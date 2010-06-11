@@ -78,6 +78,8 @@ BEGIN_SINK_MAP(Bho)
                   BeforeNavigate2, &kBeforeNavigate2Info)
   SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2,
                   NavigateComplete2, &kNavigateComplete2Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE,
+                  DocumentComplete, &kDocumentCompleteInfo)
 END_SINK_MAP()
 
   Bho();
@@ -87,10 +89,13 @@ END_SINK_MAP()
 
   // IObjectWithSite
   STDMETHODIMP SetSite(IUnknown* site);
+
+  // WebBrowser2 event sinks.
   STDMETHOD(BeforeNavigate2)(IDispatch* dispatch, VARIANT* url, VARIANT* flags,
       VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
       VARIANT_BOOL* cancel);
   STDMETHOD_(void, NavigateComplete2)(IDispatch* dispatch, VARIANT* url);
+  STDMETHOD_(void, DocumentComplete)(IDispatch* dispatch, VARIANT* url);
 
   // mshtml sends an IOleCommandTarget::Exec of OLECMDID_HTTPEQUIV
   // (and OLECMDID_HTTPEQUIV_DONE) as soon as it parses a meta tag.
@@ -115,6 +120,7 @@ END_SINK_MAP()
 
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
   static _ATL_FUNC_INFO kNavigateComplete2Info;
+  static _ATL_FUNC_INFO kDocumentCompleteInfo;
 };
 
 #endif  // CHROME_FRAME_BHO_H_

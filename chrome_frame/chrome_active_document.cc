@@ -38,6 +38,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
+#include "chrome_frame/crash_metrics.h"
 #include "chrome_frame/utils.h"
 
 const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
@@ -608,6 +609,9 @@ void ChromeActiveDocument::OnDidNavigate(int tab_handle,
       ", Title: " << nav_info.title <<
       ", Type: " << nav_info.navigation_type << ", Relative Offset: " <<
       nav_info.relative_offset << ", Index: " << nav_info.navigation_index;
+
+  CrashMetricsReporter::GetInstance()->IncrementMetric(
+      CrashMetricsReporter::CHROME_FRAME_NAVIGATION_COUNT);
 
   // This could be NULL if the active document instance is being destroyed.
   if (!m_spInPlaceSite) {

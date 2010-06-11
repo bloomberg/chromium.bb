@@ -588,7 +588,8 @@
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-
+        '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/bzip2/bzip2.gyp:bzip2',
       ],
       'sources': [
         'bho.cc',
@@ -620,6 +621,8 @@
         'com_message_event.h',
         'com_type_info_holder.cc',
         'com_type_info_holder.h',
+        'crash_metrics.cc',
+        'crash_metrics.h',
         'delete_chrome_history.cc',
         'delete_chrome_history.h',
         'exception_barrier.cc',
@@ -633,6 +636,8 @@
         'http_negotiate.h',
         'iids.cc',
         'in_place_menu.h',
+        'metrics_service.cc',
+        'metrics_service.h',
         'module_utils.cc',
         'module_utils.h',
         'ole_document_impl.h',

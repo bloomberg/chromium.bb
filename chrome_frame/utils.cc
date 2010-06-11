@@ -1191,3 +1191,25 @@ std::string Bscf2Str(DWORD flags) {
   return s;
 #undef ADD_BSCF_FLAG
 }
+
+// Reads data from a stream into a string.
+HRESULT ReadStream(IStream* stream, size_t size, std::string* data) {
+  DCHECK(stream);
+  DCHECK(data);
+
+  DWORD read = 0;
+  HRESULT hr = stream->Read(WriteInto(data, size + 1), size, &read);
+  DCHECK(hr == S_OK || hr == S_FALSE || hr == E_PENDING);
+  if (read) {
+    data->erase(read);
+    DCHECK_EQ(read, data->length());
+  } else {
+    data->clear();
+    // Return S_FALSE if the underlying stream returned S_OK and zero bytes.
+    if (hr == S_OK)
+      hr = S_FALSE;
+  }
+
+  return hr;
+}
+

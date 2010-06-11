@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
+#include "chrome_frame/crash_metrics.h"
 
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
@@ -172,6 +173,8 @@ bool ShutdownVectoredCrashReporting() {
 
 bool WriteMinidumpForException(EXCEPTION_POINTERS* p) {
   AutoLock lock(g_breakpad_lock);
+  CrashMetricsReporter::GetInstance()->IncrementMetric(
+      CrashMetricsReporter::CRASH_COUNT);
   bool success = false;
   if (g_breakpad) {
     success = g_breakpad->WriteMinidumpForException(p);

@@ -14,8 +14,10 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "chrome_tab.h" // NOLINT
+#include "chrome_frame/crash_metrics.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/http_negotiate.h"
+#include "chrome_frame/metrics_service.h"
 #include "chrome_frame/protocol_sink_wrap.h"
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
@@ -42,6 +44,13 @@ _ATL_FUNC_INFO Bho::kBeforeNavigate2Info = {
 };
 
 _ATL_FUNC_INFO Bho::kNavigateComplete2Info = {
+  CC_STDCALL, VT_EMPTY, 2, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF
+  }
+};
+
+_ATL_FUNC_INFO Bho::kDocumentCompleteInfo = {
   CC_STDCALL, VT_EMPTY, 2, {
     VT_DISPATCH,
     VT_VARIANT | VT_BYREF
@@ -84,6 +93,7 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
     // information for a URL.
     AddRef();
     RegisterThreadInstance();
+    MetricsService::Start();
   } else {
     UnregisterThreadInstance();
     Release();
@@ -132,6 +142,23 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
 
 STDMETHODIMP_(void) Bho::NavigateComplete2(IDispatch* dispatch, VARIANT* url) {
   DLOG(INFO) << __FUNCTION__;
+}
+
+STDMETHODIMP_(void) Bho::DocumentComplete(IDispatch* dispatch, VARIANT* url) {
+  DLOG(INFO) << __FUNCTION__;
+
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  if (dispatch)
+    web_browser2.QueryFrom(dispatch);
+
+  if (web_browser2) {
+    VARIANT_BOOL is_top_level = VARIANT_FALSE;
+    web_browser2->get_TopLevelContainer(&is_top_level);
+    if (is_top_level) {
+      CrashMetricsReporter::GetInstance()->IncrementMetric(
+          CrashMetricsReporter::NAVIGATION_COUNT);
+    }
+  }
 }
 
 namespace {

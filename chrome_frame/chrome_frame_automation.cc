@@ -24,6 +24,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/custom_sync_call_context.h"
+#include "chrome_frame/crash_metrics.h"
 #include "chrome_frame/utils.h"
 
 #ifdef NDEBUG
@@ -250,9 +251,13 @@ void ProxyFactory::GetAutomationServer(
   entry->thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &ProxyFactory::CreateProxy, entry, params, delegate));
 
-  entry->thread->message_loop()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(this, &ProxyFactory::SendUMAData, entry),
-      uma_send_interval_);
+  // IE uses the chrome frame provided UMA data uploading scheme. NPAPI
+  // continues to use Chrome to upload UMA data.
+  if (!CrashMetricsReporter::GetInstance()->active()) {
+    entry->thread->message_loop()->PostDelayedTask(FROM_HERE,
+        NewRunnableMethod(this, &ProxyFactory::SendUMAData, entry),
+        uma_send_interval_);
+  }
 }
 
 void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
@@ -420,6 +425,12 @@ void ProxyFactory::ReleaseProxy(ProxyCacheEntry* entry,
 Singleton<ProxyFactory> g_proxy_factory;
 
 void ProxyFactory::SendUMAData(ProxyCacheEntry* proxy_entry) {
+  // IE uses the chrome frame provided UMA data uploading scheme. NPAPI
+  // continues to use Chrome to upload UMA data.
+  if (CrashMetricsReporter::GetInstance()->active()) {
+    return;
+  }
+
   if (!proxy_entry) {
     NOTREACHED() << __FUNCTION__ << " Invalid proxy entry";
     return;

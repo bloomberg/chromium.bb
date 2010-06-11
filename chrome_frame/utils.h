@@ -393,6 +393,11 @@ extern Lock g_ChromeFrameHistogramLock;
   UMA_HISTOGRAM_TIMES(name, sample); \
 }
 
+#define THREAD_SAFE_UMA_HISTOGRAM_COUNTS(name, sample) { \
+  AutoLock lock(g_ChromeFrameHistogramLock); \
+  UMA_HISTOGRAM_COUNTS(name, sample); \
+}
+
 // Fired when we want to notify IE about privacy changes.
 #define WM_FIRE_PRIVACY_CHANGE_NOTIFICATION (WM_APP + 1)
 
@@ -455,5 +460,8 @@ class DeleteObject {
 std::string BindStatus2Str(ULONG bind_status);
 std::string PiFlags2Str(DWORD flags);
 std::string Bscf2Str(DWORD flags);
+
+// Reads data from a stream into a string.
+HRESULT ReadStream(IStream* stream, size_t size, std::string* data);
 
 #endif  // CHROME_FRAME_UTILS_H_
