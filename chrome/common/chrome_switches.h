@@ -264,8 +264,8 @@ extern const char kStartupManifest[];
 extern const char kVertScrollDelta[];
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-extern const char kUseSystemSSL[];
+#if defined(OS_WIN)
+extern const char kUseSChannel[];
 #endif
 
 #if defined(OS_POSIX)
@@ -276,6 +276,7 @@ extern const char kNoProcessSingletonDialog[];
 #if defined(OS_MACOSX)
 extern const char kDisableFlashCoreAnimation[];
 extern const char kEnableSandboxLogging[];
+extern const char kUseNSSForSSL[];
 #else
 extern const char kKioskMode[];
 #endif

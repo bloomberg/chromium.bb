@@ -913,10 +913,9 @@ const char kStartupManifest[]               = "startup-manifest";
 const char kVertScrollDelta[]               = "vert-scroll-delta";
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-// Use the system SSL library (Secure Transport on Mac, SChannel on Windows)
-// instead of NSS for SSL.
-const char kUseSystemSSL[]                  = "use-system-ssl";
+#if defined(OS_WIN)
+// Use SChannel (the system SSL library on Windows) instead of NSS for SSL.
+const char kUseSChannel[]                   = "use-schannel";
 #endif
 
 #if defined(OS_POSIX)
@@ -941,6 +940,10 @@ const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 // Temporary flag to prevent Flash from negotiating the Core Animation drawing
 // model. This will be removed once the last issues have been resolved.
 const char kDisableFlashCoreAnimation[]     = "disable-flash-core-animation";
+
+// Use NSS instead of the system SSL library for SSL.
+// This is a temporary testing flag.
+const char kUseNSSForSSL[]                  = "use-nss-for-ssl";
 #else
 // Enable Kiosk mode.
 const char kKioskMode[]                     = "kiosk";

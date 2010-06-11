@@ -136,7 +136,6 @@
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/winsock_init.h"
-#include "net/socket/ssl_client_socket_nss_factory.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)
@@ -144,11 +143,11 @@
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
 #include "chrome/browser/cocoa/install_from_dmg.h"
-#include "net/socket/ssl_client_socket_mac_factory.h"
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 #include "base/nss_util.h"
+#include "net/socket/ssl_client_socket_nss_factory.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -801,21 +800,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
     }
   }
 
-  // Use NSS for SSL by default.
-#if defined(OS_MACOSX)
-  // The default client socket factory uses NSS for SSL by default on Mac.
-  if (parsed_command_line.HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::SetSSLClientSocketFactory(
-        net::SSLClientSocketMacFactory);
-  } else {
-    // We want to be sure to init NSPR on the main thread.
-    base::EnsureNSPRInit();
-  }
-#elif defined(OS_WIN)
-  // Because of a build system issue (http://crbug.com/43461), the default
-  // client socket factory uses SChannel (the system SSL library) for SSL by
-  // default on Windows.
-  if (!parsed_command_line.HasSwitch(switches::kUseSystemSSL)) {
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
+  bool use_nss_for_ssl = !parsed_command_line.HasSwitch(switches::kUseSChannel);
+#else
+  bool use_nss_for_ssl = parsed_command_line.HasSwitch(switches::kUseNSSForSSL);
+#endif
+  if (use_nss_for_ssl ||
+      parsed_command_line.HasSwitch(switches::kUseSpdy) ||
+      is_spdy_trial) {
     net::ClientSocketFactory::SetSSLClientSocketFactory(
         net::SSLClientSocketNSSFactory);
     // We want to be sure to init NSPR on the main thread.

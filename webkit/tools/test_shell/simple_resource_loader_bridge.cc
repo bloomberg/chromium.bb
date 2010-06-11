@@ -34,7 +34,7 @@
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
 #include "base/nss_util.h"
 #endif
 #include "base/ref_counted.h"
@@ -789,8 +789,6 @@ bool SimpleResourceLoaderBridge::EnsureIOThread() {
   // inside DefaultClientSocketFactory::CreateSSLClientSocket.
   net::ClientSocketFactory::SetSSLClientSocketFactory(
       net::SSLClientSocketNSSFactory);
-#endif
-#if defined(OS_MACOSX) || defined(OS_WIN)
   // We want to be sure to init NSPR on the main thread.
   base::EnsureNSPRInit();
 #endif
