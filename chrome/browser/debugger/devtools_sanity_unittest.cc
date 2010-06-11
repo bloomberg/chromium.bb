@@ -287,9 +287,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
 }
 
-// http://crbug.com/44202
+// Fails after WebKit roll 59365:59477, http://crbug.com/44202.
+#if defined(OS_LINUX)
+#define MAYBE_TestResourceContentLength FAILS_TestResourceContentLength
+#else
+#define MAYBE_TestResourceContentLength TestResourceContentLength
+#endif  // defined(OS_LINUX)
+
 // Tests resources have correct sizes.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceContentLength) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestResourceContentLength) {
   RunTest("testResourceContentLength", kResourceContentLengthTestPage);
 }
 
