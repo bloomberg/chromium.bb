@@ -104,7 +104,7 @@ void CloudPrintService::RegisterPreferences() {
   if (pref_service->FindPreference(prefs::kCloudPrintServiceURL))
     return;
   std::wstring kDefaultCloudPrintServiceURL(
-      L"https://www.google.com/cloudprint");
+      L"http://www.google.com/cloudprint");
   pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
                                    kDefaultCloudPrintServiceURL);
 }

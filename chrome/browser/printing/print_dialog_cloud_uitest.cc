@@ -50,26 +50,6 @@ class SimpleTestJob : public URLRequestTestJob {
   explicit SimpleTestJob(URLRequest* request)
       : URLRequestTestJob(request, test_headers(),
                           Singleton<TestData>()->GetTestData(), true) {}
-
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
-    URLRequestTestJob::GetResponseInfo(info);
-    if (request_->url().SchemeIsSecure()) {
-      // Make up a fake certificate for this response since we don't have
-      // access to the real SSL info.
-      const char* kCertIssuer = "Chrome Internal";
-      const int kLifetimeDays = 100;
-
-      info->ssl_info.cert =
-          new net::X509Certificate(request_->url().GetWithEmptyPath().spec(),
-                                   kCertIssuer,
-                                   base::Time::Now(),
-                                   base::Time::Now() +
-                                   base::TimeDelta::FromDays(kLifetimeDays));
-      info->ssl_info.cert_status = 0;
-      info->ssl_info.security_bits = 0;
-    }
-  }
-
  private:
   ~SimpleTestJob() {}
 };
@@ -89,21 +69,15 @@ class TestResult {
   const GURL GetExpectedUrl() {
     return expected_url_;
   }
-  void set_delegate(TestDelegate* delegate) {
-    delegate_ = delegate;
-  }
-  TestDelegate* delegate() {
-    return delegate_;
-  }
  private:
   bool result_;
   GURL expected_url_;
-  TestDelegate* delegate_;
 };
 
 }  // namespace
 
-class PrintDialogCloudTest : public InProcessBrowserTest {
+class PrintDialogCloudTest : public InProcessBrowserTest,
+                             public NotificationObserver {
  public:
   PrintDialogCloudTest() : handler_added_(false) {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
@@ -111,16 +85,6 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
 
   // Must be static for handing into AddHostnameHandler.
   static URLRequest::ProtocolFactory Factory;
-
-  class PrintDialogCloudTestDelegate : public TestDelegate {
-   public:
-    PrintDialogCloudTestDelegate() {}
-
-    virtual void OnResponseCompleted(URLRequest* request) {
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                             new MessageLoop::QuitTask());
-    }
-  };
 
   virtual void SetUp() {
     Singleton<TestResult>()->SetResult(false);
@@ -132,7 +96,6 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
       URLRequestFilter* filter = URLRequestFilter::GetInstance();
       filter->RemoveHostnameHandler(scheme_, host_name_);
       handler_added_ = false;
-      Singleton<TestResult>()->set_delegate(NULL);
     }
     InProcessBrowserTest::TearDown();
   }
@@ -153,11 +116,23 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
                                  &PrintDialogCloudTest::Factory);
       handler_added_ = true;
 
+      registrar_.Add(this, NotificationType::LOAD_STOP,
+                     NotificationService::AllSources());
+
       GURL cloud_print_dialog_url =
           internal_cloud_print_helpers::CloudPrintService(browser()->profile()).
           GetCloudPrintServiceDialogURL();
       Singleton<TestResult>()->SetExpectedUrl(cloud_print_dialog_url);
-      Singleton<TestResult>()->set_delegate(&delegate_);
+    }
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    if (type == NotificationType::LOAD_STOP) {
+      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+      registrar_.Remove(this, NotificationType::LOAD_STOP,
+                        NotificationService::AllSources());
     }
   }
 
@@ -165,18 +140,18 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   std::string scheme_;
   std::string host_name_;
   FilePath test_data_directory_;
-  PrintDialogCloudTestDelegate delegate_;
+  NotificationRegistrar registrar_;
 };
 
 URLRequestJob* PrintDialogCloudTest::Factory(URLRequest* request,
                                              const std::string& scheme) {
-  request->set_delegate(Singleton<TestResult>()->delegate());
   if (request && (request->url() == Singleton<TestResult>()->GetExpectedUrl()))
     Singleton<TestResult>()->SetResult(true);
   return new SimpleTestJob(request);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, HandlersRegistered) {
+// Crashy, http://crbug.com/44547.
+IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, DISABLED_HandlersRegistered) {
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
 
@@ -184,11 +159,9 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, HandlersRegistered) {
 
   FilePath pdf_file =
       test_data_directory_.AppendASCII("printing/cloud_print_uitest.pdf");
+  new PrintDialogCloud(pdf_file);
 
-  {
-  PrintDialogCloud dialog (pdf_file);
   ui_test_utils::RunMessageLoop();
-  }
 
   ASSERT_TRUE(Singleton<TestResult>()->GetResult());
 }
