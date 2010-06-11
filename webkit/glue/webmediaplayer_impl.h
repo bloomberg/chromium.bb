@@ -58,6 +58,7 @@
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/waitable_event.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "media/base/filters.h"
@@ -259,6 +260,10 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // Destroy resources held.
   void Destroy();
 
+  // Callback executed after |pipeline_| stops which signals Destroy()
+  // to continue.
+  void PipelineStoppedCallback();
+
   // Getter method to |client_|.
   WebKit::WebMediaPlayerClient* GetClient();
 
@@ -299,6 +304,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   WebKit::WebMediaPlayerClient* client_;
 
   scoped_refptr<Proxy> proxy_;
+
+  // Used to block Destroy() until Pipeline::Stop() is completed.
+  base::WaitableEvent pipeline_stopped_;
 
 #if WEBKIT_USING_CG
   scoped_ptr<skia::PlatformCanvas> skia_canvas_;

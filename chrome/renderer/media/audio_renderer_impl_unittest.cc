@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,7 @@ class AudioRendererImplTest : public ::testing::Test {
   base::SharedMemory shared_mem_;
   media::MockFilterHost host_;
   media::MockFilterCallback callback_;
+  media::MockFilterCallback stop_callback_;
   scoped_refptr<media::MockAudioDecoder> decoder_;
   scoped_refptr<AudioRendererImpl> renderer_;
   media::MediaFormat decoder_media_format_;
@@ -88,14 +89,16 @@ TEST_F(AudioRendererImplTest, SetPlaybackRate) {
   renderer_->SetPlaybackRate(1.0f);
   renderer_->SetPlaybackRate(0.0f);
 
-  renderer_->Stop();
+  EXPECT_CALL(stop_callback_, OnFilterCallback());
+  renderer_->Stop(stop_callback_.NewCallback());
   message_loop_->RunAllPending();
 }
 
 TEST_F(AudioRendererImplTest, SetVolume) {
   // Execute SetVolume() codepath to create an IPC message.
   renderer_->SetVolume(0.5f);
-  renderer_->Stop();
+  EXPECT_CALL(stop_callback_, OnFilterCallback());
+  renderer_->Stop(stop_callback_.NewCallback());
   message_loop_->RunAllPending();
 }
 
@@ -109,7 +112,8 @@ TEST_F(AudioRendererImplTest, Stop) {
       { ViewMsg_AudioStreamState_Params::kPaused };
 
   // Execute Stop() codepath to create an IPC message.
-  renderer_->Stop();
+  EXPECT_CALL(stop_callback_, OnFilterCallback());
+  renderer_->Stop(stop_callback_.NewCallback());
   message_loop_->RunAllPending();
 
   // Run AudioMessageFilter::Delegate methods, which can be executed after being
@@ -132,14 +136,16 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetPlaybackRate) {
   renderer_->SetPlaybackRate(0.0f);
   renderer_->SetPlaybackRate(1.0f);
   renderer_->SetPlaybackRate(0.0f);
-  renderer_->Stop();
+  EXPECT_CALL(stop_callback_, OnFilterCallback());
+  renderer_->Stop(stop_callback_.NewCallback());
 }
 
 TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetVolume) {
   // Kill the message loop and verify SetVolume() still works.
   message_loop_.reset();
   renderer_->SetVolume(0.5f);
-  renderer_->Stop();
+  EXPECT_CALL(stop_callback_, OnFilterCallback());
+  renderer_->Stop(stop_callback_.NewCallback());
 }
 
 TEST_F(AudioRendererImplTest, DestroyedMessageLoop_OnReadComplete) {
@@ -147,5 +153,6 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_OnReadComplete) {
   message_loop_.reset();
   scoped_refptr<media::Buffer> buffer = new media::DataBuffer(kSize);
   renderer_->OnReadComplete(buffer);
-  renderer_->Stop();
+  EXPECT_CALL(stop_callback_, OnFilterCallback());
+  renderer_->Stop(stop_callback_.NewCallback());
 }

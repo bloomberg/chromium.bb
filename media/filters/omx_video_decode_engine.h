@@ -53,6 +53,7 @@ class OmxVideoDecodeEngine :
   //
   // TODO(ajwong): Normalize this interface with Task like the others, and
   // promote to the abstract interface.
+  // TODO(boliu): Should the callback type be FilterCallback*?
   virtual void Stop(Callback0::Type* done_cb);
 
   // Subclass can provide a different value.
@@ -258,4 +259,3 @@ class OmxVideoDecodeEngine :
 }  // namespace media
 
 #endif  // MEDIA_FILTERS_OMX_VIDEO_DECODE_ENGINE_H_
-

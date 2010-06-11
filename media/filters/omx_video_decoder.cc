@@ -72,11 +72,8 @@ void OmxVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
                        &OmxVideoDecodeEngine::FillThisBuffer, frame));
 }
 
-void OmxVideoDecoder::Stop() {
-  // TODO(ajwong): This is a total hack. Make async.
-  base::WaitableEvent event(false, false);
-  omx_engine_->Stop(NewCallback(&event, &base::WaitableEvent::Signal));
-  event.Wait();
+void OmxVideoDecoder::Stop(FilterCallback* callback) {
+  omx_engine_->Stop(callback);
 }
 
 void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,

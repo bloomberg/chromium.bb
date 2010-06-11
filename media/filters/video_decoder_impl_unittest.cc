@@ -139,7 +139,9 @@ class VideoDecoderImplTest : public testing::Test {
 
   virtual ~VideoDecoderImplTest() {
     // Call Stop() to shut down internal threads.
-    decoder_->Stop();
+    EXPECT_CALL(callback_, OnFilterCallback());
+    EXPECT_CALL(callback_, OnCallbackDestroyed());
+    decoder_->Stop(callback_.NewCallback());
 
     // Finish up any remaining tasks.
     message_loop_.RunAllPending();

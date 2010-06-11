@@ -28,7 +28,7 @@ class OmxVideoDecoder : public VideoDecoder {
   virtual ~OmxVideoDecoder();
 
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback);
-  virtual void Stop();
+  virtual void Stop(FilterCallback* callback);
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
   virtual const MediaFormat& media_format() { return media_format_; }
 

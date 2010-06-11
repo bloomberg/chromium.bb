@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class SimpleDataSource : public media::DataSource,
       const media::MediaFormat& media_format);
 
   // MediaFilter implementation.
-  virtual void Stop();
+  virtual void Stop(media::FilterCallback* callback);
 
   // DataSource implementation.
   virtual void Initialize(const std::string& url,

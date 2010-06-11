@@ -153,7 +153,9 @@ TEST(DecoderBaseTest, FlowControl) {
 
   // Stop.
   EXPECT_CALL(*decoder, DoStop());
-  decoder->Stop();
+  EXPECT_CALL(callback, OnFilterCallback());
+  EXPECT_CALL(callback, OnCallbackDestroyed());
+  decoder->Stop(callback.NewCallback());
   message_loop.RunAllPending();
 }
 

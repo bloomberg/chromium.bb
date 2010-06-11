@@ -48,11 +48,17 @@ void AudioRendererBase::Pause(FilterCallback* callback) {
   }
 }
 
-void AudioRendererBase::Stop() {
+void AudioRendererBase::Stop(FilterCallback* callback) {
   OnStop();
-  AutoLock auto_lock(lock_);
-  state_ = kStopped;
-  algorithm_.reset(NULL);
+  {
+    AutoLock auto_lock(lock_);
+    state_ = kStopped;
+    algorithm_.reset(NULL);
+  }
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
 }
 
 void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {

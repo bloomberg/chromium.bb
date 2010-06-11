@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -534,7 +534,10 @@ class BufferedDataSourceTest : public testing::Test {
       EXPECT_CALL(*loader_, Stop());
     }
 
-    data_source_->Stop();
+    StrictMock<media::MockFilterCallback> callback;
+    EXPECT_CALL(callback, OnFilterCallback());
+    EXPECT_CALL(callback, OnCallbackDestroyed());
+    data_source_->Stop(callback.NewCallback());
     message_loop_->RunAllPending();
   }
 

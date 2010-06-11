@@ -30,9 +30,9 @@ class DecoderBase : public Decoder {
   typedef CallbackRunner< Tuple1<Output*> > ReadCallback;
 
   // MediaFilter implementation.
-  virtual void Stop() {
+  virtual void Stop(FilterCallback* callback) {
     this->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &DecoderBase::StopTask));
+        NewRunnableMethod(this, &DecoderBase::StopTask, callback));
   }
 
   virtual void Seek(base::TimeDelta time,
@@ -146,7 +146,7 @@ class DecoderBase : public Decoder {
         NewRunnableMethod(this, &DecoderBase::ReadCompleteTask, buffer_ref));
   }
 
-  void StopTask() {
+  void StopTask(FilterCallback* callback) {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
 
     // Delegate to the subclass first.
@@ -155,6 +155,11 @@ class DecoderBase : public Decoder {
     // Throw away all buffers in all queues.
     result_queue_.clear();
     state_ = kStopped;
+
+    if (callback) {
+      callback->Run();
+      delete callback;
+    }
   }
 
   void SeekTask(base::TimeDelta time, FilterCallback* callback) {

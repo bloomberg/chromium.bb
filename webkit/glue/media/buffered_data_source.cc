@@ -592,13 +592,17 @@ void BufferedDataSource::Initialize(const std::string& url,
       NewRunnableMethod(this, &BufferedDataSource::InitializeTask));
 }
 
-void BufferedDataSource::Stop() {
+void BufferedDataSource::Stop(media::FilterCallback* callback) {
   {
     AutoLock auto_lock(lock_);
     stop_signal_received_ = true;
   }
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
   render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedDataSource::StopTask));
+      NewRunnableMethod(this, &BufferedDataSource::CleanupTask));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -664,7 +668,7 @@ void BufferedDataSource::ReadTask(
      media::DataSource::ReadCallback* read_callback) {
   DCHECK(MessageLoop::current() == render_loop_);
 
-  // If StopTask() was executed we should return immediately. We check this
+  // If CleanupTask() was executed we should return immediately. We check this
   // variable to prevent doing any actual work after clean up was done. We do
   // not check |stop_signal_received_| because anything use of it has to be
   // within |lock_| which is not desirable.
@@ -686,7 +690,7 @@ void BufferedDataSource::ReadTask(
   ReadInternal();
 }
 
-void BufferedDataSource::StopTask() {
+void BufferedDataSource::CleanupTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!stopped_on_render_loop_);
 
@@ -712,11 +716,11 @@ void BufferedDataSource::StopTask() {
 void BufferedDataSource::RestartLoadingTask() {
   DCHECK(MessageLoop::current() == render_loop_);
 
-  // This variable is set in StopTask(). We check this and do an early return.
-  // The sequence of actions which enable this conditions is:
+  // This variable is set in CleanupTask(). We check this and do an early
+  // return. The sequence of actions which enable this conditions is:
   // 1. Stop() is called from the pipeline.
   // 2. ReadCallback() is called from the resource loader.
-  // 3. StopTask() is executed.
+  // 3. CleanupTask() is executed.
   // 4. RestartLoadingTask() is executed.
   if (stopped_on_render_loop_)
     return;

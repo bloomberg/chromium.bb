@@ -91,7 +91,9 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
 
   // The pipeline has resumed playback.  Filters can continue requesting reads.
   // Filters may implement this method if they need to respond to this call.
+  // TODO(boliu): Check that callback is not NULL in sublcasses.
   virtual void Play(FilterCallback* callback) {
+    DCHECK(callback);
     if (callback) {
       callback->Run();
       delete callback;
@@ -101,24 +103,20 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
   // The pipeline has paused playback.  Filters should fulfill any existing read
   // requests and then idle.  Filters may implement this method if they need to
   // respond to this call.
+  // TODO(boliu): Check that callback is not NULL in sublcasses.
   virtual void Pause(FilterCallback* callback) {
+    DCHECK(callback);
     if (callback) {
       callback->Run();
       delete callback;
     }
   }
 
-  // TODO(boliu): Remove once Stop() is asynchronous in subclasses.
-  virtual void Stop() {}
-
   // The pipeline is being stopped either as a result of an error or because
   // the client called Stop().
-  // TODO(boliu): No implementation in subclasses yet.
+  // TODO(boliu): Check that callback is not NULL in sublcasses.
   virtual void Stop(FilterCallback* callback) {
-    // TODO(boliu): Call the synchronous version for now. Remove once
-    // all filters have asynchronous stop.
-    Stop();
-
+    DCHECK(callback);
     if (callback) {
       callback->Run();
       delete callback;
