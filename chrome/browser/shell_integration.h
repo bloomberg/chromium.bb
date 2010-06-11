@@ -97,7 +97,7 @@ class ShellIntegration {
   // Generates Win7 app id for given app name and profile path. The returned app
   // id is in the format of "|app_name|[.<profile_id>]". "profile_id" is
   // appended when user override the default value.
-  static std::wstring GetAppId(const wchar_t* app_name,
+  static std::wstring GetAppId(const std::wstring& app_name,
                                const FilePath& profile_path);
 
   // Generates Win7 app id for Chromium by calling GetAppId with

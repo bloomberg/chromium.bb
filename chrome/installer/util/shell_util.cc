@@ -778,22 +778,24 @@ bool ShellUtil::UpdateChromeShortcut(const std::wstring& chrome_exe,
       installer_util::master_preferences::kChromeShortcutIconIndex,
       &icon_index);
   if (create_new) {
-    return file_util::CreateShortcutLink(chrome_exe.c_str(),      // target
-                                         shortcut.c_str(),        // shortcut
-                                         chrome_path.c_str(),     // working dir
-                                         NULL,                    // arguments
-                                         description.c_str(),     // description
-                                         chrome_exe.c_str(),      // icon file
-                                         icon_index,              // icon index
-                                         chrome::kBrowserAppID);  // app id
+    return file_util::CreateShortcutLink(
+        chrome_exe.c_str(),                // target
+        shortcut.c_str(),                  // shortcut
+        chrome_path.c_str(),               // working dir
+        NULL,                              // arguments
+        description.c_str(),               // description
+        chrome_exe.c_str(),                // icon file
+        icon_index,                        // icon index
+        dist->GetBrowserAppId().c_str());  // app id
   } else {
-    return file_util::UpdateShortcutLink(chrome_exe.c_str(),      // target
-                                         shortcut.c_str(),        // shortcut
-                                         chrome_path.c_str(),     // working dir
-                                         NULL,                    // arguments
-                                         description.c_str(),     // description
-                                         chrome_exe.c_str(),      // icon file
-                                         icon_index,              // icon index
-                                         chrome::kBrowserAppID);  // app id
+    return file_util::UpdateShortcutLink(
+        chrome_exe.c_str(),                // target
+        shortcut.c_str(),                  // shortcut
+        chrome_path.c_str(),               // working dir
+        NULL,                              // arguments
+        description.c_str(),               // description
+        chrome_exe.c_str(),                // icon file
+        icon_index,                        // icon index
+        dist->GetBrowserAppId().c_str());  // app id
   }
 }

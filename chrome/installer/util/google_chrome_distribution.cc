@@ -37,6 +37,7 @@
 
 namespace {
 const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+const wchar_t kBrowserAppId[] = L"Chrome";
 
 // The following strings are the possible outcomes of the toast experiment
 // as recorded in the  |client| field. Previously the groups used "TSxx" but
@@ -355,6 +356,10 @@ std::wstring GoogleChromeDistribution::GetAlternateApplicationName() {
   const std::wstring& alt_product_name =
       installer_util::GetLocalizedString(IDS_OEM_MAIN_SHORTCUT_NAME_BASE);
   return alt_product_name;
+}
+
+std::wstring GoogleChromeDistribution::GetBrowserAppId() {
+  return kBrowserAppId;
 }
 
 std::wstring GoogleChromeDistribution::GetInstallSubDir() {

@@ -337,8 +337,7 @@ void Browser::CreateBrowserWindow() {
   // name.  See http://crbug.com/7028.
   win_util::SetAppIdForWindow(
       type_ & TYPE_APP ?
-      ShellIntegration::GetAppId(app_name_.c_str(),
-                                 profile_->GetPath()) :
+      ShellIntegration::GetAppId(app_name_, profile_->GetPath()) :
       ShellIntegration::GetChromiumAppId(profile_->GetPath()),
       window()->GetNativeHandle());
 #endif

@@ -22,7 +22,6 @@ extern const FilePath::CharType kFrameworkName[];
 #endif
 extern const wchar_t kBrowserAppName[];
 #if defined(OS_WIN)
-extern const wchar_t kBrowserAppID[];
 extern const wchar_t kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
 extern const wchar_t kMessageWindowClass[];

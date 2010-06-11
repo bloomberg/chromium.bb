@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "gfx/gdi_util.h"
 #include "gfx/icon_util.h"
 #include "skia/ext/image_operations.h"
@@ -244,7 +245,10 @@ class RegisterThumbnailTask : public Task {
     // that this window is a child of the browser application, i.e. to tell
     // that this thumbnail window should be displayed when we hover the
     // browser icon in the taskbar.
-    win_util::SetAppIdForWindow(chrome::kBrowserAppID, window_);
+    // TODO(mattm): This should use ShellIntegration::GetChromiumAppId to work
+    // properly with multiple profiles.
+    win_util::SetAppIdForWindow(
+        BrowserDistribution::GetDistribution()->GetBrowserAppId(), window_);
 
     // Register this place-holder window to the taskbar as a child of
     // the browser window and add it to the end of its tab list.

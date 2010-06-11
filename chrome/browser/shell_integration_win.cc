@@ -227,11 +227,10 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
     app_name = web_app::GenerateApplicationNameFromURL(
         GURL(command_line.GetSwitchValueASCII(switches::kApp)));
   } else {
-    app_name = chrome::kBrowserAppID;
+    app_name = BrowserDistribution::GetDistribution()->GetBrowserAppId();
   }
 
-  expected_app_id->assign(ShellIntegration::GetAppId(app_name.c_str(),
-                                                     profile_path));
+  expected_app_id->assign(ShellIntegration::GetAppId(app_name, profile_path));
   return true;
 }
 
@@ -386,7 +385,7 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   return ff_default;
 }
 
-std::wstring ShellIntegration::GetAppId(const wchar_t* app_name,
+std::wstring ShellIntegration::GetAppId(const std::wstring& app_name,
                                         const FilePath& profile_path) {
   std::wstring app_id(app_name);
 
@@ -402,7 +401,8 @@ std::wstring ShellIntegration::GetAppId(const wchar_t* app_name,
 }
 
 std::wstring ShellIntegration::GetChromiumAppId(const FilePath& profile_path) {
-  return GetAppId(chrome::kBrowserAppID, profile_path);
+  return GetAppId(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
+                  profile_path);
 }
 
 void ShellIntegration::MigrateChromiumShortcuts() {

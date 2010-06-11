@@ -18,7 +18,9 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_WIN)
+#include "chrome/installer/util/browser_distribution.h"
+#elif defined(OS_LINUX)
 #include "base/env_var.h"
 #endif  // defined(OS_LINUX)
 
@@ -285,7 +287,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
 TEST(ShellIntegrationTest, GetChromiumAppIdTest) {
   // Empty profile path should get chrome::kBrowserAppID
   FilePath empty_path;
-  EXPECT_EQ(std::wstring(chrome::kBrowserAppID),
+  EXPECT_EQ(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
             ShellIntegration::GetChromiumAppId(empty_path));
 
   // Default profile path should get chrome::kBrowserAppID
@@ -293,7 +295,7 @@ TEST(ShellIntegrationTest, GetChromiumAppIdTest) {
   chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
   FilePath default_profile_path =
       default_user_data_dir.Append(chrome::kNotSignedInProfile);
-  EXPECT_EQ(std::wstring(chrome::kBrowserAppID),
+  EXPECT_EQ(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
             ShellIntegration::GetChromiumAppId(default_profile_path));
 
   // Non-default profile path should get chrome::kBrowserAppID joined with
@@ -301,7 +303,8 @@ TEST(ShellIntegrationTest, GetChromiumAppIdTest) {
   FilePath profile_path(FILE_PATH_LITERAL("root"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("udd"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
-  EXPECT_EQ(std::wstring(chrome::kBrowserAppID) + L".udd.UserDataTest",
+  EXPECT_EQ(BrowserDistribution::GetDistribution()->GetBrowserAppId() +
+            L".udd.UserDataTest",
             ShellIntegration::GetChromiumAppId(profile_path));
 }
 #endif

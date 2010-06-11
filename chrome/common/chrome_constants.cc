@@ -62,11 +62,6 @@ const char    kStatsFilename[] = "ChromiumStats2";
 #endif
 
 #if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kBrowserAppID[] = L"Chrome";
-#else
-const wchar_t kBrowserAppID[] = L"Chromium";
-#endif
 const wchar_t kStatusTrayWindowClass[] = L"Chrome_StatusTrayWindow";
 #endif  // defined(OS_WIN)
 
