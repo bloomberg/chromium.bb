@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,14 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 #include <gtk/gtk.h>
+#elif defined(OS_MACOSX)
+#include <CoreFoundation/CoreFoundation.h>
 #endif
+
+#include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -27,8 +32,9 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
-#if defined(OS_MACOSX)
-#include <CoreFoundation/CoreFoundation.h>
+#if defined(USE_X11)
+#include "app/x11_util.h"
+#elif defined(OS_MACOSX)
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/scoped_cftyperef.h"
@@ -79,6 +85,8 @@ PluginThread::PluginThread()
       free(argv[i]);
     }
   }
+
+  x11_util::SetX11ErrorHandlers();
 #endif
 
   PatchNPNFunctions();
@@ -232,4 +240,4 @@ bool FindProxyForUrl(const GURL& url, std::string* proxy_list) {
   return true;
 }
 
-} // namespace webkit_glue
+}  // namespace webkit_glue

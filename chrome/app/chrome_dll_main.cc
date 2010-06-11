@@ -23,7 +23,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(USE_X11)
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -64,6 +64,10 @@
 
 #if defined(USE_NSS)
 #include "base/nss_util.h"
+#endif
+
+#if defined(USE_X11)
+#include "app/x11_util.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -204,9 +208,9 @@ bool HasDeprecatedArguments(const std::wstring& command_line) {
   return (pos != std::wstring::npos);
 }
 
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(USE_X11)
 static void GLibLogHandler(const gchar* log_domain,
                            GLogLevelFlags log_level,
                            const gchar* message,
@@ -261,7 +265,9 @@ static void SetUpGLibLogHandler() {
                       NULL);
   }
 }
+#endif  // defined(USE_X11)
 
+#if defined(OS_LINUX)
 static void AdjustLinuxOOMScore(const std::string& process_type) {
   const int kMiscScore = 7;
   const int kPluginScore = 10;
@@ -295,7 +301,7 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   if (score > -1)
     base::AdjustOOMScore(base::GetCurrentProcId(), score);
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_LINUX)
 
 // Register the invalid param handler and pure call handler to be able to
 // notify breakpad when it happens.
@@ -717,8 +723,7 @@ int ChromeMain(int argc, char** argv) {
     // Update the process name (need resources to get the strings, so
     // only do this when ResourcesBundle has been initialized).
     SetMacProcessName(process_type);
-#endif // defined(OS_MACOSX)
-
+#endif  // defined(OS_MACOSX)
   }
 
   if (!process_type.empty())
@@ -849,6 +854,8 @@ int ChromeMain(int argc, char** argv) {
     // gtk_init() can change |argc| and |argv|.
     gtk_init(&argc, &argv);
     SetUpGLibLogHandler();
+
+    x11_util::SetX11ErrorHandlers();
 #endif  // defined(OS_LINUX)
 
     rv = BrowserMain(main_params);

@@ -4,12 +4,12 @@
 
 #include "chrome/gpu/gpu_thread.h"
 
-#include "build/build_config.h"
+#include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/gpu_messages.h"
-#include "chrome/gpu/gpu_config.h"
 
 #if defined(OS_WIN)
 #include "chrome/gpu/gpu_view_win.h"
@@ -52,6 +52,7 @@ GpuThread::GpuThread() {
     for (size_t i = 0; i < args.size(); ++i) {
       free(argv[i]);
     }
+    x11_util::SetX11ErrorHandlers();
   }
 #endif
 }

@@ -52,7 +52,25 @@ CachedPictFormats* get_cached_pict_formats() {
 // Maximum number of CachedPictFormats we keep around.
 const size_t kMaxCacheSize = 5;
 
+int X11ErrorHandler(Display* d, XErrorEvent* e) {
+  LOG(FATAL) << "X Error detected: serial " << e->serial
+             << " error_code " << static_cast<unsigned int>(e->error_code)
+             << " request_code " << static_cast<unsigned int>(e->request_code)
+             << " minor_code " << static_cast<unsigned int>(e->minor_code);
+  return 0;
+}
+
+int X11IOErrorHandler(Display* d) {
+  LOG(FATAL) << "X IO Error detected";
+  return 0;
+}
+
 }  // namespace
+
+void SetX11ErrorHandlers() {
+  XSetErrorHandler(X11ErrorHandler);
+  XSetIOErrorHandler(X11IOErrorHandler);
+}
 
 bool XDisplayExists() {
   return (gdk_display_get_default() != NULL);

@@ -170,6 +170,9 @@ void GrabWindowSnapshot(GtkWindow* gdk_window,
 // Change desktop for |window| to the desktop of |destination| window.
 bool ChangeWindowDesktop(XID window, XID destination);
 
+// Sets the X Error Handlers so we can catch X errors and crash.
+void SetX11ErrorHandlers();
+
 }  // namespace x11_util
 
 #endif  // APP_X11_UTIL_H_
