@@ -4,6 +4,7 @@
 {
   'variables': {
     'chromium_code': 1,
+    'internal_pdf%': 0,
 
     'variables': {
       'version_py_path': 'tools/build/version.py',
