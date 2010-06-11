@@ -931,7 +931,7 @@ sub diskImageMaker($$$$$$$$) {
       $hybridImage = giveExtension($tempDir.'/hybrid', '.dmg');
 
       if(command($gConfig{'cmd_hdiutil'}, 'makehybrid', '-hfs',
-       '-hfs-volume-name', $name, 
+       '-hfs-volume-name', $name,
        ($gConfig{'openfolder_bless'} ? ('-hfs-openfolder', $source) : ()),
        '-ov', $source, '-o', $hybridImage) != 0) {
         cleanupDie('hdiutil makehybrid failed');
