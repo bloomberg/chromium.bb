@@ -44,9 +44,17 @@
  */
 #define SIGPIPE_FIX           1
 
-#if OSX_BLEMISH_HEURISTIC
+/*
+ * The code guarded by SIGPIPE_FIX has been found to still raise
+ * SIGPIPE in certain situations. Until we can boil this down to a
+ * small test case and, possibly, file a bug against the OS, we need
+ * to forcibly suppress these signals.
+ */
+#define SIGPIPE_ALT_FIX       1
+
+#if OSX_BLEMISH_HEURISTIC || SIGPIPE_ALT_FIX
 # include <signal.h>
-#endif  // OSX_BLEMISH_HEURISTIC
+#endif  // OSX_BLEMISH_HEURISTIC || SIGPIPE_ALT_FIX
 
 #include <algorithm>
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
@@ -197,6 +205,36 @@ bool IsBoundSocket(Handle handle, struct sockaddr_un* sa, socklen_t len) {
          strncmp(sa->sun_path, kNamePrefix, sizeof kNamePrefix - 1) == 0;
 }
 
+#if SIGPIPE_ALT_FIX
+bool sigpipe_occurred = false;
+
+void SIGPIPEHandler(int signal_number) {
+  sigpipe_occurred = true;
+}
+
+/*
+ * TODO(kbr): this mechanism is not thread safe.
+ */
+bool SIGPIPEOccurred() {
+  bool occurred = sigpipe_occurred;
+  if (occurred) {
+    sigpipe_occurred = false;
+    errno = EPIPE;
+  }
+  return occurred;
+}
+
+void InstallSIGPIPEHandler() {
+  sigset_t mask;
+  sigemptyset(&mask);
+  struct sigaction sa;
+  sa.sa_handler = &SIGPIPEHandler;
+  sa.sa_mask = mask;
+  sa.sa_flags = 0;
+  sigaction(SIGPIPE, &sa, NULL);
+}
+#endif
+
 }  // namespace
 
 Handle BoundSocket(const SocketAddress* address) {
@@ -204,6 +242,9 @@ Handle BoundSocket(const SocketAddress* address) {
   if (s == -1) {
     return -1;
   }
+#if SIGPIPE_ALT_FIX
+  InstallSIGPIPEHandler();
+#endif
 #if SIGPIPE_FIX
   int nosigpipe = 1;
   if (0 != setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE,
@@ -233,6 +274,9 @@ int SocketPair(Handle pair[2]) {
       errno = EMFILE;
       return -1;
     }
+#if SIGPIPE_ALT_FIX
+    InstallSIGPIPEHandler();
+#endif
 #if SIGPIPE_FIX
     int nosigpipe = 1;
     if (0 != setsockopt(pair[0], SOL_SOCKET, SO_NOSIGPIPE,
@@ -313,7 +357,6 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
    *
    * Don't do this again!
    */
-  NaClLog(5, "SendDatagram: Checking uint32 precondition\n");
 
   if (!MessageSizeIsValid(message)) {
     errno = EMSGSIZE;
@@ -357,6 +400,11 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   vec[0].iov_base = &header;
   vec[0].iov_len = sizeof header;
   int result = sendmsg(handle, &msg, 0);
+#if SIGPIPE_ALT_FIX
+  if (SIGPIPEOccurred()) {
+    return -1;
+  }
+#endif
   if (result == -1) {
     return -1;
   }
@@ -386,6 +434,9 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
   if  (s == -1) {
     return -1;
   }
+#if SIGPIPE_ALT_FIX
+  InstallSIGPIPEHandler();
+#endif
 #if SIGPIPE_FIX
   int nosigpipe = 1;
   if (0 != setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE,
@@ -437,7 +488,6 @@ int Receive(Handle handle, MessageHeader* message, int flags,
    *
    * Don't do this again!
    */
-  NaClLog(5, "Receive: Checking uint32 precondition\n");
 
   if (!MessageSizeIsValid(message)) {
     errno = EMSGSIZE;

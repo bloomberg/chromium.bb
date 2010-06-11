@@ -88,11 +88,6 @@ bool MessageSizeIsValid(const MessageHeader *message) {
   /* we assume that sizeof(uint32_t) <= sizeof(size_t) */
 
   for (size_t ix = 0; ix < message->iov_length; ++ix) {
-    NaClLog(5,
-            ("SendDatagramTo: cur_bytes 0x%"NACL_PRIxS","
-             " adding 0x%"NACL_PRIxS"\n"),
-            cur_bytes,
-            message->iov[ix].length);
     if (kMax - cur_bytes < message->iov[ix].length) {
       return false;
     }

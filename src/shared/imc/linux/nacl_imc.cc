@@ -137,7 +137,6 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
    *
    * Don't do this again!
    */
-  NaClLog(5, "SendDatagramTo: Checking uint32 precondition\n");
 
   if (!MessageSizeIsValid(message)) {
     errno = EMSGSIZE;
@@ -177,7 +176,6 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   msg.msg_name = 0;
   msg.msg_namelen = 0;
 
-  NaClLog(5, "ReceiveDatagram: Checking uint32 precondition\n");
   /*
    * Make sure we cannot receive more than 2**32-1 bytes.
    */
