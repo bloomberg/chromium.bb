@@ -934,8 +934,17 @@ GtkWindow* GetDialogTransientParent(GtkWindow* dialog) {
 }
 
 void ShowDialog(GtkWidget* dialog) {
+  gint width = 0;
+  gint height = 0;
+  gtk_window_get_size(GTK_WINDOW(dialog), &width, &height);
+
   chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
-      dialog, chromeos::DIALOG_FLAG_DEFAULT, gfx::Size(), gfx::Size());
+      dialog,
+      gtk_window_get_resizable(GTK_WINDOW(dialog)) ?
+          chromeos::DIALOG_FLAG_RESIZEABLE :
+          chromeos::DIALOG_FLAG_DEFAULT,
+      gfx::Size(width, height),
+      gfx::Size());
 }
 
 void ShowDialogWithLocalizedSize(GtkWidget* dialog,
@@ -981,6 +990,10 @@ GtkWindow* GetDialogWindow(GtkWidget* dialog) {
   return chromeos::GetNativeDialogWindow(dialog);
 }
 
+gfx::Rect GetDialogBounds(GtkWidget* dialog) {
+  return chromeos::GetNativeDialogContentsBounds(dialog);
+}
+
 #else
 
 void ShowDialog(GtkWidget* dialog) {
@@ -1021,6 +1034,14 @@ void PresentWindow(GtkWidget* window, int timestamp) {
 
 GtkWindow* GetDialogWindow(GtkWidget* dialog) {
   return GTK_WINDOW(dialog);
+}
+
+gfx::Rect GetDialogBounds(GtkWidget* dialog) {
+  gint x = 0, y = 0, width = 1, height = 1;
+  gtk_window_get_position(GTK_WINDOW(dialog), &x, &y);
+  gtk_window_get_size(GTK_WINDOW(dialog), &width, &height);
+
+  return gfx::Rect(x, y, width, height);
 }
 
 #endif

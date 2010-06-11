@@ -369,7 +369,7 @@ void TaskManagerGtk::OnItemsRemoved(int start, int length) {
 void TaskManagerGtk::Show() {
   if (instance_) {
     // If there's a Task manager window open already, just activate it.
-    gtk_window_present(GTK_WINDOW(instance_->dialog_));
+    gtk_util::PresentWindow(instance_->dialog_, 0);
   } else {
     instance_ = new TaskManagerGtk;
     instance_->model_->StartUpdating();
@@ -787,19 +787,17 @@ void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
   if (response_id == GTK_RESPONSE_DELETE_EVENT) {
     // Store the dialog's size so we can restore it the next time it's opened.
     if (g_browser_process->local_state()) {
-      gint x = 0, y = 0, width = 1, height = 1;
-      gtk_window_get_position(GTK_WINDOW(dialog), &x, &y);
-      gtk_window_get_size(GTK_WINDOW(dialog), &width, &height);
+      gfx::Rect dialog_bounds = gtk_util::GetDialogBounds(GTK_WIDGET(dialog));
 
       DictionaryValue* placement_pref =
           g_browser_process->local_state()->GetMutableDictionary(
               prefs::kTaskManagerWindowPlacement);
       // Note that we store left/top for consistency with Windows, but that we
       // *don't* restore them.
-      placement_pref->SetInteger(L"left", x);
-      placement_pref->SetInteger(L"top", y);
-      placement_pref->SetInteger(L"right", x + width);
-      placement_pref->SetInteger(L"bottom", y + height);
+      placement_pref->SetInteger(L"left", dialog_bounds.x());
+      placement_pref->SetInteger(L"top", dialog_bounds.y());
+      placement_pref->SetInteger(L"right", dialog_bounds.right());
+      placement_pref->SetInteger(L"bottom", dialog_bounds.bottom());
       placement_pref->SetBoolean(L"maximized", false);
     }
 

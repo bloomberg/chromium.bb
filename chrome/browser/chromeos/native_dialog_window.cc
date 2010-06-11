@@ -16,7 +16,7 @@ namespace {
 
 const int kDialogPadding = 3;
 
-const char kNativeDialogHostWindow[] = "_chromeos_native_dialog_host_window_";
+const char kNativeDialogHost[] = "_chromeos_native_dialog_host_";
 
 }  // namespace
 
@@ -179,8 +179,8 @@ void NativeDialogHost::Init() {
   g_object_unref(dialog_contents);
   gtk_widget_hide(dialog_);
 
-  g_object_set_data(G_OBJECT(dialog_), kNativeDialogHostWindow,
-      reinterpret_cast<gpointer>(window()->GetNativeWindow()));
+  g_object_set_data(G_OBJECT(dialog_), kNativeDialogHost,
+      reinterpret_cast<gpointer>(this));
 
   gtk_widget_show_all(contents);
 
@@ -229,8 +229,15 @@ void ShowNativeDialog(gfx::NativeWindow parent,
 }
 
 gfx::NativeWindow GetNativeDialogWindow(gfx::NativeView native_dialog) {
-  return reinterpret_cast<gfx::NativeWindow>(
-      g_object_get_data(G_OBJECT(native_dialog), kNativeDialogHostWindow));
+  NativeDialogHost* host = reinterpret_cast<NativeDialogHost*>(
+      g_object_get_data(G_OBJECT(native_dialog), kNativeDialogHost));
+  return host ? host->window()->GetNativeWindow() : NULL;
+}
+
+gfx::Rect GetNativeDialogContentsBounds(gfx::NativeView native_dialog) {
+  NativeDialogHost* host = reinterpret_cast<NativeDialogHost*>(
+      g_object_get_data(G_OBJECT(native_dialog), kNativeDialogHost));
+  return host ? host->bounds() : gfx::Rect();
 }
 
 }  // namespace chromeos

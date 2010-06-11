@@ -304,6 +304,9 @@ void PresentWindow(GtkWidget* window, int timestamp);
 // host window. On Linux, it merely returns the passed in dialog.
 GtkWindow* GetDialogWindow(GtkWidget* dialog);
 
+// Gets dialog window bounds.
+gfx::Rect GetDialogBounds(GtkWidget* dialog);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_

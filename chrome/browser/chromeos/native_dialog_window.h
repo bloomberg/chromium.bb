@@ -8,6 +8,7 @@
 #include "gfx/native_widget_types.h"
 
 namespace gfx {
+class Rect;
 class Size;
 }  // namespace gfx
 
@@ -32,6 +33,9 @@ void ShowNativeDialog(gfx::NativeWindow parent,
 
 // Gets the container window of the given |native_dialog|.
 gfx::NativeWindow GetNativeDialogWindow(gfx::NativeView native_dialog);
+
+// Gets the bounds of the contained dialog content.
+gfx::Rect GetNativeDialogContentsBounds(gfx::NativeView native_dialog);
 
 }  // namespace chromeos
 
