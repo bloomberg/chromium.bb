@@ -42,7 +42,7 @@ def CheckCall(command, cwd=None, print_error=True):
 
   Works on python 2.4
   """
-  logging.debug("%s, cwd=%s" % (str(command), str(cwd)))
+  logging.debug('%s, cwd=%s' % (str(command), str(cwd)))
   try:
     stderr = None
     if not print_error:
@@ -63,10 +63,10 @@ def SplitUrlRevision(url):
   """Splits url and returns a two-tuple: url, rev"""
   if url.startswith('ssh:'):
     # Make sure ssh://test@example.com/test.git@stable works
-    regex = r"(ssh://(?:[\w]+@)?[-\w:\.]+/[-\w\./]+)(?:@(.+))?"
+    regex = r'(ssh://(?:[\w]+@)?[-\w:\.]+/[-\w\./]+)(?:@(.+))?'
     components = re.search(regex, url).groups()
   else:
-    components = url.split("@")
+    components = url.split('@', 1)
     if len(components) == 1:
       components += [None]
   return tuple(components)
@@ -160,7 +160,7 @@ def RemoveDirectory(*path):
     return
 
   if os.path.islink(file_path) or not os.path.isdir(file_path):
-    raise Error("RemoveDirectory asked to remove non-directory %s" % file_path)
+    raise Error('RemoveDirectory asked to remove non-directory %s' % file_path)
 
   has_win32api = False
   if sys.platform == 'win32':
@@ -251,7 +251,7 @@ def SubprocessCallAndFilter(command,
   """
   logging.debug(command)
   if print_messages:
-    print("\n________ running \'%s\' in \'%s\'"
+    print('\n________ running \'%s\' in \'%s\''
           % (' '.join(command), in_directory))
 
   # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
@@ -266,25 +266,25 @@ def SubprocessCallAndFilter(command,
   # normally buffering is done for each line, but if svn requests input, no
   # end-of-line character is output after the prompt and it would not show up.
   in_byte = kid.stdout.read(1)
-  in_line = ""
+  in_line = ''
   while in_byte:
-    if in_byte != "\r":
+    if in_byte != '\r':
       if print_stdout:
         if not print_messages:
-          print("\n________ running \'%s\' in \'%s\'"
+          print('\n________ running \'%s\' in \'%s\''
               % (' '.join(command), in_directory))
           print_messages = True
         sys.stdout.write(in_byte)
-      if in_byte != "\n":
+      if in_byte != '\n':
         in_line += in_byte
-    if in_byte == "\n" and filter_fn:
+    if in_byte == '\n' and filter_fn:
       filter_fn(in_line)
-      in_line = ""
+      in_line = ''
     in_byte = kid.stdout.read(1)
   rv = kid.wait()
 
   if rv:
-    msg = "failed to run command: %s" % " ".join(command)
+    msg = 'failed to run command: %s' % ' '.join(command)
 
     if fail_status != None:
       print >>sys.stderr, msg
@@ -346,7 +346,7 @@ def GetGClientRootAndEntries(path=None):
   config_path = FindFileUpwards(config_file, path)
 
   if not config_path:
-    print "Can't find", config_file
+    print "Can't find %s" % config_file
     return None
 
   env = {}

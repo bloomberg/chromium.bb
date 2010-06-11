@@ -85,15 +85,85 @@ def attr(attr, data):
 ## GClient implementation.
 
 
-class GClient(object):
+class GClientKeywords(object):
+  class FromImpl(object):
+    """Used to implement the From() syntax."""
+
+    def __init__(self, module_name, sub_target_name=None):
+      """module_name is the dep module we want to include from.  It can also be
+      the name of a subdirectory to include from.
+
+      sub_target_name is an optional parameter if the module name in the other
+      DEPS file is different. E.g., you might want to map src/net to net."""
+      self.module_name = module_name
+      self.sub_target_name = sub_target_name
+
+    def __str__(self):
+      return 'From(%s, %s)' % (repr(self.module_name),
+                               repr(self.sub_target_name))
+
+    def GetUrl(self, target_name, sub_deps_base_url, root_dir, sub_deps):
+      """Resolve the URL for this From entry."""
+      sub_deps_target_name = target_name
+      if self.sub_target_name:
+        sub_deps_target_name = self.sub_target_name
+      url = sub_deps[sub_deps_target_name]
+      if url.startswith('/'):
+        # If it's a relative URL, we need to resolve the URL relative to the
+        # sub deps base URL.
+        if not isinstance(sub_deps_base_url, basestring):
+          sub_deps_base_url = sub_deps_base_url.GetPath()
+        scm = gclient_scm.CreateSCM(sub_deps_base_url, root_dir,
+                                    None)
+        url = scm.FullUrlForRelativeUrl(url)
+      return url
+
+  class FileImpl(object):
+    """Used to implement the File('') syntax which lets you sync a single file
+    from an SVN repo."""
+
+    def __init__(self, file_location):
+      self.file_location = file_location
+
+    def __str__(self):
+      return 'File("%s")' % self.file_location
+
+    def GetPath(self):
+      return os.path.split(self.file_location)[0]
+
+    def GetFilename(self):
+      rev_tokens = self.file_location.split('@')
+      return os.path.split(rev_tokens[0])[1]
+
+    def GetRevision(self):
+      rev_tokens = self.file_location.split('@')
+      if len(rev_tokens) > 1:
+        return rev_tokens[1]
+      return None
+
+  class VarImpl(object):
+    def __init__(self, custom_vars, local_scope):
+      self._custom_vars = custom_vars
+      self._local_scope = local_scope
+
+    def Lookup(self, var_name):
+      """Implements the Var syntax."""
+      if var_name in self._custom_vars:
+        return self._custom_vars[var_name]
+      elif var_name in self._local_scope.get("vars", {}):
+        return self._local_scope["vars"][var_name]
+      raise gclient_utils.Error("Var is not defined: %s" % var_name)
+
+
+class GClient(GClientKeywords):
   """Object that represent a gclient checkout."""
 
-  supported_commands = [
+  SUPPORTED_COMMANDS = [
     'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
     'runhooks'
   ]
 
-  deps_os_choices = {
+  DEPS_OS_CHOICES = {
     "win32": "win",
     "win": "win",
     "cygwin": "win",
@@ -137,13 +207,13 @@ solutions = [
   def __init__(self, root_dir, options):
     self._root_dir = root_dir
     self._options = options
-    self._config_content = None
+    self.config_content = None
     self._config_dict = {}
     self._deps_hooks = []
 
   def SetConfig(self, content):
     self._config_dict = {}
-    self._config_content = content
+    self.config_content = content
     try:
       exec(content, self._config_dict)
     except SyntaxError, e:
@@ -164,15 +234,12 @@ solutions = [
   def SaveConfig(self):
     gclient_utils.FileWrite(os.path.join(self._root_dir,
                                          self._options.config_filename),
-                            self._config_content)
+                            self.config_content)
 
   def _LoadConfig(self):
     client_source = gclient_utils.FileRead(
         os.path.join(self._root_dir, self._options.config_filename))
     self.SetConfig(client_source)
-
-  def ConfigContent(self):
-    return self._config_content
 
   def GetVar(self, key, default=None):
     return self._config_dict.get(key, default)
@@ -239,74 +306,6 @@ solutions = [
     exec(gclient_utils.FileRead(filename), scope)
     return scope["entries"]
 
-  class FromImpl:
-    """Used to implement the From syntax."""
-
-    def __init__(self, module_name, sub_target_name=None):
-      """module_name is the dep module we want to include from.  It can also be
-      the name of a subdirectory to include from.
-
-      sub_target_name is an optional parameter if the module name in the other
-      DEPS file is different. E.g., you might want to map src/net to net."""
-      self.module_name = module_name
-      self.sub_target_name = sub_target_name
-
-    def __str__(self):
-      return 'From(%s, %s)' % (repr(self.module_name),
-                               repr(self.sub_target_name))
-
-    def GetUrl(self, target_name, sub_deps_base_url, root_dir, sub_deps):
-      """Resolve the URL for this From entry."""
-      sub_deps_target_name = target_name
-      if self.sub_target_name:
-        sub_deps_target_name = self.sub_target_name
-      url = sub_deps[sub_deps_target_name]
-      if url.startswith('/'):
-        # If it's a relative URL, we need to resolve the URL relative to the
-        # sub deps base URL.
-        if not isinstance(sub_deps_base_url, basestring):
-          sub_deps_base_url = sub_deps_base_url.GetPath()
-        scm = gclient_scm.CreateSCM(sub_deps_base_url, root_dir,
-                                    None)
-        url = scm.FullUrlForRelativeUrl(url)
-      return url
-
-  class FileImpl:
-    """Used to implement the File('') syntax which lets you sync a single file
-    from an SVN repo."""
-
-    def __init__(self, file_location):
-      self.file_location = file_location
-
-    def __str__(self):
-      return 'File("%s")' % self.file_location
-
-    def GetPath(self):
-      return os.path.split(self.file_location)[0]
-
-    def GetFilename(self):
-      rev_tokens = self.file_location.split('@')
-      return os.path.split(rev_tokens[0])[1]
-
-    def GetRevision(self):
-      rev_tokens = self.file_location.split('@')
-      if len(rev_tokens) > 1:
-        return rev_tokens[1]
-      return None
-
-  class _VarImpl:
-    def __init__(self, custom_vars, local_scope):
-      self._custom_vars = custom_vars
-      self._local_scope = local_scope
-
-    def Lookup(self, var_name):
-      """Implements the Var syntax."""
-      if var_name in self._custom_vars:
-        return self._custom_vars[var_name]
-      elif var_name in self._local_scope.get("vars", {}):
-        return self._local_scope["vars"][var_name]
-      raise gclient_utils.Error("Var is not defined: %s" % var_name)
-
   def _ParseSolutionDeps(self, solution_name, solution_deps_content,
                          custom_vars, parse_hooks):
     """Parses the DEPS file for the specified solution.
@@ -325,7 +324,7 @@ solutions = [
       return {}
     # Eval the content
     local_scope = {}
-    var = self._VarImpl(custom_vars, local_scope)
+    var = self.VarImpl(custom_vars, local_scope)
     global_scope = {
       "File": self.FileImpl,
       "From": self.FromImpl,
@@ -341,9 +340,9 @@ solutions = [
       if self._options.deps_os is not None:
         deps_to_include = self._options.deps_os.split(",")
         if "all" in deps_to_include:
-          deps_to_include = list(set(self.deps_os_choices.itervalues()))
+          deps_to_include = list(set(self.DEPS_OS_CHOICES.itervalues()))
       else:
-        deps_to_include = [self.deps_os_choices.get(sys.platform, "unix")]
+        deps_to_include = [self.DEPS_OS_CHOICES.get(sys.platform, "unix")]
 
       deps_to_include = set(deps_to_include)
       for deps_os_key in deps_to_include:
@@ -547,7 +546,7 @@ solutions = [
     Raises:
       Error: If the client has conflicting entries.
     """
-    if not command in self.supported_commands:
+    if not command in self.SUPPORTED_COMMANDS:
       raise gclient_utils.Error("'%s' is an unsupported command" % command)
 
     solutions = self.GetVar("solutions")
@@ -793,7 +792,7 @@ solutions = [
       config = self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient}
       snapclient = GClient(self._root_dir, self._options)
       snapclient.SetConfig(config)
-      print(snapclient._config_content)
+      print(snapclient.config_content)
 
 
 #### gclient commands.
@@ -815,7 +814,7 @@ Mostly svn-specific. Simply runs 'svn cleanup' for each module.
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print(client.config_content)
   return client.RunOnDeps('cleanup', args)
 
 
@@ -878,7 +877,7 @@ def CMDexport(parser, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print(client.config_content)
   return client.RunOnDeps('export', args)
 
 
@@ -905,7 +904,7 @@ checked out tree via 'patch -p0 < patchfile'.
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print(client.config_content)
   return client.RunOnDeps('pack', args)
 
 
@@ -922,7 +921,7 @@ def CMDstatus(parser, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print(client.config_content)
   return client.RunOnDeps('status', args)
 
 
@@ -977,7 +976,7 @@ def CMDsync(parser, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print(client.config_content)
   return client.RunOnDeps('update', args)
 
 
@@ -998,7 +997,7 @@ def CMDdiff(parser, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print(client.config_content)
   return client.RunOnDeps('diff', args)
 
 
@@ -1034,7 +1033,7 @@ def CMDrunhooks(parser, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print(client.config_content)
   options.force = True
   options.nohooks = False
   return client.RunOnDeps('runhooks', args)
