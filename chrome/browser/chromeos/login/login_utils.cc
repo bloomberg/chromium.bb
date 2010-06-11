@@ -40,7 +40,7 @@ namespace chromeos {
 
 namespace {
 
-const int kWifiTimeoutInMS = 15000;
+const int kWifiTimeoutInMS = 30000;
 static char kIncognitoUser[] = "incognito";
 
 // Prefix for Auth token received from ClientLogin request.
@@ -111,6 +111,7 @@ class LoginUtilsImpl : public LoginUtils,
 
   NotificationRegistrar registrar_;
   bool wifi_connecting_;
+  bool wifi_connection_started_;
   base::Time wifi_connect_start_time_;
 
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
@@ -150,20 +151,35 @@ bool LoginUtilsImpl::ShouldWaitForWifi() {
   // wait kWifiTimeoutInMS until connection is made or failed.
   if (wifi_connecting_) {
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    bool failed = false;
     if (cros->PreferredNetworkConnected()) {
-      LOG(INFO) << "Wifi connection successful.";
+      base::TimeDelta diff = base::Time::Now() - wifi_connect_start_time_;
+      LOG(INFO) << "Wifi connection successful after " << diff.InSeconds() <<
+          " seconds.";
       return false;
     } else if (cros->PreferredNetworkFailed()) {
-      LOG(INFO) << "Wifi connection failed.";
-      return false;
-    } else {
-      base::TimeDelta diff = base::Time::Now() - wifi_connect_start_time_;
-      // Keep waiting if we have not timed out yet.
-      bool timedout = (diff.InMilliseconds() > kWifiTimeoutInMS);
-      if (timedout)
-        LOG(INFO) << "Wifi connection timed out.";
-      return !timedout;
+      // Sometimes we stay in the failed state before connection starts.
+      // So we only know for sure that connection failed if we get a failed
+      // state after connection has started.
+      if (wifi_connection_started_) {
+        LOG(INFO) << "Wifi connection failed.";
+        return false;
+      }
+      failed = true;
     }
+
+    // If state is not failed, then we know connection has started.
+    if (!wifi_connection_started_ && !failed) {
+      LOG(INFO) << "Wifi connection started.";
+      wifi_connection_started_ = true;
+    }
+
+    base::TimeDelta diff = base::Time::Now() - wifi_connect_start_time_;
+    // Keep waiting if we have not timed out yet.
+    bool timedout = (diff.InMilliseconds() > kWifiTimeoutInMS);
+    if (timedout)
+      LOG(INFO) << "Wifi connection timed out.";
+    return !timedout;
   }
   return false;
 }
@@ -234,6 +250,7 @@ void LoginUtilsImpl::Observe(NotificationType type,
 
 void LoginUtilsImpl::ConnectToPreferredNetwork() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  wifi_connection_started_ = false;
   wifi_connecting_ = cros->ConnectToPreferredNetworkIfAvailable();
   if (wifi_connecting_)
     wifi_connect_start_time_ = base::Time::Now();

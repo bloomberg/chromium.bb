@@ -432,6 +432,9 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // monitoring of network changes.
   void Init();
 
+  // Force an update of the system info.
+  void UpdateSystemInfo();
+
   // Gets the WifiNetwork with the given name. Returns whether the wifi network
   // was found or not.
   bool GetWifiNetworkByName(const std::string& name, WifiNetwork* wifi);

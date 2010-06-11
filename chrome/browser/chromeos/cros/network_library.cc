@@ -262,6 +262,8 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
   // So that we don't have to hard-code Google-A here.
   if (CrosLibrary::Get()->EnsureLoaded()) {
     LOG(INFO) << "Attempting to auto-connect to Google-A wifi.";
+    // First force a refresh of the system info.
+    UpdateSystemInfo();
 
     // If ethernet is connected, then don't bother.
     if (ethernet_connected()) {
@@ -277,19 +279,38 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
       return false;
     }
 
-    // See if identity and certpath are available.
-    if (wifi.identity().empty() || wifi.cert_path().empty()) {
-      LOG(INFO) << "Google-A wifi not set up.";
-      return false;
-    }
-
     // Make sure we want to auto-connect.
+    // Since auto-connect is true, we assume the identity and certificate
+    // is setup propertly. If it's not, the connection will fail.
     if (!wifi.auto_connect()) {
       LOG(INFO) << "Google-A wifi is set to not auto-connect.";
       return false;
     }
 
-    // Connect to Google-A.
+    // It takes some time for the enterprise daemon to start up and populate the
+    // certificate and identity. So we wait at most 3 seconds here. And every
+    // 100ms, we refetch the system info and check the cert and identify on the
+    // wifi. The enterprise daemon takes between 0.4 to 0.9 seconds to setup.
+    bool setup = false;
+    for (int i = 0; i < 30; i++) {
+      // Update the system and refetch the network.
+      UpdateSystemInfo();
+      GetWifiNetworkByName(kGoogleAWifi, &wifi);
+      // See if identity and certpath are available.
+      if (!wifi.identity().empty() && !wifi.cert_path().empty()) {
+        LOG(INFO) << "Google-A wifi set up after " << (i*0.1) << " seconds.";
+        setup = true;
+        break;
+      }
+      PlatformThread::Sleep(100);
+    }
+
+    if (!setup) {
+      LOG(INFO) << "Google-A wifi not set up after 3 seconds.";
+      return false;
+    }
+
+    // Now that we have a setup Google-A, we can connect to it.
     ConnectToNetwork(wifi.service_path().c_str(), NULL);
     return true;
   }
@@ -546,16 +567,21 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
 void NetworkLibraryImpl::Init() {
   // First, get the currently available networks.  This data is cached
   // on the connman side, so the call should be quick.
-  SystemInfo* system = GetSystemInfo();
-  if (system) {
-    LOG(INFO) << "Getting initial CrOS network info.";
-    UpdateNetworkStatus(system);
-    FreeSystemInfo(system);
-  }
+  LOG(INFO) << "Getting initial CrOS network info.";
+  UpdateSystemInfo();
+
   LOG(INFO) << "Registering for network status updates.";
   // Now, register to receive updates on network status.
   network_status_connection_ = MonitorNetwork(&NetworkStatusChangedHandler,
                                               this);
+}
+
+void NetworkLibraryImpl::UpdateSystemInfo() {
+  SystemInfo* system = GetSystemInfo();
+  if (system) {
+    UpdateNetworkStatus(system);
+    FreeSystemInfo(system);
+  }
 }
 
 bool NetworkLibraryImpl::GetWifiNetworkByName(const std::string& name,
