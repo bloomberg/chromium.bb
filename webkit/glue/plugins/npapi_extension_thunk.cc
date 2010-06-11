@@ -526,6 +526,14 @@ static NPError NPSetCursor(NPP id, NPCursorType type) {
       NPERR_NO_ERROR : NPERR_GENERIC_ERROR;
 }
 
+static NPFontExtensions* GetFontExtensions(NPP id) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (!plugin)
+    return NULL;
+
+  return plugin->webplugin()->delegate()->GetFontExtensions();
+}
+
 namespace NPAPI {
 
 NPError GetPepperExtensionsFunctions(void* value) {
@@ -537,6 +545,7 @@ NPError GetPepperExtensionsFunctions(void* value) {
     &ChooseFile,
     &GetWidgetExtensions,
     &NPSetCursor,
+    &GetFontExtensions,
   };
 
   // Return a pointer to the canonical function table.

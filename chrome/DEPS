@@ -32,6 +32,9 @@ include_rules = [
   # Allow inclusion of Mozilla interface headers.
   "+third_party/mozilla",
 
+  # Allow inclusion of NPAPI interface headers.
+  "+third_party/npapi",
+
   # Allow inclusion of tcmalloc header.
   "+third_party/tcmalloc",
 

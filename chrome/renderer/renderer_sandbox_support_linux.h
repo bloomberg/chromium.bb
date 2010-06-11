@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "third_party/npapi/bindings/npapi_extensions.h"
+
 namespace WebKit {
 struct WebFontRenderStyle;
 }
@@ -29,6 +31,24 @@ void getRenderStyleForStrike(const char* family, int sizeAndStyle,
 
 // Returns a file descriptor for a shared memory segment.
 int MakeSharedMemorySegmentViaIPC(size_t length);
+
+// Return a read-only file descriptor to the font which best matches the given
+// properties or -1 on failure.
+//   charset: specifies the language(s) that the font must cover. See
+// render_sandbox_host_linux.cc for more information.
+int MatchFontWithFallback(const std::string& face, bool bold,
+                          bool italic, NPCharset charset);
+
+// GetFontTable loads a specified font table from an open SFNT file.
+//   fd: a file descriptor to the SFNT file. The position doesn't matter.
+//   table: the table in *big-endian* format, or 0 for the whole font file.
+//   output: a buffer of size output_length that gets the data.  can be 0, in
+//     which case output_length will be set to the required size in bytes.
+//   output_length: size of output, if it's not 0.
+//
+//   returns: true on success.
+bool GetFontTable(int fd, uint32_t table, uint8_t* output,
+                  size_t* output_length);
 
 };  // namespace render_sandbox_support
 

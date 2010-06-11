@@ -9,6 +9,10 @@
 #include <string>
 #include <vector>
 
+#if defined(OS_LINUX)
+#include <unistd.h>
+#endif
+
 #include "base/file_util.h"
 #include "base/keyboard_codes.h"
 #if defined(OS_MACOSX)
@@ -27,6 +31,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/pepper_widget.h"
 #include "chrome/renderer/render_thread.h"
+#if defined(OS_LINUX)
+#include "chrome/renderer/renderer_sandbox_support_linux.h"
+#endif
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "gfx/blit.h"
 #if defined(OS_WIN)
@@ -424,6 +431,58 @@ COMPILE_ASSERT_MATCHING_ENUM(TypeZoomOut, NPCursorTypeZoomOut);
 bool WebPluginDelegatePepper::SetCursor(NPCursorType type) {
   cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
   return true;
+}
+
+NPError NPMatchFontWithFallback(NPP instance,
+                                const NPFontDescription* description,
+                                NPFontID* id) {
+#if defined(OS_LINUX)
+  int fd = renderer_sandbox_support::MatchFontWithFallback(
+      description->face, description->weight >= 700, description->italic,
+      description->charset);
+  if (fd == -1)
+    return NPERR_GENERIC_ERROR;
+  *id = fd;
+  return NPERR_NO_ERROR;
+#else
+  NOTIMPLEMENTED();
+  return NPERR_GENERIC_ERROR;
+#endif
+}
+
+NPError GetFontTable(NPP instance,
+                     NPFontID id,
+                     uint32_t table,
+                     void* output,
+                     size_t* output_length) {
+#if defined(OS_LINUX)
+  bool rv = renderer_sandbox_support::GetFontTable(
+      id, table, static_cast<uint8_t*>(output), output_length);
+  return rv ? NPERR_NO_ERROR : NPERR_GENERIC_ERROR;
+#else
+  NOTIMPLEMENTED();
+  return NPERR_GENERIC_ERROR;
+#endif
+}
+
+NPError NPDestroyFont(NPP instance, NPFontID id) {
+#if defined(OS_LINUX)
+  close(id);
+  return NPERR_NO_ERROR;
+#else
+  NOTIMPLEMENTED();
+  return NPERR_GENERIC_ERROR;
+#endif
+}
+
+NPFontExtensions g_font_extensions = {
+  NPMatchFontWithFallback,
+  GetFontTable,
+  NPDestroyFont
+};
+
+NPFontExtensions* WebPluginDelegatePepper::GetFontExtensions() {
+  return &g_font_extensions;
 }
 
 void WebPluginDelegatePepper::Zoom(int factor) {

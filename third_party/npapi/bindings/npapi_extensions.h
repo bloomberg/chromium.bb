@@ -630,6 +630,83 @@ typedef NPError (*NPSetCursorPtr)(
     NPP instance,
     NPCursorType type);
 
+/* unique id for each font */
+typedef int NPFontID;
+
+typedef enum {
+  NPCharsetAnsi = 0,
+  NPCharsetDefault = 1,
+  NPCharsetSymbol = 2,
+  NPCharsetMac = 77,
+  NPCharsetShiftJIS = 128,
+  NPCharsetHangul = 129,
+  NPCharsetJohab = 130,
+  NPCharsetGB2312 =134,
+  NPCharsetChineseBIG5 = 136,
+  NPCharsetGreek = 161,
+  NPCharsetTurkish = 162,
+  NPCharsetVietnamese = 163,
+  NPCharsetHebrew = 177,
+  NPCharsetArabic = 178,
+  NPCharsetBaltic = 186,
+  NPCharsetRussian = 204,
+  NPCharsetThai = 222,
+  NPCharsetEastEurope = 238,
+  NPCharsetOEM = 255
+} NPCharset;
+
+typedef enum {
+  NPPitchDefault,
+  NPPitchFixed
+} NPPitch;
+
+typedef enum {
+  NPFamilyDefault,
+  NPFamilyRoman,
+  NPFamilyScript
+} NPFamily;
+
+typedef struct _NPFontDescription {
+  const char* face;
+  int weight;
+  bool italic;
+  NPPitch pitch;
+  NPFamily family;
+  NPCharset charset;
+} NPFontDescription;
+
+// Return a font which best matches the given properties.
+typedef NPError (*NPMatchFontWithFallbackPtr) (
+    NPP instance,
+    const NPFontDescription* description,
+    NPFontID* id);
+
+// Loads a specified font table for the given font.
+//   table: the table in *big-endian* format, or 0 for the whole font file.
+//   output: a buffer of size output_length that gets the data.  can be 0, in
+//     which case output_length will be set to the required size in bytes.
+//   output_length: size of output, if it's not 0.
+typedef NPError (*GetFontTablePtr) (
+    NPP instance,
+    NPFontID id,
+    uint32_t table,
+    void* output,
+    size_t* output_length);
+
+// Destroys a font.
+typedef NPError (*NPDestroyFontPtr) (
+    NPP instance,
+    NPFontID id);
+
+typedef struct _NPFontExtensions {
+  NPMatchFontWithFallbackPtr matchFontWithFallback;
+  GetFontTablePtr getFontTable;
+  NPDestroyFontPtr destroyFont;
+} NPFontExtensions;
+
+typedef NPFontExtensions* (*NPGetFontExtensionsPtr)(
+    NPP instance);
+
 /* Pepper extensions */
 struct NPNExtensions {
   /* Device interface acquisition */
@@ -645,6 +722,8 @@ struct NPNExtensions {
   NPGetWidgetExtensionsPtr getWidgetExtensions;
   /* Cursor */
   NPSetCursorPtr setCursor;
+  /* Font */
+  NPGetFontExtensionsPtr getFontExtensions;
 };
 
 /* 3D -----------------------------------------------------------------------*/

@@ -94,6 +94,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
                           void* user_data);
   virtual NPWidgetExtensions* GetWidgetExtensions();
   virtual bool SetCursor(NPCursorType type);
+  virtual NPFontExtensions* GetFontExtensions();
   virtual void Zoom(int factor);
   virtual void Copy();
 
