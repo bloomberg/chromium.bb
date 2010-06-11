@@ -115,7 +115,7 @@
    fun:FcConfigSubstitute
 }
 {
-  bug_46177
+  bug_46177_a
   Memcheck:Leak
   ...
   fun:FcCharSetFindLeafCreate
@@ -125,6 +125,18 @@
   fun:FcFontSort
   ...
   fun:pango_layout_get_pixel_size
+}
+{
+  bug_46177_b
+  Memcheck:Leak
+  ...
+  fun:FcCharSetFindLeafCreate
+  fun:FcCharSetAddLeaf
+  fun:FcCharSetOperate
+  fun:FcFontSetSort
+  fun:FcFontSort
+  ...
+  fun:pango_layout_get_iter
 }
 {
    dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
@@ -3167,4 +3179,33 @@
    fun:_ZN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserver21AttachToCurrentThreadEv
    fun:_Z16DispatchToMethodIN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserverEMS1_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserverEMS1_FvvE6Tuple0E3RunEv
+}
+
+{
+   bug_46331
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12ChromeThread28GetMessageLoopProxyForThreadENS_2IDE
+   fun:_ZN29ChromeURLRequestContextGetter21GetIOMessageLoopProxyEv
+   fun:_ZN23URLRequestContextGetter10OnDestructEv
+   fun:_ZN29URLRequestContextGetterTraits8DestructEP23URLRequestContextGetter
+   fun:_ZN4base20RefCountedThreadSafeI23URLRequestContextGetter29URLRequestContextGetterTraitsE7ReleaseEv
+   fun:_ZN13scoped_refptrI23URLRequestContextGetterED1Ev
+   fun:_ZN27SafeBrowsingProtocolManagerD1Ev
+   fun:_ZN19SafeBrowsingService12OnIOShutdownEv
+   fun:_Z16DispatchToMethodI19SafeBrowsingServiceMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodI19SafeBrowsingServiceMS0_FvvE6Tuple0E3RunEv
+}
+
+{
+   bug_46332
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
+   fun:_ZNSs7reserveEj
+   fun:_ZNSs6appendEPKcj
+   fun:_ZNSs6appendEPKc
+   fun:_ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_PKS3_
+   fun:_ZNK21URLRequestMockHTTPJob20GetResponseInfoConstEPN3net16HttpResponseInfoE
 }
