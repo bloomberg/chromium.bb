@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -232,7 +233,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
       Time t = Time::Now() - TimeDelta::FromHours(i + 1);
       history_service->AddPageWithDetails(url, cur.title, cur.visit_count,
                                           cur.typed_count, t, false);
-      history_service->SetPageContents(url, cur.body);
+      history_service->SetPageContents(url, WideToUTF16(cur.body));
       if (cur.starred) {
         bookmark_model->SetURLStarred(url, std::wstring(), true);
       }

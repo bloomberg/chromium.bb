@@ -238,7 +238,7 @@ class RenderViewHostDelegate {
     virtual void OnPageContents(const GURL& url,
                                 int renderer_process_id,
                                 int32 page_id,
-                                const std::wstring& contents,
+                                const string16& contents,
                                 const std::string& language) = 0;
 
     // Notification that the page has been translated.

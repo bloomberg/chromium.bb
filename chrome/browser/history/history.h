@@ -211,7 +211,7 @@ class HistoryService : public CancelableRequestProvider,
   // Notifies history of the body text of the given recently-visited URL.
   // If the URL was not visited "recently enough," the history system may
   // discard it.
-  void SetPageContents(const GURL& url, const std::wstring& contents);
+  void SetPageContents(const GURL& url, const string16& contents);
 
   // Querying ------------------------------------------------------------------
 

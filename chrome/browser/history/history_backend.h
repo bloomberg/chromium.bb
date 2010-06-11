@@ -116,7 +116,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Indexing ------------------------------------------------------------------
 
-  void SetPageContents(const GURL& url, const std::wstring& contents);
+  void SetPageContents(const GURL& url, const string16& contents);
 
   // Querying ------------------------------------------------------------------
 

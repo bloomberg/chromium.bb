@@ -1983,7 +1983,7 @@ void TabContents::OnDidGetApplicationInfo(
 void TabContents::OnPageContents(const GURL& url,
                                  int renderer_process_id,
                                  int32 page_id,
-                                 const std::wstring& contents,
+                                 const string16& contents,
                                  const std::string& language) {
   // Don't index any https pages. People generally don't want their bank
   // accounts, etc. indexed on their computer, especially since some of these

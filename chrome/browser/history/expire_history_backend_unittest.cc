@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
@@ -242,17 +243,18 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
 
   // Full text index for each visit.
   text_db_->AddPageData(url_row1.url(), visit_row1.url_id, visit_row1.visit_id,
-                        visit_row1.visit_time, L"title", L"body");
+                        visit_row1.visit_time, L"title", UTF8ToUTF16("body"));
 
   text_db_->AddPageData(url_row2.url(), visit_row2.url_id, visit_row2.visit_id,
-                        visit_row2.visit_time, L"title", L"body");
+                        visit_row2.visit_time, L"title", UTF8ToUTF16("body"));
   text_db_->AddPageData(url_row2.url(), visit_row3.url_id, visit_row3.visit_id,
-                        visit_row3.visit_time, L"title", L"body");
+                        visit_row3.visit_time, L"title", UTF8ToUTF16("body"));
 
   // Note the special text in this URL. We'll search the file for this string
   // to make sure it doesn't hang around after the delete.
   text_db_->AddPageData(url_row3.url(), visit_row4.url_id, visit_row4.visit_id,
-                        visit_row4.visit_time, L"title", L"goats body");
+                        visit_row4.visit_time, L"title",
+                        UTF8ToUTF16("goats body"));
 }
 
 bool ExpireHistoryTest::HasFavIcon(FavIconID favicon_id) {

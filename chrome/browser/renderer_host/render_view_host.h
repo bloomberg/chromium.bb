@@ -630,7 +630,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnCSSInserted();
   void OnPageContents(const GURL& url,
                       int32 page_id,
-                      const std::wstring& contents,
+                      const string16& contents,
                       const std::string& language);
   void OnPageTranslated(int32 page_id,
                         const std::string& original_lang,

@@ -20,11 +20,11 @@ namespace {
 struct TestEntry {
   const char* url;
   const wchar_t* title;
-  const wchar_t* body;
+  const char* body;
 } test_entries[] = {
-  {"http://www.google.com/1", L"PAGEONE 1",   L"FOO some body text"},
-  {"http://www.google.com/2", L"PAGEONE 2",   L"FOO some more blah blah"},
-  {"http://www.google.com/3", L"PAGETHREE 3", L"BAR some hello world for you"},
+  {"http://www.google.com/1", L"PAGEONE 1",   "FOO some body text"},
+  {"http://www.google.com/2", L"PAGEONE 2",   "FOO some more blah blah"},
+  {"http://www.google.com/3", L"PAGETHREE 3", "BAR some hello world for you"},
 };
 
 class HistoryContentsProviderTest : public testing::Test,
@@ -73,7 +73,7 @@ class HistoryContentsProviderTest : public testing::Test,
       history_service->AddPage(url, t, id_scope, i, GURL(),
           PageTransition::LINK, history::RedirectList(), false);
       history_service->SetPageTitle(url, test_entries[i].title);
-      history_service->SetPageContents(url, test_entries[i].body);
+      history_service->SetPageContents(url, UTF8ToUTF16(test_entries[i].body));
     }
 
     provider_ = new HistoryContentsProvider(this, profile_.get());

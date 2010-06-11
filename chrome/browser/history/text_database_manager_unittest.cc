@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/visit_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,23 +21,23 @@ namespace {
 
 const char* kURL1 = "http://www.google.com/asdf";
 const wchar_t* kTitle1 = L"Google A";
-const wchar_t* kBody1 = L"FOO page one.";
+const char* kBody1 = "FOO page one.";
 
 const char* kURL2 = "http://www.google.com/qwer";
 const wchar_t* kTitle2 = L"Google B";
-const wchar_t* kBody2 = L"FOO two.";
+const char* kBody2 = "FOO two.";
 
 const char* kURL3 = "http://www.google.com/zxcv";
 const wchar_t* kTitle3 = L"Google C";
-const wchar_t* kBody3 = L"FOO drei";
+const char* kBody3 = "FOO drei";
 
 const char* kURL4 = "http://www.google.com/hjkl";
 const wchar_t* kTitle4 = L"Google D";
-const wchar_t* kBody4 = L"FOO lalala four.";
+const char* kBody4 = "FOO lalala four.";
 
 const char* kURL5 = "http://www.google.com/uiop";
 const wchar_t* kTitle5 = L"Google cinq";
-const wchar_t* kBody5 = L"FOO page one.";
+const char* kBody5 = "FOO page one.";
 
 // This provides a simple implementation of a URL+VisitDatabase using an
 // in-memory sqlite connection. The text database manager expects to be able to
@@ -82,7 +83,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
 
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle1, kBody1);
+                      visit_row.visit_time, kTitle1, UTF8ToUTF16(kBody1));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -90,7 +91,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL2), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle2, kBody2);
+                      visit_row.visit_time, kTitle2, UTF8ToUTF16(kBody2));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -98,7 +99,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL3), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle3, kBody3);
+                      visit_row.visit_time, kTitle3, UTF8ToUTF16(kBody3));
 
   // Put the next ones in the next month.
   exploded.month++;
@@ -107,7 +108,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL4), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle4, kBody4);
+                      visit_row.visit_time, kTitle4, UTF8ToUTF16(kBody4));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -115,7 +116,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL5), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle5, kBody5);
+                      visit_row.visit_time, kTitle5, UTF8ToUTF16(kBody5));
 
   // Put the first one in again in the second month.
   exploded.day_of_month++;
@@ -124,7 +125,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle1, kBody1);
+                      visit_row.visit_time, kTitle1, UTF8ToUTF16(kBody1));
 }
 
 bool ResultsHaveURL(const std::vector<TextDatabase::Match>& results,
@@ -204,7 +205,7 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteNoVisit) {
   const GURL url(kURL1);
   manager.AddPageURL(url, 0, 0, Time::Now());
   manager.AddPageTitle(url, kTitle1);
-  manager.AddPageContents(url, kBody1);
+  manager.AddPageContents(url, UTF8ToUTF16(kBody1));
 
   // Check that the page got added.
   QueryOptions options;
@@ -238,7 +239,7 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteVisit) {
   // Add a full text indexed entry for that visit.
   const GURL url(kURL2);
   manager.AddPageURL(url, visit.url_id, visit.visit_id, visit.visit_time);
-  manager.AddPageContents(url, kBody2);
+  manager.AddPageContents(url, UTF8ToUTF16(kBody2));
   manager.AddPageTitle(url, kTitle2);
 
   // Check that the page got added.
@@ -275,7 +276,7 @@ TEST_F(TextDatabaseManagerTest, InsertPartial) {
   // The third one has a URL and body.
   GURL url3(kURL3);
   manager.AddPageURL(url3, 0, 0, Time::Now());
-  manager.AddPageContents(url3, kBody3);
+  manager.AddPageContents(url3, UTF8ToUTF16(kBody3));
 
   // Expire stuff very fast. This assumes that the time between the first
   // AddPageURL and this line is less than the expiration time (20 seconds).
@@ -342,7 +343,7 @@ TEST_F(TextDatabaseManagerTest, PartialComplete) {
   EXPECT_EQ(0U, results.size());
 
   // Now add the body, which should be queryable.
-  manager.AddPageContents(url, L"Very awesome body");
+  manager.AddPageContents(url, UTF8ToUTF16("Very awesome body"));
   manager.GetTextMatches(L"awesome", options, &results, &first_time_searched);
   EXPECT_EQ(1U, results.size());
 

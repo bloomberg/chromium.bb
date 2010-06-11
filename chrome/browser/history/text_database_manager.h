@@ -101,7 +101,7 @@ class TextDatabaseManager {
   void AddPageURL(const GURL& url, URLID url_id, VisitID visit_id,
                   base::Time visit_time);
   void AddPageTitle(const GURL& url, const std::wstring& title);
-  void AddPageContents(const GURL& url, const std::wstring& body);
+  void AddPageContents(const GURL& url, const string16& body);
 
   // Adds the given data to the appropriate database file, returning true on
   // success. The visit database row identified by |visit_id| will be updated
@@ -112,7 +112,7 @@ class TextDatabaseManager {
                    VisitID visit_id,
                    base::Time visit_time,
                    const std::wstring& title,
-                   const std::wstring& body);
+                   const string16& body);
 
   // Deletes the instance of indexed data identified by the given time and URL.
   // Any changes will be tracked in the optional change set for use when calling
@@ -174,11 +174,11 @@ class TextDatabaseManager {
     VisitID visit_id() const { return visit_id_; }
     base::Time visit_time() const { return visit_time_; }
     const std::wstring& title() const { return title_; }
-    const std::wstring& body() const { return body_; }
+    const string16& body() const { return body_; }
 
     // Setters, we can only update the title and body.
     void set_title(const std::wstring& ttl);
-    void set_body(const std::wstring& bdy);
+    void set_body(const string16& bdy);
 
     // Returns true if both the title or body of the entry has been set. Since
     // both the title and body setters will "fix" empty strings to be a space,
@@ -205,7 +205,7 @@ class TextDatabaseManager {
 
     // Will be the string " " when they are set to distinguish set and unset.
     std::wstring title_;
-    std::wstring body_;
+    string16 body_;
   };
 
   // Converts the given time to a database identifier or vice-versa.

@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 #if defined(OS_WIN)
 #include "base/scoped_comptr_win.h"
@@ -37,7 +38,7 @@ class HistoryPublisher {
                             const GURL& url, const base::Time& time) const;
   void PublishPageContent(const base::Time& time, const GURL& url,
                           const std::wstring& title,
-                          const std::wstring& contents) const;
+                          const string16& contents) const;
   void DeleteUserHistoryBetween(const base::Time& begin_time,
                                 const base::Time& end_time) const;
 

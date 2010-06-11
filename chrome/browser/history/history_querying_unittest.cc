@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,25 +24,25 @@ struct TestEntry {
   const char* url;
   const wchar_t* title;
   const int days_ago;
-  const wchar_t* body;
+  const char* body;
   Time time;  // Filled by SetUp.
 } test_entries[] = {
   // This one is visited super long ago so it will be in a different database
   // from the next appearance of it at the end.
-  {"http://example.com/", L"Other", 180, L"Other"},
+  {"http://example.com/", L"Other", 180, "Other"},
 
   // These are deliberately added out of chronological order. The history
   // service should sort them by visit time when returning query results.
   // The correct index sort order is 4 2 3 1 0.
   {"http://www.google.com/1", L"Title 1", 10,
-   L"PAGEONE FOO some body text"},
+   "PAGEONE FOO some body text"},
   {"http://www.google.com/3", L"Title 3", 8,
-   L"PAGETHREE BAR some hello world for you"},
+   "PAGETHREE BAR some hello world for you"},
   {"http://www.google.com/2", L"Title 2", 9,
-   L"PAGETWO FOO some more blah blah blah"},
+   "PAGETWO FOO some more blah blah blah"},
 
   // A more recent visit of the first one.
-  {"http://example.com/", L"Other", 6, L"Other"},
+  {"http://example.com/", L"Other", 6, "Other"},
 };
 
 // Returns true if the nth result in the given results set matches. It will
@@ -112,7 +113,7 @@ class HistoryQueryTest : public testing::Test {
                         PageTransition::LINK, history::RedirectList(),
                         false);
       history_->SetPageTitle(url, test_entries[i].title);
-      history_->SetPageContents(url, test_entries[i].body);
+      history_->SetPageContents(url, UTF8ToUTF16(test_entries[i].body));
     }
   }
 

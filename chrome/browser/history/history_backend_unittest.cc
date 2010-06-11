@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -249,10 +250,10 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // Set full text index for each one.
   backend_->text_database_->AddPageData(row1.url(), row1_id, visit1_id,
                                         row1.last_visit(),
-                                        L"Title 1", L"Body 1");
+                                        L"Title 1", UTF8ToUTF16("Body 1"));
   backend_->text_database_->AddPageData(row2.url(), row2_id, visit2_id,
                                         row2.last_visit(),
-                                        L"Title 2", L"Body 2");
+                                        L"Title 2", UTF8ToUTF16("Body 2"));
 
   // Now finally clear all history.
   backend_->DeleteAllHistory();

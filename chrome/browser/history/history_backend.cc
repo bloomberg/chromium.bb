@@ -763,7 +763,7 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls) {
       // create the visit entry with the indexed flag set.
       has_indexed = text_database_->AddPageData(i->url(), url_id, 0,
                                                 i->last_visit(),
-                                                i->title(), std::wstring());
+                                                i->title(), string16());
     }
 
     // Make up a visit to correspond to that page.
@@ -1426,7 +1426,7 @@ void HistoryBackend::ScheduleAutocomplete(HistoryURLProvider* provider,
 }
 
 void HistoryBackend::SetPageContents(const GURL& url,
-                                     const std::wstring& contents) {
+                                     const string16& contents) {
   // This is histogrammed in the text database manager.
   if (!text_database_.get())
     return;

@@ -852,7 +852,7 @@ class TabContents : public PageNavigator,
   virtual void OnPageContents(const GURL& url,
                               int renderer_process_id,
                               int32 page_id,
-                              const std::wstring& contents,
+                              const string16& contents,
                               const std::string& language);
   virtual void OnPageTranslated(int32 page_id,
                                 const std::string& original_lang,

@@ -28,11 +28,17 @@ namespace {
 // The number of database files we will be attached to at once.
 const int kCacheDBSize = 5;
 
-std::string ConvertStringForIndexer(
-    const std::wstring& input) {
+std::string ConvertStringForIndexer(const std::wstring& input) {
   // TODO(evanm): other transformations here?
   return WideToUTF8(CollapseWhitespace(input, false));
 }
+
+#if !defined(OS_WIN)  // string16 == wstring on Windows.
+std::string ConvertStringForIndexer(const string16& input) {
+  // TODO(evanm): other transformations here?
+  return UTF16ToUTF8(CollapseWhitespace(input, false));
+}
+#endif
 
 // Data older than this will be committed to the full text index even if we
 // haven't gotten a title and/or body.
@@ -58,9 +64,9 @@ void TextDatabaseManager::PageInfo::set_title(const std::wstring& ttl) {
     title_ = ttl;
 }
 
-void TextDatabaseManager::PageInfo::set_body(const std::wstring& bdy) {
+void TextDatabaseManager::PageInfo::set_body(const string16& bdy) {
   if (bdy.empty())  // Make the body nonempty when we set it for EverybodySet.
-    body_ = L" ";
+    body_ = ASCIIToUTF16(" ");
   else
     body_ = bdy;
 }
@@ -209,7 +215,7 @@ void TextDatabaseManager::AddPageTitle(const GURL& url,
     }
 
     AddPageData(url, url_row.id(), visit.visit_id, visit.visit_time,
-                title, std::wstring());
+                title, string16());
     return;  // We don't know about this page, give up.
   }
 
@@ -226,7 +232,7 @@ void TextDatabaseManager::AddPageTitle(const GURL& url,
 }
 
 void TextDatabaseManager::AddPageContents(const GURL& url,
-                                          const std::wstring& body) {
+                                          const string16& body) {
   RecentChangeList::iterator found = recent_changes_.Peek(url);
   if (found == recent_changes_.end()) {
     // This page is not in our cache of recent pages. This means that the page
@@ -266,7 +272,7 @@ bool TextDatabaseManager::AddPageData(const GURL& url,
                                       VisitID visit_id,
                                       Time visit_time,
                                       const std::wstring& title,
-                                      const std::wstring& body) {
+                                      const string16& body) {
   TextDatabase* db = GetDBForTime(visit_time, true);
   if (!db)
     return false;

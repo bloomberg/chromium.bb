@@ -4,6 +4,8 @@
 
 #include "chrome/browser/history/history_publisher.h"
 
+#include "base/utf_string_conversions.h"
+
 namespace history {
 
 const char* const HistoryPublisher::kThumbnailImageFormat = "image/jpeg";
@@ -26,11 +28,11 @@ void HistoryPublisher::PublishPageThumbnail(
 void HistoryPublisher::PublishPageContent(const base::Time& time,
                                           const GURL& url,
                                           const std::wstring& title,
-                                          const std::wstring& contents) const {
+                                          const string16& contents) const {
   PageData page_data = {
     time,
     url,
-    contents.c_str(),
+    UTF16ToWide(contents).c_str(),
     title.c_str(),
     NULL,
     NULL,
