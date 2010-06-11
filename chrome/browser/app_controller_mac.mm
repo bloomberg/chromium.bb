@@ -580,7 +580,7 @@ void RecordLastRunAppBundlePath() {
 // dialogs that are window modal will block the browser.
 - (BOOL)keyWindowIsNotModal {
   Browser* browser = BrowserList::GetLastActive();
-  return [NSApp modalWindow] == nil && (browser &&
+  return [NSApp modalWindow] == nil && (!browser ||
          ![[browser->window()->GetNativeHandle() attachedSheet]
              isKindOfClass:[NSWindow class]]);
 }
