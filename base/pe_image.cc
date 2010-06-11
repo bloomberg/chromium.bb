@@ -21,6 +21,25 @@ struct EnumAllImportsStorage {
   PVOID cookie;
 };
 
+namespace {
+
+  // Compare two strings byte by byte on an unsigned basis.
+  //   if s1 == s2, return 0
+  //   if s1 < s2, return negative
+  //   if s1 > s2, return positive
+  // Exception if inputs are invalid.
+  int StrCmpByByte(LPCSTR s1, LPCSTR s2) {
+    while (*s1 != '\0' && *s1 == *s2) {
+      ++s1;
+      ++s2;
+    }
+
+    return (*reinterpret_cast<const unsigned char*>(s1) -
+            *reinterpret_cast<const unsigned char*>(s2));
+  }
+
+}  // namespace
+
 // Callback used to enumerate imports. See EnumImportChunksFunction.
 bool ProcessImportChunk(const PEImage &image, LPCSTR module,
                         PIMAGE_THUNK_DATA name_table,
@@ -186,7 +205,9 @@ bool PEImage::GetProcOrdinal(LPCSTR function_name, WORD *ordinal) const {
       PDWORD middle = lower + (upper - lower) / 2;
       LPCSTR name = reinterpret_cast<LPCSTR>(RVAToAddr(*middle));
 
-      cmp = strcmp(function_name, name);
+      // This may be called by sandbox before MSVCRT dll loads, so can't use
+      // CRT function here.
+      cmp = StrCmpByByte(function_name, name);
 
       if (cmp == 0) {
         lower = middle;
