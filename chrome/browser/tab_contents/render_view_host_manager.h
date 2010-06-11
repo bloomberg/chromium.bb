@@ -170,6 +170,7 @@ class RenderViewHostManager
 
  private:
   friend class TestTabContents;
+  friend class RenderViewHostManagerTest;
 
   // Returns whether this tab should transition to a new renderer for
   // cross-site URLs.  Enabled unless we see the --process-per-tab command line

@@ -308,8 +308,8 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
 
   // For security, we should transition between processes when one is a DOM UI
   // page and one isn't.
-  if (DOMUIFactory::HasDOMUIScheme(cur_entry->url()) !=
-      DOMUIFactory::HasDOMUIScheme(new_entry->url()))
+  if (DOMUIFactory::UseDOMUIForURL(cur_entry->url()) !=
+      DOMUIFactory::UseDOMUIForURL(new_entry->url()))
     return true;
 
   // Also, we must switch if one is an extension and the other is not the exact

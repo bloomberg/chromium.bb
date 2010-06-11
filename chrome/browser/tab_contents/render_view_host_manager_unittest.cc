@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -23,6 +24,12 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
         static_cast<MockRenderProcessHost*>(active_rvh()->process())->
             max_page_id() + 1,
         url);
+  }
+
+  bool ShouldSwapProcesses(RenderViewHostManager* manager,
+                           const NavigationEntry* cur_entry,
+                           const NavigationEntry* new_entry) const {
+    return manager->ShouldSwapProcessesForNavigation(cur_entry, new_entry);
   }
 };
 
@@ -140,7 +147,7 @@ TEST_F(RenderViewHostManagerTest, Init) {
   EXPECT_FALSE(manager.pending_render_view_host());
 }
 
-// Tests the Navigate function. We navigate three sites consequently and check
+// Tests the Navigate function. We navigate three sites consecutively and check
 // how the pending/committed RenderViewHost are modified.
 TEST_F(RenderViewHostManagerTest, Navigate) {
   TestNotificationTracker notifications;
@@ -254,4 +261,33 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
 
   EXPECT_FALSE(manager.pending_dom_ui());
   EXPECT_TRUE(manager.dom_ui());
+}
+
+// Tests that chrome: URLs that are not DOM UI pages do not get grouped into
+// DOM UI renderers, even if --process-per-tab is enabled.  In that mode, we
+// still swap processes if ShouldSwapProcessesForNavigation is true.
+// Regression test for bug 46290.
+TEST_F(RenderViewHostManagerTest, NonDOMUIChromeURLs) {
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
+  TestTabContents tab_contents(profile_.get(), instance);
+  RenderViewHostManager manager(&tab_contents, &tab_contents);
+  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
+
+  // NTP is a DOM UI page.
+  GURL ntp_url(chrome::kChromeUINewTabURL);
+  NavigationEntry ntp_entry(NULL /* instance */, -1 /* page_id */, ntp_url,
+                            GURL() /* referrer */, string16() /* title */,
+                            PageTransition::TYPED);
+
+  // about: URLs are not DOM UI pages.
+  GURL about_url(chrome::kAboutMemoryURL);
+  // Rewrite so it looks like chrome://about/memory
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::RewriteURLIfNecessary(
+      &about_url, profile_.get(), &reverse_on_redirect);
+  NavigationEntry about_entry(NULL /* instance */, -1 /* page_id */, about_url,
+                              GURL() /* referrer */, string16() /* title */,
+                              PageTransition::TYPED);
+
+  EXPECT_TRUE(ShouldSwapProcesses(&manager, &ntp_entry, &about_entry));
 }
