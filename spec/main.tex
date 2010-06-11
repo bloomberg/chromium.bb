@@ -107,6 +107,21 @@ spontanously when the server state changes.
 
 \subsection{Compositor}
 
+The compositor is a global object, advertised at connect time.
+
+\begin{tabular}{l}
+  \hline 
+  Interface \texttt{compositor} \\ \hline 
+  Requests \\ \hline 
+  \texttt{create\_surface(id)} \\
+  \texttt{commit()} \\ \hline
+  Events \\ \hline
+  \texttt{device(device)} \\
+  \texttt{acknowledge(key, frame)} \\
+  \texttt{frame(frame, time)} \\ \hline
+\end{tabular}
+
+
 \begin{itemize}
 \item a global object
 \item broadcasts drm file name, or at least a string like drm:/dev/card0
@@ -115,25 +130,49 @@ spontanously when the server state changes.
 
 \subsection{Surface}
 
-created by the client
-\begin{itemize}
-\item attach
-\item copy
-\item damage
-\item destroy
-\item input region, opaque region
-\item set cursor
-\end{itemize}
+Created by the client.
+
+\begin{tabular}{l}
+  \hline 
+  Interface \texttt{surface} \\ \hline 
+  Requests \\ \hline 
+  \texttt{destroy()} \\
+  \texttt{attach()} \\
+  \texttt{map()} \\
+  \texttt{damage()} \\ \hline
+  Events \\ \hline
+  no events \\ \hline
+\end{tabular}
+
+Needs a way to set input region, opaque region.
 
 \subsection{Input}
 
-global object
+Represents a group of input devices, including mice, keyboards.  Has a
+keyboard and pointer focus.  Global object.  Pointer events are
+delivered in both screen coordinates and surface local coordinates.
 
-\begin{itemize}
+\begin{tabular}{l}
+  \hline 
+  Interface \texttt{cache} \\ \hline 
+  Requests \\ \hline 
+  no requests \\ \hline
+  Events \\ \hline
+  \texttt{motion(x, y, sx, sy)} \\
+  \texttt{button(button, state, x, y, sx, sy)} \\
+  \texttt{key(key, state)} \\
+  \texttt{pointer\_focus(surface)} \\
+  \texttt{keyboard\_focus(surface, keys)} \\ \hline
+\end{tabular}
+
+
 \item input group, keyboard, mouse
 \item keyboard map, change events
 \item pointer motion
 \item enter, leave, focus
+Talk about:
+
+\begin{itemize}
 \item xkb on wayland
 \item multi pointer wayland
 \end{itemize}
@@ -164,12 +203,69 @@ image, the image will flicker.  Broken app, I suppose.
 
 \subsection{Output}
 
+A output is a global object, advertised at connect time or as they
+come and go.
+
+\begin{tabular}{l}
+  \hline 
+  Interface \texttt{output} \\ \hline 
+  Requests \\ \hline 
+  no requests \\ \hline
+  Events \\ \hline
+  \texttt{geometry(width, height)} \\ \hline
+\end{tabular}
+
 \begin{itemize}
-\item global objects
-\item a connected screen
-\item laid out in a big coordinate system
+\item laid out in a big (compositor) coordinate system
 \item basically xrandr over wayland
+\item geometry needs position in compositor coordinate system\
+\item events to advertise available modes, requests to move and change
+  modes
 \end{itemize}
+
+\subsection{Shared object cache}
+
+Cache for sharing glyphs, icons, cursors across clients.  Lets clients
+share identical objects.  The cache is a global object, advertised at
+connect time.
+
+\begin{tabular}{l}
+  \hline 
+  Interface \texttt{cache} \\ \hline 
+  Requests \\ \hline 
+  \texttt{upload(key, visual, bo, stride, width, height)} \\ \hline
+  Events \\ \hline
+  \texttt{item(key, bo, x, y, stride)} \\ 
+  \texttt{retire(bo)} \\ \hline
+\end{tabular}
+
+\begin{itemize}
+
+\item Upload by passing a visual, bo, stride, width, height to the
+  cache.
+
+\item Upload returns a bo name, stride, and x, y location of object in
+  the buffer.  Clients take a reference on the atlas bo.
+
+\item Shared objects are refcounted, freed by client (when purging
+  glyphs from the local cache) or when a client exits.
+
+\item Server can't delete individual items from an atlas, but it can
+  throw out an entire atlas bo if it becomes too sparse.  The server
+  sends out an \texttt{retire} event when this happens, and clients
+  must throw away any objects from that bo and reupload.  Between the
+  server dropping the atlas and the client receiving the retire event,
+  clients can still legally use the old atlas since they have a ref on
+  the bo.
+
+\item cairo needs to hook into the glyph cache, and maybe also a way
+  to create a read-only surface based on an object form the cache
+  (icons). 
+
+  \texttt{cairo\_wayland\_create\_cached\_surface(surface-data)}.
+
+\end{itemize}
+
 
 \subsection{Drag and Drop}
 
