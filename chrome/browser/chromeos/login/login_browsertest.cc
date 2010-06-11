@@ -22,6 +22,7 @@
 
 namespace chromeos {
 using ::testing::_;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::NiceMock;
@@ -36,7 +37,8 @@ class LoginTestBase : public InProcessBrowserTest {
 
     testApi_->SetLanguageLibrary(&mock_language_library_, false);
     EXPECT_CALL(mock_language_library_, GetActiveInputMethods())
-        .WillRepeatedly(Return(CreateFallbackInputMethodDescriptors()));
+        .WillRepeatedly(
+            InvokeWithoutArgs(CreateFallbackInputMethodDescriptors));
     EXPECT_CALL(mock_language_library_, current_ime_properties())
         .WillOnce((ReturnRef(ime_properties_)));
 

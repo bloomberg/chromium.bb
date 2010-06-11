@@ -26,6 +26,7 @@ class LanguageLibrary {
     virtual ~Observer() = 0;
     virtual void InputMethodChanged(LanguageLibrary* obj) = 0;
     virtual void ImePropertiesChanged(LanguageLibrary* obj) = 0;
+    virtual void ActiveInputMethodsChanged(LanguageLibrary* obj) = 0;
   };
   virtual ~LanguageLibrary() {}
 

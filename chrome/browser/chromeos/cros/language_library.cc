@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "third_party/cros/chromeos_keyboard.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 
@@ -243,6 +244,7 @@ bool LanguageLibraryImpl::SetImeConfig(
 }
 
 void LanguageLibraryImpl::FlushImeConfig() {
+  bool active_input_methods_are_changed = false;
   if (EnsureLoadedAndStarted()) {
     LOG(INFO) << "Sending " << pending_config_requests_.size()
               << " set config command(s)";
@@ -255,6 +257,10 @@ void LanguageLibraryImpl::FlushImeConfig() {
                                  section.c_str(), config_name.c_str(), value)) {
         // Successfully sent. Remove the command and proceed to the next one.
         pending_config_requests_.erase(iter++);
+        // Check if it's a change in active input methods.
+        if (config_name == kPreloadEnginesConfigName) {
+          active_input_methods_are_changed = true;
+        }
       } else {
         LOG(ERROR) << "chromeos::SetImeConfig failed. Will retry later: "
                    << section << "/" << config_name;
@@ -270,6 +276,9 @@ void LanguageLibraryImpl::FlushImeConfig() {
       timer_.Start(base::TimeDelta::FromSeconds(kTimerIntervalInSec), this,
                    &LanguageLibraryImpl::FlushImeConfig);
     }
+  }
+  if (active_input_methods_are_changed) {
+    FOR_EACH_OBSERVER(Observer, observers_, ActiveInputMethodsChanged(this));
   }
 }
 
