@@ -8,9 +8,9 @@
 
 namespace remoting {
 
-static const int kWidth = 32;
-static const int kHeight = 32;
-static const int kBytesPerPixel = 3;
+// Run 900 times to mimic 1280x720.
+// TODO(fbarchard): Remove benchmark once performance is non-issue.
+static const int kTimesToRun = 900;
 
 static void GenerateData(uint8* data, int size) {
   for (int i = 0; i < size; ++i) {
@@ -24,23 +24,64 @@ class EncodeDoneHandler
   MOCK_METHOD0(EncodeDone, void());
 };
 
-TEST(BlockDifferenceTest, BlockDifference) {
-  // Prepare 2 blocks to compare.
-  uint8 block1[kHeight * kWidth * kBytesPerPixel];
-  uint8 block2[kHeight * kWidth * kBytesPerPixel];
-  GenerateData(block1, sizeof(block1));
-  memcpy(block2, block1, sizeof(block2));
+// Memory buffer large enough for 2 blocks aligned to 16 bytes.
+static const int kSizeOfBlock = kBlockHeight * kBlockWidth * kBytesPerPixel;
+uint8 block_buffer[kSizeOfBlock * 2 + 16];
+
+void PrepareBuffers(uint8* &block1, uint8* &block2) {
+  block1 = reinterpret_cast<uint8*>
+      ((reinterpret_cast<uintptr_t>(&block_buffer[0]) + 15) & ~15);
+  GenerateData(block1, kSizeOfBlock);
+  block2 = block1 + kSizeOfBlock;
+  memcpy(block2, block1, kSizeOfBlock);
+}
+
+TEST(BlockDifferenceTestSame, BlockDifference) {
+  uint8* block1;
+  uint8* block2;
+  PrepareBuffers(block1, block2);
 
   // These blocks should match.
-  int same = BlockDifference(block1, block2, kWidth * kBytesPerPixel);
-  EXPECT_EQ(0, same);
+  for (int i = 0; i < kTimesToRun; ++i) {
+    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    EXPECT_EQ(0, result);
+  }
+}
 
-  // Change block2 a little.
-  block2[7] += 3;
-  block2[sizeof(block2)-1] -= 5;
-  // These blocks should not match.  The difference should be 8.
-  int not_same = BlockDifference(block1, block2, kWidth * kBytesPerPixel);
-  EXPECT_EQ(8, not_same);
+TEST(BlockDifferenceTestLast, BlockDifference) {
+  uint8* block1;
+  uint8* block2;
+  PrepareBuffers(block1, block2);
+  block2[kSizeOfBlock-2] += 1;
+
+  for (int i = 0; i < kTimesToRun; ++i) {
+    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    EXPECT_EQ(1, result);
+  }
+}
+
+TEST(BlockDifferenceTestMid, BlockDifference) {
+  uint8* block1;
+  uint8* block2;
+  PrepareBuffers(block1, block2);
+  block2[kSizeOfBlock/2+1] += 1;
+
+  for (int i = 0; i < kTimesToRun; ++i) {
+    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    EXPECT_EQ(1, result);
+  }
+}
+
+TEST(BlockDifferenceTestFirst, BlockDifference) {
+  uint8* block1;
+  uint8* block2;
+  PrepareBuffers(block1, block2);
+  block2[0] += 1;
+
+  for (int i = 0; i < kTimesToRun; ++i) {
+    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    EXPECT_EQ(1, result);
+  }
 }
 
 }  // namespace remoting
