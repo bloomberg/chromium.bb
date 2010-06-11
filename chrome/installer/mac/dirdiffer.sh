@@ -52,6 +52,17 @@
 # original new_dir as a verification step. Should verification fail, dirdiffer
 # exits with a nonzero status, and patch_dir should not be used.
 #
+# Environment variables:
+# DIRDIFFER_EXCLUDE
+#   When an entry in new_dir matches this regular expression, it will not be
+#   included in patch_dir.
+# DIRDIFFER_NO_DIFF
+#   When an entry in new_dir matches this regular expression, it will not be
+#   represented in patch_dir by a $gbs file prepared by goobsdif. It will only
+#   appear as a $bz2, $gz, or $raw file.
+# Both environment variables are regular expressions against which full paths
+# in new_dir will be matched.
+#
 # Exit codes:
 #  0  OK
 #  1  Unknown failure
@@ -71,6 +82,7 @@
 # 15  Verification failed
 # 16  Could not set mode (permissions)
 # 17  Could not set modification time
+# 18  Invalid regular expression
 
 set -eu
 
@@ -138,7 +150,10 @@ readonly BZ2_SUFFIX='$bz2'
 readonly GZ_SUFFIX='$gz'
 readonly PLAIN_SUFFIX='$raw'
 
-declare -a g_cleanup
+declare DIRDIFFER_EXCLUDE
+declare DIRDIFFER_NO_DIFF
+
+declare -a g_cleanup g_verify_exclude
 
 cleanup() {
   local status=${?}
@@ -245,7 +260,8 @@ make_patch_file() {
     keep_size="${gz_size}"
   fi
 
-  if [[ -f "${old_file}" ]] && ! [[ -h "${old_file}" ]]; then
+  if [[ -f "${old_file}" ]] && ! [[ -h "${old_file}" ]] &&
+     ! [[ "${new_file}" =~ ${DIRDIFFER_NO_DIFF} ]]; then
     local gbs_file="${patch_file}${GBS_SUFFIX}"
     if [[ -e "${gbs_file}" ]]; then
       err "${gbs_file} already exists"
@@ -296,10 +312,16 @@ make_patch_dir() {
     exit 7
   fi
 
+  local new_file
   for new_file in "${new_dir}/"*; do
     local file="${new_file:${#new_dir} + 1}"
     local old_file="${old_dir}/${file}"
     local patch_file="${patch_dir}/${file}"
+
+    if [[ "${new_file}" =~ ${DIRDIFFER_EXCLUDE} ]]; then
+      g_verify_exclude[${#g_verify_exclude[@]}]="${new_file}"
+      continue
+    fi
 
     if [[ -e "${patch_file}" ]]; then
       err "${patch_file} already exists"
@@ -340,8 +362,20 @@ verify_patch_dir() {
   # differs or exists only in one directory. As used here, it correctly
   # considers link targets, file contents, permissions, and timestamps.
   local rsync_output
-  if ! rsync_output="$(rsync -clprt --delete --out-format=%n \
-                       "${new_dir}/" "${verify_dir}")"; then
+  rsync_command=(rsync -clprt --delete --out-format=%n \
+                 "${new_dir}/" "${verify_dir}")
+  if [[ ${#g_verify_exclude[@]} -gt 0 ]]; then
+    local exclude
+    for exclude in "${g_verify_exclude[@]}"; do
+      # ${g_verify_exclude[@]} contains paths in ${new_dir}. Strip off
+      # ${new_dir} from the beginning of each, but leave a leading "/" so that
+      # rsync treats them as being at the root of the "transfer."
+      rsync_command[${#rsync_command[@]}]="--exclude"
+      rsync_command[${#rsync_command[@]}]="${exclude:${#new_dir}}"
+    done
+  fi
+
+  if ! rsync_output="$("${rsync_command[@]}")"; then
     err "rsync for verification failed"
     exit 15
   fi
@@ -409,6 +443,29 @@ main() {
     err "patch_dir parent directory must exist and be a directory"
     usage
     exit 5
+  fi
+
+  # The weird conditional structure is because the status of the RE comparison
+  # needs to be available in ${?} without conflating it with other conditions
+  # or negating it. Only a status of 2 from the =~ operator indicates an
+  # invalid regular expression.
+
+  if [[ -n "${DIRDIFFER_EXCLUDE}" ]]; then
+    if [[ "" =~ ${DIRDIFFER_EXCLUDE} ]] ; then
+      true
+    elif [[ ${?} -eq 2 ]]; then
+      err "DIRDIFFER_EXCLUDE contains an invalid regular expression"
+      exit 18
+    fi
+  fi
+
+  if [[ -n "${DIRDIFFER_NO_DIFF}" ]]; then
+    if [[ "" =~ ${DIRDIFFER_NO_DIFF} ]] ; then
+      true
+    elif [[ ${?} -eq 2 ]]; then
+      err "DIRDIFFER_NO_DIFF contains an invalid regular expression"
+      exit 18
+    fi
   fi
 
   local old_dir_phys new_dir_phys patch_dir_parent_phys patch_dir_phys

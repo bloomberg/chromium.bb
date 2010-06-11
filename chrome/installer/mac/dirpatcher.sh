@@ -249,6 +249,7 @@ patch_dir() {
     exit 7
   fi
 
+  local patch_file
   for patch_file in "${patch_dir}/"*; do
     local file="${patch_file:${#patch_dir} + 1}"
     local old_file="${old_dir}/${file}"
