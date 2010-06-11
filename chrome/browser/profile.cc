@@ -179,6 +179,56 @@ bool IncludeDefaultApps() {
 #endif
   return false;
 }
+
+// Simple task to log the size of the current profile.
+class ProfileSizeTask : public Task {
+ public:
+  explicit ProfileSizeTask(const FilePath& path) : path_(path) {}
+  virtual ~ProfileSizeTask() {}
+
+  virtual void Run();
+ private:
+  FilePath path_;
+};
+
+void ProfileSizeTask::Run() {
+  int64 size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("*"));
+  int size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.TotalSize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("History"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.HistorySize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("History*"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.TotalHistorySize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Cookies"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.CookiesSize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Bookmarks"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.BookmarksSize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Thumbnails"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.ThumbnailsSize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Visited Links"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.VisitedLinksSize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Web Data"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.WebDataSize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Extension*"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.ExtensionSize", size_MB);
+}
+
 }  // namespace
 
 // A pointer to the request context for the default profile.  See comments on
@@ -262,11 +312,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ~OffTheRecordProfileImpl() {
-   NotificationService::current()->Notify(
-      NotificationType::PROFILE_DESTROYED,
-      Source<Profile>(this),
-      NotificationService::NoDetails());
-   CleanupRequestContext(request_context_);
+    NotificationService::current()->Notify(NotificationType::PROFILE_DESTROYED,
+                                           Source<Profile>(this),
+                                           NotificationService::NoDetails());
+    CleanupRequestContext(request_context_);
   }
 
   virtual ProfileId GetRuntimeId() {
@@ -749,6 +798,10 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 #endif
 
   pinned_tab_service_.reset(new PinnedTabService(this));
+
+  // Log the profile size after a reasonable startup delay.
+  ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE,
+                                new ProfileSizeTask(path_), 112000);
 }
 
 void ProfileImpl::InitExtensions() {
