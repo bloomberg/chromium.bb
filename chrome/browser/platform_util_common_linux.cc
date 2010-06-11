@@ -11,6 +11,7 @@
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/process_watcher.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -44,7 +45,12 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   gtk_window_set_title(GTK_WINDOW(dialog), UTF16ToUTF8(title).c_str());
 
   g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
-  gtk_widget_show_all(dialog);
+  gtk_util::ShowDialog(dialog);
+
+#if !defined(OS_CHROMEOS)
+  // The following code requires the dialog to be realized. However, we host
+  // dialog's content in a Chrome window without really realize the dialog
+  // on ChromeOS. Thus, skip the following code for ChromeOS.
 
   // Make sure it's big enough to show the title.
   GtkRequisition req;
@@ -59,6 +65,7 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 
   if (width > req.width)
     gtk_widget_set_size_request(dialog, width, -1);
+#endif  // !defined(OS_CHROMEOS)
 }
 
 /* Warning: this may be either Linux or ChromeOS */

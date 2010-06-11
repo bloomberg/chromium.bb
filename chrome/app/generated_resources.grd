@@ -7384,6 +7384,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_FILEBROWSER_ENQUEUE" desc="Enqueue file menu item used for media playback">
       Enqueue
     </message>
+    <message name="IDS_FILEBROWSER_ERROR_TITLE" desc="Title text of an error message prompt.">
+      Error
+    </message>
+    <message name="IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE" desc="Error message when user attempts to open a file of unknown type in file browser.">
+      <ph name="FILENAME">$1</ph> - Unknown file type.
+    </message>
 
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
@@ -7443,7 +7449,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CREATE_ACCOUNT_BUTTON">
         Create a Google Account now
-      </message>      
+      </message>
       <message name="IDS_CANT_ACCESS_ACCOUNT_BUTTON">
         Can't access your account?
       </message>
@@ -7452,7 +7458,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_LOGIN_OOBE_HELP_DIALOG_TITLE" desc="Default title for help dialogs during OOBE/login">
         Help
-      </message>      
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
         Date and Time
       </message>

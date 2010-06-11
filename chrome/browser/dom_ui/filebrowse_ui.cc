@@ -306,6 +306,8 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
     NOTREACHED();
   }
   localized_strings.SetString(L"downloadpath", default_download_path.value());
+  localized_strings.SetString(L"error_unknown_file_type",
+      l10n_util::GetString(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE));
   SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece filebrowse_html(

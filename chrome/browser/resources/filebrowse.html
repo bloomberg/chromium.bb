@@ -1326,6 +1326,29 @@ function selectItem(elementid, path) {
   }
 }
 
+function setItemInfoText(element, text) {
+  var span;
+  if (element.childNodes.length == 2) {
+    span = document.createElement('span');
+    span.className = 'name';
+    span.textContent = text;
+    element.appendChild(span);
+    element.childNodes.item(1).style.display = 'none';
+  } else {
+    span = element.childNodes.item(2);
+    span.textContent = text;
+  }
+}
+
+function getUnknownFileTypeHandler() {
+  return function() {
+    var element = event.currentTarget;
+    setItemInfoText(element,
+                    localStrings.getStringF('error_unknown_file_type',
+                    element.childNodes.item(1).textContent));
+  };
+}
+
 function getFunctionForItem(path, id, isDirectory) {
   if (isDirectory) {
     return function() {
@@ -1357,7 +1380,7 @@ function getFunctionForItem(path, id, isDirectory) {
       showText(path);
     }
   }
-  return function() {};
+  return getUnknownFileTypeHandler();
 }
 
 /**

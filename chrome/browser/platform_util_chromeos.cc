@@ -6,12 +6,15 @@
 
 #include <gtk/gtk.h>
 
+#include "app/l10n_util.h"
 #include "app/gtk_util.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/process_watcher.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/browser_list.h"
@@ -25,13 +28,9 @@ namespace platform_util {
 static const std::string kGmailComposeUrl =
     "https://mail.google.com/mail/?extsrc=mailto&url=";
 
-// TODO(estade): It would be nice to be able to select the file in the file
-// manager, but that probably requires extending xdg-open. For now just
-// show the folder.
-void ShowItemInFolder(const FilePath& full_path) {
-  FilePath dir = full_path.DirName();
-  if (!file_util::DirectoryExists(dir))
-    return;
+// Opens file browser on UI thread.
+void OpenFileBrowserOnUIThread(const FilePath& dir) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   Profile* profile;
   profile = BrowserList::GetLastActive()->profile();
@@ -40,6 +39,23 @@ void ShowItemInFolder(const FilePath& full_path) {
                           dir.value(),
                           FileBrowseUI::kPopupWidth,
                           FileBrowseUI::kPopupHeight);
+}
+
+// TODO(estade): It would be nice to be able to select the file in the file
+// manager, but that probably requires extending xdg-open. For now just
+// show the folder.
+void ShowItemInFolder(const FilePath& full_path) {
+  FilePath dir = full_path.DirName();
+  if (!file_util::DirectoryExists(dir))
+    return;
+
+  if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    OpenFileBrowserOnUIThread(dir);
+  } else {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(&OpenFileBrowserOnUIThread, dir));
+  }
 }
 
 void OpenItem(const FilePath& full_path) {
@@ -82,6 +98,17 @@ void OpenItem(const FilePath& full_path) {
     mediaplayer->EnqueueMediaURL(gurl, NULL);
     return;
   }
+
+  // Unknwon file type. Show an error message to user.
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &SimpleErrorBox,
+          static_cast<gfx::NativeWindow>(NULL),
+          l10n_util::GetStringUTF16(IDS_FILEBROWSER_ERROR_TITLE),
+          l10n_util::GetStringFUTF16(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE,
+                                     UTF8ToUTF16(full_path.BaseName().value()))
+          ));
 }
 
 static void OpenURL(const std::string& url) {
