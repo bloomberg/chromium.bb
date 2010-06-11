@@ -308,9 +308,9 @@
       ],
     },  # end of target 'chromoting_jingle_test_client'
 
-    # Chromoting unit tests
+    # Remoting unit tests
     {
-      'target_name': 'chromoting_unittests',
+      'target_name': 'remoting_unittests',
       'type': 'executable',
       'dependencies': [
         'chromoting_base',

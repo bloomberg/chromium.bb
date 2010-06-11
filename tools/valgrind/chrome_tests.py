@@ -235,6 +235,9 @@ class ChromeTests:
   def TestPrinting(self):
     return self.SimpleTest("chrome", "printing_unittests")
 
+  def TestRemoting(self):
+    return self.SimpleTest("chrome", "remoting_unittests")
+
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests",
                            valgrind_test_args=["--trace_children"])
@@ -388,6 +391,7 @@ class ChromeTests:
     "media": TestMedia,          "media_unittests": TestMedia,
     "net": TestNet,              "net_unittests": TestNet,
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
+    "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "startup": TestStartup,      "startup_tests": TestStartup,
     "sync": TestSync,            "sync_unit_tests": TestSync,
     "test_shell": TestTestShell, "test_shell_tests": TestTestShell,

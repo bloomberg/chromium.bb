@@ -2410,6 +2410,7 @@
             'nacl_ui_tests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',
+            '../remoting/remoting.gyp:remoting_unittests',
             # ui_tests seem unhappy on both Mac and Win when run under
             # coverage (all tests fail, often with a
             # "server_->WaitForInitialLoads()").  TODO(jrg):

@@ -62,7 +62,7 @@ _EOF_
 
 # Tests, grouped by how long they take to run
 # Skip ones that require chrome itself for the moment
-SUITES_1="googleurl_unittests printing_unittests sbox_validation_tests setup_unittests"
+SUITES_1="googleurl_unittests printing_unittests remoting_unittests sbox_validation_tests setup_unittests"
 #SUITES_10="app_unittests courgette_unittests ipc_tests reliability_tests sbox_integration_tests sbox_unittests tab_switching_test tcmalloc_unittests url_fetch_test"
 SUITES_10="app_unittests courgette_unittests ipc_tests sbox_unittests tcmalloc_unittests"
 #SUITES_100="automated_ui_tests installer_util_unittests media_unittests nacl_ui_tests net_perftests net_unittests plugin_tests sync_unit_tests"
@@ -209,6 +209,7 @@ get_expected_runtime() {
   media_unittests)       echo 400;;
   net_unittests)         echo 2000;;
   printing_unittests)    echo 100;;
+  remoting_unittests)    echo 200;;
   sbox_unittests)        echo 100;;
   sbox_validation_tests) echo 100;;
   setup_unittests)       echo 100;;
