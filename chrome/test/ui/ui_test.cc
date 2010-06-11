@@ -113,7 +113,7 @@ UITestBase::UITestBase()
       homepage_(L"about:blank"),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
-      process_(0),  // NULL on Windows, 0 PID on POSIX.
+      process_(base::kNullProcessHandle),
       process_id_(-1),
       show_window_(false),
       clear_profile_(true),
@@ -139,7 +139,7 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       homepage_(L"about:blank"),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
-      process_(0),  // NULL on Windows, 0 PID on POSIX.
+      process_(base::kNullProcessHandle),
       process_id_(-1),
       show_window_(false),
       clear_profile_(true),
