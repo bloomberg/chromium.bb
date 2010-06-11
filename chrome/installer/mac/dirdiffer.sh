@@ -55,13 +55,14 @@
 # Environment variables:
 # DIRDIFFER_EXCLUDE
 #   When an entry in new_dir matches this regular expression, it will not be
-#   included in patch_dir.
+#   included in patch_dir. All prospective paths in new_dir will be matched
+#   against this regular expression, including directories. If a directory
+#   matches this pattern, dirdiffer will also ignore the directory's contents.
 # DIRDIFFER_NO_DIFF
 #   When an entry in new_dir matches this regular expression, it will not be
 #   represented in patch_dir by a $gbs file prepared by goobsdif. It will only
-#   appear as a $bz2, $gz, or $raw file.
-# Both environment variables are regular expressions against which full paths
-# in new_dir will be matched.
+#   appear as a $bz2, $gz, or $raw file. Only files in new_dir, not
+#   directories,  will be matched against this regular expression.
 #
 # Exit codes:
 #  0  OK

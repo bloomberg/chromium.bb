@@ -815,6 +815,7 @@
                 '<(PRODUCT_DIR)/goobspatch',
                 'installer/mac/dirdiffer.sh',
                 'installer/mac/dirpatcher.sh',
+                'installer/mac/dmgdiffer.sh',
                 'installer/mac/pkg-dmg',
               ],
               'conditions': [
