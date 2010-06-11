@@ -4,8 +4,10 @@
 
 #include "chrome/browser/host_content_settings_map.h"
 
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
@@ -264,6 +266,79 @@ TEST_F(HostContentSettingsMapTest, Observer) {
   EXPECT_EQ(host_content_settings_map, observer.last_notifier);
   EXPECT_TRUE(observer.last_update_all);
   EXPECT_EQ(4, observer.counter);
+}
+
+TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  PrefService* prefs = profile.GetPrefs();
+
+  // Make a copy of the default pref value so we can reset it later.
+  scoped_ptr<Value> default_value(prefs->FindPreference(
+      prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
+
+  GURL host("http://example.com");
+
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_COOKIES));
+
+  // Make a copy of the pref's new value so we can reset it later.
+  scoped_ptr<Value> new_value(prefs->FindPreference(
+      prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
+
+  // Clearing the backing pref should also clear the internal cache.
+  prefs->Set(prefs::kDefaultContentSettings, *default_value);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_COOKIES));
+
+  // Reseting the pref to its previous value should update the cache.
+  prefs->Set(prefs::kDefaultContentSettings, *new_value);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_COOKIES));
+}
+
+TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  PrefService* prefs = profile.GetPrefs();
+
+  // Make a copy of the default pref value so we can reset it later.
+  scoped_ptr<Value> default_value(prefs->FindPreference(
+      prefs::kContentSettingsPatterns)->GetValue()->DeepCopy());
+
+  HostContentSettingsMap::Pattern pattern("[*.]example.com");
+  GURL host("http://example.com");
+
+  host_content_settings_map->SetContentSetting(pattern,
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_COOKIES));
+
+  // Make a copy of the pref's new value so we can reset it later.
+  scoped_ptr<Value> new_value(prefs->FindPreference(
+      prefs::kContentSettingsPatterns)->GetValue()->DeepCopy());
+
+  // Clearing the backing pref should also clear the internal cache.
+  prefs->Set(prefs::kContentSettingsPatterns, *default_value);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_COOKIES));
+
+  // Reseting the pref to its previous value should update the cache.
+  prefs->Set(prefs::kContentSettingsPatterns, *new_value);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {

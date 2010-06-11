@@ -558,10 +558,10 @@ void HostContentSettingsMap::ReadDefaultSettings(bool overwrite) {
   PrefService* prefs = profile_->GetPrefs();
   const DictionaryValue* default_settings_dictionary =
       prefs->GetDictionary(prefs::kDefaultContentSettings);
+  if (overwrite)
+    default_content_settings_ = ContentSettings();
   // Careful: The returned value could be NULL if the pref has never been set.
   if (default_settings_dictionary != NULL) {
-    if (overwrite)
-      default_content_settings_ = ContentSettings();
     GetSettingsFromDictionary(default_settings_dictionary,
                               &default_content_settings_);
   }
@@ -572,10 +572,10 @@ void HostContentSettingsMap::ReadExceptions(bool overwrite) {
   PrefService* prefs = profile_->GetPrefs();
   const DictionaryValue* all_settings_dictionary =
       prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
+  if (overwrite)
+    host_content_settings_.clear();
   // Careful: The returned value could be NULL if the pref has never been set.
   if (all_settings_dictionary != NULL) {
-    if (overwrite)
-      host_content_settings_.clear();
     for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
       std::wstring wide_pattern(*i);
