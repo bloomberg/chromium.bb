@@ -4380,7 +4380,6 @@ void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
 
 // Dump all load time histograms.
 //
-// There are 13 histograms measuring various times.
 // The time points we keep are
 //    request: time document was requested by user
 //    start: time load of document started
@@ -4391,26 +4390,18 @@ void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
 //    first_paint_after_load: first paint performed after load is finished
 //    begin: request if it was user requested, start otherwise
 //
-// The times that we histogram are
-//    request->start,
-//    start->commit,
-//    commit->finish_document,
-//    finish_document->finish,
-//    begin->commit,
-//    begin->finishDoc,
-//    begin->finish,
-//    begin->first_paint,
-//    begin->first_paint_after_load
-//    commit->finishDoc,
-//    commit->first_paint,
-//    commit->first_paint_after_load,
-//    finish->first_paint_after_load,
-//
 // It's possible for the request time not to be set, if a client
 // redirect had been done (the user never requested the page)
 // Also, it's possible to load a page without ever laying it out
 // so first_paint and first_paint_after_load can be 0.
 void RenderView::DumpLoadHistograms() const {
+  // Configuration for PLT related histograms.
+  static const TimeDelta kPLTMin(TimeDelta::FromMilliseconds(10));
+  static const TimeDelta kPLTMax(TimeDelta::FromMinutes(10));
+  static const size_t kPLTCount(100);
+  #define PLT_HISTOGRAM(name, sample) \
+      UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, kPLTMin, kPLTMax, kPLTCount);
+
   WebFrame* main_frame = webview()->mainFrame();
   NavigationState* navigation_state =
       NavigationState::FromDataSource(main_frame->dataSource());
@@ -4418,17 +4409,19 @@ void RenderView::DumpLoadHistograms() const {
   // If we've already dumped, do nothing.
   if (navigation_state->load_histograms_recorded())
     return;
+
+  // Collect measurement times.
   Time start = navigation_state->start_load_time();
   if (start.is_null())
     return;  // Probably very premature abandonment of page.
   Time commit = navigation_state->commit_load_time();
   if (commit.is_null())
     return;  // Probably very premature abandonment of page.
+
   // We properly handle null values for the next 3 variables.
   Time request = navigation_state->request_time();
   Time first_paint = navigation_state->first_paint_time();
   Time first_paint_after_load = navigation_state->first_paint_after_load_time();
-
   Time finish = navigation_state->finish_load_time();
   Time finish_doc = navigation_state->finish_document_load_time();
 
@@ -4438,17 +4431,272 @@ void RenderView::DumpLoadHistograms() const {
     finish = Time::Now();
     navigation_state->set_finish_load_time(finish);
   }
-  if (finish_doc.is_null()) {
-      finish_doc = Time::Now();
-      navigation_state->set_finish_document_load_time(finish_doc);
-  }
-  UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned", abandoned_page ? 1 : 0, 2);
 
-  LogNavigationState(navigation_state, main_frame->dataSource());
+  if (finish_doc.is_null()) {
+    DCHECK(abandoned_page);  // how can the doc have finished but not the page?
+    if (!abandoned_page)
+      return;  // Don't try to record a stat which is broken.
+    finish_doc = finish;
+    navigation_state->set_finish_document_load_time(finish_doc);
+  }
+
+  // Note: Client side redirects will have no request time.
+  Time begin = request.is_null() ? start : request;
+  TimeDelta begin_to_finish_doc = finish_doc - begin;
+  TimeDelta begin_to_finish = finish - begin;
+  TimeDelta start_to_finish = finish - start;
 
   NavigationState::LoadType load_type = navigation_state->load_type();
-  UMA_HISTOGRAM_ENUMERATION("Renderer4.LoadType", load_type,
-                            NavigationState::kLoadTypeMax);
+
+  // Aggregate PLT data across all link types.
+  UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned", abandoned_page ? 1 : 0, 2);
+  UMA_HISTOGRAM_ENUMERATION("PLT.LoadType", load_type,
+      NavigationState::kLoadTypeMax);
+  PLT_HISTOGRAM("PLT.StartToCommit", commit - start);
+  PLT_HISTOGRAM("PLT.CommitToFinishDoc", finish_doc - commit);
+  PLT_HISTOGRAM("PLT.FinishDocToFinish", finish - finish_doc);
+  PLT_HISTOGRAM("PLT.BeginToCommit", commit - begin);
+  PLT_HISTOGRAM("PLT.StartToFinish", start_to_finish);
+  if (!request.is_null()) {
+    PLT_HISTOGRAM("PLT.RequestToStart", start - request);
+    PLT_HISTOGRAM("PLT.RequestToFinish", finish - request);
+  }
+  PLT_HISTOGRAM("PLT.CommitToFinish", finish - commit);
+  if (!first_paint.is_null()) {
+    DCHECK(begin <= first_paint);
+    PLT_HISTOGRAM("PLT.BeginToFirstPaint", first_paint - begin);
+    DCHECK(commit <= first_paint);
+    PLT_HISTOGRAM("PLT.CommitToFirstPaint", first_paint - commit);
+  }
+  if (!first_paint_after_load.is_null()) {
+    DCHECK(begin <= first_paint_after_load);
+    PLT_HISTOGRAM("PLT.BeginToFirstPaintAfterLoad",
+      first_paint_after_load - begin);
+    DCHECK(commit <= first_paint_after_load);
+    PLT_HISTOGRAM("PLT.CommitToFirstPaintAfterLoad",
+        first_paint_after_load - commit);
+    DCHECK(finish <= first_paint_after_load);
+    PLT_HISTOGRAM("PLT.FinishToFirstPaintAfterLoad",
+        first_paint_after_load - finish);
+  }
+  PLT_HISTOGRAM("PLT.BeginToFinishDoc", begin_to_finish_doc);
+  PLT_HISTOGRAM("PLT.BeginToFinish", begin_to_finish);
+
+  // Load type related histograms.
+  switch (load_type) {
+    case NavigationState::UNDEFINED_LOAD:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_UndefLoad", begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_UndefLoad", begin_to_finish);
+      break;
+    case NavigationState::RELOAD:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_Reload", begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_Reload", begin_to_finish);
+      break;
+    case NavigationState::HISTORY_LOAD:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_HistoryLoad", begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_HistoryLoad", begin_to_finish);
+      break;
+    case NavigationState::NORMAL_LOAD:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_NormalLoad", begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_NormalLoad", begin_to_finish);
+      break;
+    case NavigationState::LINK_LOAD_NORMAL:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadNormal",
+          begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadNormal", begin_to_finish);
+      break;
+    case NavigationState::LINK_LOAD_RELOAD:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadReload",
+           begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadReload", begin_to_finish);
+      break;
+    case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadStaleOk",
+           begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadStaleOk", begin_to_finish);
+      break;
+    case NavigationState::LINK_LOAD_CACHE_ONLY:
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadCacheOnly",
+           begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadCacheOnly", begin_to_finish);
+      break;
+    default:
+      break;
+  }
+
+  // Histograms to determine if DNS prefetching has an impact on PLT.
+  static bool use_dns_histogram(FieldTrialList::Find("DnsImpact") &&
+      !FieldTrialList::Find("DnsImpact")->group_name().empty());
+  if (use_dns_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.Abandoned", "DnsImpact"),
+        abandoned_page ? 1 : 0, 2);
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.LoadType", "DnsImpact"),
+        load_type, NavigationState::kLoadTypeMax);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad", "DnsImpact"), begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal", "DnsImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadReload", "DnsImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
+            begin_to_finish);
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Histograms to determine if the number of connections has an
+  // impact on PLT.
+  // TODO(jar): Consider removing the per-link-type versions.  We
+  //   really only need LINK_LOAD_NORMAL and NORMAL_LOAD.
+  static bool use_conn_impact_histogram(
+      FieldTrialList::Find("ConnCountImpact") &&
+      !FieldTrialList::Find("ConnCountImpact")->group_name().empty());
+  if (use_conn_impact_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.Abandoned", "ConnCountImpact"),
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad", "ConnCountImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal", "ConnCountImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadReload", "ConnCountImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadStaleOk", "ConnCountImpact"),
+            begin_to_finish);
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Histograms to determine if SDCH has an impact.
+  // TODO(jar): Consider removing per-link load types and the enumeration.
+  static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&
+      !FieldTrialList::Find("GlobalSdch")->group_name().empty());
+  if (use_sdch_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.LoadType", "GlobalSdch"),
+        load_type, NavigationState::kLoadTypeMax);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad", "GlobalSdch"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal", "GlobalSdch"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadReload", "GlobalSdch"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadStaleOk", "GlobalSdch"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_ONLY:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadCacheOnly", "GlobalSdch"),
+            begin_to_finish);
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Histograms to determine if cache size has an impact on PLT.
+  static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
+      !FieldTrialList::Find("CacheSize")->group_name().empty());
+  if (use_cache_histogram1 && NavigationState::LINK_LOAD_NORMAL <= load_type &&
+      NavigationState::LINK_LOAD_CACHE_ONLY >= load_type) {
+    // TODO(mbelshe): Do we really want BeginToFinishDoc here?  It seems like
+    //                StartToFinish or BeginToFinish would be better.
+    PLT_HISTOGRAM(FieldTrial::MakeName(
+        "PLT.BeginToFinishDoc_LinkLoad", "CacheSize"), begin_to_finish_doc);
+  }
+
+  // Histograms to determine if SPDY has an impact.
+  // TODO(mbelshe): After we've seen the difference between BeginToFinish
+  //                and StartToFinish, consider removing one or the other.
+  static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
+      !FieldTrialList::Find("SpdyImpact")->group_name().empty());
+  if (use_spdy_histogram && navigation_state->was_npn_negotiated()) {
+    switch (load_type) {
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+            begin_to_finish);
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.StartToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+            start_to_finish);
+        break;
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
+            begin_to_finish);
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.StartToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
+            start_to_finish);
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Record page load time and abandonment rates for proxy cases.
+  GURL url = GURL(main_frame->url());
+  if (navigation_state->was_fetched_via_proxy()) {
+    if (url.SchemeIs("https")) {
+      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.https", start_to_finish);
+      UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.Proxy.https",
+          abandoned_page ? 1 : 0, 2);
+    } else {
+      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.http", start_to_finish);
+      UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.Proxy.http",
+          abandoned_page ? 1 : 0, 2);
+    }
+  } else {
+    if (url.SchemeIs("https")) {
+      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.https", start_to_finish);
+      UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.NoProxy.https",
+          abandoned_page ? 1 : 0, 2);
+    } else {
+      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.http", start_to_finish);
+      UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.NoProxy.http",
+          abandoned_page ? 1 : 0, 2);
+    }
+  }
 
   // Site isolation metrics.
   UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithCrossSiteFrameAccess",
@@ -4456,320 +4704,8 @@ void RenderView::DumpLoadHistograms() const {
   UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithSameSiteFrameAccess",
                        same_origin_access_count_);
 
-
-  Time begin;
-  // Client side redirects will have no request time.
-  if (request.is_null()) {
-    begin = start;
-  } else {
-    begin = request;
-    UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.RequestToStart", start - request);
-  }
-  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.StartToCommit", commit - start);
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "Renderer4.CommitToFinishDoc", finish_doc - commit);
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "Renderer4.FinishDocToFinish", finish - finish_doc);
-
-  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.BeginToCommit", commit - begin);
-
-  static const TimeDelta kBeginToFinishDocMin(TimeDelta::FromMilliseconds(10));
-  static const TimeDelta kBeginToFinishDocMax(TimeDelta::FromMinutes(10));
-  static const size_t kBeginToFinishDocBucketCount(100);
-  TimeDelta begin_to_finish_doc = finish_doc - begin;
-  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.BeginToFinishDoc", begin_to_finish_doc);
-
-  static const TimeDelta kBeginToFinishMin(TimeDelta::FromMilliseconds(10));
-  static const TimeDelta kBeginToFinishMax(TimeDelta::FromMinutes(10));
-  static const size_t kBeginToFinishBucketCount(100);
-  TimeDelta begin_to_finish = finish_doc - begin;
-  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish", begin_to_finish,
-      kBeginToFinishMin, kBeginToFinishMax, kBeginToFinishBucketCount);
-
-  switch (load_type) {
-    case NavigationState::UNDEFINED_LOAD:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_UndefLoad",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_UndefLoad",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    case NavigationState::RELOAD:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_Reload",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_Reload",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    case NavigationState::HISTORY_LOAD:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_HistoryLoad",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_HistoryLoad",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    case NavigationState::NORMAL_LOAD:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_NormalLoad",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_NormalLoad",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    case NavigationState::LINK_LOAD_NORMAL:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadNormal",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadNormal",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    case NavigationState::LINK_LOAD_RELOAD:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadReload",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadReload",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadStaleOk",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadStaleOk",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    case NavigationState::LINK_LOAD_CACHE_ONLY:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadCacheOnly",
-           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-           kBeginToFinishDocBucketCount);
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadCacheOnly",
-           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-           kBeginToFinishBucketCount);
-      break;
-    default:
-      break;
-  }
-
-  static bool use_dns_histogram(FieldTrialList::Find("DnsImpact") &&
-      !FieldTrialList::Find("DnsImpact")->group_name().empty());
-  if (use_dns_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Renderer4.Abandoned", "DnsImpact"),
-        abandoned_page ? 1 : 0, 2);
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Renderer4.LoadType", "DnsImpact"),
-        load_type, NavigationState::kLoadTypeMax);
-    switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_NormalLoad", "DnsImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_NORMAL:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadNormal", "DnsImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_RELOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadReload", "DnsImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static bool use_conn_impact_histogram(
-      FieldTrialList::Find("ConnCountImpact") &&
-      !FieldTrialList::Find("ConnCountImpact")->group_name().empty());
-  if (use_conn_impact_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Renderer4.Abandoned", "ConnCountImpact"),
-        abandoned_page ? 1 : 0, 2);
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Renderer4.LoadType", "ConnCountImpact"),
-        load_type, NavigationState::kLoadTypeMax);
-    switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_NormalLoad", "ConnCountImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_NORMAL:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadNormal", "ConnCountImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_RELOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadReload", "ConnCountImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadStaleOk", "ConnCountImpact"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&
-      !FieldTrialList::Find("GlobalSdch")->group_name().empty());
-  if (use_sdch_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Renderer4.LoadType", "GlobalSdch"),
-        load_type, NavigationState::kLoadTypeMax);
-    switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_NormalLoad", "GlobalSdch"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_NORMAL:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadNormal", "GlobalSdch"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_RELOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadReload", "GlobalSdch"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadStaleOk", "GlobalSdch"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_CACHE_ONLY:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinish_LinkLoadCacheOnly", "GlobalSdch"),
-            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-            kBeginToFinishBucketCount);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
-      !FieldTrialList::Find("CacheSize")->group_name().empty());
-  if (use_cache_histogram1 && NavigationState::LINK_LOAD_NORMAL <= load_type &&
-      NavigationState::LINK_LOAD_CACHE_ONLY >= load_type)
-    UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-        "Renderer4.BeginToFinishDoc_LinkLoad", "CacheSize"),
-        begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-        kBeginToFinishDocBucketCount);
-
-  static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
-      !FieldTrialList::Find("SpdyImpact")->group_name().empty());
-  if (use_spdy_histogram) {
-    switch (load_type) {
-      case NavigationState::LINK_LOAD_NORMAL:
-        if (navigation_state->was_npn_negotiated()) {
-          DCHECK(FieldTrialList::Find("SpdyImpact")->group_name() ==
-                 "_npn_with_http" ||
-                 FieldTrialList::Find("SpdyImpact")->group_name() ==
-                 "_npn_with_spdy");
-          UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-              "Renderer4.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
-              begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
-              kBeginToFinishBucketCount);
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish",
-      finish - start, kBeginToFinishMin,
-      kBeginToFinishMax, kBeginToFinishBucketCount);
-  if (!request.is_null())
-    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.RequestToFinish",
-        finish - request, kBeginToFinishMin,
-        kBeginToFinishMax, kBeginToFinishBucketCount);
-
-  // Record page load time and abandonment rates for proxy cases.
-  GURL url = GURL(main_frame->url());
-  if (navigation_state->was_fetched_via_proxy()) {
-    if (url.SchemeIs("https")) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.Proxy.https",
-          finish - start, kBeginToFinishMin,
-          kBeginToFinishMax, kBeginToFinishBucketCount);
-      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.Proxy.https",
-          abandoned_page ? 1 : 0, 2);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.Proxy.http",
-          finish - start, kBeginToFinishMin,
-          kBeginToFinishMax, kBeginToFinishBucketCount);
-      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.Proxy.http",
-          abandoned_page ? 1 : 0, 2);
-    }
-  } else {
-    if (url.SchemeIs("https")) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.NoProxy.https",
-          finish - start, kBeginToFinishMin,
-          kBeginToFinishMax, kBeginToFinishBucketCount);
-      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.NoProxy.https",
-          abandoned_page ? 1 : 0, 2);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish.NoProxy.http",
-          finish - start, kBeginToFinishMin,
-          kBeginToFinishMax, kBeginToFinishBucketCount);
-      UMA_HISTOGRAM_ENUMERATION("Renderer4.Abandoned.NoProxy.http",
-          abandoned_page ? 1 : 0, 2);
-    }
-  }
-
-  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.CommitToFinish", finish - commit);
-
-  if (!first_paint.is_null()) {
-    DCHECK(begin <= first_paint);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Renderer4.BeginToFirstPaint", first_paint - begin);
-    DCHECK(commit <= first_paint);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Renderer4.CommitToFirstPaint", first_paint - commit);
-  }
-
-  if (!first_paint_after_load.is_null()) {
-    DCHECK(begin <= first_paint_after_load);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Renderer4.BeginToFirstPaintAfterLoad", first_paint_after_load - begin);
-    DCHECK(commit <= first_paint_after_load);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Renderer4.CommitToFirstPaintAfterLoad",
-        first_paint_after_load - commit);
-    DCHECK(finish <= first_paint_after_load);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Renderer4.FinishToFirstPaintAfterLoad",
-        first_paint_after_load - finish);
-  }
+  // Log some PLT data to the error log.
+  LogNavigationState(navigation_state, main_frame->dataSource());
 
   navigation_state->set_load_histograms_recorded(true);
 
