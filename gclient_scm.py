@@ -61,8 +61,8 @@ def GetScmName(url):
     if (url.startswith('git://') or url.startswith('ssh://') or
         url.endswith('.git')):
       return 'git'
-    elif (url.startswith('http://') or url.startswith('svn://') or
-          url.startswith('ssh+svn://')):
+    elif (url.startswith('http://') or url.startswith('https://') or
+          url.startswith('svn://') or url.startswith('ssh+svn://')):
       return 'svn'
   return None
 
