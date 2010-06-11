@@ -10,6 +10,7 @@
 namespace views {
 class Button;
 class Textfield;
+class Widget;
 }  // namespace views
 
 namespace chromeos {
@@ -25,11 +26,14 @@ class ScreenLockerTester {
   // Returns true if the screen lock is open.
   bool IsOpen();
 
-  // Injects MockAuthenticate that uses given password .
-  void InjectMockAuthenticator(const char* password);
+  // Injects MockAuthenticate that uses given |user| and |password|.
+  void InjectMockAuthenticator(const char* user, const char* password);
 
   // Emulates entring a password.
   void EnterPassword(const char* password);
+
+  // Returns the widget for screen locker window.
+  views::Widget* GetWidget();
 
  private:
   friend class chromeos::ScreenLocker;

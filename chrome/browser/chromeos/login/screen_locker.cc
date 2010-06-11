@@ -294,9 +294,36 @@ class MouseEventRelay : public MessageLoopForUI::Observer {
   DISALLOW_COPY_AND_ASSIGN(MouseEventRelay);
 };
 
-}  // namespace chromeos
+// A event observer used to unlock the screen upon user's action
+// without asking password. Used in BWSI and auto login mode.
+class InputEventObserver : public MessageLoopForUI::Observer {
+ public:
+  InputEventObserver(ScreenLocker* screen_locker)
+      : screen_locker_(screen_locker),
+        activated_(false) {
+  }
 
-namespace chromeos {
+  virtual void WillProcessEvent(GdkEvent* event) {
+    if ((event->type == GDK_KEY_PRESS ||
+         event->type == GDK_BUTTON_PRESS ||
+         event->type == GDK_MOTION_NOTIFY) &&
+        !activated_) {
+      activated_ = true;
+      std::string not_used;
+      screen_locker_->OnLoginSuccess(not_used, not_used);
+    }
+  }
+
+  virtual void DidProcessEvent(GdkEvent* event) {
+  }
+
+ private:
+  chromeos::ScreenLocker* screen_locker_;
+
+  bool activated_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputEventObserver);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // ScreenLocker, public:
@@ -308,7 +335,10 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
       user_(user),
       error_info_(NULL),
       mapped_(false),
-      input_grabbed_(false) {
+      input_grabbed_(false),
+      // TODO(oshima): support auto login mode (this is not implemented yet)
+      // http://crosbug.com/1881
+      unlock_on_input_(user_.email().empty()) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 }
@@ -330,10 +360,19 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
   lock_window_->SetContentsView(screen);
   lock_window_->Show();
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-  screen_lock_view_ = new ScreenLockView(this);
-  screen_lock_view_->Init();
 
-  gfx::Size size = screen_lock_view_->GetPreferredSize();
+  // GTK does not like zero width/height.
+  gfx::Size size(1, 1);
+
+  if (!unlock_on_input_) {
+    screen_lock_view_ = new ScreenLockView(this);
+    screen_lock_view_->Init();
+    size = screen_lock_view_->GetPreferredSize();
+  } else {
+    input_event_observer_.reset(new InputEventObserver(this));
+    MessageLoopForUI::current()->AddObserver(input_event_observer_.get());
+  }
+
 
   lock_widget_ = new GrabWidget(this);
   lock_widget_->MakeTransparent();
@@ -342,7 +381,8 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
                                          (bounds.height() - size.width()) / 2,
                                          size.width(),
                                          size.height()));
-  lock_widget_->SetContentsView(screen_lock_view_);
+  if (screen_lock_view_)
+    lock_widget_->SetContentsView(screen_lock_view_);
   lock_widget_->GetRootView()->SetVisible(false);
   lock_widget_->Show();
 }
@@ -417,8 +457,10 @@ void ScreenLocker::ClearErrors() {
 }
 
 void ScreenLocker::EnableInput() {
-  screen_lock_view_->SetEnabled(true);
-  screen_lock_view_->ClearAndSetFocusToPassword();
+  if (screen_lock_view_) {
+    screen_lock_view_->SetEnabled(true);
+    screen_lock_view_->ClearAndSetFocusToPassword();
+  }
 }
 
 void ScreenLocker::Signout() {
@@ -486,10 +528,18 @@ void ScreenLocker::InitClass() {
 
 ScreenLocker::~ScreenLocker() {
   ClearErrors();
+  if (input_event_observer_.get())
+    MessageLoopForUI::current()->RemoveObserver(input_event_observer_.get());
+
   DCHECK(lock_window_);
   lock_window_->Close();
   // lock_widget_ will be deleted by gtk's destroy signal.
   screen_locker_ = NULL;
+  bool state = false;
+  NotificationService::current()->Notify(
+      NotificationType::SCREEN_LOCK_STATE_CHANGED,
+      Source<ScreenLocker>(this),
+      Details<bool>(&state));
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
 }
@@ -503,6 +553,11 @@ void ScreenLocker::ScreenLockReady() {
   // Don't show the password field until we grab all inputs.
   lock_widget_->GetRootView()->SetVisible(true);
   EnableInput();
+  bool state = true;
+  NotificationService::current()->Notify(
+      NotificationType::SCREEN_LOCK_STATE_CHANGED,
+      Source<ScreenLocker>(this),
+      Details<bool>(&state));
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
 }

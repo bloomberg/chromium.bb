@@ -23,6 +23,7 @@ class WidgetGtk;
 namespace chromeos {
 
 class Authenticator;
+class InputEventObserver;
 class MessageBubble;
 class MouseEventRelay;
 class ScreenLockView;
@@ -126,6 +127,10 @@ class ScreenLocker : public LoginStatusConsumer,
   // the message bubble's gdk_window so that close button works.
   scoped_ptr<MouseEventRelay> mouse_event_relay_;
 
+  // A message loop observer to detect user's keyboard/mouse event.
+  // Used when |unlock_on_input_| is true.
+  scoped_ptr<InputEventObserver> input_event_observer_;
+
   // An info bubble to display login failure message.
   MessageBubble* error_info_;
 
@@ -134,6 +139,10 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // True if both mouse input and keyboard input are grabbed.
   bool input_grabbed_;
+
+  // Unlock the screen when it detects key/mouse event without asking
+  // password. True when chrome is in BWSI or auto login mode.
+  bool unlock_on_input_;
 
   // Reference to the single instance of the screen locker object.
   // This is used to make sure there is only one screen locker instance.

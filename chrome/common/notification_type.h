@@ -1006,6 +1006,13 @@ class NotificationType {
     // Sent when the wizard's content view is destroyed. The source and details
     // are not used.
     WIZARD_CONTENT_VIEW_DESTROYED,
+
+    // Sent when the screen lock state has changed. The source is
+    // ScreenLocker and the details is a bool specifing that the
+    // screen is locked. When details is a false, the source object
+    // is being deleted, so the receiver shouldn't use the screen locker
+    // object.
+    SCREEN_LOCK_STATE_CHANGED,
 #endif
 
     // Sent before the repost form warning is brought up.

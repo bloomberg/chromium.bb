@@ -14,6 +14,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 
@@ -27,10 +28,11 @@ bool ScreenLockerTester::IsOpen() {
   return chromeos::ScreenLocker::screen_locker_ != NULL;
 }
 
-void ScreenLockerTester::InjectMockAuthenticator(const char* password) {
+void ScreenLockerTester::InjectMockAuthenticator(
+    const char* user, const char* password) {
   DCHECK(ScreenLocker::screen_locker_);
   ScreenLocker::screen_locker_->SetAuthenticator(
-      new MockAuthenticator(ScreenLocker::screen_locker_, "", password));
+      new MockAuthenticator(ScreenLocker::screen_locker_, user, password));
 }
 
 void ScreenLockerTester::EnterPassword(const char* password) {
@@ -49,6 +51,11 @@ void ScreenLockerTester::EnterPassword(const char* password) {
 views::Textfield* ScreenLockerTester::GetPasswordField() {
   DCHECK(ScreenLocker::screen_locker_);
   return ScreenLocker::screen_locker_->screen_lock_view_->password_field_;
+}
+
+views::Widget* ScreenLockerTester::GetWidget() {
+  DCHECK(ScreenLocker::screen_locker_);
+  return ScreenLocker::screen_locker_->lock_window_;
 }
 
 }  // namespace test
