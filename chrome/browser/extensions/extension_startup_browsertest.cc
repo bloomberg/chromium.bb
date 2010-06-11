@@ -138,7 +138,7 @@ class ExtensionsStartupTest : public ExtensionStartupTestBase {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_Test) {
+IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
   WaitForServicesToStart(4, true);  // 1 component extension and 3 others.
   TestInjection(true, true);
 }
