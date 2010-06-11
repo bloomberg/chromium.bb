@@ -70,19 +70,46 @@ void SetConsoleEcho(bool on) {
 int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
+  std::string username;
+  std::string auth_token;
+
   // Check the argument to see if we should use a fake capturer and encoder.
   bool fake = false;
-  if (argc > 1 && std::string(argv[1]) == "--fake") {
-    fake = true;
+  // True if the JID was specified on the command line.
+  bool has_jid = false;
+  // True if the auth token was specified on the command line.
+  bool has_auth = false;
+
+  for (int i = 1; i < argc; i++) {
+    std::string arg = argv[i];
+    if (arg == "--fake") {
+      fake = true;
+    } else if (arg == "--jid") {
+      if (++i >= argc) {
+        std::cerr << "Expected JID to follow --jid option" << std::endl;
+        return 1;
+      }
+      has_jid = true;
+      username = argv[i];
+    } else if (arg == "--auth") {
+      if (++i >= argc) {
+        std::cerr << "Expected auth token to follow --auth option" << std::endl;
+        return 1;
+      }
+      has_auth = true;
+      auth_token = argv[i];
+    }
   }
 
   // Prompt user for username and auth token.
-  std::string username;
-  std::cout << "JID: ";
-  std::cin >> username;
-  std::string auth_token;
-  std::cout << "Auth Token: ";
-  std::cin >> auth_token;
+  if (!has_jid) {
+    std::cout << "JID: ";
+    std::cin >> username;
+  }
+  if (!has_auth) {
+    std::cout << "Auth Token: ";
+    std::cin >> auth_token;
+  }
 
   scoped_ptr<remoting::Capturer> capturer;
   scoped_ptr<remoting::Encoder> encoder;
