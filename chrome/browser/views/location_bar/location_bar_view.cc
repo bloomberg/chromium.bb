@@ -892,10 +892,6 @@ void LocationBarView::AcceptInput() {
   location_entry_->model()->AcceptInput(CURRENT_TAB, false);
 }
 
-void LocationBarView::AcceptInputWithDisposition(WindowOpenDisposition disp) {
-  location_entry_->model()->AcceptInput(disp, false);
-}
-
 void LocationBarView::FocusLocation(bool select_all) {
   location_entry_->SetFocus();
   if (select_all)

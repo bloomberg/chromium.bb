@@ -19,7 +19,7 @@ struct TestCase {
 TEST(ThemeResourcesUtil, SpotCheckIds) {
   const TestCase kTestCases[] = {
     {"back", IDR_BACK},
-    {"go", IDR_GO},
+    {"stop", IDR_STOP},
     {"omnibox_star", IDR_OMNIBOX_STAR},
     {"sad_tab", IDR_SAD_TAB},
   };

@@ -96,7 +96,7 @@ void CompactLocationBarView::Init() {
   reload_->SetImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_RELOAD_P));
   reload_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_RELOAD_MASK));
+      tp->GetBitmapNamed(IDR_BUTTON_MASK));
 
   AddChildView(reload_);
 

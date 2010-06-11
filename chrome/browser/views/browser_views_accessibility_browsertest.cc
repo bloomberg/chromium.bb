@@ -241,14 +241,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                               ROLE_SYSTEM_GROUPING);
 }
 
-// Retrieve accessibility object for Go button and verify accessibility info.
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestGoButtonAccObj) {
-  // Verify Go button MSAA name and role.
-  TestViewAccessibilityObject(GetToolbarView()->GetViewByID(VIEW_ID_GO_BUTTON),
-                              l10n_util::GetString(IDS_ACCNAME_GO),
-                              ROLE_SYSTEM_PUSHBUTTON);
-}
-
 // Retrieve accessibility object for Page menu button and verify accessibility
 // info.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestPageMenuAccObj) {

@@ -858,9 +858,9 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   }
 }
 
-void BrowserView::UpdateStopGoState(bool is_loading, bool force) {
-  toolbar_->go_button()->ChangeMode(
-      is_loading ? GoButton::MODE_STOP : GoButton::MODE_GO, force);
+void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
+  toolbar_->reload_button()->ChangeMode(
+      is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD, force);
 }
 
 void BrowserView::UpdateToolbar(TabContents* contents,

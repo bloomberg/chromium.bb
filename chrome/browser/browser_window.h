@@ -133,8 +133,8 @@ class BrowserWindow {
   virtual void SetFocusToLocationBar(bool select_all) = 0;
 
   // Informs the view whether or not a load is in progress for the current tab.
-  // The view can use this notification to update the go/stop button.
-  virtual void UpdateStopGoState(bool is_loading, bool force) = 0;
+  // The view can use this notification to update the reload/stop button.
+  virtual void UpdateReloadStopState(bool is_loading, bool force) = 0;
 
   // Updates the toolbar with the state for the specified |contents|.
   virtual void UpdateToolbar(TabContents* contents,

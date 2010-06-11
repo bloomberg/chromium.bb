@@ -3821,26 +3821,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_FORWARD" desc="The tooltip for forward button">
         Click to go forward, hold to see history
       </message>
+      <message name="IDS_TOOLTIP_HOME" desc="The tooltip for the home button">
+        Open the home page
+      </message>
       <message name="IDS_TOOLTIP_RELOAD" desc="The tooltip for reload button">
         Reload this page
       </message>
-      <message name="IDS_TOOLTIP_HOME" desc="The tooltip for the home button">
-        Open the home page
+      <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
+        Stop loading this page
       </message>
       <message name="IDS_TOOLTIP_STAR" desc="The tooltip for bookmark button">
         Bookmark this page
       </message>
       <message name="IDS_TOOLTIP_STARRED" desc="The tooltip for bookmark button when bookmarked">
         Edit bookmark for this page
-      </message>
-      <message name="IDS_TOOLTIP_GO_SITE" desc="The tooltip for go button when going to a site">
-        Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
-      </message>
-      <message name="IDS_TOOLTIP_GO_SEARCH" desc="The tooltip for go button when searching for a term">
-        Search <ph name="ENGINE">$1<ex>Google</ex></ph> for <ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>
-      </message>
-      <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
-        Stop loading this page
       </message>
       <message name="IDS_TOOLTIP_CLOSE_TAB" desc="The tooltip for the close tab button">
         Close
@@ -3856,17 +3850,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_FORWARD" desc="The accessible name for the forward button.">
         Forward
       </message>
-      <message name="IDS_ACCNAME_RELOAD" desc="The accessible name for the reload button.">
-        Reload
-      </message>
       <message name="IDS_ACCNAME_HOME" desc="The accessible name for the home button">
         Home
       </message>
-      <message name="IDS_ACCNAME_STAR" desc="The accessible name for the bookmark button.">
-        Bookmark
+      <message name="IDS_ACCNAME_RELOAD" desc="The accessible name for the reload/stop button.">
+        Reload
       </message>
       <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the location bar edit field.">
         Location
+      </message>
+      <message name="IDS_ACCNAME_STAR" desc="The accessible name for the bookmark button.">
+        Bookmark
       </message>
       <message name="IDS_ACCNAME_FIND" desc="The accessible name for the find button.">
         Find
@@ -3876,9 +3870,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_NEXT" desc="The accessible name for the next button.">
         Next
-      </message>
-      <message name="IDS_ACCNAME_GO" desc="The accessible name for the go/stop button.">
-        Go
       </message>
       <message name="IDS_ACCNAME_PAGE" desc="The accessible name for the page menu.">
         Page

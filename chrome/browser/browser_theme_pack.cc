@@ -23,7 +23,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 9;
+const int kThemePackVersion = 10;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the
@@ -119,30 +119,25 @@ PersistingImagesTable kPersistingImages[] = {
   { 20, IDR_FORWARD_D, NULL },
   { 21, IDR_FORWARD_H, NULL },
   { 22, IDR_FORWARD_P, NULL },
-  { 23, IDR_RELOAD, NULL },
-  { 24, IDR_RELOAD_H, NULL },
-  { 25, IDR_RELOAD_P, NULL },
-  { 26, IDR_HOME, NULL },
-  { 27, IDR_HOME_H, NULL },
-  { 28, IDR_HOME_P, NULL },
-  { 29, IDR_GO, NULL },
-  { 30, IDR_GO_NOBORDER_CENTER, NULL },
-  { 31, IDR_GO_H, NULL },
-  { 32, IDR_GO_P, NULL },
-  { 33, IDR_STOP, NULL },
-  { 34, IDR_STOP_NOBORDER_CENTER, NULL },
-  { 35, IDR_STOP_H, NULL },
-  { 36, IDR_STOP_P, NULL },
-  { 37, IDR_MENU_BOOKMARK, NULL },
-  { 38, IDR_MENU_PAGE, NULL },
-  { 39, IDR_MENU_PAGE_RTL, NULL },
-  { 40, IDR_MENU_CHROME, NULL },
-  { 41, IDR_MENU_CHROME_RTL, NULL },
-  { 42, IDR_MENU_DROPARROW, NULL },
-  { 43, IDR_THROBBER, NULL },
-  { 44, IDR_THROBBER_WAITING, NULL },
-  { 45, IDR_THROBBER_LIGHT, NULL },
-  { 46, IDR_LOCATIONBG, NULL }
+  { 23, IDR_HOME, NULL },
+  { 24, IDR_HOME_H, NULL },
+  { 25, IDR_HOME_P, NULL },
+  { 26, IDR_RELOAD, NULL },
+  { 27, IDR_RELOAD_H, NULL },
+  { 28, IDR_RELOAD_P, NULL },
+  { 29, IDR_STOP, NULL },
+  { 30, IDR_STOP_H, NULL },
+  { 31, IDR_STOP_P, NULL },
+  { 32, IDR_LOCATIONBG, NULL },
+  { 33, IDR_MENU_BOOKMARK, NULL },
+  { 34, IDR_MENU_PAGE, NULL },
+  { 35, IDR_MENU_PAGE_RTL, NULL },
+  { 36, IDR_MENU_CHROME, NULL },
+  { 37, IDR_MENU_CHROME_RTL, NULL },
+  { 38, IDR_MENU_DROPARROW, NULL },
+  { 39, IDR_THROBBER, NULL },
+  { 40, IDR_THROBBER_WAITING, NULL },
+  { 41, IDR_THROBBER_LIGHT, NULL },
 };
 
 int GetPersistentIDByName(const std::string& key) {

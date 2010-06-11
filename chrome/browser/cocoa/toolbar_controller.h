@@ -52,7 +52,6 @@ class ToolbarModel;
   IBOutlet DelayedMenuButton* forwardButton_;
   IBOutlet NSButton* reloadButton_;
   IBOutlet NSButton* homeButton_;
-  IBOutlet NSButton* goButton_;
   IBOutlet MenuButton* pageButton_;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;

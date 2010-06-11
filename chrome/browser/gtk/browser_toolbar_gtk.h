@@ -30,10 +30,10 @@ class BrowserActionsToolbarGtk;
 class BrowserWindowGtk;
 class CustomDrawButton;
 class GtkThemeProvider;
-class GoButtonGtk;
 class LocationBar;
 class LocationBarViewGtk;
 class Profile;
+class ReloadButtonGtk;
 class TabContents;
 class ToolbarModel;
 
@@ -71,7 +71,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   virtual LocationBar* GetLocationBar() const;
 
-  GoButtonGtk* GetGoButton() { return go_.get(); }
+  ReloadButtonGtk* GetReloadButton() { return reload_.get(); }
 
   GtkWidget* GetAppMenuButton() { return app_menu_button_.get(); }
 
@@ -219,8 +219,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // All the buttons in the toolbar.
   scoped_ptr<BackForwardButtonGtk> back_, forward_;
   scoped_ptr<CustomDrawButton> home_;
-  scoped_ptr<CustomDrawButton> reload_;
-  scoped_ptr<GoButtonGtk> go_;
+  scoped_ptr<ReloadButtonGtk> reload_;
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
   OwnedWidgetGtk page_menu_button_, app_menu_button_;
 

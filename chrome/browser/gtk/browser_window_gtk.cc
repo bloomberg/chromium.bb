@@ -47,7 +47,6 @@
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/gtk/find_bar_gtk.h"
 #include "chrome/browser/gtk/fullscreen_exit_bubble_gtk.h"
-#include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -59,6 +58,7 @@
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/options/content_settings_window_gtk.h"
+#include "chrome/browser/gtk/reload_button_gtk.h"
 #include "chrome/browser/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
@@ -828,9 +828,10 @@ void BrowserWindowGtk::SetFocusToLocationBar(bool select_all) {
     GetLocationBar()->FocusLocation(select_all);
 }
 
-void BrowserWindowGtk::UpdateStopGoState(bool is_loading, bool force) {
-  toolbar_->GetGoButton()->ChangeMode(
-      is_loading ? GoButtonGtk::MODE_STOP : GoButtonGtk::MODE_GO, force);
+void BrowserWindowGtk::UpdateReloadStopState(bool is_loading, bool force) {
+  toolbar_->GetReloadButton()->ChangeMode(
+      is_loading ? ReloadButtonGtk::MODE_STOP : ReloadButtonGtk::MODE_RELOAD,
+      force);
 }
 
 void BrowserWindowGtk::UpdateToolbar(TabContents* contents,

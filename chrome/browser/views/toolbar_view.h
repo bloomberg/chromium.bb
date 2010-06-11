@@ -16,8 +16,8 @@
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
-#include "chrome/browser/views/go_button.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/views/reload_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/menu_wrapper.h"
@@ -85,7 +85,7 @@ class ToolbarView : public AccessibleToolbarView,
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
-  GoButton* go_button() const { return go_; }
+  ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
   views::MenuButton* page_menu() const { return page_menu_; }
   views::MenuButton* app_menu() const { return app_menu_; }
@@ -194,9 +194,8 @@ class ToolbarView : public AccessibleToolbarView,
   views::ImageButton* back_;
   views::ImageButton* forward_;
   views::ImageButton* home_;
-  views::ImageButton* reload_;
+  ReloadButton* reload_;
   LocationBarView* location_bar_;
-  GoButton* go_;
   BrowserActionsContainer* browser_actions_;
   views::MenuButton* page_menu_;
   views::MenuButton* app_menu_;

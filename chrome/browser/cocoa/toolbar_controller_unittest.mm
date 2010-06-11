@@ -43,9 +43,8 @@ class ToolbarControllerTest : public CocoaTest {
   // Indexes that match the ordering returned by the private ToolbarController
   // |-toolbarViews| method.
   enum {
-    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kGoIndex,
-    kPageIndex, kWrenchIndex, kLocationIndex,
-    kBrowserActionContainerViewIndex
+    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kPageIndex,
+    kWrenchIndex, kLocationIndex, kBrowserActionContainerViewIndex
   };
 
   ToolbarControllerTest() {
@@ -151,14 +150,14 @@ TEST_F(ToolbarControllerTest, FocusLocation) {
 }
 
 TEST_F(ToolbarControllerTest, LoadingState) {
-  // In its initial state, the go button has a tag of IDC_GO. When loading,
-  // it should be IDC_STOP.
-  NSButton* go = [[bar_ toolbarViews] objectAtIndex:kGoIndex];
-  EXPECT_EQ([go tag], IDC_GO);
+  // In its initial state, the reload button has a tag of
+  // IDC_RELOAD. When loading, it should be IDC_STOP.
+  NSButton* reload = [[bar_ toolbarViews] objectAtIndex:kReloadIndex];
+  EXPECT_EQ([reload tag], IDC_RELOAD);
   [bar_ setIsLoading:YES];
-  EXPECT_EQ([go tag], IDC_STOP);
+  EXPECT_EQ([reload tag], IDC_STOP);
   [bar_ setIsLoading:NO];
-  EXPECT_EQ([go tag], IDC_GO);
+  EXPECT_EQ([reload tag], IDC_RELOAD);
 }
 
 // Check that toggling the state of the home button changes the visible
@@ -191,9 +190,7 @@ TEST_F(ToolbarControllerTest, TogglePageWrench) {
   EXPECT_EQ(showButtons, ![pageButton isHidden]);
   EXPECT_EQ(showButtons, ![wrenchButton isHidden]);
 
-  NSView* goButton = [[bar_ toolbarViews] objectAtIndex:kGoIndex];
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
-  NSRect originalGoFrame = [goButton frame];
   NSRect originalLocationBarFrame = [locationBar frame];
 
   // Toggle the pref and make sure the buttons changed state and the other
@@ -201,7 +198,6 @@ TEST_F(ToolbarControllerTest, TogglePageWrench) {
   prefs->SetBoolean(prefs::kShowPageOptionsButtons, !showButtons);
   EXPECT_EQ(showButtons, [pageButton isHidden]);
   EXPECT_EQ(showButtons, [wrenchButton isHidden]);
-  EXPECT_NE(NSMinX(originalGoFrame), NSMinX([goButton frame]));
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
 

@@ -67,15 +67,13 @@
 // how they appear in the GUI/menus (left to right, top to bottom, etc.).
 
 // Navigation commands
+// TODO: Reorder to be in visible order; collapse holes
 #define IDC_BACK                        33000
 #define IDC_FORWARD                     33001
 #define IDC_RELOAD                      33002
 #define IDC_HOME                        33003
 #define IDC_OPEN_CURRENT_URL            33004
-#define IDC_GO                          33005
 #define IDC_STOP                        33006
-// TODO: put this alongside RELOAD, next time someone wants to fix all
-// the Mac ids.
 #define IDC_RELOAD_IGNORING_CACHE       33007
 
 // Window management commands

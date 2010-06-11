@@ -16,6 +16,10 @@
 
 @interface SideTabsToolbarController : ToolbarController {
  @private
+  // TODO(shess): |goButton_| no longer exists in ToolbarController.
+  // It's not clear to me that |goButton_| is the right name for this
+  // class to use.
+  IBOutlet NSButton* goButton_;
   IBOutlet NSButton* starButton_;
   IBOutlet NSTextField* title_;
   IBOutlet NSProgressIndicator* loadingSpinner_;

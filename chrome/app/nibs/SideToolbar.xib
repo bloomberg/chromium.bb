@@ -195,7 +195,7 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{171, 0}, {29, 27}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
-						<int key="NSTag">33005</int>
+						<int key="NSTag">33004</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="203834804">
 							<int key="NSCellFlags">67239424</int>

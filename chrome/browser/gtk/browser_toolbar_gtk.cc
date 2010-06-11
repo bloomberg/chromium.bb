@@ -29,11 +29,11 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/custom_button.h"
-#include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/gtk/reload_button_gtk.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
@@ -97,7 +97,6 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       upgrade_reminder_animation_(this) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
-  browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
   browser_->command_updater()->AddCommandObserver(IDC_BOOKMARK_PAGE, this);
 
@@ -117,7 +116,6 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
 BrowserToolbarGtk::~BrowserToolbarGtk() {
   browser_->command_updater()->RemoveCommandObserver(IDC_BACK, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_FORWARD, this);
-  browser_->command_updater()->RemoveCommandObserver(IDC_RELOAD, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_HOME, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_BOOKMARK_PAGE, this);
 
@@ -174,16 +172,15 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_left_), back_forward_hbox_, FALSE,
                      FALSE, kToolbarWidgetSpacing);
 
+  reload_.reset(new ReloadButtonGtk(location_bar_.get(), browser_));
+  gtk_box_pack_start(GTK_BOX(toolbar_left_), reload_->widget(), FALSE, FALSE,
+                     0);
+
   home_.reset(BuildToolbarButton(IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
                                  IDR_BUTTON_MASK,
                                  l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME),
                                  GTK_STOCK_HOME, kToolbarWidgetSpacing));
   gtk_util::SetButtonTriggersNavigation(home_->widget());
-
-  reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
-                                   IDR_RELOAD_MASK,
-                                   l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
-                                   GTK_STOCK_REFRESH, 0));
 
   gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_left_, FALSE, FALSE, 0);
 
@@ -198,9 +195,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
       kToolbarWidgetSpacing + (ShouldOnlyShowLocation() ? 1 : 0));
 
   toolbar_right_ = gtk_hbox_new(FALSE, 0);
-
-  go_.reset(new GoButtonGtk(location_bar_.get(), browser_));
-  gtk_box_pack_start(GTK_BOX(toolbar_right_), go_->widget(), FALSE, FALSE, 0);
 
   if (!ShouldOnlyShowLocation()) {
     actions_toolbar_.reset(new BrowserActionsToolbarGtk(browser_));
@@ -255,7 +249,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
     gtk_widget_show(toolbar_);
     gtk_widget_show_all(location_hbox_);
     gtk_widget_hide(reload_->widget());
-    gtk_widget_hide(go_->widget());
   } else {
     gtk_widget_show_all(event_box_);
     if (actions_toolbar_->button_count() == 0)
@@ -279,7 +272,6 @@ void BrowserToolbarGtk::SetViewIDs() {
   ViewIDUtil::SetID(reload_->widget(), VIEW_ID_RELOAD_BUTTON);
   ViewIDUtil::SetID(home_->widget(), VIEW_ID_HOME_BUTTON);
   ViewIDUtil::SetID(location_bar_->widget(), VIEW_ID_LOCATION_BAR);
-  ViewIDUtil::SetID(go_->widget(), VIEW_ID_GO_BUTTON);
   if (page_menu_button_.get())
     ViewIDUtil::SetID(page_menu_button_.get(), VIEW_ID_PAGE_MENU);
   ViewIDUtil::SetID(app_menu_button_.get(), VIEW_ID_APP_MENU);
@@ -324,12 +316,6 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
       break;
     case IDC_FORWARD:
       widget = forward_->widget();
-      break;
-    case IDC_RELOAD:
-      widget = reload_->widget();
-      break;
-    case IDC_GO:
-      widget = go_->widget();
       break;
     case IDC_HOME:
       if (home_.get())
@@ -429,19 +415,6 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     }
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_),
         theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
-
-    // Update the spacing between the reload button and the location bar.
-    gtk_box_set_child_packing(
-        GTK_BOX(toolbar_), reload_->widget(),
-        FALSE, FALSE,
-        theme_provider_->UseGtkTheme() ? kToolbarWidgetSpacing : 0,
-        GTK_PACK_START);
-    gtk_box_set_child_packing(
-        GTK_BOX(toolbar_), location_hbox_,
-        TRUE, TRUE,
-        (theme_provider_->UseGtkTheme() ? kToolbarWidgetSpacing : 0) +
-        (ShouldOnlyShowLocation() ? 1 : 0),
-        GTK_PACK_START);
 
     // Force the height of the toolbar so we get the right amount of padding
     // above and below the location bar. We always force the size of the hboxes
@@ -705,29 +678,9 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button) {
     return;
   }
 
-  int command = -1;
-  GdkModifierType modifier_state;
-  gtk_get_current_event_state(&modifier_state);
-  guint modifier_state_uint = modifier_state;
-  if (button == reload_->widget()) {
-    if (modifier_state_uint & GDK_SHIFT_MASK) {
-      command = IDC_RELOAD_IGNORING_CACHE;
-      // Mask off shift so it isn't interpreted as affecting the disposition
-      // below.
-      modifier_state_uint &= ~GDK_SHIFT_MASK;
-    } else {
-      command = IDC_RELOAD;
-    }
-    if (event_utils::DispositionFromEventFlags(modifier_state_uint) ==
-        CURRENT_TAB)
-      location_bar_->Revert();
-  } else if (home_.get() && button == home_->widget()) {
-    command = IDC_HOME;
-  }
-
-  DCHECK_NE(command, -1) << "Unexpected button click callback";
-  browser_->ExecuteCommandWithDisposition(command,
-      event_utils::DispositionFromEventFlags(modifier_state_uint));
+  DCHECK(home_.get() && button == home_->widget()) <<
+      "Unexpected button click callback";
+  browser_->Home(gtk_util::DispositionForCurrentButtonPressEvent());
 }
 
 gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,

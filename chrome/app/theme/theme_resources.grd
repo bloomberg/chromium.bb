@@ -32,10 +32,6 @@
       <include name="IDR_FORWARD_D" file="forward_d.png" type="BINDATA" />
       <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
       <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
-      <include name="IDR_GO" file="go.png" type="BINDATA" />
-      <include name="IDR_GO_NOBORDER_CENTER" file="go_noborder_center.png" type="BINDATA" />
-      <include name="IDR_GO_H" file="go_h.png" type="BINDATA" />
-      <include name="IDR_GO_P" file="go_p.png" type="BINDATA" />
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG" file="locationbg.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="location_bar_keyword_search_c.png" type="BINDATA" />
@@ -140,7 +136,6 @@
       <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
       <include name="IDR_STOP" file="stop.png" type="BINDATA" />
-      <include name="IDR_STOP_NOBORDER_CENTER" file="stop_noborder_center.png" type="BINDATA" />
       <include name="IDR_STOP_H" file="stop_h.png" type="BINDATA" />
       <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
       <!-- The following (IDR_FIND_DLG_[LEFT|RIGHT|MIDDLE]_[BB]_BACKGROUND) are deprecated but are kept around for the Linux port -->
@@ -309,8 +304,6 @@
       <include name="IDR_FORWARD_MASK" file="forward_mask.png" type="BINDATA" />
       <include name="IDR_BACK_MASK" file="back_mask.png" type="BINDATA" />
       <include name="IDR_BUTTON_MASK" file="button_mask.png" type="BINDATA" />
-      <include name="IDR_RELOAD_MASK" file="reload_mask.png" type="BINDATA" />
-      <include name="IDR_GO_MASK" file="go_mask.png" type="BINDATA" />
 
       <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" type="BINDATA" />

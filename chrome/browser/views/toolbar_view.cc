@@ -74,7 +74,6 @@ ToolbarView::ToolbarView(Browser* browser)
       home_(NULL),
       reload_(NULL),
       location_bar_(NULL),
-      go_(NULL),
       browser_actions_(NULL),
       page_menu_(NULL),
       app_menu_(NULL),
@@ -92,7 +91,6 @@ ToolbarView::ToolbarView(Browser* browser)
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
-  browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
 
   display_mode_ = browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
       DISPLAYMODE_NORMAL : DISPLAYMODE_LOCATION;
@@ -154,22 +152,19 @@ void ToolbarView::Init(Profile* profile) {
   home_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_HOME));
   home_->SetID(VIEW_ID_HOME_BUTTON);
 
-  reload_ = new views::ImageButton(this);
+  // Have to create this before |reload_| as |reload_|'s constructor needs it.
+  location_bar_ = new LocationBarView(profile, browser_->command_updater(),
+      model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
+          LocationBarView::POPUP : LocationBarView::NORMAL);
+  location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
+
+  reload_ = new ReloadButton(location_bar_, browser_);
   reload_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
                                        views::Event::EF_MIDDLE_BUTTON_DOWN);
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
   reload_->SetID(VIEW_ID_RELOAD_BUTTON);
-
-  location_bar_ = new LocationBarView(profile, browser_->command_updater(),
-      model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
-          LocationBarView::POPUP : LocationBarView::NORMAL);
-  location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
-
-  go_ = new GoButton(location_bar_, browser_);
-  go_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_GO));
-  go_->SetID(VIEW_ID_GO_BUTTON);
 
   browser_actions_ = new BrowserActionsContainer(browser_, this, true);
 
@@ -203,7 +198,6 @@ void ToolbarView::Init(Profile* profile) {
   AddChildView(home_);
   AddChildView(reload_);
   AddChildView(location_bar_);
-  AddChildView(go_);
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
 
@@ -403,9 +397,6 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
     case IDC_HOME:
       button = home_;
       break;
-    case IDC_RELOAD:
-      button = reload_;
-      break;
   }
   if (button)
     button->SetEnabled(enabled);
@@ -417,31 +408,14 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 void ToolbarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
   int command = sender->tag();
-  int flags = sender->mouse_event_flags();
-  // Shift-clicking or Ctrl-clicking the reload button means we should ignore
-  // any cached content.
-  // TODO(avayvod): eliminate duplication of this logic in
-  // CompactLocationBarView.
-  if ((command == IDC_RELOAD) &&
-      (event.IsShiftDown() || event.IsControlDown())) {
-    command = IDC_RELOAD_IGNORING_CACHE;
-    // Mask off shift/ctrl so they aren't interpreted as affecting the
-    // disposition below.
-    flags &= ~(views::Event::EF_SHIFT_DOWN | views::Event::EF_CONTROL_DOWN);
-  }
   WindowOpenDisposition disposition =
-      event_utils::DispositionFromEventFlags(flags);
-  switch (command) {
-    case IDC_BACK:
-    case IDC_FORWARD:
-    case IDC_RELOAD:
-    case IDC_RELOAD_IGNORING_CACHE:
-      if (disposition == CURRENT_TAB) {
-        // Forcibly reset the location bar, since otherwise it won't discard any
-        // ongoing user edits, since it doesn't realize this is a user-initiated
-        // action.
-        location_bar_->Revert();
-      }
+      event_utils::DispositionFromEventFlags(sender->mouse_event_flags());
+  if ((disposition == CURRENT_TAB) &&
+      ((command == IDC_BACK) || (command == IDC_FORWARD))) {
+    // Forcibly reset the location bar, since otherwise it won't discard any
+    // ongoing user edits, since it doesn't realize this is a user-initiated
+    // action.
+    location_bar_->Revert();
   }
   browser_->ExecuteCommandWithDisposition(command, disposition);
 }
@@ -544,9 +518,8 @@ gfx::Size ToolbarView::GetPreferredSize() {
         forward_->GetPreferredSize().width() + kControlHorizOffset +
         (show_home_button_.GetValue() ?
             (home_->GetPreferredSize().width() + kControlHorizOffset) : 0) +
-        reload_->GetPreferredSize().width() +
+        reload_->GetPreferredSize().width() + kControlHorizOffset +
         browser_actions_->GetPreferredSize().width() +
-        go_->GetPreferredSize().width() +
         kMenuButtonOffset +
         (bookmark_menu_ ? bookmark_menu_->GetPreferredSize().width() : 0) +
         (page_menu_ ? page_menu_->GetPreferredSize().width() : 0) +
@@ -620,24 +593,21 @@ void ToolbarView::Layout() {
   reload_->SetBounds(home_->x() + home_->width() + kControlHorizOffset, child_y,
                      reload_->GetPreferredSize().width(), child_height);
 
-  int go_button_width = go_->GetPreferredSize().width();
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
   int page_menu_width =
       page_menu_ ? page_menu_->GetPreferredSize().width() : 0;
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int bookmark_menu_width = bookmark_menu_ ?
       bookmark_menu_->GetPreferredSize().width() : 0;
-  int location_x = reload_->x() + reload_->width();
+  int location_x = reload_->x() + reload_->width() + kControlHorizOffset;
   int available_width = width() - kPaddingRight - bookmark_menu_width -
       app_menu_width - page_menu_width - browser_actions_width -
-      kMenuButtonOffset - go_button_width - location_x;
+      kMenuButtonOffset - location_x;
 
   location_bar_->SetBounds(location_x, child_y, std::max(available_width, 0),
                            child_height);
-
-  go_->SetBounds(location_bar_->x() + location_bar_->width(), child_y,
-                 go_button_width, child_height);
-  int next_menu_x = go_->x() + go_->width() + kMenuButtonOffset;
+  int next_menu_x =
+      location_bar_->x() + location_bar_->width() + kMenuButtonOffset;
 
   browser_actions_->SetBounds(next_menu_x, 0, browser_actions_width, height());
   // The browser actions need to do a layout explicitly, because when an
@@ -737,20 +707,14 @@ void ToolbarView::LoadImages() {
       tp->GetBitmapNamed(IDR_RELOAD_H));
   reload_->SetImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_RELOAD_P));
-  reload_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_RELOAD_MASK));
-
-  go_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_GO));
-  go_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_GO_H));
-  go_->SetImage(views::CustomButton::BS_PUSHED, tp->GetBitmapNamed(IDR_GO_P));
-  go_->SetToggledImage(views::CustomButton::BS_NORMAL,
+  reload_->SetToggledImage(views::CustomButton::BS_NORMAL,
       tp->GetBitmapNamed(IDR_STOP));
-  go_->SetToggledImage(views::CustomButton::BS_HOT,
+  reload_->SetToggledImage(views::CustomButton::BS_HOT,
       tp->GetBitmapNamed(IDR_STOP_H));
-  go_->SetToggledImage(views::CustomButton::BS_PUSHED,
+  reload_->SetToggledImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_STOP_P));
-  go_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_GO_MASK));
+  reload_->SetBackground(color, background,
+      tp->GetBitmapNamed(IDR_BUTTON_MASK));
 
   // We use different menu button images if the locale is right-to-left.
   if (page_menu_) {

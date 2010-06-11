@@ -124,11 +124,6 @@ PageTransition::Type LocationBarViewMac::GetPageTransition() const {
 void LocationBarViewMac::AcceptInput() {
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  AcceptInputWithDisposition(disposition);
-}
-
-void LocationBarViewMac::AcceptInputWithDisposition(
-    WindowOpenDisposition disposition) {
   edit_view_->model()->AcceptInput(disposition, false);
 }
 

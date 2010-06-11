@@ -540,12 +540,7 @@ PageTransition::Type LocationBarViewGtk::GetPageTransition() const {
 }
 
 void LocationBarViewGtk::AcceptInput() {
-  AcceptInputWithDisposition(CURRENT_TAB);
-}
-
-void LocationBarViewGtk::AcceptInputWithDisposition(
-    WindowOpenDisposition disposition) {
-  location_entry_->model()->AcceptInput(disposition, false);
+  location_entry_->model()->AcceptInput(CURRENT_TAB, false);
 }
 
 void LocationBarViewGtk::FocusLocation(bool select_all) {

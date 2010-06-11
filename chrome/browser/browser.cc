@@ -1210,11 +1210,6 @@ void Browser::OpenCurrentURL() {
                  location_bar->GetPageTransition(), -1, true);
 }
 
-void Browser::Go(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(UserMetricsAction("Go"), profile_);
-  window_->GetLocationBar()->AcceptInputWithDisposition(disposition);
-}
-
 void Browser::Stop() {
   UserMetrics::RecordAction(UserMetricsAction("Stop"), profile_);
   GetSelectedTabContents()->Stop();
@@ -1874,7 +1869,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_RELOAD_IGNORING_CACHE: ReloadIgnoringCache(disposition); break;
     case IDC_HOME:                  Home(disposition);                break;
     case IDC_OPEN_CURRENT_URL:      OpenCurrentURL();                 break;
-    case IDC_GO:                    Go(disposition);                  break;
     case IDC_STOP:                  Stop();                           break;
 
      // Window management commands
@@ -2308,8 +2302,8 @@ void Browser::TabSelectedAt(TabContents* old_contents,
   // Propagate the profile to the location bar.
   UpdateToolbar(true);
 
-  // Update stop/go state.
-  UpdateStopGoState(new_contents->is_loading(), true);
+  // Update reload/stop state.
+  UpdateReloadStopState(new_contents->is_loading(), true);
 
   // Update commands to reflect current state.
   UpdateCommandsForTabState();
@@ -2475,7 +2469,7 @@ void Browser::LoadingStateChanged(TabContents* source) {
   window_->UpdateTitleBar();
 
   if (source == GetSelectedTabContents()) {
-    UpdateStopGoState(source->is_loading(), false);
+    UpdateReloadStopState(source->is_loading(), false);
     if (GetStatusBubble())
       GetStatusBubble()->SetStatus(GetSelectedTabContents()->GetStatusText());
 
@@ -3139,9 +3133,8 @@ void Browser::UpdateCommandsForTabState() {
 #endif
 }
 
-void Browser::UpdateStopGoState(bool is_loading, bool force) {
-  window_->UpdateStopGoState(is_loading, force);
-  command_updater_.UpdateCommandEnabled(IDC_GO, !is_loading);
+void Browser::UpdateReloadStopState(bool is_loading, bool force) {
+  window_->UpdateReloadStopState(is_loading, force);
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
 }
 

@@ -35,6 +35,10 @@ NSString* const kSearchButtonImageName = @"omnibox_search.pdf";
 
 - (void)awakeFromNib {
   [super awakeFromNib];
+  // TODO(shess): |goButton_| is no longer in |ToolbarController|.
+  // AFAICT this code partially implements a new feature (see
+  // http://crbug.com/44773) which may be in conflict with
+  // http://crbug.com/45762 .
   [goButton_ setImage:nsimage_cache::ImageNamed(kSearchButtonImageName)];
   [[locationBar_ autocompleteTextFieldCell] setStarIconView:nil];
 }

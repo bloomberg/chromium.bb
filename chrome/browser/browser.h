@@ -435,7 +435,6 @@ class Browser : public TabStripModelDelegate,
   void ReloadIgnoringCache(WindowOpenDisposition disposition);  // Shift-reload.
   void Home(WindowOpenDisposition disposition);
   void OpenCurrentURL();
-  void Go(WindowOpenDisposition disposition);
   void Stop();
   // Window management commands
   void NewWindow();
@@ -753,10 +752,10 @@ class Browser : public TabStripModelDelegate,
   // Update commands whose state depends on the tab's state.
   void UpdateCommandsForTabState();
 
-  // Ask the Stop/Go button to change its icon, and update the Go and Stop
-  // command states.  |is_loading| is true if the current TabContents is
-  // loading.  |force| is true if the button should change its icon immediately.
-  void UpdateStopGoState(bool is_loading, bool force);
+  // Ask the Reload/Stop button to change its icon, and update the Stop command
+  // state.  |is_loading| is true if the current TabContents is loading.
+  // |force| is true if the button should change its icon immediately.
+  void UpdateReloadStopState(bool is_loading, bool force);
 
   // UI update coalescing and handling ////////////////////////////////////////
 

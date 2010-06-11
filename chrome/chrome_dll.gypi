@@ -251,7 +251,6 @@
                 'app/theme/find_next_Template.pdf',
                 'app/theme/find_prev_Template.pdf',
                 'app/theme/forward_Template.pdf',
-                'app/theme/go_Template.pdf',
                 'app/theme/home_Template.pdf',
                 'app/theme/menu_chrome_rtl_Template.pdf',
                 'app/theme/menu_chrome_Template.pdf',
