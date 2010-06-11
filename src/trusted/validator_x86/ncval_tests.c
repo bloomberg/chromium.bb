@@ -32,11 +32,15 @@ void Info(const char *fmt, ...)
 struct NCValTestCase {
   char *name;
   char *description;
-  int sawfailure;
-  uint32_t instructions;
-  uint32_t illegalinst;
-  int testsize;
-  uint32_t vaddr;
+
+  /* Expected results: */
+  int sawfailure;        /* Whether code is expected to fail validation */
+  uint32_t illegalinst;  /* Expected number of disallowed instructions */
+  uint32_t instructions; /* Expected number of instructions (excluding final HLT) */
+
+  /* Input to validator: */
+  uint32_t vaddr;        /* Load address (shouldn't matter) */
+  int testsize;          /* Number of bytes of code */
   uint8_t *testbytes;
 };
 
@@ -44,7 +48,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 1",
     "a first very simple test with an illegal inst.",
-    1, 9, 1, 26, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 9,
+    /* vaddr= */ 0x80000000, /* testsize= */ 26,
     (uint8_t *)
     "\x55"                              /* push   %ebp                     */
     "\x89\xe5"                          /* mov    %esp,%ebp                */
@@ -59,7 +65,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 2",
     "like test 1 but no illegal inst",
-    1, 9, 0, 26, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 9,
+    /* vaddr= */ 0x80000000, /* testsize= */ 26,
     (uint8_t *)
     "\x55"                              /* push   %ebp                     */
     "\x89\xe5"                          /* mov    %esp,%ebp                */
@@ -74,7 +82,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 4",
     "a longer simple test with a bad jump target",
-    1, 90, 0, 336, 0x8054600,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 90,
+    /* vaddr= */ 0x8054600, /* testsize= */ 336,
     (uint8_t *)
     "\x8d\x4c\x24\x04"                  /* lea    0x4(%esp),%ecx           */
     "\x83\xe4\xf0"                      /* and    $0xfffffff0,%esp         */
@@ -171,7 +181,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 5",
     "a big chunk of code whose origin is not clear",
-    0, 90, 0, 336, 0x8054600,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 90,
+    /* vaddr= */ 0x8054600, /* testsize= */ 336,
     (uint8_t *)
     "\x8d\x4c\x24\x04"                  /* lea    0x4(%esp),%ecx           */
     "\x83\xe4\xf0"                      /* and    $0xfffffff0,%esp         */
@@ -268,7 +280,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 6",
     "test 6: 3c 25   cmp %al, $I",
-    0, 7, 0, 9, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 9,
     (uint8_t *)
     "\x3c\x25"                          /* cmp    $0x25,%al                */
     "\x90\x90\x90\x90\x90\x90\xf4"
@@ -276,14 +290,18 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 7",
     "test 7: group2, three byte move",
-    0, 8, 0, 13, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 8,
+    /* vaddr= */ 0x80000000, /* testsize= */ 13,
     (uint8_t *)"\xc1\xf9\x1f\x89\x4d\xe4"
     "\x90\x90\x90\x90\x90\x90\xf4"
   },
   {
     "test 8",
     "test 8: five byte move",
-    0, 7, 0, 12, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 12,
     (uint8_t *)
     "\xc6\x44\x05\xd6\x00"              /* movb   $0x0,-0x2a(%ebp,%eax,1)  */
     "\x90\x90\x90\x90\x90\x90\xf4"
@@ -291,7 +309,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 9",
     "test 9: seven byte control transfer, unprotected",
-    1, 7, 0, 14, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 14,
     (uint8_t *)
     "\xff\x24\x95\xc8\x6e\x05\x08"      /* jmp    *0x8056ec8(,%edx,4)      */
     "\x90\x90\x90\x90\x90\x90\xf4"
@@ -299,7 +319,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 10",
     "test 10: eight byte bts instruction",
-    1, 7, 1, 15, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 15,
     (uint8_t *)
     "\x0f\xab\x14\x85\x40\xfb\x27\x08"  /* bts    %edx,0x827fb40(,%eax,4)  */
     "\x90\x90\x90\x90\x90\x90\xf4",
@@ -307,7 +329,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 11",
     "test 11: four byte move",
-    0, 7, 0, 11, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 11,
     (uint8_t *)
     "\x66\xbf\x08\x00"                  /* mov    $0x8,%di                 */
     "\x90\x90\x90\x90\x90\x90\xf4",
@@ -315,7 +339,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 12",
     "test 12: five byte movsx",
-    0, 7, 0, 12, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 12,
     (uint8_t *)
     "\x66\x0f\xbe\x04\x10"              /* movsbw (%eax,%edx,1),%ax        */
     "\x90\x90\x90\x90\x90\x90\xf4"
@@ -323,7 +349,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 13",
     "test 13: eight byte bts instruction, missing full stop",
-    1, 7, 1, 15, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 15,
     (uint8_t *)
     "\x0f\xab\x14\x85\x40\xfb\x27\x08"  /* bts    %edx,0x827fb40(,%eax,4)  */
     "\x90\x90\x90\x90\x90\x90\x90",
@@ -332,7 +360,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 14",
     "test 14: ldmxcsr, stmxcsr",
-    1, 10, 2, 15, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 10,
+    /* vaddr= */ 0x80000000, /* testsize= */ 15,
     (uint8_t *)"\x90\x0f\xae\x10\x90\x0f\xae\x18"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
@@ -340,7 +370,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 15",
     "test 15: invalid instruction",
-    1, 8, 1, 11, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 8,
+    /* vaddr= */ 0x80000000, /* testsize= */ 11,
     (uint8_t *)"\x90\x0f\xae\x21"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
@@ -348,14 +380,18 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 16",
     "test 16: lfence",
-    0, 8, 0, 11, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 8,
+    /* vaddr= */ 0x80000000, /* testsize= */ 11,
     (uint8_t *)"\x90\x0f\xae\xef"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
   {
     "test 17",
     "test 17: lock cmpxchg",
-    0, 4, 0, 12, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 12,
     (uint8_t *)
     "\xf0\x0f\xb1\x8f\xa8\x01\x00\x00"  /* lock cmpxchg %ecx,0x1a8(%edi)   */
     "\x90\x90\x90\xf4",
@@ -363,247 +399,329 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 18",
     "test 18: loop branch into overlapping instruction",
-    1, 3, 1, 10, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 10,
     (uint8_t *)"\xbb\x90\x40\xcd\x80\x85\xc0\xe1\xf8\xf4",
   },
   {
     "test 19",
     "test 19: aad test",
-    1, 5, 2, 15, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 5,
+    /* vaddr= */ 0x80000000, /* testsize= */ 15,
     (uint8_t *)"\x68\x8a\x80\x04\x08\xd5\xb0\xc3\x90\xbb\x90\x40\xcd\x80\xf4"
   },
   {
     "test 20",
     "test 20: addr16 lea",
-    1, 5, 2, 19, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 5,
+    /* vaddr= */ 0x80000000, /* testsize= */ 19,
     (uint8_t *)"\x68\x8e\x80\x04\x08\x66\x67\x8d\x98\xff\xff\xc3\x90\xbb\x90\x40\xcd\x80\xf4"
   },
   {
     "test 21",
     "test 21: aam",
-    1, 4, 2, 14, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 14,
     (uint8_t *)"\x68\x89\x80\x04\x08\xd4\xb0\xc3\xbb\x90\x40\xcd\xf4",
   },
   {
     "test 22",
     "test 22: pshufw",
-    1, 4, 1, 16, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 16,
     (uint8_t *)"\x68\x8b\x80\x04\x08\x0f\x70\xca\xb3\xc3\xbb\x90\x40\xcd\x80\xf4",
   },
   {
     "test 23",
     "test 23: 14-byte nacljmp using eax",
-    1, 3, 0, 15, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 15,
     (uint8_t *)"\x81\xe0\xff\xff\xff\xff\x81\xc8\x00\x00\x00\x00\xff\xd0\xf4",
   },
   {
     "test 24",
     "test 24: 5-byte nacljmp",
-    0, 2, 0, 6, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 6,
     (uint8_t *)"\x83\xe0\xf0\xff\xe0\xf4",
   },
   {
     "test 25",
     "test 25: 0xe3 jmp",
-    1, 1, 1, 3, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 3,
     (uint8_t *)"\xe3\x00\xf4",
   },
   {
     "test 26",
     "test 26: 0xe9 jmp, nop",
-    0, 2, 0, 7, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\xe9\x00\x00\x00\x00\x90\xf4",
   },
   {
     "test 27",
     "test 27: 0xf0 0x80 jmp, nop",
-    0, 2, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x0f\x80\x00\x00\x00\x00\x90\xf4",
   },
   {
     "test 28",
     "test 28: 0xe9 jmp",
-    1, 1, 0, 6, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 6,
     (uint8_t *)"\xe9\x00\x00\x00\x00\xf4",
   },
   {
     "test 30",
     "test 30: addr16 lea ret",
-    1, 3, 2, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x67\x8d\xb4\x9a\x40\xc3\x90\xf4",
   },
   {
     "test 31",
     "test 31: repz movsbl",
-    1, 3, 2, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\xf3\x0f\xbe\x40\xd0\xc3\x90\xf4",
   },
   {
     "test 32",
     "test 32: infinite loop",
-    0, 1, 0, 3, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 3,
     (uint8_t *)"\x7f\xfe\xf4",
   },
   {
     "test 33",
     "test 33: bad branch",
-    1, 1, 0, 3, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 3,
     (uint8_t *)"\x7f\xfd\xf4",
   },
   {
     "test 34",
     "test 34: bad branch",
-    1, 1, 0, 3, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 3,
     (uint8_t *)"\x7f\xff\xf4",
   },
   {
     "test 35",
     "test 35: bad branch",
-    1, 1, 0, 3, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 3,
     (uint8_t *)"\x7f\x00\xf4",
   },
   {
     "test 36",
     "test 36: bad branch",
-    1, 1, 0, 3, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 3,
     (uint8_t *)"\x7f\x01\xf4",
   },
   {
     "test 37",
     "test 37: bad branch",
-    1, 1, 0, 3, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x80000000, /* testsize= */ 3,
     (uint8_t *)"\x7f\x02\xf4",
   },
   {
     "test 38",
     "test 38: intc",
-    1, 10, 8, 18, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 8,
+    /* instructions= */ 10,
+    /* vaddr= */ 0x80000000, /* testsize= */ 18,
     (uint8_t *)"\x66\xeb\x1b\x31\x51\x3d\xef\xcc\x2f\x36\x48\x6e\x44\x2e\xcc\x14\xf4\xf4",
   },
   {
     "test 39",
     "test 39: bad branch",
-    1, 7, 2, 18, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 18,
     (uint8_t *)"\x67\x8d\x1d\x22\xa0\x05\xe3\x7b\x9c\xdb\x08\x04\xb1\x90\xed\x12\xf4\xf4",
   },
   {
     "test 40",
     "test 40: more addr16 problems",
-    1, 4, 2, 9, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 9,
     (uint8_t *)"\x67\xa0\x00\x00\xcd\x80\x90\x90\xf4",
   },
   {
     "test 41",
     "test 41: the latest non-bug from hcf",
-    1, 5, 1, 17, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 5,
+    /* vaddr= */ 0x80000000, /* testsize= */ 17,
     (uint8_t *)"\x84\xd4\x04\x53\xa0\x04\x6a\x5a\x20\xcc\xb8\x48\x03\x2b\x96\x11\xf4"
   },
   {
     "test 42",
     "test 42: another case from hcf",
-    1, 7, 1, 17, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 17,
     (uint8_t *)"\x45\x7f\x89\x58\x94\x04\x24\x1b\xc3\xe2\x6f\x1a\x94\x87\x8f\x0b\xf4",
   },
   {
     "test 43",
     "test 43: too many prefix bytes",
-    1, 2, 1, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x66\x66\x66\x00\x00\x90\xf4"
   },
   {
     "test 44",
     "test 44: palignr (SSSE3)",
-    0, 2, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x0f\x3a\x0f\xd0\xc0\x90\xf4"
   },
   {
     "test 45",
     "test 45: undefined inst in 3-byte opcode space",
-    1, 2, 2, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x0f\x39\x0f\xd0\xc0\x90\xf4"
   },
   {
     "test 46",
     "test 46: SSE2x near miss",
-    1, 2, 1, 7, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x66\x0f\x73\x00\x00\x90\xf4"
   },
   {
     "test 47",
     "test 47: SSE2x",
-    0, 2, 0, 7, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x66\x0f\x73\xff\x00\x90\xf4"
   },
   {
     "test 48",
     "test 48: SSE2x, missing required prefix byte",
-    1, 2, 1, 6, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 6,
     (uint8_t *)"\x0f\x73\xff\x00\x90\xf4"
   },
   {
     "test 49",
     "test 49: 3DNow example",
-    0, 2, 0, 7, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x0f\x0f\x46\x01\xbf\x90\xf4"
   },
   {
     "test 50",
     "test 50: 3DNow error example 1",
-    1, 2, 1, 7, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x0f\x0f\x46\x01\x00\x90\xf4"
   },
   {
     "test 51",
     "test 51: 3DNow error example 2",
-    1, 0, 0, 5, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 0,
+    /* vaddr= */ 0x80000000, /* testsize= */ 5,
     (uint8_t *)"\x0f\x0f\x46\x01\xf4"
   },
   {
     "test 52",
     "test 52: 3DNow error example 3",
-    1, 2, 1, 7, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x0f\x0f\x46\x01\xbe\x90\xf4"
   },
   {
     "test 53",
     "test 53: 3DNow error example 4",
-    1, 2, 1, 7, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x0f\x0f\x46\x01\xaf\x90\xf4"
   },
   {
     "test 54",
     "test 54: SSE4",
-    0, 2, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x0f\x3a\x0e\xd0\xc0\x90\xf4"
   },
   {
     "test 55",
     "test 55: SSE4",
-    0, 3, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x0f\x38\x0a\xd0\x90\x90\xf4"
   },
   {
     "test 56",
     "test 56: incb decb",
-    0, 3, 0, 14, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 14,
     (uint8_t *)"\xfe\x85\x4f\xfd\xff\xff\xfe\x8d\x73\xfd\xff\xff\x90\xf4",
   },
   {
     "test 57",
     "test 57: lzcnt",
-    0, 2, 0, 6, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 6,
     (uint8_t *)"\xf3\x0f\xbd\x00\x90\xf4",
   },
   {
     "test 58",
     "test 58: fldz",
-    0, 2, 0, 4, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 4,
     (uint8_t *)"\xd9\xee\x90\xf4",
   },
   {
     "test 59",
     "test 59: x87",
-    0, 7, 0, 25, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 25,
     (uint8_t *)
     "\xdd\x9c\xfd\xb0\xfe\xff\xff"      /* fstpl  -0x150(%ebp,%edi,8)      */
     "\xdd\x9d\x40\xff\xff\xff"          /* fstpl  -0xc0(%ebp)              */
@@ -616,7 +734,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 60",
     "test 60: x87 bad instructions",
-    1, 19, 9, 40, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 9,
+    /* instructions= */ 19,
+    /* vaddr= */ 0x80000000, /* testsize= */ 40,
     (uint8_t *)
     "\xdd\xcc"                          /* (bad)                           */
     "\xdd\xc0"                          /* ffree  %st(0)                   */
@@ -641,7 +761,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 61",
     "test 61: 3DNow prefetch",
-    0, 2, 0, 5, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 5,
     (uint8_t *)
     "\x0f\x0d\x00"                      /* prefetch (%eax)                 */
     "\x90\xf4",
@@ -649,7 +771,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 61.1",
     "test 61.1: F2 0F ...",
-    1, 3, 1, 13, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 13,
     (uint8_t *)"\xf2\x0f\x48\x0f\x48\xa4\x52"
     "\xf2\x0f\x10\xc8"                  /* movsd  %xmm0,%xmm1              */
     "\x90\xf4",
@@ -657,7 +781,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 62",
     "test 62: f6/f7 test Ib/Iv ...",
-    0, 10, 0, 28, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 10,
+    /* vaddr= */ 0x80000000, /* testsize= */ 28,
     (uint8_t *)
     "\xf6\xc1\xff"                      /* test   $0xff,%cl                */
     "\xf6\x44\x43\x01\x02"              /* testb  $0x2,0x1(%ebx,%eax,2)    */
@@ -669,7 +795,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 63",
     "test 63: addr16 corner cases ...",
-    1, 5, 4, 17, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 4,
+    /* instructions= */ 5,
+    /* vaddr= */ 0x80000000, /* testsize= */ 17,
     (uint8_t *)
     "\x67\x01\x00"                      /* addr16 add %eax,(%bx,%si)       */
     "\x67\x01\x40\x00"                  /* addr16 add %eax,0x0(%bx,%si)    */
@@ -680,13 +808,17 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 64",
     "test 64: text starts with indirect jmp ...",
-    1, 2, 0, 4, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 4,
     (uint8_t *)"\xff\xd0\x90\xf4"
   },
   {
     "test 65",
     "test 65: nacljmp crosses 32-byte boundary ...",
-    1, 32, 0, 36, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 32,
+    /* vaddr= */ 0x80000000, /* testsize= */ 36,
     (uint8_t *)"\x90\x90\x90\x90\x90\x90\x90\x90"
     "\x90\x90\x90\x90\x90\x90\x90\x90"
     "\x90\x90\x90\x90\x90\x90\x90\x90"
@@ -697,86 +829,114 @@ struct NCValTestCase NCValTests[] = {
     /* I think this is currently NACLi_ILLEGAL */
     "test 65",
     "test 65: fxsave",
-    1, 2, 1, 10, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 10,
     (uint8_t *)"\x0f\xae\x00\x00\x90\x90\x90\x90\x90\xf4"
   },
   {
     "test 66",
     "test 66: NACLi_CMPXCHG8B",
-    0, 2, 0, 6, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 6,
     (uint8_t *)"\xf0\x0f\xc7\010\x90\xf4"
   },
   {
     "test 67",
     "test 67: NACLi_FCMOV",
-    0, 7, 0, 10, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 7,
+    /* vaddr= */ 0x80000000, /* testsize= */ 10,
     (uint8_t *)"\xda\xc0\x00\x00\x90\x90\x90\x90\x90\xf4"
   },
   {
     "test 68",
     "test 68: NACLi_MMX",
-    0, 4, 0, 7, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x0f\x60\x00\x90\x90\x90\xf4"
   },
   {
     "test 69",
     "test 69: NACLi_SSE",
-    0, 2, 0, 9, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 9,
     (uint8_t *)"\x0f\x5e\x90\x90\x90\x90\x90\x90\xf4"
   },
   {
     "test 70",
     "test 70: NACLi_SSE2",
-    0, 4, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x0f\x60\x00\x90\x90\x90\xf4"
   },
   {
     "test 71",
     "test 71: NACLi_SSE3",
-    0, 4, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x0f\x7d\x00\x90\x90\x90\xf4"
   },
   {
     "test 72",
     "test 72: NACLi_SSE4A",
-    0, 4, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\xf2\x0f\x79\x00\x90\x90\x90\xf4"
   },
   {
     "test 73",
     "test 73: NACLi_POPCNT",
-    0, 2, 0, 6, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 6,
     (uint8_t *)"\xf3\x0f\xb8\x00\x90\xf4"
   },
   {
     "test 74",
     "test 74: NACLi_E3DNOW",
-    0, 2, 0, 7, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x0f\x0f\x46\x01\xbb\x90\xf4"
   },
   {
     "test 75",
     "test 75: NACLi_MMXSSE2",
-    0, 2, 0, 7, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x66\x0f\x71\xf6\x00\x90\xf4",
   },
   {
     "test 76",
     "test 76: mov eax, ss",
-    1, 4, 4, 9, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 4,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 9,
     (uint8_t *)"\x8e\xd0\x8c\xd0\x66\x8c\xd0\x90\xf4",
   },
   {
     "test 77",
     "test 77: call esp",
-    1, 3, 0, 7, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 7,
     (uint8_t *)"\x83\xe4\xf0\xff\xd4\x90\xf4",
   },
   /* code.google.com issue 23 reported by defend.the.world on 11 Dec 2008 */
   {
     "test 78",
     "test 78: call (*edx)",
-    1, 30, 0, 34, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 30,
+    /* vaddr= */ 0x80000000, /* testsize= */ 34,
     (uint8_t *)
     "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
     "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
@@ -787,7 +947,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 79",
     "test 79: call *edx",
-    0, 30, 0, 34, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 30,
+    /* vaddr= */ 0x80000000, /* testsize= */ 34,
     (uint8_t *)
     "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
     "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
@@ -798,7 +960,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 80",
     "test 80: roundss",
-    0, 3, 0, 9, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 9,
     (uint8_t *)
     "\x66\x0f\x3a\x0a\xc0\x00"          /* roundss $0x0,%xmm0,%xmm0        */
     "\x90\x90"
@@ -807,7 +971,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 81",
     "test 81: crc32",
-    0, 3, 0, 8, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)
     "\xf2\x0f\x38\xf1\xc8"              /* crc32l %eax,%ecx                */
     "\x90\x90"
@@ -816,25 +982,33 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 82",
     "test 82: SSE4 error 1",
-    1, 4, 2, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\xf3\x0f\x3a\x0e\xd0\xc0\x90\xf4"
   },
   {
     "test 83",
     "test 83: SSE4 error 2",
-    1, 2, 2, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 2,
+    /* instructions= */ 2,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\xf3\x0f\x38\x0f\xd0\xc0\x90\xf4"
   },
   {
     "test 84",
     "test 84: SSE4 error 3",
-    1, 3, 1, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)"\x66\x0f\x38\x0f\xd0\xc0\x90\xf4"
   },
   {
     "test 85",
     "test 85: SSE4 error 4",
-    1, 3, 1, 10, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 10,
     (uint8_t *)"\xf2\x66\x0f\x3a\x0a\xc0\x00"
     "\x90\x90"
     "\xf4"                              /* hlt                             */
@@ -842,7 +1016,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 86",
     "test 86: bad SSE4 crc32",
-    1, 3, 1, 9, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 9,
     (uint8_t *)"\xf2\xf3\x0f\x38\xf1\xc8"
     "\x90\x90"
     "\xf4"                              /* hlt                             */
@@ -850,7 +1026,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 87",
     "test 87: bad NACLi_3BYTE instruction (SEGCS prefix)",
-    1, 3, 1, 13, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 3,
+    /* vaddr= */ 0x80000000, /* testsize= */ 13,
     (uint8_t *)"\x2e\x0f\x3a\x7d\xbb\xab\x00\x00\x00\x00"
     "\x90\x90"
     "\xf4"                              /* hlt                             */
@@ -858,7 +1036,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 88",
     "test 88: two-byte jump with prefix (bug reported by Mark Dowd)",
-    1, 4, 1, 8, 0x80000000,
+    /* sawfailure= */ 1, /* illegalinst= */ 1,
+    /* instructions= */ 4,
+    /* vaddr= */ 0x80000000, /* testsize= */ 8,
     (uint8_t *)
     "\x66\x0f\x84\x00\x00"              /* data16 je 0x5                   */
     "\x90\x90"
@@ -867,21 +1047,27 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 89",
     "test 89: sfence",
-    0, 8, 0, 11, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 8,
+    /* vaddr= */ 0x80000000, /* testsize= */ 11,
     (uint8_t *)"\x90\x0f\xae\xff"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
   {
     "test 90",
     "test 90: clflush",
-    0, 8, 0, 11, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 8,
+    /* vaddr= */ 0x80000000, /* testsize= */ 11,
     (uint8_t *)"\x90\x0f\xae\x3f"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
   {
     "test 91",
     "test 91: mfence",
-    0, 8, 0, 11, 0x80000000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 8,
+    /* vaddr= */ 0x80000000, /* testsize= */ 11,
     (uint8_t *)"\x90\x0f\xae\xf7"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
@@ -890,7 +1076,9 @@ struct NCValTestCase NCValTests[] = {
     "test 92: jump to zero should be allowed",
     /* A jump/call to a zero address will be emitted for a jump/call
        to a weak symbol that is undefined. */
-    0, 1, 0, 6, 0x08049000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x08049000, /* testsize= */ 6,
     (uint8_t *)
     "\xe9\xfb\x6f\xfb\xf7"              /* jmp    0                        */
     "\xf4"                              /* hlt                             */
@@ -898,7 +1086,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 93",
     "test 93: jump to bundle-aligned zero page address is currently allowed",
-    0, 1, 0, 6, 0x08049000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x08049000, /* testsize= */ 6,
     (uint8_t *)
     "\xe9\xfb\x70\xfb\xf7"              /* jmp    100                      */
     "\xf4"                              /* hlt                             */
@@ -906,7 +1096,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 94",
     "test 94: jump to syscall trampoline should be allowed",
-    0, 1, 0, 6, 0x08049000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x08049000, /* testsize= */ 6,
     (uint8_t *)
     "\xe9\xfb\x6f\xfc\xf7"              /* jmp    10000                    */
     "\xf4"                              /* hlt                             */
@@ -914,7 +1106,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 95",
     "test 95: unaligned jump to trampoline area must be disallowed",
-    1, 1, 0, 6, 0x08049000,
+    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x08049000, /* testsize= */ 6,
     (uint8_t *)
     "\xe9\xfc\x6f\xfc\xf7"              /* jmp    10001                    */
     "\xf4"                              /* hlt                             */
@@ -922,7 +1116,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 96",
     "test 96: bundle-aligned jump to before the code chunk is allowed",
-    0, 1, 0, 6, 0x08049000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x08049000, /* testsize= */ 6,
     (uint8_t *)
     "\xe9\xfb\x6f\xfb\xf8"              /* jmp    1000000                  */
     "\xf4"                              /* hlt                             */
@@ -930,7 +1126,9 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 97",
     "test 97: bundle-aligned jump to after the code chunk is allowed",
-    0, 1, 0, 6, 0x08049000,
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
+    /* instructions= */ 1,
+    /* vaddr= */ 0x08049000, /* testsize= */ 6,
     (uint8_t *)
     "\xe9\xfb\x6f\xfb\x07"              /* jmp    10000000                 */
     "\xf4"                              /* hlt                             */
