@@ -27,15 +27,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "libxml/globals.h"
 
-#if defined(OS_MACOSX)
-// These tests crash frequently on Mac 10.5 Tests debug. http://crbug.com/26035.
-#define MAYBE_TestBlacklistDownloading DISABLED_TestBlacklistDownloading
-#define MAYBE_TestBlacklistUpdateCheckRequests DISABLED_TestBlacklistUpdateCheckRequests
-#else
-#define MAYBE_TestBlacklistDownloading TestBlacklistDownloading
-#define MAYBE_TestBlacklistUpdateCheckRequests TestBlacklistUpdateCheckRequests
-#endif
-
 using base::Time;
 using base::TimeDelta;
 
@@ -830,7 +821,7 @@ TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequestsPending) {
 }
 
 // This test is disabled on Mac, see http://crbug.com/26035.
-TEST(ExtensionUpdaterTest, MAYBE_TestBlacklistUpdateCheckRequests) {
+TEST(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
   ExtensionUpdaterTest::TestBlacklistUpdateCheckRequests();
 }
 
@@ -855,7 +846,7 @@ TEST(ExtensionUpdaterTest, TestSingleExtensionDownloadingPending) {
 }
 
 // This test is disabled on Mac, see http://crbug.com/26035.
-TEST(ExtensionUpdaterTest, MAYBE_TestBlacklistDownloading) {
+TEST(ExtensionUpdaterTest, TestBlacklistDownloading) {
   ExtensionUpdaterTest::TestBlacklistDownloading();
 }
 
