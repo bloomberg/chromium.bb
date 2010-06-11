@@ -29,7 +29,6 @@ class WmIpc {
     ATOM_STRING,
     ATOM_UTF8_STRING,
     ATOM_WM_S0,
-    ATOM_WM_SYSTEM_METRICS,
     kNumAtoms,
   };
 
@@ -101,10 +100,6 @@ class WmIpc {
   // If |event| is a valid Message it is decoded into |msg| and true is
   // returned. If false is returned, |event| is not a valid Message.
   bool DecodeMessage(const GdkEventClient& event, Message* msg);
-
-  // If |event| is a valid StringMessage it is decoded into |msg| and true is
-  // returned. If false is returned, |event| is not a valid StringMessage.
-  bool DecodeStringMessage(const GdkEventProperty& event, std::string* msg);
 
   // Handles ClientMessage events that weren't decodable using DecodeMessage().
   // Specifically, this catches messages about the WM_S0 selection that get sent
