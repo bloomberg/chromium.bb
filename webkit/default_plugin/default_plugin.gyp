@@ -43,7 +43,6 @@
               'libraries': ['-lurlmon.lib'],
             },
             'sources': [
-              'default_plugin.cc',
               'default_plugin_resources.h',
               'install_dialog.cc',
               'install_dialog.h',
