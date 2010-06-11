@@ -9,6 +9,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
+#include "webkit/glue/plugins/plugin_switches.h"
 
 namespace {
 
@@ -46,6 +47,10 @@ class PPAPITest : public UITest {
 
     // The test sends us the result via a cookie.
     launch_arguments_.AppendSwitch(switches::kEnableFileCookies);
+
+    // Some stuff is hung off of the testing interface which is not enabled
+    // by default.
+    launch_arguments_.AppendSwitch(switches::kEnablePepperTesting);
   }
 
   void RunTest(const FilePath::StringType& test_file_name) {
