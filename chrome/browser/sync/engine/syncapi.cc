@@ -1452,6 +1452,12 @@ void SyncManager::Shutdown() {
 }
 
 void SyncManager::SyncInternal::Shutdown() {
+  // We NULL out talk_mediator_ so that any tasks pumped below do not
+  // trigger further XMPP actions.
+  //
+  // TODO(akalin): NULL the other member variables defensively, too.
+  scoped_ptr<TalkMediator> talk_mediator(talk_mediator_.release());
+
   // First reset the AuthWatcher in case an auth attempt is in progress so that
   // it terminates gracefully before we shutdown and close other components.
   // Otherwise the attempt can complete after we've closed the directory, for
@@ -1471,11 +1477,11 @@ void SyncManager::SyncInternal::Shutdown() {
   }
 
   // Shutdown the xmpp buzz connection.
-  if (talk_mediator()) {
+  if (talk_mediator.get()) {
     LOG(INFO) << "P2P: Mediator logout started.";
-    talk_mediator()->Logout();
+    talk_mediator->Logout();
     LOG(INFO) << "P2P: Mediator logout completed.";
-    talk_mediator_.reset();
+    talk_mediator.reset();
     LOG(INFO) << "P2P: Mediator destroyed.";
   }
 
