@@ -82,7 +82,7 @@
 # 15  Verification failed
 # 16  Could not set mode (permissions)
 # 17  Could not set modification time
-# 18  Invalid regular expression
+# 18  Invalid regular expression (irregular expression?)
 
 set -eu
 
@@ -361,9 +361,8 @@ verify_patch_dir() {
   # rsync will print a line for any file, directory, or symbolic link that
   # differs or exists only in one directory. As used here, it correctly
   # considers link targets, file contents, permissions, and timestamps.
-  local rsync_output
-  rsync_command=(rsync -clprt --delete --out-format=%n \
-                 "${new_dir}/" "${verify_dir}")
+  local rsync_command=(rsync -clprt --delete --out-format=%n \
+                       "${new_dir}/" "${verify_dir}")
   if [[ ${#g_verify_exclude[@]} -gt 0 ]]; then
     local exclude
     for exclude in "${g_verify_exclude[@]}"; do
@@ -375,6 +374,7 @@ verify_patch_dir() {
     done
   fi
 
+  local rsync_output
   if ! rsync_output="$("${rsync_command[@]}")"; then
     err "rsync for verification failed"
     exit 15
