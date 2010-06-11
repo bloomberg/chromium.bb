@@ -1433,6 +1433,9 @@
           'variables': {
             'repack_path': '../tools/data_pack/repack.py',
           },
+          'dependencies': [
+            'chrome_extra_resources',
+          ],
           'actions': [
             {
               'action_name': 'repack_resources',
