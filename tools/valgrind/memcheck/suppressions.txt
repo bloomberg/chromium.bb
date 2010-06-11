@@ -2969,7 +2969,7 @@
    Memcheck:Addr4
    fun:event_del
    ...
-   fun:_ZN61MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
+   fun:*FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
 }
 
 {
