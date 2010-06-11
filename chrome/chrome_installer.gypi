@@ -777,23 +777,22 @@
                   # use to sign the .app bundle.
                   'action_name': 'Make sign.sh',
                   'variables': {
-                    'make_sign_sh_path': 'installer/mac/make_sign_sh',
-                    'sign_sh_in_path': 'installer/mac/sign.sh.in',
-                    'app_resource_rules_in_path':
-                        'installer/mac/app_resource_rules.plist.in',
+                    'make_signers_sh_path': 'installer/mac/make_signers.sh',
                   },
                   'inputs': [
-                    '<(make_sign_sh_path)',
-                    '<(sign_sh_in_path)',
-                    '<(app_resource_rules_in_path)',
+                    '<(make_signers_sh_path)',
+                    'installer/mac/sign_app.sh.in',
+                    'installer/mac/sign_versioned_dir.sh.in',
+                    'installer/mac/app_resource_rules.plist.in',
                     '<(version_path)',
                   ],
                   'outputs': [
-                    '<(mac_packaging_dir)/sign.sh',
+                    '<(mac_packaging_dir)/sign_app.sh',
+                    '<(mac_packaging_dir)/sign_versioned_dir.sh',
                     '<(mac_packaging_dir)/app_resource_rules.plist',
                   ],
                   'action': [
-                    '<(make_sign_sh_path)',
+                    '<(make_signers_sh_path)',
                     '<(mac_packaging_sh_dir)',
                     '<(mac_product_name)',
                     '<(version_full)',
