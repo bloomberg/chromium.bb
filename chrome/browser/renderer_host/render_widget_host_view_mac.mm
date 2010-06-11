@@ -330,10 +330,18 @@ void RenderWidgetHostViewMac::IMEUpdateStatus(int control,
   [cocoa_view_ setCaretRect:[cocoa_view_ RectToNSRect:caret_rect]];
 }
 
-void RenderWidgetHostViewMac::DidPaintBackingStoreRects(
-    const std::vector<gfx::Rect>& rects) {
+void RenderWidgetHostViewMac::DidUpdateBackingStore(
+    const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
+    const std::vector<gfx::Rect>& copy_rects) {
   if (is_hidden_)
     return;
+
+  std::vector<gfx::Rect> rects(copy_rects);
+
+  // Because the findbar might be open, we cannot use scrollRect:by: here.  For
+  // now, simply mark all of scroll rect as dirty.
+  if (!scroll_rect.IsEmpty())
+    rects.push_back(scroll_rect);
 
   for (size_t i = 0; i < rects.size(); ++i) {
     NSRect ns_rect = [cocoa_view_ RectToNSRect:rects[i]];
@@ -364,21 +372,6 @@ void RenderWidgetHostViewMac::DidPaintBackingStoreRects(
 
   if (!about_to_validate_and_paint_)
     [cocoa_view_ displayIfNeeded];
-}
-
-void RenderWidgetHostViewMac::DidScrollBackingStoreRect(const gfx::Rect& rect,
-                                                        int dx, int dy) {
-  if (is_hidden_)
-    return;
-
-  // Because the findbar might be open, we cannot use scrollRect:by: here.  We
-  // also cannot force a synchronous paint because we are about to get a call to
-  // DidPaintBackingStoreRects() for the newly-exposed regions of the view, and
-  // painting twice per scroll is wasteful and could push us above the 60Hz
-  // update limit.  For now, simply mark all of |cocoa_view_| as dirty.  The
-  // coming call to DidPaintBackingStoreRects() will force a synchronous paint
-  // for us.
-  [cocoa_view_ setNeedsDisplay:YES];
 }
 
 void RenderWidgetHostViewMac::RenderViewGone() {

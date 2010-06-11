@@ -600,22 +600,9 @@ void RenderWidgetHostViewGtk::IMEUpdateStatus(int control,
   im_context_->UpdateStatus(control, caret_rect);
 }
 
-void RenderWidgetHostViewGtk::DidPaintBackingStoreRects(
-    const std::vector<gfx::Rect>& rects) {
-  if (is_hidden_)
-    return;
-
-  for (size_t i = 0; i < rects.size(); ++i) {
-    if (about_to_validate_and_paint_) {
-      invalid_rect_ = invalid_rect_.Union(rects[i]);
-    } else {
-      Paint(rects[i]);
-    }
-  }
-}
-
-void RenderWidgetHostViewGtk::DidScrollBackingStoreRect(const gfx::Rect& rect,
-                                                        int dx, int dy) {
+void RenderWidgetHostViewGtk::DidUpdateBackingStore(
+    const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
+    const std::vector<gfx::Rect>& copy_rects) {
   if (is_hidden_)
     return;
 
@@ -623,9 +610,22 @@ void RenderWidgetHostViewGtk::DidScrollBackingStoreRect(const gfx::Rect& rect,
   // be done using XCopyArea?  Perhaps similar to
   // BackingStore::ScrollBackingStore?
   if (about_to_validate_and_paint_)
-    invalid_rect_ = invalid_rect_.Union(rect);
+    invalid_rect_ = invalid_rect_.Union(scroll_rect);
   else
-    Paint(rect);
+    Paint(scroll_rect);
+
+  for (size_t i = 0; i < copy_rects.size(); ++i) {
+    // Avoid double painting.  NOTE: This is only relevant given the call to
+    // Paint(scroll_rect) above.
+    gfx::Rect rect = copy_rects[i].Subtract(scroll_rect);
+    if (rect.IsEmpty())
+      continue;
+
+    if (about_to_validate_and_paint_)
+      invalid_rect_ = invalid_rect_.Union(rect);
+    else
+      Paint(rect);
+  }
 }
 
 void RenderWidgetHostViewGtk::RenderViewGone() {

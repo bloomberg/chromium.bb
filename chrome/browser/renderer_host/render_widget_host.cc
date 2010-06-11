@@ -787,12 +787,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
   if (view_) {
     view_->MovePluginWindows(params.plugin_window_moves);
     view_being_painted_ = true;
-    if (!params.scroll_rect.IsEmpty()) {
-      view_->DidScrollBackingStoreRect(params.scroll_rect,
-                                       params.dx,
-                                       params.dy);
-    }
-    view_->DidPaintBackingStoreRects(params.copy_rects);
+    view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
+                                 params.copy_rects);
     view_being_painted_ = false;
   }
 
@@ -1096,7 +1092,7 @@ void RenderWidgetHost::PaintVideoLayer(TransportDIB::Id bitmap,
   copy_rects.push_back(bitmap_rect);
 
   view_being_painted_ = true;
-  view_->DidPaintBackingStoreRects(copy_rects);
+  view_->DidUpdateBackingStore(gfx::Rect(), 0, 0, copy_rects);
   view_being_painted_ = false;
 }
 

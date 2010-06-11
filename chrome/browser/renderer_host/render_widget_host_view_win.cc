@@ -696,29 +696,28 @@ void RenderWidgetHostViewWin::DrawResizeCorner(const gfx::Rect& paint_rect,
   }
 }
 
-void RenderWidgetHostViewWin::DidPaintBackingStoreRects(
-    const std::vector<gfx::Rect>& rects) {
+void RenderWidgetHostViewWin::DidUpdateBackingStore(
+    const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
+    const std::vector<gfx::Rect>& copy_rects) {
   if (is_hidden_)
     return;
 
-  for (size_t i = 0; i < rects.size(); ++i)
-    InvalidateRect(&rects[i].ToRECT(), false);
+  // Schedule invalidations first so that the ScrollWindowEx call is closer to
+  // Redraw.  That minimizes chances of "flicker" resulting if the screen
+  // refreshes before we have a chance to paint the exposed area.  Somewhat
+  // surprisingly, this ordering matters.
+
+  for (size_t i = 0; i < copy_rects.size(); ++i)
+    InvalidateRect(&copy_rects[i].ToRECT(), false);
+
+  if (!scroll_rect.IsEmpty()) {
+    RECT clip_rect = scroll_rect.ToRECT();
+    ScrollWindowEx(scroll_dx, scroll_dy, NULL, &clip_rect, NULL, NULL,
+                   SW_INVALIDATE);
+  }
 
   if (!about_to_validate_and_paint_)
     Redraw();
-}
-
-void RenderWidgetHostViewWin::DidScrollBackingStoreRect(
-    const gfx::Rect& rect, int dx, int dy) {
-  if (is_hidden_)
-    return;
-
-  // We need to pass in SW_INVALIDATE to ScrollWindowEx.  The documentation on
-  // MSDN states that it only applies to the HRGN argument, which is wrong.
-  // Not passing in this flag does not invalidate the region which was scrolled
-  // from, thus causing painting issues.
-  RECT clip_rect = rect.ToRECT();
-  ScrollWindowEx(dx, dy, NULL, &clip_rect, NULL, NULL, SW_INVALIDATE);
 }
 
 void RenderWidgetHostViewWin::RenderViewGone() {
