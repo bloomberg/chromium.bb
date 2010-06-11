@@ -1929,6 +1929,19 @@ void RenderView::showContextMenu(
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 
+bool RenderView::supportsFullscreen() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableVideoFullscreen);
+}
+
+void RenderView::enterFullscreenForNode(const WebKit::WebNode& node) {
+  NOTIMPLEMENTED();
+}
+
+void RenderView::exitFullscreenForNode(const WebKit::WebNode& node) {
+  NOTIMPLEMENTED();
+}
+
 void RenderView::setStatusText(const WebString& text) {
 }
 

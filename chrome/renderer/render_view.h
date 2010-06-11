@@ -352,6 +352,9 @@ class RenderView : public RenderWidget,
                                           const WebKit::WebString& message);
   virtual void showContextMenu(WebKit::WebFrame* frame,
                                const WebKit::WebContextMenuData& data);
+  virtual bool supportsFullscreen();
+  virtual void enterFullscreenForNode(const WebKit::WebNode&);
+  virtual void exitFullscreenForNode(const WebKit::WebNode&);
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
   virtual void setKeyboardFocusURL(const WebKit::WebURL& url);

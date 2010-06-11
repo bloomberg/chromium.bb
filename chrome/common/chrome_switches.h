@@ -124,6 +124,7 @@ extern const char kEnableSyncThemes[];
 extern const char kEnableSyncTypedUrls[];
 extern const char kEnableTouch[];
 extern const char kEnableVerticalTabs[];
+extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLayering[];
 extern const char kEnableVideoLogging[];
 extern const char kEnableWatchdog[];

@@ -556,6 +556,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kShowPaintRects,
     switches::kEnableOpenMax,
     switches::kVideoThreads,
+    switches::kEnableVideoFullscreen,
     switches::kEnableVideoLayering,
     switches::kEnableVideoLogging,
     switches::kEnableTouch,

@@ -376,6 +376,10 @@ const char kEnableTouch[]                   = "enable-touch";
 // browser window.
 const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
 
+// Enables support for fullscreen video. Current implementation is
+// incomplete and this flag is used for development and testing.
+const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
+
 // Enables video layering where video is rendered as a separate layer outside
 // of the backing store.
 const char kEnableVideoLayering[]           = "enable-video-layering";
