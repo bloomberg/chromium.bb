@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/util/channel.h"
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/browser/sync/util/row_iterator.h"
 #include "chrome/browser/sync/util/sync_types.h"
@@ -674,6 +675,8 @@ class Directory {
                            TakeSnapshotGetsOnlyDirtyHandlesTest);
 
  public:
+  class EventListenerHookup;
+
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {
@@ -782,6 +785,9 @@ class Directory {
   // Unique to each account / client pair.
   std::string cache_guid() const;
 
+  browser_sync::ChannelHookup<DirectoryChangeEvent>* AddChangeObserver(
+      browser_sync::ChannelEventHandler<DirectoryChangeEvent>* observer);
+
  protected:  // for friends, mainly used by Entry constructors
   EntryKernel* GetEntryByHandle(const int64 handle);
   EntryKernel* GetEntryByHandle(const int64 metahandle, ScopedKernelLock* lock);
@@ -818,7 +824,6 @@ class Directory {
   };
  public:
   typedef EventChannel<DirectoryEventTraits, Lock> Channel;
-  typedef EventChannel<DirectoryChangeEvent, Lock> ChangesChannel;
   typedef std::vector<int64> ChildHandles;
 
   // Returns the child meta handles for given parent id.
@@ -870,9 +875,6 @@ class Directory {
   // Get the channel for post save notification, used by the syncer.
   inline Channel* channel() const {
     return kernel_->channel;
-  }
-  inline ChangesChannel* changes_channel() const {
-    return kernel_->changes_channel;
   }
 
   // Checks tree metadata consistency.
@@ -1000,7 +1002,8 @@ class Directory {
     // The changes channel mutex is explicit because it must be locked
     // while holding the transaction mutex and released after
     // releasing the transaction mutex.
-    ChangesChannel* const changes_channel;
+    browser_sync::Channel<DirectoryChangeEvent> changes_channel;
+
     Lock changes_channel_mutex;
     KernelShareInfoStatus info_status;
 

@@ -172,7 +172,6 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       unsynced_metahandles(new MetahandleSet),
       dirty_metahandles(new MetahandleSet),
       channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
-      changes_channel(new Directory::ChangesChannel(kShutdownChangesEvent)),
       info_status(Directory::KERNEL_SHARE_INFO_VALID),
       persisted_info(info.kernel_info),
       cache_guid(info.cache_guid),
@@ -195,7 +194,7 @@ void Directory::Kernel::Release() {
 Directory::Kernel::~Kernel() {
   CHECK(0 == refcount);
   delete channel;
-  delete changes_channel;
+  changes_channel.Notify(kShutdownChangesEvent);
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete dirty_metahandles;
@@ -898,6 +897,11 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
   // pulling entries into RAM
 }
 
+browser_sync::ChannelHookup<DirectoryChangeEvent>* Directory::AddChangeObserver(
+    browser_sync::ChannelEventHandler<DirectoryChangeEvent>* observer) {
+  return kernel_->changes_channel.AddObserver(observer);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ScopedKernelLocks
 
@@ -954,14 +958,14 @@ void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
   // Tell listeners to calculate changes while we still have the mutex.
   DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,
                                  originals.get(), this, writer_ };
-  dirkernel_->changes_channel->NotifyListeners(event);
+  dirkernel_->changes_channel.Notify(event);
 
   dirkernel_->transaction_mutex.Release();
 
   DirectoryChangeEvent complete_event =
       { DirectoryChangeEvent::TRANSACTION_COMPLETE,
         NULL, NULL, INVALID };
-  dirkernel_->changes_channel->NotifyListeners(complete_event);
+  dirkernel_->changes_channel.Notify(complete_event);
 }
 
 ReadTransaction::ReadTransaction(Directory* directory, const char* file,

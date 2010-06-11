@@ -34,11 +34,11 @@ void SyncerCommand::SendNotifications(SyncSession* session) {
     const sessions::SyncSessionSnapshot& snapshot(session->TakeSnapshot());
     event.snapshot = &snapshot;
     DCHECK(session->context()->syncer_event_channel());
-    session->context()->syncer_event_channel()->NotifyListeners(event);
+    session->context()->syncer_event_channel()->Notify(event);
     if (session->status_controller()->syncer_status().over_quota) {
       SyncerEvent quota_event(SyncerEvent::OVER_QUOTA);
       quota_event.snapshot = &snapshot;
-      session->context()->syncer_event_channel()->NotifyListeners(quota_event);
+      session->context()->syncer_event_channel()->Notify(quota_event);
     }
   }
 }

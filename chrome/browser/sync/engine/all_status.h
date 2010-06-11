@@ -13,6 +13,7 @@
 #include "base/atomicops.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/sync/util/channel.h"
 #include "chrome/common/deprecated/event_sys.h"
 
 namespace browser_sync {
@@ -26,7 +27,7 @@ struct AuthWatcherEvent;
 struct ServerConnectionEvent;
 struct SyncerEvent;
 
-class AllStatus {
+class AllStatus : public ChannelEventHandler<SyncerEvent> {
   friend class ScopedStatusLockWithNotify;
  public:
   typedef EventChannel<AllStatusEvent, Lock> Channel;
@@ -97,7 +98,7 @@ class AllStatus {
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
 
   void WatchSyncerThread(SyncerThread* syncer_thread);
-  void HandleSyncerEvent(const SyncerEvent& event);
+  void HandleChannelEvent(const SyncerEvent& event);
 
   // Returns a string description of the SyncStatus (currently just the ascii
   // version of the enum). Will LOG(FATAL) if the status us out of range.
@@ -134,7 +135,7 @@ class AllStatus {
   Status status_;
   Channel* const channel_;
   scoped_ptr<EventListenerHookup> conn_mgr_hookup_;
-  scoped_ptr<EventListenerHookup> syncer_thread_hookup_;
+  scoped_ptr<ChannelHookup<SyncerEvent> > syncer_thread_hookup_;
   scoped_ptr<EventListenerHookup> diskfull_hookup_;
   scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
 

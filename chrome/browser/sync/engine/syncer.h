@@ -76,7 +76,7 @@ class Syncer {
   // The constructor may be called from a thread that is not the Syncer's
   // dedicated thread, to allow some flexibility in the setup.
   explicit Syncer(sessions::SyncSessionContext* context);
-  ~Syncer() {}
+  ~Syncer();
 
   // Called by other threads to tell the syncer to stop what it's doing
   // and return early from SyncShare, if possible.

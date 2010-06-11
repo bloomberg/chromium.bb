@@ -88,8 +88,7 @@ class SyncSessionTest : public testing::Test,
 
 TEST_F(SyncSessionTest, ScopedContextHelpers) {
   ConflictResolver resolver;
-  SyncerEventChannel* channel = new SyncerEventChannel(
-      SyncerEvent(SyncerEvent::SHUTDOWN_USE_WITH_CARE));
+  SyncerEventChannel* channel = new SyncerEventChannel();
   EXPECT_FALSE(context_->resolver());
   EXPECT_FALSE(context_->syncer_event_channel());
   {
@@ -100,6 +99,7 @@ TEST_F(SyncSessionTest, ScopedContextHelpers) {
   }
   EXPECT_FALSE(context_->resolver());
   EXPECT_FALSE(context_->syncer_event_channel());
+  channel->Notify(SyncerEvent(SyncerEvent::SHUTDOWN_USE_WITH_CARE));
   delete channel;
 }
 

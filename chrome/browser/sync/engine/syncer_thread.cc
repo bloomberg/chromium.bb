@@ -74,8 +74,7 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context,
       session_context_(context),
       disable_idle_detection_(false) {
   DCHECK(context);
-  syncer_event_relay_channel_.reset(new SyncerEventChannel(SyncerEvent(
-      SyncerEvent::SHUTDOWN_USE_WITH_CARE)));
+  syncer_event_relay_channel_.reset(new SyncerEventChannel());
 
   if (context->directory_manager()) {
     directory_manager_hookup_.reset(NewEventListenerHookup(
@@ -90,6 +89,8 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context,
 
 SyncerThread::~SyncerThread() {
   conn_mgr_hookup_.reset();
+  syncer_event_relay_channel_->Notify(SyncerEvent(
+      SyncerEvent::SHUTDOWN_USE_WITH_CARE));
   syncer_event_relay_channel_.reset();
   directory_manager_hookup_.reset();
   syncer_events_.reset();
@@ -305,7 +306,7 @@ void SyncerThread::ThreadMainLoop() {
 void SyncerThread::PauseUntilResumedOrQuit() {
   LOG(INFO) << "Syncer thread entering pause.";
   SyncerEvent event(SyncerEvent::PAUSED);
-  relay_channel()->NotifyListeners(event);
+  relay_channel()->Notify(event);
 
   // Thread will get stuck here until either a resume is requested
   // or shutdown is started.
@@ -315,7 +316,7 @@ void SyncerThread::PauseUntilResumedOrQuit() {
   // Notify that we have resumed if we are not shutting down.
   if (!vault_.stop_syncer_thread_) {
     SyncerEvent event(SyncerEvent::RESUMED);
-    relay_channel()->NotifyListeners(event);
+    relay_channel()->Notify(event);
   }
   LOG(INFO) << "Syncer thread exiting pause.";
 }
@@ -479,9 +480,9 @@ void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
   vault_.syncer_->set_updates_source(updates_source);
 }
 
-void SyncerThread::HandleSyncerEvent(const SyncerEvent& event) {
+void SyncerThread::HandleChannelEvent(const SyncerEvent& event) {
   AutoLock lock(lock_);
-  relay_channel()->NotifyListeners(event);
+  relay_channel()->Notify(event);
   if (SyncerEvent::REQUEST_SYNC_NUDGE != event.what_happened) {
     return;
   }
@@ -500,9 +501,8 @@ void SyncerThread::HandleDirectoryManagerEvent(
     session_context_->set_account_name(event.dirname);
     vault_.syncer_ = new Syncer(session_context_.get());
 
-    syncer_events_.reset(NewEventListenerHookup(
-        session_context_->syncer_event_channel(), this,
-        &SyncerThread::HandleSyncerEvent));
+    syncer_events_.reset(
+        session_context_->syncer_event_channel()->AddObserver(this));
     vault_field_changed_.Broadcast();
   }
 }

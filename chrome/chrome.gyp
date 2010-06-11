@@ -900,6 +900,7 @@
         'browser/sync/syncable/syncable_columns.h',
         'browser/sync/syncable/syncable_id.cc',
         'browser/sync/syncable/syncable_id.h',
+        'browser/sync/util/channel.h',
         'browser/sync/util/character_set_converters.h',
         'browser/sync/util/character_set_converters_posix.cc',
         'browser/sync/util/character_set_converters_win.cc',

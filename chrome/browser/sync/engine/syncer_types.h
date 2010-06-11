@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "chrome/common/deprecated/event_sys.h"
+#include "chrome/browser/sync/util/channel.h"
 
 namespace syncable {
 class BaseTransaction;
@@ -128,15 +128,16 @@ struct SyncerEvent {
 };
 
 struct SyncerShutdownEvent {
-  typedef Syncer* EventType;
+  SyncerShutdownEvent(Syncer *syncer_ptr) : syncer(syncer_ptr) {}
+  Syncer* syncer;
   static bool IsChannelShutdownEvent(Syncer* syncer) {
     return true;
   }
 };
 
-typedef EventChannel<SyncerEvent, Lock> SyncerEventChannel;
+typedef Channel<SyncerEvent> SyncerEventChannel;
 
-typedef EventChannel<SyncerShutdownEvent, Lock> ShutdownChannel;
+typedef Channel<SyncerShutdownEvent> ShutdownChannel;
 
 // This struct is passed between parts of the syncer during the processing of
 // one sync loop. It lives on the stack. We don't expose the number of

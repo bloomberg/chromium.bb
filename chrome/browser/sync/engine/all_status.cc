@@ -50,6 +50,7 @@ AllStatus::AllStatus() : status_(init_status),
 }
 
 AllStatus::~AllStatus() {
+  syncer_thread_hookup_.reset();
   delete channel_;
 }
 
@@ -60,8 +61,7 @@ void AllStatus::WatchConnectionManager(ServerConnectionManager* conn_mgr) {
 
 void AllStatus::WatchSyncerThread(SyncerThread* syncer_thread) {
   syncer_thread_hookup_.reset(
-      NewEventListenerHookup(syncer_thread->relay_channel(), this,
-                             &AllStatus::HandleSyncerEvent));
+      syncer_thread->relay_channel()->AddObserver(this));
 }
 
 AllStatus::Status AllStatus::CreateBlankStatus() const {
@@ -187,7 +187,7 @@ void AllStatus::HandleAuthWatcherEvent(const AuthWatcherEvent& auth_event) {
   }
 }
 
-void AllStatus::HandleSyncerEvent(const SyncerEvent& event) {
+void AllStatus::HandleChannelEvent(const SyncerEvent& event) {
   ScopedStatusLockWithNotify lock(this);
   switch (event.what_happened) {
     case SyncerEvent::COMMITS_SUCCEEDED:
@@ -200,6 +200,7 @@ void AllStatus::HandleSyncerEvent(const SyncerEvent& event) {
       // We're safe to use this value here because we don't call into the syncer
       // or block on any processes.
       lock.set_notify_plan(DONT_NOTIFY);
+      syncer_thread_hookup_.reset();
       break;
     case SyncerEvent::OVER_QUOTA:
       LOG(WARNING) << "User has gone over quota.";

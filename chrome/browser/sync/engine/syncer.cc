@@ -55,24 +55,29 @@ using sessions::ConflictProgress;
 Syncer::Syncer(sessions::SyncSessionContext* context)
     : early_exit_requested_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
-      syncer_event_channel_(new SyncerEventChannel(SyncerEvent(
-          SyncerEvent::SHUTDOWN_USE_WITH_CARE))),
+      syncer_event_channel_(new SyncerEventChannel()),
       resolver_scoper_(context, &resolver_),
       event_channel_scoper_(context, syncer_event_channel_.get()),
       context_(context),
       updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
       pre_conflict_resolution_closure_(NULL) {
-  shutdown_channel_.reset(new ShutdownChannel(this));
+  shutdown_channel_.reset(new ShutdownChannel());
 
   ScopedDirLookup dir(context->directory_manager(), context->account_name());
   // The directory must be good here.
   CHECK(dir.good());
 }
 
+Syncer::~Syncer() {
+  syncer_event_channel_->Notify(
+      SyncerEvent(SyncerEvent::SHUTDOWN_USE_WITH_CARE));
+  shutdown_channel_->Notify(SyncerShutdownEvent(this));
+}
+
 void Syncer::RequestNudge(int milliseconds) {
   SyncerEvent event(SyncerEvent::REQUEST_SYNC_NUDGE);
   event.nudge_delay_milliseconds = milliseconds;
-  syncer_event_channel_->NotifyListeners(event);
+  syncer_event_channel_->Notify(event);
 }
 
 bool Syncer::SyncShare(sessions::SyncSession::Delegate* delegate) {

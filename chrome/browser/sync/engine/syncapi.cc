@@ -796,7 +796,9 @@ class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::Observer,
-      public TalkMediator::Delegate {
+      public TalkMediator::Delegate,
+      public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
+      public browser_sync::ChannelEventHandler<SyncerEvent>{
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
@@ -864,7 +866,7 @@ class SyncManager::SyncInternal
   // This listener is called upon completion of a syncable transaction, and
   // builds the list of sync-engine initiated changes that will be forwarded to
   // the SyncManager's Observers.
-  void HandleChangeEvent(const syncable::DirectoryChangeEvent& event);
+  virtual void HandleChannelEvent(const syncable::DirectoryChangeEvent& event);
   void HandleTransactionCompleteChangeEvent(
       const syncable::DirectoryChangeEvent& event);
   void HandleCalculateChangesChangeEventFromSyncApi(
@@ -873,7 +875,7 @@ class SyncManager::SyncInternal
       const syncable::DirectoryChangeEvent& event);
 
   // This listener is called by the syncer channel for all syncer events.
-  void HandleSyncerEvent(const SyncerEvent& event);
+  virtual void HandleChannelEvent(const SyncerEvent& event);
 
   // We have a direct hookup to the authwatcher to be notified for auth failures
   // on startup, to serve our UI needs.
@@ -1087,10 +1089,11 @@ class SyncManager::SyncInternal
   ChangeReorderBuffer change_buffers_[syncable::MODEL_TYPE_COUNT];
 
   // The event listener hookup that is registered for HandleChangeEvent.
-  scoped_ptr<EventListenerHookup> dir_change_hookup_;
+  scoped_ptr<browser_sync::ChannelHookup<syncable::DirectoryChangeEvent> >
+      dir_change_hookup_;
 
   // The event listener hookup registered for HandleSyncerEvent.
-  scoped_ptr<EventListenerHookup> syncer_event_;
+  scoped_ptr<browser_sync::ChannelHookup<SyncerEvent> > syncer_event_;
 
   // The event listener hookup registered for HandleAuthWatcherEvent.
   scoped_ptr<EventListenerHookup> authwatcher_hookup_;
@@ -1294,9 +1297,7 @@ bool SyncManager::SyncInternal::Init(
   allstatus_.WatchSyncerThread(syncer_thread());
 
   // Subscribe to the syncer thread's channel.
-  syncer_event_.reset(
-      NewEventListenerHookup(syncer_thread()->relay_channel(), this,
-          &SyncInternal::HandleSyncerEvent));
+  syncer_event_.reset(syncer_thread()->relay_channel()->AddObserver(this));
 
   bool attempting_auth = false;
   std::string username, auth_token;
@@ -1521,7 +1522,7 @@ void SyncManager::SyncInternal::OnIPAddressChanged() {
 // Listen to model changes, filter out ones initiated by the sync API, and
 // saves the rest (hopefully just backend Syncer changes resulting from
 // ApplyUpdates) to data_->changelist.
-void SyncManager::SyncInternal::HandleChangeEvent(
+void SyncManager::SyncInternal::HandleChannelEvent(
     const syncable::DirectoryChangeEvent& event) {
   if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE) {
     HandleTransactionCompleteChangeEvent(event);
@@ -1694,7 +1695,7 @@ SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
   return return_status;
 }
 
-void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
+void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
   if (!initialized()) {
     // This could be the first time that the syncer has completed a full
     // download; if so, we should signal that initialization is complete.
@@ -1778,9 +1779,7 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
                         << "up directory change event listener!";
           return;
         }
-        dir_change_hookup_.reset(NewEventListenerHookup(
-            lookup->changes_channel(), this,
-            &SyncInternal::HandleChangeEvent));
+        dir_change_hookup_.reset(lookup->AddChangeObserver(this));
       }
       if (InitialSyncEndedForAllEnabledTypes())
         MarkAndNotifyInitializationComplete();
@@ -1942,9 +1941,7 @@ void SyncManager::SyncInternal::SetupForTestMode(
                     << "up directory change event listener!";
       return;
     }
-    dir_change_hookup_.reset(NewEventListenerHookup(
-        lookup->changes_channel(), this,
-        &SyncInternal::HandleChangeEvent));
+    dir_change_hookup_.reset(lookup->AddChangeObserver(this));
   }
   MarkAndNotifyInitializationComplete();
 }

@@ -41,7 +41,7 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   SyncerEvent event(SyncerEvent::SYNC_CYCLE_ENDED);
   sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
   event.snapshot = &snapshot;
-  session->context()->syncer_event_channel()->NotifyListeners(event);
+  session->context()->syncer_event_channel()->Notify(event);
 }
 
 }  // namespace browser_sync

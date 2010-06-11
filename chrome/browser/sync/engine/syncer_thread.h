@@ -46,7 +46,8 @@ struct SyncerEvent;
 struct SyncerShutdownEvent;
 
 class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
-                     public sessions::SyncSession::Delegate {
+                     public sessions::SyncSession::Delegate,
+                     public ChannelEventHandler<SyncerEvent> {
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculateSyncWaitTime);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculatePollingWaitTime);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Polling);
@@ -220,7 +221,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void* Run();
   void HandleDirectoryManagerEvent(
       const syncable::DirectoryManagerEvent& event);
-  void HandleSyncerEvent(const SyncerEvent& event);
+  void HandleChannelEvent(const SyncerEvent& event);
 
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(const base::TimeTicks& silenced_until);
@@ -302,7 +303,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void NudgeSyncImpl(int milliseconds_from_now, NudgeSource source);
 
   scoped_ptr<EventListenerHookup> directory_manager_hookup_;
-  scoped_ptr<EventListenerHookup> syncer_events_;
+  scoped_ptr<ChannelHookup<SyncerEvent> > syncer_events_;
 
 #if defined(OS_LINUX)
   // On Linux, we need this information in order to query idle time.

@@ -103,7 +103,8 @@ const int64 kTestLogRequestTimestamp = 123456;
 
 class SyncerTest : public testing::Test,
                    public SyncSession::Delegate,
-                   public ModelSafeWorkerRegistrar {
+                   public ModelSafeWorkerRegistrar,
+                   public ChannelEventHandler<SyncerEvent> {
  protected:
   SyncerTest() : syncer_(NULL) {}
 
@@ -138,7 +139,7 @@ class SyncerTest : public testing::Test,
     }
   }
 
-  void HandleSyncerEvent(SyncerEvent event) {
+  void HandleChannelEvent(const SyncerEvent& event) {
     LOG(INFO) << "HandleSyncerEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
     switch (event.what_happened) {
@@ -185,8 +186,7 @@ class SyncerTest : public testing::Test,
     ASSERT_TRUE(context_->syncer_event_channel());
     ASSERT_TRUE(context_->resolver());
 
-    hookup_.reset(NewEventListenerHookup(context_->syncer_event_channel(), this,
-                                         &SyncerTest::HandleSyncerEvent));
+    hookup_.reset(context_->syncer_event_channel()->AddObserver(this));
     session_.reset(new SyncSession(context_.get(), this));
 
     ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
@@ -421,7 +421,7 @@ class SyncerTest : public testing::Test,
 
   TestDirectorySetterUpper syncdb_;
   scoped_ptr<MockConnectionManager> mock_server_;
-  scoped_ptr<EventListenerHookup> hookup_;
+  scoped_ptr<ChannelHookup<SyncerEvent> > hookup_;
 
   Syncer* syncer_;
 

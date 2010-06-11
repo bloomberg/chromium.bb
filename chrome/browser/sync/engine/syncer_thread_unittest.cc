@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/browser/sync/util/channel.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,7 +33,8 @@ typedef testing::Test SyncerThreadTest;
 typedef SyncerThread::WaitInterval WaitInterval;
 
 class SyncerThreadWithSyncerTest : public testing::Test,
-                                   public ModelSafeWorkerRegistrar {
+                                   public ModelSafeWorkerRegistrar,
+                                   public ChannelEventHandler<SyncerEvent> {
  public:
   SyncerThreadWithSyncerTest() : sync_cycle_ended_event_(false, false) {}
   virtual void SetUp() {
@@ -45,8 +47,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
         NULL, metadb_.manager(), this);
     syncer_thread_ = new SyncerThread(context, allstatus_.get());
     syncer_event_hookup_.reset(
-        NewEventListenerHookup(syncer_thread_->relay_channel(), this,
-            &SyncerThreadWithSyncerTest::HandleSyncerEvent));
+        syncer_thread_->relay_channel()->AddObserver(this));
     allstatus_->WatchSyncerThread(syncer_thread_);
     syncer_thread_->SetConnected(true);
     syncable::ModelTypeBitSet expected_types;
@@ -54,8 +55,9 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     connection_->ExpectGetUpdatesRequestTypes(expected_types);
   }
   virtual void TearDown() {
-    syncer_thread_ = NULL;
+    syncer_event_hookup_.reset();
     allstatus_.reset();
+    syncer_thread_ = NULL;
     connection_.reset();
     metadb_.TearDown();
   }
@@ -98,7 +100,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
 
  private:
 
-  void HandleSyncerEvent(const SyncerEvent& event) {
+  void HandleChannelEvent(const SyncerEvent& event) {
     if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED)
       sync_cycle_ended_event_.Signal();
   }
@@ -108,7 +110,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   scoped_ptr<AllStatus> allstatus_;
   scoped_refptr<SyncerThread> syncer_thread_;
   scoped_refptr<ModelSafeWorker> worker_;
-  scoped_ptr<EventListenerHookup> syncer_event_hookup_;
+  scoped_ptr<ChannelHookup<SyncerEvent> > syncer_event_hookup_;
   base::WaitableEvent sync_cycle_ended_event_;
   DISALLOW_COPY_AND_ASSIGN(SyncerThreadWithSyncerTest);
 };
@@ -715,9 +717,9 @@ ACTION_P(SignalEvent, event) {
   event->Signal();
 }
 
-class ListenerMock {
+class ListenerMock : public ChannelEventHandler<SyncerEvent> {
  public:
-  MOCK_METHOD1(HandleEvent, void(const SyncerEvent&));
+  MOCK_METHOD1(HandleChannelEvent, void(const SyncerEvent&));
 };
 
 // TODO(skrul): Bug 39070.
@@ -730,13 +732,10 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   syncer_thread()->SetSyncerShortPollInterval(poll_interval);
 
   ListenerMock listener;
-  scoped_ptr<EventListenerHookup> hookup;
-  hookup.reset(
-      NewEventListenerHookup(syncer_thread()->relay_channel(),
-                             &listener,
-                             &ListenerMock::HandleEvent));
+  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
+  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
 
-  EXPECT_CALL(listener, HandleEvent(
+  EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
       Times(AnyNumber());
 
@@ -745,7 +744,7 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   EXPECT_FALSE(syncer_thread()->RequestResume());
 
   // Wait for the initial sync to complete.
-  EXPECT_CALL(listener, HandleEvent(
+  EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   ASSERT_TRUE(syncer_thread()->Start());
@@ -753,14 +752,14 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   sync_cycle_ended_event.Wait();
 
   // Request a pause.
-  EXPECT_CALL(listener, HandleEvent(
+  EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
       WillOnce(SignalEvent(&paused_event));
   ASSERT_TRUE(syncer_thread()->RequestPause());
   paused_event.Wait();
 
   // Resuming the pause.
-  EXPECT_CALL(listener, HandleEvent(
+  EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
       WillOnce(SignalEvent(&resumed_event));
   ASSERT_TRUE(syncer_thread()->RequestResume());
@@ -770,7 +769,7 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   EXPECT_FALSE(syncer_thread()->RequestResume());
 
   // Request a pause.
-  EXPECT_CALL(listener, HandleEvent(
+  EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
       WillOnce(SignalEvent(&paused_event));
   ASSERT_TRUE(syncer_thread()->RequestPause());
@@ -780,11 +779,11 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
 
   // Resuming will cause the nudge to be processed and a sync cycle to run.
-  EXPECT_CALL(listener, HandleEvent(
+  EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
       WillOnce(SignalEvent(&resumed_event));
   // Wait for the sync cycle to run.
-  EXPECT_CALL(listener, HandleEvent(
+  EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   ASSERT_TRUE(syncer_thread()->RequestResume());
