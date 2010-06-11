@@ -586,6 +586,7 @@
         'browser/bookmarks/bookmark_model_test_utils.h',
         'browser/bookmarks/bookmark_model_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
+        'browser/browser_about_handler_unittest.cc',
         'browser/browser_accessibility_unittest.cc',
         'browser/browser_commands_unittest.cc',
         'browser/browser_theme_pack_unittest.cc',
