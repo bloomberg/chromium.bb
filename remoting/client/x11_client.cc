@@ -9,8 +9,11 @@
 #include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
-#include "remoting/client/jingle_host_connection.h"
+#include "base/task.h"
+#include "base/waitable_event.h"
 #include "remoting/client/client_util.h"
+#include "remoting/client/host_connection.h"
+#include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
 // Include Xlib at the end because it clashes with ClientMessage defined in
@@ -20,37 +23,26 @@
 #include "remoting/client/x11_view.h"
 #include <X11/Xlib.h>
 
+using remoting::JingleHostConnection;
+using remoting::JingleThread;
+
 namespace remoting {
 
 class X11Client : public base::RefCountedThreadSafe<X11Client>,
                   public HostConnection::HostEventCallback {
  public:
-  X11Client(std::string host_jid, std::string username, std::string auth_token)
-      : display_(NULL),
+  X11Client(MessageLoop* loop, base::WaitableEvent* client_done)
+      : message_loop_(loop),
+        client_done_(client_done),
+        display_(NULL),
         window_(0),
         width_(0),
-        height_(0),
-        host_jid_(host_jid),
-        username_(username),
-        auth_token_(auth_token) {
+        height_(0) {
   }
 
   virtual ~X11Client() {
     DCHECK(!display_);
     DCHECK(!window_);
-  }
-
-  // Starts the remoting client and the message loop. Returns only after
-  // the message loop has terminated.
-  void Run() {
-    // TODO(hclam): Fix the threading issue.
-    network_thread_.Start();
-    message_loop_.PostTask(FROM_HERE,
-                        NewRunnableMethod(this, &X11Client::DoInitX11));
-    message_loop_.PostTask(FROM_HERE,
-                        NewRunnableMethod(this, &X11Client::DoInitConnection));
-    message_loop_.Run();
-    network_thread_.Stop();
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -60,18 +52,18 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
     for (size_t i = 0; i < messages->size(); ++i) {
       HostMessage* msg = (*messages)[i];
       if (msg->has_init_client()) {
-        message_loop_.PostTask(
+        message_loop_->PostTask(
             FROM_HERE, NewRunnableMethod(this, &X11Client::DoInitClient, msg));
       } else if (msg->has_begin_update_stream()) {
-        message_loop_.PostTask(
+        message_loop_->PostTask(
             FROM_HERE,
             NewRunnableMethod(this, &X11Client::DoBeginUpdate, msg));
       } else if (msg->has_update_stream_packet()) {
-        message_loop_.PostTask(
+        message_loop_->PostTask(
             FROM_HERE,
             NewRunnableMethod(this, &X11Client::DoHandleUpdate, msg));
       } else if (msg->has_end_update_stream()) {
-        message_loop_.PostTask(
+        message_loop_->PostTask(
             FROM_HERE, NewRunnableMethod(this, &X11Client::DoEndUpdate, msg));
       } else {
         NOTREACHED() << "Unknown message received";
@@ -82,25 +74,29 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
   }
 
   virtual void OnConnectionOpened(HostConnection* conn) {
-    std::cout << "Connection establised." << std::endl;
+    std::cout << "Connection established." << std::endl;
   }
 
   virtual void OnConnectionClosed(HostConnection* conn) {
     std::cout << "Connection closed." << std::endl;
-    Exit();
+    client_done_->Signal();
   }
 
   virtual void OnConnectionFailed(HostConnection* conn) {
     std::cout << "Conection failed." << std::endl;
-    Exit();
+    client_done_->Signal();
   }
 
- private:
+  void InitX11() {
+    message_loop_->PostTask(FROM_HERE,
+                         NewRunnableMethod(this, &X11Client::DoInitX11));
+  }
+
   void DoInitX11() {
     display_ = XOpenDisplay(NULL);
     if (!display_) {
       std::cout << "Error - cannot open display" << std::endl;
-      Exit();
+      client_done_->Signal();
     }
 
     // Get properties of the screen.
@@ -119,15 +115,9 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
     XMapWindow(display_, window_);
   }
 
-  void DoInitConnection() {
-    // If the initialization of X11 has failed then return directly.
-    if (!display_)
-      return;
-
-    // Creates a HostConnection object and connection to the host.
-    LOG(INFO) << "Connecting...";
-    connection_.reset(new JingleHostConnection(&network_thread_, this));
-    connection_->Connect(username_, auth_token_, host_jid_);
+  void DestroyX11() {
+    message_loop_->PostTask(FROM_HERE,
+                         NewRunnableMethod(this, &X11Client::DoDestroyX11));
   }
 
   void DoDestroyX11() {
@@ -140,27 +130,10 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
     }
   }
 
-  void DoDisconnect() {
-    if (connection_.get())
-      connection_->Disconnect();
-  }
-
-  void Exit() {
-    // Disconnect the jingle channel and client.
-    message_loop_.PostTask(FROM_HERE,
-                        NewRunnableMethod(this, &X11Client::DoDisconnect));
-
-    // Post a task to shutdown X11.
-    message_loop_.PostTask(FROM_HERE,
-                        NewRunnableMethod(this, &X11Client::DoDestroyX11));
-
-    // Quit the current message loop.
-    message_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  }
-
+ private:
   // This method is executed on the main loop.
   void DoInitClient(HostMessage* msg) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(message_loop_, MessageLoop::current());
     DCHECK(msg->has_init_client());
     scoped_ptr<HostMessage> deleter(msg);
 
@@ -179,28 +152,28 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
 
   // The following methods are executed on the same thread as libjingle.
   void DoBeginUpdate(HostMessage* msg) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(message_loop_, MessageLoop::current());
     DCHECK(msg->has_begin_update_stream());
 
     view_->HandleBeginUpdateStream(msg);
   }
 
   void DoHandleUpdate(HostMessage* msg) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(message_loop_, MessageLoop::current());
     DCHECK(msg->has_update_stream_packet());
 
     view_->HandleUpdateStreamPacket(msg);
   }
 
   void DoEndUpdate(HostMessage* msg) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(message_loop_, MessageLoop::current());
     DCHECK(msg->has_end_update_stream());
 
     view_->HandleEndUpdateStream(msg);
   }
 
   void DoProcessX11Events() {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(message_loop_, MessageLoop::current());
     if (XPending(display_)) {
       XEvent e;
       XNextEvent(display_, &e);
@@ -223,11 +196,14 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
   void ScheduleX11EventHandler() {
     // Schedule a delayed task to process X11 events in 10ms.
     static const int kProcessEventsInterval = 10;
-    message_loop_.PostDelayedTask(
+    message_loop_->PostDelayedTask(
         FROM_HERE,
         NewRunnableMethod(this, &X11Client::DoProcessX11Events),
         kProcessEventsInterval);
   }
+
+  MessageLoop* message_loop_;
+  base::WaitableEvent* client_done_;
 
   // Members used for display.
   Display* display_;
@@ -238,30 +214,47 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
   int width_;
   int height_;
 
-  std::string host_jid_;
-  std::string username_;
-  std::string auth_token_;
-  scoped_ptr<HostConnection> connection_;
   scoped_refptr<ChromotingView> view_;
-
-  JingleThread network_thread_;
-  MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(X11Client);
 };
 
 }  // namespace remoting
 
-int main() {
+int main(int argc, char** argv) {
   base::AtExitManager at_exit;
-  std::string host_jid, username, auth_token;
+  std::string host_jid;
+  std::string username;
+  std::string auth_token;
 
-  if (!remoting::GetLoginInfo(&host_jid, &username, &auth_token)) {
+  if (!remoting::GetLoginInfo(argc, argv, &host_jid, &username, &auth_token)) {
     std::cout << "Cannot obtain login info" << std::endl;
     return 1;
   }
 
+  JingleThread network_thread;
+  network_thread.Start();
+
+  base::WaitableEvent client_done(false, false);
   scoped_refptr<remoting::X11Client> client =
-      new remoting::X11Client(host_jid, username, auth_token);
-  client->Run();
+      new remoting::X11Client(network_thread.message_loop(), &client_done);
+  scoped_refptr<JingleHostConnection> connection =
+      new JingleHostConnection(&network_thread, client);
+  connection->Connect(username, auth_token, host_jid);
+
+  client->InitX11();
+
+  // Wait until the main loop is done.
+  client_done.Wait();
+
+  connection->Disconnect();
+
+  client->DestroyX11();
+
+  // Quit the current message loop.
+  network_thread.message_loop()->PostTask(FROM_HERE,
+                                          new MessageLoop::QuitTask());
+  network_thread.Stop();
+
+  return 0;
 }

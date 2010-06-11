@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
   std::string username;
   std::string auth_token;
 
-  if (!remoting::GetLoginInfo(&host_jid, &username, &auth_token)) {
+  if (!remoting::GetLoginInfo(argc, argv, &host_jid, &username, &auth_token)) {
     std::cerr << "Cannot get valid login info." << std::endl;
     return 1;
   }
