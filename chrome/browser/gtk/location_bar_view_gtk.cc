@@ -108,6 +108,10 @@ void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarViewGtk
 
+// static
+const GdkColor LocationBarViewGtk::kBackgroundColor =
+    GDK_COLOR_RGB(255, 255, 255);
+
 LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
     : star_image_(NULL),
       starred_(false),
