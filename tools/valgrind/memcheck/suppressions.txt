@@ -3240,3 +3240,30 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 
+{
+   bug_46343_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt4pairIjiEE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseISt4pairIjiESaIS1_EE11_M_allocateEj
+   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
+   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+
+{
+   bug_46345
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22ResourceDispatcherHost23CompleteResponseStartedEP10URLRequest
+   fun:_ZN22ResourceDispatcherHost17OnResponseStartedEP10URLRequest
+   fun:_ZN10URLRequest15ResponseStartedEv
+   fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
+   fun:_ZN17URLRequestFileJob10DidResolveEbRKN9file_util8FileInfoE
+   fun:_Z16DispatchToMethodI17URLRequestFileJobMS0_FvbRKN9file_util8FileInfoEEbS2_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodI17URLRequestFileJobMS0_FvbRKN9file_util8FileInfoEE6Tuple2IbS2_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
