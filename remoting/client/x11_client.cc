@@ -9,8 +9,9 @@
 #include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
-#include "remoting/client/host_connection.h"
+#include "remoting/client/jingle_host_connection.h"
 #include "remoting/client/client_util.h"
+#include "remoting/jingle_glue/jingle_thread.h"
 
 // Include Xlib at the end because it clashes with ClientMessage defined in
 // the protocol buffer.
@@ -22,7 +23,7 @@
 namespace remoting {
 
 class X11Client : public base::RefCountedThreadSafe<X11Client>,
-                  public HostConnection::EventHandler {
+                  public HostConnection::HostEventCallback {
  public:
   X11Client(std::string host_jid, std::string username, std::string auth_token)
       : display_(NULL),
@@ -42,11 +43,14 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
   // Starts the remoting client and the message loop. Returns only after
   // the message loop has terminated.
   void Run() {
+    // TODO(hclam): Fix the threading issue.
+    network_thread_.Start();
     message_loop_.PostTask(FROM_HERE,
                         NewRunnableMethod(this, &X11Client::DoInitX11));
     message_loop_.PostTask(FROM_HERE,
                         NewRunnableMethod(this, &X11Client::DoInitConnection));
     message_loop_.Run();
+    network_thread_.Stop();
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -122,7 +126,7 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
 
     // Creates a HostConnection object and connection to the host.
     LOG(INFO) << "Connecting...";
-    connection_.reset(new HostConnection(new ProtocolDecoder(), this));
+    connection_.reset(new JingleHostConnection(&network_thread_, this));
     connection_->Connect(username_, auth_token_, host_jid_);
   }
 
@@ -240,6 +244,7 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
   scoped_ptr<HostConnection> connection_;
   scoped_refptr<ChromotingView> view_;
 
+  JingleThread network_thread_;
   MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(X11Client);
@@ -251,7 +256,7 @@ int main() {
   base::AtExitManager at_exit;
   std::string host_jid, username, auth_token;
 
-  if (!remoting::GetLoginInfo(host_jid, username, auth_token)) {
+  if (!remoting::GetLoginInfo(&host_jid, &username, &auth_token)) {
     std::cout << "Cannot obtain login info" << std::endl;
     return 1;
   }

@@ -91,7 +91,8 @@
       ],  # end of Client targets
     }],  # end of OS conditions for Client targets
 
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="mac"', {
+    # TODO(hclam): Enable this target for mac.
+    ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
       'targets': [
         {
           'target_name': 'chromoting_x11_client',

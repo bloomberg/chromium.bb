@@ -12,7 +12,7 @@
 
 namespace remoting {
 
-X11View::X11View(Display* display, int window, int width, int height)
+X11View::X11View(Display* display, XID window, int width, int height)
     : display_(display),
       window_(window),
       picture_(0),
@@ -60,7 +60,7 @@ void X11View::Paint() {
   XFreeGC(display_, gc);
 
   // Creates the picture representing the pixmap.
-  unsigned long picture = XRenderCreatePicture(
+  XID picture = XRenderCreatePicture(
       display_, pixmap,
       XRenderFindStandardFormat(display_, PictStandardARGB32),
       0, NULL);

@@ -11,6 +11,7 @@
 #include "remoting/client/decoder.h"
 #include "remoting/client/chromoting_view.h"
 
+typedef unsigned long XID;
 typedef struct _XDisplay Display;
 
 namespace remoting {
@@ -18,7 +19,7 @@ namespace remoting {
 // A ChromotingView implemented using X11 and XRender.
 class X11View : public ChromotingView {
  public:
-  X11View(Display* display, int window, int width, int height);
+  X11View(Display* display, XID window, int width, int height);
 
   virtual ~X11View();
 
@@ -34,13 +35,13 @@ class X11View : public ChromotingView {
   void OnDecodeDone();
 
   Display* display_;
-  int window_;
+  XID window_;
   int width_;
   int height_;
 
   // A picture created in the X server that represents drawing area of the
   // window.
-  int picture_;
+  XID picture_;
 
   scoped_refptr<media::VideoFrame> frame_;
   UpdatedRects update_rects_;
