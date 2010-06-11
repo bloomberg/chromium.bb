@@ -779,29 +779,35 @@ void ProfileImpl::InitExtensions() {
       true);
 
   // Register the component extensions.
-  std::map<std::string, int> component_extensions;
+  typedef std::list<std::pair<std::string, int> > ComponentExtensionList;
+  ComponentExtensionList component_extensions;
 
   // Bookmark manager.
-  component_extensions["bookmark_manager"] = IDR_BOOKMARKS_MANIFEST;
+  component_extensions.push_back(
+      std::make_pair("bookmark_manager", IDR_BOOKMARKS_MANIFEST));
 
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   // Chat manager.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableChatManager)) {
-    component_extensions["chat_manager"] = IDR_CHAT_MANAGER_MANIFEST;
+    component_extensions.push_back(
+        std::make_pair("chat_manager", IDR_CHAT_MANAGER_MANIFEST));
   }
 #endif
 
   // Some sample apps to make our lives easier while we are developing extension
   // apps. This way we don't have to constantly install these over and over.
   if (Extension::AppsAreEnabled() && IncludeDefaultApps()) {
-    component_extensions["gmail_app"] = IDR_GMAIL_APP_MANIFEST;
-    component_extensions["calendar_app"] = IDR_CALENDAR_APP_MANIFEST;
-    component_extensions["docs_app"] = IDR_DOCS_APP_MANIFEST;
+    component_extensions.push_back(
+        std::make_pair("gmail_app", IDR_GMAIL_APP_MANIFEST));
+    component_extensions.push_back(
+        std::make_pair("calendar_app", IDR_CALENDAR_APP_MANIFEST));
+    component_extensions.push_back(
+        std::make_pair("docs_app", IDR_DOCS_APP_MANIFEST));
   }
 
-  for (std::map<std::string, int>::iterator iter = component_extensions.begin();
-       iter != component_extensions.end(); ++iter) {
+  for (ComponentExtensionList::iterator iter = component_extensions.begin();
+    iter != component_extensions.end(); ++iter) {
     FilePath path;
     if (PathService::Get(chrome::DIR_RESOURCES, &path)) {
       path = path.AppendASCII(iter->first);
