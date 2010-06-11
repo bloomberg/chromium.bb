@@ -334,9 +334,6 @@ class AutoFillProfilesView : public views::View,
     static const int three_column_header_ = 6;
     static const int double_column_ccexpiration_ = 7;
 
-    static const int kDefaultAddressesGroup = 0;
-    static const int kDefaultCreditCardsGroup = 1;
-
     DISALLOW_COPY_AND_ASSIGN(EditableSetViewContents);
   };
 

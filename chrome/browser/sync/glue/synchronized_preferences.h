@@ -88,7 +88,6 @@ static const wchar_t* kSynchronizedPreferences[] = {
 
   // Autofill dialog.
   prefs::kAutoFillAuxiliaryProfilesEnabled,
-  prefs::kAutoFillDefaultProfile,
 
   // Translate preferences.
   TranslatePrefs::kPrefTranslateLanguageBlacklist,
