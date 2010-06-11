@@ -30,7 +30,8 @@ class NetworkLocationProvider
   virtual ~NetworkLocationProvider();
 
   // LocationProviderBase implementation
-  virtual bool StartProvider();
+  virtual bool StartProvider(bool high_accuracy);
+  virtual void StopProvider();
   virtual void GetPosition(Geoposition *position);
   virtual void UpdatePosition();
   virtual void OnPermissionGranted(const GURL& requesting_frame);
@@ -44,6 +45,8 @@ class NetworkLocationProvider
 
   // Internal helper used by DeviceDataUpdateAvailable
   void OnDeviceDataUpdated();
+
+  bool IsStarted() const;
 
   // DeviceDataProvider::ListenerInterface implementation.
   virtual void DeviceDataUpdateAvailable(RadioDataProvider* provider);

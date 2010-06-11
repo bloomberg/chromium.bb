@@ -15,7 +15,7 @@
 MockLocationProvider* MockLocationProvider::instance_ = NULL;
 
 MockLocationProvider::MockLocationProvider(MockLocationProvider** self_ref)
-    : started_count_(0),
+    : state_(STOPPED),
       self_ref_(self_ref) {
   CHECK(self_ref_);
   CHECK(*self_ref_ == NULL);
@@ -27,9 +27,13 @@ MockLocationProvider::~MockLocationProvider() {
   *self_ref_ = NULL;
 }
 
-bool MockLocationProvider::StartProvider() {
-  ++started_count_;
+bool MockLocationProvider::StartProvider(bool high_accuracy) {
+  state_ = high_accuracy ? HIGH_ACCURACY : LOW_ACCURACY;
   return true;
+}
+
+void MockLocationProvider::StopProvider() {
+  state_ = STOPPED;
 }
 
 void MockLocationProvider::GetPosition(Geoposition* position) {
@@ -60,8 +64,8 @@ class AutoMockLocationProvider : public MockLocationProvider {
       position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     }
   }
-  virtual bool StartProvider() {
-    MockLocationProvider::StartProvider();
+  virtual bool StartProvider(bool high_accuracy) {
+    MockLocationProvider::StartProvider(high_accuracy);
     if (!requires_permission_to_start_) {
       UpdateListenersIfNeeded();
     }

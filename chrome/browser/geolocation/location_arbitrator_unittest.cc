@@ -136,7 +136,7 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   ASSERT_TRUE(arbitrator_ != NULL);
 
   EXPECT_TRUE(access_token_store_->access_token_set_.empty());
-  EXPECT_FALSE(access_token_store_->request_);
+  EXPECT_TRUE(access_token_store_->request_);
   MockLocationObserver observer;
   arbitrator_->AddObserver(&observer, GeolocationArbitrator::UpdateOptions());
 
@@ -147,9 +147,10 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_FALSE(providers_->gps_);
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(providers_->cell_);
-  EXPECT_FALSE(providers_->gps_);
+  EXPECT_TRUE(providers_->gps_);
   EXPECT_TRUE(providers_->cell_->has_listeners());
-  EXPECT_EQ(1, providers_->cell_->started_count_);
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->cell_->state_);
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->gps_->state_);
   EXPECT_FALSE(observer.last_position_.IsInitialized());
 
   SetReferencePosition(&providers_->cell_->position_);
@@ -211,18 +212,21 @@ TEST_F(GeolocationLocationArbitratorTest,
   arbitrator_->AddObserver(
       &observer, GeolocationArbitrator::UpdateOptions(false));
   access_token_store_->NotifyDelegateTokensLoaded();
-  EXPECT_TRUE(providers_->cell_);
-  EXPECT_FALSE(providers_->gps_);
+  ASSERT_TRUE(providers_->cell_);
+  ASSERT_TRUE(providers_->gps_);
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->cell_->state_);
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->gps_->state_);
   arbitrator_->AddObserver(
       &observer, GeolocationArbitrator::UpdateOptions(true));
-  EXPECT_TRUE(providers_->cell_);
-  EXPECT_TRUE(providers_->gps_);
+  EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, providers_->cell_->state_);
+  EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, providers_->gps_->state_);
   arbitrator_->AddObserver(
       &observer, GeolocationArbitrator::UpdateOptions(false));
-  EXPECT_TRUE(providers_->cell_);
-  EXPECT_FALSE(providers_->gps_);
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->cell_->state_);
+  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->gps_->state_);
   EXPECT_TRUE(arbitrator_->RemoveObserver(&observer));
-  EXPECT_FALSE(providers_->cell_);
+  EXPECT_EQ(MockLocationProvider::STOPPED, providers_->cell_->state_);
+  EXPECT_EQ(MockLocationProvider::STOPPED, providers_->gps_->state_);
   EXPECT_FALSE(arbitrator_->RemoveObserver(&observer));
 }
 

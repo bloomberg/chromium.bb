@@ -269,7 +269,7 @@ TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
 
 TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider());
+  EXPECT_TRUE(provider->StartProvider(false));
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
 
@@ -297,7 +297,7 @@ TEST_F(GeolocationNetworkProviderTest, MultiRegistrations) {
 
 TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider());
+  EXPECT_TRUE(provider->StartProvider(false));
 
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
@@ -407,7 +407,7 @@ TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
   MessageLoopQuitListener listener;
   wifi_data_provider_->set_got_data(false);
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider());
+  EXPECT_TRUE(provider->StartProvider(false));
   provider->RegisterListener(&listener);
 
   main_message_loop_.RunAllPending();
@@ -423,7 +423,7 @@ TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
 TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
   // Send initial request with empty device data
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider());
+  EXPECT_TRUE(provider->StartProvider(false));
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
 
@@ -436,7 +436,7 @@ TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
 
 TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider(false));
-  EXPECT_TRUE(provider->StartProvider());
+  EXPECT_TRUE(provider->StartProvider(false));
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
   provider->OnPermissionGranted(GURL(kTestHostUrl));
@@ -455,7 +455,7 @@ TEST_F(GeolocationNetworkProviderTest,
   access_token_store_->access_token_set_[test_server_url_] =
       UTF8ToUTF16(REFERENCE_ACCESS_TOKEN);
   scoped_ptr<LocationProviderBase> provider(CreateProvider(false));
-  EXPECT_TRUE(provider->StartProvider());
+  EXPECT_TRUE(provider->StartProvider(false));
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
 

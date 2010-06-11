@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_
 
 #include "chrome/browser/geolocation/location_provider.h"
+#include "chrome/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 
 // Mock implementation of a location provider for testing.
@@ -19,12 +20,13 @@ class MockLocationProvider : public LocationProviderBase {
   using LocationProviderBase::UpdateListeners;
 
   // LocationProviderBase implementation.
-  virtual bool StartProvider();
+  virtual bool StartProvider(bool high_accuracy);
+  virtual void StopProvider();
   virtual void GetPosition(Geoposition* position);
   virtual void OnPermissionGranted(const GURL& requesting_frame);
 
   Geoposition position_;
-  int started_count_;
+  enum { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
   GURL permission_granted_url_;
   MockLocationProvider** self_ref_;
 

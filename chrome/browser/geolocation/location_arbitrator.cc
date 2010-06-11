@@ -63,8 +63,7 @@ class GeolocationArbitratorImpl
   // |provider_vector| or deleted on error (e.g. it fails to start).
   void RegisterProvider(LocationProviderBase* provider,
                         ScopedVector<LocationProviderBase>* provider_vector);
-  void ResetProviders(ScopedVector<LocationProviderBase>* providers);
-  void ModifyProvidersIfRequired();
+  void StartProviders();
 
   // Returns true if |new_position| is an improvement over |old_position|.
   // Set |from_same_provider| to true if both the positions came from the same
@@ -78,10 +77,7 @@ class GeolocationArbitratorImpl
   GetTimeNow get_time_now_;
   scoped_refptr<ProviderFactory> provider_factory_;
 
-  // Low accuracy providers.
-  ScopedVector<LocationProviderBase> network_providers_;
-  // High accuracy providers.
-  ScopedVector<LocationProviderBase> gps_providers_;
+  ScopedVector<LocationProviderBase> providers_;
 
   typedef std::map<GeolocationArbitrator::Delegate*, UpdateOptions> DelegateMap;
   DelegateMap observers_;
@@ -129,13 +125,15 @@ GeolocationArbitratorImpl::GeolocationArbitratorImpl(
   DCHECK(NULL == g_instance_);
   DCHECK(GURL(kDefaultNetworkProviderUrl).is_valid());
   g_instance_ = this;
+  access_token_store_->LoadAccessTokens(
+      &request_consumer_,
+      NewCallback(this,
+                  &GeolocationArbitratorImpl::OnAccessTokenStoresLoaded));
 }
 
 GeolocationArbitratorImpl::~GeolocationArbitratorImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(observers_.empty()) << "Not all observers have unregistered";
-  observers_.clear();
-  ModifyProvidersIfRequired();
   DCHECK(this == g_instance_);
   g_instance_ = NULL;
 }
@@ -145,8 +143,7 @@ void GeolocationArbitratorImpl::AddObserver(
     const UpdateOptions& update_options) {
   DCHECK(CalledOnValidThread());
   observers_[delegate] = update_options;
-  ModifyProvidersIfRequired();
-
+  StartProviders();
   if (position_.IsInitialized()) {
     delegate->OnLocationUpdate(position_);
   }
@@ -156,7 +153,15 @@ bool GeolocationArbitratorImpl::RemoveObserver(
     GeolocationArbitrator::Delegate* delegate) {
   DCHECK(CalledOnValidThread());
   size_t remove = observers_.erase(delegate);
-  ModifyProvidersIfRequired();
+  if (observers_.empty()) {
+    // TODO(joth): Delayed callback to linger before stopping providers.
+    for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
+        i != providers_.end(); ++i) {
+      (*i)->StopProvider();
+    }
+  } else {  // The high accuracy requirement may have changed.
+    StartProviders();
+  }
   return remove > 0;
 }
 
@@ -168,9 +173,8 @@ void GeolocationArbitratorImpl::OnPermissionGranted(
     const GURL& requesting_frame) {
   DCHECK(CalledOnValidThread());
   most_recent_authorized_frame_ = requesting_frame;
-  for (ScopedVector<LocationProviderBase>::iterator i =
-          network_providers_.begin();
-      i != network_providers_.end(); ++i) {
+  for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
+      i != providers_.end(); ++i) {
     (*i)->OnPermissionGranted(requesting_frame);
   }
 }
@@ -203,7 +207,7 @@ void GeolocationArbitratorImpl::LocationUpdateAvailable(
 
 void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
     AccessTokenStore::AccessTokenSet access_token_set) {
-  DCHECK(network_providers_.empty())
+  DCHECK(providers_.empty())
       << "OnAccessTokenStoresLoaded : has existing location "
       << "provider. Race condition caused repeat load of tokens?";
   // If there are no access tokens, boot strap it with the default server URL.
@@ -216,8 +220,11 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
         provider_factory_->NewNetworkLocationProvider(
             access_token_store_.get(), context_getter_.get(),
             i->first, i->second),
-        &network_providers_);
+        &providers_);
   }
+  RegisterProvider(provider_factory_->NewGpsLocationProvider(),
+                   &providers_);
+  StartProviders();
 }
 
 void GeolocationArbitratorImpl::RegisterProvider(
@@ -227,51 +234,18 @@ void GeolocationArbitratorImpl::RegisterProvider(
   if (!provider)
     return;
   provider->RegisterListener(this);
-  if (!provider->StartProvider()) {
-    LOG(WARNING) << "Failed to start provider " << provider;
-    delete provider;
-    return;
-  }
   if (most_recent_authorized_frame_.is_valid())
     provider->OnPermissionGranted(most_recent_authorized_frame_);
   provider_vector->push_back(provider);
 }
 
-void GeolocationArbitratorImpl::ResetProviders(
-    ScopedVector<LocationProviderBase>* providers) {
-  DCHECK(providers);
-  if (providers->empty())
-    return;
-  for (ScopedVector<LocationProviderBase>::iterator i = providers->begin();
-      i != providers->end(); ++i) {
-    (*i)->UnregisterListener(this);
-  }
-  providers->reset();
-}
-
-void GeolocationArbitratorImpl::ModifyProvidersIfRequired() {
+void GeolocationArbitratorImpl::StartProviders() {
   DCHECK(CalledOnValidThread());
-  // TODO(joth): Delayed callback to linger before destroying providers.
-  if (observers_.empty()) {
-    ResetProviders(&network_providers_);
-    ResetProviders(&gps_providers_);
-    return;
-  }
-
-  if (network_providers_.empty() && !request_consumer_.HasPendingRequests()) {
-    // There are no network providers either created or pending creation.
-    access_token_store_->LoadAccessTokens(
-        &request_consumer_,
-        NewCallback(this,
-                    &GeolocationArbitratorImpl::OnAccessTokenStoresLoaded));
-  }
-
-  if (UpdateOptions::Collapse(observers_).use_high_accuracy) {
-    if (gps_providers_.empty())
-      RegisterProvider(provider_factory_->NewGpsLocationProvider(),
-                       &gps_providers_);
-  } else {
-    ResetProviders(&gps_providers_);
+  const bool high_accuracy_required =
+      UpdateOptions::Collapse(observers_).use_high_accuracy;
+  for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
+      i != providers_.end(); ++i) {
+    (*i)->StartProvider(high_accuracy_required);
   }
 }
 

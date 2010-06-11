@@ -141,7 +141,7 @@ GeolocationGpsProviderLinuxTests::~GeolocationGpsProviderLinuxTests() {
 TEST_F(GeolocationGpsProviderLinuxTests, NoLibGpsInstalled) {
   provider_.reset(new GpsLocationProviderLinux(NoLibGpsFactory));
   ASSERT_TRUE(provider_.get());
-  const bool ok = provider_->StartProvider();
+  const bool ok = provider_->StartProvider(true);
   EXPECT_FALSE(ok);
   Geoposition position;
   provider_->GetPosition(&position);
@@ -152,7 +152,7 @@ TEST_F(GeolocationGpsProviderLinuxTests, NoLibGpsInstalled) {
 
 TEST_F(GeolocationGpsProviderLinuxTests, GetPosition) {
   ASSERT_TRUE(provider_.get());
-  const bool ok = provider_->StartProvider();
+  const bool ok = provider_->StartProvider(true);
   EXPECT_TRUE(ok);
   ASSERT_TRUE(MockLibGps::g_instance_);
   EXPECT_EQ(0, MockLibGps::g_instance_->start_streaming_calls_);

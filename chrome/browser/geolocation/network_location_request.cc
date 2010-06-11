@@ -317,7 +317,7 @@ bool ParseServerResponse(const std::string& response_body,
   Value* location_value = NULL;
   if (!response_object->Get(kLocationString, &location_value)) {
     LOG(INFO) << "ParseServerResponse() : Missing location attribute.\n";
-    // GLS returns an empty response (with no location property) to represent
+    // GLS returns a response with no location property to represent
     // no fix available; return true to indicate successful parse.
     return true;
   }

@@ -52,7 +52,15 @@ GpsLocationProviderLinux::GpsLocationProviderLinux(LibGpsFactory libgps_factory)
 GpsLocationProviderLinux::~GpsLocationProviderLinux() {
 }
 
-bool GpsLocationProviderLinux::StartProvider() {
+bool GpsLocationProviderLinux::StartProvider(bool high_accuracy) {
+  if (!high_accuracy) {
+    StopProvider();
+    return true;  // Not an error condition, so still return true.
+  }
+  if (gps_ != NULL) {
+    DCHECK(!task_factory_.empty());
+    return true;
+  }
   position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   gps_.reset(libgps_factory_());
   if (gps_ == NULL) {
@@ -61,6 +69,11 @@ bool GpsLocationProviderLinux::StartProvider() {
   }
   ScheduleNextGpsPoll(0);
   return true;
+}
+
+void GpsLocationProviderLinux::StopProvider() {
+  task_factory_.RevokeAll();
+  gps_.reset();
 }
 
 void GpsLocationProviderLinux::GetPosition(Geoposition* position) {

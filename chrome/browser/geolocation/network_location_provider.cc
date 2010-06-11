@@ -128,10 +128,7 @@ NetworkLocationProvider::NetworkLocationProvider(
 }
 
 NetworkLocationProvider::~NetworkLocationProvider() {
-  if (radio_data_provider_)
-    radio_data_provider_->Unregister(this);
-  if (wifi_data_provider_)
-    wifi_data_provider_->Unregister(this);
+  StopProvider();
 }
 
 // LocationProviderBase implementation
@@ -141,6 +138,8 @@ void NetworkLocationProvider::GetPosition(Geoposition *position) {
 }
 
 void NetworkLocationProvider::UpdatePosition() {
+  // TODO(joth): When called via the public (base class) interface, this should
+  // poke each data provider to get them to expedite their next scan.
   // Whilst in the delayed start, only send request if all data is ready.
   if (delayed_start_task_.empty() ||
       (is_radio_data_complete_ && is_wifi_data_complete_)) {
@@ -152,7 +151,8 @@ void NetworkLocationProvider::OnPermissionGranted(
     const GURL& requesting_frame) {
   const bool host_was_empty = most_recent_authorized_host_.empty();
   most_recent_authorized_host_ = requesting_frame.host();
-  if (host_was_empty && !most_recent_authorized_host_.empty()) {
+  if (host_was_empty && !most_recent_authorized_host_.empty()
+      && IsStarted()) {
     UpdatePosition();
   }
 }
@@ -196,9 +196,10 @@ void NetworkLocationProvider::LocationResponseAvailable(
   UpdateListeners();
 }
 
-bool NetworkLocationProvider::StartProvider() {
+bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
   DCHECK(CalledOnValidThread());
-  DCHECK(radio_data_provider_ == NULL);
+  if (IsStarted())
+    return true;
   DCHECK(wifi_data_provider_ == NULL);
   if (!request_->url().is_valid()) {
     LOG(WARNING) << "StartProvider() : Failed, Bad URL: "
@@ -222,6 +223,17 @@ bool NetworkLocationProvider::StartProvider() {
   if (is_radio_data_complete_ || is_wifi_data_complete_)
     OnDeviceDataUpdated();
   return true;
+}
+
+void NetworkLocationProvider::StopProvider() {
+  DCHECK(CalledOnValidThread());
+  if (IsStarted()) {
+    radio_data_provider_->Unregister(this);
+    wifi_data_provider_->Unregister(this);
+  }
+  radio_data_provider_ = NULL;
+  wifi_data_provider_ = NULL;
+  delayed_start_task_.RevokeAll();
 }
 
 // Other methods
@@ -275,4 +287,9 @@ void NetworkLocationProvider::OnDeviceDataUpdated() {
 
   is_new_data_available_ = is_radio_data_complete_ || is_wifi_data_complete_;
   UpdatePosition();
+}
+
+bool NetworkLocationProvider::IsStarted() const {
+  DCHECK_EQ(!!radio_data_provider_, !!wifi_data_provider_);
+  return wifi_data_provider_ != NULL;
 }

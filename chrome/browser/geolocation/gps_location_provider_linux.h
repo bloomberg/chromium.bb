@@ -11,6 +11,7 @@
 #define CHROME_BROWSER_GEOLOCATION_GPS_LOCATION_PROVIDER_LINUX_H_
 
 #include "chrome/browser/geolocation/location_provider.h"
+#include "chrome/common/geoposition.h"
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -31,7 +32,8 @@ class GpsLocationProviderLinux : public LocationProviderBase {
   virtual ~GpsLocationProviderLinux();
 
   // LocationProvider
-  virtual bool StartProvider();
+  virtual bool StartProvider(bool high_accuracy);
+  virtual void StopProvider();
   virtual void GetPosition(Geoposition* position);
   virtual void UpdatePosition();
   virtual void OnPermissionGranted(const GURL& requesting_frame);

@@ -16,9 +16,9 @@
 #include <map>
 #include "base/non_thread_safe.h"
 #include "base/string16.h"
-#include "chrome/common/geoposition.h"
 
 class AccessTokenStore;
+struct Geoposition;
 class GURL;
 class URLRequestContextGetter;
 
@@ -54,8 +54,11 @@ class LocationProviderBase : public NonThreadSafe {
   void UnregisterListener(ListenerInterface* listener);
 
   // Interface methods
-  // Returns false if the provider failed to start.
-  virtual bool StartProvider() = 0;
+  // StartProvider maybe called multiple times, e.g. to alter the
+  // |high_accuracy| setting. Returns false if a fatal error was encountered
+  // which prevented the provider from starting.
+  virtual bool StartProvider(bool high_accuracy) = 0;
+  virtual void StopProvider() = 0;
   // Gets the current best position estimate.
   virtual void GetPosition(Geoposition* position) = 0;
   // Provides a hint to the provider that new location data is needed as soon
