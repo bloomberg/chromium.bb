@@ -1,11 +1,7 @@
 *.o
 *.so
 *.pc
-wayland-system-compositor
-gears
-terminal
-flower
-screenshot
+compositor
 *.jpg
 *.png
 *~

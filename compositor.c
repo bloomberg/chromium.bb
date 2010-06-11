@@ -21,21 +21,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include <termios.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <math.h>
-#include <linux/input.h>
-#include <linux/vt.h>
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 #include <time.h>
-
-#define LIBUDEV_I_KNOW_THE_API_IS_SUBJECT_TO_CHANGE
-#include <libudev.h>
+#include <linux/input.h>
 
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES
@@ -49,120 +42,8 @@
 #include "cairo-util.h"
 #include "compositor.h"
 
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
-struct wlsc_matrix {
-	GLfloat d[16];
-};
-
-struct wl_visual {
-	struct wl_object base;
-};
-
-struct wlsc_surface;
-
-struct wlsc_listener {
-	struct wl_list link;
-	void (*func)(struct wlsc_listener *listener,
-		     struct wlsc_surface *surface);
-};
-
-struct wlsc_output {
-	struct wl_object base;
-	struct wl_list link;
-	struct wlsc_compositor *compositor;
-	struct wlsc_surface *background;
-	struct wlsc_matrix matrix;
-	int32_t x, y, width, height;
-
-	drmModeModeInfo mode;
-	uint32_t crtc_id;
-	uint32_t connector_id;
-
-	GLuint rbo[2];
-	uint32_t fb_id[2];
-	EGLImageKHR image[2];
-	uint32_t current;	
-};
-
-struct wlsc_input_device {
-	struct wl_object base;
-	int32_t x, y;
-	struct wlsc_compositor *ec;
-	struct wlsc_surface *sprite;
-	struct wl_list link;
-
-	int grab;
-	struct wlsc_surface *grab_surface;
-	struct wlsc_surface *pointer_focus;
-	struct wlsc_surface *keyboard_focus;
-	struct wl_array keys;
-
-	struct wlsc_listener listener;
-};
-
-struct wlsc_compositor {
-	struct wl_compositor base;
-	struct wl_visual argb_visual, premultiplied_argb_visual, rgb_visual;
-
-	EGLDisplay display;
-	EGLContext context;
-	int drm_fd;
-	GLuint fbo, vbo;
-	GLuint proj_uniform, tex_uniform;
-	struct wl_display *wl_display;
-
-	struct wl_list output_list;
-	struct wl_list input_device_list;
-	struct wl_list surface_list;
-
-	struct wl_list surface_destroy_listener_list;
-
-	struct wl_event_source *term_signal_source;
-
-        /* tty handling state */
-	int tty_fd;
-	uint32_t vt_active : 1;
-
-	struct termios terminal_attributes;
-	struct wl_event_source *tty_input_source;
-	struct wl_event_source *enter_vt_source;
-	struct wl_event_source *leave_vt_source;
-
-	struct udev *udev;
-
-	/* Repaint state. */
-	struct wl_event_source *timer_source;
-	int repaint_needed;
-	int repaint_on_timeout;
-	struct timespec previous_swap;
-	uint32_t current_frame;
-	struct wl_event_source *drm_source;
-
-	uint32_t modifier_state;
-};
-
-#define MODIFIER_CTRL	(1 << 8)
-#define MODIFIER_ALT	(1 << 9)
-
-struct wlsc_vector {
-	GLfloat f[4];
-};
-
-struct wlsc_surface {
-	struct wl_surface base;
-	struct wlsc_compositor *compositor;
-	struct wl_visual *visual;
-	GLuint texture;
-	EGLImageKHR image;
-	int width, height;
-	struct wl_list link;
-	struct wlsc_matrix matrix;
-	struct wlsc_matrix matrix_inv;
-};
-
-static const char *option_background = "background.jpg";
-static int option_connector = 0;
+const char *option_background = "background.jpg";
+int option_connector = 0;
 
 static const GOptionEntry option_entries[] = {
 	{ "background", 'b', 0, G_OPTION_ARG_STRING,
@@ -172,83 +53,6 @@ static const GOptionEntry option_entries[] = {
 	{ NULL }
 };
 
-struct screenshooter {
-	struct wl_object base;
-	struct wlsc_compositor *ec;
-};
-
-struct screenshooter_interface {
-	void (*shoot)(struct wl_client *client, struct screenshooter *shooter);
-};
-
-static void
-screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
-{
-	struct wlsc_compositor *ec = shooter->ec;
-	struct wlsc_output *output;
-	char buffer[256];
-	GdkPixbuf *pixbuf, *normal;
-	GError *error = NULL;
-	unsigned char *data;
-	int i, j;
-
-	i = 0;
-	wl_list_for_each(output, &ec->output_list, link) {
-		snprintf(buffer, sizeof buffer, "wayland-screenshot-%d.png", i++);
-		data = malloc(output->width * output->height * 4);
-		if (data == NULL) {
-			fprintf(stderr, "couldn't allocate image buffer\n");
-			continue;
-		}
-
-		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		glReadPixels(0, 0, output->width, output->height,
-			     GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-		/* FIXME: We should just use a RGB visual for the frontbuffer. */
-		for (j = 3; j < output->width * output->height * 4; j += 4)
-			data[j] = 0xff;
-
-		pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
-						  8, output->width, output->height, output->width * 4,
-						  NULL, NULL);
-		normal = gdk_pixbuf_flip(pixbuf, FALSE);
-		gdk_pixbuf_save(normal, buffer, "png", &error, NULL);
-		gdk_pixbuf_unref(normal);
-		gdk_pixbuf_unref(pixbuf);
-		free(data);
-	}
-}
-
-static const struct wl_message screenshooter_methods[] = {
-	{ "shoot", "", NULL }
-};
-
-static const struct wl_interface screenshooter_interface = {
-	"screenshooter", 1,
-	ARRAY_LENGTH(screenshooter_methods),
-	screenshooter_methods,
-};
-
-struct screenshooter_interface screenshooter_implementation = {
-	screenshooter_shoot
-};
-
-static struct screenshooter *
-screenshooter_create(struct wlsc_compositor *ec)
-{
-	struct screenshooter *shooter;
-
-	shooter = malloc(sizeof *shooter);
-	if (shooter == NULL)
-		return NULL;
-
-	shooter->base.interface = &screenshooter_interface;
-	shooter->base.implementation = (void(**)(void)) &screenshooter_implementation;
-	shooter->ec = ec;
-
-	return shooter;
-};
 				   
 static void
 wlsc_matrix_init(struct wlsc_matrix *matrix)
@@ -543,15 +347,9 @@ wlsc_surface_lower(struct wlsc_surface *surface)
 	wl_list_insert(&compositor->surface_list, &surface->link);
 }
 
-static void
-page_flip_handler(int fd, unsigned int frame,
-		  unsigned int sec, unsigned int usec, void *data)
+void
+wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs)
 {
-	struct wlsc_output *output = data;
-	struct wlsc_compositor *compositor = output->compositor;
-	uint32_t msecs;
-
-	msecs = sec * 1000 + usec / 1000;
 	wl_display_post_frame(compositor->wl_display,
 			      &compositor->base,
 			      compositor->current_frame, msecs);
@@ -563,7 +361,7 @@ page_flip_handler(int fd, unsigned int frame,
 }
 
 static void
-repaint_output(struct wlsc_output *output)
+wlsc_output_repaint(struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
@@ -588,9 +386,6 @@ repaint_output(struct wlsc_output *output)
 				  GL_COLOR_ATTACHMENT0,
 				  GL_RENDERBUFFER,
 				  output->rbo[output->current]);
-	drmModePageFlip(ec->drm_fd, output->crtc_id,
-			output->fb_id[output->current ^ 1],
-			DRM_MODE_PAGE_FLIP_EVENT, output);
 }
 
 static void
@@ -605,7 +400,9 @@ repaint(void *data)
 	}
 
 	wl_list_for_each(output, &ec->output_list, link)
-		repaint_output(output);
+		wlsc_output_repaint(output);
+
+	wlsc_compositor_present_drm(ec);
 
 	ec->repaint_needed = 0;
 }
@@ -613,16 +410,12 @@ repaint(void *data)
 static void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
-	struct wlsc_output *output;
-
 	compositor->repaint_needed = 1;
 	if (compositor->repaint_on_timeout)
 		return;
 
-	wl_list_for_each(output, &compositor->output_list, link)
-		drmModePageFlip(compositor->drm_fd, output->crtc_id,
-				output->fb_id[output->current ^ 1],
-				DRM_MODE_PAGE_FLIP_EVENT, output);
+	wl_event_source_timer_update(compositor->timer_source, 1);
+	compositor->repaint_on_timeout = 1;
 }
 
 static void
@@ -899,8 +692,6 @@ notify_button(struct wlsc_input_device *device,
 	}
 }
 
-static void on_term_signal(int signal_number, void *data);
-
 void
 notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
@@ -914,7 +705,7 @@ notify_key(struct wlsc_input_device *device,
 
 	switch (key | compositor->modifier_state) {
 	case KEY_BACKSPACE | MODIFIER_CTRL | MODIFIER_ALT:
-		on_term_signal(SIGTERM, compositor);
+		kill(0, SIGTERM);
 		return;
 	}
 
@@ -956,10 +747,6 @@ notify_key(struct wlsc_input_device *device,
 				      WL_INPUT_KEY, key, state);
 }
 
-struct evdev_input_device *
-evdev_input_device_create(struct wlsc_input_device *device,
-			  struct wl_display *display, const char *path);
-
 static void
 handle_surface_destroy(struct wlsc_listener *listener,
 		       struct wlsc_surface *surface)
@@ -982,8 +769,8 @@ handle_surface_destroy(struct wlsc_listener *listener,
 	}
 }
 
-static struct wlsc_input_device *
-create_input_device(struct wlsc_compositor *ec)
+struct wlsc_input_device *
+wlsc_input_device_create(struct wlsc_compositor *ec)
 {
 	struct wlsc_input_device *device;
 
@@ -1008,15 +795,8 @@ create_input_device(struct wlsc_compositor *ec)
 	return device;
 }
 
-void
-wlsc_device_get_position(struct wlsc_input_device *device, int32_t *x, int32_t *y)
-{
-	*x = device->x;
-	*y = device->y;
-}
-
 static void
-post_output_geometry(struct wl_client *client, struct wl_object *global)
+wlsc_output_post_geometry(struct wl_client *client, struct wl_object *global)
 {
 	struct wlsc_output *output =
 		container_of(global, struct wlsc_output, base);
@@ -1024,17 +804,6 @@ post_output_geometry(struct wl_client *client, struct wl_object *global)
 	wl_client_post_event(client, global,
 			     WL_OUTPUT_GEOMETRY,
 			     output->width, output->height);
-}
-
-static void
-on_drm_input(int fd, uint32_t mask, void *data)
-{
-	drmEventContext evctx;
-
-	memset(&evctx, 0, sizeof evctx);
-	evctx.version = DRM_EVENT_CONTEXT_VERSION;
-	evctx.page_flip_handler = page_flip_handler;
-	drmHandleEvent(fd, &evctx);
 }
 
 static const char vertex_shader[] =
@@ -1122,227 +891,6 @@ init_shaders(struct wlsc_compositor *ec)
    glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
 }
 
-static int
-init_egl(struct wlsc_compositor *ec, struct udev_device *device)
-{
-	struct wl_event_loop *loop;
-	EGLint major, minor, count;
-	EGLConfig config;
-	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
-
-	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE,		0,
-		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
-		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
-		EGL_NONE
-	};
-
-	get_typed_display_mesa =
-		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
-	if (get_typed_display_mesa == NULL) {
-		fprintf(stderr, "eglGetDisplayMESA() not found\n");
-		return -1;
-	}
-
-	ec->base.device = strdup(udev_device_get_devnode(device));
-	ec->drm_fd = open(ec->base.device, O_RDWR);
-	if (ec->drm_fd < 0) {
-		/* Probably permissions error */
-		fprintf(stderr, "couldn't open %s, skipping\n",
-			udev_device_get_devnode(device));
-		return -1;
-	}
-
-	ec->display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
-					     (void *) ec->drm_fd);
-	if (ec->display == NULL) {
-		fprintf(stderr, "failed to create display\n");
-		return -1;
-	}
-
-	if (!eglInitialize(ec->display, &major, &minor)) {
-		fprintf(stderr, "failed to initialize display\n");
-		return -1;
-	}
-
-	if (!eglChooseConfig(ec->display, config_attribs, &config, 1, &count) ||
-	    count == 0) {
-		fprintf(stderr, "eglChooseConfig() failed\n");
-		return -1;
-	}
-
-	eglBindAPI(EGL_OPENGL_API);
-	ec->context = eglCreateContext(ec->display, config, EGL_NO_CONTEXT, NULL);
-	if (ec->context == NULL) {
-		fprintf(stderr, "failed to create context\n");
-		return -1;
-	}
-
-	if (!eglMakeCurrent(ec->display, EGL_NO_SURFACE, EGL_NO_SURFACE, ec->context)) {
-		fprintf(stderr, "failed to make context current\n");
-		return -1;
-	}
-
-	glGenFramebuffers(1, &ec->fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, ec->fbo);
-	glActiveTexture(GL_TEXTURE0);
-	init_shaders(ec);
-
-	loop = wl_display_get_event_loop(ec->wl_display);
-	ec->drm_source =
-		wl_event_loop_add_fd(loop, ec->drm_fd,
-				     WL_EVENT_READABLE, on_drm_input, ec);
-
-	return 0;
-}
-
-static drmModeModeInfo builtin_1024x768 = {
-	63500,			/* clock */
-	1024, 1072, 1176, 1328, 0,
-	768, 771, 775, 798, 0,
-	59920,
-	DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_PVSYNC,
-	0,
-	"1024x768"
-};
-
-static int
-create_output_for_connector(struct wlsc_compositor *ec,
-			    drmModeRes *resources,
-			    drmModeConnector *connector)
-{
-	struct wlsc_output *output;
-	drmModeEncoder *encoder;
-	drmModeModeInfo *mode;
-	int i, ret;
-	EGLint handle, stride, attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
-		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
-
-	output = malloc(sizeof *output);
-	if (output == NULL)
-		return -1;
-
-	if (connector->count_modes > 0) 
-		mode = &connector->modes[0];
-	else
-		mode = &builtin_1024x768;
-
-	encoder = drmModeGetEncoder(ec->drm_fd, connector->encoders[0]);
-	if (encoder == NULL) {
-		fprintf(stderr, "No encoder for connector.\n");
-		return -1;
-	}
-
-	for (i = 0; i < resources->count_crtcs; i++) {
-		if (encoder->possible_crtcs & (1 << i))
-			break;
-	}
-	if (i == resources->count_crtcs) {
-		fprintf(stderr, "No usable crtc for encoder.\n");
-		return -1;
-	}
-
-	output->compositor = ec;
-	output->crtc_id = resources->crtcs[i];
-	output->connector_id = connector->connector_id;
-	output->mode = *mode;
-	output->x = 0;
-	output->y = 0;
-	output->width = mode->hdisplay;
-	output->height = mode->vdisplay;
-	wlsc_matrix_init(&output->matrix);
-
-	wlsc_matrix_translate(&output->matrix,
-			      -output->x - output->width / 2.0,
-			      -output->y - output->height / 2.0, 0);
-	wlsc_matrix_scale(&output->matrix,
-			  2.0 / output->width, 2.0 / output->height, 1);
-
-	drmModeFreeEncoder(encoder);
-
-	glGenRenderbuffers(2, output->rbo);
-	for (i = 0; i < 2; i++) {
-		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
-
-		attribs[1] = output->width;
-		attribs[3] = output->height;
-		output->image[i] = eglCreateDRMImageMESA(ec->display, attribs);
-		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, output->image[i]);
-		eglExportDRMImageMESA(ec->display, output->image[i], NULL, &handle, &stride);
-
-		ret = drmModeAddFB(ec->drm_fd, output->width, output->height,
-				   32, 32, stride, handle, &output->fb_id[i]);
-		if (ret) {
-			fprintf(stderr, "failed to add fb %d: %m\n", i);
-			return -1;
-		}
-	}
-
-	output->current = 0;
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-				  GL_COLOR_ATTACHMENT0,
-				  GL_RENDERBUFFER,
-				  output->rbo[output->current]);
-	ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
-			     output->fb_id[output->current ^ 1], 0, 0,
-			     &output->connector_id, 1, &output->mode);
-	if (ret) {
-		fprintf(stderr, "failed to set mode: %m\n");
-		return -1;
-	}
-
-	output->base.interface = &wl_output_interface;
-	wl_display_add_object(ec->wl_display, &output->base);
-	wl_display_add_global(ec->wl_display, &output->base, post_output_geometry);
-	wl_list_insert(ec->output_list.prev, &output->link);
-
-	output->background = background_create(output, option_background);
-
-	return 0;
-}
-
-static int
-create_outputs(struct wlsc_compositor *ec)
-{
-	drmModeConnector *connector;
-	drmModeRes *resources;
-	int i;
-
-	resources = drmModeGetResources(ec->drm_fd);
-	if (!resources) {
-		fprintf(stderr, "drmModeGetResources failed\n");
-		return -1;
-	}
-
-	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(ec->drm_fd, resources->connectors[i]);
-		if (connector == NULL)
-			continue;
-
-		if (connector->connection == DRM_MODE_CONNECTED &&
-		    (option_connector == 0 ||
-		     connector->connector_id == option_connector))
-			if (create_output_for_connector(ec, resources, connector) < 0)
-				return -1;
-
-		drmModeFreeConnector(connector);
-	}
-
-	if (wl_list_empty(&ec->output_list)) {
-		fprintf(stderr, "No currently active connector found.\n");
-		return -1;
-	}
-
-	drmModeFreeResources(resources);
-
-	return 0;
-}
-
 static const struct wl_interface visual_interface = {
 	"visual", 1,
 };
@@ -1368,177 +916,12 @@ add_visuals(struct wlsc_compositor *ec)
 	wl_display_add_global(ec->wl_display, &ec->rgb_visual.base, NULL);
 }
 
-static void on_enter_vt(int signal_number, void *data)
-{
-	struct wlsc_compositor *ec = data;
-	struct wlsc_output *output;
-	int ret;
-
-	ret = drmSetMaster(ec->drm_fd);
-	if (ret) {
-		fprintf(stderr, "failed to set drm master\n");
-		on_term_signal(SIGTERM, ec);
-		return;
-	}
-
-	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
-	ec->vt_active = TRUE;
-
-	wl_list_for_each(output, &ec->output_list, link) {
-		ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
-				     output->fb_id[output->current ^ 1], 0, 0,
-				     &output->connector_id, 1, &output->mode);
-		if (ret)
-			fprintf(stderr, "failed to set mode for connector %d: %m\n",
-				output->connector_id);
-	}
-}
-
-static void on_leave_vt(int signal_number, void *data)
-{
-	struct wlsc_compositor *ec = data;
-	int ret;
-
-	ret = drmDropMaster(ec->drm_fd);
-	if (ret) {
-		fprintf(stderr, "failed to drop drm master\n");
-		on_term_signal(SIGTERM, ec);
-		return;
-	}
-
-	ioctl (ec->tty_fd, VT_RELDISP, 1);
-	ec->vt_active = FALSE;
-}
-
-static void
-on_tty_input(int fd, uint32_t mask, void *data)
-{
-	struct wlsc_compositor *ec = data;
-
-	/* Ignore input to tty.  We get keyboard events from evdev
-	 */
-	tcflush(ec->tty_fd, TCIFLUSH);
-}
-
-static void on_term_signal(int signal_number, void *data)
-{
-	struct wlsc_compositor *ec = data;
-
-	if (tcsetattr(ec->tty_fd, TCSANOW, &ec->terminal_attributes) < 0)
-		fprintf(stderr, "could not restore terminal to canonical mode\n");
-
-	exit(0);
-}
-
-static int setup_tty(struct wlsc_compositor *ec, struct wl_event_loop *loop)
-{
-	struct termios raw_attributes;
-	struct vt_mode mode = { 0 };
-
-	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
-	if (ec->tty_fd <= 0) {
-		fprintf(stderr, "failed to open active tty: %m\n");
-		return -1;
-	}
-
-	if (tcgetattr(ec->tty_fd, &ec->terminal_attributes) < 0) {
-		fprintf(stderr, "could not get terminal attributes: %m\n");
-		return -1;
-	}
-
-	/* Ignore control characters and disable echo */
-	raw_attributes = ec->terminal_attributes;
-	cfmakeraw(&raw_attributes);
-
-	/* Fix up line endings to be normal (cfmakeraw hoses them) */
-	raw_attributes.c_oflag |= OPOST | OCRNL;
-
-	if (tcsetattr(ec->tty_fd, TCSANOW, &raw_attributes) < 0)
-		fprintf(stderr, "could not put terminal into raw mode: %m\n");
-
-	ec->term_signal_source =
-		wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
-
-	ec->tty_input_source =
-		wl_event_loop_add_fd(loop, ec->tty_fd,
-				     WL_EVENT_READABLE, on_tty_input, ec);
-
-	ec->vt_active = TRUE;
-	mode.mode = VT_PROCESS;
-	mode.relsig = SIGUSR1;
-	mode.acqsig = SIGUSR2;
-	if (!ioctl(ec->tty_fd, VT_SETMODE, &mode) < 0) {
-		fprintf(stderr, "failed to take control of vt handling\n");
-	}
-
-	ec->leave_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR1, on_leave_vt, ec);
-	ec->enter_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR2, on_enter_vt, ec);
-
-	return 0;
-}
-
-static int
-init_libudev(struct wlsc_compositor *ec)
-{
-	struct udev_enumerate *e;
-        struct udev_list_entry *entry;
-	struct udev_device *device;
-	const char *path;
-	struct wlsc_input_device *input_device;
-
-	ec->udev = udev_new();
-	if (ec->udev == NULL) {
-		fprintf(stderr, "failed to initialize udev context\n");
-		return -1;
-	}
-
-	input_device = create_input_device(ec);
-
-	e = udev_enumerate_new(ec->udev);
-	udev_enumerate_add_match_subsystem(e, "input");
-	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
-        udev_enumerate_scan_devices(e);
-        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
-		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(ec->udev, path);
-		evdev_input_device_create(input_device, ec->wl_display,
-					  udev_device_get_devnode(device));
-	}
-        udev_enumerate_unref(e);
-
-	e = udev_enumerate_new(ec->udev);
-	udev_enumerate_add_match_subsystem(e, "drm");
-	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
-        udev_enumerate_scan_devices(e);
-        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
-		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(ec->udev, path);
-		if (init_egl(ec, device) < 0) {
-			fprintf(stderr, "failed to initialize egl\n");
-			return -1;
-		}
-		if (create_outputs(ec) < 0) {
-			fprintf(stderr, "failed to create output for %s\n", path);
-			return -1;
-		}
-	}
-        udev_enumerate_unref(e);
-
-	/* Create the pointer surface now that we have a current EGL context. */
-	input_device->sprite =
-		pointer_create(ec, input_device->x, input_device->y, 64, 64);
-
-	return 0;
-}
-
 static struct wlsc_compositor *
 wlsc_compositor_create(struct wl_display *display)
 {
 	struct wlsc_compositor *ec;
-	struct screenshooter *shooter;
 	struct wl_event_loop *loop;
+	struct wlsc_output *output;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
@@ -1555,19 +938,43 @@ wlsc_compositor_create(struct wl_display *display)
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->surface_destroy_listener_list);
-	if (init_libudev(ec) < 0) {
+
+	screenshooter_create(ec);
+
+	if (wlsc_compositor_init_drm(ec) < 0) {
 		fprintf(stderr, "failed to initialize devices\n");
 		return NULL;
 	}
 
-	shooter = screenshooter_create(ec);
-	wl_display_add_object(display, &shooter->base);
-	wl_display_add_global(display, &shooter->base, NULL);
+	/* Create the pointer and background surfaces now that we have
+	 * a current EGL context. */
+	ec->input_device->sprite =
+		pointer_create(ec, 
+			       ec->input_device->x,
+			       ec->input_device->y, 64, 64);
+	wl_list_for_each(output, &ec->output_list, link) {
+		output->background = background_create(output,
+						       option_background);
+
+		wlsc_matrix_init(&output->matrix);
+
+		wlsc_matrix_translate(&output->matrix,
+				      -output->x - output->width / 2.0,
+				      -output->y - output->height / 2.0, 0);
+		wlsc_matrix_scale(&output->matrix,
+				  2.0 / output->width, 2.0 / output->height, 1);
+		output->base.interface = &wl_output_interface;
+		wl_display_add_object(ec->wl_display, &output->base);
+		wl_display_add_global(ec->wl_display, &output->base,
+				      wlsc_output_post_geometry);
+	}
+
+	glGenFramebuffers(1, &ec->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, ec->fbo);
+	glActiveTexture(GL_TEXTURE0);
+	init_shaders(ec);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
-
-	setup_tty(ec, loop);
-
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	wlsc_compositor_schedule_repaint(ec);
 

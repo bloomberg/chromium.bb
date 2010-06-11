@@ -27,9 +27,9 @@ $(libs) :
 
 compositor :					\
 	compositor.o				\
-	evdev.o					\
-	cairo-util.o				\
-	wayland-util.o
+	compositor-drm.o			\
+	screenshooter.o				\
+	cairo-util.o
 
 compositor : CFLAGS += $(COMPOSITOR_CFLAGS)
 compositor : LDLIBS += ./libwayland-server.so $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL -lm

@@ -1,0 +1,594 @@
+/*
+ * Copyright © 2008-2010 Kristian Høgsberg
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <signal.h>
+#include <linux/vt.h>
+#include <linux/input.h>
+
+#define GL_GLEXT_PROTOTYPES
+#define EGL_EGLEXT_PROTOTYPES
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+#include "wayland.h"
+#include "wayland-protocol.h"
+#include "compositor.h"
+
+struct evdev_input_device {
+	struct wlsc_input_device *device;
+	struct wl_event_source *source;
+	int tool, new_x, new_y;
+	int base_x, base_y;
+	int fd;
+};
+
+static void evdev_input_device_data(int fd, uint32_t mask, void *data)
+{
+	struct evdev_input_device *device = data;
+	struct input_event ev[8], *e, *end;
+	int len, value, dx, dy, absolute_event;
+	int x, y;
+
+	dx = 0;
+	dy = 0;
+	absolute_event = 0;
+	x = device->device->x;
+	y = device->device->y;
+
+	len = read(fd, &ev, sizeof ev);
+	if (len < 0 || len % sizeof e[0] != 0) {
+		/* FIXME: handle error... reopen device? */;
+		return;
+	}
+
+	e = ev;
+	end = (void *) ev + len;
+	for (e = ev; e < end; e++) {
+		/* Get the signed value, earlier kernels had this as unsigned */
+		value = e->value;
+
+		switch (e->type) {
+		case EV_REL:
+			switch (e->code) {
+			case REL_X:
+				dx += value;
+				break;
+
+			case REL_Y:
+				dy += value;
+				break;
+			}
+			break;
+
+		case EV_ABS:
+		        absolute_event = 1;
+			switch (e->code) {
+			case ABS_X:
+				if (device->new_x) {
+					device->base_x = x - value;
+					device->new_x = 0;
+				}
+				x = device->base_x + value;
+				break;
+			case ABS_Y:
+				if (device->new_y) {
+					device->base_y = y - value;
+					device->new_y = 0;
+				}
+				y = device->base_y + value;
+				break;
+			}
+			break;
+
+		case EV_KEY:
+			if (value == 2)
+				break;
+
+			switch (e->code) {
+			case BTN_TOUCH:
+			case BTN_TOOL_PEN:
+			case BTN_TOOL_RUBBER:
+			case BTN_TOOL_BRUSH:
+			case BTN_TOOL_PENCIL:
+			case BTN_TOOL_AIRBRUSH:
+			case BTN_TOOL_FINGER:
+			case BTN_TOOL_MOUSE:
+			case BTN_TOOL_LENS:
+				if (device->tool == 0 && value) {
+					device->new_x = 1;
+					device->new_y = 1;
+				}
+				device->tool = value ? e->code : 0;
+				break;
+
+			case BTN_LEFT:
+			case BTN_RIGHT:
+			case BTN_MIDDLE:
+			case BTN_SIDE:
+			case BTN_EXTRA:
+			case BTN_FORWARD:
+			case BTN_BACK:
+			case BTN_TASK:
+				notify_button(device->device, e->code, value);
+				break;
+
+			default:
+				notify_key(device->device, e->code, value);
+				break;
+			}
+		}
+	}
+
+	if (dx != 0 || dy != 0)
+		notify_motion(device->device, x + dx, y + dy);
+	if (absolute_event && device->tool)
+		notify_motion(device->device, x, y);
+}
+
+static struct evdev_input_device *
+evdev_input_device_create(struct wlsc_input_device *master,
+			  struct wl_display *display, const char *path)
+{
+	struct evdev_input_device *device;
+	struct wl_event_loop *loop;
+
+	device = malloc(sizeof *device);
+	if (device == NULL)
+		return NULL;
+
+	device->tool = 1;
+	device->new_x = 1;
+	device->new_y = 1;
+	device->device = master;
+
+	device->fd = open(path, O_RDONLY);
+	if (device->fd < 0) {
+		free(device);
+		fprintf(stderr, "couldn't create pointer for %s: %m\n", path);
+		return NULL;
+	}
+
+	loop = wl_display_get_event_loop(display);
+	device->source = wl_event_loop_add_fd(loop, device->fd,
+					      WL_EVENT_READABLE,
+					      evdev_input_device_data, device);
+	if (device->source == NULL) {
+		close(device->fd);
+		free(device);
+		return NULL;
+	}
+
+	return device;
+}
+
+void
+wlsc_compositor_present_drm(struct wlsc_compositor *ec)
+{
+	struct wlsc_output *output;
+
+	wl_list_for_each(output, &ec->output_list, link) {
+		drmModePageFlip(ec->drm_fd, output->crtc_id,
+				output->fb_id[output->current ^ 1],
+				DRM_MODE_PAGE_FLIP_EVENT, output);
+	}	
+}
+
+static void
+page_flip_handler(int fd, unsigned int frame,
+		  unsigned int sec, unsigned int usec, void *data)
+{
+	struct wlsc_output *output = data;
+	struct wlsc_compositor *compositor = output->compositor;
+	uint32_t msecs;
+
+	msecs = sec * 1000 + usec / 1000;
+	wlsc_compositor_finish_frame(compositor, msecs);
+}
+
+static void
+on_drm_input(int fd, uint32_t mask, void *data)
+{
+	drmEventContext evctx;
+
+	memset(&evctx, 0, sizeof evctx);
+	evctx.version = DRM_EVENT_CONTEXT_VERSION;
+	evctx.page_flip_handler = page_flip_handler;
+	drmHandleEvent(fd, &evctx);
+}
+
+static int
+init_egl(struct wlsc_compositor *ec, struct udev_device *device)
+{
+	struct wl_event_loop *loop;
+	EGLint major, minor, count;
+	EGLConfig config;
+	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
+
+	static const EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE,		0,
+		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
+		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
+		EGL_NONE
+	};
+
+	get_typed_display_mesa =
+		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
+	if (get_typed_display_mesa == NULL) {
+		fprintf(stderr, "eglGetTypedDisplayMESA() not found\n");
+		return -1;
+	}
+
+	ec->base.device = strdup(udev_device_get_devnode(device));
+	ec->drm_fd = open(ec->base.device, O_RDWR);
+	if (ec->drm_fd < 0) {
+		/* Probably permissions error */
+		fprintf(stderr, "couldn't open %s, skipping\n",
+			udev_device_get_devnode(device));
+		return -1;
+	}
+
+	ec->display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
+					     (void *) ec->drm_fd);
+	if (ec->display == NULL) {
+		fprintf(stderr, "failed to create display\n");
+		return -1;
+	}
+
+	if (!eglInitialize(ec->display, &major, &minor)) {
+		fprintf(stderr, "failed to initialize display\n");
+		return -1;
+	}
+
+	if (!eglChooseConfig(ec->display, config_attribs, &config, 1, &count) ||
+	    count == 0) {
+		fprintf(stderr, "eglChooseConfig() failed\n");
+		return -1;
+	}
+
+	eglBindAPI(EGL_OPENGL_API);
+	ec->context = eglCreateContext(ec->display, config, EGL_NO_CONTEXT, NULL);
+	if (ec->context == NULL) {
+		fprintf(stderr, "failed to create context\n");
+		return -1;
+	}
+
+	if (!eglMakeCurrent(ec->display, EGL_NO_SURFACE, EGL_NO_SURFACE, ec->context)) {
+		fprintf(stderr, "failed to make context current\n");
+		return -1;
+	}
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	ec->drm_source =
+		wl_event_loop_add_fd(loop, ec->drm_fd,
+				     WL_EVENT_READABLE, on_drm_input, ec);
+
+	return 0;
+}
+
+static drmModeModeInfo builtin_1024x768 = {
+	63500,			/* clock */
+	1024, 1072, 1176, 1328, 0,
+	768, 771, 775, 798, 0,
+	59920,
+	DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_PVSYNC,
+	0,
+	"1024x768"
+};
+
+static int
+create_output_for_connector(struct wlsc_compositor *ec,
+			    drmModeRes *resources,
+			    drmModeConnector *connector)
+{
+	struct wlsc_output *output;
+	drmModeEncoder *encoder;
+	drmModeModeInfo *mode;
+	int i, ret;
+	EGLint handle, stride, attribs[] = {
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
+		EGL_NONE
+	};
+
+	output = malloc(sizeof *output);
+	if (output == NULL)
+		return -1;
+
+	if (connector->count_modes > 0) 
+		mode = &connector->modes[0];
+	else
+		mode = &builtin_1024x768;
+
+	encoder = drmModeGetEncoder(ec->drm_fd, connector->encoders[0]);
+	if (encoder == NULL) {
+		fprintf(stderr, "No encoder for connector.\n");
+		return -1;
+	}
+
+	for (i = 0; i < resources->count_crtcs; i++) {
+		if (encoder->possible_crtcs & (1 << i))
+			break;
+	}
+	if (i == resources->count_crtcs) {
+		fprintf(stderr, "No usable crtc for encoder.\n");
+		return -1;
+	}
+
+	output->compositor = ec;
+	output->crtc_id = resources->crtcs[i];
+	output->connector_id = connector->connector_id;
+	output->mode = *mode;
+	output->x = 0;
+	output->y = 0;
+	output->width = mode->hdisplay;
+	output->height = mode->vdisplay;
+
+	drmModeFreeEncoder(encoder);
+
+	glGenRenderbuffers(2, output->rbo);
+	for (i = 0; i < 2; i++) {
+		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
+
+		attribs[1] = output->width;
+		attribs[3] = output->height;
+		output->image[i] = eglCreateDRMImageMESA(ec->display, attribs);
+		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, output->image[i]);
+		eglExportDRMImageMESA(ec->display, output->image[i], NULL, &handle, &stride);
+
+		ret = drmModeAddFB(ec->drm_fd, output->width, output->height,
+				   32, 32, stride, handle, &output->fb_id[i]);
+		if (ret) {
+			fprintf(stderr, "failed to add fb %d: %m\n", i);
+			return -1;
+		}
+	}
+
+	output->current = 0;
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
+				  output->rbo[output->current]);
+	ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
+			     output->fb_id[output->current ^ 1], 0, 0,
+			     &output->connector_id, 1, &output->mode);
+	if (ret) {
+		fprintf(stderr, "failed to set mode: %m\n");
+		return -1;
+	}
+
+	wl_list_insert(ec->output_list.prev, &output->link);
+
+	return 0;
+}
+
+static int
+create_outputs(struct wlsc_compositor *ec)
+{
+	drmModeConnector *connector;
+	drmModeRes *resources;
+	int i;
+
+	resources = drmModeGetResources(ec->drm_fd);
+	if (!resources) {
+		fprintf(stderr, "drmModeGetResources failed\n");
+		return -1;
+	}
+
+	for (i = 0; i < resources->count_connectors; i++) {
+		connector = drmModeGetConnector(ec->drm_fd, resources->connectors[i]);
+		if (connector == NULL)
+			continue;
+
+		if (connector->connection == DRM_MODE_CONNECTED &&
+		    (option_connector == 0 ||
+		     connector->connector_id == option_connector))
+			if (create_output_for_connector(ec, resources, connector) < 0)
+				return -1;
+
+		drmModeFreeConnector(connector);
+	}
+
+	if (wl_list_empty(&ec->output_list)) {
+		fprintf(stderr, "No currently active connector found.\n");
+		return -1;
+	}
+
+	drmModeFreeResources(resources);
+
+	return 0;
+}
+
+static void on_enter_vt(int signal_number, void *data)
+{
+	struct wlsc_compositor *ec = data;
+	struct wlsc_output *output;
+	int ret;
+
+	ret = drmSetMaster(ec->drm_fd);
+	if (ret) {
+		fprintf(stderr, "failed to set drm master\n");
+		kill(0, SIGTERM);
+		return;
+	}
+
+	fprintf(stderr, "enter vt\n");
+
+	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
+	ec->vt_active = 1;
+
+	wl_list_for_each(output, &ec->output_list, link) {
+		ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
+				     output->fb_id[output->current ^ 1], 0, 0,
+				     &output->connector_id, 1, &output->mode);
+		if (ret)
+			fprintf(stderr, "failed to set mode for connector %d: %m\n",
+				output->connector_id);
+	}
+}
+
+static void on_leave_vt(int signal_number, void *data)
+{
+	struct wlsc_compositor *ec = data;
+	int ret;
+
+	ret = drmDropMaster(ec->drm_fd);
+	if (ret) {
+		fprintf(stderr, "failed to drop drm master\n");
+		kill(0, SIGTERM);
+		return;
+	}
+
+	ioctl (ec->tty_fd, VT_RELDISP, 1);
+	ec->vt_active = 0;
+}
+
+static void
+on_tty_input(int fd, uint32_t mask, void *data)
+{
+	struct wlsc_compositor *ec = data;
+
+	/* Ignore input to tty.  We get keyboard events from evdev
+	 */
+	tcflush(ec->tty_fd, TCIFLUSH);
+}
+
+static void on_term_signal(int signal_number, void *data)
+{
+	struct wlsc_compositor *ec = data;
+
+	if (tcsetattr(ec->tty_fd, TCSANOW, &ec->terminal_attributes) < 0)
+		fprintf(stderr, "could not restore terminal to canonical mode\n");
+
+	exit(0);
+}
+
+static int setup_tty(struct wlsc_compositor *ec, struct wl_event_loop *loop)
+{
+	struct termios raw_attributes;
+	struct vt_mode mode = { 0 };
+
+	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
+	if (ec->tty_fd <= 0) {
+		fprintf(stderr, "failed to open active tty: %m\n");
+		return -1;
+	}
+
+	if (tcgetattr(ec->tty_fd, &ec->terminal_attributes) < 0) {
+		fprintf(stderr, "could not get terminal attributes: %m\n");
+		return -1;
+	}
+
+	/* Ignore control characters and disable echo */
+	raw_attributes = ec->terminal_attributes;
+	cfmakeraw(&raw_attributes);
+
+	/* Fix up line endings to be normal (cfmakeraw hoses them) */
+	raw_attributes.c_oflag |= OPOST | OCRNL;
+
+	if (tcsetattr(ec->tty_fd, TCSANOW, &raw_attributes) < 0)
+		fprintf(stderr, "could not put terminal into raw mode: %m\n");
+
+	ec->term_signal_source =
+		wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
+
+	ec->tty_input_source =
+		wl_event_loop_add_fd(loop, ec->tty_fd,
+				     WL_EVENT_READABLE, on_tty_input, ec);
+
+	ec->vt_active = 1;
+	mode.mode = VT_PROCESS;
+	mode.relsig = SIGUSR1;
+	mode.acqsig = SIGUSR2;
+	if (!ioctl(ec->tty_fd, VT_SETMODE, &mode) < 0) {
+		fprintf(stderr, "failed to take control of vt handling\n");
+	}
+
+	ec->leave_vt_source =
+		wl_event_loop_add_signal(loop, SIGUSR1, on_leave_vt, ec);
+	ec->enter_vt_source =
+		wl_event_loop_add_signal(loop, SIGUSR2, on_enter_vt, ec);
+
+	return 0;
+}
+
+int
+wlsc_compositor_init_drm(struct wlsc_compositor *ec)
+{
+	struct udev_enumerate *e;
+        struct udev_list_entry *entry;
+	struct udev_device *device;
+	const char *path;
+	struct wlsc_input_device *input_device;
+	struct wl_event_loop *loop;
+
+	ec->udev = udev_new();
+	if (ec->udev == NULL) {
+		fprintf(stderr, "failed to initialize udev context\n");
+		return -1;
+	}
+
+	input_device = wlsc_input_device_create(ec);
+	ec->input_device = input_device;
+
+	e = udev_enumerate_new(ec->udev);
+	udev_enumerate_add_match_subsystem(e, "input");
+	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
+        udev_enumerate_scan_devices(e);
+        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+		path = udev_list_entry_get_name(entry);
+		device = udev_device_new_from_syspath(ec->udev, path);
+		evdev_input_device_create(input_device, ec->wl_display,
+					  udev_device_get_devnode(device));
+	}
+        udev_enumerate_unref(e);
+
+	e = udev_enumerate_new(ec->udev);
+	udev_enumerate_add_match_subsystem(e, "drm");
+	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
+        udev_enumerate_scan_devices(e);
+        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+		path = udev_list_entry_get_name(entry);
+		device = udev_device_new_from_syspath(ec->udev, path);
+		fprintf(stderr, "creating output for %s\n", path);
+
+		if (init_egl(ec, device) < 0) {
+			fprintf(stderr, "failed to initialize egl\n");
+			return -1;
+		}
+		if (create_outputs(ec) < 0) {
+			fprintf(stderr, "failed to create output for %s\n", path);
+			return -1;
+		}
+	}
+        udev_enumerate_unref(e);
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	setup_tty(ec, loop);
+
+	return 0;
+}
