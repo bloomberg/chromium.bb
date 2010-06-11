@@ -15,11 +15,12 @@
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/cocoa/objc_method_swizzle.h"
 
-// Deallocated objects are re-classed as |CrZombie|.  Overrides most
-// |NSObject| methods to log fatal errors.
-@interface CrZombie : NSObject {
+// Deallocated objects are re-classed as |CrZombie|.  No superclass
+// because then the class would have to override many/most of the
+// inherited methods (|NSObject| is like a category magnet!).
+@interface CrZombie {
+  Class isa;
 }
-
 @end
 
 // Objects with enough space are made into "fat" zombies, which
@@ -93,23 +94,6 @@ DestructFn* LookupObjectCxxDestruct() {
     return NULL;
 
   return (DestructFn*)((char*)&class_addIvar - nl[1].n_value + nl[0].n_value);
-}
-
-// Replace all methods in |refClass| which are not implemented in
-// |aClass| with |anImp|.
-void class_replaceUnimplementedWith(Class aClass, Class refClass, IMP anImp) {
-  unsigned int methodCount = 0;
-  Method* methodList = class_copyMethodList(refClass, &methodCount);
-  if (methodList) {
-    for (unsigned int i = 0; i < methodCount; ++i) {
-      const SEL name = method_getName(methodList[i]);
-      const char* types = method_getTypeEncoding(methodList[i]);
-
-      // Fails if the method already exists, which is fine.
-      class_addMethod(aClass, name, anImp, types);
-    }
-    free(methodList);
-  }
 }
 
 // Replacement |-dealloc| which turns objects into zombies and places
@@ -221,12 +205,6 @@ void LogAndDie(id object, SEL aSelector, SEL viaSelector) {
   LOG(FATAL) << [aString UTF8String];
 }
 
-// Implements a method which will be used to override NSObject methods
-// that zombies don't explicitly implement.
-void DoesNotRecognize(id self, SEL _cmd) {
-  LogAndDie(self, _cmd, 0);
-}
-
 // Initialize our globals, returning YES on success.
 BOOL ZombieInit() {
   static BOOL initialized = NO;
@@ -238,18 +216,14 @@ BOOL ZombieInit() {
   g_object_cxxDestruct = LookupObjectCxxDestruct();
   g_originalDeallocIMP =
       class_getMethodImplementation(rootClass, @selector(dealloc));
-  g_zombieClass = [CrZombie class];
-  g_fatZombieClass = [CrFatZombie class];
+  // objc_getClass() so CrZombie doesn't need +class.
+  g_zombieClass = objc_getClass("CrZombie");
+  g_fatZombieClass = objc_getClass("CrFatZombie");
   g_fatZombieSize = class_getInstanceSize(g_fatZombieClass);
 
   if (!g_object_cxxDestruct || !g_originalDeallocIMP ||
       !g_zombieClass || !g_fatZombieClass)
     return NO;
-
-  // Override any inherited methods from |NSObject| with
-  // |DoesNotRecognize()|.
-  class_replaceUnimplementedWith(g_zombieClass, rootClass,
-                                 (IMP)DoesNotRecognize);
 
   initialized = YES;
   return YES;
@@ -259,9 +233,12 @@ BOOL ZombieInit() {
 
 @implementation CrZombie
 
-// |DoesNotRecognize()| will log and crash for any selector send to
-// instances of the class.  Override a few methods related to message
-// dispatch to provide more specific diagnostic information.
+// The Objective-C runtime needs to be able to call this successfully.
++ (void)initialize {
+}
+
+// Override a few methods related to message dispatch to provide
+// diagnostic information.
 - (BOOL)respondsToSelector:(SEL)aSelector {
   LogAndDie(self, aSelector, _cmd);
   return NO;
