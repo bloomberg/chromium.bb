@@ -6,3 +6,10 @@ core
 *.o
 *~
 *.swp
+*.ncb
+*.user
+*.suo
+*.exe
+*.webm
+Debug
+Release
