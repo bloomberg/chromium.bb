@@ -13,6 +13,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -39,6 +41,15 @@ void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
 
 }  // namespace
 
+ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
+    : pref_service_(pref_service) {
+  pref_service_->AddPrefObserver(prefs::kNTPShownSections, this);
+}
+
+ShownSectionsHandler::~ShownSectionsHandler() {
+  pref_service_->RemovePrefObserver(prefs::kNTPShownSections, this);
+}
+
 void ShownSectionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("getShownSections",
       NewCallback(this, &ShownSectionsHandler::HandleGetShownSections));
@@ -46,10 +57,21 @@ void ShownSectionsHandler::RegisterMessages() {
       NewCallback(this, &ShownSectionsHandler::HandleSetShownSections));
 }
 
+void ShownSectionsHandler::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  DCHECK(NotificationType::PREF_CHANGED == type);
+  std::wstring* pref_name = Details<std::wstring>(details).ptr();
+  DCHECK(*pref_name == prefs::kNTPShownSections);
+
+  int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
+  FundamentalValue sections_value(sections);
+  dom_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
+}
+
 void ShownSectionsHandler::HandleGetShownSections(const Value* value) {
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-  SetFirstAppLauncherRunPref(pref_service);
-  int sections = pref_service->GetInteger(prefs::kNTPShownSections);
+  SetFirstAppLauncherRunPref(pref_service_);
+  int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
   FundamentalValue sections_value(sections);
   dom_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
 }
@@ -72,13 +94,11 @@ void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
   DCHECK(r) << "Missing value in setShownSections from the NTP Most Visited.";
 
   int mode = StringToInt(mode_string);
-  int old_mode = dom_ui_->GetProfile()->GetPrefs()->GetInteger(
-      prefs::kNTPShownSections);
+  int old_mode = pref_service_->GetInteger(prefs::kNTPShownSections);
 
   if (old_mode != mode) {
     NotifySectionDisabled(mode, old_mode, dom_ui_->GetProfile());
-    dom_ui_->GetProfile()->GetPrefs()->SetInteger(
-        prefs::kNTPShownSections, mode);
+    pref_service_->SetInteger(prefs::kNTPShownSections, mode);
   }
 }
 

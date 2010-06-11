@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOM_UI_SHOWN_SECTIONS_HANDLER_H_
 
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/common/notification_observer.h"
 
 class DOMUI;
 class Value;
@@ -21,13 +22,19 @@ enum Section {
   DEBUG = 32
 };
 
-class ShownSectionsHandler : public DOMMessageHandler {
+class ShownSectionsHandler : public DOMMessageHandler,
+                             public NotificationObserver {
  public:
-  ShownSectionsHandler() {}
-  virtual ~ShownSectionsHandler() {}
+  explicit ShownSectionsHandler(PrefService* pref_service);
+  virtual ~ShownSectionsHandler();
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Callback for "getShownSections" message.
   void HandleGetShownSections(const Value* value);
@@ -45,6 +52,8 @@ class ShownSectionsHandler : public DOMMessageHandler {
                                int new_pref_version);
 
  private:
+  PrefService* pref_service_;
+
   DISALLOW_COPY_AND_ASSIGN(ShownSectionsHandler);
 };
 

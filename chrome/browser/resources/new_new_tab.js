@@ -239,7 +239,9 @@ function getSectionElement(section) {
 function showSection(section) {
   if (!(section & shownSections)) {
     shownSections |= section;
-    getSectionElement(section).classList.remove('hidden');
+    var el = getSectionElement(section);
+    if (el)
+      el.classList.remove('hidden');
 
     switch (section) {
       case Section.THUMB:
@@ -267,7 +269,22 @@ function hideSection(section) {
         break;
     }
 
-    getSectionElement(section).classList.add('hidden');
+    var el = getSectionElement(section);
+    if (el)
+      el.classList.add('hidden');
+  }
+}
+
+/**
+ * Callback when the shown sections changes in another NTP.
+ * @param {number} newShownSections Bitmask of the shown sections.
+ */
+function setShownSections(newShownSections) {
+  for (var key in Section) {
+    if (newShownSections & Section[key])
+      showSection(Section[key]);
+    else
+      hideSection(Section[key]);
   }
 }
 

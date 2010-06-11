@@ -458,7 +458,8 @@ NewTabUI::NewTabUI(TabContents* contents)
   }
 
   if (!GetProfile()->IsOffTheRecord()) {
-    AddMessageHandler((new ShownSectionsHandler())->Attach(this));
+    PrefService* pref_service = GetProfile()->GetPrefs();
+    AddMessageHandler((new ShownSectionsHandler(pref_service))->Attach(this));
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
     AddMessageHandler((new MetricsHandler())->Attach(this));
