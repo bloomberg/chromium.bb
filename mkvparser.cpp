@@ -1160,6 +1160,9 @@ long Segment::Load()
     
     m_clusterCount = 0;
 
+	long long* fileposition_of_clusters = NULL;
+	long long size_of_cluster_pos = 0;
+
     while (index < stop)
     {
         long len = 0;
@@ -1197,18 +1200,46 @@ long Segment::Load()
         index += len;  //consume length of size of element
  
         if (id == 0x0F43B675) // Cluster ID 
-            break;
-	
-        if (id == 0x014D9B74) // SeekHead ID 
+		{
+			assert(fileposition_of_clusters);
+			if (m_clusterCount > size_of_cluster_pos)
+			{
+				size_of_cluster_pos *= 2;
+				long long* const temp = new long long[size_of_cluster_pos];
+				memset(temp, 0, size_of_cluster_pos);
+				memcpy(temp, fileposition_of_clusters, size_of_cluster_pos);
+				delete [] fileposition_of_clusters;
+				fileposition_of_clusters = temp;
+			}
+			fileposition_of_clusters[m_clusterCount] = idpos;
+			++m_clusterCount;
+		}
+		else if (id == 0x0549A966)  //Segment Info ID
         {
-            ParseSeekHead(index, size, NULL); 
-            break;
+            assert(m_pInfo == NULL);
+            m_pInfo = new  SegmentInfo(this, index, size); 
+            assert(m_pInfo); 
+			assert(m_clusterCount == 0); 
+
+			const long long duration = m_pInfo->GetDuration();
+			size_of_cluster_pos = duration / 1000000000 + 1;
+			fileposition_of_clusters = new long long[size_of_cluster_pos];
+			memset(fileposition_of_clusters, 0, size_of_cluster_pos);
         }
         index += size;
     }
-        
+
     if (m_clusterCount == 0)
         return -1L;
+
+	m_clusters = new Cluster*[m_clusterCount];  
+
+	for (int i = 0; i < m_clusterCount; ++i)
+	{
+		m_clusters[i] = Cluster::Parse(this, i, fileposition_of_clusters[i]);
+	}
+	
+	delete [] fileposition_of_clusters;
 
     while (m_pos < stop)
     {
@@ -1256,21 +1287,7 @@ long Segment::Load()
         if (id == 0x0F43B675)  //Cluster ID
             break;
 
-        if (id == 0x014D9B74)  //SeekHead ID
-        {
-            m_clusters = new Cluster*[m_clusterCount];   
-            size_t index = 0;
-            
-            ParseSeekHead(pos, size, &index);            
-            assert(index == m_clusterCount);
-        }            
-        else if (id == 0x0549A966)  //Segment Info ID
-        {
-            assert(m_pInfo == NULL);
-            m_pInfo = new  SegmentInfo(this, pos, size);
-            assert(m_pInfo);  //TODO
-        }
-        else if (id == 0x0654AE6B)  //Tracks ID
+        if (id == 0x0654AE6B)  //Tracks ID
         {
             assert(m_pTracks == NULL);
             m_pTracks = new Tracks(this, pos, size);
@@ -1374,7 +1391,6 @@ void Segment::ParseSecondarySeekHead(long long off, size_t* pIndex)
     
     ParseSeekHead(pos, size, pIndex);
 }
-
 
 void Segment::ParseSeekEntry(long long start, long long size_, size_t* pIndex)
 {
@@ -2444,10 +2460,9 @@ void Cluster::Load()
     
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
-    const long long off = -m_start;  //relative to segment
-    long long pos = m_pSegment->m_start + off;  //absolute
+    long long pos = -m_start;
     
-    long len;
+	long len;
 
     const long long id_ = ReadUInt(pReader, pos, len);
     assert(id_ >= 0);

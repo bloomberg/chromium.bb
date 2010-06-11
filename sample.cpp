@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
         printf("\t\tCluster Time Code\t: %lld\n", timeCode);
  
         const long long time_ns = pCluster->GetTime();
-        printf("\t\tCluster Time (ns)\t\t: %lld\n", time_ns); 
+        printf("\t\tCluster Time (ns)\t: %lld\n", time_ns); 
   
         const BlockEntry* pBlockEntry = pCluster->GetFirst(); 
   
