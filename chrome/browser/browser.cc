@@ -1194,16 +1194,32 @@ void Browser::OpenCurrentURL() {
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
   GURL url(WideToUTF8(location_bar->GetInputString()));
-  if (open_disposition == CURRENT_TAB &&
-      tabstrip_model()->IsTabPinned(selected_index())) {
-    // To make pinned tabs feel more permanent any requests from the omnibox
-    // to open a url in the current tab with a host different from the current
-    // host of the pinned tab result in creating a new tab. We allow changes to
-    // the path so that the user can trigger reloads or fix up parts of the url
-    // without spawning a new tab.
+
+  if (open_disposition == CURRENT_TAB) {
     TabContents* selected_contents = GetSelectedTabContents();
-    if (!selected_contents || url.host() != selected_contents->GetURL().host())
-      open_disposition = NEW_FOREGROUND_TAB;
+    Extension* extension = profile()->GetExtensionsService()
+        ->GetExtensionByWebExtent(url);
+
+    if (extension && selected_contents &&
+        selected_contents->GetURL().GetOrigin() ==
+            GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+      // If the |url| is within an app's web extent and it was typed into the
+      // omnibox of an NTP page, interpret as an app launch and close the NTP
+      // tab.
+      Browser::OpenApplication(profile(), extension,
+          extension->launch_container());
+      CloseTabContents(selected_contents);
+      return;
+    } else if (tabstrip_model()->IsTabPinned(selected_index())) {
+      // To make pinned tabs feel more permanent any requests from the omnibox
+      // to open a url in the current tab with a host different from the current
+      // host of the pinned tab result in creating a new tab. We allow changes
+      // to the path so that the user can trigger reloads or fix up parts of the
+      // url without spawning a new tab.
+      if (!selected_contents ||
+          url.host() != selected_contents->GetURL().host())
+        open_disposition = NEW_FOREGROUND_TAB;
+    }
   }
   OpenURLAtIndex(NULL, url, GURL(),
                  open_disposition,
