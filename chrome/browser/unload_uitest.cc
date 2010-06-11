@@ -293,6 +293,8 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
 #define MAYBE_BrowserCloseWithInnerFocusedFrame \
     DISABLED_BrowserCloseWithInnerFocusedFrame
 #elif defined(OS_LINUX)
+#define MAYBE_BrowserCloseBeforeUnloadOK BrowserCloseBeforeUnloadOK
+#define MAYBE_BrowserCloseBeforeUnloadCancel BrowserCloseBeforeUnloadCancel
 // Fails sometimes on Linux valgrind.
 #define MAYBE_BrowserCloseWithInnerFocusedFrame \
     FLAKY_BrowserCloseWithInnerFocusedFrame
