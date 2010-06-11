@@ -221,7 +221,7 @@ class GritNode(base.Node):
     elif t == 'resource_map_header':
       from grit.format import resource_map
       return resource_map.HeaderTopLevel()
-    elif t == 'resource_map_source':
+    elif t in ('resource_map_source', 'resource_file_map_source'):
       from grit.format import resource_map
       return resource_map.SourceTopLevel()
     elif t == 'js_map_format':

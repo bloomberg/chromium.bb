@@ -371,6 +371,24 @@
                     '<@(locales)',
                   ],
                 },
+                {
+                  'action_name': 'repack_resources',
+                  'variables': {
+                    'pak_inputs': [
+                      '<(grit_out_dir)/net_internals_resources.pak',
+                    ],
+                  },
+                  'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/repack/resources.pak',
+                  ],
+                  'action': ['python', '<(repack_path)', '<@(_outputs)',
+                             '<@(pak_inputs)'],
+                  'process_outputs_as_mac_bundle_resources': 1,
+                },
               ],
               'postbuilds': [
                 {

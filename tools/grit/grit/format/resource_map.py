@@ -106,7 +106,7 @@ const size_t %(map_name)sSize = arraysize(%(map_name)s);
 
 class SourceInclude(interface.ItemFormatter):
   '''Populate the resource mapping.  For each include, we map a string to
-  the ID.'''
+  the resource ID.'''
   def Format(self, item, lang='en', begin_item=True, output_dir='.'):
     if not begin_item:
       return ''
@@ -114,3 +114,13 @@ class SourceInclude(interface.ItemFormatter):
     if short_name.startswith('idr_'):
       short_name = short_name[4:]
     return '  {"%s", %s},\n' % (short_name, item.attrs['name'])
+
+
+class SourceFileInclude(interface.ItemFormatter):
+  '''Populate the resource mapping.  For each include, we map a filename to
+  the resource ID.'''
+  def Format(self, item, lang='en', begin_item=True, output_dir='.'):
+    if not begin_item:
+      return ''
+    filename = item.attrs['file'].replace("\\", "/")
+    return '  {"%s", %s},\n' % (filename, item.attrs['name'])

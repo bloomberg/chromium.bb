@@ -55,6 +55,12 @@
       'common/common_resources.grd',
       'renderer/renderer_resources.grd',
     ],
+    'chrome_extra_resources_grds': [
+      # These resources end up in resources.pak because they are resources
+      # used by internal pages.  Putting them in a spearate pak file makes
+      # it easier for us to reference them internally.
+      'browser/resources/net_internals_resources.grd',
+    ],
     'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
     'grit_cmd': ['python', '../tools/grit/grit.py'],
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
@@ -398,6 +404,79 @@
           ],
           'message': 'Generating resources from <(input_path)',
         },
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(grit_out_dir)',
+        ],
+      },
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': ['../build/win/system.gyp:cygwin'],
+        }],
+      ],
+    },
+    {
+      'target_name': 'chrome_extra_resources',
+      'type': 'none',
+      'variables': {
+        'chrome_extra_resources_inputs': [
+          '<!@(<(grit_info_cmd) --inputs <(chrome_extra_resources_grds))',
+        ],
+      },
+      'rules': [
+        {
+          'rule_name': 'grit',
+          'extension': 'grd',
+          'variables': {
+            'conditions': [
+              ['branding=="Chrome"', {
+                # TODO(mmoss) The .grd files look for _google_chrome, but for
+                # consistency they should look for GOOGLE_CHROME_BUILD like C++.
+                # Clean this up when Windows moves to gyp.
+                'chrome_build': '_google_chrome',
+                'branded_env': 'CHROMIUM_BUILD=google_chrome',
+              }, {  # else: branding!="Chrome"
+                'chrome_build': '_chromium',
+                'branded_env': 'CHROMIUM_BUILD=chromium',
+              }],
+            ],
+          },
+          'inputs': [
+            '<@(chrome_extra_resources_inputs)',
+          ],
+          'outputs': [
+            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
+            '<(grit_out_dir)/<(RULE_INPUT_ROOT).pak',
+            # TODO(bradnelson): move to something like this instead
+            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_resources_grds))',
+            # This currently cannot work because gyp only evaluates the
+            # outputs once (rather than per case where the rule applies).
+            # This means you end up with all the outputs from all the grd
+            # files, which angers scons and confuses vstudio.
+            # One alternative would be to turn this into several actions,
+            # but that would be rather verbose.
+          ],
+          'action': ['<@(grit_cmd)', '-i',
+            '<(RULE_INPUT_PATH)',
+            'build', '-o', '<(grit_out_dir)',
+            '-D', '<(chrome_build)',
+            '-E', '<(branded_env)',
+          ],
+          'conditions': [
+            ['chromeos==1', {
+              'action': ['-D', 'chromeos'],
+            }],
+            ['use_titlecase_in_grd_files==1', {
+              'action': ['-D', 'use_titlecase'],
+            }],
+          ],
+          'message': 'Generating resources from <(RULE_INPUT_PATH)',
+        },
+      ],
+      'sources': [
+        '<@(chrome_extra_resources_grds)',
+        '<@(chrome_extra_resources_inputs)',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -1344,6 +1423,36 @@
             'tools/perf/flush_cache/flush_cache.cc',
           ],
         },
+        {
+          # Mac needs 'process_outputs_as_mac_bundle_resources' to be set,
+          # and the option is only effective when the target type is native
+          # binary. Hence we cannot build the Mac bundle resources here and
+          # the action is duplicated in chrome_dll.gypi.
+          'target_name': 'packed_extra_resources',
+          'type': 'none',
+          'variables': {
+            'repack_path': '../tools/data_pack/repack.py',
+          },
+          'actions': [
+            {
+              'action_name': 'repack_resources',
+              'variables': {
+                'pak_inputs': [
+                  '<(grit_out_dir)/net_internals_resources.pak',
+                ],
+              },
+              'inputs': [
+                '<(repack_path)',
+                '<@(pak_inputs)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/resources.pak',
+              ],
+              'action': ['python', '<(repack_path)', '<@(_outputs)',
+                         '<@(pak_inputs)'],
+            },
+          ]
+        }
       ],
     },],  # OS!="mac"
     ['OS=="linux"',

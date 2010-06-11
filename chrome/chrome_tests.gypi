@@ -1936,6 +1936,10 @@
           'dependencies': [
             'helper_app'
           ],
+        },{  # OS!="mac"
+          'dependencies': [
+            'packed_extra_resources',
+          ],
         }],
         ['OS=="linux" and chromeos==1', {
           'include_dirs': [

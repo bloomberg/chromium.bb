@@ -43,6 +43,9 @@ class IncludeNode(base.Node):
     elif t == 'resource_map_source':
       from grit.format import resource_map
       return resource_map.SourceInclude()
+    elif t == 'resource_file_map_source':
+      from grit.format import resource_map
+      return resource_map.SourceFileInclude()
     else:
       return super(type(self), self).ItemFormatter(t)
 

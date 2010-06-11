@@ -171,7 +171,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
       # files (no UTF-8), so we make all RC files UTF-16 to support all
       # character sets.
       if output.GetType() in ('rc_header', 'resource_map_header',
-                              'resource_map_source'):
+          'resource_map_source', 'resource_file_map_source'):
         encoding = 'cp1252'
       elif output.GetType() == 'js_map_format':
         encoding = 'utf_8'

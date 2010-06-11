@@ -413,6 +413,9 @@
               'product_name': 'chrome'
             }],
           ],
+          'dependencies': [
+            'packed_extra_resources',
+          ],
         }],
         ['OS=="mac" or OS=="win"', {
           'dependencies': [

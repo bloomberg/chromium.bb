@@ -11,6 +11,7 @@
       'dependencies': [
         'common',
         'common_net',
+        'chrome_extra_resources',
         'chrome_resources',
         'chrome_strings',
         'chrome_version_info',
