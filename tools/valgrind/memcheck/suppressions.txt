@@ -87,6 +87,7 @@
    # and http://www.gnome.org/~johan/gtk.suppression
    fontconfig_bug_8428
    Memcheck:Leak
+   ...
    fun:realloc
    fun:FcPatternObjectInsertElt
    fun:FcPatternObjectAddWithBinding
@@ -95,6 +96,7 @@
    # Another permutation of previous leak.
    fontconfig_bug_8428_2
    Memcheck:Leak
+   ...
    fun:realloc
    fun:FcPatternObjectInsertElt
    fun:FcPatternObjectAdd
@@ -102,6 +104,7 @@
 {
    bug_18590
    Memcheck:Leak
+   ...
    fun:malloc
    fun:FcConfigValues
    fun:FcConfigValues
@@ -957,6 +960,7 @@
    # Somewhat common in ui tests.  See also bug 9245.
    bug_16102
    Memcheck:Leak
+   ...
    fun:realloc
    fun:FcPatternObjectInsertElt
    fun:FcConfigPatternAdd
