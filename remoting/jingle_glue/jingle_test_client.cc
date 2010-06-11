@@ -18,6 +18,7 @@ extern "C" {
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 #include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/jingle_glue/jingle_thread.h"
 
 using remoting::JingleClient;
 using remoting::JingleChannel;
@@ -55,7 +56,10 @@ class JingleTestClient : public JingleChannel::Callback,
 
   void Run(const std::string& username, const std::string& auth_token,
            const std::string& host_jid) {
-    client_ = new JingleClient();
+    // TODO(hclam): Fix the threading problem.
+    remoting::JingleThread jingle_thread;
+    jingle_thread.Start();
+    client_ = new JingleClient(&jingle_thread);
     client_->Init(username, auth_token, kChromotingTokenServiceName, this);
 
     if (host_jid != "") {
@@ -89,6 +93,7 @@ class JingleTestClient : public JingleChannel::Callback,
     }
 
     client_->Close();
+    jingle_thread.Stop();
   }
 
   // JingleChannel::Callback interface.
