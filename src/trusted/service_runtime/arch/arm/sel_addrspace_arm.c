@@ -110,18 +110,3 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
    */
   return LOAD_OK;
 }
-
-void NaClTeardownMprotectGuards(struct NaClApp *nap) {
-  void *guard_base = (void *) (((uintptr_t) 1) << nap->addr_bits);
-
-  if (!nap->guard_pages_initialized) {
-    NaClLog(4, "No guard pages to tear down.\n");
-    return;
-  }
-  NaClLog(4, "NaClTeardownMprotectGuards: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
-          (uintptr_t) guard_base,
-          (size_t) POST_ADDR_SPACE_GUARD_SIZE);
-  NaCl_page_free(guard_base, POST_ADDR_SPACE_GUARD_SIZE);
-
-  NaClLog(4, "NaClTeardownMprotectGuards: done\n");
-}

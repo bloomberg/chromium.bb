@@ -36,14 +36,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
  *
  * If successful, the guard pages are not yet memory protected.  The
  * function NaClMprotectGuards must be called for the guard pages to
- * be active.  On cleanup, NaClTeardownMprotectGuards should be
- * invoked.
+ * be active.
  *
  * Returns LOAD_OK on success.
  */
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) NACL_WUR;
 
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap);
-
-void NaClTeardownMprotectGuards(struct NaClApp *nap);
 #endif

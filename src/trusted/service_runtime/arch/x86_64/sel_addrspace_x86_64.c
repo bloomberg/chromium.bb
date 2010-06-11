@@ -129,22 +129,3 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
 #endif
   return LOAD_OK;
 }
-
-void NaClTeardownMprotectGuards(struct NaClApp *nap) {
-  uintptr_t start_addr;
-
-  if (!nap->guard_pages_initialized) {
-    NaClLog(4, "No guard pages to tear down.\n");
-    return;
-  }
-  start_addr = nap->mem_start;
-
-  /*
-   * No need to undo mprotect, since we're just deallocating back to
-   * the system.
-   */
-  NaCl_page_free((void *) (start_addr - GUARDSIZE),
-                 GUARDSIZE);
-  NaCl_page_free((void *) (start_addr + FOURGIG),
-                 GUARDSIZE);
-}

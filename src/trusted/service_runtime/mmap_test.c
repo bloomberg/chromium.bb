@@ -44,7 +44,6 @@ static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
   }
 
   natp->is_privileged = 0;
-  natp->refcount = 1;
 
   effp = (struct NaClDescEffectorLdr *) malloc(sizeof *effp);
   ASSERT_NE(effp, NULL);

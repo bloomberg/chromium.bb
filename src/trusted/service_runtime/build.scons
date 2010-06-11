@@ -90,7 +90,6 @@ ldr_inputs = [
     'sel_util.c',
     'sel_util-inl.c',
     'sel_validate_image.c',
-    'web_worker_stub.c',
     'elf_util.c',
 ]
 

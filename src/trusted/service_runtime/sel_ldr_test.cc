@@ -79,8 +79,6 @@ TEST_F(SelLdrTest, DescTable) {
   // never set a desc at pos 10
   ret_desc = NaClGetDesc(&app, 10);
   ASSERT_TRUE(NULL == ret_desc);
-
-  NaClAppDtor(&app);
 }
 
 // create service socket
@@ -100,7 +98,6 @@ TEST_F(SelLdrTest, CreateServiceSocket) {
   ASSERT_TRUE(NULL != app.service_port);
   ASSERT_TRUE(NULL != app.service_address);
 
-  NaClAppDtor(&app);
   NaClNrdAllModulesFini();
 }
 
@@ -133,10 +130,4 @@ TEST_F(SelLdrTest, ThreadTableTest) {
 
   NaClRemoveThread(&app, 0);
   ASSERT_EQ(2, app.num_threads);
-
-  // NaClAppDtor is deprecated and will be removed soon; this test
-  // should be refactored so that NaClAppCtor is called at most once
-  // per run.
-
-  // NaClAppDtor(&app);
 }
