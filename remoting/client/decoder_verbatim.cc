@@ -6,6 +6,10 @@
 
 namespace remoting {
 
+DecoderVerbatim::DecoderVerbatim()
+    : updated_rects_(NULL) {
+}
+
 bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
                                   UpdatedRects* updated_rects,
                                   Task* partial_decode_done,

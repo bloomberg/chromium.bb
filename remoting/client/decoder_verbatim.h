@@ -11,8 +11,7 @@ namespace remoting {
 
 class DecoderVerbatim : public Decoder {
  public:
-  DecoderVerbatim() {
-  }
+  DecoderVerbatim();
 
   // Decoder implementations.
   virtual bool BeginDecode(scoped_refptr<media::VideoFrame> frame,
