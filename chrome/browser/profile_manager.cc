@@ -93,8 +93,8 @@ FilePath ProfileManager::GetProfilePrefsPath(
   return default_prefs_path;
 }
 
-Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
-  FilePath default_profile_dir(user_data_dir);
+FilePath ProfileManager::GetCurrentProfileDir() {
+  FilePath relative_profile_dir;
 #if defined(OS_CHROMEOS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (logged_in_) {
@@ -109,15 +109,24 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
     } else {
       // We should never be logged in with no profile dir.
       NOTREACHED();
-      return NULL;
+      return FilePath("");
     }
-    default_profile_dir = default_profile_dir.Append(profile_dir);
-    return GetProfile(default_profile_dir);
-  } else {
-    // If not logged in on cros, always return the incognito profile
-    default_profile_dir = default_profile_dir.Append(
-        FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+    relative_profile_dir = relative_profile_dir.Append(profile_dir);
+    return relative_profile_dir;
+  }
+#endif
+  relative_profile_dir = relative_profile_dir.Append(
+      FilePath::FromWStringHack(chrome::kNotSignedInProfile));
+  return relative_profile_dir;
+}
+
+Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
+  FilePath default_profile_dir(user_data_dir);
+  default_profile_dir = default_profile_dir.Append(GetCurrentProfileDir());
+#if defined(OS_CHROMEOS)
+  if (!logged_in_) {
     Profile* profile;
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
     // For cros, return the OTR profile so we never accidentally keep
     // user data in an unencrypted profile. But doing this makes
@@ -134,11 +143,8 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
     }
     return profile;
   }
-#else
-  default_profile_dir = default_profile_dir.Append(
-      FilePath::FromWStringHack(chrome::kNotSignedInProfile));
-  return GetProfile(default_profile_dir);
 #endif
+  return GetProfile(default_profile_dir);
 }
 
 Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {

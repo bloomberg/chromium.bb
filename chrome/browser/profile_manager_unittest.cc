@@ -2,14 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/system_monitor.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +72,47 @@ TEST_F(ProfileManagerTest, CreateProfile) {
   ASSERT_TRUE(profile.get());
 #endif
 }
+
+TEST_F(ProfileManagerTest, DefaultProfileDir) {
+  CommandLine *cl = CommandLine::ForCurrentProcess();
+  SystemMonitor dummy;
+  ProfileManager profile_manager;
+  std::string profile_dir("my_user");
+
+  cl->AppendSwitch(switches::kTestType);
+
+  FilePath expected_default =
+      FilePath::FromWStringHack(chrome::kNotSignedInProfile);
+  EXPECT_EQ(expected_default.value(),
+            profile_manager.GetCurrentProfileDir().value());
+}
+
+#if defined(OS_CHROMEOS)
+// This functionality only exists on Chrome OS.
+TEST_F(ProfileManagerTest, LoggedInProfileDir) {
+  CommandLine *cl = CommandLine::ForCurrentProcess();
+  SystemMonitor dummy;
+  ProfileManager profile_manager;
+  std::string profile_dir("my_user");
+
+  cl->AppendSwitchWithValue(switches::kLoginProfile, profile_dir);
+  cl->AppendSwitch(switches::kTestType);
+
+  FilePath expected_default =
+      FilePath::FromWStringHack(chrome::kNotSignedInProfile);
+  EXPECT_EQ(expected_default.value(),
+            profile_manager.GetCurrentProfileDir().value());
+
+  profile_manager.Observe(NotificationType::LOGIN_USER_CHANGED,
+                          NotificationService::AllSources(),
+                          NotificationService::NoDetails());
+  FilePath expected_logged_in(profile_dir);
+  EXPECT_EQ(expected_logged_in.value(),
+            profile_manager.GetCurrentProfileDir().value());
+  LOG(INFO) << test_dir_.Append(profile_manager.GetCurrentProfileDir()).value();
+}
+
+#endif
 
 // TODO(timsteele): This is disabled while I try to track down a purify
 // regression (http://crbug.com/10553).

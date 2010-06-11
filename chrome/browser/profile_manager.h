@@ -97,6 +97,10 @@ class ProfileManager : public NonThreadSafe,
   // first to see if the profile already exists.
   Profile* GetProfile(const FilePath& profile_dir, bool init_extensions);
 
+  // Returns the directory where the currently active profile is
+  // stored, relative to the user data directory currently in use..
+  FilePath GetCurrentProfileDir();
+
   // These allow iteration through the current list of profiles.
   typedef std::vector<Profile*> ProfileVector;
   typedef ProfileVector::iterator iterator;
@@ -120,7 +124,8 @@ class ProfileManager : public NonThreadSafe,
 
   // ------------------ static utility functions -------------------
 
-  // Returns the path to the profile directory based on the user data directory.
+  // Returns the path to the default profile directory, based on the given
+  // user data directory.
   static FilePath GetDefaultProfileDir(const FilePath& user_data_dir);
 
 // Returns the path to the preferences file given the user profile directory.
