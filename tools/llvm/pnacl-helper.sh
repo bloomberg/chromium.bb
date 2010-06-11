@@ -23,7 +23,7 @@ readonly PNACL_HG_CLIENT=$(readlink -f ${PNACL_TOOLCHAIN_ROOT}/hg)
 
 readonly ARM_UNTRUSTED=$(readlink -f toolchain/linux_arm-untrusted)
 readonly LLVM_DIS=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm/bin/llvm-dis
-readonly LLVM_AR=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm/bin/llvm-ar
+readonly LLVM_AR=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ar
 
 # NOTE: temporary measure until we have a unified llc
 readonly SYMLINK_LLC_X86_32=${ARM_UNTRUSTED}/llc-x86-32-sfi
