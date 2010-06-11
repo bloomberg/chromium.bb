@@ -49,6 +49,7 @@
         'renderer',
         'chrome_resources',
         'chrome_strings',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'theme_resources',
         '../base/base.gyp:test_support_base',
         '../skia/skia.gyp:skia',
@@ -147,6 +148,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:nss',
           ],
         }],
         ['OS=="win"', {
@@ -937,6 +939,7 @@
         'browser/sync/sync_setup_wizard_unittest.cc',
         'browser/sync/sync_ui_util_mac_unittest.mm',
         'browser/sync/test_profile_sync_service.h',
+        'browser/sync/util/cryptographer_unittest.cc',
         'browser/sync/util/nigori_unittest.cc',
         'browser/tab_contents/navigation_controller_unittest.cc',
         'browser/tab_contents/navigation_entry_unittest.cc',

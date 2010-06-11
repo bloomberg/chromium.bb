@@ -785,6 +785,13 @@
         'notifier',
         'sync',
       ],
+      'conditions': [
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+          'dependencies': [
+            '../build/linux/system.gyp:nss'
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'notifier',
@@ -877,12 +884,16 @@
       'sources': [
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/encryption.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/encryption.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/extension_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/extension_specifics.pb.h',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/nigori_specifics.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/nigori_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/password_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/password_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.cc',
@@ -986,6 +997,8 @@
         'browser/sync/util/closure.h',
         'browser/sync/util/crypto_helpers.cc',
         'browser/sync/util/crypto_helpers.h',
+        'browser/sync/util/cryptographer.cc',
+        'browser/sync/util/cryptographer.h',
         'browser/sync/util/dbgq.h',
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',

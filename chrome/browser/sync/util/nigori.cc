@@ -69,6 +69,9 @@ Nigori::~Nigori() {
 }
 
 bool Nigori::Init(const std::string& username, const std::string& password) {
+  username_ = username;
+  password_ = password;
+
   NigoriStream salt_password;
   salt_password << username << hostname_;
 

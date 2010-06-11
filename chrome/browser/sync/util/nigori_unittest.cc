@@ -10,6 +10,14 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+TEST(NigoriTest, Parameters) {
+  browser_sync::Nigori nigori("example.com");
+  EXPECT_TRUE(nigori.Init("username", "password"));
+  EXPECT_STREQ("example.com", nigori.hostname().c_str());
+  EXPECT_STREQ("username", nigori.username().c_str());
+  EXPECT_STREQ("password", nigori.password().c_str());
+}
+
 TEST(NigoriTest, Permute) {
   browser_sync::Nigori nigori("example.com");
   EXPECT_TRUE(nigori.Init("username", "password"));

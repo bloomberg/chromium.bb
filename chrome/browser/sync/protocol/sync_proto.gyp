@@ -14,9 +14,11 @@
       'type': 'none',
       'sources': [
         'sync.proto',
+        'encryption.proto',
         'autofill_specifics.proto',
         'bookmark_specifics.proto',
         'extension_specifics.proto',
+        'nigori_specifics.proto',
         'password_specifics.proto',
         'preference_specifics.proto',
         'theme_specifics.proto',
