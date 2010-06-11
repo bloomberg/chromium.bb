@@ -1010,6 +1010,7 @@
 {
    bug_16583
    Memcheck:Leak
+   ...
    fun:malloc
    fun:g_malloc
    fun:g_slice_alloc
@@ -3120,6 +3121,7 @@
 {
    bug_46144
    Memcheck:Leak
+   ...
    fun:malloc
    fun:_ZN3WTF10fastMallocEj
    fun:_ZN3WTF13FastAllocBasenwEj
@@ -3138,6 +3140,7 @@
 {
    bug_46162
    Memcheck:Leak
+   ...
    fun:malloc
    fun:_ZN3WTF10fastMallocEj
    fun:_ZN3WTF13FastAllocBasenwEj
