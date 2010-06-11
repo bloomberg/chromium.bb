@@ -26,20 +26,78 @@
 
 #include <stdio.h>
 #include <assert.h>
-
-/* Currently, valgrind-on-nacl is supported only for x86-64 linux. */
-#if defined(__linux__) && defined(__x86_64__)
+#include <pthread.h>
+#include <errno.h>
+#include <sched.h>
 
 #include "native_client/src/third_party/valgrind/nacl_valgrind.h"
 #include "native_client/src/third_party/valgrind/nacl_memcheck.h"
 
 #define INLINE __attribute__((always_inline))
 
+#include "native_client/src/third_party/valgrind/ts_valgrind_client_requests.h"
+
+/* For sizeof(nc_thread_memory_block_t) */
+#include "native_client/src/untrusted/pthread/pthread_types.h"
+
 /* This variable needs to be referenced by a program (either in sources,
   or using the linker flag -u) to which this library is linked.
   When using gcc/g++ as a linker, use -Wl,-u,have_nacl_valgrind_interceptors.
 */
 int have_nacl_valgrind_interceptors;
+
+/* TSan interceptors. */
+
+#define VG_NACL_FUNC(f) I_WRAP_SONAME_FNNAME_ZZ(NaCl, f)
+
+#define VG_CREQ_v_W(_req, _arg1)                                        \
+  do {                                                                  \
+    uint64_t _res;                                                      \
+    VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, _arg1, 0, 0, 0, 0);   \
+  } while (0)
+
+#define VG_CREQ_v_WW(_req, _arg1, _arg2)                                \
+  do {                                                                  \
+    uint64_t _res;                                                      \
+    VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, _arg1, _arg2, 0, 0, 0);   \
+  } while (0)
+
+#define VG_CREQ_v_WWW(_req, _arg1, _arg2, _arg3)                        \
+  do {                                                                  \
+    uint64_t _res;                                                      \
+    VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, _arg1, _arg2, _arg3, 0, 0); \
+  } while (0)
+
+static inline void start_ignore_all_accesses(void) {
+  VG_CREQ_v_W(TSREQ_IGNORE_ALL_ACCESSES_BEGIN, 0);
+}
+
+static inline void stop_ignore_all_accesses(void) {
+  VG_CREQ_v_W(TSREQ_IGNORE_ALL_ACCESSES_END, 0);
+}
+
+static inline void start_ignore_all_sync(void) {
+  VG_CREQ_v_W(TSREQ_IGNORE_ALL_SYNC_BEGIN, 0);
+}
+
+static inline void stop_ignore_all_sync(void) {
+  VG_CREQ_v_W(TSREQ_IGNORE_ALL_SYNC_END, 0);
+}
+
+static inline void start_ignore_all_accesses_and_sync(void) {
+  start_ignore_all_accesses();
+  start_ignore_all_sync();
+}
+
+static inline void stop_ignore_all_accesses_and_sync(void) {
+  stop_ignore_all_accesses();
+  stop_ignore_all_sync();
+}
+
+
+/*----------------------------------------------------------------*/
+/*--- memory allocation                                        ---*/
+/*----------------------------------------------------------------*/
 
 /* Create red zones of this size around malloc-ed memory.
  Must be >= 3*sizeof(size_t) */
@@ -53,14 +111,17 @@ static const size_t kMallocMagic = 0x1234abcd;
  Instead of free-ing this pointer instantly, we free a pointer
  in the back of the queue.
  */
-#define DELAY_REUSE_QUEUE_SIZE 1024
-static size_t delay_reuse_queue[DELAY_REUSE_QUEUE_SIZE];
+enum {
+  kDelayReuseQueueSize = 1024
+};
+static size_t delay_reuse_queue[kDelayReuseQueueSize];
 static size_t drq_begin;
 
 /* Generic malloc() handler. */
 INLINE static size_t handle_malloc(OrigFn fn, size_t size) {
   size_t ptr;
   uint64_t base;
+  start_ignore_all_accesses_and_sync();
   /* Allocate memory with red zones fro both sides. */
   CALL_FN_W_W(ptr, fn, size + 2 * kRedZoneSize);
   /* Mark all memory as defined, put our own data at the beginning. */
@@ -73,6 +134,9 @@ INLINE static size_t handle_malloc(OrigFn fn, size_t size) {
   VALGRIND_MALLOCLIKE_BLOCK(base + kRedZoneSize, size, kRedZoneSize, 0);
   VALGRIND_MAKE_MEM_NOACCESS(base, kRedZoneSize);
   VALGRIND_MAKE_MEM_NOACCESS(base + kRedZoneSize + size, kRedZoneSize);
+  stop_ignore_all_accesses_and_sync();
+  /* Tell TSan about malloc-ed memory. */
+  VG_CREQ_v_WW(TSREQ_MALLOC, base + kRedZoneSize, size);
   /* Done */
   return ptr + kRedZoneSize;
 }
@@ -81,9 +145,12 @@ INLINE static size_t handle_malloc(OrigFn fn, size_t size) {
 INLINE static void handle_free(OrigFn fn, size_t ptr) {
   uint64_t base;
   size_t size, old_ptr;
+  start_ignore_all_accesses_and_sync();
   /* Get the size of allocated region, check sanity. */
   ptr -= kRedZoneSize;
   base = VALGRIND_SANDBOX_PTR(ptr);
+  /* Tell TSan about deallocated memory. */
+  VG_CREQ_v_W(TSREQ_FREE, base + kRedZoneSize);
   VALGRIND_MAKE_MEM_DEFINED(base, kRedZoneSize);
   assert(((size_t*)ptr)[0] == kMallocMagic);
   size = ((size_t*)ptr)[1];
@@ -99,21 +166,149 @@ INLINE static void handle_free(OrigFn fn, size_t ptr) {
   CALL_FN_v_W(fn, old_ptr);
   /* Put the current pointer into the eruse queue. */
   delay_reuse_queue[drq_begin] = ptr;
-  drq_begin = (drq_begin + 1) % DELAY_REUSE_QUEUE_SIZE;
+  drq_begin = (drq_begin + 1) % kDelayReuseQueueSize;
+  stop_ignore_all_accesses_and_sync();
 }
 
 /* malloc() */
-size_t I_WRAP_SONAME_FNNAME_ZZ(NaCl, malloc)(size_t size) {
+size_t VG_NACL_FUNC(malloc)(size_t size) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
   return handle_malloc(fn, size);
 }
 
 /* free() */
-void I_WRAP_SONAME_FNNAME_ZZ(NaCl, free)(size_t ptr) {
+void VG_NACL_FUNC(free)(size_t ptr) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
   handle_free(fn, ptr);
 }
 
-#endif  /* defined(__linux__) && defined(__x86_64__) */
+/* nc_allocate_memory_block_mu() - a cached malloc for thread stack & tls. */
+size_t VG_NACL_FUNC(nc_allocate_memory_block_mu)(int type, size_t size) {
+  OrigFn fn;
+  size_t ret;
+  VALGRIND_GET_ORIG_FN(fn);
+  start_ignore_all_accesses_and_sync();
+  CALL_FN_W_WW(ret, fn, type, size);
+  stop_ignore_all_accesses_and_sync();
+  if (ret) {
+    VG_CREQ_v_WW(TSREQ_MALLOC, VALGRIND_SANDBOX_PTR(ret),
+        size + sizeof(nc_thread_memory_block_t));
+  }
+  return ret;
+}
+
+/* Tell the tool that the stack has moved.
+   This is the first untrusted function of any NaCl thread and the first
+   place after the context switch that we can intercept. */
+void VG_NACL_FUNC(nc_thread_starter)(size_t func, size_t state) {
+  OrigFn fn;
+  int local_stack_var = 0;
+
+  /* Let the tool guess where the stack starts. */
+  VG_CREQ_v_W(TSREQ_THR_STACK_TOP, (size_t)&local_stack_var);
+
+  VALGRIND_GET_ORIG_FN(fn);
+  CALL_FN_v_WW(fn, func, state);
+}
+
+
+/*----------------------------------------------------------------*/
+/* pthread_mutex_t functions */
+
+/* pthread_mutex_init */
+int VG_NACL_FUNC(pthreadZumutexZuinit)(pthread_mutex_t *mutex,
+    pthread_mutexattr_t* attr) {
+  int    ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  CALL_FN_W_WW(ret, fn, (size_t)mutex, (size_t)attr);
+
+  if (ret == 0 /*success*/) {
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_CREATE_POST, (size_t)mutex, 0);
+  }
+
+  return ret;
+}
+
+/* pthread_mutex_destroy */
+int VG_NACL_FUNC(pthreadZumutexZudestroy)(pthread_mutex_t *mutex) {
+  int    ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_DESTROY_PRE, (size_t)mutex);
+
+  CALL_FN_W_W(ret, fn, (size_t)mutex);
+
+  return ret;
+}
+
+/* pthread_mutex_lock */
+int VG_NACL_FUNC(pthreadZumutexZulock)(pthread_mutex_t *mutex) {
+  int    ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  start_ignore_all_accesses();
+  CALL_FN_W_W(ret, fn, (size_t)mutex);
+  stop_ignore_all_accesses();
+
+  if (ret == 0 /*success*/) {
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, (size_t)mutex, 1);
+  }
+
+  return ret;
+}
+
+/* pthread_mutex_trylock. */
+int VG_NACL_FUNC(pthreadZumutexZutrylock)(pthread_mutex_t *mutex) {
+  int    ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  start_ignore_all_accesses();
+  CALL_FN_W_W(ret, fn, (size_t)mutex);
+  stop_ignore_all_accesses();
+
+  if (ret == 0 /*success*/) {
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, (size_t)mutex, 1);
+  }
+
+  return ret;
+}
+
+/* pthread_mutex_timedlock. */
+int VG_NACL_FUNC(pthreadZumutexZutimedlock)(pthread_mutex_t *mutex,
+    void* timeout) {
+  int    ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  start_ignore_all_accesses();
+  CALL_FN_W_WW(ret, fn, (size_t)mutex, (size_t)timeout);
+  stop_ignore_all_accesses();
+
+  if (ret == 0 /*success*/) {
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, (size_t)mutex, 1);
+  }
+
+  return ret;
+}
+
+/* pthread_mutex_unlock */
+int VG_NACL_FUNC(pthreadZumutexZuunlock)(pthread_mutex_t *mutex) {
+  int    ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_UNLOCK_PRE, (size_t)mutex);
+
+  start_ignore_all_accesses();
+  CALL_FN_W_W(ret, fn, (size_t)mutex);
+  stop_ignore_all_accesses();
+
+  return ret;
+}

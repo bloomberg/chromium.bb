@@ -1,0 +1,10 @@
+# This function does a push as a first instruction, before we can tell
+# ThreadSanitizer about the new stack location.
+
+fun:nc_thread_starter
+
+# The following 2 functions generate false(?) reports on global arrays
+# nacl_user, nacl_thread, nacl_sys when a thread index is reused.
+
+fun:NaClAppThreadCtor
+fun:NaClSysCommonThreadSuicide

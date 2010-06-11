@@ -2,4 +2,13 @@ This directory contains valgrind-related files:
   * ./valgrind.h and ./memcheck.h -- public valgrind headers
      needed to communicate NaCl-specific memory management to valgrind.
   * ./bin/* -- pre-built valgrind binaries which can be used with NaCl.
-    These binaries are built with native_client/tools/build_memcheck.sh
+    The memcheck binary is built with native_client/tools/build_memcheck.sh.
+    The tsan binary can be updated from TSan buildbot at
+        http://build.chromium.org/buildbot/tsan/binaries/
+    Look for the latest tsan-rNNNN-amd64-linux-self-contained.sh.
+    Alternatively, you can build one yourself with
+        make -C tsan OFFLINE= VALGRIND_INST_ROOT=../out \
+          VALGRIND_ROOT=../third_party/valgrind OS=linux ARCH=amd64 DEBUG=0 \
+          self-contained-stripped
+    in ThreadSanitizer source directory, it will be 2 times smaller, because it
+    will not include all the x86(32) stuff.
