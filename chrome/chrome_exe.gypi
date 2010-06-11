@@ -437,11 +437,6 @@
             },
           },
         }],
-        ['internal_pdf', {
-          'dependencies': [
-            '../pdf/pdf.gyp:pdf',
-          ],
-        }],
       ],
     },
     {
