@@ -298,6 +298,11 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
 // Fails sometimes on Linux valgrind.
 #define MAYBE_BrowserCloseWithInnerFocusedFrame \
     FLAKY_BrowserCloseWithInnerFocusedFrame
+#else
+#define MAYBE_BrowserCloseWithInnerFocusedFrame \
+    BrowserCloseWithInnerFocusedFrame
+#define MAYBE_BrowserCloseBeforeUnloadOK BrowserCloseBeforeUnloadOK
+#define MAYBE_BrowserCloseBeforeUnloadCancel BrowserCloseBeforeUnloadCancel
 #endif
 
 // Tests closing the browser with a beforeunload handler and clicking
