@@ -66,6 +66,8 @@ readonly BINUTILS_GOLD_UPDATE_PATCH=${PATCH_DIR}/gold-update.patch
 readonly BINUTILS_GOLD_OUTPUT_NAME_PATCH=${PATCH_DIR}/gold-output-name.patch
 readonly BINUTILS_GOLD_VISIBILITY_PATCH=${PATCH_DIR}/gold-visibility.patch
 
+readonly BFD_PLUGIN_DIR=${LLVMGCC_INSTALL_DIR}/lib/bfd-plugins
+
 # TODO(robertm): get the code from a repo rather than use tarball + patch
 readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
 readonly NEWLIB_PATCH=${PATCH_DIR}/newlib-1.17.0_arm.patch
@@ -106,6 +108,15 @@ readonly CFLAGS_FOR_SFI_TARGET="-march=armv6 \
                            -DMISSING_SYSCALL_NAMES=1 \
                            -ffixed-r9 \
                            -D__native_client__=1"
+
+# The gold plugin that we use is documented at
+# http://llvm.org/docs/GoldPlugin.html
+# Despite its name it is actually used by both gold and bfd. The changes to
+# this file to enable its use are:
+# * Build shared
+# * --enable-gold and --enable-plugin when building binutils
+# * --with-binutils-include when building binutils
+# * linking the plugin in bfd-plugins
 
 ######################################################################
 # Helper
@@ -264,6 +275,11 @@ ConfigureAndBuildLlvm() {
 
   Run "Linking llc-sfi" ln -s \
            llc ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm/bin/llc-sfi
+
+  SubBanner "Linking the plugin"
+  mkdir -p ${BFD_PLUGIN_DIR}
+  ln -s ../../../llvm/lib/LLVMgold.so ${BFD_PLUGIN_DIR}
+  ln -s ../../../llvm/lib/libLTO.so ${BFD_PLUGIN_DIR}
 
   cd ${saved_dir}
 }
