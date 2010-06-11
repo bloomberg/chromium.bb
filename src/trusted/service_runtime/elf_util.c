@@ -33,9 +33,11 @@ struct NaClElfImage {
 
 
 enum NaClPhdrCheckAction {
+  PCA_NONE,
   PCA_TEXT_CHECK,
   PCA_RODATA,
-  PCA_DATA
+  PCA_DATA,
+  PCA_IGNORE  /* ignore this segment. */
 };
 
 
@@ -48,15 +50,38 @@ struct NaClPhdrChecks {
 };
 
 /*
- * These are the only loadable segments that are allowed.
+ * Other than empty segments, these are the only ones that are allowed.
  */
 static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
+  /* phdr */
+  { PT_PHDR, PF_R, PCA_IGNORE, 0, 0, },
   /* text */
   { PT_LOAD, PF_R|PF_X, PCA_TEXT_CHECK, 1, NACL_TRAMPOLINE_END, },
   /* rodata */
   { PT_LOAD, PF_R, PCA_RODATA, 0, 0, },
   /* data/bss */
   { PT_LOAD, PF_R|PF_W, PCA_DATA, 0, 0, },
+  /* tls */
+  { PT_TLS, PF_R, PCA_IGNORE, 0, 0},
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /* arm exception handling unwind info (for c++)*/
+  /* TODO(robertm): for some reason this does NOT end up in ro maybe because
+   *             it is relocatable. Try hacking the linker script to move it.
+   */
+  { PT_ARM_EXIDX, PF_R, PCA_IGNORE, 0, 0, },
+#endif
+  /*
+   * allow optional GNU stack permission marker, but require that the
+   * stack is non-executable.
+   */
+  { PT_GNU_STACK, PF_R|PF_W, PCA_NONE, 0, 0, },
+  /* ignored segments */
+  { PT_DYNAMIC, PF_R, PCA_IGNORE, 0, 0},
+  { PT_INTERP, PF_R, PCA_IGNORE, 0, 0},
+  { PT_NOTE, PF_R, PCA_IGNORE, 0, 0},
+  { PT_GNU_EH_FRAME, PF_R, PCA_IGNORE, 0, 0},
+  { PT_GNU_RELRO, PF_R, PCA_IGNORE, 0, 0},
+  { PT_NULL, PF_R, PCA_IGNORE, 0, 0},
 };
 
 
@@ -224,11 +249,11 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
     php = &image->phdrs[segnum];
     NaClLog(3, "Looking at segment %d, type 0x%x, p_flags 0x%x\n",
             segnum, php->p_type, php->p_flags);
-    if (0 == php->p_memsz || php->p_type != PT_LOAD) {
+    if (0 == php->p_memsz) {
       /*
        * We will not load this segment.
        */
-      NaClLog(3, "Ignoring non PT_LOAD or empty segment\n");
+      NaClLog(3, "Ignoring empty segment\n");
       continue;
     }
 
@@ -253,6 +278,11 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
       return LOAD_DUP_SEGMENT;
     }
     seen_seg[j] = 1;
+
+    if (PCA_IGNORE == nacl_phdr_check_data[j].action) {
+      NaClLog(3, "Ignoring\n");
+      continue;
+    }
 
     /*
      * We will load this segment later.  Do the sanity checks.
@@ -316,6 +346,8 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
     }
 
     switch (nacl_phdr_check_data[j].action) {
+      case PCA_NONE:
+        break;
       case PCA_TEXT_CHECK:
         if (0 == php->p_memsz) {
           return LOAD_BAD_ELF_TEXT;
@@ -329,6 +361,8 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
       case PCA_DATA:
         *data_start = php->p_vaddr;
         *data_end = php->p_vaddr + php->p_memsz;
+        break;
+      case PCA_IGNORE:
         break;
     }
   }

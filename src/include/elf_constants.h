@@ -142,11 +142,14 @@ EXTERN_C_BEGIN
 #endif
 #define PT_HIPROC     0x7fffffff  /* Processor-specific high */
 /*
- * PT_TLS and PT_GNU_STACK are from linux elf.h, for code usage
+ * These are from linux elf.h, for code usage
  * compatibility.
  */
 #define PT_TLS        7
 #define PT_GNU_STACK  0x6474e551
+#define PT_GNU_EH_FRAME 0x6474e550      /* GCC .eh_frame_hdr segment */
+#define PT_GNU_RELRO    0x6474e552      /* Read-only after relocation */
+
 
 #define PF_X          1
 #define PF_W          2
