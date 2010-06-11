@@ -118,14 +118,7 @@ class MenuGtk {
   // Contains implementation for OnMenuShow.
   void UpdateMenu();
 
-  // Dispatches to either |model| (if it is non-null) or |delegate_|. The
-  // reason for this awkwardness is that we are in a transitional period where
-  // we support both MenuModel and Delegate as a menu controller.
-  // TODO(estade): remove controller functions from Delegate.
-  // http://crbug.com/31365
-  bool IsCommandEnabled(menus::MenuModel* model, int id);
   void ExecuteCommand(menus::MenuModel* model, int id);
-  bool IsItemChecked(menus::MenuModel* model, int id);
 
   // Callback for when a menu item is clicked.
   static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);
