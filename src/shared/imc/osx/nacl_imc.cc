@@ -209,6 +209,7 @@ bool IsBoundSocket(Handle handle, struct sockaddr_un* sa, socklen_t len) {
 bool sigpipe_occurred = false;
 
 void SIGPIPEHandler(int signal_number) {
+  (void) signal_number;  // Unused parameter
   sigpipe_occurred = true;
 }
 
