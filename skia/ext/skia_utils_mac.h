@@ -9,11 +9,11 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
-struct SkMatrix;
 struct SkIRect;
 struct SkPoint;
 struct SkRect;
 class SkBitmap;
+class SkMatrix;
 #ifdef __LP64__
 typedef CGSize NSSize;
 #else

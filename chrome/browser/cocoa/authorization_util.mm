@@ -167,8 +167,7 @@ OSStatus ExecuteWithPrivilegesAndWait(AuthorizationRef authorization,
   }
 
   if (pid != -1) {
-    pid_t wait_result;
-    HANDLE_EINTR(wait_result = waitpid(pid, exit_status_pointer, 0));
+    pid_t wait_result = HANDLE_EINTR(waitpid(pid, exit_status_pointer, 0));
     if (wait_result != pid) {
       PLOG(ERROR) << "waitpid";
       *exit_status_pointer = -1;

@@ -284,8 +284,6 @@ const CGFloat kRapidCloseDist = 2.5;
         [NSApp nextEventMatchingMask:NSLeftMouseUpMask | NSLeftMouseDraggedMask
                            untilDate:[NSDate distantFuture]
                               inMode:NSDefaultRunLoopMode dequeue:YES];
-    NSPoint thisPoint = [NSEvent mouseLocation];
-
     NSEventType type = [theEvent type];
     if (type == NSLeftMouseDragged) {
       [self mouseDragged:theEvent];
@@ -339,7 +337,6 @@ const CGFloat kRapidCloseDist = 2.5;
   tabWasDragged_ = YES;
 
   if (draggingWithinTabStrip_) {
-    NSRect frame = [self frame];
     NSPoint thisPoint = [NSEvent mouseLocation];
     CGFloat stretchiness = thisPoint.y - dragOrigin_.y;
     stretchiness = copysign(sqrtf(fabs(stretchiness))/sqrtf(kTearDistance),
@@ -365,9 +362,6 @@ const CGFloat kRapidCloseDist = 2.5;
       return;
     }
   }
-
-  NSPoint lastPoint =
-    [[theEvent window] convertBaseToScreen:[theEvent locationInWindow]];
 
   // Do not start dragging until the user has "torn" the tab off by
   // moving more than 3 pixels.
@@ -502,7 +496,6 @@ const CGFloat kRapidCloseDist = 2.5;
 
     // Compute where placeholder should go and insert it into the
     // destination tab strip.
-    NSRect dropTabFrame = [[targetController_ tabStripView] frame];
     TabView* draggedTabView = (TabView*)[draggedController_ selectedTabView];
     NSRect tabFrame = [draggedTabView frame];
     tabFrame.origin = [dragWindow_ convertBaseToScreen:tabFrame.origin];
@@ -510,9 +503,6 @@ const CGFloat kRapidCloseDist = 2.5;
                         convertScreenToBase:tabFrame.origin];
     tabFrame = [[targetController_ tabStripView]
                 convertRect:tabFrame fromView:nil];
-    NSPoint point =
-      [sourceWindow_ convertBaseToScreen:
-       [draggedTabView convertPoint:NSZeroPoint toView:nil]];
     [targetController_ insertPlaceholderForTab:self
                                          frame:tabFrame
                                  yStretchiness:0];

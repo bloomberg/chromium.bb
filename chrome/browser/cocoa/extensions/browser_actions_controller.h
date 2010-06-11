@@ -55,7 +55,7 @@ extern const NSString* kBrowserActionVisibilityChangedNotification;
   scoped_nsobject<NSMutableArray> hiddenButtons_;
 
   // The currently running chevron animation (fade in/out).
-  scoped_nsobject<NSAnimation> chevronAnimation_;
+  scoped_nsobject<NSViewAnimation> chevronAnimation_;
 
   // The chevron button used when Browser Actions are hidden.
   scoped_nsobject<MenuButton> chevronMenuButton_;

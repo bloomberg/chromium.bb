@@ -988,7 +988,7 @@ void RecordLastRunAppBundlePath() {
   [self commandDispatch:sender];
 }
 
-- (NSMenu*)applicationDockMenu:(id)sender {
+- (NSMenu*)applicationDockMenu:(NSApplication*)sender {
   NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
   NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
   scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]

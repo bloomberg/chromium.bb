@@ -19,7 +19,7 @@
 
 @implementation URLDropTargetHandler
 
-- (id)initWithView:(NSView*)view {
+- (id)initWithView:(NSView<URLDropTarget>*)view {
   if ((self = [super init])) {
     view_ = view;
     [view_ registerForDraggedTypes:

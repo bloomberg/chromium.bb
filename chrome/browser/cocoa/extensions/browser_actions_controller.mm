@@ -28,7 +28,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
-extern const CGFloat kBrowserActionButtonPadding = 3;
+const CGFloat kBrowserActionButtonPadding = 3;
 
 extern const NSString* kBrowserActionVisibilityChangedNotification =
     @"BrowserActionVisibilityChangedNotification";

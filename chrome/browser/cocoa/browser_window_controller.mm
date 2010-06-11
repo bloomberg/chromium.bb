@@ -1473,14 +1473,15 @@
 - (void)swipeWithEvent:(NSEvent*)event {
   // Map forwards and backwards to history; left is positive, right is negative.
   unsigned int command = 0;
-  if ([event deltaX] > 0.5)
+  if ([event deltaX] > 0.5) {
     command = IDC_BACK;
-  else if ([event deltaX] < -0.5)
+  } else if ([event deltaX] < -0.5) {
     command = IDC_FORWARD;
-  else if ([event deltaY] > 0.5)
-    ;  // TODO(pinkerton): figure out page-up, http://crbug.com/16305
-  else if ([event deltaY] < -0.5)
-    ;  // TODO(pinkerton): figure out page-down, http://crbug.com/16305
+  } else if ([event deltaY] > 0.5) {
+    // TODO(pinkerton): figure out page-up, http://crbug.com/16305
+  } else if ([event deltaY] < -0.5) {
+    // TODO(pinkerton): figure out page-down, http://crbug.com/16305
+  }
 
   // Ensure the command is valid first (ExecuteCommand() won't do that) and
   // then make it so.

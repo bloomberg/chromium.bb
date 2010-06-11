@@ -29,7 +29,7 @@ class SelectFileDialogImpl;
 }
 
 - (id)initWithSelectFileDialogImpl:(SelectFileDialogImpl*)s;
-- (void)endedPanel:(NSSavePanel *)panel
+- (void)endedPanel:(NSSavePanel*)panel
         withReturn:(int)returnCode
            context:(void *)context;
 
@@ -325,7 +325,7 @@ bool SelectFileDialogImpl::ShouldEnableFilename(NSPanel* dialog,
   return self;
 }
 
-- (void)endedPanel:(id)panel
+- (void)endedPanel:(NSSavePanel*)panel
         withReturn:(int)returnCode
            context:(void *)context {
   int index = 0;
@@ -355,7 +355,8 @@ bool SelectFileDialogImpl::ShouldEnableFilename(NSPanel* dialog,
         index = 1;
       }
     } else {
-      NSArray* filenames = [panel filenames];
+      CHECK([panel isKindOfClass:[NSOpenPanel class]]);
+      NSArray* filenames = [static_cast<NSOpenPanel*>(panel) filenames];
       for (NSString* filename in filenames)
         paths.push_back(FilePath(base::SysNSStringToUTF8(filename)));
     }

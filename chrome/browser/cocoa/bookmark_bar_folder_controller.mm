@@ -367,7 +367,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // Create buttons for all our nodes.
 // TODO(jrg): break up into more and smaller routines for easier unit testing.
 - (void)configureWindow {
-  NSPoint newWindowTopLeft = [self windowTopLeft];
   const BookmarkNode* node = [parentButton_ bookmarkNode];
   DCHECK(node);
   int startingIndex = [[parentButton_ cell] startingChildIndex];

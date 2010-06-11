@@ -120,7 +120,6 @@ static const CGFloat kExtraMarginForDetailsView = 10;
 
   [detailsViewController_ setContentObject:selectionAdapterObject_.get()];
 
-  NSRect viewFrameRect = [disclosedViewPlaceholder_ frame];
   [[disclosedViewPlaceholder_ superview]
       replaceSubview:disclosedViewPlaceholder_
                 with:[detailsViewController_ view]];

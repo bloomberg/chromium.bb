@@ -42,7 +42,7 @@ static const CGFloat kBrowserActionOriginYOffset = 5;
 
 // The size of each button on the toolbar.
 static const CGFloat kBrowserActionHeight = 27;
-extern const CGFloat kBrowserActionWidth = 29;
+const CGFloat kBrowserActionWidth = 29;
 
 namespace {
 const CGFloat kAnimationDuration = 0.2;
@@ -181,8 +181,6 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     [[self superview] addSubview:self positioned:NSWindowAbove relativeTo:nil];
   }
   isBeingDragged_ = YES;
-  NSPoint location = [self convertPoint:[theEvent locationInWindow]
-                               fromView:nil];
   NSRect buttonFrame = [self frame];
   // TODO(andybons): Constrain the buttons to be within the container.
   // Clamp the button to be within its superview along the X-axis.

@@ -935,7 +935,7 @@ class PrefObserverBridge : public NotificationObserver,
 }
 
 // Getter for the |customPagesSource| property for bindings.
-- (id)customPagesSource {
+- (CustomHomePagesModel*)customPagesSource {
   return customPagesSource_.get();
 }
 

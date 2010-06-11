@@ -212,7 +212,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   void KillSelf();
 
-  void set_parent_view(BaseView* parent_view) { parent_view_ = parent_view; }
+  void set_parent_view(NSView* parent_view) { parent_view_ = parent_view; }
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -280,7 +280,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   ScopedRunnableMethodFactory<RenderWidgetHostViewMac> shutdown_factory_;
 
   // Used for positioning a popup menu.
-  BaseView* parent_view_;
+  NSView* parent_view_;
 
   // Helper class for managing instances of accelerated plug-ins.
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;

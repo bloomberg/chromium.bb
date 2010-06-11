@@ -40,7 +40,7 @@ extern const CGFloat kBrowserActionWidth;
   scoped_nsobject<NSImage> tabSpecificIcon_;
 
   // Used to move the button and query whether a button is currently animating.
-  scoped_nsobject<NSAnimation> moveAnimation_;
+  scoped_nsobject<NSViewAnimation> moveAnimation_;
 
   // The extension for this button. Weak.
   Extension* extension_;

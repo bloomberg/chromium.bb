@@ -20,8 +20,6 @@
 
 @interface BookmarkEditorBaseController ()
 
-@property (retain, readwrite) NSArray* folderTreeArray;
-
 // Return the folder tree object for the given path.
 - (BookmarkFolderInfo*)folderForIndexPath:(NSIndexPath*)path;
 

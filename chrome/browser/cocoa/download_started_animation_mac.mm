@@ -97,7 +97,6 @@ private:
   tabContents->GetContainerBounds(&bounds);
   imageWidth_ = CGImageGetWidth(image);
   CGFloat imageHeight = CGImageGetHeight(image);
-  CGRect imageBounds = CGRectMake(0, 0, imageWidth_, imageHeight);
 
   // Sanity check the size in case there's no room to display the animation.
   if (bounds.height() < imageHeight) {

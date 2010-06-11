@@ -9,7 +9,7 @@
 class GURL;
 class RenderViewHost;
 class TabContents;
-class WebDropData;
+struct WebDropData;
 
 // A typedef for a RenderViewHost used for comparison purposes only.
 typedef RenderViewHost* RenderViewHostIdentifier;

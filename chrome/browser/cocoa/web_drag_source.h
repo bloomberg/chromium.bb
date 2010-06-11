@@ -10,8 +10,8 @@
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
-struct WebDropData;
 @class TabContentsViewCocoa;
+struct WebDropData;
 
 // A class that handles tracking and event processing for a drag and drop
 // originating from the content area.

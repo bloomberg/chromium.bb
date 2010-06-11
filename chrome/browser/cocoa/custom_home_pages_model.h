@@ -22,7 +22,7 @@ class Profile;
 
 @interface CustomHomePagesModel : NSObject {
  @private
-  scoped_nsobject<NSArray> entries_;
+  scoped_nsobject<NSMutableArray> entries_;
   Profile* profile_;  // weak, used for loading favicons
 }
 

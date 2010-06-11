@@ -141,7 +141,7 @@
       static_cast<menus::MenuModel*>(
           [[sender representedObject] pointerValue]);
   DCHECK(model);
-  if (model);
+  if (model)
     model->ActivatedAt(modelIndex);
 }
 

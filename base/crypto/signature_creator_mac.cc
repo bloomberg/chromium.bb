@@ -31,7 +31,7 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   crtn = CSSM_SignDataInit(result->sig_handle_);
   if (crtn) {
     NOTREACHED();
-    return false;
+    return NULL;
   }
 
   return result.release();
