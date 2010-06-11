@@ -404,6 +404,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOut) {
 #else
 #define MAYBE_TestStepIn TestStepIn
 #endif
+// Disable TestStepIn completely while test expectations are not updated
+// in Webkit.  See http://crbug.com/46235
+#undef MAYBE_TestStepIn
+#define MAYBE_TestStepIn DISABLED_TestStepIn
+
 // Tests step in functionality in the debugger.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepIn) {
   RunTest("testStepIn", kDebuggerStepTestPage);
