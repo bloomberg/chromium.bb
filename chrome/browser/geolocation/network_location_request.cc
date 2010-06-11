@@ -54,6 +54,8 @@ void AddInteger(const std::wstring& property_name,
                 int value,
                 DictionaryValue* object);
 // Parses the server response body. Returns true if parsing was successful.
+// Sets |*position| to the parsed location if a valid fix was received,
+// otherwise leaves it unchanged (i.e. IsInitialized() == false).
 bool ParseServerResponse(const std::string& response_body,
                          const base::Time& timestamp,
                          Geoposition* position,
@@ -279,6 +281,7 @@ bool ParseServerResponse(const std::string& response_body,
                          Geoposition* position,
                          string16* access_token) {
   DCHECK(position);
+  DCHECK(!position->IsInitialized());
   DCHECK(access_token);
   DCHECK(!timestamp.is_null());
 
@@ -314,7 +317,9 @@ bool ParseServerResponse(const std::string& response_body,
   Value* location_value = NULL;
   if (!response_object->Get(kLocationString, &location_value)) {
     LOG(INFO) << "ParseServerResponse() : Missing location attribute.\n";
-    return false;
+    // GLS returns an empty response (with no location property) to represent
+    // no fix available; return true to indicate successful parse.
+    return true;
   }
   DCHECK(location_value);
 
