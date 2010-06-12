@@ -45,9 +45,6 @@ static const int kTitlePadding = 4;
 // of the field's left edge.
 static const int kMinimumFieldSize = 180;
 
-// Max number of most recently used folders.
-static const size_t kMaxMRUFolders = 5;
-
 // Bubble close image.
 static SkBitmap* kCloseImage = NULL;
 
@@ -74,64 +71,6 @@ bool IsBookmarkBubbleViewShowing() {
 }
 
 }  // namespace browser
-
-// RecentlyUsedFoldersModel ---------------------------------------------------
-
-BookmarkBubbleView::RecentlyUsedFoldersModel::RecentlyUsedFoldersModel(
-    BookmarkModel* bb_model, const BookmarkNode* node)
-      // Use + 2 to account for bookmark bar and other node.
-      : nodes_(bookmark_utils::GetMostRecentlyModifiedGroups(
-            bb_model, kMaxMRUFolders + 2)),
-      node_parent_index_(0) {
-  // TODO(sky): bug 1173415 add a separator in the combobox here.
-
-  // We special case the placement of these, so remove them from the list, then
-  // fix up the order.
-  RemoveNode(bb_model->GetBookmarkBarNode());
-  RemoveNode(bb_model->other_node());
-  RemoveNode(node->GetParent());
-
-  // Make the parent the first item, unless it's the bookmark bar or other node.
-  if (node->GetParent() != bb_model->GetBookmarkBarNode() &&
-      node->GetParent() != bb_model->other_node()) {
-    nodes_.insert(nodes_.begin(), node->GetParent());
-  }
-
-  // Make sure we only have kMaxMRUFolders in the first chunk.
-  if (nodes_.size() > kMaxMRUFolders)
-    nodes_.erase(nodes_.begin() + kMaxMRUFolders, nodes_.end());
-
-  // And put the bookmark bar and other nodes at the end of the list.
-  nodes_.push_back(bb_model->GetBookmarkBarNode());
-  nodes_.push_back(bb_model->other_node());
-
-  node_parent_index_ = static_cast<int>(
-      find(nodes_.begin(), nodes_.end(), node->GetParent()) - nodes_.begin());
-}
-
-int BookmarkBubbleView::RecentlyUsedFoldersModel::GetItemCount() {
-  return static_cast<int>(nodes_.size() + 1);
-}
-
-std::wstring BookmarkBubbleView::RecentlyUsedFoldersModel::GetItemAt(
-    int index) {
-  if (index == static_cast<int>(nodes_.size()))
-    return l10n_util::GetString(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
-  return nodes_[index]->GetTitle();
-}
-
-const BookmarkNode* BookmarkBubbleView::RecentlyUsedFoldersModel::GetNodeAt(
-    int index) {
-  return nodes_[index];
-}
-
-void BookmarkBubbleView::RecentlyUsedFoldersModel::RemoveNode(
-    const BookmarkNode* node) {
-  std::vector<const BookmarkNode*>::iterator i =
-      find(nodes_.begin(), nodes_.end(), node);
-  if (i != nodes_.end())
-    nodes_.erase(i);
-}
 
 // BookmarkBubbleView ---------------------------------------------------------
 

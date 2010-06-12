@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/combobox_model.h"
+#include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
@@ -64,33 +65,6 @@ class BookmarkBubbleView : public views::View,
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
  private:
-  // Model for the combobox showing the list of folders to choose from. The
-  // list always contains the bookmark bar, other node and parent. The list
-  // also contains an extra item that shows the text 'Choose another folder...'.
-  class RecentlyUsedFoldersModel : public ComboboxModel {
-   public:
-    RecentlyUsedFoldersModel(BookmarkModel* bb_model, const BookmarkNode* node);
-
-    // Combobox::Model methods. Call through to nodes_.
-    virtual int GetItemCount();
-    virtual std::wstring GetItemAt(int index);
-
-    // Returns the node at the specified index.
-    const BookmarkNode* GetNodeAt(int index);
-
-    // Returns the index of the original parent folder.
-    int node_parent_index() const { return node_parent_index_; }
-
-   private:
-    // Removes node from nodes_. Does nothing if node is not in nodes_.
-    void RemoveNode(const BookmarkNode* node);
-
-    std::vector<const BookmarkNode*> nodes_;
-    int node_parent_index_;
-
-    DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersModel);
-  };
-
   // Creates a BookmarkBubbleView.
   // |title| is the title of the page. If newly_bookmarked is false, title is
   // ignored and the title of the bookmark is fetched from the database.
@@ -158,7 +132,7 @@ class BookmarkBubbleView : public views::View,
   // If true, the page was just bookmarked.
   const bool newly_bookmarked_;
 
-  RecentlyUsedFoldersModel parent_model_;
+  RecentlyUsedFoldersComboModel parent_model_;
 
   // Link for removing/unstarring the bookmark.
   views::Link* remove_link_;

@@ -248,6 +248,8 @@
         'browser/bookmarks/bookmark_storage.h',
         'browser/bookmarks/bookmark_utils.cc',
         'browser/bookmarks/bookmark_utils.h',
+	'browser/bookmarks/recently_used_folders_combo_model.cc',
+	'browser/bookmarks/rencetly_used_folders_combo_model.h',
         'browser/browser.cc',
         'browser/browser.h',
         'browser/browser_about_handler.cc',
