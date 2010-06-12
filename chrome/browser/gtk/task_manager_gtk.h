@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/task_manager.h"
 #include "grit/generated_resources.h"
@@ -70,23 +71,18 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   gint CompareImpl(GtkTreeModel* tree_model, GtkTreeIter* a,
                    GtkTreeIter* b, int id);
 
-  // response signal handler that notifies us of dialog destruction.
-  static void OnDestroy(GtkDialog* dialog, TaskManagerGtk* task_manager);
+  // Response signal handler that notifies us of dialog destruction.
+  CHROMEGTK_CALLBACK_0(TaskManagerGtk, void, OnDestroy);
 
-  // response signal handler that notifies us of dialog responses.
-  static void OnResponse(GtkDialog* dialog, gint response_id,
-                         TaskManagerGtk* task_manager);
+  // Response signal handler that notifies us of dialog responses.
+  CHROMEGTK_CALLBACK_1(TaskManagerGtk, void, OnResponse, gint);
 
-  // realize signal handler to set the page column's initial size.
-  static void OnTreeViewRealize(GtkTreeView* treeview,
-                                TaskManagerGtk* task_manager);
+  // Realize signal handler to set the page column's initial size.
+  CHROMEG_CALLBACK_0(TaskManagerGtk, void, OnTreeViewRealize, GtkTreeView*);
 
-  // changed signal handler that is sent when the treeview selection changes.
-  static void OnSelectionChangedThunk(GtkTreeSelection* selection,
-                                      TaskManagerGtk* task_manager) {
-    task_manager->OnSelectionChanged(selection);
-  }
-  void OnSelectionChanged(GtkTreeSelection* selection);
+  // Changed signal handler that is sent when the treeview selection changes.
+  CHROMEG_CALLBACK_0(TaskManagerGtk, void, OnSelectionChanged,
+                     GtkTreeSelection*);
 
   // button-press-event handler that activates a process on double-click.
   static gboolean OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,

@@ -423,8 +423,8 @@ void TaskManagerGtk::Init() {
                       gtk_util::kContentAreaSpacing);
 
   destroy_handler_id_ = g_signal_connect(dialog_, "destroy",
-                                         G_CALLBACK(OnDestroy), this);
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+                                         G_CALLBACK(OnDestroyThunk), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "button-release-event",
                    G_CALLBACK(OnButtonReleaseEvent), this);
   gtk_widget_add_events(dialog_,
@@ -465,7 +465,7 @@ void TaskManagerGtk::SetInitialDialogSize() {
   // Hook up to the realize event so we can size the page column to the
   // size of the leftover space after packing the other columns.
   g_signal_connect(treeview_, "realize",
-                   G_CALLBACK(OnTreeViewRealize), this);
+                   G_CALLBACK(OnTreeViewRealizeThunk), this);
   // If we previously saved the dialog's bounds, use them.
   if (g_browser_process->local_state()) {
     const DictionaryValue* placement_pref =
@@ -774,16 +774,12 @@ gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,
   }
 }
 
-// static
-void TaskManagerGtk::OnDestroy(GtkDialog* dialog,
-                               TaskManagerGtk* task_manager) {
+void TaskManagerGtk::OnDestroy(GtkWidget* dialog) {
   instance_ = NULL;
-  delete task_manager;
+  delete this;
 }
 
-// static
-void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
-                                TaskManagerGtk* task_manager) {
+void TaskManagerGtk::OnResponse(GtkWidget* dialog, gint response_id) {
   if (response_id == GTK_RESPONSE_DELETE_EVENT) {
     // Store the dialog's size so we can restore it the next time it's opened.
     if (g_browser_process->local_state()) {
@@ -802,19 +798,17 @@ void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
     }
 
     instance_ = NULL;
-    delete task_manager;
+    delete this;
   } else if (response_id == kTaskManagerResponseKill) {
-    task_manager->KillSelectedProcesses();
+    KillSelectedProcesses();
   } else if (response_id == kTaskManagerAboutMemoryLink) {
-    task_manager->OnLinkActivated();
+    OnLinkActivated();
   } else if (response_id == kTaskManagerPurgeMemory) {
     MemoryPurger::PurgeAll();
   }
 }
 
-// static
-void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview,
-                                       TaskManagerGtk* task_manager) {
+void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview) {
   // Four columns show by default: the page column, the memory column, the
   // CPU column, and the network column. Initially we set the page column to
   // take all the extra space, with the other columns being sized to fit the
