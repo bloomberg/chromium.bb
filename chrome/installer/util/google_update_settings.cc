@@ -95,15 +95,15 @@ bool GoogleUpdateSettings::SetEULAConsent(bool consented) {
 }
 
 int GoogleUpdateSettings::GetLastRunTime() {
- std::wstring time_s;
- if (!ReadGoogleUpdateStrKey(google_update::kRegLastRunTimeField, &time_s))
-   return -1;
- int64 time_i;
- if (!StringToInt64(time_s, &time_i))
-   return -1;
- base::TimeDelta td =
+  std::wstring time_s;
+  if (!ReadGoogleUpdateStrKey(google_update::kRegLastRunTimeField, &time_s))
+    return -1;
+  int64 time_i;
+  if (!StringToInt64(time_s, &time_i))
+    return -1;
+  base::TimeDelta td =
     base::Time::NowFromSystemTime() - base::Time::FromInternalValue(time_i);
- return td.InDays();
+  return td.InDays();
 }
 
 bool GoogleUpdateSettings::SetLastRunTime() {
@@ -175,3 +175,67 @@ bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
 
   return true;
 }
+
+void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
+    bool incremental_install, int install_return_code,
+    const std::wstring& product_guid) {
+  HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  RegKey key;
+  std::wstring ap_key_value;
+  std::wstring reg_key(google_update::kRegPathClientState);
+  reg_key.append(L"\\");
+  reg_key.append(product_guid);
+  if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
+      !key.ReadValue(google_update::kRegApField, &ap_key_value)) {
+    LOG(INFO) << "Application key not found.";
+    if (!incremental_install || !install_return_code) {
+      LOG(INFO) << "Returning without changing application key.";
+      key.Close();
+      return;
+    } else if (!key.Valid()) {
+      reg_key.assign(google_update::kRegPathClientState);
+      if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
+          !key.CreateKey(product_guid.c_str(), KEY_ALL_ACCESS)) {
+        LOG(ERROR) << "Failed to create application key.";
+        key.Close();
+        return;
+      }
+    }
+  }
+
+  std::wstring new_value = GetNewGoogleUpdateApKey(
+      incremental_install, install_return_code, ap_key_value);
+  if ((new_value.compare(ap_key_value) != 0) &&
+      !key.WriteValue(google_update::kRegApField, new_value.c_str())) {
+    LOG(ERROR) << "Failed to write value " << new_value
+               << " to the registry field " << google_update::kRegApField;
+  }
+  key.Close();
+}
+
+std::wstring GoogleUpdateSettings::GetNewGoogleUpdateApKey(
+    bool diff_install, int install_return_code, const std::wstring& value) {
+  // Magic suffix that we need to add or remove to "ap" key value.
+  const std::wstring kMagicSuffix = L"-full";
+
+  bool has_magic_string = false;
+  if ((value.length() >= kMagicSuffix.length()) &&
+      (value.rfind(kMagicSuffix) == (value.length() - kMagicSuffix.length()))) {
+    LOG(INFO) << "Incremental installer failure key already set.";
+    has_magic_string = true;
+  }
+
+  std::wstring new_value(value);
+  if ((!diff_install || !install_return_code) && has_magic_string) {
+    LOG(INFO) << "Removing failure key from value " << value;
+    new_value = value.substr(0, value.length() - kMagicSuffix.length());
+  } else if ((diff_install && install_return_code) &&
+             !has_magic_string) {
+    LOG(INFO) << "Incremental installer failed, setting failure key.";
+    new_value.append(kMagicSuffix);
+  }
+
+  return new_value;
+}
+
