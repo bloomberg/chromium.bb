@@ -88,7 +88,8 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   // RenderViewHostDelegate::View implementation:
   virtual void CreateNewWindow(
       int route_id,
-      WindowContainerType window_container_type);
+      WindowContainerType window_container_type,
+      const string16& frame_name);
   virtual void CreateNewWidget(int route_id,
                                WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWindow(int route_id,
@@ -407,7 +408,7 @@ TabContentsView* InterstitialPage::CreateTabContentsView() {
   if (!request_context.get())
     request_context = tab()->profile()->GetRequestContext();
 
-  render_view_host_->CreateRenderView(request_context.get());
+  render_view_host_->CreateRenderView(request_context.get(), string16());
   view->SetSize(tab_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();
@@ -560,7 +561,8 @@ InterstitialPage::InterstitialPageRVHViewDelegate::
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type) {
+    WindowContainerType window_container_type,
+    const string16& frame_name) {
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";
 }
 

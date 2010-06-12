@@ -202,7 +202,8 @@ void ExtensionHost::CreateRenderViewSoon(RenderWidgetHostView* host_view) {
 }
 
 void ExtensionHost::CreateRenderViewNow() {
-  render_view_host_->CreateRenderView(profile_->GetRequestContext());
+  render_view_host_->CreateRenderView(profile_->GetRequestContext(),
+                                      string16());
   NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
 }
@@ -555,14 +556,16 @@ RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
 
 void ExtensionHost::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type) {
+    WindowContainerType window_container_type,
+    const string16& frame_name) {
   delegate_view_helper_.CreateNewWindow(
       route_id,
       render_view_host()->process()->profile(),
       site_instance(),
       DOMUIFactory::GetDOMUIType(url_),
       this,
-      window_container_type);
+      window_container_type,
+      frame_name);
 }
 
 void ExtensionHost::CreateNewWidget(int route_id,

@@ -123,6 +123,7 @@ class RenderWidgetHelper
   void CreateNewWindow(int opener_id,
                        bool user_gesture,
                        WindowContainerType window_container_type,
+                       const string16& frame_name,
                        base::ProcessHandle render_process,
                        int* route_id);
   void CreateNewWidget(int opener_id,
@@ -164,7 +165,8 @@ class RenderWidgetHelper
   // Called on the UI thread to finish creating a window.
   void OnCreateWindowOnUI(int opener_id,
                           int route_id,
-                          WindowContainerType window_container_type);
+                          WindowContainerType window_container_type,
+                          string16 frame_name);
 
   // Called on the IO thread after a window was created on the UI thread.
   void OnCreateWindowOnIO(int route_id);

@@ -103,8 +103,10 @@ class RenderViewHost : public RenderWidgetHost {
   RenderViewHostDelegate* delegate() const { return delegate_; }
 
   // Set up the RenderView child process. Virtual because it is overridden by
-  // TestRenderViewHost.
-  virtual bool CreateRenderView(URLRequestContextGetter* request_context);
+  // TestRenderViewHost. If the |frame_name| parameter is non-empty, it is used
+  // as the name of the new top-level frame.
+  virtual bool CreateRenderView(URLRequestContextGetter* request_context,
+                                const string16& frame_name);
 
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.
@@ -417,7 +419,8 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id,
-                       WindowContainerType window_container_type);
+                       WindowContainerType window_container_type,
+                       const string16& frame_name);
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).

@@ -156,13 +156,15 @@ void BackgroundContents::ProcessDOMUIMessage(const std::string& message,
 
 void BackgroundContents::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type) {
+    WindowContainerType window_container_type,
+    const string16& frame_name) {
   delegate_view_helper_.CreateNewWindow(route_id,
                                         render_view_host_->process()->profile(),
                                         render_view_host_->site_instance(),
                                         DOMUIFactory::GetDOMUIType(url_),
                                         this,
-                                        window_container_type);
+                                        window_container_type,
+                                        frame_name);
 }
 
 void BackgroundContents::CreateNewWidget(int route_id,

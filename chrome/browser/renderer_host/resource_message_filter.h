@@ -46,6 +46,7 @@ class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
 class URLRequestContextGetter;
+struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
 struct WebPluginInfo;
 
@@ -132,9 +133,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   virtual ~ResourceMessageFilter();
 
-  void OnMsgCreateWindow(int opener_id, bool user_gesture,
-                         WindowContainerType window_container_type,
-                         int64 session_storage_namespace_id, int* route_id,
+  void OnMsgCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
+                         int* route_id,
                          int64* cloned_session_storage_namespace_id);
   void OnMsgCreateWidget(int opener_id,
                          WebKit::WebPopupType popup_type,

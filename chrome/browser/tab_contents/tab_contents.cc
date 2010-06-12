@@ -2911,7 +2911,7 @@ bool TabContents::CreateRenderViewForRenderManager(
   if (!request_context.get())
     request_context = profile()->GetRequestContext();
 
-  if (!render_view_host->CreateRenderView(request_context))
+  if (!render_view_host->CreateRenderView(request_context, string16()))
     return false;
 
   // Now that the RenderView has been created, we need to tell it its size.

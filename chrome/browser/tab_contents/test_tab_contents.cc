@@ -49,7 +49,8 @@ TestRenderViewHost* TestTabContents::pending_rvh() {
 bool TestTabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
   // This will go to a TestRenderViewHost.
-  render_view_host->CreateRenderView(profile()->GetRequestContext());
+  render_view_host->CreateRenderView(profile()->GetRequestContext(),
+                                     string16());
   return true;
 }
 

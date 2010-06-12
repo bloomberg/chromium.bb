@@ -155,7 +155,8 @@ class RenderView : public RenderWidget,
       const WebPreferences& webkit_prefs,
       SharedRenderViewCounter* counter,
       int32 routing_id,
-      int64 session_storage_namespace_id);
+      int64 session_storage_namespace_id,
+      const string16& frame_name);
 
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
@@ -306,9 +307,14 @@ class RenderView : public RenderWidget,
 
   // WebKit::WebViewClient implementation --------------------------------------
 
+  // TODO(atwilson): Remove this API when we push related changes upstream
   virtual WebKit::WebView* createView(
       WebKit::WebFrame* creator,
       const WebKit::WebWindowFeatures& features);
+  virtual WebKit::WebView* createView(
+      WebKit::WebFrame* creator,
+      const WebKit::WebWindowFeatures& features,
+      const WebKit::WebString& frame_name);
   virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
@@ -616,7 +622,8 @@ class RenderView : public RenderWidget,
             int32 opener_id,
             const RendererPreferences& renderer_prefs,
             SharedRenderViewCounter* counter,
-            int32 routing_id);
+            int32 routing_id,
+            const string16& frame_name);
 
   void UpdateURL(WebKit::WebFrame* frame);
   void UpdateTitle(WebKit::WebFrame* frame, const string16& title);

@@ -498,7 +498,8 @@ RenderView* RenderView::Create(
     const WebPreferences& webkit_prefs,
     SharedRenderViewCounter* counter,
     int32 routing_id,
-    int64 session_storage_namespace_id) {
+    int64 session_storage_namespace_id,
+    const string16& frame_name) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderView> view = new RenderView(render_thread, webkit_prefs,
                                                   session_storage_namespace_id);
@@ -506,7 +507,8 @@ RenderView* RenderView::Create(
              opener_id,
              renderer_prefs,
              counter,
-             routing_id);  // adds reference
+             routing_id,
+             frame_name);  // adds reference
   return view;
 }
 
@@ -541,7 +543,8 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
                       int32 opener_id,
                       const RendererPreferences& renderer_prefs,
                       SharedRenderViewCounter* counter,
-                      int32 routing_id) {
+                      int32 routing_id,
+                      const string16& frame_name) {
   DCHECK(!webview());
 
   if (opener_id != MSG_ROUTING_NONE)
@@ -562,6 +565,9 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
+  // TODO(atwilson): Enable this when setName() becomes available upstream.
+  // if (!frame_name.empty)
+  //   webview()->mainFrame()->setName(frame_name);
   webview()->setDevToolsAgent(
       WebDevToolsAgent::create(webview(), devtools_agent_.get()));
 
@@ -1587,9 +1593,18 @@ void RenderView::OnMissingPluginStatus(
 
 // WebKit::WebViewClient ------------------------------------------------------
 
+// TODO(atwilson): Remove this older API when we've pushed the related changes
+// upstream.
 WebView* RenderView::createView(
     WebFrame* creator,
     const WebWindowFeatures& features) {
+  return createView(creator, features, WebString());
+}
+
+WebView* RenderView::createView(
+    WebFrame* creator,
+    const WebWindowFeatures& features,
+    const WebString& frame_name) {
   // Check to make sure we aren't overloading on popups.
   if (shared_popup_counter_->data > kMaximumNumberOfUnacknowledgedPopups)
     return NULL;
@@ -1598,19 +1613,21 @@ WebView* RenderView::createView(
   // message from the Browser process explicitly allowing it.
   script_can_close_ = false;
 
+  ViewHostMsg_CreateWindow_Params params;
+  params.opener_id = routing_id_;
+  params.user_gesture = creator->isProcessingUserGesture();
+  params.window_container_type = WindowFeaturesToContainerType(features);
+  params.session_storage_namespace_id = session_storage_namespace_id_;
+  params.frame_name = frame_name;
+
   int32 routing_id = MSG_ROUTING_NONE;
-  bool user_gesture = creator->isProcessingUserGesture();
-  bool opener_suppressed = creator->willSuppressOpenerInNewFrame();
   int64 cloned_session_storage_namespace_id;
+  bool opener_suppressed = creator->willSuppressOpenerInNewFrame();
 
   render_thread_->Send(
-      new ViewHostMsg_CreateWindow(
-          routing_id_,
-          user_gesture,
-          WindowFeaturesToContainerType(features),
-          session_storage_namespace_id_,
-          &routing_id,
-          &cloned_session_storage_namespace_id));
+      new ViewHostMsg_CreateWindow(params,
+                                   &routing_id,
+                                   &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
@@ -1621,8 +1638,9 @@ WebView* RenderView::createView(
                                         webkit_preferences_,
                                         shared_popup_counter_,
                                         routing_id,
-                                        cloned_session_storage_namespace_id);
-  view->opened_by_user_gesture_ = user_gesture;
+                                        cloned_session_storage_namespace_id,
+                                        frame_name);
+  view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
   view->opener_suppressed_ = opener_suppressed;

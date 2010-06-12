@@ -83,7 +83,8 @@ class BalloonHost : public RenderViewHostDelegate,
   // windows are currently implemented.
   virtual void CreateNewWindow(
       int route_id,
-      WindowContainerType window_container_type);
+      WindowContainerType window_container_type,
+      const string16& frame_name);
   virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type) {}
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,

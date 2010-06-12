@@ -56,7 +56,8 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     SiteInstance* site,
     DOMUITypeID domui_type,
     RenderViewHostDelegate* opener,
-    WindowContainerType window_container_type) {
+    WindowContainerType window_container_type,
+    const string16& frame_name) {
   if (ShouldOpenBackgroundContents(window_container_type,
                                    opener->GetURL(),
                                    site->GetProcess(),

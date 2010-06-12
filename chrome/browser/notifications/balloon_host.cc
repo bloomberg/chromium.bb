@@ -88,14 +88,16 @@ void BalloonHost::ProcessDOMUIMessage(const std::string& message,
 // open pages in new tabs.
 void BalloonHost::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type) {
+    WindowContainerType window_container_type,
+    const string16& frame_name) {
   delegate_view_helper_.CreateNewWindow(
       route_id,
       balloon_->profile(),
       site_instance_.get(),
       DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()),
       this,
-      window_container_type);
+      window_container_type,
+      frame_name);
 }
 
 void BalloonHost::ShowCreatedWindow(int route_id,
@@ -149,7 +151,7 @@ void BalloonHost::Init() {
   DCHECK(render_widget_host_view());
 
   rvh->set_view(render_widget_host_view());
-  rvh->CreateRenderView(GetProfile()->GetRequestContext());
+  rvh->CreateRenderView(GetProfile()->GetRequestContext(), string16());
   rvh->NavigateToURL(balloon_->notification().content_url());
 
   initialized_ = true;

@@ -978,14 +978,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Sent by the renderer when it is creating a new window.  The browser creates
   // a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
   // MSG_ROUTING_NONE, the view couldn't be created.
-  IPC_SYNC_MESSAGE_CONTROL4_2(
-      ViewHostMsg_CreateWindow,
-      int /* opener_id */,
-      bool /* user_gesture */,
-      WindowContainerType /* window_container_type */,
-      int64 /* session_storage_namespace_id */,
-      int /* route_id */,
-      int64 /* cloned_session_storage_namespace_id */)
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_CreateWindow,
+                              ViewHostMsg_CreateWindow_Params,
+                              int /* route_id */,
+                              int64 /* cloned_session_storage_namespace_id */)
 
   // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
   // <select> dropdowns.  This message is sent to the TabContents that

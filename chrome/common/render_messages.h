@@ -639,6 +639,27 @@ struct ViewMsg_New_Params {
 
   // The session storage namespace ID this view should use.
   int64 session_storage_namespace_id;
+
+  // The name of the frame associated with this view (or empty if none).
+  string16 frame_name;
+};
+
+struct ViewHostMsg_CreateWindow_Params {
+  // Routing ID of the view initiating the open.
+  int opener_id;
+
+  // True if this open request came in the context of a user gesture.
+  bool user_gesture;
+
+  // Type of window requested.
+  WindowContainerType window_container_type;
+
+  // The session storage namespace ID this view should use.
+  int64 session_storage_namespace_id;
+
+  // The name of the resulting frame that should be created (empty if none
+  // has been specified).
+  string16 frame_name;
 };
 
 struct ViewHostMsg_RunFileChooser_Params {
@@ -2521,6 +2542,7 @@ struct ParamTraits<ViewMsg_New_Params> {
     WriteParam(m, p.web_preferences);
     WriteParam(m, p.view_id);
     WriteParam(m, p.session_storage_namespace_id);
+    WriteParam(m, p.frame_name);
   }
 
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -2529,7 +2551,8 @@ struct ParamTraits<ViewMsg_New_Params> {
       ReadParam(m, iter, &p->renderer_preferences) &&
       ReadParam(m, iter, &p->web_preferences) &&
       ReadParam(m, iter, &p->view_id) &&
-      ReadParam(m, iter, &p->session_storage_namespace_id);
+      ReadParam(m, iter, &p->session_storage_namespace_id) &&
+      ReadParam(m, iter, &p->frame_name);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -2542,6 +2565,8 @@ struct ParamTraits<ViewMsg_New_Params> {
     LogParam(p.view_id, l);
     l->append(L", ");
     LogParam(p.session_storage_namespace_id, l);
+    l->append(L", ");
+    LogParam(p.frame_name, l);
     l->append(L")");
   }
 };
@@ -2589,6 +2614,39 @@ struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
     LogParam(p.title, l);
     l->append(L", ");
     LogParam(p.default_file_name, l);
+  }
+};
+
+template<>
+struct ParamTraits<ViewHostMsg_CreateWindow_Params> {
+  typedef ViewHostMsg_CreateWindow_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.opener_id);
+    WriteParam(m, p.user_gesture);
+    WriteParam(m, p.window_container_type);
+    WriteParam(m, p.session_storage_namespace_id);
+    WriteParam(m, p.frame_name);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->opener_id) &&
+      ReadParam(m, iter, &p->user_gesture) &&
+      ReadParam(m, iter, &p->window_container_type) &&
+      ReadParam(m, iter, &p->session_storage_namespace_id) &&
+      ReadParam(m, iter, &p->frame_name);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.opener_id, l);
+    l->append(L", ");
+    LogParam(p.user_gesture, l);
+    l->append(L", ");
+    LogParam(p.window_container_type, l);
+    l->append(L", ");
+    LogParam(p.session_storage_namespace_id, l);
+    l->append(L", ");
+    LogParam(p.frame_name, l);
+    l->append(L")");
   }
 };
 

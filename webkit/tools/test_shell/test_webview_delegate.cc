@@ -316,10 +316,17 @@ void TestWebViewDelegate::SetAuthorAndUserStylesEnabled(bool is_enabled) {
 }
 
 // WebViewClient -------------------------------------------------------------
-
+// TODO(atwilson): Remove this API when we push related changes upstream
 WebView* TestWebViewDelegate::createView(
     WebFrame* creator,
     const WebWindowFeatures& window_features) {
+  return shell_->CreateWebView();
+}
+
+WebView* TestWebViewDelegate::createView(
+    WebFrame* creator,
+    const WebWindowFeatures& window_features,
+    const WebString& frame_name) {
   return shell_->CreateWebView();
 }
 

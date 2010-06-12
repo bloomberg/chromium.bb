@@ -165,7 +165,8 @@ class TestRenderViewHost : public RenderViewHost {
 
   // RenderViewHost overrides --------------------------------------------------
 
-  virtual bool CreateRenderView(URLRequestContextGetter* request_context);
+  virtual bool CreateRenderView(URLRequestContextGetter* request_context,
+                                const string16& frame_name);
   virtual bool IsRenderViewLive() const;
 
  private:

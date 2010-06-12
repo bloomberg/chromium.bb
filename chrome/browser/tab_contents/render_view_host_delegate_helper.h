@@ -44,7 +44,8 @@ class RenderViewHostDelegateViewHelper {
       SiteInstance* site,
       DOMUITypeID domui_type,
       RenderViewHostDelegate* opener,
-      WindowContainerType window_container_type);
+      WindowContainerType window_container_type,
+      const string16& frame_name);
 
   // Creates a new RenderWidgetHost and saves it for later retrieval by
   // GetCreatedWidget.

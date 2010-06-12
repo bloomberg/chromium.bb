@@ -146,7 +146,7 @@ RenderViewHost::~RenderViewHost() {
 }
 
 bool RenderViewHost::CreateRenderView(
-    URLRequestContextGetter* request_context) {
+    URLRequestContextGetter* request_context, const string16& frame_name) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
   // The process may (if we're sharing a process with another host that already
@@ -191,6 +191,7 @@ bool RenderViewHost::CreateRenderView(
   params.web_preferences = webkit_prefs;
   params.view_id = routing_id();
   params.session_storage_namespace_id = session_storage_namespace_id_;
+  params.frame_name = frame_name;
   Send(new ViewMsg_New(params));
 
   // Set the alternate error page, which is profile specific, in the renderer.
@@ -863,12 +864,13 @@ void RenderViewHost::Shutdown() {
 
 void RenderViewHost::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type) {
+    WindowContainerType window_container_type,
+    const string16& frame_name) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (!view)
     return;
 
-  view->CreateNewWindow(route_id, window_container_type);
+  view->CreateNewWindow(route_id, window_container_type, frame_name);
 }
 
 void RenderViewHost::CreateNewWidget(int route_id,

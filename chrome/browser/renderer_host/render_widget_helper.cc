@@ -203,6 +203,7 @@ void RenderWidgetHelper::CreateNewWindow(
     int opener_id,
     bool user_gesture,
     WindowContainerType window_container_type,
+    const string16& frame_name,
     base::ProcessHandle render_process,
     int* route_id) {
   *route_id = GetNextRoutingID();
@@ -215,16 +216,17 @@ void RenderWidgetHelper::CreateNewWindow(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderWidgetHelper::OnCreateWindowOnUI, opener_id, *route_id,
-          window_container_type));
+          window_container_type, frame_name));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(
     int opener_id,
     int route_id,
-    WindowContainerType window_container_type) {
+    WindowContainerType window_container_type,
+    string16 frame_name) {
   RenderViewHost* host = RenderViewHost::FromID(render_process_id_, opener_id);
   if (host)
-    host->CreateNewWindow(route_id, window_container_type);
+    host->CreateNewWindow(route_id, window_container_type, frame_name);
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,

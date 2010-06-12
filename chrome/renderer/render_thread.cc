@@ -623,9 +623,15 @@ void RenderThread::OnCreateNewView(const ViewMsg_New_Params& params) {
   EnsureWebKitInitialized();
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderView::Create(
-      this, params.parent_window, MSG_ROUTING_NONE, params.renderer_preferences,
-      params.web_preferences, new SharedRenderViewCounter(0), params.view_id,
-      params.session_storage_namespace_id);
+      this,
+      params.parent_window,
+      MSG_ROUTING_NONE,
+      params.renderer_preferences,
+      params.web_preferences,
+      new SharedRenderViewCounter(0),
+      params.view_id,
+      params.session_storage_namespace_id,
+      params.frame_name);
 }
 
 void RenderThread::OnSetCacheCapacities(size_t min_dead_capacity,
