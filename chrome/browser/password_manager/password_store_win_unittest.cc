@@ -258,6 +258,7 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   MessageLoop::current()->RunAllPending();
 }
 
+// Hangs flakily, see http://crbug.com/43836.
 TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   IE7PasswordInfo password_info;
   ASSERT_TRUE(CreateIE7PasswordInfo(L"http://example.com/origin",

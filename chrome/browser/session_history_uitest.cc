@@ -268,7 +268,7 @@ TEST_F(SessionHistoryTest, FrameFormBackForward) {
 // document state"
 // Test that back/forward preserves POST data and document state when navigating
 // across frames (ie, from frame -> nonframe).
-// http://crbug.com/45058
+// Hangs, see http://crbug.com/45058.
 TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
@@ -513,7 +513,7 @@ TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
   EXPECT_EQ(L"Default Title", GetTabTitle());
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=38583
+// Hangs, see http://crbug.com/38583.
 #if defined(OS_WIN)
 #define HistoryLength DISABLED_HistoryLength
 #endif  // defined(OS_WIN)
