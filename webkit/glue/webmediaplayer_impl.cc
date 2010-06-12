@@ -452,8 +452,12 @@ const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK(MessageLoop::current() == main_loop_);
 
   // Update buffered_ with the most recent buffered time.
-  buffered_[0].end = static_cast<float>(
-      pipeline_->GetBufferedTime().InSecondsF());
+  if (buffered_.size() > 0) {
+    float buffered_time = static_cast<float>(
+        pipeline_->GetBufferedTime().InSecondsF());
+    if (buffered_time >= buffered_[0].start)
+      buffered_[0].end = buffered_time;
+  }
 
   return buffered_;
 }
