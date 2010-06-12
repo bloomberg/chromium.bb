@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
-#include "chrome_frame/crash_metrics.h"
+#include "chrome_frame/crash_reporting/crash_metrics.h"
 
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";

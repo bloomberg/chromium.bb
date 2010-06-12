@@ -17,6 +17,8 @@
       'target_name': 'crash_report',
       'type': 'static_library',
       'sources': [
+        'crash_metrics.cc',
+        'crash_metrics.h',
         'crash_report.cc',
         'crash_report.h',
         'nt_loader.cc',

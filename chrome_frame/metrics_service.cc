@@ -58,7 +58,7 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bind_status_callback_impl.h"
-#include "chrome_frame/crash_metrics.h"
+#include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 #include "net/base/upload_data.h"
 #include "chrome_frame/urlmon_bind_status_callback.h"

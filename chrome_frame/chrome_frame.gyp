@@ -621,8 +621,6 @@
         'com_message_event.h',
         'com_type_info_holder.cc',
         'com_type_info_holder.h',
-        'crash_metrics.cc',
-        'crash_metrics.h',
         'delete_chrome_history.cc',
         'delete_chrome_history.h',
         'exception_barrier.cc',

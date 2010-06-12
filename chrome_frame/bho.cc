@@ -14,7 +14,7 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "chrome_tab.h" // NOLINT
-#include "chrome_frame/crash_metrics.h"
+#include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/metrics_service.h"

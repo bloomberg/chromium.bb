@@ -38,7 +38,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
-#include "chrome_frame/crash_metrics.h"
+#include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 
 const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";

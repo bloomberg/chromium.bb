@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_frame/crash_metrics.h"
+#include "chrome_frame/crash_reporting/crash_metrics.h"
 
 #include "base/histogram.h"
 #include "base/registry.h"

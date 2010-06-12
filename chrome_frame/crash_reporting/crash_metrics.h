@@ -5,8 +5,8 @@
 // This file defines a service that collects information about the user
 // experience in order to help improve future versions of the app.
 
-#ifndef CHROME_FRAME_CRASH_METRICS_H_
-#define CHROME_FRAME_CRASH_METRICS_H_
+#ifndef CHROME_FRAME_CRASH_REPORTING_CRASH_METRICS_H_
+#define CHROME_FRAME_CRASH_REPORTING_CRASH_METRICS_H_
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
@@ -61,5 +61,5 @@ class CrashMetricsReporter {
   DISALLOW_COPY_AND_ASSIGN(CrashMetricsReporter);
 };
 
-#endif  // CHROME_FRAME_CRASH_METRICS_H_
+#endif  // CHROME_FRAME_CRASH_REPORTING_CRASH_METRICS_H_
 
