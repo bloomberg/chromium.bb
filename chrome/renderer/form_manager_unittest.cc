@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_util.h"
 #include "chrome/renderer/form_manager.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,6 +35,7 @@ TEST_F(FormManagerTest, WebFormElementToFormData) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
            "  <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+           "  <INPUT type=\"hidden\" id=\"notvisible\" value=\"apple\"/>"
            "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
            "</FORM>");
 
@@ -54,25 +56,31 @@ TEST_F(FormManagerTest, WebFormElementToFormData) {
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormField>& fields = form.fields;
-  ASSERT_EQ(3U, fields.size());
-  EXPECT_EQ(FormField(string16(),
-                      ASCIIToUTF16("firstname"),
-                      ASCIIToUTF16("John"),
-                      ASCIIToUTF16("text"),
-                      20),
-            fields[0]);
-  EXPECT_EQ(FormField(string16(),
-                      ASCIIToUTF16("lastname"),
-                      ASCIIToUTF16("Smith"),
-                      ASCIIToUTF16("text"),
-                      20),
-            fields[1]);
-  EXPECT_EQ(FormField(string16(),
-                      ASCIIToUTF16("reply-send"),
-                      ASCIIToUTF16("Send"),
-                      ASCIIToUTF16("submit"),
-                      0),
-            fields[2]);
+  ASSERT_EQ(4U, fields.size());
+  EXPECT_TRUE(fields[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("firstname"),
+                ASCIIToUTF16("John"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("lastname"),
+                ASCIIToUTF16("Smith"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("notvisible"),
+                ASCIIToUTF16("apple"),
+                ASCIIToUTF16("hidden"),
+                0)));
+  EXPECT_TRUE(fields[3].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("reply-send"),
+                string16(),
+                ASCIIToUTF16("submit"),
+                0)));
 }
 
 TEST_F(FormManagerTest, ExtractForms) {
@@ -2162,6 +2170,174 @@ TEST_F(FormManagerTest, FillFormNonEmptyField) {
                       ASCIIToUTF16("submit"),
                       0),
                       fields2[2]);
+}
+
+TEST_F(FormManagerTest, ClearFormWithNode) {
+  LoadHTML(
+      "<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+      "  <INPUT type=\"text\" id=\"firstname\" value=\"Wyatt\"/>"
+      "  <INPUT type=\"text\" id=\"lastname\" value=\"Earp\"/>"
+      "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noAC\" value=\"one\"/>"
+      "  <INPUT type=\"text\" id=\"notenabled\" disabled=\"disabled\">"
+      "  <INPUT type=\"hidden\" id=\"notvisible\" value=\"apple\">"
+      "  <INPUT type=\"submit\" value=\"Send\"/>"
+      "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Set the auto-filled attribute on the firstname element.
+  WebInputElement firstname =
+      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  firstname.setAutofilled(true);
+
+  // Set the value of the disabled attribute.
+  WebInputElement notenabled =
+      web_frame->document().getElementById("notenabled").to<WebInputElement>();
+  notenabled.setValue(WebString::fromUTF8("no clear"));
+
+  // Clear the form.
+  EXPECT_TRUE(form_manager.ClearFormWithNode(firstname));
+
+  // Verify that the auto-filled attribute has been turned off.
+  EXPECT_FALSE(firstname.isAutofilled());
+
+  // Verify the form is cleared.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      firstname, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form2.action);
+
+  const std::vector<FormField>& fields2 = form2.fields;
+  ASSERT_EQ(6U, fields2.size());
+  EXPECT_TRUE(fields2[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("firstname"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields2[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("lastname"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields2[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("noAC"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields2[3].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("notenabled"),
+                ASCIIToUTF16("no clear"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields2[4].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("notvisible"),
+                ASCIIToUTF16("apple"),
+                ASCIIToUTF16("hidden"),
+                0)));
+  EXPECT_TRUE(fields2[5].StrictlyEqualsHack(
+      FormField(string16(),
+                string16(),
+                string16(),
+                ASCIIToUTF16("submit"),
+                0)));
+}
+
+TEST_F(FormManagerTest, ClearPreviewedForm) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"Wyatt\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"submit\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Set the auto-filled attribute.
+  WebInputElement firstname =
+      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  firstname.setAutofilled(true);
+  WebInputElement lastname =
+      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  lastname.setAutofilled(true);
+  WebInputElement email =
+      web_frame->document().getElementById("email").to<WebInputElement>();
+  email.setAutofilled(true);
+
+  // Set the placeholder values on two of the elements.
+  lastname.setPlaceholder(ASCIIToUTF16("Earp"));
+  email.setPlaceholder(ASCIIToUTF16("wyatt@earp.com"));
+
+  // Clear the previewed fields.
+  EXPECT_TRUE(form_manager.ClearPreviewedForm(forms[0]));
+
+  // Fields with non-empty values are not modified.
+  EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
+  EXPECT_TRUE(firstname.placeholder().isEmpty());
+  EXPECT_TRUE(firstname.isAutofilled());
+
+  // Verify the previewed fields are cleared.
+  EXPECT_TRUE(lastname.value().isEmpty());
+  EXPECT_TRUE(lastname.placeholder().isEmpty());
+  EXPECT_FALSE(lastname.isAutofilled());
+  EXPECT_TRUE(email.value().isEmpty());
+  EXPECT_TRUE(email.placeholder().isEmpty());
+  EXPECT_FALSE(email.isAutofilled());
+}
+
+TEST_F(FormManagerTest, FormWithNodeIsAutoFilled) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"Wyatt\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"submit\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  WebInputElement firstname =
+      web_frame->document().getElementById("firstname").to<WebInputElement>();
+
+  // Auto-filled attribute not set yet.
+  EXPECT_FALSE(form_manager.FormWithNodeIsAutoFilled(firstname));
+
+  // Set the auto-filled attribute.
+  firstname.setAutofilled(true);
+
+  EXPECT_TRUE(form_manager.FormWithNodeIsAutoFilled(firstname));
 }
 
 }  // namespace

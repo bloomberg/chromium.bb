@@ -237,7 +237,8 @@ void FormManager::WebFormControlElementToFormField(
   // TODO(jhawkins): In WebKit, move value() and setValue() to
   // WebFormControlElement.
   string16 value;
-  if (element.formControlType() == WebString::fromUTF8("text")) {
+  if (element.formControlType() == WebString::fromUTF8("text") ||
+      element.formControlType() == WebString::fromUTF8("hidden")) {
     const WebInputElement& input_element =
         element.toConst<WebInputElement>();
     value = input_element.value();
@@ -546,10 +547,33 @@ bool FormManager::PreviewForm(const FormData& form) {
   return true;
 }
 
-void FormManager::ClearPreviewedForm(const FormData& form) {
+bool FormManager::ClearFormWithNode(const WebKit::WebNode& node) {
+  FormElement* form_element = NULL;
+  if (!FindCachedFormElementWithNode(node, &form_element))
+    return false;
+
+  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
+    WebFormControlElement element = form_element->control_elements[i];
+    if (element.formControlType() != WebString::fromUTF8("text"))
+      continue;
+
+    WebInputElement input_element = element.to<WebInputElement>();
+
+    // We don't modify the value of disabled fields.
+    if (!input_element.isEnabled())
+      continue;
+
+    input_element.setValue(string16());
+    input_element.setAutofilled(false);
+  }
+
+  return true;
+}
+
+bool FormManager::ClearPreviewedForm(const FormData& form) {
   FormElement* form_element = NULL;
   if (!FindCachedFormElement(form, &form_element))
-    return;
+    return false;
 
   for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
     WebFormControlElement* element = &form_element->control_elements[i];
@@ -564,9 +588,16 @@ void FormManager::ClearPreviewedForm(const FormData& form) {
     if (!input_element.isAutofilled())
       continue;
 
+    // If the user has completed the auto-fill and the values are filled in, we
+    // don't want to reset the auto-filled status.
+    if (!input_element.value().isEmpty())
+      continue;
+
     input_element.setPlaceholder(string16());
     input_element.setAutofilled(false);
   }
+
+  return true;
 }
 
 void FormManager::Reset() {
@@ -583,6 +614,24 @@ void FormManager::ResetFrame(const WebFrame* frame) {
     STLDeleteElements(&iter->second);
     form_elements_map_.erase(iter);
   }
+}
+
+bool FormManager::FormWithNodeIsAutoFilled(const WebKit::WebNode& node) {
+  FormElement* form_element = NULL;
+  if (!FindCachedFormElementWithNode(node, &form_element))
+    return false;
+
+  for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
+    WebFormControlElement element = form_element->control_elements[i];
+    if (element.formControlType() != WebString::fromUTF8("text"))
+      continue;
+
+    const WebInputElement& input_element = element.to<WebInputElement>();
+    if (input_element.isAutofilled())
+      return true;
+  }
+
+  return false;
 }
 
 // static
@@ -605,7 +654,6 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
   if (!form->action.is_valid())
     form->action = GURL(form_element->form_element.action());
 
-  // Form elements loop.
   for (std::vector<WebFormControlElement>::const_iterator element_iter =
            form_element->control_elements.begin();
        element_iter != form_element->control_elements.end(); ++element_iter) {
@@ -646,6 +694,28 @@ string16 FormManager::InferLabelForElement(
   }
 
   return inferred_label;
+}
+
+bool FormManager::FindCachedFormElementWithNode(const WebKit::WebNode& node,
+                                                FormElement** form_element) {
+  for (WebFrameFormElementMap::const_iterator frame_iter =
+           form_elements_map_.begin();
+       frame_iter != form_elements_map_.end(); ++frame_iter) {
+    for (std::vector<FormElement*>::const_iterator form_iter =
+             frame_iter->second.begin();
+         form_iter != frame_iter->second.end(); ++form_iter) {
+      for (std::vector<WebKit::WebFormControlElement>::const_iterator iter =
+               (*form_iter)->control_elements.begin();
+           iter != (*form_iter)->control_elements.end(); ++iter) {
+        if (*iter == node) {
+          *form_element = *form_iter;
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 bool FormManager::FindCachedFormElement(const FormData& form,

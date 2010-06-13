@@ -1518,11 +1518,22 @@ void RenderView::OnAutoFillSuggestionsReturned(
   if (webview() && query_id == autofill_query_id_) {
     std::vector<string16> v(values);
     std::vector<string16> l(labels);
+    int separator_index = v.size();
+
+    // The form has been auto-filled, so give the user the chance to clear the
+    // form.
+    if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
+      v.push_back(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
+      l.push_back(string16());
+    }
+
+    // Append the 'AutoFill Options...' menu item.
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_MENU_ITEM));
     l.push_back(string16());
     suggestions_count_ = v.size();
     webview()->applyAutoFillSuggestions(
-        autofill_query_node_, v, l, v.size() - 1);
+        autofill_query_node_, v, l, separator_index);
   }
 }
 
@@ -2112,11 +2123,17 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              unsigned index) {
   DCHECK_NE(0U, suggestions_count_);
 
-  // User selected 'AutoFill Options...'.
-  if (index == suggestions_count_ - 1)
+  if (index == suggestions_count_ - 1) {
+    // User selected 'AutoFill Options...'.
     Send(new ViewHostMsg_ShowAutoFillDialog(routing_id_));
-  else
+  } else if (form_manager_.FormWithNodeIsAutoFilled(node) &&
+             index == suggestions_count_ - 2) {
+    // The form has been auto-filled, so give the user the chance to clear the
+    // form.
+    form_manager_.ClearFormWithNode(node);
+  } else {
     QueryAutoFillFormData(node, value, label, AUTOFILL_FILL);
+  }
 
   suggestions_count_ = 0;
 }

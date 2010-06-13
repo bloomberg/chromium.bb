@@ -96,15 +96,23 @@ class FormManager {
   // Previews the form represented by |form|.  Same conditions as FillForm.
   bool PreviewForm(const webkit_glue::FormData& form);
 
+  // Clears the values of all input elements in the form that contains |node|.
+  // Returns false if the form is not found.
+  bool ClearFormWithNode(const WebKit::WebNode& node);
+
   // Clears the placeholder values and the auto-filled background for any fields
-  // in |form| that have been previewed.
-  void ClearPreviewedForm(const webkit_glue::FormData& form);
+  // in |form| that have been previewed.  Returns false if the form is not
+  // found.
+  bool ClearPreviewedForm(const webkit_glue::FormData& form);
 
   // Resets the stored set of forms.
   void Reset();
 
   // Resets the forms for the specified |frame|.
   void ResetFrame(const WebKit::WebFrame* frame);
+
+  // Returns true if |form| has any auto-filled fields.
+  bool FormWithNodeIsAutoFilled(const WebKit::WebNode& node);
 
  private:
   // Stores the WebFormElement and the form control elements for a form.
@@ -135,6 +143,10 @@ class FormManager {
   // the form.
   static string16 InferLabelForElement(
       const WebKit::WebFormControlElement& element);
+
+  // Finds the cached FormElement that contains |node|.
+  bool FindCachedFormElementWithNode(const WebKit::WebNode& node,
+                                     FormElement** form_element);
 
   // Uses the data in |form| to find the cached FormElement.
   bool FindCachedFormElement(const webkit_glue::FormData& form,
