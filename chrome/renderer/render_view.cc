@@ -4462,6 +4462,7 @@ void RenderView::DumpLoadHistograms() const {
   TimeDelta begin_to_finish_doc = finish_doc - begin;
   TimeDelta begin_to_finish = finish - begin;
   TimeDelta start_to_finish = finish - start;
+  TimeDelta start_to_commit = commit - start;
 
   NavigationState::LoadType load_type = navigation_state->load_type();
 
@@ -4469,7 +4470,7 @@ void RenderView::DumpLoadHistograms() const {
   UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned", abandoned_page ? 1 : 0, 2);
   UMA_HISTOGRAM_ENUMERATION("PLT.LoadType", load_type,
       NavigationState::kLoadTypeMax);
-  PLT_HISTOGRAM("PLT.StartToCommit", commit - start);
+  PLT_HISTOGRAM("PLT.StartToCommit", start_to_commit);
   PLT_HISTOGRAM("PLT.CommitToFinishDoc", finish_doc - commit);
   PLT_HISTOGRAM("PLT.FinishDocToFinish", finish - finish_doc);
   PLT_HISTOGRAM("PLT.BeginToCommit", commit - begin);
@@ -4677,6 +4678,9 @@ void RenderView::DumpLoadHistograms() const {
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.StartToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
             start_to_finish);
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.StartToCommit_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+            start_to_commit);
         break;
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
@@ -4685,6 +4689,9 @@ void RenderView::DumpLoadHistograms() const {
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.StartToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
             start_to_finish);
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.StartToCommit_NormalLoad_SpdyTrial", "SpdyImpact"),
+            start_to_commit);
         break;
       default:
         break;
