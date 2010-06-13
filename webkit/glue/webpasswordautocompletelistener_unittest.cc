@@ -21,60 +21,41 @@ using webkit_glue::WebPasswordAutocompleteListenerImpl;
 
 class TestWebInputElementDelegate : public WebInputElementDelegate {
  public:
-  TestWebInputElementDelegate() : WebInputElementDelegate(),
-                                  did_call_on_finish_(false),
-                                  did_set_value_(false),
-                                  did_set_selection_(false),
-                                  selection_start_(0),
-                                  selection_end_(0),
-                                  is_editable_(true) {
+  TestWebInputElementDelegate()
+      : WebInputElementDelegate(),
+        selection_start_(0),
+        selection_end_(0),
+        is_editable_(true),
+        is_autofilled_(false) {
   }
 
   // Override those methods we implicitly invoke in the tests.
-  virtual bool IsEditable() {
+  virtual bool IsEditable() const {
     return is_editable_;
   }
 
   virtual void SetValue(const string16& value) {
     value_ = value;
-    did_set_value_ = true;
   }
 
-  virtual void OnFinishedAutocompleting() {
-    did_call_on_finish_ = true;
+  virtual bool IsAutofilled() const { return is_autofilled_; }
+
+  virtual void SetAutofilled(bool autofilled) {
+    is_autofilled_ = autofilled;
   }
 
   virtual void SetSelectionRange(size_t start, size_t end) {
     selection_start_ = start;
     selection_end_ = end;
-    did_set_selection_ = true;
   }
 
   // Testing-only methods.
-  void ResetTestState() {
-    did_call_on_finish_ = false;
-    did_set_value_ = false;
-    did_set_selection_ = false;
-  }
-
   void set_is_editable(bool editable) {
     is_editable_ = editable;
   }
 
   string16 value() const {
     return value_;
-  }
-
-  bool did_call_on_finish() const {
-    return did_call_on_finish_;
-  }
-
-  bool did_set_value() const {
-    return did_set_value_;
-  }
-
-  bool did_set_selection() const {
-    return did_set_selection_;
   }
 
   size_t selection_start() const {
@@ -86,18 +67,21 @@ class TestWebInputElementDelegate : public WebInputElementDelegate {
   }
 
  private:
-  bool did_call_on_finish_;
-  bool did_set_value_;
-  bool did_set_selection_;
   string16 value_;
   size_t selection_start_;
   size_t selection_end_;
   bool is_editable_;
+  bool is_autofilled_;
 };
 
 namespace {
 class PasswordManagerAutocompleteTests : public testing::Test {
  public:
+  PasswordManagerAutocompleteTests()
+      : username_delegate_(NULL),
+        password_delegate_(NULL) {
+  }
+
   virtual void SetUp() {
     // Add a preferred login and an additional login to the FillData.
     username1_ = ASCIIToUTF16("alice");
@@ -115,7 +99,25 @@ class PasswordManagerAutocompleteTests : public testing::Test {
                                                 string16(),
                                                 0));
     data_.additional_logins[username2_] = password2_;
+
+    username_delegate_ = new TestWebInputElementDelegate();
+    password_delegate_ = new TestWebInputElementDelegate();
+
     testing::Test::SetUp();
+  }
+
+ protected:
+  // Create the WebPasswordAutocompleteListener associated with
+  // username_delegate_ and password_delegate_, should be called only once at
+  // the begining of the test.
+  WebKit::WebPasswordAutocompleteListener* CreateListener(
+      bool wait_for_username) {
+    DCHECK(!listener_.get());
+    data_.wait_for_username = wait_for_username;
+    listener_.reset(new WebPasswordAutocompleteListenerImpl(username_delegate_,
+                                                            password_delegate_,
+                                                            data_));
+    return listener_.get();
   }
 
   string16 username1_;
@@ -123,76 +125,69 @@ class PasswordManagerAutocompleteTests : public testing::Test {
   string16 username2_;
   string16 password2_;
   PasswordFormDomManager::FillData data_;
+  TestWebInputElementDelegate* username_delegate_;
+  TestWebInputElementDelegate* password_delegate_;
+
+ private:
+  scoped_ptr<WebPasswordAutocompleteListenerImpl> listener_;
 };
 
 TEST_F(PasswordManagerAutocompleteTests, OnBlur) {
-  TestWebInputElementDelegate* username_delegate =
-      new TestWebInputElementDelegate();
-  TestWebInputElementDelegate* password_delegate =
-      new TestWebInputElementDelegate();
-
-  scoped_ptr<WebPasswordAutocompleteListenerImpl> listener(
-      new WebPasswordAutocompleteListenerImpl(username_delegate,
-                                              password_delegate,
-                                              data_));
-
-  // Clear the password field.
-  password_delegate->SetValue(string16());
+  WebKit::WebPasswordAutocompleteListener* listener = CreateListener(false);
 
   // Make the password field read-only.
-  password_delegate->set_is_editable(false);
+  password_delegate_->set_is_editable(false);
   // Simulate a blur event on the username field, but r/o password won't fill.
   listener->didBlurInputElement(username1_);
-  EXPECT_EQ(string16(), password_delegate->value());
-  password_delegate->set_is_editable(true);
+  EXPECT_TRUE(password_delegate_->value().empty());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
+  password_delegate_->set_is_editable(true);
 
   // Simulate a blur event on the username field and expect a password autofill.
   listener->didBlurInputElement(username1_);
-  EXPECT_EQ(password1_, password_delegate->value());
+  EXPECT_EQ(password1_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
 
   // Now the user goes back and changes the username to something we don't
   // have saved. The password should remain unchanged.
   listener->didBlurInputElement(ASCIIToUTF16("blahblahblah"));
-  EXPECT_EQ(password1_, password_delegate->value());
+  EXPECT_EQ(password1_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
 
   // Now they type in the additional login username.
   listener->didBlurInputElement(username2_);
-  EXPECT_EQ(password2_, password_delegate->value());
+  EXPECT_EQ(password2_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
 }
 
 TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
-  TestWebInputElementDelegate* username_delegate =
-      new TestWebInputElementDelegate();
-  TestWebInputElementDelegate* password_delegate =
-      new TestWebInputElementDelegate();
+  WebKit::WebPasswordAutocompleteListener* listener = CreateListener(false);
 
-  scoped_ptr<WebPasswordAutocompleteListenerImpl> listener(
-      new WebPasswordAutocompleteListenerImpl(username_delegate,
-                                              password_delegate,
-                                              data_));
-
-  password_delegate->SetValue(string16());
   // Simulate the user typing in the first letter of 'alice', a stored username.
   listener->performInlineAutocomplete(ASCIIToUTF16("a"), false, false);
   // Both the username and password delegates should reflect selection
   // of the stored login.
-  EXPECT_EQ(username1_, username_delegate->value());
-  EXPECT_EQ(password1_, password_delegate->value());
+  EXPECT_EQ(username1_, username_delegate_->value());
+  EXPECT_TRUE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(password1_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
   // And the selection should have been set to 'lice', the last 4 letters.
-  EXPECT_EQ(1U, username_delegate->selection_start());
-  EXPECT_EQ(username1_.length(), username_delegate->selection_end());
-  // And both fields should have observed OnFinishedAutocompleting.
-  EXPECT_TRUE(username_delegate->did_call_on_finish());
-  EXPECT_TRUE(password_delegate->did_call_on_finish());
+  EXPECT_EQ(1U, username_delegate_->selection_start());
+  EXPECT_EQ(username1_.length(), username_delegate_->selection_end());
+  // And both fields should have the autofill style.
+  EXPECT_TRUE(username_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
 
   // Now the user types the next letter of the same username, 'l'.
   listener->performInlineAutocomplete(ASCIIToUTF16("al"), false, false);
   // Now the fields should have the same value, but the selection should have a
   // different start value.
-  EXPECT_EQ(username1_, username_delegate->value());
-  EXPECT_EQ(password1_, password_delegate->value());
-  EXPECT_EQ(2U, username_delegate->selection_start());
-  EXPECT_EQ(username1_.length(), username_delegate->selection_end());
+  EXPECT_EQ(username1_, username_delegate_->value());
+  EXPECT_TRUE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(password1_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
+  EXPECT_EQ(2U, username_delegate_->selection_start());
+  EXPECT_EQ(username1_.length(), username_delegate_->selection_end());
 
   // Now lets say the user goes astray from the stored username and types
   // the letter 'f', spelling 'alf'.  We don't know alf (that's just sad),
@@ -203,67 +198,93 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   // and selection would be set directly by WebCore in practice.
 
   // Reset the delegate's test state so we can determine what, if anything,
-  // was invoked during performInlineAutocomplete.
-  username_delegate->ResetTestState();
-  password_delegate->ResetTestState();
+  // was set during performInlineAutocomplete.
+  username_delegate_->SetValue(string16());
+  username_delegate_->SetSelectionRange(0, 0);
   listener->performInlineAutocomplete(ASCIIToUTF16("alf"), false, false);
-  EXPECT_FALSE(username_delegate->did_set_selection());
-  EXPECT_FALSE(username_delegate->did_set_value());
-  EXPECT_FALSE(username_delegate->did_call_on_finish());
-  EXPECT_FALSE(password_delegate->did_set_value());
-  EXPECT_FALSE(password_delegate->did_call_on_finish());
+  EXPECT_EQ(0U, username_delegate_->selection_start());
+  EXPECT_EQ(0U, username_delegate_->selection_end());
+  // Username should not have been filled by us.
+  EXPECT_TRUE(username_delegate_->value().empty());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->value().empty());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
 
   // Ok, so now the user removes all the text and enters the letter 'b'.
   listener->performInlineAutocomplete(ASCIIToUTF16("b"), false, false);
   // The username and password fields should match the 'bob' entry.
-  EXPECT_EQ(username2_, username_delegate->value());
-  EXPECT_EQ(password2_, password_delegate->value());
-  EXPECT_EQ(1U, username_delegate->selection_start());
-  EXPECT_EQ(username2_.length(), username_delegate->selection_end());
+  EXPECT_EQ(username2_, username_delegate_->value());
+  EXPECT_TRUE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(password2_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
+  EXPECT_EQ(1U, username_delegate_->selection_start());
+  EXPECT_EQ(username2_.length(), username_delegate_->selection_end());
 }
 
 TEST_F(PasswordManagerAutocompleteTests, TestWaitUsername) {
-  TestWebInputElementDelegate* username_delegate =
-      new TestWebInputElementDelegate();
-  TestWebInputElementDelegate* password_delegate =
-      new TestWebInputElementDelegate();
-
   // If we had an action authority mismatch (for example), we don't want to
   // automatically autofill anything without some user interaction first.
   // We require an explicit blur on the username field, and that a valid
   // matching username is in the field, before we autofill passwords.
-  data_.wait_for_username = true;
-  scoped_ptr<WebPasswordAutocompleteListenerImpl> listener(
-      new WebPasswordAutocompleteListenerImpl(username_delegate,
-                                              password_delegate,
-                                              data_));
+  WebKit::WebPasswordAutocompleteListener* listener = CreateListener(true);
 
-  string16 empty;
   // In all cases, username_delegate should remain empty because we should
   // never modify it when wait_for_username is true; only the user can by
   // typing into (in real life) the HTMLInputElement.
-  password_delegate->SetValue(string16());
+  password_delegate_->SetValue(string16());
   listener->performInlineAutocomplete(ASCIIToUTF16("a"), false, false);
-  EXPECT_EQ(empty, username_delegate->value());
-  EXPECT_EQ(empty, password_delegate->value());
+  EXPECT_TRUE(username_delegate_->value().empty());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->value().empty());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
   listener->performInlineAutocomplete(ASCIIToUTF16("al"), false, false);
-  EXPECT_EQ(empty, username_delegate->value());
-  EXPECT_EQ(empty, password_delegate->value());
+  EXPECT_TRUE(username_delegate_->value().empty());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->value().empty());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
   listener->performInlineAutocomplete(ASCIIToUTF16("alice"), false, false);
-  EXPECT_EQ(empty, username_delegate->value());
-  EXPECT_EQ(empty, password_delegate->value());
+  EXPECT_TRUE(username_delegate_->value().empty());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->value().empty());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
 
   listener->didBlurInputElement(ASCIIToUTF16("a"));
-  EXPECT_EQ(empty, username_delegate->value());
-  EXPECT_EQ(empty, password_delegate->value());
+  EXPECT_TRUE(username_delegate_->value().empty());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->value().empty());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
   listener->didBlurInputElement(ASCIIToUTF16("ali"));
-  EXPECT_EQ(empty, username_delegate->value());
-  EXPECT_EQ(empty, password_delegate->value());
+  EXPECT_TRUE(username_delegate_->value().empty());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->value().empty());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
 
   // Blur with 'alice' should allow password autofill.
   listener->didBlurInputElement(ASCIIToUTF16("alice"));
-  EXPECT_EQ(empty, username_delegate->value());
-  EXPECT_EQ(password1_, password_delegate->value());
+  EXPECT_TRUE(username_delegate_->value().empty());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(password1_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
+}
+
+// Tests that editing the password clears the autofilled password field.
+TEST_F(PasswordManagerAutocompleteTests, TestPasswordClearOnEdit) {
+  WebKit::WebPasswordAutocompleteListener* listener = CreateListener(false);
+
+  // User enters a known login.
+  listener->performInlineAutocomplete(ASCIIToUTF16("alice"), false, false);
+  // We are autofilled.
+  EXPECT_TRUE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(password1_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
+
+  // User modifies the login name to an unknown one.
+  listener->performInlineAutocomplete(ASCIIToUTF16("alicia"), false, false);
+  // We should not be autofilled anymore and the password should have been
+  // cleared.
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
+  EXPECT_TRUE(password_delegate_->value().empty());
 }
 
 }  // namespace

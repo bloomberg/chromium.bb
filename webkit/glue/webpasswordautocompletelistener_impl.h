@@ -29,13 +29,13 @@ class WebInputElementDelegate {
   virtual ~WebInputElementDelegate();
 
   // These are virtual to support unit testing.
-  virtual bool IsEditable();
+  virtual bool IsEditable() const;
   virtual void SetValue(const string16& value);
+  virtual bool IsAutofilled() const;
+  virtual void SetAutofilled(bool autofilled);
   virtual void SetSelectionRange(size_t start, size_t end);
-  virtual void OnFinishedAutocompleting();
-  virtual void RefreshAutofillPopup(
-      const std::vector<string16>& suggestions,
-      int default_suggestion_index);
+  virtual void RefreshAutofillPopup(const std::vector<string16>& suggestions,
+                                    int default_suggestion_index);
 
  private:
   // The underlying DOM element we're wrapping.

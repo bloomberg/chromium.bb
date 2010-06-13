@@ -152,7 +152,7 @@ namespace webkit_glue {
 
 // Map element name to a list of pointers to corresponding elements to simplify
 // form filling.
-typedef std::map<string16, WebKit::WebInputElement >
+typedef std::map<string16, WebKit::WebInputElement>
     FormInputElementMap;
 
 // Utility struct for form lookup and autofill. When we parse the DOM to lookup
@@ -175,22 +175,21 @@ static bool FillFormImpl(FormElements* fe, const FormData& data) {
     return false;
 
   std::map<string16, string16> data_map;
-  for (size_t i = 0; i < data.fields.size(); i++) {
+  for (size_t i = 0; i < data.fields.size(); i++)
     data_map[data.fields[i].name()] = data.fields[i].value();
-  }
 
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
-    if (!it->second.value().isEmpty())  // Don't overwrite pre-filled values.
+    WebKit::WebInputElement& element = it->second;
+    if (!element.value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
-    if (it->second.inputType() == WebInputElement::Password) {
-       if (!it->second.isEnabledFormControl() ||
-           it->second.hasAttribute("readonly"))
-        continue;  // Don't fill uneditable password fields.
+    if (element.inputType() == WebInputElement::Password &&
+        (!element.isEnabledFormControl() || element.hasAttribute("readonly"))) {
+      continue;  // Don't fill uneditable password fields.
     }
-    it->second.setValue(data_map[it->first]);
-    it->second.setAutofilled(true);
-    it->second.dispatchFormControlChangeEvent();
+    element.setValue(data_map[it->first]);
+    element.setAutofilled(true);
+    element.dispatchFormControlChangeEvent();
   }
 
   return false;
