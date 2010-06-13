@@ -19,8 +19,41 @@ namespace webkit_database {
 static const int kFileTypeMask = 0x00007F00;
 
 // static
+void VfsBackend::GetFileHandleForProcess(base::ProcessHandle process_handle,
+                                         const base::PlatformFile& file_handle,
+                                         base::PlatformFile* target_handle,
+                                         bool close_source_handle) {
+  if (file_handle == base::kInvalidPlatformFileValue) {
+    *target_handle = base::kInvalidPlatformFileValue;
+    return;
+  }
+
+#if defined(OS_WIN)
+  // Duplicate the file handle.
+  if (!DuplicateHandle(GetCurrentProcess(), file_handle,
+                       process_handle, target_handle, 0, false,
+                       DUPLICATE_SAME_ACCESS |
+                       (close_source_handle ? DUPLICATE_CLOSE_SOURCE : 0))) {
+    // file_handle is closed whether or not DuplicateHandle succeeds.
+    *target_handle = INVALID_HANDLE_VALUE;
+  }
+#elif defined(OS_POSIX)
+  *target_handle = file_handle;
+#endif
+}
+
+// static
 bool VfsBackend::FileTypeIsMainDB(int desired_flags) {
   return (desired_flags & kFileTypeMask) == SQLITE_OPEN_MAIN_DB;
+}
+
+// static
+bool VfsBackend::FileTypeIsJournal(int desired_flags) {
+  int file_type = desired_flags & kFileTypeMask;
+  return ((file_type == SQLITE_OPEN_MAIN_JOURNAL) ||
+          (file_type == SQLITE_OPEN_TEMP_JOURNAL) ||
+          (file_type == SQLITE_OPEN_SUBJOURNAL) ||
+          (file_type == SQLITE_OPEN_MASTER_JOURNAL));
 }
 
 // static
@@ -47,15 +80,12 @@ bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
 
   // If we're accessing an existing file, we cannot give exclusive access, and
   // we can't delete it.
+  // Normally, we'd also check that 'is_delete' is false for a main DB, main
+  // journal or master journal file; however, when in incognito mode, we use
+  // the SQLITE_OPEN_DELETEONCLOSE flag when opening those files too and keep
+  // an open handle to them for as long as the incognito profile is around.
   if ((is_exclusive || is_delete) && !is_create)
     return false;
-
-  // The main DB, main journal and master journal cannot be auto-deleted.
-  if (is_delete && ((file_type == SQLITE_OPEN_MAIN_DB) ||
-                    (file_type == SQLITE_OPEN_MAIN_JOURNAL) ||
-                    (file_type == SQLITE_OPEN_MASTER_JOURNAL))) {
-    return false;
-  }
 
   // Make sure we're opening the DB directory or that a file type is set.
   return (file_type == SQLITE_OPEN_MAIN_DB) ||
@@ -70,8 +100,7 @@ bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
 // static
 void VfsBackend::OpenFile(const FilePath& file_path,
                           int desired_flags,
-                          base::ProcessHandle handle,
-                          base::PlatformFile* target_handle) {
+                          base::PlatformFile* file_handle) {
   DCHECK(!file_path.empty());
 
   // Verify the flags for consistency and create the database
@@ -104,29 +133,15 @@ void VfsBackend::OpenFile(const FilePath& file_path,
   }
 
   // Try to open/create the DB file.
-  base::PlatformFile file_handle =
+  *file_handle =
       base::CreatePlatformFile(file_path.ToWStringHack(), flags, NULL);
-  if (file_handle != base::kInvalidPlatformFileValue) {
-#if defined(OS_WIN)
-    // Duplicate the file handle.
-    if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                         handle, target_handle, 0, false,
-                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-      // file_handle is closed whether or not DuplicateHandle succeeds.
-      *target_handle = INVALID_HANDLE_VALUE;
-    }
-#elif defined(OS_POSIX)
-    *target_handle = file_handle;
-#endif
-  }
 }
 
 // static
 void VfsBackend::OpenTempFileInDirectory(
     const FilePath& dir_path,
     int desired_flags,
-    base::ProcessHandle handle,
-    base::PlatformFile* target_handle) {
+    base::PlatformFile* file_handle) {
   // We should be able to delete temp files when they're closed
   // and create them as needed
   if (!(desired_flags & SQLITE_OPEN_DELETEONCLOSE) ||
@@ -139,7 +154,7 @@ void VfsBackend::OpenTempFileInDirectory(
   if (!file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path))
     return;
 
-  OpenFile(temp_file_path, desired_flags, handle, target_handle);
+  OpenFile(temp_file_path, desired_flags, file_handle);
 }
 
 // static

@@ -288,7 +288,7 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
 
 webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
   if (!db_tracker_)
-    db_tracker_ = new webkit_database::DatabaseTracker(GetPath());
+    db_tracker_ = new webkit_database::DatabaseTracker(GetPath(), false);
   return db_tracker_;
 }
 

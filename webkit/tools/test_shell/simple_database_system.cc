@@ -13,8 +13,6 @@
 #include "base/auto_reset.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
-#include "base/process_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/database/database_util.h"
@@ -34,7 +32,7 @@ SimpleDatabaseSystem* SimpleDatabaseSystem::GetInstance() {
 SimpleDatabaseSystem::SimpleDatabaseSystem()
     : waiting_for_dbs_to_close_(false) {
   temp_dir_.CreateUniqueTempDir();
-  db_tracker_ = new DatabaseTracker(temp_dir_.path());
+  db_tracker_ = new DatabaseTracker(temp_dir_.path(), false);
   db_tracker_->AddObserver(this);
   DCHECK(!instance_);
   instance_ = this;
@@ -51,11 +49,9 @@ base::PlatformFile SimpleDatabaseSystem::OpenFile(
   FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
   if (file_name.empty()) {
     VfsBackend::OpenTempFileInDirectory(
-        db_tracker_->DatabaseDirectory(), desired_flags,
-        base::GetCurrentProcessHandle(), &file_handle);
+        db_tracker_->DatabaseDirectory(), desired_flags, &file_handle);
   } else {
-    VfsBackend::OpenFile(file_name, desired_flags,
-                         base::GetCurrentProcessHandle(), &file_handle);
+    VfsBackend::OpenFile(file_name, desired_flags, &file_handle);
   }
 
   return file_handle;
@@ -159,7 +155,8 @@ void SimpleDatabaseSystem::databaseClosed(const WebKit::WebDatabase& database) {
 void SimpleDatabaseSystem::ClearAllDatabases() {
   // Wait for all databases to be closed.
   if (!database_connections_.IsEmpty()) {
-    AutoReset<bool> waiting_for_dbs_auto_reset(&waiting_for_dbs_to_close_, true);
+    AutoReset<bool> waiting_for_dbs_auto_reset(
+        &waiting_for_dbs_to_close_, true);
     MessageLoop::ScopedNestableTaskAllower nestable(MessageLoop::current());
     MessageLoop::current()->Run();
   }

@@ -12,8 +12,8 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "webkit/database/databases_table.h"
@@ -36,21 +36,28 @@ namespace webkit_database {
 
 const FilePath::CharType kDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases");
+const FilePath::CharType kIncognitoDatabaseDirectoryName[] =
+    FILE_PATH_LITERAL("databases-incognito");
 const FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
 static const int kCurrentVersion = 2;
 static const int kCompatibleVersion = 1;
 static const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
-DatabaseTracker::DatabaseTracker(const FilePath& profile_path)
+DatabaseTracker::DatabaseTracker(const FilePath& profile_path,
+                                 bool is_incognito)
     : is_initialized_(false),
-      is_incognito_(profile_path.empty()),
+      is_incognito_(is_incognito),
+      shutting_down_(false),
+      profile_path_(profile_path),
       db_dir_(is_incognito_ ?
-          FilePath() : profile_path.Append(kDatabaseDirectoryName)),
+              profile_path_.Append(kIncognitoDatabaseDirectoryName) :
+              profile_path_.Append(kDatabaseDirectoryName)),
       db_(new sql::Connection()),
       databases_table_(NULL),
       meta_table_(NULL),
-      default_quota_(5 * 1024 * 1024) {
+      default_quota_(5 * 1024 * 1024),
+      incognito_origin_directories_generator_(0) {
 }
 
 DatabaseTracker::~DatabaseTracker() {
@@ -168,11 +175,30 @@ void DatabaseTracker::RemoveObserver(Observer* observer) {
 
 void DatabaseTracker::CloseTrackerDatabaseAndClearCaches() {
   ClearAllCachedOriginInfo();
-  meta_table_.reset(NULL);
-  databases_table_.reset(NULL);
-  quota_table_.reset(NULL);
-  db_->Close();
-  is_initialized_ = false;
+
+  if (!is_incognito_) {
+    meta_table_.reset(NULL);
+    databases_table_.reset(NULL);
+    quota_table_.reset(NULL);
+    db_->Close();
+    is_initialized_ = false;
+  }
+}
+
+string16 DatabaseTracker::GetOriginDirectory(
+    const string16& origin_identifier) {
+  if (!is_incognito_)
+    return origin_identifier;
+
+  OriginDirectoriesMap::const_iterator it =
+      incognito_origin_directories_.find(origin_identifier);
+  if (it != incognito_origin_directories_.end())
+    return it->second;
+
+  string16 origin_directory =
+      IntToString16(incognito_origin_directories_generator_++);
+  incognito_origin_directories_[origin_identifier] = origin_directory;
+  return origin_directory;
 }
 
 FilePath DatabaseTracker::GetFullDBFilePath(
@@ -190,7 +216,7 @@ FilePath DatabaseTracker::GetFullDBFilePath(
 
   FilePath file_name = FilePath::FromWStringHack(Int64ToWString(id));
   return db_dir_.Append(FilePath::FromWStringHack(
-      UTF16ToWide(origin_identifier))).Append(file_name);
+      UTF16ToWide(GetOriginDirectory(origin_identifier)))).Append(file_name);
 }
 
 bool DatabaseTracker::GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) {
@@ -299,7 +325,7 @@ bool DatabaseTracker::IsDatabaseScheduledForDeletion(
 }
 
 bool DatabaseTracker::LazyInit() {
-  if (!is_initialized_ && !is_incognito_) {
+  if (!is_initialized_ && !shutting_down_) {
     DCHECK(!db_->is_open());
     DCHECK(!databases_table_.get());
     DCHECK(!quota_table_.get());
@@ -326,7 +352,9 @@ bool DatabaseTracker::LazyInit() {
 
     is_initialized_ =
         file_util::CreateDirectory(db_dir_) &&
-        (db_->is_open() || db_->Open(kTrackerDatabaseFullPath)) &&
+        (db_->is_open() ||
+         (is_incognito_ ? db_->OpenInMemory() :
+          db_->Open(kTrackerDatabaseFullPath))) &&
         UpgradeToCurrentVersion();
     if (!is_initialized_) {
       databases_table_.reset(NULL);
@@ -562,6 +590,61 @@ int DatabaseTracker::DeleteDataForOrigin(const string16& origin,
     return net::ERR_IO_PENDING;
   }
   return net::OK;
+}
+
+void DatabaseTracker::GetIncognitoFileHandle(
+    const string16& vfs_file_name, base::PlatformFile* file_handle) const {
+  DCHECK(is_incognito_);
+  FileHandlesMap::const_iterator it =
+      incognito_file_handles_.find(vfs_file_name);
+  if (it != incognito_file_handles_.end())
+    *file_handle = it->second;
+  else
+    *file_handle = base::kInvalidPlatformFileValue;
+}
+
+void DatabaseTracker::SaveIncognitoFileHandle(
+    const string16& vfs_file_name, const base::PlatformFile& file_handle) {
+  DCHECK(is_incognito_);
+  DCHECK(incognito_file_handles_.find(vfs_file_name) ==
+         incognito_file_handles_.end());
+  if (file_handle != base::kInvalidPlatformFileValue)
+    incognito_file_handles_[vfs_file_name] = file_handle;
+}
+
+bool DatabaseTracker::CloseIncognitoFileHandle(const string16& vfs_file_name) {
+  DCHECK(is_incognito_);
+  DCHECK(incognito_file_handles_.find(vfs_file_name) !=
+         incognito_file_handles_.end());
+
+  bool handle_closed = false;
+  FileHandlesMap::iterator it = incognito_file_handles_.find(vfs_file_name);
+  if (it != incognito_file_handles_.end()) {
+    handle_closed = !base::ClosePlatformFile(it->second);
+    if (handle_closed)
+      incognito_file_handles_.erase(it);
+  }
+  return handle_closed;
+}
+
+bool DatabaseTracker::HasSavedIncognitoFileHandle(
+    const string16& vfs_file_name) const {
+  return (incognito_file_handles_.find(vfs_file_name) !=
+          incognito_file_handles_.end());
+}
+
+void DatabaseTracker::DeleteIncognitoDBDirectory() {
+  shutting_down_ = true;
+  is_initialized_ = false;
+
+  for (FileHandlesMap::iterator it = incognito_file_handles_.begin();
+       it != incognito_file_handles_.end(); it++)
+    base::ClosePlatformFile(it->second);
+
+  FilePath incognito_db_dir =
+      profile_path_.Append(kIncognitoDatabaseDirectoryName);
+  if (file_util::DirectoryExists(incognito_db_dir))
+    file_util::Delete(incognito_db_dir, true);
 }
 
 // static

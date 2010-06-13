@@ -316,6 +316,13 @@ class OffTheRecordProfileImpl : public Profile,
                                            Source<Profile>(this),
                                            NotificationService::NoDetails());
     CleanupRequestContext(request_context_);
+
+    // Clean up all DB files/directories
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            db_tracker_.get(),
+            &webkit_database::DatabaseTracker::DeleteIncognitoDBDirectory));
   }
 
   virtual ProfileId GetRuntimeId() {
@@ -342,8 +349,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() {
-    if (!db_tracker_)
-      db_tracker_ = new webkit_database::DatabaseTracker(FilePath());
+    if (!db_tracker_) {
+      db_tracker_ = new webkit_database::DatabaseTracker(
+          GetPath(), IsOffTheRecord());
+    }
     return db_tracker_;
   }
 
@@ -1017,8 +1026,10 @@ Profile* ProfileImpl::GetOriginalProfile() {
 }
 
 webkit_database::DatabaseTracker* ProfileImpl::GetDatabaseTracker() {
-  if (!db_tracker_)
-    db_tracker_ = new webkit_database::DatabaseTracker(GetPath());
+  if (!db_tracker_) {
+    db_tracker_ = new webkit_database::DatabaseTracker(
+        GetPath(), IsOffTheRecord());
+  }
   return db_tracker_;
 }
 
