@@ -174,9 +174,6 @@ class ConditionVariable {
 
   pthread_cond_t condition_;
   pthread_mutex_t* user_mutex_;
-#if !defined(NDEBUG)
-  Lock* user_lock_;     // Needed to adjust shadow lock state on wait.
-#endif
 
 #endif
 
