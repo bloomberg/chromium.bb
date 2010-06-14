@@ -39,6 +39,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -97,15 +98,7 @@ static void SuppressDialogs() {
 
 namespace logging {
 
-void InitChromeLogging(const CommandLine& command_line,
-                       OldFileDeletionState delete_old_log_file) {
-  DCHECK(!chrome_logging_initialized_) <<
-    "Attempted to initialize logging when it was already initialized.";
-
-#if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
-  IPC::Logging::SetLoggerFunctions(g_log_function_mapping);
-#endif
-
+LoggingDestination DetermineLogMode(const CommandLine& command_line) {
   // only use OutputDebugString in debug mode
 #ifdef NDEBUG
   bool enable_logging = false;
@@ -133,9 +126,67 @@ void InitChromeLogging(const CommandLine& command_line,
   } else {
     log_mode = logging::LOG_NONE;
   }
+  return log_mode;
+}
 
-  logging::InitLogging(GetLogFileName().value().c_str(),
-                       log_mode,
+#if defined(OS_CHROMEOS)
+void SetUpSymlink(const FilePath& symlink_path, const FilePath& new_log_path) {
+  if (access(symlink_path.value().c_str(), F_OK) == 0 &&
+      file_util::Delete(symlink_path, false)) {
+    PLOG(ERROR) << "Unable to unlink " << symlink_path.value();
+  }
+  if (symlink(new_log_path.value().c_str(),
+              symlink_path.value().c_str()) == -1) {
+    PLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
+                << " pointing at " << new_log_path.value();
+  }
+}
+
+FilePath TimestampLog(const FilePath& new_log_file, base::Time timestamp) {
+  base::Time::Exploded time_deets;
+  timestamp.LocalExplode(&time_deets);
+  std::string suffix = StringPrintf("_%02d%02d%02d-%02d%02d%02d",
+                                    time_deets.year,
+                                    time_deets.month,
+                                    time_deets.day_of_month,
+                                    time_deets.hour,
+                                    time_deets.minute,
+                                    time_deets.second);
+  FilePath new_log_path = new_log_file.InsertBeforeExtension(suffix);
+  SetUpSymlink(new_log_file, new_log_path);
+
+  return new_log_path;
+}
+
+void RedirectChromeLogging(const FilePath& new_log_dir,
+                           const CommandLine& command_line,
+                           OldFileDeletionState delete_old_log_file) {
+  FilePath log_file_name = GetLogFileName().BaseName();
+  FilePath new_log_path =
+      TimestampLog(new_log_dir.Append(log_file_name), base::Time::Now());
+  InitLogging(new_log_path.value().c_str(),
+              DetermineLogMode(command_line),
+              logging::LOCK_LOG_FILE,
+              delete_old_log_file);
+}
+#endif
+
+void InitChromeLogging(const CommandLine& command_line,
+                       OldFileDeletionState delete_old_log_file) {
+  DCHECK(!chrome_logging_initialized_) <<
+    "Attempted to initialize logging when it was already initialized.";
+
+#if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
+  IPC::Logging::SetLoggerFunctions(g_log_function_mapping);
+#endif
+
+  FilePath log_path = GetLogFileName();
+#if defined(OS_CHROMEOS)
+  log_path = TimestampLog(log_path, base::Time::Now());
+#endif
+
+  logging::InitLogging(log_path.value().c_str(),
+                       DetermineLogMode(command_line),
                        logging::LOCK_LOG_FILE,
                        delete_old_log_file);
 

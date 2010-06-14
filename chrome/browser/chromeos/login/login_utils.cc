@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/lock.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/common/logging_chrome.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -201,6 +203,12 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+
+  logging::RedirectChromeLogging(
+      user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
+      *(CommandLine::ForCurrentProcess()),
+      logging::DELETE_OLD_LOG_FILE);
+
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is

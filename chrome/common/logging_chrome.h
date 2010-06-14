@@ -13,6 +13,10 @@
 class CommandLine;
 class FilePath;
 
+namespace base {
+class Time;
+}
+
 namespace logging {
 
 // Call to initialize logging for Chrome. This sets up the chrome-specific
@@ -30,6 +34,12 @@ namespace logging {
 // and GetSilencedError().
 void InitChromeLogging(const CommandLine& command_line,
                        OldFileDeletionState delete_old_log_file);
+
+#if defined(OS_CHROMEOS)
+void RedirectChromeLogging(const FilePath& new_log_dir,
+                           const CommandLine& command_line,
+                           OldFileDeletionState delete_old_log_file);
+#endif
 
 // Call when done using logging for Chrome.
 void CleanupChromeLogging();
