@@ -19,11 +19,21 @@ struct InternalPolicyValueMapEntry {
 
 const InternalPolicyValueMapEntry kPolicyValueMap[] = {
   { ConfigurationPolicyStore::kPolicyHomePage,
-    Value::TYPE_STRING, "Homepage" },
+      Value::TYPE_STRING, "Homepage" },
   { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
-    Value::TYPE_BOOLEAN, "HomepageIsNewTabPage" },
+      Value::TYPE_BOOLEAN, "HomepageIsNewTabPage" },
+  { ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
+      Value::TYPE_BOOLEAN, "AlternateErrorPagesEnabled" },
+  { ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
+      Value::TYPE_BOOLEAN, "SearchSuggestEnabled" },
+  { ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
+      Value::TYPE_BOOLEAN, "DnsPrefetchingEnabled" },
+  { ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
+      Value::TYPE_BOOLEAN, "SafeBrowsingEnabled" },
+  { ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
+      Value::TYPE_BOOLEAN, "MetricsReportingEnabled" },
   { ConfigurationPolicyStore::kPolicyCookiesMode,
-    Value::TYPE_INTEGER, "CookiesMode" }
+      Value::TYPE_INTEGER, "CookiesMode" }
 };
 
 }  // namespace

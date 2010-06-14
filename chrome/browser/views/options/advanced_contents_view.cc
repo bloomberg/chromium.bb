@@ -650,6 +650,17 @@ void PrivacySection::InitControlLayout() {
   safe_browsing_.Init(prefs::kSafeBrowsingEnabled, profile()->GetPrefs(), this);
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
+
+
+  enable_link_doctor_checkbox_->SetEnabled(!alternate_error_pages_.IsManaged());
+  enable_suggest_checkbox_->SetEnabled(!use_suggest_.IsManaged());
+  enable_dns_prefetching_checkbox_->SetEnabled(
+      !dns_prefetch_enabled_.IsManaged());
+  enable_safe_browsing_checkbox_->SetEnabled(!safe_browsing_.IsManaged());
+#if defined(GOOGLE_CHROME_BUILD)
+  reporting_enabled_checkbox_->SetEnabled(
+      !enable_metrics_recording_.IsManaged());
+#endif
 }
 
 void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {

@@ -1451,6 +1451,11 @@ const int kDisabledIndex = 1;
   alternateErrorPages_.SetValue(value ? true : false);
 }
 
+// Returns whether the alternate error page checkbox should be enabled.
+- (BOOL)isAlternateErrorPagesEnabled {
+  return !alternateErrorPages_.IsManaged();
+}
+
 // Returns whether the suggest checkbox should be checked based on the
 // preference.
 - (BOOL)useSuggest {
@@ -1467,6 +1472,11 @@ const int kDisabledIndex = 1;
     [self recordUserAction:UserMetricsAction(
                            "Options_UseSuggestCheckbox_Disable")];
   useSuggest_.SetValue(value ? true : false);
+}
+
+// Returns whether the suggest checkbox should be enabled.
+- (BOOL)isSuggestEnabled {
+  return !useSuggest_.IsManaged();
 }
 
 // Returns whether the DNS prefetch checkbox should be checked based on the
@@ -1486,6 +1496,11 @@ const int kDisabledIndex = 1;
                            "Options_DnsPrefetchCheckbox_Disable")];
   dnsPrefetch_.SetValue(value ? true : false);
   chrome_browser_net::EnableDnsPrefetch(value ? true : false);
+}
+
+// Returns whether the DNS prefetch checkbox should be enabled.
+- (BOOL)isDnsPrefetchEnabled {
+  return !dnsPrefetch_.IsManaged();
 }
 
 // Returns whether the safe browsing checkbox should be checked based on the
@@ -1511,14 +1526,19 @@ const int kDisabledIndex = 1;
       safeBrowsingService, &SafeBrowsingService::OnEnable, enabled));
 }
 
-// Returns whether the suggest checkbox should be checked based on the
+// Returns whether the safe browsing checkbox should be enabled.
+- (BOOL)isSafeBrowsingEnabled {
+  return !safeBrowsing_.IsManaged();
+}
+
+// Returns whether the metrics recording checkbox should be checked based on the
 // preference.
 - (BOOL)metricsRecording {
   return metricsRecording_.GetValue() ? YES : NO;
 }
 
-// Sets the backend pref for whether or not the suggest checkbox should be
-// displayed based on |value|.
+// Sets the backend pref for whether or not the metrics recording checkbox
+// should be displayed based on |value|.
 - (void)setMetricsRecording:(BOOL)value {
   if (value)
     [self recordUserAction:UserMetricsAction(
@@ -1552,6 +1572,11 @@ const int kDisabledIndex = 1;
   // TODO(pinkerton): windows shows a dialog here telling the user they need to
   // restart for this to take effect. http://crbug.com/34653
   metricsRecording_.SetValue(enabled);
+}
+
+// Returns whether the metrics recording checkbox should be enabled.
+- (BOOL)isMetricsRecordingEnabled {
+  return !metricsRecording_.IsManaged();
 }
 
 - (NSURL*)defaultDownloadLocation {

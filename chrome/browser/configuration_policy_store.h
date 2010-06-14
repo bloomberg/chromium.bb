@@ -17,6 +17,11 @@ class ConfigurationPolicyStore {
   enum PolicyType {
     kPolicyHomePage,
     kPolicyHomepageIsNewTabPage,
+    kPolicyAlternateErrorPagesEnabled,
+    kPolicySearchSuggestEnabled,
+    kPolicyDnsPrefetchingEnabled,
+    kPolicySafeBrowsingEnabled,
+    kPolicyMetricsReportingEnabled,
     kPolicyCookiesMode
   };
 

@@ -14,6 +14,16 @@ ConfigurationPolicyPrefStore::simple_policy_map_[] = {
   { Value::TYPE_STRING, kPolicyHomePage,  prefs::kHomePage },
   { Value::TYPE_BOOLEAN, kPolicyHomepageIsNewTabPage,
       prefs::kHomePageIsNewTabPage },
+  { Value::TYPE_BOOLEAN, kPolicyAlternateErrorPagesEnabled,
+      prefs::kAlternateErrorPagesEnabled },
+  { Value::TYPE_BOOLEAN, kPolicySearchSuggestEnabled,
+      prefs::kSearchSuggestEnabled },
+  { Value::TYPE_BOOLEAN, kPolicyDnsPrefetchingEnabled,
+      prefs::kDnsPrefetchingEnabled },
+  { Value::TYPE_BOOLEAN, kPolicySafeBrowsingEnabled,
+      prefs::kSafeBrowsingEnabled },
+  { Value::TYPE_BOOLEAN, kPolicyMetricsReportingEnabled,
+      prefs::kMetricsReportingEnabled },
   { Value::TYPE_INTEGER, kPolicyCookiesMode, prefs::kCookieBehavior }
 };
 

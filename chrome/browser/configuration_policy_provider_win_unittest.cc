@@ -35,7 +35,8 @@ class TestConfigurationPolicyProviderWin
 
   void SetHomepageRegistryValue(HKEY hive, const wchar_t* value);
   void SetHomepageRegistryValueWrongType(HKEY hive);
-  void SetHomepageIsNewTabPage(HKEY hive, bool value);
+  void SetBooleanPolicy(ConfigurationPolicyStore::PolicyType type,
+                        HKEY hive, bool value);
   void SetCookiesMode(HKEY hive, uint32 value);
 
   typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
@@ -80,15 +81,13 @@ void TestConfigurationPolicyProviderWin::SetHomepageRegistryValueWrongType(
       5));
 }
 
-void TestConfigurationPolicyProviderWin::SetHomepageIsNewTabPage(
+void TestConfigurationPolicyProviderWin::SetBooleanPolicy(
+    ConfigurationPolicyStore::PolicyType type,
     HKEY hive,
     bool value) {
-  RegKey key(hive,
-      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
+  RegKey key(hive, ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
       KEY_ALL_ACCESS);
-  EXPECT_TRUE(key.WriteValue(NameForPolicy(
-      ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage).c_str(),
-      value));
+  EXPECT_TRUE(key.WriteValue(NameForPolicy(type).c_str(), value));
 }
 
 void TestConfigurationPolicyProviderWin::SetCookiesMode(
@@ -122,6 +121,10 @@ class ConfigurationPolicyProviderWinTest : public testing::Test {
 
   // Deletes the registry key created during the tests.
   void DeleteRegistrySandbox();
+
+  void TestBooleanPolicyDefault(ConfigurationPolicyStore::PolicyType type);
+  void TestBooleanPolicyHKLM(ConfigurationPolicyStore::PolicyType type);
+  void TestBooleanPolicy(ConfigurationPolicyStore::PolicyType type);
 
  private:
   // Keys are created for the lifetime of a test to contain
@@ -178,6 +181,40 @@ void ConfigurationPolicyProviderWinTest::DeleteRegistrySandbox() {
   RegKey key(HKEY_CURRENT_USER, kUnitTestRegistrySubKey, KEY_ALL_ACCESS);
   key.DeleteKey(L"");
 }
+
+void ConfigurationPolicyProviderWinTest::TestBooleanPolicyDefault(
+    ConfigurationPolicyStore::PolicyType type) {
+  MockConfigurationPolicyStore store;
+  TestConfigurationPolicyProviderWin provider;
+  provider.Provide(&store);
+
+  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
+  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
+      map.find(type);
+  EXPECT_TRUE(i == map.end());
+}
+
+void ConfigurationPolicyProviderWinTest::TestBooleanPolicyHKLM(
+    ConfigurationPolicyStore::PolicyType type) {
+  MockConfigurationPolicyStore store;
+  TestConfigurationPolicyProviderWin provider;
+  provider.SetBooleanPolicy(type, HKEY_LOCAL_MACHINE, true);
+  provider.Provide(&store);
+
+  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
+  MockConfigurationPolicyStore::PolicyMap::const_iterator i = map.find(type);
+  EXPECT_TRUE(i != map.end());
+  bool value = false;
+  i->second->GetAsBoolean(&value);
+  EXPECT_EQ(true, value);
+}
+
+void ConfigurationPolicyProviderWinTest::TestBooleanPolicy(
+    ConfigurationPolicyStore::PolicyType type) {
+  TestBooleanPolicyDefault(type);
+  TestBooleanPolicyHKLM(type);
+}
+
 TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyDefault) {
   MockConfigurationPolicyStore store;
   TestConfigurationPolicyProviderWin provider;
@@ -257,33 +294,34 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKLMOverHKCU) {
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest,
-    TestHomepageIsNewTabPagePolicyDefault) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage);
-  EXPECT_TRUE(i == map.end());
+    TestHomepageIsNewTabPagePolicy) {
+  TestBooleanPolicy(ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage);
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest,
-    TestHomepageIsNewTabPagePolicyHKLM) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-  provider.SetHomepageIsNewTabPage(HKEY_LOCAL_MACHINE, true);
+    TestPolicyAlternateErrorPagesEnabled) {
+  TestBooleanPolicy(
+      ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled);
+}
 
-  provider.Provide(&store);
+TEST_F(ConfigurationPolicyProviderWinTest,
+    TestPolicySearchSuggestEnabled) {
+  TestBooleanPolicy(ConfigurationPolicyStore::kPolicySearchSuggestEnabled);
+}
 
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage);
-  EXPECT_TRUE(i != map.end());
-  bool value = false;
-  i->second->GetAsBoolean(&value);
-  EXPECT_EQ(true, value);
+TEST_F(ConfigurationPolicyProviderWinTest,
+    TestPolicyDnsPrefetchingEnabled) {
+  TestBooleanPolicy(ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled);
+}
+
+TEST_F(ConfigurationPolicyProviderWinTest,
+    TestPolicySafeBrowsingEnabled) {
+  TestBooleanPolicy(ConfigurationPolicyStore::kPolicySafeBrowsingEnabled);
+}
+
+TEST_F(ConfigurationPolicyProviderWinTest,
+    TestPolicyMetricsReportingEnabled) {
+  TestBooleanPolicy(ConfigurationPolicyStore::kPolicyMetricsReportingEnabled);
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest,
