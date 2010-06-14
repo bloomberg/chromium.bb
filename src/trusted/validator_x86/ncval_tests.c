@@ -840,7 +840,7 @@ struct NCValTestCase NCValTests[] = {
     /* sawfailure= */ 0, /* illegalinst= */ 0,
     /* instructions= */ 2,
     /* vaddr= */ 0x80000000, /* testsize= */ 6,
-    (uint8_t *)"\xf0\x0f\xc7\010\x90\xf4"
+    (uint8_t *)"\xf0\x0f\xc7\x08\x90\xf4"
   },
   {
     "test 67",
