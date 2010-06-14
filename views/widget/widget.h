@@ -64,10 +64,20 @@ class Widget {
     NotDeleteOnDestroy
   };
 
+  enum MirroringParam {
+    MirrorOriginInRTL,
+    DontMirrorOriginInRTL
+  };
+
   // Creates a transient popup widget specific to the current platform.
+  // If |mirror_in_rtl| is set to MirrorOriginInRTL, the contents of the
+  // popup will be mirrored if the current locale is RTL.  You should use
+  // DontMirrorOriginInRTL if you are aleady handling the RTL layout within
+  // the widget.
   static Widget* CreatePopupWidget(TransparencyParam transparent,
                                    EventsParam accept_events,
-                                   DeleteParam delete_on_destroy);
+                                   DeleteParam delete_on_destroy,
+                                   MirroringParam mirror_in_rtl);
 
   // Returns the root view for |native_window|. If |native_window| does not have
   // a rootview, this recurses through all of |native_window|'s children until

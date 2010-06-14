@@ -1427,7 +1427,8 @@ void WidgetGtk::DrawTransparentBackground(GtkWidget* widget,
 // static
 Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
                                   EventsParam accept_events,
-                                  DeleteParam delete_on_destroy) {
+                                  DeleteParam delete_on_destroy,
+                                  MirroringParam mirror_in_rtl) {
   WidgetGtk* popup = new WidgetGtk(WidgetGtk::TYPE_POPUP);
   popup->set_delete_on_destroy(delete_on_destroy == DeleteOnDestroy);
   if (transparent == Transparent)

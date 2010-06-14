@@ -70,7 +70,8 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
   gfx::Rect rc(0, 0, 0, 0);
   popup_ = views::Widget::CreatePopupWidget(views::Widget::Transparent,
                                             views::Widget::NotAcceptEvents,
-                                            views::Widget::DeleteOnDestroy);
+                                            views::Widget::DeleteOnDestroy,
+                                            views::Widget::MirrorOriginInRTL);
   popup_->SetOpacity(0xCC);
   popup_->Init(tab_contents->GetNativeView(), rc);
   popup_->SetContentsView(this);

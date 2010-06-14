@@ -109,7 +109,8 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
 #else
     border_widget_ = Widget::CreatePopupWidget(Widget::Transparent,
                                                Widget::NotAcceptEvents,
-                                               Widget::DeleteOnDestroy);
+                                               Widget::DeleteOnDestroy,
+                                               Widget::MirrorOriginInRTL);
 #endif
     border_widget_->Init(native_window, bounds());
 #if defined(OS_CHROMEOS)

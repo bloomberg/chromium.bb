@@ -1257,9 +1257,12 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
 // static
 Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
                                   EventsParam accept_events,
-                                  DeleteParam delete_on_destroy) {
+                                  DeleteParam delete_on_destroy,
+                                  MirroringParam mirror_in_rtl) {
   WidgetWin* popup = new WidgetWin;
-  DWORD ex_style = WS_EX_TOOLWINDOW | l10n_util::GetExtendedTooltipStyles();
+  DWORD ex_style = WS_EX_TOOLWINDOW;
+  if (mirror_in_rtl == MirrorOriginInRTL)
+    ex_style |= l10n_util::GetExtendedTooltipStyles();
   if (transparent == Transparent)
     ex_style |= WS_EX_LAYERED;
   if (accept_events != AcceptEvents)

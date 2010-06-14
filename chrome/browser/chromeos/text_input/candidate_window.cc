@@ -853,7 +853,8 @@ void CandidateWindowController::CreateView() {
   frame_.reset(views::Widget::CreatePopupWidget(
       views::Widget::NotTransparent,
       views::Widget::AcceptEvents,
-      views::Widget::DeleteOnDestroy));
+      views::Widget::DeleteOnDestroy,
+      views::Widget::MirrorOriginInRTL));
   // The size is initially zero.
   frame_->Init(NULL, gfx::Rect(0, 0));
 

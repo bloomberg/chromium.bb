@@ -144,7 +144,8 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
                    const Widget::TransparencyParam transparency) {
     Widget* widget = Widget::CreatePopupWidget(transparency,
                                                Widget::AcceptEvents,
-                                               Widget::DeleteOnDestroy);
+                                               Widget::DeleteOnDestroy,
+                                               Widget::MirrorOriginInRTL);
     // Compute where to place the popup widget.
     // We'll place it right below the create button.
     gfx::Point point = parent->GetPosition();
