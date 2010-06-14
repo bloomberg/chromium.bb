@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -384,6 +385,8 @@ void LanguageMenuButton::ActivatedAt(int index) {
 // LanguageMenuButton, views::ViewMenuDelegate implementation:
 
 void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+  UserMetrics::RecordAction(
+      UserMetricsAction("LanguageMenuButton_Open"));
   input_method_descriptors_.reset(CrosLibrary::Get()->GetLanguageLibrary()->
                                   GetActiveInputMethods());
   RebuildModel();
@@ -396,6 +399,9 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 // LanguageLibrary::Observer implementation:
 
 void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
+  UserMetrics::RecordAction(
+      UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
+
   const InputMethodDescriptor& input_method =
       obj->current_input_method();
   UpdateIconFromInputMethod(input_method);

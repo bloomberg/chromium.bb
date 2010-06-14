@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/restart_message_box.h"
@@ -459,6 +460,7 @@ std::wstring LanguageConfigView::GetText(int row, int column_id) {
 }
 
 void LanguageConfigView::Show(Profile* profile, gfx::NativeWindow parent) {
+  UserMetrics::RecordAction(UserMetricsAction("LanguageConfigView_Open"));
   views::Window* window = views::Window::CreateChromeWindow(
       parent, gfx::Rect(), new LanguageConfigView(profile));
   window->SetIsAlwaysOnTop(true);
