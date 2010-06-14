@@ -131,10 +131,9 @@ LoggingDestination DetermineLogMode(const CommandLine& command_line) {
 
 #if defined(OS_CHROMEOS)
 void SetUpSymlink(const FilePath& symlink_path, const FilePath& new_log_path) {
-  if (access(symlink_path.value().c_str(), F_OK) == 0 &&
-      file_util::Delete(symlink_path, false)) {
-    PLOG(ERROR) << "Unable to unlink " << symlink_path.value();
-  }
+  // We don't care if the unlink fails; we're going to continue anyway.
+  if (unlink(symlink_path.value().c_str()) == -1)
+    PLOG(WARNING) << "Unable to unlink " << symlink_path.value();
   if (symlink(new_log_path.value().c_str(),
               symlink_path.value().c_str()) == -1) {
     PLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
