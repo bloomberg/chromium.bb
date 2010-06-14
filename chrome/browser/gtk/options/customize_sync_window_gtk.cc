@@ -62,6 +62,7 @@ class CustomizeSyncWindowGtk {
   GtkWidget* bookmarks_check_box_;
   GtkWidget* preferences_check_box_;
   GtkWidget* themes_check_box_;
+  GtkWidget* extensions_check_box_;
   GtkWidget* autofill_check_box_;
 
   // Helper object to manage accessibility metadata.
@@ -82,6 +83,7 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL),
       themes_check_box_(NULL),
+      extensions_check_box_(NULL),
       autofill_check_box_(NULL) {
   syncable::ModelTypeSet registered_types;
   profile_->GetProfileSyncService()->GetRegisteredDataTypes(&registered_types);
@@ -136,10 +138,16 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
                                     themes_checked);
   }
 
+  if (registered_types.count(syncable::EXTENSIONS)) {
+    bool extensions_checked = preferred_types.count(syncable::EXTENSIONS) != 0;
+    extensions_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_EXTENSIONS,
+                                        extensions_checked);
+  }
+
   if (registered_types.count(syncable::AUTOFILL)) {
     bool autofill_checked = preferred_types.count(syncable::AUTOFILL) != 0;
     autofill_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_AUTOFILL,
-      autofill_checked);
+                                      autofill_checked);
   }
 
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), vbox, FALSE, FALSE, 0);
@@ -173,6 +181,9 @@ bool CustomizeSyncWindowGtk::ClickOk() {
            preferences_check_box_))) ||
       (themes_check_box_ &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_))) ||
+      (extensions_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+           extensions_check_box_))) ||
       (autofill_check_box_ &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_)))) {
     Accept();
@@ -217,7 +228,6 @@ bool CustomizeSyncWindowGtk::Accept() {
   if (bookmarks_enabled) {
     preferred_types.insert(syncable::BOOKMARKS);
   }
-
   if (preferences_check_box_) {
     bool preferences_enabled = gtk_toggle_button_get_active(
         GTK_TOGGLE_BUTTON(preferences_check_box_));
@@ -230,6 +240,13 @@ bool CustomizeSyncWindowGtk::Accept() {
         GTK_TOGGLE_BUTTON(themes_check_box_));
     if (themes_enabled) {
       preferred_types.insert(syncable::THEMES);
+    }
+  }
+  if (extensions_check_box_) {
+    bool extensions_enabled = gtk_toggle_button_get_active(
+        GTK_TOGGLE_BUTTON(extensions_check_box_));
+    if (extensions_enabled) {
+      preferred_types.insert(syncable::EXTENSIONS);
     }
   }
   if (autofill_check_box_) {
@@ -271,6 +288,9 @@ void CustomizeSyncWindowGtk::OnCheckboxClicked(GtkWidget* widget) {
            preferences_check_box_))) ||
       (themes_check_box_ &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_))) ||
+      (extensions_check_box_ &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+           extensions_check_box_))) ||
       (autofill_check_box_ &&
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_)));
   if (any_datatypes_selected) {

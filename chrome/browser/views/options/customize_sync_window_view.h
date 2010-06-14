@@ -75,6 +75,7 @@ class CustomizeSyncWindowView : public views::View,
   views::Checkbox* bookmarks_check_box_;
   views::Checkbox* preferences_check_box_;
   views::Checkbox* themes_check_box_;
+  views::Checkbox* extensions_check_box_;
   views::Checkbox* autofill_check_box_;
 
   Profile* profile_;

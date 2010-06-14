@@ -30,6 +30,7 @@ CustomizeSyncWindowView::CustomizeSyncWindowView(Profile* profile)
       bookmarks_check_box_(NULL),
       preferences_check_box_(NULL),
       themes_check_box_(NULL),
+      extensions_check_box_(NULL),
       autofill_check_box_(NULL) {
   DCHECK(profile);
   Init();
@@ -112,6 +113,16 @@ void CustomizeSyncWindowView::Layout() {
     last_view = themes_check_box_;
   }
 
+  if (extensions_check_box_) {
+    sz = extensions_check_box_->GetPreferredSize();
+    extensions_check_box_->SetBounds(2 * kPanelHorizMargin,
+      last_view->y() +
+      last_view->height() +
+      kRelatedControlVerticalSpacing,
+      sz.width(), sz.height());
+    last_view = extensions_check_box_;
+  }
+
   if (autofill_check_box_) {
     sz = autofill_check_box_->GetPreferredSize();
     autofill_check_box_->SetBounds(2 * kPanelHorizMargin,
@@ -151,6 +162,9 @@ bool CustomizeSyncWindowView::Accept() {
   if (themes_check_box_ && themes_check_box_->checked()) {
     desired_types.insert(syncable::THEMES);
   }
+  if (extensions_check_box_ && extensions_check_box_->checked()) {
+    desired_types.insert(syncable::EXTENSIONS);
+  }
   if (autofill_check_box_ && autofill_check_box_->checked()) {
     desired_types.insert(syncable::AUTOFILL);
   }
@@ -175,7 +189,8 @@ bool CustomizeSyncWindowView::IsDialogButtonEnabled(
         return bookmarks_check_box_->checked() ||
             (preferences_check_box_ && preferences_check_box_->checked()) ||
             (autofill_check_box_ && autofill_check_box_->checked()) ||
-            (themes_check_box_ && themes_check_box_->checked());
+            (themes_check_box_ && themes_check_box_->checked()) ||
+            (extensions_check_box_ && extensions_check_box_->checked());
       case MessageBoxFlags::DIALOGBUTTON_CANCEL:
         return true;
       default:
@@ -253,6 +268,12 @@ void CustomizeSyncWindowView::Init() {
     bool themes_checked = preferred_types.count(syncable::THEMES) != 0;
     themes_check_box_ = AddCheckbox(
         l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES), themes_checked);
+  }
+
+  if (registered_types.count(syncable::EXTENSIONS)) {
+    bool extensions_checked = preferred_types.count(syncable::EXTENSIONS) != 0;
+    extensions_check_box_ = AddCheckbox(
+        l10n_util::GetString(IDS_SYNC_DATATYPE_EXTENSIONS), extensions_checked);
   }
 
   if (registered_types.count(syncable::AUTOFILL)) {
