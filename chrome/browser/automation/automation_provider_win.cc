@@ -132,14 +132,6 @@ class MouseEventTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(MouseEventTask);
 };
 
-void AutomationProvider::ScheduleMouseEvent(views::View* view,
-                                            views::Event::EventType type,
-                                            const gfx::Point& point,
-                                            int flags) {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      new MouseEventTask(view, type, point, flags));
-}
-
 // This task sends a WindowDragResponse message with the appropriate
 // routing ID to the automation proxy.  This is implemented as a task so that
 // we know that the mouse events (and any tasks that they spawn on the message

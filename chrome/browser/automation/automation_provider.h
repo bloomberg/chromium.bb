@@ -249,21 +249,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SetProxyConfig(const std::string& new_proxy_config);
   void IsFullscreen(int handle, bool* is_fullscreen);
   void GetFullscreenBubbleVisibility(int handle, bool* is_visible);
-#if defined(OS_WIN)
-  void OnBrowserMoved(int handle);
-#endif
   void SetContentSetting(int handle,
                          const std::string& host,
                          ContentSettingsType content_type,
                          ContentSetting setting,
                          bool* success);
-
-#if defined(OS_WIN)
-  void ScheduleMouseEvent(views::View* view,
-                          views::Event::EventType type,
-                          const gfx::Point& point,
-                          int flags);
-#endif  // defined(OS_WIN)
 
   void GetFocusedViewID(int handle, int* view_id);
 
@@ -770,8 +760,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                                     const std::string& origin,
                                                     const std::string& target);
 
+  void OnBrowserMoved(int handle);
+
   ExternalTabContainer* GetExternalTabForHandle(int handle);
-#endif
+#endif  // defined(OS_WIN)
 
   typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;

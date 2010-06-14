@@ -521,15 +521,9 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
                         ShutdownSessionService)
     IPC_MESSAGE_HANDLER(AutomationMsg_SaveAsAsync, SaveAsAsync)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_BrowserMove, OnBrowserMoved)
-#endif
     IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
-#if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
-                                    LoginWithUserAndPass)
-#endif
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
 #if defined(TOOLKIT_VIEWS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForFocusedViewIDToChange,
                                     WaitForFocusedViewIDToChange)
@@ -537,8 +531,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         StartTrackingPopupMenus)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForPopupMenuToOpen,
                                     WaitForPopupMenuToOpen)
-#endif
-    IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
+#endif  // defined(TOOLKIT_VIEWS)
 #if defined(OS_WIN)
     // These are for use with external tabs.
     IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
@@ -557,7 +550,12 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         SetEnableExtensionAutomation)
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleMessageFromExternalHost,
                         OnMessageFromExternalHost)
-#endif
+    IPC_MESSAGE_HANDLER(AutomationMsg_BrowserMove, OnBrowserMoved)
+#endif  // defined(OS_WIN)
+#if defined(OS_CHROMEOS)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
+                                    LoginWithUserAndPass)
+#endif  // defined(OS_CHROMEOS)
   IPC_END_MESSAGE_MAP()
 }
 
