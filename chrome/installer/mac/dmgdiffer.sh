@@ -49,11 +49,10 @@
 #  7  Could not mount new_dmg
 #  8  Could not create temporary patch filesystem directory
 #  9  Could not create disk image
-# 10  Could not read old application version
-# 11  Could not read new application version
-# 12  Could not read product ID
-# 13  Old or new application sanity check failure
-# 14  Could not write the patch
+# 10  Could not read old application data
+# 11  Could not read new application data
+# 12  Old or new application sanity check failure
+# 13  Could not write the patch
 #
 # Exit codes in the range 21-40 are mapped to codes 1-20 as returned by the
 # first dirdiffer invocation. Codes 41-60 are mapped to codes 1-20 as returned
@@ -141,8 +140,9 @@ make_patch_fs() {
   readonly PRODUCT_NAME="Google Chrome"
   readonly APP_NAME="${PRODUCT_NAME}.app"
   readonly APP_NAME_RE="${PRODUCT_NAME}\\.app"
-  readonly APP_INFO_PLIST="Contents/Info"
+  readonly APP_PLIST="Contents/Info"
   readonly APP_VERSION_KEY="CFBundleShortVersionString"
+  readonly KS_VERSION_KEY="KSVersion"
   readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_CHANNEL_KEY="KSChannelID"
   readonly VERSIONS_DIR="Contents/Versions"
@@ -151,48 +151,64 @@ make_patch_fs() {
   readonly MIN_BUILD=434
 
   local old_app_path="${old_fs}/${APP_NAME}"
-  local old_app_info_plist="${old_app_path}/${APP_INFO_PLIST}"
-  local old_version
-  if ! old_version="$(defaults read "${old_app_info_plist}" \
-                      "${APP_VERSION_KEY}")"; then
+  local old_app_plist="${old_app_path}/${APP_PLIST}"
+  local old_app_version
+  if ! old_app_version="$(defaults read "${old_app_plist}" \
+                                        "${APP_VERSION_KEY}")"; then
     err "could not read old app version"
     exit 10
   fi
-  if ! [[ "${old_version}" =~ ${BUILD_RE} ]]; then
+  if ! [[ "${old_app_version}" =~ ${BUILD_RE} ]]; then
     err "old app version not of expected format"
     exit 10
   fi
-  local old_version_build="${BASH_REMATCH[1]}"
+  local old_app_version_build="${BASH_REMATCH[1]}"
+
+  local old_ks_plist="${old_app_plist}"
+  local old_ks_version
+  if ! old_ks_version="$(defaults read "${old_ks_plist}" \
+                                       "${KS_VERSION_KEY}")"; then
+    err "could not read old Keystone version"
+    exit 10
+  fi
 
   local new_app_path="${new_fs}/${APP_NAME}"
-  local new_app_info_plist="${new_app_path}/${APP_INFO_PLIST}"
-  local new_version
-  if ! new_version="$(defaults read "${new_app_info_plist}" \
+  local new_app_plist="${new_app_path}/${APP_PLIST}"
+  local new_app_version
+  if ! new_app_version="$(defaults read "${new_app_plist}" \
                       "${APP_VERSION_KEY}")"; then
     err "could not read new app version"
     exit 11
   fi
-  if ! [[ "${new_version}" =~ ${BUILD_RE} ]]; then
+  if ! [[ "${new_app_version}" =~ ${BUILD_RE} ]]; then
     err "new app version not of expected format"
     exit 11
   fi
-  local new_version_build="${BASH_REMATCH[1]}"
+  local new_app_version_build="${BASH_REMATCH[1]}"
 
-  local product_id
-  if ! product_id="$(defaults read "${new_app_info_plist}" \
-                                   "${KS_PRODUCT_KEY}")"; then
-    err "could not read product ID"
+  local new_ks_plist="${new_app_plist}"
+  local new_ks_version
+  if ! new_ks_version="$(defaults read "${new_ks_plist}" \
+                                       "${KS_VERSION_KEY}")"; then
+    err "could not read new Keystone version"
+    exit 11
+  fi
+
+  local new_ks_product
+  if ! new_ks_product="$(defaults read "${new_app_plist}" \
+                                       "${KS_PRODUCT_KEY}")"; then
+    err "could not read new Keystone product ID"
+    exit 11
+  fi
+
+  if [[ ${old_app_version_build} -lt ${MIN_BUILD} ]] ||
+     [[ ${new_app_version_build} -lt ${MIN_BUILD} ]]; then
+    err "old and new versions must be build ${MIN_BUILD} or newer"
     exit 12
   fi
 
-  if [[ ${old_version_build} -lt ${MIN_BUILD} ]] ||
-     [[ ${new_version_build} -lt ${MIN_BUILD} ]]; then
-    err "old and new versions must be build ${MIN_BUILD} or newer"
-    exit 13
-  fi
-
   local new_ks_channel
-  new_ks_channel="$(defaults read "${new_app_info_plist}" \
+  new_ks_channel="$(defaults read "${new_app_plist}" \
                     "${KS_CHANNEL_KEY}" 2> /dev/null || true)"
 
   local name_extra
@@ -204,53 +220,56 @@ make_patch_fs() {
     name_extra=" ${new_ks_channel}"
   fi
 
-  local old_versioned_dir="${old_app_path}/${VERSIONS_DIR}/${old_version}"
-  local new_versioned_dir="${new_app_path}/${VERSIONS_DIR}/${new_version}"
+  local old_versioned_dir="${old_app_path}/${VERSIONS_DIR}/${old_app_version}"
+  local new_versioned_dir="${new_app_path}/${VERSIONS_DIR}/${new_app_version}"
 
   if ! cp -p "${SCRIPT_DIR}/keystone_install.sh" \
              "${patch_fs}/.keystone_install"; then
     err "could not copy .keystone_install"
-    exit 14
+    exit 13
   fi
 
   local patch_dotpatch_dir="${patch_fs}/.patch"
   if ! mkdir "${patch_dotpatch_dir}"; then
     err "could not mkdir patch_dotpatch_dir"
-    exit 14
+    exit 13
   fi
 
   if ! cp -p "${SCRIPT_DIR}/dirpatcher.sh" \
              "${SCRIPT_DIR}/goobspatch" \
              "${patch_dotpatch_dir}/"; then
     err "could not copy dirpatcher.sh and goobspatch"
-    exit 14
+    exit 13
   fi
 
-  if ! echo "${product_id}" > "${patch_dotpatch_dir}/product_id" ||
-     ! echo "${old_version}" > "${patch_dotpatch_dir}/old_version" ||
-     ! echo "${new_version}" > "${patch_dotpatch_dir}/new_version"; then
+  if ! echo "${new_ks_product}" > "${patch_dotpatch_dir}/ks_product" ||
+     ! echo "${old_app_version}" > "${patch_dotpatch_dir}/old_app_version" ||
+     ! echo "${new_app_version}" > "${patch_dotpatch_dir}/new_app_version" ||
+     ! echo "${old_ks_version}" > "${patch_dotpatch_dir}/old_ks_version" ||
+     ! echo "${new_ks_version}" > "${patch_dotpatch_dir}/new_ks_version"; then
     err "could not write patch product or version information"
-    exit 14
+    exit 13
   fi
   local patch_ks_channel_file="${patch_dotpatch_dir}/ks_channel"
   if [[ -n "${new_ks_channel}" ]]; then
     if ! echo "${new_ks_channel}" > "${patch_ks_channel_file}"; then
       err "could not write Keystone channel information"
-      exit 14
+      exit 13
     fi
   else
     if ! touch "${patch_ks_channel_file}"; then
       err "could not write empty Keystone channel information"
-      exit 14
+      exit 13
     fi
   fi
 
   # The only visible contents of the disk image will be a README file that
   # explains the image's purpose.
+  local new_app_version_extra="${new_app_version}${name_extra}"
   cat > "${patch_fs}/README.txt" << __EOF__ || \
-      (err "could not write README.txt" && exit 14)
+      (err "could not write README.txt" && exit 13)
 This disk image contains a differential updater that can update
-${PRODUCT_NAME} from version ${old_version} to ${new_version}${name_extra}.
+${PRODUCT_NAME} from version ${old_app_version} to ${new_app_version_extra}.
 
 This image is part of the auto-update system and is not independently
 useful.
@@ -259,7 +278,7 @@ To install ${PRODUCT_NAME}, please visit <${PRODUCT_URL}>.
 __EOF__
 
   local patch_versioned_dir="\
-${patch_dotpatch_dir}/version_${old_version}_${new_version}.dirpatch"
+${patch_dotpatch_dir}/version_${old_app_version}_${new_app_version}.dirpatch"
 
   if ! "${DIRDIFFER}" "${old_versioned_dir}" \
                       "${new_versioned_dir}" \
@@ -292,7 +311,7 @@ ${patch_dotpatch_dir}/version_${old_version}_${new_version}.dirpatch"
 
   unset DIRDIFFER_EXCLUDE DIRDIFFER_NO_DIFF
 
-  echo "${PRODUCT_NAME} ${old_version}-${new_version}${name_extra} Update"
+  echo "${PRODUCT_NAME} ${old_app_version}-${new_app_version_extra} Update"
 }
 
 # package_patch_dmg creates a disk image at patch_dmg with the contents of
