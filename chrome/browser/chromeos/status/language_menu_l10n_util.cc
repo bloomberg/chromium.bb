@@ -154,8 +154,6 @@ namespace chromeos {
 
 std::wstring LanguageMenuL10nUtil::GetString(
     const std::string& english_string) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI))
-      << "You should not call this function from non-UI threads";
   string16 localized_string;
   if (GetLocalizedString(english_string, &localized_string)) {
     return UTF16ToWide(localized_string);
@@ -165,8 +163,6 @@ std::wstring LanguageMenuL10nUtil::GetString(
 
 std::string LanguageMenuL10nUtil::GetStringUTF8(
     const std::string& english_string) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI))
-      << "You should not call this function from non-UI threads";
   string16 localized_string;
   if (GetLocalizedString(english_string, &localized_string)) {
     return UTF16ToUTF8(localized_string);
@@ -176,8 +172,6 @@ std::string LanguageMenuL10nUtil::GetStringUTF8(
 
 string16 LanguageMenuL10nUtil::GetStringUTF16(
     const std::string& english_string) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI))
-      << "You should not call this function from non-UI threads";
   string16 localized_string;
   if (GetLocalizedString(english_string, &localized_string)) {
     return localized_string;
@@ -187,8 +181,6 @@ string16 LanguageMenuL10nUtil::GetStringUTF16(
 
 bool LanguageMenuL10nUtil::StringIsSupported(
     const std::string& english_string) {
-  // Do not check the current thread since the function is supposed to be called
-  // from unit tests.
   string16 localized_string;
   return GetLocalizedString(english_string, &localized_string);
 }

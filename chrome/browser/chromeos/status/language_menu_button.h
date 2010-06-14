@@ -59,6 +59,16 @@ class LanguageMenuButton : public views::MenuButton,
                        const NotificationSource& source,
                        const NotificationDetails& details) {}
 
+  // Converts an InputMethodDescriptor object into human readable string.
+  // Returns a text for the indicator on top right corner of the Chrome window.
+  static std::wstring GetTextForIndicator(
+      const InputMethodDescriptor& input_method);
+
+  // Converts an InputMethodDescriptor object into human readable string.
+  // Returns a string for the drop-down menu and the tooltip for the indicator.
+  static std::wstring GetTextForMenu(
+      const InputMethodDescriptor& input_method, bool add_method_name);
+
  protected:
   // views::View implementation.
   virtual void LocaleChanged();
@@ -68,10 +78,10 @@ class LanguageMenuButton : public views::MenuButton,
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // Updates the status area with |name| and tooltip with |tooltip|.
-  void UpdateIcon(const std::wstring& name, const std::wstring& tooltip);
+  void UpdateIndicator(const std::wstring& name, const std::wstring& tooltip);
 
   // Updates the status area from the given input method.
-  void UpdateIconFromInputMethod(
+  void UpdateIndicatorFromInputMethod(
       const InputMethodDescriptor& input_method);
 
   // Rebuilds |model_|. This function should be called whenever

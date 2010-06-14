@@ -611,6 +611,7 @@
         'browser/chromeos/login/mock_auth_response_handler.cc',
         'browser/chromeos/options/language_config_view_test.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
+        'browser/chromeos/status/language_menu_button_unittest.cc',
         'browser/chromeos/status/language_menu_l10n_util_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/content_setting_bubble_model_unittest.cc',

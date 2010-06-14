@@ -16,7 +16,8 @@ class LanguageMenuL10nUtil {
  public:
   // Converts a string sent from IBus IME engines, which is written in English,
   // into Chrome's string ID, then pulls internationalized resource string from
-  // the resource bundle and returns it.
+  // the resource bundle and returns it. These functions are not thread-safe.
+  // Non-UI threads are not allowed to call them.
   static std::wstring GetString(const std::string& english_string);
   static std::string GetStringUTF8(const std::string& english_string);
   static string16 GetStringUTF16(const std::string& english_string);

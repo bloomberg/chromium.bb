@@ -68,54 +68,35 @@ enum {
 // input method list to avoid conflict.
 const int kRadioGroupLanguage = 1 << 16;
 const int kRadioGroupNone = -1;
-const size_t kMaxLanguageNameLen = 2;
 const wchar_t kSpacer[] = L"MMM";
+
+// A mapping from an input method id to a text for the language indicator. The
+// mapping is necessary since some input methods belong to the same language.
+// For example, both "xkb:us::eng" and "xkb:us:dvorak:eng" are for US English.
+const struct {
+  const char* input_method_id;
+  const char* indicator_text;
+} kMappingFromIdToIndicatorText[] = {
+  // To distinguish from "xkb:us::eng"
+  { "xkb:us:dvorak:eng", "DV" },
+  // To distinguish from "xkb:jp::jpn"
+  { "mozc", "\xe3\x81\x82" },  // Japanese Hiragana letter A in UTF-8.
+  { "mozc-jp", "\xe3\x81\x82" },
+
+  // Handle "m17n:t" input methods here since ICU is not able to handle the
+  // language code "t". Note: most users use either latn-pre or latn-post
+  // methods, not both. The same is true for mozc/mozc-jp.
+  { "m17n:t:latn-pre", "LAT" },
+  { "m17n:t:latn-post", "LAT" },
+};
+const size_t kMappingFromIdToIndicatorTextLen =
+    ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);
 
 // Returns the language name for the given |language_code|.
 std::wstring GetLanguageName(const std::string& language_code) {
   const string16 language_name = l10n_util::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
   return UTF16ToWide(language_name);
-}
-
-// Converts chromeos::InputMethodDescriptor object into human readable string.
-// Returns a string for the drop-down menu if |for_menu| is true. Otherwise,
-// returns a string for the status area.
-std::wstring FormatInputLanguage(
-    const chromeos::InputMethodDescriptor& input_method, bool for_menu,
-    bool add_method_name) {
-  const std::string language_code
-      = chromeos::LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
-
-  std::wstring formatted;
-  if (language_code == "t") {
-    // "t" is used by input methods that do not associate with a
-    // particular language. Returns the display name as-is.
-    formatted = UTF8ToWide(input_method.display_name);
-  }
-
-  if (for_menu) {
-    // For the drop-down menu, we'll show language names like
-    // "Chinese (Simplified)" and "Japanese", instead of input method names
-    // like "Pinyin" and "Anthy".
-    if (formatted.empty()) {
-      formatted = GetLanguageName(language_code);
-      if (add_method_name) {
-        formatted += L" - ";
-        formatted += chromeos::LanguageMenuL10nUtil::GetString(
-            input_method.display_name);
-      }
-    }
-  } else {
-    // For the status area, we use two-letter, upper-case language code like
-    // "EN" and "JA".
-    if (formatted.empty()) {
-      formatted = UTF8ToWide(language_code);
-    }
-    formatted = StringToUpperASCII(formatted).substr(0, kMaxLanguageNameLen);
-  }
-  DCHECK(!formatted.empty());
-  return formatted;
 }
 
 // Returns PrefService object associated with |host|. Returns NULL if we are NOT
@@ -155,13 +136,13 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // Update the model
   RebuildModel();
   // Grab the real estate.
-  UpdateIcon(kSpacer, L"" /* no tooltip */);
+  UpdateIndicator(kSpacer, L"" /* no tooltip */);
 
   // Draw the default indicator "EN". The default indicator "EN" is used when
   // |pref_service| is not available (for example, unit tests) or |pref_service|
   // is available, but Chrome preferences are not available (for example,
   // initial OS boot).
-  UpdateIcon(L"EN", L"");
+  UpdateIndicator(L"EN", L"");
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
   // InputMethodChanged() will be called soon and the indicator will be updated.
@@ -321,8 +302,8 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
         LanguageLibrary::GetLanguageCodeFromDescriptor(
             input_method_descriptors_->at(index));
     bool need_method_name = (need_method_name_.count(language_code) > 0);
-    name = FormatInputLanguage(input_method_descriptors_->at(index), true,
-                               need_method_name);
+    name = GetTextForMenu(input_method_descriptors_->at(index),
+                          need_method_name);
   } else if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
         = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
@@ -406,8 +387,7 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
       obj->previous_input_method();
   const InputMethodDescriptor& current_input_method =
       obj->current_input_method();
-  UpdateIconFromInputMethod(current_input_method);
-
+  UpdateIndicatorFromInputMethod(current_input_method);
   // Update Chrome prefs as well.
   if (GetPrefService(host_)) {
     // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
@@ -418,8 +398,8 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
 
 void LanguageMenuButton::ActiveInputMethodsChanged(LanguageLibrary* obj) {
   // Update the icon if active input methods are changed. See also
-  // comments in UpdateIcon()
-  UpdateIconFromInputMethod(obj->current_input_method());
+  // comments in UpdateIndicator()
+  UpdateIndicatorFromInputMethod(obj->current_input_method());
 }
 
 void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
@@ -431,12 +411,12 @@ void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 void LanguageMenuButton::LocaleChanged() {
   const InputMethodDescriptor& input_method =
       CrosLibrary::Get()->GetLanguageLibrary()->current_input_method();
-  UpdateIconFromInputMethod(input_method);
+  UpdateIndicatorFromInputMethod(input_method);
   Layout();
   SchedulePaint();
 }
 
-void LanguageMenuButton::UpdateIcon(
+void LanguageMenuButton::UpdateIndicator(
     const std::wstring& name, const std::wstring& tooltip) {
   if (!tooltip.empty()) {
     SetTooltipText(tooltip);
@@ -460,11 +440,12 @@ void LanguageMenuButton::UpdateIcon(
   SchedulePaint();
 }
 
-void LanguageMenuButton::UpdateIconFromInputMethod(
+void LanguageMenuButton::UpdateIndicatorFromInputMethod(
     const InputMethodDescriptor& input_method) {
-  const std::wstring name = FormatInputLanguage(input_method, false, false);
-  const std::wstring tooltip = FormatInputLanguage(input_method, true, true);
-  UpdateIcon(name, tooltip);
+  const std::wstring name = GetTextForIndicator(input_method);
+  const std::wstring tooltip =
+      GetTextForMenu(input_method, true /* add_method_name */);
+  UpdateIndicator(name, tooltip);
 }
 
 void LanguageMenuButton::RebuildModel() {
@@ -561,6 +542,59 @@ bool LanguageMenuButton::IndexPointsToConfigureImeMenuItem(int index) const {
 
   return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
           (model_->GetCommandIdAt(index) == COMMAND_ID_CUSTOMIZE_LANGUAGE));
+}
+
+std::wstring LanguageMenuButton::GetTextForIndicator(
+    const InputMethodDescriptor& input_method) {
+  // For the status area, we use two-letter, upper-case language code like
+  // "EN" and "JA".
+  std::wstring text;
+
+  // Check special cases first.
+  for (size_t i = 0; i < kMappingFromIdToIndicatorTextLen; ++i) {
+    if (kMappingFromIdToIndicatorText[i].input_method_id == input_method.id) {
+      text = UTF8ToWide(kMappingFromIdToIndicatorText[i].indicator_text);
+      break;
+    }
+  }
+  // TODO(yusukes): Some languages have two or more input methods. For example,
+  // Thai has 3, Traditional Chinese has many. If these input methods could be
+  // activated at the same time, we should do either of the following:
+  //   (1) Add mappings to |kMappingFromIdToIndicatorText|
+  //   (2) Add suffix (1, 2, ...) to |text| when ambiguous.
+
+  if (text.empty()) {
+    const size_t kMaxLanguageNameLen = 2;
+    const std::wstring language_code = UTF8ToWide(
+        LanguageLibrary::GetLanguageCodeFromDescriptor(input_method));
+    text = StringToUpperASCII(language_code).substr(0, kMaxLanguageNameLen);
+  }
+  DCHECK(!text.empty());
+  return text;
+}
+
+std::wstring LanguageMenuButton::GetTextForMenu(
+    const InputMethodDescriptor& input_method, bool add_method_name) {
+  const std::string language_code
+      = LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
+
+  std::wstring text;
+  if (language_code == "t") {
+    text = UTF8ToWide(input_method.display_name);
+  }
+
+  // For the drop-down menu and tooltip, we'll show language names like
+  // "Chinese (Simplified)" and "Japanese", instead of input method names
+  // like "Pinyin" and "Mozc".
+  if (text.empty()) {
+    text = GetLanguageName(language_code);
+    if (add_method_name) {
+      text += L" - ";
+      text += LanguageMenuL10nUtil::GetString(input_method.display_name);
+    }
+  }
+  DCHECK(!text.empty());
+  return text;
 }
 
 }  // namespace chromeos
