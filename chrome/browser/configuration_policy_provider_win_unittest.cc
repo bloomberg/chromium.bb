@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/configuration_policy_provider_win.h"
@@ -189,9 +190,7 @@ void ConfigurationPolicyProviderWinTest::TestBooleanPolicyDefault(
   provider.Provide(&store);
 
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(type);
-  EXPECT_TRUE(i == map.end());
+  EXPECT_FALSE(ContainsKey(map, type));
 }
 
 void ConfigurationPolicyProviderWinTest::TestBooleanPolicyHKLM(
@@ -203,7 +202,7 @@ void ConfigurationPolicyProviderWinTest::TestBooleanPolicyHKLM(
 
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
   MockConfigurationPolicyStore::PolicyMap::const_iterator i = map.find(type);
-  EXPECT_TRUE(i != map.end());
+  ASSERT_TRUE(i != map.end());
   bool value = false;
   i->second->GetAsBoolean(&value);
   EXPECT_EQ(true, value);
@@ -222,9 +221,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyDefault) {
   provider.Provide(&store);
 
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyHomePage);
-  EXPECT_TRUE(i == map.end());
+  EXPECT_FALSE(ContainsKey(map, ConfigurationPolicyStore::kPolicyHomePage));
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKCU) {
@@ -238,7 +235,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKCU) {
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
   MockConfigurationPolicyStore::PolicyMap::const_iterator i =
       map.find(ConfigurationPolicyStore::kPolicyHomePage);
-  EXPECT_TRUE(i != map.end());
+  ASSERT_TRUE(i != map.end());
   string16 value;
   i->second->GetAsString(&value);
   EXPECT_EQ(L"http://chromium.org", value);
@@ -252,9 +249,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKCUWrongType) {
   provider.Provide(&store);
 
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyHomePage);
-  EXPECT_TRUE(i == map.end());
+  EXPECT_FALSE(ContainsKey(map, ConfigurationPolicyStore::kPolicyHomePage));
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKLM) {
@@ -268,7 +263,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKLM) {
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
   MockConfigurationPolicyStore::PolicyMap::const_iterator i =
       map.find(ConfigurationPolicyStore::kPolicyHomePage);
-  EXPECT_TRUE(i != map.end());
+  ASSERT_TRUE(i != map.end());
   string16 value;
   i->second->GetAsString(&value);
   EXPECT_EQ(L"http://chromium.org", value);
@@ -287,7 +282,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestHomePagePolicyHKLMOverHKCU) {
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
   MockConfigurationPolicyStore::PolicyMap::const_iterator i =
       map.find(ConfigurationPolicyStore::kPolicyHomePage);
-  EXPECT_TRUE(i != map.end());
+  ASSERT_TRUE(i != map.end());
   string16 value;
   i->second->GetAsString(&value);
   EXPECT_EQ(L"http://crbug.com", value);
@@ -332,9 +327,8 @@ TEST_F(ConfigurationPolicyProviderWinTest,
   provider.Provide(&store);
 
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyCookiesMode);
-  EXPECT_TRUE(i == map.end());
+  EXPECT_FALSE(ContainsKey(map,
+                           ConfigurationPolicyStore::kPolicyCookiesMode));
 }
 
 TEST_F(ConfigurationPolicyProviderWinTest,
@@ -348,7 +342,7 @@ TEST_F(ConfigurationPolicyProviderWinTest,
   const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
   MockConfigurationPolicyStore::PolicyMap::const_iterator i =
       map.find(ConfigurationPolicyStore::kPolicyCookiesMode);
-  EXPECT_TRUE(i != map.end());
+  ASSERT_TRUE(i != map.end());
   int value = 0;
   i->second->GetAsInteger(&value);
   EXPECT_EQ(2, value);
