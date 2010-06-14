@@ -77,8 +77,13 @@ readonly SCRIPT_DIR
 readonly DIRDIFFER="${SCRIPT_DIR}/dirdiffer.sh"
 readonly PKG_DMG="${SCRIPT_DIR}/pkg-dmg"
 
-declare -a g_cleanup g_cleanup_mount_points
+err() {
+  local error="${1}"
 
+  echo "${ME}: ${error}" >& 2
+}
+
+declare -a g_cleanup g_cleanup_mount_points
 cleanup() {
   local status=${?}
 
@@ -101,12 +106,6 @@ cleanup() {
   fi
 
   exit ${status}
-}
-
-err() {
-  local error="${1}"
-
-  echo "${ME}: ${error}" >& 2
 }
 
 mount_dmg() {
@@ -147,7 +146,7 @@ make_patch_fs() {
   readonly VERSIONS_DIR="Contents/Versions"
   readonly PRODUCT_URL="http://www.google.com/chrome/"
   readonly BUILD_RE="^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+\$"
-  readonly MIN_BUILD=434
+  readonly MIN_BUILD=375
 
   local old_app_path="${old_fs}/${APP_NAME}"
   local old_app_info_plist="${old_app_path}/${APP_INFO_PLIST}"
@@ -322,17 +321,17 @@ make_patch_dmg() {
 
   local temp_dir
   temp_dir="$(mktemp -d -t "${ME}")"
-  g_cleanup[${#g_cleanup[@]}]="${temp_dir}"
+  g_cleanup+=("${temp_dir}")
 
   local old_mount_point="${temp_dir}/old"
-  g_cleanup_mount_points[${#g_cleanup_mount_points[@]}]="${old_mount_point}"
+  g_cleanup_mount_points+=("${old_mount_point}")
   if ! mount_dmg "${old_dmg}" "${old_mount_point}"; then
     err "could not mount old_dmg ${old_dmg}"
     exit 6
   fi
 
   local new_mount_point="${temp_dir}/new"
-  g_cleanup_mount_points[${#g_cleanup_mount_points[@]}]="${new_mount_point}"
+  g_cleanup_mount_points+=("${new_mount_point}")
   if ! mount_dmg "${new_dmg}" "${new_mount_point}"; then
     err "could not mount new_dmg ${new_dmg}"
     exit 7

@@ -154,8 +154,13 @@ readonly PLAIN_SUFFIX='$raw'
 declare DIRDIFFER_EXCLUDE
 declare DIRDIFFER_NO_DIFF
 
-declare -a g_cleanup g_verify_exclude
+err() {
+  local error="${1}"
 
+  echo "${ME}: ${error}" >& 2
+}
+
+declare -a g_cleanup g_verify_exclude
 cleanup() {
   local status=${?}
 
@@ -173,12 +178,6 @@ cleanup() {
   exit ${status}
 }
 
-err() {
-  local error="${1}"
-
-  echo "${ME}: ${error}" >& 2
-}
-
 copy_mode_and_time() {
   local new_file="${1}"
   local patch_file="${2}"
@@ -189,7 +188,7 @@ copy_mode_and_time() {
     exit 16
   fi
 
-  if ! [[ -h "${patch_file}" ]]; then
+  if ! [[ -L "${patch_file}" ]]; then
     # Symbolic link modification times can't be copied because there's no
     # shell tool that provides direct access to lutimes. Instead, the symbolic
     # link was created with rsync, which already copied the timestamp with
@@ -261,7 +260,7 @@ make_patch_file() {
     keep_size="${gz_size}"
   fi
 
-  if [[ -f "${old_file}" ]] && ! [[ -h "${old_file}" ]] &&
+  if [[ -f "${old_file}" ]] && ! [[ -L "${old_file}" ]] &&
      ! [[ "${new_file}" =~ ${DIRDIFFER_NO_DIFF} ]]; then
     local gbs_file="${patch_file}${GBS_SUFFIX}"
     if [[ -e "${gbs_file}" ]]; then
@@ -320,7 +319,7 @@ make_patch_dir() {
     local patch_file="${patch_dir}/${file}"
 
     if [[ "${new_file}" =~ ${DIRDIFFER_EXCLUDE} ]]; then
-      g_verify_exclude[${#g_verify_exclude[@]}]="${new_file}"
+      g_verify_exclude+=("${new_file}")
       continue
     fi
 
@@ -329,7 +328,7 @@ make_patch_dir() {
       exit 8
     fi
 
-    if [[ -h "${new_file}" ]]; then
+    if [[ -L "${new_file}" ]]; then
       make_patch_symlink "${new_file}" "${patch_file}"
     elif [[ -d "${new_file}" ]]; then
       make_patch_dir "${old_file}" "${new_file}" "${patch_file}"
@@ -351,7 +350,7 @@ verify_patch_dir() {
 
   local verify_temp_dir verify_dir
   verify_temp_dir="$(mktemp -d -t "${ME}")"
-  g_cleanup[${#g_cleanup[@]}]="${verify_temp_dir}"
+  g_cleanup+=("${verify_temp_dir}")
   verify_dir="${verify_temp_dir}/patched"
 
   if ! "${DIRPATCHER}" "${old_dir}" "${patch_dir}" "${verify_dir}"; then
@@ -370,8 +369,7 @@ verify_patch_dir() {
       # ${g_verify_exclude[@]} contains paths in ${new_dir}. Strip off
       # ${new_dir} from the beginning of each, but leave a leading "/" so that
       # rsync treats them as being at the root of the "transfer."
-      rsync_command[${#rsync_command[@]}]="--exclude"
-      rsync_command[${#rsync_command[@]}]="${exclude:${#new_dir}}"
+      rsync_command+=("--exclude" "${exclude:${#new_dir}}")
     done
   fi
 

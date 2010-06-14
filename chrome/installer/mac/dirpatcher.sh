@@ -96,8 +96,13 @@ readonly BZ2_SUFFIX='$bz2'
 readonly GZ_SUFFIX='$gz'
 readonly PLAIN_SUFFIX='$raw'
 
-declare -a g_cleanup
+err() {
+  local error="${1}"
 
+  echo "${ME}: ${error}" >& 2
+}
+
+declare -a g_cleanup
 cleanup() {
   local status=${?}
 
@@ -115,12 +120,6 @@ cleanup() {
   exit ${status}
 }
 
-err() {
-  local error="${1}"
-
-  echo "${ME}: ${error}" >& 2
-}
-
 copy_mode_and_time() {
   local patch_file="${1}"
   local new_file="${2}"
@@ -131,7 +130,7 @@ copy_mode_and_time() {
     exit 16
   fi
 
-  if ! [[ -h "${new_file}" ]]; then
+  if ! [[ -L "${new_file}" ]]; then
     # Symbolic link modification times can't be copied because there's no
     # shell tool that provides direct access to lutimes. Instead, the symbolic
     # link was created with rsync, which already copied the timestamp with
@@ -148,7 +147,7 @@ apply_patch() {
   local new_file="${3}"
   local patcher="${4}"
 
-  if [[ -h "${old_file}" ]] || ! [[ -f "${old_file}" ]]; then
+  if [[ -L "${old_file}" ]] || ! [[ -f "${old_file}" ]]; then
     err "can't patch nonexistent or irregular file ${old_file}"
     exit 12
   fi
@@ -260,7 +259,7 @@ patch_dir() {
       exit 8
     fi
 
-    if [[ -h "${patch_file}" ]]; then
+    if [[ -L "${patch_file}" ]]; then
       patch_symlink "${patch_file}" "${new_file}"
     elif [[ -d "${patch_file}" ]]; then
       patch_dir "${old_file}" "${patch_file}" "${new_file}"
@@ -345,7 +344,7 @@ main() {
     exit 6
   fi
 
-  g_cleanup[${#g_cleanup[@]}]="${new_dir}"
+  g_cleanup+=("${new_dir}")
 
   patch_dir "${old_dir}" "${patch_dir}" "${new_dir}"
 
