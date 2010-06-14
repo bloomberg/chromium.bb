@@ -155,10 +155,38 @@ class GClientKeywords(object):
       raise gclient_utils.Error("Var is not defined: %s" % var_name)
 
 
-class GClient(GClientKeywords):
-  """Object that represent a gclient checkout."""
+class Dependency(GClientKeywords):
+  """Object that represents a dependency checkout."""
   DEPS_FILE = 'DEPS'
+  def __init__(self, parent, name, url, safesync_url=None, custom_deps=None,
+      custom_vars=None, deps_file=None):
+    GClientKeywords.__init__(self)
+    self.parent = parent
+    self.name = name
+    self.url = url
+    # These 2 are only set in .gclient and not in DEPS files.
+    self.safesync_url = safesync_url
+    self.custom_vars = custom_vars or {}
+    self.custom_deps = custom_deps or {}
+    self.dependencies = []
+    self.deps_file = deps_file or self.DEPS_FILE
+    self._deps_hooks = []
 
+    # Sanity checks
+    if not self.name and self.parent:
+      raise gclient_utils.Error('Dependency without name')
+    if not isinstance(self.url,
+        (basestring, self.FromImpl, self.FileImpl, None.__class__)):
+      raise gclient_utils.Error('dependency url must be either a string, None, '
+                                'File() or From() instead of %s' %
+                                self.url.__class__.__name__)
+    if '/' in self.deps_file or '\\' in self.deps_file:
+      raise gclient_utils.Error('deps_file name must not be a path, just a '
+                                'filename. %s' % self.deps_file)
+
+
+class GClient(Dependency):
+  """Main gclient checkout root where .gclient resides."""
   SUPPORTED_COMMANDS = [
     'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
     'runhooks'
@@ -204,17 +232,16 @@ solutions = [
 """)
 
   def __init__(self, root_dir, options):
+    Dependency.__init__(self, None, None, None)
     self._root_dir = root_dir
     self._options = options
     self.config_content = None
-    self._config_dict = {}
-    self._deps_hooks = []
 
   def SetConfig(self, content):
-    self._config_dict = {}
+    config_dict = {}
     self.config_content = content
     try:
-      exec(content, self._config_dict)
+      exec(content, config_dict)
     except SyntaxError, e:
       try:
         # Try to construct a human readable error message
@@ -228,6 +255,14 @@ solutions = [
       else:
         # Raise a new exception with the human readable message:
         raise gclient_utils.Error('\n'.join(error_message))
+    for s in config_dict.get('solutions', []):
+      self.dependencies.append(Dependency(
+          self, s['name'], s['url'],
+          s.get('safesync_url', None),
+          s.get('custom_deps', {}),
+          s.get('custom_vars', {})))
+    # .gclient can have hooks.
+    self._deps_hooks = config_dict.get('hooks', [])
 
   def SaveConfig(self):
     gclient_utils.FileWrite(os.path.join(self.root_dir(),
@@ -238,9 +273,6 @@ solutions = [
     client_source = gclient_utils.FileRead(
         os.path.join(self.root_dir(), self._options.config_filename))
     self.SetConfig(client_source)
-
-  def GetVar(self, key, default=None):
-    return self._config_dict.get(key, default)
 
   @staticmethod
   def LoadCurrentConfig(options, from_dir=None):
@@ -355,7 +387,12 @@ solutions = [
           deps.update(os_deps)
 
     if 'hooks' in local_scope and parse_hooks:
-      self._deps_hooks.extend(local_scope['hooks'])
+      # TODO(maruel): Temporary Hack. Since this function is misplaced, find the
+      # right 'self' to add the hooks.
+      for d in self.dependencies:
+        if d.name == solution_name:
+          d._deps_hooks.extend(local_scope['hooks'])
+          break
 
     # If use_relative_paths is set in the DEPS file, regenerate
     # the dictionary using paths relative to the directory containing
@@ -388,25 +425,23 @@ solutions = [
       Error: If a dependency conflicts with another dependency or of a solution.
     """
     deps = {}
-    for solution in self.GetVar("solutions"):
-      custom_vars = solution.get("custom_vars", {})
+    for solution in self.dependencies:
       solution_deps = self._ParseSolutionDeps(
-                              solution["name"],
-                              solution_deps_content[solution["name"]],
-                              custom_vars,
+                              solution.name,
+                              solution_deps_content[solution.name],
+                              solution.custom_vars,
                               True)
 
       # If a line is in custom_deps, but not in the solution, we want to append
       # this line to the solution.
-      if "custom_deps" in solution:
-        for d in solution["custom_deps"]:
-          if d not in solution_deps:
-            solution_deps[d] = solution["custom_deps"][d]
+      for d in solution.custom_deps:
+        if d not in solution_deps:
+          solution_deps[d] = solution.custom_deps[d]
 
       for d in solution_deps:
-        if "custom_deps" in solution and d in solution["custom_deps"]:
+        if d in solution.custom_deps:
           # Dependency is overriden.
-          url = solution["custom_deps"][d]
+          url = solution.custom_deps[d]
           if url is None:
             continue
         else:
@@ -434,8 +469,8 @@ solutions = [
                 raise gclient_utils.Error(
                     "relative DEPS entry \"%s\" must begin with a slash" % d)
               # Create a scm just to query the full url.
-              scm = gclient_scm.CreateSCM(solution["url"], self.root_dir(),
-                                           None)
+              scm = gclient_scm.CreateSCM(solution.url, self.root_dir(),
+                                          None)
               url = scm.FullUrlForRelativeUrl(url)
         if d in deps and deps[d] != url:
           raise gclient_utils.Error(
@@ -480,9 +515,10 @@ solutions = [
       return
 
     # Get any hooks from the .gclient file.
-    hooks = self.GetVar("hooks", [])
+    hooks = self._deps_hooks[:]
     # Add any hooks found in DEPS files.
-    hooks.extend(self._deps_hooks)
+    for d in self.dependencies:
+      hooks.extend(d._deps_hooks)
 
     # If "--force" was specified, run all hooks regardless of what files have
     # changed.  If the user is using git, then we don't know what files have
@@ -500,29 +536,29 @@ solutions = [
       if matching_file_list:
         self._RunHookAction(hook_dict, matching_file_list)
 
-  def _EnforceRevisions(self, solutions):
+  def _EnforceRevisions(self):
     """Checks for revision overrides."""
     revision_overrides = {}
     if self._options.head:
       return revision_overrides
-    for s in solutions:
-      if not s.get('safesync_url', None):
+    for s in self.dependencies:
+      if not s.safesync_url:
         continue
-      handle = urllib.urlopen(s['safesync_url'])
+      handle = urllib.urlopen(s.safesync_url)
       rev = handle.read().strip()
       handle.close()
       if len(rev):
-        self._options.revisions.append('%s@%s' % (s['name'], rev))
+        self._options.revisions.append('%s@%s' % (s.name, rev))
     if not self._options.revisions:
       return revision_overrides
     # --revision will take over safesync_url.
-    solutions_names = [s['name'] for s in solutions]
+    solutions_names = [s.name for s in self.dependencies]
     index = 0
     for revision in self._options.revisions:
       if not '@' in revision:
         # Support for --revision 123
         revision = '%s@%s' % (solutions_names[index], revision)
-      sol, rev = revision.split("@", 1)
+      sol, rev = revision.split('@', 1)
       if not sol in solutions_names:
         #raise gclient_utils.Error('%s is not a valid solution.' % sol)
         print >> sys.stderr, ('Please fix your script, having invalid '
@@ -547,10 +583,9 @@ solutions = [
     if not command in self.SUPPORTED_COMMANDS:
       raise gclient_utils.Error("'%s' is an unsupported command" % command)
 
-    solutions = self.GetVar("solutions")
-    if not solutions:
+    if not self.dependencies:
       raise gclient_utils.Error("No solution specified")
-    revision_overrides = self._EnforceRevisions(solutions)
+    revision_overrides = self._EnforceRevisions()
 
     # When running runhooks --force, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
@@ -561,15 +596,11 @@ solutions = [
     entries_deps_content = {}
     file_list = []
     # Run on the base solutions first.
-    for solution in solutions:
-      name = solution["name"]
-      deps_file = solution.get("deps_file", self.DEPS_FILE)
-      if '/' in deps_file or '\\' in deps_file:
-        raise gclient_utils.Error('deps_file name must not be a path, just a '
-                                  'filename.')
+    for solution in self.dependencies:
+      name = solution.name
       if name in entries:
         raise gclient_utils.Error("solution %s specified more than once" % name)
-      url = solution["url"]
+      url = solution.url
       entries[name] = url
       if run_scm and url:
         self._options.revision = revision_overrides.get(name)
@@ -579,7 +610,7 @@ solutions = [
         self._options.revision = None
       try:
         deps_content = gclient_utils.FileRead(
-            os.path.join(self.root_dir(), name, deps_file))
+            os.path.join(self.root_dir(), name, solution.deps_file))
       except IOError, e:
         if e.errno != errno.ENOENT:
           raise
@@ -703,8 +734,7 @@ solutions = [
 
     The --snapshot option allows creating a .gclient file to reproduce the tree.
     """
-    solutions = self.GetVar("solutions")
-    if not solutions:
+    if not self.dependencies:
       raise gclient_utils.Error("No solution specified")
 
     # Inner helper to generate base url and rev tuple
@@ -720,15 +750,15 @@ solutions = [
     entries = {}
     entries_deps_content = {}
     # Run on the base solutions first.
-    for solution in solutions:
+    for solution in self.dependencies:
       # Dictionary of { path : SCM url } to describe the gclient checkout
-      name = solution["name"]
+      name = solution.name
       if name in solution_names:
         raise gclient_utils.Error("solution %s specified more than once" % name)
-      (url, rev) = GetURLAndRev(name, solution["url"])
+      (url, rev) = GetURLAndRev(name, solution.url)
       entries[name] = "%s@%s" % (url, rev)
       solution_names[name] = "%s@%s" % (url, rev)
-      deps_file = solution.get("deps_file", self.DEPS_FILE)
+      deps_file = solution.deps_file
       if '/' in deps_file or '\\' in deps_file:
         raise gclient_utils.Error('deps_file name must not be a path, just a '
                                   'filename.')
