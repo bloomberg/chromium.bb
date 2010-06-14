@@ -38,15 +38,13 @@ branch_forwards:
         jmp branch_backwards
         /* The assembler generates a bad jmp if I use ".p2align 5"
            instead of padding manually.  TODO(mseaborn): Investigate. */
-        .fill 31 - 5, 1, 0x90
-        hlt
+        .fill 32 - 5, 1, 0x90
 branch_forwards_end:
 branch_backwards:
         jmp branch_forwards
         /* The assembler generates a bad jmp if I use ".p2align 5"
            instead of padding manually. */
-        .fill 31 - 5, 1, 0x90
-        hlt
+        .fill 32 - 5, 1, 0x90
 branch_backwards_end:
 
 

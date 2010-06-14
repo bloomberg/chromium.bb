@@ -63,26 +63,9 @@ struct NCValTestCase NCValTests[] = {
     "\x00\x00\xf4",
   },
   {
-    "test 2",
-    "like test 1 but no illegal inst",
-    /* sawfailure= */ 1, /* illegalinst= */ 0,
-    /* instructions= */ 9,
-    /* vaddr= */ 0x80000000, /* testsize= */ 26,
-    (uint8_t *)
-    "\x55"                              /* push   %ebp                     */
-    "\x89\xe5"                          /* mov    %esp,%ebp                */
-    "\x83\xec\x08"                      /* sub    $0x8,%esp                */
-    "\xe8\x81\x00\x00\x00"              /* call   0x86                     */
-    "\xe8\xd3\x00\x00\x00"              /* call   0xd8                     */
-    "\xe8\xf3\x04\x00\x00"              /* call   0x4f8                    */
-    "\xc9"                              /* leave                           */
-    "\x90"                              /* nop                             */
-    "\x00\x00\xf4",
-  },
-  {
     "test 4",
-    "a longer simple test with a bad jump target",
-    /* sawfailure= */ 1, /* illegalinst= */ 0,
+    "a big chunk of code whose origin is not clear",
+    /* sawfailure= */ 0, /* illegalinst= */ 0,
     /* instructions= */ 90,
     /* vaddr= */ 0x8054600, /* testsize= */ 336,
     (uint8_t *)
@@ -176,7 +159,7 @@ struct NCValTestCase NCValTests[] = {
     "\x01\xc2"                          /* add    %eax,%edx                */
     "\xb8\x06\x00\x00\x00"              /* mov    $0x6,%eax                */
     "\x29\xd0"                          /* sub    %edx,%eax                */
-    "\x90"                              /* nop                             */
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 5",
@@ -346,16 +329,6 @@ struct NCValTestCase NCValTests[] = {
     "\x66\x0f\xbe\x04\x10"              /* movsbw (%eax,%edx,1),%ax        */
     "\x90\x90\x90\x90\x90\x90\xf4"
   },
-  {
-    "test 13",
-    "test 13: eight byte bts instruction, missing full stop",
-    /* sawfailure= */ 1, /* illegalinst= */ 1,
-    /* instructions= */ 7,
-    /* vaddr= */ 0x80000000, /* testsize= */ 15,
-    (uint8_t *)
-    "\x0f\xab\x14\x85\x40\xfb\x27\x08"  /* bts    %edx,0x827fb40(,%eax,4)  */
-    "\x90\x90\x90\x90\x90\x90\x90",
-  },
   /* ldmxcsr, stmxcsr */
   {
     "test 14",
@@ -426,7 +399,12 @@ struct NCValTestCase NCValTests[] = {
     /* sawfailure= */ 1, /* illegalinst= */ 2,
     /* instructions= */ 4,
     /* vaddr= */ 0x80000000, /* testsize= */ 14,
-    (uint8_t *)"\x68\x89\x80\x04\x08\xd4\xb0\xc3\xbb\x90\x40\xcd\xf4",
+    (uint8_t *)
+    "\x68\x89\x80\x04\x08"              /* push   $0x8048089               */
+    "\xd4\xb0"                          /* aam    $0xffffffb0              */
+    "\xc3"                              /* ret                             */
+    "\xbb\x90\x40\xcd\xf4"              /* mov    $0xf4cd4090,%ebx         */
+    "\xf4"                              /* hlt                             */
   },
   {
     "test 22",
@@ -1144,10 +1122,25 @@ static void TestValidator(struct NCValTestCase *vtest) {
   uint8_t *byte0 = memdup(vtest->testbytes, vtest->testsize);
   int rc;
 
+  /*
+   * Because we use string literals for the binary data above, we have
+   * to manually fill out the string length in testsize.  Do a sanity
+   * check that the string terminator matches testsize.
+   *
+   * The validator used to require that code chunks end in HLT.  We
+   * have left the HLTs in, but don't pass them to the validator.
+   * They just act as a further sanity check on testsize.
+   *
+   * TODO(mseaborn): Remove testsize and don't put binary data in
+   * string literals.
+   */
+  assert(vtest->testbytes[vtest->testsize - 1] == 0xf4 /* HLT */);
+  assert(vtest->testbytes[vtest->testsize] == 0);
+
   vstate = NCValidateInit(vtest->vaddr,
                           vtest->vaddr + vtest->testsize, 16);
   assert (vstate != NULL);
-  NCValidateSegment(byte0, (uint32_t)vtest->vaddr, vtest->testsize, vstate);
+  NCValidateSegment(byte0, (uint32_t)vtest->vaddr, vtest->testsize - 1, vstate);
   free(byte0);
   rc = NCValidateFinish(vstate);
   do {

@@ -151,11 +151,6 @@ static void Stats_UnsafeIndirect(struct NCValidatorState *vstate) {
   Stats_SawFailure(vstate);
 }
 
-static void Stats_MissingFullStop(struct NCValidatorState *vstate) {
-  vstate->stats.missingfullstop += 1;
-  Stats_SawFailure(vstate);
-}
-
 static void Stats_Return(struct NCValidatorState *vstate) {
   vstate->stats.returns += 1;
   Stats_UnsafeIndirect(vstate);
@@ -193,7 +188,6 @@ static void Stats_Init(struct NCValidatorState *vstate) {
   vstate->stats.badalignment = 0;
   vstate->stats.internalerrors = 0;
   vstate->stats.badcpu = 0;
-  vstate->stats.missingfullstop = 0;
   vstate->stats.badinstlength = 0;
   vstate->stats.badprefix = 0;
   vstate->stats.sawfailure = 0;
@@ -228,8 +222,6 @@ void Stats_Print(FILE *f, struct NCValidatorState *vstate) {
           vstate->stats.badprefix);
   fprintf(f, "%d bad instruction length\n",
           vstate->stats.badinstlength);
-  fprintf(f, "%d missing full stop\n",
-          vstate->stats.missingfullstop);
   fprintf(f, "%d internal errors\n",
           vstate->stats.internalerrors);
   fprintf(f, "%d bad cpu\n",
@@ -718,7 +710,6 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate) {
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)");
-    Stats_MissingFullStop(vstate);
     Stats_SegFault(vstate);
     return;
   }
@@ -740,9 +731,6 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
 #endif
 
   g_print_diagnostics = 0; /* Supress confusing validator errors. */
-  NCDecodeSegment(mbase, vbase, sz-1, vstate);
-  if (mbase[sz-1] != kNaClFullStop) {
-    Stats_MissingFullStop(vstate);
-  }
+  NCDecodeSegment(mbase, vbase, sz, vstate);
   g_print_diagnostics = 1;
 }

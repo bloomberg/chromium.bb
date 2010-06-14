@@ -29,7 +29,6 @@ struct SummaryStats {
   uint32_t segfaults;
   uint32_t badprefix;
   uint32_t badinstlength;
-  uint32_t missingfullstop;
   uint32_t internalerrors;
   uint32_t badcpu;
   int sawfailure;          /* boolean */

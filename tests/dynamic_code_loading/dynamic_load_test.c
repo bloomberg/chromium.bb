@@ -56,7 +56,6 @@ void fill_int32(uint8_t *data, size_t size, int32_t value) {
 void fill_nops(uint8_t *data, size_t size) {
 #if defined(__i386__) || defined(__x86_64__)
   memset(data, 0x90, size); /* NOPs */
-  data[size - 1] = 0xf4; /* final HLT */
 #elif defined(__arm__)
   fill_int32(data, size, 0xe1a00000); /* NOP (MOV r0, r0) */
 #else

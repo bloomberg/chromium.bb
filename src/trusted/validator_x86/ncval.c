@@ -68,9 +68,12 @@ int AnalyzeSections(ncfile *ncf, struct NCValidatorState *vstate) {
         (0 == (phdr[ii].p_flags & PF_X)))
       continue;
     Debug("parsing segment %d\n", ii);
-    /* note we use NCDecodeSegment instead of NCValidateSegment */
-    /* because we don't want the check for a hlt at the end of  */
-    /* the text segment as required by NaCl.                    */
+    /*
+     * This used NCDecodeSegment() instead of NCValidateSegment()
+     * because the latter required a HLT at the end of the code, but
+     * this requirement has now gone.
+     * TODO(mseaborn): Could use NCValidateSegment() now.
+     */
     NCDecodeSegment(ncf->data + (phdr[ii].p_vaddr - ncf->vbase),
                     phdr[ii].p_vaddr, phdr[ii].p_memsz, vstate);
   }
