@@ -28,6 +28,7 @@
 #include "chrome/browser/views/location_bar/star_view.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
+#include "gfx/skia_util.h"
 #include "grit/theme_resources.h"
 #include "views/drag_utils.h"
 
@@ -39,15 +40,21 @@ using views::View;
 
 // static
 const int LocationBarView::kVertMargin = 2;
+const int LocationBarView::kEdgeThickness = 2;
+const int LocationBarView::kItemPadding = 3;
 
-// Padding between items in the location bar.
-static const int kViewPadding = 3;
+// Convenience: Total space at the edges of the bar.
+const int kEdgePadding =
+    LocationBarView::kEdgeThickness + LocationBarView::kItemPadding;
 
 // Padding before the start of a bubble.
-static const int kBubblePadding = kViewPadding - 1;
+static const int kBubblePadding = kEdgePadding - 1;
 
 // Padding between the location icon and the edit, if they're adjacent.
-static const int kLocationIconEditPadding = kViewPadding - 1;
+static const int kLocationIconEditPadding = LocationBarView::kItemPadding - 1;
+
+// Padding after the star.
+static const int kStarPadding = kEdgePadding + 1;
 
 static const int kEVBubbleBackgroundImages[] = {
   IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
@@ -61,9 +68,11 @@ static const int kSelectedKeywordBackgroundImages[] = {
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
 };
 
-static const SkBitmap* kBackground = NULL;
-
-static const SkBitmap* kPopupBackground = NULL;
+static const int kNormalModeBackgroundImages[] = {
+  IDR_LOCATIONBG_L,
+  IDR_LOCATIONBG_C,
+  IDR_LOCATIONBG_R,
+};
 
 // LocationBarView -----------------------------------------------------------
 
@@ -90,11 +99,8 @@ LocationBarView::LocationBarView(Profile* profile,
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
 
-  if (!kBackground) {
-    ResourceBundle &rb = ResourceBundle::GetSharedInstance();
-    kBackground = rb.GetBitmapNamed(IDR_LOCATIONBG);
-    kPopupBackground = rb.GetBitmapNamed(IDR_LOCATIONBG_POPUPMODE_CENTER);
-  }
+  if (mode_ == NORMAL)
+    painter_.reset(new views::HorizontalPainter(kNormalModeBackgroundImages));
 }
 
 LocationBarView::~LocationBarView() {
@@ -358,15 +364,15 @@ void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
-  return gfx::Size(0,
-      (mode_ == POPUP ? kPopupBackground : kBackground)->height());
+  return gfx::Size(0, GetThemeProvider()->GetBitmapNamed(mode_ == POPUP ?
+      IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG_C)->height());
 }
 
 void LocationBarView::Layout() {
   if (!location_entry_.get())
     return;
 
-  int entry_width = width() - kViewPadding;
+  int entry_width = width() - (star_view_ ? kStarPadding : kEdgePadding);
 
   // |location_icon_view_| is visible except when |ev_bubble_view_| or
   // |selected_keyword_view_| are visible.
@@ -378,7 +384,7 @@ void LocationBarView::Layout() {
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
   const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
   if (show_selected_keyword) {
-    entry_width -= kViewPadding;  // Assume the keyword might be hidden.
+    entry_width -= kEdgePadding;  // Assume the keyword might be hidden.
   } else if (model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     ev_bubble_view_->SetVisible(true);
     ev_bubble_view_->SetLabel(model_->GetEVCertName());
@@ -388,20 +394,20 @@ void LocationBarView::Layout() {
     location_icon_view_->SetVisible(true);
     location_icon_width = location_icon_view_->GetPreferredSize().width();
     entry_width -=
-        kViewPadding + location_icon_width + kLocationIconEditPadding;
+        kEdgePadding + location_icon_width + kLocationIconEditPadding;
   }
 
   if (star_view_)
-    entry_width -= star_view_->GetPreferredSize().width() + kViewPadding;
+    entry_width -= star_view_->GetPreferredSize().width() + kItemPadding;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kViewPadding;
+      entry_width -= (*i)->GetPreferredSize().width() + kItemPadding;
   }
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
     if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kViewPadding;
+      entry_width -= (*i)->GetPreferredSize().width() + kItemPadding;
   }
 
   // Size the EV bubble.  We do this after taking the star/page actions/content
@@ -412,10 +418,10 @@ void LocationBarView::Layout() {
     static const int kMinElidedBubbleWidth = 150;
     static const double kMaxBubbleFraction = 0.5;
     ev_bubble_width = std::min(ev_bubble_width, std::max(kMinElidedBubbleWidth,
-        static_cast<int>((entry_width - kBubblePadding - kViewPadding) *
+        static_cast<int>((entry_width - kBubblePadding - kItemPadding) *
         kMaxBubbleFraction)));
 
-    entry_width -= kBubblePadding + ev_bubble_width + kViewPadding;
+    entry_width -= kBubblePadding + ev_bubble_width + kItemPadding;
   }
 
 #if defined(OS_WIN)
@@ -449,12 +455,15 @@ void LocationBarView::Layout() {
   int location_height = std::max(height() - location_y - kVertMargin, 0);
 
   // Lay out items to the right of the edit field.
-  int offset = width() - kViewPadding;
+  int offset = width();
   if (star_view_) {
+    offset -= kStarPadding;
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
-    offset -= kViewPadding;
+    offset -= kItemPadding;
+  } else {
+    offset -= kEdgePadding;
   }
 
   for (PageActionViews::const_iterator i(page_action_views_.begin());
@@ -463,7 +472,7 @@ void LocationBarView::Layout() {
       int page_action_width = (*i)->GetPreferredSize().width();
       offset -= page_action_width;
       (*i)->SetBounds(offset, location_y, page_action_width, location_height);
-      offset -= kViewPadding;
+      offset -= kItemPadding;
     }
   }
   // We use a reverse_iterator here because we're laying out the views from
@@ -476,21 +485,21 @@ void LocationBarView::Layout() {
       offset -= content_blocked_width;
       (*i)->SetBounds(offset, location_y, content_blocked_width,
                       location_height);
-      offset -= kViewPadding;
+      offset -= kItemPadding;
     }
   }
 
   // Now lay out items to the left of the edit field.
   if (location_icon_view_->IsVisible()) {
-    location_icon_view_->SetBounds(kViewPadding, location_y,
+    location_icon_view_->SetBounds(kEdgePadding, location_y,
                                    location_icon_width, location_height);
     offset = location_icon_view_->bounds().right() + kLocationIconEditPadding;
   } else if (ev_bubble_view_->IsVisible()) {
     ev_bubble_view_->SetBounds(kBubblePadding, location_y, ev_bubble_width,
                                location_height);
-    offset = ev_bubble_view_->bounds().right() + kViewPadding;
+    offset = ev_bubble_view_->bounds().right() + kItemPadding;
   } else {
-    offset = show_selected_keyword ? kBubblePadding : kViewPadding;
+    offset = show_selected_keyword ? kBubblePadding : kEdgePadding;
   }
 
   // Now lay out the edit field and views that autocollapse to give it more
@@ -500,7 +509,7 @@ void LocationBarView::Layout() {
     LayoutView(true, selected_keyword_view_, available_width, &location_bounds);
     if (!selected_keyword_view_->IsVisible()) {
       location_bounds.set_x(
-          location_bounds.x() + kViewPadding - kBubblePadding);
+          location_bounds.x() + kEdgePadding - kBubblePadding);
     }
   } else if (show_keyword_hint) {
     LayoutView(false, keyword_hint_view_, available_width, &location_bounds);
@@ -511,21 +520,40 @@ void LocationBarView::Layout() {
 
 void LocationBarView::Paint(gfx::Canvas* canvas) {
   View::Paint(canvas);
+
+  if (painter_.get()) {
+    painter_->Paint(width(), height(), canvas);
+  } else if (mode_ == POPUP) {
+    canvas->TileImageInt(*GetThemeProvider()->GetBitmapNamed(
+        IDR_LOCATIONBG_POPUPMODE_CENTER), 0, 0, 0, 0, width(), height());
+  }
   // When used in the app launcher, don't draw a border, the LocationBarView has
   // its own views::Border.
-  if (mode_ != APP_LAUNCHER) {
-    const SkBitmap* background =
-        mode_ == POPUP ?
-            kPopupBackground :
-            GetThemeProvider()->GetBitmapNamed(IDR_LOCATIONBG);
 
-    canvas->TileImageInt(*background, 0, 0, 0, 0, width(), height());
+  // Draw the background color so that the graphical elements at the edges
+  // appear over the correct color.  (The edit draws its own background, so this
+  // isn't important for that.)
+  // TODO(pkasting): We need images that are transparent in the middle, so we
+  // can draw the border images over the background color instead of the
+  // reverse; this antialiases better (see comments in
+  // AutocompletePopupContentsView::Paint()).
+  gfx::Rect bounds(GetLocalBounds(false));
+  bounds.Inset(0, TopMargin(), 0, kVertMargin);
+  SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
+  if (mode_ == NORMAL) {
+    SkPaint paint;
+    paint.setColor(color);
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setAntiAlias(true);
+    // The round corners of the omnibox match the round corners of the dropdown
+    // below, and all our other bubbles.
+    const SkScalar radius(SkIntToScalar(BubbleBorder::GetCornerRadius()));
+    bounds.Inset(kEdgeThickness, 0);
+    canvas->drawRoundRect(gfx::RectToSkRect(bounds), radius, radius, paint);
+  } else {
+    canvas->FillRectInt(color, bounds.x(), bounds.y(), bounds.width(),
+                        bounds.height());
   }
-  gfx::Rect bounds = GetLocalBounds(false);
-  int top_margin = TopMargin();
-  canvas->FillRectInt(GetColor(ToolbarModel::NONE, BACKGROUND), bounds.x(),
-                      top_margin, bounds.width(),
-                      std::max(height() - top_margin - kVertMargin, 0));
 }
 
 void LocationBarView::VisibleBoundsInRootChanged() {
@@ -665,7 +693,7 @@ int LocationBarView::AvailableWidth(int location_bar_width) {
 }
 
 bool LocationBarView::UsePref(int pref_width, int available_width) {
-  return (pref_width + kViewPadding <= available_width);
+  return (pref_width + kItemPadding <= available_width);
 }
 
 void LocationBarView::LayoutView(bool leading,
@@ -676,19 +704,19 @@ void LocationBarView::LayoutView(bool leading,
   gfx::Size view_size = view->GetPreferredSize();
   if (!UsePref(view_size.width(), available_width))
     view_size = view->GetMinimumSize();
-  if (view_size.width() + kViewPadding >= bounds->width()) {
+  if (view_size.width() + kItemPadding >= bounds->width()) {
     view->SetVisible(false);
     return;
   }
   if (leading) {
     view->SetBounds(bounds->x(), bounds->y(), view_size.width(),
                     bounds->height());
-    bounds->Offset(view_size.width() + kViewPadding, 0);
+    bounds->Offset(view_size.width() + kItemPadding, 0);
   } else {
     view->SetBounds(bounds->right() - view_size.width(), bounds->y(),
                     view_size.width(), bounds->height());
   }
-  bounds->set_width(bounds->width() - view_size.width() - kViewPadding);
+  bounds->set_width(bounds->width() - view_size.width() - kItemPadding);
   view->SetVisible(true);
 }
 

@@ -73,8 +73,8 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
       x += kArrowOverlap - border_size.width();
       break;
 
-    case FLOAT:
     case NONE:
+    case FLOAT:
       x += w / 2 - border_size.width() / 2;
       break;
   }
@@ -101,12 +101,12 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
       y += h / 2 + arrow_offset - border_size.height();
       break;
 
-    case FLOAT:
-      y += h / 2 - border_size.height() / 2;
-      break;
-
     case NONE:
       y += h;
+      break;
+
+    case FLOAT:
+      y += h / 2 - border_size.height() / 2;
       break;
   }
 
@@ -140,9 +140,6 @@ void BubbleBorder::GetInsets(gfx::Insets* insets) const {
       break;
 
     case NONE:
-      top = 0;
-      break;
-
     case FLOAT:
       // Nothing to do.
       break;
@@ -200,13 +197,11 @@ void BubbleBorder::InitClass() {
 
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   // Convenience shorthand variables.
-  // If |arrow_location_| == NONE, the entire top edge is omitted and height of
-  // corresponding bitmaps is set to 0.
   const int tl_width = top_left_->width();
-  const int tl_height = (arrow_location_ == NONE ? 0 : top_left_->height());
-  const int t_height = (arrow_location_ == NONE ? 0 : top_->height());
+  const int tl_height = top_left_->height();
+  const int t_height = top_->height();
   const int tr_width = top_right_->width();
-  const int tr_height = (arrow_location_ == NONE ? 0 : top_right_->height());
+  const int tr_height = top_right_->height();
   const int l_width = left_->width();
   const int r_width = right_->width();
   const int br_width = bottom_right_->width();
@@ -240,8 +235,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   if (arrow_location_ == LEFT_TOP || arrow_location_ == LEFT_BOTTOM) {
     int start_y = top + tl_height;
     int before_arrow = arrow_offset - start_y - left_arrow_->height() / 2;
-    int after_arrow = height - tl_height - bl_height -
-        left_arrow_->height() - before_arrow;
+    int after_arrow =
+        height - tl_height - bl_height - left_arrow_->height() - before_arrow;
     DrawArrowInterior(canvas,
                       false,
                       left_arrow_->width() - kArrowInteriorHeight,
@@ -262,39 +257,37 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
                          height - tl_height - bl_height);
   }
 
-  if (arrow_location_ != NONE) {
-    // Top left corner.
-    canvas->DrawBitmapInt(*top_left_, left, top);
+  // Top left corner.
+  canvas->DrawBitmapInt(*top_left_, left, top);
 
-    // Top edge.
-    if (arrow_location_ == TOP_LEFT || arrow_location_ == TOP_RIGHT) {
-      int start_x = left + tl_width;
-      int before_arrow = arrow_offset - start_x - top_arrow_->width() / 2;
-      int after_arrow = width - tl_width - tr_width -
-          top_arrow_->width() - before_arrow;
-      DrawArrowInterior(canvas,
-                        true,
-                        start_x + before_arrow + top_arrow_->width() / 2,
-                        top_arrow_->height() - kArrowInteriorHeight,
-                        1 - top_arrow_->width() / 2,
-                        kArrowInteriorHeight);
-      DrawEdgeWithArrow(canvas,
-                        true,
-                        top_,
-                        top_arrow_,
-                        start_x,
-                        top,
-                        before_arrow,
-                        after_arrow,
-                        top_->height() - top_arrow_->height());
-    } else {
-      canvas->TileImageInt(*top_, left + tl_width, top,
-                           width - tl_width - tr_width, t_height);
-    }
-
-    // Top right corner.
-    canvas->DrawBitmapInt(*top_right_, right - tr_width, top);
+  // Top edge.
+  if (arrow_location_ == TOP_LEFT || arrow_location_ == TOP_RIGHT) {
+    int start_x = left + tl_width;
+    int before_arrow = arrow_offset - start_x - top_arrow_->width() / 2;
+    int after_arrow =
+        width - tl_width - tr_width - top_arrow_->width() - before_arrow;
+    DrawArrowInterior(canvas,
+                      true,
+                      start_x + before_arrow + top_arrow_->width() / 2,
+                      top_arrow_->height() - kArrowInteriorHeight,
+                      1 - top_arrow_->width() / 2,
+                      kArrowInteriorHeight);
+    DrawEdgeWithArrow(canvas,
+                      true,
+                      top_,
+                      top_arrow_,
+                      start_x,
+                      top,
+                      before_arrow,
+                      after_arrow,
+                      top_->height() - top_arrow_->height());
+  } else {
+    canvas->TileImageInt(*top_, left + tl_width, top,
+                         width - tl_width - tr_width, t_height);
   }
+
+  // Top right corner.
+  canvas->DrawBitmapInt(*top_right_, right - tr_width, top);
 
   // Right edge.
   if (arrow_location_ == RIGHT_TOP || arrow_location_ == RIGHT_BOTTOM) {
@@ -329,8 +322,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   if (arrow_location_ == BOTTOM_LEFT || arrow_location_ == BOTTOM_RIGHT) {
     int start_x = left + bl_width;
     int before_arrow = arrow_offset - start_x - bottom_arrow_->width() / 2;
-    int after_arrow = width - bl_width - br_width -
-        bottom_arrow_->width() - before_arrow;
+    int after_arrow =
+        width - bl_width - br_width - bottom_arrow_->width() - before_arrow;
     DrawArrowInterior(canvas,
                       true,
                       start_x + before_arrow + bottom_arrow_->width() / 2,
@@ -368,7 +361,7 @@ void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
    *                     start_x
    *                       .
    *                       .        ┌───┐                 ┬ offset
-   * start_y..........┌────┬────────┤ ▲ ├────────┬────┐   ┴
+   * start_y..........┌────┬────────┤ ▲ ├────────┬────┐
    *                  │  / │--------│∙ ∙│--------│ \  │
    *                  │ /  ├────────┴───┴────────┤  \ │
    *                  ├───┬┘                     └┬───┤

@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/views/bubble_border.h"
+#include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/insets.h"
@@ -93,8 +94,6 @@ const int kIconVerticalPadding = 2;
 // bottom of the row. See comment about the use of "minimum" for
 // kIconVerticalPadding.
 const int kTextVerticalPadding = 3;
-// The padding between horizontally adjacent items (including row edges).
-const int kHorizontalPadding = 3;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
 #if !defined(OS_CHROMEOS)
@@ -306,12 +305,13 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
 }
 
 void AutocompleteResultView::Layout() {
-  icon_bounds_.SetRect(kHorizontalPadding, (height() - icon_size_) / 2,
-                       icon_size_, icon_size_);
-  int text_x = icon_bounds_.right() + kHorizontalPadding;
+  icon_bounds_.SetRect(LocationBarView::kItemPadding,
+                       (height() - icon_size_) / 2, icon_size_, icon_size_);
+  int text_x = icon_bounds_.right() + LocationBarView::kItemPadding;
   int font_height = std::max(normal_font_.height(), bold_font_.height());
   text_bounds_.SetRect(text_x, std::max(0, (height() - font_height) / 2),
-      std::max(0, bounds().width() - text_x - kHorizontalPadding), font_height);
+      std::max(0, bounds().width() - text_x - LocationBarView::kItemPadding),
+      font_height);
 }
 
 gfx::Size AutocompleteResultView::GetPreferredSize() {
@@ -670,28 +670,23 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   }
 
   // Calculate desired bounds.
-  gfx::Rect location_bar_bounds(location_bar_->bounds());
-  gfx::Point location;
+  gfx::Rect location_bar_bounds(gfx::Point(), location_bar_->size());
   const views::Border* border = location_bar_->border();
-  int location_bar_height = location_bar_bounds.height();
   if (border) {
     // Adjust for the border so that the bubble and location bar borders are
     // aligned.
     gfx::Insets insets;
     border->GetInsets(&insets);
     location_bar_bounds.Inset(insets.left(), 0, insets.right(), 0);
-    location.Offset(insets.left(), 0);
   } else {
     // The normal location bar is drawn using a background graphic that includes
-    // the border.  The graphic is actually one pixel larger above and below the
-    // dark of the border, so that it can draw a faint highlight.
-    // So, in order to make the popup butt up against the dark border, it has to
-    // overlap the location bar by one pixel.
-    location_bar_height -= 1;
+    // the border, so we inset by enough to make the edges line up, and the
+    // bubble appear at the same height as the Star bubble.
+    location_bar_bounds.Inset(LocationBarView::kEdgeThickness, 0);
   }
-  views::View::ConvertPointToScreen(location_bar_, &location);
-  location_bar_bounds.set_origin(location);
-  location_bar_bounds.set_height(location_bar_height);
+  gfx::Point location_bar_origin(location_bar_bounds.origin());
+  views::View::ConvertPointToScreen(location_bar_, &location_bar_origin);
+  location_bar_bounds.set_origin(location_bar_origin);
   gfx::Rect new_target_bounds(bubble_border_->GetBounds(location_bar_bounds,
       gfx::Size(location_bar_bounds.width(), total_child_height)));
 
@@ -900,19 +895,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
            SkIntToScalar(bounding_rect.bottom()));
 
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
-  SkScalar scaled_radius =
-      SkScalarMul(radius, (SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3);
-  path->moveTo(rect.fRight, rect.fTop);
-  path->lineTo(rect.fRight, rect.fBottom - radius);
-  path->cubicTo(rect.fRight, rect.fBottom - radius + scaled_radius,
-               rect.fRight - radius + scaled_radius, rect.fBottom,
-               rect.fRight - radius, rect.fBottom);
-  path->lineTo(rect.fLeft + radius, rect.fBottom);
-  path->cubicTo(rect.fLeft + radius - scaled_radius, rect.fBottom,
-               rect.fLeft, rect.fBottom - radius + scaled_radius,
-               rect.fLeft, rect.fBottom - radius);
-  path->lineTo(rect.fLeft, rect.fTop);
-  path->close();
+  path->addRoundRect(rect, radius, radius);
 }
 
 void AutocompletePopupContentsView::UpdateBlurRegion() {

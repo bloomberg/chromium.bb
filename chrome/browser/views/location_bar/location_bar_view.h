@@ -41,6 +41,10 @@ class Profile;
 class SelectedKeywordView;
 class StarView;
 
+namespace views {
+class HorizontalPainter;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // LocationBarView class
@@ -208,7 +212,9 @@ class LocationBarView : public LocationBar,
   virtual ExtensionAction* GetVisiblePageAction(size_t index);
   virtual void TestPageActionPressed(size_t index);
 
-  static const int kVertMargin;
+  static const int kVertMargin;     // Space above and below the edit.
+  static const int kEdgeThickness;  // Unavailable space at horizontal edges.
+  static const int kItemPadding;    // Space between items within the bar.
 
  protected:
   void Focus();
@@ -296,6 +302,9 @@ class LocationBarView : public LocationBar,
 
   // Font used by edit and some of the hints.
   gfx::Font font_;
+
+  // An object used to paint the normal-mode background.
+  scoped_ptr<views::HorizontalPainter> painter_;
 
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;

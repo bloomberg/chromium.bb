@@ -28,8 +28,8 @@ class BubbleBorder : public views::Border {
     RIGHT_TOP    = 5,
     LEFT_BOTTOM  = 6,
     RIGHT_BOTTOM = 7,
-    NONE  = 8,  // No arrow and top border. Aligned under the supplied rect.
-    FLOAT = 9   // No arrow but has top edge. Centered over the supplied rect.
+    NONE  = 8,  // No arrow. Positioned under the supplied rect.
+    FLOAT = 9   // No arrow. Centered over the supplied rect.
   };
 
   explicit BubbleBorder(ArrowLocation arrow_location)
