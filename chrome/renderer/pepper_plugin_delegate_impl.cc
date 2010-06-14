@@ -6,7 +6,6 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/scoped_ptr.h"
-#include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/common/render_messages.h"
@@ -45,43 +44,6 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
     : render_view_(render_view) {
-}
-
-void PepperPluginDelegateImpl::ViewInitiatedPaint() {
-  // Notify all of our instances that we started painting. This is used for
-  // internal bookkeeping only, so we know that the set can not change under
-  // us.
-  for (std::set<pepper::PluginInstance*>::iterator i =
-           active_instances_.begin();
-       i != active_instances_.end(); ++i)
-    (*i)->ViewInitiatedPaint();
-}
-
-void PepperPluginDelegateImpl::ViewFlushedPaint() {
-  // Notify all instances that we painted. This will call into the plugin, and
-  // we it may ask to close itself as a result. This will, in turn, modify our
-  // set, possibly invalidating the iterator. So we iterate on a copy that
-  // won't change out from under us.
-  std::set<pepper::PluginInstance*> plugins = active_instances_;
-  for (std::set<pepper::PluginInstance*>::iterator i = plugins.begin();
-       i != plugins.end(); ++i) {
-    // The copy above makes sure our iterator is never invalid if some plugins
-    // are destroyed. But some plugin may decide to close all of its views in
-    // response to a paint in one of them, so we need to make sure each one is
-    // still "current" before using it.
-    if (active_instances_.find(*i) != active_instances_.end())
-      (*i)->ViewFlushedPaint();
-  }
-}
-
-void PepperPluginDelegateImpl::InstanceCreated(
-    pepper::PluginInstance* instance) {
-  active_instances_.insert(instance);
-}
-
-void PepperPluginDelegateImpl::InstanceDeleted(
-    pepper::PluginInstance* instance) {
-  active_instances_.erase(instance);
 }
 
 pepper::PluginDelegate::PlatformImage2D*
