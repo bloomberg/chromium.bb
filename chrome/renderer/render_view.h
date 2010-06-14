@@ -1179,9 +1179,9 @@ class RenderView : public RenderWidget,
   std::set<WebPluginDelegateProxy*> plugin_delegates_;
 #endif
 
-  // A list of all Pepper v1 plugins that we've created that haven't been
-  // destroyed yet. Pepper v2 plugins are tracked by the pepper_delegate_.
-  std::set<WebPluginDelegatePepper*> current_oldstyle_pepper_plugins_;
+  // A list of all pepper plugins that we've created that haven't been
+  // destroyed yet.
+  std::set<WebPluginDelegatePepper*> current_pepper_plugins_;
 
   // Helper objects ------------------------------------------------------------
 
