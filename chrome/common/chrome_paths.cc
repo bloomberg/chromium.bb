@@ -34,13 +34,15 @@ const FilePath::CharType kInternalFlashPluginFileName[] =
 
 namespace chrome {
 
-// Gets the path for internal (or bundled) plugins.
+// Gets the path for internal plugins.
 bool GetInternalPluginsDirectory(FilePath* result) {
 #if defined(OS_MACOSX)
-  // If called from Chrome, get internal plugins from the versioned directory.
+  // If called from Chrome, get internal plugins from a subdirectory of the
+  // framework.
   if (mac_util::AmIBundled()) {
-    *result = chrome::GetVersionedDirectory();
+    *result = chrome::GetFrameworkBundlePath();
     DCHECK(!result->empty());
+    *result = result->Append("Internet Plug-Ins");
     return true;
   }
   // In tests, just look in the module directory (below).
