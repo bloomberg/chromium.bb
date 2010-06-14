@@ -33,6 +33,7 @@ PrinterJobHandler::PrinterJobHandler(
       delegate_(delegate),
       local_job_id_(-1),
       next_response_handler_(NULL),
+      next_failure_handler_(NULL),
       server_error_count_(0),
       print_thread_("Chrome_CloudPrintJobPrintThread"),
       shutting_down_(false),
@@ -82,7 +83,8 @@ void PrinterJobHandler::Start() {
         MakeServerRequest(
             CloudPrintHelpers::GetUrlForPrinterDelete(cloud_print_server_url_,
                                                       printer_id_),
-            &PrinterJobHandler::HandlePrinterDeleteResponse);
+            &PrinterJobHandler::HandlePrinterDeleteResponse,
+            &PrinterJobHandler::Stop);
       }
       if (!task_in_progress_ && printer_update_pending_) {
         printer_update_pending_ = false;
@@ -95,7 +97,8 @@ void PrinterJobHandler::Start() {
         MakeServerRequest(
             CloudPrintHelpers::GetUrlForJobFetch(
                 cloud_print_server_url_, printer_id_),
-            &PrinterJobHandler::HandleJobMetadataResponse);
+            &PrinterJobHandler::HandleJobMetadataResponse,
+            &PrinterJobHandler::Stop);
       }
     }
   }
@@ -176,6 +179,7 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
     CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
     request_->set_upload_data(mime_type, post_data);
     next_response_handler_ = &PrinterJobHandler::HandlePrinterUpdateResponse;
+    next_failure_handler_ = &PrinterJobHandler::Stop;
     request_->Start();
     ret = true;
   }
@@ -331,7 +335,8 @@ bool PrinterJobHandler::HandleJobMetadataResponse(
         next_task = NewRunnableMethod(
               this, &PrinterJobHandler::MakeServerRequest,
               GURL(print_ticket_url.c_str()),
-              &PrinterJobHandler::HandlePrintTicketResponse);
+              &PrinterJobHandler::HandlePrintTicketResponse,
+              &PrinterJobHandler::FailedFetchingJobData);
       }
     }
   }
@@ -361,12 +366,11 @@ bool PrinterJobHandler::HandlePrintTicketResponse(
         NewRunnableMethod(this,
                           &PrinterJobHandler::MakeServerRequest,
                           GURL(print_data_url_.c_str()),
-                          &PrinterJobHandler::HandlePrintDataResponse));
+                          &PrinterJobHandler::HandlePrintDataResponse,
+                          &PrinterJobHandler::FailedFetchingJobData));
   } else {
     // The print ticket was not valid. We are done here.
-    MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::JobFailed,
-                                     INVALID_JOB_DATA));
+    FailedFetchingJobData();
   }
   return true;
 }
@@ -450,9 +454,8 @@ void PrinterJobHandler::Shutdown() {
 
 void PrinterJobHandler::HandleServerError(const GURL& url) {
   Task* task_to_retry = NewRunnableMethod(this,
-                                          &PrinterJobHandler::MakeServerRequest,
-                                          url, next_response_handler_);
-  Task* task_on_give_up = NewRunnableMethod(this, &PrinterJobHandler::Stop);
+                                          &PrinterJobHandler::FetchURL, url);
+  Task* task_on_give_up = NewRunnableMethod(this, next_failure_handler_);
   CloudPrintHelpers::HandleServerError(&server_error_count_, kMaxRetryCount,
                                        -1, kBaseRetryInterval, task_to_retry,
                                        task_on_give_up);
@@ -462,6 +465,9 @@ void PrinterJobHandler::UpdateJobStatus(cloud_print::PrintJobStatus status,
                                         PrintJobError error) {
   if (!shutting_down_) {
     if (!job_details_.job_id_.empty()) {
+      LOG(INFO) << "CP: Updating status, jod id: " << job_details_.job_id_ <<
+          ", status: " << status;
+
       ResponseHandler response_handler = NULL;
       if (error == SUCCESS) {
         response_handler =
@@ -474,7 +480,8 @@ void PrinterJobHandler::UpdateJobStatus(cloud_print::PrintJobStatus status,
           CloudPrintHelpers::GetUrlForJobStatusUpdate(cloud_print_server_url_,
                                                       job_details_.job_id_,
                                                       status),
-          response_handler);
+          response_handler,
+          &PrinterJobHandler::Stop);
     }
   }
 }
@@ -524,15 +531,21 @@ bool PrinterJobHandler::HandleFailureStatusUpdateResponse(
 }
 
 void PrinterJobHandler::MakeServerRequest(const GURL& url,
-                                          ResponseHandler response_handler) {
+                                          ResponseHandler response_handler,
+                                          FailureHandler failure_handler) {
   if (!shutting_down_) {
-    request_.reset(new URLFetcher(url, URLFetcher::GET, this));
     server_error_count_ = 0;
-    CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
     // Set up the next response handler
     next_response_handler_ = response_handler;
-    request_->Start();
+    next_failure_handler_ = failure_handler;
+    FetchURL(url);
   }
+}
+
+void PrinterJobHandler::FetchURL(const GURL& url) {
+  request_.reset(new URLFetcher(url, URLFetcher::GET, this));
+  CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
+  request_->Start();
 }
 
 bool PrinterJobHandler::HavePendingTasks() {
@@ -540,6 +553,13 @@ bool PrinterJobHandler::HavePendingTasks() {
          printer_delete_pending_;
 }
 
+void PrinterJobHandler::FailedFetchingJobData() {
+  if (!shutting_down_) {
+    LOG(ERROR) << "CP: Failed fetching job data for printer: " <<
+        printer_info_.printer_name << ", job id: " << job_details_.job_id_;
+    JobFailed(INVALID_JOB_DATA);
+  }
+}
 
 void PrinterJobHandler::DoPrint(const JobDetails& job_details,
                           const std::string& printer_name,

@@ -35,7 +35,7 @@ extern const char kSyncGaiaServiceId[];
 // Max interval between retrying connection to the server
 const int64 kMaxRetryInterval = 5*60*1000;  // 5 minutes in millseconds
 const int64 kBaseRetryInterval = 5*1000;  // 5 seconds
-const int kMaxRetryCount = 5;
+const int kMaxRetryCount = 2;
 const int64 kJobStatusUpdateInterval = 10*1000;  // 10 seconds
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_

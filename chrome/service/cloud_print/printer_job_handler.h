@@ -130,6 +130,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
       const URLFetcher* source, const GURL& url,
       const URLRequestStatus& status, int response_code,
       const ResponseCookies& cookies, const std::string& data);
+  // Prototype for a failure handler. This handler will be executed if all
+  // attempts to fetch url failed.
+  typedef void (PrinterJobHandler::*FailureHandler)();
   // Begin request handlers for each state in the state machine
   bool HandlePrinterUpdateResponse(const URLFetcher* source, const GURL& url,
                                    const URLRequestStatus& status,
@@ -185,12 +188,24 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   void HandleServerError(const GURL& url);
   void Reset();
   void UpdateJobStatus(cloud_print::PrintJobStatus status, PrintJobError error);
-  void MakeServerRequest(const GURL& url, ResponseHandler response_handler);
+
+  // This function should be used to go from one state to another. It will
+  // retry to fetch url (up to a limit) if response handler will return false.
+  // Calling this function will zero failure counter.
+  void MakeServerRequest(const GURL& url,
+                         ResponseHandler response_handler,
+                         FailureHandler failure_handler);
+  // This function should be used ONLY from MakeServerRequest and
+  // HandleServerError. It is using stored handlers and failure counter
+  // to decide which handler to call.
+  void FetchURL(const GURL& url);
+
   void JobFailed(PrintJobError error);
   void JobSpooled(cloud_print::PlatformJobId local_job_id);
   // Returns false if printer info is up to date and no updating is needed.
   bool UpdatePrinterInfo();
   bool HavePendingTasks();
+  void FailedFetchingJobData();
 
   static void DoPrint(const JobDetails& job_details,
                       const std::string& printer_name,
@@ -212,6 +227,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // job id of the job on the local spooler.
   cloud_print::PlatformJobId local_job_id_;
   ResponseHandler next_response_handler_;
+  FailureHandler next_failure_handler_;
   // The number of consecutive times that connecting to the server failed.
   int server_error_count_;
   // The thread on which the actual print operation happens
