@@ -14,6 +14,7 @@
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/text_database.h"
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/common/notification_type.h"
@@ -122,6 +123,14 @@ const int kExpirationDelaySec = 30;
 // history to expire last iteration, it's likely there is nothing next
 // iteration, so we want to wait longer before checking to avoid wasting CPU.
 const int kExpirationEmptyDelayMin = 5;
+
+// The number of minutes that we wait for before scheduling a task to
+// delete old history index files.
+const int kIndexExpirationDelayMin = 2;
+
+// The number of the most recent months for which we do not want to delete
+// the history index files.
+const int kStoreHistoryIndexesForMonths = 12;
 
 }  // namespace
 
@@ -303,6 +312,7 @@ void ExpireHistoryBackend::StartArchivingOldStuff(
   // Initialize the queue with all tasks for the first set of iterations.
   InitWorkQueue();
   ScheduleArchive();
+  ScheduleExpireHistoryIndexFiles();
 }
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(
@@ -556,7 +566,6 @@ void ExpireHistoryBackend::ScheduleArchive() {
     delay = TimeDelta::FromSeconds(kExpirationDelaySec);
   }
 
-  factory_.RevokeAll();
   MessageLoop::current()->PostDelayedTask(FROM_HERE, factory_.NewRunnableMethod(
           &ExpireHistoryBackend::DoArchiveIteration), delay.InMilliseconds());
 }
@@ -639,6 +648,41 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
 
 void ExpireHistoryBackend::ParanoidExpireHistory() {
   // FIXME(brettw): Bug 1067331: write this to clean up any errors.
+}
+
+void ExpireHistoryBackend::ScheduleExpireHistoryIndexFiles() {
+  if (!text_db_) {
+    // Can't expire old history index files because we
+    // don't know where they're located.
+    return;
+  }
+
+  TimeDelta delay = TimeDelta::FromMinutes(kIndexExpirationDelayMin);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, factory_.NewRunnableMethod(
+          &ExpireHistoryBackend::DoExpireHistoryIndexFiles),
+      delay.InMilliseconds());
+}
+
+void ExpireHistoryBackend::DoExpireHistoryIndexFiles() {
+  Time::Exploded exploded;
+  Time::Now().LocalExplode(&exploded);
+  int cutoff_month =
+      exploded.year * 12 + exploded.month - kStoreHistoryIndexesForMonths;
+  TextDatabase::DBIdent cutoff_id =
+      (cutoff_month / 12) * 100 + (cutoff_month % 12);
+
+  FilePath::StringType history_index_files_pattern = TextDatabase::file_base();
+  history_index_files_pattern.append(FILE_PATH_LITERAL("*"));
+  file_util::FileEnumerator file_enumerator(
+      text_db_->GetDir(), false, file_util::FileEnumerator::FILES,
+      history_index_files_pattern);
+  for (FilePath file = file_enumerator.Next(); !file.empty();
+       file = file_enumerator.Next()) {
+    TextDatabase::DBIdent file_id = TextDatabase::FileNameToID(file);
+    if (file_id < cutoff_id)
+      file_util::Delete(file, false);
+  }
 }
 
 BookmarkService* ExpireHistoryBackend::GetBookmarkService() {

@@ -222,6 +222,12 @@ class ExpireHistoryBackend {
   // and deletes items. For example, URLs with no visits.
   void ParanoidExpireHistory();
 
+  // Schedules a call to DoExpireHistoryIndexFiles.
+  void ScheduleExpireHistoryIndexFiles();
+
+  // Deletes old history index files.
+  void DoExpireHistoryIndexFiles();
+
   // Returns the BookmarkService, blocking until it is loaded. This may return
   // NULL.
   BookmarkService* GetBookmarkService();

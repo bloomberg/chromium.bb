@@ -82,6 +82,9 @@ class TextDatabaseManager {
   // functions should be called.
   bool Init(const HistoryPublisher* history_publisher);
 
+  // Returns the directory that holds the full text database files.
+  const FilePath& GetDir() { return dir_; }
+
   // Allows scoping updates. This also allows things to go faster since every
   // page add doesn't need to be committed to disk (slow). Note that files will
   // still get created during a transaction.
