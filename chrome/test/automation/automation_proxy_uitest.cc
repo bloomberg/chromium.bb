@@ -41,12 +41,6 @@ using testing::CreateFunctor;
 using testing::StrEq;
 using testing::_;
 
-#if defined(OS_MACOSX)
-#define MAYBE_WindowGetViewBounds DISABLED_WindowGetViewBounds
-#else
-#define MAYBE_WindowGetViewBounds WindowGetViewBounds
-#endif
-
 class AutomationProxyTest : public UITest {
  protected:
   AutomationProxyTest() {
@@ -82,7 +76,12 @@ TEST_F(AutomationProxyTest, GetBrowserWindow) {
   }
 };
 
-// TODO(estade): port automation provider for this test to mac.
+#if defined(OS_MACOSX)
+// Missing automation provider support: http://crbug.com/45892
+#define MAYBE_WindowGetViewBounds FAILS_WindowGetViewBounds
+#else
+#define MAYBE_WindowGetViewBounds WindowGetViewBounds
+#endif
 TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
   {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
