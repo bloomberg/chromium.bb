@@ -132,6 +132,9 @@
       },
       'dependencies': [
         'chrome_version_info',
+        # Copy Flash Player files to PRODUCT_DIR if applicable.
+        # Let the .gyp file decide what to do on a per-OS basis.
+        '../third_party/adobe/flash/flash_player.gyp:flash_player',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
@@ -330,6 +333,14 @@
               'files': [
                 '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
               ],
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'files': [
+                    '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
+                    '<(PRODUCT_DIR)/plugin.vch',
+                  ],
+                }],
+              ],
             },
           ],
           'postbuilds': [
@@ -404,10 +415,6 @@
           ],
           'dependencies': [
             'packed_extra_resources',
-            # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
-            # file decide what to do on a per-OS basis; on Mac, internal plugins
-            # go inside the framework, so this dependency is in chrome_dll.gypi.
-            '../third_party/adobe/flash/flash_player.gyp:flash_player',
           ],
         }],
         ['OS=="mac" or OS=="win"', {
