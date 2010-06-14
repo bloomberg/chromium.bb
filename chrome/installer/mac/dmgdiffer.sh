@@ -51,8 +51,9 @@
 #  9  Could not create disk image
 # 10  Could not read old application version
 # 11  Could not read new application version
-# 12  Old or new application sanity check failure
-# 13  Could not write the patch
+# 12  Could not read product ID
+# 13  Old or new application sanity check failure
+# 14  Could not write the patch
 #
 # Exit codes in the range 21-40 are mapped to codes 1-20 as returned by the
 # first dirdiffer invocation. Codes 41-60 are mapped to codes 1-20 as returned
@@ -142,11 +143,12 @@ make_patch_fs() {
   readonly APP_NAME_RE="${PRODUCT_NAME}\\.app"
   readonly APP_INFO_PLIST="Contents/Info"
   readonly APP_VERSION_KEY="CFBundleShortVersionString"
+  readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_CHANNEL_KEY="KSChannelID"
   readonly VERSIONS_DIR="Contents/Versions"
   readonly PRODUCT_URL="http://www.google.com/chrome/"
   readonly BUILD_RE="^[0-9]+\\.[0-9]+\\.([0-9]+)\\.[0-9]+\$"
-  readonly MIN_BUILD=375
+  readonly MIN_BUILD=434
 
   local old_app_path="${old_fs}/${APP_NAME}"
   local old_app_info_plist="${old_app_path}/${APP_INFO_PLIST}"
@@ -176,10 +178,17 @@ make_patch_fs() {
   fi
   local new_version_build="${BASH_REMATCH[1]}"
 
+  local product_id
+  if ! product_id="$(defaults read "${new_app_info_plist}" \
+                                   "${KS_PRODUCT_KEY}")"; then
+    err "could not read product ID"
+    exit 12
+  fi
+
   if [[ ${old_version_build} -lt ${MIN_BUILD} ]] ||
      [[ ${new_version_build} -lt ${MIN_BUILD} ]]; then
     err "old and new versions must be build ${MIN_BUILD} or newer"
-    exit 12
+    exit 13
   fi
 
   local new_ks_channel
@@ -201,44 +210,45 @@ make_patch_fs() {
   if ! cp -p "${SCRIPT_DIR}/keystone_install.sh" \
              "${patch_fs}/.keystone_install"; then
     err "could not copy .keystone_install"
-    exit 13
+    exit 14
   fi
 
   local patch_dotpatch_dir="${patch_fs}/.patch"
   if ! mkdir "${patch_dotpatch_dir}"; then
     err "could not mkdir patch_dotpatch_dir"
-    exit 13
+    exit 14
   fi
 
   if ! cp -p "${SCRIPT_DIR}/dirpatcher.sh" \
              "${SCRIPT_DIR}/goobspatch" \
              "${patch_dotpatch_dir}/"; then
     err "could not copy dirpatcher.sh and goobspatch"
-    exit 13
+    exit 14
   fi
 
-  if ! echo "${old_version}" > "${patch_dotpatch_dir}/old_version" ||
+  if ! echo "${product_id}" > "${patch_dotpatch_dir}/product_id" ||
+     ! echo "${old_version}" > "${patch_dotpatch_dir}/old_version" ||
      ! echo "${new_version}" > "${patch_dotpatch_dir}/new_version"; then
-    err "could not write patch version information"
-    exit 13
+    err "could not write patch product or version information"
+    exit 14
   fi
   local patch_ks_channel_file="${patch_dotpatch_dir}/ks_channel"
   if [[ -n "${new_ks_channel}" ]]; then
     if ! echo "${new_ks_channel}" > "${patch_ks_channel_file}"; then
       err "could not write Keystone channel information"
-      exit 13
+      exit 14
     fi
   else
     if ! touch "${patch_ks_channel_file}"; then
       err "could not write empty Keystone channel information"
-      exit 13
+      exit 14
     fi
   fi
 
   # The only visible contents of the disk image will be a README file that
   # explains the image's purpose.
   cat > "${patch_fs}/README.txt" << __EOF__ || \
-      (err "could not write README.txt" && exit 13)
+      (err "could not write README.txt" && exit 14)
 This disk image contains a differential updater that can update
 ${PRODUCT_NAME} from version ${old_version} to ${new_version}${name_extra}.
 
