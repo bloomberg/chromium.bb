@@ -59,6 +59,8 @@ std::wstring ChildProcessInfo::GetTypeNameInEnglish(
       return L"Native Client module";
     case NACL_BROKER_PROCESS:
       return L"Native Client broker";
+    case GPU_PROCESS:
+      return L"GPU";
     case UNKNOWN_PROCESS:
       default:
       DCHECK(false) << "Unknown child process type!";
