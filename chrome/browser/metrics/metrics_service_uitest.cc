@@ -55,11 +55,11 @@ class MetricsServiceTest : public UITest {
         .Append(chrome::kLocalStateFilename);
 
     return new PrefService(new PrefValueStore(
-        NULL,
-        new JsonPrefStore(
+        NULL, /* no managed preferences */
+        new JsonPrefStore( /* local user preferences */
             local_state_path,
             ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-        NULL));
+        NULL /* no recommended preferences */));
   }
 };
 

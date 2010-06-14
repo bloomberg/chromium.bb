@@ -43,11 +43,11 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
   PrefService pref(new PrefValueStore(
-      NULL,
+      NULL, /* no managed preferences */
       new JsonPrefStore(
         FilePath(),
         ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-      NULL));
+      NULL  /* no suggested preferences */));
 
   // Set an *old* value
   pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);

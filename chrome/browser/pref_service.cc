@@ -17,6 +17,16 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/configuration_policy_provider_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/dummy_configuration_policy_provider.h"
+#elif defined(OS_POSIX)
+#include "chrome/browser/dummy_configuration_policy_provider.h"
+#endif
+
+#include "chrome/browser/configuration_policy_pref_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -76,14 +86,32 @@ void NotifyReadError(PrefService* pref, int message_id) {
 }  // namespace
 
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
-  // Create a PrefValueStore that has user defined preference values
-  // read from a local json text file.
+  PrefStore* managed_prefs = NULL;
+  PrefStore* local_prefs = new JsonPrefStore(
+      pref_filename,
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+  PrefStore* recommended_prefs = NULL;
+
+  ConfigurationPolicyProvider* managed_prefs_provider = NULL;
+#if defined(OS_WIN)
+  managed_prefs_provider = new ConfigurationPolicyProviderWin();
+#elif defined(OS_MACOSX)
+  // TODO(markusheintz): Will be replaced by the Mac implementation.
+  managed_prefs_provider = new DummyConfigurationPolicyProvider();
+#elif defined(OS_POSIX)
+  // TODO(markusheintz): Will be replaced by the Linux implementation.
+  managed_prefs_provider = new DummyConfigurationPolicyProvider();
+#endif
+
+  // The ConfigurationPolicyPrefStore take the ownership of the passed
+  // |provider|.
+  managed_prefs = new ConfigurationPolicyPrefStore(managed_prefs_provider);
+
+  // The PrefValueStore takes to ownership of the parameters.
   PrefValueStore* value_store = new PrefValueStore(
-      NULL, /* no managed preference values */
-      new JsonPrefStore(  /* user defined preference values */
-          pref_filename,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-      NULL /* no recommended preference values */);
+      managed_prefs,
+      local_prefs,
+      recommended_prefs);
   return new PrefService(value_store);
 }
 

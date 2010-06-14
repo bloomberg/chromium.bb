@@ -11,16 +11,17 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/configuration_policy_provider.h"
 #include "chrome/browser/configuration_policy_store.h"
 #include "chrome/common/pref_store.h"
-
-class ConfigurationPolicyProvider;
 
 // An implementation of the |PrefStore| that holds a Dictionary
 // created through applied policy.
 class ConfigurationPolicyPrefStore : public PrefStore,
                                      public ConfigurationPolicyStore {
  public:
+  // The ConfigurationPolicyPrefStore takes the ownership of the passed
+  // |provider|.
   explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyPrefStore() { }
 
@@ -43,7 +44,7 @@ class ConfigurationPolicyPrefStore : public PrefStore,
 
   static const PolicyToPreferenceMapEntry simple_policy_map_[];
 
-  ConfigurationPolicyProvider* provider_;
+  scoped_ptr<ConfigurationPolicyProvider> provider_;
   scoped_ptr<DictionaryValue> prefs_;
 
   // ConfigurationPolicyStore methods:

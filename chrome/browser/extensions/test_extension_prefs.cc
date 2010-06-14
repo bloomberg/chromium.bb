@@ -43,7 +43,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
 
   // Create a |PrefService| instance that contains only user defined values.
   pref_service_.reset(new PrefService(new PrefValueStore(
-    NULL, /* no managed preference values*/
+    NULL, /* no managed preference values */
     new JsonPrefStore( /* user defined preferemnce values*/
         preferences_file_,
         ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),

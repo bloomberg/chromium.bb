@@ -529,7 +529,7 @@ class PageLoadTest : public UITest {
         .Append(chrome::kLocalStateFilename);
 
     PrefService* local_state(new PrefService(new PrefValueStore(
-        NULL, /* no menaged preference values */
+        NULL, /* no managed preference values */
         new JsonPrefStore( /* user defined preference values */
             local_state_path,
             ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),

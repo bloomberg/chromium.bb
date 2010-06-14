@@ -1023,6 +1023,7 @@
         'browser/download/save_package.cc',
         'browser/download/save_package.h',
         'browser/download/save_types.h',
+        'browser/dummy_configuration_policy_provider.h',
         'browser/encoding_menu_controller.cc',
         'browser/encoding_menu_controller.h',
         'browser/extensions/convert_user_script.cc',

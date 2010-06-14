@@ -79,12 +79,12 @@ TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   // PrefService with JSON user-pref file only, no enforced or advised prefs.
   PrefService prefs(new PrefValueStore(
-      NULL,  /* no enforced prefs */
+      NULL, /* no enforced prefs */
       new JsonPrefStore(
           FilePath(),
           ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
           /* user prefs */
-      NULL  /* no advised prefs */));
+      NULL /* no advised prefs */));
 
   // Does the migration
   NewTabUI::RegisterUserPrefs(&prefs);
