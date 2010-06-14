@@ -88,6 +88,9 @@ class ProgramManager {
     // Updates the program info after a successful link.
     void Update();
 
+    // Updates the program log info.
+    void UpdateLogInfo();
+
     const AttribInfoVector& GetAttribInfos() const {
       return attrib_infos_;
     }
@@ -140,6 +143,14 @@ class ProgramManager {
 
     bool CanLink() const;
 
+    const std::string& log_info() const {
+      return log_info_;
+    }
+
+    void set_log_info(const std::string& str) {
+      log_info_ = str;
+    }
+
    private:
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
@@ -180,6 +191,9 @@ class ProgramManager {
 
     // This is true if glLinkProgram was successful.
     bool valid_;
+
+    // Log info
+    std::string log_info_;
   };
 
   ProgramManager() { }

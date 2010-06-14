@@ -39,6 +39,15 @@ void ProgramManager::ProgramInfo::Reset() {
   sampler_indices_.clear();
   attrib_location_to_index_map_.clear();
   uniform_location_to_index_map_.clear();
+  UpdateLogInfo();
+}
+
+void ProgramManager::ProgramInfo::UpdateLogInfo() {
+  GLint len = 0;
+  glGetProgramiv(service_id_, GL_INFO_LOG_LENGTH, &len);
+  scoped_array<char> temp(new char[len]);
+  glGetProgramInfoLog(service_id_, len, &len, temp.get());
+  set_log_info(std::string(temp.get(), len));
 }
 
 void ProgramManager::ProgramInfo::Update() {
@@ -261,6 +270,17 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
     case GL_LINK_STATUS:
       *params = valid_;
       break;
+    case GL_INFO_LOG_LENGTH:
+      // Notice +1 to accomodate NULL terminator.
+      *params = log_info_.size() + 1;
+      break;
+    case GL_VALIDATE_STATUS:
+      if (!CanLink()) {
+        *params = GL_FALSE;
+      } else {
+        glGetProgramiv(service_id_, pname, params);
+      }
+      break;
     default:
       glGetProgramiv(service_id_, pname, params);
       break;
@@ -280,7 +300,7 @@ void ProgramManager::ProgramInfo::DetachShader(
 
 bool ProgramManager::ProgramInfo::CanLink() const {
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-    if (!attached_shaders_[ii]) {
+    if (!attached_shaders_[ii] || !attached_shaders_[ii]->IsValid()) {
       return false;
     }
   }

@@ -437,7 +437,15 @@ void GLES2DecoderTestBase::SetupShader(
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, GetProgramiv(program_service_id, GL_LINK_STATUS, _))
-        .WillOnce(SetArgumentPointee<2>(1))
+        .WillOnce(SetArgumentPointee<2>(GL_TRUE))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_,
+        GetProgramiv(program_service_id, GL_INFO_LOG_LENGTH, _))
+        .WillOnce(SetArgumentPointee<2>(0))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_,
+        GetProgramInfoLog(program_service_id, _, _, _))
+        .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
         GetProgramiv(program_service_id, GL_ACTIVE_ATTRIBUTES, _))
@@ -518,6 +526,9 @@ void GLES2DecoderTestBase::SetupShader(
   DoCreateShader(
       GL_FRAGMENT_SHADER, fragment_shader_client_id,
       fragment_shader_service_id);
+
+  GetShaderInfo(vertex_shader_client_id)->SetStatus(true, "");
+  GetShaderInfo(fragment_shader_client_id)->SetStatus(true, "");
 
   AttachShader attach_cmd;
   attach_cmd.Init(program_client_id, vertex_shader_client_id);

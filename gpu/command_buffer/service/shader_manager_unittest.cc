@@ -37,7 +37,12 @@ TEST_F(ShaderManagerTest, Basic) {
   EXPECT_EQ(kService1Id, info1->service_id());
   // Check if the shader has correct type.
   EXPECT_EQ(kShader1Type, info1->shader_type());
-  EXPECT_EQ(true, info1->translation_valid());
+  EXPECT_FALSE(info1->IsValid());
+  EXPECT_STREQ("", info1->log_info().c_str());
+  const char* kLog = "foo";
+  info1->SetStatus(true, kLog);
+  EXPECT_TRUE(info1->IsValid());
+  EXPECT_STREQ(kLog, info1->log_info().c_str());
   // Check we can set its source.
   info1->Update(kClient1Source);
   EXPECT_STREQ(kClient1Source.c_str(), info1->source().c_str());

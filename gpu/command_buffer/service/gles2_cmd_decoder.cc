@@ -2722,8 +2722,6 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
     return;
   }
   if (!info->CanLink()) {
-    SetGLError(GL_INVALID_OPERATION,
-               "glLinkProgram: must have both vertex and fragment shader");
     return;
   }
   glLinkProgram(info->service_id());
@@ -3287,18 +3285,27 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
     compiler = ShConstructCompiler(language, dbg_options);
     if (!ShCompile(compiler, &shader_src, 1, EShOptNone, &resources,
                    dbg_options)) {
-      info->SetTranslationStatus(false, ShGetInfoLog(compiler));
+      info->SetStatus(false, ShGetInfoLog(compiler));
       ShDestruct(compiler);
       return;
     }
-
-    info->SetTranslationStatus(true, "");
     shader_src = ShGetObjectCode(compiler);
   }
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 
   glShaderSource(info->service_id(), 1, &shader_src, NULL);
   glCompileShader(info->service_id());
+  GLint status = GL_FALSE;
+  glGetShaderiv(info->service_id(),  GL_COMPILE_STATUS, &status);
+  if (status) {
+    info->SetStatus(true, "");
+  } else {
+    GLint len = 0;
+    glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
+    scoped_array<char> temp(new char[len]);
+    glGetShaderInfoLog(info->service_id(), len, &len, temp.get());
+    info->SetStatus(false, std::string(temp.get(), len));
+  }
 #ifdef GLES2_GPU_SERVICE_TRANSLATE_SHADER
   if (use_shader_translator_) {
     ShDestruct(compiler);
@@ -3318,17 +3325,11 @@ void GLES2DecoderImpl::DoGetShaderiv(
       *params = info->source().size();
       return;
     case GL_COMPILE_STATUS:
-      if (!info->translation_valid()) {
-        *params = GL_FALSE;
-        return;
-      }
-      break;
+      *params = info->IsValid();
+      return;
     case GL_INFO_LOG_LENGTH:
-      if (!info->translation_valid()) {
-        *params = info->translation_log().size() + 1;
-        return;
-      }
-      break;
+      *params = info->log_info().size() + 1;
+      return;
     default:
       break;
   }
@@ -3360,12 +3361,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   if (!info) {
     return error::kNoError;
   }
-  GLint len = 0;
-  glGetProgramiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
-  bucket->SetSize(len);
-  glGetProgramInfoLog(
-      info->service_id(),
-      len, &len, bucket->GetDataAs<GLchar*>(0, len));
+  bucket->SetFromString(info->log_info());
   return error::kNoError;
 }
 
@@ -3380,16 +3376,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     bucket->SetSize(0);
     return error::kNoError;
   }
-  if (!info->translation_valid()) {
-    bucket->SetFromString(info->translation_log());
-  } else {
-    GLint len = 0;
-    glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
-    bucket->SetSize(len);
-    glGetShaderInfoLog(
-        info->service_id(),
-        len, &len, bucket->GetDataAs<GLchar*>(0, len));
-  }
+  bucket->SetFromString(info->log_info());
   return error::kNoError;
 }
 
@@ -3455,7 +3442,12 @@ void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
   if (!info) {
     return;
   }
+  if (!info->CanLink()) {
+    info->set_log_info("Missing Shader");
+    return;
+  }
   glValidateProgram(info->service_id());
+  info->UpdateLogInfo();
 }
 
 void GLES2DecoderImpl::DoGetVertexAttribfv(

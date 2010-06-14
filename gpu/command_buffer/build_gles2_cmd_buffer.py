@@ -1196,8 +1196,7 @@ _FUNCTION_INFO = {
   },
   'GetProgramInfoLog': {
     'type': 'STRn',
-    'get_len_func': 'glGetProgramiv',
-    'get_len_enum': 'GL_INFO_LOG_LENGTH',
+    'expectation': False,
   },
   'GetRenderbufferParameteriv': {
     'type': 'GETn',
@@ -3747,7 +3746,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
         'args': '%s, kBucketId' % args[0].GetValidArg(0, 0),
         'expect_len_code': '',
     }
-    if get_len_func[0:2] == 'gl':
+    if get_len_func and get_len_func[0:2] == 'gl':
       sub['expect_len_code'] = (
         "  EXPECT_CALL(*gl_, %s(%s, %s, _))\n"
         "      .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1));") % (

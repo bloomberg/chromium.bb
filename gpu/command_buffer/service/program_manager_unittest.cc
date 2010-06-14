@@ -48,6 +48,7 @@ TEST_F(ProgramManagerTest, Basic) {
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(kService1Id, info1->service_id());
   EXPECT_FALSE(info1->CanLink());
+  EXPECT_STREQ("", info1->log_info().c_str());
   GLuint client_id = 0;
   EXPECT_TRUE(manager_.GetClientId(info1->service_id(), &client_id));
   EXPECT_EQ(kClient1Id, client_id);
@@ -134,6 +135,14 @@ class ProgramManagerWithShaderTest : public testing::Test {
                    UniformInfo* uniforms, size_t num_uniforms,
                    GLuint service_id) {
     InSequence s;
+    EXPECT_CALL(*gl_,
+        GetProgramiv(service_id, GL_INFO_LOG_LENGTH, _))
+        .WillOnce(SetArgumentPointee<2>(0))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_,
+        GetProgramInfoLog(service_id, _, _, _))
+        .Times(1)
+        .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))
         .WillOnce(SetArgumentPointee<2>(num_attribs))
@@ -373,10 +382,12 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
       kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
   ShaderManager::ShaderInfo* vshader = shader_manager.GetShaderInfo(
       kVShaderClientId);
+  vshader->SetStatus(true, "");
   shader_manager.CreateShaderInfo(
       kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
   ShaderManager::ShaderInfo* fshader = shader_manager.GetShaderInfo(
       kFShaderClientId);
+  fshader->SetStatus(true, "");
   program_info->AttachShader(vshader);
   EXPECT_FALSE(program_info->CanLink());
   program_info->AttachShader(fshader);
@@ -387,6 +398,18 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
   EXPECT_TRUE(program_info->CanLink());
   program_info->DetachShader(fshader);
   EXPECT_FALSE(program_info->CanLink());
+  program_info->AttachShader(vshader);
+  EXPECT_FALSE(program_info->CanLink());
+  program_info->AttachShader(fshader);
+  EXPECT_TRUE(program_info->CanLink());
+  vshader->SetStatus(false, "");
+  EXPECT_FALSE(program_info->CanLink());
+  vshader->SetStatus(true, "");
+  EXPECT_TRUE(program_info->CanLink());
+  fshader->SetStatus(false, "");
+  EXPECT_FALSE(program_info->CanLink());
+  fshader->SetStatus(true, "");
+  EXPECT_TRUE(program_info->CanLink());
 }
 
 TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {

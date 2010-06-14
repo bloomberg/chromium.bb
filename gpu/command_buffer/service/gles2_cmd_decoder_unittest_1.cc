@@ -76,6 +76,14 @@ void GLES2DecoderTestBase::SpecializedSetup<GetRenderbufferParameteriv, 0>(
                     kServiceRenderbufferId);
 };
 
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<GetProgramInfoLog, 0>(
+    bool /* valid */) {
+  ProgramManager::ProgramInfo* info = GetProgramInfo(client_program_id_);
+  info->set_log_info("hello");
+};
+
+
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h"
 
 }  // namespace gles2

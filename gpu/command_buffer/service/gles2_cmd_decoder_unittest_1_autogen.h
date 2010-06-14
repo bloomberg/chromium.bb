@@ -1485,12 +1485,7 @@ TEST_F(GLES2DecoderTest1, GetProgramInfoLogValidArgs) {
   const char* kInfo = "hello";
   const uint32 kBucketId = 123;
   SpecializedSetup<GetProgramInfoLog, 0>(true);
-  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1));
-  EXPECT_CALL(
-      *gl_, GetProgramInfoLog(kServiceProgramId, strlen(kInfo) + 1, _, _))
-      .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
-                      SetArrayArgument<3>(kInfo, kInfo + strlen(kInfo) + 1)));
+
   GetProgramInfoLog cmd;
   cmd.Init(client_program_id_, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1504,8 +1499,6 @@ TEST_F(GLES2DecoderTest1, GetProgramInfoLogValidArgs) {
 
 TEST_F(GLES2DecoderTest1, GetProgramInfoLogInvalidArgs) {
   const uint32 kBucketId = 123;
-  EXPECT_CALL(*gl_, GetProgramInfoLog(_, _, _, _))
-      .Times(0);
   GetProgramInfoLog cmd;
   cmd.Init(kInvalidClientId, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

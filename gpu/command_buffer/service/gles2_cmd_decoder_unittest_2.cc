@@ -43,6 +43,9 @@ void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>(bool /* valid */) {
   DoCreateShader(
       GL_FRAGMENT_SHADER, kClientFragmentShaderId, kServiceFragmentShaderId);
 
+  GetShaderInfo(kClientVertexShaderId)->SetStatus(true, "");
+  GetShaderInfo(kClientFragmentShaderId)->SetStatus(true, "");
+
   InSequence dummy;
   EXPECT_CALL(*gl_,
               AttachShader(kServiceProgramId, kServiceVertexShaderId))
@@ -54,6 +57,14 @@ void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>(bool /* valid */) {
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
       .WillOnce(SetArgumentPointee<2>(1));
+  EXPECT_CALL(*gl_,
+      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(0))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+      GetProgramInfoLog(kServiceProgramId, _, _, _))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTES, _))
       .WillOnce(SetArgumentPointee<2>(0));
   EXPECT_CALL(
@@ -73,7 +84,30 @@ void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>(bool /* valid */) {
 
   attach_cmd.Init(client_program_id_, kClientFragmentShaderId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
+};
 
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<ValidateProgram, 0>(
+    bool /* valid */) {
+  // Needs the same setup as LinkProgram.
+  SpecializedSetup<LinkProgram, 0>(false);
+
+  EXPECT_CALL(*gl_, LinkProgram(kServiceProgramId))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  LinkProgram link_cmd;
+  link_cmd.Init(client_program_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
+
+  EXPECT_CALL(*gl_,
+      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(0))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+      GetProgramInfoLog(kServiceProgramId, _, _, _))
+      .Times(1)
+      .RetiresOnSaturation();
 };
 
 template <>

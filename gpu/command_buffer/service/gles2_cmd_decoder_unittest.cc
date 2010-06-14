@@ -913,6 +913,9 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderInfoLogValidArgs) {
   GetShaderInfoLog cmd;
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
   EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
+  EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_COMPILE_STATUS, _))
+      .WillOnce(SetArgumentPointee<2>(GL_FALSE))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_INFO_LOG_LENGTH, _))
       .WillOnce(SetArgumentPointee<2>(strlen(kInfo) + 1))
       .RetiresOnSaturation();
@@ -943,6 +946,9 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderInfoLogInvalidArgs) {
 TEST_F(GLES2DecoderTest, CompileShaderValidArgs) {
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
   EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
+  EXPECT_CALL(*gl_, GetShaderiv(kServiceShaderId, GL_COMPILE_STATUS, _))
+      .WillOnce(SetArgumentPointee<2>(GL_TRUE))
+      .RetiresOnSaturation();
   CompileShader cmd;
   cmd.Init(client_shader_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
