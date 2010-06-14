@@ -18,7 +18,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
+#include "grit/app_resources.h"
 
 // Delegate protocol that needs to be in place for the AutoFillTableView's
 // handling of delete and backspace keys.
@@ -725,12 +725,20 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 }
 
 - (id)transformedValue:(id)string {
+  NSImage* image = nil;
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (string == nil || [string length] == 0) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    NSImage* image = rb.GetNSImageNamed(IDR_WARNING);
+    image = rb.GetNSImageNamed(IDR_INPUT_ALERT);
     DCHECK(image);
     return image;
   }
+
+  if (!image) {
+    image = rb.GetNSImageNamed(IDR_INPUT_GOOD);
+    DCHECK(image);
+    return image;
+  }
+
   return nil;
 }
 
@@ -754,6 +762,8 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 }
 
 - (id)transformedValue:(id)string {
+  NSImage* image = nil;
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (string != nil && [string length] != 0) {
     // TODO(dhollowa): Using SetInfo() call to validate phone number.  Should
     // have explicit validation method.  More robust validation is needed as
@@ -762,12 +772,18 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
                     base::SysNSStringToUTF16(string));
     if (profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      NSImage* image = rb.GetNSImageNamed(IDR_WARNING);
+      image = rb.GetNSImageNamed(IDR_INPUT_ALERT);
       DCHECK(image);
       return image;
     }
   }
+
+  if (!image) {
+    image = rb.GetNSImageNamed(IDR_INPUT_GOOD);
+    DCHECK(image);
+    return image;
+  }
+
   return nil;
 }
 
