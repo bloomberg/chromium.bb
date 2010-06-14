@@ -10,6 +10,7 @@
 
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
+#include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/theme_background.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -515,7 +517,8 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
 }
 
 bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
-  if ((browser()->type() & Browser::TYPE_POPUP) == 0) {
+  if ((browser()->type() & Browser::TYPE_POPUP) == 0 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame)) {
     // Typically we don't request a full screen size. This means we'll request a
     // non-full screen size, layout/paint at that size, then the window manager
     // will snap us to full screen size. This results in an ugly
