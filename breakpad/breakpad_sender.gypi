@@ -18,11 +18,6 @@
         'include_dirs': [
           'src',
         ],
-        'link_settings': {
-          'libraries': [
-            '-lurlmon.lib',
-          ],
-        },
       }],
     ],
   },

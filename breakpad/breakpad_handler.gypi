@@ -28,11 +28,6 @@
         'include_dirs': [
           'src',
         ],
-        'link_settings': {
-          'libraries': [
-            '-lurlmon.lib',
-          ],
-        },
         'defines': [
           # Avoid the TerminateThread Application Verifier Failure.
           'BREAKPAD_NO_TERMINATE_THREAD',
