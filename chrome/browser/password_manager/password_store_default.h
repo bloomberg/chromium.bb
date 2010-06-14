@@ -15,8 +15,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
-class Task;
-
 // Simple password store implementation that delegates everything to
 // the LoginDatabase.
 class PasswordStoreDefault : public PasswordStore,

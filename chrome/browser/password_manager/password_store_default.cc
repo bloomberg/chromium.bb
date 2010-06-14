@@ -13,7 +13,7 @@
 #include "chrome/common/pref_names.h"
 
 #include "base/logging.h"
-#include "base/task.h"
+#include "base/stl_util-inl.h"
 
 using webkit_glue::PasswordForm;
 
@@ -81,6 +81,7 @@ void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
           Details<PasswordStoreChangeList>(&changes));
     }
   }
+  STLDeleteElements(&forms);
 }
 
 void PasswordStoreDefault::GetLoginsImpl(

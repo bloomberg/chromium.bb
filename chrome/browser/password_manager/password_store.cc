@@ -86,8 +86,12 @@ void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
                                        int handle,
                                        const vector<PasswordForm*> forms) {
   // Don't notify the consumer if the request was canceled.
-  if (pending_requests_.find(handle) == pending_requests_.end())
+  if (pending_requests_.find(handle) == pending_requests_.end()) {
+    // |forms| is const so we iterate rather than use STLDeleteElements().
+    for (size_t i = 0; i < forms.size(); ++i)
+      delete forms[i];
     return;
+  }
   pending_requests_.erase(handle);
 
   consumer->OnPasswordStoreRequestDone(handle, forms);
