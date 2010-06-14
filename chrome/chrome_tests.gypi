@@ -1239,7 +1239,6 @@
             'browser/bookmarks/bookmark_codec_unittest.cc',
             'browser/bookmarks/bookmark_drag_data_unittest.cc',
             'browser/browser_accessibility_unittest.cc',
-            'browser/browser_unittest.cc',
             'browser/chrome_plugin_unittest.cc',
             'browser/extensions/extension_process_manager_unittest.cc',
             'browser/importer/importer_unittest.cc',

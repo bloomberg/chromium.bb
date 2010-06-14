@@ -24,6 +24,7 @@
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/page_transition_types.h"
 #include "chrome/common/page_zoom.h"
 #include "gfx/rect.h"
 
@@ -608,6 +609,7 @@ class Browser : public TabStripModelDelegate,
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, PinnedTabDisposition);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
 
   // Used to describe why a tab is being detached. This is used by
@@ -912,6 +914,17 @@ class Browser : public TabStripModelDelegate,
   // the browser.
   bool SupportsWindowFeatureImpl(WindowFeature feature,
                                  bool check_fullscreen) const;
+
+  // Calculate a new window open disposition for a navigation. The return
+  // value will usually be |original_disposition|, but for some pinned tab cases
+  // we change it to NEW_FOREGROUND_TAB so that the pinned tab feels more
+  // permanent.
+  static WindowOpenDisposition AdjustWindowOpenDispositionForTab(
+      bool is_pinned,
+      const GURL& url,
+      const GURL& referrer,
+      PageTransition::Type transition,
+      WindowOpenDisposition original_disposition);
 
   // Data members /////////////////////////////////////////////////////////////
 

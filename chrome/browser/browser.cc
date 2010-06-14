@@ -1210,17 +1210,9 @@ void Browser::OpenCurrentURL() {
           extension->launch_container());
       CloseTabContents(selected_contents);
       return;
-    } else if (tabstrip_model()->IsTabPinned(selected_index())) {
-      // To make pinned tabs feel more permanent any requests from the omnibox
-      // to open a url in the current tab with a host different from the current
-      // host of the pinned tab result in creating a new tab. We allow changes
-      // to the path so that the user can trigger reloads or fix up parts of the
-      // url without spawning a new tab.
-      if (!selected_contents ||
-          url.host() != selected_contents->GetURL().host())
-        open_disposition = NEW_FOREGROUND_TAB;
     }
   }
+
   OpenURLAtIndex(NULL, url, GURL(),
                  open_disposition,
                  location_bar->GetPageTransition(), -1, true);
@@ -3570,6 +3562,38 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
   return false;
 }
 
+// static
+WindowOpenDisposition Browser::AdjustWindowOpenDispositionForTab(
+    bool is_pinned,
+    const GURL& url,
+    const GURL& referrer,
+    PageTransition::Type transition,
+    WindowOpenDisposition original_disposition) {
+  if (!is_pinned ||
+      original_disposition != CURRENT_TAB ||
+      (transition != PageTransition::AUTO_BOOKMARK &&
+      transition != PageTransition::LINK)) {
+    return original_disposition;
+  }
+
+  bool url_is_http_or_https =
+       url.SchemeIs(chrome::kHttpScheme) ||
+       url.SchemeIs(chrome::kHttpsScheme);
+  bool referrer_is_http_or_https =
+       referrer.SchemeIs(chrome::kHttpScheme) ||
+       referrer.SchemeIs(chrome::kHttpsScheme);
+  bool scheme_matches =
+      (url.scheme() == referrer.scheme()) ||
+      (url_is_http_or_https && referrer_is_http_or_https);
+
+  // If the host and scheme are the same, then we allow the link to open in
+  // the current tab, to make the page feel more web-appy.
+  if (url.host() == referrer.host() && scheme_matches)
+    return original_disposition;
+
+  return NEW_FOREGROUND_TAB;
+}
+
 void Browser::OpenURLAtIndex(TabContents* source,
                              const GURL& url,
                              const GURL& referrer,
@@ -3597,11 +3621,12 @@ void Browser::OpenURLAtIndex(TabContents* source,
     delegate->OnUserGesture();
   }
 
-  if (current_tab && IsPinned(current_tab) &&
-      transition == PageTransition::AUTO_BOOKMARK &&
-      disposition == CURRENT_TAB) {
-    disposition = NEW_FOREGROUND_TAB;
-  }
+  transition = AdjustWindowOpenDispositionForTab(
+      current_tab && IsPinned(current_tab),
+      url,
+      referrer,
+      transition,
+      disposition);
 
   if (HandleCrossAppNavigation(current_tab, url, referrer, &disposition,
                                transition)) {

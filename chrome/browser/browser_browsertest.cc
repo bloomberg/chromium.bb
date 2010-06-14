@@ -885,3 +885,85 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
   ASSERT_EQ(browser(), BrowserList::GetLastActive());
   ASSERT_EQ(2, browser()->tab_count());
 }
+
+// TODO(ben): this test was never enabled. It has bit-rotted since being added.
+// It originally lived in browser_unittest.cc, but has been moved here to make
+// room for real browser unit tests.
+#if 0
+class BrowserTest2 : public InProcessBrowserTest {
+ public:
+  BrowserTest2() {
+    host_resolver_proc_ = new net::RuleBasedHostResolverProc(NULL);
+    // Avoid making external DNS lookups. In this test we don't need this
+    // to succeed.
+    host_resolver_proc_->AddSimulatedFailure("*.google.com");
+    scoped_host_resolver_proc_.Init(host_resolver_proc_.get());
+  }
+
+ private:
+  scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc_;
+  net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
+};
+
+IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
+  Browser::RegisterAppPrefs(L"Test");
+
+  // We start with a normal browser with one tab.
+  EXPECT_EQ(1, browser()->tab_count());
+
+  // Open a popup browser with a single blank foreground tab.
+  Browser* popup_browser = browser()->CreateForPopup(browser()->profile());
+  popup_browser->AddBlankTab(true);
+  EXPECT_EQ(1, popup_browser->tab_count());
+
+  // Now try opening another tab in the popup browser.
+  popup_browser->AddTabWithURL(
+      GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
+      Browser::ADD_SELECTED, NULL, std::string());
+
+  // The popup should still only have one tab.
+  EXPECT_EQ(1, popup_browser->tab_count());
+
+  // The normal browser should now have two.
+  EXPECT_EQ(2, browser()->tab_count());
+
+  // Open an app frame browser with a single blank foreground tab.
+  Browser* app_browser =
+      browser()->CreateForApp(L"Test", browser()->profile(), false);
+  app_browser->AddBlankTab(true);
+  EXPECT_EQ(1, app_browser->tab_count());
+
+  // Now try opening another tab in the app browser.
+  app_browser->AddTabWithURL(
+      GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
+      Browser::ADD_SELECTED, NULL, std::string());
+
+  // The popup should still only have one tab.
+  EXPECT_EQ(1, app_browser->tab_count());
+
+  // The normal browser should now have three.
+  EXPECT_EQ(3, browser()->tab_count());
+
+  // Open an app frame popup browser with a single blank foreground tab.
+  Browser* app_popup_browser =
+      browser()->CreateForApp(L"Test", browser()->profile(), false);
+  app_popup_browser->AddBlankTab(true);
+  EXPECT_EQ(1, app_popup_browser->tab_count());
+
+  // Now try opening another tab in the app popup browser.
+  app_popup_browser->AddTabWithURL(
+      GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
+      Browser::ADD_SELECTED, NULL, std::string());
+
+  // The popup should still only have one tab.
+  EXPECT_EQ(1, app_popup_browser->tab_count());
+
+  // The normal browser should now have four.
+  EXPECT_EQ(4, browser()->tab_count());
+
+  // Close the additional browsers.
+  popup_browser->CloseAllTabs();
+  app_browser->CloseAllTabs();
+  app_popup_browser->CloseAllTabs();
+}
+#endif
