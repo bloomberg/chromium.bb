@@ -14,6 +14,7 @@
 
 struct ViewHostMsg_IndexedDatabaseOpen_Params;
 struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
+struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
 
 namespace WebKit {
 class WebIDBDatabase;
@@ -51,6 +52,7 @@ class IndexedDBDispatcherHost
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
   int32 Add(WebKit::WebIDBDatabase* idb_database);
+  int32 Add(WebKit::WebIDBIndex* idb_index);
   int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
 
  private:
@@ -91,7 +93,10 @@ class IndexedDBDispatcherHost
     void OnObjectStores(int32 idb_database_id, IPC::Message* reply_msg);
     void OnCreateObjectStore(
         const ViewHostMsg_IDBDatabaseCreateObjectStore_Params& params);
-
+    void OnObjectStore(int32 idb_database_id, const string16& name, int32 mode,
+                       IPC::Message* reply_msg);
+    void OnRemoveObjectStore(int32 idb_database_id, int32 response_id,
+                             const string16& name);
     void OnDestroyed(int32 idb_database_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -125,6 +130,13 @@ class IndexedDBDispatcherHost
 
     void OnName(int32 idb_object_store_id, IPC::Message* reply_msg);
     void OnKeyPath(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnIndexNames(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnCreateIndex(
+        const ViewHostMsg_IDBObjectStoreCreateIndex_Params& params);
+    void OnIndex(int32 idb_object_store_id, const string16& name,
+                 IPC::Message* reply_msg);
+    void OnRemoveIndex(int32 idb_object_store_id, int32 response_id,
+                       const string16& name);
     void OnDestroyed(int32 idb_object_store_id);
 
     IndexedDBDispatcherHost* parent_;

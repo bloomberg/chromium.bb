@@ -158,6 +158,10 @@ int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database) {
   return database_dispatcher_host_->map_.Add(idb_database);
 }
 
+int32 IndexedDBDispatcherHost::Add(WebIDBIndex* idb_index) {
+  return index_dispatcher_host_->map_.Add(idb_index);
+}
+
 int32 IndexedDBDispatcherHost::Add(WebIDBObjectStore* idb_object_store) {
   return object_store_dispatcher_host_->map_.Add(idb_object_store);
 }
@@ -170,10 +174,7 @@ void IndexedDBDispatcherHost::OnIndexedDatabaseOpen(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   Context()->GetIndexedDatabase()->open(
       params.name_, params.description_,
-      new IndexedDBCallbacks<WebIDBDatabase,
-                             ViewMsg_IndexedDatabaseOpenSuccess,
-                             ViewMsg_IndexedDatabaseOpenError>(
-                             this, params.response_id_),
+      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL);
 }
 
@@ -245,6 +246,10 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                                     OnObjectStores)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseCreateObjectStore,
                         OnCreateObjectStore)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseObjectStore,
+                                    OnObjectStore)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseRemoveObjectStore,
+                        OnRemoveObjectStore)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -287,6 +292,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObjectStores(
 
   WebDOMStringList web_object_stores = idb_database->objectStores();
   std::vector<string16> object_stores;
+  object_stores.reserve(web_object_stores.length());
   for (unsigned i = 0; i < web_object_stores.length(); ++i)
     object_stores[i] = web_object_stores.item(i);
   ViewHostMsg_IDBDatabaseObjectStores::WriteReplyParams(reply_msg,
@@ -299,15 +305,40 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
       &map_, params.idb_database_id_, NULL,
-      ViewHostMsg_IDBDatabaseObjectStores::ID);
+      ViewHostMsg_IDBDatabaseCreateObjectStore::ID);
   if (!idb_database)
     return;
   idb_database->createObjectStore(
       params.name_, params.keypath_, params.auto_increment_,
-      new IndexedDBCallbacks<WebIDBObjectStore,
-                             ViewMsg_IDBDatabaseCreateObjectStoreSuccess,
-                             ViewMsg_IDBDatabaseCreateObjectStoreError>(
-                             parent_, params.response_id_));
+      new IndexedDBCallbacks<WebIDBObjectStore>(parent_, params.response_id_));
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObjectStore(
+    int32 idb_database_id, const string16& name, int32 mode,
+    IPC::Message* reply_msg) {
+  WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
+      &map_, idb_database_id, reply_msg,
+      ViewHostMsg_IDBDatabaseObjectStore::ID);
+  if (!idb_database)
+    return;
+
+  WebIDBObjectStore* object_store = idb_database->objectStore(name, mode);
+  int32 object_id = object_store ? parent_->Add(object_store) : 0;
+  ViewHostMsg_IDBDatabaseObjectStore::WriteReplyParams(
+      reply_msg, !!object_store, object_id);
+  parent_->Send(reply_msg);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
+    int32 idb_database_id, int32 response_id, const string16& name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
+      &map_, idb_database_id, NULL,
+      ViewHostMsg_IDBDatabaseRemoveObjectStore::ID);
+  if (!idb_database)
+    return;
+  idb_database->removeObjectStore(
+      name, new IndexedDBCallbacks<WebIDBObjectStore>(parent_, response_id));
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
@@ -419,6 +450,64 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnKeyPath(
     int32 object_id, IPC::Message* reply_msg) {
   parent_->SyncGetter<string16, ViewHostMsg_IDBObjectStoreKeyPath>(
       &map_, object_id, reply_msg, &WebIDBObjectStore::keyPath);
+}
+
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
+    int32 idb_object_store_id, IPC::Message* reply_msg) {
+  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
+      &map_, idb_object_store_id, reply_msg,
+      ViewHostMsg_IDBObjectStoreIndexNames::ID);
+  if (!idb_object_store)
+    return;
+
+  WebDOMStringList web_index_names = idb_object_store->indexNames();
+  std::vector<string16> index_names;
+  index_names.reserve(web_index_names.length());
+  for (unsigned i = 0; i < web_index_names.length(); ++i)
+    index_names[i] = web_index_names.item(i);
+  ViewHostMsg_IDBObjectStoreIndexNames::WriteReplyParams(reply_msg,
+                                                         index_names);
+  parent_->Send(reply_msg);
+}
+
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
+   const ViewHostMsg_IDBObjectStoreCreateIndex_Params& params) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
+      &map_, params.idb_object_store_id_, NULL,
+      ViewHostMsg_IDBObjectStoreCreateIndex::ID);
+  if (!idb_object_store)
+    return;
+  idb_object_store->createIndex(
+      params.name_, params.keypath_, params.unique_,
+      new IndexedDBCallbacks<WebIDBIndex>(parent_, params.response_id_));
+}
+
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndex(
+    int32 idb_object_store_id, const string16& name, IPC::Message* reply_msg) {
+  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
+      &map_, idb_object_store_id, reply_msg,
+      ViewHostMsg_IDBObjectStoreIndex::ID);
+  if (!idb_object_store)
+    return;
+
+  WebIDBIndex* index = idb_object_store->index(name);
+  int32 object_id = index ? parent_->Add(index) : 0;
+  ViewHostMsg_IDBObjectStoreIndex::WriteReplyParams(reply_msg, !!index,
+                                                    object_id);
+  parent_->Send(reply_msg);
+}
+
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemoveIndex(
+    int32 idb_object_store_id, int32 response_id, const string16& name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
+      &map_, idb_object_store_id, NULL,
+      ViewHostMsg_IDBObjectStoreRemoveIndex::ID);
+  if (!idb_object_store)
+    return;
+  idb_object_store->removeIndex(
+      name, new IndexedDBCallbacks<void>(parent_, response_id));
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDestroyed(

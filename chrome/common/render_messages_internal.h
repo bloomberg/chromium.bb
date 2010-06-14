@@ -845,20 +845,19 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_DOMStorageEvent,
                        ViewMsg_DOMStorageEvent_Params)
 
-  // IndexedDatabase::open message responses.
-  IPC_MESSAGE_CONTROL2(ViewMsg_IndexedDatabaseOpenSuccess,
+  // IDBCallback message handlers.
+  IPC_MESSAGE_CONTROL1(ViewMsg_IDBCallbackSuccessReturnNull,
+                       int32 /* response_id */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessCreateIDBDatabase,
                        int32 /* response_id */,
                        int32 /* idb_database_id */)
-  IPC_MESSAGE_CONTROL3(ViewMsg_IndexedDatabaseOpenError,
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessCreateIDBObjectStore,
                        int32 /* response_id */,
-                       int /* code */,
-                       string16 /* message */)
-
-  // IDBDatabase::createObjectStore message responses.
-  IPC_MESSAGE_CONTROL2(ViewMsg_IDBDatabaseCreateObjectStoreSuccess,
+                       int32 /* idb_callback_id */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessCreateIDBIndex,
                        int32 /* response_id */,
-                       int32 /* object_store_id */)
-  IPC_MESSAGE_CONTROL3(ViewMsg_IDBDatabaseCreateObjectStoreError,
+                       int32 /* idb_index_id */)
+  IPC_MESSAGE_CONTROL3(ViewMsg_IDBCallbackError,
                        int32 /* response_id */,
                        int /* code */,
                        string16 /* message */)
@@ -2208,6 +2207,20 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseCreateObjectStore,
                        ViewHostMsg_IDBDatabaseCreateObjectStore_Params)
 
+  // WebIDBDatabase::objectStore() message.
+  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_IDBDatabaseObjectStore,
+                              int32, /* idb_database_id */
+                              string16, /* name */
+                              int32, /* mode */
+                              bool, /* success */
+                              int32 /* idb_object_store_id */)
+
+  // WebIDBDatabase::removeObjectStore() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBDatabaseRemoveObjectStore,
+                       int32, /* idb_database_id */
+                       int32, /* response_id */
+                       string16 /* name */)
+
   // WebIDBDatabase::~WebIDBDatabase() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseDestroyed,
                        int32 /* idb_database_id */)
@@ -2240,6 +2253,28 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreKeyPath,
                               int32, /* idb_object_store_id */
                               string16 /* keyPath */)
+
+  // WebIDBObjectStore::indexNames() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreIndexNames,
+                              int32, /* idb_object_store_id */
+                              std::vector<string16> /* index_names */)
+
+  // WebIDBObjectStore::createIndex() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreCreateIndex,
+                       ViewHostMsg_IDBObjectStoreCreateIndex_Params)
+
+  // WebIDBObjectStore::index() message.
+  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_IDBObjectStoreIndex,
+                              int32, /* idb_object_store_id */
+                              string16, /* name */
+                              bool, /* success */
+                              int32 /* idb_index_id */)
+
+  // WebIDBObjectStore::removeIndex() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBObjectStoreRemoveIndex,
+                       int32, /* idb_object_store_id */
+                       int32, /* response_id */
+                       string16 /* name */)
 
   // WebIDBObjectStore::~WebIDBObjectStore() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreDestroyed,

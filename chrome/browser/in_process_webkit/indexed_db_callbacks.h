@@ -9,31 +9,81 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "chrome/common/render_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
 
+// Template magic to figure out what message to send to the renderer based on
+// which (overloaded) onSuccess method we expect to be called.
+template <class Type> struct WebIDBToMsgHelper { };
+template <> struct WebIDBToMsgHelper<WebKit::WebIDBDatabase> {
+  typedef ViewMsg_IDBCallbackSuccessCreateIDBDatabase MsgType;
+};
+template <> struct WebIDBToMsgHelper<WebKit::WebIDBIndex> {
+  typedef ViewMsg_IDBCallbackSuccessCreateIDBIndex MsgType;
+};
+template <> struct WebIDBToMsgHelper<WebKit::WebIDBObjectStore> {
+  typedef ViewMsg_IDBCallbackSuccessCreateIDBObjectStore MsgType;
+};
 
-template <class WebObjectType, typename SuccessMsgType, typename ErrorMsgType>
-class IndexedDBCallbacks : public WebKit::WebIDBCallbacks {
+// The code the following two classes share.
+class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
  public:
-  IndexedDBCallbacks(
+  IndexedDBCallbacksBase(
       IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
       : dispatcher_host_(dispatcher_host), response_id_(response_id) { }
 
   virtual void onError(const WebKit::WebIDBDatabaseError& error) {
-    dispatcher_host_->Send(new ErrorMsgType(
+    dispatcher_host_->Send(new ViewMsg_IDBCallbackError(
         response_id_, error.code(), error.message()));
   }
 
-  virtual void onSuccess(WebObjectType* idb_object) {
-    int32 object_id = dispatcher_host_->Add(idb_object);
-    dispatcher_host_->Send(new SuccessMsgType(response_id_, object_id));
+ protected:
+  IndexedDBDispatcherHost* dispatcher_host() const {
+    return dispatcher_host_.get();
   }
+  int32 response_id() const { return response_id_; }
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int32 response_id_;
 
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksBase);
+};
+
+// A WebIDBCallbacks implementation that returns an object of WebObjectType.
+template <class WebObjectType>
+class IndexedDBCallbacks : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+
+  virtual void onSuccess(WebObjectType* idb_object) {
+    int32 object_id = dispatcher_host()->Add(idb_object);
+    dispatcher_host()->Send(
+        new typename WebIDBToMsgHelper<WebObjectType>::MsgType(response_id(),
+                                                               object_id));
+  }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
+// A WebIDBCallbacks implementation that doesn't return a result.
+template <>
+class IndexedDBCallbacks<void> : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+
+  virtual void onSuccess() {
+    dispatcher_host()->Send(
+        new ViewMsg_IDBCallbackSuccessReturnNull(response_id()));
+  }
+
+ private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 

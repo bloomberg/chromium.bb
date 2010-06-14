@@ -34,24 +34,29 @@ class IndexedDBDispatcher {
       const string16& name, const string16& keypath, bool auto_increment,
       WebKit::WebIDBCallbacks* callbacks, int32 idb_database_id);
 
+  void RequestIDBDatabaseRemoveObjectStore(
+      const string16& name, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_database_id);
+
+  void RequestIDBObjectStoreCreateIndex(
+      const string16& name, const string16& keypath, bool unique,
+      WebKit::WebIDBCallbacks* callbacks, int32 idb_object_store_id);
+
+  void RequestIDBObjectStoreRemoveIndex(
+      const string16& name, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id);
+
  private:
-  // Message handlers.  For each message we send, we need to handle both the
-  // success and the error case.
-  void OnIndexedDatabaseOpenSuccess(int32 response_id,
-                                    int32 idb_database_id);
-  void OnIndexedDatabaseOpenError(int32 response_id, int code,
-                                  const string16& message);
-  void OnIDBDatabaseCreateObjectStoreSuccess(int32 response_id,
-                                             int32 idb_object_store_id);
-  void OnIDBDatabaseCreateObjectStoreError(int32 response_id, int code,
-                                           const string16& message);
+  // IDBCallback message handlers.
+  void OnSuccessReturnNull(int32 response_id);
+  void OnSuccessCreateIDBDatabase(int32 response_id, int32 object_id);
+  void OnSuccessCreateIDBObjectStore(int32 response_id, int32 object_id);
+  void OnSuccessCreateIDBIndex(int32 response_id, int32 object_id);
+  void OnError(int32 response_id, int code, const string16& message);
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.
-  IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer>
-      indexed_database_open_callbacks_;
-  IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer>
-      idb_database_create_object_store_callbacks_;
+  IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };
