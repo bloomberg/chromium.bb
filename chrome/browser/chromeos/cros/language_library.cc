@@ -183,6 +183,11 @@ chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
   return result;
 }
 
+size_t LanguageLibraryImpl::GetNumActiveInputMethods() {
+  scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
+  return input_methods->size();
+}
+
 chromeos::InputMethodDescriptors*
 LanguageLibraryImpl::GetSupportedInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;

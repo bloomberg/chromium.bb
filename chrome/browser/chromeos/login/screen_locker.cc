@@ -410,6 +410,10 @@ void ScreenLocker::OnLoginFailure(const std::string& error) {
   if (!error.empty())
     msg += L"\n" + ASCIIToWide(error);
 
+  LanguageLibrary* language_library = CrosLibrary::Get()->GetLanguageLibrary();
+  if (language_library->GetNumActiveInputMethods() > 1)
+    msg += L"\n" + l10n_util::GetString(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
+
   error_info_ = MessageBubble::ShowNoGrab(
       lock_window_,
       rect,

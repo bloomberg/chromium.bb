@@ -38,6 +38,9 @@ class LanguageLibrary {
   // returns a fallback input method list (and never returns NULL).
   virtual InputMethodDescriptors* GetActiveInputMethods() = 0;
 
+  // Returns the number of active input methods.
+  virtual size_t GetNumActiveInputMethods() = 0;
+
   // Returns the list of input methods we support, including ones not active.
   // If the cros library is not found or IBus/DBus daemon is not alive, this
   // function returns a fallback input method list (and never returns NULL).
@@ -125,6 +128,7 @@ class LanguageLibraryImpl : public LanguageLibrary {
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
   virtual InputMethodDescriptors* GetActiveInputMethods();
+  virtual size_t GetNumActiveInputMethods();
   virtual InputMethodDescriptors* GetSupportedInputMethods();
   virtual void ChangeInputMethod(const std::string& input_method_id);
   virtual void SetImePropertyActivated(const std::string& key,
