@@ -7,21 +7,13 @@ meta-refresh timer is scheduled, so we use a non-zero timeout of 1msec for this.
   <head>
     <meta http-equiv="refresh" content="20000">
     <script>
-      // Function to simulate a user clicking on the button, so
-      // the anchor navigation is not flagged as a redirect.
-      function clickButton() {
-	var node = document.getElementById("mybutton");
-        var evt = document.createEvent("MouseEvents");
-        evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0,
-	                   false, false, false, false, 0, null);
-        node.dispatchEvent(evt)
-      }
-      function changeLocAfterTimeout() {
-        setTimeout("clickButton()", 1);
+      function click() {
+        document.location = "#myanchor";
+        return true;
       }
     </script>
   </head>
-  <body onload="changeLocAfterTimeout()">
+  <body>
 	  <input type="button" id="mybutton" onclick="document.location='#myanchor'"/>
       	  <a name="myanchor">Anchor</a><br/>
   </body>
