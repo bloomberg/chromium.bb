@@ -58,6 +58,10 @@ const SkColor kDisabledShortcutColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
 // window. We use this value to prevent the candidate window from being
 // too narrow when all candidates are short.
 const int kMinCandidateLabelWidth = 100;
+// The maximum width of candidate labels in the vertical candidate
+// window. We use this value to prevent the candidate window from being
+// too wide when one of candidates are long.
+const int kMaxCandidateLabelWidth = 500;
 
 // Wraps the given view with some padding, and returns it.
 views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
@@ -284,6 +288,9 @@ class VerticalCandidateLabel : public views::Label {
     size.set_width(size.width() + 2);
     if (size.width() < kMinCandidateLabelWidth) {
       size.set_width(kMinCandidateLabelWidth);
+    }
+    if (size.width() > kMaxCandidateLabelWidth) {
+      size.set_width(kMaxCandidateLabelWidth);
     }
     return size;
   }
