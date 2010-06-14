@@ -25,10 +25,6 @@ void TooltipWindowGtk::SetTooltipText(const std::wstring& text) {
   const std::string& utf8 = WideToUTF8(text);
 
   gtk_label_set_text(label(), utf8.c_str());
-  // Setting the text in a label doesn't force recalculating wrap position.
-  // We force recalculating wrap position by resetting the max width.
-  gtk_label_set_max_width_chars(label(), 2999);
-  gtk_label_set_max_width_chars(label(), 3000);
 }
 
 void  TooltipWindowGtk::Init() {
@@ -55,7 +51,6 @@ void  TooltipWindowGtk::Init() {
 
   label_ = gtk_label_new("");
   gtk_label_set_line_wrap(GTK_LABEL(label_), TRUE);
-  gtk_label_set_max_width_chars(GTK_LABEL(label_), 3000);
   gtk_container_add(GTK_CONTAINER(alignment_), label_);
   gtk_widget_show(label_);
 
