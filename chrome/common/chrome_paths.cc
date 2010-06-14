@@ -34,20 +34,18 @@ const FilePath::CharType kInternalFlashPluginFileName[] =
 
 namespace chrome {
 
-// Gets the path for internal (or bundled) plugins.
+// Gets the path for internal plugins.
 bool GetInternalPluginsDirectory(FilePath* result) {
 #if defined(OS_MACOSX)
-  // If called from Chrome, get internal plugins from the versioned directory.
-  if (mac_util::AmIBundled()) {
-    *result = chrome::GetVersionedDirectory();
-    DCHECK(!result->empty());
-    return true;
-  }
-  // In tests, just look in the module directory (below).
-#endif
-
+  // On Mac, internal plugins reside in subdirectory of the framework.
+  *result = chrome::GetFrameworkBundlePath();
+  DCHECK(!result->empty());
+  *result = result->Append("Internet Plug-Ins");
+  return true;
+#else
   // The rest of the world expects plugins in the module directory.
   return PathService::Get(base::DIR_MODULE, result);
+#endif
 }
 
 bool GetGearsPluginPathFromCommandLine(FilePath* path) {

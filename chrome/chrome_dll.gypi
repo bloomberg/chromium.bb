@@ -284,6 +284,10 @@
                 # Bring in pdfsqueeze and run it on all pdfs
                 '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
                 '../build/util/support/support.gyp:*',
+                # On Mac, Flash gets put into the framework, so we need this
+                # dependency here. flash_player.gyp will copy the Flash bundle
+                # into PRODUCT_DIR.
+                '../third_party/adobe/flash/flash_player.gyp:flash_player',
               ],
               'rules': [
                 {
@@ -459,6 +463,18 @@
                     # TODO(ajwong): Find a way to share this path with
                     # ffmpeg.gyp so they don't diverge. (BUG=23602)
                     '<(PRODUCT_DIR)/libffmpegsumo.dylib',
+                  ],
+                },
+                {
+                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins',
+                  'files': [],
+                  'conditions': [
+                    [ 'branding == "Chrome"', {
+                      'files': [
+                        '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
+                        '<(PRODUCT_DIR)/plugin.vch',
+                      ],
+                    }],
                   ],
                 },
               ],
