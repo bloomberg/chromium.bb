@@ -64,6 +64,12 @@ IN_PROC_BROWSER_TEST_F(LanguageMenuButtonTest, InitialIndicatorTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(LanguageMenuButtonTest, IndicatorAndTooltipUpdateTest) {
+  EXPECT_CALL(*mock_language_library_, previous_input_method())
+      .Times(3)
+      .WillOnce(ReturnRef(invalid_desc_))
+      .WillOnce(ReturnRef(invalid_desc_))
+      .WillOnce(ReturnRef(invalid_desc_))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_language_library_, current_input_method())
       .Times(3)
       .WillOnce(ReturnRef(korean_desc_))

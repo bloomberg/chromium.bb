@@ -88,8 +88,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
         saved_active_input_method_list_.empty()) {
       chromeos::LanguageLibrary* language =
           chromeos::CrosLibrary::Get()->GetLanguageLibrary();
+      saved_previous_input_method_id_ = language->previous_input_method().id;
       saved_current_input_method_id_ = language->current_input_method().id;
-      // TODO(yusukes): save/restore previous input method ID.
       scoped_ptr<chromeos::InputMethodDescriptors> active_input_method_list(
           language->GetActiveInputMethods());
 
@@ -125,14 +125,20 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       language->SetImeConfig(chromeos::kGeneralSectionName,
                              chromeos::kPreloadEnginesConfigName,
                              value);
-      language->ChangeInputMethod(saved_current_input_method_id_);
+      // Send previous input method id first so Ctrl+space would work fine.
+      if (!saved_previous_input_method_id_.empty())
+        language->ChangeInputMethod(saved_previous_input_method_id_);
+      if (!saved_current_input_method_id_.empty())
+        language->ChangeInputMethod(saved_current_input_method_id_);
 
+      saved_previous_input_method_id_.clear();
       saved_current_input_method_id_.clear();
       saved_active_input_method_list_.clear();
     }
   }
 
   NotificationRegistrar registrar_;
+  std::string saved_previous_input_method_id_;
   std::string saved_current_input_method_id_;
   std::vector<std::string> saved_active_input_method_list_;
 
@@ -298,7 +304,7 @@ class MouseEventRelay : public MessageLoopForUI::Observer {
 // without asking password. Used in BWSI and auto login mode.
 class InputEventObserver : public MessageLoopForUI::Observer {
  public:
-  InputEventObserver(ScreenLocker* screen_locker)
+  explicit InputEventObserver(ScreenLocker* screen_locker)
       : screen_locker_(screen_locker),
         activated_(false) {
   }

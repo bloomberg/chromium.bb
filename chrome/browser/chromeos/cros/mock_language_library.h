@@ -28,6 +28,7 @@ class MockLanguageLibrary : public LanguageLibrary {
   MOCK_METHOD3(GetImeConfig, bool(const char*, const char*, ImeConfigValue*));
   MOCK_METHOD3(SetImeConfig, bool(const char*, const char*,
                                   const ImeConfigValue&));
+  MOCK_CONST_METHOD0(previous_input_method, const InputMethodDescriptor&(void));
   MOCK_CONST_METHOD0(current_input_method, const InputMethodDescriptor&(void));
   MOCK_CONST_METHOD0(current_ime_properties, const ImePropertyList&(void));
 };

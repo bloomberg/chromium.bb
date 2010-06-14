@@ -148,6 +148,7 @@ std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
 
 LanguageLibraryImpl::LanguageLibraryImpl()
     : input_method_status_connection_(NULL),
+      previous_input_method_("", "", "", ""),
       current_input_method_("", "", "", "") {
   scoped_ptr<InputMethodDescriptors> input_method_descriptors(
       CreateFallbackInputMethodDescriptors());
@@ -336,25 +337,28 @@ bool LanguageLibraryImpl::EnsureLoadedAndStarted() {
 }
 
 void LanguageLibraryImpl::UpdateCurrentInputMethod(
-    const chromeos::InputMethodDescriptor& current_input_method) {
+    const chromeos::InputMethodDescriptor& new_input_method) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     DLOG(INFO) << "UpdateCurrentInputMethod (Background thread)";
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        // NewRunnableMethod() copies |current_input_method| by value.
+        // NewRunnableMethod() copies |new_input_method| by value.
         NewRunnableMethod(
             this, &LanguageLibraryImpl::UpdateCurrentInputMethod,
-            current_input_method));
+            new_input_method));
     return;
   }
 
   DLOG(INFO) << "UpdateCurrentInputMethod (UI thread)";
   // Change the keyboard layout to a preferred layout for the input method.
   chromeos::SetCurrentKeyboardLayoutByName(
-      current_input_method.keyboard_layout);
+      new_input_method.keyboard_layout);
 
-  current_input_method_ = current_input_method;
+  if (current_input_method_.id != new_input_method.id) {
+    previous_input_method_ = current_input_method_;
+    current_input_method_ = new_input_method;
+  }
   FOR_EACH_OBSERVER(Observer, observers_, InputMethodChanged(this));
 }
 

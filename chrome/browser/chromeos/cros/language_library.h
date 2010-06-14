@@ -77,6 +77,7 @@ class LanguageLibrary {
                             const char* config_name,
                             const ImeConfigValue& value) = 0;
 
+  virtual const InputMethodDescriptor& previous_input_method() const = 0;
   virtual const InputMethodDescriptor& current_input_method() const = 0;
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
@@ -135,6 +136,9 @@ class LanguageLibraryImpl : public LanguageLibrary {
                             const char* config_name,
                             const ImeConfigValue& value);
 
+  virtual const InputMethodDescriptor& previous_input_method() const {
+    return previous_input_method_;
+  }
   virtual const InputMethodDescriptor& current_input_method() const {
     return current_input_method_;
   }
@@ -191,7 +195,8 @@ class LanguageLibraryImpl : public LanguageLibrary {
   InputMethodStatusConnection* input_method_status_connection_;
   ObserverList<Observer> observers_;
 
-  // The input method which is currently selected.
+  // The input method which was/is selected.
+  InputMethodDescriptor previous_input_method_;
   InputMethodDescriptor current_input_method_;
 
   // The input method properties which the current input method uses. The list

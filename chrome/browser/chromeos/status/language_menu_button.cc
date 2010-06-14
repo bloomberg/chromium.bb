@@ -402,17 +402,17 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
   UserMetrics::RecordAction(
       UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
 
-  const InputMethodDescriptor& input_method =
+  const InputMethodDescriptor& previous_input_method =
+      obj->previous_input_method();
+  const InputMethodDescriptor& current_input_method =
       obj->current_input_method();
-  UpdateIconFromInputMethod(input_method);
+  UpdateIconFromInputMethod(current_input_method);
+
   // Update Chrome prefs as well.
   if (GetPrefService(host_)) {
-    const std::wstring& previous_input_method_id =
-        current_input_method_pref_.GetValue();
-    // Sometimes (e.g. initial boot) |previous_input_method_id| is an empty
-    // string.
-    previous_input_method_pref_.SetValue(previous_input_method_id);
-    current_input_method_pref_.SetValue(UTF8ToWide(input_method.id));
+    // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
+    previous_input_method_pref_.SetValue(UTF8ToWide(previous_input_method.id));
+    current_input_method_pref_.SetValue(UTF8ToWide(current_input_method.id));
   }
 }
 
