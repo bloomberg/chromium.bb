@@ -2127,7 +2127,6 @@ bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   return (wm_name == "Blackbox" ||
           wm_name == "compiz" ||
           wm_name == "e16" ||  // Enlightenment DR16
-          wm_name == "KWin" ||
           wm_name == "Metacity" ||
           wm_name == "Mutter" ||
           wm_name == "Openbox" ||
