@@ -342,6 +342,7 @@ wl_event_source_idle_remove(struct wl_event_source *source)
 		(struct wl_event_source_idle *) source;
 
 	wl_list_remove(&idle_source->link);
+	free(source);
 
 	return 0;
 }

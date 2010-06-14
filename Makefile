@@ -28,6 +28,7 @@ $(libs) :
 compositor :					\
 	compositor.o				\
 	compositor-drm.o			\
+	compositor-x11.o			\
 	screenshooter.o				\
 	cairo-util.o
 

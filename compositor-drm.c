@@ -37,8 +37,43 @@
 #include "wayland-protocol.h"
 #include "compositor.h"
 
+struct drm_compositor {
+	struct wlsc_compositor base;
+
+	struct udev *udev;
+	struct wl_event_source *drm_source;
+	int drm_fd;
+
+	struct wl_event_source *term_signal_source;
+
+        /* tty handling state */
+	int tty_fd;
+	uint32_t vt_active : 1;
+
+	struct termios terminal_attributes;
+	struct wl_event_source *tty_input_source;
+	struct wl_event_source *enter_vt_source;
+	struct wl_event_source *leave_vt_source;
+};
+
+struct drm_output {
+	struct wlsc_output   base;
+
+	drmModeModeInfo mode;
+	uint32_t crtc_id;
+	uint32_t connector_id;
+	GLuint rbo[2];
+	uint32_t fb_id[2];
+	EGLImageKHR image[2];
+	uint32_t current;	
+};
+
+struct drm_input {
+	struct wlsc_input_device base;
+};
+
 struct evdev_input_device {
-	struct wlsc_input_device *device;
+	struct drm_input *master;
 	struct wl_event_source *source;
 	int tool, new_x, new_y;
 	int base_x, base_y;
@@ -47,16 +82,21 @@ struct evdev_input_device {
 
 static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 {
+	struct drm_compositor *c;
 	struct evdev_input_device *device = data;
 	struct input_event ev[8], *e, *end;
 	int len, value, dx, dy, absolute_event;
 	int x, y;
 
+	c = (struct drm_compositor *) device->master->base.ec;
+	if (!c->vt_active)
+		return;
+
 	dx = 0;
 	dy = 0;
 	absolute_event = 0;
-	x = device->device->x;
-	y = device->device->y;
+	x = device->master->base.x;
+	y = device->master->base.y;
 
 	len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
@@ -132,24 +172,26 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 			case BTN_FORWARD:
 			case BTN_BACK:
 			case BTN_TASK:
-				notify_button(device->device, e->code, value);
+				notify_button(&device->master->base,
+					      e->code, value);
 				break;
 
 			default:
-				notify_key(device->device, e->code, value);
+				notify_key(&device->master->base,
+					   e->code, value);
 				break;
 			}
 		}
 	}
 
 	if (dx != 0 || dy != 0)
-		notify_motion(device->device, x + dx, y + dy);
+		notify_motion(&device->master->base, x + dx, y + dy);
 	if (absolute_event && device->tool)
-		notify_motion(device->device, x, y);
+		notify_motion(&device->master->base, x, y);
 }
 
 static struct evdev_input_device *
-evdev_input_device_create(struct wlsc_input_device *master,
+evdev_input_device_create(struct drm_input *master,
 			  struct wl_display *display, const char *path)
 {
 	struct evdev_input_device *device;
@@ -162,7 +204,7 @@ evdev_input_device_create(struct wlsc_input_device *master,
 	device->tool = 1;
 	device->new_x = 1;
 	device->new_y = 1;
-	device->device = master;
+	device->master = master;
 
 	device->fd = open(path, O_RDONLY);
 	if (device->fd < 0) {
@@ -184,13 +226,52 @@ evdev_input_device_create(struct wlsc_input_device *master,
 	return device;
 }
 
-void
-wlsc_compositor_present_drm(struct wlsc_compositor *ec)
+static void
+drm_input_create(struct drm_compositor *c)
 {
-	struct wlsc_output *output;
+	struct drm_input *input;
+	struct udev_enumerate *e;
+        struct udev_list_entry *entry;
+	struct udev_device *device;
+	const char *path;
 
-	wl_list_for_each(output, &ec->output_list, link) {
-		drmModePageFlip(ec->drm_fd, output->crtc_id,
+	input = malloc(sizeof *input);
+	if (input == NULL)
+		return;
+
+	memset(input, 0, sizeof *input);
+	wlsc_input_device_init(&input->base, &c->base);
+
+	e = udev_enumerate_new(c->udev);
+	udev_enumerate_add_match_subsystem(e, "input");
+	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
+        udev_enumerate_scan_devices(e);
+        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+		path = udev_list_entry_get_name(entry);
+		device = udev_device_new_from_syspath(c->udev, path);
+		evdev_input_device_create(input, c->base.wl_display,
+					  udev_device_get_devnode(device));
+	}
+        udev_enumerate_unref(e);
+
+	c->base.input_device = &input->base;
+}
+
+static void
+drm_compositor_present(struct wlsc_compositor *ec)
+{
+	struct drm_compositor *c = (struct drm_compositor *) ec;
+	struct drm_output *output;
+
+	wl_list_for_each(output, &ec->output_list, base.link) {
+		output->current ^= 1;
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+					  GL_COLOR_ATTACHMENT0,
+					  GL_RENDERBUFFER,
+					  output->rbo[output->current]);
+
+		drmModePageFlip(c->drm_fd, output->crtc_id,
 				output->fb_id[output->current ^ 1],
 				DRM_MODE_PAGE_FLIP_EVENT, output);
 	}	
@@ -220,9 +301,8 @@ on_drm_input(int fd, uint32_t mask, void *data)
 }
 
 static int
-init_egl(struct wlsc_compositor *ec, struct udev_device *device)
+init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
-	struct wl_event_loop *loop;
 	EGLint major, minor, count;
 	EGLConfig config;
 	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
@@ -241,8 +321,8 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	ec->base.device = strdup(udev_device_get_devnode(device));
-	ec->drm_fd = open(ec->base.device, O_RDWR);
+	ec->base.base.device = strdup(udev_device_get_devnode(device));
+	ec->drm_fd = open(ec->base.base.device, O_RDWR);
 	if (ec->drm_fd < 0) {
 		/* Probably permissions error */
 		fprintf(stderr, "couldn't open %s, skipping\n",
@@ -250,40 +330,38 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	ec->display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
-					     (void *) ec->drm_fd);
-	if (ec->display == NULL) {
+	ec->base.display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
+						  (void *) ec->drm_fd);
+	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
 	}
 
-	if (!eglInitialize(ec->display, &major, &minor)) {
+	if (!eglInitialize(ec->base.display, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");
 		return -1;
 	}
 
-	if (!eglChooseConfig(ec->display, config_attribs, &config, 1, &count) ||
+	if (!eglChooseConfig(ec->base.display,
+			     config_attribs, &config, 1, &count) ||
 	    count == 0) {
 		fprintf(stderr, "eglChooseConfig() failed\n");
 		return -1;
 	}
 
 	eglBindAPI(EGL_OPENGL_API);
-	ec->context = eglCreateContext(ec->display, config, EGL_NO_CONTEXT, NULL);
-	if (ec->context == NULL) {
+	ec->base.context = eglCreateContext(ec->base.display,
+					    config, EGL_NO_CONTEXT, NULL);
+	if (ec->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
 	}
 
-	if (!eglMakeCurrent(ec->display, EGL_NO_SURFACE, EGL_NO_SURFACE, ec->context)) {
+	if (!eglMakeCurrent(ec->base.display, EGL_NO_SURFACE,
+			    EGL_NO_SURFACE, ec->base.context)) {
 		fprintf(stderr, "failed to make context current\n");
 		return -1;
 	}
-
-	loop = wl_display_get_event_loop(ec->wl_display);
-	ec->drm_source =
-		wl_event_loop_add_fd(loop, ec->drm_fd,
-				     WL_EVENT_READABLE, on_drm_input, ec);
 
 	return 0;
 }
@@ -299,11 +377,11 @@ static drmModeModeInfo builtin_1024x768 = {
 };
 
 static int
-create_output_for_connector(struct wlsc_compositor *ec,
+create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
 			    drmModeConnector *connector)
 {
-	struct wlsc_output *output;
+	struct drm_output *output;
 	drmModeEncoder *encoder;
 	drmModeModeInfo *mode;
 	int i, ret;
@@ -339,14 +417,13 @@ create_output_for_connector(struct wlsc_compositor *ec,
 		return -1;
 	}
 
-	output->compositor = ec;
+	memset(output, 0, sizeof *output);
+	wlsc_output_init(&output->base, &ec->base, 0, 0,
+			 mode->hdisplay, mode->vdisplay);
+
 	output->crtc_id = resources->crtcs[i];
 	output->connector_id = connector->connector_id;
 	output->mode = *mode;
-	output->x = 0;
-	output->y = 0;
-	output->width = mode->hdisplay;
-	output->height = mode->vdisplay;
 
 	drmModeFreeEncoder(encoder);
 
@@ -354,13 +431,17 @@ create_output_for_connector(struct wlsc_compositor *ec,
 	for (i = 0; i < 2; i++) {
 		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
 
-		attribs[1] = output->width;
-		attribs[3] = output->height;
-		output->image[i] = eglCreateDRMImageMESA(ec->display, attribs);
-		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, output->image[i]);
-		eglExportDRMImageMESA(ec->display, output->image[i], NULL, &handle, &stride);
+		attribs[1] = output->base.width;
+		attribs[3] = output->base.height;
+		output->image[i] =
+			eglCreateDRMImageMESA(ec->base.display, attribs);
+		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
+						       output->image[i]);
+		eglExportDRMImageMESA(ec->base.display, output->image[i],
+				      NULL, &handle, &stride);
 
-		ret = drmModeAddFB(ec->drm_fd, output->width, output->height,
+		ret = drmModeAddFB(ec->drm_fd,
+				   output->base.width, output->base.height,
 				   32, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
 			fprintf(stderr, "failed to add fb %d: %m\n", i);
@@ -381,13 +462,13 @@ create_output_for_connector(struct wlsc_compositor *ec,
 		return -1;
 	}
 
-	wl_list_insert(ec->output_list.prev, &output->link);
+	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
 	return 0;
 }
 
 static int
-create_outputs(struct wlsc_compositor *ec)
+create_outputs(struct drm_compositor *ec)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
@@ -413,7 +494,7 @@ create_outputs(struct wlsc_compositor *ec)
 		drmModeFreeConnector(connector);
 	}
 
-	if (wl_list_empty(&ec->output_list)) {
+	if (wl_list_empty(&ec->base.output_list)) {
 		fprintf(stderr, "No currently active connector found.\n");
 		return -1;
 	}
@@ -425,8 +506,8 @@ create_outputs(struct wlsc_compositor *ec)
 
 static void on_enter_vt(int signal_number, void *data)
 {
-	struct wlsc_compositor *ec = data;
-	struct wlsc_output *output;
+	struct drm_compositor *ec = data;
+	struct drm_output *output;
 	int ret;
 
 	ret = drmSetMaster(ec->drm_fd);
@@ -441,19 +522,20 @@ static void on_enter_vt(int signal_number, void *data)
 	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
 	ec->vt_active = 1;
 
-	wl_list_for_each(output, &ec->output_list, link) {
+	wl_list_for_each(output, &ec->base.output_list, base.link) {
 		ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
 				     output->fb_id[output->current ^ 1], 0, 0,
 				     &output->connector_id, 1, &output->mode);
 		if (ret)
-			fprintf(stderr, "failed to set mode for connector %d: %m\n",
+			fprintf(stderr,
+				"failed to set mode for connector %d: %m\n",
 				output->connector_id);
 	}
 }
 
 static void on_leave_vt(int signal_number, void *data)
 {
-	struct wlsc_compositor *ec = data;
+	struct drm_compositor *ec = data;
 	int ret;
 
 	ret = drmDropMaster(ec->drm_fd);
@@ -470,7 +552,7 @@ static void on_leave_vt(int signal_number, void *data)
 static void
 on_tty_input(int fd, uint32_t mask, void *data)
 {
-	struct wlsc_compositor *ec = data;
+	struct drm_compositor *ec = data;
 
 	/* Ignore input to tty.  We get keyboard events from evdev
 	 */
@@ -479,7 +561,7 @@ on_tty_input(int fd, uint32_t mask, void *data)
 
 static void on_term_signal(int signal_number, void *data)
 {
-	struct wlsc_compositor *ec = data;
+	struct drm_compositor *ec = data;
 
 	if (tcsetattr(ec->tty_fd, TCSANOW, &ec->terminal_attributes) < 0)
 		fprintf(stderr, "could not restore terminal to canonical mode\n");
@@ -487,7 +569,7 @@ static void on_term_signal(int signal_number, void *data)
 	exit(0);
 }
 
-static int setup_tty(struct wlsc_compositor *ec, struct wl_event_loop *loop)
+static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
 {
 	struct termios raw_attributes;
 	struct vt_mode mode = { 0 };
@@ -536,59 +618,65 @@ static int setup_tty(struct wlsc_compositor *ec, struct wl_event_loop *loop)
 	return 0;
 }
 
-int
-wlsc_compositor_init_drm(struct wlsc_compositor *ec)
+struct wlsc_compositor *
+drm_compositor_create(struct wl_display *display)
 {
+	struct drm_compositor *ec;
 	struct udev_enumerate *e;
         struct udev_list_entry *entry;
 	struct udev_device *device;
 	const char *path;
-	struct wlsc_input_device *input_device;
 	struct wl_event_loop *loop;
 
+	ec = malloc(sizeof *ec);
+	if (ec == NULL)
+		return NULL;
+
+	memset(ec, 0, sizeof *ec);
 	ec->udev = udev_new();
 	if (ec->udev == NULL) {
 		fprintf(stderr, "failed to initialize udev context\n");
-		return -1;
+		return NULL;
 	}
-
-	input_device = wlsc_input_device_create(ec);
-	ec->input_device = input_device;
-
-	e = udev_enumerate_new(ec->udev);
-	udev_enumerate_add_match_subsystem(e, "input");
-	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
-        udev_enumerate_scan_devices(e);
-        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
-		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(ec->udev, path);
-		evdev_input_device_create(input_device, ec->wl_display,
-					  udev_device_get_devnode(device));
-	}
-        udev_enumerate_unref(e);
 
 	e = udev_enumerate_new(ec->udev);
 	udev_enumerate_add_match_subsystem(e, "drm");
 	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
         udev_enumerate_scan_devices(e);
+	device = NULL;
         udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(ec->udev, path);
-		fprintf(stderr, "creating output for %s\n", path);
-
-		if (init_egl(ec, device) < 0) {
-			fprintf(stderr, "failed to initialize egl\n");
-			return -1;
-		}
-		if (create_outputs(ec) < 0) {
-			fprintf(stderr, "failed to create output for %s\n", path);
-			return -1;
-		}
+		break;
 	}
         udev_enumerate_unref(e);
 
-	loop = wl_display_get_event_loop(ec->wl_display);
-	setup_tty(ec, loop);
+	if (device == NULL) {
+		fprintf(stderr, "no drm device found\n");
+		return NULL;
+	}
 
-	return 0;
+	if (init_egl(ec, device) < 0) {
+		fprintf(stderr, "failed to initialize egl\n");
+		return NULL;
+	}
+	
+	/* Can't init base class until we have a current egl context */
+	wlsc_compositor_init(&ec->base, display);
+
+	if (create_outputs(ec) < 0) {
+		fprintf(stderr, "failed to create output for %s\n", path);
+		return NULL;
+	}
+
+	drm_input_create(ec);
+
+	loop = wl_display_get_event_loop(ec->base.wl_display);
+	ec->drm_source =
+		wl_event_loop_add_fd(loop, ec->drm_fd,
+				     WL_EVENT_READABLE, on_drm_input, ec);
+	setup_tty(ec, loop);
+	ec->base.present = drm_compositor_present;
+
+	return &ec->base;
 }

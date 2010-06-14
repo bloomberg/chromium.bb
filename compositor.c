@@ -355,8 +355,6 @@ wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs)
 			      compositor->current_frame, msecs);
 
 	wl_event_source_timer_update(compositor->timer_source, 5);
-	compositor->repaint_on_timeout = 1;
-
 	compositor->current_frame++;
 }
 
@@ -379,13 +377,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	wl_list_for_each(eid, &ec->input_device_list, link)
 		wlsc_surface_draw(eid->sprite, output);
-
-	output->current ^= 1;
-
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-				  GL_COLOR_ATTACHMENT0,
-				  GL_RENDERBUFFER,
-				  output->rbo[output->current]);
 }
 
 static void
@@ -402,7 +393,7 @@ repaint(void *data)
 	wl_list_for_each(output, &ec->output_list, link)
 		wlsc_output_repaint(output);
 
-	wlsc_compositor_present_drm(ec);
+	ec->present(ec);
 
 	ec->repaint_needed = 0;
 }
@@ -628,9 +619,6 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy;
 
-	if (!ec->vt_active)
-		return;
-
 	/* FIXME: We need some multi head love here. */
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
 	if (x < output->x)
@@ -668,8 +656,7 @@ notify_button(struct wlsc_input_device *device,
 	struct wlsc_compositor *compositor = device->ec;
 	int32_t sx, sy;
 
-	if (!compositor->vt_active)
-		return;
+	fprintf(stderr, "notify button: button %d, state %d\n", button, state);
 
 	surface = pick_surface(device, &sx, &sy);
 	if (surface) {
@@ -699,9 +686,6 @@ notify_key(struct wlsc_input_device *device,
 	struct wlsc_compositor *compositor = device->ec;
 	uint32_t *k, *end;
 	uint32_t modifier;
-
-	if (!compositor->vt_active)
-		return;
 
 	switch (key | compositor->modifier_state) {
 	case KEY_BACKSPACE | MODIFIER_CTRL | MODIFIER_ALT:
@@ -769,16 +753,10 @@ handle_surface_destroy(struct wlsc_listener *listener,
 	}
 }
 
-struct wlsc_input_device *
-wlsc_input_device_create(struct wlsc_compositor *ec)
+void
+wlsc_input_device_init(struct wlsc_input_device *device,
+		       struct wlsc_compositor *ec)
 {
-	struct wlsc_input_device *device;
-
-	device = malloc(sizeof *device);
-	if (device == NULL)
-		return NULL;
-
-	memset(device, 0, sizeof *device);
 	device->base.interface = &wl_input_device_interface;
 	device->base.implementation = NULL;
 	wl_display_add_object(ec->wl_display, &device->base);
@@ -786,13 +764,12 @@ wlsc_input_device_create(struct wlsc_compositor *ec)
 	device->x = 100;
 	device->y = 100;
 	device->ec = ec;
+	device->sprite = pointer_create(ec, device->x, device->y, 64, 64);
 
 	device->listener.func = handle_surface_destroy;
 	wl_list_insert(ec->surface_destroy_listener_list.prev,
 		       &device->listener.link);
 	wl_list_insert(ec->input_device_list.prev, &device->link);
-
-	return device;
 }
 
 static void
@@ -916,18 +893,37 @@ add_visuals(struct wlsc_compositor *ec)
 	wl_display_add_global(ec->wl_display, &ec->rgb_visual.base, NULL);
 }
 
-static struct wlsc_compositor *
-wlsc_compositor_create(struct wl_display *display)
+void
+wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
+		 int x, int y, int width, int height)
 {
-	struct wlsc_compositor *ec;
+	output->compositor = c;
+	output->x = x;
+	output->y = y;
+	output->width = width;
+	output->height = height;
+
+	output->background =
+		background_create(output, option_background);
+
+	wlsc_matrix_init(&output->matrix);
+	wlsc_matrix_translate(&output->matrix,
+			      -output->x - output->width / 2.0,
+			      -output->y - output->height / 2.0, 0);
+	wlsc_matrix_scale(&output->matrix,
+			  2.0 / output->width, 2.0 / output->height, 1);
+
+	output->base.interface = &wl_output_interface;
+	wl_display_add_object(c->wl_display, &output->base);
+	wl_display_add_global(c->wl_display, &output->base,
+			      wlsc_output_post_geometry);
+}
+
+int
+wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
+{
 	struct wl_event_loop *loop;
-	struct wlsc_output *output;
 
-	ec = malloc(sizeof *ec);
-	if (ec == NULL)
-		return NULL;
-
-	memset(ec, 0, sizeof *ec);
 	ec->wl_display = display;
 
 	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
@@ -941,34 +937,6 @@ wlsc_compositor_create(struct wl_display *display)
 
 	screenshooter_create(ec);
 
-	if (wlsc_compositor_init_drm(ec) < 0) {
-		fprintf(stderr, "failed to initialize devices\n");
-		return NULL;
-	}
-
-	/* Create the pointer and background surfaces now that we have
-	 * a current EGL context. */
-	ec->input_device->sprite =
-		pointer_create(ec, 
-			       ec->input_device->x,
-			       ec->input_device->y, 64, 64);
-	wl_list_for_each(output, &ec->output_list, link) {
-		output->background = background_create(output,
-						       option_background);
-
-		wlsc_matrix_init(&output->matrix);
-
-		wlsc_matrix_translate(&output->matrix,
-				      -output->x - output->width / 2.0,
-				      -output->y - output->height / 2.0, 0);
-		wlsc_matrix_scale(&output->matrix,
-				  2.0 / output->width, 2.0 / output->height, 1);
-		output->base.interface = &wl_output_interface;
-		wl_display_add_object(ec->wl_display, &output->base);
-		wl_display_add_global(ec->wl_display, &output->base,
-				      wlsc_output_post_geometry);
-	}
-
 	glGenFramebuffers(1, &ec->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->fbo);
 	glActiveTexture(GL_TEXTURE0);
@@ -978,7 +946,7 @@ wlsc_compositor_create(struct wl_display *display)
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	wlsc_compositor_schedule_repaint(ec);
 
-	return ec;
+	return 0;
 }
 
 /* The plan here is to generate a random anonymous socket name and
@@ -1002,7 +970,11 @@ int main(int argc, char *argv[])
 
 	display = wl_display_create();
 
-	ec = wlsc_compositor_create(display);
+	if (getenv("DISPLAY"))
+		ec = x11_compositor_create(display);
+	else
+		ec = drm_compositor_create(display);
+
 	if (ec == NULL) {
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);

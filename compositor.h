@@ -54,15 +54,6 @@ struct wlsc_output {
 	struct wlsc_surface *background;
 	struct wlsc_matrix matrix;
 	int32_t x, y, width, height;
-
-	drmModeModeInfo mode;
-	uint32_t crtc_id;
-	uint32_t connector_id;
-
-	GLuint rbo[2];
-	uint32_t fb_id[2];
-	EGLImageKHR image[2];
-	uint32_t current;	
 };
 
 struct wlsc_input_device {
@@ -87,7 +78,6 @@ struct wlsc_compositor {
 
 	EGLDisplay display;
 	EGLContext context;
-	int drm_fd;
 	GLuint fbo, vbo;
 	GLuint proj_uniform, tex_uniform;
 	struct wl_display *wl_display;
@@ -101,28 +91,16 @@ struct wlsc_compositor {
 
 	struct wl_list surface_destroy_listener_list;
 
-	struct wl_event_source *term_signal_source;
-
-        /* tty handling state */
-	int tty_fd;
-	uint32_t vt_active : 1;
-
-	struct termios terminal_attributes;
-	struct wl_event_source *tty_input_source;
-	struct wl_event_source *enter_vt_source;
-	struct wl_event_source *leave_vt_source;
-
-	struct udev *udev;
-
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
 	int repaint_needed;
 	int repaint_on_timeout;
 	struct timespec previous_swap;
 	uint32_t current_frame;
-	struct wl_event_source *drm_source;
 
 	uint32_t modifier_state;
+
+	void (*present)(struct wlsc_compositor *c);
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -152,13 +130,24 @@ void
 notify_key(struct wlsc_input_device *device, uint32_t key, uint32_t state);
 
 void
-wlsc_compositor_present_drm(struct wlsc_compositor *wlsc);
-int
-wlsc_compositor_init_drm(struct wlsc_compositor *ec);
-void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
 struct wlsc_input_device *
 wlsc_input_device_create(struct wlsc_compositor *ec);
+
+int
+wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
+void
+wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
+		 int x, int y, int width, int height);
+void
+wlsc_input_device_init(struct wlsc_input_device *device,
+		       struct wlsc_compositor *ec);
+
+struct wlsc_compositor *
+x11_compositor_create(struct wl_display *display);
+
+struct wlsc_compositor *
+drm_compositor_create(struct wl_display *display);
 
 void
 screenshooter_create(struct wlsc_compositor *ec);
