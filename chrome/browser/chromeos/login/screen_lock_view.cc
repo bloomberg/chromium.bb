@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/background.h"
+#include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
@@ -276,6 +277,13 @@ void ScreenLockView::SetImage(const SkBitmap& image,
   image_view_->SetImage(image);
   image_view_->SetImageSize(gfx::Size(std::min(desired_width, kMaxImageSize),
                                       std::min(desired_height, kMaxImageSize)));
+  gfx::Size size = image_view_->GetPreferredSize();
+  int h = std::max((kMaxImageSize - size.height()) / 2, 0);
+  int w = std::max((kMaxImageSize - size.width()) / 2, 0);
+  if (h != 0 || w != 0)
+    image_view_->set_border(views::Border::CreateEmptyBorder(h, w, h, w));
+  else
+    image_view_->set_border(NULL);
 }
 
 }  // namespace chromeos
