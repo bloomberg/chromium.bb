@@ -51,8 +51,8 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), 100);
-  EXPECT_GT(window_bounds.y(), 140);  // 140 because the arrow overlaps a bit on
-                                      // the position_relative_to.
+  EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
+                                                // arrow overlap.
 
   // Test bubble not fitting on left.
   border_contents.SizeAndGetBounds(
@@ -67,7 +67,8 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), 100);
-  EXPECT_GT(window_bounds.y(), 140);
+  EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
+                                                // arrow overlap.
 
   // Test bubble not fitting on left or top.
   border_contents.SizeAndGetBounds(
@@ -82,7 +83,8 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), 100);
-  EXPECT_GT(window_bounds.y(), 140);
+  EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
+                                                // arrow overlap.
 
   // Test bubble not fitting on top.
   border_contents.SizeAndGetBounds(
@@ -97,7 +99,8 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), 100);
-  EXPECT_GT(window_bounds.y(), 140);
+  EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
+                                                // arrow overlap.
 
   // Test bubble not fitting on top and right.
   border_contents.SizeAndGetBounds(
@@ -111,9 +114,9 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
-  // The window should be right aligned with the position_relative_to.
-  EXPECT_LT(window_bounds.x(), 900 + 50 / 2 - 500);
-  EXPECT_GT(window_bounds.y(), 140);
+  EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
+  EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
+                                                // arrow overlap.
 
  // Test bubble not fitting on right.
   border_contents.SizeAndGetBounds(
@@ -127,9 +130,9 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
-  // The window should be right aligned with the position_relative_to.
-  EXPECT_LT(window_bounds.x(), 900 + 50 / 2 - 500);
-  EXPECT_GT(window_bounds.y(), 140);
+  EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
+  EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
+                                                // arrow overlap.
 
   // Test bubble not fitting on bottom and right.
   border_contents.SizeAndGetBounds(
@@ -143,8 +146,7 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
   EXPECT_FALSE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
-  // The window should be right aligned with the position_relative_to.
-  EXPECT_LT(window_bounds.x(), 900 + 50 / 2 - 500);
+  EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_LT(window_bounds.y(), 900 - 500 - 15);  // -15 to roughly compensate
                                                  // for arrow height.
 
@@ -161,7 +163,7 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_FALSE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   // The window should be right aligned with the position_relative_to.
-  EXPECT_LT(window_bounds.x(), 900 + 50 / 2 - 500);
+  EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_LT(window_bounds.y(), 900 - 500 - 15);  // -15 to roughly compensate
                                                  // for arrow height.
 
@@ -178,7 +180,7 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBounds) {
   EXPECT_FALSE(BubbleBorder::is_arrow_on_top(arrow_location));
   EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   // The window should be right aligned with the position_relative_to.
-  EXPECT_LT(window_bounds.x(), 900 + 50 / 2 - 500);
+  EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_LT(window_bounds.y(), 900 - 500 - 15);  // -15 to roughly compensate
                                                  // for arrow height.
 }
@@ -229,6 +231,7 @@ TEST_F(InfoBubbleTest, BorderContentsSizeAndGetBoundsAllowOffscreen) {
   EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
   // The coordinates should be pointing to 'positive relative to' from
   // TOP_RIGHT.
-  EXPECT_LT(window_bounds.x(), 100 + 50 / 2 - 500);
-  EXPECT_GT(window_bounds.y(), 900 + 50 - 10);
+  EXPECT_LT(window_bounds.x(), 100 + 50 - 500);
+  EXPECT_GT(window_bounds.y(), 900 + 50 - 10);  // -10 to roughly compensate for
+                                                // arrow overlap.
 }
