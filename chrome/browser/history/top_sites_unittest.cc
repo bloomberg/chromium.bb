@@ -133,9 +133,11 @@ class MockHistoryServiceImpl : public TopSites::MockHistoryService {
 // A mockup of a TopSitesDatabase used for testing TopSites.
 class MockTopSitesDatabaseImpl : public TopSitesDatabase {
  public:
-  virtual MostVisitedURLList GetTopURLs() {
+  virtual void GetPageThumbnails(MostVisitedURLList* urls,
+                                 std::map<GURL, TopSites::Images>* thumbnails) {
     // Return a copy of the vector.
-    return top_sites_list_;
+    *urls = top_sites_list_;
+    *thumbnails = thumbnails_map_;
   }
 
   virtual void SetPageThumbnail(const MostVisitedURL& url, int url_rank,
@@ -162,10 +164,10 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
   }
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
-  virtual bool GetPageThumbnail(const MostVisitedURL& url,
+  virtual bool GetPageThumbnail(const GURL& url,
                                 TopSites::Images* thumbnail) {
     std::map<GURL, TopSites::Images>::const_iterator found =
-        thumbnails_map_.find(url.url);
+        thumbnails_map_.find(url);
     if (found == thumbnails_map_.end())
       return false;  // No thumbnail for this URL.
 
@@ -341,6 +343,7 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
 }
 
 TEST_F(TopSitesTest, GetMostVisited) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   GURL news("http://news.google.com/");
   GURL google("http://google.com/");
 
@@ -350,14 +353,15 @@ TEST_F(TopSitesTest, GetMostVisited) {
   top_sites().SetMockHistoryService(&hs);
 
   top_sites().StartQueryForMostVisited();
-
+  MessageLoop::current()->RunAllPending();
   MostVisitedURLList results = top_sites().GetMostVisitedURLs();
-  EXPECT_EQ(2u, results.size());
+  ASSERT_EQ(2u, results.size());
   EXPECT_EQ(news, results[0].url);
   EXPECT_EQ(google, results[1].url);
 }
 
 TEST_F(TopSitesTest, MockDatabase) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   MockTopSitesDatabaseImpl* db = new MockTopSitesDatabaseImpl;
   // |db| is destroyed when the top_sites is destroyed in TearDown.
   top_sites().db_.reset(db);
@@ -378,7 +382,7 @@ TEST_F(TopSitesTest, MockDatabase) {
   top_sites().ReadDatabase();
 
   MostVisitedURLList result = top_sites().GetMostVisitedURLs();
-  EXPECT_EQ(1u, result.size());
+  ASSERT_EQ(1u, result.size());
   EXPECT_EQ(asdf_url, result[0].url);
   EXPECT_EQ(asdf_title, result[0].title);
 
@@ -393,7 +397,7 @@ TEST_F(TopSitesTest, MockDatabase) {
   top_sites().ReadDatabase();
 
   result = top_sites().GetMostVisitedURLs();
-  EXPECT_EQ(2u, result.size());
+  ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google_url, result[0].url);
   EXPECT_EQ(google_title, result[0].title);
   EXPECT_EQ(asdf_url, result[1].url);
@@ -407,9 +411,11 @@ TEST_F(TopSitesTest, MockDatabase) {
 
   // This writes the new data to the DB.
   top_sites().StartQueryForMostVisited();
+  MessageLoop::current()->RunAllPending();
 
-  result = db->GetTopURLs();
-  EXPECT_EQ(2u, result.size());
+  std::map<GURL, TopSites::Images> thumbnails;
+  db->GetPageThumbnails(&result, &thumbnails);
+  ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google_title, result[0].title);
   EXPECT_EQ(news_title, result[1].title);
 }
@@ -437,11 +443,13 @@ TEST_F(TopSitesTest, TopSitesDB) {
   db.SetPageThumbnail(url, 0, thumbnail);
 
   TopSites::Images result;
-  EXPECT_TRUE(db.GetPageThumbnail(url, &result));
+  EXPECT_TRUE(db.GetPageThumbnail(url.url, &result));
   EXPECT_EQ(thumbnail.thumbnail->data.size(), result.thumbnail->data.size());
   EXPECT_TRUE(ThumbnailsAreEqual(thumbnail.thumbnail, result.thumbnail));
 
-  MostVisitedURLList urls = db.GetTopURLs();
+  MostVisitedURLList urls;
+  std::map<GURL, TopSites::Images> thumbnails;
+  db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(1u, urls.size());
   EXPECT_EQ(asdf_url, urls[0].url);
   EXPECT_EQ(asdf_title, urls[0].title);
@@ -451,7 +459,7 @@ TEST_F(TopSitesTest, TopSitesDB) {
 
   // Add google at rank 1 - no rank shifting.
   db.SetPageThumbnail(url, 1, thumbnail);
-  urls = db.GetTopURLs();
+  db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(2u, urls.size());
   EXPECT_EQ(asdf_url, urls[0].url);
   EXPECT_EQ(asdf_title, urls[0].title);
@@ -463,16 +471,15 @@ TEST_F(TopSitesTest, TopSitesDB) {
 
   // Add news at rank 1 - shift google to rank 2.
   db.SetPageThumbnail(url, 1, thumbnail);
-  urls = db.GetTopURLs();
+  db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(3u, urls.size());
   EXPECT_EQ(asdf_url, urls[0].url);
   EXPECT_EQ(news_url, urls[1].url);
   EXPECT_EQ(google_url, urls[2].url);
 
-  db.GetTopURLs();
   // Move news at rank 0 - shift the rest up.
   db.SetPageThumbnail(url, 0, thumbnail);
-  urls = db.GetTopURLs();
+  db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(3u, urls.size());
   EXPECT_EQ(news_url, urls[0].url);
   EXPECT_EQ(asdf_url, urls[1].url);
@@ -480,7 +487,7 @@ TEST_F(TopSitesTest, TopSitesDB) {
 
   // Move news at rank 2 - shift the rest down.
   db.SetPageThumbnail(url, 2, thumbnail);
-  urls = db.GetTopURLs();
+  db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(3u, urls.size());
   EXPECT_EQ(asdf_url, urls[0].url);
   EXPECT_EQ(google_url, urls[1].url);
@@ -490,7 +497,7 @@ TEST_F(TopSitesTest, TopSitesDB) {
   url.url = asdf_url;
   db.RemoveURL(url);
 
-  urls = db.GetTopURLs();
+  db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(2u, urls.size());
   EXPECT_EQ(google_url, urls[0].url);
   EXPECT_EQ(news_url, urls[1].url);
@@ -498,6 +505,7 @@ TEST_F(TopSitesTest, TopSitesDB) {
 
 // Test TopSites with a real database.
 TEST_F(TopSitesTest, RealDatabase) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   TopSitesDatabaseImpl* db = new TopSitesDatabaseImpl;
 
   ASSERT_TRUE(db->Init(file_name()));
@@ -527,8 +535,13 @@ TEST_F(TopSitesTest, RealDatabase) {
   EXPECT_EQ(asdf_url, result[0].url);
   EXPECT_EQ(asdf_title, result[0].title);
 
+  TopSites::Images img_result;
+  db->GetPageThumbnail(asdf_url, &img_result);
+  EXPECT_TRUE(img_result.thumbnail != NULL);
+  EXPECT_TRUE(ThumbnailsAreEqual(random_thumbnail(), img_result.thumbnail));
+
   RefCountedBytes* thumbnail_result;
-  top_sites().GetPageThumbnail(asdf_url, &thumbnail_result);
+  EXPECT_TRUE(top_sites().GetPageThumbnail(asdf_url, &thumbnail_result));
   EXPECT_TRUE(thumbnail_result != NULL);
   EXPECT_TRUE(ThumbnailsAreEqual(random_thumbnail(), thumbnail_result));
 
@@ -550,7 +563,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google1_url, result[0].url);
   EXPECT_EQ(google_title, result[0].title);
-  top_sites().GetPageThumbnail(google1_url, &thumbnail_result);
+  EXPECT_TRUE(top_sites().GetPageThumbnail(google1_url, &thumbnail_result));
   EXPECT_TRUE(ThumbnailsAreEqual(google_thumbnail(), thumbnail_result));
   ASSERT_EQ(3u, result[0].redirects.size());
   EXPECT_EQ(google1_url, result[0].redirects[0]);
@@ -568,8 +581,10 @@ TEST_F(TopSitesTest, RealDatabase) {
 
   // This requests data from History Service and  writes it to the DB.
   top_sites().StartQueryForMostVisited();
+  MessageLoop::current()->RunAllPending();
 
-  result = db->GetTopURLs();
+  std::map<GURL, TopSites::Images> thumbnails;
+  db->GetPageThumbnails(&result, &thumbnails);
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google_title, result[0].title);
   EXPECT_EQ(news_title, result[1].title);
@@ -589,8 +604,11 @@ TEST_F(TopSitesTest, RealDatabase) {
                                            medium_score));
   RefCountedBytes* out_1;
   TopSites::Images out_2;
-  top_sites().GetPageThumbnail(google1_url, &out_1);
-  db->GetPageThumbnail(url2, &out_2);
+  EXPECT_TRUE(top_sites().GetPageThumbnail(google1_url, &out_1));
+
+  MessageLoop::current()->RunAllPending();
+
+  db->GetPageThumbnail(url2.url, &out_2);
   EXPECT_TRUE(ThumbnailsAreEqual(out_1, out_2.thumbnail));
 
   scoped_ptr<SkBitmap> google_bitmap(
@@ -599,23 +617,26 @@ TEST_F(TopSitesTest, RealDatabase) {
 
   // 2. Set to google - low score.
   EXPECT_FALSE(top_sites().SetPageThumbnail(google1_url,
-                                           *google_bitmap,
-                                           low_score));
+                                            *google_bitmap,
+                                            low_score));
 
   // 3. Set to google - high score.
   EXPECT_TRUE(top_sites().SetPageThumbnail(google1_url,
                                            *google_bitmap,
                                            high_score));
   // Check that the thumbnail was updated.
-  top_sites().GetPageThumbnail(google1_url, &out_1);
+  EXPECT_TRUE(top_sites().GetPageThumbnail(google1_url, &out_1));
   EXPECT_FALSE(ThumbnailsAreEqual(out_1, out_2.thumbnail));
+  MessageLoop::current()->RunAllPending();
+
   // Read the new thumbnail from the DB - should match what's in TopSites.
-  db->GetPageThumbnail(url2, &out_2);
+  db->GetPageThumbnail(url2.url, &out_2);
   EXPECT_TRUE(ThumbnailsAreEqual(out_1, out_2.thumbnail));
   EXPECT_TRUE(high_score.Equals(out_2.thumbnail_score));
 }
 
 TEST_F(TopSitesTest, DeleteNotifications) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
   GURL google3_url("http://www.google.com");
@@ -632,6 +653,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
   top_sites().SetMockHistoryService(&hs);
 
   top_sites().StartQueryForMostVisited();
+  MessageLoop::current()->RunAllPending();
 
   MostVisitedURLList result = top_sites().GetMostVisitedURLs();
   ASSERT_EQ(2u, result.size());
@@ -643,6 +665,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
   top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
                       Source<Profile> (&profile()),
                       (const NotificationDetails&)details);
+  MessageLoop::current()->RunAllPending();
 
   result = top_sites().GetMostVisitedURLs();
   ASSERT_EQ(1u, result.size());
@@ -653,6 +676,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
   top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
                       Source<Profile> (&profile()),
                       (const NotificationDetails&)details);
+  MessageLoop::current()->RunAllPending();
   result = top_sites().GetMostVisitedURLs();
   ASSERT_EQ(0u, result.size());
 }

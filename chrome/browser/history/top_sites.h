@@ -108,8 +108,6 @@ class TopSites : public NotificationObserver,
   void OnTopSitesAvailable(CancelableRequestProvider::Handle handle,
                            MostVisitedURLList data);
 
-  // Updates the top sites list and writes the difference to disk.
-  void UpdateMostVisited(MostVisitedURLList* most_visited);
   // Saves the set of the top URLs visited by this user. The 0th item is the
   // most popular.
   // DANGER! This will clear all data from the input argument.
@@ -147,10 +145,6 @@ class TopSites : public NotificationObserver,
                               std::vector<size_t>* deleted_urls,
                               std::vector<size_t>* moved_urls);
 
-  // Reads the database from disk. Called on startup to get the last
-  // known top sites.
-  void ReadDatabase();
-
   // For testing with a HistoryService mock.
   void SetMockHistoryService(MockHistoryService* mhs);
 
@@ -162,6 +156,24 @@ class TopSites : public NotificationObserver,
   // Returns the delay until the next update of history is needed.
   // Uses num_urls_changed
   base::TimeDelta GetUpdateDelay();
+
+  // The following methods must be run on the DB thread since they
+  // access the database.
+
+  // Reads the database from disk. Called on startup to get the last
+  // known top sites.
+  void ReadDatabase();
+
+  // Write a thumbnail to database.
+  void WriteThumbnailToDB(const MostVisitedURL& url,
+                          int url_rank,
+                          const TopSites::Images& thumbnail);
+
+  // Updates the top sites list and writes the difference to disk.
+  void UpdateMostVisited(MostVisitedURLList most_visited);
+
+  // Deletes the database file, then reinitializes the database.
+  void ResetDatabase();
 
   Profile* profile_;
   // A mockup to use for testing. If NULL, use the real HistoryService

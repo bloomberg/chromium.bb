@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_TOP_SITES_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_TOP_SITES_DATABASE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -34,7 +35,9 @@ class TopSitesDatabase {
   }
 
   // Returns a list of all URLs currently in the table.
-  virtual MostVisitedURLList GetTopURLs() = 0;
+  virtual void GetPageThumbnails(MostVisitedURLList* urls,
+                                 std::map<GURL,
+                                 TopSites::Images>* thumbnails) = 0;
 
   // Set a thumbnail for a URL. |url_rank| is the position of the URL
   // in the list of TopURLs, zero-based.
@@ -44,8 +47,14 @@ class TopSitesDatabase {
                                 int url_rank,
                                 const TopSites::Images& thumbnail) = 0;
 
+  // Convenience wrapper.
+  bool GetPageThumbnail(const MostVisitedURL& url,
+                        TopSites::Images* thumbnail) {
+    return GetPageThumbnail(url.url, thumbnail);
+  }
+
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
-  virtual bool GetPageThumbnail(const MostVisitedURL& url,
+  virtual bool GetPageThumbnail(const GURL& url,
                                 TopSites::Images* thumbnail) = 0;
 
   // Remove the record for this URL. Returns true iff removed successfully.
@@ -64,8 +73,9 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
   // Thumbnails ----------------------------------------------------------------
 
   // Returns a list of all URLs currently in the table.
-  virtual MostVisitedURLList GetTopURLs();
-
+  // WARNING: clears both input arguments.
+  virtual void GetPageThumbnails(MostVisitedURLList* urls,
+                                 std::map<GURL, TopSites::Images>* thumbnails);
   // Set a thumbnail for a URL. |url_rank| is the position of the URL
   // in the list of TopURLs, zero-based.
   // If the URL is not in the table, add it. If it is, replace its
@@ -75,7 +85,7 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
                                 const TopSites::Images& thumbnail);
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
-  virtual bool GetPageThumbnail(const MostVisitedURL& url,
+  virtual bool GetPageThumbnail(const GURL& url,
                                 TopSites::Images* thumbnail);
 
   // Remove the record for this URL. Returns true iff removed successfully.

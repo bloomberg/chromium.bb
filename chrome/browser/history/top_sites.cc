@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -40,10 +41,13 @@ TopSites::~TopSites() {
 void TopSites::Init(const FilePath& db_name) {
   db_path_ = db_name;
   db_.reset(new TopSitesDatabaseImpl());
-  if (!db_->Init(db_name))
+  if (!db_->Init(db_name)) {
+    NOTREACHED() << "Failed to initialize database.";
     return;
+  }
 
-  ReadDatabase();
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
+      this, &TopSites::ReadDatabase));
 
   // Start the one-shot timer.
   timer_.Start(base::TimeDelta::FromSeconds(kUpdateIntervalSecs), this,
@@ -51,20 +55,22 @@ void TopSites::Init(const FilePath& db_name) {
 }
 
 void TopSites::ReadDatabase() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  std::map<GURL, Images> thumbnails;
+
   DCHECK(db_.get());
   {
     AutoLock lock(lock_);
-    MostVisitedURLList top_urls = db_->GetTopURLs();
+    MostVisitedURLList top_urls;
+    db_->GetPageThumbnails(&top_urls, &thumbnails);
     StoreMostVisited(&top_urls);
   }  // Lock is released here.
 
   for (size_t i = 0; i < top_sites_.size(); i++) {
     MostVisitedURL url = top_sites_[i];
-    Images thumbnail;
-    if (db_->GetPageThumbnail(url, &thumbnail)) {
-      SetPageThumbnailNoDB(url.url, thumbnail.thumbnail,
-                           thumbnail.thumbnail_score);
-    }
+    Images thumbnail = thumbnails[url.url];
+    SetPageThumbnailNoDB(url.url, thumbnail.thumbnail,
+                         thumbnail.thumbnail_score);
   }
 }
 
@@ -95,8 +101,18 @@ bool TopSites::SetPageThumbnail(const GURL& url,
   size_t index = found->second;
 
   MostVisitedURL& most_visited = top_sites_[index];
-  db_->SetPageThumbnail(most_visited, index, top_images_[most_visited.url]);
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
+      this, &TopSites::WriteThumbnailToDB,
+      most_visited, index, top_images_[most_visited.url]));
   return true;
+}
+
+void TopSites::WriteThumbnailToDB(const MostVisitedURL& url,
+                                  int url_rank,
+                                  const TopSites::Images& thumbnail) {
+  DCHECK(db_.get());
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  db_->SetPageThumbnail(url, url_rank, thumbnail);
 }
 
 // private
@@ -145,15 +161,15 @@ bool TopSites::GetPageThumbnail(const GURL& url, RefCountedBytes** data) const {
   return true;
 }
 
-void TopSites::UpdateMostVisited(MostVisitedURLList* most_visited) {
-  lock_.AssertAcquired();
+void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // TODO(brettw) filter for blacklist!
 
   if (!top_sites_.empty()) {
     std::vector<size_t> added;    // Indices into most_visited.
     std::vector<size_t> deleted;  // Indices into top_sites_.
     std::vector<size_t> moved;    // Indices into most_visited.
-    DiffMostVisited(top_sites_, *most_visited, &added, &deleted, &moved);
+    DiffMostVisited(top_sites_, most_visited, &added, &deleted, &moved);
 
     // #added == #deleted; #added + #moved = total.
     last_num_urls_changed_ = added.size() + moved.size();
@@ -175,16 +191,17 @@ void TopSites::UpdateMostVisited(MostVisitedURLList* most_visited) {
     if (db_.get()) {
       // Write both added and moved urls.
       for (size_t i = 0; i < added.size(); i++) {
-        MostVisitedURL added_url = (*most_visited)[added[i]];
+        MostVisitedURL added_url = most_visited[added[i]];
         db_->SetPageThumbnail(added_url, added[i], Images());
       }
       for (size_t i = 0; i < moved.size(); i++) {
-        MostVisitedURL moved_url = (*most_visited)[moved[i]];
+        MostVisitedURL moved_url = most_visited[moved[i]];
         db_->SetPageThumbnail(moved_url, moved[i], Images());
       }
     }
   }
-  StoreMostVisited(most_visited);
+  AutoLock lock(lock_);
+  StoreMostVisited(&most_visited);
 }
 
 void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
@@ -315,8 +332,8 @@ base::TimeDelta TopSites::GetUpdateDelay() {
 void TopSites::OnTopSitesAvailable(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
-  AutoLock lock(lock_);
-  UpdateMostVisited(&pages);
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
+      this, &TopSites::UpdateMostVisited, pages));
 }
 
 void TopSites::SetMockHistoryService(MockHistoryService* mhs) {
@@ -333,15 +350,20 @@ void TopSites::Observe(NotificationType type,
 
   Details<history::URLsDeletedDetails> deleted_details(details);
   if (deleted_details->all_history) {
-    db_.reset(new TopSitesDatabaseImpl());
-    // TODO(nshkrob): delete file in background (FILE) thread.
-    file_util::Delete(db_path_, false);
-    if (!db_->Init(db_path_)) {
-      NOTREACHED() << "Failed to initialize database.";
-      return;
-    }
+    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+                           NewRunnableMethod(this, &TopSites::ResetDatabase));
   }
   StartQueryForMostVisited();
+}
+
+void TopSites::ResetDatabase() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  db_.reset(new TopSitesDatabaseImpl());
+  file_util::Delete(db_path_, false);
+  if (!db_->Init(db_path_)) {
+    NOTREACHED() << "Failed to initialize database.";
+    return;
+  }
 }
 
 }  // namespace history

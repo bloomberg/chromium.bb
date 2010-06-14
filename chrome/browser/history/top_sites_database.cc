@@ -46,34 +46,45 @@ bool TopSitesDatabaseImpl::InitThumbnailTable() {
   return true;
 }
 
-MostVisitedURLList TopSitesDatabaseImpl::GetTopURLs() {
-  MostVisitedURLList result;
-  sql::Statement select_statement(db_.GetCachedStatement(
+void TopSitesDatabaseImpl::GetPageThumbnails(MostVisitedURLList* urls,
+                                             std::map<GURL,
+                                             TopSites::Images>* thumbnails) {
+  sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT url, url_rank, title, redirects "
-      "FROM thumbnails ORDER BY url_rank"));
+      "SELECT url, url_rank, title, thumbnail, redirects, "
+      "boring_score, good_clipping, at_top, last_updated "
+      "FROM thumbnails ORDER BY url_rank "));
 
-  if (!select_statement) {
+  if (!statement) {
     LOG(WARNING) << db_.GetErrorMessage();
-    return result;
+    return;
   }
 
-  int row_count = 0;
-  int max_rank = -1;  // -1 is for the case of empty DB.
-  while (select_statement.Step()) {
+  urls->clear();
+  thumbnails->clear();
+
+  while (statement.Step()) {
     // Results are sorted by url_rank.
     MostVisitedURL url;
-    GURL gurl(select_statement.ColumnString(0));
+    GURL gurl(statement.ColumnString(0));
     url.url = gurl;
-    url.title = select_statement.ColumnString16(2);
-    std::string redirects = select_statement.ColumnString(3);
+    url.title = statement.ColumnString16(2);
+    std::string redirects = statement.ColumnString(4);
     SetRedirects(redirects, &url);
-    result.push_back(url);
-  }
-  DCHECK(select_statement.Succeeded());
-  DCHECK_EQ(max_rank + 1, row_count);
+    urls->push_back(url);
 
-  return result;
+    std::vector<unsigned char> data;
+    statement.ColumnBlobAsVector(3, &data);
+    TopSites::Images thumbnail;
+    thumbnail.thumbnail = RefCountedBytes::TakeVector(&data);
+    thumbnail.thumbnail_score.boring_score = statement.ColumnDouble(5);
+    thumbnail.thumbnail_score.good_clipping = statement.ColumnBool(6);
+    thumbnail.thumbnail_score.at_top = statement.ColumnBool(7);
+    thumbnail.thumbnail_score.time_at_snapshot =
+        base::Time::FromInternalValue(statement.ColumnInt64(8));
+
+    (*thumbnails)[gurl] = thumbnail;
+  }
 }
 
 // static
@@ -174,7 +185,7 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
   transaction.Commit();
 }
 
-bool TopSitesDatabaseImpl::GetPageThumbnail(const MostVisitedURL& url,
+bool TopSitesDatabaseImpl::GetPageThumbnail(const GURL& url,
                                             TopSites::Images* thumbnail) {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
@@ -186,7 +197,7 @@ bool TopSitesDatabaseImpl::GetPageThumbnail(const MostVisitedURL& url,
     return false;
   }
 
-  statement.BindString(0, url.url.spec());
+  statement.BindString(0, url.spec());
   if (!statement.Step())
     return false;
 
