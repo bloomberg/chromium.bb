@@ -140,15 +140,23 @@ bool ExtensionUnpacker::Run() {
   // <profile>/Extensions/INSTALL_TEMP/<version>
   temp_install_dir_ =
     extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
-  if (!file_util::CreateDirectory(temp_install_dir_)) {
+
 #if defined(OS_WIN)
-    std::string dir_string = WideToUTF8(temp_install_dir_.value());
+  std::ostringstream log_stream;
+  std::string dir_string = WideToUTF8(temp_install_dir_.value());
+  log_stream << kCouldNotCreateDirectoryError << dir_string << std::endl;
+  if (!file_util::CreateDirectoryExtraLogging(temp_install_dir_, log_stream)) {
+    log_stream.flush();
+    SetError(log_stream.str());
+    return false;
+  }
 #else
+  if (!file_util::CreateDirectory(temp_install_dir_)) {
     std::string dir_string = temp_install_dir_.value();
-#endif
     SetError(kCouldNotCreateDirectoryError + dir_string);
     return false;
   }
+#endif
 
   if (!Unzip(extension_path_, temp_install_dir_)) {
     SetError(kCouldNotUnzipExtension);
