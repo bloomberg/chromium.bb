@@ -21,9 +21,9 @@
 #include "gfx/size.h"
 
 class BalloonCollection;
+class CustomDrawButton;
 class GtkThemeProvider;
 class MenuGtk;
-class NineBox;
 class NotificationDetails;
 class NotificationOptionsMenuModel;
 class NotificationSource;
@@ -56,18 +56,12 @@ class BalloonViewImpl : public BalloonView,
   // AnimationDelegate interface.
   virtual void AnimationProgressed(const Animation* animation);
 
-  // Adjust the contents window size to be appropriate for the frame.
-  void SizeContentsWindow();
-
   // Do the delayed close work.
   void DelayedClose(bool by_user);
 
   // The height of the balloon's shelf.
   // The shelf is where is close button is located.
   int GetShelfHeight() const;
-
-  // The height of the part of the frame around the balloon.
-  int GetBalloonFrameHeight() const;
 
   // The width and height that the frame should be.  If the balloon inside
   // changes size, this will not be the same as the actual frame size until
@@ -113,12 +107,8 @@ class BalloonViewImpl : public BalloonView,
   // The following factory is used to call methods at a later time.
   ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;
 
-  // Image painters for the frame of the toast.
-  scoped_ptr<NineBox> shelf_background_;
-  scoped_ptr<NineBox> balloon_background_;
-
-  // Pointer to sub-view is owned by the View sub-class.
-  GtkWidget* close_button_;
+  // Close button.
+  scoped_ptr<CustomDrawButton> close_button_;
 
   // An animation to move the balloon on the screen as its position changes.
   scoped_ptr<SlideAnimation> animation_;
@@ -128,7 +118,8 @@ class BalloonViewImpl : public BalloonView,
   // The options menu.
   scoped_ptr<MenuGtk> options_menu_;
   scoped_ptr<NotificationOptionsMenuModel> options_menu_model_;
-  GtkWidget* options_menu_button_;
+  // The button to open the options menu.
+  scoped_ptr<CustomDrawButton> options_menu_button_;
 
   NotificationRegistrar notification_registrar_;
 

@@ -319,8 +319,9 @@
       <include name="IDR_BALLOON_BORDER" file="balloon_frame.png" type="BINDATA" />
       <include name="IDR_BALLOON_SHELF" file="balloon_shelf.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH" file="balloon_wrench.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH" file="balloon_wrench.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_HOVER" file="balloon_wrench_hover.png" type="BINDATA" />
       <include name="IDR_BALLOON_OPTIONS_ARROW" file="balloon_options_arrow.png" type="BINDATA" />
       <include name="IDR_BALLOON_OPTIONS_ARROW_HOVER" file="balloon_options_arrow_hover.png" type="BINDATA" />
       <!-- Desktop notifications for ChromeOS-->

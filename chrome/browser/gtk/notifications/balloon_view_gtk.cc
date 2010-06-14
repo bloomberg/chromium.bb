@@ -19,12 +19,11 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/gtk/gtk_chrome_button.h"
+#include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
-#include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/notifications/balloon_view_host_gtk.h"
 #include "chrome/browser/gtk/notifications/notification_options_menu_model.h"
 #include "chrome/browser/gtk/rounded_window.h"
@@ -49,14 +48,14 @@ namespace {
 
 // Margin, in pixels, between the notification frame and the contents
 // of the notification.
-const int kTopMargin = 2;
+const int kTopMargin = 0;
 const int kBottomMargin = 1;
-const int kLeftMargin = 2;
-const int kRightMargin = 2;
+const int kLeftMargin = 1;
+const int kRightMargin = 1;
 
 // How many pixels of overlap there is between the shelf top and the
 // balloon bottom.
-const int kShelfBorderTopOverlap = 3;
+const int kShelfBorderTopOverlap = 0;
 
 // Properties of the dismiss button.
 const int kDismissButtonWidth = 60;
@@ -67,7 +66,7 @@ const int kOptionsMenuWidth = 60;
 const int kOptionsMenuHeight = 20;
 
 // Properties of the origin label.
-const int kLeftLabelMargin = 5;
+const int kLeftLabelMargin = 8;
 
 // TODO(johnnyg): Add a shadow for the frame.
 const int kLeftShadowWidth = 0;
@@ -76,21 +75,32 @@ const int kTopShadowWidth = 0;
 const int kBottomShadowWidth = 0;
 
 // Space in pixels between text and icon on the buttons.
-const int kButtonIconSpacing = 3;
+const int kButtonIconSpacing = 10;
 
 // Number of characters to show in the origin label before ellipsis.
 const int kOriginLabelCharacters = 18;
 
 // The shelf height for the system default font size.  It is scaled
 // with changes in the default font size.
-const int kDefaultShelfHeight = 24;
+const int kDefaultShelfHeight = 21;
+const int kShelfVerticalMargin = 3;
 
 // The amount that the bubble collections class offsets from the side of the
 // screen.
 const int kScreenBorder = 5;
 
+// Colors specified in various ways for different parts of the UI.
+// These match the windows colors in balloon_view.cc
+const char* kLabelColor = "#7D7D7D";
+const double kShelfBackgroundColorR = 245.0 / 255.0;
+const double kShelfBackgroundColorG = 245.0 / 255.0;
+const double kShelfBackgroundColorB = 245.0 / 255.0;
+const double kDividerLineColorR = 180.0 / 255.0;
+const double kDividerLineColorG = 180.0 / 255.0;
+const double kDividerLineColorB = 180.0 / 255.0;
+
 // Makes the website label relatively smaller to the base text size.
-const char* kLabelMarkup = "<span size=\"smaller\">%s</span>";
+const char* kLabelMarkup = "<span size=\"small\" color=\"%s\">%s</span>";
 
 }  // namespace
 
@@ -101,9 +111,6 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       method_factory_(this),
       close_button_(NULL),
       animation_(NULL) {
-  // Load the sprites for the frames.
-  shelf_background_.reset(new NineBox(IDR_BALLOON_SHELF, 1, 9, 9, 9));
-  balloon_background_.reset(new NineBox(IDR_BALLOON_BORDER, 4, 1, 9, 9));
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
@@ -189,26 +196,6 @@ void BalloonViewImpl::AnimationProgressed(const Animation* animation) {
   html_contents_->UpdateActualSize(contents_rect.size());
 }
 
-void PrepareButtonWithIcon(GtkWidget* button,
-                           const std::string& text_utf8, int icon_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  GdkPixbuf* pixbuf = rb.GetPixbufNamed(icon_id);
-  GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-
-  GtkWidget* box = gtk_hbox_new(FALSE, kButtonIconSpacing);
-
-  GtkWidget* label = gtk_label_new(text_utf8.c_str());
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
-
-  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 1, 1, 1, 1);
-  gtk_container_add(GTK_CONTAINER(alignment), box);
-  gtk_container_add(GTK_CONTAINER(button), alignment);
-
-  gtk_widget_show_all(alignment);
-}
-
 void BalloonViewImpl::Show(Balloon* balloon) {
   theme_provider_ = GtkThemeProvider::GetFrom(balloon->profile());
 
@@ -232,12 +219,12 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   html_contents_->Init();
   gfx::NativeView contents = html_contents_->native_view();
 
-  gtk_widget_set_app_paintable(frame_container_, TRUE);
-  gtk_widget_realize(frame_container_);
-
-  // Divide the frame vertically into the content area and the shelf.
+  // Divide the frame vertically into the shelf and the content area.
   GtkWidget* vbox = gtk_vbox_new(0, 0);
   gtk_container_add(GTK_CONTAINER(frame_container_), vbox);
+
+  shelf_ = gtk_hbox_new(0, 0);
+  gtk_container_add(GTK_CONTAINER(vbox), shelf_);
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(
@@ -247,16 +234,10 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_container_add(GTK_CONTAINER(alignment), contents);
   gtk_container_add(GTK_CONTAINER(vbox), alignment);
 
-  shelf_ = gtk_hbox_new(0, 0);
-  GtkWidget* alignment2 = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment2), 2, 2, 10, 0);
-  gtk_container_add(GTK_CONTAINER(vbox), shelf_);
-
   // Create a toolbar and add it to the shelf.
   hbox_ = gtk_hbox_new(FALSE, 0);
   gtk_widget_set_size_request(GTK_WIDGET(hbox_), -1, GetShelfHeight());
-  gtk_container_add(GTK_CONTAINER(alignment2), hbox_);
-  gtk_container_add(GTK_CONTAINER(shelf_), alignment2);
+  gtk_container_add(GTK_CONTAINER(shelf_), hbox_);
   gtk_widget_show_all(vbox);
 
   g_signal_connect(frame_container_, "expose-event",
@@ -268,33 +249,58 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   // toolbar.
   GtkWidget* source_label_ = gtk_label_new(NULL);
   char* markup = g_markup_printf_escaped(kLabelMarkup,
+                                         kLabelColor,
                                          source_label_text.c_str());
   gtk_label_set_markup(GTK_LABEL(source_label_), markup);
   g_free(markup);
   gtk_label_set_max_width_chars(GTK_LABEL(source_label_),
                                 kOriginLabelCharacters);
   gtk_label_set_ellipsize(GTK_LABEL(source_label_), PANGO_ELLIPSIZE_END);
-  gtk_box_pack_start(GTK_BOX(hbox_), source_label_, FALSE, FALSE, 0);
+  GtkWidget* label_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(label_alignment),
+                            kShelfVerticalMargin, kShelfVerticalMargin,
+                            kLeftLabelMargin, 0);
+  gtk_container_add(GTK_CONTAINER(label_alignment), source_label_);
+  gtk_box_pack_start(GTK_BOX(hbox_), label_alignment, FALSE, FALSE, 0);
 
   // Create a button to dismiss the balloon and add it to the toolbar.
-  close_button_ = theme_provider_->BuildChromeButton();
-  g_signal_connect(close_button_, "clicked",
+  close_button_.reset(new CustomDrawButton(IDR_BALLOON_CLOSE,
+                                           IDR_BALLOON_CLOSE_HOVER,
+                                           IDR_BALLOON_CLOSE_HOVER,
+                                           IDR_BALLOON_CLOSE_HOVER));
+  gtk_widget_set_tooltip_text(close_button_->widget(), dismiss_text.c_str());
+  g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
-  PrepareButtonWithIcon(close_button_, dismiss_text, IDR_BALLOON_CLOSE_HOVER);
-  gtk_box_pack_end(GTK_BOX(hbox_), close_button_, FALSE, FALSE, 0);
+  GTK_WIDGET_UNSET_FLAGS(close_button_->widget(), GTK_CAN_FOCUS);
+  GtkWidget* close_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(close_alignment),
+                            kShelfVerticalMargin, kShelfVerticalMargin,
+                            0, kButtonIconSpacing);
+  gtk_container_add(GTK_CONTAINER(close_alignment), close_button_->widget());
+  gtk_box_pack_end(GTK_BOX(hbox_), close_alignment, FALSE, FALSE, 0);
 
   // Create a button for showing the options menu, and add it to the toolbar.
-  options_menu_button_ = theme_provider_->BuildChromeButton();
-  g_signal_connect(options_menu_button_, "clicked",
+  options_menu_button_.reset(new CustomDrawButton(IDR_BALLOON_WRENCH,
+                                                  IDR_BALLOON_WRENCH_HOVER,
+                                                  IDR_BALLOON_WRENCH_HOVER,
+                                                  IDR_BALLOON_WRENCH_HOVER));
+  gtk_widget_set_tooltip_text(options_menu_button_->widget(),
+                              options_text.c_str());
+  g_signal_connect(options_menu_button_->widget(), "clicked",
                    G_CALLBACK(OnOptionsMenuButtonThunk), this);
-  PrepareButtonWithIcon(options_menu_button_, options_text,
-                        IDR_BALLOON_OPTIONS_ARROW_HOVER);
-  gtk_box_pack_end(GTK_BOX(hbox_), options_menu_button_, FALSE, FALSE, 0);
+  GTK_WIDGET_UNSET_FLAGS(options_menu_button_->widget(), GTK_CAN_FOCUS);
+  GtkWidget* options_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(options_alignment),
+                            kShelfVerticalMargin, kShelfVerticalMargin,
+                            0, kButtonIconSpacing);
+  gtk_container_add(GTK_CONTAINER(options_alignment),
+                    options_menu_button_->widget());
+  gtk_box_pack_end(GTK_BOX(hbox_), options_alignment, FALSE, FALSE, 0);
 
   notification_registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                               NotificationService::AllSources());
-  // We don't do InitThemesFor() because it just forces a redraw.
 
+  // We don't do InitThemesFor() because it just forces a redraw.
   gtk_util::ActAsRoundedWindow(frame_container_, gfx::kGdkBlack, 3,
                                gtk_util::ROUNDED_ALL,
                                gtk_util::BORDER_ALL);
@@ -320,17 +326,13 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 }
 
 gfx::Point BalloonViewImpl::GetContentsOffset() const {
-  return gfx::Point(kTopShadowWidth + kTopMargin,
-                    kLeftShadowWidth + kLeftMargin);
+  return gfx::Point(kLeftShadowWidth + kLeftMargin,
+                    GetShelfHeight() + kTopShadowWidth + kTopMargin);
 }
 
 int BalloonViewImpl::GetShelfHeight() const {
   // TODO(johnnyg): add scaling here.
   return kDefaultShelfHeight;
-}
-
-int BalloonViewImpl::GetBalloonFrameHeight() const {
-  return GetDesiredTotalHeight() - GetShelfHeight();
 }
 
 int BalloonViewImpl::GetDesiredTotalWidth() const {
@@ -376,36 +378,29 @@ void BalloonViewImpl::Observe(NotificationType type,
 }
 
 gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
-  if (theme_provider_->UseGtkTheme()) {
-    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
-    gdk_cairo_rectangle(cr, &event->area);
-    cairo_clip(cr);
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
 
-    gfx::Size content_size = balloon_->content_size();
-    gfx::Point offset = GetContentsOffset();
+  gfx::Size content_size = balloon_->content_size();
+  gfx::Point offset = GetContentsOffset();
 
-    // Draw lines of the content border color around the html content.
-    GdkColor color = theme_provider_->GetBorderColor();
-    gdk_cairo_set_source_color(cr, &color);
-    cairo_rectangle(cr, offset.x() - 1, offset.y() - 1,
-                    offset.x() + content_size.width() + 1,
-                    offset.y() + content_size.height());
-    cairo_fill(cr);
+  // Draw a background color behind the shelf.
+  cairo_set_source_rgb(cr, kShelfBackgroundColorR,
+                       kShelfBackgroundColorG, kShelfBackgroundColorB);
+  cairo_rectangle(cr, kLeftMargin, kTopMargin + 0.5,
+                  content_size.width() - 0.5, GetShelfHeight());
+  cairo_fill(cr);
 
-    // Now draw a one pixel black line under the separator stuff.
-    cairo_move_to(cr, 0, offset.y() + content_size.height() + 1.5);
-    cairo_line_to(cr, offset.x() + content_size.width() + 1,
-                  offset.y() + content_size.height() + 1.5);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_stroke(cr);
+  // Now draw a one pixel line between content and shelf.
+  cairo_move_to(cr, offset.x(), offset.y() - 1);
+  cairo_line_to(cr, offset.x() + content_size.width(), offset.y() - 1);
+  cairo_set_line_width(cr, 0.5);
+  cairo_set_source_rgb(cr, kDividerLineColorR,
+                       kDividerLineColorG, kDividerLineColorB);
+  cairo_stroke(cr);
 
-    cairo_destroy(cr);
-  } else {
-    // Draw the background images.
-    balloon_background_->RenderToWidget(frame_container_);
-    shelf_background_->RenderToWidget(shelf_);
-  }
+  cairo_destroy(cr);
 
   return FALSE;
 }
