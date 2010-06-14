@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <linux/input.h>
 
 #include <xcb/xcb.h>
 #include <xcb/dri2.h>
@@ -518,26 +519,22 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(c->base.input_device,
-				   key_press->detail, 1);
-
-			fprintf(stderr, "code %d, sequence %d\n",
-				key_press->detail, key_press->sequence);
-
+				   key_press->detail - 8, 1);
 			break;
 		case XCB_KEY_RELEASE:
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(c->base.input_device,
-				   key_press->detail, 0);
+				   key_press->detail - 8, 0);
 			break;
 		case XCB_BUTTON_PRESS:
 			button_press = (xcb_button_press_event_t *) event;
 			notify_button(c->base.input_device,
-				      button_press->detail, 1);
+				      button_press->detail + BTN_LEFT - 1, 1);
 			break;
 		case XCB_BUTTON_RELEASE:
 			button_press = (xcb_button_press_event_t *) event;
 			notify_button(c->base.input_device,
-				      button_press->detail, 0);
+				      button_press->detail + BTN_LEFT - 1, 0);
 			break;
 
 		case XCB_MOTION_NOTIFY:

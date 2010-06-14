@@ -656,8 +656,6 @@ notify_button(struct wlsc_input_device *device,
 	struct wlsc_compositor *compositor = device->ec;
 	int32_t sx, sy;
 
-	fprintf(stderr, "notify button: button %d, state %d\n", button, state);
-
 	surface = pick_surface(device, &sx, &sy);
 	if (surface) {
 		if (state) {
