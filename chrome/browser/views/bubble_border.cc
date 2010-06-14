@@ -60,7 +60,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
 
     case TOP_RIGHT:
     case BOTTOM_RIGHT:
-      x += w / 2 + arrow_offset - border_size.width();
+      x += w / 2 + arrow_offset - border_size.width() + 1;
       break;
 
     case LEFT_TOP:
@@ -98,7 +98,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
 
     case LEFT_BOTTOM:
     case RIGHT_BOTTOM:
-      y += h / 2 + arrow_offset - border_size.height();
+      y += h / 2 + arrow_offset - border_size.height() + 1;
       break;
 
     case NONE:
