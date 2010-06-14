@@ -19,7 +19,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/tcp_client_socket_pool.h"
-#include "net/spdy/spdy_stream.h"
+#include "net/spdy/spdy_http_stream.h"
 
 using base::Time;
 

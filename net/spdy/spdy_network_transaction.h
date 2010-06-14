@@ -22,7 +22,7 @@
 namespace net {
 
 class SpdySession;
-class SpdyStream;
+class SpdyHttpStream;
 class HttpNetworkSession;
 class HttpResponseInfo;
 class IOBuffer;
@@ -112,7 +112,7 @@ class SpdyNetworkTransaction : public HttpTransaction {
   // The next state in the state machine.
   State next_state_;
 
-  scoped_refptr<SpdyStream> stream_;
+  scoped_refptr<SpdyHttpStream> stream_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyNetworkTransaction);
 };
