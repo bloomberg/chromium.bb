@@ -281,7 +281,6 @@ TabContents::TabContents(Profile* profile,
       last_search_case_sensitive_(false),
       last_search_result_(),
       extension_app_(NULL),
-      extension_app_for_current_page_(NULL),
       capturing_contents_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
@@ -841,10 +840,6 @@ bool TabContents::NavigateToPendingEntry(
       favicon_service->SetFaviconOutOfDateForPage(entry.url());
   }
 
-  // The url likely changed, see if there is an extension whose extent contains
-  // the current page.
-  UpdateExtensionAppForCurrentPage();
-
   return true;
 }
 
@@ -866,7 +861,6 @@ TabContents* TabContents::Clone() {
                                     MSG_ROUTING_NONE, this);
   tc->controller().CopyStateFrom(controller_);
   tc->extension_app_ = extension_app_;
-  tc->extension_app_for_current_page_ = extension_app_for_current_page_;
   tc->extension_app_icon_ = extension_app_icon_;
   return tc;
 }
@@ -1620,10 +1614,6 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Clear the cache of forms in AutoFill.
   if (autofill_manager_.get())
     autofill_manager_->Reset();
-
-  // The url likely changed, see if there is an extension whose extent contains
-  // the current page.
-  UpdateExtensionAppForCurrentPage();
 }
 
 void TabContents::DidNavigateAnyFramePostCommit(
@@ -2994,26 +2984,12 @@ void TabContents::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_LOADED: {
-      if (!extension_app_ && !extension_app_for_current_page_ &&
-          Source<Profile>(source).ptr() == profile()) {
-        UpdateExtensionAppForCurrentPage();
-        if (extension_app_for_current_page_)
-          NotifyNavigationStateChanged(INVALIDATE_TAB);
-      }
+    case NotificationType::EXTENSION_LOADED:
       break;
-    }
 
     case NotificationType::EXTENSION_UNLOADED:
-    case NotificationType::EXTENSION_UNLOADED_DISABLED: {
-      if (extension_app_for_current_page_ ==
-          Details<Extension>(details).ptr()) {
-        extension_app_for_current_page_ = NULL;
-        UpdateExtensionAppForCurrentPage();
-        NotifyNavigationStateChanged(INVALIDATE_TAB);
-      }
+    case NotificationType::EXTENSION_UNLOADED_DISABLED:
       break;
-    }
 
     default:
       NOTREACHED();
@@ -3044,22 +3020,6 @@ Extension* TabContents::GetExtensionContaining(const GURL& url) {
   Extension* extension = extensions_service->GetExtensionByURL(url);
   return extension ?
       extension : extensions_service->GetExtensionByWebExtent(url);
-}
-
-void TabContents::UpdateExtensionAppForCurrentPage() {
-  if (extension_app_) {
-    // Tab has an explicit app extension; nothing to do.
-    return;
-  }
-
-  // Check the current extension before iterating through all extensions.
-  if (extension_app_for_current_page_ &&
-      extension_app_for_current_page_->web_extent().ContainsURL(GetURL())) {
-    return;
-  }
-
-  extension_app_for_current_page_ = GetExtensionContaining(GetURL());
-  UpdateExtensionAppIcon(extension_app_for_current_page_);
 }
 
 void TabContents::OnImageLoaded(SkBitmap* image, ExtensionResource resource,

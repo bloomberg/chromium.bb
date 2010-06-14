@@ -1037,9 +1037,6 @@ class TabContents : public PageNavigator,
   // ImageLoadingTracker to load the extension's image.
   void UpdateExtensionAppIcon(Extension* extension);
 
-  // Called on every navigation to update app_icon_cache_entry_ as necessary.
-  void UpdateExtensionAppForCurrentPage();
-
   // ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
                              int index);
@@ -1206,10 +1203,6 @@ class TabContents : public PageNavigator,
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
   Extension* extension_app_;
-
-  // If extension_app_ is NULL and there is an extension whose extent contains
-  // the current url, this is the extension.
-  Extension* extension_app_for_current_page_;
 
   // Icon for extension_app_ (if non-null) or extension_for_current_page_.
   SkBitmap extension_app_icon_;
