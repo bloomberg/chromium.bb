@@ -50,10 +50,11 @@ const size_t kRequiredAutoFillFields = 3;
 // are non-empty text nodes.  This is a faster alternative to |innerText()| for
 // performance critical operations.  It does a full depth-first search so
 // can be used when the structure is not directly known.  The text is
-// accumulated after the whitespace has been stripped.
-string16 FindChildTextInner(const WebNode& node) {
+// accumulated after the whitespace has been stripped.  Search depth is limited
+// with the |depth| parameter.
+string16 FindChildTextInner(const WebNode& node, int depth) {
   string16 element_text;
-  if (node.isNull())
+  if (depth <= 0 || node.isNull())
     return element_text;
 
   string16 node_text = node.nodeValue();
@@ -61,11 +62,11 @@ string16 FindChildTextInner(const WebNode& node) {
   if (!node_text.empty())
     element_text = node_text;
 
-  string16 child_text = FindChildTextInner(node.firstChild());
+  string16 child_text = FindChildTextInner(node.firstChild(), depth-1);
   if (!child_text.empty())
     element_text = element_text + child_text;
 
-  string16 sibling_text = FindChildTextInner(node.nextSibling());
+  string16 sibling_text = FindChildTextInner(node.nextSibling(), depth-1);
   if (!sibling_text.empty())
     element_text = element_text + sibling_text;
 
@@ -74,10 +75,13 @@ string16 FindChildTextInner(const WebNode& node) {
 
 // Returns the node value of the first descendant of |element| that is a
 // non-empty text node.  "Non-empty" in this case means non-empty after the
-// whitespace has been stripped.
+// whitespace has been stripped.  Search is limited to within 10 siblings and/or
+// descendants.
 string16 FindChildText(const WebElement& element) {
   WebNode child = element.firstChild();
-  return FindChildTextInner(child);
+
+  const int kChildSearchDepth = 10;
+  return FindChildTextInner(child, kChildSearchDepth);
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
