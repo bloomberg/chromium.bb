@@ -4687,6 +4687,9 @@ void RenderView::DumpLoadHistograms() const {
   static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
       !FieldTrialList::Find("SpdyImpact")->group_name().empty());
   if (use_spdy_histogram && navigation_state->was_npn_negotiated()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
+        abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(FieldTrial::MakeName(
