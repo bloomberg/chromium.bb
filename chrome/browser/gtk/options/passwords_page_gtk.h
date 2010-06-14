@@ -27,7 +27,8 @@ class PasswordsPageGtk {
   // The password store associated with the currently active profile.
   PasswordStore* GetPasswordStore();
 
-  // Sets the password list contents to the given data.
+  // Sets the password list contents to the given data. We take ownership of
+  // the PasswordForms in the vector.
   void SetPasswordList(const std::vector<webkit_glue::PasswordForm*>& result);
 
   CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnRemoveButtonClicked);
@@ -88,7 +89,7 @@ class PasswordsPageGtk {
   GtkWidget* page_;
 
   Profile* profile_;
-  std::vector<webkit_glue::PasswordForm> password_list_;
+  std::vector<webkit_glue::PasswordForm*> password_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsPageGtk);
 };

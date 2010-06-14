@@ -9,6 +9,7 @@
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -99,6 +100,7 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
 }
 
 PasswordsPageGtk::~PasswordsPageGtk() {
+  STLDeleteElements(&password_list_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -156,9 +158,9 @@ void PasswordsPageGtk::SetPasswordList(
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   gtk_list_store_clear(password_list_store_);
-  password_list_.resize(result.size());
+  STLDeleteElements(&password_list_);
+  password_list_ = result;
   for (size_t i = 0; i < result.size(); ++i) {
-    password_list_[i] = *result[i];
     GtkTreeIter iter;
     gtk_list_store_insert_with_values(password_list_store_, &iter, (gint) i,
         COL_SITE,
@@ -188,11 +190,11 @@ void PasswordsPageGtk::OnRemoveButtonClicked(GtkWidget* widget) {
 
   // Remove from GTK list, DB, and vector.
   gtk_list_store_remove(password_list_store_, &child_iter);
-  GetPasswordStore()->RemoveLogin(password_list_[index]);
+  GetPasswordStore()->RemoveLogin(*password_list_[index]);
+  delete password_list_[index];
   password_list_.erase(password_list_.begin() + index);
 
-  gtk_widget_set_sensitive(remove_all_button_,
-                           password_list_.size() > 0);
+  gtk_widget_set_sensitive(remove_all_button_, password_list_.size() > 0);
 }
 
 void PasswordsPageGtk::OnRemoveAllButtonClicked(GtkWidget* widget) {
@@ -231,10 +233,9 @@ void PasswordsPageGtk::OnRemoveAllConfirmResponse(GtkWidget* confirm,
   // Remove from GTK list, DB, and vector.
   PasswordStore* store = GetPasswordStore();
   gtk_list_store_clear(password_list_store_);
-  for (size_t i = 0; i < password_list_.size(); ++i) {
-    store->RemoveLogin(password_list_[i]);
-  }
-  password_list_.clear();
+  for (size_t i = 0; i < password_list_.size(); ++i)
+    store->RemoveLogin(*password_list_[i]);
+  STLDeleteElements(&password_list_);
   gtk_widget_set_sensitive(remove_all_button_, FALSE);
 }
 
@@ -259,7 +260,7 @@ void PasswordsPageGtk::OnShowPasswordButtonClicked(GtkWidget* widget) {
   gint index = gtk_tree::GetTreeSortChildRowNumForPath(
       password_list_sort_, path);
   gtk_tree_path_free(path);
-  std::string pass = UTF16ToUTF8(password_list_[index].password_value);
+  std::string pass = UTF16ToUTF8(password_list_[index]->password_value);
   gtk_label_set_text(GTK_LABEL(password_), pass.c_str());
   gtk_button_set_label(GTK_BUTTON(show_password_button_),
       l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON).c_str());
@@ -289,8 +290,8 @@ gint PasswordsPageGtk::CompareSite(GtkTreeModel* model,
   int row1 = gtk_tree::GetRowNumForIter(model, a);
   int row2 = gtk_tree::GetRowNumForIter(model, b);
   PasswordsPageGtk* page = reinterpret_cast<PasswordsPageGtk*>(window);
-  return page->password_list_[row1].origin.spec().compare(
-         page->password_list_[row2].origin.spec());
+  return page->password_list_[row1]->origin.spec().compare(
+         page->password_list_[row2]->origin.spec());
 }
 
 // static
@@ -300,8 +301,8 @@ gint PasswordsPageGtk::CompareUsername(GtkTreeModel* model,
   int row1 = gtk_tree::GetRowNumForIter(model, a);
   int row2 = gtk_tree::GetRowNumForIter(model, b);
   PasswordsPageGtk* page = reinterpret_cast<PasswordsPageGtk*>(window);
-  return page->password_list_[row1].username_value.compare(
-         page->password_list_[row2].username_value);
+  return page->password_list_[row1]->username_value.compare(
+         page->password_list_[row2]->username_value);
 }
 
 void PasswordsPageGtk::PasswordListPopulater::populate() {

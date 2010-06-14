@@ -30,7 +30,8 @@ class PasswordsExceptionsPageGtk {
   // The password store associated with the currently active profile.
   PasswordStore* GetPasswordStore();
 
-  // Sets the exception list contents to the given data.
+  // Sets the exception list contents to the given data. We take ownership of
+  // the PasswordForms in the vector.
   void SetExceptionList(const std::vector<webkit_glue::PasswordForm*>& result);
 
   CHROMEGTK_CALLBACK_0(PasswordsExceptionsPageGtk, void, OnRemoveButtonClicked);
@@ -84,7 +85,7 @@ class PasswordsExceptionsPageGtk {
   GtkWidget* page_;
 
   Profile* profile_;
-  std::vector<webkit_glue::PasswordForm> exception_list_;
+  std::vector<webkit_glue::PasswordForm*> exception_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsExceptionsPageGtk);
 };

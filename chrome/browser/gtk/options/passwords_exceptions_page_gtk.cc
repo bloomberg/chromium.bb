@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -69,6 +70,7 @@ PasswordsExceptionsPageGtk::PasswordsExceptionsPageGtk(Profile* profile)
 }
 
 PasswordsExceptionsPageGtk::~PasswordsExceptionsPageGtk() {
+  STLDeleteElements(&exception_list_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,9 +114,9 @@ void PasswordsExceptionsPageGtk::SetExceptionList(
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   gtk_list_store_clear(exception_list_store_);
-  exception_list_.resize(result.size());
+  STLDeleteElements(&exception_list_);
+  exception_list_ = result;
   for (size_t i = 0; i < result.size(); ++i) {
-    exception_list_[i] = *result[i];
     GtkTreeIter iter;
     gtk_list_store_insert_with_values(exception_list_store_, &iter, (gint) i,
         COL_SITE,
@@ -143,7 +145,8 @@ void PasswordsExceptionsPageGtk::OnRemoveButtonClicked(GtkWidget* widget) {
 
   // Remove from GTK list, DB, and vector.
   gtk_list_store_remove(exception_list_store_, &child_iter);
-  GetPasswordStore()->RemoveLogin(exception_list_[index]);
+  GetPasswordStore()->RemoveLogin(*exception_list_[index]);
+  delete exception_list_[index];
   exception_list_.erase(exception_list_.begin() + index);
 
   gtk_widget_set_sensitive(remove_all_button_, exception_list_.size() > 0);
@@ -153,10 +156,9 @@ void PasswordsExceptionsPageGtk::OnRemoveAllButtonClicked(GtkWidget* widget) {
   // Remove from GTK list, DB, and vector.
   PasswordStore* store = GetPasswordStore();
   gtk_list_store_clear(exception_list_store_);
-  for (size_t i = 0; i < exception_list_.size(); ++i) {
-    store->RemoveLogin(exception_list_[i]);
-  }
-  exception_list_.clear();
+  for (size_t i = 0; i < exception_list_.size(); ++i)
+    store->RemoveLogin(*exception_list_[i]);
+  STLDeleteElements(&exception_list_);
   gtk_widget_set_sensitive(remove_all_button_, FALSE);
 }
 
@@ -178,8 +180,8 @@ gint PasswordsExceptionsPageGtk::CompareSite(GtkTreeModel* model,
   int row2 = gtk_tree::GetRowNumForIter(model, b);
   PasswordsExceptionsPageGtk* page =
       reinterpret_cast<PasswordsExceptionsPageGtk*>(window);
-  return page->exception_list_[row1].origin.spec().compare(
-         page->exception_list_[row2].origin.spec());
+  return page->exception_list_[row1]->origin.spec().compare(
+         page->exception_list_[row2]->origin.spec());
 }
 
 void PasswordsExceptionsPageGtk::ExceptionListPopulater::populate() {
