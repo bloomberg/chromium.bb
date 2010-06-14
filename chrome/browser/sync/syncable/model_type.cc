@@ -113,6 +113,8 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Themes";
     case TYPED_URLS:
       return "Typed URLs";
+    case EXTENSIONS:
+      return "Extensions";
     default:
       NOTREACHED() << "No known extension for model type.";
       return "INVALID";

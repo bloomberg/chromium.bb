@@ -73,6 +73,13 @@ class ProfileSyncFactory {
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the
+  // extension data type.  The pointers in the return struct are
+  // owned by the caller.
+  virtual SyncComponents CreateExtensionSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
+
+  // Instantiates both a model associator and change processor for the
   // password data type.  The pointers in the return struct are
   // owned by the caller.
   virtual SyncComponents CreatePasswordSyncComponents(

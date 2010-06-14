@@ -529,6 +529,15 @@ class SyncManager {
     const sync_pb::AutofillSpecifics* pre_deletion_data;
   };
 
+  // Extra data used only for extension DELETE changes.
+  class ExtraExtensionChangeRecordData : public ExtraChangeRecordData {
+   public:
+    explicit ExtraExtensionChangeRecordData(const std::string& extension_id)
+        : extension_id(extension_id) {}
+    virtual ~ExtraExtensionChangeRecordData() {}
+    const std::string extension_id;
+  };
+
   // Status encapsulates detailed state about the internals of the SyncManager.
   struct Status {
     // Summary is a distilled set of important information that the end-user may

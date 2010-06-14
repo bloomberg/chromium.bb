@@ -1613,13 +1613,26 @@ void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
     const syncable::EntryKernel& original, bool existed_before,
     bool exists_now) {
   // Extra data for autofill deletions.
-  if (type == syncable::AUTOFILL) {
-    if (!exists_now && existed_before) {
-      sync_pb::AutofillSpecifics* s = new sync_pb::AutofillSpecifics;
-      s->CopyFrom(original.ref(SPECIFICS).GetExtension(sync_pb::autofill));
-      ExtraChangeRecordData* extra = new ExtraAutofillChangeRecordData(s);
-      buffer->SetExtraDataForId(id, extra);
-    }
+  switch (type) {
+    case syncable::AUTOFILL:
+      if (!exists_now && existed_before) {
+        sync_pb::AutofillSpecifics* s = new sync_pb::AutofillSpecifics;
+        s->CopyFrom(original.ref(SPECIFICS).GetExtension(sync_pb::autofill));
+        ExtraChangeRecordData* extra = new ExtraAutofillChangeRecordData(s);
+        buffer->SetExtraDataForId(id, extra);
+      }
+      break;
+    case syncable::EXTENSIONS:
+      if (!exists_now && existed_before) {
+        const std::string& extension_id =
+            original.ref(SPECIFICS).GetExtension(sync_pb::extension).id();
+        ExtraChangeRecordData* extra =
+            new ExtraExtensionChangeRecordData(extension_id);
+        buffer->SetExtraDataForId(id, extra);
+      }
+      break;
+    default:
+      break;
   }
 }
 

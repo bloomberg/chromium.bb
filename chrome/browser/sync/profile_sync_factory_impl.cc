@@ -13,6 +13,9 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/extension_change_processor.h"
+#include "chrome/browser/sync/glue/extension_data_type_controller.h"
+#include "chrome/browser/sync/glue/extension_model_associator.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
@@ -40,6 +43,9 @@ using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
+using browser_sync::ExtensionChangeProcessor;
+using browser_sync::ExtensionDataTypeController;
+using browser_sync::ExtensionModelAssociator;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;
@@ -86,6 +92,13 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   if (!command_line_->HasSwitch(switches::kDisableSyncBookmarks)) {
     pss->RegisterDataTypeController(
         new BookmarkDataTypeController(this, profile_, pss));
+  }
+
+  // Extension sync is disabled by default.  Register only if
+  // explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncExtensions)) {
+    pss->RegisterDataTypeController(
+        new ExtensionDataTypeController(this, profile_, pss));
   }
 
   // Password sync is disabled by default.  Register only if
@@ -152,6 +165,17 @@ ProfileSyncFactoryImpl::CreateBookmarkSyncComponents(
   BookmarkChangeProcessor* change_processor =
       new BookmarkChangeProcessor(model_associator,
                                   error_handler);
+  return SyncComponents(model_associator, change_processor);
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateExtensionSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    UnrecoverableErrorHandler* error_handler) {
+  ExtensionModelAssociator* model_associator =
+      new ExtensionModelAssociator(profile_sync_service);
+  ExtensionChangeProcessor* change_processor =
+      new ExtensionChangeProcessor(error_handler, model_associator);
   return SyncComponents(model_associator, change_processor);
 }
 
