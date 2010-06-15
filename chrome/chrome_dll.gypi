@@ -289,13 +289,6 @@
                 # into PRODUCT_DIR.
                 '../third_party/adobe/flash/flash_player.gyp:flash_player',
               ],
-              'conditions': [
-                ['internal_pdf', {
-                  'dependencies': [
-                    '../pdf/pdf.gyp:pdf',
-                  ],
-                }],
-              ],
               'rules': [
                 {
                   'rule_name': 'pdfsqueeze',
@@ -535,6 +528,11 @@
                     },
                   ],
                 }],  # mac_keystone
+                ['internal_pdf', {
+                  'dependencies': [
+                    '../pdf/pdf.gyp:pdf',
+                  ],
+                }],
               ],  # conditions
             }],  # OS=="mac"
           ],  # conditions
