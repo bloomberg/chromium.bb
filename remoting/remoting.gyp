@@ -165,6 +165,8 @@
       'sources': [
         'host/capturer.cc',
         'host/capturer.h',
+        'host/chromoting_host.cc',
+        'host/chromoting_host.h',
         'host/client_connection.cc',
         'host/client_connection.h',
         'host/differ.h',
@@ -180,8 +182,6 @@
         'host/event_executor.h',
         'host/session_manager.cc',
         'host/session_manager.h',
-        'host/simple_host.cc',
-        'host/simple_host.h',
         'host/heartbeat_sender.cc',
         'host/heartbeat_sender.h',
       ],

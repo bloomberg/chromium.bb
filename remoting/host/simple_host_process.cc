@@ -25,7 +25,7 @@
 #include "base/waitable_event.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/encoder_verbatim.h"
-#include "remoting/host/simple_host.h"
+#include "remoting/host/chromoting_host.h"
 
 #if defined(OS_WIN)
 #include "remoting/host/capturer_gdi.h"
@@ -37,35 +37,6 @@
 #include "remoting/host/capturer_mac.h"
 #include "remoting/host/event_executor_mac.h"
 #endif
-
-void SetConsoleEcho(bool on) {
-#if defined(OS_WIN)
-  HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-  if ((hIn == INVALID_HANDLE_VALUE) || (hIn == NULL))
-    return;
-
-  DWORD mode;
-  if (!GetConsoleMode(hIn, &mode))
-    return;
-
-  if (on) {
-    mode = mode | ENABLE_ECHO_INPUT;
-  } else {
-    mode = mode & ~ENABLE_ECHO_INPUT;
-  }
-
-  SetConsoleMode(hIn, mode);
-#elif defined(OS_POSIX)
-  struct termios settings;
-  tcgetattr(STDIN_FILENO, &settings);
-  if (on) {
-    settings.c_lflag |= ECHO;
-  } else {
-    settings.c_lflag &= ~ECHO;
-  }
-  tcsetattr(STDIN_FILENO, TCSANOW, &settings);
-#endif  //  defined(OS_WIN)
-}
 
 int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
@@ -131,15 +102,15 @@ int main(int argc, char** argv) {
     capturer.reset(new remoting::CapturerFake());
   }
 
-  // Construct a simple host with username and auth_token.
+  // Construct a chromoting host with username and auth_token.
   // TODO(hclam): Allow the host to load saved credentials.
   base::WaitableEvent host_done(false, false);
-  scoped_refptr<remoting::SimpleHost> host
-      = new remoting::SimpleHost(username, auth_token,
-                                 capturer.release(),
-                                 encoder.release(),
-                                 executor.release(),
-                                 &host_done);
+  scoped_refptr<remoting::ChromotingHost> host
+      = new remoting::ChromotingHost(username, auth_token,
+                                     capturer.release(),
+                                     encoder.release(),
+                                     executor.release(),
+                                     &host_done);
   host->Run();
   host_done.Wait();
   return 0;

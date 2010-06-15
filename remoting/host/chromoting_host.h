@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIMPLE_HOST_H_
-#define REMOTING_SIMPLE_HOST_H_
+#ifndef REMOTING_CHROMOTING_HOST_H_
+#define REMOTING_CHROMOTING_HOST_H_
 
 #include <string>
 
@@ -48,14 +48,14 @@ namespace remoting {
 //    all pending tasks to complete. After all of that completed we
 //    return to the idle state. We then go to step (2) if there a new
 //    incoming connection.
-class SimpleHost : public base::RefCountedThreadSafe<SimpleHost>,
+class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                    public ClientConnection::EventHandler,
                    public JingleClient::Callback {
  public:
-  SimpleHost(const std::string& username, const std::string& auth_token,
+  ChromotingHost(const std::string& username, const std::string& auth_token,
              Capturer* capturer, Encoder* encoder, EventExecutor* executor,
              base::WaitableEvent* host_done);
-  virtual ~SimpleHost();
+  virtual ~ChromotingHost();
 
   // Run the host porcess. This method returns only after the message loop
   // of the host process exits.
@@ -139,9 +139,9 @@ class SimpleHost : public base::RefCountedThreadSafe<SimpleHost>,
   // Signals the host is ready to be destroyed.
   base::WaitableEvent* host_done_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleHost);
+  DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SIMPLE_HOST_H_
+#endif  // REMOTING_HOST_CHROMOTING_HOST_H_

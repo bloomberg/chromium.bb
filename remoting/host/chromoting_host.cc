@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/simple_host.h"
+#include "remoting/host/chromoting_host.h"
 
 #include "base/stl_util-inl.h"
 #include "base/waitable_event.h"
@@ -14,7 +14,7 @@
 
 namespace remoting {
 
-SimpleHost::SimpleHost(const std::string& username,
+ChromotingHost::ChromotingHost(const std::string& username,
                        const std::string& auth_token,
                        Capturer* capturer,
                        Encoder* encoder,
@@ -40,7 +40,7 @@ SimpleHost::SimpleHost(const std::string& username,
   network_thread_.Start();
 }
 
-SimpleHost::~SimpleHost() {
+ChromotingHost::~ChromotingHost() {
   // TODO(ajwong): We really need to inject these threads and get rid of these
   // start/stops.
   main_thread_.Stop();
@@ -49,15 +49,16 @@ SimpleHost::~SimpleHost() {
   DCHECK(!capture_thread_.IsRunning());
 }
 
-void SimpleHost::Run() {
+void ChromotingHost::Run() {
   // Submit a task to perform host registration. We'll also start
   // listening to connection if registration is done.
-  message_loop()->PostTask(FROM_HERE,
-                           NewRunnableMethod(this, &SimpleHost::RegisterHost));
+  message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &ChromotingHost::RegisterHost));
 }
 
 // This method is called when we need to destroy the host process.
-void SimpleHost::DestroySession() {
+void ChromotingHost::DestroySession() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // First we tell the session to pause and then we wait until all
@@ -76,7 +77,7 @@ void SimpleHost::DestroySession() {
 
 // This method talks to the cloud to register the host process. If
 // successful we will start listening to network requests.
-void SimpleHost::RegisterHost() {
+void ChromotingHost::RegisterHost() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(!jingle_client_);
 
@@ -87,7 +88,7 @@ void SimpleHost::RegisterHost() {
 }
 
 // This method is called if a client is connected to this object.
-void SimpleHost::OnClientConnected(ClientConnection* client) {
+void ChromotingHost::OnClientConnected(ClientConnection* client) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Create a new RecordSession if there was none.
@@ -119,7 +120,7 @@ void SimpleHost::OnClientConnected(ClientConnection* client) {
   }
 }
 
-void SimpleHost::OnClientDisconnected(ClientConnection* client) {
+void ChromotingHost::OnClientDisconnected(ClientConnection* client) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Remove the client from the session manager.
@@ -137,7 +138,7 @@ void SimpleHost::OnClientDisconnected(ClientConnection* client) {
 
 ////////////////////////////////////////////////////////////////////////////
 // ClientConnection::EventHandler implementations
-void SimpleHost::HandleMessages(ClientConnection* client,
+void ChromotingHost::HandleMessages(ClientConnection* client,
                                 ClientMessageList* messages) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
@@ -148,7 +149,7 @@ void SimpleHost::HandleMessages(ClientConnection* client,
   STLDeleteElements<ClientMessageList>(messages);
 }
 
-void SimpleHost::OnConnectionOpened(ClientConnection* client) {
+void ChromotingHost::OnConnectionOpened(ClientConnection* client) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Completes the client connection.
@@ -156,7 +157,7 @@ void SimpleHost::OnConnectionOpened(ClientConnection* client) {
   OnClientConnected(client_.get());
 }
 
-void SimpleHost::OnConnectionClosed(ClientConnection* client) {
+void ChromotingHost::OnConnectionClosed(ClientConnection* client) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Completes the client connection.
@@ -164,7 +165,7 @@ void SimpleHost::OnConnectionClosed(ClientConnection* client) {
   OnClientDisconnected(client_.get());
 }
 
-void SimpleHost::OnConnectionFailed(ClientConnection* client) {
+void ChromotingHost::OnConnectionFailed(ClientConnection* client) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // The client has disconnected.
@@ -174,7 +175,7 @@ void SimpleHost::OnConnectionFailed(ClientConnection* client) {
 
 ////////////////////////////////////////////////////////////////////////////
 // JingleClient::Callback implementations
-void SimpleHost::OnStateChange(JingleClient* jingle_client,
+void ChromotingHost::OnStateChange(JingleClient* jingle_client,
                                JingleClient::State state) {
   DCHECK_EQ(jingle_client_.get(), jingle_client);
 
@@ -196,7 +197,7 @@ void SimpleHost::OnStateChange(JingleClient* jingle_client,
   }
 }
 
-bool SimpleHost::OnAcceptConnection(
+bool ChromotingHost::OnAcceptConnection(
     JingleClient* jingle_client, const std::string& jid,
     JingleChannel::Callback** channel_callback) {
   DCHECK_EQ(jingle_client_.get(), jingle_client);
@@ -214,7 +215,7 @@ bool SimpleHost::OnAcceptConnection(
   return true;
 }
 
-void SimpleHost::OnNewConnection(JingleClient* jingle_client,
+void ChromotingHost::OnNewConnection(JingleClient* jingle_client,
                                  scoped_refptr<JingleChannel> channel) {
   DCHECK_EQ(jingle_client_.get(), jingle_client);
 
@@ -224,7 +225,7 @@ void SimpleHost::OnNewConnection(JingleClient* jingle_client,
   client_->set_jingle_channel(channel);
 }
 
-MessageLoop* SimpleHost::message_loop() {
+MessageLoop* ChromotingHost::message_loop() {
   return main_thread_.message_loop();
 }
 
