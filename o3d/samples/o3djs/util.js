@@ -612,8 +612,9 @@ function o3djs_isV8Supported() {
  * @param {o3djs.util.Engine} engine The engine.
  */
 o3djs.util.setMainEngine = function(engine) {
-  if ((engine == o3djs.util.Engine.V8) && !o3djs_isV8Supported())
-    return;
+  if ((engine == o3djs.util.Engine.V8) && !o3djs_isV8Supported()) {
+    engine = o3djs.util.Engine.BROWSER;
+  }
   o3djs.util.mainEngine_ = engine;
 };
 
@@ -989,7 +990,11 @@ o3djs.util.makeClients = function(callback,
 
         // TODO: Is this needed with the new event code?
         for (var cc = 0; cc < clientElements.length; ++cc) {
-          o3djs.base.initV8(clientElements[cc]);
+          // Based on v8 support test, not on current engine, as V8
+          // still needs to be initialized even with o3djs.util.Engine.BROWSER
+          // on some configs.
+          if (o3djs_isV8Supported())
+            o3djs.base.initV8(clientElements[cc]);
           o3djs.event.startKeyboardEventSynthesis(clientElements[cc]);
           o3djs.error.setDefaultErrorHandler(clientElements[cc].client);
         }
@@ -1010,7 +1015,7 @@ o3djs.util.makeClients = function(callback,
             var scriptTagText = o3djs.util.getScriptTagText_();
             mainClientElement.eval(scriptTagText);
 
-            // Invoke the vallback in V8.
+            // Invoke the callback in V8.
             o3djs.util.callV8(mainClientElement,
                               callback,
                               o3djs.global,
