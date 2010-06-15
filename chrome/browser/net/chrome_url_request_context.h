@@ -29,6 +29,7 @@ class CommandLine;
 class Profile;
 
 namespace net {
+class NetworkDelegate;
 class ProxyConfig;
 }
 
@@ -217,6 +218,10 @@ class ChromeURLRequestContext : public URLRequestContext {
   }
   void set_net_log(net::NetLog* net_log) {
     net_log_ = net_log;
+  }
+  void set_network_delegate(
+      net::HttpNetworkDelegate* network_delegate) {
+    network_delegate_ = network_delegate;
   }
 
   // Callback for when the accept language changes.

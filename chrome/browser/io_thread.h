@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process_sub_thread.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/net/dns.h"
 #include "net/base/host_resolver.h"
 
@@ -36,6 +37,7 @@ class IOThread : public BrowserProcessSubThread {
     scoped_refptr<net::HostResolver> host_resolver;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
+    ChromeNetworkDelegate network_delegate;
   };
 
   IOThread();

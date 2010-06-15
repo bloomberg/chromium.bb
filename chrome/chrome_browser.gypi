@@ -1692,6 +1692,8 @@
         'browser/net/chrome_cookie_policy.h',
         'browser/net/chrome_net_log.cc',
         'browser/net/chrome_net_log.h',
+        'browser/net/chrome_network_delegate.cc',
+        'browser/net/chrome_network_delegate.h',
         'browser/net/chrome_url_request_context.cc',
         'browser/net/chrome_url_request_context.h',
         'browser/net/connection_tester.cc',

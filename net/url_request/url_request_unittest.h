@@ -166,6 +166,7 @@ class TestURLRequestContext : public URLRequestContext {
                                                proxy_service_,
                                                ssl_config_service_,
                                                http_auth_handler_factory_,
+                                               network_delegate_,
                                                NULL),
           net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.

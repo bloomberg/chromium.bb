@@ -59,6 +59,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
                                                  proxy_service_,
                                                  ssl_config_service_,
                                                  http_auth_handler_factory_,
+                                                 NULL,
                                                  NULL),
             net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
@@ -401,4 +402,3 @@ void ConnectionTester::OnExperimentCompleted(int result) {
     StartNextExperiment();
   }
 }
-

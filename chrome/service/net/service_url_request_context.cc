@@ -40,7 +40,8 @@ ServiceURLRequestContext::ServiceURLRequestContext() {
                                            proxy_service_,
                                            ssl_config_service_,
                                            http_auth_handler_factory_,
-                                           NULL /*net_log*/),
+                                           NULL /* network_delegate */,
+                                           NULL /* net_log */),
       net::HttpCache::DefaultBackend::InMemory(0));
   // In-memory cookie store.
   cookie_store_ = new net::CookieMonster(NULL, NULL);
@@ -53,4 +54,3 @@ ServiceURLRequestContext::~ServiceURLRequestContext() {
   delete http_transaction_factory_;
   delete http_auth_handler_factory_;
 }
-
