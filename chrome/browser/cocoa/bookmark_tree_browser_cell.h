@@ -22,9 +22,9 @@ class BookmarkNode;
   SEL action_;
 }
 
-@property (assign) NSMatrix* matrix;
-@property (assign) id target;
-@property (assign) SEL action;
+@property (nonatomic, assign) NSMatrix* matrix;
+@property (nonatomic, assign) id target;
+@property (nonatomic, assign) SEL action;
 
 - (const BookmarkNode*)bookmarkNode;
 - (void)setBookmarkNode:(const BookmarkNode*)bookmarkNode;

@@ -285,7 +285,7 @@ skia::PlatformCanvas* RenderProcessImpl::GetDrawingCanvas(
   if (!GetTransportDIBFromCache(memory, size)) {
     *memory = CreateTransportDIB(size);
     if (!*memory)
-      return false;
+      return NULL;
   }
 
   return (*memory)->GetPlatformCanvas(width, height);

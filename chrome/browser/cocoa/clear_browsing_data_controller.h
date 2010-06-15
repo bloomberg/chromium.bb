@@ -62,14 +62,14 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
 - (IBAction)openFlashPlayerSettings:(id)sender;
 
 // Properties for bindings
-@property BOOL clearBrowsingHistory;
-@property BOOL clearDownloadHistory;
-@property BOOL emptyCache;
-@property BOOL deleteCookies;
-@property BOOL clearSavedPasswords;
-@property BOOL clearFormData;
-@property NSInteger timePeriod;
-@property BOOL isClearing;
+@property (nonatomic) BOOL clearBrowsingHistory;
+@property (nonatomic) BOOL clearDownloadHistory;
+@property (nonatomic) BOOL emptyCache;
+@property (nonatomic) BOOL deleteCookies;
+@property (nonatomic) BOOL clearSavedPasswords;
+@property (nonatomic) BOOL clearFormData;
+@property (nonatomic) NSInteger timePeriod;
+@property (nonatomic) BOOL isClearing;
 
 @end
 

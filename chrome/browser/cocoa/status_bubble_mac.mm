@@ -32,7 +32,7 @@ const int kMousePadding = 20;
 const int kTextPadding = 3;
 
 // The animation key used for fade-in and fade-out transitions.
-const NSString* kFadeAnimationKey = @"alphaValue";
+NSString* const kFadeAnimationKey = @"alphaValue";
 
 // The status bubble's maximum opacity, when fully faded in.
 const CGFloat kBubbleOpacity = 1.0;

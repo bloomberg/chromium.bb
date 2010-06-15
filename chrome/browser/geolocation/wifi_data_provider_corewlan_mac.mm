@@ -29,16 +29,16 @@
 @end
 
 @interface CWNetwork : NSObject <NSCopying, NSCoding>
-@property(readonly) NSString* ssid;
-@property(readonly) NSString* bssid;
-@property(readonly) NSData* bssidData;
-@property(readonly) NSNumber* securityMode;
-@property(readonly) NSNumber* phyMode;
-@property(readonly) NSNumber* channel;
-@property(readonly) NSNumber* rssi;
-@property(readonly) NSNumber* noise;
-@property(readonly) NSData* ieData;
-@property(readonly) BOOL isIBSS;
+@property (nonatomic, readonly) NSString* ssid;
+@property (nonatomic, readonly) NSString* bssid;
+@property (nonatomic, readonly) NSData* bssidData;
+@property (nonatomic, readonly) NSNumber* securityMode;
+@property (nonatomic, readonly) NSNumber* phyMode;
+@property (nonatomic, readonly) NSNumber* channel;
+@property (nonatomic, readonly) NSNumber* rssi;
+@property (nonatomic, readonly) NSNumber* noise;
+@property (nonatomic, readonly) NSData* ieData;
+@property (nonatomic, readonly) BOOL isIBSS;
 - (BOOL)isEqualToNetwork:(CWNetwork*)network;
 @end
 

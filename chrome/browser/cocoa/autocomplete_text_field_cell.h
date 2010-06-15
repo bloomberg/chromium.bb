@@ -158,9 +158,9 @@ class ExtensionAction;
 // Internal methods here exposed for unit testing.
 @interface AutocompleteTextFieldCell (UnitTesting)
 
-@property(readonly) NSAttributedString* keywordString;
-@property(readonly) NSAttributedString* hintString;
-@property(readonly) NSAttributedString* hintIconLabel;
+@property(nonatomic, readonly) NSAttributedString* keywordString;
+@property(nonatomic, readonly) NSAttributedString* hintString;
+@property(nonatomic, readonly) NSAttributedString* hintIconLabel;
 
 // Returns the total number of installed Page Actions, visible or not.
 - (size_t)pageActionCount;

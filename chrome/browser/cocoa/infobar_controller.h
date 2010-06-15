@@ -73,8 +73,8 @@ class InfoBarDelegate;
 // Sets the info bar message to the specified |message|.
 - (void)setLabelToMessage:(NSString*)message;
 
-@property(assign, nonatomic) id<InfoBarContainer> containerController;
-@property(readonly) InfoBarDelegate* delegate;
+@property(nonatomic, assign) id<InfoBarContainer> containerController;
+@property(nonatomic, readonly) InfoBarDelegate* delegate;
 
 @end
 

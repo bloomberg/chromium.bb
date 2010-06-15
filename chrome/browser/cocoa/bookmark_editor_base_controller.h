@@ -46,11 +46,11 @@ class BookmarkModel;
   scoped_ptr<BookmarkEditorBaseControllerBridge> observer_;
 }
 
-@property (copy) NSString* initialName;
-@property (copy) NSString* displayName;
-@property (assign) BOOL okEnabled;
-@property (retain, readonly) NSArray* folderTreeArray;
-@property (copy) NSArray* tableSelectionPaths;
+@property (nonatomic, copy) NSString* initialName;
+@property (nonatomic, copy) NSString* displayName;
+@property (nonatomic, assign) BOOL okEnabled;
+@property (nonatomic, retain, readonly) NSArray* folderTreeArray;
+@property (nonatomic, copy) NSArray* tableSelectionPaths;
 
 // Designated initializer.  Derived classes should call through to this init.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
@@ -120,10 +120,10 @@ class BookmarkModel;
   BOOL newFolder_;
 }
 
-@property (copy, readwrite) NSString* folderName;
-@property (assign, readwrite) const BookmarkNode* folderNode;
-@property (retain, readwrite) NSMutableArray* children;
-@property (assign, readwrite) BOOL newFolder;
+@property (nonatomic, copy) NSString* folderName;
+@property (nonatomic, assign) const BookmarkNode* folderNode;
+@property (nonatomic, retain) NSMutableArray* children;
+@property (nonatomic, assign) BOOL newFolder;
 
 // Convenience creator for adding a new folder to the editor's bookmark
 // structure.  This folder will be added to the bookmark model when the
@@ -152,7 +152,7 @@ class BookmarkModel;
 
 @interface BookmarkEditorBaseController(TestingAPI)
 
-@property (readonly) BOOL okButtonEnabled;
+@property (nonatomic, readonly) BOOL okButtonEnabled;
 
 // Create any newly added folders.  New folders are nodes in folderTreeArray
 // which are marked as being new (i.e. their kFolderTreeNewFolderKey

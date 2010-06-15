@@ -161,7 +161,7 @@ class ProfileSyncService;
 - (IBAction)toolbarButtonSelected:(id)sender;
 
 // Usable from cocoa bindings to hook up the custom home pages table.
-@property(readonly) CustomHomePagesModel* customPagesSource;
+@property (nonatomic, readonly) CustomHomePagesModel* customPagesSource;
 
 @end
 

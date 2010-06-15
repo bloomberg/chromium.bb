@@ -25,7 +25,7 @@ class Profile;
 extern const CGFloat kBrowserActionButtonPadding;
 
 // Sent when the visibility of the Browser Actions changes.
-extern const NSString* kBrowserActionVisibilityChangedNotification;
+extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 // Handles state and provides an interface for controlling the Browser Actions
 // container within the Toolbar.

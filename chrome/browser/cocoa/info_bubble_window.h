@@ -27,6 +27,6 @@ class AppNotificationBridge;
 // after the closing animation has completed.
 - (BOOL)isClosing;
 
-@property BOOL delayOnClose;
+@property (nonatomic) BOOL delayOnClose;
 
 @end

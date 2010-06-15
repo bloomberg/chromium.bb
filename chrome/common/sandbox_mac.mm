@@ -244,10 +244,6 @@ void SandboxWarmup() {
 // Turns on the OS X sandbox for this process.
 bool EnableSandbox(SandboxProcessType sandbox_type,
                    const FilePath& allowed_dir) {
-  // Name of the file containing a common prefix included at the start of
-  // all the other sandbox profiles.
-  const NSString* kCommonSandboxPrefixFileName = @"common";
-
   // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
   // passed in.
   if (sandbox_type != SANDBOX_TYPE_UTILITY) {
@@ -297,7 +293,7 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
 
   // Read in the sandbox profile and the common prefix file.
   NSString* common_sandbox_prefix_path =
-      [mac_util::MainAppBundle() pathForResource:kCommonSandboxPrefixFileName
+      [mac_util::MainAppBundle() pathForResource:@"common"
                                           ofType:@"sb"];
   NSString* common_sandbox_prefix_data =
       [NSString stringWithContentsOfFile:common_sandbox_prefix_path

@@ -39,17 +39,18 @@ enum AutoupdateStatus {
 // value as an intValue at key kAutoupdateStatusStatus.  If a version is
 // available (see AutoupdateStatus), it will be present at key
 // kAutoupdateStatusVersion.
-extern const NSString* const kAutoupdateStatusNotification;
-extern const NSString* const kAutoupdateStatusStatus;
-extern const NSString* const kAutoupdateStatusVersion;
+extern NSString* const kAutoupdateStatusNotification;
+extern NSString* const kAutoupdateStatusStatus;
+extern NSString* const kAutoupdateStatusVersion;
 
 namespace {
-  enum BrandFileType {
-    kBrandFileTypeNotDetermined = 0,
-    kBrandFileTypeNone,
-    kBrandFileTypeUser,
-    kBrandFileTypeSystem,
-  };
+
+enum BrandFileType {
+  kBrandFileTypeNotDetermined = 0,
+  kBrandFileTypeNone,
+  kBrandFileTypeUser,
+  kBrandFileTypeSystem,
+};
 
 } // namespace
 

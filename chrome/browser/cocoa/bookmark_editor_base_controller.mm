@@ -332,10 +332,6 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   return folderTreeArray_.get();
 }
 
-- (void)setFolderTreeArray:(NSArray*)folderTreeArray {
-  folderTreeArray_.reset([folderTreeArray retain]);
-}
-
 - (NSArray*)tableSelectionPaths {
   return tableSelectionPaths_.get();
 }
@@ -420,7 +416,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   const BookmarkNode* rootNode = model->root_node();
   NSMutableArray* baseArray = [self addChildFoldersFromNode:rootNode];
   DCHECK(baseArray);
-  [self setFolderTreeArray:baseArray];
+  folderTreeArray_.reset([baseArray retain]);
 }
 
 - (void)modelChangedPreserveSelection:(BOOL)preserve {

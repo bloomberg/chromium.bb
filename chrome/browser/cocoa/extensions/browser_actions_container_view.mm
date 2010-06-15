@@ -9,11 +9,11 @@
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
 
-extern const NSString* kBrowserActionGrippyDragStartedNotification =
+NSString* const kBrowserActionGrippyDragStartedNotification =
     @"BrowserActionGrippyDragStartedNotification";
-extern const NSString* kBrowserActionGrippyDraggingNotification =
+NSString* const kBrowserActionGrippyDraggingNotification =
     @"BrowserActionGrippyDraggingNotification";
-extern const NSString* kBrowserActionGrippyDragFinishedNotification =
+NSString* const kBrowserActionGrippyDragFinishedNotification =
     @"BrowserActionGrippyDragFinishedNotification";
 
 namespace {

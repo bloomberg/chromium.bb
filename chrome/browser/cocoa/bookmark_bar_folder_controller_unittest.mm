@@ -34,7 +34,7 @@
 @interface BookmarkBarFolderControllerLow : BookmarkBarFolderController {
   BOOL realTopLeft_;  // Use the real windowTopLeft call?
 }
-@property BOOL realTopLeft;
+@property (nonatomic) BOOL realTopLeft;
 @end
 
 
@@ -57,8 +57,8 @@
   BOOL childFolderWillShow_;
   BOOL childFolderWillClose_;
 }
-@property(readonly) BOOL childFolderWillShow;
-@property(readonly) BOOL childFolderWillClose;
+@property (nonatomic, readonly) BOOL childFolderWillShow;
+@property (nonatomic, readonly) BOOL childFolderWillClose;
 @end
 
 @implementation BookmarkBarFolderControllerPong
@@ -397,7 +397,7 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   NSPoint dropLocation_;
   NSDragOperation sourceMask_;
 }
-@property (assign) NSPoint dropLocation;
+@property (nonatomic, assign) NSPoint dropLocation;
 - (void)setDraggingSourceOperationMask:(NSDragOperation)mask;
 @end
 

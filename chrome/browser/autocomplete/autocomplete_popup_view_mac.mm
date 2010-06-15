@@ -75,13 +75,13 @@ NSColor* HoveredBackgroundColor() {
   return [[NSColor controlHighlightColor] colorWithAlphaComponent:kPopupAlpha];
 }
 
-static const NSColor* ContentTextColor() {
+static NSColor* ContentTextColor() {
   return [NSColor blackColor];
 }
-static const NSColor* URLTextColor() {
+static NSColor* URLTextColor() {
   return [NSColor colorWithCalibratedRed:0.0 green:0.55 blue:0.0 alpha:1.0];
 }
-static const NSColor* DescriptionTextColor() {
+static NSColor* DescriptionTextColor() {
   return [NSColor darkGrayColor];
 }
 

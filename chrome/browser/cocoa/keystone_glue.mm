@@ -32,33 +32,35 @@ typedef enum {
   kKSRegistrationDontKnowWhatKindOfTicket,
 } KSRegistrationTicketType;
 
-NSString* KSRegistrationVersionKey = @"Version";
-NSString* KSRegistrationExistenceCheckerTypeKey = @"ExistenceCheckerType";
-NSString* KSRegistrationExistenceCheckerStringKey = @"ExistenceCheckerString";
-NSString* KSRegistrationServerURLStringKey = @"URLString";
-NSString* KSRegistrationPreserveTrustedTesterTokenKey = @"PreserveTTT";
-NSString* KSRegistrationTagKey = @"Tag";
-NSString* KSRegistrationTagPathKey = @"TagPath";
-NSString* KSRegistrationTagKeyKey = @"TagKey";
-NSString* KSRegistrationBrandPathKey = @"BrandPath";
-NSString* KSRegistrationBrandKeyKey = @"BrandKey";
+NSString* const KSRegistrationVersionKey = @"Version";
+NSString* const KSRegistrationExistenceCheckerTypeKey = @"ExistenceCheckerType";
+NSString* const KSRegistrationExistenceCheckerStringKey =
+    @"ExistenceCheckerString";
+NSString* const KSRegistrationServerURLStringKey = @"URLString";
+NSString* const KSRegistrationPreserveTrustedTesterTokenKey = @"PreserveTTT";
+NSString* const KSRegistrationTagKey = @"Tag";
+NSString* const KSRegistrationTagPathKey = @"TagPath";
+NSString* const KSRegistrationTagKeyKey = @"TagKey";
+NSString* const KSRegistrationBrandPathKey = @"BrandPath";
+NSString* const KSRegistrationBrandKeyKey = @"BrandKey";
 
-NSString *KSRegistrationDidCompleteNotification =
+NSString* const KSRegistrationDidCompleteNotification =
     @"KSRegistrationDidCompleteNotification";
-NSString *KSRegistrationPromotionDidCompleteNotification =
+NSString* const KSRegistrationPromotionDidCompleteNotification =
     @"KSRegistrationPromotionDidCompleteNotification";
 
-NSString *KSRegistrationCheckForUpdateNotification =
+NSString* const KSRegistrationCheckForUpdateNotification =
     @"KSRegistrationCheckForUpdateNotification";
-NSString *KSRegistrationStatusKey = @"Status";
-NSString *KSRegistrationUpdateCheckErrorKey = @"Error";
+NSString* KSRegistrationStatusKey = @"Status";
+NSString* KSRegistrationUpdateCheckErrorKey = @"Error";
 
-NSString *KSRegistrationStartUpdateNotification =
+NSString* const KSRegistrationStartUpdateNotification =
     @"KSRegistrationStartUpdateNotification";
-NSString *KSUpdateCheckSuccessfulKey = @"CheckSuccessful";
-NSString *KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
+NSString* const KSUpdateCheckSuccessfulKey = @"CheckSuccessful";
+NSString* const KSUpdateCheckSuccessfullyInstalledKey =
+    @"SuccessfullyInstalled";
 
-NSString *KSRegistrationRemoveExistingTag = @"";
+NSString* const KSRegistrationRemoveExistingTag = @"";
 #define KSRegistrationPreserveExistingTag nil
 
 // Constants for the brand file (uses an external file so it can survive updates
@@ -175,15 +177,14 @@ NSString* SystemBrandFilePath() {
 
 @end  // @interface KeystoneGlue(Private)
 
-const NSString* const kAutoupdateStatusNotification =
-    @"AutoupdateStatusNotification";
-const NSString* const kAutoupdateStatusStatus = @"status";
-const NSString* const kAutoupdateStatusVersion = @"version";
+NSString* const kAutoupdateStatusNotification = @"AutoupdateStatusNotification";
+NSString* const kAutoupdateStatusStatus = @"status";
+NSString* const kAutoupdateStatusVersion = @"version";
 
 namespace {
 
-const NSString* const kChannelKey = @"KSChannelID";
-const NSString* const kBrandKey = @"KSBrandID";
+NSString* const kChannelKey = @"KSChannelID";
+NSString* const kBrandKey = @"KSBrandID";
 
 }  // namespace
 

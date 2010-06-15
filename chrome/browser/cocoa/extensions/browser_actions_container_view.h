@@ -8,13 +8,13 @@
 #import <Cocoa/Cocoa.h>
 
 // Sent when a user-initiated drag to resize the container is initiated.
-extern const NSString* kBrowserActionGrippyDragStartedNotification;
+extern NSString* const kBrowserActionGrippyDragStartedNotification;
 
 // Sent when a user-initiated drag is resizing the container.
-extern const NSString* kBrowserActionGrippyDraggingNotification;
+extern NSString* const kBrowserActionGrippyDraggingNotification;
 
 // Sent when a user-initiated drag to resize the container has finished.
-extern const NSString* kBrowserActionGrippyDragFinishedNotification;
+extern NSString* const kBrowserActionGrippyDragFinishedNotification;
 
 // The view that encompasses the Browser Action buttons in the toolbar and
 // provides mechanisms for resizing.

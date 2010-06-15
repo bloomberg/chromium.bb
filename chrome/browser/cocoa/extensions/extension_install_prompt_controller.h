@@ -38,13 +38,13 @@ class Profile;
   SkBitmap icon_;
 }
 
-@property (readonly) NSImageView* iconView;
-@property (readonly) NSTextField* titleField;
-@property (readonly) NSTextField* subtitleField;
-@property (readonly) NSTextField* warningsField;
-@property (readonly) NSBox* warningsBox;
-@property (readonly) NSButton* cancelButton;
-@property (readonly) NSButton* okButton;
+@property (nonatomic, readonly) NSImageView* iconView;
+@property (nonatomic, readonly) NSTextField* titleField;
+@property (nonatomic, readonly) NSTextField* subtitleField;
+@property (nonatomic, readonly) NSTextField* warningsField;
+@property (nonatomic, readonly) NSBox* warningsBox;
+@property (nonatomic, readonly) NSButton* cancelButton;
+@property (nonatomic, readonly) NSButton* okButton;
 
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile

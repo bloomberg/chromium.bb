@@ -27,9 +27,9 @@ namespace {
   // Only mock one type of drag data at a time.
   NSString* dragDataType_;
 }
-@property (readwrite) BOOL dropIndicatorShown;
-@property (readwrite) BOOL draggingEnteredCalled;
-@property (copy) NSString* dragDataType;
+@property (nonatomic) BOOL dropIndicatorShown;
+@property (nonatomic) BOOL draggingEnteredCalled;
+@property (nonatomic, copy) NSString* dragDataType;
 @end
 
 @implementation FakeBookmarkDraggingInfo

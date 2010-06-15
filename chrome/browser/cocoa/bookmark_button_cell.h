@@ -29,9 +29,9 @@ class BookmarkNode;
   scoped_nsobject<NSImage> arrowImage_;
 }
 
-@property (readwrite, assign) const BookmarkNode* bookmarkNode;
-@property (readwrite, assign) int startingChildIndex;
-@property (readwrite, assign) BOOL drawFolderArrow;
+@property (nonatomic, readwrite, assign) const BookmarkNode* bookmarkNode;
+@property (nonatomic, readwrite, assign) int startingChildIndex;
+@property (nonatomic, readwrite, assign) BOOL drawFolderArrow;
 
 // Create a button cell which draws with a theme.
 + (id)buttonCellForNode:(const BookmarkNode*)node

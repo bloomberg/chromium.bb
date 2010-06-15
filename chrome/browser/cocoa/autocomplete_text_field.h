@@ -106,7 +106,7 @@ class AutocompleteTextFieldObserver {
   scoped_nsobject<NSMutableArray> currentToolTips_;
 }
 
-@property AutocompleteTextFieldObserver* observer;
+@property (nonatomic) AutocompleteTextFieldObserver* observer;
 
 // Convenience method to return the cell, casted appropriately.
 - (AutocompleteTextFieldCell*)autocompleteTextFieldCell;

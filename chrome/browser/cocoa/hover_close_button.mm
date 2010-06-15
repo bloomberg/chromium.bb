@@ -10,11 +10,11 @@
 
 namespace  {
 
-const NSString* kNormalImageString = @"close_bar.pdf";
-const NSString* kHoverImageString = @"close_bar_h.pdf";
-const NSString* kPressedImageString = @"close_bar_p.pdf";
+NSString* const kNormalImageString = @"close_bar.pdf";
+NSString* const kHoverImageString = @"close_bar_h.pdf";
+NSString* const kPressedImageString = @"close_bar_p.pdf";
 
-}
+}  // namespace
 
 @implementation HoverCloseButton
 

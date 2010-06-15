@@ -20,16 +20,16 @@
 // obvious to intercept, but it doesn't catch the original throw
 // because the objc runtime doesn't use it.
 @interface NSException (NSExceptionSwizzle)
-- (id)chromeInitWithName:(NSString *)aName
-                  reason:(NSString *)aReason
+- (id)chromeInitWithName:(NSString*)aName
+                  reason:(NSString*)aReason
                 userInfo:(NSDictionary *)someUserInfo;
 @end
 
 static IMP gOriginalInitIMP = NULL;
 
 @implementation NSException (NSExceptionSwizzle)
-- (id)chromeInitWithName:(NSString *)aName
-                  reason:(NSString *)aReason
+- (id)chromeInitWithName:(NSString*)aName
+                  reason:(NSString*)aReason
                 userInfo:(NSDictionary *)someUserInfo {
   // Method only called when swizzled.
   DCHECK(_cmd == @selector(initWithName:reason:userInfo:));
@@ -38,7 +38,7 @@ static IMP gOriginalInitIMP = NULL;
   // worth bugging-out over. It is very important that there be zero chance that
   // any Chromium code is on the stack; these must be created by Apple code and
   // then immediately consumed by Apple code.
-  static const NSString* kAcceptableNSExceptionNames[] = {
+  static NSString* const kAcceptableNSExceptionNames[] = {
     // If an object does not support an accessibility attribute, this will
     // get thrown.
     NSAccessibilityException,
@@ -85,7 +85,7 @@ size_t BinForException(NSException* exception) {
   // A list of common known exceptions.  The list position will
   // determine where they live in the histogram, so never move them
   // around, only add to the end.
-  static const NSString* kKnownNSExceptionNames[] = {
+  static NSString* const kKnownNSExceptionNames[] = {
     // ???
     NSGenericException,
 
@@ -104,7 +104,7 @@ size_t BinForException(NSException* exception) {
   // Make sure our array hasn't outgrown our abilities to track it.
   DCHECK_LE(arraysize(kKnownNSExceptionNames), kKnownNSExceptionCount);
 
-  const NSString* name = [exception name];
+  NSString* name = [exception name];
   for (int i = 0; kKnownNSExceptionNames[i]; ++i) {
     if (name == kKnownNSExceptionNames[i]) {
       return i;
@@ -276,7 +276,7 @@ BOOL SwizzleNSExceptionInit() {
   // When a Cocoa control is wired to a freed object, we get crashers
   // in the call to |super| with no useful information in the
   // backtrace.  Attempt to add some useful information.
-  static const NSString* kActionKey = @"sendaction";
+  static NSString* const kActionKey = @"sendaction";
 
   // If the action is something generic like -commandDispatch:, then
   // the tag is essential.
@@ -318,9 +318,9 @@ BOOL SwizzleNSExceptionInit() {
     // is tracked because it may be the one which caused the system to
     // go off the rails.  The last exception thrown is tracked because
     // it may be the one most directly associated with the crash.
-    static const NSString* kFirstExceptionKey = @"firstexception";
+    static NSString* const kFirstExceptionKey = @"firstexception";
     static BOOL trackedFirstException = NO;
-    static const NSString* kLastExceptionKey = @"lastexception";
+    static NSString* const kLastExceptionKey = @"lastexception";
 
     // TODO(shess): It would be useful to post some stacktrace info
     // from the exception.

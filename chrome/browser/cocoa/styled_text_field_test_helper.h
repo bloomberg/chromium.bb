@@ -11,6 +11,6 @@
   CGFloat leftMargin_;
   CGFloat rightMargin_;
 }
-@property(assign) CGFloat leftMargin;
-@property(assign) CGFloat rightMargin;
+@property (nonatomic, assign) CGFloat leftMargin;
+@property (nonatomic, assign) CGFloat rightMargin;
 @end

@@ -28,7 +28,7 @@
   IBOutlet GTMUILocalizerAndLayoutTweaker* tweaker_;
 }
 
-@property (readonly) BOOL hasExpiration;
+@property (nonatomic, readonly) BOOL hasExpiration;
 
 - (id)init;
 

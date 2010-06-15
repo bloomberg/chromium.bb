@@ -19,11 +19,11 @@
 namespace {
 
 // Would be nice if this were in UTCoreTypes.h, but it isn't
-const NSString* kUTTypeURLName = @"public.url-name";
+NSString* const kUTTypeURLName = @"public.url-name";
 
 // Tells us if WebKit was the last to write to the pasteboard. There's no
 // actual data associated with this type.
-const NSString *kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
+NSString* const kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
 
 NSPasteboard* GetPasteboard() {
   // The pasteboard should not be nil in a UI session, but this handy DCHECK

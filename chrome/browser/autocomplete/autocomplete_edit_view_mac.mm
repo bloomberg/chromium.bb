@@ -55,7 +55,7 @@ namespace {
 // TODO(shess): This is ugly, find a better way.  Using it right now
 // so that I can crib from gtk and still be able to see that I'm using
 // the same values easily.
-const NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
+NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
   DCHECK_LE(rr, 255);
   DCHECK_LE(bb, 255);
   DCHECK_LE(gg, 255);
@@ -65,19 +65,19 @@ const NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
                                    alpha:1.0];
 }
 
-const NSColor* HostTextColor() {
+NSColor* HostTextColor() {
   return [NSColor blackColor];
 }
-const NSColor* BaseTextColor() {
+NSColor* BaseTextColor() {
   return [NSColor darkGrayColor];
 }
-const NSColor* EVSecureSchemeColor() {
+NSColor* EVSecureSchemeColor() {
   return ColorWithRGBBytes(0x07, 0x95, 0x00);
 }
-const NSColor* SecureSchemeColor() {
+NSColor* SecureSchemeColor() {
   return ColorWithRGBBytes(0x00, 0x0e, 0x95);
 }
-const NSColor* SecurityErrorSchemeColor() {
+NSColor* SecurityErrorSchemeColor() {
   return ColorWithRGBBytes(0xa2, 0x00, 0x00);
 }
 

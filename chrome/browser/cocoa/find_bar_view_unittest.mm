@@ -14,7 +14,7 @@
 @interface MouseDownViewPong : NSView {
   BOOL pong_;
 }
-@property(assign) BOOL pong;
+@property (nonatomic, assign) BOOL pong;
 @end
 
 @implementation MouseDownViewPong

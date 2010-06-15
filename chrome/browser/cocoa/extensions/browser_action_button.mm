@@ -25,12 +25,12 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
-extern const NSString* kBrowserActionButtonUpdatedNotification =
+NSString* const kBrowserActionButtonUpdatedNotification =
     @"BrowserActionButtonUpdatedNotification";
 
-extern const NSString* kBrowserActionButtonDraggingNotification =
+NSString* const kBrowserActionButtonDraggingNotification =
     @"BrowserActionButtonDraggingNotification";
-extern const NSString* kBrowserActionButtonDragEndNotification =
+NSString* const kBrowserActionButtonDragEndNotification =
     @"BrowserActionButtonDragEndNotification";
 
 static const CGFloat kBrowserActionBadgeOriginYOffset = 5;

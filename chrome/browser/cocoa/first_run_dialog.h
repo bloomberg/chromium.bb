@@ -36,14 +36,14 @@
 - (IBAction)learnMore:(id)sender;
 
 // Properties for bindings.
-@property(assign) BOOL userDidCancel;
-@property(assign) BOOL statsEnabled;
-@property(assign) BOOL statsCheckboxHidden;
-@property(assign) BOOL makeDefaultBrowser;
-@property(assign) BOOL importBookmarks;
-@property(assign) int browserImportSelectedIndex;
-@property(retain) NSArray* browserImportList;
-@property(assign) BOOL browserImportListHidden;
+@property(assign, nonatomic) BOOL userDidCancel;
+@property(assign, nonatomic) BOOL statsEnabled;
+@property(assign, nonatomic) BOOL statsCheckboxHidden;
+@property(assign, nonatomic) BOOL makeDefaultBrowser;
+@property(assign, nonatomic) BOOL importBookmarks;
+@property(assign, nonatomic) int browserImportSelectedIndex;
+@property(retain, nonatomic) NSArray* browserImportList;
+@property(assign, nonatomic) BOOL browserImportListHidden;
 
 @end
 

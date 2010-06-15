@@ -52,19 +52,19 @@ class ProfileSyncService;
 - (IBAction)endSheetWithOK:(id)sender;
 
 // Properties for bindings.
-@property(assign) BOOL bookmarksRegistered;
-@property(assign) BOOL preferencesRegistered;
-@property(assign) BOOL autofillRegistered;
-@property(assign) BOOL themesRegistered;
-@property(assign) BOOL extensionsRegistered;
+@property (nonatomic, assign) BOOL bookmarksRegistered;
+@property (nonatomic, assign) BOOL preferencesRegistered;
+@property (nonatomic, assign) BOOL autofillRegistered;
+@property (nonatomic, assign) BOOL themesRegistered;
+@property (nonatomic, assign) BOOL extensionsRegistered;
 
-@property(assign) BOOL bookmarksPreferred;
-@property(assign) BOOL preferencesPreferred;
-@property(assign) BOOL autofillPreferred;
-@property(assign) BOOL themesPreferred;
-@property(assign) BOOL extensionsPreferred;
+@property (nonatomic, assign) BOOL bookmarksPreferred;
+@property (nonatomic, assign) BOOL preferencesPreferred;
+@property (nonatomic, assign) BOOL autofillPreferred;
+@property (nonatomic, assign) BOOL themesPreferred;
+@property (nonatomic, assign) BOOL extensionsPreferred;
 
-@property(readonly) BOOL okEnabled;
+@property (nonatomic, readonly) BOOL okEnabled;
 
 @end
 

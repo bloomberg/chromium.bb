@@ -71,8 +71,8 @@ typedef enum {
   IBOutlet NSTextField* extensionInstalledInfoMsg_;
 }
 
-@property (readonly) Extension* extension;
-@property BOOL pageActionRemoved;
+@property (nonatomic, readonly) Extension* extension;
+@property (nonatomic) BOOL pageActionRemoved;
 
 // Initialize the window, and then create observers to wait for the extension
 // to complete loading, or the browser window to close.

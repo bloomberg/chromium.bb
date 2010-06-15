@@ -51,16 +51,16 @@ class ImporterObserverBridge;
 - (void)ImportItemEnded:(importer::ImportItem)item;
 - (void)ImportEnded;
 
-@property(retain) NSString* explanatoryText;
-@property(retain) NSString* favoritesStatusText;
-@property(retain) NSString* searchStatusText;
-@property(retain) NSString* savedPasswordStatusText;
-@property(retain) NSString* historyStatusText;
+@property (nonatomic, retain) NSString* explanatoryText;
+@property (nonatomic, retain) NSString* favoritesStatusText;
+@property (nonatomic, retain) NSString* searchStatusText;
+@property (nonatomic, retain) NSString* savedPasswordStatusText;
+@property (nonatomic, retain) NSString* historyStatusText;
 
-@property(retain) NSColor* favoritesImportEnabled;
-@property(retain) NSColor* searchImportEnabled;
-@property(retain) NSColor* passwordImportEnabled;
-@property(retain) NSColor* historyImportEnabled;
+@property (nonatomic, retain) NSColor* favoritesImportEnabled;
+@property (nonatomic, retain) NSColor* searchImportEnabled;
+@property (nonatomic, retain) NSColor* passwordImportEnabled;
+@property (nonatomic, retain) NSColor* historyImportEnabled;
 
 @end
 

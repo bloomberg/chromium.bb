@@ -30,7 +30,7 @@
 
 const CGFloat kBrowserActionButtonPadding = 3;
 
-extern const NSString* kBrowserActionVisibilityChangedNotification =
+NSString* const kBrowserActionVisibilityChangedNotification =
     @"BrowserActionVisibilityChangedNotification";
 
 namespace {

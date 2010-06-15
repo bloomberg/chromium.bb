@@ -61,9 +61,9 @@ class MockThemeProvider : public ThemeProvider {
   ThemeProvider* themeProvider_;
   bookmarks::VisualState visualState_;
 }
-@property(assign) int currentTabContentsHeight;
-@property(assign) ThemeProvider* themeProvider;
-@property(assign) bookmarks::VisualState visualState;
+@property (nonatomic, assign) int currentTabContentsHeight;
+@property (nonatomic, assign) ThemeProvider* themeProvider;
+@property (nonatomic, assign) bookmarks::VisualState visualState;
 
 // |BookmarkBarState| protocol:
 - (BOOL)isVisible;

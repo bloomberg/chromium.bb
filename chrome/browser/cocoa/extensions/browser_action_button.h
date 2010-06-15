@@ -18,12 +18,12 @@ class Profile;
 
 // Fired when the Browser Action's state has changed. Usually the image needs to
 // be updated.
-extern const NSString* kBrowserActionButtonUpdatedNotification;
+extern NSString* const kBrowserActionButtonUpdatedNotification;
 
 // Fired on each drag event while the user is moving the button.
-extern const NSString* kBrowserActionButtonDraggingNotification;
+extern NSString* const kBrowserActionButtonDraggingNotification;
 // Fired when the user drops the button.
-extern const NSString* kBrowserActionButtonDragEndNotification;
+extern NSString* const kBrowserActionButtonDragEndNotification;
 
 extern const CGFloat kBrowserActionWidth;
 

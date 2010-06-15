@@ -49,8 +49,8 @@ enum DownloadItemMousePosition {
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel;
 
-@property (copy) NSString* secondaryTitle;
-@property (retain) NSFont* secondaryFont;
+@property (nonatomic, copy) NSString* secondaryTitle;
+@property (nonatomic, retain) NSFont* secondaryFont;
 
 // Returns if the mouse is over the button part of the cell.
 - (BOOL)isMouseOverButtonPart;

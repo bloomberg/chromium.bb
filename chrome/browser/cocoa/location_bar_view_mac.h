@@ -163,8 +163,8 @@ class LocationBarViewMac : public AutocompleteEditController,
     // before the visibility is set to |true|.
     void SetVisible(bool visible);
 
-    const NSImage* GetImage() const { return image_; }
-    const NSAttributedString* GetLabel() const { return label_; }
+    NSImage* GetImage() const { return image_; }
+    NSAttributedString* GetLabel() const { return label_; }
     bool IsVisible() const { return visible_; }
 
     // Default size when no image is present.
@@ -174,7 +174,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     NSSize GetImageSize() const;
 
     // Returns the tooltip for this image view or |nil| if there is none.
-    virtual const NSString* GetToolTip() { return nil; }
+    virtual NSString* GetToolTip() { return nil; }
 
     // Used to determinate if the item can act as a drag source.
     virtual bool IsDraggable() { return false; }
@@ -233,7 +233,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     // Set the image and tooltip based on |starred|.
     void SetStarred(bool starred);
 
-    virtual const NSString* GetToolTip();
+    virtual NSString* GetToolTip();
 
    private:
     // For bringing up bookmark bar.
@@ -287,7 +287,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     void SetToolTip(std::string tooltip);
 
     // Returns the tooltip for this Page Action image or |nil| if there is none.
-    virtual const NSString* GetToolTip();
+    virtual NSString* GetToolTip();
 
     // Overridden to return a menu.
     virtual NSMenu* GetMenu();
@@ -360,7 +360,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     void UpdateFromTabContents(const TabContents* tab_contents);
 
     // Returns the tooltip for this Page Action image or |nil| if there is none.
-    virtual const NSString* GetToolTip();
+    virtual NSString* GetToolTip();
 
    private:
     void SetToolTip(NSString* tooltip);
@@ -421,7 +421,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   void SetSecurityLabel();
 
   // Posts |notification| to the default notification center.
-  void PostNotification(const NSString* notification);
+  void PostNotification(NSString* notification);
 
   // Updates visibility of the content settings icons based on the current
   // tab contents state.

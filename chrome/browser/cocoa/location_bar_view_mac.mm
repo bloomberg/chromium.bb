@@ -492,7 +492,7 @@ void LocationBarViewMac::Observe(NotificationType type,
   }
 }
 
-void LocationBarViewMac::PostNotification(const NSString* notification) {
+void LocationBarViewMac::PostNotification(NSString* notification) {
   [[NSNotificationCenter defaultCenter] postNotificationName:notification
                                         object:[NSValue valueWithPointer:this]];
 }
@@ -625,7 +625,7 @@ void LocationBarViewMac::StarIconView::OnMousePressed(NSRect bounds) {
   command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
 }
 
-const NSString* LocationBarViewMac::StarIconView::GetToolTip() {
+NSString* LocationBarViewMac::StarIconView::GetToolTip() {
   return tooltip_.get();
 }
 
@@ -791,7 +791,7 @@ void LocationBarViewMac::PageActionImageView::SetToolTip(std::string tooltip) {
   SetToolTip(base::SysUTF8ToNSString(tooltip));
 }
 
-const NSString* LocationBarViewMac::PageActionImageView::GetToolTip() {
+NSString* LocationBarViewMac::PageActionImageView::GetToolTip() {
   return tooltip_.get();
 }
 
@@ -874,7 +874,7 @@ void LocationBarViewMac::ContentSettingImageView::OnMousePressed(NSRect bounds)
                                      anchoredAt:anchor] showWindow:nil];
 }
 
-const NSString* LocationBarViewMac::ContentSettingImageView::GetToolTip() {
+NSString* LocationBarViewMac::ContentSettingImageView::GetToolTip() {
   return tooltip_.get();
 }
 

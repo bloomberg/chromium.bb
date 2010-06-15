@@ -52,7 +52,7 @@
  @private
   NSSize cellSize_;
 }
-@property(readonly) NSSize cellSize;
+@property (nonatomic, readonly) NSSize cellSize;
 @end
 
 @implementation CellWithDesiredSize
@@ -73,7 +73,7 @@
  @private
   int toggles_;
 }
-@property (readonly) int toggles;
+@property (nonatomic, readonly) int toggles;
 @end
 
 @implementation BookmarkBarControllerTogglePong
@@ -91,8 +91,8 @@
   BOOL windowWillCloseReceived_;
   BOOL windowDidResignKeyReceived_;
 }
-@property(readonly) BOOL windowWillCloseReceived;
-@property(readonly) BOOL windowDidResignKeyReceived;
+@property (nonatomic, readonly) BOOL windowWillCloseReceived;
+@property (nonatomic, readonly) BOOL windowDidResignKeyReceived;
 @end
 
 @implementation BookmarkBarControllerNotificationPong
@@ -114,7 +114,7 @@
 @interface BookmarkBarControllerOpenAllPong : BookmarkBarControllerNoOpen {
   WindowOpenDisposition dispositionDetected_;
 }
-@property WindowOpenDisposition dispositionDetected;
+@property (nonatomic) WindowOpenDisposition dispositionDetected;
 @end
 
 @implementation BookmarkBarControllerOpenAllPong
@@ -201,7 +201,7 @@ class FakeTheme : public ThemeProvider {
   NSPoint dropLocation_;
   NSDragOperation sourceMask_;
 }
-@property (assign) NSPoint dropLocation;
+@property (nonatomic, assign) NSPoint dropLocation;
 - (void)setDraggingSourceOperationMask:(NSDragOperation)mask;
 @end
 
