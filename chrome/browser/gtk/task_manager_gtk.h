@@ -85,19 +85,16 @@ class TaskManagerGtk : public TaskManagerModelObserver {
                      GtkTreeSelection*);
 
   // button-press-event handler that activates a process on double-click.
-  static gboolean OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
-                                     TaskManagerGtk* task_manager);
+  CHROMEGTK_CALLBACK_1(TaskManagerGtk, gboolean, OnButtonPressEvent,
+                       GdkEventButton*);
 
   // button-release-event handler that opens the right-click context menu.
-  static gboolean OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
-                                       TaskManagerGtk* task_manager);
+  CHROMEGTK_CALLBACK_1(TaskManagerGtk, gboolean, OnButtonReleaseEvent,
+                       GdkEventButton*);
 
   // Handles an accelerator being pressed.
-  static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,
-                                   GObject* acceleratable,
-                                   guint keyval,
-                                   GdkModifierType modifier,
-                                   TaskManagerGtk* task_manager);
+  CHROMEG_CALLBACK_3(TaskManagerGtk, gboolean, OnGtkAccelerator,
+                     GtkAccelGroup*, GObject*, guint, GdkModifierType);
 
   // Page sorting callback.
   static gint ComparePage(GtkTreeModel* model, GtkTreeIter* a,

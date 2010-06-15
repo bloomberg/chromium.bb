@@ -426,7 +426,7 @@ void TaskManagerGtk::Init() {
                                          G_CALLBACK(OnDestroyThunk), this);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "button-release-event",
-                   G_CALLBACK(OnButtonReleaseEvent), this);
+                   G_CALLBACK(OnButtonReleaseEventThunk), this);
   gtk_widget_add_events(dialog_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
@@ -442,7 +442,7 @@ void TaskManagerGtk::Init() {
   CreateTaskManagerTreeview();
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview_), TRUE);
   g_signal_connect(treeview_, "button-press-event",
-                   G_CALLBACK(OnButtonPressEvent), this);
+                   G_CALLBACK(OnButtonPressEventThunk), this);
   gtk_widget_add_events(treeview_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
@@ -496,7 +496,7 @@ void TaskManagerGtk::ConnectAccelerators() {
 
   gtk_accel_group_connect(accel_group_,
                           GDK_w, GDK_CONTROL_MASK, GtkAccelFlags(0),
-                          g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
+                          g_cclosure_new(G_CALLBACK(OnGtkAcceleratorThunk),
                                          this, NULL));
 }
 
@@ -879,37 +879,30 @@ void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
                                     kTaskManagerResponseKill, sensitive);
 }
 
-// static
 gboolean TaskManagerGtk::OnButtonPressEvent(GtkWidget* widget,
-                                            GdkEventButton* event,
-                                            TaskManagerGtk* task_manager) {
+                                            GdkEventButton* event) {
   if (event->type == GDK_2BUTTON_PRESS)
-    task_manager->ActivateFocusedTab();
+    ActivateFocusedTab();
 
   return FALSE;
 }
 
-// static
 gboolean TaskManagerGtk::OnButtonReleaseEvent(GtkWidget* widget,
-                                              GdkEventButton* event,
-                                              TaskManagerGtk* task_manager) {
+                                              GdkEventButton* event) {
   if (event->button == 3)
-    task_manager->ShowContextMenu();
+    ShowContextMenu();
 
   return FALSE;
 }
 
-// static
 gboolean TaskManagerGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
                                           GObject* acceleratable,
                                           guint keyval,
-                                          GdkModifierType modifier,
-                                          TaskManagerGtk* task_manager) {
+                                          GdkModifierType modifier) {
   if (keyval == GDK_w && modifier == GDK_CONTROL_MASK) {
     // The GTK_RESPONSE_DELETE_EVENT response must be sent before the widget
     // is destroyed.  The deleted object will receive gtk signals otherwise.
-    gtk_dialog_response(GTK_DIALOG(task_manager->dialog_),
-                        GTK_RESPONSE_DELETE_EVENT);
+    gtk_dialog_response(GTK_DIALOG(dialog_), GTK_RESPONSE_DELETE_EVENT);
   }
 
   return TRUE;
