@@ -38,6 +38,7 @@ installer::Version* installer::Version::GetVersionFromString(
   SplitString(version_str, '.', &numbers);
 
   if (numbers.size() != 4) {
+    LOG(ERROR) << "Invalid version string: " << version_str;
     return NULL;
   }
 

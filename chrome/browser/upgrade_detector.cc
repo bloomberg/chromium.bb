@@ -102,10 +102,19 @@ class DetectUpgradeTask : public Task {
       NOTREACHED() << "Failed to get current file version";
       return;
     }
-    scoped_ptr<Version> running_version(Version::GetVersionFromString(
-        WideToUTF16(version->file_version())));
 
-    if (installed_version->IsHigherThan(running_version.get())) {
+    scoped_ptr<Version> running_version(
+        Version::GetVersionFromString(WideToUTF16(version->file_version())));
+    if (running_version.get() == NULL) {
+      NOTREACHED() << "Failed to parse version info";
+      return;
+    }
+
+    // |installed_version| may be NULL when the user downgrades on Linux (by
+    // switching from dev to beta channel, for example). The user needs a
+    // restart in this case as well. See http://crbug.com/46547
+    if (!installed_version.get() ||
+        installed_version->IsHigherThan(running_version.get())) {
       ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
                              upgrade_detected_task_);
       upgrade_detected_task_ = NULL;
