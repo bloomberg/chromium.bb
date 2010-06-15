@@ -23,12 +23,19 @@
 #  3  Basic sanity check destination failure (e.g. ticket points to nothing)
 #  4  Update driven by user ticket when a system ticket is also present
 #  5  Could not prepare existing installed version to receive update
-#  6  rsync failed (could not assure presence of Versions directory)
+#  6  Patch sanity check failure
 #  7  rsync failed (could not copy new versioned directory to Versions)
 #  8  rsync failed (could not update outer .app bundle)
 #  9  Could not get the version, update URL, or channel after update
 # 10  Updated application does not have the version number from the update
 # 11  ksadmin failure
+# 12  dirpatcher failed for versioned directory
+# 13  dirpatcher failed for outer .app bundle
+#
+# The following exit codes are not used by this script, but can be used to
+# convey special meaning to Keystone:
+# 66  (unused) success, request reboot
+# 77  (unused) try installation again later
 
 set -eu
 
@@ -71,6 +78,41 @@ note() {
 
   if [[ -n "${GOOGLE_CHROME_UPDATER_DEBUG}" ]]; then
     err "${message}"
+  fi
+}
+
+declare g_temp_dir
+cleanup() {
+  local status=${?}
+
+  trap - EXIT
+  trap '' HUP INT QUIT TERM
+
+  if [[ ${status} -ge 128 ]]; then
+    err "Caught signal $((${status} - 128))"
+  fi
+
+  if [[ -n "${g_temp_dir}" ]]; then
+    rm -rf "${g_temp_dir}"
+  fi
+
+  exit ${status}
+}
+
+ensure_temp_dir() {
+  if [[ -z "${g_temp_dir}" ]]; then
+    # Choose a template that won't be a dot directory.  Make it safe by
+    # removing leading hyphens, too.
+    local template="${ME}"
+    if [[ "${template}" =~ ^[-.]+(.*)$ ]]; then
+      template="${BASH_REMATCH[1]}"
+    fi
+    if [[ -z "${template}" ]]; then
+      template="keystone_install"
+    fi
+
+    g_temp_dir="$(mktemp -d -t "${template}")"
+    note "g_temp_dir = ${g_temp_dir}"
   fi
 }
 
@@ -184,6 +226,57 @@ ensure_writable_symlink() {
   return 0
 }
 
+# ensure_writable_symlinks_recursive calls ensure_writable_symlink for every
+# symbolic link in |directory|, recursivley.
+#
+# In some very weird and rare cases, it is possible to wind up with a user
+# installation that contains symbolic links that the user does not have write
+# permission over.  More on how that might happen later.
+#
+# If a weird and rare case like this is observed, rsync will exit with an
+# error when attempting to update the times on these symbolic links.  rsync
+# may not be intelligent enough to try creating a new symbolic link in these
+# cases, but this script can be.
+#
+# The problem occurs when an administrative user first drag-installs the
+# application to /Applications, resulting in the program's user being set to
+# the user's own ID.  If, subsequently, a .pkg package is installed over that,
+# the existing directory ownership will be preserved, but file ownership will
+# be changed to whateer is specified by the package, typically root.  This
+# applies to symbolic links as well.  On a subsequent update, rsync will be
+# able to copy the new files into place, because the user still has permission
+# to write to the directories.  If the symbolic link targets are not changing,
+# though, rsync will not replace them, and they will remain owned by root.
+# The user will not have permission to update the time on the symbolic links,
+# resulting in an rsync error.
+ensure_writable_symlinks_recursive() {
+  local directory="${1}"
+
+  # This fix-up is not necessary when running as root, because root will
+  # always be able to write everything needed.
+  if [[ ${EUID} -eq 0 ]]; then
+    return 0
+  fi
+
+  # This step isn't critical.
+  local set_e=
+  if [[ "${-}" =~ e ]]; then
+    set_e="y"
+    set +e
+  fi
+
+  # Use find -print0 with read -d $'\0' to handle even the weirdest paths.
+  local symlink
+  while IFS= read -r -d $'\0' symlink; do
+    ensure_writable_symlink "${symlink}"
+  done < <(find "${directory}" -type l -print0)
+
+  # Go back to how things were.
+  if [[ -n "${set_e}" ]]; then
+    set -e
+  fi
+}
+
 # Prints the version of ksadmin, as reported by ksadmin --ksadmin-version, to
 # stdout.  This function operates with "static" variables: it will only check
 # the ksadmin version once per script run.  If ksadmin is old enough to not
@@ -208,11 +301,11 @@ ksadmin_version() {
 # Keystone version.  |check_version| should be a string of the form
 # "major.minor.micro.build".  Returns 1 (false) if either |check_version| or
 # the Keystone version do not match this format.
-readonly VER_RE="^([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)\$"
+readonly KSADMIN_VERSION_RE="^([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)\$"
 is_ksadmin_version_ge() {
   local check_version="${1}"
 
-  if ! [[ "${check_version}" =~ ${VER_RE} ]]; then
+  if ! [[ "${check_version}" =~ ${KSADMIN_VERSION_RE} ]]; then
     return 1
   fi
 
@@ -224,7 +317,7 @@ is_ksadmin_version_ge() {
   local ksadmin_version
   ksadmin_version="$(ksadmin_version)"
 
-  if ! [[ "${ksadmin_version}" =~ ${VER_RE} ]]; then
+  if ! [[ "${ksadmin_version}" =~ ${KSADMIN_VERSION_RE} ]]; then
     return 1
   fi
 
@@ -294,10 +387,13 @@ main() {
   # Early steps are critical.  Don't continue past any failure.
   set -e
 
+  trap cleanup EXIT HUP INT QUIT TERM
+
   readonly PRODUCT_NAME="Google Chrome"
   readonly APP_DIR="${PRODUCT_NAME}.app"
   readonly FRAMEWORK_NAME="${PRODUCT_NAME} Framework"
   readonly FRAMEWORK_DIR="${FRAMEWORK_NAME}.framework"
+  readonly PATCH_DIR=".patch"
   readonly CONTENTS_DIR="Contents"
   readonly APP_PLIST="${CONTENTS_DIR}/Info"
   readonly VERSIONS_DIR="${CONTENTS_DIR}/Versions"
@@ -348,51 +444,144 @@ main() {
     exit 2
   fi
 
+  local patch_dir="${update_dmg_mount_point}/${PATCH_DIR}"
+  if [[ "${patch_dir:0:1}" != "/" ]]; then
+    note "patch_dir = ${patch_dir}"
+    err "patch_dir must be an absolute path"
+    exit 2
+  fi
+
+  # Figure out if this is an ordinary installation disk image being used as a
+  # full update, or a patch.  A patch will have a .patch directory at the root
+  # of the disk image containing information about the update, tools to apply
+  # it, and the update contents.
+  local is_patch=
+  local dirpatcher=
+  if [[ -d "${patch_dir}" ]]; then
+    # patch_dir exists and is a directory - this is a patch update.
+    is_patch="y"
+    dirpatcher="${patch_dir}/dirpatcher.sh"
+    if ! [[ -x "${dirpatcher}" ]]; then
+      err "couldn't locate dirpatcher"
+      exit 6
+    fi
+  elif [[ -e "${patch_dir}" ]]; then
+    # patch_dir exists, but is not a directory - what's that mean?
+    note "patch_dir = ${patch_dir}"
+    err "patch_dir must be a directory"
+    exit 2
+  else
+    # patch_dir does not exist - this is a full "installer."
+    patch_dir=
+  fi
+  note "patch_dir = ${patch_dir}"
+  note "is_patch = ${is_patch}"
+  note "dirpatcher = ${dirpatcher}"
+
   # The update to install.
-  local update_app="${update_dmg_mount_point}/${APP_DIR}"
-  note "update_app = ${update_app}"
 
-  # Make sure that there's something to copy from, and that it's an absolute
-  # path.
-  if [[ "${update_app:0:1}" != "/" ]] ||
-     ! [[ -d "${update_app}" ]]; then
-    err "update_app must be an absolute path to a directory"
-    exit 2
+  # update_app is the path to the new version of the .app.  It will only be
+  # set at this point for a non-patch update.  It is not yet set for a patch
+  # update because no such directory exists yet; it will be set later when
+  # dirpatcher creates it.
+  local update_app=
+
+  # update_version_app_old, patch_app_dir, and patch_versioned_dir will only
+  # be set for patch updates.
+  local update_version_app_old=
+  local patch_app_dir=
+  local patch_versioned_dir=
+
+  local update_version_app update_version_ks product_id
+  if [[ -z "${is_patch}" ]]; then
+    update_app="${update_dmg_mount_point}/${APP_DIR}"
+    note "update_app = ${update_app}"
+
+    # Make sure that there's something to copy from, and that it's an absolute
+    # path.
+    if [[ "${update_app:0:1}" != "/" ]] ||
+       ! [[ -d "${update_app}" ]]; then
+      err "update_app must be an absolute path to a directory"
+      exit 2
+    fi
+
+    # Get some information about the update.
+    note "reading update values"
+
+    local update_app_plist="${update_app}/${APP_PLIST}"
+    note "update_app_plist = ${update_app_plist}"
+    if ! update_version_app="$(defaults read "${update_app_plist}" \
+                                             "${APP_VERSION_KEY}")" ||
+       [[ -z "${update_version_app}" ]]; then
+      err "couldn't determine update_version_app"
+      exit 2
+    fi
+    note "update_version_app = ${update_version_app}"
+
+    local update_ks_plist="${update_app_plist}"
+    note "update_ks_plist = ${update_ks_plist}"
+    if ! update_version_ks="$(defaults read "${update_ks_plist}" \
+                                            "${KS_VERSION_KEY}")" ||
+       [[ -z "${update_version_ks}" ]]; then
+      err "couldn't determine update_version_ks"
+      exit 2
+    fi
+    note "update_version_ks = ${update_version_ks}"
+
+    if ! product_id="$(defaults read "${update_ks_plist}" \
+                                     "${KS_PRODUCT_KEY}")" ||
+       [[ -z "${product_id}" ]]; then
+      err "couldn't determine product_id"
+      exit 2
+    fi
+    note "product_id = ${product_id}"
+  else  # [[ -n "${is_patch}" ]]
+    # Get some information about the update.
+    note "reading update values"
+
+    if ! update_version_app_old=$(<"${patch_dir}/old_app_version") ||
+       [[ -z "${update_version_app_old}" ]]; then
+      err "couldn't determine update_version_app_old"
+      exit 2
+    fi
+    note "update_version_app_old = ${update_version_app_old}"
+
+    if ! update_version_app=$(<"${patch_dir}/new_app_version") ||
+       [[ -z "${update_version_app}" ]]; then
+      err "couldn't determine update_version_app"
+      exit 2
+    fi
+    note "update_version_app = ${update_version_app}"
+
+    if ! update_version_ks=$(<"${patch_dir}/new_ks_version") ||
+       [[ -z "${update_version_ks}" ]]; then
+      err "couldn't determine update_version_ks"
+      exit 2
+    fi
+    note "update_version_ks = ${update_version_ks}"
+
+    if ! product_id=$(<"${patch_dir}/ks_product") ||
+       [[ -z "${product_id}" ]]; then
+      err "couldn't determine product_id"
+      exit 2
+    fi
+    note "product_id = ${product_id}"
+
+    patch_app_dir="${patch_dir}/application.dirpatch"
+    if ! [[ -d "${patch_app_dir}" ]]; then
+      err "couldn't locate patch_app_dir"
+      exit 6
+    fi
+    note "patch_app_dir = ${patch_app_dir}"
+
+    patch_versioned_dir=\
+"${patch_dir}/version_${update_version_app_old}_${update_version_app}.dirpatch"
+    if ! [[ -d "${patch_versioned_dir}" ]]; then
+      err "couldn't locate patch_versioned_dir"
+      exit 6
+    fi
+    note "patch_versioned_dir = ${patch_versioned_dir}"
   fi
-
-  # Get some information about the update.
-  note "reading update values"
-
-  local update_app_plist="${update_app}/${APP_PLIST}"
-  note "update_app_plist = ${update_app_plist}"
-  local update_version_app
-  if ! update_version_app="$(defaults read "${update_app_plist}" \
-                                           "${APP_VERSION_KEY}")" ||
-     [[ -z "${update_version_app}" ]]; then
-    err "couldn't determine update_version_app"
-    exit 2
-  fi
-  note "update_version_app = ${update_version_app}"
-
-  local update_ks_plist="${update_app_plist}"
-  note "update_ks_plist = ${update_ks_plist}"
-  local update_version_ks
-  if ! update_version_ks="$(defaults read "${update_ks_plist}" \
-                                          "${KS_VERSION_KEY}")" ||
-     [[ -z "${update_version_ks}" ]]; then
-    err "couldn't determine update_version_ks"
-    exit 2
-  fi
-  note "update_version_ks = ${update_version_ks}"
-
-  local product_id
-  if ! product_id="$(defaults read "${update_ks_plist}" \
-                                   "${KS_PRODUCT_KEY}")" ||
-     [[ -z "${product_id}" ]]; then
-    err "couldn't determine product_id"
-    exit 2
-  fi
-  note "product_id = ${product_id}"
 
   # ksadmin is required. Keystone should have set a ${PATH} that includes it.
   # Check that here, so that more useful feedback can be offered in the
@@ -479,6 +668,22 @@ main() {
                                    "${APP_VERSION_KEY}" || true)"
   note "old_version_app = ${old_version_app}"
 
+  # old_version_app is not required, because it won't be present in skeleton
+  # bootstrap installations, which just have an empty .app directory.  Only
+  # require it when doing a patch update, and use it to validate that the
+  # patch applies to the old installed version.  By definition, skeleton
+  # bootstraps can't be installed with patch udpates.  They require the full
+  # application on the disk image.
+  if [[ -n "${is_patch}" ]]; then
+    if [[ -z "${old_version_app}" ]]; then
+      err "old_version_app required for patch"
+      exit 6
+    elif [[ "${old_version_app}" != "${update_version_app_old}" ]]; then
+      err "this patch does not apply to the installed version"
+      exit 6
+    fi
+  fi
+
   local installed_versions_dir="${installed_app}/${VERSIONS_DIR}"
   note "installed_versions_dir = ${installed_versions_dir}"
 
@@ -500,6 +705,137 @@ main() {
                true)"
   note "old_brand = ${old_brand}"
 
+  ensure_writable_symlinks_recursive "${installed_app}"
+
+  # By copying to ${installed_app}, the existing application name will be
+  # preserved, if the user has renamed the application on disk.  Respecting
+  # the user's changes is friendly.
+
+  # Make sure that ${installed_versions_dir} exists, so that it can receive
+  # the versioned directory.  It may not exist if updating from an older
+  # version that did not use the versioned layout on disk.  Later, during the
+  # rsync to copy the applciation directory, the mode bits and timestamp on
+  # ${installed_versions_dir} will be set to conform to whatever is present in
+  # the update.
+  #
+  # ${installed_app} is guaranteed to exist at this point, but
+  # ${installed_app}/${CONTENTS_DIR} may not if things are severely broken or
+  # if this update is actually an initial installation from a Keystone
+  # skeleton bootstrap.  The mkdir creates ${installed_app}/${CONTENTS_DIR} if
+  # it doesn't exist; its mode bits will be fixed up in a subsequent rsync.
+  note "creating installed_versions_dir"
+  if ! mkdir -p "${installed_versions_dir}"; then
+    err "mkdir of installed_versions_dir failed"
+    exit 5
+  fi
+
+  local new_versioned_dir
+  new_versioned_dir="${installed_versions_dir}/${update_version_app}"
+  note "new_versioned_dir = ${new_versioned_dir}"
+
+  # If there's an entry at ${new_versioned_dir} but it's not a directory
+  # (or it's a symbolic link, whether or not it points to a directory), rsync
+  # won't get rid of it.  It's never correct to have a non-directory in place
+  # of the versioned directory, so toss out whatever's there.  Don't treat
+  # this as a critical step: if removal fails, operation can still proceed to
+  # to the dirpatcher or rsync, which will likely fail.
+  if [[ -e "${new_versioned_dir}" ]] &&
+     ([[ -L "${new_versioned_dir}" ]] ||
+      ! [[ -d "${new_versioned_dir}" ]]); then
+    note "removing non-directory in place of versioned directory"
+    rm -f "${new_versioned_dir}" 2> /dev/null || true
+  fi
+
+  local update_versioned_dir
+  if [[ -z "${is_patch}" ]]; then
+    update_versioned_dir="${update_app}/${VERSIONS_DIR}/${update_version_app}"
+    note "update_versioned_dir = ${update_versioned_dir}"
+  else  # [[ -n "${is_patch}" ]]
+    # dirpatcher won't patch into a directory that already exists.  Doing so
+    # would be a bad idea, anyway.  If ${new_versioned_dir} already exists,
+    # it may be something left over from a previous failed or incomplete
+    # update attempt, or it may be the live versioned directory if this is a
+    # same-version update intended only to change channels.  Since there's no
+    # way to tell, this case is handled by having dirpatcher produce the new
+    # versioned directory in a temporary location and then having rsync copy
+    # it into place as an ${update_versioned_dir}, the same as in a non-patch
+    # update.  If ${new_versioned_dir} doesn't exist, dirpatcher can place the
+    # new versioned directory at that location directly.
+    local versioned_dir_target
+    if ! [[ -e "${new_versioned_dir}" ]]; then
+      versioned_dir_target="${new_versioned_dir}"
+      note "versioned_dir_target = ${versioned_dir_target}"
+    else
+      ensure_temp_dir
+      versioned_dir_target="${g_temp_dir}/${update_version_app}"
+      note "versioned_dir_target = ${versioned_dir_target}"
+      update_versioned_dir="${versioned_dir_target}"
+      note "update_versioned_dir = ${update_versioned_dir}"
+    fi
+
+    note "dirpatching versioned directory"
+    if ! "${dirpatcher}" "${old_versioned_dir}" \
+                         "${patch_versioned_dir}" \
+                         "${versioned_dir_target}"; then
+      err "dirpatcher of versioned directory failed, status ${PIPESTATUS[0]}"
+      exit 12
+    fi
+  fi
+
+  # Copy the versioned directory.  The new versioned directory should have a
+  # different name than any existing one, so this won't harm anything already
+  # present in ${installed_versions_dir}, including the versioned directory
+  # being used by any running processes.  If this step is interrupted, there
+  # will be an incomplete versioned directory left behind, but it won't
+  # won't interfere with anything, and it will be replaced or removed during a
+  # future update attempt.
+  #
+  # In certain cases, same-version updates are distributed to move users
+  # between channels; when this happens, the contents of the versioned
+  # directories are identical and rsync will not render the versioned
+  # directory unusable even for an instant.
+  #
+  # ${update_versioned_dir} may be empty during a patch update (${is_patch})
+  # if the dirpatcher above was able to write it into place directly.  In
+  # that event, dirpatcher guarantees that ${new_versioned_dir} is already in
+  # place.
+  if [[ -n "${update_versioned_dir}" ]]; then
+    note "rsyncing versioned directory"
+    if ! rsync ${RSYNC_FLAGS} --delete-before "${update_versioned_dir}/" \
+                                              "${new_versioned_dir}"; then
+      err "rsync of versioned directory failed, status ${PIPESTATUS[0]}"
+      exit 7
+    fi
+  fi
+
+  if [[ -n "${is_patch}" ]]; then
+    # If the versioned directory was prepared in a temporary directory and
+    # then rsynced into place, remove the temporary copy now that it's no
+    # longer needed.
+    if [[ -n "${update_versioned_dir}" ]]; then
+      rm -rf "${update_versioned_dir}" 2> /dev/null || true
+      update_versioned_dir=
+      note "update_versioned_dir = ${update_versioned_dir}"
+    fi
+
+    # Prepare ${update_app}.  This always needs to be done in a temporary
+    # location because dirpatcher won't write to a directory that already
+    # exists, and ${installed_app} needs to be used as input to dirpatcher
+    # in any event.  The new application will be rsynced into place once
+    # dirpatcher creates it.
+    ensure_temp_dir
+    update_app="${g_temp_dir}/${APP_DIR}"
+    note "update_app = ${update_app}"
+
+    note "dirpatching app directory"
+    if ! "${dirpatcher}" "${installed_app}" \
+                         "${patch_app_dir}" \
+                         "${update_app}"; then
+      err "dirpatcher of app directory failed, status ${PIPESTATUS[0]}"
+      exit 13
+    fi
+  fi
+
   # See if the timestamp of what's currently on disk is newer than the
   # update's outer .app's timestamp.  rsync will copy the update's timestamp
   # over, but if that timestamp isn't as recent as what's already on disk, the
@@ -510,109 +846,6 @@ main() {
   fi
   note "needs_touch = ${needs_touch}"
 
-  # In some very weird and rare cases, it is possible to wind up with a user
-  # installation that contains symbolic links that the user does not have
-  # write permission over.  More on how that might happen later.
-  #
-  # If a weird and rare case like this is observed, rsync will exit with an
-  # error when attempting to update the times on these symbolic links.  rsync
-  # may not be intelligent enough to try creating a new symbolic link in these
-  # cases, but this script can be.
-  #
-  # This fix-up is not necessary when running as root, because root will
-  # always be able to write everything needed.
-  #
-  # The problem occurs when an administrative user first drag-installs the
-  # application to /Applications, resulting in the program's user being set to
-  # the user's own ID.  If, subsequently, a .pkg package is installed over
-  # that, the existing directory ownership will be preserved, but file
-  # ownership will be changed to whateer is specified by the package,
-  # typically root.  This applies to symbolic links as well.  On a subsequent
-  # update, rsync will be able to copy the new files into place, because the
-  # user still has permission to write to the directories.  If the symbolic
-  # link targets are not changing, though, rsync will not replace them, and
-  # they will remain owned by root.  The user will not have permission to
-  # update the time on the symbolic links, resulting in an rsync error.
-  if [[ ${EUID} -ne 0 ]]; then
-    # This step isn't critical.
-    set +e
-    note "fixing installed symbolic links"
-
-    # Only consider symbolic links in ${update_app}.  If there are any other
-    # links in ${installed_app} not present in ${update_app}, rsync will
-    # delete them as needed later.  Use find -print0 with read -d $'\0' to
-    # handle even the weirdest paths.
-    local update_link
-    while IFS= read -r -d $'\0' update_link; do
-      # ${update_link} is relative to ${update_app}.  Prepending
-      # ${installed_app} looks for the same link already on disk.
-      local installed_link="${installed_app}/${update_link}"
-      note "ensure_writable_symlink ${installed_link}"
-      ensure_writable_symlink "${installed_link}"
-    done < <(cd "${update_app}" && find . -type l -print0)
-
-    # Go back to how things were.
-    set -e
-  fi
-
-  # By copying to ${installed_app}, the existing application name will be
-  # preserved, if the user has renamed the application on disk.  Respecting
-  # the user's changes is friendly.
-
-  # Make sure that ${installed_versions_dir} exists, so that it can receive
-  # the versioned directory.  It may not exist if updating from an older
-  # version that did not use the versioned layout on disk.  An rsync that
-  # excludes all contents is used to bring the permissions over from
-  # ${update_versions_dir}, otherwise, this directory would be the only one in
-  # the entire update exempt from getting its permissions copied over.  A
-  # simple mkdir wouldn't copy mode bits.  This is done even if
-  # ${installed_versions_dir} already does exist to ensure that the mode bits
-  # come from the update.
-  #
-  # ${installed_app} is guaranteed to exist at this point, but
-  # ${installed_app}/${CONTENTS_DIR} may not if things are severely broken or
-  # if this update is actually an initial installation from a Keystone
-  # skeleton bootstrap.  The mkdir creates ${installed_app}/${CONTENTS_DIR} if
-  # it doesn't exist; its mode bits will be fixed up in a subsequent rsync.
-  note "creating CONTENTS_DIR"
-  if ! mkdir -p "${installed_app}/${CONTENTS_DIR}"; then
-    err "mkdir of CONTENTS_DIR failed"
-    exit 5
-  fi
-
-  local update_versions_dir="${update_app}/${VERSIONS_DIR}"
-  note "update_versions_dir = ${update_versions_dir}"
-
-  note "rsyncing VERSIONS_DIR"
-  if ! rsync ${RSYNC_FLAGS} --exclude "*" "${update_versions_dir}/" \
-                                          "${installed_versions_dir}"; then
-    err "rsync of VERSIONS_DIR failed, status ${PIPESTATUS[0]}"
-    exit 6
-  fi
-
-  # Copy the versioned directory.  The new versioned directory should have a
-  # different name than any existing one, so this won't harm anything already
-  # present in ${installed_versions_dir}, including the versioned directory
-  # being used by any running processes.  If this step is interrupted, there
-  # will be an incomplete versioned directory left behind, but it won't
-  # won't interfere with anything, and it will be replaced or removed during a
-  # future update attempt.  Note that in certain cases, same-version updates
-  # are distributed to move users between channels; when this happens, the
-  # contents of the versioned directories are identical and rsync will not
-  # render the versioned directory unusable even for an instant.
-  local update_versioned_dir new_versioned_dir
-  update_versioned_dir="${update_versions_dir}/${update_version_app}"
-  note "update_versioned_dir = ${update_versioned_dir}"
-  new_versioned_dir="${installed_versions_dir}/${update_version_app}"
-  note "new_versioned_dir = ${new_versioned_dir}"
-
-  note "rsyncing versioned directory"
-  if ! rsync ${RSYNC_FLAGS} --delete-before "${update_versioned_dir}/" \
-                                            "${new_versioned_dir}"; then
-    err "rsync of versioned directory failed, status ${PIPESTATUS[0]}"
-    exit 7
-  fi
-
   # Copy the unversioned files into place, leaving everything in
   # ${installed_versions_dir} alone.  If this step is interrupted, the
   # application will at least remain in a usable state, although it may not
@@ -621,15 +854,31 @@ main() {
   # critical point is when the main executable is replaced.  There isn't very
   # much to copy in this step, because most of the application is in the
   # versioned directory.  This step only accounts for around 50 files, most of
-  # which are small localized InfoPlist.strings files.
+  # which are small localized InfoPlist.strings files.  Note that
+  # ${VERSIONS_DIR} is included to copy its mode bits and timestamp, but its
+  # contents are excluded, having already been installed above.
   note "rsyncing app directory"
-  if ! rsync ${RSYNC_FLAGS} --delete-after --exclude "/${VERSIONS_DIR}" \
+  if ! rsync ${RSYNC_FLAGS} --delete-after --exclude "/${VERSIONS_DIR}/*" \
        "${update_app}/" "${installed_app}"; then
     err "rsync of app directory failed, status ${PIPESTATUS[0]}"
     exit 8
   fi
 
   note "rsyncs complete"
+
+  if [[ -n "${is_patch}" ]]; then
+    # update_app has been rsynced into place and is no longer needed.
+    rm -rf "${update_app}" 2> /dev/null || true
+    update_app=
+    note "update_app = ${update_app}"
+  fi
+
+  if [[ -n "${g_temp_dir}" ]]; then
+    # The temporary directory, if any, is no longer needed.
+    rm -rf "${g_temp_dir}" 2> /dev/null || true
+    g_temp_dir=
+    note "g_temp_dir = ${g_temp_dir}"
+  fi
 
   # If necessary, touch the outermost .app so that it appears to the outside
   # world that something was done to the bundle.  This will cause
@@ -967,6 +1216,9 @@ main() {
 
   # Great success!
   note "done!"
+
+  trap - EXIT
+
   return 0
 }
 
