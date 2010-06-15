@@ -169,7 +169,7 @@ void TextDatabase::CommitTransaction() {
 bool TextDatabase::CreateTables() {
   // FTS table of page contents.
   if (!db_.DoesTableExist("pages")) {
-    if (!db_.Execute("CREATE VIRTUAL TABLE pages USING fts3("
+    if (!db_.Execute("CREATE VIRTUAL TABLE pages USING fts2("
                      "TOKENIZE icu,"
                      "url LONGVARCHAR,"
                      "title LONGVARCHAR,"
