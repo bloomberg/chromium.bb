@@ -120,7 +120,7 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue('www.google.com' in matches_description['contents'])
     self.assertEqual('history-url', matches_description['type'])
     # The url should be inline-autocompleted in the omnibox
-    self.assertEqual('google.com/', self.GetOmniboxInfo().Text())
+    self.assertTrue('google.com' in self.GetOmniboxInfo().Text())
 
   def testCrazyFilenames(self):
     """Test omnibox query with filenames containing special chars.
