@@ -1798,7 +1798,12 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
                         << "up directory change event listener!";
           return;
         }
-        dir_change_hookup_.reset(lookup->AddChangeObserver(this));
+
+        // Note that we can end up here multiple times, for example if the
+        // user had to re-login and we got a second AUTH_SUCCEEDED event. Take
+        // care not to add ourselves as an observer a second time.
+        if (!dir_change_hookup_.get())
+          dir_change_hookup_.reset(lookup->AddChangeObserver(this));
       }
       if (InitialSyncEndedForAllEnabledTypes())
         MarkAndNotifyInitializationComplete();
