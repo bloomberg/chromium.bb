@@ -1949,8 +1949,8 @@ long Track::GetNext(const BlockEntry* pCurrEntry, const BlockEntry*& pNextEntry)
     //we want at all; we want the next call to PopulateSample to
     //return end-of-stream, not (re)start from the beginning.
     //
-    //One work-around is to send EOS immediately.  We would send 
-    //the EOS the next pass anyway, so maybe it's no great loss.  The 
+    //One work-around is to send EOS immediately.  We would send
+    //the EOS the next pass anyway, so maybe it's no great loss.  The
     //only problem is that if this the stream really does end one
     //cluster early (relative to other tracks), or the last frame
     //happens to be a keyframe ("CanSeekToEnd").
@@ -1960,7 +1960,7 @@ long Track::GetNext(const BlockEntry* pCurrEntry, const BlockEntry*& pNextEntry)
     //We need to give pCurr some value that means "you've reached EOS".
     //We can't synthesize the special EOS Cluster immediately
     //(when we first open the file, say), because we use the existance
-    //of that special cluster value to mean that we've read all of 
+    //of that special cluster value to mean that we've read all of
     //the clusters (this is a network download, so we can't know apriori
     //how many we have).
     //
@@ -1968,13 +1968,13 @@ long Track::GetNext(const BlockEntry* pCurrEntry, const BlockEntry*& pNextEntry)
     //object itself, to indicate that it should send EOS earlier
     //than when (pCurr=pStop).
     //
-    //Or, probably the best solution, when we actually load the 
+    //Or, probably the best solution, when we actually load the
     //blocks into a cluster: if we notice that there's no block
     //for a track, we synthesize a nonce EOS block for that track.
     //That way we always have something to return.  But that will
     //only work for sequential scan???
 
-    //pNext = NULL;    
+    //pNext = NULL;
     //return E_FAIL;
     pNextEntry = GetEOS();
     return 1L;
@@ -2590,41 +2590,41 @@ void Cluster::LoadBlockEntries()
     if (m_pEntries)
         return;
 
-    Load();    
+    Load();
     assert(m_timecode >= 0);
     assert(m_start > 0);
     assert(m_size > 0);
-    
+
     IMkvReader* const pReader = m_pSegment->m_pReader;
-    
+
     long long pos = m_start;
     const long long stop = m_start + m_size;
     long long timecode = -1;
-   
+
     long long idx = pos;
 
     m_entriesCount = 0;
-    
+
     while (idx < stop)
     {
         if (Match(pReader, idx, 0x67, timecode))
             assert(timecode == m_timecode);
-        else 
+        else
         {
             long len;
-            
+
             const long long id = ReadUInt(pReader, idx, len);
             assert(id >= 0);  //TODO
             assert((idx + len) <= stop);
-            
+
             idx += len;  //consume id
-            
+
             const long long size = ReadUInt(pReader, idx, len);
             assert(size >= 0);  //TODO
             assert((idx + len) <= stop);
-            
+
             idx += len;  //consume size
-            
+
             if (id == 0x20)  //BlockGroup ID
                 ++m_entriesCount;
             else if (id == 0x23)  //SimpleBlock ID
@@ -2633,15 +2633,15 @@ void Cluster::LoadBlockEntries()
             idx += size;  //consume payload
 
             assert(idx <= stop);
-        }  
+        }
     }
 
     if (m_entriesCount == 0)
         return;
-     
+
     m_pEntries = new BlockEntry*[m_entriesCount];
     size_t index = 0;
-    
+
     while (pos < stop)
     {
         if (Match(pReader, pos, 0x67, timecode))
@@ -2652,15 +2652,15 @@ void Cluster::LoadBlockEntries()
             const long long id = ReadUInt(pReader, pos, len);
             assert(id >= 0);  //TODO
             assert((pos + len) <= stop);
-            
+
             pos += len;  //consume id
-            
+
             const long long size = ReadUInt(pReader, pos, len);
             assert(size >= 0);  //TODO
             assert((pos + len) <= stop);
-            
+
             pos += len;  //consume size
-            
+
             if (id == 0x20)  //BlockGroup ID
                 ParseBlockGroup(pos, size, index++);
             else if (id == 0x23)  //SimpleBlock ID
@@ -2670,7 +2670,7 @@ void Cluster::LoadBlockEntries()
             assert(pos <= stop);
         }
     }
-    
+
     assert(pos == stop);
     assert(timecode >= 0);
     assert(index == m_entriesCount);
@@ -2689,13 +2689,13 @@ long long Cluster::GetTime()
 {
     const long long tc = GetTimeCode();
     assert(tc >= 0);
-    
+
     const SegmentInfo* const pInfo = m_pSegment->GetInfo();
     assert(pInfo);
-    
+
     const long long scale = pInfo->GetTimeCodeScale();
     assert(scale >= 1);
-    
+
     const long long t = m_timecode * scale;
 
     return t;
@@ -2707,10 +2707,10 @@ void Cluster::ParseBlockGroup(long long start, long long size, size_t index)
     assert(m_pEntries);
     assert(m_entriesCount);
     assert(index < m_entriesCount);
-    
+
     BlockGroup* const pGroup = new BlockGroup(this, index, start, size);
     assert(pGroup);  //TODO
-        
+
     m_pEntries[index] = pGroup;
 }
 
@@ -2724,7 +2724,7 @@ void Cluster::ParseSimpleBlock(long long start, long long size, size_t index)
 
     SimpleBlock* const pSimpleBlock = new SimpleBlock(this, index, start, size);
     assert(pSimpleBlock);  //TODO
-        
+
     m_pEntries[index] = pSimpleBlock;
 }
 
@@ -2732,29 +2732,29 @@ void Cluster::ParseSimpleBlock(long long start, long long size, size_t index)
 const BlockEntry* Cluster::GetFirst()
 {
     LoadBlockEntries();
-    
+
     return m_pEntries[0];
 }
 
-        
+
 const BlockEntry* Cluster::GetLast()
-{ 
+{
     if (m_entriesCount == 0)
         return m_pEntries[0];
-    
+
     return m_pEntries[m_entriesCount-1];
 }
 
-        
+
 const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
 {
     assert(pEntry);
-    
+
     size_t idx = pEntry->GetIndex();
-    
+
     ++idx;
 
-    if (idx == m_entriesCount) 
+    if (idx == m_entriesCount)
       return NULL;
 
     return m_pEntries[idx];
@@ -2766,12 +2766,12 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack)
 {
 
     assert(pTrack);
-    
+
     if (m_pSegment == NULL)  //EOS
         return pTrack->GetEOS();
-    
+
     LoadBlockEntries();
-    
+
     BlockEntry* i = *m_pEntries;
     BlockEntry* j = *m_pEntries + m_entriesCount;
     while (i != j)
@@ -2780,17 +2780,17 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack)
         i++;
         assert(pEntry);
         assert(!pEntry->EOS());
-        
+
         const Block* const pBlock = pEntry->GetBlock();
         assert(pBlock);
-        
+
         if (pBlock->GetTrackNumber() != pTrack->GetNumber())
             continue;
 
         if (pTrack->VetEntry(pEntry))
             return pEntry;
     }
-    
+
     return pTrack->GetEOS();  //no satisfactory block found
 }
 
@@ -2807,9 +2807,9 @@ BlockEntry::~BlockEntry()
 
 
 SimpleBlock::SimpleBlock(
-    Cluster* pCluster, 
-    size_t idx, 
-    long long start, 
+    Cluster* pCluster,
+    size_t idx,
+    long long start,
     long long size) :
     m_pCluster(pCluster),
     m_index(idx),
@@ -2849,9 +2849,9 @@ bool SimpleBlock::IsBFrame() const
 
 
 BlockGroup::BlockGroup(
-    Cluster* pCluster, 
-    size_t idx, 
-    long long start, 
+    Cluster* pCluster,
+    size_t idx,
+    long long start,
     long long size_) :
     m_pCluster(pCluster),
     m_index(idx),
@@ -2860,18 +2860,18 @@ BlockGroup::BlockGroup(
     m_pBlock(NULL)  //TODO: accept multiple blocks within a block group
 {
     IMkvReader* const pReader = m_pCluster->m_pSegment->m_pReader;
-    
+
     long long pos = start;
     const long long stop = start + size_;
- 
+
     bool bSimpleBlock = false;
-    
+
     while (pos < stop)
     {
         short t;
-    
+
         if (Match(pReader, pos, 0x7B, t))
-        {    
+        {
             if (t < 0)
                 m_prevTimeCode = t;
             else if (t > 0)
@@ -2885,15 +2885,15 @@ BlockGroup::BlockGroup(
             const long long id = ReadUInt(pReader, pos, len);
             assert(id >= 0);  //TODO
             assert((pos + len) <= stop);
-            
+
             pos += len;  //consume ID
-            
+
             const long long size = ReadUInt(pReader, pos, len);
             assert(size >= 0);  //TODO
             assert((pos + len) <= stop);
-            
+
             pos += len;  //consume size
-            
+
             switch (id)
             {
                 case 0x23:  //SimpleBlock ID
@@ -2901,21 +2901,21 @@ BlockGroup::BlockGroup(
                     //YES, FALL THROUGH TO NEXT CASE
 
                 case 0x21:  //Block ID
-                    ParseBlock(pos, size);                    
+                    ParseBlock(pos, size);
                     break;
-                    
+
                 default:
                     break;
             }
-                
+
             pos += size;  //consume payload
             assert(pos <= stop);
         }
     }
-    
+
     assert(pos == stop);
     assert(m_pBlock);
-    
+
     if (!bSimpleBlock)
         m_pBlock->SetKey(m_prevTimeCode >= 0);
 }
@@ -2928,18 +2928,18 @@ BlockGroup::~BlockGroup()
 
 
 void BlockGroup::ParseBlock(long long start, long long size)
-{   
+{
     IMkvReader* const pReader = m_pCluster->m_pSegment->m_pReader;
-    
+
     Block* const pBlock = new Block(start, size, pReader);
     assert(pBlock);  //TODO
 
-    //TODO: the Matroska spec says you have multiple blocks within the 
+    //TODO: the Matroska spec says you have multiple blocks within the
     //same block group, with blocks ranked by priority (the flag bits).
     //I haven't ever seen such a file (mkvmux certainly doesn't make
     //one), so until then I'll just assume block groups contain a single
     //block.
-#if 0    
+#if 0
     m_blocks.push_back(pBlock);
 #else
     assert(m_pBlock == NULL);
@@ -2949,7 +2949,7 @@ void BlockGroup::ParseBlock(long long start, long long size)
 #if 0
     Track* const pTrack = pBlock->GetTrack();
     assert(pTrack);
-    
+
     pTrack->Insert(pBlock);
 #endif
 }
@@ -2988,7 +2988,7 @@ short BlockGroup::GetPrevTimeCode() const
 short BlockGroup::GetNextTimeCode() const
 {
     return m_nextTimeCode;
-}    
+}
 
 
 bool BlockGroup::IsBFrame() const
@@ -3006,31 +3006,31 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
     const long long stop = start + size_;
 
     long len;
-    
+
     m_track = ReadUInt(pReader, pos, len);
     assert(m_track > 0);
     assert((pos + len) <= stop);
-    
+
     pos += len;  //consume track number
     assert((stop - pos) >= 2);
-    
+
     m_timecode = Unserialize2SInt(pReader, pos);
 
     pos += 2;
     assert((stop - pos) >= 1);
-    
+
     const long hr = pReader->Read(pos, 1, &m_flags);
     assert(hr == 0L);
 
     ++pos;
     assert(pos <= stop);
-    
+
     m_frameOff = pos;
-    
+
     const long long frame_size = stop - pos;
 
     assert(frame_size <= 2147483647L);
-    
+
     m_frameSize = static_cast<long>(frame_size);
 }
 
@@ -3038,13 +3038,13 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
 long long Block::GetTimeCode(Cluster* pCluster) const
 {
     assert(pCluster);
-    
+
     const long long tc0 = pCluster->GetTimeCode();
     assert(tc0 >= 0);
-    
+
     const long long tc = tc0 + static_cast<long long>(m_timecode);
     assert(tc >= 0);
-    
+
     return tc;  //unscaled timecode units
 }
 
@@ -3052,16 +3052,16 @@ long long Block::GetTimeCode(Cluster* pCluster) const
 long long Block::GetTime(Cluster* pCluster) const
 {
     assert(pCluster);
-    
+
     const long long tc = GetTimeCode(pCluster);
-    
+
     const Segment* const pSegment = pCluster->m_pSegment;
     const SegmentInfo* const pInfo = pSegment->GetInfo();
     assert(pInfo);
-    
+
     const long long scale = pInfo->GetTimeCodeScale();
     assert(scale >= 1);
-    
+
     const long long ns = tc * scale;
 
     return ns;
@@ -3071,7 +3071,7 @@ long long Block::GetTime(Cluster* pCluster) const
 unsigned long Block::GetTrackNumber() const
 {
     assert(m_track > 0);
-    
+
     return static_cast<unsigned long>(m_track);
 }
 
@@ -3102,9 +3102,9 @@ long Block::Read(IMkvReader* pReader, unsigned char* buf) const
 
     assert(pReader);
     assert(buf);
-    
+
     const long hr = pReader->Read(m_frameOff, m_frameSize, buf);
-    
+
     return hr;
 }
 

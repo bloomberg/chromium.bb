@@ -24,13 +24,13 @@ int MkvReader::Open(const char* fileName)
 {
     if (fileName == NULL)
         return -1;
- 
+
     if (m_file)
         return -1;
 
 #ifdef WIN32
     const errno_t e = fopen_s(&m_file, fileName, "rb");
-    
+
     if (e)
         return -1;  //error
 #else
@@ -40,29 +40,29 @@ int MkvReader::Open(const char* fileName)
         return -1;
 #endif
 
-#ifdef WIN32    
+#ifdef WIN32
     int status = _fseeki64(m_file, 0L, SEEK_END);
-    
+
     if (status)
         return -1;  //error
-        
+
     m_length = _ftelli64(m_file);
-#else    
+#else
     fseek(m_file, 0L, SEEK_END);
     m_length = ftell(m_file);
-#endif    
-    assert(m_length >= 0); 
-    
-#ifdef WIN32    
+#endif
+    assert(m_length >= 0);
+
+#ifdef WIN32
     status = _fseeki64(m_file, 0L, SEEK_SET);
-    
+
     if (status)
         return -1;  //error
-#else    
+#else
     fseek(m_file, 0L, SEEK_SET);
-#endif    
+#endif
 
-    return 0;		
+    return 0;
 }
 
 void MkvReader::Close()
@@ -81,10 +81,10 @@ int MkvReader::Length(long long* total, long long* available)
 
     if (total)
         *total = m_length;
-  
+
     if (available)
         *available = m_length;
- 
+
     return 0;
 }
 
@@ -95,29 +95,29 @@ int MkvReader::Read(long long offset, long len, unsigned char* buffer)
 
     if (offset < 0)
         return -1;
-   
+
     if (len < 0)
         return -1;
-    
+
     if (len == 0)
         return 0;
-    
+
     if (offset >= m_length)
         return -1;
 
-#ifdef WIN32    
+#ifdef WIN32
     const int status = _fseeki64(m_file, offset, SEEK_SET);
-    
+
     if (status)
         return -1;  //error
-#else    
+#else
     fseek(m_file, offset, SEEK_SET);
-#endif    
+#endif
 
     const size_t size = fread(buffer, 1, len, m_file);
-    
+
     if (size < size_t(len))
         return -1;  //error
- 
+
     return 0;  //success
 }
