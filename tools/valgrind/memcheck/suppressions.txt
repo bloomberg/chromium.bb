@@ -2851,10 +2851,6 @@
    fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE9push_backERKS2_
    fun:_ZN16ObserverListBaseIN11MessageLoop19DestructionObserverEE11AddObserverEPS1_
    fun:_ZN11MessageLoop22AddDestructionObserverEPNS_19DestructionObserverE
-   fun:_ZN4base20MessageLoopProxyImplC1Ev
-   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
-   fun:_ZN4base6Thread10ThreadMainEv
-   fun:_Z10ThreadFuncPv
 }
 {
    bug_43613a
@@ -3295,3 +3291,40 @@
    fun:_ZN23ChromeURLRequestContextD0Ev
 }
 
+{
+   bug_46558
+   Memcheck:Cond
+   fun:_ZN8chromeos11CrosLibraryD0Ev
+   fun:_ZN22DefaultSingletonTraitsIN8chromeos11CrosLibraryEE6DeleteEPS1_
+   fun:_ZN9SingletonIN8chromeos11CrosLibraryE22DefaultSingletonTraitsIS1_ES1_E6OnExitEPv
+   fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
+   fun:_ZN4base13AtExitManagerD1Ev
+   fun:_ZN9TestSuiteD2Ev
+   fun:_ZN15ChromeTestSuiteD1Ev
+   fun:main
+}
+
+{
+   bug_46560
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos11CrosLibrary18GetKeyboardLibraryEv
+   fun:_ZN8chromeos18LanguageMenuButtonC1EPNS_14StatusAreaHostE
+   fun:_ZN8chromeos14StatusAreaView4InitEv
+   fun:_ZN8chromeos21BrowserStatusAreaView4InitEv
+   fun:_ZN8chromeos11BrowserView4InitEv
+   fun:_ZN11BrowserView20ViewHierarchyChangedEbPN5views4ViewES2_
+   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View12AddChildViewEiPS0_
+   fun:_ZN5views13NonClientView20ViewHierarchyChangedEbPNS_4ViewES2_
+   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View12AddChildViewEiPS0_
+   fun:_ZN5views4View12AddChildViewEPS0_
+   fun:_ZN5views8RootView15SetContentsViewEPNS_4ViewE
+   fun:_ZN5views9WidgetGtk15SetContentsViewEPNS_4ViewE
+   fun:_ZN5views9WindowGtk4InitEP10_GtkWindowRKN3gfx4RectE
+   fun:_ZN15BrowserFrameGtk4InitEv
+   fun:_ZN8chromeos20BrowserFrameChromeos4InitEv
+}
