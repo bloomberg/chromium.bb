@@ -16,10 +16,10 @@ bool CacheDumper::CreateEntry(const std::string& key,
   return cache_->CreateEntry(key, entry);
 }
 
-bool CacheDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
-                             net::IOBuffer* buf, int buf_len) {
-  int written = entry->WriteData(index, offset, buf, buf_len, NULL, false);
-  return written == buf_len;
+int CacheDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
+                            net::IOBuffer* buf, int buf_len,
+                            net::CompletionCallback* callback) {
+  return entry->WriteData(index, offset, buf, buf_len, callback, false);
 }
 
 void CacheDumper::CloseEntry(disk_cache::Entry* entry, base::Time last_used,
@@ -48,7 +48,7 @@ bool SafeCreateDirectory(const std::wstring& path) {
     pos = 4;
 
   // Create the subdirectories individually
-  while((pos = path.find(backslash, pos)) != std::wstring::npos) {
+  while ((pos = path.find(backslash, pos)) != std::wstring::npos) {
     std::wstring subdir = path.substr(0, pos);
     CreateDirectoryW(subdir.c_str(), NULL);
     // we keep going even if directory creation failed.
@@ -141,10 +141,11 @@ void GetNormalizedHeaders(const net::HttpResponseInfo& info,
   output->append("\r\n");
 }
 
-bool DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
-                            net::IOBuffer* buf, int buf_len) {
+int DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
+                           net::IOBuffer* buf, int buf_len,
+                           net::CompletionCallback* callback) {
   if (!entry_)
-    return false;
+    return 0;
 
   std::string headers;
   const char *data;
@@ -154,11 +155,11 @@ bool DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
     bool truncated;
     if (!net::HttpCache::ParseResponseInfo(buf->data(), buf_len,
                                            &response_info, &truncated))
-      return false;
+      return 0;
 
     // Skip this entry if it was truncated (results in an empty file).
     if (truncated)
-      return true;
+      return buf_len;
 
     // Remove the size headers.
     response_info.headers->RemoveHeader("transfer-encoding");
@@ -188,11 +189,12 @@ bool DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
   }
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   DWORD bytes;
-  DWORD rv = WriteFile(entry_, data, len, &bytes, 0);
-  return rv == TRUE && bytes == static_cast<DWORD>(len);
+  if (!WriteFile(entry_, data, len, &bytes, 0))
+    return 0;
+
+  return bytes;
 #else
-  int bytes = fwrite(data, 1, len, entry_);
-  return bytes == len;
+  return fwrite(data, 1, len, entry_);
 #endif
 }
 

@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DUMP_CACHE_DUMPER_H_
-#define NET_TOOLS_DUMP_CACHE_DUMPER_H_
+#ifndef NET_TOOLS_DUMP_CACHE_CACHE_DUMPER_H_
+#define NET_TOOLS_DUMP_CACHE_CACHE_DUMPER_H_
 
 #include <string>
 #include "base/file_path.h"
@@ -22,6 +22,8 @@
 // An abstract class for writing cache dump data.
 class CacheDumpWriter {
  public:
+  virtual ~CacheDumpWriter() {}
+
   // Creates an entry to be written.
   // On success, populates the |entry|.
   // Returns true on success, false otherwise.
@@ -30,8 +32,9 @@ class CacheDumpWriter {
 
   // Write to the current entry.
   // Returns true on success, false otherwise.
-  virtual bool WriteEntry(disk_cache::Entry* entry, int stream, int offset,
-                          net::IOBuffer* buf, int buf_len) = 0;
+  virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
+                         net::IOBuffer* buf, int buf_len,
+                         net::CompletionCallback* callback) = 0;
 
   // Close the current entry.
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
@@ -41,27 +44,29 @@ class CacheDumpWriter {
 // Writes data to a cache.
 class CacheDumper : public CacheDumpWriter {
  public:
-  CacheDumper(disk_cache::BackendImpl* cache) : cache_(cache) {};
+  explicit CacheDumper(disk_cache::Backend* cache) : cache_(cache) {}
 
   virtual bool CreateEntry(const std::string& key, disk_cache::Entry** entry);
-  virtual bool WriteEntry(disk_cache::Entry* entry, int stream, int offset,
-                          net::IOBuffer* buf, int buf_len);
+  virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
+                         net::IOBuffer* buf, int buf_len,
+                         net::CompletionCallback* callback);
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
                           base::Time last_modified);
 
  private:
-  disk_cache::BackendImpl* cache_;
+  disk_cache::Backend* cache_;
 };
 
 // Writes data to a disk.
 class DiskDumper : public CacheDumpWriter {
  public:
-  DiskDumper(const std::wstring& path) : path_(path), entry_(NULL) {
+  explicit DiskDumper(const std::wstring& path) : path_(path), entry_(NULL) {
     file_util::CreateDirectory(FilePath(path));
-  };
+  }
   virtual bool CreateEntry(const std::string& key, disk_cache::Entry** entry);
-  virtual bool WriteEntry(disk_cache::Entry* entry, int stream, int offset,
-                          net::IOBuffer* buf, int buf_len);
+  virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
+                         net::IOBuffer* buf, int buf_len,
+                         net::CompletionCallback* callback);
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
                           base::Time last_modified);
 
@@ -79,4 +84,4 @@ class DiskDumper : public CacheDumpWriter {
 #endif
 };
 
-#endif  // NET_TOOLS_DUMP_CACHE_DUMPER_H_
+#endif  // NET_TOOLS_DUMP_CACHE_CACHE_DUMPER_H_
