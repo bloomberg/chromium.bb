@@ -163,6 +163,9 @@ class InfoBubbleDelegate {
   // However, if the bubble appears as a notification that something happened
   // in the background, we use FadeIn.
   virtual bool FadeInOnShow() = 0;
+
+  // The name of the window to which this delegate belongs.
+  virtual std::wstring accessible_name() { return L""; }
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the

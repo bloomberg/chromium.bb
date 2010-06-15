@@ -348,6 +348,8 @@ void InfoBubble::Init(views::Widget* parent,
   // We make the BorderWidget the owner of the InfoBubble HWND, so that the
   // latter is displayed on top of the former.
   WidgetWin::Init(border_->GetNativeView(), gfx::Rect());
+
+  SetWindowText(GetNativeView(), delegate_->accessible_name().c_str());
 #elif defined(OS_LINUX)
   MakeTransparent();
   make_transient_to_parent();

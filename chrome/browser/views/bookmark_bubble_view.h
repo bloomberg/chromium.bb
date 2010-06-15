@@ -97,6 +97,7 @@ class BookmarkBubbleView : public views::View,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow() { return false; }
+  virtual std::wstring accessible_name();
 
   // Closes the bubble.
   void Close();

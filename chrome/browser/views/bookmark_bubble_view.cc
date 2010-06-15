@@ -325,6 +325,10 @@ bool BookmarkBubbleView::CloseOnEscape() {
   return delegate_ ? delegate_->CloseOnEscape() : true;
 }
 
+std::wstring BookmarkBubbleView::accessible_name() {
+  return l10n_util::GetString(IDS_BOOMARK_BUBBLE_ADD_BOOKMARK);
+}
+
 void BookmarkBubbleView::Close() {
   static_cast<InfoBubble*>(GetWidget())->Close();
 }
