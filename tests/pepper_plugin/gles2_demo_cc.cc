@@ -68,6 +68,7 @@ void InitShaders() {
     "   texCoord = g_TexCoord0;\n"
     "}\n";
   static const char* fShaderStr =
+    "precision mediump float;\n"
     "uniform sampler2D tex;\n"
     "varying vec2 texCoord;\n"
     "void main()\n"
@@ -227,4 +228,3 @@ void GLFromCPPDraw() {
   CheckGLError("GLFromCPPDraw", __LINE__);
   glFlush();
 }
-
