@@ -95,6 +95,17 @@ class WebPluginImplWithPageDelegate
   DISALLOW_COPY_AND_ASSIGN(WebPluginImplWithPageDelegate);
 };
 
+FilePath GetWebKitRootDirFilePath() {
+  FilePath basePath;
+  PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
+  FilePath path = basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+  if (!file_util::PathExists(path)) {
+    // WebKit/WebKit/chromium/ -> WebKit/
+    path = basePath.Append(FILE_PATH_LITERAL("../.."));
+  }
+  return path;
+}
+
 }  // namespace
 
 namespace webkit_support {
@@ -203,13 +214,7 @@ WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
 }
 
 WebKit::WebString GetWebKitRootDir() {
-  FilePath sourcePath;
-  PathService::Get(base::DIR_SOURCE_ROOT, &sourcePath);
-  FilePath path = sourcePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-  if (!file_util::PathExists(path)) {
-      path = sourcePath.Append(FILE_PATH_LITERAL("../.."));
-      DCHECK(file_util::PathExists(path));
-  }
+  FilePath path = GetWebKitRootDirFilePath();
   return WebKit::WebString::fromUTF8(WideToUTF8(path.ToWStringHack()).c_str());
 }
 
@@ -285,14 +290,9 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
   if (utf8_url.compare(0, kPrefixLen, kPrefix, kPrefixLen))
     return WebURL(GURL(utf8_url));
 
-  FilePath sourcePath;
-  PathService::Get(base::DIR_SOURCE_ROOT, &sourcePath);
-  FilePath replacePath
-      = sourcePath.Append(FILE_PATH_LITERAL("third_party/WebKit/LayoutTests/"));
-  if (!file_util::PathExists(replacePath)) {
-      replacePath = sourcePath.Append(FILE_PATH_LITERAL("../../LayoutTests/"));
-      DCHECK(file_util::PathExists(replacePath));
-  }
+  FilePath replacePath =
+      GetWebKitRootDirFilePath().Append(FILE_PATH_LITERAL("LayoutTests/"));
+  CHECK(file_util::PathExists(replacePath));
 #if defined(OS_WIN)
   std::string utf8_path = WideToUTF8(replacePath.value());
 #else
