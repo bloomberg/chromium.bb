@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
@@ -20,6 +21,7 @@ namespace chromeos {
 
 CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              crypto_lib_(NULL),
+                             keyboard_lib_(NULL),
                              language_lib_(NULL),
                              login_lib_(NULL),
                              mount_lib_(NULL),
@@ -51,6 +53,8 @@ CrosLibrary::~CrosLibrary() {
     delete library_loader_;
   if (own_cryptohome_lib_)
     delete crypto_lib_;
+  if (own_keyboard_lib_)
+    delete keyboard_lib_;
   if (own_language_lib_)
     delete language_lib_;
   if (own_login_lib_)
@@ -81,6 +85,12 @@ CryptohomeLibrary* CrosLibrary::GetCryptohomeLibrary() {
   if (!crypto_lib_)
     crypto_lib_ = new CryptohomeLibraryImpl();
   return crypto_lib_;
+}
+
+KeyboardLibrary* CrosLibrary::GetKeyboardLibrary() {
+  if (!keyboard_lib_)
+    keyboard_lib_ = new KeyboardLibraryImpl();
+  return keyboard_lib_;
 }
 
 LanguageLibrary* CrosLibrary::GetLanguageLibrary() {
@@ -172,6 +182,14 @@ void CrosLibrary::TestApi::SetCryptohomeLibrary(CryptohomeLibrary* library,
     delete library_->crypto_lib_;
   library_->own_cryptohome_lib_ = own;
   library_->crypto_lib_ = library;
+}
+
+void CrosLibrary::TestApi::SetKeyboardLibrary(KeyboardLibrary* library,
+                                              bool own) {
+  if (library_->own_keyboard_lib_)
+    delete library_->keyboard_lib_;
+  library_->own_keyboard_lib_ = own;
+  library_->keyboard_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetLanguageLibrary(LanguageLibrary* library,

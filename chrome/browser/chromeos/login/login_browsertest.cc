@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/mock_keyboard_library.h"
 #include "chrome/browser/chromeos/cros/mock_language_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
@@ -35,6 +36,7 @@ class LoginTestBase : public InProcessBrowserTest {
     EXPECT_CALL(loader_, Load(_))
         .WillRepeatedly(Return(true));
 
+    testApi_->SetKeyboardLibrary(&mock_keyboard_library_, false);
     testApi_->SetLanguageLibrary(&mock_language_library_, false);
     EXPECT_CALL(mock_language_library_, GetActiveInputMethods())
         .WillRepeatedly(
@@ -56,6 +58,7 @@ class LoginTestBase : public InProcessBrowserTest {
  protected:
   NiceMock<MockLibraryLoader> loader_;
   NiceMock<MockCryptohomeLibrary> mock_cryptohome_library_;
+  NiceMock<MockKeyboardLibrary> mock_keyboard_library_;
   NiceMock<MockLanguageLibrary> mock_language_library_;
   NiceMock<MockNetworkLibrary> mock_network_library_;
   NiceMock<MockPowerLibrary> mock_power_library_;

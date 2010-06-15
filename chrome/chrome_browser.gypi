@@ -359,6 +359,8 @@
         'browser/chromeos/cros/cros_library_loader.h',
         'browser/chromeos/cros/cryptohome_library.cc',
         'browser/chromeos/cros/cryptohome_library.h',
+        'browser/chromeos/cros/keyboard_library.cc',
+        'browser/chromeos/cros/keyboard_library.h',
         'browser/chromeos/cros/language_library.cc',
         'browser/chromeos/cros/language_library.h',
         'browser/chromeos/cros/login_library.cc',

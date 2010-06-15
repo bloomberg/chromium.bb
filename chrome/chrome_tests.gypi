@@ -1457,6 +1457,8 @@
             'browser/chromeos/cros/cros_in_process_browser_test.h',
             'browser/chromeos/cros/mock_cros_library.h',
             'browser/chromeos/cros/mock_cryptohome_library.h',
+            'browser/chromeos/cros/mock_keyboard_library.h',
+            'browser/chromeos/cros/mock_language_library.h',
             'browser/chromeos/cros/mock_mount_library.cc',
             'browser/chromeos/cros/mock_mount_library.h',
             'browser/chromeos/cros/mock_network_library.h',

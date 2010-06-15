@@ -9,8 +9,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "third_party/cros/chromeos_keyboard.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
@@ -357,7 +357,7 @@ void LanguageLibraryImpl::UpdateCurrentInputMethod(
 
   DLOG(INFO) << "UpdateCurrentInputMethod (UI thread)";
   // Change the keyboard layout to a preferred layout for the input method.
-  chromeos::SetCurrentKeyboardLayoutByName(
+  CrosLibrary::Get()->GetKeyboardLibrary()->SetCurrentKeyboardLayoutByName(
       new_input_method.keyboard_layout);
 
   if (current_input_method_.id != new_input_method.id) {

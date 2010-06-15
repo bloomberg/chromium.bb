@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -143,6 +144,9 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // is available, but Chrome preferences are not available (for example,
   // initial OS boot).
   UpdateIndicator(L"EN", L"");
+
+  // Use the same keyboard layout on all windows.
+  CrosLibrary::Get()->GetKeyboardLibrary()->SetKeyboardLayoutPerWindow(false);
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
   // InputMethodChanged() will be called soon and the indicator will be updated.
