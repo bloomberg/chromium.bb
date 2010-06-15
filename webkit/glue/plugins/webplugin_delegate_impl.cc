@@ -138,6 +138,17 @@ void WebPluginDelegateImpl::DestroyInstance() {
 void WebPluginDelegateImpl::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
+
+  if (first_set_window_call_) {
+    first_set_window_call_ = false;
+    // Plugins like media player on Windows have a bug where in they handle the
+    // first geometry update and ignore the rest resulting in painting issues.
+    // This quirk basically ignores the first set window call sequence for
+    // these plugins and has been tested for Windows plugins only.
+    if (quirks_ & PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL)
+      return;
+  }
+
   if (windowless_) {
     WindowlessUpdateGeometry(window_rect, clip_rect);
   } else {

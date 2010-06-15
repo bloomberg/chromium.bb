@@ -260,7 +260,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 #pragma warning(suppress: 4355)  // can use this
       user_gesture_msg_factory_(this),
       handle_event_depth_(0),
-      mouse_hook_(NULL) {
+      mouse_hook_(NULL),
+      first_set_window_call_(true) {
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
@@ -298,6 +299,11 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     // Windowless mode doesn't work in the WMP NPAPI plugin.
     quirks_ |= PLUGIN_QUIRK_NO_WINDOWLESS;
 
+    // The media player plugin sets its size on the first NPP_SetWindow call
+    // and never updates its size. We should call the underlying NPP_SetWindow
+    // only when we have the correct size.
+    quirks_ |= PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL;
+
     if (filename == kOldWMPPlugin) {
       // Non-admin users on XP couldn't modify the key to force the new UI.
       quirks_ |= PLUGIN_QUIRK_PATCH_REGENUMKEYEXW;
@@ -318,6 +324,12 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     // Explanation for this quirk can be found in
     // WebPluginDelegateImpl::Initialize.
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;
+  } else if (plugin_info.name.find(L"DivX Web Player") !=
+             std::wstring::npos) {
+    // The divx plugin sets its size on the first NPP_SetWindow call and never
+    // updates its size. We should call the underlying NPP_SetWindow only when
+    // we have the correct size.
+    quirks_ |= PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL;
   }
 }
 

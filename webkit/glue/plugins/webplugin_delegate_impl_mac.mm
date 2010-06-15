@@ -267,7 +267,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       container_is_visible_(false),
       have_called_set_window_(false),
       external_drag_tracker_(new ExternalDragTracker()),
-      handle_event_depth_(0) {
+      handle_event_depth_(0),
+      first_set_window_call_(true) {
   memset(&window_, 0, sizeof(window_));
 #ifndef NP_NO_CARBON
   memset(&np_cg_context_, 0, sizeof(np_cg_context_));

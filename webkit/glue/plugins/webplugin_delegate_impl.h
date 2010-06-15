@@ -68,11 +68,12 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
     PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW = 256,  // Linux
     PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW = 512,  // Linux
     PLUGIN_QUIRK_NO_WINDOWLESS = 1024,  // Windows
-    PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048, // Windows
-    PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096, // Windows
-    PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH = 8192, // Mac
-    PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE = 16384, // Windows
-    PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK = 32768, // Linux
+    PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048,  // Windows
+    PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096,  // Windows
+    PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH = 8192,  // Mac
+    PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE = 16384,  // Windows
+    PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK = 32768,  // Linux
+    PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL = 65536,  // Windows.
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -478,6 +479,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // Holds the current cursor set by the windowless plugin.
   WebCursor current_windowless_cursor_;
+
+  // Set to true initially and indicates if this is the first npp_setwindow
+  // call received by the plugin.
+  bool first_set_window_call_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateImpl);
 };

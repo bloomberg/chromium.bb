@@ -240,8 +240,14 @@ NPObject* WebPluginImpl::scriptableObject() {
 }
 
 void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
-  if (!delegate_)
+  if (!delegate_ || !container_)
     return;
+
+#if defined(OS_WIN)
+  // Force a geometry update if needed to allow plugins like media player
+  // which defer the initial geometry update to work.
+  container_->reportGeometry();
+#endif  // OS_WIN
 
   // Note that |canvas| is only used when in windowless mode.
   delegate_->Paint(canvas, paint_rect);
@@ -291,8 +297,21 @@ void WebPluginImpl::updateGeometry(
     }
   }
 
-  first_geometry_update_ = false;
+#if defined(OS_WIN)
+  // Don't cache the geometry during the first geometry update. The first
+  // geometry update sequence is received when Widget::setParent is called.
+  // For plugins like media player which have a bug where they only honor
+  // the first geometry update, we have a quirk which ignores the first
+  // geometry update. To ensure that these plugins work correctly in cases
+  // where we receive only one geometry update from webkit, we also force
+  // a geometry update during paint which should go out correctly as the
+  // initial geometry update was not cached.
+  if (!first_geometry_update_)
+    geometry_ = new_geometry;
+#else  // OS_WIN
   geometry_ = new_geometry;
+#endif  // OS_WIN
+  first_geometry_update_ = false;
 }
 
 void WebPluginImpl::updateFocus(bool focused) {
