@@ -13,6 +13,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -21,11 +22,9 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 
-#if defined(USE_BASE_DATA_PACK)
 namespace base {
 class DataPack;
 }
-#endif
 #if defined(USE_X11)
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
@@ -77,6 +76,12 @@ class ResourceBundle {
   // guarantee thread-safety, since all string access is expected to happen on
   // the UI thread.
   static std::string ReloadSharedInstance(const std::wstring& pref_locale);
+
+  // Registers additional data pack files with the global ResourceBundle.  When
+  // looking for a DataResource, we will search these files after searching the
+  // main module.  This method is not thread safe!  You should call it
+  // immediately after calling InitSharedInstance.
+  static void AddDataPackToSharedInstance(const FilePath& path);
 
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
@@ -151,6 +156,21 @@ class ResourceBundle {
   static const SkColor toolbar_separator_color;
 
  private:
+  // Helper class for managing data packs.
+  class LoadedDataPack {
+   public:
+    LoadedDataPack(const FilePath& path);
+    bool GetStringPiece(int resource_id, base::StringPiece* data);
+
+   private:
+    void Load();
+
+    scoped_ptr<base::DataPack> data_pack_;
+    FilePath path_;
+
+    DISALLOW_COPY_AND_ASSIGN(LoadedDataPack);
+  };
+
   // We define a DataHandle typedef to abstract across how data is stored
   // across platforms.
 #if defined(OS_WIN)
@@ -216,6 +236,9 @@ class ResourceBundle {
   // Handles for data sources.
   DataHandle resources_data_;
   DataHandle locale_resources_data_;
+
+  // References to extra data packs loaded via AddDataPackToSharedInstance.
+  std::vector<LoadedDataPack*> data_packs_;
 
   // Cached images. The ResourceBundle caches all retrieved bitmaps and keeps
   // ownership of the pointers.

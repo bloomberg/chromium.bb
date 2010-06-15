@@ -922,6 +922,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
     std::string app_locale = ResourceBundle::InitSharedInstance(
         local_state->GetString(prefs::kApplicationLocale));
     g_browser_process->SetApplicationLocale(app_locale);
+
+    FilePath resources_pack_path;
+    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+    ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 #endif  // !defined(OS_MACOSX)
   }
 

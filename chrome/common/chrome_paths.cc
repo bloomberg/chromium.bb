@@ -251,6 +251,11 @@ bool PathProvider(int key, FilePath* result) {
       if (!file_util::PathExists(cur))
         return false;
       break;
+    case chrome::FILE_RESOURCES_PACK:
+      if (!PathService::Get(base::DIR_EXE, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("resources.pak"));
+      break;
 #if defined(OS_CHROMEOS)
     case chrome::FILE_CHROMEOS_API:
       if (!PathService::Get(base::DIR_MODULE, &cur))

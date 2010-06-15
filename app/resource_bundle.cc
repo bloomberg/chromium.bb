@@ -4,8 +4,10 @@
 
 #include "app/resource_bundle.h"
 
+#include "base/data_pack.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "build/build_config.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -49,6 +51,12 @@ std::string ResourceBundle::ReloadSharedInstance(
 
   g_shared_instance_->UnloadLocaleResources();
   return g_shared_instance_->LoadLocaleResources(pref_locale);
+}
+
+/* static */
+void ResourceBundle::AddDataPackToSharedInstance(const FilePath& path) {
+  DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
+  g_shared_instance_->data_packs_.push_back(new LoadedDataPack(path));
 }
 
 /* static */
@@ -185,4 +193,28 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
     default:
       return *base_font_;
   }
+}
+
+// LoadedDataPack implementation
+ResourceBundle::LoadedDataPack::LoadedDataPack(const FilePath& path)
+    : path_(path) {
+  // On unicies, we preload data packs so background updates don't cause us to
+  // load the wrong data.
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  Load();
+#endif
+}
+
+void ResourceBundle::LoadedDataPack::Load() {
+  DCHECK(!data_pack_.get());
+  data_pack_.reset(new base::DataPack);
+  bool success = data_pack_->Load(path_);
+  CHECK(success) << "Failed to load " << path_.value();
+}
+
+bool ResourceBundle::LoadedDataPack::GetStringPiece(int resource_id,
+                                                    base::StringPiece* data) {
+  if (!data_pack_.get())
+    Load();
+  return data_pack_->GetStringPiece(static_cast<uint32>(resource_id), data);
 }

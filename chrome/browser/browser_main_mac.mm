@@ -11,7 +11,9 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
+#include "base/file_path.h"
 #include "base/mac_util.h"
+#include "base/path_service.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -19,6 +21,7 @@
 #import "chrome/browser/chrome_browser_application_mac.h"
 #import "chrome/browser/cocoa/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
@@ -44,6 +47,10 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
     // Before we load the nib, we need to start up the resource bundle so we
     // have the strings avaiable for localization.
     ResourceBundle::InitSharedInstance(std::wstring());
+
+    FilePath resources_pack_path;
+    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+    ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
   }
 
   // Now load the nib (from the right bundle).

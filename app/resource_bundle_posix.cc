@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/data_pack.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "gfx/font.h"
@@ -31,6 +32,8 @@ ResourceBundle::~ResourceBundle() {
   FreeGdkPixBufs();
 #endif
   UnloadLocaleResources();
+  STLDeleteContainerPointers(data_packs_.begin(),
+                             data_packs_.end());
   delete resources_data_;
   resources_data_ = NULL;
 }
@@ -52,6 +55,11 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
   base::StringPiece data;
   if (!resources_data_->GetStringPiece(resource_id, &data)) {
     if (!locale_resources_data_->GetStringPiece(resource_id, &data)) {
+      for (size_t i = 0; i < data_packs_.size(); ++i) {
+        if (data_packs_[i]->GetStringPiece(resource_id, &data))
+          return data;
+      }
+
       return base::StringPiece();
     }
   }

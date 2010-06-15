@@ -8,11 +8,13 @@
 
 #include "app/app_paths.h"
 #include "app/l10n_util.h"
+#include "base/data_pack.h"
 #include "base/debug_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/resource_util.h"
+#include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/win_util.h"
 #include "gfx/font.h"
@@ -32,6 +34,8 @@ DWORD GetDataDllLoadFlags() {
 ResourceBundle::~ResourceBundle() {
   FreeImages();
   UnloadLocaleResources();
+  STLDeleteContainerPointers(data_packs_.begin(),
+                             data_packs_.end());
   resources_data_ = NULL;
 }
 
@@ -113,6 +117,13 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
                                              &data_size)) {
     return base::StringPiece(static_cast<const char*>(data_ptr), data_size);
   }
+
+  base::StringPiece data;
+  for (size_t i = 0; i < data_packs_.size(); ++i) {
+    if (data_packs_[i]->GetStringPiece(resource_id, &data))
+      return data;
+  }
+
   return base::StringPiece();
 }
 

@@ -53,6 +53,9 @@ enum {
   FILE_LIBAVFORMAT,             // Full path to libavformat media parsing
                                 // library.
   FILE_LIBAVUTIL,               // Full path to libavutil media utility library.
+  FILE_RESOURCES_PACK,          // Full path to the .pak file containing
+                                // binary data (e.g., html files and images
+                                // used by interal pages).
 #if defined(OS_CHROMEOS)
   FILE_CHROMEOS_API,            // Full path to chrome os api shared object.
 #endif
