@@ -14,6 +14,13 @@
       [ 'OS == "linux"', {
         'use_system_zlib': 0,
         'use_system_libjpeg': 0,
+        'nacl_standalone': 1,
+        # nacl_standalone=1 is broken because nacl's build/common.gypi
+        # insists on building 32-bit. Force target_arch to be defined
+        # so that nacl's override isn't used.
+        # Note: this variable setting is copied from nacl's
+        # build/common.gypi so that it has the exact same semantics.
+        'target_arch%': '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/arm.*/arm/")'
       }],
       [ 'OS == "win"', {
         'nacl_standalone': 1,
