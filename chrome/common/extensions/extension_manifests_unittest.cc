@@ -44,8 +44,7 @@ class ManifestTest : public testing::Test {
 
     scoped_ptr<Extension> extension(new Extension(path.DirName()));
     extension->set_location(location);
-    if (enable_apps_)
-      extension->set_apps_enabled(true);
+    extension->set_apps_enabled(enable_apps_);
 
     if (!extension->InitFromValue(*value, false, error))
       return NULL;
