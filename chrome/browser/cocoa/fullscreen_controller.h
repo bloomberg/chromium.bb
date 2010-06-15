@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/location_bar_view_mac.h"
 
 @class BrowserWindowController;
+@class DropdownAnimation;
 
 // Provides a controller to manage fullscreen mode for a single browser window.
 // This class handles running animations, showing and hiding the floating
@@ -46,7 +47,7 @@
 
   // Pointer to the currently running animation.  Is nil if no animation is
   // running.
-  scoped_nsobject<NSAnimation> currentAnimation_;
+  scoped_nsobject<DropdownAnimation> currentAnimation_;
 
   // Timers for scheduled showing/hiding of the bar (which are always done with
   // animation).
