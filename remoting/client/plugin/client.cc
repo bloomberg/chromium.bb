@@ -328,8 +328,8 @@ bool ChromotingClient::read_image(BinaryImage* image) {
     return false;
   }
 
-  char* raw_data = new char[image->header.size];
-  result = host_->read_data(raw_data, image->header.size);
+  scoped_array<char> raw_data(new char[image->header.size]);
+  result = host_->read_data(raw_data.get(), image->header.size);
   if (!result) {
     std::cout << "Failed to receive image data" << std::endl;
     return false;
@@ -337,7 +337,7 @@ bool ChromotingClient::read_image(BinaryImage* image) {
 
   if (image->header.format == FormatRaw) {
     // Raw image - all we need to do is load the data, so we're done.
-    image->data.reset(raw_data);
+    image->data.reset(raw_data.release());
     return true;
   } else if (image->header.format == FormatVp8) {
     return false;
@@ -348,7 +348,7 @@ bool ChromotingClient::read_image(BinaryImage* image) {
     uint8* planes[3];
     int strides[3];
     printf("decoder.DecodeFrame\n");
-    if (!decoder.DecodeFrame(raw_data, image->header.size)) {
+    if (!decoder.DecodeFrame(raw_data.get(), image->header.size)) {
       std::cout << "Unable to decode frame" << std::endl;
       return false;
     }
@@ -378,9 +378,6 @@ bool ChromotingClient::read_image(BinaryImage* image) {
     printf("conversion done\n");
 
     image->data.reset(rgb_data);
-
-    // Raw YUV data is no longer needed.
-    delete raw_data;
     return true;
 #endif
   }

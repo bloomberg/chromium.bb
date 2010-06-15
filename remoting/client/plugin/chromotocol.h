@@ -71,7 +71,7 @@ struct BinaryImageHeader {
 
 struct BinaryImage {
   BinaryImageHeader header;
-  scoped_ptr<char> data;
+  scoped_array<char> data;
 };
 
 }  // namespace remoting
