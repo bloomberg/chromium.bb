@@ -934,7 +934,9 @@ bool Extension::AppsAreEnabled() {
 #if defined(OS_CHROMEOS)
   return true;
 #else
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps);
+  static bool apps_enabled_mode =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps);
+  return apps_enabled_mode;
 #endif
 }
 
