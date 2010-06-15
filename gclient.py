@@ -3,13 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A wrapper script to manage a set of client modules in different SCM.
-
-This script is intended to be used to help basic management of client
-program sources residing in one or more Subversion modules and Git
-repositories, along with other modules it depends on, also in Subversion or Git,
-but possibly on multiple respositories, making a wrapper system apparently
-necessary.
+"""Meta checkout manager supporting both Subversion and GIT.
 
 Files
   .gclient      : Current client configuration, written by 'config' command.
@@ -28,7 +22,7 @@ Hooks
   .gclient and DEPS files may optionally contain a list named "hooks" to
   allow custom actions to be performed based on files that have changed in the
   working copy as a result of a "sync"/"update" or "revert" operation.  This
-  could be prevented by using --nohooks (hooks run by default). Hooks can also
+  can be prevented by using --nohooks (hooks run by default). Hooks can also
   be forced to run with the "runhooks" operation.  If "sync" is run with
   --force, all known hooks will run regardless of the state of the working
   copy.
@@ -55,7 +49,7 @@ Hooks
     ]
 """
 
-__version__ = "0.4"
+__version__ = "0.4.1"
 
 import errno
 import logging
@@ -158,8 +152,9 @@ class GClientKeywords(object):
 class Dependency(GClientKeywords):
   """Object that represents a dependency checkout."""
   DEPS_FILE = 'DEPS'
+
   def __init__(self, parent, name, url, safesync_url=None, custom_deps=None,
-      custom_vars=None, deps_file=None):
+               custom_vars=None, deps_file=None):
     GClientKeywords.__init__(self)
     self.parent = parent
     self.name = name
@@ -168,9 +163,9 @@ class Dependency(GClientKeywords):
     self.safesync_url = safesync_url
     self.custom_vars = custom_vars or {}
     self.custom_deps = custom_deps or {}
+    self.deps_hooks = []
     self.dependencies = []
     self.deps_file = deps_file or self.DEPS_FILE
-    self._deps_hooks = []
 
     # Sanity checks
     if not self.name and self.parent:
@@ -238,6 +233,7 @@ solutions = [
     self.config_content = None
 
   def SetConfig(self, content):
+    assert self.dependencies == []
     config_dict = {}
     self.config_content = content
     try:
@@ -262,37 +258,23 @@ solutions = [
           s.get('custom_deps', {}),
           s.get('custom_vars', {})))
     # .gclient can have hooks.
-    self._deps_hooks = config_dict.get('hooks', [])
+    self.deps_hooks = config_dict.get('hooks', [])
 
   def SaveConfig(self):
     gclient_utils.FileWrite(os.path.join(self.root_dir(),
                                          self._options.config_filename),
                             self.config_content)
 
-  def _LoadConfig(self):
-    client_source = gclient_utils.FileRead(
-        os.path.join(self.root_dir(), self._options.config_filename))
-    self.SetConfig(client_source)
-
   @staticmethod
-  def LoadCurrentConfig(options, from_dir=None):
+  def LoadCurrentConfig(options):
     """Searches for and loads a .gclient file relative to the current working
-    dir.
-
-    Returns:
-      A dict representing the contents of the .gclient file or an empty dict if
-      the .gclient file doesn't exist.
-    """
-    if not from_dir:
-      from_dir = os.curdir
-    path = os.path.realpath(from_dir)
-    while not os.path.exists(os.path.join(path, options.config_filename)):
-      split_path = os.path.split(path)
-      if not split_path[1]:
-        return None
-      path = split_path[0]
+    dir. Returns a GClient object."""
+    path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
+    if not path:
+      return None
     client = GClient(path, options)
-    client._LoadConfig()
+    client.SetConfig(gclient_utils.FileRead(
+        os.path.join(path, options.config_filename)))
     return client
 
   def SetDefaultConfig(self, solution_name, solution_url, safesync_url):
@@ -322,9 +304,6 @@ solutions = [
   def _ReadEntries(self):
     """Read the .gclient_entries file for the given client.
 
-    Args:
-      client: The client for which the entries file should be read.
-
     Returns:
       A sequence of solution names, which will be empty if there is the
       entries file hasn't been created yet.
@@ -334,7 +313,7 @@ solutions = [
     if not os.path.exists(filename):
       return []
     exec(gclient_utils.FileRead(filename), scope)
-    return scope["entries"]
+    return scope['entries']
 
   def _ParseSolutionDeps(self, solution_name, solution_deps_content,
                          custom_vars, parse_hooks):
@@ -391,7 +370,7 @@ solutions = [
       # right 'self' to add the hooks.
       for d in self.dependencies:
         if d.name == solution_name:
-          d._deps_hooks.extend(local_scope['hooks'])
+          d.deps_hooks.extend(local_scope['hooks'])
           break
 
     # If use_relative_paths is set in the DEPS file, regenerate
@@ -515,10 +494,10 @@ solutions = [
       return
 
     # Get any hooks from the .gclient file.
-    hooks = self._deps_hooks[:]
+    hooks = self.deps_hooks[:]
     # Add any hooks found in DEPS files.
     for d in self.dependencies:
-      hooks.extend(d._deps_hooks)
+      hooks.extend(d.deps_hooks)
 
     # If "--force" was specified, run all hooks regardless of what files have
     # changed.  If the user is using git, then we don't know what files have
@@ -571,14 +550,9 @@ solutions = [
   def RunOnDeps(self, command, args):
     """Runs a command on each dependency in a client and its dependencies.
 
-    The module's dependencies are specified in its top-level DEPS files.
-
     Args:
       command: The command to use (e.g., 'status' or 'diff')
       args: list of str - extra arguments to add to the command line.
-
-    Raises:
-      Error: If the client has conflicting entries.
     """
     if not command in self.SUPPORTED_COMMANDS:
       raise gclient_utils.Error("'%s' is an unsupported command" % command)
@@ -834,14 +808,14 @@ def CMDcleanup(parser, args):
 
 Mostly svn-specific. Simply runs 'svn cleanup' for each module.
 """
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -859,19 +833,19 @@ modules to operate on as well. If optional [url] parameter is
 provided, then configuration is read from a specified Subversion server
 URL.
 """
-  parser.add_option("--spec",
-                    help="create a gclient file containing the provided "
-                         "string. Due to Cygwin/Python brokenness, it "
-                         "probably can't contain any newlines.")
-  parser.add_option("--name",
-                    help="overrides the default name for the solution")
+  parser.add_option('--spec',
+                    help='create a gclient file containing the provided '
+                         'string. Due to Cygwin/Python brokenness, it '
+                         'probably can\'t contain any newlines.')
+  parser.add_option('--name',
+                    help='overrides the default name for the solution')
   (options, args) = parser.parse_args(args)
   if ((options.spec and args) or len(args) > 2 or
       (not options.spec and not args)):
     parser.error('Inconsistent arguments. Use either --spec or one or 2 args')
 
   if os.path.exists(options.config_filename):
-    raise gclient_utils.Error("%s file already exists in the current directory"
+    raise gclient_utils.Error('%s file already exists in the current directory'
                                   % options.config_filename)
   client = GClient('.', options)
   if options.spec:
@@ -879,11 +853,11 @@ URL.
   else:
     base_url = args[0].rstrip('/')
     if not options.name:
-      name = base_url.split("/")[-1]
+      name = base_url.split('/')[-1]
     else:
       # specify an alternate relpath for the given URL.
       name = options.name
-    safesync_url = ""
+    safesync_url = ''
     if len(args) > 1:
       safesync_url = args[1]
     client.SetDefaultConfig(name, base_url, safesync_url)
@@ -893,17 +867,17 @@ URL.
 
 def CMDexport(parser, args):
   """Wrapper for svn export for all managed directories."""
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
   (options, args) = parser.parse_args(args)
   if len(args) != 1:
-    raise gclient_utils.Error("Need directory name")
+    raise gclient_utils.Error('Need directory name')
   client = GClient.LoadCurrentConfig(options)
 
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
 
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
@@ -924,14 +898,14 @@ dependencies, and performs minimal postprocessing of the output. The
 resulting patch is printed to stdout and can be applied to a freshly
 checked out tree via 'patch -p0 < patchfile'.
 """
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -941,14 +915,14 @@ checked out tree via 'patch -p0 < patchfile'.
 
 def CMDstatus(parser, args):
   """Show modification status for every dependencies."""
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -968,41 +942,41 @@ def CMDstatus(parser, args):
 """)
 def CMDsync(parser, args):
   """Checkout/update all modules."""
-  parser.add_option("-f", "--force", action="store_true",
-                    help="force update even for unchanged modules")
-  parser.add_option("-n", "--nohooks", action="store_true",
-                    help="don't run hooks after the update is complete")
-  parser.add_option("-r", "--revision", action="append",
-                    dest="revisions", metavar="REV", default=[],
-                    help="Enforces revision/hash for the solutions with the "
-                         "format src@rev. The src@ part is optional and can be "
-                         "skipped. -r can be used multiple times when .gclient "
-                         "has multiple solutions configured and will work even "
-                         "if the src@ part is skipped.")
-  parser.add_option("-H", "--head", action="store_true",
-                    help="skips any safesync_urls specified in "
-                         "configured solutions and sync to head instead")
-  parser.add_option("-D", "--delete_unversioned_trees", action="store_true",
-                    help="delete any unexpected unversioned trees "
-                         "that are in the checkout")
-  parser.add_option("-R", "--reset", action="store_true",
-                    help="resets any local changes before updating (git only)")
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
-  parser.add_option("-m", "--manually_grab_svn_rev", action="store_true",
-                    help="Skip svn up whenever possible by requesting "
-                         "actual HEAD revision from the repository")
+  parser.add_option('-f', '--force', action='store_true',
+                    help='force update even for unchanged modules')
+  parser.add_option('-n', '--nohooks', action='store_true',
+                    help='don\'t run hooks after the update is complete')
+  parser.add_option('-r', '--revision', action='append',
+                    dest='revisions', metavar='REV', default=[],
+                    help='Enforces revision/hash for the solutions with the '
+                         'format src@rev. The src@ part is optional and can be '
+                         'skipped. -r can be used multiple times when .gclient '
+                         'has multiple solutions configured and will work even '
+                         'if the src@ part is skipped.')
+  parser.add_option('-H', '--head', action='store_true',
+                    help='skips any safesync_urls specified in '
+                         'configured solutions and sync to head instead')
+  parser.add_option('-D', '--delete_unversioned_trees', action='store_true',
+                    help='delete any unexpected unversioned trees '
+                         'that are in the checkout')
+  parser.add_option('-R', '--reset', action='store_true',
+                    help='resets any local changes before updating (git only)')
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
+  parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
+                    help='Skip svn up whenever possible by requesting '
+                         'actual HEAD revision from the repository')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
 
   if options.revisions and options.head:
     # TODO(maruel): Make it a parser.error if it doesn't break any builder.
-    print("Warning: you cannot use both --head and --revision")
+    print('Warning: you cannot use both --head and --revision')
 
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
@@ -1017,14 +991,14 @@ def CMDupdate(parser, args):
 
 def CMDdiff(parser, args):
   """Displays local diff for every dependencies."""
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -1034,33 +1008,33 @@ def CMDdiff(parser, args):
 
 def CMDrevert(parser, args):
   """Revert all modifications in every dependencies."""
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
-  parser.add_option("-n", "--nohooks", action="store_true",
-                    help="don't run hooks after the revert is complete")
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
+  parser.add_option('-n', '--nohooks', action='store_true',
+                    help='don\'t run hooks after the revert is complete')
   (options, args) = parser.parse_args(args)
   # --force is implied.
   options.force = True
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   return client.RunOnDeps('revert', args)
 
 
 def CMDrunhooks(parser, args):
   """Runs hooks for files that have been modified in the local working copy."""
-  parser.add_option("--deps", dest="deps_os", metavar="OS_LIST",
-                    help="override deps for the specified (comma-separated) "
-                         "platform(s); 'all' will process all deps_os "
-                         "references")
-  parser.add_option("-f", "--force", action="store_true", default=True,
-                    help="Deprecated. No effect.")
+  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
+                    help='override deps for the specified (comma-separated) '
+                         'platform(s); \'all\' will process all deps_os '
+                         'references')
+  parser.add_option('-f', '--force', action='store_true', default=True,
+                    help='Deprecated. No effect.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -1073,10 +1047,10 @@ def CMDrunhooks(parser, args):
 def CMDrevinfo(parser, args):
   """Output revision info mapping for the client and its dependencies.
 
-  This allows the capture of an overall "revision" for the source tree that
+  This allows the capture of an overall 'revision' for the source tree that
   can be used to reproduce the same tree in the future. It is only useful for
-  "unpinned dependencies", i.e. DEPS/deps references without a svn revision
-  number or a git hash. A git branch name isn't "pinned" since the actual
+  'unpinned dependencies', i.e. DEPS/deps references without a svn revision
+  number or a git hash. A git branch name isn't 'pinned' since the actual
   commit can change.
   """
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
@@ -1090,7 +1064,7 @@ def CMDrevinfo(parser, args):
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise gclient_utils.Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   client.PrintRevInfo()
   return 0
 
