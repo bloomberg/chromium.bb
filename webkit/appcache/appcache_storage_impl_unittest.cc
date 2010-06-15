@@ -1014,8 +1014,7 @@ TEST_F(AppCacheStorageImplTest, FindNoMainResponse) {
   RunTestOnIOThread(&AppCacheStorageImplTest::FindNoMainResponse);
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=39731
-TEST_F(AppCacheStorageImplTest, DISABLED_BasicFindMainResponseInDatabase) {
+TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInDatabase) {
   RunTestOnIOThread(
       &AppCacheStorageImplTest::BasicFindMainResponseInDatabase);
 }
