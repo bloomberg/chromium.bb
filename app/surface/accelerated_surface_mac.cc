@@ -10,62 +10,21 @@
 #include "gfx/rect.h"
 
 AcceleratedSurface::AcceleratedSurface()
-    : gl_context_(NULL),
-      pbuffer_(NULL),
-      allocate_fbo_(false),
+    : allocate_fbo_(false),
       texture_(0),
       fbo_(0),
       depth_stencil_renderbuffer_(0) {
 }
 
-bool AcceleratedSurface::Initialize(CGLContextObj share_context,
+bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
                                     bool allocate_fbo) {
   allocate_fbo_ = allocate_fbo;
 
-  // TODO(kbr): we should reuse the code for PbufferGLContext here instead
-  // of duplicating it. However, in order to do so, we need to move the
-  // GLContext classes out of gpu/ and into gfx/.
+  gl_context_.reset(gfx::GLContext::CreateOffscreenGLContext(share_context));
+  if (!gl_context_.get())
+    return false;
 
-  // Create a 1x1 pbuffer and associated context to bootstrap things
-  static const CGLPixelFormatAttribute attribs[] = {
-    (CGLPixelFormatAttribute) kCGLPFAPBuffer,
-    (CGLPixelFormatAttribute) 0
-  };
-  CGLPixelFormatObj pixel_format;
-  GLint num_pixel_formats;
-  if (CGLChoosePixelFormat(attribs,
-                           &pixel_format,
-                           &num_pixel_formats) != kCGLNoError) {
-    DLOG(ERROR) << "Error choosing pixel format.";
-    return false;
-  }
-  if (!pixel_format) {
-    return false;
-  }
-  CGLContextObj context;
-  CGLError res = CGLCreateContext(pixel_format, share_context, &context);
-  CGLDestroyPixelFormat(pixel_format);
-  if (res != kCGLNoError) {
-    DLOG(ERROR) << "Error creating context.";
-    return false;
-  }
-  CGLPBufferObj pbuffer;
-  if (CGLCreatePBuffer(1, 1,
-                       GL_TEXTURE_2D, GL_RGBA,
-                       0, &pbuffer) != kCGLNoError) {
-    CGLDestroyContext(context);
-    DLOG(ERROR) << "Error creating pbuffer.";
-    return false;
-  }
-  if (CGLSetPBuffer(context, pbuffer, 0, 0, 0) != kCGLNoError) {
-    CGLDestroyContext(context);
-    CGLDestroyPBuffer(pbuffer);
-    DLOG(ERROR) << "Error attaching pbuffer to context.";
-    return false;
-  }
-  gl_context_ = context;
-  pbuffer_ = pbuffer;
-  // Now we're ready to handle SetWindowSize calls, which will
+  // Now we're ready to handle SetSurfaceSize calls, which will
   // allocate and/or reallocate the IOSurface and associated offscreen
   // OpenGL structures for rendering.
   return true;
@@ -82,10 +41,10 @@ void AcceleratedSurface::Destroy() {
     dib_free_callback_->Run(transport_dib_->id());
   }
   transport_dib_.reset();
-  if (gl_context_)
-    CGLDestroyContext(gl_context_);
-  if (pbuffer_)
-    CGLDestroyPBuffer(pbuffer_);
+
+  if (gl_context_.get())
+    gl_context_->Destroy();
+  gl_context_.reset();
 }
 
 // Call after making changes to the surface which require a visual update.
@@ -198,7 +157,7 @@ bool AcceleratedSurface::SetupFrameBufferObject(GLenum target) {
   // Attach the depth and stencil buffer.
   if (fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT) {
     glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                 0x8D20, // GL_STENCIL_ATTACHMENT,
+                                 0x8D20,  // GL_STENCIL_ATTACHMENT,
                                  GL_RENDERBUFFER_EXT,
                                  depth_stencil_renderbuffer_);
     fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -207,16 +166,13 @@ bool AcceleratedSurface::SetupFrameBufferObject(GLenum target) {
 }
 
 bool AcceleratedSurface::MakeCurrent() {
-  if (CGLGetCurrentContext() != gl_context_) {
-    if (CGLSetCurrentContext(gl_context_) != kCGLNoError) {
-      DLOG(ERROR) << "Unable to make gl context current.";
-      return false;
-    }
-  }
-  return true;
+  if (!gl_context_.get())
+    return false;
+  return gl_context_->MakeCurrent();
 }
 
 void AcceleratedSurface::Clear(const gfx::Rect& rect) {
+  DCHECK(gl_context_->IsCurrent());
   glClearColor(0, 0, 0, 0);
   glViewport(0, 0, rect.width(), rect.height());
   glMatrixMode(GL_PROJECTION);
@@ -274,15 +230,16 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
 
   // Don't think we need to identify a plane.
   GLuint plane = 0;
-  io_surface_support->CGLTexImageIOSurface2D(gl_context_,
-                                             target,
-                                             GL_RGBA,
-                                             size.width(),
-                                             size.height(),
-                                             GL_BGRA,
-                                             GL_UNSIGNED_INT_8_8_8_8_REV,
-                                             io_surface_.get(),
-                                             plane);
+  io_surface_support->CGLTexImageIOSurface2D(
+      static_cast<CGLContextObj>(gl_context_->GetHandle()),
+      target,
+      GL_RGBA,
+      size.width(),
+      size.height(),
+      GL_BGRA,
+      GL_UNSIGNED_INT_8_8_8_8_REV,
+      io_surface_.get(),
+      plane);
   if (allocate_fbo_) {
     // Set up the frame buffer object.
     SetupFrameBufferObject(target);
@@ -333,6 +290,7 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   }
 
   if (allocate_fbo_) {
+    DCHECK(gl_context_->IsCurrent());
     // Set up the render buffers and reserve enough space on the card for the
     // framebuffer texture.
     GLenum target = GL_TEXTURE_RECTANGLE_ARB;

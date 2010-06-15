@@ -40,8 +40,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   if (window) {
     surface_.reset(new AcceleratedSurface());
     // TODO(apatrick): AcceleratedSurface will not work with an OSMesa context.
-    if (!surface_->Initialize(
-        static_cast<CGLContextObj>(context_->GetHandle()), false)) {
+    if (!surface_->Initialize(context_.get(), false)) {
       Destroy();
       return false;
     }

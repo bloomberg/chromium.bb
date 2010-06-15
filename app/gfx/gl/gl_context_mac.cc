@@ -6,7 +6,6 @@
 
 #include <OpenGL/OpenGL.h>
 
-#include "app/surface/accelerated_surface_mac.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_bindings.h"

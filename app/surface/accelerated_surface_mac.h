@@ -7,6 +7,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include "app/gfx/gl/gl_context.h"
 #include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/scoped_cftyperef.h"
@@ -17,7 +18,6 @@
 // Should not include GL headers in a header file. Forward declare these types
 // instead.
 typedef struct _CGLContextObject* CGLContextObj;
-typedef struct _CGLPBufferObject* CGLPBufferObj;
 typedef unsigned int GLenum;
 typedef unsigned int GLuint;
 
@@ -27,7 +27,7 @@ class Rect;
 
 // Encapsulates an accelerated GL surface that can be shared across processes
 // on systems that support it (10.6 and above). For systems that do not, it
-// uses a regular dib. There will either be a GL Context or a TransportDIB,
+// uses a regular dib. There will either be an IOSurface or a TransportDIB,
 // never both.
 
 class AcceleratedSurface {
@@ -45,11 +45,11 @@ class AcceleratedSurface {
   // implementation does not know to bind the accelerated surface's
   // internal FBO when the default FBO is bound. Returns false upon
   // failure.
-  bool Initialize(CGLContextObj share_context, bool allocate_fbo);
+  bool Initialize(gfx::GLContext* share_context, bool allocate_fbo);
   // Tear down. Must be called before destructor to prevent leaks.
   void Destroy();
 
-  // These methods are used only when there is a GL surface.
+  // These methods are used only once the accelerated surface is initialized.
 
   // Sets the accelerated surface to the given size, creating a new one if
   // the height or width changes. Returns a unique id of the IOSurface to
@@ -64,7 +64,8 @@ class AcceleratedSurface {
   // MakeCurrent().
   void Clear(const gfx::Rect& rect);
   // Call after making changes to the surface which require a visual update.
-  // Makes the rendering show up in other processes.
+  // Makes the rendering show up in other processes. Assumes the caller has
+  // already called MakeCurrent().
   //
   // If this AcceleratedSurface is configured with its own FBO, then
   // this call causes the color buffer to be transmitted. Otherwise,
@@ -84,13 +85,16 @@ class AcceleratedSurface {
   // texture is a legal name in the namespace of the current context.
   void SwapBuffers();
 
-  CGLContextObj context() { return gl_context_; }
+  CGLContextObj context() {
+    return static_cast<CGLContextObj>(gl_context_->GetHandle());
+  }
 
   // These methods are only used when there is a transport DIB.
 
   // Sets the transport DIB to the given size, creating a new one if the
   // height or width changes. Returns a handle to the new DIB, or a default
-  // handle if no changes were made.
+  // handle if no changes were made. Assumes the caller has already called
+  // MakeCurrent().
   TransportDIB::Handle SetTransportDIBSize(const gfx::Size& size);
   // Sets the methods to use for allocating and freeing memory for the
   // transport DIB.
@@ -119,8 +123,7 @@ class AcceleratedSurface {
   // speaking, we do not need to allocate a GL context all of the
   // time. We only need one if (a) we are using the IOSurface code
   // path, or (b) if we are allocating an FBO internally.
-  CGLContextObj gl_context_;
-  CGLPBufferObj pbuffer_;
+  scoped_ptr<gfx::GLContext> gl_context_;
   // Either |io_surface_| or |transport_dib_| is a valid pointer, but not both.
   // |io_surface_| is non-NULL if the IOSurface APIs are supported (Mac OS X
   // 10.6 and later).

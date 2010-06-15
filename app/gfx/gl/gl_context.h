@@ -48,6 +48,8 @@ class GLContext {
 
   // Create a GL context used for offscreen rendering. It is initially backed by
   // a 1x1 pbuffer. Use it to create an FBO to do useful rendering.
+  // |share_context|, if non-NULL, is a context which the internally created
+  // OpenGL context shares textures and other resources.
   static GLContext* CreateOffscreenGLContext(GLContext* shared_context);
 
  protected:
