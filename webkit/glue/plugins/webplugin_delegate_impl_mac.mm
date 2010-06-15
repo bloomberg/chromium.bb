@@ -44,7 +44,7 @@ using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 
-const int kCoreAnimationRedrawPeriodMs = 20;  // 50fps
+const int kCoreAnimationRedrawPeriodMs = 10;  // 100 Hz
 
 // Important implementation notes: The Mac definition of NPAPI, particularly
 // the distinction between windowed and windowless modes, differs from the
@@ -995,6 +995,11 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
   surface_->Clear(window_rect_);
 
   [renderer_ beginFrameAtTime:CACurrentMediaTime() timeStamp:NULL];
+  if (CGRectIsEmpty([renderer_ updateBounds])) {
+    // If nothing has changed, we are done.
+    [renderer_ endFrame];
+    return;
+  }
   CGRect layerRect = [layer_ bounds];
   [renderer_ addUpdateRect:layerRect];
   [renderer_ render];
