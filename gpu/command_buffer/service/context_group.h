@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
+#include "gpu/command_buffer/service/gles2_cmd_validation.h"
 
 namespace gpu {
 
@@ -88,6 +89,10 @@ class ContextGroup {
 
   IdAllocator* GetIdAllocator(unsigned namepsace_id);
 
+  const Validators* validators() const {
+    return &validators_;
+  }
+
  private:
   // Whether or not this context is initialized.
   bool initialized_;
@@ -114,6 +119,8 @@ class ContextGroup {
 
   typedef std::map<uint32, linked_ptr<IdAllocator> > IdAllocatorMap;
   IdAllocatorMap id_namespaces_;
+
+  Validators validators_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

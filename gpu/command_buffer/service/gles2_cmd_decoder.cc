@@ -1039,8 +1039,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       error::Error* error, GLuint* service_id, void** result,
       GLenum* result_type);
 
-  bool ValidateGLenumCompressedTextureInternalFormat(GLenum format);
-
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
@@ -1145,6 +1143,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   std::string last_error_;
 
   bool use_shader_translator_;
+
+  // Cached from the context group.
+  const Validators* validators_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -1407,7 +1408,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       black_2d_texture_id_(0),
       black_cube_texture_id_(0),
       anti_aliased_(false),
-      use_shader_translator_(true) {
+      use_shader_translator_(true),
+      validators_(group->validators()) {
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
   attrib_0_value_.v[2] = 0.0f;
@@ -2026,11 +2028,6 @@ bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
     CreateShaderInfo(client_id, service_id, type);
   }
   return true;
-}
-
-bool GLES2DecoderImpl::ValidateGLenumCompressedTextureInternalFormat(GLenum) {
-  // TODO(gman): Add support for compressed texture formats.
-  return false;
 }
 
 void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
@@ -3155,11 +3152,11 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     SetGLError(GL_INVALID_VALUE, "glDrawElements: offset < 0");
     return error::kNoError;
   }
-  if (!ValidateGLenumDrawMode(mode)) {
+  if (!validators_->draw_mode.IsValid(mode)) {
     SetGLError(GL_INVALID_ENUM, "glDrawElements: mode GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLenumIndexType(type)) {
+  if (!validators_->index_type.IsValid(type)) {
     SetGLError(GL_INVALID_ENUM, "glDrawElements: type GL_INVALID_ENUM");
     return error::kNoError;
   }
@@ -3685,12 +3682,12 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
   GLsizei stride = c.stride;
   GLsizei offset = c.offset;
   const void* ptr = reinterpret_cast<const void*>(offset);
-  if (!ValidateGLenumVertexAttribType(type)) {
+  if (!validators_->vertex_attrib_type.IsValid(type)) {
     SetGLError(GL_INVALID_ENUM,
                "glVertexAttribPointer: type GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLintVertexAttribSize(size)) {
+  if (!validators_->vertex_attrib_size.IsValid(size)) {
     SetGLError(GL_INVALID_ENUM,
                "glVertexAttribPointer: size GL_INVALID_VALUE");
     return error::kNoError;
@@ -3759,11 +3756,11 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kOutOfBounds;
   }
 
-  if (!ValidateGLenumReadPixelFormat(format)) {
+  if (!validators_->read_pixel_format.IsValid(format)) {
     SetGLError(GL_INVALID_ENUM, "glReadPixels: format GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLenumPixelType(type)) {
+  if (!validators_->pixel_type.IsValid(type)) {
     SetGLError(GL_INVALID_ENUM, "glReadPixels: type GL_INVALID_ENUM");
     return error::kNoError;
   }
@@ -3846,11 +3843,11 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
     uint32 immediate_data_size, const gles2::PixelStorei& c) {
   GLenum pname = c.pname;
   GLenum param = c.param;
-  if (!ValidateGLenumPixelStore(pname)) {
+  if (!validators_->pixel_store.IsValid(pname)) {
     SetGLError(GL_INVALID_ENUM, "glPixelStorei: pname GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLintPixelStoreAlignment(param)) {
+  if (!validators_->pixel_store_alignment.IsValid(param)) {
     SetGLError(GL_INVALID_VALUE, "glPixelSTore: param GL_INVALID_VALUE");
     return error::kNoError;
   }
@@ -4006,7 +4003,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocationBucket(
 error::Error GLES2DecoderImpl::HandleGetString(
     uint32 immediate_data_size, const gles2::GetString& c) {
   GLenum name = static_cast<GLenum>(c.name);
-  if (!ValidateGLenumStringType(name)) {
+  if (!validators_->string_type.IsValid(name)) {
     SetGLError(GL_INVALID_ENUM, "glGetString: name GL_INVALID_ENUM");
     return error::kNoError;
   }
@@ -4033,11 +4030,11 @@ error::Error GLES2DecoderImpl::HandleGetString(
 
 void GLES2DecoderImpl::DoBufferData(
     GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
-  if (!ValidateGLenumBufferTarget(target)) {
+  if (!validators_->buffer_target.IsValid(target)) {
     SetGLError(GL_INVALID_ENUM, "glBufferData: target GL_INVALID_ENUM");
     return;
   }
-  if (!ValidateGLenumBufferUsage(usage)) {
+  if (!validators_->buffer_usage.IsValid(usage)) {
     SetGLError(GL_INVALID_ENUM, "glBufferData: usage GL_INVALID_ENUM");
     return;
   }
@@ -4124,12 +4121,13 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
   GLsizei image_size,
   const void* data) {
   // TODO(gman): Validate image_size is correct for width, height and format.
-  if (!ValidateGLenumTextureTarget(target)) {
+  if (!validators_->texture_target.IsValid(target)) {
     SetGLError(GL_INVALID_ENUM,
                "glCompressedTexImage2D: target GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLenumCompressedTextureInternalFormat(internal_format)) {
+  if (!validators_->compressed_texture_format.IsValid(
+      internal_format)) {
     SetGLError(GL_INVALID_ENUM,
                "glCompressedTexImage2D: internal_format GL_INVALID_ENUM");
     return error::kNoError;
@@ -4228,9 +4226,14 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
   uint32 data_size = bucket->size();
   GLsizei imageSize = data_size;
   const void* data = bucket->GetData(0, data_size);
-  if (!ValidateGLenumTextureTarget(target)) {
+  if (!validators_->texture_target.IsValid(target)) {
     SetGLError(
         GL_INVALID_ENUM, "glCompressedTexSubImage2D: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!validators_->compressed_texture_format.IsValid(format)) {
+    SetGLError(GL_INVALID_ENUM,
+               "glCompressedTexSubImage2D: format GL_INVALID_ENUM");
     return error::kNoError;
   }
   if (width < 0) {
@@ -4261,20 +4264,20 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   GLenum type,
   const void* pixels,
   uint32 pixels_size) {
-  if (!ValidateGLenumTextureTarget(target)) {
+  if (!validators_->texture_target.IsValid(target)) {
     SetGLError(GL_INVALID_ENUM, "glTexImage2D: target GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLenumTextureFormat(internal_format)) {
+  if (!validators_->texture_format.IsValid(internal_format)) {
     SetGLError(GL_INVALID_ENUM,
                "glTexImage2D: internal_format GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLenumTextureFormat(format)) {
+  if (!validators_->texture_format.IsValid(format)) {
     SetGLError(GL_INVALID_ENUM, "glTexImage2D: format GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLenumPixelType(type)) {
+  if (!validators_->pixel_type.IsValid(type)) {
     SetGLError(GL_INVALID_ENUM, "glTexImage2D: type GL_INVALID_ENUM");
     return error::kNoError;
   }
@@ -4373,7 +4376,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  if (!ValidateGLenumVertexPointer(pname)) {
+  if (!validators_->vertex_pointer.IsValid(pname)) {
     SetGLError(GL_INVALID_ENUM,
                "glGetVertexAttribPointerv: pname GL_INVALID_ENUM");
     return error::kNoError;
@@ -4503,12 +4506,12 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  if (!ValidateGLenumShaderType(shader_type)) {
+  if (!validators_->shader_type.IsValid(shader_type)) {
     SetGLError(GL_INVALID_ENUM,
                "glGetShaderPrecisionFormat: shader_type GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!ValidateGLenumShaderPrecision(precision_type)) {
+  if (!validators_->shader_precision.IsValid(precision_type)) {
     SetGLError(GL_INVALID_ENUM,
                "glGetShaderPrecisionFormat: precision_type GL_INVALID_ENUM");
     return error::kNoError;

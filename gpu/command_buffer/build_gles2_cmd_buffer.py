@@ -160,9 +160,9 @@ GL_APICALL void         GL_APIENTRY glUniform4f (GLint location, GLfloat x, GLfl
 GL_APICALL void         GL_APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat* v);
 GL_APICALL void         GL_APIENTRY glUniform4i (GLint location, GLint x, GLint y, GLint z, GLint w);
 GL_APICALL void         GL_APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint* v);
-GL_APICALL void         GL_APIENTRY glUniformMatrix2fv (GLint location, GLsizei count, GLbooleanFalse transpose, const GLfloat* value);
-GL_APICALL void         GL_APIENTRY glUniformMatrix3fv (GLint location, GLsizei count, GLbooleanFalse transpose, const GLfloat* value);
-GL_APICALL void         GL_APIENTRY glUniformMatrix4fv (GLint location, GLsizei count, GLbooleanFalse transpose, const GLfloat* value);
+GL_APICALL void         GL_APIENTRY glUniformMatrix2fv (GLint location, GLsizei count, GLbooleanFalseOnly transpose, const GLfloat* value);
+GL_APICALL void         GL_APIENTRY glUniformMatrix3fv (GLint location, GLsizei count, GLbooleanFalseOnly transpose, const GLfloat* value);
+GL_APICALL void         GL_APIENTRY glUniformMatrix4fv (GLint location, GLsizei count, GLbooleanFalseOnly transpose, const GLfloat* value);
 GL_APICALL void         GL_APIENTRY glUseProgram (GLidZeroProgram program);
 GL_APICALL void         GL_APIENTRY glValidateProgram (GLidProgram program);
 GL_APICALL void         GL_APIENTRY glVertexAttrib1f (GLuint indx, GLfloat x);
@@ -947,7 +947,7 @@ _ENUM_LISTS = {
       '5',
     ],
   },
-  'False': {
+  'FalseOnly': {
     'type': 'GLboolean',
     'valid': [
       'false',
@@ -1450,6 +1450,47 @@ _FUNCTION_INFO = {
                   'GLsizei stride, GLuint offset',
   },
 }
+
+
+def SplitWords(input_string):
+  """Transforms a input_string into a list of lower-case components.
+
+  Args:
+    input_string: the input string.
+
+  Returns:
+    a list of lower-case words.
+  """
+  if input_string.find('_') > -1:
+    # 'some_TEXT_' -> 'some text'
+    return input_string.replace('_', ' ').strip().lower().split()
+  else:
+    if re.search('[A-Z]', input_string) and re.search('[a-z]', input_string):
+      # mixed case.
+      # look for capitalization to cut input_strings
+      # 'SomeText' -> 'Some Text'
+      input_string = re.sub('([A-Z])', r' \1', input_string).strip()
+      # 'Vector3' -> 'Vector 3'
+      input_string = re.sub('([^0-9])([0-9])', r'\1 \2', input_string)
+    return input_string.lower().split()
+
+
+def Lower(words):
+  """Makes a lower-case identifier from words.
+
+  Args:
+    words: a list of lower-case words.
+
+  Returns:
+    the lower-case identifier.
+  """
+  return '_'.join(words)
+
+
+def ToUnderscore(input_string):
+  """converts CamelCase to camel_case."""
+  words = SplitWords(input_string)
+  return Lower(words)
 
 
 class CWriter(object):
@@ -3906,10 +3947,12 @@ class EnumBaseArgument(Argument):
     self.local_type = type
     self.gl_error = gl_error
     name = type[len(gl_type):]
+    self.type_name = name
     self.enum_info = _ENUM_LISTS[name]
 
   def WriteValidationCode(self, file, func):
-    file.Write("  if (!Validate%s(%s)) {\n" % (self.local_type, self.name))
+    file.Write("  if (!validators_->%s.IsValid(%s)) {\n" %
+        (ToUnderscore(self.type_name), self.name))
     file.Write("    SetGLError(%s, \"gl%s: %s %s\");\n" %
                (self.gl_error, func.original_name, self.name, self.gl_error))
     file.Write("    return error::kNoError;\n")
@@ -4902,24 +4945,40 @@ class GLGenerator(object):
     """Writes the gles2 auto generated utility header."""
     file = CHeaderWriter(filename)
     for enum in sorted(_ENUM_LISTS.keys()):
-      file.Write("bool Validate%s%s(GLenum value);\n" % (_ENUM_LISTS[enum]['type'], enum))
+      file.Write("ValueValidator<%s> %s;\n" %
+                 (_ENUM_LISTS[enum]['type'], ToUnderscore(enum)))
     file.Write("\n")
     file.Close()
 
   def WriteServiceUtilsImplementation(self, filename):
     """Writes the gles2 auto generated utility implementation."""
     file = CHeaderWriter(filename)
-    for enum in sorted(_ENUM_LISTS.keys()):
-      file.Write("bool Validate%s%s(GLenum value) {\n" % (_ENUM_LISTS[enum]['type'], enum))
-      file.Write("  switch (value) {\n")
+    enums = sorted(_ENUM_LISTS.keys())
+    for enum in enums:
+      file.Write("static %s valid_%s_table[] = {\n" %
+                 (_ENUM_LISTS[enum]['type'], ToUnderscore(enum)))
       for value in _ENUM_LISTS[enum]['valid']:
-        file.Write("    case %s:\n" % value)
-      file.Write("      return true;\n")
-      file.Write("    default:\n")
-      file.Write("      return false;\n")
-      file.Write("  }\n")
-      file.Write("}\n")
+        file.Write("  %s,\n" % value)
+      file.Write("};\n")
       file.Write("\n")
+    file.Write("Validators::Validators()\n")
+    pre = ': '
+    post = ','
+    count = 0
+    for enum in enums:
+      count += 1
+      if count == len(enums):
+        post = ' {'
+      code = """    %(pre)s%(name)s(
+        valid_%(name)s_table, arraysize(valid_%(name)s_table))%(post)s
+"""
+      file.Write(code % {
+          'name': ToUnderscore(enum),
+          'pre': pre,
+          'post': post,
+        })
+      pre = '  '
+    file.Write("}\n");
     file.Close()
 
 

@@ -27,6 +27,7 @@
 #define GL_SHADER_BINARY_FORMATS          0x8DF8
 #define GL_NUM_SHADER_BINARY_FORMATS      0x8DF9
 #define GL_SHADER_COMPILER                0x8DFA
+#define GL_RGB565                         0x8D62
 
 #define GL_GLEXT_PROTOTYPES 1
 
