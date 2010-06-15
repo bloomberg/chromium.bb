@@ -707,6 +707,11 @@ const wchar_t kOptionsWindowLastTabIndex[] = L"options_window.last_tab_index";
 const wchar_t kContentSettingsWindowLastTabIndex[] =
     L"content_settings_window.last_tab_index";
 
+// Integer that specifies the index of the tab the user was on when they
+// last visited the Certificate Manager window.
+const wchar_t kCertificateManagerWindowLastTabIndex[] =
+    L"certificate_manager_window.last_tab_index";
+
 // The mere fact that this pref is registered signals that we should show the
 // First Run Search Information bubble when the first browser window appears.
 // This preference is only registered by the first-run procedure.
@@ -876,4 +881,5 @@ const wchar_t kCloudPrintXMPPAuthToken[] = L"cloud_print.xmpp_auth_token";
 // The email address of the account used to authenticate with the Cloud Print
 // server.
 extern const wchar_t kCloudPrintEmail[] = L"cloud_print.email";
+
 }  // namespace prefs

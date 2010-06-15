@@ -19,6 +19,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/certificate_viewer.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/pref_member.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "grit/generated_resources.h"
@@ -49,9 +53,7 @@ class CertificatePage {
   void PopulateTree(CERTCertList* cert_list);
 
   // Get the top-level widget of this page.
-  GtkWidget* widget() {
-    return vbox_;
-  }
+  GtkWidget* widget() { return vbox_; }
 
  private:
   // Columns of the tree store.
@@ -345,12 +347,16 @@ void CertificatePage::OnViewClicked(GtkWidget* button) {
 
 class CertificateManager {
  public:
-  explicit CertificateManager(gfx::NativeWindow parent);
+  explicit CertificateManager(gfx::NativeWindow parent, Profile* profile);
   ~CertificateManager();
 
-  void Show();
+  // Shows the Tab corresponding to the specified |page|.
+  void ShowCertificatePage(CertificateManagerPage page);
 
  private:
+  CHROMEGTK_CALLBACK_2(CertificateManager, void, OnSwitchPage,
+                       GtkNotebookPage*, guint);
+
   CERTCertList* cert_list_;
 
   CertificatePage user_page_;
@@ -360,6 +366,14 @@ class CertificateManager {
   CertificatePage unknown_page_;
 
   GtkWidget* dialog_;
+
+  GtkWidget* notebook_;
+
+  // The last page the user was on when they opened the CertificateManager
+  // window.
+  IntegerPrefMember last_selected_page_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertificateManager);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -369,12 +383,17 @@ void OnDestroy(GtkDialog* dialog, CertificateManager* cert_manager) {
   delete cert_manager;
 }
 
-CertificateManager::CertificateManager(gfx::NativeWindow parent)
+CertificateManager::CertificateManager(gfx::NativeWindow parent,
+                                       Profile* profile)
     : user_page_(psm::USER_CERT),
       email_page_(psm::EMAIL_CERT),
       server_page_(psm::SERVER_CERT),
       ca_page_(psm::CA_CERT),
       unknown_page_(psm::UNKNOWN_CERT) {
+  // We don't need to observe changes in this value.
+  last_selected_page_.Init(prefs::kCertificateManagerWindowLastTabIndex,
+                           profile->GetPrefs(), NULL);
+
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CERTIFICATE_MANAGER_TITLE).c_str(),
       parent,
@@ -387,40 +406,39 @@ CertificateManager::CertificateManager(gfx::NativeWindow parent)
                       gtk_util::kContentAreaSpacing);
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 600, 440);
 
-  GtkWidget* notebook = gtk_notebook_new();
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook);
+  notebook_ = gtk_notebook_new();
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
-  // TODO(mattm): Remember which page user viewed last.
   gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook),
+      GTK_NOTEBOOK(notebook_),
       user_page_.widget(),
       gtk_label_new_with_mnemonic(
           l10n_util::GetStringUTF8(
               IDS_CERT_MANAGER_PERSONAL_CERTS_TAB_LABEL).c_str()));
 
   gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook),
+      GTK_NOTEBOOK(notebook_),
       email_page_.widget(),
       gtk_label_new_with_mnemonic(
           l10n_util::GetStringUTF8(
               IDS_CERT_MANAGER_OTHER_PEOPLES_CERTS_TAB_LABEL).c_str()));
 
   gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook),
+      GTK_NOTEBOOK(notebook_),
       server_page_.widget(),
       gtk_label_new_with_mnemonic(
           l10n_util::GetStringUTF8(
               IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL).c_str()));
 
   gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook),
+      GTK_NOTEBOOK(notebook_),
       ca_page_.widget(),
       gtk_label_new_with_mnemonic(
           l10n_util::GetStringUTF8(
               IDS_CERT_MANAGER_CERT_AUTHORITIES_TAB_LABEL).c_str()));
 
   gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook),
+      GTK_NOTEBOOK(notebook_),
       unknown_page_.widget(),
       gtk_label_new_with_mnemonic(
           l10n_util::GetStringUTF8(
@@ -433,6 +451,14 @@ CertificateManager::CertificateManager(gfx::NativeWindow parent)
   ca_page_.PopulateTree(cert_list_);
   unknown_page_.PopulateTree(cert_list_);
 
+  // Need to show the notebook before connecting switch-page signal, otherwise
+  // we'll immediately get a signal switching to page 0 and overwrite our
+  // last_selected_page_ value.
+  gtk_util::ShowDialogWithLocalizedSize(dialog_, -1, -1, true);
+
+  g_signal_connect(notebook_, "switch-page",
+                   G_CALLBACK(OnSwitchPageThunk), this);
+
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
 }
@@ -441,13 +467,46 @@ CertificateManager::~CertificateManager() {
   CERT_DestroyCertList(cert_list_);
 }
 
-void CertificateManager::Show() {
-  gtk_util::ShowDialog(dialog_);
+void CertificateManager::OnSwitchPage(GtkWidget* notebook,
+                                      GtkNotebookPage* page,
+                                      guint page_num) {
+  int index = static_cast<int>(page_num);
+  DCHECK(index > PAGE_DEFAULT && index < PAGE_COUNT);
+  last_selected_page_.SetValue(index);
 }
 
-} // namespace
+void CertificateManager::ShowCertificatePage(CertificateManagerPage page) {
+  // Bring options window to front if it already existed and isn't already
+  // in front
+  gtk_window_present_with_time(GTK_WINDOW(dialog_),
+                               gtk_get_current_event_time());
 
-void ShowCertificateManager(gfx::NativeWindow parent) {
+  if (page == PAGE_DEFAULT) {
+    // Remember the last visited page from local state.
+    page = static_cast<CertificateManagerPage>(last_selected_page_.GetValue());
+    if (page == PAGE_DEFAULT)
+      page = PAGE_USER;
+  }
+  // If the page number is out of bounds, reset to the first tab.
+  if (page < 0 || page >= gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)))
+    page = PAGE_USER;
+
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook_), page);
+}
+
+}  // namespace
+
+namespace certificate_manager_util {
+
+void RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kCertificateManagerWindowLastTabIndex, 0);
+}
+
+}  // namespace certificate_manager_util
+
+void ShowCertificateManager(gfx::NativeWindow parent, Profile* profile,
+                            CertificateManagerPage page) {
   base::EnsureNSSInit();
-  (new CertificateManager(parent))->Show();
+  CertificateManager* manager = new CertificateManager(parent, profile);
+  manager->ShowCertificatePage(page);
 }

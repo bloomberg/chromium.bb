@@ -257,6 +257,7 @@ extern const wchar_t kSafeBrowsingWrappedKey[];
 
 extern const wchar_t kOptionsWindowLastTabIndex[];
 extern const wchar_t kContentSettingsWindowLastTabIndex[];
+extern const wchar_t kCertificateManagerWindowLastTabIndex[];
 extern const wchar_t kShouldShowFirstRunBubble[];
 extern const wchar_t kShouldUseOEMFirstRunBubble[];
 extern const wchar_t kShouldUseMinimalFirstRunBubble[];
