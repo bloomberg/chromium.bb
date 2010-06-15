@@ -47,6 +47,16 @@ static const int kDelayTimeMs = 10;
 // mode responsive).
 static const int kConfigureTimeMs = 10;
 
+// This is the size of the web page when we lay it out for a snapshot.
+static const int kSnapshotWebPageWidth = 1024;
+static const int kSnapshotWebPageHeight = 1280;
+static const double kSnapshotWebPageRatio =
+    static_cast<double>(kSnapshotWebPageWidth) / kSnapshotWebPageHeight;
+
+// This is the maximum percentage of the original browser client area
+// that a snapshot can take up.
+static const double kSnapshotMaxSizeRatio = 0.77;
+
 class BrowserListener : public TabStripModelObserver {
  public:
   BrowserListener(Browser* browser, WmOverviewController* parent);
@@ -110,6 +120,8 @@ class BrowserListener : public TabStripModelObserver {
     return browser_->tabstrip_model()->GetTabContentsAt(index);
   }
  private:
+  // Calculate the size of a cell based on the browser window's size.
+  gfx::Size CalculateCellSize();
 
   // Configures a cell from the tab contents.
   void ConfigureCell(WmOverviewSnapshot* cell, TabContents* contents);
@@ -198,6 +210,7 @@ void BrowserListener::TabMoved(TabContents* contents,
   snapshots_.insert(snapshots_.begin() + to_index, snapshot);
 
   RenumberSnapshots(std::min(to_index, from_index));
+  UpdateSelectedIndex(browser_->selected_index());
 }
 
 void BrowserListener::TabChangedAt(
@@ -267,6 +280,7 @@ bool BrowserListener::ConfigureNextUnconfiguredSnapshot() {
 void BrowserListener::RestoreOriginalSelectedTab() {
   if (original_selected_tab_ >= 0) {
     browser_->SelectTabContentsAt(original_selected_tab_, false);
+    UpdateSelectedIndex(browser_->selected_index());
   }
 }
 
@@ -285,6 +299,36 @@ void BrowserListener::SelectTab(int index, uint32 timestamp) {
   select_tab_timestamp_ = old_value;
 }
 
+gfx::Size BrowserListener::CalculateCellSize() {
+  // Make the page size and the cell size a fixed size for overview
+  // mode.  The cell size is calculated based on the desired maximum
+  // size on the screen, so it's related to the width and height of
+  // the browser client area.  In this way, when this snapshot gets
+  // to the window manager, it will already have the correct size,
+  // and will be scaled by 1.0, meaning that it won't be resampled
+  // and will not be blurry.
+  gfx::Rect bounds = static_cast<BrowserView*>(browser_->window())->
+                     GetClientAreaBounds();
+  const gfx::Size max_size = gfx::Size(
+      bounds.width() * kSnapshotMaxSizeRatio,
+      bounds.height() * kSnapshotMaxSizeRatio);
+  const double max_size_ratio = static_cast<double>(max_size.width()) /
+                                max_size.height();
+  gfx::Size cell_size;
+  if (kSnapshotWebPageRatio > max_size_ratio) {
+    const double scale_factor =
+        static_cast<double>(max_size.width())/ kSnapshotWebPageWidth;
+    cell_size = gfx::Size(max_size.width(),
+                          kSnapshotWebPageHeight * scale_factor + 0.5);
+  } else {
+    const double scale_factor =
+        static_cast<double>(max_size.height())/ kSnapshotWebPageHeight;
+    cell_size = gfx::Size(kSnapshotWebPageWidth * scale_factor + 0.5,
+                          max_size.height());
+  }
+  return cell_size;
+}
+
 void BrowserListener::ConfigureCell(WmOverviewSnapshot* cell,
                                     TabContents* contents) {
   if (contents) {
@@ -300,16 +344,13 @@ void BrowserListener::ConfigureCell(WmOverviewSnapshot* cell,
     // rendered.
     ThumbnailGenerator::ThumbnailReadyCallback* callback =
         NewCallback(cell, &WmOverviewSnapshot::SetImage);
-    gfx::Size cell_size = cell->size();
 
-    // Ask for the page size to be twice the requested size of the
-    // snapshot.
     generator->AskForSnapshot(contents->render_view_host(),
                               false,
                               callback,
-                              gfx::Size(cell_size.width() * 2,
-                                        cell_size.height() * 2),
-                              cell_size);
+                              gfx::Size(kSnapshotWebPageWidth,
+                                        kSnapshotWebPageHeight),
+                              CalculateCellSize());
   } else {
     // This happens because the contents haven't been loaded yet.
 
@@ -322,10 +363,7 @@ void BrowserListener::ConfigureCell(WmOverviewSnapshot* cell,
 
 void BrowserListener::InsertSnapshot(int index) {
   WmOverviewSnapshot* snapshot = new WmOverviewSnapshot;
-  gfx::Rect bounds =
-      static_cast<BrowserView*>(browser_->window())->GetClientAreaBounds();
-  gfx::Size size(bounds.width() / 2, bounds.height() / 2);
-  snapshot->Init(size, browser_, index);
+  snapshot->Init(CalculateCellSize(), browser_, index);
   snapshots_.insert(snapshots_.begin() + index, snapshot);
   snapshot->reload_snapshot();
   controller_->StartDelayTimer();
@@ -403,11 +441,11 @@ void WmOverviewController::Observe(NotificationType type,
       break;
 
     case NotificationType::THUMBNAIL_GENERATOR_SNAPSHOT_CHANGED: {
-      // Don't do any dynamic updating if we're not in overview mode.
-      if (layout_mode_ == OVERVIEW_MODE) {
-        RenderWidgetHost* renderer = Details<RenderViewHost>(details).ptr();
-        SnapshotImageChanged(renderer);
-      }
+      // It's OK to do this in active mode too -- nothing will happen
+      // except invalidation of the snapshot, because the delay timer
+      // won't start until we're in overview mode.
+      RenderWidgetHost* renderer = Details<RenderViewHost>(details).ptr();
+      SnapshotImageChanged(renderer);
       break;
     }
     default:
