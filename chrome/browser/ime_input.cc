@@ -275,6 +275,19 @@ bool ImeInput::GetComposition(HWND window_handle, LPARAM lparam,
     // Copy the composition string to the ImeComposition object.
     result = GetString(imm_context, lparam, GCS_COMPSTR, composition);
 
+    // This is a dirty workaround for facebook. Facebook deletes the placeholder
+    // character (U+3000) used by Traditional-Chinese IMEs at the beginning of
+    // composition text. This prevents WebKit from replacing this placeholder
+    // character with a Traditional-Chinese character, i.e. we cannot input any
+    // characters in a comment box of facebook with Traditional-Chinese IMEs.
+    // As a workaround, we replace U+3000 at the beginning of composition text
+    // with U+FF3F, a placeholder character used by Japanese IMEs.
+    if (input_language_id_ == MAKELANGID(LANG_CHINESE,
+                                         SUBLANG_CHINESE_TRADITIONAL) &&
+        composition->ime_string[0] == 0x3000) {
+      composition->ime_string[0] = 0xFF3F;
+    }
+
     // Retrieve the cursor position in the IME composition.
     int cursor_position = ::ImmGetCompositionString(imm_context,
                                                     GCS_CURSORPOS, NULL, 0);
