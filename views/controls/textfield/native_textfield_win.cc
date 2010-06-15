@@ -59,6 +59,20 @@ NativeTextfieldWin::ScopedFreeze::~ScopedFreeze() {
   }
 }
 
+NativeTextfieldWin::ScopedSuspendUndo::ScopedSuspendUndo(
+    ITextDocument* text_object_model)
+    : text_object_model_(text_object_model) {
+  // Suspend Undo processing.
+  if (text_object_model_)
+    text_object_model_->Undo(tomSuspend, NULL);
+}
+
+NativeTextfieldWin::ScopedSuspendUndo::~ScopedSuspendUndo() {
+  // Resume Undo processing.
+  if (text_object_model_)
+    text_object_model_->Undo(tomResume, NULL);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin
 
@@ -314,7 +328,7 @@ void NativeTextfieldWin::ExecuteCommand(int command_id) {
     case IDS_APP_SELECT_ALL: SelectAll();  break;
     default:                 NOTREACHED(); break;
   }
-  OnAfterPossibleChange();
+  OnAfterPossibleChange(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -415,7 +429,11 @@ LRESULT NativeTextfieldWin::OnImeComposition(UINT message,
     }
   }
 
-  OnAfterPossibleChange();
+  // If we allow OnAfterPossibleChange() to redraw the text, it will do this by
+  // setting the edit's text directly, which can cancel the current IME
+  // composition or cause other adverse affects. So we set |should_redraw_text|
+  // to false.
+  OnAfterPossibleChange(false);
   return result;
 }
 
@@ -473,7 +491,7 @@ void NativeTextfieldWin::OnKeyDown(TCHAR key, UINT repeat_count, UINT flags) {
         ScopedFreeze freeze(this, GetTextObjectModel());
         OnBeforePossibleChange();
         Cut();
-        OnAfterPossibleChange();
+        OnAfterPossibleChange(true);
       }
       return;
 
@@ -497,7 +515,7 @@ void NativeTextfieldWin::OnKeyDown(TCHAR key, UINT repeat_count, UINT flags) {
         ScopedFreeze freeze(this, GetTextObjectModel());
         OnBeforePossibleChange();
         Paste();
-        OnAfterPossibleChange();
+        OnAfterPossibleChange(true);
       }
       return;
 
@@ -528,7 +546,7 @@ void NativeTextfieldWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
   OnBeforePossibleChange();
   DefWindowProc(WM_LBUTTONDBLCLK, keys,
                 MAKELPARAM(ClipXCoordToVisibleText(point.x, false), point.y));
-  OnAfterPossibleChange();
+  OnAfterPossibleChange(true);
 }
 
 void NativeTextfieldWin::OnLButtonDown(UINT keys, const CPoint& point) {
@@ -545,7 +563,7 @@ void NativeTextfieldWin::OnLButtonDown(UINT keys, const CPoint& point) {
   DefWindowProc(WM_LBUTTONDOWN, keys,
                 MAKELPARAM(ClipXCoordToVisibleText(point.x, is_triple_click),
                            point.y));
-  OnAfterPossibleChange();
+  OnAfterPossibleChange(true);
 }
 
 void NativeTextfieldWin::OnLButtonUp(UINT keys, const CPoint& point) {
@@ -553,7 +571,7 @@ void NativeTextfieldWin::OnLButtonUp(UINT keys, const CPoint& point) {
   OnBeforePossibleChange();
   DefWindowProc(WM_LBUTTONUP, keys,
                 MAKELPARAM(ClipXCoordToVisibleText(point.x, false), point.y));
-  OnAfterPossibleChange();
+  OnAfterPossibleChange(true);
 }
 
 void NativeTextfieldWin::OnMouseLeave() {
@@ -619,7 +637,7 @@ void NativeTextfieldWin::OnMouseMove(UINT keys, const CPoint& point) {
     GetRect(&r);
     DefWindowProc(WM_MOUSEMOVE, keys,
                   MAKELPARAM(point.x, (r.bottom - r.top) / 2));
-    OnAfterPossibleChange();
+    OnAfterPossibleChange(true);
   }
 }
 
@@ -796,7 +814,15 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
       DefWindowProc(message, key, MAKELPARAM(repeat_count, flags));
     }
 
-    OnAfterPossibleChange();
+    // CRichEditCtrl automatically turns on IMF_AUTOKEYBOARD when the user
+    // inputs an RTL character, making it difficult for the user to control
+    // what language is set as they type. Force this off to make the edit's
+    // behavior more stable.
+    const int lang_options = SendMessage(EM_GETLANGOPTIONS, 0, 0);
+    if (lang_options & IMF_AUTOKEYBOARD)
+      SendMessage(EM_SETLANGOPTIONS, 0, lang_options & ~IMF_AUTOKEYBOARD);
+
+    OnAfterPossibleChange(true);
   }
 }
 
@@ -805,7 +831,7 @@ void NativeTextfieldWin::OnBeforePossibleChange() {
   text_before_change_ = GetText();
 }
 
-void NativeTextfieldWin::OnAfterPossibleChange() {
+void NativeTextfieldWin::OnAfterPossibleChange(bool should_redraw_text) {
   // Prevent the user from selecting the "phantom newline" at the end of the
   // edit.  If they try, we just silently move the end of the selection back to
   // the end of the real text.
@@ -835,6 +861,17 @@ void NativeTextfieldWin::OnAfterPossibleChange() {
     textfield_->SyncText();
     if (textfield_->GetController())
       textfield_->GetController()->ContentsChanged(textfield_, new_text);
+
+    if (should_redraw_text) {
+      CHARRANGE original_sel;
+      GetSel(original_sel);
+      std::wstring text = GetText();
+      ScopedSuspendUndo suspend_undo(GetTextObjectModel());
+
+      SelectAll();
+      ReplaceSel(reinterpret_cast<LPCTSTR>(text.c_str()), true);
+      SetSel(original_sel);
+    }
   }
 }
 
