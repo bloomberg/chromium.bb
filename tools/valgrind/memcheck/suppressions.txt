@@ -142,6 +142,18 @@
   fun:pango_layout_get_iter
 }
 {
+  bug_46177_c
+  Memcheck:Leak
+  ...
+  fun:FcCharSetFindLeafCreate
+  fun:FcCharSetAddLeaf
+  fun:FcCharSetOperate
+  fun:FcFontSetSort
+  fun:FcFontSort
+  ...
+  fun:pango_layout_line_get_extents
+}
+{
    dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
    Memcheck:Value4
    ...
@@ -3328,3 +3340,65 @@
    fun:_ZN15BrowserFrameGtk4InitEv
    fun:_ZN8chromeos20BrowserFrameChromeos4InitEv
 }
+
+{
+   bug_46569
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net10FileStream12AsyncContext23OnBackgroundIOCompletedEi
+   fun:_Z16DispatchToMethodIN3net10FileStream12AsyncContextEMS2_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN3net10FileStream12AsyncContextEMS2_FviE6Tuple1IiEE13RunWithParamsERKS6_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+}
+
+{
+   bug_46570_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
+   fun:_ZNSs7reserveEj
+   fun:_ZNSs6appendERKSs
+   fun:_ZNK8FilePath6AppendERKSs
+   fun:_ZN9file_util31CreateAndOpenFdForTemporaryFileE8FilePathPS0_
+   fun:_ZN9file_util31CreateAndOpenTemporaryFileInDirERK8FilePathPS0_
+   fun:_ZN9file_util31CreateAndOpenTemporaryShmemFileEP8FilePath
+   fun:_ZN4base12SharedMemory12CreateOrOpenERKSbIwSt11char_traitsIwESaIwEEij
+   fun:_ZN4base12SharedMemory6CreateERKSbIwSt11char_traitsIwESaIwEEbbj
+   fun:_ZN14SharedIOBuffer4InitEv
+   fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
+   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEP10URLRequesti
+   fun:_ZN13URLRequestJob18NotifyReadCompleteEi
+   fun:_ZN19URLRequestChromeJob13DataAvailableEP16RefCountedMemory
+   fun:_ZN20ChromeURLDataManager13DataAvailableEi13scoped_refptrI16RefCountedMemoryE
+   fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
+}
+
+{
+   bug_46570_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   obj:/usr/lib/libstdc++.so.6.0.9
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN9file_util15GetShmemTempDirEP8FilePath
+   fun:_ZN9file_util31CreateAndOpenTemporaryShmemFileEP8FilePath
+   fun:_ZN4base12SharedMemory12CreateOrOpenERKSbIwSt11char_traitsIwESaIwEEij
+   fun:_ZN4base12SharedMemory6CreateERKSbIwSt11char_traitsIwESaIwEEbbj
+   fun:_ZN14SharedIOBuffer4InitEv
+   fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
+   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEP10URLRequesti
+   fun:_ZN13URLRequestJob18NotifyReadCompleteEi
+   fun:_ZN19URLRequestChromeJob13DataAvailableEP16RefCountedMemory
+   fun:_ZN20ChromeURLDataManager13DataAvailableEi13scoped_refptrI16RefCountedMemoryE
+   fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
+}
+
