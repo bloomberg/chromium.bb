@@ -188,6 +188,7 @@
         'host/session_manager.h',
         'host/heartbeat_sender.cc',
         'host/heartbeat_sender.h',
+        'host/host_config.h',
       ],
       'conditions': [
         ['OS=="win"', {

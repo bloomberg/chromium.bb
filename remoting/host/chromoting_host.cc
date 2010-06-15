@@ -9,22 +9,21 @@
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/protocol_decoder.h"
+#include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 
 namespace remoting {
 
-ChromotingHost::ChromotingHost(const std::string& username,
-                       const std::string& auth_token,
-                       Capturer* capturer,
-                       Encoder* encoder,
-                       EventExecutor* executor,
-                       base::WaitableEvent* host_done)
+ChromotingHost::ChromotingHost(HostConfig* config,
+                               Capturer* capturer,
+                               Encoder* encoder,
+                               EventExecutor* executor,
+                               base::WaitableEvent* host_done)
       : main_thread_("MainThread"),
         capture_thread_("CaptureThread"),
         encode_thread_("EncodeThread"),
-        username_(username),
-        auth_token_(auth_token),
+        config_(config),
         capturer_(capturer),
         encoder_(encoder),
         executor_(executor),
@@ -83,7 +82,7 @@ void ChromotingHost::RegisterHost() {
 
   // Connect to the talk network with a JingleClient.
   jingle_client_ = new JingleClient(&network_thread_);
-  jingle_client_->Init(username_, auth_token_,
+  jingle_client_->Init(config_->xmpp_login(), config_->xmpp_auth_token(),
                        kChromotingTokenServiceName, this);
 }
 
@@ -186,7 +185,7 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     // Start heartbeating after we connected
     heartbeat_sender_ = new HeartbeatSender();
     // TODO(sergeyu): where do we get host id?
-    heartbeat_sender_->Start(jingle_client_.get(), "HostID");
+    heartbeat_sender_->Start(config_, jingle_client_.get());
   } else if (state == JingleClient::CLOSED) {
     LOG(INFO) << "Host disconnected from talk network." << std::endl;
     heartbeat_sender_ = NULL;

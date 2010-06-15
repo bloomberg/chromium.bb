@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
+#include "remoting/host/host_config.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -28,15 +29,14 @@ HeartbeatSender::HeartbeatSender()
     : started_(false) {
 }
 
-void HeartbeatSender::Start(JingleClient* jingle_client,
-                            const std::string& host_id) {
+void HeartbeatSender::Start(HostConfig* config, JingleClient* jingle_client) {
   DCHECK(jingle_client);
   DCHECK(!started_);
 
   started_ = true;
 
   jingle_client_ = jingle_client;
-  host_id_ = host_id;
+  config_ = config;
 
   jingle_client_->message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoStart));
@@ -58,7 +58,7 @@ void HeartbeatSender::DoSendStanza() {
   LOG(INFO) << "Sending heartbeat stanza to " << kChromotingBotJid;
 
   buzz::XmlElement* stanza = new buzz::XmlElement(kHeartbeatQuery);
-  stanza->AddAttr(kHostIdAttr, host_id_);
+  stanza->AddAttr(kHostIdAttr, config_->host_id());
   request_->SendIq(buzz::STR_SET, kChromotingBotJid, stanza);
 
   // Schedule next heartbeat.

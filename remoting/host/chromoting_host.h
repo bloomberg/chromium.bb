@@ -23,6 +23,8 @@ class WaitableEvent;
 
 namespace remoting {
 
+class HostConfig;
+
 // A class to implement the functionality of a host process.
 //
 // Here's the work flow of this class:
@@ -52,9 +54,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                    public ClientConnection::EventHandler,
                    public JingleClient::Callback {
  public:
-  ChromotingHost(const std::string& username, const std::string& auth_token,
-             Capturer* capturer, Encoder* encoder, EventExecutor* executor,
-             base::WaitableEvent* host_done);
+  ChromotingHost(HostConfig* config, Capturer* capturer, Encoder* encoder,
+                 EventExecutor* executor, base::WaitableEvent* host_done);
   virtual ~ChromotingHost();
 
   // Run the host porcess. This method returns only after the message loop
@@ -108,8 +109,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // A thread that hosts encode operations.
   base::Thread encode_thread_;
 
-  std::string username_;
-  std::string auth_token_;
+  scoped_refptr<HostConfig> config_;
 
   // Capturer to be used by SessionManager. Once the SessionManager is
   // constructed this is set to NULL.

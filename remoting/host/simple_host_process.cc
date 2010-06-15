@@ -25,6 +25,7 @@
 #include "base/waitable_event.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/encoder_verbatim.h"
+#include "remoting/host/host_config.h"
 #include "remoting/host/chromoting_host.h"
 
 #if defined(OS_WIN)
@@ -102,15 +103,21 @@ int main(int argc, char** argv) {
     capturer.reset(new remoting::CapturerFake());
   }
 
+  // TODO(sergeyu): Implement HostConfigStorage and use it here to load
+  // settings.
+  scoped_refptr<remoting::HostConfig> config(new remoting::HostConfig());
+  config->set_xmpp_login(username);
+  config->set_xmpp_auth_token(auth_token);
+  config->set_host_id("foo");
+
   // Construct a chromoting host with username and auth_token.
-  // TODO(hclam): Allow the host to load saved credentials.
   base::WaitableEvent host_done(false, false);
-  scoped_refptr<remoting::ChromotingHost> host
-      = new remoting::ChromotingHost(username, auth_token,
-                                     capturer.release(),
-                                     encoder.release(),
-                                     executor.release(),
-                                     &host_done);
+  scoped_refptr<remoting::ChromotingHost> host =
+      new remoting::ChromotingHost(config,
+                                   capturer.release(),
+                                   encoder.release(),
+                                   executor.release(),
+                                   &host_done);
   host->Run();
   host_done.Wait();
   return 0;
