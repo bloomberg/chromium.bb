@@ -24,7 +24,10 @@ AutoFillInfoBarDelegate::AutoFillInfoBarDelegate(TabContents* tab_contents,
       browser_(NULL),
       host_(host) {
   if (tab_contents) {
-    browser_ = tab_contents->delegate()->GetBrowser();
+    // This is NULL for TestTabContents.
+    if (tab_contents->delegate())
+      browser_ = tab_contents->delegate()->GetBrowser();
+
     PrefService* prefs = tab_contents->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kAutoFillInfoBarShown, true);
     tab_contents->AddInfoBar(this);

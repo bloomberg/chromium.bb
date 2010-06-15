@@ -23,6 +23,7 @@ using webkit_glue::FormData;
 using webkit_glue::FormField;
 
 namespace {
+
 // We only send a fraction of the forms to upload server.
 // The rate for positive/negative matches potentially could be different.
 const double kAutoFillPositiveUploadRateDefaultValue = 0.01;
@@ -33,6 +34,7 @@ const int kAutoFillPhoneNumberPrefixOffset = 0;
 const int kAutoFillPhoneNumberPrefixCount = 3;
 const int kAutoFillPhoneNumberSuffixOffset = 3;
 const int kAutoFillPhoneNumberSuffixCount = 4;
+
 }  // namespace
 
 // TODO(jhawkins): Maybe this should be in a grd file?

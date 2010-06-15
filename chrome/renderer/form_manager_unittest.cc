@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -17,6 +18,7 @@
 
 using WebKit::WebDocument;
 using WebKit::WebElement;
+using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
@@ -853,6 +855,49 @@ TEST_F(FormManagerTest, LabelsInferredFromText) {
                       ASCIIToUTF16("submit"),
                       0),
             fields[2]);
+}
+
+TEST_F(FormManagerTest, LabelsInferredFromTextHidden) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  First name:"
+           "    <INPUT type=\"hidden\" id=\"firstname\" value=\"John\"/>"
+           "  Last name:"
+           "    <INPUT type=\"hidden\" id=\"lastname\" value=\"Smith\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  const FormData& form = forms[0];
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_TRUE(fields[0].StrictlyEqualsHack(FormField(string16(),
+                                                     ASCIIToUTF16("firstname"),
+                                                     ASCIIToUTF16("John"),
+                                                     ASCIIToUTF16("hidden"),
+                                                     0)));
+  EXPECT_TRUE(fields[1].StrictlyEqualsHack(FormField(string16(),
+                                                     ASCIIToUTF16("lastname"),
+                                                     ASCIIToUTF16("Smith"),
+                                                     ASCIIToUTF16("hidden"),
+                                                     0)));
+  EXPECT_TRUE(fields[2].StrictlyEqualsHack(FormField(string16(),
+                                                     ASCIIToUTF16("reply-send"),
+                                                     string16(),
+                                                     ASCIIToUTF16("submit"),
+                                                     0)));
 }
 
 TEST_F(FormManagerTest, LabelsInferredFromParagraph) {
@@ -2338,6 +2383,72 @@ TEST_F(FormManagerTest, FormWithNodeIsAutoFilled) {
   firstname.setAutofilled(true);
 
   EXPECT_TRUE(form_manager.FormWithNodeIsAutoFilled(firstname));
+}
+
+TEST_F(FormManagerTest, LabelsHiddenFields) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <LABEL for=\"firstname\"> First name: </LABEL>"
+           "    <INPUT type=\"hidden\" id=\"firstname\" value=\"John\"/>"
+           "  <LABEL for=\"lastname\"> Last name: </LABEL>"
+           "    <INPUT type=\"hidden\" id=\"lastname\" value=\"Smith\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  std::vector<FormData> forms;
+  form_manager.GetForms(FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  const FormData& form = forms[0];
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_TRUE(fields[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("firstname"),
+                ASCIIToUTF16("John"),
+                ASCIIToUTF16("hidden"),
+                0)));
+  EXPECT_TRUE(fields[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("lastname"),
+                ASCIIToUTF16("Smith"),
+                ASCIIToUTF16("hidden"),
+                0)));
+  EXPECT_TRUE(fields[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("reply-send"),
+                string16(),
+                ASCIIToUTF16("submit"),
+                0)));
+}
+
+TEST_F(FormManagerTest, LabelForElementHidden) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <LABEL for=\"firstname\"> First name: </LABEL>"
+           "    <INPUT type=\"hidden\" id=\"firstname\" value=\"John\"/>"
+           "  <LABEL for=\"lastname\"> Last name: </LABEL>"
+           "    <INPUT type=\"hidden\" id=\"lastname\" value=\"Smith\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  WebElement e = web_frame->document().getElementById("firstname");
+  WebFormControlElement firstname = e.to<WebFormControlElement>();
+
+  // Hidden form control element should not have a label set.
+  FormManager form_manager;
+  EXPECT_EQ(string16(), form_manager.LabelForElement(firstname));
 }
 
 }  // namespace

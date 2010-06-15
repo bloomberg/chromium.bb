@@ -258,6 +258,10 @@ void FormManager::WebFormControlElementToFormField(
 
 // static
 string16 FormManager::LabelForElement(const WebFormControlElement& element) {
+  // Don't scrape labels for hidden elements.
+  if (element.formControlType() == WebString::fromUTF8("hidden"))
+    return string16();
+
   WebNodeList labels = element.document().getElementsByTagName("label");
   for (unsigned i = 0; i < labels.length(); ++i) {
     WebElement e = labels.item(i).to<WebElement>();
@@ -349,7 +353,9 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     WebLabelElement label = labels.item(i).to<WebLabelElement>();
     WebFormControlElement field_element =
         label.correspondingControl().to<WebFormControlElement>();
-    if (field_element.isNull() || !field_element.isFormControlElement())
+    if (field_element.isNull() ||
+        !field_element.isFormControlElement() ||
+        field_element.formControlType() == WebString::fromUTF8("hidden"))
       continue;
 
     std::map<string16, FormField*>::iterator iter =
@@ -685,6 +691,10 @@ bool FormManager::FormElementToFormData(const WebFrame* frame,
 // static
 string16 FormManager::InferLabelForElement(
     const WebFormControlElement& element) {
+  // Don't scrape labels for hidden elements.
+  if (element.formControlType() == WebString::fromUTF8("hidden"))
+    return string16();
+
   string16 inferred_label = InferLabelFromPrevious(element);
 
   // If we didn't find a label, check for table cell case.

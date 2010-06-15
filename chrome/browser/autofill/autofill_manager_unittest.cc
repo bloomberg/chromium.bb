@@ -14,10 +14,15 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/ipc_test_sink.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
@@ -33,6 +38,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   virtual void InitializeIfNeeded() {}
+  virtual void SaveImportedFormData() {}
 
   AutoFillProfile* GetLabeledProfile(const char* label) {
     for (std::vector<AutoFillProfile *>::iterator it = web_profiles_.begin();
@@ -200,6 +206,8 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
     autofill_manager_.reset(new TestAutoFillManager(contents()));
   }
+
+  Profile* profile() { return contents()->profile(); }
 
   bool GetAutoFillSuggestionsMessage(int *page_id,
                                      std::vector<string16>* values,
@@ -700,6 +708,62 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   CreateTestFormField(
       "Email", "email", "theking@gmail.com", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
+}
+
+TEST_F(AutoFillManagerTest, InfoBarShown) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  webkit_glue::FormField field;
+  CreateTestFormField("E-mail", "one", "one", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("E-mail", "two", "two", "text", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("E-mail", "three", "three", "text", &field);
+  form.fields.push_back(field);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // Submit the form.
+  autofill_manager_->FormSubmitted(form);
+
+  // Check that the 'AutoFill InfoBar shown' pref is set.
+  PrefService* prefs = profile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kAutoFillInfoBarShown));
+}
+
+TEST_F(AutoFillManagerTest, HiddenFields) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  webkit_glue::FormField field;
+  CreateTestFormField("E-mail", "one", "one", "hidden", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("E-mail", "two", "two", "hidden", &field);
+  form.fields.push_back(field);
+  CreateTestFormField("E-mail", "three", "three", "hidden", &field);
+  form.fields.push_back(field);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // Submit the form.
+  autofill_manager_->FormSubmitted(form);
+
+  // Check that the 'AutoFill InfoBar shown' pref is not set.
+  PrefService* prefs = profile()->GetPrefs();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kAutoFillInfoBarShown));
 }
 
 }  // namespace

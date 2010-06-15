@@ -66,7 +66,7 @@ class PersonalDataManager
 
   // Saves |imported_profile_| and |imported_credit_card_| to the WebDB if they
   // exist.
-  void SaveImportedFormData();
+  virtual void SaveImportedFormData();
 
   // Gets |imported_profile_| and |imported_credit_card_| and returns their
   // values in |profile| and |credit_card| parameters respectively.  One or

@@ -14,6 +14,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRegularExpression.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
+namespace {
+
+// The name of the hidden form control element.
+const char* const kControlTypeHidden = "hidden";
+
+}  // namespace
+
 class EmailField : public FormField {
  public:
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const {
@@ -216,6 +223,13 @@ FormFieldSet::FormFieldSet(FormStructure* fields) {
   // Parse fields.
   std::vector<AutoFillField*>::const_iterator field = fields->begin();
   while (field != fields->end() && *field != NULL) {
+    // Don't parse hidden fields.
+    if (LowerCaseEqualsASCII((*field)->form_control_type(),
+                             kControlTypeHidden)) {
+      field++;
+      continue;
+    }
+
     FormField* form_field = FormField::ParseFormField(&field, is_ecml);
     if (!form_field) {
       field++;
