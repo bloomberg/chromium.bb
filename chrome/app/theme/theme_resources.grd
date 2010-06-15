@@ -513,6 +513,7 @@
         <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
         <include name="IDR_LOGIN_OTHER_USER" file="login_other.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_NO_VIDEO" file="login_other.png" type="BINDATA" />
+	<include name="IDR_VOLUMEBUBBLE_ICON" file="volume_icon.png" type="BINDATA" />
        </if>
 
       <if expr="not pp_ifdef('chromeos') and not pp_ifdef('toolkit_views')">
