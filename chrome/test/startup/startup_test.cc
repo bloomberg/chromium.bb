@@ -16,6 +16,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/base/net_util.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -40,6 +41,24 @@ class StartupTest : public UITest {
     launch_arguments_.AppendLooseValue(file_url.ToWStringHack());
   }
 
+  // Load a complex html file on startup represented by |which_tab|.
+  void SetUpWithComplexFileURL(unsigned int which_tab) {
+    const char* const kTestPageCyclerDomains[] = {
+        "www.google.com", "www.nytimes.com",
+        "www.yahoo.com", "espn.go.com", "www.amazon.com"
+    };
+    unsigned int which_el = which_tab % arraysize(kTestPageCyclerDomains);
+    const char* this_domain = kTestPageCyclerDomains[which_el];
+
+    FilePath page_cycler_path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &page_cycler_path);
+    page_cycler_path = page_cycler_path.AppendASCII("data")
+        .AppendASCII("page_cycler").AppendASCII("moz")
+        .AppendASCII(this_domain).AppendASCII("index.html");
+    GURL file_url = net::FilePathToFileURL(page_cycler_path).Resolve("?skip");
+    launch_arguments_.AppendLooseValue(ASCIIToWide(file_url.spec()));
+  }
+
   // Use the given profile in the test data extensions/profiles dir.  This tests
   // startup with extensions installed.
   void SetUpWithExtensionsProfile(const char* profile) {
@@ -52,6 +71,9 @@ class StartupTest : public UITest {
     // For now, these tests still depend on toolstrips.
     launch_arguments_.AppendSwitch(switches::kEnableExtensionToolstrips);
   }
+
+  void RunPerfTestWithManyTabs(const char *test_name,
+      int tab_count, bool restore_session);
 
   void RunStartupTest(const char* graph, const char* trace,
       bool test_cold, bool important, UITest::ProfileType profile_type) {
@@ -144,6 +166,52 @@ TEST_F(StartupTest, PerfReferenceWarm) {
 TEST_F(StartupTest, PerfCold) {
   RunStartupTest("cold", "t", true /* cold */, false /* not important */,
                  UITest::DEFAULT_THEME);
+}
+
+void StartupTest::RunPerfTestWithManyTabs(const char *test_name,
+    int tab_count, bool restore_session) {
+  // Initialize session with |tab_count| tabs.
+  for (int i = 0; i < tab_count; ++i)
+    SetUpWithComplexFileURL(i);
+
+  if (restore_session) {
+    // Start the browser with these urls so we can save the session and exit.
+    UITest::SetUp();
+    // Set flags to ensure profile is saved and can be restored.
+#if defined(OS_MACOSX)
+    shutdown_type_ = UITestBase::USER_QUIT;
+#endif
+    clear_profile_ = false;
+    // Quit and set flags to restore session.
+    UITest::TearDown();
+    // Clear all arguments for session restore, or the number of open tabs
+    // will grow with each restore.
+    launch_arguments_ = CommandLine(CommandLine::ARGUMENTS_ONLY);
+    // The session will be restored once per cycle for numCycles test cycles,
+    // and each time, UITest::SetUp will wait for |tab_count| tabs to
+    // finish loading.
+    launch_arguments_.AppendSwitchWithValue(switches::kRestoreLastSession,
+                                            IntToWString(tab_count));
+  }
+  RunStartupTest("warm", test_name,
+                 false, false,
+                 UITest::DEFAULT_THEME);
+}
+
+TEST_F(StartupTest, PerfFewTabs) {
+  RunPerfTestWithManyTabs("few_tabs", 5, false);
+}
+
+TEST_F(StartupTest, PerfSeveralTabs) {
+  RunPerfTestWithManyTabs("several_tabs", 20, false);
+}
+
+TEST_F(StartupTest, PerfRestoreFewTabs) {
+  RunPerfTestWithManyTabs("restore_few_tabs", 5, true);
+}
+
+TEST_F(StartupTest, PerfRestoreSeveralTabs) {
+  RunPerfTestWithManyTabs("restore_several_tabs", 20, true);
 }
 
 TEST_F(StartupTest, PerfExtensionEmpty) {
