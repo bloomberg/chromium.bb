@@ -21,7 +21,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/configuration_policy_provider_win.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/dummy_configuration_policy_provider.h"
+#include "chrome/browser/configuration_policy_provider_mac.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/dummy_configuration_policy_provider.h"
 #endif
@@ -96,8 +96,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
 #if defined(OS_WIN)
   managed_prefs_provider = new ConfigurationPolicyProviderWin();
 #elif defined(OS_MACOSX)
-  // TODO(markusheintz): Will be replaced by the Mac implementation.
-  managed_prefs_provider = new DummyConfigurationPolicyProvider();
+  managed_prefs_provider = new ConfigurationPolicyProviderMac();
 #elif defined(OS_POSIX)
   // TODO(markusheintz): Will be replaced by the Linux implementation.
   managed_prefs_provider = new DummyConfigurationPolicyProvider();
