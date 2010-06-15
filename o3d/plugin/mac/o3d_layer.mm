@@ -115,14 +115,16 @@ using o3d::DisplayWindowMac;
  * renderers from pixel format 'pixelFormat'. The default implementation
  * allocates a new context with a null share context. */
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
-  CGLContextObj share_context = obj_->GetFullscreenShareContext();
-  DCHECK(share_context);
-  if (CGLCreateContext(pixelFormat, share_context, &glContext_) !=
-      kCGLNoError) {
-    glContext_ = [super copyCGLContextForPixelFormat:pixelFormat];
+  if (glContext_ == NULL) {
+    CGLContextObj share_context = obj_->GetFullscreenShareContext();
+    DCHECK(share_context);
+    if (CGLCreateContext(pixelFormat, share_context, &glContext_) !=
+        kCGLNoError) {
+      glContext_ = [super copyCGLContextForPixelFormat:pixelFormat];
+    }
+    obj_->SetMacCGLContext(glContext_);
+    created_context_ = true;
   }
-  obj_->SetMacCGLContext(glContext_);
-  created_context_ = true;
   return glContext_;
 }
 
