@@ -817,7 +817,8 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
 // The principle advantages are that we can get scrollwheel messages,
 // mouse-moved messages, and can tell which mouse button was pressed.
 // This API will also be required for a carbon-free 64 bit version for 10.6.
-bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
+bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event,
+                      bool initiated_from_browser) {
   PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
   FullscreenWindowMac* fullscreen_window = obj->GetFullscreenMacWindow();
   bool handled = false;
@@ -848,6 +849,21 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
     case NPCocoaEventMouseEntered:
     case NPCocoaEventMouseExited:
     case NPCocoaEventScrollWheel:
+      if (the_event->type == NPCocoaEventMouseUp &&
+          initiated_from_browser && fullscreen_window) {
+        // The mouse-up event associated with the mouse-down that caused
+        // the app to go full-screen is dispatched against the browser
+        // window rather than the full-screen window. Apps that have an
+        // icon which toggles full-screen and windowed mode therefore come
+        // out of full-screen immediately when the icon is clicked, since
+        // the mouse-up occurs at the same location as the mouse-down. Work
+        // around this by squelching this mouse up event. This seems to
+        // work acceptably for known apps. We could do better by
+        // redispatching all mouse events through the full-screen window
+        // until the first mouse up.
+        break;
+      }
+
       HandleCocoaMouseEvent(obj, the_event);
       break;
     case NPCocoaEventKeyDown:
@@ -901,7 +917,12 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
       // because another app has been called to the front.
       // TODO: We'll have problems with this when dealing with e.g.
       // Japanese text input IME windows.
-      if (fullscreen_window && !fullscreen_window->IsActive()) {
+      // Note that we ignore focus transfer events coming from the
+      // browser while in full-screen mode, because otherwise we
+      // frequently disable full-screen mode almost immediately after
+      // entering it.
+      if (fullscreen_window && !fullscreen_window->IsActive() &&
+          !initiated_from_browser) {
         obj->CancelFullscreenDisplay();
       }
 
@@ -1331,7 +1352,7 @@ int16 NPP_HandleEvent(NPP instance, void* event) {
     EventRecord* theEvent = static_cast<EventRecord*>(event);
     return HandleMacEvent(theEvent, instance) ? 1 : 0;
   } else if (obj->event_model_ == NPEventModelCocoa){
-    return HandleCocoaEvent(instance, (NPCocoaEvent*)event) ? 1 : 0;
+    return HandleCocoaEvent(instance, (NPCocoaEvent*)event, true) ? 1 : 0;
   }
   return 0;
 }

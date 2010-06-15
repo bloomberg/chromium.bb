@@ -97,7 +97,11 @@ char* CreatePosixFilePathFromHFSFilePath(const char* hfsPath);
 
 bool HandleMacEvent(EventRecord* the_event, NPP instance);
 
-bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event);
+// initiated_from_browser indicates whether the event came from the
+// browser's window. It will be false if the event originated from the
+// full-screen window.
+bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event,
+                      bool initiated_from_browser);
 
 o3d::Event::Button MacOSMouseButtonNumberToO3DButton(int inButton);
 

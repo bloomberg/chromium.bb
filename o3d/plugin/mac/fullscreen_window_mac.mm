@@ -618,7 +618,7 @@ void CocoaFullscreenWindowMac::DispatchKeyEvent(NPCocoaEventType kind,
       (NPNSString*) [event charactersIgnoringModifiers];
   cocoa_event.data.key.isARepeat = [event isARepeat];
   cocoa_event.data.key.keyCode = [event keyCode];
-  HandleCocoaEvent(obj_->npp(), &cocoa_event);
+  HandleCocoaEvent(obj_->npp(), &cocoa_event, false);
 }
 
 void CocoaFullscreenWindowMac::DispatchMouseEvent(NPCocoaEventType kind,
@@ -637,7 +637,7 @@ void CocoaFullscreenWindowMac::DispatchMouseEvent(NPCocoaEventType kind,
   cocoa_event.data.mouse.deltaX = [event deltaX];
   cocoa_event.data.mouse.deltaY = [event deltaY];
   cocoa_event.data.mouse.deltaZ = [event deltaZ];
-  HandleCocoaEvent(obj_->npp(), &cocoa_event);
+  HandleCocoaEvent(obj_->npp(), &cocoa_event, false);
 }
 
 void CocoaFullscreenWindowMac::DispatchFocusLostEvent() {
@@ -646,7 +646,7 @@ void CocoaFullscreenWindowMac::DispatchFocusLostEvent() {
   cocoa_event.type = NPCocoaEventFocusChanged;
   // cocoa_event.data.focus.hasFocus is already false.
   // We aren't testing this in HandleCocoaEvent anyway.
-  HandleCocoaEvent(obj_->npp(), &cocoa_event);
+  HandleCocoaEvent(obj_->npp(), &cocoa_event, false);
 }
 
 //----------------------------------------------------------------------
