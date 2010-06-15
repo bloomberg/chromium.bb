@@ -150,7 +150,8 @@ chrome.test.runTests([
           assertEq(true, tabs[1].selected);
           assertEq(false, tabs[2].selected);
           // Select tab[2].
-          chrome.tabs.update(tabs[2].id, {selected: true},
+          chrome.tabs.update(tabs[2].id,
+			     {selected: true},
                              pass(function(tab2){
             // Check update of tab[2].
             chrome.test.assertEq(true, tab2.selected);
