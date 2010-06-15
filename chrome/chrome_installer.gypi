@@ -351,7 +351,6 @@
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/xdg-settings',
           '<(PRODUCT_DIR)/locales/en-US.pak',
-          '<(PRODUCT_DIR)/libpdf.so',
         ],
         'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
         'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
@@ -373,6 +372,11 @@
           ['target_arch=="x64"', {
             'deb_arch': 'amd64',
             'rpm_arch': 'x86_64',
+          }],
+          ['internal_pdf', {
+            'packaging_files_binaries': [
+              '<(PRODUCT_DIR)/libpdf.so',
+            ],
           }],
         ],
       },
