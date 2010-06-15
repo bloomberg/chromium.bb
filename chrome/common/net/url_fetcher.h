@@ -12,7 +12,6 @@
 
 #include <string>
 
-#include "base/leak_tracker.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
@@ -176,8 +175,6 @@ class URLFetcher {
   scoped_refptr<Core> core_;
 
   static Factory* factory_;
-
-  base::LeakTracker<URLFetcher> leak_tracker_;
 
   // If |automatically_retry_on_5xx_| is false, 5xx responses will be
   // propagated to the observer, if it is true URLFetcher will automatically

@@ -116,7 +116,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
     WifiDataProvider::ResetFactory();
     RadioDataProvider::ResetFactory();
     URLFetcher::set_factory(NULL);
-    base::LeakTracker<URLFetcher>::CheckForLeaks();
   }
 
   LocationProviderBase* CreateProvider(bool set_permission_granted) {

@@ -24,6 +24,7 @@ bool URLFetcher::g_interception_enabled = false;
 
 class URLFetcher::Core
     : public base::RefCountedThreadSafe<URLFetcher::Core>,
+      public MessageLoop::DestructionObserver,
       public URLRequest::Delegate {
  public:
   // For POST requests, set |content_type| to the MIME type of the content
@@ -47,7 +48,11 @@ class URLFetcher::Core
   // safe to call this multiple times.
   void Stop();
 
-  // URLRequest::Delegate implementations
+  // MessageLoop::DestructionObserver implementation.  We are only registered as
+  // a DestructionObserver when |request_| exists.
+  virtual void WillDestroyCurrentMessageLoop();
+
+  // URLRequest::Delegate implementation.
   virtual void OnResponseStarted(URLRequest* request);
   virtual void OnReadCompleted(URLRequest* request, int bytes_read);
 
@@ -168,6 +173,13 @@ void URLFetcher::Core::Stop() {
   }
 }
 
+void URLFetcher::Core::WillDestroyCurrentMessageLoop() {
+  CancelURLRequest();
+  // Don't bother to try and notify the delegate thread portion of this object,
+  // since if the IO thread is shutting down, everything is shutting down, and
+  // we just want to avoid leaks.
+}
+
 void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
   DCHECK(request == request_);
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
@@ -207,6 +219,7 @@ void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
         this, &Core::OnCompletedURLRequest, request_->status()));
     delete request_;
     request_ = NULL;
+    MessageLoop::current()->RemoveDestructionObserver(this);
   }
 }
 
@@ -221,6 +234,8 @@ void URLFetcher::Core::StartURLRequest() {
 
   CHECK(request_context_getter_);
   DCHECK(!request_);
+
+  MessageLoop::current()->AddDestructionObserver(this);
 
   request_ = new URLRequest(original_url_, this);
   int flags = request_->load_flags() | load_flags_;
@@ -266,6 +281,7 @@ void URLFetcher::Core::CancelURLRequest() {
     request_->Cancel();
     delete request_;
     request_ = NULL;
+    MessageLoop::current()->RemoveDestructionObserver(this);
   }
   // Release the reference to the request context. There could be multiple
   // references to URLFetcher::Core at this point so it may take a while to
