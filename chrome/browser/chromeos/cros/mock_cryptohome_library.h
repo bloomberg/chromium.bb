@@ -21,6 +21,7 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
                               const std::string& passhash));
   MOCK_METHOD0(IsMounted, bool(void));
+  MOCK_METHOD0(GetSystemSalt, CryptohomeBlob(void));
 };
 }  // namespace chromeos
 

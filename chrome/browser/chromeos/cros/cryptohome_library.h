@@ -31,6 +31,9 @@ class CryptohomeLibrary {
   // Asks cryptohomed if a drive is currently mounted.
   virtual bool IsMounted() = 0;
 
+  // Asks cryptohomed for the system salt.
+  virtual CryptohomeBlob GetSystemSalt() = 0;
+
 };
 
 // This class handles the interaction with the ChromeOS cryptohome library APIs.
@@ -47,6 +50,9 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   // Asks cryptohomed if a drive is currently mounted.
   virtual bool IsMounted();
+
+  // Asks cryptohomed for the system salt.
+  virtual CryptohomeBlob GetSystemSalt();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryImpl);

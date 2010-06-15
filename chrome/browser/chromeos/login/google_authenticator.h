@@ -70,7 +70,7 @@ class GoogleAuthenticator : public Authenticator,
 
 
   // Public for testing.
-  void set_system_salt(const std::vector<unsigned char>& new_salt) {
+  void set_system_salt(const chromeos::CryptohomeBlob& new_salt) {
     system_salt_ = new_salt;
   }
   void set_localaccount(const std::string& new_name) {
@@ -100,9 +100,8 @@ class GoogleAuthenticator : public Authenticator,
   static const char kTmpfsTrigger[];
 
  private:
-  // If we don't have the system salt yet, loads it from |path|.
-  // Should only be called on the FILE thread.
-  void LoadSystemSalt(const FilePath& path);
+  // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
+  void LoadSystemSalt();
 
   // If we haven't already, looks in a file called |filename| next to
   // the browser executable for a "localaccount" name, and retrieves it
@@ -167,7 +166,7 @@ class GoogleAuthenticator : public Authenticator,
   std::string username_;
   std::string ascii_hash_;
   std::string request_body_;
-  std::vector<unsigned char> system_salt_;
+  chromeos::CryptohomeBlob system_salt_;
   std::string localaccount_;
   bool checked_for_localaccount_;  // needed becasuse empty localaccount_ is ok.
   bool unlock_;  // True if authenticating to unlock the computer.
@@ -193,7 +192,7 @@ class GoogleAuthenticator : public Authenticator,
                            EmailAddressIgnorePlusSuffix);
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
                            EmailAddressIgnoreMultiPlusSuffix);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadSaltTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadSaltOnlyOnceTest);
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadLocalaccountTest);
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
                            ReadLocalaccountTrailingWSTest);

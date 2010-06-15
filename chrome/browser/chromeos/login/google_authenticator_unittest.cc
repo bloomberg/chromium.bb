@@ -130,7 +130,11 @@ TEST_F(GoogleAuthenticatorTest, SaltToAsciiTest) {
   std::vector<unsigned char> salt_v(fake_salt, fake_salt + sizeof(fake_salt));
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->set_system_salt(salt_v);
+
+  ON_CALL(*mock_library_, GetSystemSalt())
+      .WillByDefault(Return(salt_v));
+  EXPECT_CALL(*mock_library_, GetSystemSalt())
+      .Times(1);
 
   EXPECT_EQ("0a010000000000a0", auth->SaltAsAscii());
 }
@@ -190,15 +194,6 @@ TEST_F(GoogleAuthenticatorTest, EmailAddressIgnorePlusSuffix) {
 TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix) {
   EXPECT_EQ(GoogleAuthenticator::Canonicalize("user+cc+bcc@what.com"),
             GoogleAuthenticator::Canonicalize("user@what.com"));
-}
-
-TEST_F(GoogleAuthenticatorTest, ReadSaltTest) {
-  FilePath tmp_file_path = PopulateTempFile(raw_bytes_, sizeof(raw_bytes_));
-
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadSystemSalt(tmp_file_path);
-  EXPECT_EQ(auth->SaltAsAscii(), bytes_as_ascii_);
-  Delete(tmp_file_path, false);
 }
 
 TEST_F(GoogleAuthenticatorTest, ReadLocalaccountTest) {
@@ -437,11 +432,9 @@ class MockFactory : public URLFetcher::Factory {
 TEST_F(GoogleAuthenticatorTest, FullLoginTest) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
-  ChromeThread file_thread(ChromeThread::FILE);
-  file_thread.Start();
-
   GURL source(AuthResponseHandler::kTokenAuthUrl);
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  chromeos::CryptohomeBlob salt_v(fake_hash_, fake_hash_ + sizeof(fake_hash_));
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
@@ -449,35 +442,21 @@ TEST_F(GoogleAuthenticatorTest, FullLoginTest) {
   EXPECT_CALL(*mock_library_, Mount(username_, _))
       .WillOnce(Return(true));
 
+  ON_CALL(*mock_library_, GetSystemSalt())
+      .WillByDefault(Return(salt_v));
+  EXPECT_CALL(*mock_library_, GetSystemSalt())
+      .Times(1);
+
   TestingProfile profile;
 
   MockFactory factory;
   URLFetcher::set_factory(&factory);
-  std::vector<unsigned char> salt_v(fake_hash_,
-                                    fake_hash_ + sizeof(fake_hash_));
 
-  {
-    scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-    auth->set_system_salt(salt_v);
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  auth->AuthenticateToLogin(&profile, username_, hash_ascii_);
 
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
-        NewRunnableMethod(auth.get(),
-                          &Authenticator::AuthenticateToLogin,
-                          &profile, username_, hash_ascii_));
-
-    // The following awkwardness is here to force the above Task to run,
-    // then allow all the stuff on the UI thread to go through by calling
-    // RunAllPending(), then force |auth| to be destroyed, and then start up
-    // the FILE thread again so that the destruction of some objects owned by
-    // |auth| can proceed on the FILE thread.  If I don't Stop/Start, it seems
-    // that Authenticate doesn't happen until after RunAllPending is called.
-    file_thread.Stop();
-    file_thread.Start();
-    message_loop.RunAllPending();
-  }
   URLFetcher::set_factory(NULL);
-  file_thread.Stop();
+  message_loop.RunAllPending();
 }
 
 }  // namespace chromeos

@@ -83,7 +83,7 @@ GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
 }
 
 GoogleAuthenticator::~GoogleAuthenticator() {
-  ChromeThread::DeleteSoon(ChromeThread::FILE, FROM_HERE, fetcher_);
+  delete fetcher_;
 }
 
 // static
@@ -105,7 +105,6 @@ URLFetcher* GoogleAuthenticator::CreateClientLoginFetcher(
 bool GoogleAuthenticator::AuthenticateToLogin(Profile* profile,
                                               const std::string& username,
                                               const std::string& password) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   unlock_ = false;
   getter_ = profile->GetRequestContext();
 
@@ -254,19 +253,12 @@ void GoogleAuthenticator::OnLoginFailure(const std::string& data) {
   consumer_->OnLoginFailure(data);
 }
 
-void GoogleAuthenticator::LoadSystemSalt(const FilePath& path) {
+void GoogleAuthenticator::LoadSystemSalt() {
   if (!system_salt_.empty())
     return;
-  CHECK(PathExists(path)) << path.value() << " does not exist!";
-  int64 file_size;
-  CHECK(GetFileSize(path, &file_size)) << "Could not get size of "
-                                       << path.value();
-
-  char salt[file_size];
-  int data_read = ReadFile(path, salt, file_size);
-
-  CHECK_EQ(data_read % 2, 0);
-  system_salt_.assign(salt, salt + data_read);
+  system_salt_ = CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt();
+  CHECK(!system_salt_.empty());
+  CHECK_EQ(system_salt_.size() % 2, 0U);
 }
 
 void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
@@ -318,7 +310,7 @@ void GoogleAuthenticator::StoreHashedPassword(const std::string& password) {
 }
 
 std::string GoogleAuthenticator::SaltAsAscii() {
-  LoadSystemSalt(FilePath(kSystemSalt));  // no-op if it's already loaded.
+  LoadSystemSalt();  // no-op if it's already loaded.
   unsigned int salt_len = system_salt_.size();
   char ascii_salt[2 * salt_len + 1];
   if (GoogleAuthenticator::BinaryToHex(system_salt_,

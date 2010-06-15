@@ -23,4 +23,8 @@ bool CryptohomeLibraryImpl::IsMounted() {
   return chromeos::CryptohomeIsMounted();
 }
 
+CryptohomeBlob CryptohomeLibraryImpl::GetSystemSalt() {
+  return chromeos::CryptohomeGetSystemSalt();
+}
+
 }  // namespace chromeos
