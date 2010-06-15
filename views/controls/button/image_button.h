@@ -18,6 +18,14 @@ namespace views {
 
 class ImageButton : public CustomButton {
  public:
+  enum HorizontalAlignment { ALIGN_LEFT = 0,
+                             ALIGN_CENTER,
+                             ALIGN_RIGHT, };
+
+  enum VerticalAlignment { ALIGN_TOP = 0,
+                           ALIGN_MIDDLE,
+                           ALIGN_BOTTOM };
+
   explicit ImageButton(ButtonListener* listener);
   virtual ~ImageButton();
 
@@ -29,13 +37,10 @@ class ImageButton : public CustomButton {
                      const SkBitmap* image,
                      const SkBitmap* mask);
 
-  enum HorizontalAlignment { ALIGN_LEFT = 0,
-                             ALIGN_CENTER,
-                             ALIGN_RIGHT, };
-
-  enum VerticalAlignment { ALIGN_TOP = 0,
-                           ALIGN_MIDDLE,
-                           ALIGN_BOTTOM };
+  // Explicitly sets the background image.
+  void set_background_image(const SkBitmap& background) {
+    background_image_ = background;
+  }
 
   // Sets how the image is laid out within the button's bounds.
   void SetImageAlignment(HorizontalAlignment h_align,
