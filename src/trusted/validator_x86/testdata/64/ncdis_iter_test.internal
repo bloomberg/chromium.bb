@@ -2172,6 +2172,40 @@ NaClExpVector[10] = {
   { OperandReference[1] , 2, 0 },
   { ExprConstant[0] , 0x5, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
+0000000000000000: f3 0f c2 c7 01                               cmpss %xmm0, %xmm7, 0x1
+  { PrefixF30F, {  0x0f, 0xc2 }, Cmpss,  NACLi_SSE2,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
+    { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+    { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
+    { I_Operand, NACL_OPFLAG(OpUse) },
+  };
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm0, ExprSet },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm7, ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x1, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: f3 0f c2 0d 67 87 10 00 05                   cmpss %xmm1, [%rip+0x108767], 0x5
+  { PrefixF30F, {  0x0f, 0xc2 }, Cmpss,  NACLi_SSE2,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
+    { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
+    { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
+    { I_Operand, NACL_OPFLAG(OpUse) },
+  };
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm1, ExprSet },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x108767, ExprSize32 | ExprSignedHex },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x5, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
 0000000000000000: 0f 6f 05 ba 87 0f 00                         movq %mmx0, [%rip+0xf87ba]
   { Prefix0F, {  0x0f, 0x6f }, Movq,  NACLi_MMX,
     NACL_IFLAG(OpcodeUsesModRm),

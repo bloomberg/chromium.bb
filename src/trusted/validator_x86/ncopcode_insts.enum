@@ -54,6 +54,7 @@ Cmp
 Cmpsb
 Cmpsd
 Cmpsd_xmm
+Cmpss
 Cmpsq
 Cmpsw
 Cmpxchg

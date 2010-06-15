@@ -869,6 +869,16 @@ static void NaClDefNarySseInsts() {
   NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpSet));
   NaClDefOp(Xmm_E_Operand, NACL_OPFLAG(OpUse));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+
+  /* f3 0f c2 /r ib  cmpss xmm1, xmm2/m64, imm8  SSE RexR */
+  NaClDefInstPrefix(PrefixF30F);
+  NaClDefInst(0xc2,
+              NACLi_SSE,
+              NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
+              InstCmpss);
+  NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpSet));
+  NaClDefOp(Xmm_E_Operand, NACL_OPFLAG(OpUse));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 }
 
 void NaClDefSseInsts() {
