@@ -135,7 +135,7 @@ Handle CreateMemoryObject(size_t length) {
   if (fd >= 0)
     return fd;
 
-#if NACL_LINUX && (defined(CHROMIUM_BUILD) || defined(GOOGLE_CHROME_BUILD))
+#if NACL_LINUX && !defined(NACL_STANDALONE)
   // As a temporary measure, we try shm_open() as well as calling
   // the unsandboxed browser process.  This code runs in the
   // context of both the renderer and (Chromium's compiled-in)
