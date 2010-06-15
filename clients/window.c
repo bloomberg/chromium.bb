@@ -326,21 +326,17 @@ window_get_surface(struct window *window)
 }
 
 enum window_state {
-	WINDOW_STABLE,
-	WINDOW_MOVING,
-	WINDOW_RESIZING_UPPER_LEFT,
-	WINDOW_RESIZING_UPPER_RIGHT,
-	WINDOW_RESIZING_LOWER_LEFT,
-	WINDOW_RESIZING_LOWER_RIGHT
-};
-
-enum location {
-	LOCATION_INTERIOR,
-	LOCATION_UPPER_LEFT,
-	LOCATION_UPPER_RIGHT,
-	LOCATION_LOWER_LEFT,
-	LOCATION_LOWER_RIGHT,
-	LOCATION_OUTSIDE
+	WINDOW_MOVING = 0,
+	WINDOW_RESIZING_TOP = 1,
+	WINDOW_RESIZING_BOTTOM = 2,
+	WINDOW_RESIZING_LEFT = 4,
+	WINDOW_RESIZING_TOP_LEFT = 5,
+	WINDOW_RESIZING_BOTTOM_LEFT = 6,
+	WINDOW_RESIZING_RIGHT = 8,
+	WINDOW_RESIZING_TOP_RIGHT = 9,
+	WINDOW_RESIZING_BOTTOM_RIGHT = 10,
+	WINDOW_RESIZING_MASK = 15,
+	WINDOW_STABLE = 16,
 };
 
 static void
@@ -364,13 +360,31 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 			       window->allocation.height);
 		wl_compositor_commit(window->display->compositor, 1);
 		break;
-	case WINDOW_RESIZING_LOWER_RIGHT:
+
+	case WINDOW_RESIZING_TOP:
+	case WINDOW_RESIZING_BOTTOM:
+	case WINDOW_RESIZING_LEFT:
+	case WINDOW_RESIZING_RIGHT:
+	case WINDOW_RESIZING_TOP_LEFT:
+	case WINDOW_RESIZING_TOP_RIGHT:
+	case WINDOW_RESIZING_BOTTOM_LEFT:
+	case WINDOW_RESIZING_BOTTOM_RIGHT:
 		if (window->fullscreen)
 			break;
 		if (window->grab_device != input_device)
 			break;
-		window->allocation.width = window->drag_x + x;
-		window->allocation.height = window->drag_y + y;
+		if (window->state & WINDOW_RESIZING_LEFT) {
+			window->allocation.x = x - window->drag_x + window->saved_allocation.x;
+			window->allocation.width = window->drag_x - x + window->saved_allocation.width;
+		}
+		if (window->state & WINDOW_RESIZING_RIGHT)
+			window->allocation.width = x - window->drag_x + window->saved_allocation.width;
+		if (window->state & WINDOW_RESIZING_TOP) {
+			window->allocation.y = y - window->drag_y + window->saved_allocation.y;
+			window->allocation.height = window->drag_y - y + window->saved_allocation.height;
+		}
+		if (window->state & WINDOW_RESIZING_BOTTOM)
+			window->allocation.height = y - window->drag_y + window->saved_allocation.height;
 
 		if (window->resize_handler)
 			(*window->resize_handler)(window,
@@ -385,35 +399,46 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 				 int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct window *window = data;
-	int32_t left = window->allocation.x;
-	int32_t right = window->allocation.x +
-		window->allocation.width - window->margin * 2;
-	int32_t top = window->allocation.y;
-	int32_t bottom = window->allocation.y +
-		window->allocation.height - window->margin * 2;
-	int grip_size = 16, location;
-	
-	if (right - grip_size <= x && x < right &&
-	    bottom - grip_size <= y && y < bottom) {
-		location = LOCATION_LOWER_RIGHT;
-	} else if (left <= x && x < right && top <= y && y < bottom) {
-		location = LOCATION_INTERIOR;
-	} else {
-		location = LOCATION_OUTSIDE;
-	}
+	int grip_size = 8, vlocation, hlocation;
+
+	if (window->margin <= sx && sx < window->margin + grip_size)
+		hlocation = WINDOW_RESIZING_LEFT;
+	else if (sx < window->allocation.width - window->margin - grip_size)
+		hlocation = WINDOW_MOVING;
+	else if (sx < window->allocation.width - window->margin)
+		hlocation = WINDOW_RESIZING_RIGHT;
+	else
+		hlocation = WINDOW_STABLE;
+
+	if (window->margin <= sy && sy < window->margin + grip_size)
+		vlocation = WINDOW_RESIZING_TOP;
+	else if (sy < window->allocation.height - window->margin - grip_size)
+		vlocation = WINDOW_MOVING;
+	else if (sy < window->allocation.height - window->margin)
+		vlocation = WINDOW_RESIZING_BOTTOM;
+	else
+		vlocation = WINDOW_STABLE;
 
 	if (button == BTN_LEFT && state == 1) {
-		switch (location) {
-		case LOCATION_INTERIOR:
+		switch (hlocation | vlocation) {
+		case WINDOW_MOVING:
 			window->drag_x = window->allocation.x - x;
 			window->drag_y = window->allocation.y - y;
 			window->state = WINDOW_MOVING;
 			window->grab_device = input_device;
 			break;
-		case LOCATION_LOWER_RIGHT:
-			window->drag_x = window->allocation.width - x;
-			window->drag_y = window->allocation.height - y;
-			window->state = WINDOW_RESIZING_LOWER_RIGHT;
+		case WINDOW_RESIZING_TOP:
+		case WINDOW_RESIZING_BOTTOM:
+		case WINDOW_RESIZING_LEFT:
+		case WINDOW_RESIZING_RIGHT:
+		case WINDOW_RESIZING_TOP_LEFT:
+		case WINDOW_RESIZING_TOP_RIGHT:
+		case WINDOW_RESIZING_BOTTOM_LEFT:
+		case WINDOW_RESIZING_BOTTOM_RIGHT:
+			window->drag_x = x;
+			window->drag_y = y;
+			window->saved_allocation = window->allocation;
+			window->state = hlocation | vlocation;
 			window->grab_device = input_device;
 			break;
 		default:
@@ -613,9 +638,19 @@ void
 window_set_child_size(struct window *window,
 		      struct rectangle *rectangle)
 {
+	int32_t width, height;
+
 	if (!window->fullscreen) {
-		window->allocation.width = rectangle->width + 20 + window->margin * 2;
-		window->allocation.height = rectangle->height + 60 + window->margin * 2;
+		width = rectangle->width + 20 + window->margin * 2;
+		height = rectangle->height + 60 + window->margin * 2;
+		if (window->state & WINDOW_RESIZING_LEFT)
+			window->allocation.x -=
+				width - window->allocation.width;
+		if (window->state & WINDOW_RESIZING_TOP)
+			window->allocation.y -=
+				height - window->allocation.height;
+		window->allocation.width = width;
+		window->allocation.height = height;
 	}
 }
 
