@@ -50,7 +50,7 @@ static int option_fullscreen;
 struct terminal {
 	struct window *window;
 	struct display *display;
-	int redraw_scheduled, redraw_pending;
+	int redraw_scheduled;
 	char *data;
 	int width, height, start, row, column;
 	int fd, master;
@@ -63,6 +63,7 @@ struct terminal {
 	int fullscreen;
 	int focused;
 	struct color_scheme *color_scheme;
+	cairo_font_extents_t extents;
 };
 
 static char *
@@ -195,30 +196,21 @@ static void
 terminal_draw(struct terminal *terminal)
 {
 	struct rectangle rectangle;
-	cairo_surface_t *surface;
-	cairo_font_extents_t extents;
-	cairo_t *cr;
 	int32_t width, height;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
-	cr = cairo_create(surface);
-	cairo_select_font_face (cr, "mono",
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size(cr, 14);
-	cairo_font_extents(cr, &extents);
-	cairo_destroy(cr);
-	cairo_surface_destroy(surface);
-
-	width = (rectangle.width - 2 * terminal->margin) / (int32_t) extents.max_x_advance;
-	height = (rectangle.height - 2 * terminal->margin) / (int32_t) extents.height;
+	width = (rectangle.width - 2 * terminal->margin) /
+		(int32_t) terminal->extents.max_x_advance;
+	height = (rectangle.height - 2 * terminal->margin) /
+		(int32_t) terminal->extents.height;
 	terminal_resize(terminal, width, height);
 
 	if (!terminal->fullscreen) {
-		rectangle.width = terminal->width * extents.max_x_advance + 2 * terminal->margin;
-		rectangle.height = terminal->height * extents.height + 2 * terminal->margin;
+		rectangle.width = terminal->width *
+			terminal->extents.max_x_advance + 2 * terminal->margin;
+		rectangle.height = terminal->height *
+			terminal->extents.height + 2 * terminal->margin;
 		window_set_child_size(terminal->window, &rectangle);
 	}
 
@@ -233,6 +225,7 @@ idle_redraw(void *data)
 	struct terminal *terminal = data;
 
 	terminal_draw(terminal);
+	terminal->redraw_scheduled = 0;
 
 	return FALSE;
 }
@@ -249,8 +242,6 @@ terminal_schedule_redraw(struct terminal *terminal)
 	if (!terminal->redraw_scheduled) {
 		g_idle_add(idle_redraw, terminal);
 		terminal->redraw_scheduled = 1;
-	} else {
-		terminal->redraw_pending = 1;
 	}
 }
 
@@ -417,19 +408,6 @@ resize_handler(struct window *window, void *data)
 }
 
 static void
-acknowledge_handler(struct window *window,
-		    uint32_t key, uint32_t frame, void *data)
-{
-	struct terminal *terminal = data;
-
-	terminal->redraw_scheduled = 0;
-	if (terminal->redraw_pending) {
-		terminal->redraw_pending = 0;
-		terminal_schedule_redraw(terminal);
-	}
-}
-
-static void
 key_handler(struct window *window, uint32_t key, uint32_t unicode,
 	    uint32_t state, uint32_t modifiers, void *data)
 {
@@ -465,6 +443,8 @@ static struct terminal *
 terminal_create(struct display *display, int fullscreen)
 {
 	struct terminal *terminal;
+	cairo_surface_t *surface;
+	cairo_t *cr;
 
 	terminal = malloc(sizeof *terminal);
 	if (terminal == NULL)
@@ -476,16 +456,25 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->window = window_create(display, "Wayland Terminal",
 					 500, 100, 500, 400);
 	terminal->display = display;
-	terminal->redraw_scheduled = 1;
 	terminal->margin = 5;
 
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
-	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
 
 	window_set_key_handler(terminal->window, key_handler, terminal);
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler, terminal);
+
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
+	cr = cairo_create(surface);
+	cairo_select_font_face (cr, "mono",
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_set_font_size(cr, 14);
+	cairo_font_extents(cr, &terminal->extents);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+
 
 	terminal_draw(terminal);
 

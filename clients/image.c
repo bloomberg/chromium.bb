@@ -48,9 +48,7 @@ struct image {
 	uint32_t key;
 
 	gboolean redraw_scheduled;
-	gboolean redraw_pending;
 
-	cairo_surface_t *surface;
 	gchar *filename;
 };
 
@@ -149,8 +147,9 @@ image_draw(struct image *image)
 	struct rectangle rectangle;
 	GdkPixbuf *pb;
 	cairo_t *cr;
+	cairo_surface_t *wsurface, *surface;
 
-	image->redraw_pending = 0;
+	image->redraw_scheduled = 0;
 
 	window_draw(image->window);
 
@@ -163,10 +162,13 @@ image_draw(struct image *image)
 	if (pb == NULL)
 		return;
 
-	image->surface =
-		window_create_surface(image->window, &rectangle);
+	wsurface = window_get_surface(image->window);
+	surface = cairo_surface_create_similar(wsurface,
+					       CAIRO_CONTENT_COLOR_ALPHA,
+					       rectangle.width,
+					       rectangle.height);
 
-	cr = cairo_create(image->surface);
+	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_paint(cr);
@@ -179,11 +181,9 @@ image_draw(struct image *image)
 
 	g_object_unref(pb);
 
-	window_copy_surface(image->window,
-			    &rectangle,
-			    image->surface);
-
+	window_copy_surface(image->window, &rectangle, surface);
 	window_commit(image->window, image->key);
+	cairo_surface_destroy(surface);
 }
 
 static gboolean
@@ -202,8 +202,6 @@ image_schedule_redraw(struct image *image)
 	if (!image->redraw_scheduled) {
 		image->redraw_scheduled = 1;
 		g_idle_add(image_idle_redraw, image);
-	} else {
-		image->redraw_pending = 1;
 	}
 }
 
@@ -222,23 +220,6 @@ keyboard_focus_handler(struct window *window,
 	struct image *image = data;
 
 	image_schedule_redraw(image);
-}
-
-static void
-acknowledge_handler(struct window *window,
-		    uint32_t key, uint32_t frame, void *data)
-{
-	struct image *image = data;
-
-	if (image->key != key)
-		return;
-
-	cairo_surface_destroy(image->surface);
-	image->redraw_scheduled = 0;
-	if (image->redraw_pending) {
-		image->redraw_pending = 0;
-		image_schedule_redraw(image);
-	}
 }
 
 static struct image *
@@ -265,11 +246,9 @@ image_create(struct display *display, uint32_t key, const char *filename)
 	/* FIXME: Window uses key 1 for moves, need some kind of
 	 * allocation scheme here.  Or maybe just a real toolkit. */
 	image->key = key + 100;
-	image->redraw_scheduled = 1;
 
 	window_set_resize_handler(image->window, resize_handler, image);
 	window_set_keyboard_focus_handler(image->window, keyboard_focus_handler, image);
-	window_set_acknowledge_handler(image->window, acknowledge_handler, image);
 
 	image_draw(image);
 

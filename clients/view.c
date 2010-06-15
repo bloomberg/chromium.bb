@@ -52,9 +52,7 @@ struct view {
 	uint32_t key;
 
 	gboolean redraw_scheduled;
-	gboolean redraw_pending;
 
-	cairo_surface_t *surface;
 	gchar *filename;
 	PopplerDocument *document;
 	int page;
@@ -66,11 +64,12 @@ static void
 view_draw(struct view *view)
 {
 	struct rectangle rectangle;
+	cairo_surface_t *surface;
 	cairo_t *cr;
 	PopplerPage *page;
 	double width, height, doc_aspect, window_aspect, scale;
 
-	view->redraw_pending = 0;
+	view->redraw_scheduled = 0;
 
 	window_draw(view->window);
 
@@ -78,10 +77,13 @@ view_draw(struct view *view)
 
 	page = poppler_document_get_page(view->document, view->page);
 
-	view->surface =
-		window_create_surface(view->window, &rectangle);
+	surface = window_get_surface(view->window);
 
-	cr = cairo_create(view->surface);
+	cr = cairo_create(surface);
+	cairo_rectangle(cr, rectangle.x, rectangle.y,
+			 rectangle.width, rectangle.height);
+	cairo_clip(cr);
+
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8); 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_paint(cr);
@@ -92,6 +94,7 @@ view_draw(struct view *view)
 		scale = rectangle.height / height;
 	else
 		scale = rectangle.width / width;
+	cairo_translate(cr, rectangle.x, rectangle.y);
 	cairo_scale(cr, scale, scale);
 	cairo_translate(cr,
 			(rectangle.width - width * scale) / 2 / scale,
@@ -103,10 +106,6 @@ view_draw(struct view *view)
 	poppler_page_render(page, cr);
 	cairo_destroy(cr);
 	g_object_unref(G_OBJECT(page));
-
-	window_copy_surface(view->window,
-			    &rectangle,
-			    view->surface);
 
 	window_commit(view->window, 0);
 }
@@ -127,8 +126,6 @@ view_schedule_redraw(struct view *view)
 	if (!view->redraw_scheduled) {
 		view->redraw_scheduled = 1;
 		g_idle_add(view_idle_redraw, view);
-	} else {
-		view->redraw_pending = 1;
 	}
 }
 
@@ -174,23 +171,6 @@ resize_handler(struct window *window, void *data)
 }
 
 static void
-acknowledge_handler(struct window *window,
-		    uint32_t key, uint32_t frame, void *data)
-{
-	struct view *view = data;
-
-	if (view->key != key)
-		return;
-
-	cairo_surface_destroy(view->surface);
-	view->redraw_scheduled = 0;
-	if (view->redraw_pending) {
-		view->redraw_pending = 0;
-		view_schedule_redraw(view);
-	}
-}
-
-static void
 keyboard_focus_handler(struct window *window,
 		       struct wl_input_device *device, void *data)
 {
@@ -232,7 +212,6 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	window_set_key_handler(view->window, key_handler, view);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler, view);
-	window_set_acknowledge_handler(view->window, acknowledge_handler, view);
 
 	view->document = poppler_document_new_from_file(view->filename,
 							NULL, &error);

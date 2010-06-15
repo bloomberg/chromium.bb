@@ -67,7 +67,7 @@ struct window {
 	struct display *display;
 	struct wl_surface *surface;
 	const char *title;
-	struct rectangle allocation, saved_allocation;
+	struct rectangle allocation, saved_allocation, surface_allocation;
 	int minimum_width, minimum_height;
 	int margin;
 	int drag_x, drag_y;
@@ -81,7 +81,6 @@ struct window {
 
 	EGLImageKHR *image;
 	cairo_surface_t *cairo_surface, *pending_surface;
-	int new_surface;
 
 	window_resize_handler_t resize_handler;
 	window_key_handler_t key_handler;
@@ -170,36 +169,39 @@ window_attach_surface(struct window *window)
 	if (window->pending_surface != NULL)
 		return;
 
-	window->pending_surface =
-		cairo_surface_reference(window->cairo_surface);
+	window->pending_surface = window->cairo_surface;
+	window->cairo_surface = NULL;
 
-	data = cairo_surface_get_user_data (window->cairo_surface, &surface_data_key);
-	eglExportDRMImageMESA(window->display->dpy, data->image, &name, NULL, &stride);
+	data = cairo_surface_get_user_data (window->pending_surface,
+					    &surface_data_key);
+	eglExportDRMImageMESA(window->display->dpy,
+			      data->image, &name, NULL, &stride);
 
 	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
 	wl_surface_attach(window->surface,
 			  name,
-			  window->allocation.width,
-			  window->allocation.height,
+			  window->surface_allocation.width,
+			  window->surface_allocation.height,
 			  stride,
 			  visual);
 
 	wl_surface_map(window->surface,
-		       window->allocation.x - window->margin,
-		       window->allocation.y - window->margin,
-		       window->allocation.width,
-		       window->allocation.height);
+		       window->surface_allocation.x - window->margin,
+		       window->surface_allocation.y - window->margin,
+		       window->surface_allocation.width,
+		       window->surface_allocation.height);
+
+	wl_compositor_commit(window->display->compositor, 0);
 }
 
 void
 window_commit(struct window *window, uint32_t key)
 {
-	if (window->new_surface) {
+	if (window->cairo_surface) {
 		window_attach_surface(window);
-		window->new_surface = 0;
+	} else {
+		wl_compositor_commit(window->display->compositor, key);
 	}
-
-	wl_compositor_commit(window->display->compositor, key);
 }
 
 static void
@@ -214,6 +216,7 @@ window_draw_decorations(struct window *window)
 
 	window->cairo_surface =
 		window_create_surface(window, &window->allocation);
+	window->surface_allocation = window->allocation;
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
 	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
@@ -224,6 +227,11 @@ window_draw_decorations(struct window *window)
 	width = window->allocation.width - window->margin * 2;
 	height = window->allocation.height - window->margin * 2;
 
+	cairo_set_source_rgba(cr, 0, 0, 0, 0);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_paint(cr);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_translate(cr, window->margin + shadow_dx,
 			window->margin + shadow_dy);
 	cairo_set_line_width (cr, border);
@@ -303,6 +311,7 @@ window_draw_fullscreen(struct window *window)
 {
 	window->cairo_surface =
 		window_create_surface(window, &window->allocation);
+	window->surface_allocation = window->allocation;
 }
 
 void
@@ -315,8 +324,6 @@ window_draw(struct window *window)
 		window_draw_fullscreen(window);
 	else
 		window_draw_decorations(window);
-
-	window->new_surface = 1;
 }
 
 cairo_surface_t *
@@ -804,11 +811,10 @@ display_handle_acknowledge(void *data,
 	 * window buffer if we resized and render the next frame into
 	 * our back buffer.. */
 	wl_list_for_each(window, &d->window_list, link) {
-		pending = window->pending_surface;
+		cairo_surface_destroy(window->pending_surface);
 		window->pending_surface = NULL;
-		if (pending != window->cairo_surface)
+		if (window->cairo_surface)
 			window_attach_surface(window);
-		cairo_surface_destroy(pending);
 		if (window->acknowledge_handler)
 			(*window->acknowledge_handler)(window, key, frame, window->user_data);
 	}
