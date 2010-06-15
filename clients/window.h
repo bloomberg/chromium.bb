@@ -45,6 +45,10 @@ EGLDisplay
 display_get_egl_display(struct display *d);
 #endif
 
+cairo_surface_t *
+display_create_surface(struct display *display,
+		       struct rectangle *rectangle);
+
 void
 display_run(struct display *d);
 
@@ -86,10 +90,6 @@ window_schedule_redraw(struct window *window);
 
 void
 window_move(struct window *window, int32_t x, int32_t y);
-
-cairo_surface_t *
-window_create_surface(struct window *window,
-		      struct rectangle *rectangle);
 
 cairo_surface_t *
 window_get_surface(struct window *window);

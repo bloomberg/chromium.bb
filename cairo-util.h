@@ -26,4 +26,12 @@
 void
 blur_surface(cairo_surface_t *surface, int margin);
 
+void
+tile_mask(cairo_t *cr, cairo_surface_t *surface,
+	  int x, int y, int width, int height, int margin);
+
+void
+tile_source(cairo_t *cr, cairo_surface_t *surface,
+	    int x, int y, int width, int height, int margin);
+
 #endif

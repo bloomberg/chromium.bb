@@ -136,7 +136,7 @@ terminal_draw_contents(struct terminal *terminal)
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
-	surface = window_create_surface(terminal->window, &rectangle);
+	surface = display_create_surface(terminal->display, &rectangle);
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr,

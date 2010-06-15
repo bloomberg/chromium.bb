@@ -61,6 +61,7 @@ struct display {
 	GSource *source;
 	struct wl_list window_list;
 	char *device_name;
+	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 };
 
 struct window {
@@ -125,11 +126,11 @@ surface_data_destroy(void *p)
 }
 
 cairo_surface_t *
-window_create_surface(struct window *window,
-		      struct rectangle *rectangle)
+display_create_surface(struct display *display,
+		       struct rectangle *rectangle)
 {
 	struct surface_data *data;
-	EGLDisplay dpy = window->display->dpy;
+	EGLDisplay dpy = display->dpy;
 	cairo_surface_t *surface;
 
 	EGLint image_attribs[] = {
@@ -149,7 +150,7 @@ window_create_surface(struct window *window,
 	glBindTexture(GL_TEXTURE_2D, data->texture);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
 
-	surface = cairo_gl_surface_create_for_texture(window->display->device,
+	surface = cairo_gl_surface_create_for_texture(display->device,
 						      CAIRO_CONTENT_COLOR_ALPHA,
 						      data->texture,
 						      rectangle->width,
@@ -212,13 +213,16 @@ window_draw_decorations(struct window *window)
 	cairo_t *cr;
 	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
-	cairo_pattern_t *gradient, *outline, *bright, *dim;
+	cairo_pattern_t *pattern, *gradient, *outline, *bright, *dim;
 	int width, height;
 	int shadow_dx = 4, shadow_dy = 4;
+	cairo_matrix_t matrix;
 
 	window->cairo_surface =
-		window_create_surface(window, &window->allocation);
+		display_create_surface(window->display, &window->allocation);
 	window->surface_allocation = window->allocation;
+	width = window->allocation.width;
+	height = window->allocation.height;
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
 	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
@@ -226,85 +230,33 @@ window_draw_decorations(struct window *window)
 
 	cr = cairo_create(window->cairo_surface);
 
-	width = window->allocation.width - window->margin * 2;
-	height = window->allocation.height - window->margin * 2;
-
-	cairo_set_source_rgba(cr, 0, 0, 0, 0);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0);
 	cairo_paint(cr);
 
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_translate(cr, window->margin + shadow_dx,
-			window->margin + shadow_dy);
-	cairo_set_line_width (cr, border);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
-	rounded_rect(cr, -1, -1, width + 1, height + 1, radius);
-	cairo_fill(cr);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
+	tile_mask(cr, window->display->shadow, 3, 3, width, height, 32);
 
-#define SLOW_BUT_PWETTY_not_right_now
-#ifdef SLOW_BUT_PWETTY
-	/* FIXME: Aw, pretty drop shadows now have to fallback to sw.
-	 * Ideally we should have convolution filters in cairo, but we
-	 * can also fallback to compositing the shadow image a bunch
-	 * of times according to the blur kernel. */
-	{
-		cairo_surface_t *map;
-
-		map = cairo_drm_surface_map(window->cairo_surface);
-		blur_surface(map, 32);
-		cairo_drm_surface_unmap(window->cairo_surface, map);
-	}
-#endif
-
-	cairo_translate(cr, -shadow_dx, -shadow_dy);
-	if (window->keyboard_device) {
-		rounded_rect(cr, 0, 0, width, height, radius);
-		gradient = cairo_pattern_create_linear (0, 0, 0, 100);
-		cairo_pattern_add_color_stop_rgb(gradient, 0, 0.6, 0.6, 0.6);
-		cairo_pattern_add_color_stop_rgb(gradient, 1, 0.8, 0.8, 0.8);
-		cairo_set_source(cr, gradient);
-		cairo_fill(cr);
-		cairo_pattern_destroy(gradient);
-	} else {
-		rounded_rect(cr, 0, 0, width, height, radius);
-		cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 1);
-		cairo_fill(cr);
-	}
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_move_to(cr, 10, 50);
-	cairo_line_to(cr, width - 10, 50);
-	cairo_line_to(cr, width - 10, height - 10);
-	cairo_line_to(cr, 10, height - 10);
-	cairo_close_path(cr);
-	cairo_set_source(cr, dim);
-	cairo_stroke(cr);
-
-	cairo_move_to(cr, 11, 51);
-	cairo_line_to(cr, width - 10, 51);
-	cairo_line_to(cr, width - 10, height - 10);
-	cairo_line_to(cr, 11, height - 10);
-	cairo_close_path(cr);
-	cairo_set_source(cr, bright);
-	cairo_stroke(cr);
+	if (window->keyboard_device)
+		tile_source(cr, window->display->active_frame,
+			    0, 0, width, height, 96);
+	else
+		tile_source(cr, window->display->inactive_frame,
+			    0, 0, width, height, 96);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, window->title, &extents);
-	cairo_move_to(cr, (width - extents.width) / 2, 10 - extents.y_bearing);
+	cairo_move_to(cr, (width - extents.width) / 2, 32 - extents.y_bearing);
 	cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
 	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 	cairo_set_line_width (cr, 4);
-	cairo_text_path(cr, window->title);
-	if (window->keyboard_device) {
-		cairo_set_source_rgb(cr, 0.56, 0.56, 0.56);
-		cairo_stroke_preserve(cr);
-		cairo_set_source_rgb(cr, 1, 1, 1);
-		cairo_fill(cr);
-	} else {
+	if (window->keyboard_device)
+		cairo_set_source_rgb(cr, 0, 0, 0);
+	else
 		cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
-		cairo_fill(cr);
-	}
+	cairo_show_text(cr, window->title);
+
 	cairo_destroy(cr);
 }
 
@@ -312,7 +264,7 @@ static void
 window_draw_fullscreen(struct window *window)
 {
 	window->cairo_surface =
-		window_create_surface(window, &window->allocation);
+		display_create_surface(window->display, &window->allocation);
 	window->surface_allocation = window->allocation;
 }
 
@@ -907,6 +859,41 @@ display_handle_global(struct wl_display *display,
 
 static const char socket_name[] = "\0wayland";
 
+static void
+display_render_frame(struct display *d)
+{
+	struct rectangle r = { 0, 0, 128, 128 };
+	int radius = 8;
+	cairo_t *cr;
+
+	d->shadow = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
+	cr = cairo_create(d->shadow);
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	rounded_rect(cr, 16, 16, 112, 112, radius);
+	cairo_fill(cr);
+	cairo_destroy(cr);
+	blur_surface(d->shadow, 64);
+
+	d->active_frame =
+		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
+	cr = cairo_create(d->active_frame);
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_source_rgba(cr, 0.8, 0.8, 0.4, 1);
+	rounded_rect(cr, 16, 16, 112, 112, radius);
+	cairo_fill(cr);
+	cairo_destroy(cr);
+
+	d->inactive_frame =
+		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
+	cr = cairo_create(d->inactive_frame);
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 1);
+	rounded_rect(cr, 16, 16, 112, 112, radius);
+	cairo_fill(cr);
+	cairo_destroy(cr);
+}
+
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
@@ -997,6 +984,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		fprintf(stderr, "failed to get cairo drm device\n");
 		return NULL;
 	}
+
+	display_render_frame(d);
 
 	d->loop = g_main_loop_new(NULL, FALSE);
 	d->source = wl_glib_source_new(d->display);

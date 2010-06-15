@@ -114,4 +114,142 @@ blur_surface(cairo_surface_t *surface, int margin)
 	}
 
 	free(dst);
+	cairo_surface_mark_dirty(surface);
+}
+
+void
+tile_mask(cairo_t *cr, cairo_surface_t *surface,
+	  int x, int y, int width, int height, int margin)
+{
+	cairo_pattern_t *pattern;
+	cairo_matrix_t matrix;
+	int i, fx, fy;
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	pattern = cairo_pattern_create_for_surface (surface);
+
+	for (i = 0; i < 4; i++) {
+		fx = i & 1;
+		fy = i >> 1;
+
+		cairo_matrix_init_translate(&matrix,
+					    -x + fx * (128 - width),
+					    -y + fy * (128 - height));
+		cairo_pattern_set_matrix(pattern, &matrix);
+
+		cairo_reset_clip(cr);
+		cairo_rectangle(cr,
+				x + fx * (width - margin),
+				y + fy * (height - margin),
+				margin, margin);
+		cairo_clip (cr);
+		cairo_mask(cr, pattern);
+	}
+
+	/* Top strecth */
+	cairo_matrix_init_translate(&matrix, 64, 0);
+	cairo_matrix_scale(&matrix, 64.0 / (width - 2 * margin), 1);
+	cairo_matrix_translate(&matrix, -x - width / 2, -y);
+	cairo_pattern_set_matrix(pattern, &matrix);
+	cairo_rectangle(cr, x + margin, y, width - 2 * margin, margin);
+
+	cairo_reset_clip(cr);
+	cairo_rectangle(cr,
+			x + margin,
+			y,
+			width - 2 * margin, margin);
+	cairo_clip (cr);
+	cairo_mask(cr, pattern);
+
+	/* Bottom strecth */
+	cairo_matrix_translate(&matrix, 0, -height + 128);
+	cairo_pattern_set_matrix(pattern, &matrix);
+
+	cairo_reset_clip(cr);
+	cairo_rectangle(cr, x + margin, y + height - margin,
+			width - 2 * margin, margin);
+	cairo_clip (cr);
+	cairo_mask(cr, pattern);
+
+	/* Left strecth */
+	cairo_matrix_init_translate(&matrix, 0, 64);
+	cairo_matrix_scale(&matrix, 1, 64.0 / (height - 2 * margin));
+	cairo_matrix_translate(&matrix, -x, -y - height / 2);
+	cairo_pattern_set_matrix(pattern, &matrix);
+	cairo_reset_clip(cr);
+	cairo_rectangle(cr, x, y + margin, margin, height - 2 * margin);
+	cairo_clip (cr);
+	cairo_mask(cr, pattern);
+
+	/* Right strecth */
+	cairo_matrix_translate(&matrix, -width + 128, 0);
+	cairo_pattern_set_matrix(pattern, &matrix);
+	cairo_rectangle(cr, x + width - margin, y + margin,
+			margin, height - 2 * margin);
+	cairo_reset_clip(cr);
+	cairo_clip (cr);
+	cairo_mask(cr, pattern);
+
+	cairo_pattern_destroy(pattern);
+	cairo_reset_clip(cr);
+}
+
+void
+tile_source(cairo_t *cr, cairo_surface_t *surface,
+	    int x, int y, int width, int height, int margin)
+{
+	cairo_pattern_t *pattern;
+	cairo_matrix_t matrix;
+	int i, fx, fy;
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	pattern = cairo_pattern_create_for_surface (surface);
+	cairo_set_source(cr, pattern);
+	cairo_pattern_destroy(pattern);
+
+	for (i = 0; i < 4; i++) {
+		fx = i & 1;
+		fy = i >> 1;
+
+		cairo_matrix_init_translate(&matrix,
+					    -x + fx * (128 - width),
+					    -y + fy * (128 - height));
+		cairo_pattern_set_matrix(pattern, &matrix);
+
+		cairo_rectangle(cr,
+				x + fx * (width - margin),
+				y + fy * (height - margin),
+				margin, margin);
+		cairo_fill(cr);
+	}
+
+	/* Top strecth */
+	cairo_matrix_init_translate(&matrix, 64, 0);
+	cairo_matrix_scale(&matrix, 64.0 / (width - 2 * margin), 1);
+	cairo_matrix_translate(&matrix, -x - width / 2, -y);
+	cairo_pattern_set_matrix(pattern, &matrix);
+	cairo_rectangle(cr, x + margin, y, width - 2 * margin, margin);
+	cairo_fill(cr);
+
+	/* Bottom strecth */
+	cairo_matrix_translate(&matrix, 0, -height + 128);
+	cairo_pattern_set_matrix(pattern, &matrix);
+	cairo_rectangle(cr, x + margin, y + height - margin,
+			width - 2 * margin, margin);
+	cairo_fill(cr);
+
+	/* Left strecth */
+	cairo_matrix_init_translate(&matrix, 0, 64);
+	cairo_matrix_scale(&matrix, 1, 64.0 / (height - 2 * margin));
+	cairo_matrix_translate(&matrix, -x, -y - height / 2);
+	cairo_pattern_set_matrix(pattern, &matrix);
+	cairo_rectangle(cr, x, y + margin, margin, height - 2 * margin);
+	cairo_fill(cr);
+
+	/* Right strecth */
+	cairo_matrix_translate(&matrix, -width + 128, 0);
+	cairo_pattern_set_matrix(pattern, &matrix);
+	cairo_rectangle(cr, x + width - margin, y + margin,
+			margin, height - 2 * margin);
+	cairo_fill(cr);
 }
