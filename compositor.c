@@ -801,27 +801,36 @@ static const char fragment_shader[] =
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
 	"}\n";
 
-static void
+static int
 init_shaders(struct wlsc_compositor *ec)
 {
    GLuint v, f, program;
    const char *p;
    char msg[512];
    GLfloat vertices[4 * 5];
+   GLint status;
 
    p = vertex_shader;
    v = glCreateShader(GL_VERTEX_SHADER);
    glShaderSource(v, 1, &p, NULL);
    glCompileShader(v);
-   glGetShaderInfoLog(v, sizeof msg, NULL, msg);
-   printf("vertex shader info: %s\n", msg);
+   glGetShaderiv(v, GL_COMPILE_STATUS, &status);
+   if (!status) {
+	   glGetShaderInfoLog(v, sizeof msg, NULL, msg);
+	   fprintf(stderr, "vertex shader info: %s\n", msg);
+	   return -1;
+   }
 
    p = fragment_shader;
    f = glCreateShader(GL_FRAGMENT_SHADER);
    glShaderSource(f, 1, &p, NULL);
    glCompileShader(f);
-   glGetShaderInfoLog(f, sizeof msg, NULL, msg);
-   printf("fragment shader info: %s\n", msg);
+   glGetShaderiv(f, GL_COMPILE_STATUS, &status);
+   if (!status) {
+	   glGetShaderInfoLog(f, sizeof msg, NULL, msg);
+	   fprintf(stderr, "fragment shader info: %s\n", msg);
+	   return -1;
+   }
 
    program = glCreateProgram();
    glAttachShader(program, v);
@@ -830,8 +839,12 @@ init_shaders(struct wlsc_compositor *ec)
    glBindAttribLocation(program, 1, "texcoord");
 
    glLinkProgram(program);
-   glGetProgramInfoLog(program, sizeof msg, NULL, msg);
-   printf("info: %s\n", msg);
+   glGetProgramiv(program, GL_LINK_STATUS, &status);
+   if (!status) {
+	   glGetProgramInfoLog(program, sizeof msg, NULL, msg);
+	   fprintf(stderr, "link info: %s\n", msg);
+	   return -1;
+   }
 
    glUseProgram(program);
    ec->proj_uniform = glGetUniformLocation(program, "proj");
@@ -864,6 +877,8 @@ init_shaders(struct wlsc_compositor *ec)
    glGenBuffers(1, &ec->vbo);
    glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
    glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
+
+   return 0;
 }
 
 static const struct wl_interface visual_interface = {
@@ -938,7 +953,8 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	glGenFramebuffers(1, &ec->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->fbo);
 	glActiveTexture(GL_TEXTURE0);
-	init_shaders(ec);
+	if (init_shaders(ec) < 0)
+		return -1;
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);

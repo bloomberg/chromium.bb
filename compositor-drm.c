@@ -662,7 +662,8 @@ drm_compositor_create(struct wl_display *display)
 	}
 	
 	/* Can't init base class until we have a current egl context */
-	wlsc_compositor_init(&ec->base, display);
+	if (wlsc_compositor_init(&ec->base, display) < 0)
+		return NULL;
 
 	if (create_outputs(ec) < 0) {
 		fprintf(stderr, "failed to create output for %s\n", path);

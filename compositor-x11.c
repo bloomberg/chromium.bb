@@ -644,7 +644,8 @@ x11_compositor_create(struct wl_display *display)
 	x11_compositor_init_egl(c);
 
 	/* Can't init base class until we have a current egl context */
-	wlsc_compositor_init(&c->base, display);
+	if (wlsc_compositor_init(&c->base, display) < 0)
+		return NULL;
 
 	x11_compositor_create_output(c, 1024, 640);
 
