@@ -78,7 +78,7 @@ void handle_request(int connection) {
   //   GET /index.html HTTP/1.1
   read_text_data(connection, buffer, 512);
 
-  char *saveptr;
+  char *saveptr = NULL;
   char *request = strtok_r(buffer, " ", &saveptr);
   char *resource = strtok_r(NULL, " ", &saveptr);
   char *version = strtok_r(NULL, " ", &saveptr);
