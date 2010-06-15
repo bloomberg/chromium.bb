@@ -1561,7 +1561,6 @@ nacl_extra_sdk_env.Append(
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/pthread/nacl.scons',
-      'src/untrusted/reachable_function_symbols/nacl.scons',
       'src/untrusted/stubs/nacl.scons',
       'src/untrusted/nosys/nacl.scons',
       'src/untrusted/valgrind/nacl.scons',

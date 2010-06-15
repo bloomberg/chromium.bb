@@ -671,33 +671,55 @@ def GenerateCombinedBitcodeFile(argv):
     if last_bitcode_pos != None:
         # Splice in the extra symbols.
         args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
-                       [PNACL_BITCODE_ROOT + '/reachable_function_symbols.o'] +
+#                       [PNACL_BITCODE_ROOT + '/reachable_function_symbols.o'] +
                        args_bit_ld[last_bitcode_pos:] +
                        ['-lstdc++',
                         '-lc',
                         ])
 
-  # NOTE: .bc will be appended output by LLVM_LD
-  # These are the functions that are used by the NaCl runtime and therefore
-  # cannot be internalized.
+  # NOTE: .bc will be appended to the output name by LLVM_LD
+  # These are the functions/symbols that are used by the NaCl runtime and
+  # therefore cannot be internalized but should be linked in from libraries
+  # even if they are not directly referenced in bitcode.
   # TODO(espindola): Give a pointer to a doc explaining how/why these are used.
-  # TODO(espindola): Check if a gold plugin can be used to do the right thing
-  # automatically.
-#   public_functions = ['atexit',
-#                       'exit',
-#                       'main',
-#                       'raise',
-#                       '__av_wait',
-#                       '__pthread_initialize',
-#                       '__pthread_shutdown',
-#                       '__srpc_init',
-#                       '__srpc_wait']
+  public_functions = ['atexit',
+                      'environ',
+                      'memset',
+                      'exit',
+                      'main',
+                      'raise',
+                      '__av_wait',
+                      '__pthread_initialize',
+                      '__pthread_shutdown',
+                      '__srpc_init',
+                      '__srpc_wait']
+
+  # if we are not in barebones mode keep some symbols other than main
+  # alive which are called form crtX.o
+
+  if '-nostdlib' not in argv:
+    args_bit_ld += [
+       '-internalize-public-api-list=' + ','.join(public_functions),
+       '-referenced-list=' + ','.join(public_functions),
+       # NOTE: without this we still get a few miscompiles for pnacl-x86-32.
+       # (LLVM's inliner will be more aggressives when functions are not
+       # internalized.)
+       '-disable-internalize',
+       ]
+  else:
+     args_bit_ld += ['-internalize-public-api-list=_start',
+                     # NOTE: without this llvm will be able
+                     # to evaluate too much at compile time
+                     # TODO(robertm): make all tests depend
+                     # on argc to fool llvm
+                     '-disable-internalize',
+                     ]
 
   Run([LLVM_LD] + args_bit_ld +
-      [# TODO(espindola): this does not seem to work yet
-       #'-internalize-public-api-list=' + ','.join(public_functions),
-       '-disable-internalize',
-       '-o', output])
+       ['-o', output])
+
+
+
   return output, args_native_ld
 
 
