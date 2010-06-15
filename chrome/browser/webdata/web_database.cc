@@ -153,7 +153,7 @@ using webkit_glue::PasswordForm;
 using base::Time;
 
 // Current version number.
-static const int kCurrentVersionNumber = 23;
+static const int kCurrentVersionNumber = 24;
 static const int kCompatibleVersionNumber = 21;
 
 // Keys used in the meta table.
@@ -1826,6 +1826,66 @@ void WebDatabase::MigrateOldVersionsAsNeeded() {
           return;
       }
       meta_table_.SetVersionNumber(23);
+
+      // FALL THROUGH
+
+    case 23: {
+      // One-time cleanup for Chromium bug 38364.  In the presence of
+      // multi-byte UTF-8 characters, that bug could cause AutoFill strings
+      // to grow larger and more corrupt with each save.  The cleanup removes
+      // any row with a string field larger than a reasonable size.  The string
+      // fields examined here are precisely the ones that were subject to
+      // corruption by the original bug.
+      const std::string autofill_is_too_big =
+          "max(length(name), length(value)) > 500";
+
+      const std::string credit_cards_is_too_big =
+          "max(length(label), length(name_on_card), length(type), "
+          "    length(expiration_month), length(expiration_year), "
+          "    length(billing_address), length(shipping_address) "
+          ") > 500";
+
+      const std::string autofill_profiles_is_too_big =
+          "max(length(label), length(first_name), "
+          "    length(middle_name), length(last_name), length(email), "
+          "    length(company_name), length(address_line_1), "
+          "    length(address_line_2), length(city), length(state), "
+          "    length(zipcode), length(country), length(phone), "
+          "    length(fax)) > 500";
+
+      std::string query = "DELETE FROM autofill_dates WHERE pair_id IN ("
+          "SELECT pair_id FROM autofill WHERE " + autofill_is_too_big + ")";
+      if (!db_.Execute(query.c_str())) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 24.";
+        return;
+      }
+      query = "DELETE FROM autofill WHERE " + autofill_is_too_big;
+      if (!db_.Execute(query.c_str())) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 24.";
+        return;
+      }
+      query = "DELETE FROM credit_cards WHERE (" + credit_cards_is_too_big +
+          ") OR label IN (SELECT label FROM autofill_profiles WHERE " +
+          autofill_profiles_is_too_big + ")";
+      if (!db_.Execute(query.c_str())) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 24.";
+        return;
+      }
+      query = "DELETE FROM autofill_profiles WHERE " +
+          autofill_profiles_is_too_big;
+      if (!db_.Execute(query.c_str())) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 24.";
+        return;
+      }
+
+      meta_table_.SetVersionNumber(24);
+
+      // FALL THROUGH
+    }
 
     // Add successive versions here.  Each should set the version number and
     // compatible version number as appropriate, then fall through to the next
