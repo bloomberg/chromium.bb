@@ -2173,7 +2173,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x5, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: f3 0f c2 c7 01                               cmpss %xmm0, %xmm7, 0x1
-  { PrefixF30F, {  0x0f, 0xc2 }, Cmpss,  NACLi_SSE2,
+  { PrefixF30F, {  0x0f, 0xc2 }, Cmpss,  NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
     { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
     { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
@@ -2188,7 +2188,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x1, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: f3 0f c2 0d 67 87 10 00 05                   cmpss %xmm1, [%rip+0x108767], 0x5
-  { PrefixF30F, {  0x0f, 0xc2 }, Cmpss,  NACLi_SSE2,
+  { PrefixF30F, {  0x0f, 0xc2 }, Cmpss,  NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b),
     { Xmm_G_Operand, NACL_OPFLAG(OpSet) },
     { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
