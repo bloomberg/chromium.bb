@@ -11,7 +11,6 @@
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -29,12 +28,12 @@
 #import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/toolbar_view.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
@@ -51,7 +50,6 @@ NSString* const kForwardButtonImageName = @"forward_Template.pdf";
 NSString* const kReloadButtonReloadImageName = @"reload_Template.pdf";
 NSString* const kReloadButtonStopImageName = @"stop_Template.pdf";
 NSString* const kHomeButtonImageName = @"home_Template.pdf";
-NSString* const kPageButtonImageName = @"menu_page_Template.pdf";
 NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
@@ -220,10 +218,8 @@ class PrefObserverBridge : public NotificationObserver {
   [reloadButton_
       setImage:nsimage_cache::ImageNamed(kReloadButtonReloadImageName)];
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
-  [pageButton_ setImage:nsimage_cache::ImageNamed(kPageButtonImageName)];
   [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
 
-  [pageButton_ setShowsBorderOnlyWhileMouseInside:YES];
   [wrenchButton_ setShowsBorderOnlyWhileMouseInside:YES];
 
   [self initCommandStatus:commands_];
@@ -239,7 +235,7 @@ class PrefObserverBridge : public NotificationObserver {
   showPageOptionButtons_.Init(prefs::kShowPageOptionsButtons, prefs,
                               prefObserver_.get());
   [self showOptionalHomeButton];
-  [self showOptionalPageWrenchButtons];
+  [self installWrenchMenu];
 
   // Create the controllers for the back/forward menus.
   backMenuController_.reset([[BackForwardMenuController alloc]
@@ -305,10 +301,6 @@ class PrefObserverBridge : public NotificationObserver {
                        forAttribute:NSAccessibilityDescriptionAttribute];
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_LOCATION);
   [[locationBar_ cell]
-      accessibilitySetOverrideValue:description
-                       forAttribute:NSAccessibilityDescriptionAttribute];
-  description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_PAGE);
-  [[pageButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
   description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_APP);
@@ -468,7 +460,7 @@ class PrefObserverBridge : public NotificationObserver {
 // Returns an array of views in the order of the outlets above.
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
-             homeButton_, pageButton_, wrenchButton_, locationBar_,
+             homeButton_, wrenchButton_, locationBar_,
              browserActionsContainerView_, nil];
 }
 
@@ -515,61 +507,24 @@ class PrefObserverBridge : public NotificationObserver {
   [homeButton_ setHidden:hide];
 }
 
-// Lazily install the menus on the page and wrench buttons. Calling this
-// repeatedly is inexpensive so it can be done every time the buttons are shown.
-- (void)installPageWrenchMenus {
-  if (pageMenuModel_.get())
+// Install the menu wrench buttons. Calling this repeatedly is inexpensive so it
+// can be done every time the buttons are shown.
+- (void)installWrenchMenu {
+  if (wrenchMenuModel_.get())
     return;
   menuDelegate_.reset(new ToolbarControllerInternal::MenuDelegate(browser_));
-  pageMenuModel_.reset(new PageMenuModel(menuDelegate_.get(), browser_));
-  pageMenuController_.reset(
-      [[MenuController alloc] initWithModel:pageMenuModel_.get()
+
+  wrenchMenuModel_.reset(new WrenchMenuModel(menuDelegate_.get(), browser_));
+  wrenchMenuController_.reset(
+      [[MenuController alloc] initWithModel:wrenchMenuModel_.get()
                      useWithPopUpButtonCell:YES]);
-  [pageButton_ setAttachedMenu:[pageMenuController_ menu]];
-
-  appMenuModel_.reset(new AppMenuModel(menuDelegate_.get(), browser_));
-  appMenuController_.reset(
-      [[MenuController alloc] initWithModel:appMenuModel_.get()
-                     useWithPopUpButtonCell:YES]);
-  [wrenchButton_ setAttachedMenu:[appMenuController_ menu]];
-}
-
-// Show or hide the page and wrench buttons based on the pref.
-- (void)showOptionalPageWrenchButtons {
-  // Ignore this message if only showing the URL bar.
-  if (!hasToolbar_)
-    return;
-  DCHECK([pageButton_ isHidden] == [wrenchButton_ isHidden]);
-  BOOL hide = showPageOptionButtons_.GetValue() ? NO : YES;
-  if (!hide)
-    [self installPageWrenchMenus];
-  if (hide == [pageButton_ isHidden])
-    return;  // Nothing to do, view state matches pref state.
-
-  // Resize the text field and move the browser actions by the width
-  // of the page/wrench buttons plus two times the gap width.
-  CGFloat dX = 2 * [self interButtonSpacing] + NSWidth([pageButton_ frame]) +
-      NSWidth([wrenchButton_ frame]);
-
-  // Larger if hiding menus, smaller if showing.
-  if (!hide)
-    dX *= -1;
-
-  [self adjustLocationSizeBy:dX animate:NO];
-  [browserActionsContainerView_ setFrame:NSOffsetRect(
-      [browserActionsContainerView_ frame], dX, 0)];
-
-  [browserActionsContainerView_ setRightBorderShown:!hide];
-  [pageButton_ setHidden:hide];
-  [wrenchButton_ setHidden:hide];
+  [wrenchButton_ setAttachedMenu:[wrenchMenuController_ menu]];
 }
 
 - (void)prefChanged:(std::wstring*)prefName {
   if (!prefName) return;
   if (*prefName == prefs::kShowHomeButton) {
     [self showOptionalHomeButton];
-  } else if (*prefName == prefs::kShowPageOptionsButtons) {
-    [self showOptionalPageWrenchButtons];
   }
 }
 
@@ -603,8 +558,9 @@ class PrefObserverBridge : public NotificationObserver {
       NSWidth([browserActionsContainerView_ frame]);
   if (containerWidth > 0.0)
     [self adjustLocationSizeBy:(containerWidth * -1) animate:NO];
-  BOOL rightBorderShown = !([pageButton_ isHidden] && [wrenchButton_ isHidden]);
-  [browserActionsContainerView_ setRightBorderShown:rightBorderShown];
+  // Right border should always be visible because wrench menu can no longer
+  // hide.
+  [browserActionsContainerView_ setRightBorderShown:YES];
 }
 
 - (void)adjustBrowserActionsContainerForNewWindow:
@@ -639,8 +595,7 @@ class PrefObserverBridge : public NotificationObserver {
   CGFloat leftPadding;
 
   if ([browserActionsContainerView_ isHidden]) {
-    CGFloat edgeXPos = [pageButton_ isHidden] ?
-        NSWidth([[locationBar_ window] frame]) : [pageButton_ frame].origin.x;
+    CGFloat edgeXPos = [wrenchButton_ frame].origin.x;
     leftPadding = edgeXPos - locationBarXPos;
   } else {
     NSRect containerFrame = animate ?

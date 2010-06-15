@@ -43,7 +43,7 @@ class ToolbarControllerTest : public CocoaTest {
   // Indexes that match the ordering returned by the private ToolbarController
   // |-toolbarViews| method.
   enum {
-    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kPageIndex,
+    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex,
     kWrenchIndex, kLocationIndex, kBrowserActionContainerViewIndex
   };
 
@@ -182,45 +182,19 @@ TEST_F(ToolbarControllerTest, ToggleHome) {
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
 
-TEST_F(ToolbarControllerTest, TogglePageWrench) {
-  PrefService* prefs = helper_.profile()->GetPrefs();
-  bool showButtons = prefs->GetBoolean(prefs::kShowPageOptionsButtons);
-  NSView* pageButton = [[bar_ toolbarViews] objectAtIndex:kPageIndex];
-  NSView* wrenchButton = [[bar_ toolbarViews] objectAtIndex:kWrenchIndex];
-  EXPECT_EQ(showButtons, ![pageButton isHidden]);
-  EXPECT_EQ(showButtons, ![wrenchButton isHidden]);
-
-  NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
-  NSRect originalLocationBarFrame = [locationBar frame];
-
-  // Toggle the pref and make sure the buttons changed state and the other
-  // views moved (or in the case of the location bar, it changed width).
-  prefs->SetBoolean(prefs::kShowPageOptionsButtons, !showButtons);
-  EXPECT_EQ(showButtons, [pageButton isHidden]);
-  EXPECT_EQ(showButtons, [wrenchButton isHidden]);
-  EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
-}
-
 // Ensure that we don't toggle the buttons when we have a strip marked as not
 // having the full toolbar. Also ensure that the location bar doesn't change
 // size.
 TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   [bar_ setHasToolbar:NO hasLocationBar:YES];
   NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
-  NSView* pageButton = [[bar_ toolbarViews] objectAtIndex:kPageIndex];
-  NSView* wrenchButton = [[bar_ toolbarViews] objectAtIndex:kWrenchIndex];
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
   NSRect locationBarFrame = [locationBar frame];
   EXPECT_EQ([homeButton isHidden], YES);
-  EXPECT_EQ([pageButton isHidden], YES);
-  EXPECT_EQ([wrenchButton isHidden], YES);
   [bar_ showOptionalHomeButton];
   EXPECT_EQ([homeButton isHidden], YES);
   NSRect newLocationBarFrame = [locationBar frame];
   EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
-  [bar_ showOptionalPageWrenchButtons];
-  EXPECT_EQ([pageButton isHidden], YES);
-  EXPECT_EQ([wrenchButton isHidden], YES);
   newLocationBarFrame = [locationBar frame];
   EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
 }

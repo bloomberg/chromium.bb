@@ -334,7 +334,6 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setHomepageURL:(NSString*)urlString;
 - (void)setRestoreOnStartupIndex:(NSInteger)type;
 - (void)setShowHomeButton:(BOOL)value;
-- (void)setShowPageOptionsButtons:(BOOL)value;
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value;
 - (void)setFormAutofillEnabledIndex:(NSInteger)value;
 - (void)setIsUsingDefaultTheme:(BOOL)value;
@@ -695,8 +694,6 @@ class PrefObserverBridge : public NotificationObserver,
                              prefs_, observer_.get());
   homepage_.Init(prefs::kHomePage, prefs_, observer_.get());
   showHomeButton_.Init(prefs::kShowHomeButton, prefs_, observer_.get());
-  showPageOptionButtons_.Init(prefs::kShowPageOptionsButtons, prefs_,
-                              observer_.get());
 
   // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
@@ -869,10 +866,6 @@ class PrefObserverBridge : public NotificationObserver,
 
   if (*prefName == prefs::kShowHomeButton) {
     [self setShowHomeButton:showHomeButton_.GetValue() ? YES : NO];
-  }
-  if (*prefName == prefs::kShowPageOptionsButtons) {
-    [self setShowPageOptionsButtons:showPageOptionButtons_.GetValue() ?
-        YES : NO];
   }
 }
 
@@ -1059,24 +1052,6 @@ enum { kHomepageNewTabPage, kHomepageURL };
     [self recordUserAction:UserMetricsAction(
                            "Options_Homepage_HideHomeButton")];
   showHomeButton_.SetValue(value ? true : false);
-}
-
-// Returns whether the page and options button should be checked based on the
-// preference.
-- (BOOL)showPageOptionsButtons {
-  return showPageOptionButtons_.GetValue() ? YES : NO;
-}
-
-// Sets the backend pref for whether or not the page and options buttons should
-// be displayed based on |value|.
-- (void)setShowPageOptionsButtons:(BOOL)value {
-  if (value)
-    [self recordUserAction:UserMetricsAction(
-                           "Options_Homepage_ShowPageOptionsButtons")];
-  else
-    [self recordUserAction:UserMetricsAction(
-                           "Options_Homepage_HidePageOptionsButtons")];
-  showPageOptionButtons_.SetValue(value ? true : false);
 }
 
 // Getter for the |searchEngineModel| property for bindings.

@@ -15,7 +15,6 @@
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/pref_member.h"
 
-class AppMenuModel;
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
 @class BrowserActionsContainerView;
@@ -28,7 +27,6 @@ class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
 @class MenuController;
-class PageMenuModel;
 namespace ToolbarControllerInternal {
 class MenuDelegate;
 class PrefObserverBridge;
@@ -36,6 +34,7 @@ class PrefObserverBridge;
 class Profile;
 class TabContents;
 class ToolbarModel;
+class WrenchMenuModel;
 
 // A controller for the toolbar in the browser window. Manages
 // updating the state for location bar and back/fwd/reload/go buttons.
@@ -52,7 +51,6 @@ class ToolbarModel;
   IBOutlet DelayedMenuButton* forwardButton_;
   IBOutlet NSButton* reloadButton_;
   IBOutlet NSButton* homeButton_;
-  IBOutlet MenuButton* pageButton_;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
   IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
@@ -71,14 +69,11 @@ class ToolbarModel;
   scoped_nsobject<BrowserActionsController> browserActionsController_;
 
   // Lazily-instantiated model, controller, and delegate for the menu on the
-  // page and wrench buttons. The wrench menu is also called the "app menu". If
-  // it's visible, these will be non-null, but they are not reaped when the
-  // button is hidden once it is initially shown.
-  scoped_ptr<PageMenuModel> pageMenuModel_;
-  scoped_nsobject<MenuController> pageMenuController_;
+  // wrench button.  Once visible, it will be non-null, but will not
+  // reaped when the menu is hidden once it is initially shown.
   scoped_ptr<ToolbarControllerInternal::MenuDelegate> menuDelegate_;
-  scoped_ptr<AppMenuModel> appMenuModel_;
-  scoped_nsobject<MenuController> appMenuController_;
+  scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
+  scoped_nsobject<MenuController> wrenchMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
@@ -180,7 +175,7 @@ class ToolbarModel;
 // Returns an array of views in the order of the outlets above.
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
-- (void)showOptionalPageWrenchButtons;
+- (void)installWrenchMenu;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end

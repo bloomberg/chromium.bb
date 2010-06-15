@@ -78,7 +78,6 @@ class ProfileSyncService;
   BooleanPrefMember newTabPageIsHomePage_;
   StringPrefMember homepage_;
   BooleanPrefMember showHomeButton_;
-  BooleanPrefMember showPageOptionButtons_;
   scoped_nsobject<SearchEngineListModel> searchEngineModel_;
   // Used when creating a new home page url to make the new cell editable.
   BOOL pendingSelectForEdit_;

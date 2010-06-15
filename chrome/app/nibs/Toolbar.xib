@@ -42,14 +42,14 @@
 					<object class="NSCustomView" id="421615633">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">-2147483383</int>
-						<string key="NSFrame">{{540, 0}, {0.777771, 36}}</string>
+						<string key="NSFrame">{{574, 0}, {0.777771, 36}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<string key="NSClassName">BrowserActionsContainerView</string>
 					</object>
 					<object class="NSTextField" id="535508469">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">266</int>
-						<string key="NSFrame">{{136, 5}, {401, 27}}</string>
+						<string key="NSFrame">{{136, 5}, {435, 27}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33004</int>
 						<bool key="NSEnabled">YES</bool>
@@ -190,30 +190,6 @@
 							<int key="NSPeriodicInterval">75</int>
 						</object>
 					</object>
-					<object class="NSButton" id="571076484">
-						<reference key="NSNextResponder" ref="928520650"/>
-						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{540, 5}, {35, 27}}</string>
-						<reference key="NSSuperview" ref="928520650"/>
-						<bool key="NSEnabled">YES</bool>
-						<object class="NSButtonCell" key="NSCell" id="482050975">
-							<int key="NSCellFlags">-2080244224</int>
-							<int key="NSCellFlags2">134250496</int>
-							<string key="NSContents"/>
-							<reference key="NSSupport" ref="64724822"/>
-							<reference key="NSControlView" ref="571076484"/>
-							<int key="NSButtonFlags">141312255</int>
-							<int key="NSButtonFlags2">134</int>
-							<object class="NSCustomResource" key="NSNormalImage">
-								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">menu_page_Template</string>
-							</object>
-							<string key="NSAlternateContents"/>
-							<string key="NSKeyEquivalent"/>
-							<int key="NSPeriodicDelay">400</int>
-							<int key="NSPeriodicInterval">75</int>
-						</object>
-					</object>
 					<object class="NSButton" id="602421009">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">265</int>
@@ -230,7 +206,7 @@
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">menu_chrome_Template</string>
+								<string key="NSResourceName">NSActionTemplate</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -316,14 +292,6 @@
 						<reference key="destination" ref="368496192"/>
 					</object>
 					<int key="connectionID">35</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">pageButton_</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="571076484"/>
-					</object>
-					<int key="connectionID">40</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -414,7 +382,6 @@
 							<reference ref="781044416"/>
 							<reference ref="368496192"/>
 							<reference ref="602421009"/>
-							<reference ref="571076484"/>
 							<reference ref="421615633"/>
 						</object>
 						<reference key="parent" ref="588411309"/>
@@ -490,20 +457,6 @@
 						<reference key="parent" ref="634265909"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">36</int>
-						<reference key="object" ref="571076484"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="482050975"/>
-						</object>
-						<reference key="parent" ref="928520650"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">37</int>
-						<reference key="object" ref="482050975"/>
-						<reference key="parent" ref="571076484"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">38</int>
 						<reference key="object" ref="602421009"/>
 						<object class="NSMutableArray" key="children">
@@ -561,11 +514,6 @@
 					<string>2.IBPluginDependency</string>
 					<string>3.IBAttributePlaceholdersKey</string>
 					<string>3.IBPluginDependency</string>
-					<string>36.CustomClassName</string>
-					<string>36.IBAttributePlaceholdersKey</string>
-					<string>36.IBPluginDependency</string>
-					<string>37.CustomClassName</string>
-					<string>37.IBPluginDependency</string>
 					<string>38.CustomClassName</string>
 					<string>38.IBAttributePlaceholdersKey</string>
 					<string>38.IBPluginDependency</string>
@@ -586,7 +534,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{322, 542}, {618, 36}}</string>
+					<string>{{175, 552}, {618, 36}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>ClickHoldButtonCell</string>
@@ -618,18 +566,6 @@
 							<string key="toolTip">^IDS_TOOLTIP_RELOAD</string>
 						</object>
 					</object>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>MenuButton</string>
-					<object class="NSMutableDictionary">
-						<string key="NS.key.0">ToolTip</string>
-						<object class="IBToolTipAttribute" key="NS.object.0">
-							<string key="name">ToolTip</string>
-							<reference key="object" ref="571076484"/>
-							<string key="toolTip">^IDS_PAGEMENU_TOOLTIP</string>
-						</object>
-					</object>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>ClickHoldButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>MenuButton</string>
 					<object class="NSMutableDictionary">
