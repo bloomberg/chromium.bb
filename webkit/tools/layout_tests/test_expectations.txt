@@ -4,3 +4,7 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Before I can roll to r61202
+BUGDIMICH MAC : fast/canvas/webgl/texture-npot.html = TEXT
+
