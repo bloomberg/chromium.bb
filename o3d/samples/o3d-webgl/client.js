@@ -97,8 +97,9 @@ o3d.Renderer.clients_ = [];
 o3d.Renderer.renderClients = function() {
   for (var i = 0; i < o3d.Renderer.clients_.length; ++i) {
     var client = o3d.Renderer.clients_[i];
-
-    client.render();
+    if (client.renderMode == o3d.Client.RENDERMODE_CONTINUOUS) {
+      client.render();
+    }
   }
 };
 
