@@ -1297,7 +1297,7 @@ index 0000000..2caf371
 +RD(THM_TLS_DESCSEQ16 , STATIC  , N, THM16, NONE                   ,  N, -1, Y)
 +RD(THM_TLS_DESCSEQ32 , STATIC  , N, THM32, NONE                   ,  N, -1, Y)
 diff --git a/gold/arm.cc b/gold/arm.cc
-index dd5f67d..820abc7 100644
+index dd5f67d..fdc4287 100644
 --- a/gold/arm.cc
 +++ b/gold/arm.cc
 @@ -1,8 +1,10 @@
@@ -8698,7 +8698,7 @@ index dd5f67d..820abc7 100644
      symtab,
      layout,
      this,
-@@ -1825,8 +7744,69 @@ Target_arm<big_endian>::scan_relocs(const General_options& options,
+@@ -1825,8 +7744,74 @@ Target_arm<big_endian>::scan_relocs(const General_options& options,
  
  template<bool big_endian>
  void
@@ -8708,6 +8708,11 @@ index dd5f67d..820abc7 100644
 +    const Input_objects* input_objects,
 +    Symbol_table* symtab)
  {
++  // Create an empty uninitialized attribute section if we still don't have it
++  // at this moment.
++  if (this->attributes_section_data_ == NULL)
++    this->attributes_section_data_ = new Attributes_section_data(NULL, 0);
++
 +  // Merge processor-specific flags.
 +  for (Input_objects::Relobj_iterator p = input_objects->relobj_begin();
 +       p != input_objects->relobj_end();
@@ -8769,7 +8774,7 @@ index dd5f67d..820abc7 100644
    // Fill in some more dynamic tags.
    Output_data_dynamic* const odyn = layout->dynamic_data();
    if (odyn != NULL)
-@@ -1864,24 +7844,44 @@ Target_arm<big_endian>::do_finalize_sections(Layout* layout)
+@@ -1864,24 +7849,44 @@ Target_arm<big_endian>::do_finalize_sections(Layout* layout)
    if (this->copy_relocs_.any_saved_relocs())
      this->copy_relocs_.emit(this->rel_dyn_section(layout));
  
@@ -8823,7 +8828,7 @@ index dd5f67d..820abc7 100644
  }
  
  // Return whether a direct absolute static relocation needs to be applied.
-@@ -1938,31 +7938,94 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -1938,31 +7943,94 @@ Target_arm<big_endian>::Relocate::relocate(
      const Sized_symbol<32>* gsym,
      const Symbol_value<32>* psymval,
      unsigned char* view,
@@ -8933,7 +8938,7 @@ index dd5f67d..820abc7 100644
    // Get the GOT offset if needed.
    // The GOT pointer points to the end of the GOT section.
    // We need to subtract the size of the GOT section to get
-@@ -1993,8 +8056,61 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -1993,8 +8061,61 @@ Target_arm<big_endian>::Relocate::relocate(
        break;
      }
  
@@ -8995,7 +9000,7 @@ index dd5f67d..820abc7 100644
    switch (r_type)
      {
      case elfcpp::R_ARM_NONE:
-@@ -2022,7 +8138,7 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2022,7 +8143,7 @@ Target_arm<big_endian>::Relocate::relocate(
        if (should_apply_static_reloc(gsym, Symbol::ABSOLUTE_REF, true,
  				    output_section))
  	reloc_status = Arm_relocate_functions::abs32(view, object, psymval,
@@ -9004,7 +9009,7 @@ index dd5f67d..820abc7 100644
        break;
  
      case elfcpp::R_ARM_ABS32_NOI:
-@@ -2030,75 +8146,72 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2030,75 +8151,72 @@ Target_arm<big_endian>::Relocate::relocate(
  				    output_section))
  	// No thumb bit for this relocation: (S + A)
  	reloc_status = Arm_relocate_functions::abs32(view, object, psymval,
@@ -9114,7 +9119,7 @@ index dd5f67d..820abc7 100644
        break;
  
      case elfcpp::R_ARM_THM_ABS5:
-@@ -2108,65 +8221,48 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2108,65 +8226,48 @@ Target_arm<big_endian>::Relocate::relocate(
        break;
  
      case elfcpp::R_ARM_THM_CALL:
@@ -9205,7 +9210,7 @@ index dd5f67d..820abc7 100644
        }
        break;
  
-@@ -2180,7 +8276,7 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2180,7 +8281,7 @@ Target_arm<big_endian>::Relocate::relocate(
        // Get the address origin for GOT PLT, which is allocated right
        // after the GOT section, to calculate an absolute address of
        // the symbol GOT entry (got_origin + got_offset).
@@ -9214,7 +9219,7 @@ index dd5f67d..820abc7 100644
        got_origin = target->got_plt_section()->address();
        reloc_status = Arm_relocate_functions::got_prel(view,
  						      got_origin + got_offset,
-@@ -2194,44 +8290,153 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2194,44 +8295,153 @@ Target_arm<big_endian>::Relocate::relocate(
  		  || (gsym->is_defined()
  		      && !gsym->is_from_dynobj()
  		      && !gsym->is_preemptible()));
@@ -9391,7 +9396,7 @@ index dd5f67d..820abc7 100644
      }
  
    // Report any errors.
-@@ -2259,6 +8464,145 @@ Target_arm<big_endian>::Relocate::relocate(
+@@ -2259,6 +8469,145 @@ Target_arm<big_endian>::Relocate::relocate(
    return true;
  }
  
@@ -9537,7 +9542,7 @@ index dd5f67d..820abc7 100644
  // Relocate section data.
  
  template<bool big_endian>
-@@ -2271,13 +8615,35 @@ Target_arm<big_endian>::relocate_section(
+@@ -2271,13 +8620,35 @@ Target_arm<big_endian>::relocate_section(
      Output_section* output_section,
      bool needs_special_offset_handling,
      unsigned char* view,
@@ -9574,7 +9579,7 @@ index dd5f67d..820abc7 100644
    gold::relocate_section<32, big_endian, Target_arm, elfcpp::SHT_REL,
  			 Arm_relocate>(
      relinfo,
-@@ -2302,57 +8668,16 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
+@@ -2302,57 +8673,16 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
      Relobj* object)
  {
    r_type = get_real_reloc_type(r_type);
@@ -9641,7 +9646,7 @@ index dd5f67d..820abc7 100644
        return 0;
      }
  }
-@@ -2362,7 +8687,6 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
+@@ -2362,7 +8692,6 @@ Target_arm<big_endian>::Relocatable_size_for_reloc::get_size_for_reloc(
  template<bool big_endian>
  void
  Target_arm<big_endian>::scan_relocatable_relocs(
@@ -9649,7 +9654,7 @@ index dd5f67d..820abc7 100644
      Symbol_table* symtab,
      Layout* layout,
      Sized_relobj<32, big_endian>* object,
-@@ -2383,7 +8707,6 @@ Target_arm<big_endian>::scan_relocatable_relocs(
+@@ -2383,7 +8712,6 @@ Target_arm<big_endian>::scan_relocatable_relocs(
  
    gold::scan_relocatable_relocs<32, big_endian, elfcpp::SHT_REL,
        Scan_relocatable_relocs>(
@@ -9657,7 +9662,7 @@ index dd5f67d..820abc7 100644
      symtab,
      layout,
      object,
-@@ -2410,7 +8733,7 @@ Target_arm<big_endian>::relocate_for_relocatable(
+@@ -2410,7 +8738,7 @@ Target_arm<big_endian>::relocate_for_relocatable(
      off_t offset_in_output_section,
      const Relocatable_relocs* rr,
      unsigned char* view,
@@ -9666,7 +9671,7 @@ index dd5f67d..820abc7 100644
      section_size_type view_size,
      unsigned char* reloc_view,
      section_size_type reloc_view_size)
-@@ -2465,7 +8788,1836 @@ Target_arm<big_endian>::get_real_reloc_type (unsigned int r_type)
+@@ -2465,7 +8793,1836 @@ Target_arm<big_endian>::get_real_reloc_type (unsigned int r_type)
      }
  }
  
@@ -11504,7 +11509,7 @@ index dd5f67d..820abc7 100644
  
  template<bool big_endian>
  class Target_selector_arm : public Target_selector
-@@ -2481,6 +10633,52 @@ class Target_selector_arm : public Target_selector
+@@ -2481,6 +10638,52 @@ class Target_selector_arm : public Target_selector
    { return new Target_arm<big_endian>(); }
  };
  
@@ -11559,7 +11564,7 @@ index dd5f67d..820abc7 100644
  
 diff --git a/gold/attributes.cc b/gold/attributes.cc
 new file mode 100644
-index 0000000..6b2260d
+index 0000000..2deb9bd
 --- /dev/null
 +++ b/gold/attributes.cc
 @@ -0,0 +1,458 @@
@@ -11843,7 +11848,7 @@ index 0000000..6b2260d
 +
 +  const unsigned char *p = view;
 +  p = view;
-+  if (*(p++) == 'A')
++  if (size > 0 && p != NULL && *(p++) == 'A')
 +    {
 +      size--;
 +      while (size > 0)
