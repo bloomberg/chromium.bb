@@ -61,7 +61,21 @@
   Heapcheck:Leak
   fun:FcConfigFilename
 }
-
+{
+  bug_39050_i
+  Heapcheck:Leak
+  fun:FcCharSetFindLeafCreate
+}
+{
+  bug_39050_j
+  Heapcheck:Leak
+  fun:FcCharSetPutLeaf
+}
+{
+  bug_39050_k
+  Heapcheck:Leak
+  fun:IA__FcCharSetCreate
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
@@ -418,3 +432,133 @@
    fun:::RunTest_EnsureTaskDeletion*
    fun:MessageLoopTest_*EnsureTaskDeletion_*::TestBody
 }
+
+{
+   bug_46571_a
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WebCore::StringImpl::createUninitialized
+   fun:WebCore::String::createUninitialized
+   fun:WebCore::StringTraits::fromV8String
+   fun:WebCore::v8StringToWebCoreString
+   fun:WebCore::v8StringToWebCoreString
+   fun:WebCore::v8ValueToWebCoreString
+   fun:WebCore::toWebCoreString
+   fun:WebCore::ScriptValue::getString
+   fun:WebKit::WebFrameImpl::loadJavaScriptURL
+   fun:WebKit::WebFrameImpl::loadRequest
+   fun:TestShell::Navigate
+}
+
+{
+   bug_46571_b
+   Heapcheck:Leak
+   fun:WebCore::makeExternalString
+   fun:WebCore::v8ExternalString
+   fun:WebCore::V8Proxy::evaluate
+   fun:WebCore::ScriptController::evaluate
+   fun:WebCore::ScriptController::executeScript
+   fun:WebCore::ScriptController::executeScript
+   fun:WebKit::WebFrameImpl::loadJavaScriptURL
+   fun:WebKit::WebFrameImpl::loadRequest
+   fun:TestShell::Navigate
+}
+
+{
+   bug_46571_c
+   Heapcheck:Leak
+   fun:WebCore::makeExternalString
+   fun:WebCore::v8ExternalString
+   fun:WebCore::v8String
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebKit::WebFrameImpl::bindToWindowObject
+   fun:CppBoundClass::BindToJavascript
+   fun:TestShell::BindJSObjectsToWindow
+   fun:TestWebViewDelegate::didClearWindowObject
+   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::V8DOMWindowShell::initContextIfNeeded
+   fun:WebCore::V8Proxy::mainWorldContext
+   fun:WebCore::V8Proxy::mainWorldContext
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebKit::WebFrameImpl::bindToWindowObject
+   fun:CppBoundClass::BindToJavascript
+   fun:AccessibilityController::BindToJavascript
+   fun:TestShell::BindJSObjectsToWindow
+}
+
+{
+   bug_46571_d
+   Heapcheck:Leak
+   fun:WebCore::makeExternalString
+   fun:WebCore::v8ExternalString
+   fun:WebCore::v8String
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebKit::WebFrameImpl::bindToWindowObject
+   fun:CppBoundClass::BindToJavascript
+   fun:AccessibilityController::BindToJavascript
+   fun:TestShell::BindJSObjectsToWindow
+   fun:TestWebViewDelegate::didClearWindowObject
+   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
+   fun:WebCore::V8DOMWindowShell::initContextIfNeeded
+   fun:WebCore::V8Proxy::mainWorldContext
+   fun:WebCore::V8Proxy::mainWorldContext
+   fun:WebCore::ScriptController::bindToWindowObject
+   fun:WebKit::WebFrameImpl::bindToWindowObject
+   fun:CppBoundClass::BindToJavascript
+   fun:AccessibilityController::BindToJavascript
+   fun:TestShell::BindJSObjectsToWindow
+}
+
+
+{
+   bug_46571_e
+   Heapcheck:Leak
+   fun:WebCore::v8StringToWebCoreString
+   fun:WebCore::v8StringToWebCoreString
+   fun:WebCore::v8ValueToWebCoreString
+   fun:WebCore::toWebCoreString
+   fun:WebCore::ScriptValue::getString
+   fun:WebKit::WebFrameImpl::loadJavaScriptURL
+   fun:WebKit::WebFrameImpl::loadRequest
+   fun:TestShell::Navigate
+   fun:TestNavigationController::NavigateToPendingEntry
+   fun:TestNavigationController::LoadEntry
+   fun:TestShell::LoadURLForFrame
+   fun:TestShell::LoadURL
+   fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
+   fun:testing::Test::Run
+   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestCase::Run
+   fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::UnitTest::Run
+   fun:main
+   fun:__libc_start_main
+}
+
+{
+   bug_46571_f
+   Heapcheck:Leak
+   fun:WebCore::makeExternalString
+   fun:WebCore::v8ExternalString
+   fun:WebCore::V8Proxy::evaluate
+   fun:WebCore::ScriptController::collectGarbage
+   fun:WebKit::WebFrameImpl::collectGarbage
+   fun:TestShell::CallJSGC
+   fun:TestShell::~TestShell
+   fun:::MainWindowDestroyed
+   fun:g_closure_invoke
+}
+
+
+{
+   bug_32366
+   Heapcheck:Leak
+   fun:CallbackRunner* NewCallback
+   fun:media::PipelineImpl::FilterStateTransitionTask
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:MessageLoop::RunTask
+}
+
