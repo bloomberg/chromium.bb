@@ -572,12 +572,13 @@ def MassageFinalLinkCommandArm(args):
     out.append('-L' + LIBDIR_ARM_3)
     out.append('-lstdc++')
     out.append('-L' + LIBDIR_ARM_1)
-    out.append('-lgcc') # the "-lgcc -lc -lgcc" is the same sequence used by
-                        # gcc. libgcc use libc and libc uses libgcc
+    # NOTE: bad things happen if ''-lc' is not first
+    out.append('--start-group')
     out.append('-lc')
+    out.append('-lnacl')
     out.append('-lgcc')
     out.append('-lnosys')
-
+    out.append('--end-group')
   return out
 
 
@@ -671,10 +672,12 @@ def GenerateCombinedBitcodeFile(argv):
     if last_bitcode_pos != None:
         # Splice in the extra symbols.
         args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
-#                       [PNACL_BITCODE_ROOT + '/reachable_function_symbols.o'] +
                        args_bit_ld[last_bitcode_pos:] +
-                       ['-lstdc++',
+                       [# NOTE: bad things happen when '-lc' is not first
                         '-lc',
+                        '-lnacl',
+                        '-lstdc++',
+                        '-lnosys',
                         ])
 
   # NOTE: .bc will be appended to the output name by LLVM_LD
