@@ -22,8 +22,8 @@ bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
   decode_done_.reset(decode_done);
   updated_rects_ = updated_rects;
 
-  // TODO(hclam): Check if we can accept the color format of the video frame and
-  // the codec.
+  // TODO(hclam): Check if we can accept the color format of the video frame
+  // and the codec.
   frame_ = frame;
   return true;
 }
@@ -46,7 +46,7 @@ bool DecoderVerbatim::PartialDecode(HostMessage* message) {
     bytes_per_pixel = 2;
   } else if (pixel_format == PixelFormatRgb32) {
     bytes_per_pixel = 4;
-  } else if (pixel_format != PixelFormatAscii) {
+  } else if (pixel_format == PixelFormatAscii) {
     bytes_per_pixel = 1;
   } else {
     NOTREACHED() << "Pixel format not supported";

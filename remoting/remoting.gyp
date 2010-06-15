@@ -331,6 +331,7 @@
         'base/mock_objects.h',
         'base/multiple_array_input_stream_unittest.cc',
         'base/protocol_decoder_unittest.cc',
+        'client/mock_objects.h',
         'client/decoder_verbatim_unittest.cc',
         'host/differ_unittest.cc',
         'host/differ_block_unittest.cc',
