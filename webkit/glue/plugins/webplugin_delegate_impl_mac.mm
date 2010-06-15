@@ -620,12 +620,19 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
   bool handled = instance()->NPP_HandleEvent(plugin_event) != 0;
 
+  // Plugins don't give accurate information about whether or not they handled
+  // events, so browsers on the Mac ignore the return value.
+  // Scroll events are the exception, since the Cocoa spec defines a meaning
+  // for the return value.
   if (WebInputEvent::isMouseEventType(event.type)) {
-    // Plugins are not good about giving accurate information about whether or
-    // not they handled events, and other browsers on the Mac generally ignore
-    // the return value. We may need to expand this to other input types, but
-    // we'll need to be careful about things like Command-keys.
     handled = true;
+  } else if (WebInputEvent::isKeyboardEventType(event.type)) {
+    // For Command-key events, trust the return value since eating all menu
+    // shortcuts is not ideal.
+    // TODO(stuartmorgan): Implement the advanced key handling spec, and trust
+    // trust the key event return value from plugins that implement it.
+    if (!(event.modifiers & WebInputEvent::MetaKey))
+      handled = true;
   }
 
   return handled;
