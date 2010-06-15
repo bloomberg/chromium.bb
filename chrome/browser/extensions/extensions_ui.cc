@@ -208,8 +208,8 @@ void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
                                      &file_contents)) {
       // If there's no icon, default to the puzzle icon. This is safe to do from
       // the file thread.
-      file_contents = ResourceBundle::GetSharedInstance().GetDataResource(
-          IDR_EXTENSION_DEFAULT_ICON);
+      file_contents = ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_EXTENSION_DEFAULT_ICON).as_string();
     }
 
     // If the extension is disabled, we desaturate the icon to add to the

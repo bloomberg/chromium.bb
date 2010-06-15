@@ -95,10 +95,6 @@ SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
   return new SkBitmap(bitmap);
 }
 
-std::string ResourceBundle::GetDataResource(int resource_id) {
-  return GetRawDataResource(resource_id).as_string();
-}
-
 RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
   return LoadResourceBytes(resources_data_, resource_id);

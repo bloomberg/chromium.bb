@@ -208,23 +208,7 @@ class ChromeOSAboutVersionHandler {
 
 // Individual about handlers ---------------------------------------------------
 
-std::string AboutCredits() {
-  static const std::string credits_html =
-      ResourceBundle::GetSharedInstance().GetDataResource(
-          IDR_CREDITS_HTML);
-
-  return credits_html;
-}
-
 #if defined(OS_CHROMEOS)
-std::string AboutOSCredits() {
-  static const std::string os_credits_html =
-      ResourceBundle::GetSharedInstance().GetDataResource(
-          IDR_OS_CREDITS_HTML);
-
-  return os_credits_html;
-}
-
 std::string AboutNetwork(const std::string& query) {
   int refresh;
   StringToInt(query, &refresh);
@@ -487,14 +471,6 @@ std::string AboutLinuxProxyConfig() {
 }
 #endif
 
-std::string AboutTerms() {
-  static const std::string terms_html =
-      ResourceBundle::GetSharedInstance().GetDataResource(
-          IDR_TERMS_HTML);
-
-  return terms_html;
-}
-
 std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString(L"title",
       l10n_util::GetString(IDS_ABOUT_VERSION_TITLE));
@@ -552,8 +528,8 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString(L"command_line", command_line);
 #endif
 
-  static const std::string version_html(
-      ResourceBundle::GetSharedInstance().GetDataResource(
+  base::StringPiece version_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_VERSION_HTML));
 
   return jstemplate_builder::GetTemplatesHtml(
@@ -765,15 +741,18 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     response = AboutVersion(&value);
 #endif
   } else if (path == kCreditsPath) {
-    response = AboutCredits();
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_CREDITS_HTML).as_string();
 #if defined(OS_CHROMEOS)
   } else if (path == kOSCreditsPath) {
-    response = AboutOSCredits();
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_OS_CREDITS_HTML).as_string();
   } else if (path == kNetworkPath) {
     response = AboutNetwork(info);
 #endif
   } else if (path == kTermsPath) {
-    response = AboutTerms();
+    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_TERMS_HTML).as_string();
 #if defined(OS_LINUX)
   } else if (path == kLinuxProxyConfigPath) {
     response = AboutLinuxProxyConfig();

@@ -56,7 +56,7 @@ class URLRequestBlacklistJob : public URLRequestSimpleJob {
 
   static std::string GetImage() {
     return ResourceBundle::GetSharedInstance().
-        GetDataResource(IDR_BLACKLIST_IMAGE);
+        GetRawDataResource(IDR_BLACKLIST_IMAGE).as_string();
   }
 
   std::string GetHTML() const {

@@ -63,19 +63,19 @@ void TestShellDevToolsAgent::runtimeFeatureStateChanged(
 WebCString TestShellDevToolsAgent::injectedScriptSource() {
   base::StringPiece injectjsWebkit =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
-  return WebCString(injectjsWebkit.as_string().c_str());
+  return WebCString(injectjsWebkit.data(), injectjsWebkit.length());
 }
 
 WebCString TestShellDevToolsAgent::injectedScriptDispatcherSource() {
   base::StringPiece injectDispatchjs =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_DISPATCH_JS);
-  return WebCString(injectDispatchjs.as_string().c_str());
+  return WebCString(injectDispatchjs.data(), injectDispatchjs.length());
 }
 
 WebCString TestShellDevToolsAgent::debuggerScriptSource() {
   base::StringPiece debuggerScriptjs =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
-  return WebCString(debuggerScriptjs.as_string().c_str());
+  return WebCString(debuggerScriptjs.data(), debuggerScriptjs.length());
 }
 
 void TestShellDevToolsAgent::AsyncCall(const TestShellDevToolsCallArgs &args) {

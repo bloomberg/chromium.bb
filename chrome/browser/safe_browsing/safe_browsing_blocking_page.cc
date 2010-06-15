@@ -122,16 +122,17 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
 
   if (unsafe_resources_.size() > 1) {
     PopulateMultipleThreatStringDictionary(&strings);
-    html = rb.GetDataResource(IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK);
+    html = rb.GetRawDataResource(
+        IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK).as_string();
   } else if (unsafe_resources_[0].threat_type ==
              SafeBrowsingService::URL_MALWARE) {
     PopulateMalwareStringDictionary(&strings);
-    html = rb.GetDataResource(IDR_SAFE_BROWSING_MALWARE_BLOCK);
+    html = rb.GetRawDataResource(IDR_SAFE_BROWSING_MALWARE_BLOCK).as_string();
   } else {  // Phishing.
     DCHECK(unsafe_resources_[0].threat_type ==
            SafeBrowsingService::URL_PHISHING);
     PopulatePhishingStringDictionary(&strings);
-    html = rb.GetDataResource(IDR_SAFE_BROWSING_PHISHING_BLOCK);
+    html = rb.GetRawDataResource(IDR_SAFE_BROWSING_PHISHING_BLOCK).as_string();
   }
 
   return jstemplate_builder::GetTemplatesHtml(html, &strings, "template_root");

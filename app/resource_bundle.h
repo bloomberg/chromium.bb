@@ -99,14 +99,7 @@ class ResourceBundle {
   // the resource. Returns whether we successfully read the resource.
   RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
 
-  // Return the contents of a file in a string given the resource id.
-  // This will copy the data from the resource and return it as a string.
-  // TODO(port): deprecate this and replace with GetRawDataResource to avoid
-  // needless copying.
-  std::string GetDataResource(int resource_id);
-
-  // Like GetDataResource(), but avoids copying the resource.  Instead, it
-  // returns a StringPiece which points into the actual resource in the image.
+  // Return the contents of a resource in a StringPiece given the resource id.
   base::StringPiece GetRawDataResource(int resource_id);
 
   // Get a localized string given a message id.  Returns an empty

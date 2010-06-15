@@ -147,15 +147,15 @@ bool LaunchSetupWithParam(const std::string& param, const std::wstring& value,
 }
 
 bool WriteEULAtoTempFile(FilePath* eula_path) {
-  std::string terms =
-      ResourceBundle::GetSharedInstance().GetDataResource(IDR_TERMS_HTML);
+  base::StringPiece terms =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_TERMS_HTML);
   if (terms.empty())
     return false;
   FilePath temp_dir;
   if (!file_util::GetTempDir(&temp_dir))
     return false;
   *eula_path = temp_dir.Append(L"chrome_eula_iframe.html");
-  return (file_util::WriteFile(*eula_path, terms.c_str(), terms.size()) > 0);
+  return (file_util::WriteFile(*eula_path, terms.data(), terms.size()) > 0);
 }
 
 // Helper class that performs delayed first-run tasks that need more of the
