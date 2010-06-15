@@ -37,7 +37,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 	uint8_t *src, *dst;
 	uint32_t *s, *d, a, p;
 	int i, j, k, size, half;
-	uint8_t kernel[35];
+	uint32_t kernel[49];
 	double f;
 
 	size = ARRAY_LENGTH(kernel);
@@ -49,11 +49,9 @@ blur_surface(cairo_surface_t *surface, int margin)
 	dst = malloc(height * stride);
 
 	half = size / 2;
-	a = 0;
 	for (i = 0; i < size; i++) {
 		f = (i - half);
-		kernel[i] = exp(- f * f / 30.0) * 80;
-		a += kernel[i];
+		kernel[i] = exp(- f * f / ARRAY_LENGTH(kernel)) * 10000;
 	}
 
 	for (i = 0; i < height; i++) {
@@ -69,6 +67,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 			y = 0;
 			z = 0;
 			w = 0;
+			a = 0;
 			for (k = 0; k < size; k++) {
 				if (j - half + k < 0 || j - half + k >= width)
 					continue;
@@ -78,6 +77,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 				y += ((p >> 16) & 0xff) * kernel[k];
 				z += ((p >> 8) & 0xff) * kernel[k];
 				w += (p & 0xff) * kernel[k];
+				a += kernel[k];
 			}
 			d[j] = (x / a << 24) | (y / a << 16) | (z / a << 8) | w / a;
 		}
@@ -96,6 +96,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 			y = 0;
 			z = 0;
 			w = 0;
+			a = 0;
 			for (k = 0; k < size; k++) {
 				if (i - half + k < 0 || i - half + k >= height)
 					continue;
@@ -106,6 +107,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 				y += ((p >> 16) & 0xff) * kernel[k];
 				z += ((p >> 8) & 0xff) * kernel[k];
 				w += (p & 0xff) * kernel[k];
+				a += kernel[k];
 			}
 			d[j] = (x / a << 24) | (y / a << 16) | (z / a << 8) | w / a;
 		}
