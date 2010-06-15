@@ -53,9 +53,6 @@ void* Map(void* start, size_t length, int prot, int flags,
 
   start = MapViewOfFileEx(memory, desired_access, 0, offset, length,
                           (flags & kMapFixed) ? start : 0);
-  if (NULL == start) {
-    NaClLog(LOG_ERROR, "MapViewOfFileEx failed, error 0x%x\n", GetLastError());
-  }
   return (NULL != start) ? start : kMapFailed;
 }
 

@@ -206,33 +206,16 @@ bool IsBoundSocket(Handle handle, struct sockaddr_un* sa, socklen_t len) {
 }
 
 #if SIGPIPE_ALT_FIX
-bool sigpipe_occurred = false;
-
-void SIGPIPEHandler(int signal_number) {
-  (void) signal_number;  // Unused parameter
-  sigpipe_occurred = true;
-}
-
-/*
- * TODO(kbr): this mechanism is not thread safe.
- */
-bool SIGPIPEOccurred() {
-  bool occurred = sigpipe_occurred;
-  if (occurred) {
-    sigpipe_occurred = false;
-    errno = EPIPE;
-  }
-  return occurred;
-}
-
-void InstallSIGPIPEHandler() {
+// TODO(kbr): move this to an Init() function so it isn't called all
+// the time.
+bool IgnoreSIGPIPE() {
   sigset_t mask;
   sigemptyset(&mask);
   struct sigaction sa;
-  sa.sa_handler = &SIGPIPEHandler;
+  sa.sa_handler = SIG_IGN;
   sa.sa_mask = mask;
   sa.sa_flags = 0;
-  sigaction(SIGPIPE, &sa, NULL);
+  return sigaction(SIGPIPE, &sa, NULL) == 0;
 }
 #endif
 
@@ -244,7 +227,10 @@ Handle BoundSocket(const SocketAddress* address) {
     return -1;
   }
 #if SIGPIPE_ALT_FIX
-  InstallSIGPIPEHandler();
+  if (!IgnoreSIGPIPE()) {
+    close(s);
+    return -1;
+  }
 #endif
 #if SIGPIPE_FIX
   int nosigpipe = 1;
@@ -276,7 +262,11 @@ int SocketPair(Handle pair[2]) {
       return -1;
     }
 #if SIGPIPE_ALT_FIX
-    InstallSIGPIPEHandler();
+    if (!IgnoreSIGPIPE()) {
+      close(pair[0]);
+      close(pair[1]);
+      return -1;
+    }
 #endif
 #if SIGPIPE_FIX
     int nosigpipe = 1;
@@ -401,11 +391,6 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   vec[0].iov_base = &header;
   vec[0].iov_len = sizeof header;
   int result = sendmsg(handle, &msg, 0);
-#if SIGPIPE_ALT_FIX
-  if (SIGPIPEOccurred()) {
-    return -1;
-  }
-#endif
   if (result == -1) {
     return -1;
   }
@@ -436,7 +421,10 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
     return -1;
   }
 #if SIGPIPE_ALT_FIX
-  InstallSIGPIPEHandler();
+  if (!IgnoreSIGPIPE()) {
+    close(s);
+    return -1;
+  }
 #endif
 #if SIGPIPE_FIX
   int nosigpipe = 1;
