@@ -9,7 +9,9 @@
 var ChatBridgeEventTypes = {
   SHOW_CHAT: 'showChat',
   START_VIDEO: 'startVideo',
+  NEW_VIDEO_CHAT: 'newVideoChat',
   START_VOICE: 'startVoice',
+  NEW_VOICE_CHAT: 'newVoiceChat',
   CENTRAL_USER_SET: 'centralJidSet',
   CENTRAL_USER_UPDATE: 'centralJidUpdate',
   CENTRAL_USER_WATCHER: 'getCentralJid'

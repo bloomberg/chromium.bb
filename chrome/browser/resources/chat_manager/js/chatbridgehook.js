@@ -16,6 +16,41 @@ var centralJidListenerChatPort;
 var divRosterHandler;
 
 /**
+ * Triggered on a user initiated chat request. Forward to extension to be
+ * processed by the Chrome central roster.
+ * @param {MessageEvent} event the new chat event.
+ */
+function forwardChatEvent(event) {
+  var eventType = event.type;
+  switch (event.type) {
+    case ChatBridgeEventTypes.NEW_VIDEO_CHAT:
+      eventType = ChatBridgeEventTypes.START_VIDEO;
+      break;
+    case ChatBridgeEventTypes.NEW_VOICE_CHAT:
+      eventType = ChatBridgeEventTypes.START_VOICE;
+      break;
+  }
+  var chatJid = event.data;
+  if (!centralJidBroadcasterPort) {
+    chrome.extension.sendRequest({msg: eventType, jid: chatJid});
+  } else {
+    dispatchChatEvent(eventType, chatJid);
+  }
+}
+
+/**
+ * Manage two-way communication with the central roster. Updated jid's are
+ * forwarded to the background, while chats are forwarded to the page.
+ * @param {string} chatType the chat event type.
+ * @param {string} chatJid the jid to route the chat event to.
+ */
+function dispatchChatEvent(chatType, chatJid) {
+  var showChatEvent = document.createEvent('MessageEvent');
+  showChatEvent.initMessageEvent(chatType, true, true, chatJid);
+  divRosterHandler.dispatchEvent(showChatEvent);
+}
+
+/**
  * Manage two-way communication with the central roster. Updated jid's are
  * forwarded to the background, while chats are forwarded to the page.
  * @param {MessageEvent} event the new central roster jid event.
@@ -26,9 +61,7 @@ function centralRosterHandler(event) {
         {name: 'centralJidBroadcaster'});
     centralJidBroadcasterPort.onMessage.addListener(function(msg) {
       var chatJid = msg.jid;
-      var showChatEvent = document.createEvent('MessageEvent');
-      showChatEvent.initMessageEvent(msg.chatType, true, true, chatJid);
-      divRosterHandler.dispatchEvent(showChatEvent);
+      dispatchChatEvent(msg.chatType, chatJid);
     });
   }
   var centralRosterJid = event.data;
@@ -57,6 +90,12 @@ function setupCentralRosterJidListener(event) {
 // Search for communication channel div.
 divRosterHandler = document.getElementById('roster_comm_link');
 if (divRosterHandler) {
+  divRosterHandler.addEventListener(ChatBridgeEventTypes.SHOW_CHAT,
+      forwardChatEvent, false);
+  divRosterHandler.addEventListener(ChatBridgeEventTypes.NEW_VIDEO_CHAT,
+      forwardChatEvent, false);
+  divRosterHandler.addEventListener(ChatBridgeEventTypes.NEW_VOICE_CHAT,
+      forwardChatEvent, false);
   divRosterHandler.addEventListener(ChatBridgeEventTypes.CENTRAL_USER_SET,
       centralRosterHandler, false);
   divRosterHandler.addEventListener(ChatBridgeEventTypes.CENTRAL_USER_WATCHER,
