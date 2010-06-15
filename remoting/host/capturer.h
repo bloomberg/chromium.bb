@@ -31,10 +31,10 @@ class Capturer {
   // Capture the full screen. When the action is completed |done_task|
   // is called.
   //
-  // It is OK to call this methods while another thread is reading
+  // It is OK to call this method while another thread is reading
   // data of the last capture.
   // There can be at most one concurrent read going on when this
-  // methods is called.
+  // method is called.
   virtual void CaptureFullScreen(Task* done_task) = 0;
 
   // Capture the updated regions since last capture. If the last
@@ -45,7 +45,7 @@ class Capturer {
   // It is OK to call this method while another thread is reading
   // data of the last capture.
   // There can be at most one concurrent read going on when this
-  // methods is called.
+  // method is called.
   virtual void CaptureDirtyRects(Task* done_task) = 0;
 
   // Capture the specified screen rect and call |done_task| when complete.
@@ -55,14 +55,14 @@ class Capturer {
   // It is OK to call this method while another thread is reading
   // data of the last capture.
   // There can be at most one concurrent read going on when this
-  // methods is called.
+  // method is called.
   virtual void CaptureRect(const gfx::Rect& rect, Task* done_task) = 0;
 
   // Get the image data of the last capture. The pointers to data is
   // written to |planes|. |planes| should be an array of 3 elements.
   virtual void GetData(const uint8* planes[]) const = 0;
 
-  // Get the image data stride of the last capture. This size of strides
+  // Get the image data stride of the last capture. The size of strides
   // is written to |strides|. |strides| should be array of 3 elements.
   virtual void GetDataStride(int strides[]) const = 0;
 

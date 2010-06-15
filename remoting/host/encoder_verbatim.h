@@ -18,13 +18,10 @@ class EncoderVerbatim : public Encoder {
   virtual ~EncoderVerbatim() {}
 
   virtual void Encode(const DirtyRects& dirty_rects,
-                      const uint8** input_data,
+                      const uint8* const* input_data,
                       const int* strides,
                       bool key_frame,
-                      UpdateStreamPacketHeader* header,
-                      scoped_refptr<media::DataBuffer>* output_data,
-                      bool* encode_done,
-                      Task* data_available_task);
+                      DataAvailableCallback* data_available_callback);
   virtual void SetSize(int width, int height);
   virtual void SetPixelFormat(PixelFormat pixel_format);
 
@@ -32,10 +29,10 @@ class EncoderVerbatim : public Encoder {
   // Encode a single dirty rect. Called by Encode().
   // Returns false if there is an error.
   bool EncodeRect(const gfx::Rect& dirty,
-                  const uint8** input_data,
+                  const uint8* const* input_data,
                   const int* strides,
-                  UpdateStreamPacketHeader* header,
-                  scoped_refptr<media::DataBuffer>* output_data);
+                  UpdateStreamPacketHeader *header,
+                  scoped_refptr<media::DataBuffer> *output_data);
 
   int width_;
   int height_;

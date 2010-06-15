@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
 #include "remoting/host/capturer.h"
+#include "remoting/host/encoder.h"
 
 namespace media {
 
@@ -95,6 +96,18 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void RemoveClient(scoped_refptr<ClientConnection> client);
 
  private:
+
+  // Stores the data and information of a capture to pass off to the
+  // encoding thread.
+  struct CaptureData {
+    DirtyRects dirty_rects_;
+    const uint8* data_[3];
+    int data_strides_[3];
+    int width_;
+    int height_;
+    PixelFormat pixel_format_;
+  };
+
   void DoStart();
   void DoPause();
   void DoStartRateControl();
@@ -102,12 +115,14 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 
   void DoCapture();
   void DoFinishEncode();
-  void DoEncode();
-  void DoSendUpdate(
-      UpdateStreamPacketHeader* header,
-      scoped_refptr<media::DataBuffer> encoded_data,
-      bool begin_update,
-      bool end_update);
+
+  // DoEncode takes ownership of capture_data and is responsible for deleting
+  // it.
+  void DoEncode(const CaptureData *capture_data);
+  // DoSendUpdate takes ownership of header and is responsible for deleting it.
+  void DoSendUpdate(const UpdateStreamPacketHeader* header,
+                    const scoped_refptr<media::DataBuffer> data,
+                    Encoder::EncodingState state);
   void DoSendInit(scoped_refptr<ClientConnection> client,
                   int width, int height);
   void DoGetInitInfo(scoped_refptr<ClientConnection> client);
@@ -124,7 +139,11 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void ScheduleNextRateControl();
 
   void CaptureDoneTask();
-  void EncodeDataAvailableTask();
+  // EncodeDataAvailableTask takes ownership of header and is responsible for
+  // deleting it.
+  void EncodeDataAvailableTask(const UpdateStreamPacketHeader *header,
+                               const scoped_refptr<media::DataBuffer>& data,
+                               Encoder::EncodingState state);
 
   // Message loops used by this class.
   MessageLoop* capture_loop_;
@@ -159,28 +178,6 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 
   // The following member is accessed on the network thread.
   bool rate_control_started_;
-
-  // Stores the data and information of the last capture done.
-  // These members are written on capture thread and read on encode thread.
-  // It is guranteed the read happens after the write.
-  DirtyRects capture_dirty_rects_;
-  const uint8* capture_data_[3];
-  int capture_data_strides_[3];
-  int capture_width_;
-  int capture_height_;
-  PixelFormat capture_pixel_format_;
-
-  // The following members are accessed on the encode thread.
-  // Output parameter written by Encoder to carry encoded data.
-  UpdateStreamPacketHeader encoded_data_header_;
-  scoped_refptr<media::DataBuffer> encoded_data_;
-
-  // True if we have started receiving encoded data from the Encoder.
-  bool encode_stream_started_;
-
-  // Output parameter written by Encoder to notify the end of encoded data
-  // stream.
-  bool encode_done_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };

@@ -78,7 +78,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // Send encoded update stream data to the viewer. The viewer
   // should not take ownership of the data.
   virtual void SendUpdateStreamPacketMessage(
-      UpdateStreamPacketHeader* header,
+      const UpdateStreamPacketHeader* header,
       scoped_refptr<media::DataBuffer> data);
 
   // Notifies the viewer the update stream has ended.

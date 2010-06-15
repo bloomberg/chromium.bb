@@ -13,22 +13,35 @@ namespace remoting {
 using media::DataBuffer;
 
 void EncoderVerbatim::Encode(const DirtyRects& dirty_rects,
-                             const uint8** input_data,
+                             const uint8* const* input_data,
                              const int* strides,
                              bool key_frame,
-                             UpdateStreamPacketHeader* header,
-                             scoped_refptr<DataBuffer>* output_data,
-                             bool* encode_done,
-                             Task* data_available_task) {
+                             DataAvailableCallback* data_available_callback) {
   int num_rects = dirty_rects.size();
   for (int i = 0; i < num_rects; i++) {
-    if (EncodeRect(dirty_rects[i], input_data, strides, header, output_data)) {
-      *encode_done = (i == num_rects - 1);  // Set for last rect.
-      data_available_task->Run();
+    scoped_refptr<DataBuffer> data;
+    gfx::Rect dirty_rect = dirty_rects[i];
+    PixelFormat pixel_format;
+    UpdateStreamEncoding encoding;
+    scoped_ptr<UpdateStreamPacketHeader> header(new UpdateStreamPacketHeader);
+    if (EncodeRect(dirty_rect,
+                   input_data,
+                   strides,
+                   header.get(),
+                   &data)) {
+      EncodingState state = EncodingInProgress;
+      if (i == 0) {
+        state |= EncodingStarting;
+      } else if (i == num_rects - 1) {
+        state |= EncodingEnded;
+      }
+      data_available_callback->Run(header.release(),
+                                   data,
+                                   state);
     }
   }
 
-  delete data_available_task;
+  delete data_available_callback;
 }
 
 void EncoderVerbatim::SetSize(int width, int height) {
@@ -54,9 +67,9 @@ void EncoderVerbatim::SetPixelFormat(PixelFormat pixel_format) {
 }
 
 bool EncoderVerbatim::EncodeRect(const gfx::Rect& dirty,
-                                 const uint8** input_data,
+                                 const uint8* const* input_data,
                                  const int* strides,
-                                 UpdateStreamPacketHeader* header,
+                                 UpdateStreamPacketHeader *header,
                                  scoped_refptr<DataBuffer>* output_data) {
   const int kPlanes = 3;
 
@@ -74,10 +87,9 @@ bool EncoderVerbatim::EncodeRect(const gfx::Rect& dirty,
   header->set_encoding(EncodingNone);
   header->set_pixel_format(pixel_format_);
 
-  *output_data = new DataBuffer(output_size);
-  (*output_data)->SetDataSize(output_size);
-
+  *output_data = new DataBuffer(new uint8[output_size], output_size);
   uint8* out = (*output_data)->GetWritableData();
+
   for (int i = 0; i < kPlanes; ++i) {
     const uint8* in = input_data[i];
     // Skip over planes that don't have data.

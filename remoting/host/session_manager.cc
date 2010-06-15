@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/protocol_decoder.h"
@@ -46,12 +47,7 @@ SessionManager::SessionManager(
       max_rate_(kDefaultCaptureRate),
       started_(false),
       recordings_(0),
-      rate_control_started_(false),
-      capture_width_(0),
-      capture_height_(0),
-      capture_pixel_format_(PixelFormatInvalid),
-      encode_stream_started_(false),
-      encode_done_(false) {
+      rate_control_started_(false) {
   DCHECK(capture_loop_);
   DCHECK(encode_loop_);
   DCHECK(network_loop_);
@@ -188,47 +184,45 @@ void SessionManager::DoFinishEncode() {
     DoCapture();
 }
 
-void SessionManager::DoEncode() {
+void SessionManager::DoEncode(const CaptureData *capture_data) {
+  // Take ownership of capture_data.
+  scoped_ptr<const CaptureData> capture_data_owner(capture_data);
+
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
-  // Reset states about the encode stream.
-  encode_done_ = false;
-  encode_stream_started_ = false;
-
-  DCHECK(!encoded_data_.get());
   DCHECK(encoder_.get());
 
   // TODO(hclam): Enable |force_refresh| if a new client was
   // added.
-  encoder_->SetSize(capture_width_, capture_height_);
-  encoder_->SetPixelFormat(capture_pixel_format_);
+  encoder_->SetSize(capture_data->width_, capture_data->height_);
+  encoder_->SetPixelFormat(capture_data->pixel_format_);
   encoder_->Encode(
-      capture_dirty_rects_,
-      capture_data_,
-      capture_data_strides_,
+      capture_data->dirty_rects_,
+      capture_data->data_,
+      capture_data->data_strides_,
       false,
-      &encoded_data_header_,
-      &encoded_data_,
-      &encode_done_,
-      NewRunnableMethod(this, &SessionManager::EncodeDataAvailableTask));
+      NewCallback(this, &SessionManager::EncodeDataAvailableTask));
 }
 
-void SessionManager::DoSendUpdate(
-    UpdateStreamPacketHeader* header,
-    scoped_refptr<media::DataBuffer> encoded_data,
-    bool begin_update, bool end_update) {
+void SessionManager::DoSendUpdate(const UpdateStreamPacketHeader* header,
+                                  const scoped_refptr<media::DataBuffer> data,
+                                  Encoder::EncodingState state) {
+  // Take ownership of header.
+  scoped_ptr<const UpdateStreamPacketHeader> header_owner(header);
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   for (size_t i = 0; i < clients_.size(); ++i) {
-    if (begin_update)
+    if (state & Encoder::EncodingStarting) {
       clients_[i]->SendBeginUpdateStreamMessage();
+    }
 
-    // This will pass the ownership of the DataBuffer to the ClientConnection.
-    clients_[i]->SendUpdateStreamPacketMessage(header, encoded_data);
+    clients_[i]->SendUpdateStreamPacketMessage(header, data);
 
-    if (end_update)
+    if (state & Encoder::EncodingEnded) {
       clients_[i]->SendEndUpdateStreamMessage();
+    }
   }
+  delete header;
 }
 
 void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
@@ -358,20 +352,25 @@ void SessionManager::ScheduleNextRateControl() {
 void SessionManager::CaptureDoneTask() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
+  scoped_ptr<CaptureData> data(new CaptureData);
+
   // Save results of the capture.
-  capturer_->GetData(capture_data_);
-  capturer_->GetDataStride(capture_data_strides_);
-  capture_dirty_rects_.clear();
-  capturer_->GetDirtyRects(&capture_dirty_rects_);
-  capture_pixel_format_ = capturer_->GetPixelFormat();
-  capture_width_ = capturer_->GetWidth();
-  capture_height_ = capturer_->GetHeight();
+  capturer_->GetData(data->data_);
+  capturer_->GetDataStride(data->data_strides_);
+  capturer_->GetDirtyRects(&data->dirty_rects_);
+  data->pixel_format_ = capturer_->GetPixelFormat();
+  data->width_ = capturer_->GetWidth();
+  data->height_ = capturer_->GetHeight();
 
   encode_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &SessionManager::DoEncode));
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoEncode, data.release()));
 }
 
-void SessionManager::EncodeDataAvailableTask() {
+void SessionManager::EncodeDataAvailableTask(
+    const UpdateStreamPacketHeader *header,
+    const scoped_refptr<media::DataBuffer>& data,
+    Encoder::EncodingState state) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   // Before a new encode task starts, notify clients a new update
@@ -382,20 +381,11 @@ void SessionManager::EncodeDataAvailableTask() {
       FROM_HERE,
       NewRunnableMethod(this,
                         &SessionManager::DoSendUpdate,
-                        &encoded_data_header_,
-                        encoded_data_,
-                        !encode_stream_started_,
-                        encode_done_));
+                        header,
+                        data,
+                        state));
 
-  // Since we have received data from the Encoder, mark the encode
-  // stream has started.
-  encode_stream_started_ = true;
-
-  // Give up the ownership of DataBuffer since it is passed to
-  // the ClientConnections.
-  encoded_data_ = NULL;
-
-  if (encode_done_) {
+  if (state == Encoder::EncodingEnded) {
     capture_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &SessionManager::DoFinishEncode));
   }

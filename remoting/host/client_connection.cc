@@ -62,7 +62,7 @@ void ClientConnection::SendBeginUpdateStreamMessage() {
 }
 
 void ClientConnection::SendUpdateStreamPacketMessage(
-    UpdateStreamPacketHeader* header,
+    const UpdateStreamPacketHeader* header,
     scoped_refptr<DataBuffer> data) {
   DCHECK_EQ(loop_, MessageLoop::current());
   DCHECK(channel_.get());

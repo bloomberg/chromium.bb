@@ -6,7 +6,8 @@
 #define REMOTING_HOST_ENCODER_H_
 
 #include "base/basictypes.h"
-#include "base/task.h"
+#include "base/callback.h"
+#include "media/base/data_buffer.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
 #include "remoting/host/capturer.h"
 
@@ -23,6 +24,24 @@ namespace remoting {
 // This class operates asynchronously to enable maximum throughput.
 class Encoder {
  public:
+
+  // EncodingState is a bitfield that tracks the state of the encoding.
+  // An encoding that consists of a single block could concievably be starting
+  // inprogress and ended at the same time.
+  enum {
+    EncodingStarting = 1 << 0,
+    EncodingInProgress = 1 << 1,
+    EncodingEnded = 1 << 2
+  };
+  typedef int EncodingState;
+
+  // DataAvailableCallback is called as blocks of data are made available
+  // from the encoder. The callback takes ownership of header and is
+  // responsible for deleting it.
+  typedef Callback3<const UpdateStreamPacketHeader*,
+                    const scoped_refptr<media::DataBuffer>&,
+                    EncodingState>::Type DataAvailableCallback;
+
   virtual ~Encoder() {}
 
   // Encode an image stored in |input_data|. |dirty_rects| contains
@@ -41,13 +60,10 @@ class Encoder {
   // Implementation has to ensure that when |data_available_task| is called
   // output parameters are stable.
   virtual void Encode(const DirtyRects& dirty_rects,
-                      const uint8** input_data,
+                      const uint8* const* input_data,
                       const int* strides,
                       bool key_frame,
-                      UpdateStreamPacketHeader* header,
-                      scoped_refptr<media::DataBuffer>* output_data,
-                      bool* encode_done,
-                      Task* data_available_task) = 0;
+                      DataAvailableCallback* data_available_callback) = 0;
 
   // Set the dimension of the incoming images. Need to call this before
   // calling Encode().

@@ -28,8 +28,8 @@ static uint8* kData[3] = {
   reinterpret_cast<uint8*>(0x02),
   reinterpret_cast<uint8*>(0x03),
 };
-static const PixelFormat kFormat =
-    PixelFormatRgb32;
+static const PixelFormat kFormat = PixelFormatRgb32;
+static const UpdateStreamEncoding kEncoding = EncodingNone;
 
 class SessionManagerTest : public testing::Test {
  public:
@@ -67,18 +67,28 @@ ACTION(RunSimpleTask) {
   delete arg0;
 }
 
-ACTION_P2(FinishDecode, header, data) {
-  *arg4 = header;
-  *arg5 = data;
-  *arg6 = true;
-  arg7->Run();
-  delete arg7;
+ACTION_P3(FinishDecode, rects, buffer, header) {
+  gfx::Rect& rect = (*rects)[0];
+  Encoder::EncodingState state = (Encoder::EncodingStarting |
+                                  Encoder::EncodingInProgress |
+                                  Encoder::EncodingEnded);
+  header->set_x(rect.x());
+  header->set_y(rect.y());
+  header->set_width(rect.width());
+  header->set_height(rect.height());
+  header->set_encoding(kEncoding);
+  header->set_pixel_format(kFormat);
+  arg4->Run(header, *buffer, state);
 }
 
 ACTION_P(AssignCaptureData, data) {
   arg0[0] = data[0];
   arg0[1] = data[1];
   arg0[2] = data[2];
+}
+
+ACTION_P(AssignDirtyRect, rects) {
+  *arg0 = *rects;
 }
 
 TEST_F(SessionManagerTest, OneRecordCycle) {
@@ -96,8 +106,12 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
   // First the capturer is called.
   EXPECT_CALL(*capturer_, CaptureDirtyRects(NotNull()))
       .WillOnce(RunSimpleTask());
-  // TODO(hclam): Return DirtyRects for verification.
-  EXPECT_CALL(*capturer_, GetDirtyRects(NotNull()));
+
+  // Create a dirty rect that can be verified.
+  DirtyRects rects;
+  rects.push_back(gfx::Rect(0, 0, 10, 10));
+  EXPECT_CALL(*capturer_, GetDirtyRects(NotNull()))
+      .WillOnce(AssignDirtyRect(&rects));
   EXPECT_CALL(*capturer_, GetData(NotNull()))
       .WillOnce(AssignCaptureData(kData));
   EXPECT_CALL(*capturer_, GetDataStride(NotNull()))
@@ -106,19 +120,17 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
       .WillOnce(Return(kFormat));
 
   // Expect the encoder be called.
-  UpdateStreamPacketHeader header;
   scoped_refptr<media::DataBuffer> buffer = new media::DataBuffer(0);
   EXPECT_CALL(*encoder_, SetSize(kWidth, kHeight));
   EXPECT_CALL(*encoder_, SetPixelFormat(kFormat));
-  // TODO(hclam): Expect the content of the dirty rects.
-  EXPECT_CALL(*encoder_,
-              Encode(_, NotNull(), NotNull(), false, NotNull(),
-                     NotNull(), NotNull(), NotNull()))
-      .WillOnce(FinishDecode(header, buffer));
+  UpdateStreamPacketHeader *header = new UpdateStreamPacketHeader;
+  EXPECT_CALL(*encoder_, Encode(rects, NotNull(), NotNull(), false, NotNull()))
+      .WillOnce(FinishDecode(&rects, &buffer, header));
 
   // Expect the client be notified.
   EXPECT_CALL(*client_, SendBeginUpdateStreamMessage());
-  EXPECT_CALL(*client_, SendUpdateStreamPacketMessage(NotNull(), buffer));
+
+  EXPECT_CALL(*client_, SendUpdateStreamPacketMessage(header ,buffer));
   EXPECT_CALL(*client_, SendEndUpdateStreamMessage());
   EXPECT_CALL(*client_, GetPendingUpdateStreamMessages())
       .Times(AtLeast(0))

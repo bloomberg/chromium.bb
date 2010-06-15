@@ -37,15 +37,12 @@ class MockEncoder : public Encoder {
  public:
   MockEncoder() {}
 
-  MOCK_METHOD8(Encode, void(
-      const DirtyRects& dirty_rects,
-      const uint8** planes,
-      const int* strides,
-      bool key_frame,
-      UpdateStreamPacketHeader* output_data_header,
-      scoped_refptr<media::DataBuffer>* output_data,
-      bool* encode_done,
-      Task* data_available_task));
+  MOCK_METHOD5(Encode, void(
+     const DirtyRects& dirty_rects,
+     const uint8* const* input_data,
+     const int* strides,
+     bool key_frame,
+     DataAvailableCallback* data_available_callback));
   MOCK_METHOD2(SetSize, void(int width, int height));
   MOCK_METHOD1(SetPixelFormat, void(PixelFormat pixel_format));
 
@@ -70,7 +67,7 @@ class MockClientConnection : public ClientConnection {
   MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
   MOCK_METHOD0(SendBeginUpdateStreamMessage, void());
   MOCK_METHOD2(SendUpdateStreamPacketMessage,
-               void(UpdateStreamPacketHeader* header,
+               void(const UpdateStreamPacketHeader* header,
                     scoped_refptr<media::DataBuffer> data));
   MOCK_METHOD0(SendEndUpdateStreamMessage, void());
   MOCK_METHOD0(GetPendingUpdateStreamMessages, int());
