@@ -94,7 +94,14 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // URLRequests/SocketStreams/ConnectJobs.
   class SourceTracker {
    public:
-    SourceTracker(size_t max_graveyard_size, PassiveLogCollector* parent);
+    // Creates a SourceTracker that will track at most |max_num_sources|.
+    // Up to |max_graveyard_size| unreferenced sources will be kept around
+    // before deleting them for good. |parent| may be NULL, and points to
+    // the owning PassiveLogCollector (it is used when adding references
+    // to other sources).
+    SourceTracker(size_t max_num_sources,
+                  size_t max_graveyard_size,
+                  PassiveLogCollector* parent);
 
     virtual ~SourceTracker();
 
@@ -158,6 +165,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     // (It includes both the "live" sources, and the "dead" ones.)
     SourceIDToInfoMap sources_;
 
+    size_t max_num_sources_;
     size_t max_graveyard_size_;
 
     // FIFO queue for entries in |sources_| that are no longer alive, and
@@ -173,6 +181,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // Specialization of SourceTracker for handling ConnectJobs.
   class ConnectJobTracker : public SourceTracker {
    public:
+    static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
     explicit ConnectJobTracker(PassiveLogCollector* parent);
@@ -186,6 +195,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // Specialization of SourceTracker for handling Sockets.
   class SocketTracker : public SourceTracker {
    public:
+    static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
     SocketTracker();
@@ -200,6 +210,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // Specialization of SourceTracker for handling URLRequest/SocketStream.
   class RequestTracker : public SourceTracker {
    public:
+    static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
     explicit RequestTracker(PassiveLogCollector* parent);
@@ -215,6 +226,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // SOURCE_INIT_PROXY_RESOLVER.
   class InitProxyResolverTracker : public SourceTracker {
    public:
+    static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
     InitProxyResolverTracker();
@@ -229,6 +241,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // Tracks the log entries for the last seen SOURCE_SPDY_SESSION.
   class SpdySessionTracker : public SourceTracker {
    public:
+    static const size_t kMaxNumSources;
     static const size_t kMaxGraveyardSize;
 
     SpdySessionTracker();
@@ -264,6 +277,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
  private:
   FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest,
                            HoldReferenceToDependentSource);
+  FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest,
+                           HoldReferenceToDeletedSource);
 
   ConnectJobTracker connect_job_tracker_;
   SocketTracker socket_tracker_;

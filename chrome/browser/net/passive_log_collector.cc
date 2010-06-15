@@ -17,7 +17,6 @@ namespace {
 // TODO(eroman): Do something with the truncation count.
 
 const size_t kMaxNumEntriesPerLog = 30;
-const size_t kMaxSourcesPerTracker = 200;
 
 void AddEntryToSourceInfo(const PassiveLogCollector::Entry& entry,
                           PassiveLogCollector::SourceInfo* out_info) {
@@ -131,8 +130,12 @@ std::string PassiveLogCollector::SourceInfo::GetURL() const {
 //----------------------------------------------------------------------------
 
 PassiveLogCollector::SourceTracker::SourceTracker(
-    size_t max_graveyard_size, PassiveLogCollector* parent)
-    : max_graveyard_size_(max_graveyard_size), parent_(parent) {
+    size_t max_num_sources,
+    size_t max_graveyard_size,
+    PassiveLogCollector* parent)
+    : max_num_sources_(max_num_sources),
+      max_graveyard_size_(max_graveyard_size),
+      parent_(parent) {
 }
 
 PassiveLogCollector::SourceTracker::~SourceTracker() {}
@@ -162,7 +165,7 @@ void PassiveLogCollector::SourceTracker::OnAddEntry(const Entry& entry) {
     }
   }
 
-  if (sources_.size() > kMaxSourcesPerTracker) {
+  if (sources_.size() > max_num_sources_) {
     // This is a safety net in case something went wrong, to avoid continually
     // growing memory.
     LOG(WARNING) << "The passive log data has grown larger "
@@ -230,15 +233,22 @@ void PassiveLogCollector::SourceTracker::AdjustReferenceCountForSource(
   // In general it is invalid to call AdjustReferenceCountForSource() on
   // source that doesn't exist. However, it is possible that if
   // SourceTracker::Clear() was previously called this can happen.
-  // TODO(eroman): Add a unit-test that exercises this case.
   SourceIDToInfoMap::iterator it = sources_.find(source_id);
-  if (it == sources_.end())
+  if (it == sources_.end()) {
+    LOG(WARNING) << "Released a reference to nonexistent source.";
     return;
+  }
 
   SourceInfo& info = it->second;
   DCHECK_GE(info.reference_count, 0);
-  DCHECK_GE(info.reference_count + offset, 0);
   info.reference_count += offset;
+
+  if (info.reference_count < 0) {
+    // In general this shouldn't happen, however it is possible to reach this
+    // state if SourceTracker::Clear() was called earlier.
+    LOG(WARNING) << "Released unmatched reference count.";
+    info.reference_count = 0;
+  }
 
   if (!info.is_alive) {
     if (info.reference_count == 1 && offset == 1) {
@@ -275,7 +285,7 @@ void PassiveLogCollector::SourceTracker::AddReferenceToSourceDependency(
 void
 PassiveLogCollector::SourceTracker::ReleaseAllReferencesToDependencies(
     SourceInfo* info) {
-  // Release all references |info| was holding to dependent sources.
+  // Release all references |info| was holding to other sources.
   for (SourceDependencyList::const_iterator it = info->dependencies.begin();
        it != info->dependencies.end(); ++it) {
     const net::NetLog::Source& source = *it;
@@ -297,11 +307,12 @@ PassiveLogCollector::SourceTracker::ReleaseAllReferencesToDependencies(
 // ConnectJobTracker
 //----------------------------------------------------------------------------
 
+const size_t PassiveLogCollector::ConnectJobTracker::kMaxNumSources = 100;
 const size_t PassiveLogCollector::ConnectJobTracker::kMaxGraveyardSize = 15;
 
 PassiveLogCollector::ConnectJobTracker::ConnectJobTracker(
     PassiveLogCollector* parent)
-    : SourceTracker(kMaxGraveyardSize, parent) {
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, parent) {
 }
 
 PassiveLogCollector::SourceTracker::Action
@@ -328,10 +339,11 @@ PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
 // SocketTracker
 //----------------------------------------------------------------------------
 
+const size_t PassiveLogCollector::SocketTracker::kMaxNumSources = 200;
 const size_t PassiveLogCollector::SocketTracker::kMaxGraveyardSize = 15;
 
 PassiveLogCollector::SocketTracker::SocketTracker()
-    : SourceTracker(kMaxGraveyardSize, NULL) {
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
 }
 
 PassiveLogCollector::SourceTracker::Action
@@ -359,10 +371,11 @@ PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
 // RequestTracker
 //----------------------------------------------------------------------------
 
+const size_t PassiveLogCollector::RequestTracker::kMaxNumSources = 100;
 const size_t PassiveLogCollector::RequestTracker::kMaxGraveyardSize = 25;
 
 PassiveLogCollector::RequestTracker::RequestTracker(PassiveLogCollector* parent)
-    : SourceTracker(kMaxGraveyardSize, parent) {
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, parent) {
 }
 
 PassiveLogCollector::SourceTracker::Action
@@ -395,11 +408,12 @@ PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
 // InitProxyResolverTracker
 //----------------------------------------------------------------------------
 
+const size_t PassiveLogCollector::InitProxyResolverTracker::kMaxNumSources = 20;
 const size_t PassiveLogCollector::InitProxyResolverTracker::kMaxGraveyardSize =
     3;
 
 PassiveLogCollector::InitProxyResolverTracker::InitProxyResolverTracker()
-    : SourceTracker(kMaxGraveyardSize, NULL) {
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
 }
 
 PassiveLogCollector::SourceTracker::Action
@@ -418,10 +432,11 @@ PassiveLogCollector::InitProxyResolverTracker::DoAddEntry(
 // SpdySessionTracker
 //----------------------------------------------------------------------------
 
+const size_t PassiveLogCollector::SpdySessionTracker::kMaxNumSources = 50;
 const size_t PassiveLogCollector::SpdySessionTracker::kMaxGraveyardSize = 10;
 
 PassiveLogCollector::SpdySessionTracker::SpdySessionTracker()
-    : SourceTracker(kMaxGraveyardSize, NULL) {
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
 }
 
 PassiveLogCollector::SourceTracker::Action
