@@ -25,7 +25,8 @@ class FastShutdown : public UITest {
 // http://crbug.com/46614
 #define MAYBE_SlowTermination FAILS_SlowTermination
 #else
-#define MAYBE_SlowTermination SlowTermination
+// Times out: http://crbug.com/46616
+#define MAYBE_SlowTermination DISABLED_SlowTermination
 #endif
 
 // This tests for a previous error where uninstalling an onbeforeunload
