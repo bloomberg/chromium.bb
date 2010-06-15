@@ -9,17 +9,17 @@
 
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "webkit/glue/password_form.h"
 
 class PasswordManager;
 class Profile;
 
 // Per-password-form-{on-page, dialog} class responsible for interactions
-// between a given form, the per-tab PasswordManager, and the web database.
+// between a given form, the per-tab PasswordManager, and the PasswordStore.
 class PasswordFormManager : public PasswordStoreConsumer {
  public:
-  // web_data_service allows access to current profile's Web Data
+  // profile contains the link to the PasswordStore and whether we're off
+  //           the record
   // password_manager owns this object
   // form_on_page is the form that may be submitted and could need login data.
   // ssl_valid represents the security of the page containing observed_form,
@@ -34,10 +34,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   bool DoesManage(const webkit_glue::PasswordForm& form) const;
 
   // Retrieves potential matching logins from the database.
-  void FetchMatchingLoginsFromWebDatabase();
+  void FetchMatchingLoginsFromPasswordStore();
 
   // Simple state-check to verify whether this object as received a callback
-  // from the web database and completed its matching phase. Note that the
+  // from the PasswordStore and completed its matching phase. Note that the
   // callback in question occurs on the same (and only) main thread from which
   // instances of this class are ever used, but it is required since it is
   // conceivable that a user (or ui test) could attempt to submit a login
@@ -87,10 +87,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
  private:
   friend class PasswordFormManagerTest;
   // Called by destructor to ensure if this object is deleted, no potential
-  // outstanding callbacks can call OnWebDataServiceRequestDone.
+  // outstanding callbacks can call OnPasswordStoreRequestDone.
   void CancelLoginsQuery();
 
-  // Helper for OnWebDataServiceRequestDone to determine whether or not
+  // Helper for OnPasswordStoreRequestDone to determine whether or not
   // the given result form is worth scoring.
   bool IgnoreResult(const webkit_glue::PasswordForm& form) const;
 
@@ -100,7 +100,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // the previously preferred login from |best_matches_| will be reset.
   void SaveAsNewLogin(bool reset_preferred_login);
 
-  // Helper for OnWebDataServiceRequestDone to score an individual result
+  // Helper for OnPasswordStoreRequestDone to score an individual result
   // against the observed_form_.
   int ScoreResult(const webkit_glue::PasswordForm& form) const;
 
@@ -161,11 +161,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   } PasswordFormManagerState;
 
   // State of matching process, used to verify that we don't call methods
-  // assuming we've already processed the web data request for matching logins,
+  // assuming we've already processed the request for matching logins,
   // when we actually haven't.
   PasswordFormManagerState state_;
 
-  // The profile from which we get the WebDataService.
+  // The profile from which we get the PasswordStore.
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);

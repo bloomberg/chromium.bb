@@ -172,7 +172,7 @@ void PasswordFormManager::Save() {
     UpdateLogin();
 }
 
-void PasswordFormManager::FetchMatchingLoginsFromWebDatabase() {
+void PasswordFormManager::FetchMatchingLoginsFromPasswordStore() {
   DCHECK_EQ(state_, PRE_MATCHING_PHASE);
   DCHECK(!pending_login_query_);
   state_ = MATCHING_PHASE;

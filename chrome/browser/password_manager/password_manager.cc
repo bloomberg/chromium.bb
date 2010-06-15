@@ -161,7 +161,7 @@ void PasswordManager::PasswordFormsFound(
         new PasswordFormManager(delegate_->GetProfileForPasswordManager(),
                                 this, *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
-    manager->FetchMatchingLoginsFromWebDatabase();
+    manager->FetchMatchingLoginsFromPasswordStore();
   }
 }
 
