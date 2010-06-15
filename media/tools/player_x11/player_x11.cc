@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
+#include "base/waitable_event.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
@@ -141,7 +142,9 @@ void PeriodicalUpdate(MessageLoop* message_loop, bool audio_only) {
       }
     } else if (e.type == ButtonPress) {
       g_running = false;
-      message_loop->Quit();
+      // QuitNow is more responsive than Quit since renderer_base is till
+      // posting paint messages.
+      message_loop->QuitNow();
       return;
     }
   }
@@ -181,6 +184,7 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   scoped_ptr<base::Thread> thread;
   scoped_refptr<media::PipelineImpl> pipeline;
+  MessageLoop message_loop;
   thread.reset(new base::Thread("PipelineThread"));
   thread->Start();
   if (InitPipeline(thread->message_loop(), filename.c_str(),
@@ -191,7 +195,6 @@ int main(int argc, char** argv) {
     // Check if video is present.
     audio_only = !pipeline->IsRendered(media::mime_type::kMajorTypeVideo);
 
-    MessageLoop message_loop;
     if (!audio_only) {
       // Tell the renderer to paint.
       DCHECK(Renderer::instance());
@@ -202,7 +205,10 @@ int main(int argc, char** argv) {
         NewRunnableFunction(PeriodicalUpdate, &message_loop, audio_only));
     message_loop.Run();
 
-    pipeline->Stop(NULL);
+    // Need to wait for pipeline to be fully stopped before stopping the thread.
+    base::WaitableEvent event(false, false);
+    pipeline->Stop(NewCallback(&event, &base::WaitableEvent::Signal));
+    event.Wait();
   } else{
     std::cout << "Pipeline initialization failed..." << std::endl;
   }

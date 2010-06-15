@@ -62,7 +62,8 @@ OmxVideoDecodeEngine::OmxVideoDecodeEngine()
 }
 
 OmxVideoDecodeEngine::~OmxVideoDecodeEngine() {
-  DCHECK_EQ(client_state_, kClientNotInitialized);
+  DCHECK(client_state_ == kClientNotInitialized ||
+         client_state_ == kClientStopped);
   DCHECK_EQ(il_state_, kIlNone);
   DCHECK_EQ(0u, input_buffers_.size());
   DCHECK_EQ(0u, output_buffers_.size());
@@ -168,6 +169,7 @@ VideoDecodeEngine::State OmxVideoDecodeEngine::state() const {
       return kNormal;
       break;
     case kClientStopping:
+    case kClientStopped:
       return kStopped;
       break;
     case kClientError:
@@ -521,9 +523,15 @@ void OmxVideoDecodeEngine::DoneSetStateExecuting(OMX_STATETYPE state) {
 // and outside allocator.
 void OmxVideoDecodeEngine::FillThisBuffer(
     scoped_refptr<VideoFrame> video_frame) {
+
   // TODO(wjia): merge buffer recycling for EGLImage and system memory path.
   if (!video_frame.get() || VideoFrame::TYPE_EGL_IMAGE != video_frame->type())
     return;
+
+  if (!CanAcceptOutput()) {
+    fill_this_buffer_callback_->Run(video_frame);
+    return;
+  }
 
   OMX_BUFFERHEADERTYPE* omx_buffer = FindOmxBuffer(video_frame);
   if (omx_buffer) {
@@ -734,7 +742,10 @@ void OmxVideoDecodeEngine::DeinitFromLoaded(OMX_STATETYPE state) {
     component_handle_ = NULL;
   }
   il_state_ = expected_il_state_ = kIlNone;
-  client_state_ = kClientNotInitialized;
+
+  // kClientStopped is different from kClientNotInitialized. The former can't
+  // accept output buffers, while the latter can.
+  client_state_ = kClientStopped;
 
   OMX_Deinit();
 
@@ -851,6 +862,7 @@ void OmxVideoDecodeEngine::FreeOutputBuffers() {
       }
     }
     output_frames_.clear();
+    output_frames_allocated_ = false;
   } else {
     for (size_t i = 0; i < output_buffers_.size(); ++i)
       OMX_FreeBuffer(component_handle_, output_port_, output_buffers_[i]);
@@ -917,14 +929,17 @@ bool OmxVideoDecodeEngine::CanFillBuffer() {
 
 bool OmxVideoDecodeEngine::CanAcceptInput() {
   // We can't take input buffer when in error state.
-  return (client_state_ != kClientError &&
-          !input_queue_has_eos_ &&
-          kClientStopping != client_state_);
+  return (kClientError != client_state_ &&
+          kClientStopping != client_state_ &&
+          kClientStopped != client_state_ &&
+          !input_queue_has_eos_);
 }
 
 bool OmxVideoDecodeEngine::CanAcceptOutput() {
-  // TODO(hclam): Reject when in stopped state.
-  return client_state_ != kClientError && output_port_state_ == kPortEnabled;
+  return (kClientError != client_state_ &&
+          kClientStopping != client_state_ &&
+          kClientStopped != client_state_ &&
+          output_port_state_ == kPortEnabled);
 }
 
 // TODO(wjia): There are several things need to be done here:

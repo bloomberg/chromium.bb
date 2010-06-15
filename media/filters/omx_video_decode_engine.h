@@ -75,6 +75,7 @@ class OmxVideoDecodeEngine :
     kClientInitializing,
     kClientRunning,
     kClientStopping,
+    kClientStopped,
     kClientPausing,
     kClientFlushing,
     kClientError,
