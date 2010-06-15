@@ -13,7 +13,6 @@
 #include "gfx/path.h"
 #include "gfx/skia_util.h"
 #include "grit/app_resources.h"
-#include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
 
 namespace {
@@ -38,11 +37,8 @@ const int kPhantomTabIconAlpha = 100;
 // SideTab, public:
 
 SideTab::SideTab(TabController* controller)
-    : BaseTab(controller) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  close_button()->SetBackground(kTextColor,
-                                rb.GetBitmapNamed(IDR_TAB_CLOSE),
-                                rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
+    : BaseTab(controller, false) {
+  SetCloseButtonColor(kTextColor);
 }
 
 SideTab::~SideTab() {
