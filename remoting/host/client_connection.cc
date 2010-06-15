@@ -15,7 +15,7 @@ namespace remoting {
 
 // Determine how many update streams we should count to find the size of
 // average update stream.
-static const int kAverageUpdateStream = 10;
+static const size_t kAverageUpdateStream = 10;
 
 ClientConnection::ClientConnection(MessageLoop* message_loop,
                                    ProtocolDecoder* decoder,

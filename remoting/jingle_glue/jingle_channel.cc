@@ -20,8 +20,8 @@ const size_t kReadBufferSize = 4096;
 
 JingleChannel::JingleChannel(Callback* callback)
     : state_(INITIALIZING),
-      event_handler_(this),
       callback_(callback),
+      event_handler_(this),
       write_buffer_size_(0),
       current_write_buf_pos_(0) {
   DCHECK(callback_ != NULL);

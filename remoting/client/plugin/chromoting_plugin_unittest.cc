@@ -79,11 +79,6 @@ TEST_F(ChromotingPluginTest, TestNew) {
   ASSERT_EQ(NPERR_NO_ERROR, result);
 }
 
-
-static uint32 get_pixel(uint32* pixels, int stride, int x, int y) {
-  return pixels[((x) + ((y) * (stride >> 2)))];
-}
-
 TEST_F(ChromotingPluginTest, TestSetWindow) {
   NPWindow* window = fake_browser_->GetWindow();
   NPError result;

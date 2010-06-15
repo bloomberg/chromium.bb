@@ -15,9 +15,9 @@ namespace remoting {
 X11View::X11View(Display* display, XID window, int width, int height)
     : display_(display),
       window_(window),
-      picture_(0),
       width_(width),
-      height_(height) {
+      height_(height),
+      picture_(0) {
 }
 
 X11View::~X11View() {

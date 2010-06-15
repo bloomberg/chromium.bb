@@ -44,9 +44,9 @@ SessionManager::SessionManager(
       capturer_(capturer),
       encoder_(encoder),
       rate_(kDefaultCaptureRate),
-      max_rate_(kDefaultCaptureRate),
       started_(false),
       recordings_(0),
+      max_rate_(kDefaultCaptureRate),
       rate_control_started_(false) {
   DCHECK(capture_loop_);
   DCHECK(encode_loop_);
@@ -308,7 +308,7 @@ void SessionManager::DoRateControl() {
   }
 
   // If |slow_down| equals zero, we have no slow down.
-  int slow_down = max_pending_update_streams / kSlowDownFactor;
+  size_t slow_down = max_pending_update_streams / kSlowDownFactor;
   // Set new_rate to -1 for checking later.
   double new_rate = -1;
   // If the slow down is too large.

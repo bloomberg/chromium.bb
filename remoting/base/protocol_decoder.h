@@ -54,13 +54,13 @@ class ProtocolDecoder {
 
   typedef std::deque<scoped_refptr<media::DataBuffer> > DataList;
   DataList data_list_;
-  int last_read_position_;
+  size_t last_read_position_;
 
   // Count the number of bytes in |data_list_| not read.
-  int available_bytes_;
+  size_t available_bytes_;
 
   // Stores the size of the next payload if known.
-  int next_payload_;
+  size_t next_payload_;
 
   // True if the size of the next payload is known. After one payload is read,
   // this is reset to false.

@@ -9,8 +9,8 @@
 
 namespace remoting {
 
-static int ReadFromInput(MultipleArrayInputStream* input,
-                         void* data, int size) {
+static size_t ReadFromInput(MultipleArrayInputStream* input,
+                         void* data, size_t size) {
   uint8* out = reinterpret_cast<uint8*>(data);
   int out_size = size;
 

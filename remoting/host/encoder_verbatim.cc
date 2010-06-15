@@ -21,8 +21,6 @@ void EncoderVerbatim::Encode(const DirtyRects& dirty_rects,
   for (int i = 0; i < num_rects; i++) {
     scoped_refptr<DataBuffer> data;
     gfx::Rect dirty_rect = dirty_rects[i];
-    PixelFormat pixel_format;
-    UpdateStreamEncoding encoding;
     scoped_ptr<UpdateStreamPacketHeader> header(new UpdateStreamPacketHeader);
     if (EncodeRect(dirty_rect,
                    input_data,

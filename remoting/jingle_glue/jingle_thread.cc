@@ -28,9 +28,9 @@ void TaskPump::OnMessage(talk_base::Message* pmsg) {
 }
 
 JingleThread::JingleThread()
-    : message_loop_(NULL),
-      task_pump_(NULL),
-      started_event_(true, false) { }
+    : task_pump_(NULL),
+      started_event_(true, false),
+      message_loop_(NULL) { }
 
 JingleThread::~JingleThread() { }
 

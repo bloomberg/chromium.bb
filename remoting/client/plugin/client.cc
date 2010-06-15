@@ -28,7 +28,6 @@ ChromotingClient::~ChromotingClient() {
 
 void ChromotingClient::hexdump(void* ptr, int buflen) {
   unsigned char* buf = static_cast<unsigned char*>(ptr);
-  int i, j;
   for (int i = 0; i < buflen; i += 16) {
     printf("%06x: ", i);
     for (int j = 0; j < 16; j ++)

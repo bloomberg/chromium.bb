@@ -109,6 +109,7 @@ int ZDecompressor::GetRawSize() {
 
 int ZDecompressor::GetCompressedSize() {
   // I don't care.
+  return 0;
 }
 
 }  // namespace remoting

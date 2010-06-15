@@ -71,7 +71,6 @@ NPError ChromotingPlugin::SetWindow(NPWindow* window) {
 
 int16 ChromotingPlugin::HandleEvent(void* event) {
   NPPepperEvent* npevent = static_cast<NPPepperEvent*>(event);
-  char ch;
 
   switch (npevent->type) {
     case NPEventType_MouseDown:

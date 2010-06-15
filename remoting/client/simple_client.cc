@@ -81,6 +81,7 @@ class SimpleHostEventCallback : public HostConnection::HostEventCallback {
 
   void HandleBeginUpdateStreamMessage(HostMessage* host_msg) {
     const BeginUpdateStreamMessage& msg = host_msg->begin_update_stream();
+    std::cout << msg.GetTypeName() << std::endl;
   }
 
   void HandleUpdateStreamPacketMessage(HostMessage* host_msg) {
@@ -93,6 +94,7 @@ class SimpleHostEventCallback : public HostConnection::HostEventCallback {
 
   void HandleEndUpdateStreamMessage(HostMessage* host_msg) {
     const EndUpdateStreamMessage& msg = host_msg->end_update_stream();
+    std::cout << msg.GetTypeName() << std::endl;
   }
 
   // JingleClient::Callback interface.

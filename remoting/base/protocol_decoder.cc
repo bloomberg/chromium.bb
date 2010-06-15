@@ -69,9 +69,8 @@ bool ProtocolDecoder::ParseOneMessage(T** message) {
   std::deque<int> buffer_sizes;
   while (next_payload_ > 0 && !data_list_.empty()) {
     scoped_refptr<media::DataBuffer> buffer = data_list_.front();
-    int read_bytes = std::min(
-        static_cast<int>(buffer->GetDataSize()) - last_read_position_,
-        next_payload_);
+    size_t read_bytes = std::min(buffer->GetDataSize() - last_read_position_,
+                                 next_payload_);
 
     buffers.push_back(buffer);
     buffer_pointers.push_back(buffer->GetData() + last_read_position_);
@@ -88,7 +87,7 @@ bool ProtocolDecoder::ParseOneMessage(T** message) {
       last_read_position_ = 0;
     }
   }
-  DCHECK_EQ(0, next_payload_);
+  DCHECK_EQ(0UL, next_payload_);
   DCHECK_EQ(buffers.size(), buffer_pointers.size());
   DCHECK_EQ(buffers.size(), buffer_sizes.size());
 
@@ -108,7 +107,7 @@ bool ProtocolDecoder::ParseOneMessage(T** message) {
 
 bool ProtocolDecoder::GetPayloadSize(int* size) {
   // The header has a size of 4 bytes.
-  const int kHeaderSize = sizeof(int32);
+  const size_t kHeaderSize = sizeof(int32);
 
   if (available_bytes_ < kHeaderSize)
     return false;

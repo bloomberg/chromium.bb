@@ -145,7 +145,7 @@ class DifferTest : public testing::Test {
     DirtyRects* dirty = new DirtyRects();
     differ_->MergeBlocks(dirty);
 
-    ASSERT_EQ(1, dirty->size());
+    ASSERT_EQ(1UL, dirty->size());
     CheckDirtyRect(dirty->at(0), x_origin, y_origin, width, height);
   }
 
@@ -272,7 +272,7 @@ TEST_F(DifferTest, MergeBlocks_Empty) {
   DirtyRects* dirty = new DirtyRects();
   differ_->MergeBlocks(dirty);
 
-  EXPECT_EQ(0, dirty->size());
+  EXPECT_EQ(0UL, dirty->size());
 }
 
 TEST_F(DifferTest, MergeBlocks_SingleBlock) {
@@ -435,7 +435,7 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   dirty = new DirtyRects();
   differ_->MergeBlocks(dirty);
 
-  ASSERT_EQ(3, dirty->size());
+  ASSERT_EQ(3UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 1, 0, 1, 1);
   CheckDirtyRect(dirty->at(1), 0, 1, 1, 1);
   CheckDirtyRect(dirty->at(2), 2, 2, 1, 1);
@@ -456,7 +456,7 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   dirty = new DirtyRects();
   differ_->MergeBlocks(dirty);
 
-  ASSERT_EQ(2, dirty->size());
+  ASSERT_EQ(2UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 2, 0, 1, 3);
   CheckDirtyRect(dirty->at(1), 0, 1, 2, 2);
 
@@ -477,7 +477,7 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   dirty = new DirtyRects();
   differ_->MergeBlocks(dirty);
 
-  ASSERT_EQ(3, dirty->size());
+  ASSERT_EQ(3UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 0, 1, 1, 2);
   CheckDirtyRect(dirty->at(1), 2, 1, 1, 2);
   CheckDirtyRect(dirty->at(2), 1, 2, 1, 1);
@@ -500,7 +500,7 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   dirty = new DirtyRects();
   differ_->MergeBlocks(dirty);
 
-  ASSERT_EQ(4, dirty->size());
+  ASSERT_EQ(4UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 0, 0, 3, 1);
   CheckDirtyRect(dirty->at(1), 0, 1, 1, 2);
   CheckDirtyRect(dirty->at(2), 2, 1, 1, 2);
@@ -522,7 +522,7 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   dirty = new DirtyRects();
   differ_->MergeBlocks(dirty);
 
-  ASSERT_EQ(2, dirty->size());
+  ASSERT_EQ(2UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 0, 0, 2, 2);
   CheckDirtyRect(dirty->at(1), 1, 2, 1, 1);
 }

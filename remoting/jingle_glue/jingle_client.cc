@@ -179,6 +179,9 @@ void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
     case buzz::XmppEngine::STATE_CLOSED:
       UpdateState(CLOSED);
       break;
+    default:
+      NOTREACHED();
+      break;
   }
 }
 
