@@ -41,8 +41,6 @@ class Event {
                    ET_MOUSE_MOVED,
                    ET_MOUSE_ENTERED,
                    ET_MOUSE_EXITED,
-                   ET_MOUSE_NEAR,
-                   ET_MOUSE_EXITED_NEAR,
                    ET_KEY_PRESSED,
                    ET_KEY_RELEASED,
                    ET_MOUSEWHEEL,
@@ -102,9 +100,7 @@ class Event {
            type_ == ET_MOUSE_MOVED ||
            type_ == ET_MOUSE_ENTERED ||
            type_ == ET_MOUSE_EXITED ||
-           type_ == ET_MOUSEWHEEL ||
-           type_ == ET_MOUSE_NEAR ||
-           type_ == ET_MOUSE_EXITED_NEAR;
+           type_ == ET_MOUSEWHEEL;
   }
 
 #if defined(OS_WIN)
