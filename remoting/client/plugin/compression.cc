@@ -29,7 +29,12 @@ void ZCompressor::WriteInternal(char* buffer, int size, int flush) {
     stream_.avail_out = kZLIB_CHUNK;
     stream_.next_out = reinterpret_cast<Bytef*>(&buffer_[last_size]);
     int ret = deflate(&stream_, flush);
-    assert(ret != Z_STREAM_ERROR);
+
+    // Check ret before the assert so that we don't get an unused variable
+    // warning in release builds.
+    if (ret == Z_STREAM_ERROR) {
+      assert(ret != Z_STREAM_ERROR);
+    }
 
     // Shrink the size of the vector. It doesn't alter the capacity.
     int compressed = kZLIB_CHUNK - stream_.avail_out;
@@ -81,7 +86,12 @@ void ZDecompressor::WriteInternal(char* buffer, int size, int flush) {
     stream_.avail_out = kZLIB_CHUNK;
     stream_.next_out = reinterpret_cast<Bytef*>(&buffer_[last_size]);
     int ret = inflate(&stream_, flush);
-    assert(ret != Z_STREAM_ERROR);
+
+    // Check ret before the assert so that we don't get an unused variable
+    // warning in release builds.
+    if (ret == Z_STREAM_ERROR) {
+      assert(ret != Z_STREAM_ERROR);
+    }
 
     // Shrink the size of the vector. It doesn't alter the capacity.
     int decompressed = kZLIB_CHUNK - stream_.avail_out;
