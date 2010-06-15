@@ -401,6 +401,12 @@
               # etc.; should we try to extract from there instead?
               'product_name': 'chrome'
             }],
+            # On Mac, this is done in chrome_dll.gypi.
+            ['internal_pdf', {
+              'dependencies': [
+                '../pdf/pdf.gyp:pdf',
+              ],
+            }],
           ],
           'dependencies': [
             'packed_extra_resources',
@@ -432,11 +438,6 @@
               'ProgramDatabaseFile': '$(OutDir)\\chrome_exe.pdb',
             },
           },
-        }],
-        ['internal_pdf', {
-          'dependencies': [
-            '../pdf/pdf.gyp:pdf',
-          ],
         }],
       ],
     },

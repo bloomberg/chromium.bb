@@ -288,6 +288,11 @@
                 # dependency here. flash_player.gyp will copy the Flash bundle
                 # into PRODUCT_DIR.
                 '../third_party/adobe/flash/flash_player.gyp:flash_player',
+                'conditions': [
+                  ['internal_pdf', {
+                    '../pdf/pdf.gyp:pdf',
+                  }],
+                ],
               ],
               'rules': [
                 {
@@ -473,6 +478,11 @@
                       'files': [
                         '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
                         '<(PRODUCT_DIR)/plugin.vch',
+                      ],
+                    }],
+                    ['internal_pdf', {
+                      'files': [
+                        '<(PRODUCT_DIR)/PDF.plugin',
                       ],
                     }],
                   ],

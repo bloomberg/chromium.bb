@@ -44,6 +44,7 @@ servers\*.dll: %(VersionDir)s\
 servers\*.exe: %(VersionDir)s\
 Extensions\*.*: %(VersionDir)s\Extensions\
 av*.dll: %(VersionDir)s\
+pdf.dll: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 gcswf32.dll: %(VersionDir)s\
