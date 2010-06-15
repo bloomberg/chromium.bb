@@ -249,7 +249,8 @@ void CertificatePage::PopulateTree(CERTCertList* cert_list) {
         org_tree_map_iter = org_tree_map.insert(std::make_pair(org,
                                                                iter)).first;
       }
-      std::string name = Stringize(CERT_GetCommonName(&cert->subject));
+      std::string name = psm::ProcessIDN(
+          Stringize(CERT_GetCommonName(&cert->subject)));
       if (name.empty() && cert->nickname) {
         name = cert->nickname;
         // Hack copied from mozilla: Cut off text before first :, which seems to

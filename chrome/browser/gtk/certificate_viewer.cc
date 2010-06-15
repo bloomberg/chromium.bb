@@ -284,7 +284,7 @@ void CertificateViewer::InitGeneralPage() {
            l10n_util::GetStringUTF8(IDS_CERT_INFO_SUBJECT_GROUP));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_COMMON_NAME_LABEL),
-              Stringize(CERT_GetCommonName(&cert->subject)));
+              psm::ProcessIDN(Stringize(CERT_GetCommonName(&cert->subject))));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_ORGANIZATION_LABEL),
               Stringize(CERT_GetOrgName(&cert->subject)));
@@ -301,7 +301,7 @@ void CertificateViewer::InitGeneralPage() {
            l10n_util::GetStringUTF8(IDS_CERT_INFO_ISSUER_GROUP));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_COMMON_NAME_LABEL),
-              Stringize(CERT_GetCommonName(&cert->issuer)));
+              psm::ProcessIDN(Stringize(CERT_GetCommonName(&cert->issuer))));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_ORGANIZATION_LABEL),
               Stringize(CERT_GetOrgName(&cert->issuer)));
