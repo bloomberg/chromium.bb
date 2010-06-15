@@ -78,10 +78,10 @@ class DetectUpgradeTask : public Task {
     // Get the version of the currently *installed* instance of Chrome,
     // which might be newer than the *running* instance if we have been
     // upgraded in the background.
-    Version* installed_version = InstallUtil::GetChromeVersion(false);
-    if (!installed_version) {
+    scoped_ptr<Version> installed_version(InstallUtil::GetChromeVersion(false));
+    if (!installed_version.get()) {
       // User level Chrome is not installed, check system level.
-      installed_version = InstallUtil::GetChromeVersion(true);
+      installed_version.reset(InstallUtil::GetChromeVersion(true));
     }
 #elif defined(OS_LINUX)
     CommandLine command_line(*CommandLine::ForCurrentProcess());
