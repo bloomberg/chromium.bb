@@ -198,7 +198,7 @@ class TCPClientSocketPool : public ClientSocketPool {
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocketPool);
 };
 
-REGISTER_SOCKET_PARAMS_FOR_POOL(TCPClientSocketPool, TCPSocketParams)
+REGISTER_SOCKET_PARAMS_FOR_POOL(TCPClientSocketPool, TCPSocketParams);
 
 }  // namespace net
 
