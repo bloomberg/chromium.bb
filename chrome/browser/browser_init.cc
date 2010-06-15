@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browser_init.h"
 
+#include <algorithm>   // For max().
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/event_recorder.h"
@@ -69,7 +71,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/mount_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
@@ -445,6 +447,19 @@ bool BrowserInit::LaunchBrowser(
   }
   return true;
 }
+
+#if defined(OS_CHROMEOS)
+bool BrowserInit::ApplyServicesCustomization(
+    const chromeos::ServicesCustomizationDocument* customization) {
+  GURL welcome_url(customization->initial_start_page_url());
+  DCHECK(welcome_url.is_valid()) << welcome_url;
+  if (welcome_url.is_valid()) {
+    AddFirstRunTab(welcome_url);
+  }
+  // TODO(denisromanov): Add extensions and web apps customization here.
+  return true;
+}
+#endif
 
 // LaunchWithProfile ----------------------------------------------------------
 

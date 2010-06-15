@@ -18,6 +18,11 @@ class GURL;
 class PrefService;
 class Profile;
 class TabContents;
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class ServicesCustomizationDocument;
+}
+#endif
 
 // class containing helpers for BrowserMain to spin up a new instance and
 // initialize the profile.
@@ -70,6 +75,13 @@ class BrowserInit {
   bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
                      const std::wstring& cur_dir, bool process_startup,
                      int* return_code);
+
+#if defined(OS_CHROMEOS)
+  // Processes the OEM services customization document and modifies browser
+  // settings like initial startup page, web apps and extentions.
+  bool ApplyServicesCustomization(
+      const chromeos::ServicesCustomizationDocument* customization);
+#endif
 
   // LaunchWithProfile ---------------------------------------------------------
   //

@@ -910,8 +910,12 @@ const char kLoginUser[]                     = "login-user";
 const char kChromeosFrame[]                 = "chromeos-frame";
 
 // Specify startup customization manifest.
-// TODO(denisromanov): delete this once it's not needed for testing anymore.
+// TODO(denisromanov): delete this when not needed for testing.
 const char kStartupManifest[]               = "startup-manifest";
+
+// Specify services customization manifest.
+// TODO(denisromanov): delete this when not needed for testing.
+const char kServicesManifest[]              = "services-manifest";
 
 // Specify the amount the trackpad should scroll by.
 const char kVertScrollDelta[]               = "vert-scroll-delta";

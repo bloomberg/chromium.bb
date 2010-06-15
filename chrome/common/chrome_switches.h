@@ -261,7 +261,10 @@ extern const char kProfile[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kChromeosFrame[];
+// TODO(denisromanov): Remove this flag when it is not needed for testing.
 extern const char kStartupManifest[];
+// TODO(denisromanov): Remove this flag when it is not needed for testing, too.
+extern const char kServicesManifest[];
 extern const char kVertScrollDelta[];
 #endif
 

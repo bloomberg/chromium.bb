@@ -159,6 +159,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -600,6 +601,7 @@ void InitializeToolkit() {
 #endif
 
 #if defined(OS_CHROMEOS)
+
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
     std::string first_screen =
@@ -619,11 +621,44 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
     browser::ShowLoginWizard(first_screen, size);
   }
 }
+
+bool OptionallyApplyServicesCustomizationFromCommandLine(
+    const CommandLine& parsed_command_line,
+    BrowserInit* browser_init) {
+  // For Chrome OS, we may need to fetch OEM partner's services customization
+  // manifest and apply the customizations. This happens on the very first run
+  // or if startup manifest is passed on the command line.
+  scoped_ptr<chromeos::ServicesCustomizationDocument> customization;
+  customization.reset(new chromeos::ServicesCustomizationDocument());
+  bool manifest_loaded = false;
+  if (parsed_command_line.HasSwitch(switches::kServicesManifest)) {
+    // Load manifest from file specified by command line switch.
+    FilePath manifest_path =
+        parsed_command_line.GetSwitchValuePath(switches::kServicesManifest);
+    manifest_loaded = customization->LoadManifestFromFile(manifest_path);
+    DCHECK(manifest_loaded) << manifest_path.value();
+  }
+  // If manifest was loaded successfully, apply the customizations.
+  if (manifest_loaded) {
+    browser_init->ApplyServicesCustomization(customization.get());
+  }
+  return manifest_loaded;
+}
+
 #else
+
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
   // Dummy empty function for non-ChromeOS builds to avoid extra ifdefs below.
 }
-#endif
+
+bool OptionallyApplyServicesCustomizationFromCommandLine(
+    const CommandLine& parsed_command_line,
+    BrowserInit* browser_init) {
+  // Dummy empty function for non-ChromeOS builds to avoid extra ifdefs below.
+  return false;
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
 OSStatus KeychainCallback(SecKeychainEvent keychain_event,
@@ -1217,6 +1252,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RegisterURLRequestChromeJob();
   RegisterExtensionProtocols();
   RegisterMetadataURLRequestHandler();
+
+  // If path to partner services customization document was passed on command
+  // line, apply the customizations (Chrome OS only).
+  // TODO(denisromanov): Remove this when not needed for testing.
+  OptionallyApplyServicesCustomizationFromCommandLine(parsed_command_line,
+                                                      &browser_init);
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global GoogleURLTracker and IntranetRedirectDetector instances, which
