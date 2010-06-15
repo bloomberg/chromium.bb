@@ -44,7 +44,7 @@
       'ENABLE_VIDEO=1',
       'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WORKERS=1',
-      'ENABLE_V8_SCRIPT_DEBUG_SERVER=1',
+      'ENABLE_V8_SCRIPT_DEBUG_SERVER=0',
     ],
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
