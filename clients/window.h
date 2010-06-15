@@ -55,6 +55,7 @@ enum {
 };
 
 typedef void (*window_resize_handler_t)(struct window *window, void *data);
+typedef void (*window_redraw_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
 typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key, uint32_t frame, void *data);
 typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
@@ -80,6 +81,8 @@ void
 window_copy_image(struct window *window,
 		  struct rectangle *rectangle,
 		  void *image);
+void
+window_schedule_redraw(struct window *window);
 
 void
 window_move(struct window *window, int32_t x, int32_t y);
@@ -98,6 +101,10 @@ window_copy_surface(struct window *window,
 
 void
 window_set_fullscreen(struct window *window, int fullscreen);
+
+void
+window_set_redraw_handler(struct window *window,
+			  window_redraw_handler_t handler, void *data);
 
 void
 window_set_decoration(struct window *window, int decoration);

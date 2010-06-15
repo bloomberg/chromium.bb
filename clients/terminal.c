@@ -50,7 +50,6 @@ static int option_fullscreen;
 struct terminal {
 	struct window *window;
 	struct display *display;
-	int redraw_scheduled;
 	char *data;
 	int width, height, start, row, column;
 	int fd, master;
@@ -219,15 +218,12 @@ terminal_draw(struct terminal *terminal)
 	window_commit(terminal->window, 0);
 }
 
-static gboolean
-idle_redraw(void *data)
+static void
+redraw_handler(struct window *window, void *data)
 {
 	struct terminal *terminal = data;
 
 	terminal_draw(terminal);
-	terminal->redraw_scheduled = 0;
-
-	return FALSE;
 }
 
 #define STATE_NORMAL 0
@@ -235,15 +231,6 @@ idle_redraw(void *data)
 
 static void
 terminal_data(struct terminal *terminal, const char *data, size_t length);
-
-static void
-terminal_schedule_redraw(struct terminal *terminal)
-{
-	if (!terminal->redraw_scheduled) {
-		g_idle_add(idle_redraw, terminal);
-		terminal->redraw_scheduled = 1;
-	}
-}
 
 static void
 handle_escape(struct terminal *terminal)
@@ -396,15 +383,7 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 		}
 	}
 
-	terminal_schedule_redraw(terminal);
-}
-
-static void
-resize_handler(struct window *window, void *data)
-{
-	struct terminal *terminal = data;
-
-	terminal_schedule_redraw(terminal);
+	window_schedule_redraw(terminal->window);
 }
 
 static void
@@ -420,7 +399,7 @@ key_handler(struct window *window, uint32_t key, uint32_t unicode,
 			break;
 		terminal->fullscreen ^= 1;
 		window_set_fullscreen(window, terminal->fullscreen);
-		terminal_schedule_redraw(terminal);
+		window_schedule_redraw(terminal->window);
 		break;
 	default:
 		if (state && unicode)
@@ -436,7 +415,7 @@ keyboard_focus_handler(struct window *window,
 	struct terminal *terminal = data;
 
 	terminal->focused = (device != NULL);
-	terminal_schedule_redraw(terminal);
+	window_schedule_redraw(terminal->window);
 }
 
 static struct terminal *
@@ -459,7 +438,8 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->margin = 5;
 
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
-	window_set_resize_handler(terminal->window, resize_handler, terminal);
+	window_set_redraw_handler(terminal->window,
+				  redraw_handler, terminal);
 
 	window_set_key_handler(terminal->window, key_handler, terminal);
 	window_set_keyboard_focus_handler(terminal->window,
@@ -474,7 +454,6 @@ terminal_create(struct display *display, int fullscreen)
 	cairo_font_extents(cr, &terminal->extents);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
-
 
 	terminal_draw(terminal);
 

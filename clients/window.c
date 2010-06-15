@@ -68,6 +68,7 @@ struct window {
 	struct wl_surface *surface;
 	const char *title;
 	struct rectangle allocation, saved_allocation, surface_allocation;
+	int redraw_scheduled;
 	int minimum_width, minimum_height;
 	int margin;
 	int drag_x, drag_y;
@@ -83,6 +84,7 @@ struct window {
 	cairo_surface_t *cairo_surface, *pending_surface;
 
 	window_resize_handler_t resize_handler;
+	window_redraw_handler_t redraw_handler;
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
 	window_acknowledge_handler_t acknowledge_handler;
@@ -396,7 +398,8 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 		if (window->resize_handler)
 			(*window->resize_handler)(window,
 						  window->user_data);
-
+		else if (window->redraw_handler)
+			window_schedule_redraw(window);
 		break;
 	}
 }
@@ -685,6 +688,26 @@ window_copy_surface(struct window *window,
 	cairo_destroy (cr);
 }
 
+static gboolean
+idle_redraw(void *data)
+{
+	struct window *window = data;
+
+	window->redraw_handler(window, window->user_data);
+	window->redraw_scheduled = 0;
+
+	return FALSE;
+}
+
+void
+window_schedule_redraw(struct window *window)
+{
+	if (!window->redraw_scheduled) {
+		g_idle_add(idle_redraw, window);
+		window->redraw_scheduled = 1;
+	}
+}
+
 void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
@@ -708,6 +731,14 @@ window_set_resize_handler(struct window *window,
 			  window_resize_handler_t handler, void *data)
 {
 	window->resize_handler = handler;
+	window->user_data = data;
+}
+
+void
+window_set_redraw_handler(struct window *window,
+			  window_redraw_handler_t handler, void *data)
+{
+	window->redraw_handler = handler;
 	window->user_data = data;
 }
 
@@ -804,7 +835,6 @@ display_handle_acknowledge(void *data,
 {
 	struct display *d = data;
 	struct window *window;
-	cairo_surface_t *pending;
 		
 	/* The acknowledge event means that the server processed our
 	 * last commit request and we can now safely free the old

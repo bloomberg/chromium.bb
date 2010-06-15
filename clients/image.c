@@ -46,9 +46,6 @@ struct image {
 	struct window *window;
 	struct display *display;
 	uint32_t key;
-
-	gboolean redraw_scheduled;
-
 	gchar *filename;
 };
 
@@ -149,8 +146,6 @@ image_draw(struct image *image)
 	cairo_t *cr;
 	cairo_surface_t *wsurface, *surface;
 
-	image->redraw_scheduled = 0;
-
 	window_draw(image->window);
 
 	window_get_child_rectangle(image->window, &rectangle);
@@ -186,31 +181,12 @@ image_draw(struct image *image)
 	cairo_surface_destroy(surface);
 }
 
-static gboolean
-image_idle_redraw(void *data)
+static void
+redraw_handler(struct window *window, void *data)
 {
 	struct image *image = data;
 
 	image_draw(image);
-
-	return FALSE;
-}
-
-static void
-image_schedule_redraw(struct image *image)
-{
-	if (!image->redraw_scheduled) {
-		image->redraw_scheduled = 1;
-		g_idle_add(image_idle_redraw, image);
-	}
-}
-
-static void
-resize_handler(struct window *window, void *data)
-{
-	struct image *image = data;
-
-	image_schedule_redraw(image);
 }
 
 static void
@@ -219,7 +195,7 @@ keyboard_focus_handler(struct window *window,
 {
 	struct image *image = data;
 
-	image_schedule_redraw(image);
+	window_schedule_redraw(image->window);
 }
 
 static struct image *
@@ -247,7 +223,7 @@ image_create(struct display *display, uint32_t key, const char *filename)
 	 * allocation scheme here.  Or maybe just a real toolkit. */
 	image->key = key + 100;
 
-	window_set_resize_handler(image->window, resize_handler, image);
+	window_set_redraw_handler(image->window, redraw_handler, image);
 	window_set_keyboard_focus_handler(image->window, keyboard_focus_handler, image);
 
 	image_draw(image);

@@ -51,8 +51,6 @@ struct view {
 	struct display *display;
 	uint32_t key;
 
-	gboolean redraw_scheduled;
-
 	gchar *filename;
 	PopplerDocument *document;
 	int page;
@@ -68,8 +66,6 @@ view_draw(struct view *view)
 	cairo_t *cr;
 	PopplerPage *page;
 	double width, height, doc_aspect, window_aspect, scale;
-
-	view->redraw_scheduled = 0;
 
 	window_draw(view->window);
 
@@ -110,23 +106,12 @@ view_draw(struct view *view)
 	window_commit(view->window, 0);
 }
 
-static gboolean
-view_idle_redraw(void *data)
+static void
+redraw_handler(struct window *window, void *data)
 {
 	struct view *view = data;
 
 	view_draw(view);
-
-	return FALSE;
-}
-
-static void
-view_schedule_redraw(struct view *view)
-{
-	if (!view->redraw_scheduled) {
-		view->redraw_scheduled = 1;
-		g_idle_add(view_idle_redraw, view);
-	}
 }
 
 static void
@@ -141,33 +126,25 @@ key_handler(struct window *window, uint32_t key, uint32_t unicode,
 			break;
 		view->fullscreen ^= 1;
 		window_set_fullscreen(window, view->fullscreen);
-		view_schedule_redraw(view);
+		window_schedule_redraw(view->window);
 		break;
 	case KEY_SPACE:
 	case KEY_PAGEDOWN:
 		if (!state)
 			break;
 		view->page++;
-		view_schedule_redraw(view);
+		window_schedule_redraw(view->window);
 		break;
 	case KEY_BACKSPACE:
 	case KEY_PAGEUP:
 		if (!state)
 			break;
 		view->page--;
-		view_schedule_redraw(view);
+		window_schedule_redraw(view->window);
 		break;
 	default:
 		break;
 	}
-}
-
-static void
-resize_handler(struct window *window, void *data)
-{
-	struct view *view = data;
-
-	view_schedule_redraw(view);
 }
 
 static void
@@ -177,7 +154,7 @@ keyboard_focus_handler(struct window *window,
 	struct view *view = data;
 
 	view->focused = (device != NULL);
-	view_schedule_redraw(view);
+	window_schedule_redraw(view->window);
 }
 
 static struct view *
@@ -206,9 +183,8 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	/* FIXME: Window uses key 1 for moves, need some kind of
 	 * allocation scheme here.  Or maybe just a real toolkit. */
 	view->key = key + 100;
-	view->redraw_scheduled = 1;
 
-	window_set_resize_handler(view->window, resize_handler, view);
+	window_set_redraw_handler(view->window, redraw_handler, view);
 	window_set_key_handler(view->window, key_handler, view);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler, view);
