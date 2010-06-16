@@ -9,7 +9,6 @@ import sys
 
 import breakpad
 
-import gcl
 import presubmit_support
 import scm
 import watchlists
@@ -51,7 +50,7 @@ class ChangeOptions:
     issue = BackquoteAsInteger(['git', 'cl', 'status', '--field=id'])
     patchset = BackquoteAsInteger(['git', 'cl', 'status', '--field=patch'])
     if issue:
-      description = gcl.GetIssueDescription(issue)
+      description = Backquote(['git', 'cl', 'status', '--field=desc'])
     else:
       description = m.group(2)
     self.change = presubmit_support.GitChange(name, description, absroot, files,
