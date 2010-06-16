@@ -42,41 +42,29 @@ readonly BINUTILS_INSTALL_DIR="${LLVMGCC_INSTALL_DIR}"
 
 readonly PATCH_DIR=$(pwd)/tools/patches
 
-# TODO(robertm): get the code from a repo rather than use tarball + patch
-readonly LLVMGCC_TARBALL=$(pwd)/../third_party/llvm/llvm-gcc-4.2-88663.tar.bz2
-# TODO(robertm): move these two into a proper patch when move to hg repo
-readonly LLVMGCC_SFI_PATCH=${PATCH_DIR}/libgcc-arm-lib1funcs.patch
-readonly LLVMGCC_SFI_PATCH2=${PATCH_DIR}/libgcc-arm-libunwind.patch
-readonly LLVMGCC_SFI_PATCH3=${PATCH_DIR}/libstdcpp-eh_arm.patch
-
-# TODO(robertm): get the code from a repo rather than use tarball + patch
-readonly LLVM_TARBALL=$(pwd)/../third_party/llvm/llvm-88663.tar.bz2
-readonly LLVM_SFI_PATCH=${PATCH_DIR}/llvm-r88663.patch
-readonly LLVM_HACK_SFI_PATCH=${PATCH_DIR}/llvm-hack-sfi.patch
-readonly LLVM_UPDATE_PLUGIN_PATCH=${PATCH_DIR}/llvm-update-plugin.patch
-readonly LLVM_GCC_PATCH=${PATCH_DIR}/llvm-gcc-104753.patch
-readonly LLVM_GCC_PATCH2=${PATCH_DIR}/llvm-gcc-104870.patch
-
-readonly BINUTILS_GAS_PATCH=${PATCH_DIR}/binutils-2.20-gas.patch
-readonly BINUTILS_GAS_VCVT_PATCH=${PATCH_DIR}/binutils-2.20-gas-vcvt.patch
-readonly BINUTILS_GAS_VMRS_PATCH=${PATCH_DIR}/binutils-2.20-gas-vmrs.patch
-readonly BINUTILS_GAS_VNMLA_PATCH=${PATCH_DIR}/binutils-2.20-gas-vnmla.patch
-readonly BINUTILS_GAS_VMLS_PATCH=${PATCH_DIR}/binutils-2.20-gas-vmls.patch
-readonly BINUTILS_GOLD_UPDATE_PATCH=${PATCH_DIR}/gold-update.patch
-readonly BINUTILS_GOLD_OUTPUT_NAME_PATCH=${PATCH_DIR}/gold-output-name.patch
-readonly BINUTILS_GOLD_VISIBILITY_PATCH=${PATCH_DIR}/gold-visibility.patch
-
 readonly BFD_PLUGIN_DIR=${LLVMGCC_INSTALL_DIR}/lib/bfd-plugins
-
-# TODO(robertm): get the code from a repo rather than use tarball + patch
-readonly NEWLIB_TARBALL=$(pwd)/../third_party/newlib/newlib-1.17.0.tar.gz
-readonly NEWLIB_PATCH=${PATCH_DIR}/newlib-1.17.0_arm.patch
-
 
 readonly MAKE_OPTS="-j8 VERBOSE=1"
 
+# The directory in which we perform all our builds.
+# TODO(adonovan): make this include a hash (or segments) of $(pwd) so
+# we don't clobber builds done from other clients.  (The Hg repos could
+# be shared, though.)
 readonly TMP=/tmp/crosstool-untrusted
 
+# Environmental options: each optional *_DEV variable specifies a
+# directory to use instead of the Mercurial repository.  Use these
+# options to test pending changes.
+readonly LLVM_GCC_DEV=${LLVM_GCC_DEV:-}   # llvm-gcc
+readonly LLVM_DEV=${LLVM_DEV:-}           # llvm
+readonly NEWLIB_DEV=${NEWLIB_DEV:-}       # newlib
+readonly BINUTILS_DEV=${BINUTILS_DEV:-}   # binutils
+
+# Current milestones within each Hg repo:
+readonly LLVM_REV=bbd520cb9bab # (on the arm-sfi branch)
+readonly LLVM_GCC_REV=641899ceeb66
+readonly NEWLIB_REV=5d64fed35b93
+readonly BINUTILS_REV=0f826f30861d
 
 # These are simple compiler wrappers to force 32bit builds
 # They are unused now. Instead we make sure that the toolchains that we
@@ -126,7 +114,7 @@ readonly CFLAGS_FOR_SFI_TARGET="-march=armv6 \
 # * linking the plugin in bfd-plugins
 
 ######################################################################
-# Helper
+# Helpers
 ######################################################################
 
 Banner() {
@@ -194,6 +182,57 @@ RunWithLog() {
   }
 }
 
+# Usage: HgMirror <repo>
+#
+# Clones the specified Mercurial repository from
+# nacl-llvm-branches.googlecode.com into the local "hg mirrors"
+# directory, to be used by subsequent steps.
+HgMirror() {
+  local repo=$1
+  local repo_mirror=${TMP}/hg-mirrors
+  local url=https://${repo}.googlecode.com/hg/
+  mkdir -p ${repo_mirror}
+  echo "HgMirror: creating local mirror of ${url} Mercurial repository..."
+  trap "rm -fr ${repo_mirror}/${repo}" EXIT
+  if [ -d ${repo_mirror}/${repo} ]; then
+    # Already exists: just bring it up-to-date.
+    (cd ${repo_mirror}/${repo} && hg pull)
+  else
+    # Absent: create anew.
+    hg clone ${url} ${repo_mirror}/${repo}
+  fi
+  trap - EXIT
+  echo "HgMirror: done."
+}
+
+# Usage: SetupSourceTree <dest> <repo-name> <label> <dev-tree>
+#
+# Sets up a source tree <dest> by cloning the Mercurial repository
+# <repo-name> at label <label> (e.g. an Hg branch name or revision
+# specification), or if <dev-tree> is non-empty, by copying the tree
+# <dev-tree>.
+SetupSourceTree() {
+  local dest=$1
+  local repo_name=$2
+  local label=$3
+  local dev_tree=${4:-}
+
+  rm -rf ${dest}  # TODO(adonovan): optimise around this when safe
+
+  mkdir -p $(dirname ${dest})
+
+  if [ -n "${dev_tree}" ]; then
+    # User has requested that we use their development tree instead.
+    echo "Copying user's development tree ${dev_tree}..."
+    cp -ru ${dev_tree} ${dest}
+  else
+    HgMirror ${repo_name}
+    echo "Making local checkout of repo ${repo_name} at label ${label}..."
+    hg clone ${TMP}/hg-mirrors/${repo_name} ${dest}
+    (cd ${dest} && hg up -C ${label})
+  fi
+}
+
 ######################################################################
 #
 ######################################################################
@@ -224,14 +263,14 @@ RecordRevisionInfo() {
 }
 
 
-CreateTarBall() {
+tarball() {
   local tarball=$1
   Banner "creating tar ball ${tarball}"
   tar zcf ${tarball} -C ${INSTALL_ROOT} .
 }
 
 # try to keep the tarball small
-PruneLLVM() {
+prune() {
   Banner "pruning llvm sourcery tree"
   local LLVM_ROOT=${INSTALL_ROOT}/arm-none-linux-gnueabi
   SubBanner "Size before: $(du -msc  ${LLVM_ROOT})"
@@ -240,19 +279,20 @@ PruneLLVM() {
 }
 
 # Build basic llvm tools
-ConfigureAndBuildLlvm() {
-  local saved_dir=$(pwd)
+llvm() {
   local tmpdir=${TMP}/llvm
-  Banner "Building llvm in ${tmpdir}"
-  rm -rf ${tmpdir}
-  mkdir -p ${tmpdir}
-  cd ${tmpdir}
 
-  Run "Untaring" tar jxf ${LLVM_TARBALL}
-  cd llvm
+  Banner "Building LLVM in ${tmpdir}"
 
-  Run "Patching" patch -p2 < ${LLVM_SFI_PATCH}
-  Run "Patching hack" patch -p1 < ${LLVM_HACK_SFI_PATCH}
+  SetupSourceTree ${tmpdir} \
+                  nacl-llvm-branches \
+                  ${LLVM_REV} \
+                  ${LLVM_DEV}
+  pushd ${tmpdir}/llvm-trunk
+
+  # TODO(adonovan): this is a hack which Cliff will revert ASAP (Jun
+  # 14 2010)
+  Run "Patching hack" patch -p1 < ${PATCH_DIR}/llvm-hack-sfi.patch
 
   # The --with-binutils-include is to allow llvm to build the gold plugin
   local binutils_include="${TMP}/binutils.nacl/src/binutils-2.20/include"
@@ -288,61 +328,29 @@ ConfigureAndBuildLlvm() {
   ln -s ../../../llvm/lib/LLVMgold.so ${BFD_PLUGIN_DIR}
   ln -s ../../../llvm/lib/libLTO.so ${BFD_PLUGIN_DIR}
 
-  cd ${saved_dir}
+  popd
 }
 
-
-# UntarAndPatchNewLib
-UntarAndPatchNewlib() {
-  local saved_dir=$(pwd)
+SetupNewlibSource() {
   local tmpdir=${TMP}/newlib
-  Banner "Untaring and patching newlib in ${tmpdir}"
-  rm -rf ${tmpdir}
-  mkdir -p ${tmpdir}
-  cd ${tmpdir}
 
-  Run "Untaring newlib [${NEWLIB_TARBALL}]" tar zxf ${NEWLIB_TARBALL}
-  cd newlib-1.17.0
-  SubBanner "patching newlib"
-  # remove -fshort-enums
-  readonly patch1="newlib/libc/stdio/Makefile.am"
-  mv ${patch1} ${patch1}.orig
-  sed -e 's/-fshort-enums//' < ${patch1}.orig >  ${patch1}
-  echo ${patch1}
+  Banner "Setting up newlib source in ${tmpdir}"
 
-  readonly patch2="newlib/libc/stdio/Makefile.in"
-  mv ${patch2} ${patch2}.orig
-  sed -e 's/-fshort-enums//' < ${patch2}.orig >  ${patch2}
-  echo ${patch2}
-
-  # replace setjmp assembler code with an empty file
-  readonly patch3="newlib/libc/machine/arm/Makefile.in"
-  mv ${patch3} ${patch3}.orig
-  sed -e 's/setjmp.S/setjmp.c/g'  < ${patch3}.orig >  ${patch3}
-  touch newlib/libc/machine/arm/setjmp.c
-  echo ${patch3}
-
-  SubBanner "more patching newlib"
-  # patch some more files using the traditional patch tool
-  patch -p1 < ${NEWLIB_PATCH}
-
-  SubBanner "delete syscalls"
-  # remove newlib functions - we have our own dummy
-  for s in newlib/libc/syscalls/*.c ; do
-    echo $s
-    mv ${s} ${s}.orig
-    touch ${s}
-  done
+  SetupSourceTree ${tmpdir} \
+                  newlib.nacl-llvm-branches \
+                  ${NEWLIB_REV} \
+                  ${NEWLIB_DEV}
 
   SubBanner "add nacl headers"
-  ${saved_dir}/src/trusted/service_runtime/export_header.py \
-       ${saved_dir}/src/trusted/service_runtime/include \
-       newlib/libc/include
 
-  cd ${saved_dir}
+  here=$(pwd)
+  (cd ${tmpdir}/newlib-1.17.0 &&
+    ${here}/src/trusted/service_runtime/export_header.py \
+      ${here}/src/trusted/service_runtime/include \
+      newlib/libc/include)
 }
 
-# Note: depends on newlib being untared and patched
+# Note: depends on newlib source being set up.
 SetupSysRoot() {
   local sys_include=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include
   local sys_include2=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/sys-include
@@ -354,40 +362,25 @@ SetupSysRoot() {
   cp -r ${TMP}/newlib/newlib-1.17.0/newlib/libc/include/* ${sys_include}
 }
 
-
 # Build "pregcc" which is a gcc that does not depend on having glibc/newlib
 # already compiled. This also generates some important headers (confirm this).
 #
-# NOTE: depends on newlib being untared and patched so we can use it to setup a
-#       sysroot
+# NOTE: depends on newlib source being set up so we can use it to set
+#       up a sysroot.
 ConfigureAndBuildGccStage1() {
   local tmpdir=${TMP}/llvm-pregcc
-  local saved_dir=$(pwd)
 
   Banner "Building llvmgcc-stage1 in ${tmpdir}"
 
-  rm -rf ${tmpdir}
-  mkdir -p ${tmpdir}
-  cd ${tmpdir}
-
-  Run "Untaring llvm-gcc" \
-    tar jxf ${LLVMGCC_TARBALL}
-
-  Run "Patching" \
-    patch llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${LLVMGCC_SFI_PATCH}
-
-  Run "Patching2" \
-    patch llvm-gcc-4.2/gcc/config/arm/libunwind.S ${LLVMGCC_SFI_PATCH2}
-
-  cd llvm-gcc-4.2
-  Run "Patching3" \
-    patch -p1 < ${LLVM_GCC_PATCH}
-    patch -p1 < ${LLVM_GCC_PATCH2}
-  cd ..
+  SetupSourceTree ${tmpdir} \
+                  llvm-gcc.nacl-llvm-branches \
+                  ${LLVM_GCC_REV} \
+                  ${LLVM_GCC_DEV}
+  mkdir -p ${tmpdir}/build
+  pushd ${tmpdir}/build
 
   # NOTE: you cannot build llvm-gcc inside the source directory
-  mkdir -p build
-  cd build
+
   # TODO(robertm): do we really need CROSS_TARGET_*
   RunWithLog "Configure" ${TMP}/llvm-pregcc.configure.log \
       env -i PATH=/usr/bin/:/bin \
@@ -427,7 +420,7 @@ ConfigureAndBuildGccStage1() {
              CFLAGS="-Dinhibit_libc" \
              make ${MAKE_OPTS} install
 
-  cd ${saved_dir}
+  popd
 }
 
 
@@ -450,7 +443,7 @@ STD_ENV_FOR_GCC_ETC=(
 BuildLibgcc() {
   local tmpdir=$1
 
-  cd ${tmpdir}/gcc
+  pushd ${tmpdir}/gcc
 
   Run "Build libgcc clean"\
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
@@ -461,19 +454,22 @@ BuildLibgcc() {
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} libgcc.a
+
+  popd
 }
 
 
 BuildLibiberty() {
   local tmpdir=$1
 
-  cd ${tmpdir}
+  pushd ${tmpdir}
   # maybe clean libiberty first
   RunWithLog "Build libiberty" ${TMP}/llvm-gcc.make_libiberty.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} all-target-libiberty
+  popd
 }
 
 STD_ENV_FOR_LIBSTDCPP=(
@@ -501,15 +497,12 @@ STD_ENV_FOR_LIBSTDCPP=(
 
 BuildLibstdcpp() {
   local tmpdir=$1
-  cd ${tmpdir}
+  pushd ${tmpdir}
   local src_dir=${tmpdir}/../llvm-gcc-4.2
   local cpp_build_dir=${tmpdir}/${CROSS_TARGET}/libstdc++-v3
   rm -rf ${cpp_build_dir}
   mkdir -p  ${cpp_build_dir}
   cd ${cpp_build_dir}
-
-  Run "Patching" \
-    patch ${src_dir}/libstdc++-v3/libsupc++/eh_arm.cc  ${LLVMGCC_SFI_PATCH3}
 
   RunWithLog "Configure libstdc++" ${TMP}/llvm-gcc.configure_libstdcpp.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
@@ -537,34 +530,21 @@ BuildLibstdcpp() {
 #  RunWithLog "Install libstdc++" ${TMP}/llvm-gcc.install_libstdcpp.log \
 #    env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
 #      make  ${MAKE_OPTS} install
+  popd
 }
 
 # Build gcc again in order to build libgcc and other essential libs
 # Note: depends on
-ConfigureAndBuildGccStage2() {
+gcc-stage2() {
   local tmpdir=${TMP}/llvm-gcc
-  local saved_dir=$(pwd)
 
   Banner "Building llvmgcc-stage2 in ${tmpdir}"
 
-  rm -rf ${tmpdir}
-  mkdir -p ${tmpdir}
-  cd ${tmpdir}
-
-  Run "Untaring llvm-gcc" \
-    tar jxf ${LLVMGCC_TARBALL}
-
-  Run "Patching" \
-    patch  llvm-gcc-4.2/gcc/config/arm/lib1funcs.asm ${LLVMGCC_SFI_PATCH}
-
-  Run "Patching2" \
-    patch llvm-gcc-4.2/gcc/config/arm/libunwind.S ${LLVMGCC_SFI_PATCH2}
-
-  cd llvm-gcc-4.2
-  Run "Patching3" \
-    patch -p1 < ${LLVM_GCC_PATCH}
-    patch -p1 < ${LLVM_GCC_PATCH2}
-  cd ..
+  SetupSourceTree ${tmpdir} \
+                  llvm-gcc.nacl-llvm-branches \
+                  ${LLVM_GCC_REV} \
+                  ${LLVM_GCC_DEV}
+  pushd ${tmpdir}
 
   # NOTE: you cannot build llvm-gcc inside the source directory
   mkdir -p build
@@ -615,23 +595,21 @@ ConfigureAndBuildGccStage2() {
   cp cc1plus ${LLVMGCC_INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/4.2.1
 
   BuildLibstdcpp ${tmpdir}/build
-  cd ${saved_dir}
+  popd
 }
 
 
-ConfigureAndBuildGccStage3() {
+gcc-stage3() {
   local tmpdir=${TMP}/llvm-gcc
-  local saved_dir=$(pwd)
 
   Banner "Installing final version of llvmgcc (stage3)"
 
-  cd ${tmpdir}/build
+  pushd ${tmpdir}/build
   RunWithLog "Make" ${TMP}/llvm-gcc.install.log \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              install
-
 
   SubBanner "Install libgcc.a library"
   # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
@@ -649,7 +627,7 @@ ConfigureAndBuildGccStage3() {
   ln -s ../../include/c++ \
         ${LLVMGCC_INSTALL_DIR}/arm-none-linux-gnueabi/include/c++
 
-  cd ${saved_dir}
+  popd
 }
 
 # We need to adjust the start address and aligment of nacl arm modules
@@ -660,8 +638,30 @@ InstallUntrustedLinkerScript() {
 
 
 # we copy some useful tools after building them first
-InstallMiscTools() {
+misc-tools() {
    Banner "building and installing misc tools"
+
+   if [ ! -f toolchain/linux_arm-trusted/ld_script_arm_trusted ]; then
+     cat <<EOF
+The trusted toolchain doesn't appear to be installed, so this step
+will fail due to missing libraries.  Run:
+
+  % tools/llvm/trusted-toolchain-creator.sh trusted_sdk
+
+This takes a while.  Alternatively, you could run:
+
+  % tools/llvm/pnacl-helper.sh download-toolchains
+
+or even:
+
+  % ./scons platform=arm --download sdl=none
+
+but be warned that both of these will clobber your untrusted
+toolchains tree, negating the work done so far, so you may want to
+manually save/restore the untrusted toolchains.
+EOF
+     exit -1
+   fi
 
    # TODO(robertm): revisit some of these options
    Run "sel loader" \
@@ -723,31 +723,18 @@ STD_ENV_FOR_NEWLIB=(
     LD_FOR_TARGET="${ILLEGAL_TOOL}"
     STRIP_FOR_TARGET="${ILLEGAL_TOOL}")
 
-#
 BuildAndInstallBinutils() {
-  local saved_dir=$(pwd)
   local tmpdir="${TMP}/binutils.nacl"
   local tarball=$(readlink -f ../third_party/binutils/binutils-2.20.tar.bz2)
 
   Banner "Building binutils"
 
-  rm -rf ${tmpdir}
-  mkdir ${tmpdir}
-  mkdir ${tmpdir}/build
-  mkdir ${tmpdir}/src
-  cd ${tmpdir}/src
-  tar xf ${tarball}
-  SubBanner "patching binutils"
-  cd binutils-2.20
-  patch -p1 < ${BINUTILS_GAS_PATCH}
-  patch -p1 < ${BINUTILS_GAS_VNMLA_PATCH}
-  patch -p1 < ${BINUTILS_GAS_VCVT_PATCH}
-  patch -p1 < ${BINUTILS_GAS_VMRS_PATCH}
-  patch -p1 < ${BINUTILS_GAS_VMLS_PATCH}
-  patch -p1 < ${BINUTILS_GOLD_UPDATE_PATCH}
-  patch -p1 < ${BINUTILS_GOLD_OUTPUT_NAME_PATCH}
-  patch -p1 < ${BINUTILS_GOLD_VISIBILITY_PATCH}
-  cd ../../build
+  SetupSourceTree ${tmpdir}/src \
+                  binutils.nacl-llvm-branches \
+                  ${BINUTILS_REV} \
+                  ${BINUTILS_DEV}
+  mkdir -p ${tmpdir}/build
+  pushd ${tmpdir}/build
 
   # --enable-checking is to avoid a build failure:
   #   tc-arm.c:2489: warning: empty body in an if-statement
@@ -774,21 +761,23 @@ BuildAndInstallBinutils() {
       make \
       install ${MAKE_OPTS}
 
-  cd ${saved_dir}
+  popd
 }
 
 BuildAndInstallNewlib() {
-  local saved_dir=$(pwd)
   local tmpdir=${TMP}/newlib
-  # NOTE: When an argument is given to this fucntion we abuse it to generate
+  # NOTE: When an argument is given to this function we abuse it to generate
   #       a bitcode version of the library. In the scenario we just want to
   #       build libc.a and do install or uninstall anything.
   if [ $# == 0 ] ; then
     rm -rf ${NEWLIB_INSTALL_DIR}
+  elif [ ! -d "$1" ]; then
+    echo "Error: no such directory '$1'." >&2
+    exit 1
   fi
   Banner "building and installing newlib"
 
-  cd ${tmpdir}/newlib-1.17.0
+  pushd ${tmpdir}/newlib-1.17.0
 
   RunWithLog "Configuring newlib"  ${TMP}/newlib.configure.log \
     env -i \
@@ -813,7 +802,7 @@ BuildAndInstallNewlib() {
 
   if [ $# == 1 ] ; then
     SubBanner "installing lib[cgm].a to $1"
-    cp ${tmpdir}//newlib-1.17.0/arm-none-linux-gnueabi/newlib/lib[cgm].a $1
+    cp ${tmpdir}/newlib-1.17.0/arm-none-linux-gnueabi/newlib/lib[cgm].a $1
     return
   fi
 
@@ -847,11 +836,11 @@ BuildAndInstallNewlib() {
     rm -f $p
   done
 
-  cd ${saved_dir}
+  popd
 }
 
 
-BuildExtraSDK() {
+extrasdk() {
   Banner "building extra sdk"
   ./scons MODE=nacl_extra_sdk \
           platform=arm \
@@ -864,7 +853,7 @@ BuildExtraSDK() {
 }
 
 
-InstallExamples() {
+examples() {
   Banner "installing examples into ${INSTALL_ROOT}/examples"
   rm -rf  ${INSTALL_ROOT}/examples/
   cp -r  tools/llvm/arm_examples ${INSTALL_ROOT}/examples/
@@ -872,7 +861,7 @@ InstallExamples() {
 
 
 # NOTE: Experiment x86-32 support
-AddX86Basics32() {
+add-x86-basics-32() {
   Banner "installing experimental x86-32 support"
   local libdir="${INSTALL_ROOT}/x86-32sfi-lib"
   mkdir -p ${libdir}
@@ -898,184 +887,135 @@ AddX86Basics32() {
 
 
 ######################################################################
-# Main
-######################################################################
-if [ $# -eq 0 ] ; then
-  echo
-  echo "ERROR: you must specify a mode on the commandline:"
-  echo
-  Usage
-  exit -1
-fi
-
-MODE=$1
-shift
+# Actions
 
 #@
 #@ help
 #@
-#@   print help for all modes
-if [ $MODE} = 'help' ] ; then
+#@   Print help for all modes.
+help() {
   Usage
-  exit 0
-fi
+}
 
 #@
 #@ untrusted_sdk <tarball>
 #@
-#@   create untrusted sdk tarball
+#@   Create untrusted SDK tarball.
 #@   This is the primary function of this script.
-if [ ${MODE} = 'untrusted_sdk' ] ; then
+untrusted_sdk() {
+  if [ ! -n "${1:-}" ]; then
+    echo "Error: untrusted_sdk needs a tarball name." >&2
+    exit 1
+  fi
   mkdir -p ${TMP}
   PathSanityCheck
   ClearInstallDir
   RecordRevisionInfo
-
   BuildAndInstallBinutils
-
-  ConfigureAndBuildLlvm
-
-  UntarAndPatchNewlib
-  SetupSysRoot
-
-  ConfigureAndBuildGccStage1
-
-  InstallUntrustedLinkerScript
-  InstallDriver
-
-  ConfigureAndBuildGccStage2
-  ConfigureAndBuildGccStage3
-
-
+  llvm
+  gcc-stage1
+  driver
+  gcc-stage2
+  gcc-stage3
   BuildAndInstallNewlib
-
-  BuildExtraSDK
-
-  InstallMiscTools
-
-  InstallExamples
-
-  PruneLLVM
-
-  CreateTarBall $1
-
-  exit 0
-fi
+  extrasdk
+  misc-tools
+  examples
+  prune
+  tarball $1
+}
 
 #@
 #@ llc-sfi
 #@
-#@   reinstall llc-sfi
-if [ ${MODE} = 'llc-sfi' ] ; then
-  UntarPatchConfigureAndBuildSfiLlc
-  exit 0
-fi
+#@   Build and install SFI llc.
 
 #@
 #@ llvm
 #@
-#@   install llvm
-if [ ${MODE} = 'llvm' ] ; then
-  ConfigureAndBuildLlvm
-  exit 0
-fi
+#@   Configure, build and install LLVM.
 
 #@
 #@ gcc-stage1
 #@
 #@   install pre-gcc
-if [ ${MODE} = 'gcc-stage1' ] ; then
-  UntarAndPatchNewlib
+gcc-stage1() {
+  SetupNewlibSource
   SetupSysRoot
   ConfigureAndBuildGccStage1
-  exit 0
-fi
+}
 
 #@
 #@ gcc-stage2
 #@
 #@   NOTE: depends on installation of gcc-stage1
 #@   build libgcc, libiberty, libstc++
-if [ ${MODE} = 'gcc-stage2' ] ; then
-  ConfigureAndBuildGccStage2
-  exit 0
-fi
 
 #@
 #@ gcc-stage3
 #@
 #@   NOTE: depends on installation of gcc-stage2
-if [ ${MODE} = 'gcc-stage3' ] ; then
-  ConfigureAndBuildGccStage3
-  exit 0
-fi
 
 #@
 #@ newlib
 #@
-#@   build and install newlib
-if [ ${MODE} = 'newlib' ] ; then
-  UntarAndPatchNewlib
+#@   Build and install newlib.
+newlib() {
+  SetupNewlibSource
   BuildAndInstallNewlib
-  exit 0
-fi
+}
 
 #@
 #@ newlib-libonly <target-dir>
 #@
-#@   build and install newlib
-if [ ${MODE} = 'newlib-libonly' ] ; then
-  UntarAndPatchNewlib
+#@   Build and install newlib.
+newlib-libonly() {
+  SetupNewlibSource
   BuildAndInstallNewlib $1
-  exit 0
-fi
+}
 
 #@
 #@ libstdcpp-libonly <target-dir>
 #@
-#@   build and install libstc++
-if [ ${MODE} = 'libstdcpp-libonly' ] ; then
+#@   Build and install libstc++.
+libstdcpp-libonly() {
+  if [ ! -d "$1" ]; then
+    echo "Error: no such directory '$1'." >&2
+    exit 1
+  fi
   dest=$(readlink -f $1)
-  tmp=${TMP}/libstdcpp
-  rm -rf ${tmp}
-  mkdir -p ${tmp}
-  cd ${tmp}
-  tar jxf ${LLVMGCC_TARBALL}
-  # we do not bother with the patches as they do not apply to this lib
-  mkdir ${tmp}/build
-  BuildLibstdcpp ${tmp}/build
-  cp ${tmp}/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a ${dest}
-  exit 0
-fi
+  tmpdir=${TMP}/libstdcpp
+
+  # Extract llvm-gcc headers:
+  SetupSourceTree ${tmpdir} \
+                  llvm-gcc.nacl-llvm-branches \
+                  ${LLVM_GCC_REV} \
+                  ${LLVM_GCC_DEV}
+  pushd ${tmpdir}
+  mkdir -p build
+  BuildLibstdcpp ${tmpdir}/build
+  cp ${tmpdir}/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a ${dest}
+  popd
+}
 
 #@
 #@ extrasdk
 #@
-#@   build and install extra sdk libs and headers
-if [ ${MODE} = 'extrasdk' ] ; then
-  BuildExtraSDK
-  exit 0
-fi
+#@   Build and install extra sdk libs and headers.
 
 #@
 #@ misc-tools
 #@
-#@   install misc tools
-if [ ${MODE} = 'misc-tools' ] ; then
-  InstallMiscTools
-  exit 0
-fi
+#@   Build and install misc tools such as sel_ldr, validator.
 
 #@
 #@ driver
 #@
-#@   install driver
-if [ ${MODE} = 'driver' ] ; then
+#@   Install driver.
+driver() {
   InstallUntrustedLinkerScript
   InstallDriver
-  exit 0
-fi
-
+}
 
 #@
 #@ driver-symlink
@@ -1084,49 +1024,45 @@ fi
 #@   so that driver development is simplified.
 #@   NOTE: This will make the INSTALL_ROOT unsuitable
 #@         for being tar'ed up as a self contained toolchain.
-if [ ${MODE} = 'driver-symlink' ] ; then
+driver-symlink() {
   abs_path=$(readlink -f tools/llvm/llvm-fake.py)
   driver=${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm-fake.py
   ln -sf ${abs_path} ${driver}
-  exit 0
-fi
+}
 
 #@
 #@ prune
 #@
-#@   prune tree to make tarball smaller
-if [ ${MODE} = 'prune' ] ; then
-  PruneLLVM
-  exit 0
-fi
+#@   Prune tree to make tarball smaller.
 
 #@
 #@ examples
 #@
-#@   add examples
-if [ ${MODE} = 'examples' ] ; then
-  InstallExamples
-  exit 0
-fi
+#@   Install examples.
 
 #@
 #@ add-x86-basics-32
 #@
-#@   add x86 basic libs from
-if [ ${MODE} = 'add-x86-basics-32' ] ; then
-  AddX86Basics32
-  exit 0
-fi
-
+#@   Install x86 stubs, libraries, linker scripts and tools.
 
 #@
-#@ tar <tarball>
+#@ tarball <tarball>
 #@
-#@   tar everything up
-if [ ${MODE} = 'tar' ] ; then
-  CreateTarBall $1
-  exit 0
+#@   Tar everything up.
+
+######################################################################
+# Main
+
+if [ $(basename $(pwd)) != "native_client" ]; then
+  echo "You must run this script from the 'native_client' directory." >&2
+  exit -1
 fi
 
-echo "ERROR: unknown mode ${MODE}"
-exit -1
+[ $# = 0 ] && set -- help  # Avoid reference to undefined $1.
+if [ "$(type -t $1)" != "function" ]; then
+  Usage
+  echo "ERROR: unknown mode '$1'." >&2
+  exit 1
+fi
+
+eval "$@"
