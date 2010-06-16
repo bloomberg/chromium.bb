@@ -42,6 +42,8 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& origin, const WebKit::WebURL& url,
       bool isLocalStorage);
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
+                                 bool sync_dir);
 
  private:
   webkit_glue::WebFileSystemImpl file_system_;

@@ -4,11 +4,13 @@
 
 #include "chrome/browser/in_process_webkit/browser_webkitclient_impl.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "webkit/glue/webkit_glue.h"
 
 BrowserWebKitClientImpl::BrowserWebKitClientImpl() {
   file_system_.set_sandbox_enabled(false);
@@ -129,4 +131,10 @@ WebKit::WebSharedWorkerRepository*
 BrowserWebKitClientImpl::sharedWorkerRepository() {
     NOTREACHED();
     return NULL;
+}
+
+int BrowserWebKitClientImpl::databaseDeleteFile(
+    const WebKit::WebString& vfs_file_name, bool sync_dir) {
+  const FilePath path = webkit_glue::WebStringToFilePath(vfs_file_name);
+  return file_util::Delete(path, false) ? 0 : 1;
 }
