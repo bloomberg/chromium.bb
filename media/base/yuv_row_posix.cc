@@ -273,6 +273,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
   asm(
   ".global FastConvertYUVToRGB32Row\n"
 "FastConvertYUVToRGB32Row:\n"
+#if 0
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
   "mov    0x28(%esp),%edi\n"
@@ -319,6 +320,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
   "movd   %mm1,0x0(%ebp)\n"
 "convertdone:"
   "popa\n"
+#endif
   "ret\n"
 );
 
@@ -333,6 +335,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
   asm(
   ".global ScaleYUVToRGB32Row\n"
 "ScaleYUVToRGB32Row:\n"
+#if 0
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
   "mov    0x28(%esp),%edi\n"
@@ -394,6 +397,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 
 "scaledone:"
   "popa\n"
+#endif
   "ret\n"
 );
 
@@ -407,6 +411,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
   asm(
   ".global LinearScaleYUVToRGB32Row\n"
 "LinearScaleYUVToRGB32Row:\n"
+#if 0
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
   "mov    0x28(%esp),%edi\n"
@@ -505,6 +510,7 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
   "packuswb %mm1, %mm1\n"
   "movd %mm1, (%ebp)\n"
   "popa\n"
+#endif
   "ret\n"
 );
 
@@ -518,6 +524,7 @@ extern void PICConvertYUVToRGB32Row(const uint8* y_buf,
                                     int16 *kCoefficientsRgbY);
   __asm__(
 "_PICConvertYUVToRGB32Row:\n"
+#if 0
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
   "mov    0x28(%esp),%edi\n"
@@ -565,6 +572,7 @@ extern void PICConvertYUVToRGB32Row(const uint8* y_buf,
   "movd   %mm1,0x0(%ebp)\n"
 ".Lconvertdone:\n"
   "popa\n"
+#endif
   "ret\n"
 );
 
@@ -587,6 +595,7 @@ extern void PICScaleYUVToRGB32Row(const uint8* y_buf,
 
   __asm__(
 "_PICScaleYUVToRGB32Row:\n"
+#if 0
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
   "mov    0x28(%esp),%edi\n"
@@ -648,6 +657,7 @@ extern void PICScaleYUVToRGB32Row(const uint8* y_buf,
 
 "Lscaledone:"
   "popa\n"
+#endif
   "ret\n"
 );
 
@@ -672,6 +682,7 @@ void PICLinearScaleYUVToRGB32Row(const uint8* y_buf,
 
   asm(
 "_PICLinearScaleYUVToRGB32Row:\n"
+#if 0
   "pusha\n"
   "mov    0x24(%esp),%edx\n"
   "mov    0x30(%esp),%ebp\n"
@@ -773,6 +784,7 @@ void PICLinearScaleYUVToRGB32Row(const uint8* y_buf,
   "packuswb %mm1, %mm1\n"
   "movd %mm1, (%ebp)\n"
   "popa\n"
+#endif
   "ret\n"
 );
 
