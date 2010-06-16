@@ -371,7 +371,7 @@ void WebWidgetHost::Paint() {
       total_paint = total_paint.Union(rect);
     }
   }
-  DCHECK(paint_rect_.IsEmpty());
+  //DCHECK(paint_rect_.IsEmpty());
 
   // Invalidate the paint region on the widget's underlying gdk window. Note
   // that gdk_window_invalidate_* will generate extra expose events, which
