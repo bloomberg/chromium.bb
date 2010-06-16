@@ -182,7 +182,7 @@ void PepperDeviceTest::SetUp() {
   // Normally the RenderView creates the pepper plugin and registers it with
   // its internal list. Since we're creating it manually, we have to reach in
   // and register it to prevent tear-down from asserting.
-  view_->current_pepper_plugins_.insert(pepper_plugin_);
+  view_->current_oldstyle_pepper_plugins_.insert(pepper_plugin_);
 
   active_tests[npp()] = this;
 

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/glue/plugins/pepper_resource.h"
@@ -79,7 +80,6 @@ class DeviceContext2D : public Resource {
     PPB_DeviceContext2D_FlushCallback callback_;
     void* callback_data_;
   };
-  typedef std::vector<FlushCallbackData> FlushCallbackVector;
 
   // Called internally to execute the different queued commands. The
   // parameters to these functions will have already been validated. The last
@@ -103,6 +103,9 @@ class DeviceContext2D : public Resource {
   // issues the offscreen callbacks.
   void ExecuteOffscreenCallback(FlushCallbackData data);
 
+  // Returns true if there is any type of flush callback pending.
+  bool HasPendingFlush() const;
+
   scoped_refptr<ImageData> image_data_;
 
   // Non-owning pointer to the plugin instance this device context is currently
@@ -119,20 +122,32 @@ class DeviceContext2D : public Resource {
   // This is initially false and is set to true at the first Flush() call.
   bool flushed_any_data_;
 
-  // The plugin may be constantly giving us paint messages. "Unpainted" ones
-  // are paint requests which have never been painted. These could have been
-  // done while the RenderView was already waiting for an ACK from a previous
-  // paint, so won't generate a new one yet.
+  // The plugin can give us one "Flush" at a time. This flush will either be in
+  // the "unpainted" state (in which case unpainted_flush_callback_ will be
+  // non-NULL) or painted, in which case painted_flush_callback_ will be
+  // non-NULL). There can also be an offscreen callback which is handled
+  // separately (see offscreen_callback_pending_). Only one of these three
+  // things may be set at a time to enforce the "only one pending flush at a
+  // time" constraint.
   //
-  // "Painted" ones are those paints that have been painted by RenderView, but
+  // "Unpainted" ones are flush requests which have never been painted. These
+  // could have been done while the RenderView was already waiting for an ACK
+  // from a previous paint, so won't generate a new one yet.
+  //
+  // "Painted" ones are those flushes that have been painted by RenderView, but
   // for which the ACK from the browser has not yet been received.
   //
   // When we get updates from a plugin with a callback, it is first added to
   // the unpainted callbacks. When the renderer has initiated a paint, we'll
   // move it to the painted callbacks list. When the renderer receives a flush,
   // we'll execute the callback and remove it from the list.
-  FlushCallbackVector unpainted_flush_callbacks_;
-  FlushCallbackVector painted_flush_callbacks_;
+  scoped_ptr<FlushCallbackData> unpainted_flush_callback_;
+  scoped_ptr<FlushCallbackData> painted_flush_callback_;
+
+  // When doing offscreen flushes, we issue a task that issues the callback
+  // later. This is set when one of those tasks is pending so that we can
+  // enforce the "only one pending flush at a time" constraint in the API.
+  bool offscreen_flush_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceContext2D);
 };

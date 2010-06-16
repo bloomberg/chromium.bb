@@ -13,6 +13,8 @@ class PlatformCanvas;
 
 namespace pepper {
 
+class PluginInstance;
+
 // Virtual interface that the browser implements to implement features for
 // Pepper plugins.
 class PluginDelegate {
@@ -31,6 +33,14 @@ class PluginDelegate {
     // out-of-process plugin. Returns 0 on failure.
     virtual intptr_t GetSharedMemoryHandle() const = 0;
   };
+
+  // Indicates that the given instance has been created.
+  virtual void InstanceCreated(pepper::PluginInstance* instance) = 0;
+
+  // Indicates that the given instance is being destroyed. This is called from
+  // the destructor, so it's important that the instance is not dereferenced
+  // from this call.
+  virtual void InstanceDeleted(pepper::PluginInstance* instance) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;

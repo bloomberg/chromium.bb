@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -110,8 +111,21 @@ bool ReadImageData(PP_Resource device_context_2d,
   return context->ReadImageData(image, x, y);
 }
 
+void RunMessageLoop() {
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::current()->Run();
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+}
+
+void QuitMessageLoop() {
+  MessageLoop::current()->Quit();
+}
+
 const PPB_Testing testing_interface = {
-  &ReadImageData
+  &ReadImageData,
+  &RunMessageLoop,
+  &QuitMessageLoop,
 };
 
 // GetInterface ----------------------------------------------------------------

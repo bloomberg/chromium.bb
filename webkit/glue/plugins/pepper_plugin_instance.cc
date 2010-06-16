@@ -21,6 +21,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
+#include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_var.h"
@@ -146,9 +147,11 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       container_(NULL) {
   DCHECK(delegate);
   module_->InstanceCreated(this);
+  delegate_->InstanceCreated(this);
 }
 
 PluginInstance::~PluginInstance() {
+  delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
 }
 
