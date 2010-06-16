@@ -369,11 +369,7 @@ class ModelessHtmlDialogDelegate : public HtmlDialogUIDelegate {
 
 // Allows InvokeLater without adding refcounting.  The object is only deleted
 // when its last InvokeLater is run anyway.
-template <>
-struct RunnableMethodTraits<ModelessHtmlDialogDelegate> {
-  void RetainCallee(ModelessHtmlDialogDelegate* delegate) {}
-  void ReleaseCallee(ModelessHtmlDialogDelegate* delegate) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ModelessHtmlDialogDelegate);
 
 namespace {
 

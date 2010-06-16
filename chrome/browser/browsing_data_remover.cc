@@ -31,11 +31,7 @@
 
 // Done so that we can use PostTask on BrowsingDataRemovers and not have
 // BrowsingDataRemover implement RefCounted.
-template <>
-struct RunnableMethodTraits<BrowsingDataRemover> {
-  void RetainCallee(BrowsingDataRemover* remover) {}
-  void ReleaseCallee(BrowsingDataRemover* remover) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(BrowsingDataRemover);
 
 bool BrowsingDataRemover::removing_ = false;
 

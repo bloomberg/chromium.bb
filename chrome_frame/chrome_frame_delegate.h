@@ -54,11 +54,8 @@ class ChromeFrameDelegate {
   virtual ~ChromeFrameDelegate() {}
 };
 
-// Template specialization
-template <> struct RunnableMethodTraits<ChromeFrameDelegate> {
-  void RetainCallee(ChromeFrameDelegate* obj) {}
-  void ReleaseCallee(ChromeFrameDelegate* obj) {}
-};
+// Disable refcounting of ChromeFrameDelegate.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ChromeFrameDelegate);
 
 extern UINT kAutomationServerReady;
 extern UINT kMessageFromChromeFrame;

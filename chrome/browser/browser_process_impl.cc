@@ -463,11 +463,7 @@ void BrowserProcessImpl::CreateStatusTrayManager() {
 
 // The BrowserProcess object must outlive the file thread so we use traits
 // which don't do any management.
-template <>
-struct RunnableMethodTraits<BrowserProcessImpl> {
-  void RetainCallee(BrowserProcessImpl* process) {}
-  void ReleaseCallee(BrowserProcessImpl* process) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(BrowserProcessImpl);
 
 void BrowserProcessImpl::CheckForInspectorFiles() {
   file_thread()->message_loop()->PostTask

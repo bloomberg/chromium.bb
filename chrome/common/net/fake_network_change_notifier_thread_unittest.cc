@@ -16,11 +16,7 @@ class FlagToggler;
 }  // namespace chrome_common_net
 
 // We manage the lifetime of chrome_common_net::FlagToggler ourselves.
-template <>
-struct RunnableMethodTraits<chrome_common_net::FlagToggler> {
-  void RetainCallee(chrome_common_net::FlagToggler*) {}
-  void ReleaseCallee(chrome_common_net::FlagToggler*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chrome_common_net::FlagToggler);
 
 namespace chrome_common_net {
 

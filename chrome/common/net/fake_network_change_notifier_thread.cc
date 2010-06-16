@@ -11,12 +11,8 @@
 
 // We manage the lifetime of
 // chrome_common_net::FakeNetworkChangeNotifierThread ourselves.
-template <>
-struct RunnableMethodTraits<chrome_common_net::
-    FakeNetworkChangeNotifierThread> {
-  void RetainCallee(chrome_common_net::FakeNetworkChangeNotifierThread*) {}
-  void ReleaseCallee(chrome_common_net::FakeNetworkChangeNotifierThread*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(
+    chrome_common_net::FakeNetworkChangeNotifierThread);
 
 namespace chrome_common_net {
 

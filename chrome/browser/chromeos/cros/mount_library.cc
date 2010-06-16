@@ -11,11 +11,7 @@
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
-template <>
-struct RunnableMethodTraits<chromeos::MountLibraryImpl> {
-  void RetainCallee(chromeos::MountLibraryImpl* obj) {}
-  void ReleaseCallee(chromeos::MountLibraryImpl* obj) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::MountLibraryImpl);
 
 namespace chromeos {
 

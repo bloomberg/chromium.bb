@@ -58,11 +58,7 @@ class HistoryTest;
 // Specialize RunnableMethodTraits for HistoryTest so we can create callbacks.
 // None of these callbacks can outlast the test, so there is not need to retain
 // the HistoryTest object.
-template <>
-struct RunnableMethodTraits<history::HistoryTest> {
-  void RetainCallee(history::HistoryTest* obj) { }
-  void ReleaseCallee(history::HistoryTest* obj) { }
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(history::HistoryTest);
 
 namespace history {
 

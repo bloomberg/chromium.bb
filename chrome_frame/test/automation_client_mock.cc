@@ -15,20 +15,9 @@ using testing::_;
 using testing::CreateFunctor;
 using testing::Return;
 
-template <> struct RunnableMethodTraits<ProxyFactory::LaunchDelegate> {
-  void RetainCallee(ProxyFactory::LaunchDelegate* obj) {}
-  void ReleaseCallee(ProxyFactory::LaunchDelegate* obj) {}
-};
-
-template <> struct RunnableMethodTraits<ChromeFrameAutomationClient> {
-  void RetainCallee(ChromeFrameAutomationClient* obj) {}
-  void ReleaseCallee(ChromeFrameAutomationClient* obj) {}
-};
-
-template <> struct RunnableMethodTraits<chrome_frame_test::TimedMsgLoop> {
-  void RetainCallee(chrome_frame_test::TimedMsgLoop* obj) {}
-  void ReleaseCallee(chrome_frame_test::TimedMsgLoop* obj) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ProxyFactory::LaunchDelegate);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ChromeFrameAutomationClient);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chrome_frame_test::TimedMsgLoop);
 
 void MockProxyFactory::GetServerImpl(ChromeFrameAutomationProxy* pxy,
                                      void* proxy_id,

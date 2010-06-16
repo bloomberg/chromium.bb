@@ -729,8 +729,4 @@ TEST_F(AppCacheRequestHandlerTest, WorkerRequest) {
 
 // AppCacheRequestHandlerTest is expected to always live longer than the
 // runnable methods.  This lets us call NewRunnableMethod on its instances.
-template<>
-struct RunnableMethodTraits<appcache::AppCacheRequestHandlerTest> {
-  void RetainCallee(appcache::AppCacheRequestHandlerTest* obj) { }
-  void ReleaseCallee(appcache::AppCacheRequestHandlerTest* obj) { }
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheRequestHandlerTest);

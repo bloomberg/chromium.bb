@@ -228,11 +228,7 @@ class CreateShortcutCommand : public CPCommandInterface {
 
 // Allows InvokeLater without adding refcounting.  The object is only deleted
 // when its last InvokeLater is run anyway.
-template <>
-struct RunnableMethodTraits<CreateShortcutCommand> {
-  void RetainCallee(CreateShortcutCommand* command) {}
-  void ReleaseCallee(CreateShortcutCommand* command) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(CreateShortcutCommand);
 
 void GearsCreateShortcut(
     const webkit_glue::WebApplicationInfo& app_info,

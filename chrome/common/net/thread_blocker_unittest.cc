@@ -18,11 +18,7 @@ class Flag;
 };  // namespace chrome_common_net
 
 // We manage the lifetime of chrome_common_net::Flag ourselves.
-template <>
-struct RunnableMethodTraits<chrome_common_net::Flag> {
-  void RetainCallee(chrome_common_net::Flag*) {}
-  void ReleaseCallee(chrome_common_net::Flag*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chrome_common_net::Flag);
 
 namespace chrome_common_net {
 

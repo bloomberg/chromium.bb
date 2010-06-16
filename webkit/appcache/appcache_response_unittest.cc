@@ -716,8 +716,4 @@ TEST_F(AppCacheResponseTest, DeleteWithIOPending) {
 
 // AppCacheResponseTest is expected to always live longer than the
 // runnable methods.  This lets us call NewRunnableMethod on its instances.
-template<>
-struct RunnableMethodTraits<appcache::AppCacheResponseTest> {
-  void RetainCallee(appcache::AppCacheResponseTest* obj) { }
-  void ReleaseCallee(appcache::AppCacheResponseTest* obj) { }
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheResponseTest);

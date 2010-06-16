@@ -159,10 +159,7 @@ class ChromeURLDataManager {
 
 // Since we have a single global ChromeURLDataManager, we don't need to
 // grab a reference to it when creating Tasks involving it.
-template <> struct RunnableMethodTraits<ChromeURLDataManager> {
-  void RetainCallee(ChromeURLDataManager* manager) {}
-  void ReleaseCallee(ChromeURLDataManager* manager) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ChromeURLDataManager);
 
 // Register our special URL handler under our special URL scheme.
 // Must be done once at startup.

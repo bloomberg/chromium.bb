@@ -23,11 +23,7 @@
 #include "talk/xmpp/xmppclientsettings.h"
 
 // We manage the lifetime of notifier::MediatorThreadImpl ourselves.
-template <>
-struct RunnableMethodTraits<notifier::MediatorThreadImpl> {
-  void RetainCallee(notifier::MediatorThreadImpl*) {}
-  void ReleaseCallee(notifier::MediatorThreadImpl*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 namespace notifier {
 

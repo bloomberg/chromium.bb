@@ -12,11 +12,7 @@
 
 // Since a ThreadBlocker is outlived by its target thread, we don't
 // have to ref-count it.
-template <>
-struct RunnableMethodTraits<chrome_common_net::ThreadBlocker> {
-  void RetainCallee(chrome_common_net::ThreadBlocker*) {}
-  void ReleaseCallee(chrome_common_net::ThreadBlocker*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chrome_common_net::ThreadBlocker);
 
 namespace chrome_common_net {
 

@@ -30,10 +30,7 @@
 // Since classes derived from CrashHandlerHostLinux are singletons, it's only
 // destroyed at the end of the processes lifetime, which is greater in span than
 // the lifetime of the IO message loop.
-template<> struct RunnableMethodTraits<CrashHandlerHostLinux> {
-  void RetainCallee(CrashHandlerHostLinux*) { }
-  void ReleaseCallee(CrashHandlerHostLinux*) { }
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(CrashHandlerHostLinux);
 
 CrashHandlerHostLinux::CrashHandlerHostLinux()
     : process_socket_(-1),

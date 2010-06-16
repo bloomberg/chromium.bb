@@ -14,10 +14,7 @@
 // No AddRef required when using ExtensionErrorReporter with RunnableMethod.
 // This is okay since the ExtensionErrorReporter is a singleton that lives until
 // the end of the process.
-template <> struct RunnableMethodTraits<ExtensionErrorReporter> {
-  void RetainCallee(ExtensionErrorReporter*) {}
-  void ReleaseCallee(ExtensionErrorReporter*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ExtensionErrorReporter);
 
 ExtensionErrorReporter* ExtensionErrorReporter::instance_ = NULL;
 

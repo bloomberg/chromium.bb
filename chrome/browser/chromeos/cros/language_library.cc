@@ -15,11 +15,7 @@
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
-template <>
-struct RunnableMethodTraits<chromeos::LanguageLibraryImpl> {
-  void RetainCallee(chromeos::LanguageLibraryImpl* obj) {}
-  void ReleaseCallee(chromeos::LanguageLibraryImpl* obj) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::LanguageLibraryImpl);
 
 namespace {
 

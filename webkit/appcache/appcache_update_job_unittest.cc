@@ -3366,14 +3366,6 @@ TEST_F(AppCacheUpdateJobTest, MultipleHeadersRefetch) {
 
 // AppCacheUpdateJobTest is expected to always live longer than the
 // runnable methods.  This lets us call NewRunnableMethod on its instances.
-template<>
-struct RunnableMethodTraits<appcache::AppCacheUpdateJobTest> {
-  void RetainCallee(appcache::AppCacheUpdateJobTest* obj) { }
-  void ReleaseCallee(appcache::AppCacheUpdateJobTest* obj) { }
-};
-template<>
-struct RunnableMethodTraits<appcache::AppCacheUpdateJobTest::MockAppCachePolicy>
-{
-  void RetainCallee(appcache::AppCacheUpdateJobTest::MockAppCachePolicy* o) { }
-  void ReleaseCallee(appcache::AppCacheUpdateJobTest::MockAppCachePolicy* o) { }
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheUpdateJobTest);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(
+    appcache::AppCacheUpdateJobTest::MockAppCachePolicy);

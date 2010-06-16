@@ -345,11 +345,7 @@ void MediaplayerHandler::HandleTogglePlaylist(const Value* value) {
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
-template <>
-struct RunnableMethodTraits<MediaPlayer> {
-  void RetainCallee(MediaPlayer* obj) {}
-  void ReleaseCallee(MediaPlayer* obj) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(MediaPlayer);
 
 void MediaPlayer::EnqueueMediaURL(const GURL& url, Browser* creator) {
   if (handler_ == NULL) {

@@ -744,8 +744,4 @@ TEST_F(AppCacheURLRequestJobTest, CancelRequestWithIOPending) {
 
 // AppCacheURLRequestJobTest is expected to always live longer than the
 // runnable methods.  This lets us call NewRunnableMethod on its instances.
-template<>
-struct RunnableMethodTraits<appcache::AppCacheURLRequestJobTest> {
-  void RetainCallee(appcache::AppCacheURLRequestJobTest* obj) { }
-  void ReleaseCallee(appcache::AppCacheURLRequestJobTest* obj) { }
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheURLRequestJobTest);

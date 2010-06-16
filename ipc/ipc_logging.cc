@@ -32,11 +32,7 @@ using base::Time;
 
 // IPC::Logging is allocated as a singleton, so we don't need any kind of
 // special retention program.
-template <>
-struct RunnableMethodTraits<IPC::Logging> {
-  void RetainCallee(IPC::Logging*) {}
-  void ReleaseCallee(IPC::Logging*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(IPC::Logging);
 
 namespace IPC {
 

@@ -212,6 +212,9 @@ class ReleaseTask : public CancelableTask {
 // define other lifetime management.  For example, if the callee is known to
 // live longer than the RunnableMethod object, then a RunnableMethodTraits
 // struct could be defined with empty RetainCallee and ReleaseCallee methods.
+//
+// The DISABLE_RUNNABLE_METHOD_REFCOUNT macro is provided as a convenient way
+// for declaring a RunnableMethodTraits that disables refcounting.
 
 template <class T>
 struct RunnableMethodTraits {
@@ -250,6 +253,30 @@ struct RunnableMethodTraits {
   PlatformThreadId origin_thread_id_;
 #endif
 };
+
+// Convenience macro for declaring a RunnableMethodTraits that disables
+// refcounting of a class.  This is useful if you know that the callee
+// will outlive the RunnableMethod object and thus do not need the ref counts.
+//
+// The invocation of DISABLE_RUNNABLE_METHOD_REFCOUNT should be done at the
+// global namespace scope.  Example:
+//
+//   namespace foo {
+//   class Bar {
+//     ...
+//   };
+//   }  // namespace foo
+//
+//   DISABLE_RUNNABLE_METHOD_REFCOUNT(foo::Bar)
+//
+// This is different from DISALLOW_COPY_AND_ASSIGN which is declared inside the
+// class.
+#define DISABLE_RUNNABLE_METHOD_REFCOUNT(TypeName) \
+  template <>                                      \
+  struct RunnableMethodTraits<TypeName> {          \
+    void RetainCallee(TypeName* manager) {}        \
+    void ReleaseCallee(TypeName* manager) {}       \
+  }
 
 // RunnableMethod and RunnableFunction -----------------------------------------
 //

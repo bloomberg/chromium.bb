@@ -1060,8 +1060,4 @@ TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInWorkingSet) {
 
 // AppCacheStorageImplTest is expected to always live longer than the
 // runnable methods.  This lets us call NewRunnableMethod on its instances.
-template<>
-struct RunnableMethodTraits<appcache::AppCacheStorageImplTest> {
-  void RetainCallee(appcache::AppCacheStorageImplTest* obj) { }
-  void ReleaseCallee(appcache::AppCacheStorageImplTest* obj) { }
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(appcache::AppCacheStorageImplTest);

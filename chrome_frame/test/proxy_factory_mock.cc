@@ -10,10 +10,7 @@
 using testing::CreateFunctor;
 using testing::_;
 
-template <> struct RunnableMethodTraits<MockProxyFactory> {
-  void RetainCallee(MockProxyFactory* obj) {}
-  void ReleaseCallee(MockProxyFactory* obj) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(MockProxyFactory);
 
 TEST(ProxyFactoryTest, CreateDestroy) {
   ProxyFactory f;

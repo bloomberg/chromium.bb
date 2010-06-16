@@ -81,11 +81,7 @@ net::HostResolver* CreateGlobalHostResolver(
 
 // The IOThread object must outlive any tasks posted to the IO thread before the
 // Quit task.
-template <>
-struct RunnableMethodTraits<IOThread> {
-  void RetainCallee(IOThread* /* io_thread */) {}
-  void ReleaseCallee(IOThread* /* io_thread */) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(IOThread);
 
 IOThread::IOThread()
     : BrowserProcessSubThread(ChromeThread::IO),

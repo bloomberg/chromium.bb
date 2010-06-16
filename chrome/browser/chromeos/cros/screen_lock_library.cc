@@ -11,11 +11,7 @@
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
-template <>
-struct RunnableMethodTraits<chromeos::ScreenLockLibraryImpl> {
-  void RetainCallee(chromeos::ScreenLockLibraryImpl* obj) {}
-  void ReleaseCallee(chromeos::ScreenLockLibraryImpl* obj) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::ScreenLockLibraryImpl);
 
 namespace chromeos {
 

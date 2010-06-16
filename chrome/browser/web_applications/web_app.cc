@@ -678,11 +678,7 @@ void UpdateShortcutWorker::DeleteMeOnUIThread() {
 #if defined(OS_WIN)
 // Allows UpdateShortcutWorker without adding refcounting. UpdateShortcutWorker
 // manages its own life time and will delete itself when it's done.
-template <>
-struct RunnableMethodTraits<UpdateShortcutWorker> {
-  void RetainCallee(UpdateShortcutWorker* worker) {}
-  void ReleaseCallee(UpdateShortcutWorker* worker) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(UpdateShortcutWorker);
 #endif  // defined(OS_WIN)
 
 namespace web_app {

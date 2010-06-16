@@ -195,10 +195,7 @@ ProxyFactory::ProxyCacheEntry::ProxyCacheEntry(const std::wstring& profile)
   thread->Start();
 }
 
-template <> struct RunnableMethodTraits<ProxyFactory> {
-  void RetainCallee(ProxyFactory* obj) {}
-  void ReleaseCallee(ProxyFactory* obj) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ProxyFactory);
 
 ProxyFactory::ProxyFactory()
     : uma_send_interval_(0) {

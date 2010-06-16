@@ -85,11 +85,7 @@ static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
 
 // We manage the lifetime of sync_api::SyncManager::SyncInternal ourselves.
-template <>
-struct RunnableMethodTraits<sync_api::SyncManager::SyncInternal> {
-  void RetainCallee(sync_api::SyncManager::SyncInternal*) {}
-  void ReleaseCallee(sync_api::SyncManager::SyncInternal*) {}
-};
+DISABLE_RUNNABLE_METHOD_REFCOUNT(sync_api::SyncManager::SyncInternal);
 
 namespace sync_api {
 
