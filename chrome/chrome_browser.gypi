@@ -2688,10 +2688,10 @@
         }],
         ['chromeos==1', {
           'sources!': [
-            'browser/password_manager/native_backend_gnome.h',
-            'browser/password_manager/native_backend_gnome.cc',
-            'browser/password_manager/native_backend_kwallet.h',
-            'browser/password_manager/native_backend_kwallet.cc',
+            'browser/password_manager/native_backend_gnome_x.h',
+            'browser/password_manager/native_backend_gnome_x.cc',
+            'browser/password_manager/native_backend_kwallet_x.h',
+            'browser/password_manager/native_backend_kwallet_x.cc',
             'browser/platform_util_linux.cc',
           ],
           'link_settings': {
