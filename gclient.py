@@ -179,142 +179,6 @@ class Dependency(GClientKeywords):
       raise gclient_utils.Error('deps_file name must not be a path, just a '
                                 'filename. %s' % self.deps_file)
 
-
-class GClient(Dependency):
-  """Main gclient checkout root where .gclient resides."""
-  SUPPORTED_COMMANDS = [
-    'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
-    'runhooks'
-  ]
-
-  DEPS_OS_CHOICES = {
-    "win32": "win",
-    "win": "win",
-    "cygwin": "win",
-    "darwin": "mac",
-    "mac": "mac",
-    "unix": "unix",
-    "linux": "unix",
-    "linux2": "unix",
-  }
-
-  DEFAULT_CLIENT_FILE_TEXT = ("""\
-solutions = [
-  { "name"        : "%(solution_name)s",
-    "url"         : "%(solution_url)s",
-    "custom_deps" : {
-    },
-    "safesync_url": "%(safesync_url)s"
-  },
-]
-""")
-
-  DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
-  { "name"        : "%(solution_name)s",
-    "url"         : "%(solution_url)s",
-    "custom_deps" : {
-      %(solution_deps)s,
-    },
-    "safesync_url": "%(safesync_url)s"
-  },
-""")
-
-  DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
-# Snapshot generated with gclient revinfo --snapshot
-solutions = [
-%(solution_list)s
-]
-""")
-
-  def __init__(self, root_dir, options):
-    Dependency.__init__(self, None, None, None)
-    self._root_dir = root_dir
-    self._options = options
-    self.config_content = None
-
-  def SetConfig(self, content):
-    assert self.dependencies == []
-    config_dict = {}
-    self.config_content = content
-    try:
-      exec(content, config_dict)
-    except SyntaxError, e:
-      try:
-        # Try to construct a human readable error message
-        error_message = [
-            'There is a syntax error in your configuration file.',
-            'Line #%s, character %s:' % (e.lineno, e.offset),
-            '"%s"' % re.sub(r'[\r\n]*$', '', e.text) ]
-      except:
-        # Something went wrong, re-raise the original exception
-        raise e
-      else:
-        # Raise a new exception with the human readable message:
-        raise gclient_utils.Error('\n'.join(error_message))
-    for s in config_dict.get('solutions', []):
-      self.dependencies.append(Dependency(
-          self, s['name'], s['url'],
-          s.get('safesync_url', None),
-          s.get('custom_deps', {}),
-          s.get('custom_vars', {})))
-    # .gclient can have hooks.
-    self.deps_hooks = config_dict.get('hooks', [])
-
-  def SaveConfig(self):
-    gclient_utils.FileWrite(os.path.join(self.root_dir(),
-                                         self._options.config_filename),
-                            self.config_content)
-
-  @staticmethod
-  def LoadCurrentConfig(options):
-    """Searches for and loads a .gclient file relative to the current working
-    dir. Returns a GClient object."""
-    path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
-    if not path:
-      return None
-    client = GClient(path, options)
-    client.SetConfig(gclient_utils.FileRead(
-        os.path.join(path, options.config_filename)))
-    return client
-
-  def SetDefaultConfig(self, solution_name, solution_url, safesync_url):
-    self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
-      'solution_name': solution_name,
-      'solution_url': solution_url,
-      'safesync_url' : safesync_url,
-    })
-
-  def _SaveEntries(self, entries):
-    """Creates a .gclient_entries file to record the list of unique checkouts.
-
-    The .gclient_entries file lives in the same directory as .gclient.
-
-    Args:
-      entries: A sequence of solution names.
-    """
-    # Sometimes pprint.pformat will use {', sometimes it'll use { ' ... It
-    # makes testing a bit too fun.
-    result = pprint.pformat(entries, 2)
-    if result.startswith('{\''):
-      result = '{ \'' + result[2:]
-    text = "entries = \\\n" + result + '\n'
-    file_path = os.path.join(self.root_dir(), self._options.entries_filename)
-    gclient_utils.FileWrite(file_path, text)
-
-  def _ReadEntries(self):
-    """Read the .gclient_entries file for the given client.
-
-    Returns:
-      A sequence of solution names, which will be empty if there is the
-      entries file hasn't been created yet.
-    """
-    scope = {}
-    filename = os.path.join(self.root_dir(), self._options.entries_filename)
-    if not os.path.exists(filename):
-      return []
-    exec(gclient_utils.FileRead(filename), scope)
-    return scope['entries']
-
   def _ParseSolutionDeps(self, solution_name, solution_deps_content,
                          custom_vars, parse_hooks):
     """Parses the DEPS file for the specified solution.
@@ -514,6 +378,142 @@ solutions = [
       matching_file_list = [f for f in file_list if pattern.search(f)]
       if matching_file_list:
         self._RunHookAction(hook_dict, matching_file_list)
+
+
+class GClient(Dependency):
+  """Main gclient checkout root where .gclient resides."""
+  SUPPORTED_COMMANDS = [
+    'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
+    'runhooks'
+  ]
+
+  DEPS_OS_CHOICES = {
+    "win32": "win",
+    "win": "win",
+    "cygwin": "win",
+    "darwin": "mac",
+    "mac": "mac",
+    "unix": "unix",
+    "linux": "unix",
+    "linux2": "unix",
+  }
+
+  DEFAULT_CLIENT_FILE_TEXT = ("""\
+solutions = [
+  { "name"        : "%(solution_name)s",
+    "url"         : "%(solution_url)s",
+    "custom_deps" : {
+    },
+    "safesync_url": "%(safesync_url)s"
+  },
+]
+""")
+
+  DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
+  { "name"        : "%(solution_name)s",
+    "url"         : "%(solution_url)s",
+    "custom_deps" : {
+      %(solution_deps)s,
+    },
+    "safesync_url": "%(safesync_url)s"
+  },
+""")
+
+  DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
+# Snapshot generated with gclient revinfo --snapshot
+solutions = [
+%(solution_list)s
+]
+""")
+
+  def __init__(self, root_dir, options):
+    Dependency.__init__(self, None, None, None)
+    self._root_dir = root_dir
+    self._options = options
+    self.config_content = None
+
+  def SetConfig(self, content):
+    assert self.dependencies == []
+    config_dict = {}
+    self.config_content = content
+    try:
+      exec(content, config_dict)
+    except SyntaxError, e:
+      try:
+        # Try to construct a human readable error message
+        error_message = [
+            'There is a syntax error in your configuration file.',
+            'Line #%s, character %s:' % (e.lineno, e.offset),
+            '"%s"' % re.sub(r'[\r\n]*$', '', e.text) ]
+      except:
+        # Something went wrong, re-raise the original exception
+        raise e
+      else:
+        # Raise a new exception with the human readable message:
+        raise gclient_utils.Error('\n'.join(error_message))
+    for s in config_dict.get('solutions', []):
+      self.dependencies.append(Dependency(
+          self, s['name'], s['url'],
+          s.get('safesync_url', None),
+          s.get('custom_deps', {}),
+          s.get('custom_vars', {})))
+    # .gclient can have hooks.
+    self.deps_hooks = config_dict.get('hooks', [])
+
+  def SaveConfig(self):
+    gclient_utils.FileWrite(os.path.join(self.root_dir(),
+                                         self._options.config_filename),
+                            self.config_content)
+
+  @staticmethod
+  def LoadCurrentConfig(options):
+    """Searches for and loads a .gclient file relative to the current working
+    dir. Returns a GClient object."""
+    path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
+    if not path:
+      return None
+    client = GClient(path, options)
+    client.SetConfig(gclient_utils.FileRead(
+        os.path.join(path, options.config_filename)))
+    return client
+
+  def SetDefaultConfig(self, solution_name, solution_url, safesync_url):
+    self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
+      'solution_name': solution_name,
+      'solution_url': solution_url,
+      'safesync_url' : safesync_url,
+    })
+
+  def _SaveEntries(self, entries):
+    """Creates a .gclient_entries file to record the list of unique checkouts.
+
+    The .gclient_entries file lives in the same directory as .gclient.
+
+    Args:
+      entries: A sequence of solution names.
+    """
+    # Sometimes pprint.pformat will use {', sometimes it'll use { ' ... It
+    # makes testing a bit too fun.
+    result = pprint.pformat(entries, 2)
+    if result.startswith('{\''):
+      result = '{ \'' + result[2:]
+    text = "entries = \\\n" + result + '\n'
+    file_path = os.path.join(self.root_dir(), self._options.entries_filename)
+    gclient_utils.FileWrite(file_path, text)
+
+  def _ReadEntries(self):
+    """Read the .gclient_entries file for the given client.
+
+    Returns:
+      A sequence of solution names, which will be empty if there is the
+      entries file hasn't been created yet.
+    """
+    scope = {}
+    filename = os.path.join(self.root_dir(), self._options.entries_filename)
+    if not os.path.exists(filename):
+      return []
+    exec(gclient_utils.FileRead(filename), scope)
+    return scope['entries']
 
   def _EnforceRevisions(self):
     """Checks for revision overrides."""
