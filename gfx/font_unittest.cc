@@ -58,8 +58,8 @@ TEST_F(FontTest, Widths) {
 }
 
 #if defined(OS_WIN)
-// TODO(beng): re-enable evening of 3/22.
-TEST_F(FontTest, DISABLED_DeriveFontResizesIfSizeTooSmall) {
+// http://crbug.com/46733
+TEST_F(FontTest, FAILS_DeriveFontResizesIfSizeTooSmall) {
   // This creates font of height -8.
   Font cf(Font::CreateFont(L"Arial", 6));
   Font derived_font = cf.DeriveFont(-4);
@@ -68,7 +68,7 @@ TEST_F(FontTest, DISABLED_DeriveFontResizesIfSizeTooSmall) {
   EXPECT_EQ(-5, font_info.lfHeight);
 }
 
-TEST_F(FontTest, DISABLED_DeriveFontKeepsOriginalSizeIfHeightOk) {
+TEST_F(FontTest, DeriveFontKeepsOriginalSizeIfHeightOk) {
   // This creates font of height -8.
   Font cf(Font::CreateFont(L"Arial", 6));
   Font derived_font = cf.DeriveFont(-2);
