@@ -229,6 +229,9 @@ class ChromeTests:
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
 
+  def TestCourgette(self):
+    return self.SimpleTest("courgette", "courgette_unittests")
+
   def TestMedia(self):
     return self.SimpleTest("chrome", "media_unittests")
 
@@ -386,6 +389,7 @@ class ChromeTests:
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
     "googleurl": TestGURL,       "googleurl_unittests": TestGURL,
+    "courgette": TestCourgette,  "courgette_unittests": TestCourgette,
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "layout": TestLayout,        "layout_tests": TestLayout,
     "media": TestMedia,          "media_unittests": TestMedia,

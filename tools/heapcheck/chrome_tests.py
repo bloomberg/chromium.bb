@@ -82,6 +82,8 @@ class ChromeTests(object):
       "base": self.TestBase,            "base_unittests": self.TestBase,
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
       "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
+      "courgette": self.TestCourgette,
+      "courgette_unittests": self.TestCourgette,
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
       "layout": self.TestLayout,        "layout_tests": self.TestLayout,
       "media": self.TestMedia,          "media_unittests": self.TestMedia,
@@ -184,8 +186,8 @@ class ChromeTests(object):
     return self._test_list[self._test]()
 
   def _ReadGtestFilterFile(self, name, cmd):
-    '''Reads files which contain lists of tests to filter out with --gtest_filter
-    and appends the command-line option to |cmd|.
+    '''Reads files which contain lists of tests to filter out with
+    --gtest_filter and appends the command-line option to |cmd|.
 
     Args:
       name: the test executable name.
@@ -248,6 +250,9 @@ class ChromeTests(object):
 
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
+
+  def TestCourgette(self):
+    return self.SimpleTest("courgette", "courgette_unittests")
 
   def TestMedia(self):
     return self.SimpleTest("chrome", "media_unittests")
