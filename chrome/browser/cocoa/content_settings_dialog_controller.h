@@ -9,6 +9,21 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/browser/pref_member.h"
 
+// Index of the "enabled" and "disabled" radio group settings in all tabs except
+// for the cookies tab.
+const NSInteger kContentSettingsEnabledIndex = 0;
+const NSInteger kContentSettingsDisabledIndex = 1;
+
+// Indices of the various cookie settings in the cookie radio group.
+const NSInteger kCookieEnabledIndex = 0;
+const NSInteger kCookieAskIndex = 1;
+const NSInteger kCookieDisabledIndex = 2;
+
+// Indices of the various geolocation settings in the geolocation radio group.
+const NSInteger kGeolocationEnabledIndex = 0;
+const NSInteger kGeolocationAskIndex = 1;
+const NSInteger kGeolocationDisabledIndex = 2;
+
 namespace ContentSettingsDialogControllerInternal {
 class PrefObserverBridge;
 }
@@ -49,4 +64,16 @@ class Profile;
 - (IBAction)showPopupsExceptions:(id)sender;
 - (IBAction)showGeolocationExceptions:(id)sender;
 
+@end
+
+@interface ContentSettingsDialogController (TestingAPI)
+// Properties that the radio groups and checkboxes are bound to.
+@property(assign, nonatomic) NSInteger cookieSettingIndex;
+@property(assign, nonatomic) BOOL blockThirdPartyCookies;
+@property(assign, nonatomic) BOOL clearSiteDataOnExit;
+@property(assign, nonatomic) NSInteger imagesEnabledIndex;
+@property(assign, nonatomic) NSInteger javaScriptEnabledIndex;
+@property(assign, nonatomic) NSInteger popupsEnabledIndex;
+@property(assign, nonatomic) NSInteger pluginsEnabledIndex;
+@property(assign, nonatomic) NSInteger geolocationSettingIndex;
 @end
