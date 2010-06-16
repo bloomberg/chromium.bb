@@ -14,6 +14,7 @@
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
+#include "chrome/common/notification_service.h"
 #include "third_party/cros/chromeos_input_method.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
@@ -55,6 +56,154 @@ class AddLanguageComboboxModel : public LanguageComboboxModel {
  private:
   std::set<std::string> ignore_set_;
   DISALLOW_COPY_AND_ASSIGN(AddLanguageComboboxModel);
+};
+
+// The model of LanguageConfigView.
+class LanguageConfigModel : public NotificationObserver {
+ public:
+  LanguageConfigModel(PrefService* pref_service);
+
+  // Initializes the model.
+  void Init();
+
+  // Gets the list of active IME IDs like "pinyin" and "m17n:ar:kbd".
+  void GetActiveInputMethodIds(
+      std::vector<std::string>* out_input_method_ids);
+
+  // Converts an input method ID to a language code of the IME. Returns "Eng"
+  // when |input_method_id| is unknown.
+  // Example: "hangul" => "ko"
+  std::string GetLanguageCodeFromInputMethodId(
+      const std::string& input_method_id) const;
+
+  // Converts an input method ID to a display name of the IME. Returns
+  // "USA" (US keyboard) when |input_method_id| is unknown.
+  // Examples: "pinyin" => "Pinyin"
+  //           "m17n:ar:kbd" => "kbd (m17n)"
+  std::string GetInputMethodDisplayNameFromId(
+      const std::string& input_method_id) const;
+
+  // Gets the list of input method ids associated with the given language
+  // code.  The original contents of |input_method_ids| will be lost.
+  void GetInputMethodIdsFromLanguageCode(
+      const std::string& language_code,
+      std::vector<std::string>* input_method_ids) const;
+
+  // Deactivates the input methods for the given language code.
+  void DeactivateInputMethodsFor(const std::string& language_code);
+
+  // Activates or deactivates an IME whose ID is |input_method_id|.
+  void SetInputMethodActivated(const std::string& input_method_id,
+                               bool activated);
+
+  // Returns true if an IME of |input_method_id| is activated.
+  bool InputMethodIsActivated(const std::string& input_method_id);
+
+  // Counts the number of active input methods for the given language code.
+  size_t CountNumActiveInputMethods(const std::string& language_code);
+
+  // Returns true if the language code is in the preferred language list.
+  bool HasLanguageCode(const std::string& language_code) const;
+
+  // Adds the given language to the preferred language list, and returns
+  // the index of the row where the language is added.
+  size_t AddLanguageCode(const std::string& language_code);
+
+  // Removes the language at the given row.
+  void RemoveLanguageAt(size_t row);
+
+  // Updates Chrome's input method preferences.
+  void UpdateInputMethodPreferences(
+      const std::vector<std::string>& new_input_method_ids);
+
+  // Callback for |preload_engines_| pref updates. Initializes the preferred
+  // language codes based on the updated pref value.
+  void NotifyPrefChanged();
+
+  // NotificationObserver overrides.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  const std::string& preferred_language_code_at(size_t at) const {
+    return preferred_language_codes_[at];
+  }
+
+  size_t num_preferred_language_codes() const {
+    return preferred_language_codes_.size();
+  }
+
+  const std::string& supported_input_method_id_at(size_t at) const {
+    return supported_input_method_ids_[at];
+  }
+
+  size_t num_supported_input_method_ids() const {
+    return supported_input_method_ids_.size();
+  }
+
+  const std::vector<std::string>& supported_language_codes() const {
+    return supported_language_codes_;
+  }
+
+  // Rewrites the language name and returns the modified version if
+  // necessary. Otherwise, returns the given language name as is.
+  // In particular, this rewrites the special language name used for input
+  // methods that don't fall under any other languages.
+  static std::wstring MaybeRewriteLanguageName(
+      const std::wstring& language_name);
+
+  // Converts a language code to a language display name, using the
+  // current application locale. MaybeRewriteLanguageName() is called
+  // internally.
+  // Examples: "fr"    => "French"
+  //           "en-US" => "English (United States)"
+  static std::wstring GetLanguageDisplayNameFromCode(
+      const std::string& language_code);
+
+  // Sorts the given language codes by their corresponding language names,
+  // using the unicode string comparator. Uses unstable sorting.
+  static void SortLanguageCodesByNames(
+      std::vector<std::string>* language_codes);
+
+  // Sorts the given input method ids by their corresponding language names,
+  // using the unicode string comparator. Uses stable sorting.
+  static void SortInputMethodIdsByNames(
+      const std::map<std::string, std::string>& id_to_language_code_map,
+      std::vector<std::string>* input_method_ids);
+
+  // Reorders the given input method ids for the language code. For
+  // example, if |language_codes| is "fr" and |input_method_ids| contains
+  // ["xkb:be::fra", and "xkb:fr::fra"], the list is reordered to
+  // ["xkb:fr::fra", and "xkb:be::fra"], so that French keyboard layout
+  // comes before Belgian keyboard layout.
+  static void ReorderInputMethodIdsForLanguageCode(
+      const std::string& language_code,
+      std::vector<std::string>* input_method_ids);
+
+ private:
+  // Adds the given language code and input method pair to the internal maps.
+  void AddInputMethodToMaps(const std::string& language_code,
+                            const InputMethodDescriptor& input_method);
+
+  // Initializes id_to_{code,display_name}_map_ maps,
+  // as well as supported_{language_codes,input_method_ids}_ vectors.
+  void InitInputMethodIdMapsAndVectors();
+
+  PrefService* pref_service_;
+  // The codes of the preferred languages.
+  std::vector<std::string> preferred_language_codes_;
+  StringPrefMember preload_engines_;
+  std::map<std::string, std::string> id_to_language_code_map_;
+  std::map<std::string, std::string> id_to_display_name_map_;
+  // List of supported language codes like "en" and "ja".
+  std::vector<std::string> supported_language_codes_;
+  // List of supported IME IDs like "pinyin" and "m17n:ar:kbd".
+  std::vector<std::string> supported_input_method_ids_;
+  // Map from language code to associated input method IDs.
+  typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
+  LanguageCodeToIdsMap language_code_to_ids_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(LanguageConfigModel);
 };
 
 // A dialog box for configuring the languages.
@@ -110,50 +259,10 @@ class LanguageConfigView : public TableModel,
   // OptionsPageView overrides.
   virtual void InitControlLayout();
 
-  // NotificationObserver overrides.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // views::Combobox::Listener overrides:
   virtual void ItemChanged(views::Combobox* combobox,
                            int prev_index,
                            int new_index);
-
-  // Rewrites the language name and returns the modified version if
-  // necessary. Otherwise, returns the given language name as is.
-  // In particular, this rewrites the special language name used for input
-  // methods that don't fall under any other languages.
-  static std::wstring MaybeRewriteLanguageName(
-      const std::wstring& language_name);
-
-  // Converts a language code to a language display name, using the
-  // current application locale. MaybeRewriteLanguageName() is called
-  // internally.
-  // Examples: "fr"    => "French"
-  //           "en-US" => "English (United States)"
-  static std::wstring GetLanguageDisplayNameFromCode(
-      const std::string& language_code);
-
-  // Sorts the given language codes by their corresponding language names,
-  // using the unicode string comparator. Uses unstable sorting.
-  static void SortLanguageCodesByNames(
-      std::vector<std::string>* language_codes);
-
-  // Sorts the given input method ids by their corresponding language names,
-  // using the unicode string comparator. Uses stable sorting.
-  static void SortInputMethodIdsByNames(
-      const std::map<std::string, std::string>& id_to_language_code_map,
-      std::vector<std::string>* input_method_ids);
-
-  // Reorders the given input method ids for the language code. For
-  // example, if |language_codes| is "fr" and |input_method_ids| contains
-  // ["xkb:be::fra", and "xkb:fr::fra"], the list is reordered to
-  // ["xkb:fr::fra", and "xkb:be::fra"], so that French keyboard layout
-  // comes before Belgian keyboard layout.
-  static void ReorderInputMethodIdsForLanguageCode(
-      const std::string& language_code,
-      std::vector<std::string>* input_method_ids);
 
   // Shows the language config dialog in a new window.
   static void Show(Profile* profile, gfx::NativeWindow parent);
@@ -161,14 +270,6 @@ class LanguageConfigView : public TableModel,
  private:
   // Initializes the input method config view.
   void InitInputMethodConfigViewMap();
-
-  // Initializes id_to_{code,display_name}_map_ maps,
-  // as well as supported_{language_codes,input_method_ids}_ vectors.
-  void InitInputMethodIdMapsAndVectors();
-
-  // Adds the given language code and input method pair to the internal maps.
-  void AddInputMethodToMaps(const std::string& language_code,
-                            const InputMethodDescriptor& input_method);
 
   // Creates the contents on the left, including the language table.
   views::View* CreateContentsOnLeft();
@@ -187,23 +288,10 @@ class LanguageConfigView : public TableModel,
   void AddInputMethodSection(const std::string& language_code,
                              views::GridLayout* layout);
 
-  // Deactivates the input methods for the given language code.
-  void DeactivateInputMethodsFor(const std::string& language_code);
-
   // Creates the input method config view based on the given |input_method_id|.
   // Returns NULL if the config view is not found.
   views::DialogDelegate* CreateInputMethodConfigureView(
       const std::string& input_method_id);
-
-  // Activates or deactivates an IME whose ID is |input_method_id|.
-  void SetInputMethodActivated(const std::string& input_method_id,
-                               bool activated);
-
-  // Returns true if an IME of |input_method_id| is activated.
-  bool InputMethodIsActivated(const std::string& input_method_id);
-
-  // Gets the list of active IME IDs like "pinyin" and "m17n:ar:kbd".
-  void GetActiveInputMethodIds(std::vector<std::string>* out_input_method_ids);
 
   // If there is only one input method left, disable the selected method.
   // This is done to prevent the user from disabling all input methods.
@@ -212,31 +300,9 @@ class LanguageConfigView : public TableModel,
   // Enable all input method checkboxes.
   void EnableAllCheckboxes();
 
-  // Converts an input method ID to a language code of the IME. Returns "Eng"
-  // when |input_method_id| is unknown.
-  // Example: "hangul" => "ko"
-  std::string GetLanguageCodeFromInputMethodId(
-      const std::string& input_method_id) const;
+  // The model of the view.
+  LanguageConfigModel model;
 
-  // Converts an input method ID to a display name of the IME. Returns
-  // "USA" (US keyboard) when |input_method_id| is unknown.
-  // Examples: "pinyin" => "Pinyin"
-  //           "m17n:ar:kbd" => "kbd (m17n)"
-  std::string GetInputMethodDisplayNameFromId(
-      const std::string& input_method_id) const;
-
-  // Gets the list of input method ids associated with the given language
-  // code.  The original contents of |input_method_ids| will be lost.
-  void GetInputMethodIdsFromLanguageCode(
-      const std::string& language_code,
-      std::vector<std::string>* input_method_ids) const;
-
-  // Callback for |preload_engines_| pref updates. Initializes the preferred
-  // language codes based on the updated pref value.
-  void NotifyPrefChanged();
-
-  // The codes of the preferred languages.
-  std::vector<std::string> preferred_language_codes_;
   // The map of the input method id to a pointer to the function for
   // creating the input method configuration dialog.
   typedef views::DialogDelegate* (*CreateDialogDelegateFunction)(Profile*);
@@ -253,17 +319,6 @@ class LanguageConfigView : public TableModel,
   views::TableView2* preferred_language_table_;
   scoped_ptr<AddLanguageComboboxModel> add_language_combobox_model_;
   views::Combobox* add_language_combobox_;
-
-  StringPrefMember preload_engines_;
-  std::map<std::string, std::string> id_to_language_code_map_;
-  std::map<std::string, std::string> id_to_display_name_map_;
-  // List of supported language codes like "en" and "ja".
-  std::vector<std::string> supported_language_codes_;
-  // List of supported IME IDs like "pinyin" and "m17n:ar:kbd".
-  std::vector<std::string> supported_input_method_ids_;
-  // Map from language code to associated input method IDs.
-  typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
-  LanguageCodeToIdsMap language_code_to_ids_map_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigView);
 };

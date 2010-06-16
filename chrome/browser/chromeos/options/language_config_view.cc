@@ -126,7 +126,7 @@ std::wstring AddLanguageComboboxModel::GetItemAt(int index) {
     return l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX);
   }
-  return LanguageConfigView::MaybeRewriteLanguageName(
+  return LanguageConfigModel::MaybeRewriteLanguageName(
       GetLanguageNameAt(GetLanguageIndex(index)));
 }
 
@@ -217,8 +217,78 @@ class InputMethodCheckbox : public views::Checkbox {
   DISALLOW_COPY_AND_ASSIGN(InputMethodCheckbox);
 };
 
+LanguageConfigModel::LanguageConfigModel(PrefService* pref_service)
+    : pref_service_(pref_service) {
+}
+
+void LanguageConfigModel::Init() {
+  // Initialize the maps and vectors.
+  InitInputMethodIdMapsAndVectors();
+
+  preload_engines_.Init(
+      prefs::kLanguagePreloadEngines, pref_service_, this);
+  // TODO(yusukes): It might be safer to call GetActiveLanguages() cros API
+  // here and compare the result and preload_engines_.GetValue(). If there's
+  // a discrepancy between IBus setting and Chrome prefs, we can resolve it
+  // by calling preload_engines_SetValue() here.
+}
+
+size_t LanguageConfigModel::CountNumActiveInputMethods(
+    const std::string& language_code) {
+  int num_selected_active_input_methods = 0;
+  std::pair<LanguageCodeToIdsMap::const_iterator,
+            LanguageCodeToIdsMap::const_iterator> range =
+      language_code_to_ids_map_.equal_range(language_code);
+  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
+       iter != range.second; ++iter) {
+    if (InputMethodIsActivated(iter->second)) {
+      ++num_selected_active_input_methods;
+    }
+  }
+  return num_selected_active_input_methods;
+}
+
+bool LanguageConfigModel::HasLanguageCode(
+    const std::string& language_code) const {
+  return std::find(preferred_language_codes_.begin(),
+                   preferred_language_codes_.end(),
+                   language_code) != preferred_language_codes_.end();
+}
+
+size_t LanguageConfigModel::AddLanguageCode(
+    const std::string& language_code) {
+  preferred_language_codes_.push_back(language_code);
+  // Sort the language codes by names. This is not efficient, but
+  // acceptable as the language list is about 40 item long at most.  In
+  // theory, we could find the position to insert rather than sorting, but
+  // it would be complex as we need to use unicode string comparator.
+  SortLanguageCodesByNames(&preferred_language_codes_);
+  // Find the language code just added in the sorted language codes.
+  const int added_at =
+      std::distance(preferred_language_codes_.begin(),
+                    std::find(preferred_language_codes_.begin(),
+                              preferred_language_codes_.end(),
+                              language_code));
+  return added_at;
+}
+
+void LanguageConfigModel::RemoveLanguageAt(size_t row) {
+  preferred_language_codes_.erase(preferred_language_codes_.begin() + row);
+}
+
+void LanguageConfigModel::UpdateInputMethodPreferences(
+    const std::vector<std::string>& in_new_input_method_ids) {
+  std::vector<std::string> new_input_method_ids = in_new_input_method_ids;
+  // Note: Since |new_input_method_ids| is alphabetically sorted and the sort
+  // function below uses stable sort, the relateve order of input methods that
+  // belong to the same language (e.g. "mozc" and "xkb:jp::jpn") is maintained.
+  SortInputMethodIdsByNames(id_to_language_code_map_, &new_input_method_ids);
+  preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
+}
+
 LanguageConfigView::LanguageConfigView(Profile* profile)
     : OptionsPageView(profile),
+      model(profile->GetPrefs()),
       root_container_(NULL),
       right_container_(NULL),
       remove_language_button_(NULL),
@@ -236,7 +306,7 @@ void LanguageConfigView::ButtonPressed(
     InputMethodCheckbox* checkbox =
         static_cast<InputMethodCheckbox*>(sender);
     const std::string& input_method_id = checkbox->input_method_id();
-    SetInputMethodActivated(input_method_id, checkbox->checked());
+    model.SetInputMethodActivated(input_method_id, checkbox->checked());
     if (checkbox->checked()) {
       EnableAllCheckboxes();
     } else {
@@ -329,7 +399,8 @@ void LanguageConfigView::AddUiLanguageSection(const std::string& language_code,
   const string16 language_name16 = l10n_util::GetDisplayNameForLocale(
       language_code, application_locale, true);
   const std::wstring language_name
-      = MaybeRewriteLanguageName(UTF16ToWide(language_name16));
+      = LanguageConfigModel::MaybeRewriteLanguageName(
+          UTF16ToWide(language_name16));
   views::Label* language_name_label = new views::Label(language_name);
   language_name_label->SetFont(
       language_name_label->font().DeriveFont(0, gfx::Font::BOLD));
@@ -377,11 +448,11 @@ void LanguageConfigView::AddInputMethodSection(
 
   // Get the list of input method ids associated with the language code.
   std::vector<std::string> input_method_ids;
-  GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
+  model.GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
 
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
-    const std::string display_name = GetInputMethodDisplayNameFromId(
+    const std::string display_name = model.GetInputMethodDisplayNameFromId(
         input_method_id);
     layout->StartRow(0, kPerLanguageDoubleColumnSetId);
     InputMethodCheckbox* checkbox
@@ -389,7 +460,7 @@ void LanguageConfigView::AddInputMethodSection(
                                   input_method_id);
     checkbox->set_listener(this);
     checkbox->set_tag(kSelectInputMethodButton);
-    if (InputMethodIsActivated(input_method_id)) {
+    if (model.InputMethodIsActivated(input_method_id)) {
       checkbox->SetChecked(true);
     }
 
@@ -412,24 +483,16 @@ void LanguageConfigView::OnSelectionChanged() {
   right_container_->RemoveAllChildViews(true);  // Delete the child views.
 
   const int row = preferred_language_table_->GetFirstSelectedRow();
-  const std::string& language_code = preferred_language_codes_[row];
+  const std::string& language_code = model.preferred_language_code_at(row);
 
   // Count the number of all active input methods.
   std::vector<std::string> active_input_method_ids;
-  GetActiveInputMethodIds(&active_input_method_ids);
+  model.GetActiveInputMethodIds(&active_input_method_ids);
   const int num_all_active_input_methods = active_input_method_ids.size();
 
   // Count the number of active input methods for the selected language.
-  int num_selected_active_input_methods = 0;
-  std::pair<LanguageCodeToIdsMap::const_iterator,
-            LanguageCodeToIdsMap::const_iterator> range =
-      language_code_to_ids_map_.equal_range(language_code);
-  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
-       iter != range.second; ++iter) {
-    if (InputMethodIsActivated(iter->second)) {
-      ++num_selected_active_input_methods;
-    }
-  }
+  int num_selected_active_input_methods =
+      model.CountNumActiveInputMethods(language_code);
 
   bool remove_button_enabled = false;
   // Allow removing the language only if the following conditions are met:
@@ -452,8 +515,10 @@ void LanguageConfigView::OnSelectionChanged() {
 }
 
 std::wstring LanguageConfigView::GetText(int row, int column_id) {
-  if (row >= 0 && row < static_cast<int>(preferred_language_codes_.size())) {
-    return GetLanguageDisplayNameFromCode(preferred_language_codes_[row]);
+  if (row >= 0 && row < static_cast<int>(
+          model.num_preferred_language_codes())) {
+    return LanguageConfigModel::
+        GetLanguageDisplayNameFromCode(model.preferred_language_code_at(row));
   }
   NOTREACHED();
   return L"";
@@ -475,20 +540,14 @@ void LanguageConfigView::SetObserver(TableModelObserver* observer) {
 
 int LanguageConfigView::RowCount() {
   // Returns the number of rows of the language table.
-  return preferred_language_codes_.size();
+  return model.num_preferred_language_codes();
 }
 
 void LanguageConfigView::InitControlLayout() {
-  // Initialize the maps.
-  InitInputMethodIdMapsAndVectors();
+  // Initialize the model.
+  model.Init();
+  // Initialize the map.
   InitInputMethodConfigViewMap();
-
-  preload_engines_.Init(
-      prefs::kLanguagePreloadEngines, profile()->GetPrefs(), this);
-  // TODO(yusukes): It might be safer to call GetActiveLanguages() cros API
-  // here and compare the result and preload_engines_.GetValue(). If there's
-  // a discrepancy between IBus setting and Chrome prefs, we can resolve it
-  // by calling preload_engines_SetValue() here.
 
   root_container_ = new views::View;
   AddChildView(root_container_);
@@ -514,7 +573,7 @@ void LanguageConfigView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
 
   // Initialize the language codes currently activated.
-  NotifyPrefChanged();
+  model.NotifyPrefChanged();
 
   // Set up the container for the contents on the right.  Just adds a
   // place holder here. This will get replaced in OnSelectionChanged().
@@ -535,7 +594,7 @@ void LanguageConfigView::InitControlLayout() {
   // Select the first row in the language table.
   // There should be at least one language in the table, but we check it
   // here so this won't result in crash in case there is no row in the table.
-  if (!preferred_language_codes_.empty()) {
+  if (model.num_preferred_language_codes() > 0) {
     preferred_language_table_->SelectRow(0);
   }
 }
@@ -551,7 +610,7 @@ void LanguageConfigView::InitInputMethodConfigViewMap() {
   // input_method_config_view_map_["mozc-jp"] = CreateLanguageMozcConfigView;
 }
 
-void LanguageConfigView::InitInputMethodIdMapsAndVectors() {
+void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
   // The two sets are used to build lists without duplication.
   std::set<std::string> supported_language_code_set;
   std::set<std::string> supported_input_method_id_set;
@@ -598,7 +657,7 @@ void LanguageConfigView::InitInputMethodIdMapsAndVectors() {
                                      supported_input_method_id_set.end());
 }
 
-void LanguageConfigView::AddInputMethodToMaps(
+void LanguageConfigModel::AddInputMethodToMaps(
     const std::string& language_code,
     const InputMethodDescriptor& input_method) {
   id_to_language_code_map_.insert(
@@ -662,11 +721,12 @@ views::View* LanguageConfigView::CreateContentsOnBottom() {
   // Create the add language combobox model.
   // LanguageComboboxModel sorts languages by their display names.
   add_language_combobox_model_.reset(
-      new AddLanguageComboboxModel(NULL, supported_language_codes_));
+      new AddLanguageComboboxModel(NULL, model.supported_language_codes()));
   // Mark the existing preferred languages to be ignored.
-  for (size_t i = 0; i < preferred_language_codes_.size(); ++i) {
-    add_language_combobox_model_->SetIgnored(preferred_language_codes_[i],
-                                             true);
+  for (size_t i = 0; i < model.num_preferred_language_codes(); ++i) {
+    add_language_combobox_model_->SetIgnored(
+        model.preferred_language_code_at(i),
+        true);
   }
   // Create the add language combobox.
   add_language_combobox_
@@ -690,40 +750,27 @@ views::View* LanguageConfigView::CreateContentsOnBottom() {
 
 void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
   // Skip if the language is already in the preferred_language_codes_.
-  if (std::find(preferred_language_codes_.begin(),
-                preferred_language_codes_.end(),
-                language_code) != preferred_language_codes_.end()) {
+  if (model.HasLanguageCode(language_code)) {
     return;
   }
   // Activate the first input language associated with the language. We have
   // to call this before the OnItemsAdded() call below so the checkbox
   // for the first input language gets checked.
   std::vector<std::string> input_method_ids;
-  GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
+  model.GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
   if (!input_method_ids.empty()) {
-    SetInputMethodActivated(input_method_ids[0], true);
+    model.SetInputMethodActivated(input_method_ids[0], true);
   }
 
   // Append the language to the list of language codes.
-  preferred_language_codes_.push_back(language_code);
-  // Sort the language codes by names. This is not efficient, but
-  // acceptable as the language list is about 40 item long at most.  In
-  // theory, we could find the position to insert rather than sorting, but
-  // it would be complex as we need to use unicode string comparator.
-  SortLanguageCodesByNames(&preferred_language_codes_);
-  // Find the language code just added in the sorted language codes.
-  const int added_at =
-      std::distance(preferred_language_codes_.begin(),
-                    std::find(preferred_language_codes_.begin(),
-                              preferred_language_codes_.end(),
-                              language_code));
+  const int added_at = model.AddLanguageCode(language_code);
   // Notify the table that the new row added at |added_at|.
   preferred_language_table_->OnItemsAdded(added_at, 1);
   // For some reason, OnItemsAdded() alone does not redraw the table. Need
   // to tell the table that items are changed. TODO(satorux): Investigate
   // if it's a bug in TableView2.
   preferred_language_table_->OnItemsChanged(
-      0, preferred_language_codes_.size());
+      0, model.num_preferred_language_codes());
   // Switch to the row added.
   preferred_language_table_->SelectRow(added_at);
 
@@ -734,14 +781,14 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 
 void LanguageConfigView::OnRemoveLanguage() {
   const int row = preferred_language_table_->GetFirstSelectedRow();
-  const std::string& language_code = preferred_language_codes_[row];
+  const std::string& language_code = model.preferred_language_code_at(row);
   // Mark the language not to be ignored.
   add_language_combobox_model_->SetIgnored(language_code, false);
   ResetAddLanguageCombobox();
   // Deactivate the associated input methods.
-  DeactivateInputMethodsFor(language_code);
+  model.DeactivateInputMethodsFor(language_code);
   // Remove the language code and the row from the table.
-  preferred_language_codes_.erase(preferred_language_codes_.begin() + row);
+  model.RemoveLanguageAt(row);
   preferred_language_table_->OnItemsRemoved(row, 1);
   // Switch to the previous row, or the first row.
   // There should be at least one row in the table.
@@ -761,15 +808,16 @@ void LanguageConfigView::ResetAddLanguageCombobox() {
   add_language_combobox_->SetSelectedItem(0);
 }
 
-void LanguageConfigView::DeactivateInputMethodsFor(
+void LanguageConfigModel::DeactivateInputMethodsFor(
     const std::string& language_code) {
-  for (size_t i = 0; i < supported_input_method_ids_.size(); ++i) {
-    if (GetLanguageCodeFromInputMethodId(supported_input_method_ids_[i]) ==
+  for (size_t i = 0; i < num_supported_input_method_ids(); ++i) {
+    if (GetLanguageCodeFromInputMethodId(
+            supported_input_method_id_at(i)) ==
         language_code) {
       // What happens if we disable the input method currently active?
       // IBus should take care of it, so we don't do anything special
       // here. See crosbug.com/2443.
-      SetInputMethodActivated(supported_input_method_ids_[i], false);
+      SetInputMethodActivated(supported_input_method_id_at(i), false);
       // Do not break; here in order to disable all engines that belong to
       // |language_code|.
     }
@@ -787,9 +835,9 @@ views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
   return NULL;
 }
 
-void LanguageConfigView::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+void LanguageConfigModel::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED) {
     NotifyPrefChanged();
   }
@@ -809,7 +857,7 @@ void LanguageConfigView::ItemChanged(views::Combobox* combobox,
   OnAddLanguage(language_selected);
 }
 
-void LanguageConfigView::SetInputMethodActivated(
+void LanguageConfigModel::SetInputMethodActivated(
     const std::string& input_method_id, bool activated) {
   DCHECK(!input_method_id.empty());
   std::vector<std::string> input_method_ids;
@@ -827,15 +875,10 @@ void LanguageConfigView::SetInputMethodActivated(
   // Update Chrome's preference.
   std::vector<std::string> new_input_method_ids(input_method_id_set.begin(),
                                                 input_method_id_set.end());
-
-  // Note: Since |new_input_method_ids| is alphabetically sorted and the sort
-  // function below uses stable sort, the relateve order of input methods that
-  // belong to the same language (e.g. "mozc" and "xkb:jp::jpn") is maintained.
-  SortInputMethodIdsByNames(id_to_language_code_map_, &new_input_method_ids);
-  preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
+  UpdateInputMethodPreferences(new_input_method_ids);
 }
 
-bool LanguageConfigView::InputMethodIsActivated(
+bool LanguageConfigModel::InputMethodIsActivated(
     const std::string& input_method_id) {
   std::vector<std::string> input_method_ids;
   GetActiveInputMethodIds(&input_method_ids);
@@ -843,7 +886,7 @@ bool LanguageConfigView::InputMethodIsActivated(
                     input_method_id) != input_method_ids.end());
 }
 
-void LanguageConfigView::GetActiveInputMethodIds(
+void LanguageConfigModel::GetActiveInputMethodIds(
     std::vector<std::string>* out_input_method_ids) {
   const std::wstring value = preload_engines_.GetValue();
   out_input_method_ids->clear();
@@ -854,7 +897,7 @@ void LanguageConfigView::GetActiveInputMethodIds(
 
 void LanguageConfigView::MaybeDisableLastCheckbox() {
   std::vector<std::string> input_method_ids;
-  GetActiveInputMethodIds(&input_method_ids);
+  model.GetActiveInputMethodIds(&input_method_ids);
   if (input_method_ids.size() <= 1) {
     for (std::set<InputMethodCheckbox*>::iterator checkbox =
              input_method_checkboxes_.begin();
@@ -873,7 +916,7 @@ void LanguageConfigView::EnableAllCheckboxes() {
   }
 }
 
-std::string LanguageConfigView::GetLanguageCodeFromInputMethodId(
+std::string LanguageConfigModel::GetLanguageCodeFromInputMethodId(
     const std::string& input_method_id) const {
   std::map<std::string, std::string>::const_iterator iter
       = id_to_language_code_map_.find(input_method_id);
@@ -883,7 +926,7 @@ std::string LanguageConfigView::GetLanguageCodeFromInputMethodId(
       kDefaultLanguageCode : iter->second;
 }
 
-std::string LanguageConfigView::GetInputMethodDisplayNameFromId(
+std::string LanguageConfigModel::GetInputMethodDisplayNameFromId(
     const std::string& input_method_id) const {
   // |kDefaultDisplayName| is not for Chrome OS. See the comment above.
   static const char kDefaultDisplayName[] = "USA";
@@ -893,7 +936,7 @@ std::string LanguageConfigView::GetInputMethodDisplayNameFromId(
       kDefaultDisplayName : iter->second;
 }
 
-void LanguageConfigView::GetInputMethodIdsFromLanguageCode(
+void LanguageConfigModel::GetInputMethodIdsFromLanguageCode(
     const std::string& language_code,
     std::vector<std::string>* input_method_ids) const {
   DCHECK(input_method_ids);
@@ -910,7 +953,7 @@ void LanguageConfigView::GetInputMethodIdsFromLanguageCode(
   ReorderInputMethodIdsForLanguageCode(language_code, input_method_ids);
 }
 
-void LanguageConfigView::NotifyPrefChanged() {
+void LanguageConfigModel::NotifyPrefChanged() {
   std::vector<std::string> input_method_ids;
   GetActiveInputMethodIds(&input_method_ids);
 
@@ -924,10 +967,10 @@ void LanguageConfigView::NotifyPrefChanged() {
   preferred_language_codes_.clear();
   preferred_language_codes_.assign(
       language_code_set.begin(), language_code_set.end());
-  SortLanguageCodesByNames(&preferred_language_codes_);
+  LanguageConfigModel::SortLanguageCodesByNames(&preferred_language_codes_);
 }
 
-std::wstring LanguageConfigView::MaybeRewriteLanguageName(
+std::wstring LanguageConfigModel::MaybeRewriteLanguageName(
     const std::wstring& language_name) {
   // "t" is used as the language code for input methods that don't fall
   // under any other languages.
@@ -938,7 +981,7 @@ std::wstring LanguageConfigView::MaybeRewriteLanguageName(
   return language_name;
 }
 
-std::wstring LanguageConfigView::GetLanguageDisplayNameFromCode(
+std::wstring LanguageConfigModel::GetLanguageDisplayNameFromCode(
     const std::string& language_code) {
   return MaybeRewriteLanguageName(UTF16ToWide(
       l10n_util::GetDisplayNameForLocale(
@@ -961,9 +1004,9 @@ struct CompareLanguageCodesByLanguageName
   // list is short (about 40 at most).
   bool operator()(const std::string& s1, const std::string& s2) const {
     const std::wstring key1 =
-            LanguageConfigView::GetLanguageDisplayNameFromCode(s1);
+            LanguageConfigModel::GetLanguageDisplayNameFromCode(s1);
     const std::wstring key2 =
-            LanguageConfigView::GetLanguageDisplayNameFromCode(s2);
+            LanguageConfigModel::GetLanguageDisplayNameFromCode(s2);
     return l10n_util::StringComparator<std::wstring>(collator_)(key1, key2);
   }
 
@@ -1002,7 +1045,7 @@ struct CompareInputMethodIdsByLanguageName
 
 }  // namespace
 
-void LanguageConfigView::SortLanguageCodesByNames(
+void LanguageConfigModel::SortLanguageCodesByNames(
     std::vector<std::string>* language_codes) {
   // We should build collator outside of the comparator. We cannot have
   // scoped_ptr<> in the comparator for a subtle STL reason.
@@ -1017,7 +1060,7 @@ void LanguageConfigView::SortLanguageCodesByNames(
             CompareLanguageCodesByLanguageName(collator.get()));
 }
 
-void LanguageConfigView::SortInputMethodIdsByNames(
+void LanguageConfigModel::SortInputMethodIdsByNames(
     const std::map<std::string, std::string>& id_to_language_code_map,
     std::vector<std::string>* input_method_ids) {
   UErrorCode error = U_ZERO_ERROR;
@@ -1032,7 +1075,7 @@ void LanguageConfigView::SortInputMethodIdsByNames(
                        collator.get(), id_to_language_code_map));
 }
 
-void LanguageConfigView::ReorderInputMethodIdsForLanguageCode(
+void LanguageConfigModel::ReorderInputMethodIdsForLanguageCode(
     const std::string& language_code,
     std::vector<std::string>* input_method_ids) {
   for (size_t i = 0; i < arraysize(kLanguageDefaultInputMethodIds); ++i) {
