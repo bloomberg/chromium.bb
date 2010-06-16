@@ -12,16 +12,17 @@ class PrefService;
 
 // An identifier for the Certificate Manager window. These are treated as
 // indices into the list of available tabs to be displayed.
-// PAGE_DEFAULT means select the last tab viewed when the Certificate Manager
-// window was opened, or PAGE_USER if the Certificate Manager was never opened.
+// CERT_MANAGER_PAGE_DEFAULT means select the last tab viewed when the
+// Certificate Manager window was opened, or CERT_MANAGER_PAGE_USER if the
+// Certificate Manager was never opened.
 enum CertificateManagerPage {
-  PAGE_DEFAULT = -1,
-  PAGE_USER,
-  PAGE_EMAIL,
-  PAGE_SERVER,
-  PAGE_CA,
-  PAGE_UNKNOWN,
-  PAGE_COUNT
+  CERT_MANAGER_PAGE_DEFAULT = -1,
+  CERT_MANAGER_PAGE_USER,
+  CERT_MANAGER_PAGE_EMAIL,
+  CERT_MANAGER_PAGE_SERVER,
+  CERT_MANAGER_PAGE_CA,
+  CERT_MANAGER_PAGE_UNKNOWN,
+  CERT_MANAGER_PAGE_COUNT
 };
 
 namespace certificate_manager_util {

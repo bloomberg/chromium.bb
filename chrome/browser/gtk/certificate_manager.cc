@@ -471,7 +471,7 @@ void CertificateManager::OnSwitchPage(GtkWidget* notebook,
                                       GtkNotebookPage* page,
                                       guint page_num) {
   int index = static_cast<int>(page_num);
-  DCHECK(index > PAGE_DEFAULT && index < PAGE_COUNT);
+  DCHECK(index > CERT_MANAGER_PAGE_DEFAULT && index < CERT_MANAGER_PAGE_COUNT);
   last_selected_page_.SetValue(index);
 }
 
@@ -481,15 +481,15 @@ void CertificateManager::ShowCertificatePage(CertificateManagerPage page) {
   gtk_window_present_with_time(GTK_WINDOW(dialog_),
                                gtk_get_current_event_time());
 
-  if (page == PAGE_DEFAULT) {
+  if (page == CERT_MANAGER_PAGE_DEFAULT) {
     // Remember the last visited page from local state.
     page = static_cast<CertificateManagerPage>(last_selected_page_.GetValue());
-    if (page == PAGE_DEFAULT)
-      page = PAGE_USER;
+    if (page == CERT_MANAGER_PAGE_DEFAULT)
+      page = CERT_MANAGER_PAGE_USER;
   }
   // If the page number is out of bounds, reset to the first tab.
   if (page < 0 || page >= gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)))
-    page = PAGE_USER;
+    page = CERT_MANAGER_PAGE_USER;
 
   gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook_), page);
 }
