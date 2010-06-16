@@ -28,12 +28,10 @@
   return becoming;
 }
 
-- (void)setObjectValue:(id<NSCopying>)object {
-// FIXME
-  if (isCreditCardField_ &&
-      [(NSObject*)object isKindOfClass:[NSString class]]) {
+- (void)setObjectValue:(id)object {
+  if (isCreditCardField_ && [object isKindOfClass:[NSString class]]) {
     // Obfuscate the number.
-    NSString* string = (NSString*)object;  // FIXME: NSMutableCopying
+    NSString* string = object;
     CreditCard card;
     card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
                  base::SysNSStringToUTF16(string));

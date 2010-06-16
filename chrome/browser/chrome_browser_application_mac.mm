@@ -85,11 +85,7 @@ size_t BinForException(NSException* exception) {
   // A list of common known exceptions.  The list position will
   // determine where they live in the histogram, so never move them
   // around, only add to the end.
-<<<<<<< HEAD
   static NSString* const kKnownNSExceptionNames[] = {
-=======
-  static NSString* kKnownNSExceptionNames[] = {
->>>>>>> more
     // ???
     NSGenericException,
 
@@ -280,11 +276,7 @@ BOOL SwizzleNSExceptionInit() {
   // When a Cocoa control is wired to a freed object, we get crashers
   // in the call to |super| with no useful information in the
   // backtrace.  Attempt to add some useful information.
-<<<<<<< HEAD
   static NSString* const kActionKey = @"sendaction";
-=======
-  static NSString* kActionKey = @"sendaction";
->>>>>>> more
 
   // If the action is something generic like -commandDispatch:, then
   // the tag is essential.
@@ -326,15 +318,9 @@ BOOL SwizzleNSExceptionInit() {
     // is tracked because it may be the one which caused the system to
     // go off the rails.  The last exception thrown is tracked because
     // it may be the one most directly associated with the crash.
-<<<<<<< HEAD
     static NSString* const kFirstExceptionKey = @"firstexception";
     static BOOL trackedFirstException = NO;
     static NSString* const kLastExceptionKey = @"lastexception";
-=======
-    static NSString* kFirstExceptionKey = @"firstexception";
-    static BOOL trackedFirstException = NO;
-    static NSString* kLastExceptionKey = @"lastexception";
->>>>>>> more
 
     // TODO(shess): It would be useful to post some stacktrace info
     // from the exception.
