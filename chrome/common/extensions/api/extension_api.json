@@ -2780,7 +2780,7 @@
           "secure": {"type": "boolean", "description": "True if the cookie is marked as Secure (i.e. its scope is limited to secure channels, typically HTTPS)."},
           "httpOnly": {"type": "boolean", "description": "True if the cookie is marked as HttpOnly (i.e. the cookie is inaccessible to client-side scripts)."},
           "session": {"type": "boolean", "description": "True if the cookie is a session cookie, as opposed to a persistent cookie with an expiration date."},
-          "expirationDate": {"type": "number", "optional": true, "description": "The expiration date of the cookie as the number of milliseconds since the UNIX epoch. Not provided for session cookies."},
+          "expirationDate": {"type": "number", "optional": true, "description": "The expiration date of the cookie as the number of seconds since the UNIX epoch. Not provided for session cookies."},
           "storeId": {"type": "string", "description": "The ID of the cookie store containing this cookie, as provided in getAllCookieStores()."}
         }
       },
@@ -2868,7 +2868,7 @@
               "path": {"type": "string", "optional": true, "description": "The path of the cookie. Defaults to the path portion of the url parameter."},
               "secure": {"type": "boolean", "optional": true, "description": "Whether the cookie should be marked as Secure. Defaults to false."},
               "httpOnly": {"type": "boolean", "optional": true, "description": "Whether the cookie should be marked as HttpOnly. Defaults to false."},
-              "expirationDate": {"type": "number", "optional": true, "description": "The expiration date of the cookie as the number of milliseconds since the UNIX epoch. If omitted, the cookie becomes a session cookie."},
+              "expirationDate": {"type": "number", "optional": true, "description": "The expiration date of the cookie as the number of seconds since the UNIX epoch. If omitted, the cookie becomes a session cookie."},
               "storeId": {"type": "string", "optional": true, "description": "The ID of the cookie store in which to set the cookie. By default, the cookie is set in the current execution context's cookie store."}
             }
           }

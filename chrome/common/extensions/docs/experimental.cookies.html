@@ -248,9 +248,9 @@
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#type-CookieStore">CookieStore</a>
-                      </li><li>
                         <a href="#type-Cookie">Cookie</a>
+                      </li><li>
+                        <a href="#type-CookieStore">CookieStore</a>
                       </li>
                     </ol>
                   </li>
@@ -1786,7 +1786,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The expiration date of the cookie as the number of milliseconds since the UNIX epoch. If omitted, the cookie becomes a session cookie.</dd>
+          <dd>The expiration date of the cookie as the number of seconds since the UNIX epoch. If omitted, the cookie becomes a session cookie.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -2045,140 +2045,6 @@
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-CookieStore"></a>
-              <h4>CookieStore</h4>
-
-              <div>
-          <dt>
-            <var style="display: none; ">paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Represents a cookie store in the browser. An incognito mode window, for instance, uses a separate cookie store from a non-incognito window.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>id</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The unique identifier for the cookie store.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>tabIds</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Identifiers of all the browser tabs that share this cookie store.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-
-            </div><div class="apiItem">
               <a name="type-Cookie"></a>
               <h4>Cookie</h4>
 
@@ -2572,7 +2438,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The expiration date of the cookie as the number of milliseconds since the UNIX epoch. Not provided for session cookies.</dd>
+          <dd>The expiration date of the cookie as the number of seconds since the UNIX epoch. Not provided for session cookies.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -2614,6 +2480,140 @@
             Undocumented.
           </dd>
           <dd>The ID of the cookie store containing this cookie, as provided in getAllCookieStores().</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+
+            </div><div class="apiItem">
+              <a name="type-CookieStore"></a>
+              <h4>CookieStore</h4>
+
+              <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Represents a cookie store in the browser. An incognito mode window, for instance, uses a separate cookie store from a non-incognito window.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>id</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The unique identifier for the cookie store.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>tabIds</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Identifiers of all the browser tabs that share this cookie store.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">

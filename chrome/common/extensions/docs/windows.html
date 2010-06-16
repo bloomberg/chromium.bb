@@ -226,11 +226,11 @@
               <li>
                 <a href="#apiReference">API reference: chrome.windows</a>
                 <ol>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
-                        <a href="#property-anchor">propertyName</a>
+                        <a href="#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a>
                       </li>
                     </ol>
                   </li>
@@ -362,19 +362,57 @@ For other examples and for help in viewing the source code, see
         <h2>API reference: chrome.windows</h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
             <div>
-              <a></a>
-              <h4>getLastError</h4>
+              <a name="property-WINDOW_ID_NONE"></a>
+              <h4>WINDOW_ID_NONE</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
+                <span>chrome.windows.</span><span>WINDOW_ID_NONE</span>
               </div>
               <div>
+          <dt>
+            <var>WINDOW_ID_NONE</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The windowId value that represents the absence of a chrome browser window.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
               </div>
+            </dl>
+          </dd>
+        </div>
             </div>
 
           </div> <!-- /apiGroup -->
@@ -2142,7 +2180,7 @@ For other examples and for help in viewing the source code, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when the currently focused window changes.</p>
+                <p>Fired when the currently focused window changes. Will be chrome.windows.WINDOW_ID_NONE if all chrome windows have lost focus. Note: On some Linux window managers, WINDOW_ID_NONE will always be sent immediately preceding a switch from one chrome window to another.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
