@@ -92,8 +92,6 @@ const FilePath::CharType Extension::kMessagesFilename[] =
 
 // A list of all the keys allowed by themes.
 static const wchar_t* kValidThemeKeys[] = {
-  keys::kCurrentLocale,
-  keys::kDefaultLocale,
   keys::kDescription,
   keys::kName,
   keys::kPublicKey,
