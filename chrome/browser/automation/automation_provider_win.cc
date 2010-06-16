@@ -12,7 +12,7 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/external_tab_container.h"
+#include "chrome/browser/external_tab_container_win.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

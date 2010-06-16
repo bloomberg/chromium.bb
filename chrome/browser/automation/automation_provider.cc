@@ -89,7 +89,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/external_tab_container.h"
+#include "chrome/browser/external_tab_container_win.h"
 #endif  // defined(OS_WIN)
 
 using base::Time;

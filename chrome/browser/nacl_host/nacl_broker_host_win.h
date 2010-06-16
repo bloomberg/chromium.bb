@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_H_
+#ifndef CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_WIN_H_
+#define CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_WIN_H_
 
 #include "base/basictypes.h"
 #include "base/process.h"
@@ -46,4 +46,4 @@ class NaClBrokerHost : public ChildProcessHost {
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerHost);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_H_
+#endif  // CHROME_BROWSER_NACL_HOST_NACL_BROKER_HOST_WIN_H_

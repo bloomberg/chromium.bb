@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_broker_host.h"
+#include "chrome/browser/nacl_host/nacl_broker_host_win.h"
 
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "ipc/ipc_switches.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/nacl_host/nacl_broker_service.h"
+#include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

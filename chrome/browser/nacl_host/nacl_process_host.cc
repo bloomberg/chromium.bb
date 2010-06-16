@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #endif
 
 #include "base/command_line.h"
-#include "chrome/browser/nacl_host/nacl_broker_service.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -22,6 +21,8 @@
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
+#elif defined(OS_WIN)
+#include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #endif
 
 NaClProcessHost::NaClProcessHost(
@@ -55,7 +56,6 @@ bool NaClProcessHost::Launch(ResourceMessageFilter* resource_message_filter,
   NOTIMPLEMENTED() << "Native Client disabled at build time";
   return false;
 #else
-
   // Create a connected socket
   if (nacl::SocketPair(pair_) == -1)
     return false;
@@ -98,16 +98,14 @@ bool NaClProcessHost::LaunchSelLdr() {
     NaClBrokerService::GetInstance()->Init(resource_dispatcher_host_);
     return NaClBrokerService::GetInstance()->LaunchLoader(this,
         ASCIIToWide(channel_id()));
-  } else  // NO_LINT
-#endif
-    ChildProcessHost::Launch(
-#if defined(OS_WIN)
-        FilePath(),
+  } else {
+    ChildProcessHost::Launch(FilePath(), cmd_line);
+  }
 #elif defined(OS_POSIX)
-        true, // use_zygote
-        base::environment_vector(),
+  ChildProcessHost::Launch(true,  // use_zygote
+                           base::environment_vector(),
+                           cmd_line);
 #endif
-        cmd_line);
 
   return true;
 }
@@ -154,7 +152,6 @@ void NaClProcessHost::OnProcessLaunched() {
                   PROCESS_DUP_HANDLE,
                   FALSE,
                   0);
-
 #else
   int flags = fcntl(pair_[0], F_GETFD);
   if (flags != -1) {
@@ -168,7 +165,6 @@ void NaClProcessHost::OnProcessLaunched() {
 
   // We use pid as process handle on Posix
   nacl_process_handle = handle();
-
 #endif
 
   // Get the pid of the NaCl process
