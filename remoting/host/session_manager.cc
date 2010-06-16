@@ -222,7 +222,6 @@ void SessionManager::DoSendUpdate(const UpdateStreamPacketHeader* header,
       clients_[i]->SendEndUpdateStreamMessage();
     }
   }
-  delete header;
 }
 
 void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
