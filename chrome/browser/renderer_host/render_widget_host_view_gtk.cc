@@ -48,7 +48,14 @@ static const int kMaxWindowHeight = 4000;
 static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
 #if defined(OS_CHROMEOS)
-static const float kDefaultVertScrollDelta = 20.0;
+// TODO(davemoore) Under Chromeos we are increasing the rate that the trackpad
+// generates events to get better precisions. Eventually we will coordinate the
+// driver and this setting to ensure they match.
+static const float kDefaultScrollPixelsPerTick = 20;
+#else
+// See WebInputEventFactor.cpp for a reason for this being the default
+// scroll size for linux.
+static const float kDefaultScrollPixelsPerTick = 160.0f / 3.0f;
 #endif
 
 using WebKit::WebInputEventFactory;
@@ -310,27 +317,73 @@ class RenderWidgetHostViewGtkWidget {
     return true;
   }
 
-#if defined(OS_CHROMEOS)
   // Allow the vertical scroll delta to be overridden from the command line.
   // This will allow us to test more easily to discover the amount
   // (either hard coded or computed) that's best.
-  static float GetVertScrollDelta() {
-    static float vert_scroll_delta = -1;
-    if (vert_scroll_delta < 0) {
-      vert_scroll_delta = kDefaultVertScrollDelta;
+  static float GetScrollPixelsPerTick() {
+    static float scroll_pixels = -1;
+    if (scroll_pixels < 0) {
+      scroll_pixels = kDefaultScrollPixelsPerTick;
       CommandLine* command_line = CommandLine::ForCurrentProcess();
-      std::string vert_scroll_option =
-          command_line->GetSwitchValueASCII(switches::kVertScrollDelta);
-      if (!vert_scroll_option.empty()) {
+      std::string scroll_pixels_option =
+          command_line->GetSwitchValueASCII(switches::kScrollPixels);
+      if (!scroll_pixels_option.empty()) {
         double v;
-        if (StringToDouble(vert_scroll_option, &v))
-          vert_scroll_delta = static_cast<float>(v);
+        if (StringToDouble(scroll_pixels_option, &v))
+          scroll_pixels = static_cast<float>(v);
       }
-      DCHECK_GT(vert_scroll_delta, 0);
+      DCHECK_GT(scroll_pixels, 0);
     }
-    return vert_scroll_delta;
+    return scroll_pixels;
   }
-#endif
+
+  // Return the net up / down (or left / right) distance represented by events
+  // in the  events will be removed from the queue. We only look at the top of
+  // queue...any other type of event will cause us not to look farther.
+  // If there is a change to the set of modifier keys or scroll axis
+  // in the events we will stop looking as well.
+  static int GetPendingScrollDelta(bool vert, guint current_event_state) {
+    int num_clicks = 0;
+    GdkEvent* event;
+    bool event_coalesced = true;
+    while ((event = gdk_event_get()) && event_coalesced) {
+      event_coalesced = false;
+      if (event->type == GDK_SCROLL) {
+        GdkEventScroll scroll = event->scroll;
+        if (scroll.state & GDK_SHIFT_MASK) {
+          if (scroll.direction == GDK_SCROLL_UP)
+            scroll.direction = GDK_SCROLL_LEFT;
+          else if (scroll.direction == GDK_SCROLL_DOWN)
+            scroll.direction = GDK_SCROLL_RIGHT;
+        }
+        if (vert) {
+          if (scroll.direction == GDK_SCROLL_UP ||
+              scroll.direction == GDK_SCROLL_DOWN) {
+            if (scroll.state == current_event_state) {
+              num_clicks += (scroll.direction == GDK_SCROLL_UP ? 1 : -1);
+              gdk_event_free(event);
+              event_coalesced = true;
+            }
+          }
+        } else {
+          if (scroll.direction == GDK_SCROLL_RIGHT ||
+              scroll.direction == GDK_SCROLL_LEFT) {
+            if (scroll.state == current_event_state) {
+              num_clicks += (scroll.direction == GDK_SCROLL_RIGHT ? 1 : -1);
+              gdk_event_free(event);
+              event_coalesced = true;
+            }
+          }
+        }
+      }
+    }
+    // If we have an event left we put it back on the queue.
+    if (event) {
+      gdk_event_put(event);
+      gdk_event_free(event);
+    }
+    return num_clicks * GetScrollPixelsPerTick();
+  }
 
   static gboolean MouseScrollEvent(GtkWidget* widget, GdkEventScroll* event,
                                    RenderWidgetHostViewGtk* host_view) {
@@ -345,20 +398,22 @@ class RenderWidgetHostViewGtkWidget {
     }
 
     WebMouseWheelEvent web_event = WebInputEventFactory::mouseWheelEvent(event);
-#if defined (OS_CHROMEOS)
-    // Under ChromeOS we know that the wheel is a touchpad. The driver for this
-    // can generate events very quickly. We configure it to generate more
-    // events and scroll by a smaller amount on each, to give us better
-    // precision. This is only configured for vertical scrolling, and
-    // doesn't apply if we are using the shift modifier to cause a horizontal
-    // scroll.
-    if (!(event->state & GDK_SHIFT_MASK)) {
+    // We  peek ahead at the top of the queue to look for additional pending
+    // scroll events.
+    if (event->direction == GDK_SCROLL_UP ||
+        event->direction == GDK_SCROLL_DOWN) {
       if (event->direction == GDK_SCROLL_UP)
-        web_event.deltaY = GetVertScrollDelta();
+        web_event.deltaY = GetScrollPixelsPerTick();
       else
-        web_event.deltaY = -GetVertScrollDelta();
+        web_event.deltaY = -GetScrollPixelsPerTick();
+      web_event.deltaY += GetPendingScrollDelta(true, event->state);
+    } else {
+      if (event->direction == GDK_SCROLL_RIGHT)
+        web_event.deltaX = GetScrollPixelsPerTick();
+      else
+        web_event.deltaX = -GetScrollPixelsPerTick();
+      web_event.deltaX += GetPendingScrollDelta(false, event->state);
     }
-#endif // OS_CHROMEOS
     host_view->GetRenderWidgetHost()->ForwardWheelEvent(web_event);
     return FALSE;
   }

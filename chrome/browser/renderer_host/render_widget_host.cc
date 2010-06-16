@@ -88,9 +88,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       text_direction_updated_(false),
       text_direction_(WebKit::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
-      suppress_next_char_events_(false),
-      spin_runloop_before_sending_wheel_event_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_runner_(this)) {
+      suppress_next_char_events_(false) {
   if (routing_id_ == MSG_ROUTING_NONE)
     routing_id_ = process_->GetNextRoutingID();
 
@@ -423,8 +421,6 @@ void RenderWidgetHost::ForwardWheelEvent(
   if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
-  spin_runloop_before_sending_wheel_event_ = true;
-
   // If there's already a mouse wheel event waiting to be sent to the renderer,
   // add the new deltas to that event. Not doing so (e.g., by dropping the old
   // event, as for mouse moves) results in very slow scrolling on the Mac (on
@@ -452,7 +448,6 @@ void RenderWidgetHost::ForwardWheelEvent(
   HISTOGRAM_COUNTS_100("MPArch.RWH_WheelQueueSize",
                        coalesced_mouse_wheel_events_.size());
 
-  last_wheel_message_time_ = TimeTicks::Now();
   ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent), false);
 }
 
@@ -565,7 +560,6 @@ void RenderWidgetHost::RendererExited() {
   mouse_move_pending_ = false;
   next_mouse_move_.reset();
   mouse_wheel_pending_ = false;
-  spin_runloop_before_sending_wheel_event_ = false;
   coalesced_mouse_wheel_events_.clear();
 
   // Must reset these to ensure that keyboard events work with a new renderer.
@@ -865,21 +859,6 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
 }
 
 void RenderWidgetHost::ProcessWheelAck() {
-  static const base::TimeDelta kMaxTimeBetweenWheelMessages =
-      base::TimeDelta::FromMilliseconds(kMaxTimeBetweenWheelMessagesMs);
-
-  // Allow additional wheel events pending in the message queue to be coalesced.
-  if (spin_runloop_before_sending_wheel_event_) {
-    base::TimeDelta time_since_last_wheel_message_ =
-        TimeTicks::Now() - last_wheel_message_time_;
-    if (time_since_last_wheel_message_ < kMaxTimeBetweenWheelMessages) {
-      spin_runloop_before_sending_wheel_event_ = false;
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_runner_.NewRunnableMethod(&RenderWidgetHost::ProcessWheelAck));
-      return;
-    }
-  }
-
   mouse_wheel_pending_ = false;
 
   // Now send the next (coalesced) mouse wheel event.

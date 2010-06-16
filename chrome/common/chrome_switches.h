@@ -265,7 +265,10 @@ extern const char kChromeosFrame[];
 extern const char kStartupManifest[];
 // TODO(denisromanov): Remove this flag when it is not needed for testing, too.
 extern const char kServicesManifest[];
-extern const char kVertScrollDelta[];
+#endif
+
+#if defined(OS_LINUX)
+extern const char kScrollPixels[];
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN)

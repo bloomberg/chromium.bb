@@ -917,8 +917,11 @@ const char kStartupManifest[]               = "startup-manifest";
 // TODO(denisromanov): delete this when not needed for testing.
 const char kServicesManifest[]              = "services-manifest";
 
+#endif
+
+#if defined(OS_LINUX)
 // Specify the amount the trackpad should scroll by.
-const char kVertScrollDelta[]               = "vert-scroll-delta";
+const char kScrollPixels[]                  = "scroll-pixels";
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
