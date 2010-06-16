@@ -51,8 +51,6 @@ namespace {
 
 class CookiesWindowControllerTest : public CocoaTest {
  public:
-  CookiesWindowControllerTest()
-      : io_thread_(ChromeThread::IO, MessageLoop::current()) {}
 
   virtual void SetUp() {
     CocoaTest::SetUp();
@@ -84,8 +82,6 @@ class CookiesWindowControllerTest : public CocoaTest {
 
  protected:
   BrowserTestHelper browser_helper_;
-  // Need an IO thread to not leak from TestingProfile::CreateRequestContext().
-  ChromeThread io_thread_;
   scoped_nsobject<CookiesWindowController> controller_;
   MockBrowsingDataDatabaseHelper* database_helper_;
   MockBrowsingDataLocalStorageHelper* local_storage_helper_;

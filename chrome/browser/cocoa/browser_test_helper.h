@@ -13,6 +13,13 @@
 // Base class which contains a valid Browser*.  Lots of boilerplate to
 // recycle between unit test classes.
 //
+// This class creates fake UI, file, and IO threads because many objects that
+// are attached to the TestingProfile (and other objects) have traits that limit
+// their destruction to certain threads. For example, the URLRequestContext can
+// only be deleted on the IO thread; without this fake IO thread, the object
+// would never be deleted and would report as a leak under Valgrind. Note that
+// these are fake threads and they all share the same MessageLoop.
+//
 // TODO(jrg): move up a level (chrome/browser/cocoa -->
 // chrome/browser), and use in non-Mac unit tests such as
 // back_forward_menu_model_unittest.cc,
@@ -21,7 +28,8 @@ class BrowserTestHelper {
  public:
   BrowserTestHelper()
       : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE, &message_loop_) {
+        file_thread_(ChromeThread::FILE, &message_loop_),
+        io_thread_(ChromeThread::IO, &message_loop_) {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -72,6 +80,7 @@ class BrowserTestHelper {
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ChromeThread file_thread_;
+  ChromeThread io_thread_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
