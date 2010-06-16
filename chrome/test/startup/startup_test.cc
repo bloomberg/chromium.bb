@@ -202,16 +202,25 @@ TEST_F(StartupTest, PerfFewTabs) {
   RunPerfTestWithManyTabs("few_tabs", 5, false);
 }
 
-TEST_F(StartupTest, PerfSeveralTabs) {
-  RunPerfTestWithManyTabs("several_tabs", 20, false);
-}
-
 TEST_F(StartupTest, PerfRestoreFewTabs) {
   RunPerfTestWithManyTabs("restore_few_tabs", 5, true);
 }
 
-TEST_F(StartupTest, PerfRestoreSeveralTabs) {
-  RunPerfTestWithManyTabs("restore_several_tabs", 20, true);
+// http://crbug.com/46609
+#if defined(OS_MACOSX)
+#define MAYBE_PerfSeveralTabs FLAKY_PerfSeveralTabs
+#define MAYBE_PerfRestoreSeveralTabs FLAKY_PerfRestoreSeveralTabs
+#else
+#define MAYBE_PerfSeveralTabs PerfSeveralTabs
+#define MAYBE_PerfRestoreSeveralTabs PerfRestoreSeveralTabs
+#endif
+
+TEST_F(StartupTest, MAYBE_PerfSeveralTabs) {
+  RunPerfTestWithManyTabs("several_tabs", 10, false);
+}
+
+TEST_F(StartupTest, MAYBE_PerfRestoreSeveralTabs) {
+  RunPerfTestWithManyTabs("restore_several_tabs", 10, true);
 }
 
 TEST_F(StartupTest, PerfExtensionEmpty) {

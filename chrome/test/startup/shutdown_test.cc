@@ -109,13 +109,22 @@ TEST_F(ShutdownTest, SimpleSessionEnding) {
                   true, /* important */ UITest::SESSION_ENDING);
 }
 
-TEST_F(ShutdownTest, TwentyTabsWindowClose) {
+// http://crbug.com/46609
+#if defined(OS_MACOSX)
+#define MAYBE_TwentyTabsWindowClose FLAKY_TwentyTabsWindowClose
+#define MAYBE_TwentyTabsUserQuit FLAKY_TwentyTabsUserQuit
+#else
+#define MAYBE_TwentyTabsWindowClose TwentyTabsWindowClose
+#define MAYBE_TwentyTabsUserQuit TwentyTabsUserQuit
+#endif
+
+TEST_F(ShutdownTest, MAYBE_TwentyTabsWindowClose) {
   SetUpTwentyTabs();
   RunShutdownTest("shutdown", "twentytabs-window-close",
                   true, /* important */ UITest::WINDOW_CLOSE);
 }
 
-TEST_F(ShutdownTest, TwentyTabsUserQuit) {
+TEST_F(ShutdownTest, MAYBE_TwentyTabsUserQuit) {
   SetUpTwentyTabs();
   RunShutdownTest("shutdown", "twentytabs-user-quit",
                   true, /* important */ UITest::USER_QUIT);
@@ -124,9 +133,13 @@ TEST_F(ShutdownTest, TwentyTabsUserQuit) {
 // http://crbug.com/40671
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TwentyTabsSessionEnding DISABLED_TwentyTabsSessionEnding
+#elif defined(OS_MACOSX)
+// http://crbug.com/46609
+#define MAYBE_TwentyTabsSessionEnding FLAKY_TwentyTabsSessionEnding
 #else
 #define MAYBE_TwentyTabsSessionEnding TwentyTabsSessionEnding
 #endif
+
 TEST_F(ShutdownTest, MAYBE_TwentyTabsSessionEnding) {
   SetUpTwentyTabs();
   RunShutdownTest("shutdown", "twentytabs-session-ending",
