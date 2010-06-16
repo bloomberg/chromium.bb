@@ -245,8 +245,8 @@ class AutoFillProfilesView : public views::View,
       MessageBoxFlags::DialogButton button) const;
     virtual bool IsDialogButtonEnabled(
       MessageBoxFlags::DialogButton button) const;
-    virtual bool CanResize() const { return true; }
-    virtual bool CanMaximize() const { return true; }
+    virtual bool CanResize() const { return false; }
+    virtual bool CanMaximize() const { return false; }
     virtual bool IsAlwaysOnTop() const { return false; }
     virtual bool HasAlwaysOnTopMenu() const { return false; }
     virtual std::wstring GetWindowTitle() const;
@@ -273,6 +273,7 @@ class AutoFillProfilesView : public views::View,
     enum TextFields {
       TEXT_LABEL,
       TEXT_FULL_NAME,
+      TEXT_COMPANY,
       TEXT_EMAIL,
       TEXT_ADDRESS_LINE_1,
       TEXT_ADDRESS_LINE_2,
@@ -284,7 +285,6 @@ class AutoFillProfilesView : public views::View,
       TEXT_FAX_PHONE,
       TEXT_CC_NAME,
       TEXT_CC_NUMBER,
-      TEXT_CC_CVC,
       // must be last
       MAX_TEXT_FIELD
     };
@@ -305,7 +305,6 @@ class AutoFillProfilesView : public views::View,
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
     std::vector<EditableSetInfo>::iterator editable_fields_set_;
     EditableSetInfo temporary_info_;
-    views::Label* title_label_;
     views::ImageButton* label_warning_button_;
     AutoFillProfilesView* observer_;
     AddressComboBoxModel* billing_model_;

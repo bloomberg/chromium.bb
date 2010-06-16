@@ -19,7 +19,8 @@ static const int kDefaultHeight = 14;  // Default button height if no theme.
 ImageButton::ImageButton(ButtonListener* listener)
     : CustomButton(listener),
       h_alignment_(ALIGN_LEFT),
-      v_alignment_(ALIGN_TOP) {
+      v_alignment_(ALIGN_TOP),
+      preferred_size_(kDefaultWidth, kDefaultHeight) {
   // By default, we request that the gfx::Canvas passed to our View::Paint()
   // implementation is flipped horizontally so that the button's bitmaps are
   // mirrored when the UI directionality is right-to-left.
@@ -58,7 +59,7 @@ void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
 gfx::Size ImageButton::GetPreferredSize() {
   if (!images_[BS_NORMAL].isNull())
     return gfx::Size(images_[BS_NORMAL].width(), images_[BS_NORMAL].height());
-  return gfx::Size(kDefaultWidth, kDefaultHeight);
+  return preferred_size_;
 }
 
 void ImageButton::Paint(gfx::Canvas* canvas) {

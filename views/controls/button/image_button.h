@@ -50,6 +50,12 @@ class ImageButton : public CustomButton {
   virtual gfx::Size GetPreferredSize();
   virtual void Paint(gfx::Canvas* canvas);
 
+  // Sets preferred size, so it could be correctly positioned in layout even if
+  // it is NULL.
+  void SetPreferredSize(const gfx::Size& preferred_size) {
+    preferred_size_ = preferred_size;
+  }
+
  protected:
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
@@ -65,6 +71,7 @@ class ImageButton : public CustomButton {
   // Image alignment.
   HorizontalAlignment h_alignment_;
   VerticalAlignment v_alignment_;
+  gfx::Size preferred_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageButton);
 };
