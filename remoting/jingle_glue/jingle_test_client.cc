@@ -24,31 +24,6 @@ using remoting::JingleClient;
 using remoting::JingleChannel;
 using remoting::kChromotingTokenServiceName;
 
-void SetConsoleEcho(bool on) {
-#if defined(OS_WIN)
-  HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-  if ((hIn == INVALID_HANDLE_VALUE) || (hIn == NULL))
-    return;
-
-  DWORD mode;
-  if (!GetConsoleMode(hIn, &mode))
-    return;
-
-  if (on) {
-    mode = mode | ENABLE_ECHO_INPUT;
-  } else {
-    mode = mode & ~ENABLE_ECHO_INPUT;
-  }
-
-  SetConsoleMode(hIn, mode);
-#else  // defined(OS_WIN)
-  if (on)
-    system("stty echo");
-  else
-    system("stty -echo");
-#endif  // !defined(OS_WIN)
-}
-
 class JingleTestClient : public JingleChannel::Callback,
                          public JingleClient::Callback {
  public:
