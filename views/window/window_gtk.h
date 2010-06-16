@@ -70,12 +70,6 @@ class WindowGtk : public WidgetGtk, public Window {
   virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
   virtual void SetInitialFocus();
 
-  // Gets the WindowGtk in the userdata section of the widget.
-  static WindowGtk* GetWindowForNative(GtkWidget* widget);
-
-  // Sets the WindowGtk in the userdata section of the widget.
-  static void SetWindowForNative(GtkWidget* widget, WindowGtk* window);
-
  protected:
   // For  the constructor.
   friend class Window;

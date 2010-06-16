@@ -9,7 +9,7 @@
 #include "views/accelerator.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_manager.h"
-#include "views/window/window_gtk.h"
+#include "views/widget/widget_gtk.h"
 
 namespace views {
 
@@ -55,10 +55,12 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
     gtk_main_do_event(event);
     return true;
   }
-  DCHECK(ptr);  // The top-level window is expected to always be associated
-                // with the top-level gtk widget.
-  WindowGtk* widget =
-      WindowGtk::GetWindowForNative(reinterpret_cast<GtkWidget*>(ptr));
+  DCHECK(ptr);
+
+  // The top-level window or window widget is expected to always be associated
+  // with the top-level gtk widget.
+  WidgetGtk* widget =
+      WidgetGtk::GetViewForNative(reinterpret_cast<GtkWidget*>(ptr));
   if (!widget) {
     // During dnd we get events for windows we don't control (such as the
     // window being dragged).

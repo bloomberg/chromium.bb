@@ -373,17 +373,6 @@ void WindowGtk::SetInitialFocus() {
   }
 }
 
-// static
-WindowGtk* WindowGtk::GetWindowForNative(GtkWidget* widget) {
-  gpointer user_data = g_object_get_data(G_OBJECT(widget), "chrome-window");
-  return static_cast<WindowGtk*>(user_data);
-}
-
-// static
-void WindowGtk::SetWindowForNative(GtkWidget* widget, WindowGtk* window) {
-  g_object_set_data(G_OBJECT(widget), "chrome-window", window);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, protected:
 
@@ -422,8 +411,6 @@ void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
 
   UpdateWindowTitle();
   SetInitialBounds(parent, bounds);
-
-  SetWindowForNative(GTK_WIDGET(GetNativeWindow()), this);
 
   // if (!IsAppWindow()) {
   //   notification_registrar_.Add(
