@@ -160,3 +160,18 @@ function TestIfRunningInChrome() {
   }
   return is_chrome;
 }
+
+// Returns the base document url.
+function GetBaseUrlPath() {
+ var url = window.location.protocol + "//" + window.location.host + "/";
+ return url;
+}
+
+// Appends arguments passed in to the base document url and returns the same.
+function AppendArgumentsToBaseUrl() {
+  var url = GetBaseUrlPath();
+  for (arg_index = 0; arg_index < arguments.length; arg_index++) {
+    url += arguments[arg_index];
+  }
+  return url;
+}

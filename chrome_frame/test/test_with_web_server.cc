@@ -901,3 +901,18 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SetCookieTest) {
   chrome_frame_test::CloseAllIEWindows();
   ASSERT_TRUE(CheckResultFile(L"FullTab_SetCookieTest", "OK"));
 }
+
+const wchar_t kXHRConditionalHeaderTestUrl[] =
+    L"files/xmlhttprequest_conditional_header_test.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRConditionalHeaderTest) {
+  chrome_frame_test::TimedMsgLoop loop;
+  ASSERT_TRUE(LaunchBrowser(IE, kXHRConditionalHeaderTestUrl));
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  chrome_frame_test::CloseAllIEWindows();
+  ASSERT_TRUE(CheckResultFile(L"FullTab_XMLHttpRequestConditionalHeaderTest",
+                              "OK"));
+}
+

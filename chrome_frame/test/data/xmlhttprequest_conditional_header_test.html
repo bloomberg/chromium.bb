@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>ChromeFrame conditional header test</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function ValidateUserAgent() {
+        if (isRunningInMSIE()) {
+          onFailure("FullTab_XMLHttpRequestConditionalHeaderTest", 1,
+                    "Failed");
+        }
+
+        SendXHRRequest("if_match", "*");
+        SendXHRRequest("if_modified_since", "*");
+        SendXHRRequest("if-none-match", "*");
+        SendXHRRequest("if-range", "*");
+        SendXHRRequest("if-unmodified-since", "*");
+        onSuccess("FullTab_XMLHttpRequestConditionalHeaderTest", 1);
+      }
+
+      function SendXHRRequest(conditional_header, value) {
+        var test_name = "FullTab_XMLHttpRequestConditionalHeaderTest";
+        var xhr = getXHRObject();
+        if (!xhr) {
+          onFailure(test_name, 1, "Failed to get XHR object");
+        }
+
+        var request_uri = AppendArgumentsToBaseUrl("echoheader?",
+                                                   conditional_header);
+        xhr.open("GET", request_uri, false);
+        xhr.setRequestHeader(conditional_header, value);
+
+        try {
+          xhr.send(null);
+          var pos = xhr.responseText.indexOf(value);
+          if (pos >= 0) {
+            appendStatus("Received header: " + xhr.responseText);
+          } else {
+            onFailure(
+              test_name, 1,
+              "Failed to find header " + conditional_header + " in response.");
+          }
+        } catch (e) {
+          appendStatus("XHR send failed. Error: " + e.description);
+          onFailure(test_name, 1, "Failed to send XHR request");
+        }
+      }
+    </script>
+  </head>
+
+  <body onload="setTimeout(ValidateUserAgent, 100);">
+    ChromeFrame full tab mode XMLHttpRequest conditional header test.
+    Verifies that conditional headers set by XML HTTP requests make it past
+    the host network stack.
+  </body>
+</html>
