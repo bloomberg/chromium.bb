@@ -878,7 +878,8 @@ void AutocompleteEditViewMac::FocusLocation(bool select_all) {
     // call it if this behavior is desired.
     if (select_all || ![field_ currentEditor])
       [[field_ window] makeFirstResponder:field_];
-    DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
+// FIXME
+    DCHECK_EQ((id)[field_ currentEditor], (id)[[field_ window] firstResponder]);
   }
 }
 

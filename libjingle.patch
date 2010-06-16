@@ -1,0 +1,36 @@
+Index: talk/base/stringutils.h
+===================================================================
+--- talk/base/stringutils.h	(revision 21)
++++ talk/base/stringutils.h	(working copy)
+@@ -225,15 +225,6 @@
+ GCC_ATTR(format(printf,3,4));
+ */
+ template<class CTYPE>
+-size_t sprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format, ...) {
+-  va_list args;
+-  va_start(args, format);
+-  size_t len = vsprintfn(buffer, buflen, format, args);
+-  va_end(args);
+-  return len;
+-}
+-
+-template<class CTYPE>
+ size_t vsprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format,
+                  va_list args) {
+   int len = vsnprintf(buffer, buflen, format, args);
+@@ -244,6 +235,15 @@
+   return len;
+ }
+ 
++template<class CTYPE>
++size_t sprintfn(CTYPE* buffer, size_t buflen, const CTYPE* format, ...) {
++  va_list args;
++  va_start(args, format);
++  size_t len = vsprintfn(buffer, buflen, format, args);
++  va_end(args);
++  return len;
++}
++
+ ///////////////////////////////////////////////////////////////////////////////
+ // Allow safe comparing and copying ascii (not UTF-8) with both wide and
+ // non-wide character strings.

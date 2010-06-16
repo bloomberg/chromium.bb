@@ -47,7 +47,8 @@ AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
 
   // The OS will append " Type an administrator's name and password to allow
   // <CFBundleDisplayName> to make changes."
-  NSString* prompt_ns = reinterpret_cast<const NSString*>(prompt);
+//FIXME
+  NSString* prompt_ns = (NSString*)prompt;
   const char* prompt_c = [prompt_ns UTF8String];
   size_t prompt_length = prompt_c ? strlen(prompt_c) : 0;
 
