@@ -764,6 +764,12 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 - (id)transformedValue:(id)string {
   NSImage* image = nil;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  // We display no validation icon when input has not yet been entered.
+  if (string == nil || [string length] == 0)
+    return nil;
+
+  // If we have input then display alert icon if we have an invalid number.
   if (string != nil && [string length] != 0) {
     // TODO(dhollowa): Using SetInfo() call to validate phone number.  Should
     // have explicit validation method.  More robust validation is needed as
@@ -778,6 +784,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     }
   }
 
+  // No alert icon, so must be valid input.
   if (!image) {
     image = rb.GetNSImageNamed(IDR_INPUT_GOOD);
     DCHECK(image);

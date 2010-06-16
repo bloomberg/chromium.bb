@@ -16,7 +16,6 @@
 @synthesize creditCardNumber = creditCardNumber_;
 @synthesize expirationMonth = expirationMonth_;
 @synthesize expirationYear = expirationYear_;
-@synthesize cvcCode = cvcCode_;
 @synthesize billingAddress = billingAddress_;
 
 - (id)initWithCreditCard:(const CreditCard&)creditCard {
@@ -30,8 +29,6 @@
         creditCard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)))];
     [self setExpirationYear:SysUTF16ToNSString(
         creditCard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)))];
-    [self setCvcCode:SysUTF16ToNSString(
-        creditCard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE)))];
     [self setBillingAddress:SysUTF16ToNSString(
         creditCard.billing_address())];
   }
@@ -44,7 +41,6 @@
   [creditCardNumber_ release];
   [expirationMonth_ release];
   [expirationYear_ release];
-  [cvcCode_ release];
   [billingAddress_ release];
   [super dealloc];
 }
@@ -60,8 +56,6 @@
       base::SysNSStringToUTF16([self expirationMonth]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
       base::SysNSStringToUTF16([self expirationYear]));
-  creditCard->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-      base::SysNSStringToUTF16([self cvcCode]));
   creditCard->set_billing_address(
       base::SysNSStringToUTF16([self billingAddress]));
 }

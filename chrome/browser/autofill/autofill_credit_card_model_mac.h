@@ -25,7 +25,6 @@ class CreditCard;
   NSString* creditCardNumber_;
   NSString* expirationMonth_;
   NSString* expirationYear_;
-  NSString* cvcCode_;
   NSString* billingAddress_;
   NSString* shippingAddress_;
 }
@@ -35,7 +34,6 @@ class CreditCard;
 @property (nonatomic, copy) NSString* creditCardNumber;
 @property (nonatomic, copy) NSString* expirationMonth;
 @property (nonatomic, copy) NSString* expirationYear;
-@property (nonatomic, copy) NSString* cvcCode;
 @property (nonatomic, copy) NSString* billingAddress;
 
 // Designated initializer.  Initializes the property strings to values retrieved

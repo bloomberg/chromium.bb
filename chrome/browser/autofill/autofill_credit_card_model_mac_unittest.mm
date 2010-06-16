@@ -45,7 +45,6 @@ TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
   EXPECT_TRUE([[model creditCardNumber] isEqualToString:@"123456789012"]);
   EXPECT_TRUE([[model expirationMonth] isEqualToString:@"01"]);
   EXPECT_TRUE([[model expirationYear] isEqualToString:@"2010"]);
-  EXPECT_TRUE([[model cvcCode] isEqualToString:@"123"]);
   EXPECT_TRUE([[model billingAddress] isEqualToString:@"Chicago"]);
 }
 
@@ -71,7 +70,6 @@ TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
   [model setCreditCardNumber:@"223456789012"];
   [model setExpirationMonth:@"11"];
   [model setExpirationYear:@"2011"];
-  [model setCvcCode:@"223"];
   [model setBillingAddress:@"New York"];
 
   [model copyModelToCreditCard:&credit_card];
@@ -86,9 +84,6 @@ TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
   EXPECT_EQ(ASCIIToUTF16("2011"),
             credit_card.GetFieldText(
                 AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
-  EXPECT_EQ(ASCIIToUTF16("223"),
-            credit_card.GetFieldText(
-                AutoFillType(CREDIT_CARD_VERIFICATION_CODE)));
   EXPECT_EQ(ASCIIToUTF16("New York"), credit_card.billing_address());
 }
 

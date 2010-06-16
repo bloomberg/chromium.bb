@@ -297,8 +297,6 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
   credit_card.SetInfo(
     AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), ASCIIToUTF16("2012"));
-  credit_card.SetInfo(
-    AutoFillType(CREDIT_CARD_VERIFICATION_CODE), ASCIIToUTF16("222"));
   credit_cards().push_back(&credit_card);
 
   LoadDialog();
@@ -314,7 +312,6 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
   EXPECT_TRUE([[cm creditCardNumber] isEqualToString:@"1234 5678 9101 1121"]);
   EXPECT_TRUE([[cm expirationMonth] isEqualToString:@"01"]);
   EXPECT_TRUE([[cm expirationYear] isEqualToString:@"2012"]);
-  EXPECT_TRUE([[cm cvcCode] isEqualToString:@"222"]);
 
   [sheet save:nil];
   [controller_ save:nil];
