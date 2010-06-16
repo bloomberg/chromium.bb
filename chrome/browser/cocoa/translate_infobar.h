@@ -74,9 +74,6 @@ class TranslateNotificationObserverBridge;
 // Called when the "Show Original" button is pressed.
 - (IBAction)showOriginal:(id)sender;
 
-// Covariant override; required for clang and gcc 4.2.
-- (TranslateInfoBarDelegate*)delegate;
-
 @end
 
 @interface TranslateInfoBarController (TestingAPI)
