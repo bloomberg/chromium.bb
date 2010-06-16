@@ -727,7 +727,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
       const struct addrinfo* current_address = entry->addrlist.head();
       while (current_address) {
         address_list->Append(Value::CreateStringValue(
-            net::NetAddressToString(current_address)));
+            net::NetAddressToStringWithPort(current_address)));
         current_address = current_address->ai_next;
       }
       entry_dict->Set(L"addresses", address_list);
