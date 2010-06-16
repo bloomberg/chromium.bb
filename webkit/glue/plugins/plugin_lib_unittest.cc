@@ -7,6 +7,54 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Test the unloading of plugin libs. Bug http://crbug.com/46526 showed that
+// if UnloadAllPlugins() simply iterates through the g_loaded_libs global
+// variable, we can get a crash if no plugin libs were marked as always loaded.
+class PluginLibTest : public NPAPI::PluginLib {
+ public:
+  PluginLibTest() : NPAPI::PluginLib(WebPluginInfo(), NULL) {
+  }
+  using NPAPI::PluginLib::Unload;
+};
+
+TEST(PluginLibLoading, UnloadAllPlugins) {
+  // For the creation of the g_loaded_libs global variable.
+  ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
+      PluginLibTest::CreatePluginLib(FilePath()));
+
+  // Try with a single plugin lib.
+  scoped_refptr<PluginLibTest> plugin_lib1 = new PluginLibTest();
+  NPAPI::PluginLib::UnloadAllPlugins();
+
+  // Need to create it again, it should have been destroyed above.
+  ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
+      PluginLibTest::CreatePluginLib(FilePath()));
+
+  // Try with two plugin libs.
+  plugin_lib1 = new PluginLibTest();
+  scoped_refptr<PluginLibTest> plugin_lib2 = new PluginLibTest();
+  NPAPI::PluginLib::UnloadAllPlugins();
+
+  // Need to create it again, it should have been destroyed above.
+  ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
+      PluginLibTest::CreatePluginLib(FilePath()));
+
+  // Now try to manually Unload one and then UnloadAll.
+  plugin_lib1 = new PluginLibTest();
+  plugin_lib2 = new PluginLibTest();
+  plugin_lib1->Unload();
+  NPAPI::PluginLib::UnloadAllPlugins();
+
+  // Need to create it again, it should have been destroyed above.
+  ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
+      PluginLibTest::CreatePluginLib(FilePath()));
+
+  // Now try to manually Unload the only one and then UnloadAll.
+  plugin_lib1 = new PluginLibTest();
+  plugin_lib1->Unload();
+  NPAPI::PluginLib::UnloadAllPlugins();
+}
+
 #if defined(OS_LINUX)
 
 // Test parsing a simple description: Real Audio.
@@ -100,5 +148,3 @@ TEST(MIMEDescriptionParse, ComplicatedJava) {
 }
 
 #endif  // defined(OS_LINUX)
-
-

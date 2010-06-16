@@ -43,11 +43,17 @@ PluginLib* PluginLib::CreatePluginLib(const FilePath& filename) {
 
 void PluginLib::UnloadAllPlugins() {
   if (g_loaded_libs) {
-    for (size_t i = 0; i < g_loaded_libs->size(); ++i)
-      (*g_loaded_libs)[i]->Unload();
+    // PluginLib::Unload() can remove items from the list and even delete
+    // the list when it removes the last item, so we must work with a copy
+    // of the list so that we don't get the carpet removed under our feet.
+    std::vector<scoped_refptr<PluginLib> > loaded_libs(*g_loaded_libs);
+    for (size_t i = 0; i < loaded_libs.size(); ++i)
+      loaded_libs[i]->Unload();
 
-    delete g_loaded_libs;
-    g_loaded_libs = NULL;
+    if (g_loaded_libs && g_loaded_libs->empty()) {
+      delete g_loaded_libs;
+      g_loaded_libs = NULL;
+    }
   }
 }
 
@@ -68,7 +74,7 @@ PluginLib::PluginLib(const WebPluginInfo& info,
       skip_unload_(false),
       always_loaded_(false) {
   StatsCounter(kPluginLibrariesLoadedCounter).Increment();
-  memset((void*)&plugin_funcs_, 0, sizeof(plugin_funcs_));
+  memset(static_cast<void*>(&plugin_funcs_), 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(this);
 
   if (entry_points) {
@@ -142,7 +148,7 @@ PluginInstance* PluginLib::CreateInstance(const std::string& mime_type) {
   PluginInstance* new_instance = new PluginInstance(this, mime_type);
   instance_count_++;
   StatsCounter(kPluginInstancesActiveCounter).Increment();
-  DCHECK(new_instance != 0);
+  DCHECK_NE(static_cast<PluginInstance*>(NULL), new_instance);
   return new_instance;
 }
 
@@ -277,7 +283,7 @@ void PluginLib::Unload() {
         base::UnloadNativeLibrary(library_);
     }
 
-    library_ = 0;
+    library_ = NULL;
   }
 
   for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
