@@ -166,7 +166,6 @@ class UnloadTest : public UITest {
   }
 
   void ClickModalDialogButton(MessageBoxFlags::DialogButton button) {
-#if defined(OS_WIN) || defined(OS_LINUX)
     bool modal_dialog_showing = false;
     MessageBoxFlags::DialogButton available_buttons;
     EXPECT_TRUE(automation()->WaitForAppModalDialog());
@@ -175,10 +174,6 @@ class UnloadTest : public UITest {
     ASSERT_TRUE(modal_dialog_showing);
     EXPECT_TRUE((button & available_buttons) != 0);
     EXPECT_TRUE(automation()->ClickAppModalDialogButton(button));
-#else
-    // TODO(port): port this function to Mac.
-    NOTIMPLEMENTED();
-#endif
   }
 };
 
@@ -285,29 +280,9 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
   LoadUrlAndQuitBrowser(UNLOAD_HTML, L"unload");
 }
 
-#if defined(OS_MACOSX)
-// ClickModalDialogButton doesn't work on Mac: http://crbug.com/45031
-#define MAYBE_BrowserCloseBeforeUnloadOK DISABLED_BrowserCloseBeforeUnloadOK
-#define MAYBE_BrowserCloseBeforeUnloadCancel \
-    DISABLED_BrowserCloseBeforeUnloadCancel
-#define MAYBE_BrowserCloseWithInnerFocusedFrame \
-    DISABLED_BrowserCloseWithInnerFocusedFrame
-#elif defined(OS_LINUX)
-#define MAYBE_BrowserCloseBeforeUnloadOK BrowserCloseBeforeUnloadOK
-#define MAYBE_BrowserCloseBeforeUnloadCancel BrowserCloseBeforeUnloadCancel
-// Fails sometimes on Linux valgrind.
-#define MAYBE_BrowserCloseWithInnerFocusedFrame \
-    FLAKY_BrowserCloseWithInnerFocusedFrame
-#else
-#define MAYBE_BrowserCloseWithInnerFocusedFrame \
-    BrowserCloseWithInnerFocusedFrame
-#define MAYBE_BrowserCloseBeforeUnloadOK BrowserCloseBeforeUnloadOK
-#define MAYBE_BrowserCloseBeforeUnloadCancel BrowserCloseBeforeUnloadCancel
-#endif
-
 // Tests closing the browser with a beforeunload handler and clicking
 // OK in the beforeunload confirm dialog.
-TEST_F(UnloadTest, MAYBE_BrowserCloseBeforeUnloadOK) {
+TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
@@ -319,7 +294,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseBeforeUnloadOK) {
 
 // Tests closing the browser with a beforeunload handler and clicking
 // CANCEL in the beforeunload confirm dialog.
-TEST_F(UnloadTest, MAYBE_BrowserCloseBeforeUnloadCancel) {
+TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
@@ -335,6 +310,15 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseBeforeUnloadCancel) {
   ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
   WaitForBrowserClosed();
 }
+
+#if defined(OS_LINUX)
+// Fails sometimes on Linux valgrind. http://crbug.com/32615
+#define MAYBE_BrowserCloseWithInnerFocusedFrame \
+    FLAKY_BrowserCloseWithInnerFocusedFrame
+#else
+#define MAYBE_BrowserCloseWithInnerFocusedFrame \
+    BrowserCloseWithInnerFocusedFrame
+#endif
 
 // Tests closing the browser and clicking OK in the beforeunload confirm dialog
 // if an inner frame has the focus.  See crbug.com/32615.
