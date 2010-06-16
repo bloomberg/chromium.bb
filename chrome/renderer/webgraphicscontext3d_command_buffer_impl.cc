@@ -392,6 +392,7 @@ DELEGATE_TO_GL_1(generateMipmap, GenerateMipmap, unsigned long)
 
 bool WebGraphicsContext3DCommandBufferImpl::getActiveAttrib(
     WebGLId program, unsigned long index, ActiveInfo& info) {
+  makeContextCurrent();
   if (!program) {
     synthesizeGLError(GL_INVALID_VALUE);
     return false;
@@ -421,6 +422,7 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveAttrib(
 
 bool WebGraphicsContext3DCommandBufferImpl::getActiveUniform(
     WebGLId program, unsigned long index, ActiveInfo& info) {
+  makeContextCurrent();
   GLint max_name_length = -1;
   glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length);
   if (max_name_length < 0)
