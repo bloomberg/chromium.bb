@@ -8,7 +8,6 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
-#include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -40,9 +39,6 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
       break;
     case EXTENSIONS:
       specifics->MutableExtension(sync_pb::extension);
-      break;
-    case NIGORI:
-      specifics->MutableExtension(sync_pb::nigori);
       break;
     default:
       NOTREACHED() << "No known extension for model type.";

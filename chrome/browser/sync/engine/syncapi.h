@@ -80,7 +80,6 @@ class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
 class ExtensionSpecifics;
-class NigoriSpecifics;
 class PasswordSpecifics;
 class PreferenceSpecifics;
 class PasswordSpecifics;
@@ -180,10 +179,6 @@ class BaseNode {
   // Getter specific to the AUTOFILL datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == AUTOFILL.
   const sync_pb::AutofillSpecifics& GetAutofillSpecifics() const;
-
-  // Getter specific to the NIGORI datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == NIGORI.
-  const sync_pb::NigoriSpecifics& GetNigoriSpecifics() const;
 
   // Getter specific to the PASSWORD datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == PASSWORD.
@@ -308,10 +303,6 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == AUTOFILL.
   void SetAutofillSpecifics(const sync_pb::AutofillSpecifics& specifics);
 
-  // Set the nigori specifics.
-  // Should only be called if GetModelType() == NIGORI.
-  void SetNigoriSpecifics(const sync_pb::NigoriSpecifics& specifics);
-
   // Set the password specifics.
   // Should only be called if GetModelType() == PASSWORD.
   void SetPasswordSpecifics(const sync_pb::PasswordSpecificsData& specifics);
@@ -355,8 +346,6 @@ class WriteNode : public BaseNode {
       const sync_pb::AutofillSpecifics& new_value);
   void PutBookmarkSpecificsAndMarkForSyncing(
       const sync_pb::BookmarkSpecifics& new_value);
-  void PutNigoriSpecificsAndMarkForSyncing(
-      const sync_pb::NigoriSpecifics& new_value);
   void PutPasswordSpecificsAndMarkForSyncing(
       const sync_pb::PasswordSpecifics& new_value);
   void PutPreferenceSpecificsAndMarkForSyncing(
