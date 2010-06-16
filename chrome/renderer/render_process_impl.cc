@@ -184,7 +184,8 @@ RenderProcessImpl::RenderProcessImpl()
 
   // Load the pdf plugin before the sandbox is turned on.
   FilePath pdf;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf)) {
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
+      file_util::PathExists(pdf)) {
     static scoped_refptr<NPAPI::PluginLib> pdf_lib =
         NPAPI::PluginLib::CreatePluginLib(pdf);
     // Load the plugin now before the sandbox engages and keep it always loaded.

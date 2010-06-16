@@ -248,8 +248,6 @@ bool PathProvider(int key, FilePath* result) {
 #else  // Linux and Chrome OS
       cur = cur.Append(FILE_PATH_LITERAL("libpdf.so"));
 #endif
-      if (!file_util::PathExists(cur))
-        return false;
       break;
     case chrome::FILE_RESOURCES_PACK:
       if (!PathService::Get(base::DIR_EXE, &cur))
