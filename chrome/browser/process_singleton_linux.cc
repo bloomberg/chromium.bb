@@ -325,7 +325,8 @@ bool KillProcessByLockPath(const std::string& path) {
     int rv = kill(static_cast<base::ProcessHandle>(pid), SIGKILL);
     // ESRCH = No Such Process (can happen if the other process is already in
     // progress of shutting down and finishes before we try to kill it).
-    DCHECK(rv == 0 || errno == ESRCH) << "Error killing process: " << safe_strerror(errno);
+    DCHECK(rv == 0 || errno == ESRCH) << "Error killing process: "
+                                      << safe_strerror(errno);
     return true;
   }
 
@@ -533,12 +534,22 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     return;
   }
 
-  // Run the browser startup sequence again, with the command line of the
-  // signalling process.
-  FilePath current_dir_file_path(current_dir);
-  BrowserInit::ProcessCommandLine(parsed_command_line,
-                                  current_dir_file_path.ToWStringHack(),
-                                  false, profile, NULL);
+  // Ignore the request if the process was passed the --product-version flag.
+  // Normally we wouldn't get here if that flag had been passed, but it can
+  // happen if it is passed to an older version of chrome. Since newer versions
+  // of chrome do this in the background, we want to avoid spawning extra
+  // windows.
+  if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
+    DLOG(WARNING) << "Remote process was passed product version flag, "
+                  << "but ignored it. Doing nothing.";
+  } else {
+    // Run the browser startup sequence again, with the command line of the
+    // signalling process.
+    FilePath current_dir_file_path(current_dir);
+    BrowserInit::ProcessCommandLine(parsed_command_line,
+                                    current_dir_file_path.ToWStringHack(),
+                                    false, profile, NULL);
+  }
 
   // Send back "ACK" message to prevent the client process from starting up.
   reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
