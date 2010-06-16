@@ -38,6 +38,15 @@
   fun:*media*PipelineImpl*GetCurrentTime*
 }
 
+{
+  bug_46672
+  ThreadSanitizer:Race
+  fun:*std*set_new_handler*
+  fun:*sk_malloc_flags*
+  fun:*SkBitmap*HeapAllocator*allocPixelRef*
+  fun:*SkBitmap**allocPixels*
+}
+
 ############################
 # Real races in third_party
 {
