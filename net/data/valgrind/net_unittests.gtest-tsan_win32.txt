@@ -8,6 +8,10 @@ X509CertificateTest.UnoSoftCertParsing
 URLRequestTest.DoNotSaveCookies
 URLRequestTest.QuitTest
 
+# See http://crbug.com/46647
+DiskCacheBackendTest.NewEvictionDisableSuccess4
+DiskCacheBackendTest.NewEvictionInvalidRankingsSuccess
+
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
 # Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
