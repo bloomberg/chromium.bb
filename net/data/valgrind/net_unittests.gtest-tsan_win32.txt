@@ -9,8 +9,7 @@ URLRequestTest.DoNotSaveCookies
 URLRequestTest.QuitTest
 
 # See http://crbug.com/46647
-DiskCacheBackendTest.NewEvictionDisableSuccess4
-DiskCacheBackendTest.NewEvictionInvalidRankingsSuccess
+DiskCacheBackendTest.*
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
