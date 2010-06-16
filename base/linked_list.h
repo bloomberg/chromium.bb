@@ -125,6 +125,10 @@ class LinkNode {
     return static_cast<T*>(this);
   }
 
+  void set(LinkNode<T>* prev, LinkNode<T>* next) {
+    previous_ = prev; next_ = next;
+  }
+
  private:
   LinkNode<T>* previous_;
   LinkNode<T>* next_;
@@ -136,7 +140,7 @@ class LinkedList {
   // The "root" node is self-referential, and forms the basis of a circular
   // list (root_.next() will point back to the start of the list,
   // and root_->previous() wraps around to the end of the list).
-  LinkedList() : root_(&root_, &root_) {}
+  LinkedList() { root_.set(&root_, &root_); }
 
   // Appends |e| to the end of the linked list.
   void Append(LinkNode<T>* e) {
