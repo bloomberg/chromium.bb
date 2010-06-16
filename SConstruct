@@ -1329,19 +1329,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
 
   # NOTE: we change the linker command line to make it possible to
   #       sneak in startup and cleanup code
-  linkcom = (nacl_env['LINKCOM'].replace('$LINK ', '$LINK $LINKFLAGS_FIRST ') +
-              ' $LINKFLAGS_LAST')
-  nacl_env['LINKCOM'] = linkcom
-
-  nacl_env.Prepend(
-      LINKFLAGS_LAST = ['-lsrpc',
-                        '-lc',
-                        '-lnacl',
-                        '-lc',
-                        '-lnosys',
-                        ],
-      EMULATOR  = EMULATOR,
-      )
+  nacl_env.Prepend(EMULATOR=EMULATOR)
 
 if not GetOption('brief_comstr'):
   nacl_env['LINKCOM'] += '&& $PYTHON -c "import os; import sys;\
