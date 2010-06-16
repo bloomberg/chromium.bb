@@ -35,6 +35,7 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
@@ -242,6 +243,11 @@ const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::bookmark);
 }
 
+const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
+  DCHECK(GetModelType() == syncable::NIGORI);
+  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::nigori);
+}
+
 bool BaseNode::GetPasswordSpecifics(sync_pb::PasswordSpecificsData* data)
     const {
   DCHECK(GetModelType() == syncable::PASSWORDS);
@@ -327,6 +333,19 @@ void WriteNode::PutBookmarkSpecificsAndMarkForSyncing(
     const sync_pb::BookmarkSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::bookmark)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
+}
+
+void WriteNode::SetNigoriSpecifics(
+    const sync_pb::NigoriSpecifics& new_value) {
+  DCHECK(GetModelType() == syncable::NIGORI);
+  PutNigoriSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutNigoriSpecificsAndMarkForSyncing(
+    const sync_pb::NigoriSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::nigori)->CopyFrom(new_value);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 

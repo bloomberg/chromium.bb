@@ -55,6 +55,8 @@ enum ModelType {
   TYPED_URLS,
   // A extension folder or a extension object.
   EXTENSIONS,
+  // An object represeting a set of Nigori keys.
+  NIGORI,
 
   MODEL_TYPE_COUNT,
 };
