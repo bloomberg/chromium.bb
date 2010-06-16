@@ -41,11 +41,9 @@ const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xe6, 0xed, 0xf4);
 
 // Padding between the chrome button highlight border and the contents (favicon,
 // text).
-// TODO(estade): we need to adjust the top and bottom padding, but first we need
-// to give the bookmark bar more space (at the expense of the toolbar).
 const int kButtonPaddingTop = 0;
 const int kButtonPaddingBottom = 0;
-const int kButtonPaddingLeft = 2;
+const int kButtonPaddingLeft = 5;
 const int kButtonPaddingRight = 0;
 
 void* AsVoid(const BookmarkNode* node) {

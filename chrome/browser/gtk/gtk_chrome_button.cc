@@ -42,8 +42,10 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
 static void gtk_chrome_button_class_init(GtkChromeButtonClass* button_class) {
   gtk_rc_parse_string(
       "style \"chrome-button\" {"
+      "  xthickness = 2 "
       "  GtkButton::child-displacement-x = 0"
       "  GtkButton::child-displacement-y = 0"
+      "  GtkButton::inner-border = { 0, 0, 0, 0 }"
       "}"
       "widget_class \"*.<GtkChromeButton>\" style \"chrome-button\"");
 
