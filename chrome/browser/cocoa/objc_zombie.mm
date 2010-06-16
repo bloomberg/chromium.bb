@@ -100,7 +100,7 @@ DestructFn* LookupObjectCxxDestruct() {
 // them into |g_zombies| to be freed later.
 void ZombieDealloc(id self, SEL _cmd) {
   // This code should only be called when it is implementing |-dealloc|.
-  DCHECK_EQ(_cmd, @selector(dealloc));
+  //DCHECK_EQ(_cmd, @selector(dealloc));  // clang
 
   // Use the original |-dealloc| if the object doesn't wish to be
   // zombied.

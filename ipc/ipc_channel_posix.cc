@@ -200,7 +200,8 @@ bool ServerAcceptFifoConnection(int server_listen_fd, int* server_socket) {
   if (accept_fd < 0)
     return false;
   if (fcntl(accept_fd, F_SETFL, O_NONBLOCK) == -1) {
-    HANDLE_EINTR(close(accept_fd));
+    if (HANDLE_EINTR(close(accept_fd)) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
