@@ -36,18 +36,7 @@ class InitialLoadObserver : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Caller owns the return value and is responsible for deleting it.
-  // Example return value:
-  // {'tabs': [{'start_time_ms': 1, 'stop_time_ms': 2.5},
-  //           {'start_time_ms': 0.5, 'stop_time_ms': 3}]}
-  // stop_time_ms values may be null if WaitForInitialLoads has not finished.
-  // Only includes entries for the |tab_count| tabs we are monitoring.
-  // There is no defined ordering of the return value.
-  DictionaryValue* GetTimingInformation() const;
-
  private:
-  class TabTime;
-  typedef std::map<uintptr_t, TabTime> TabTimeMap;
   typedef std::set<uintptr_t> TabSet;
 
   void ConditionMet();
@@ -56,8 +45,7 @@ class InitialLoadObserver : public NotificationObserver {
 
   AutomationProvider* automation_;
   size_t outstanding_tab_count_;
-  base::TimeTicks init_time_;
-  TabTimeMap loading_tabs_;
+  TabSet loading_tabs_;
   TabSet finished_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(InitialLoadObserver);

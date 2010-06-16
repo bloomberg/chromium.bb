@@ -28,31 +28,10 @@
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #endif
 
-// Holds onto start and stop timestamps for a particular tab
-class InitialLoadObserver::TabTime {
- public:
-  explicit TabTime(base::TimeTicks started)
-      : load_start_time_(started) {
-  }
-  void set_stop_time(base::TimeTicks stopped) {
-    load_stop_time_ = stopped;
-  }
-  base::TimeTicks stop_time() const {
-    return load_stop_time_;
-  }
-  base::TimeTicks start_time() const {
-    return load_start_time_;
-  }
- private:
-  base::TimeTicks load_start_time_;
-  base::TimeTicks load_stop_time_;
-};
-
 InitialLoadObserver::InitialLoadObserver(size_t tab_count,
                                          AutomationProvider* automation)
     : automation_(automation),
-      outstanding_tab_count_(tab_count),
-      init_time_(base::TimeTicks::Now()) {
+      outstanding_tab_count_(tab_count) {
   if (outstanding_tab_count_ > 0) {
     registrar_.Add(this, NotificationType::LOAD_START,
                    NotificationService::AllSources());
@@ -69,44 +48,17 @@ void InitialLoadObserver::Observe(NotificationType type,
                                   const NotificationDetails& details) {
   if (type == NotificationType::LOAD_START) {
     if (outstanding_tab_count_ > loading_tabs_.size())
-      loading_tabs_.insert(TabTimeMap::value_type(
-          source.map_key(),
-          TabTime(base::TimeTicks::Now())));
+      loading_tabs_.insert(source.map_key());
   } else if (type == NotificationType::LOAD_STOP) {
     if (outstanding_tab_count_ > finished_tabs_.size()) {
-      TabTimeMap::iterator iter = loading_tabs_.find(source.map_key());
-      if (iter != loading_tabs_.end()) {
+      if (loading_tabs_.find(source.map_key()) != loading_tabs_.end())
         finished_tabs_.insert(source.map_key());
-        iter->second.set_stop_time(base::TimeTicks::Now());
-      }
       if (outstanding_tab_count_ == finished_tabs_.size())
         ConditionMet();
     }
   } else {
     NOTREACHED();
   }
-}
-
-DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
-  ListValue* items = new ListValue;
-  for (TabTimeMap::const_iterator it = loading_tabs_.begin();
-       it != loading_tabs_.end();
-       ++it) {
-    DictionaryValue* item = new DictionaryValue;
-    base::TimeDelta delta_start = it->second.start_time() - init_time_;
-
-    item->SetReal(L"load_start_ms", delta_start.InMillisecondsF());
-    if (it->second.stop_time().is_null()) {
-      item->Set(L"load_stop_ms", Value::CreateNullValue());
-    } else {
-      base::TimeDelta delta_stop = it->second.stop_time() - init_time_;
-      item->SetReal(L"load_stop_ms", delta_stop.InMillisecondsF());
-    }
-    items->Append(item);
-  }
-  DictionaryValue* return_value = new DictionaryValue;
-  return_value->Set(L"tabs", items);
-  return return_value;
 }
 
 void InitialLoadObserver::ConditionMet() {

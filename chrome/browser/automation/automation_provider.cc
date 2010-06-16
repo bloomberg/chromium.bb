@@ -2077,22 +2077,6 @@ void AutomationProvider::OmniboxAcceptInput(Browser* browser,
   browser->window()->GetLocationBar()->AcceptInput();
 }
 
-// Sample json input: { "command": "GetInitialLoadTimes" }
-// Refer to InitialLoadObserver::GetTimingInformation() for sample output.
-void AutomationProvider::GetInitialLoadTimes(
-    Browser*,
-    DictionaryValue*,
-    IPC::Message* reply_message) {
-  scoped_ptr<DictionaryValue> return_value(
-      initial_load_observer_->GetTimingInformation());
-
-  std::string json_return;
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, true);
-  Send(reply_message);
-}
-
 // Sample json input: { "command": "GetPluginsInfo" }
 // Refer chrome/test/pyautolib/plugins_info.py for sample json output.
 void AutomationProvider::GetPluginsInfo(Browser* browser,
@@ -2254,8 +2238,6 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetDownloadsInfo"] = &AutomationProvider::GetDownloadsInfo;
   handler_map["WaitForAllDownloadsToComplete"] =
       &AutomationProvider::WaitForDownloadsToComplete;
-
-  handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
 
   if (error_string.empty()) {
     if (handler_map.find(std::string(command)) != handler_map.end()) {

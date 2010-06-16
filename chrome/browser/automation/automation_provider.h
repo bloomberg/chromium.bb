@@ -50,7 +50,6 @@ class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
 class LoginHandler;
 class MetricEventDurationObserver;
-class InitialLoadObserver;
 class NavigationControllerRestoredObserver;
 struct AutocompleteMatchData;
 
@@ -376,15 +375,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SetPrefs(Browser* browser,
                 DictionaryValue* args,
                 IPC::Message* reply_message);
-
-  // Return load times of initial tabs.
-  // Uses the JSON interface for input/output.
-  // Only includes tabs from command line arguments or session restore.
-  // See declaration of InitialLoadObserver in automation_provider_observers.h
-  // for example response.
-  void GetInitialLoadTimes(Browser* browser,
-                           DictionaryValue* args,
-                           IPC::Message* reply_message);
 
   // Get info about plugins.
   // Uses the JSON interface for input/output.
@@ -780,7 +770,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   typedef std::map<int, ExtensionPortContainer*> PortContainerMap;
 
   scoped_ptr<IPC::ChannelProxy> channel_;
-  scoped_ptr<InitialLoadObserver> initial_load_observer_;
+  scoped_ptr<NotificationObserver> initial_load_observer_;
   scoped_ptr<NotificationObserver> new_tab_ui_load_observer_;
   scoped_ptr<NotificationObserver> find_in_page_observer_;
   scoped_ptr<NotificationObserver> dom_operation_observer_;
