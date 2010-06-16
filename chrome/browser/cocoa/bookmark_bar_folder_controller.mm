@@ -1025,21 +1025,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return [self dragBookmark:sourceNode to:point copy:copy];
 }
 
-// clang hack to work around http://llvm.org/bugs/show_bug.cgi?id=7386
-// TODO(mrossetti,jrg): Identical to the same function in BookmarkBarController.
-// http://crbug.com/35966
-- (std::vector<const BookmarkNode*>)retrieveBookmarkDragDataNodes {
-  std::vector<const BookmarkNode*> dragDataNodes;
-  BookmarkDragData dragData;
-  if(dragData.ReadFromDragClipboard()) {
-    BookmarkModel* bookmarkModel = [self bookmarkModel];
-    Profile* profile = bookmarkModel->profile();
-    std::vector<const BookmarkNode*> nodes(dragData.GetNodes(profile));
-    dragDataNodes.assign(nodes.begin(), nodes.end());
-  }
-  return dragDataNodes;
-}
-
 // TODO(mrossetti,jrg): Identical to the same function in BookmarkBarController.
 // http://crbug.com/35966
 - (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info {
@@ -1055,6 +1040,20 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     }
   }
   return dragged;
+}
+
+// TODO(mrossetti,jrg): Identical to the same function in BookmarkBarController.
+// http://crbug.com/35966
+- (std::vector<const BookmarkNode*>)retrieveBookmarkDragDataNodes {
+  std::vector<const BookmarkNode*> dragDataNodes;
+  BookmarkDragData dragData;
+  if(dragData.ReadFromDragClipboard()) {
+    BookmarkModel* bookmarkModel = [self bookmarkModel];
+    Profile* profile = bookmarkModel->profile();
+    std::vector<const BookmarkNode*> nodes(dragData.GetNodes(profile));
+    dragDataNodes.assign(nodes.begin(), nodes.end());
+  }
+  return dragDataNodes;
 }
 
 // Return YES if we should show the drop indicator, else NO.
