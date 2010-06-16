@@ -80,7 +80,7 @@ class UTObserver: public DiagnosticsModel::Observer {
 #if defined(OS_WIN)
 const int kDiagnosticsTestCount = 18;
 #else
-const int kDiagnosticsTestCount = 17;
+const int kDiagnosticsTestCount = 16;
 #endif
 
 // Test that the initial state is correct.

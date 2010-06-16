@@ -137,7 +137,6 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
  public:
   DiagnosticsModelPosix() {
     tests_.push_back(MakeInstallTypeTest());
-    tests_.push_back(MakeVersionTest());
     tests_.push_back(MakeUserDirTest());
     tests_.push_back(MakeLocalStateFileTest());
     tests_.push_back(MakeDictonaryDirTest());
