@@ -33,7 +33,8 @@ enum FontEquivClass
 {
     OTHER,
     SANS,
-    SERIF
+    SERIF,
+    MONO
 };
 
 // Match the font name against a whilelist of fonts, returning the equivalence
@@ -50,9 +51,12 @@ FontEquivClass GetFontEquivClass(const char* fontname)
     //   /etc/fonts/conf.d/30-metric-aliases.conf
     // from my Ubuntu system, but we're better off being very conservative.
 
-    // "Ascender Sans" and "Ascender Serif" are the tentative names of
-    // another set of fonts metric-compatible with Arial and Times New Roman
-    // with a character repertoire much larger than Liberation.
+    // "Ascender Sans", "Ascender Serif" and "Ascender Sans Mono" are the
+    // tentative names of another set of fonts metric-compatible with
+    // Arial, Times New Roman and Courier New  with a character repertoire
+    // much larger than Liberation. Note that Ascender Sans Mono
+    // is metrically compatible with Courier New, but the former
+    // is sans-serif while ther latter is serif.
     if (strcasecmp(fontname, "Arial") == 0 ||
         strcasecmp(fontname, "Liberation Sans") == 0 ||
         strcasecmp(fontname, "Ascender Sans") == 0) {
@@ -61,6 +65,9 @@ FontEquivClass GetFontEquivClass(const char* fontname)
                strcasecmp(fontname, "Liberation Serif") == 0 ||
                strcasecmp(fontname, "Ascender Serif") == 0) {
         return SERIF;
+    } else if (strcasecmp(fontname, "Courier New") == 0 ||
+               strcasecmp(fontname, "Ascender Sans Mono") == 0) {
+        return MONO;
     }
     return OTHER;
 }
