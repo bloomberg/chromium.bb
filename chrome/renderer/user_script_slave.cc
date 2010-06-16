@@ -18,8 +18,6 @@
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
 #include "grit/renderer_resources.h"
@@ -150,19 +148,6 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
   // Don't bother if this is not a URL we inject script into.
   if (!URLPattern::IsValidScheme(frame_url.scheme()))
     return true;
-
-  // Only inject user scripts into documents with an <html> tag as the root
-  // element. Note that WebCore fixes up html pages that lack a root HTML
-  // element so that they include one. Also, documents like text/plain and
-  // image/* are wrapped in a simple HTML document.
-  //
-  // Basically, this check filters out SVG documents and other types of XML
-  // documents.
-  if (frame->document().isNull() ||
-      frame->document().documentElement().isNull() ||
-      !frame->document().documentElement().hasTagName("html")) {
-      return true;
-  }
 
   // Don't inject user scripts into the gallery itself.  This prevents
   // a user script from removing the "report abuse" link, for example.

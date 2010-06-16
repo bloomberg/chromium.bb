@@ -962,6 +962,53 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   ValidatePrefKeyCount(pref_count);
 }
 
+TEST_F(ExtensionsServiceTest, LoadLocalizedTheme) {
+  // Load.
+  InitializeEmptyExtensionsService();
+  FilePath extension_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
+  extension_path = extension_path
+      .AppendASCII("extensions")
+      .AppendASCII("theme_i18n");
+
+  service_->LoadExtension(extension_path);
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, loaded_.size());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ("name", service_->extensions()->at(0)->name());
+  EXPECT_EQ("description", service_->extensions()->at(0)->description());
+}
+
+TEST_F(ExtensionsServiceTest, InstallLocalizedTheme) {
+  // Pack.
+  InitializeEmptyExtensionsService();
+  FilePath extension_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
+  extension_path = extension_path
+      .AppendASCII("extensions")
+      .AppendASCII("theme_i18n");
+
+  FilePath crx_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &crx_path));
+  crx_path = crx_path.AppendASCII("theme.crx");
+  FilePath pem_path = crx_path.DirName().AppendASCII("theme.pem");
+
+  ASSERT_TRUE(file_util::Delete(crx_path, false));
+  ASSERT_TRUE(file_util::Delete(pem_path, false));
+  scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
+  ASSERT_TRUE(creator->Run(extension_path, crx_path, FilePath(), pem_path));
+  ASSERT_TRUE(file_util::PathExists(crx_path));
+
+  // Install.
+  service_->UnloadAllExtensions();
+  InstallExtension(crx_path, true);
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ("name", service_->extensions()->at(0)->name());
+  EXPECT_EQ("description", service_->extensions()->at(0)->description());
+}
+
 TEST_F(ExtensionsServiceTest, InstallApps) {
   InitializeEmptyExtensionsService();
   FilePath extensions_path;
