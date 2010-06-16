@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/language_switch_model.h"
 #include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
@@ -245,6 +246,14 @@ void WizardController::Init(const std::string& first_screen_name,
   if (chromeos::UserManager::Get()->GetUsers().empty() ||
       first_screen_name == kOutOfBoxScreenName) {
     is_out_of_box_ = true;
+  }
+
+  // Switch to initial locale if specified by customization.
+  if (customization_ != NULL) {
+    const std::string locale = customization_->initial_locale();
+    if (!locale.empty()) {
+      chromeos::LanguageSwitchModel::SwitchLanguage(locale);
+    }
   }
 
   ShowFirstScreen(first_screen_name);

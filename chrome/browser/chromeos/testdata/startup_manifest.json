@@ -4,7 +4,7 @@
   "product_sku" : "SKU",
 
   // Optional.
-  "initial_locale" : "en_US",
+  "initial_locale" : "it",
   "background_color" : "#880088",
   "registration_url" : "http://www.google.com",
   "setup_content" : [

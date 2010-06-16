@@ -41,6 +41,9 @@ class LanguageSwitchModel : public views::ViewMenuDelegate,
     delta_y_ = delta_y;
   }
 
+  // Switches the current locale, saves the new locale in preferences.
+  static void SwitchLanguage(const std::string& locale);
+
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
@@ -51,9 +54,6 @@ class LanguageSwitchModel : public views::ViewMenuDelegate,
   virtual bool GetAcceleratorForCommandId(int command_id,
                                           menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
-
-  // Switches the current locale, saves the new locale in preferences.
-  static void SwitchLanguage(const std::string& locale);
 
   // Dialog controls that we own ourselves.
   menus::SimpleMenuModel menu_model_;

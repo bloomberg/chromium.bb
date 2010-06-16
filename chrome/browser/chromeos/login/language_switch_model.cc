@@ -81,6 +81,21 @@ void LanguageSwitchModel::SetFirstLevelMenuWidth(int width) {
   gtk_widget_set_size_request(menu_->GetNativeMenu(), width, -1);
 }
 
+// static
+void LanguageSwitchModel::SwitchLanguage(const std::string& locale) {
+  // Save new locale.
+  DCHECK(g_browser_process);
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
+  prefs->SavePersistentPrefs();
+
+  // Switch the locale.
+  ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
+
+  // The following line does not seem to affect locale anyhow. Maybe in future..
+  g_browser_process->SetApplicationLocale(locale);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation.
 
@@ -114,24 +129,6 @@ void LanguageSwitchModel::ExecuteCommand(int command_id) {
 
   // Update all view hierarchies that the locale has changed.
   views::Widget::NotifyLocaleChanged();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Private implementation.
-
-// static
-void LanguageSwitchModel::SwitchLanguage(const std::string& locale) {
-  // Save new locale.
-  DCHECK(g_browser_process);
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
-  prefs->SavePersistentPrefs();
-
-  // Switch the locale.
-  ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
-
-  // The following line does not seem to affect locale anyhow. Maybe in future..
-  g_browser_process->SetApplicationLocale(locale);
 }
 
 }  // namespace chromeos
