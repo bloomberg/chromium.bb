@@ -4,11 +4,13 @@
 
 #include "chrome/browser/views/first_run_search_engine_view.h"
 
+#include <algorithm>
 #include <map>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "base/time.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -29,6 +31,7 @@
 #include "views/view_text_utils.h"
 #include "views/window/window.h"
 
+using base::Time;
 using TemplateURLPrepopulateData::SearchEngineType;
 
 namespace {
@@ -156,10 +159,11 @@ void SearchEngineChoice::SetChoiceViewBounds(int x, int y, int width,
 }
 
 FirstRunSearchEngineView::FirstRunSearchEngineView(
-    SearchEngineSelectionObserver* observer, Profile* profile)
+    SearchEngineSelectionObserver* observer, Profile* profile, bool randomize)
     : profile_(profile),
       observer_(observer),
-      text_direction_is_rtl_(base::i18n::IsRTL()) {
+      text_direction_is_rtl_(base::i18n::IsRTL()),
+      randomize_(randomize) {
   DCHECK(observer);
   // Don't show ourselves until all the search engines have loaded from
   // the profile -- otherwise we have nothing to show.
@@ -248,6 +252,14 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
     search_engine_choices_.push_back(default_choice);
     AddChildView(default_choice->GetView());  // The logo or text view.
     AddChildView(default_choice);  // The button associated with the choice.
+  }
+
+  // Randomize order of logos if option has been set.
+  if (randomize_) {
+    int seed = static_cast<int>(Time::Now().ToInternalValue());
+    srand(seed);
+    std::random_shuffle(search_engine_choices_.begin(),
+                        search_engine_choices_.end());
   }
 
   // Now that we know how many logos to show, lay out and become visible.

@@ -30,7 +30,8 @@ class FirstRunViewBase : public views::View,
  public:
   explicit FirstRunViewBase(Profile* profile, bool homepage_defined,
                             int import_items, int dont_import_items,
-                            bool search_engine_experiment);
+                            bool search_engine_experiment,
+                            bool randomize_search_engine_experiment);
   virtual ~FirstRunViewBase();
 
   // Overridden from views::View.
@@ -94,6 +95,7 @@ class FirstRunViewBase : public views::View,
   int import_items_;
   int dont_import_items_;
   bool search_engine_experiment_;
+  bool randomize_search_engine_experiment_;
 
  private:
   // Initializes the controls on the dialog.

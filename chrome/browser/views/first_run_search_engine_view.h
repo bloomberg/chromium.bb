@@ -85,9 +85,10 @@ class FirstRunSearchEngineView
  public:
   // |observer| is the FirstRunView that waits for us to pass back a search
   // engine choice; |profile| allows us to get the set of imported search
-  // engines, and display the KeywordEditorView on demand.
+  // engines, and display the KeywordEditorView on demand; |randomize|
+  // is true if logos are to be displayed in random order.
   FirstRunSearchEngineView(SearchEngineSelectionObserver* observer,
-                           Profile* profile);
+                           Profile* profile, bool randomize);
 
   virtual ~FirstRunSearchEngineView();
 
@@ -132,6 +133,9 @@ class FirstRunSearchEngineView
   SearchEngineSelectionObserver* observer_;
 
   bool text_direction_is_rtl_;
+
+  // If logos are to be displayed in random order.  Used for UX testing.
+  bool randomize_;
 
   // UI elements:
   // Text above the first horizontal separator

@@ -43,6 +43,7 @@ class FirstRunCustomizeView : public FirstRunViewBase,
                         bool homepage_defined,
                         int import_items,
                         int dont_import_items,
+                        bool randomize_search_engine_experiment,
                         bool search_engine_experiment);
   virtual ~FirstRunCustomizeView();
 

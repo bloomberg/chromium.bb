@@ -44,6 +44,7 @@ class FirstRun {
     int do_import_items;
     int dont_import_items;
     bool run_search_engine_experiment;
+    bool randomize_search_engine_experiment;
     std::vector<GURL> new_tabs;
     std::vector<GURL> bookmarks;
   };
@@ -262,6 +263,8 @@ class FirstRunImportObserver : public ImportObserver {
 // preferences and will override default behavior of importer.
 // |search_engine_experiment| indicates whether the experimental search engine
 // window should be shown.
+// |randomize_search_engine_experiment| is true if the logos in the search
+// engine window should be shown in randomized order.
 // Returns true if the user clicked "Start", false if the user pressed "Cancel"
 // or closed the dialog.
 bool OpenFirstRunDialog(Profile* profile,
@@ -269,6 +272,7 @@ bool OpenFirstRunDialog(Profile* profile,
                         int import_items,
                         int dont_import_items,
                         bool search_engine_experiment,
+                        bool randomize_search_engine_experiment,
                         ProcessSingleton* process_singleton);
 
 #endif  // CHROME_BROWSER_FIRST_RUN_H_

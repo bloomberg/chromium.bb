@@ -34,7 +34,8 @@
 
 FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined,
                                    int import_items, int dont_import_items,
-                                   bool search_engine_experiment)
+                                   bool search_engine_experiment,
+                                   bool randomize_search_engine_experiment)
     : preferred_width_(0),
       background_image_(NULL),
       separator_1_(NULL),
@@ -46,7 +47,8 @@ FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined,
       homepage_defined_(homepage_defined),
       import_items_(import_items),
       dont_import_items_(dont_import_items),
-      search_engine_experiment_(search_engine_experiment) {
+      search_engine_experiment_(search_engine_experiment),
+      randomize_search_engine_experiment_(randomize_search_engine_experiment) {
   DCHECK(profile);
   SetupControls();
 }

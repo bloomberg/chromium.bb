@@ -30,7 +30,8 @@ class FirstRunView : public FirstRunViewBase,
  public:
   explicit FirstRunView(Profile* profile, bool homepage_defined,
                         int import_items, int dont_import_items,
-                        bool search_engine_experiment);
+                        bool search_engine_experiment,
+                        bool randomize_search_engine_experiment);
   virtual ~FirstRunView();
 
   bool accepted() const { return accepted_;}
@@ -64,8 +65,9 @@ class FirstRunView : public FirstRunViewBase,
   // Creates the dialog that allows the user to customize work items.
   void OpenCustomizeDialog();
 
-  // Creates the search engine selection dialog.
-  void OpenSearchEngineDialog();
+  // Creates the search engine selection dialog.  If |randomize|, the display
+  // of search engine logos should be randomized.
+  void OpenSearchEngineDialog(bool randomize);
 
   views::Label* welcome_label_;
   views::Label* actions_label_;

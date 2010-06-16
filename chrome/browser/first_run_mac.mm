@@ -51,6 +51,7 @@ bool OpenFirstRunDialog(Profile* profile,
                         int import_items,
                         int dont_import_items,
                         bool search_engine_experiment,
+                        bool randomize_search_engine_experiment,
                         ProcessSingleton* process_singleton) {
   FirstRunController* controller = new FirstRunController;
   return controller->DoFirstRun(profile, process_singleton);

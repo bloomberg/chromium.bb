@@ -40,9 +40,11 @@ std::wstring AddBullet(const std::wstring& text) {
 
 FirstRunView::FirstRunView(Profile* profile, bool homepage_defined,
                            int import_items, int dont_import_items,
-                           bool search_engine_experiment)
+                           bool search_engine_experiment,
+                           bool randomize_search_engine_experiment)
     : FirstRunViewBase(profile, homepage_defined, import_items,
-                       dont_import_items, search_engine_experiment),
+                       dont_import_items, search_engine_experiment,
+                       randomize_search_engine_experiment),
       welcome_label_(NULL),
       actions_label_(NULL),
       actions_import_(NULL),
@@ -186,15 +188,17 @@ void FirstRunView::OpenCustomizeDialog() {
                                 homepage_defined_,
                                 import_items_,
                                 dont_import_items_,
-                                search_engine_experiment_))->Show();
+                                search_engine_experiment_,
+                                randomize_search_engine_experiment_))->Show();
 }
 
-void FirstRunView::OpenSearchEngineDialog() {
+void FirstRunView::OpenSearchEngineDialog(bool randomize) {
   views::Window::CreateChromeWindow(
       window()->GetNativeWindow(),
       gfx::Rect(),
       new FirstRunSearchEngineView(this,
-                                   profile_))->Show();
+                                   profile_,
+                                   randomize))->Show();
 }
 
 void FirstRunView::LinkActivated(views::Link* source, int event_flags) {
@@ -229,7 +233,7 @@ bool FirstRunView::Accept() {
 
   // Launch the search engine dialog.
   if (search_engine_experiment_) {
-    OpenSearchEngineDialog();
+    OpenSearchEngineDialog(randomize_search_engine_experiment_);
     // Leave without shutting down; we'll observe the search engine dialog and
     // shut down after it closes.
     return false;
@@ -251,7 +255,7 @@ bool FirstRunView::Cancel() {
 // the work is done there we have nothing else to do.
 void FirstRunView::CustomizeAccepted() {
   if (search_engine_experiment_) {
-    OpenSearchEngineDialog();
+    OpenSearchEngineDialog(randomize_search_engine_experiment_);
     // We'll shut down after search engine has been chosen.
     return;
   }

@@ -13,7 +13,7 @@ namespace master_preferences {
   const wchar_t kCreateAllShortcuts[] = L"create_all_shortcuts";
   const wchar_t kDistroImportBookmarksPref[] = L"import_bookmarks";
   const wchar_t kDistroImportBookmarksFromFilePref[] =
-    L"import_bookmarks_from_file";
+      L"import_bookmarks_from_file";
   const wchar_t kDistroImportHistoryPref[] = L"import_history";
   const wchar_t kDistroImportHomePagePref[] = L"import_home_page";
   const wchar_t kDistroImportSearchPref[] = L"import_search_engine";
@@ -23,12 +23,14 @@ namespace master_preferences {
   const wchar_t kDoNotCreateShortcuts[] = L"do_not_create_shortcuts";
   const wchar_t kDoNotLaunchChrome[] = L"do_not_launch_chrome";
   const wchar_t kDoNotRegisterForUpdateLaunch[] =
-    L"do_not_register_for_update_launch";
+      L"do_not_register_for_update_launch";
   const wchar_t kMakeChromeDefault[] = L"make_chrome_default";
   const wchar_t kMakeChromeDefaultForUser[] = L"make_chrome_default_for_user";
   const wchar_t kMsi[] = L"msi";
   const wchar_t kRequireEula[] = L"require_eula";
   const wchar_t kSearchEngineExperimentPref[] = L"search_engine_experiment";
+  const wchar_t kSearchEngineExperimentRandomizePref[] =
+      L"search_engine_experiment_randomize";
   const wchar_t kSystemLevel[] = L"system_level";
   const wchar_t kVerboseLogging[] = L"verbose_logging";
   const wchar_t kExtensionsBlock[] = L"extensions.settings";

@@ -324,6 +324,13 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       &value) && value) {
     // Set the first run dialog to include the search choice window.
     out_prefs->run_search_engine_experiment = true;
+    // Check to see if search engine logos should be randomized.
+    if (installer_util::GetDistroBooleanPreference(prefs.get(),
+        installer_util::master_preferences::
+            kSearchEngineExperimentRandomizePref,
+        &value) && value) {
+      out_prefs->randomize_search_engine_experiment = true;
+    }
     // Set the first run bubble to minimal.
     FirstRun::SetMinimalFirstRunBubblePref();
   }
@@ -491,6 +498,7 @@ bool OpenFirstRunDialog(Profile* profile,
                         int import_items,
                         int dont_import_items,
                         bool search_engine_experiment,
+                        bool randomize_search_engine_experiment,
                         ProcessSingleton* process_singleton) {
   DCHECK(profile);
   DCHECK(process_singleton);
@@ -502,7 +510,8 @@ bool OpenFirstRunDialog(Profile* profile,
                        homepage_defined,
                        import_items,
                        dont_import_items,
-                       search_engine_experiment));
+                       search_engine_experiment,
+                       randomize_search_engine_experiment));
   first_run_view->set_parent_owned(false);
   views::Window* first_run_ui = views::Window::CreateChromeWindow(
       NULL, gfx::Rect(), first_run_view.get());

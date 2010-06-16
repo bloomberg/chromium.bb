@@ -22,16 +22,19 @@
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
-FirstRunCustomizeView::FirstRunCustomizeView(Profile* profile,
-                                             ImporterHost* importer_host,
-                                             CustomizeViewObserver* observer,
-                                             bool default_browser_checked,
-                                             bool homepage_defined,
-                                             int import_items,
-                                             int dont_import_items,
-                                             bool search_engine_experiment)
+FirstRunCustomizeView::FirstRunCustomizeView(
+    Profile* profile,
+    ImporterHost* importer_host,
+    CustomizeViewObserver* observer,
+    bool default_browser_checked,
+    bool homepage_defined,
+    int import_items,
+    int dont_import_items,
+    bool search_engine_experiment,
+    bool randomize_search_engine_experiment)
     : FirstRunViewBase(profile, homepage_defined, import_items,
-                       dont_import_items, search_engine_experiment),
+                       dont_import_items, search_engine_experiment,
+                       randomize_search_engine_experiment),
       main_label_(NULL),
       import_cbox_(NULL),
       import_from_combo_(NULL),

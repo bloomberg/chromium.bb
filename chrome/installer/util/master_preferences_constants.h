@@ -65,6 +65,8 @@ extern const wchar_t kVerboseLogging[];
 extern const wchar_t kExtensionsBlock[];
 // Boolean. Use experimental search engine selection dialog.
 extern const wchar_t kSearchEngineExperimentPref[];
+// Boolean. Randomize logos in experimental search engine selection dialog.
+extern const wchar_t kSearchEngineExperimentRandomizePref[];
 }
 }
 
