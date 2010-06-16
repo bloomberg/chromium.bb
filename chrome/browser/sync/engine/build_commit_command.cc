@@ -112,6 +112,7 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
 
     string name = meta_entry.Get(syncable::NON_UNIQUE_NAME);
     CHECK(!name.empty());  // Make sure this isn't an update.
+    TruncateUTF8ToByteSize(name, 255, &name);
     sync_entry->set_name(name);
 
     // Set the non_unique_name.  If we do, the server ignores
