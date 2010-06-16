@@ -97,6 +97,7 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
     if (!display_) {
       std::cout << "Error - cannot open display" << std::endl;
       client_done_->Signal();
+      return;
     }
 
     // Get properties of the screen.
