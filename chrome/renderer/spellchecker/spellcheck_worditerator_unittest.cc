@@ -128,3 +128,4 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
     }
   }
 }
+

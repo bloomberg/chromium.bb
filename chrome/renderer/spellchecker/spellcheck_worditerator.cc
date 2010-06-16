@@ -1,6 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// Implements a custom word iterator used for our spellchecker.
 
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 
@@ -15,7 +17,6 @@
 #include "third_party/icu/public/common/unicode/uscript.h"
 #include "third_party/icu/public/i18n/unicode/ulocdata.h"
 
-///////////////////////////////////////////////////////////////////////////////
 // SpellcheckCharAttribute implementation:
 
 SpellcheckCharAttribute::SpellcheckCharAttribute()
@@ -35,8 +36,11 @@ string16 SpellcheckCharAttribute::GetRuleSet(bool allow_contraction) const {
 }
 
 void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
-  // The template for our custom rule sets. Even though this template is based
-  // on the one of ICU 4.0, it changed the following points:
+  // The template for our custom rule sets, which is based on the word-break
+  // rules of ICU 4.0:
+  // <http://source.icu-project.org/repos/icu/icu/tags/release-4-0/source/data/brkitr/word.txt>.
+  // The major differences from the original one are listed below:
+  // * It discards comments in the original rules.
   // * It discards characters not needed by our spellchecker (e.g. numbers,
   //   punctuation characters, Hiraganas, Katakanas, CJK Ideographs, and so on).
   // * It allows customization of the $ALetter value (i.e. word characters).
@@ -119,9 +123,11 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       "($MidNumEx | $MidNumLetEx) $NumericEx;"
       "$dictionary $dictionary;";
 
-  // Retrieve the script code used by the given language from ICU. When the
+  // Retrieve the script codes used by the given language from ICU. When the
   // given language consists of two or more scripts, we just use the first
-  // script.
+  // script. The size of returned script codes is always < 8. Therefore, we use
+  // an array of size 8 so we can include all script codes without insufficient
+  // buffer errors.
   UErrorCode error = U_ZERO_ERROR;
   UScriptCode script_code[8];
   int scripts = uscript_getCode(language.c_str(), script_code,
@@ -143,7 +149,7 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
   if (script_code_ == USCRIPT_HANGUL || script_code_ == USCRIPT_THAI)
     aletter_plus = kWithDictionary;
 
-  // Create two custom rule-sets: one allows contraction and the other doesn't.
+  // Create two custom rule-sets: one allows contraction and the other does not.
   // We save these strings in UTF-16 so we can use it without conversions. (ICU
   // needs UTF-16 strings.)
   const char kAllowContraction[] =
@@ -186,28 +192,42 @@ bool SpellcheckCharAttribute::OutputArabic(UChar c, string16* output) const {
 }
 
 bool SpellcheckCharAttribute::OutputHangul(UChar c, string16* output) const {
-  // Decompose a Hangul syllable to Hangul jamos.
-  // This code is copied from Unicode Standard Annex #15:
-  // <http://unicode.org/reports/tr15>.
-  const int kSBase = 0xAC00;
-  const int kLBase = 0x1100;
-  const int kVBase = 0x1161;
-  const int kTBase = 0x11A7;
-  const int kLCount = 19;
-  const int kVCount = 21;
-  const int kTCount = 28;
+  // Decompose a Hangul character to a Hangul vowel and consonants used by our
+  // spellchecker. A Hangul character of Unicode is a ligature consisting of a
+  // Hangul vowel and consonants, e.g. U+AC01 "Gag" consists of U+1100 "G",
+  // U+1161 "a", and U+11A8 "g". That is, we can treat each Hangul character as
+  // a point of a cubic linear space consisting of (first consonant, vowel, last
+  // consonant). Therefore, we can compose a Hangul character from a vowel and
+  // two consonants with linear composition:
+  //   character =  0xAC00 +
+  //                (first consonant - 0x1100) * 28 * 21 +
+  //                (vowel           - 0x1161) * 28 +
+  //                (last consonant  - 0x11A7);
+  // We can also decompose a Hangul character with linear decomposition:
+  //   first consonant = (character - 0xAC00) / 28 / 21;
+  //   vowel           = (character - 0xAC00) / 28 % 21;
+  //   last consonant  = (character - 0xAC00) % 28;
+  // This code is copied from Unicode Standard Annex #15
+  // <http://unicode.org/reports/tr15> and added some comments.
+  const int kSBase = 0xAC00;  // U+AC00: the top of Hangul characters.
+  const int kLBase = 0x1100;  // U+1100: the top of Hangul first consonants.
+  const int kVBase = 0x1161;  // U+1161: the top of Hangul vowels.
+  const int kTBase = 0x11A7;  // U+11A7: the top of Hangul last consonants.
+  const int kLCount = 19;     // The number of Hangul first consonants.
+  const int kVCount = 21;     // The number of Hangul vowels.
+  const int kTCount = 28;     // The number of Hangul last consonants.
   const int kNCount = kVCount * kTCount;
   const int kSCount = kLCount * kNCount;
 
   int index = c - kSBase;
   if (index < 0 || index >= kSBase + kSCount) {
     // This is not a Hangul syllable. Call the default output function since we
-    // should output this character when it is a Hangul jamo.
+    // should output this character when it is a Hangul syllable.
     return OutputDefault(c, output);
   }
 
-  // This is a Hangul syllable. Decompose this syllable into Hangul jamos and
-  // output them.
+  // This is a Hangul character. Decompose this characters into Hangul vowels
+  // and consonants.
   int l = kLBase + index / kNCount;
   int v = kVBase + (index % kNCount) / kTCount;
   int t = kTBase + index % kTCount;
@@ -220,7 +240,7 @@ bool SpellcheckCharAttribute::OutputHangul(UChar c, string16* output) const {
 
 bool SpellcheckCharAttribute::OutputHebrew(UChar c, string16* output) const {
   // Discard characters except Hebrew alphabets. We also discard Hebrew niqquds
-  // to prevent our Hebrew dictionay from marking a Hebrew word including
+  // to prevent our Hebrew dictionary from marking a Hebrew word including
   // niqquds as misspelled. (Same as Arabic vowel marks, we need to check
   // niqquds manually and filter them out since their script codes are
   // USCRIPT_HEBREW.)
@@ -239,7 +259,6 @@ bool SpellcheckCharAttribute::OutputDefault(UChar c, string16* output) const {
   return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
 // SpellcheckWordIterator implementation:
 
 SpellcheckWordIterator::SpellcheckWordIterator()
@@ -325,8 +344,13 @@ void SpellcheckWordIterator::Close() {
 bool SpellcheckWordIterator::Normalize(int input_start,
                                        int input_length,
                                        string16* output_string) const {
-  // We use NFKC to normalize this token because NFKC can compose combined
-  // characters and decompose ligatures.
+  // We use NFKC (Normalization Form, Compatible decomposition, followed by
+  // canonical Composition) defined in Unicode Standard Annex #15 to normalize
+  // this token because it it the most suitable normalization algorithm for our
+  // spellchecker. Nevertheless, it is not a perfect algorithm for our
+  // spellchecker and we need manual normalization as well. The normalized
+  // text does not have to be NUL-terminated since its characters are copied to
+  // string16, which adds a NUL character when we need.
   icu::UnicodeString input(FALSE, &word_[input_start], input_length);
   UErrorCode status = U_ZERO_ERROR;
   icu::UnicodeString output;
@@ -341,3 +365,4 @@ bool SpellcheckWordIterator::Normalize(int input_start,
 
   return !output_string->empty();
 }
+
