@@ -1856,9 +1856,9 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     // The reference to the parent is a weak pointer and will become null if the
     // parent is later destroyed.
     GLuint service_id = offscreen_saved_color_texture_->id();
-
-    TextureManager::TextureInfo* info =
-        parent_->texture_manager()->GetTextureInfo(service_id);
+    GLuint client_id;
+    CHECK(parent_->texture_manager()->GetClientId(service_id, &client_id));
+    TextureManager::TextureInfo* info = parent_->GetTextureInfo(client_id);
     DCHECK(info);
 
     texture_manager()->SetLevelInfo(
