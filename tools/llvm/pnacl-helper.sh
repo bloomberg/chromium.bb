@@ -272,9 +272,10 @@ verify() {
   for i in ${PNACL_BITCODE_ROOT}/*.a ; do
     VerifyLlvmArchive $i
   done
-  for i in ${PNACL_BITCODE_ROOT}/*.o ; do
-    VerifyLlvmObj $i
-  done
+  # we currently do not expect any .o files in this directory
+  #for i in ${PNACL_BITCODE_ROOT}/*.o ; do
+  #  VerifyLlvmObj $i
+  #done
 }
 
 #@
@@ -351,10 +352,10 @@ test-x86-64() {
 }
 
 #@
-#@ test-x86-64-short-term-goals
+#@ test-x86-64-currently-working
 #@
-#@   these high priority tests are currently being worked
-test-x86-64-short-term-goals() {
+#@   these tests are currently working and should remain so
+test-x86-64-currently-working() {
   ./scons platform=x86-64 sdl=none sel_ldr
   export TARGET_CODE=bc-x86-64
   rm -rf scons-out/nacl-arm
@@ -366,26 +367,21 @@ test-x86-64-short-term-goals() {
           run_barebones_hello_world_test \
           run_barebones_regs_test \
           run_barebones_switch_test \
-          run_barebones_vaarg_test \
           run_barebones_vtable_test \
           "$@"
 }
 
 #@
-#@ test-x86-64-currently-working
+#@ test-arm-spec <official-spec-dir>
 #@
-#@   all these tests should pass
-test-x86-64-currently-working() {
-  ./scons platform=x86-64 sdl=none sel_ldr
-  export TARGET_CODE=bc-x86-64
-  rm -rf scons-out/nacl-arm
-  ./scons ${SCONS_ARGS[@]} \
-          force_emulator= \
-          force_sel_ldr=scons-out/opt-linux-x86-64/staging/sel_ldr \
-          run_barebones_exit_test \
-          run_barebones_hello_world_test \
-          run_barebones_switch_test \
-          "$@"
+#@   run spec via arm
+test-arm-spec() {
+  official=$(readlink -f $1)
+  cd  tests/spec2k
+  ./run_all.sh CleanBenchmarks
+  ./run_all.sh PoplateFromSpecHarness ${official}
+  ./run_all.sh BuildAndRunBenchmarks
+
 }
 
 #@
