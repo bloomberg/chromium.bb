@@ -43,7 +43,7 @@ bool Blacklist::Matches(const std::string& pattern, const std::string& url) {
 
   while (pattern[p] != '\0' && url[u] != '\0') {
     if (pattern[p] == '@') {
-      while (pattern[++p] == '@');  // Consecutive @ are redundant.
+      while (pattern[++p] == '@') {}  // Consecutive @ are redundant.
 
       if (pattern[p] == '\0')
         return true;  // Nothing to match after the @.

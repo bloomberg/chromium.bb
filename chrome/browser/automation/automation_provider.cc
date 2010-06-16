@@ -863,7 +863,7 @@ void AutomationProvider::GetBrowserWindow(int index, int* handle) {
   *handle = 0;
   if (index >= 0) {
     BrowserList::const_iterator iter = BrowserList::begin();
-    for (; (iter != BrowserList::end()) && (index > 0); ++iter, --index);
+    for (; (iter != BrowserList::end()) && (index > 0); ++iter, --index) {}
     if (iter != BrowserList::end()) {
       *handle = browser_tracker_->Add(*iter);
     }

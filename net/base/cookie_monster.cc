@@ -1184,7 +1184,7 @@ static inline bool CharIsA(const char c, const char* chars) {
 static inline bool SeekTo(std::string::const_iterator* it,
                           const std::string::const_iterator& end,
                           const char* chars) {
-  for (; *it != end && !CharIsA(**it, chars); ++(*it));
+  for (; *it != end && !CharIsA(**it, chars); ++(*it)) {}
   return *it == end;
 }
 // Seek the iterator to the first occurrence of a character not in |chars|.
@@ -1192,13 +1192,13 @@ static inline bool SeekTo(std::string::const_iterator* it,
 static inline bool SeekPast(std::string::const_iterator* it,
                             const std::string::const_iterator& end,
                             const char* chars) {
-  for (; *it != end && CharIsA(**it, chars); ++(*it));
+  for (; *it != end && CharIsA(**it, chars); ++(*it)) {}
   return *it == end;
 }
 static inline bool SeekBackPast(std::string::const_iterator* it,
                                 const std::string::const_iterator& end,
                                 const char* chars) {
-  for (; *it != end && CharIsA(**it, chars); --(*it));
+  for (; *it != end && CharIsA(**it, chars); --(*it)) {}
   return *it == end;
 }
 

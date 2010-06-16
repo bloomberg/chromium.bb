@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/weak_ptr.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
+#include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 class RenderView;
 

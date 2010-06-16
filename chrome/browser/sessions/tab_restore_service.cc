@@ -254,7 +254,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
 
   size_t index = 0;
   for (Entries::iterator j = entries_.begin(); j != i && j != entries_.end();
-       ++j, ++index);
+       ++j, ++index) {}
   if (static_cast<int>(index) < entries_to_write_)
     entries_to_write_--;
 

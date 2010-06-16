@@ -275,9 +275,6 @@ BOOL ZombieEnable(BOOL zombieAllObjects,
   if (!ZombieInit())
     return NO;
 
-  if (zombieCount < 0)
-    return NO;
-
   g_zombieAllObjects = zombieAllObjects;
 
   // Replace the implementation of -[NSObject dealloc].
