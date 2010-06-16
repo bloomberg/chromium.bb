@@ -48,7 +48,7 @@ const char* ProfileSyncService::kSyncServerUrl =
     "https://clients4.google.com/chrome-sync";
 
 const char* ProfileSyncService::kDevServerUrl =
-    "https://clients4.google.com/chrome-sync";
+    "https://clients4.google.com/chrome-sync/dev";
 
 ProfileSyncService::ProfileSyncService(
     ProfileSyncFactory* factory,
