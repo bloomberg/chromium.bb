@@ -36,7 +36,8 @@ class PepperTester : public NPAPITesterBase {
 // TODO(alokp): Enable the test after making sure it works on all platforms
 // and buildbots have OpenGL support.
 #if defined(OS_WIN)
-TEST_F(PepperTester, Pepper3D) {
+// Disabled after failing on buildbots: crbug/46662
+TEST_F(PepperTester, DISABLED_Pepper3D) {
   const FilePath dir(FILE_PATH_LITERAL("pepper"));
   const FilePath file(FILE_PATH_LITERAL("pepper_3d.html"));
   GURL url = ui_test_utils::GetTestUrl(dir, file);
