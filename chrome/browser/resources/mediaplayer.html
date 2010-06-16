@@ -381,6 +381,9 @@ function setupMediaEvents(element) {
   element.onerror = onMediaError;
   element.addEventListener("play", onMediaPlay, true);
   element.addEventListener("pause", onMediaPause, true);
+  element.oncontextmenu = function() {
+     return false;
+  };
 }
 
 function getMediaElement() {
