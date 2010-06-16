@@ -653,3 +653,38 @@
    fun:std::vector::push_back
    fun:courgette::EncodedProgram::AddOrigin
 }
+
+{
+   bug_46658
+   Heapcheck:Leak
+   fun:WebCore::makeExternalString
+   fun:WebCore::v8ExternalString
+   fun:WebCore::v8String
+   fun:WebCore::V8DOMWindowShell::namedItemAdded
+   fun:WebCore::ScriptController::namedItemAdded
+   fun:WebCore::HTMLDocument::addItemToMap
+   fun:WebCore::HTMLDocument::addNamedItem
+   fun:WebCore::HTMLFormElement::insertedIntoDocument
+   fun:WebCore::ContainerNode::addChild
+   fun:WebCore::LegacyHTMLTreeConstructor::insertNode
+   fun:WebCore::LegacyHTMLTreeConstructor::handleError
+   fun:WebCore::LegacyHTMLTreeConstructor::insertNode
+   fun:WebCore::LegacyHTMLTreeConstructor::handleError
+   fun:WebCore::LegacyHTMLTreeConstructor::insertNode
+   fun:WebCore::LegacyHTMLTreeConstructor::insertNodeAfterLimitDepth
+   fun:WebCore::LegacyHTMLTreeConstructor::parseToken
+   fun:WebCore::HTMLDocumentParser::processToken
+   fun:WebCore::HTMLDocumentParser::parseTag
+   fun:WebCore::HTMLDocumentParser::advance
+   fun:WebCore::HTMLDocumentParser::write
+   fun:WebCore::DocumentWriter::addData
+   fun:WebCore::FrameLoader::addData
+   fun:WebKit::WebFrameImpl::commitDocumentData
+   fun:WebKit::FrameLoaderClientImpl::committedLoad
+   fun:WebCore::FrameLoader::committedLoad
+   fun:WebCore::DocumentLoader::commitLoad
+   fun:WebCore::DocumentLoader::receivedData
+   fun:WebCore::FrameLoader::receivedData
+   fun:WebCore::MainResourceLoader::addData
+   fun:WebCore::ResourceLoader::didReceiveData
+}
