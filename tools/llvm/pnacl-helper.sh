@@ -28,6 +28,7 @@ readonly LLVM_AR=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-no
 # NOTE: temporary measure until we have a unified llc
 readonly SYMLINK_LLC_X86_32=${ARM_UNTRUSTED}/llc-x86-32-sfi
 readonly SYMLINK_LLC_X86_64=${ARM_UNTRUSTED}/llc-x86-64-sfi
+
 ######################################################################
 # Helpers
 ######################################################################
@@ -60,9 +61,9 @@ VerifyObject() {
 }
 
 
-# Usage: VerifyLlvmArchive <filename>
-VerifyLlvmArchive() {
-  echo "verify $1"
+# Usage: VerifyLLVMArchive <filename>
+VerifyLLVMArchive() {
+  echo -n "verify $1: "
   saved=$(pwd)
   local archive=$1
   local tmp=/tmp/ar-verify
@@ -72,22 +73,26 @@ VerifyLlvmArchive() {
   cd ${tmp}
   ${LLVM_AR} x $(basename ${archive})
   for i in *.o ; do
-    ${LLVM_DIS} $i -o $i.ll
+    if [ "$i" = "*.o" ]; then
+      echo "FAIL (no object files in ${archive})"
+      exit -1
+    elif ! ${LLVM_DIS} $i -o $i.ll; then
+      echo "FAIL (disassembly of $(pwd)/$i failed)"
+      exit -1
+    elif grep -ql asm $i.ll; then
+      echo "FAIL ($(pwd)/$i.ll contained inline assembly)"
+      exit -1
+    else
+      : ok
+    fi
   done
-
-  if  grep asm *.ll ; then
-    echo
-    echo "ERROR"
-    echo
-    exit -1
-  fi
-
+  echo "PASS"
   cd ${saved}
 }
 
-# Usage: VerifyLlvmObj <filename>
-VerifyLlvmObj() {
-  echo "verify $1"
+# Usage: VerifyLLVMObj <filename>
+VerifyLLVMObj() {
+  echo -n "verify $1: "
   t=$(${LLVM_DIS} $1 -o -)
 
   if  grep asm <<<$t ; then
@@ -96,7 +101,9 @@ VerifyLlvmObj() {
     echo
     exit -1
   fi
+  echo "PASS"
 }
+
 ######################################################################
 # Actions
 ######################################################################
@@ -118,6 +125,7 @@ download-toolchains() {
   ./scons platform=x86-64 --download sdl=none
 }
 
+#@
 #@ clean
 #@
 #@   Removes the toolchain/pnacl-untrusted directory, undoing the effect
@@ -173,6 +181,7 @@ organize-native-code() {
 #@   Build bitcode libraries for C++.
 build-bitcode-cpp() {
   Banner "C++"
+  mkdir -p ${PNACL_BITCODE_ROOT}
   tools/llvm/untrusted-toolchain-creator.sh libstdcpp-libonly \
       ${PNACL_BITCODE_ROOT}
 
@@ -187,6 +196,7 @@ build-bitcode-cpp() {
 build-bitcode-newlib() {
   export TARGET_CODE=bc-arm  # "bc" is important; "arm" is incidental.
   Banner "Newlib"
+  mkdir -p ${PNACL_BITCODE_ROOT}
   tools/llvm/untrusted-toolchain-creator.sh newlib-libonly \
        $(pwd)/${PNACL_BITCODE_ROOT}
 }
@@ -235,7 +245,7 @@ build-bitcode() {
 #@   Verifies that a given archive is bitcode and free of ASMSs
 verify-llvm-archive() {
   Banner "verify $1"
-  VerifyLlvmArchive "$@"
+  VerifyLLVMArchive "$@"
 }
 
 #@
@@ -244,7 +254,7 @@ verify-llvm-archive() {
 #@   Verifies that a given .o file is bitcode and free of ASMSs
 verify-llvm-object() {
   Banner "verify $1"
-  VerifyLlvmObj "$@"
+  VerifyLLVMObj "$@"
 }
 
 #@
@@ -270,11 +280,11 @@ verify() {
 
   Banner "Verify ${PNACL_BITCODE_ROOT}"
   for i in ${PNACL_BITCODE_ROOT}/*.a ; do
-    VerifyLlvmArchive $i
+    VerifyLLVMArchive $i
   done
   # we currently do not expect any .o files in this directory
   #for i in ${PNACL_BITCODE_ROOT}/*.o ; do
-  #  VerifyLlvmObj $i
+  #  VerifyLLVMObj $i
   #done
 }
 
