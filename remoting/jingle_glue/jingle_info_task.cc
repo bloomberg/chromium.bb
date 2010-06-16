@@ -5,9 +5,9 @@
 #include "remoting/jingle_glue/jingle_info_task.h"
 
 #include "base/scoped_ptr.h"
-#include "talk/base/socketaddress.h"
-#include "talk/xmpp/constants.h"
-#include "talk/xmpp/xmppclient.h"
+#include "third_party/libjingle/source/talk/base/socketaddress.h"
+#include "third_party/libjingle/source/talk/xmpp/constants.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
 namespace remoting {
 
@@ -15,9 +15,10 @@ namespace remoting {
 
 class JingleInfoTask::JingleInfoGetTask : public XmppTask {
  public:
-  explicit JingleInfoGetTask(talk_base::TaskParent* parent) :
-      XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
-      done_(false) { }
+  explicit JingleInfoGetTask(talk_base::TaskParent* parent)
+      : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
+        done_(false) {
+  }
 
   virtual int ProcessStart() {
     // Set jingle info query IQ stanza.

@@ -6,9 +6,10 @@
 #define REMOTING_JINGLE_GLUE_RELAY_PORT_ALLOCATOR_H_
 
 #include <string>
+#include <vector>
 
-#include "talk/base/sigslot.h"
-#include "talk/p2p/client/httpportallocator.h"
+#include "third_party/libjingle/source/talk/base/sigslot.h"
+#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 
 namespace buzz {
 class XmppClient;
@@ -16,17 +17,22 @@ class XmppClient;
 
 namespace remoting {
 
-class RelayPortAllocator: public cricket::HttpPortAllocator,
-                          public sigslot::has_slots<> {
+class RelayPortAllocator : public cricket::HttpPortAllocator,
+                           public sigslot::has_slots<> {
  public:
+  // Caller keeps ownership of |network_manager|. |network_manager| must not
+  // be destroyed before RelayPortAllocator.
   RelayPortAllocator(talk_base::NetworkManager* network_manager,
-                     const std::string& user_agent):
-      cricket::HttpPortAllocator(network_manager, user_agent) { }
+                     const std::string& user_agent)
+      : cricket::HttpPortAllocator(network_manager, user_agent) {
+  }
 
   void OnJingleInfo(const std::string& token,
                     const std::vector<std::string>& relay_hosts,
                     const std::vector<talk_base::SocketAddress>& stun_hosts);
 
+  // Starts JingleInfoTask to get new relay information. Caller keeps ownership
+  // of |client|.
   void SetJingleInfo(buzz::XmppClient* client);
 
  private:
@@ -35,4 +41,4 @@ class RelayPortAllocator: public cricket::HttpPortAllocator,
 
 }  // namespace remoting
 
-#endif // REMOTING_JINGLE_GLUE_RELAY_PORT_ALLOCATOR_H_
+#endif  // REMOTING_JINGLE_GLUE_RELAY_PORT_ALLOCATOR_H_

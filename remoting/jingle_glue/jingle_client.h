@@ -8,7 +8,7 @@
 #include <string>
 
 #include "remoting/jingle_glue/jingle_channel.h"
-#include "talk/xmpp/xmppclient.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
 class MessageLoop;
 
@@ -64,10 +64,10 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // take ownership of |thread| and expects that the thread is started before
   // the constructor is called, and only stopped after the JingleClient object
   // has been destructed.
-  JingleClient(JingleThread* thread);
+  explicit JingleClient(JingleThread* thread);
   virtual ~JingleClient();
 
-  // Starts the XMPP connection inialization. Must be called only once.
+  // Starts the XMPP connection initialization. Must be called only once.
   // |callback| specifies callback object for the client and must not be NULL.
   void Init(const std::string& username, const std::string& auth_token,
             const std::string& auth_token_service, Callback* callback);

@@ -8,8 +8,8 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "remoting/jingle_glue/jingle_client.h"
-#include "talk/xmpp/constants.h"
-#include "talk/xmpp/xmppengine.h"
+#include "third_party/libjingle/source/talk/xmpp/constants.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppengine.h"
 
 namespace remoting {
 
@@ -33,8 +33,8 @@ void IqRequest::SendIq(const std::string& type,
   // Unregister the handler if it is already registered.
   Unregister();
 
-  DCHECK(type.length() > 0);
-  DCHECK(addressee.length() > 0);
+  DCHECK_GT(type.length(), 0U);
+  DCHECK_GT(addressee.length(), 0U);
 
   buzz::XmppClient* xmpp_client = jingle_client_->xmpp_client();
   DCHECK(xmpp_client);  // Expect that connection is active.

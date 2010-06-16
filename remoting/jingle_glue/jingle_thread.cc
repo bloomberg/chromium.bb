@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "talk/base/ssladapter.h"
+#include "third_party/libjingle/source/talk/base/ssladapter.h"
 
 namespace remoting {
 
@@ -30,7 +30,8 @@ void TaskPump::OnMessage(talk_base::Message* pmsg) {
 JingleThread::JingleThread()
     : task_pump_(NULL),
       started_event_(true, false),
-      message_loop_(NULL) { }
+      message_loop_(NULL) {
+}
 
 JingleThread::~JingleThread() { }
 
@@ -63,7 +64,7 @@ void JingleThread::Run() {
   LOG(INFO) << "Jingle thread finished.";
 }
 
-// This method is called every 20ms to process  tasks from |message_loop_|
+// This method is called every 20ms to process tasks from |message_loop_|
 // on this thread.
 // TODO(sergeyu): Remove it when JingleThread moved to Chromium's base::Thread.
 void JingleThread::PumpAuxiliaryLoops() {

@@ -13,8 +13,8 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "talk/base/sigslot.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "third_party/libjingle/source/talk/base/sigslot.h"
 
 namespace base {
 class WaitableEvent;
@@ -63,10 +63,10 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
   virtual void Close();
 
   // Current state of the tunnel.
-  State state() { return state_; }
+  State state() const { return state_; }
 
   // JID of the other end of the channel.
-  const std::string& jid() { return jid_; }
+  const std::string& jid() const { return jid_; }
 
   // Number of bytes currently stored in the write buffer.
   size_t write_buffer_size();
@@ -76,12 +76,12 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
   friend class JingleClient;
 
   // Constructor used by unit test only.
-  // TODO(hclam): Have to suppress warnnings in MSVC.
+  // TODO(hclam): Have to suppress warnings in MSVC.
   JingleChannel();
 
   // Used by JingleClient to create an instance of the channel. |callback|
   // must not be NULL.
-  JingleChannel(Callback* callback);
+  explicit JingleChannel(Callback* callback);
 
   // Initialized the channel. Ownership of the |stream| is transfered to
   // caller. Ownership of |thread| is not.
@@ -105,8 +105,7 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
   // to JingleChannel.
   class EventHandler : public sigslot::has_slots<> {
    protected:
-    EventHandler(JingleChannel* channel)
-        : channel_(channel) { }
+    explicit EventHandler(JingleChannel* channel) : channel_(channel) {}
 
     // Constructor used only by unit test.
     EventHandler() : channel_(NULL) {}
@@ -115,8 +114,8 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
                        int events, int error) {
       channel_->OnStreamEvent(stream, events, error);
     }
-    friend class JingleChannel;
    private:
+    friend class JingleChannel;
     JingleChannel* channel_;
   };
   friend class EventHandler;
@@ -135,12 +134,17 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
 
   void DoClose(base::WaitableEvent* done_event);
 
+  // Callback that is called on channel events. Initialized in the constructor.
   Callback* callback_;
+
+  // Event handler for stream events.
   EventHandler event_handler_;
+
+  // Jid of the other end of the channel.
   std::string jid_;
 
   // Write buffer. |write_lock_| should be locked when accessing |write_queue_|
-  // and |write_buffer_size_|, but isn't neccessary for |current_write_buf_|.
+  // and |write_buffer_size_|, but isn't necessary for |current_write_buf_|.
   // |current_write_buf_| is accessed only by the jingle thread.
   // |write_buffer_size_| stores number of bytes currently in |write_queue_|
   // and in |current_write_buf_|.

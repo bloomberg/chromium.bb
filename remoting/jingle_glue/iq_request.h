@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "talk/xmpp/xmppengine.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppengine.h"
 
 namespace remoting {
 

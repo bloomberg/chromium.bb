@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_JINGLE_THREAD_H
-#define REMOTING_JINGLE_GLUE_JINGLE_THREAD_H
+#ifndef REMOTING_JINGLE_GLUE_JINGLE_THREAD_H_
+#define REMOTING_JINGLE_GLUE_JINGLE_THREAD_H_
 
 #include "base/tracked_objects.h"
 #include "base/waitable_event.h"
-#include "talk/base/messagequeue.h"
-#include "talk/base/taskrunner.h"
-#include "talk/base/thread.h"
+#include "third_party/libjingle/source/talk/base/messagequeue.h"
+#include "third_party/libjingle/source/talk/base/taskrunner.h"
+#include "third_party/libjingle/source/talk/base/thread.h"
 
 class MessageLoop;
 
@@ -25,11 +25,11 @@ class TaskPump : public talk_base::MessageHandler,
   TaskPump();
 
   // TaskRunner methods.
-  void WakeTasks();
-  int64 CurrentTime();
+  virtual void WakeTasks();
+  virtual int64 CurrentTime();
 
   // MessageHandler methods.
-  void OnMessage(talk_base::Message* pmsg);
+  virtual void OnMessage(talk_base::Message* pmsg);
 };
 
 // TODO(sergeyu): This class should be changed to inherit from Chromiums
@@ -46,7 +46,7 @@ class JingleThread : public talk_base::Thread,
   void Run();
 
   // Returns Chromiums message loop for this thread.
-  // TODO(sergeyu): remove this methid when we use base::Thread insted of
+  // TODO(sergeyu): remove this method when we use base::Thread instead of
   // talk_base::Thread
   MessageLoop* message_loop() { return message_loop_; }
 
@@ -67,4 +67,4 @@ class JingleThread : public talk_base::Thread,
 
 }  // namespace remoting
 
-#endif // REMOTING_JINGLE_GLUE_JINGLE_THREAD_H
+#endif  // REMOTING_JINGLE_GLUE_JINGLE_THREAD_H_

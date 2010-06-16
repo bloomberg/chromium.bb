@@ -8,10 +8,10 @@
 #include <vector>
 #include <string>
 
-#include "talk/base/sigslot.h"
-#include "talk/p2p/client/httpportallocator.h"
-#include "talk/xmpp/xmppengine.h"
-#include "talk/xmpp/xmpptask.h"
+#include "third_party/libjingle/source/talk/base/sigslot.h"
+#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppengine.h"
+#include "third_party/libjingle/source/talk/xmpp/xmpptask.h"
 
 namespace remoting {
 
@@ -23,7 +23,8 @@ namespace remoting {
 class JingleInfoTask : public buzz::XmppTask {
  public:
   explicit JingleInfoTask(talk_base::TaskParent* parent)
-      : XmppTask(parent, buzz::XmppEngine::HL_TYPE) {}
+      : XmppTask(parent, buzz::XmppEngine::HL_TYPE) {
+  }
 
   virtual int ProcessStart();
   void RefreshJingleInfoNow();

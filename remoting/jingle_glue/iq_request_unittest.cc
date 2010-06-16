@@ -6,9 +6,9 @@
 #include "base/string_util.h"
 #include "media/base/data_buffer.h"
 #include "remoting/jingle_glue/iq_request.h"
-#include "talk/xmllite/xmlelement.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
 

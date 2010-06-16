@@ -10,12 +10,13 @@
 #include "base/waitable_event.h"
 #include "media/base/data_buffer.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "talk/base/stream.h"
+#include "third_party/libjingle/source/talk/base/stream.h"
 
 using media::DataBuffer;
 
 namespace remoting {
 
+// Size of a read buffer chunk in bytes.
 const size_t kReadBufferSize = 4096;
 
 JingleChannel::JingleChannel(Callback* callback)
@@ -35,7 +36,7 @@ JingleChannel::JingleChannel()
 }
 
 JingleChannel::~JingleChannel() {
-  DCHECK(state_ == CLOSED);
+  DCHECK_EQ(CLOSED, state_);
 }
 
 void JingleChannel::Init(JingleThread* thread,
@@ -99,7 +100,7 @@ void JingleChannel::DoRead() {
         buffer->GetWritableData(), bytes_to_read, &bytes_read, &error);
     switch (result) {
       case talk_base::SR_SUCCESS: {
-        DCHECK(bytes_read > 0);
+        DCHECK_GT(bytes_read, 0U);
         buffer->SetDataSize(bytes_read);
         callback_->OnPacketReceived(this, buffer);
         break;
@@ -164,21 +165,17 @@ void JingleChannel::DoWrite() {
 
 void JingleChannel::OnStreamEvent(talk_base::StreamInterface* stream,
                                   int events, int error) {
-  if (events & talk_base::SE_OPEN) {
+  if (events & talk_base::SE_OPEN)
     SetState(OPEN);
-  }
 
-  if (state_ == OPEN && (events & talk_base::SE_WRITE)) {
+  if (state_ == OPEN && (events & talk_base::SE_WRITE))
     DoWrite();
-  }
 
-  if (state_ == OPEN && (events & talk_base::SE_READ)) {
+  if (state_ == OPEN && (events & talk_base::SE_READ))
     DoRead();
-  }
 
-  if (events & talk_base::SE_CLOSE) {
+  if (events & talk_base::SE_CLOSE)
     SetState(CLOSED);
-  }
 }
 
 void JingleChannel::SetState(State state) {

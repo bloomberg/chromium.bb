@@ -16,16 +16,16 @@
 #include "chrome/common/net/notifier/communicator/xmpp_socket_adapter.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/relay_port_allocator.h"
-#include "talk/base/asyncsocket.h"
-#include "talk/base/ssladapter.h"
-#include "talk/p2p/base/sessionmanager.h"
-#include "talk/p2p/client/sessionmanagertask.h"
+#include "third_party/libjingle/source/talk/base/asyncsocket.h"
+#include "third_party/libjingle/source/talk/base/ssladapter.h"
+#include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
+#include "third_party/libjingle/source/talk/p2p/client/sessionmanagertask.h"
 #ifdef USE_SSL_TUNNEL
-#include "talk/session/tunnel/securetunnelsessionclient.h"
+#include "third_party/libjingle/source/talk/session/tunnel/securetunnelsessionclient.h"
 #endif
-#include "talk/session/tunnel/tunnelsessionclient.h"
-#include "talk/xmpp/prexmppauth.h"
-#include "talk/xmpp/saslcookiemechanism.h"
+#include "third_party/libjingle/source/talk/session/tunnel/tunnelsessionclient.h"
+#include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
+#include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 
 namespace remoting {
 
@@ -44,7 +44,7 @@ JingleClient::~JingleClient() {
 void JingleClient::Init(
     const std::string& username, const std::string& auth_token,
     const std::string& auth_token_service, Callback* callback) {
-  DCHECK(username != "");
+  DCHECK_NE(username, "");
   DCHECK(callback != NULL);
   DCHECK(callback_ == NULL);  // Init() can be called only once.
 
@@ -197,14 +197,12 @@ void JingleClient::OnIncomingTunnel(
   JingleChannel::Callback* channel_callback;
   if (callback_->OnAcceptConnection(this, jid.Str(), &channel_callback)) {
     DCHECK(channel_callback != NULL);
-    talk_base::StreamInterface* stream =
-        client->AcceptTunnel(session);
+    talk_base::StreamInterface* stream = client->AcceptTunnel(session);
     scoped_refptr<JingleChannel> channel(new JingleChannel(channel_callback));
     channel->Init(thread_, stream, jid.Str());
     callback_->OnNewConnection(this, channel);
   } else {
     client->DeclineTunnel(session);
-    return;
   }
 }
 

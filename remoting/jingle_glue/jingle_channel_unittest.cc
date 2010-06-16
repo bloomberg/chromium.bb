@@ -6,9 +6,9 @@
 #include "media/base/data_buffer.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "talk/base/stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle/source/talk/base/stream.h"
 
 using testing::_;
 using testing::Return;
@@ -18,6 +18,7 @@ using testing::SetArgumentPointee;
 namespace remoting {
 
 namespace {
+// Size of test buffer in bytes.
 const size_t kBufferSize = 100;
 }  // namespace
 
@@ -31,23 +32,22 @@ class MockCallback : public JingleChannel::Callback {
 class MockStream : public talk_base::StreamInterface {
  public:
   virtual ~MockStream() {}
-  MOCK_CONST_METHOD0(GetState, talk_base::StreamState ());
+  MOCK_CONST_METHOD0(GetState, talk_base::StreamState());
 
-  MOCK_METHOD4(Read, talk_base::StreamResult (void*, size_t,
+  MOCK_METHOD4(Read, talk_base::StreamResult(void*, size_t, size_t*, int*));
+  MOCK_METHOD4(Write, talk_base::StreamResult(const void*, size_t,
                                               size_t*, int*));
-  MOCK_METHOD4(Write, talk_base::StreamResult (const void*, size_t,
-                                               size_t*, int*));
-  MOCK_CONST_METHOD1(GetAvailable, bool (size_t *));
-  MOCK_METHOD0(Close, void ());
+  MOCK_CONST_METHOD1(GetAvailable, bool(size_t*));
+  MOCK_METHOD0(Close, void());
 
-  MOCK_METHOD3(PostEvent, void (talk_base::Thread*, int, int));
-  MOCK_METHOD2(PostEvent, void (int, int));
+  MOCK_METHOD3(PostEvent, void(talk_base::Thread*, int, int));
+  MOCK_METHOD2(PostEvent, void(int, int));
 };
 
 TEST(JingleChannelTest, Init) {
   JingleThread thread;
 
-  MockStream *stream = new MockStream();
+  MockStream* stream = new MockStream();
   MockCallback callback;
 
   EXPECT_CALL(*stream, GetState())
@@ -71,14 +71,14 @@ TEST(JingleChannelTest, Init) {
 
 TEST(JingleChannelTest, Write) {
   JingleThread thread;
-  MockStream* stream = new MockStream(); // Freed by the channel.
+  MockStream* stream = new MockStream();  // Freed by the channel.
   MockCallback callback;
 
   scoped_refptr<media::DataBuffer> data = new media::DataBuffer(kBufferSize);
   data->SetDataSize(kBufferSize);
 
   EXPECT_CALL(*stream, Write(static_cast<const void*>(data->GetData()),
-                            kBufferSize, _, _))
+                             kBufferSize, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(kBufferSize),
                       Return(talk_base::SR_SUCCESS)));
 
@@ -95,7 +95,7 @@ TEST(JingleChannelTest, Write) {
 
 TEST(JingleChannelTest, Read) {
   JingleThread thread;
-  MockStream* stream = new MockStream(); // Freed by the channel.
+  MockStream* stream = new MockStream();  // Freed by the channel.
   MockCallback callback;
 
   scoped_refptr<media::DataBuffer> data = new media::DataBuffer(kBufferSize);
@@ -127,7 +127,7 @@ TEST(JingleChannelTest, Read) {
 
 TEST(JingleChannelTest, Close) {
   JingleThread thread;
-  MockStream* stream = new MockStream(); // Freed by the channel.
+  MockStream* stream = new MockStream();  // Freed by the channel.
   MockCallback callback;
 
   EXPECT_CALL(*stream, Close())
