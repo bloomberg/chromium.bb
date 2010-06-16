@@ -724,3 +724,35 @@
    fun:WebCore::FrameLoader::receivedData
    fun:WebCore::MainResourceLoader::addData
 }
+
+{
+   bug_46678_a
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:remoting::Differ::MergeBlocks
+}
+
+{
+   bug_46678_b
+   Heapcheck:Leak
+   fun:remoting::DifferTest::MarkBlocksAndCheckMerge
+}
+
+{
+   bug_46678_c
+   Heapcheck:Leak
+   fun:remoting::DifferTest_*_Test::TestBody
+   fun:testing::Test::Run
+}
+
+{
+   bug_46678_d
+   Heapcheck:Leak
+   ...
+   fun:remoting::ChromotingPlugin::ChromotingPlugin
+   fun:CreatePlugin
+}
+
