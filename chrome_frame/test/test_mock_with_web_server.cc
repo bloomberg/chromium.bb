@@ -888,10 +888,11 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 // Test Back/Forward from context menu. Loads page 1 in chrome and page 2
 // in IE. Then it tests back and forward using context menu
-// Marking this test FLAKY as it fails at times on the buildbot.
-// http://code.google.com/p/chromium/issues/detail?id=26549
+// Disabling this test as it won't work as per the current chrome external tab
+// design.
+// http://code.google.com/p/chromium/issues/detail?id=46615
 TEST_F(ChromeFrameTestWithWebServer,
-       FLAKY_FullTabModeIE_ContextMenuBackForward) {
+       DISABLED_FullTabModeIE_ContextMenuBackForward) {
   CloseIeAtEndOfScope last_resort_close_ie;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
   chrome_frame_test::TimedMsgLoop loop;
