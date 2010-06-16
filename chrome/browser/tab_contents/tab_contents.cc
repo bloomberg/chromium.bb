@@ -3099,15 +3099,18 @@ void TabContents::SetAppIcon(const SkBitmap& app_icon) {
 class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SavePasswordInfoBarDelegate(TabContents* tab_contents,
-                              PasswordFormManager* form_to_save) :
-      ConfirmInfoBarDelegate(tab_contents),
-      form_to_save_(form_to_save) {
+                              PasswordFormManager* form_to_save)
+      : ConfirmInfoBarDelegate(tab_contents),
+        form_to_save_(form_to_save),
+        infobar_response_(kNoResponse) {
   }
 
   virtual ~SavePasswordInfoBarDelegate() { }
 
   // Overridden from ConfirmInfoBarDelegate:
   virtual void InfoBarClosed() {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
+                              infobar_response_, kNumResponseTypes);
     delete this;
   }
 
@@ -3136,12 +3139,14 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() {
     DCHECK(form_to_save_.get());
     form_to_save_->Save();
+    infobar_response_ = kRememberPassword;
     return true;
   }
 
   virtual bool Cancel() {
     DCHECK(form_to_save_.get());
     form_to_save_->PermanentlyBlacklist();
+    infobar_response_ = kDontRememberPassword;
     return true;
   }
 
@@ -3149,6 +3154,15 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.
   scoped_ptr<PasswordFormManager> form_to_save_;
+
+  // Used to track the results we get from the info bar.
+  enum ResponseType {
+    kNoResponse = 0,
+    kRememberPassword,
+    kDontRememberPassword,
+    kNumResponseTypes,
+  };
+  ResponseType infobar_response_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };
