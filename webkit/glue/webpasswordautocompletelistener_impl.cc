@@ -62,7 +62,6 @@ void WebInputElementDelegate::RefreshAutofillPopup(
                                           default_suggestion_index);
 }
 
-
 WebPasswordAutocompleteListenerImpl::WebPasswordAutocompleteListenerImpl(
     WebInputElementDelegate* username_delegate,
     WebInputElementDelegate* password_delegate,
@@ -117,11 +116,8 @@ void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
     password_delegate_->SetAutofilled(false);
   }
 
-  if (show_suggestions) {
-    std::vector<string16> suggestions;
-    GetSuggestions(user_input16, &suggestions);
-    username_delegate_->RefreshAutofillPopup(suggestions, -1);
-  }
+  if (show_suggestions)
+    showSuggestionPopup(user_input16);
 
   if (backspace_or_delete_pressed)
     return;  // Don't inline autocomplete when the user deleted something.
@@ -146,6 +142,17 @@ void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
     if (TryToMatch(user_input16, it->first, it->second))
       return;
   }
+}
+
+bool WebPasswordAutocompleteListenerImpl::showSuggestionPopup(
+    const WebString& value) {
+  std::vector<string16> suggestions;
+  GetSuggestions(value, &suggestions);
+  if (suggestions.empty())
+    return false;
+
+  username_delegate_->RefreshAutofillPopup(suggestions, -1);
+  return true;
 }
 
 bool WebPasswordAutocompleteListenerImpl::TryToMatch(const string16& input,

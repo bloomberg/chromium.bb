@@ -59,6 +59,7 @@ class WebPasswordAutocompleteListenerImpl :
   virtual void performInlineAutocomplete(const WebString& user_input,
                                          bool backspace_or_delete_pressed,
                                          bool show_suggestions);
+  virtual bool showSuggestionPopup(const WebString& value);
 
  private:
   // Check if the input string resembles a potential matching login
