@@ -81,7 +81,7 @@ void TranslateHelper::RevertTranslation(int page_id) {
     return;
   }
 
-  WebFrame* main_frame = render_view_->webview()->mainFrame();
+  WebFrame* main_frame = GetMainFrame();
   if (!main_frame)
     return;
 
@@ -213,7 +213,7 @@ void TranslateHelper::CheckTranslateStatus() {
 }
 
 bool TranslateHelper::ExecuteScript(const std::string& script) {
-  WebFrame* main_frame = render_view_->webview()->mainFrame();
+  WebFrame* main_frame = GetMainFrame();
   if (!main_frame)
     return false;
   main_frame->executeScript(WebScriptSource(ASCIIToUTF16(script)));
@@ -223,7 +223,7 @@ bool TranslateHelper::ExecuteScript(const std::string& script) {
 bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
                                                     bool* value) {
   DCHECK(value);
-  WebFrame* main_frame = render_view_->webview()->mainFrame();
+  WebFrame* main_frame = GetMainFrame();
   if (!main_frame)
     return false;
 
@@ -239,7 +239,7 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
 bool TranslateHelper::ExecuteScriptAndGetStringResult(const std::string& script,
                                                       std::string* value) {
   DCHECK(value);
-  WebFrame* main_frame = render_view_->webview()->mainFrame();
+  WebFrame* main_frame = GetMainFrame();
   if (!main_frame)
     return false;
 
@@ -291,4 +291,16 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
   // Notify the browser there was an error.
   render_view_->Send(new ViewHostMsg_PageTranslated(
       render_view_->routing_id(), page_id_, source_lang_, target_lang_, error));
+}
+
+WebFrame* TranslateHelper::GetMainFrame() {
+  WebKit::WebView* web_view = render_view_->webview();
+  if (!web_view) {
+    // When the WebView is going away, the render view should have called
+    // CancelPendingTranslation() which should have stopped any pending work, so
+    // that case should not happen.
+    NOTREACHED();
+    return NULL;
+  }
+  return web_view->mainFrame();
 }

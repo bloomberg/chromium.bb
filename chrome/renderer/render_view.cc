@@ -2190,6 +2190,10 @@ void RenderView::show(WebNavigationPolicy policy) {
 }
 
 void RenderView::closeWidgetSoon() {
+  // Cancel pending translations so that the translate_helper_ does not attempt
+  // to access the WebView.
+  translate_helper_.CancelPendingTranslation();
+
   if (script_can_close_)
     RenderWidget::closeWidgetSoon();
 }

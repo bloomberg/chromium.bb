@@ -11,6 +11,9 @@
 #include "chrome/common/translate_errors.h"
 
 class RenderView;
+namespace WebKit {
+class WebFrame;
+}
 
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
@@ -98,6 +101,10 @@ class TranslateHelper {
   // Sends a message to the browser to notify it that the translation failed
   // with |error|.
   void NotifyBrowserTranslationFailed(TranslateErrors::Type error);
+
+  // Convenience method to access the main frame.  Can return NULL, typically
+  // if the page is being closed.
+  WebKit::WebFrame* GetMainFrame();
 
   // The RenderView we are performing translations for.
   RenderView* render_view_;
