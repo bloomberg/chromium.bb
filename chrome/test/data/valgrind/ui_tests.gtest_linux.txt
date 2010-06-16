@@ -3,15 +3,19 @@
 ChromeMainTest.AppLaunch
 # See http://crbug.com/29585.
 MetricsServiceTest.CrashRenderers
-# See http://crbug.com/29587.
-UnloadTest.CrossSiteInfiniteBeforeUnloadSync
 # See http://crbug.com/40584
 ExtensionProxyUITest.*
 # See http://crbug.com/42105
 BrowserTest.PosixSessionEnd
 # See http://crbug.com/42921
 ResourceDispatcherTest.CrossSiteAfterCrash
-# See http://crbug.com/45562
-UnloadTest.*BrowserCloseTabWhenOtherTabHasListener
 # http://crbug.com/45574   Unhappy on ChromeOS valgrind
 LayoutPluginTester.UnloadNoCrash
+
+# See http://crbug.com/29587.
+UnloadTest.CrossSiteInfiniteBeforeUnloadSync
+# See http://crbug.com/45562
+UnloadTest.*BrowserCloseTabWhenOtherTabHasListener
+# See http://crbug.com/46211
+UnloadTest.BrowserCloseBeforeUnloadOK
+UnloadTest.BrowserCloseWithInnerFocusedFrame
