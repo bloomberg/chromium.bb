@@ -537,6 +537,7 @@
    fun:__libc_start_main
 }
 
+# "*~TestShell" means "~TestShell" and "TestShell::~TestShell".
 {
    bug_46571_f
    Heapcheck:Leak
@@ -546,7 +547,7 @@
    fun:WebCore::ScriptController::collectGarbage
    fun:WebKit::WebFrameImpl::collectGarbage
    fun:TestShell::CallJSGC
-   fun:TestShell::~TestShell
+   fun:*~TestShell
    fun:::MainWindowDestroyed
    fun:g_closure_invoke
 }
