@@ -457,15 +457,6 @@
                   ],
                 },
                 {
-                  'destination':
-                      '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
-                  'files': [
-                    # TODO(ajwong): Find a way to share this path with
-                    # ffmpeg.gyp so they don't diverge. (BUG=23602)
-                    '<(PRODUCT_DIR)/libffmpegsumo.dylib',
-                  ],
-                },
-                {
                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins',
                   'files': [],
                   'conditions': [
@@ -532,7 +523,20 @@
                   'dependencies': [
                     '../pdf/pdf.gyp:pdf',
                   ],
-                }],
+                }],  # internal_pdf
+                ['build_ffmpegsumo', {
+                  'copies': [
+                    {
+                      'destination':
+                          '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+                      'files': [
+                        # TODO(ajwong): Find a way to share this path with
+                        # ffmpeg.gyp so they don't diverge. (BUG=23602)
+                        '<(PRODUCT_DIR)/libffmpegsumo.dylib',
+                      ],
+                    },
+                  ],
+                }],  # build_ffmpegsumo
               ],  # conditions
             }],  # OS=="mac"
           ],  # conditions
