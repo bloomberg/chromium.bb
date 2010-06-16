@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/password_store_default.h"
 
+#include <vector>
+
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/pref_service.h"
@@ -145,7 +147,7 @@ void PasswordStoreDefault::OnWebDataServiceRequestDone(
       static_cast<const WDResult<PasswordForms>*>(result)->GetValue();
   for (PasswordForms::const_iterator it = forms.begin();
        it != forms.end(); ++it) {
-    AddLoginImpl(**it);
+    AddLogin(**it);
     web_data_service_->RemoveLogin(**it);
     delete *it;
   }

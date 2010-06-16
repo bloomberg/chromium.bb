@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_store_kwallet.h"
+#include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 
 #include <sstream>
 
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/pickle.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/task.h"
+#include "chrome/browser/chrome_thread.h"
 
 using std::string;
 using std::vector;
@@ -19,31 +18,28 @@ using webkit_glue::PasswordForm;
 
 // We could localize these strings, but then changing your locale would cause
 // you to lose access to all your stored passwords. Maybe best not to do that.
-const char* PasswordStoreKWallet::kAppId = "Chrome";
-const char* PasswordStoreKWallet::kKWalletFolder = "Chrome Form Data";
+const char* NativeBackendKWallet::kAppId = "Chrome";
+const char* NativeBackendKWallet::kKWalletFolder = "Chrome Form Data";
 
-const char* PasswordStoreKWallet::kKWalletServiceName = "org.kde.kwalletd";
-const char* PasswordStoreKWallet::kKWalletPath = "/modules/kwalletd";
-const char* PasswordStoreKWallet::kKWalletInterface = "org.kde.KWallet";
-const char* PasswordStoreKWallet::kKLauncherServiceName = "org.kde.klauncher";
-const char* PasswordStoreKWallet::kKLauncherPath = "/KLauncher";
-const char* PasswordStoreKWallet::kKLauncherInterface = "org.kde.KLauncher";
+const char* NativeBackendKWallet::kKWalletServiceName = "org.kde.kwalletd";
+const char* NativeBackendKWallet::kKWalletPath = "/modules/kwalletd";
+const char* NativeBackendKWallet::kKWalletInterface = "org.kde.KWallet";
+const char* NativeBackendKWallet::kKLauncherServiceName = "org.kde.klauncher";
+const char* NativeBackendKWallet::kKLauncherPath = "/KLauncher";
+const char* NativeBackendKWallet::kKLauncherInterface = "org.kde.KLauncher";
 
-PasswordStoreKWallet::PasswordStoreKWallet(LoginDatabase* login_db,
-                                           Profile* profile,
-                                           WebDataService* web_data_service)
+NativeBackendKWallet::NativeBackendKWallet()
     : error_(NULL),
       connection_(NULL),
       proxy_(NULL) {
 }
 
-PasswordStoreKWallet::~PasswordStoreKWallet() {
-  if (proxy_) {
+NativeBackendKWallet::~NativeBackendKWallet() {
+  if (proxy_)
     g_object_unref(proxy_);
-  }
 }
 
-bool PasswordStoreKWallet::Init() {
+bool NativeBackendKWallet::Init() {
   // Initialize threading in dbus-glib - it should be fine for
   // dbus_g_thread_init to be called multiple times.
   if (!g_thread_supported())
@@ -64,7 +60,7 @@ bool PasswordStoreKWallet::Init() {
   return true;
 }
 
-bool PasswordStoreKWallet::StartKWalletd() {
+bool NativeBackendKWallet::StartKWalletd() {
   // Sadly kwalletd doesn't use DBUS activation, so we have to make a call to
   // klauncher to start it.
   DBusGProxy* klauncher_proxy =
@@ -100,7 +96,7 @@ bool PasswordStoreKWallet::StartKWalletd() {
   return true;
 }
 
-bool PasswordStoreKWallet::InitWallet() {
+bool NativeBackendKWallet::InitWallet() {
   // Make a proxy to KWallet.
   proxy_ = dbus_g_proxy_new_for_name(connection_, kKWalletServiceName,
                                      kKWalletPath, kKWalletInterface);
@@ -129,26 +125,25 @@ bool PasswordStoreKWallet::InitWallet() {
   return true;
 }
 
-void PasswordStoreKWallet::AddLoginImpl(const PasswordForm& form) {
-  AutoLock l(kwallet_lock_);
+bool NativeBackendKWallet::AddLogin(const PasswordForm& form) {
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
-    return;
+    return false;
 
   PasswordFormList forms;
   GetLoginsList(&forms, form.signon_realm, wallet_handle);
 
   forms.push_back(new PasswordForm(form));
-  SetLoginsList(forms, form.signon_realm, wallet_handle);
+  bool ok = SetLoginsList(forms, form.signon_realm, wallet_handle);
 
   STLDeleteElements(&forms);
+  return ok;
 }
 
-void PasswordStoreKWallet::UpdateLoginImpl(const PasswordForm& form) {
-  AutoLock l(kwallet_lock_);
+bool NativeBackendKWallet::UpdateLogin(const PasswordForm& form) {
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
-    return;
+    return false;
 
   PasswordFormList forms;
   GetLoginsList(&forms, form.signon_realm, wallet_handle);
@@ -158,16 +153,16 @@ void PasswordStoreKWallet::UpdateLoginImpl(const PasswordForm& form) {
       *forms[i] = form;
   }
 
-  SetLoginsList(forms, form.signon_realm, wallet_handle);
+  bool ok = SetLoginsList(forms, form.signon_realm, wallet_handle);
 
   STLDeleteElements(&forms);
+  return ok;
 }
 
-void PasswordStoreKWallet::RemoveLoginImpl(const PasswordForm& form) {
-  AutoLock l(kwallet_lock_);
+bool NativeBackendKWallet::RemoveLogin(const PasswordForm& form) {
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
-    return;
+    return false;
 
   PasswordFormList all_forms;
   GetLoginsList(&all_forms, form.signon_realm, wallet_handle);
@@ -181,18 +176,19 @@ void PasswordStoreKWallet::RemoveLoginImpl(const PasswordForm& form) {
       kept_forms.push_back(all_forms[i]);
   }
 
-  // Update the entry in the wallet.
-  SetLoginsList(kept_forms, form.signon_realm, wallet_handle);
+  // Update the entry in the wallet, possibly deleting it.
+  bool ok = SetLoginsList(kept_forms, form.signon_realm, wallet_handle);
+
   STLDeleteElements(&kept_forms);
+  return ok;
 }
 
-void PasswordStoreKWallet::RemoveLoginsCreatedBetweenImpl(
+bool NativeBackendKWallet::RemoveLoginsCreatedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
-  AutoLock l(kwallet_lock_);
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
-    return;
+    return false;
 
   // We could probably also use readEntryList here.
   char** realm_list = NULL;
@@ -204,8 +200,9 @@ void PasswordStoreKWallet::RemoveLoginsCreatedBetweenImpl(
                     G_TYPE_STRV,    &realm_list,
                     G_TYPE_INVALID);
   if (CheckError())
-    return;
+    return false;
 
+  bool ok = true;
   for (char** realm = realm_list; *realm; ++realm) {
     GArray* byte_array = NULL;
     dbus_g_proxy_call(proxy_, "readEntry", &error_,
@@ -237,49 +234,46 @@ void PasswordStoreKWallet::RemoveLoginsCreatedBetweenImpl(
       }
     }
 
-    SetLoginsList(kept_forms, signon_realm, wallet_handle);
+    if (!SetLoginsList(kept_forms, signon_realm, wallet_handle))
+      ok = false;
     STLDeleteElements(&kept_forms);
   }
   g_strfreev(realm_list);
+  return ok;
 }
 
-void PasswordStoreKWallet::GetLoginsImpl(GetLoginsRequest* request,
-                                         const PasswordForm& form) {
-  PasswordFormList forms;
-
-  AutoLock l(kwallet_lock_);
+bool NativeBackendKWallet::GetLogins(const PasswordForm& form,
+                                     PasswordFormList* forms) {
   int wallet_handle = WalletHandle();
-  if (wallet_handle != kInvalidKWalletHandle)
-    GetLoginsList(&forms, form.signon_realm, wallet_handle);
-
-  NotifyConsumer(request, forms);
+  if (wallet_handle == kInvalidKWalletHandle)
+    return false;
+  return GetLoginsList(forms, form.signon_realm, wallet_handle);
 }
 
-void PasswordStoreKWallet::GetAutofillableLoginsImpl(
-    GetLoginsRequest* request) {
-  std::vector<PasswordForm*> forms;
-  FillAutofillableLogins(&forms);
-  NotifyConsumer(request, forms);
+bool NativeBackendKWallet::GetLoginsCreatedBetween(const base::Time& get_begin,
+                                                   const base::Time& get_end,
+                                                   PasswordFormList* forms) {
+  int wallet_handle = WalletHandle();
+  if (wallet_handle == kInvalidKWalletHandle)
+    return false;
+  return GetLoginsList(forms, get_begin, get_end, wallet_handle);
 }
 
-void PasswordStoreKWallet::GetBlacklistLoginsImpl(
-    GetLoginsRequest* request) {
-  std::vector<PasswordForm*> forms;
-  FillBlacklistLogins(&forms);
-  NotifyConsumer(request, forms);
+bool NativeBackendKWallet::GetAutofillableLogins(PasswordFormList* forms) {
+  int wallet_handle = WalletHandle();
+  if (wallet_handle == kInvalidKWalletHandle)
+    return false;
+  return GetLoginsList(forms, true, wallet_handle);
 }
 
-bool PasswordStoreKWallet::FillAutofillableLogins(
-    std::vector<PasswordForm*>* forms) {
-  return FillSomeLogins(true, forms);
+bool NativeBackendKWallet::GetBlacklistLogins(PasswordFormList* forms) {
+  int wallet_handle = WalletHandle();
+  if (wallet_handle == kInvalidKWalletHandle)
+    return false;
+  return GetLoginsList(forms, false, wallet_handle);
 }
 
-bool PasswordStoreKWallet::FillBlacklistLogins(
-    std::vector<PasswordForm*>* forms) {
-  return FillSomeLogins(false, forms);
-}
-
-void PasswordStoreKWallet::GetLoginsList(PasswordFormList* forms,
+bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
                                          const string& signon_realm,
                                          int wallet_handle) {
   // Is there an entry in the wallet?
@@ -294,7 +288,7 @@ void PasswordStoreKWallet::GetLoginsList(PasswordFormList* forms,
                     G_TYPE_INVALID);
 
   if (CheckError() || !has_entry)
-    return;
+    return false;
 
   GArray* byte_array = NULL;
   dbus_g_proxy_call(proxy_, "readEntry", &error_,
@@ -307,14 +301,93 @@ void PasswordStoreKWallet::GetLoginsList(PasswordFormList* forms,
                     G_TYPE_INVALID);
 
   if (CheckError() || !byte_array || !byte_array->len)
-    return;
+    return false;
 
   Pickle pickle(byte_array->data, byte_array->len);
   DeserializeValue(signon_realm, pickle, forms);
   g_array_free(byte_array, true);
+
+  return true;
 }
 
-void PasswordStoreKWallet::SetLoginsList(const PasswordFormList& forms,
+bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
+                                         bool autofillable,
+                                         int wallet_handle) {
+  PasswordFormList all_forms;
+  if (!GetAllLogins(&all_forms, wallet_handle))
+    return false;
+
+  // We have to read all the entries, and then filter them here.
+  forms->reserve(forms->size() + all_forms.size());
+  for (size_t i = 0; i < all_forms.size(); ++i) {
+    if (all_forms[i]->blacklisted_by_user == !autofillable)
+      forms->push_back(all_forms[i]);
+    else
+      delete all_forms[i];
+  }
+
+  return true;
+}
+
+bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
+                                         const base::Time& begin,
+                                         const base::Time& end,
+                                         int wallet_handle) {
+  PasswordFormList all_forms;
+  if (!GetAllLogins(&all_forms, wallet_handle))
+    return false;
+
+  // We have to read all the entries, and then filter them here.
+  forms->reserve(forms->size() + all_forms.size());
+  for (size_t i = 0; i < all_forms.size(); ++i) {
+    if (begin <= all_forms[i]->date_created &&
+        (end.is_null() || all_forms[i]->date_created < end)) {
+      forms->push_back(all_forms[i]);
+    } else {
+      delete all_forms[i];
+    }
+  }
+
+  return true;
+}
+
+bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
+                                        int wallet_handle) {
+  // We could probably also use readEntryList here.
+  char** realm_list = NULL;
+  dbus_g_proxy_call(proxy_, "entryList", &error_,
+                    G_TYPE_INT,     wallet_handle,             // handle
+                    G_TYPE_STRING,  kKWalletFolder,            // folder
+                    G_TYPE_STRING,  kAppId,                    // appid
+                    G_TYPE_INVALID,
+                    G_TYPE_STRV,    &realm_list,
+                    G_TYPE_INVALID);
+  if (CheckError())
+    return false;
+
+  for (char** realm = realm_list; *realm; ++realm) {
+    GArray* byte_array = NULL;
+    dbus_g_proxy_call(proxy_, "readEntry", &error_,
+                      G_TYPE_INT,     wallet_handle,           // handle
+                      G_TYPE_STRING,  kKWalletFolder,          // folder
+                      G_TYPE_STRING,  *realm,                  // key
+                      G_TYPE_STRING,  kAppId,                  // appid
+                      G_TYPE_INVALID,
+                      DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
+                      G_TYPE_INVALID);
+
+    if (CheckError() || !byte_array || !byte_array->len)
+      continue;
+
+    Pickle pickle(byte_array->data, byte_array->len);
+    DeserializeValue(*realm, pickle, forms);
+    g_array_free(byte_array, true);
+  }
+  g_strfreev(realm_list);
+  return true;
+}
+
+bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
                                          const string& signon_realm,
                                          int wallet_handle) {
   if (forms.empty()) {
@@ -331,7 +404,7 @@ void PasswordStoreKWallet::SetLoginsList(const PasswordFormList& forms,
     CheckError();
     if (ret != 0)
       LOG(ERROR) << "Bad return code " << ret << " from kwallet removeEntry";
-    return;
+    return ret == 0;
   }
 
   Pickle value;
@@ -358,61 +431,10 @@ void PasswordStoreKWallet::SetLoginsList(const PasswordFormList& forms,
   CheckError();
   if (ret != 0)
     LOG(ERROR) << "Bad return code " << ret << " from kwallet writeEntry";
+  return ret == 0;
 }
 
-bool PasswordStoreKWallet::FillSomeLogins(bool autofillable,
-                                          PasswordFormList* forms) {
-  AutoLock l(kwallet_lock_);
-  int wallet_handle = WalletHandle();
-  if (wallet_handle == kInvalidKWalletHandle)
-    return false;
-
-  // We could probably also use readEntryList here.
-  char** realm_list = NULL;
-  dbus_g_proxy_call(proxy_, "entryList", &error_,
-                    G_TYPE_INT,     wallet_handle,             // handle
-                    G_TYPE_STRING,  kKWalletFolder,            // folder
-                    G_TYPE_STRING,  kAppId,                    // appid
-                    G_TYPE_INVALID,
-                    G_TYPE_STRV,    &realm_list,
-                    G_TYPE_INVALID);
-  if (CheckError())
-    return false;
-
-  PasswordFormList all_forms;
-  for (char** realm = realm_list; *realm; ++realm) {
-    GArray* byte_array = NULL;
-    dbus_g_proxy_call(proxy_, "readEntry", &error_,
-                      G_TYPE_INT,     wallet_handle,           // handle
-                      G_TYPE_STRING,  kKWalletFolder,          // folder
-                      G_TYPE_STRING,  *realm,                  // key
-                      G_TYPE_STRING,  kAppId,                  // appid
-                      G_TYPE_INVALID,
-                      DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
-                      G_TYPE_INVALID);
-
-    if (CheckError() || !byte_array || !byte_array->len)
-      continue;
-
-    Pickle pickle(byte_array->data, byte_array->len);
-    DeserializeValue(*realm, pickle, &all_forms);
-    g_array_free(byte_array, true);
-  }
-  g_strfreev(realm_list);
-
-  // We have to read all the entries, and then filter them here.
-  forms->reserve(forms->size() + all_forms.size());
-  for (size_t i = 0; i < all_forms.size(); ++i) {
-    if (all_forms[i]->blacklisted_by_user == !autofillable)
-      forms->push_back(all_forms[i]);
-    else
-      delete all_forms[i];
-  }
-
-  return true;
-}
-
-bool PasswordStoreKWallet::CompareForms(const PasswordForm& a,
+bool NativeBackendKWallet::CompareForms(const PasswordForm& a,
                                         const PasswordForm& b,
                                         bool update_check) {
   // An update check doesn't care about the submit element.
@@ -425,7 +447,7 @@ bool PasswordStoreKWallet::CompareForms(const PasswordForm& a,
          a.username_value   == b.username_value;
 }
 
-void PasswordStoreKWallet::SerializeValue(const PasswordFormList& forms,
+void NativeBackendKWallet::SerializeValue(const PasswordFormList& forms,
                                           Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
   pickle->WriteSize(forms.size());
@@ -447,7 +469,7 @@ void PasswordStoreKWallet::SerializeValue(const PasswordFormList& forms,
   }
 }
 
-void PasswordStoreKWallet::DeserializeValue(const string& signon_realm,
+void NativeBackendKWallet::DeserializeValue(const string& signon_realm,
                                             const Pickle& pickle,
                                             PasswordFormList* forms) {
   void* iter = NULL;
@@ -487,14 +509,14 @@ void PasswordStoreKWallet::DeserializeValue(const string& signon_realm,
   }
 }
 
-void PasswordStoreKWallet::ReadGURL(const Pickle& pickle, void** iter,
+void NativeBackendKWallet::ReadGURL(const Pickle& pickle, void** iter,
                                     GURL* url) {
   string url_string;
   pickle.ReadString(iter, &url_string);
   *url = GURL(url_string);
 }
 
-bool PasswordStoreKWallet::CheckError() {
+bool NativeBackendKWallet::CheckError() {
   if (error_) {
     LOG(ERROR) << "Failed to complete KWallet call: " << error_->message;
     g_error_free(error_);
@@ -504,7 +526,8 @@ bool PasswordStoreKWallet::CheckError() {
   return false;
 }
 
-int PasswordStoreKWallet::WalletHandle() {
+int NativeBackendKWallet::WalletHandle() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // Open the wallet.
   int handle = kInvalidKWalletHandle;
   dbus_g_proxy_call(proxy_, "open", &error_,

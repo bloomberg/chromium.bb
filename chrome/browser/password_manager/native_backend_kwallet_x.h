@@ -2,71 +2,74 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET_H_
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_KWALLET_X_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_KWALLET_X_H_
 
 #include <dbus/dbus-glib.h>
 #include <glib.h>
 
 #include <string>
-#include <vector>
 
-#include "base/lock.h"
-#include "chrome/browser/password_manager/login_database.h"
-#include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "base/basictypes.h"
+#include "base/time.h"
+#include "chrome/browser/password_manager/password_store_x.h"
 #include "webkit/glue/password_form.h"
 
 class Pickle;
-class Profile;
-class Task;
 
-class PasswordStoreKWallet : public PasswordStore {
+// NativeBackend implementation using KWallet.
+class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
  public:
-  PasswordStoreKWallet(LoginDatabase* login_db,
-                       Profile* profile,
-                       WebDataService* web_data_service);
+  NativeBackendKWallet();
 
-  bool Init();
+  virtual ~NativeBackendKWallet();
+
+  virtual bool Init();
+
+  // Implements NativeBackend interface.
+  virtual bool AddLogin(const webkit_glue::PasswordForm& form);
+  virtual bool UpdateLogin(const webkit_glue::PasswordForm& form);
+  virtual bool RemoveLogin(const webkit_glue::PasswordForm& form);
+  virtual bool RemoveLoginsCreatedBetween(const base::Time& delete_begin,
+                                          const base::Time& delete_end);
+  virtual bool GetLogins(const webkit_glue::PasswordForm& form,
+                         PasswordFormList* forms);
+  virtual bool GetLoginsCreatedBetween(const base::Time& delete_begin,
+                                       const base::Time& delete_end,
+                                       PasswordFormList* forms);
+  virtual bool GetAutofillableLogins(PasswordFormList* forms);
+  virtual bool GetBlacklistLogins(PasswordFormList* forms);
 
  private:
-  typedef std::vector<webkit_glue::PasswordForm*> PasswordFormList;
-
-  virtual ~PasswordStoreKWallet();
-
-  // Implements PasswordStore interface.
-  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                              const base::Time& delete_end);
-  virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const webkit_glue::PasswordForm& form);
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request);
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request);
-  virtual bool FillAutofillableLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
-  virtual bool FillBlacklistLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
-
   // Initialization.
   bool StartKWalletd();
   bool InitWallet();
 
-  // Reads a list of PasswordForms from the wallet that match the signon_realm.
-  void GetLoginsList(PasswordFormList* forms,
+  // Reads PasswordForms from the wallet that match the given signon_realm.
+  bool GetLoginsList(PasswordFormList* forms,
                      const std::string& signon_realm,
                      int wallet_handle);
+
+  // Reads PasswordForms from the wallet with the given autofillability state.
+  bool GetLoginsList(PasswordFormList* forms,
+                     bool autofillable,
+                     int wallet_handle);
+
+  // Reads PasswordForms from the wallet created in the given time range.
+  bool GetLoginsList(PasswordFormList* forms,
+                     const base::Time& begin,
+                     const base::Time& end,
+                     int wallet_handle);
+
+  // Helper for some of the above GetLoginsList() methods.
+  bool GetAllLogins(PasswordFormList* forms, int wallet_handle);
 
   // Writes a list of PasswordForms to the wallet with the given signon_realm.
   // Overwrites any existing list for this signon_realm. Removes the entry if
-  // |forms| is empty.
-  void SetLoginsList(const PasswordFormList& forms,
+  // |forms| is empty. Returns true on success.
+  bool SetLoginsList(const PasswordFormList& forms,
                      const std::string& signon_realm,
                      int wallet_handle);
-
-  // Helper for FillAutofillableLogins() and FillBlacklistLogins().
-  bool FillSomeLogins(bool autofillable, PasswordFormList* forms);
 
   // Checks if the last DBus call returned an error. If it did, logs the error
   // message, frees it and returns true.
@@ -117,9 +120,6 @@ class PasswordStoreKWallet : public PasswordStore {
   // Invalid handle returned by WalletHandle().
   static const int kInvalidKWalletHandle = -1;
 
-  // Controls all access to kwallet DBus calls.
-  Lock kwallet_lock_;
-
   // Error from the last DBus call. NULL when there's no error. Freed and
   // cleared by CheckError().
   GError* error_;
@@ -131,7 +131,7 @@ class PasswordStoreKWallet : public PasswordStore {
   // The name of the wallet we've opened. Set during Init().
   std::string wallet_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreKWallet);
+  DISALLOW_COPY_AND_ASSIGN(NativeBackendKWallet);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET_H_
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_KWALLET_X_H_

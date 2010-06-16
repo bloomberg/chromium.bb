@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_store_gnome.h"
+#include "chrome/browser/password_manager/native_backend_gnome_x.h"
 
 #if defined(DLOPEN_GNOME_KEYRING)
 #include <dlfcn.h>
@@ -13,13 +13,12 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 
 using std::map;
 using std::string;
-using std::vector;
 using webkit_glue::PasswordForm;
 
 /* Many of the gnome_keyring_* functions use variable arguments, which makes
@@ -136,7 +135,7 @@ bool LoadGnomeKeyring() {
 #define GNOME_KEYRING_APPLICATION_CHROME "chrome"
 
 // Schema is analagous to the fields in PasswordForm.
-const GnomeKeyringPasswordSchema PasswordStoreGnome::kGnomeSchema = {
+const GnomeKeyringPasswordSchema NativeBackendGnome::kGnomeSchema = {
   GNOME_KEYRING_ITEM_GENERIC_SECRET, {
     { "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { "action_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
@@ -156,26 +155,47 @@ const GnomeKeyringPasswordSchema PasswordStoreGnome::kGnomeSchema = {
   }
 };
 
-PasswordStoreGnome::PasswordStoreGnome(LoginDatabase* login_db,
-                                       Profile* profile,
-                                       WebDataService* web_data_service) {
+NativeBackendGnome::NativeBackendGnome() {
 }
 
-PasswordStoreGnome::~PasswordStoreGnome() {
+NativeBackendGnome::~NativeBackendGnome() {
 }
 
-bool PasswordStoreGnome::Init() {
-  return PasswordStore::Init() &&
-         LoadGnomeKeyring() &&
-         gnome_keyring_is_available();
+bool NativeBackendGnome::Init() {
+  return LoadGnomeKeyring() && gnome_keyring_is_available();
 }
 
-void PasswordStoreGnome::AddLoginImpl(const PasswordForm& form) {
+bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  AddLoginHelper(form, base::Time::Now());
+  GnomeKeyringResult result = gnome_keyring_store_password_sync(
+      &kGnomeSchema,
+      NULL,  // Default keyring.
+      form.origin.spec().c_str(),  // Display name.
+      UTF16ToUTF8(form.password_value).c_str(),
+      "origin_url", form.origin.spec().c_str(),
+      "action_url", form.action.spec().c_str(),
+      "username_element", UTF16ToUTF8(form.username_element).c_str(),
+      "username_value", UTF16ToUTF8(form.username_value).c_str(),
+      "password_element", UTF16ToUTF8(form.password_element).c_str(),
+      "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
+      "signon_realm", form.signon_realm.c_str(),
+      "ssl_valid", form.ssl_valid,
+      "preferred", form.preferred,
+      "date_created", Int64ToString(form.date_created.ToTimeT()).c_str(),
+      "blacklisted_by_user", form.blacklisted_by_user,
+      "scheme", form.scheme,
+      "application", GNOME_KEYRING_APPLICATION_CHROME,
+      NULL);
+
+  if (result != GNOME_KEYRING_RESULT_OK) {
+    LOG(ERROR) << "Keyring save failed: "
+               << gnome_keyring_result_to_message(result);
+    return false;
+  }
+  return true;
 }
 
-void PasswordStoreGnome::UpdateLoginImpl(const PasswordForm& form) {
+bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
   // Based on LoginDatabase::UpdateLogin(), we search for forms to update by
   // origin_url, username_element, username_value, password_element, and
   // signon_realm. We then compare the result to the updated form. If they
@@ -201,31 +221,35 @@ void PasswordStoreGnome::UpdateLoginImpl(const PasswordForm& form) {
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
       GNOME_KEYRING_APPLICATION_CHROME,
       NULL);
-  vector<PasswordForm*> forms;
-  if (result == GNOME_KEYRING_RESULT_OK) {
-    FillFormVector(found, &forms);
-    for (size_t i = 0; i < forms.size(); ++i) {
-      if (forms[i]->action != form.action ||
-          forms[i]->password_value != form.password_value ||
-          forms[i]->ssl_valid != form.ssl_valid ||
-          forms[i]->preferred != form.preferred) {
-        PasswordForm updated = *forms[i];
-        updated.action = form.action;
-        updated.password_value = form.password_value;
-        updated.ssl_valid = form.ssl_valid;
-        updated.preferred = form.preferred;
-        if (AddLoginHelper(updated, updated.date_created))
-          RemoveLoginImpl(*forms[i]);
-      }
-      delete forms[i];
-    }
-  } else {
+  if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
                << gnome_keyring_result_to_message(result);
+    return false;
   }
+  bool ok = true;
+  PasswordFormList forms;
+  ConvertFormList(found, &forms);
+  for (size_t i = 0; i < forms.size(); ++i) {
+    if (forms[i]->action != form.action ||
+        forms[i]->password_value != form.password_value ||
+        forms[i]->ssl_valid != form.ssl_valid ||
+        forms[i]->preferred != form.preferred) {
+      PasswordForm updated = *forms[i];
+      updated.action = form.action;
+      updated.password_value = form.password_value;
+      updated.ssl_valid = form.ssl_valid;
+      updated.preferred = form.preferred;
+      if (AddLogin(updated))
+        RemoveLogin(*forms[i]);
+      else
+        ok = false;
+    }
+    delete forms[i];
+  }
+  return ok;
 }
 
-void PasswordStoreGnome::RemoveLoginImpl(const PasswordForm& form) {
+bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // We find forms using the same fields as LoginDatabase::RemoveLogin().
   GnomeKeyringResult result = gnome_keyring_delete_password_sync(
@@ -241,43 +265,35 @@ void PasswordStoreGnome::RemoveLoginImpl(const PasswordForm& form) {
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring delete failed: "
                << gnome_keyring_result_to_message(result);
+    return false;
   }
+  return true;
 }
 
-void PasswordStoreGnome::RemoveLoginsCreatedBetweenImpl(
+bool NativeBackendGnome::RemoveLoginsCreatedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  GList* found = NULL;
-  // Search GNOME keyring for all passwords, then delete the ones in the range.
-  // We need to search for something, otherwise we get no results - so we search
-  // for the fixed application string.
-  GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      &found,
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
-      NULL);
-  if (result == GNOME_KEYRING_RESULT_OK) {
-    // We could walk the list and delete items as we find them, but it is much
-    // easier to build the vector and use RemoveLoginImpl() to delete them.
-    vector<PasswordForm*> forms;
-    FillFormVector(found, &forms);
-    for (size_t i = 0; i < forms.size(); ++i) {
-      if (delete_begin <= forms[i]->date_created &&
-          (delete_end.is_null() || forms[i]->date_created < delete_end)) {
-        RemoveLoginImpl(*forms[i]);
-      }
-      delete forms[i];
+  bool ok = true;
+  // We could walk the list and delete items as we find them, but it is much
+  // easier to build the list and use RemoveLogin() to delete them.
+  PasswordFormList forms;
+  if (!GetAllLogins(&forms))
+    return false;
+
+  for (size_t i = 0; i < forms.size(); ++i) {
+    if (delete_begin <= forms[i]->date_created &&
+        (delete_end.is_null() || forms[i]->date_created < delete_end)) {
+      if (!RemoveLogin(*forms[i]))
+        ok = false;
     }
-  } else if (result != GNOME_KEYRING_RESULT_NO_MATCH) {
-    LOG(ERROR) << "Keyring find failed: "
-               << gnome_keyring_result_to_message(result);
+    delete forms[i];
   }
+  return ok;
 }
 
-void PasswordStoreGnome::GetLoginsImpl(GetLoginsRequest* request,
-                                       const PasswordForm& form) {
+bool NativeBackendGnome::GetLogins(const PasswordForm& form,
+                                   PasswordFormList* forms) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   GList* found = NULL;
   // Search gnome keyring for matching passwords.
@@ -289,73 +305,50 @@ void PasswordStoreGnome::GetLoginsImpl(GetLoginsRequest* request,
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
       GNOME_KEYRING_APPLICATION_CHROME,
       NULL);
-  vector<PasswordForm*> forms;
-  if (result == GNOME_KEYRING_RESULT_OK) {
-    FillFormVector(found, &forms);
-  } else if (result != GNOME_KEYRING_RESULT_NO_MATCH) {
-    LOG(ERROR) << "Keyring find failed: "
-               << gnome_keyring_result_to_message(result);
-  }
-  NotifyConsumer(request, forms);
-}
-
-void PasswordStoreGnome::GetAutofillableLoginsImpl(
-    GetLoginsRequest* request) {
-  std::vector<PasswordForm*> forms;
-  FillAutofillableLogins(&forms);
-  NotifyConsumer(request, forms);
-}
-
-void PasswordStoreGnome::GetBlacklistLoginsImpl(
-    GetLoginsRequest* request) {
-  std::vector<PasswordForm*> forms;
-  FillBlacklistLogins(&forms);
-  NotifyConsumer(request, forms);
-}
-
-bool PasswordStoreGnome::FillAutofillableLogins(
-    std::vector<PasswordForm*>* forms) {
-  return FillSomeLogins(true, forms);
-}
-
-bool PasswordStoreGnome::FillBlacklistLogins(
-    std::vector<PasswordForm*>* forms) {
-  return FillSomeLogins(false, forms);
-}
-
-bool PasswordStoreGnome::AddLoginHelper(const PasswordForm& form,
-                                        const base::Time& date_created) {
-  GnomeKeyringResult result = gnome_keyring_store_password_sync(
-      &kGnomeSchema,
-      NULL,  // Default keyring.
-      form.origin.spec().c_str(),  // Display name.
-      UTF16ToUTF8(form.password_value).c_str(),
-      "origin_url", form.origin.spec().c_str(),
-      "action_url", form.action.spec().c_str(),
-      "username_element", UTF16ToUTF8(form.username_element).c_str(),
-      "username_value", UTF16ToUTF8(form.username_value).c_str(),
-      "password_element", UTF16ToUTF8(form.password_element).c_str(),
-      "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
-      "signon_realm", form.signon_realm.c_str(),
-      "ssl_valid", form.ssl_valid,
-      "preferred", form.preferred,
-      "date_created", Int64ToString(date_created.ToTimeT()).c_str(),
-      "blacklisted_by_user", form.blacklisted_by_user,
-      "scheme", form.scheme,
-      "application", GNOME_KEYRING_APPLICATION_CHROME,
-      NULL);
-
+  if (result == GNOME_KEYRING_RESULT_NO_MATCH)
+    return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
-    LOG(ERROR) << "Keyring save failed: "
+    LOG(ERROR) << "Keyring find failed: "
                << gnome_keyring_result_to_message(result);
     return false;
   }
+  ConvertFormList(found, forms);
   return true;
 }
 
-bool PasswordStoreGnome::FillSomeLogins(
-    bool autofillable,
-    std::vector<PasswordForm*>* forms) {
+bool NativeBackendGnome::GetLoginsCreatedBetween(const base::Time& get_begin,
+                                                 const base::Time& get_end,
+                                                 PasswordFormList* forms) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  // We could walk the list and add items as we find them, but it is much
+  // easier to build the list and then filter the results.
+  PasswordFormList all_forms;
+  if (!GetAllLogins(&all_forms))
+    return false;
+
+  forms->reserve(forms->size() + all_forms.size());
+  for (size_t i = 0; i < all_forms.size(); ++i) {
+    if (get_begin <= all_forms[i]->date_created &&
+        (get_end.is_null() || all_forms[i]->date_created < get_end)) {
+      forms->push_back(all_forms[i]);
+    } else {
+      delete all_forms[i];
+    }
+  }
+
+  return true;
+}
+
+bool NativeBackendGnome::GetAutofillableLogins(PasswordFormList* forms) {
+  return GetLoginsList(forms, true);
+}
+
+bool NativeBackendGnome::GetBlacklistLogins(PasswordFormList* forms) {
+  return GetLoginsList(forms, false);
+}
+
+bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
+                                       bool autofillable) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   GList* found = NULL;
   uint32_t blacklisted_by_user = !autofillable;
@@ -368,18 +361,40 @@ bool PasswordStoreGnome::FillSomeLogins(
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
       GNOME_KEYRING_APPLICATION_CHROME,
       NULL);
-  if (result == GNOME_KEYRING_RESULT_OK) {
-    FillFormVector(found, forms);
-  } else if (result != GNOME_KEYRING_RESULT_NO_MATCH) {
+  if (result == GNOME_KEYRING_RESULT_NO_MATCH)
+    return true;
+  if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
                << gnome_keyring_result_to_message(result);
     return false;
   }
+  ConvertFormList(found, forms);
   return true;
 }
 
-void PasswordStoreGnome::FillFormVector(GList* found,
-    std::vector<PasswordForm*>* forms) {
+bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
+  GList* found = NULL;
+  // We need to search for something, otherwise we get no results - so we search
+  // for the fixed application string.
+  GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
+      GNOME_KEYRING_ITEM_GENERIC_SECRET,
+      &found,
+      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      GNOME_KEYRING_APPLICATION_CHROME,
+      NULL);
+  if (result == GNOME_KEYRING_RESULT_NO_MATCH)
+    return true;
+  if (result != GNOME_KEYRING_RESULT_OK) {
+    LOG(ERROR) << "Keyring find failed: "
+               << gnome_keyring_result_to_message(result);
+    return false;
+  }
+  ConvertFormList(found, forms);
+  return true;
+}
+
+void NativeBackendGnome::ConvertFormList(GList* found,
+                                         PasswordFormList* forms) {
   GList* element = g_list_first(found);
   while (element != NULL) {
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
