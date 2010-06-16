@@ -26,6 +26,18 @@
   fun:*browser_sync*SyncShareIntercept*Observe*
 }
 
+{
+  bug_46642a
+  ThreadSanitizer:Race
+  fun:*media*PipelineImpl*InitializeTask*
+}
+
+{
+  bug_46642b
+  ThreadSanitizer:Race
+  fun:*media*PipelineImpl*GetCurrentTime*
+}
+
 ############################
 # Real races in third_party
 {
