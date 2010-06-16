@@ -10,6 +10,7 @@
 #include <atlcrack.h>
 #include <atlctrls.h>
 #include <atlmisc.h>
+#include <oleacc.h>
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl
 #include <vsstyle.h>
 
@@ -70,6 +71,11 @@ class NativeTextfieldWin
   virtual bool GetAcceleratorForCommandId(int command_id,
                                           menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
+
+  // Update accessibility information.
+  void InitializeAccessibilityInfo();
+  void UpdateAccessibleState(uint32 state_flag, bool set_value);
+  void UpdateAccessibleValue(const std::wstring& value);
 
   // CWindowImpl
   BEGIN_MSG_MAP(Edit)
@@ -241,6 +247,9 @@ class NativeTextfieldWin
   NativeViewHost* container_view_;
 
   COLORREF bg_color_;
+
+  //  The accessibility state of this object.
+  int accessibility_state_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldWin);
 };

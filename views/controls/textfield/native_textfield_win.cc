@@ -19,6 +19,7 @@
 #include "gfx/native_theme_win.h"
 #include "grit/app_strings.h"
 #include "skia/ext/skia_utils_win.h"
+#include "views/controls/label.h"
 #include "views/controls/menu/menu_win.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
@@ -119,6 +120,8 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   ole_interface.Attach(GetOleInterface());
   if (ole_interface)
     text_object_model_.QueryFrom(ole_interface);
+
+  InitializeAccessibilityInfo();
 }
 
 NativeTextfieldWin::~NativeTextfieldWin() {
@@ -158,6 +161,7 @@ void NativeTextfieldWin::UpdateText() {
   if (textfield_->style() & Textfield::STYLE_LOWERCASE)
     text_to_set = l10n_util::ToLower(text_to_set);
   SetWindowText(text_to_set.c_str());
+  UpdateAccessibleValue(text_to_set);
 }
 
 void NativeTextfieldWin::AppendText(const string16& text) {
@@ -217,6 +221,7 @@ void NativeTextfieldWin::UpdateBackgroundColor() {
 
 void NativeTextfieldWin::UpdateReadOnly() {
   SendMessage(m_hWnd, EM_SETREADONLY, textfield_->read_only(), 0);
+  UpdateAccessibleState(STATE_SYSTEM_READONLY, textfield_->read_only());
 }
 
 void NativeTextfieldWin::UpdateFont() {
@@ -228,10 +233,12 @@ void NativeTextfieldWin::UpdateFont() {
 
 void NativeTextfieldWin::UpdateIsPassword() {
   // TODO: Need to implement for Windows.
+  UpdateAccessibleState(STATE_SYSTEM_PROTECTED, textfield_->IsPassword());
 }
 
 void NativeTextfieldWin::UpdateEnabled() {
   SendMessage(m_hWnd, WM_ENABLE, textfield_->IsEnabled(), 0);
+  UpdateAccessibleState(STATE_SYSTEM_UNAVAILABLE, !textfield_->IsEnabled());
 }
 
 gfx::Insets NativeTextfieldWin::CalculateInsets() {
@@ -329,6 +336,73 @@ void NativeTextfieldWin::ExecuteCommand(int command_id) {
     default:                 NOTREACHED(); break;
   }
   OnAfterPossibleChange(true);
+}
+
+void NativeTextfieldWin::InitializeAccessibilityInfo() {
+  // Set the accessible state.
+  accessibility_state_ = 0;
+
+  ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (!SUCCEEDED(hr))
+    return;
+
+  VARIANT var;
+
+  // Set the accessible role.
+  var.vt = VT_I4;
+  var.lVal = ROLE_SYSTEM_TEXT;
+  hr = pAccPropServices->SetHwndProp(m_hWnd, OBJID_CLIENT,
+      CHILDID_SELF, PROPID_ACC_ROLE, var);
+
+  // Set the accessible name by getting the label text.
+  View* parent = textfield_->GetParent();
+  int label_index = parent->GetChildIndex(textfield_) - 1;
+  if (label_index  >= 0) {
+    // Try to find the name of this text field.
+    // We expect it to be a Label preceeding this view (if it exists).
+    std::wstring name;
+    View* label_view = parent->GetChildViewAt(label_index );
+    if (label_view ->GetClassName() == Label::kViewClassName &&
+        label_view ->GetAccessibleName(&name)) {
+      hr = pAccPropServices->SetHwndPropStr(m_hWnd, OBJID_CLIENT,
+          CHILDID_SELF, PROPID_ACC_NAME, name.c_str());
+    }
+  }
+}
+
+void NativeTextfieldWin::UpdateAccessibleState(uint32 state_flag,
+                                               bool set_value) {
+  ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (!SUCCEEDED(hr))
+    return;
+
+  VARIANT var;
+  var.vt = VT_I4;
+  var.lVal = set_value ? accessibility_state_ | state_flag
+      : accessibility_state_ & ~state_flag;
+  hr = pAccPropServices->SetHwndProp(m_hWnd, OBJID_CLIENT,
+      CHILDID_SELF, PROPID_ACC_STATE, var);
+
+  ::NotifyWinEvent(EVENT_OBJECT_STATECHANGE, m_hWnd, OBJID_CLIENT,
+                   CHILDID_SELF);
+}
+
+void NativeTextfieldWin::UpdateAccessibleValue(const std::wstring& value) {
+  ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (!SUCCEEDED(hr))
+    return;
+
+  hr = pAccPropServices->SetHwndPropStr(m_hWnd, OBJID_CLIENT,
+      CHILDID_SELF, PROPID_ACC_VALUE, value.c_str());
+
+  ::NotifyWinEvent(EVENT_OBJECT_VALUECHANGE, m_hWnd, OBJID_CLIENT,
+                   CHILDID_SELF);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -859,6 +933,7 @@ void NativeTextfieldWin::OnAfterPossibleChange(bool should_redraw_text) {
         return;
     }
     textfield_->SyncText();
+    UpdateAccessibleValue(textfield_->text());
     if (textfield_->GetController())
       textfield_->GetController()->ContentsChanged(textfield_, new_text);
 
