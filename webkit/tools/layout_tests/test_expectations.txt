@@ -29,7 +29,6 @@ BUG46674 WIN LINUX : fast/tokenizer/missing-title-end-tag-2.html = FAIL
 BUG46674 WIN LINUX : fast/tokenizer/script_extra_close.html = FAIL
 BUG46674 WIN LINUX : tables/mozilla/images/adforce_imgis_com.html = FAIL
 BUG46674 WIN LINUX : webarchive/archive-empty-frame-dom.html = FAIL
-BUG46674 LINUX : fast/text/international/hindi-whitespace.html = FAIL
 BUG46674 MAC : fast/parser/script-tag-with-trailing-slash.html = FAIL
 BUG46674 MAC : fast/tokenizer/script_extra_close.html = FAIL
 BUG46674 MAC : webarchive/archive-empty-frame-dom.html = FAIL
