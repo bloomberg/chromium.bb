@@ -99,8 +99,9 @@ void CocoaTest::TearDown() {
 
   while (windows_left.size() > 0) {
     // Cover delayed actions by spinning the loop at least once after
-    // this timeout.
-    const NSTimeInterval kCloseTimeout = 1.0;
+    // this timeout.  Made large to accomocate valgrind and the wall
+    // clock delay of a [NSApplication endSheet:].
+    const NSTimeInterval kCloseTimeout = 5.0;
 
     // Cover chains of delayed actions by spinning the loop at least
     // this many times.
