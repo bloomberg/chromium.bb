@@ -47,9 +47,7 @@ const gint kAutoFillDialogLearnMoreLink = 1;
 // All of these widgets are GtkEntrys.
 typedef struct _AddressWidgets {
   GtkWidget* label;
-  GtkWidget* first_name;
-  GtkWidget* middle_name;
-  GtkWidget* last_name;
+  GtkWidget* full_name;
   GtkWidget* email;
   GtkWidget* company_name;
   GtkWidget* address_line1;
@@ -406,12 +404,8 @@ static AutoFillProfile AutoFillProfileFromWidgetValues(
     const AddressWidgets& widgets) {
   // TODO(jhawkins): unique id?
   AutoFillProfile profile(GetEntryText(widgets.label), 0);
-  profile.SetInfo(AutoFillType(NAME_FIRST),
-                  GetEntryText(widgets.first_name));
-  profile.SetInfo(AutoFillType(NAME_MIDDLE),
-      GetEntryText(widgets.middle_name));
-  profile.SetInfo(AutoFillType(NAME_LAST),
-      GetEntryText(widgets.last_name));
+  profile.SetInfo(AutoFillType(NAME_FULL),
+                  GetEntryText(widgets.full_name));
   profile.SetInfo(AutoFillType(EMAIL_ADDRESS),
       GetEntryText(widgets.email));
   profile.SetInfo(AutoFillType(COMPANY_NAME),
@@ -785,12 +779,8 @@ GtkWidget* AutoFillDialog::AddNewAddress(bool expand) {
   widgets.label = FormTableAddLabelEntry(table, 0, 0, 1,
                                          IDS_AUTOFILL_DIALOG_LABEL,
                                          address, G_CALLBACK(OnLabelChanged));
-  widgets.first_name = FormTableAddEntry(table, 1, 0, 1,
-                                         IDS_AUTOFILL_DIALOG_FIRST_NAME);
-  widgets.middle_name = FormTableAddEntry(table, 1, 1, 1,
-                                          IDS_AUTOFILL_DIALOG_MIDDLE_NAME);
-  widgets.last_name = FormTableAddEntry(table, 1, 2, 1,
-                                        IDS_AUTOFILL_DIALOG_LAST_NAME);
+  widgets.full_name = FormTableAddEntry(table, 1, 0, 1,
+                                        IDS_AUTOFILL_DIALOG_FULL_NAME);
   widgets.email = FormTableAddEntry(table, 2, 0, 1,
                                     IDS_AUTOFILL_DIALOG_EMAIL);
   widgets.company_name = FormTableAddEntry(table, 2, 1, 1,
@@ -913,12 +903,8 @@ void AutoFillDialog::AddAddress(const AutoFillProfile& profile) {
   // We just pushed the widgets to the back of the vector.
   const AddressWidgets& widgets = address_widgets_.back();
   SetEntryText(widgets.label, profile.Label());
-  SetEntryText(widgets.first_name,
-               profile.GetFieldText(AutoFillType(NAME_FIRST)));
-  SetEntryText(widgets.middle_name,
-               profile.GetFieldText(AutoFillType(NAME_MIDDLE)));
-  SetEntryText(widgets.last_name,
-               profile.GetFieldText(AutoFillType(NAME_LAST)));
+  SetEntryText(widgets.full_name,
+               profile.GetFieldText(AutoFillType(NAME_FULL)));
   SetEntryText(widgets.email,
                profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)));
   SetEntryText(widgets.company_name,
