@@ -231,7 +231,8 @@ g_suite.testQuaternionToRotation = function() {
 
 g_suite.testRotationToQuaternion = function() {
   // Start with a bunch of haphazard rotation matrices.
-  var matrices = [g_math.matrix4.axisRotation([1, -2, 0], 1),
+  var matrices = [g_math.matrix4.identity(),
+                  g_math.matrix4.axisRotation([1, -2, 0], 1),
                   g_math.matrix4.axisRotation([2, -4, -1], -.1),
                   g_math.matrix4.axisRotation([-1, -4, -1], 1),
                   g_math.matrix4.axisRotation([-1, -3, 2], .1),

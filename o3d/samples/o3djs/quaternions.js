@@ -441,6 +441,7 @@ o3djs.quaternions.quaternionToRotation = function(q) {
 
 /**
  * Computes a quaternion whose rotation is equivalent to the given matrix.
+ * Based on an algorithm from Shoemake SIGGRAPH 1987.
  * @param {(!o3djs.math.Matrix4|!o3djs.math.Matrix3)} m A 3-by-3 or 4-by-4
  *     rotation matrix.
  * @return {!o3djs.quaternions.Quaternion} A quaternion q such that
@@ -451,28 +452,62 @@ o3djs.quaternions.rotationToQuaternion = function(m) {
   var v;
   var w;
 
-  // Choose u, v, and w such that u is the index of the biggest diagonal entry
-  // of m, and u v w is an even permutation of 0 1 and 2.
-  if (m[0][0] > m[1][1] && m[0][0] > m[2][2]) {
-    u = 0;
-    v = 1;
-    w = 2;
-  } else if (m[1][1] > m[0][0] && m[1][1] > m[2][2]) {
-    u = 1;
-    v = 2;
-    w = 0;
-  } else {
-    u = 2;
-    v = 0;
-    w = 1;
+  var q = [];
+
+  var m0 = m[0];
+  var m1 = m[1];
+  var m2 = m[2];
+
+  var m00 = m0[0];
+  var m11 = m1[1];
+  var m22 = m2[2];
+
+  var trace = m00 + m11 + m22;
+
+  if (trace > 0) {
+    var r = Math.sqrt(1 + trace);
+    var k = 0.5 / r;
+    return [(m1[2] - m2[1]) * k,
+            (m2[0] - m0[2]) * k,
+            (m0[1] - m1[0]) * k,
+            0.5 * r];
   }
 
-  var r = Math.sqrt(1 + m[u][u] - m[v][v] - m[w][w]);
-  var q = [];
+  var mu;
+  var mv;
+  var mw;
+
+  // Choose u, v, and w such that u is the index of the biggest diagonal entry
+  // of m, and u v w is an even permutation of 0 1 and 2.
+  if (m00 > m11 && m00 > m22) {
+    u = 0;
+    mu = m0;
+    v = 1;
+    mv = m1;
+    w = 2;
+    mw = m2;
+  } else if (m11 > m00 && m11 > m22) {
+    u = 1;
+    mu = m1;
+    v = 2;
+    mv = m2;
+    w = 0;
+    mw = m0;
+  } else {
+    u = 2;
+    mu = m2;
+    v = 0;
+    mv = m0;
+    w = 1;
+    mw = m1;
+  }
+
+  var r = Math.sqrt(1 + mu[u] - mv[v] - mw[w]);
+  var k = 0.5 / r;
   q[u] = 0.5 * r;
-  q[v] = 0.5 * (m[v][u] + m[u][v]) / r;
-  q[w] = 0.5 * (m[u][w] + m[w][u]) / r;
-  q[3] = 0.5 * (m[v][w] - m[w][v]) / r;
+  q[v] = (mv[u] + mu[v]) * k;
+  q[w] = (mu[w] + mw[u]) * k;
+  q[3] = (mv[w] - mw[v]) * k;
 
   return q;
 };
