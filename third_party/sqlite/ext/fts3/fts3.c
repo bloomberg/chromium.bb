@@ -5482,6 +5482,8 @@ static int leavesReaderInit(fulltext_vtab *v,
       }
       return rc;
     }
+
+    pReader->pStmt = s;
   }
   return SQLITE_OK;
 }
