@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 
 #include "chrome/browser/chromeos/audio_handler.h"
+#include "chrome/browser/chromeos/volume_bubble.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 namespace chromeos {
@@ -17,8 +18,7 @@ const double kStepPercentage = 4.0;
 
 // static
 SystemKeyEventListener* SystemKeyEventListener::instance() {
-  SystemKeyEventListener* instance = Singleton<SystemKeyEventListener>::get();
-  return instance;
+  return Singleton<SystemKeyEventListener>::get();
 }
 
 SystemKeyEventListener::SystemKeyEventListener()
@@ -44,14 +44,19 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
       // long as mute key was held.
       // Refer to http://crosbug.com/3754 and http://crosbug.com/3751
       audio_handler_->SetMute(true);
+      VolumeBubble::instance()->ShowVolumeBubble(0);
       break;
     case WM_IPC_SYSTEM_KEY_VOLUME_DOWN:
       audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
       audio_handler_->SetMute(false);
+      VolumeBubble::instance()->ShowVolumeBubble(
+          audio_handler_->GetVolumePercent());
       break;
     case WM_IPC_SYSTEM_KEY_VOLUME_UP:
       audio_handler_->AdjustVolumeByPercent(kStepPercentage);
       audio_handler_->SetMute(false);
+      VolumeBubble::instance()->ShowVolumeBubble(
+          audio_handler_->GetVolumePercent());
       break;
     default:
       DLOG(ERROR) << "SystemKeyEventListener: Unexpected message "
@@ -61,4 +66,3 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
 }
 
 }  // namespace chromeos
-
