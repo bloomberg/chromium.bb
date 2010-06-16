@@ -76,7 +76,8 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
       border_view_(NULL),
       popup_chrome_(chrome),
       observer_(observer),
-      anchor_position_(arrow_location) {
+      anchor_position_(arrow_location),
+      instance_lifetime_(new InternalRefCounter()){
   AddRef();  // Balanced in Close();
   set_delegate(this);
   host->view()->SetContainer(this);
@@ -395,14 +396,21 @@ void ExtensionPopup::Close() {
   closing_ = true;
   DetachFromBrowser();
 
-  ExtensionPopup::Observer* observer = observer_;
+  if (observer_)
+    observer_->ExtensionPopupIsClosing(this);
 
-  if (observer)
-    observer->ExtensionPopupIsClosing(this);
-
-  DCHECK(HasOneRef()) << "Unexpected extra reference to ExtensionPopup.";
   Release();  // Balanced in ctor.
+}
 
-  if (observer)
-    observer->ExtensionPopupClosed(this);
+void ExtensionPopup::Release() {
+  bool final_release = instance_lifetime_->HasOneRef();
+  instance_lifetime_->Release();
+  if (final_release) {
+    DCHECK(closing_) << "ExtensionPopup to be destroyed before being closed.";
+    ExtensionPopup::Observer* observer = observer_;
+    delete this;
+
+    if (observer)
+      observer->ExtensionPopupClosed(this);
+  }
 }

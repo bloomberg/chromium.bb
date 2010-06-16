@@ -26,8 +26,7 @@ class Widget;
 class ExtensionPopup : public BrowserBubble,
                        public BrowserBubble::Delegate,
                        public NotificationObserver,
-                       public ExtensionView::Container,
-                       public base::RefCounted<ExtensionPopup> {
+                       public ExtensionView::Container {
  public:
   // Observer to ExtensionPopup events.
   class Observer {
@@ -143,6 +142,18 @@ class ExtensionPopup : public BrowserBubble,
   virtual void OnExtensionMouseLeave(ExtensionView* view) { }
   virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 
+  // Export the refrence-counted interface required for use as template
+  // arguments for RefCounted.  ExtensionPopup does not inherit from RefCounted
+  // because it must override the behaviour of Release.
+  void AddRef() { instance_lifetime_->AddRef(); }
+  static bool ImplementsThreadSafeReferenceCounting() {
+    return InternalRefCounter::ImplementsThreadSafeReferenceCounting();
+  }
+
+  // Implements the standard RefCounted<T>::Release behaviour, except
+  // signals Observer::ExtensionPopupClosed after final release.
+  void Release();
+
   // The min/max height of popups.
   static const int kMinWidth;
   static const int kMinHeight;
@@ -198,6 +209,13 @@ class ExtensionPopup : public BrowserBubble,
   // If a black-border was requested, we still need this value to determine
   // the position of the pop-up in relation to |relative_to_|.
   BubbleBorder::ArrowLocation anchor_position_;
+
+  // ExtensionPopup's lifetime is managed via reference counting, but it does
+  // not expose the RefCounted interface.  Instead, the lifetime is tied to
+  // this member variable.
+  class InternalRefCounter : public base::RefCounted<InternalRefCounter> {
+  };
+  InternalRefCounter* instance_lifetime_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };
