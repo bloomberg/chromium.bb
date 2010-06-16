@@ -112,8 +112,7 @@ struct SimilarTypeTraits {
 template <class P>
 static inline void WriteParam(Message* m, const P& p) {
   typedef typename SimilarTypeTraits<P>::Type Type;
-  const Type& t = p;
-  ParamTraits<Type>::Write(m, t);
+  ParamTraits<Type>::Write(m, static_cast<const Type& >(p));
 }
 
 template <class P>
@@ -126,8 +125,7 @@ static inline bool WARN_UNUSED_RESULT ReadParam(const Message* m, void** iter,
 template <class P>
 static inline void LogParam(const P& p, std::wstring* l) {
   typedef typename SimilarTypeTraits<P>::Type Type;
-  const Type& t = p;
-  ParamTraits<Type>::Log(t, l);
+  ParamTraits<Type>::Log(static_cast<const Type& >(p), l);
 }
 
 template <>

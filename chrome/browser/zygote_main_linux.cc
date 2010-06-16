@@ -616,11 +616,6 @@ static bool EnterSandbox() {
 
 #endif  // CHROMIUM_SELINUX
 
-// CLANG HACK
-int SupportsSeccompSandbox(int) { return 0; }
-void SeccompSandboxSetProcSelfMaps(int) {}
-void StartSeccompSandbox() {}
-
 bool ZygoteMain(const MainFunctionParams& params) {
 #if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;

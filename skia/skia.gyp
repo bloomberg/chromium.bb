@@ -552,7 +552,6 @@
       ],
       'defines': [
         'SK_BUILD_NO_IMAGE_ENCODE',
-        'SK_RESTRICT=',   # Remove use of __restrict__ -- not sure it's correct.
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
