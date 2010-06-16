@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <signal.h>
+#include <X11/keysym.h>
 #include <X11/Xlib.h>
 
 #include "base/at_exit.h"
@@ -59,7 +60,8 @@ bool InitX11() {
                                  BlackPixel(g_display, screen));
   XStoreName(g_display, g_window, "X11 Media Player");
 
-  XSelectInput(g_display, g_window, ExposureMask | ButtonPressMask);
+  XSelectInput(g_display, g_window,
+               ExposureMask | ButtonPressMask | KeyPressMask);
   XMapWindow(g_display, g_window);
   return true;
 }
@@ -124,7 +126,10 @@ void TerminateHandler(int signal) {
   g_running = false;
 }
 
-void PeriodicalUpdate(MessageLoop* message_loop, bool audio_only) {
+void PeriodicalUpdate(
+    media::PipelineImpl* pipeline,
+    MessageLoop* message_loop,
+    bool audio_only) {
   if (!g_running) {
     message_loop->Quit();
     return;
@@ -134,23 +139,57 @@ void PeriodicalUpdate(MessageLoop* message_loop, bool audio_only) {
   while (XPending(g_display)) {
     XEvent e;
     XNextEvent(g_display, &e);
-    if (e.type == Expose) {
-      if (!audio_only) {
-        // Tell the renderer to paint.
-        DCHECK(Renderer::instance());
-        Renderer::instance()->Paint();
-      }
-    } else if (e.type == ButtonPress) {
-      g_running = false;
-      // QuitNow is more responsive than Quit since renderer_base is till
-      // posting paint messages.
-      message_loop->QuitNow();
-      return;
+    switch (e.type) {
+      case Expose:
+        if (!audio_only) {
+          // Tell the renderer to paint.
+          DCHECK(Renderer::instance());
+          Renderer::instance()->Paint();
+        }
+        break;
+      case ButtonPress:
+        {
+          Window window;
+          int x, y;
+          unsigned int width, height, border_width, depth;
+          XGetGeometry(g_display,
+                       g_window,
+                       &window,
+                       &x,
+                       &y,
+                       &width,
+                       &height,
+                       &border_width,
+                       &depth);
+          base::TimeDelta time = pipeline->GetMediaDuration();
+          pipeline->Seek(time*e.xbutton.x/width, NULL);
+        }
+        break;
+      case KeyPress:
+        {
+          KeySym key = XKeycodeToKeysym(g_display, e.xkey.keycode, 0);
+          if (key == XK_Escape) {
+            g_running = false;
+            // QuitNow is more responsive than Quit since renderer_base is till
+            // posting paint messages.
+            message_loop->QuitNow();
+            return;
+          } else if (key == XK_space) {
+            if (pipeline->GetPlaybackRate() < 0.01f) // paused
+              pipeline->SetPlaybackRate(1.0f);
+            else
+              pipeline->SetPlaybackRate(0.0f);
+          }
+        }
+        break;
+      default:
+        break;
     }
   }
 
   message_loop->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(PeriodicalUpdate, message_loop, audio_only), 10);
+      NewRunnableFunction(PeriodicalUpdate, pipeline,
+                          message_loop, audio_only), 10);
 }
 
 int main(int argc, char** argv) {
@@ -161,7 +200,10 @@ int main(int argc, char** argv) {
               << "Optional arguments:" << std::endl
               << "  [--enable-openmax]"
               << "  [--audio]"
-              << "  [--alsa-device=DEVICE]" << std::endl;
+              << "  [--alsa-device=DEVICE]" << std::endl
+              << " Press [ESC] to stop" << std::endl
+              << " Press [SPACE] to toggle pause/play" << std::endl
+              << " Press mouse left button to seek" << std::endl;
     return 1;
   }
 
@@ -202,7 +244,8 @@ int main(int argc, char** argv) {
     }
 
     message_loop.PostTask(FROM_HERE,
-        NewRunnableFunction(PeriodicalUpdate, &message_loop, audio_only));
+        NewRunnableFunction(PeriodicalUpdate, pipeline.get(),
+                            &message_loop, audio_only));
     message_loop.Run();
 
     // Need to wait for pipeline to be fully stopped before stopping the thread.
