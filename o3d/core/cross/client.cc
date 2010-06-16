@@ -252,6 +252,16 @@ void Client::RenderClientInner(bool present, bool send_callback) {
     profiler_->ProfileStart("Render callback");
     if (send_callback)
       render_callback_manager_.Run(render_event_);
+
+    // Calling back to JavaScript may have caused the plugin to be
+    // torn down. Guard carefully against this.
+    if (!profiler_.IsAvailable()) {
+      if (renderer_.IsAvailable()) {
+        renderer_->FinishRendering();
+      }
+      return;
+    }
+
     profiler_->ProfileStop("Render callback");
 
     if (!render_tree_called_) {

@@ -109,8 +109,11 @@ void NPP_URLNotify(NPP instance, const char *url, NPReason reason,
                    void *notifyData) {
   HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-  StreamManager *stream_manager = obj->stream_manager();
-  stream_manager->URLNotify(url, reason, notifyData);
+  // Make sure the plugin hasn't been destroyed already.
+  if (obj) {
+    StreamManager *stream_manager = obj->stream_manager();
+    stream_manager->URLNotify(url, reason, notifyData);
+  }
 }
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {

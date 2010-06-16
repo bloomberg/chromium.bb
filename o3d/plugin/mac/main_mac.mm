@@ -983,6 +983,14 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 
     // TODO(maf) / TODO(kbr): are we leaking AGL / CGL contexts?
 
+    if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
+      O3DLayer* layer = ObjO3DLayer(obj);
+      if (layer) {
+        // Prevent the layer from rendering any more.
+        [layer setPluginObject:NULL];
+      }
+    }
+
     obj->TearDown();
     NPN_ReleaseObject(obj);
     instance->pdata = NULL;

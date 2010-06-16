@@ -71,6 +71,10 @@ using o3d::DisplayWindowMac;
              pixelFormat:(CGLPixelFormatObj)pf
             forLayerTime:(CFTimeInterval)t
              displayTime:(const CVTimeStamp *)ts {
+  // Watch out for the plugin being destroyed out from under us.
+  if (!obj_) {
+    return;
+  }
 
   // Set the current context to the one given to us.
   CGLSetCurrentContext(ctx);
