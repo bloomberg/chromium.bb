@@ -163,6 +163,37 @@ TEST(MetricsLogTest, LoadEvent) {
   ASSERT_EQ(expected_output, encoded);
 }
 
+#if defined(OS_CHROMEOS)
+TEST(MetricsLogTest, ChromeOSLoadEvent) {
+  std::string expected_output = StringPrintf(
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
+          "appversion=\"%s\" hardwareclass=\"sample-class\">\n"
+      " <document action=\"load\" docid=\"1\" window=\"3\" loadtime=\"7219\" "
+          "origin=\"link\" session=\"0\" time=\"\"/>\n"
+      "</log>", MetricsLog::GetVersionString().c_str());
+
+  NoTimeMetricsLog log("bogus client ID", 0);
+  log.RecordLoadEvent(3, GURL("http://google.com"), PageTransition::LINK,
+                      1, TimeDelta::FromMilliseconds(7219));
+  log.set_hardware_class("sample-class");
+  log.CloseLog();
+
+  ASSERT_EQ(1, log.num_events());
+
+  int size = log.GetEncodedLogSize();
+  ASSERT_GT(size, 0);
+
+  std::string encoded;
+  // Leave room for the NUL terminator.
+  ASSERT_TRUE(log.GetEncodedLog(WriteInto(&encoded, size + 1), size));
+  TrimWhitespaceASCII(encoded, TRIM_ALL, &encoded);
+  NormalizeBuildtime(&encoded);
+  NormalizeBuildtime(&expected_output);
+
+  ASSERT_EQ(expected_output, encoded);
+}
+#endif  // OS_CHROMEOS
+
 // Make sure our ID hashes are the same as what we see on the server side.
 TEST(MetricsLogTest, CreateHash) {
   static const struct {
