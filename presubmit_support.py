@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.3.4'
+__version__ = '1.3.5'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -740,6 +740,9 @@ class GitChange(Change):
 def ListRelevantPresubmitFiles(files, root):
   """Finds all presubmit files that apply to a given set of source files.
 
+  If inherit-review-settings-ok is present right under root, looks for
+  PRESUBMIT.py in directories enclosing root.
+
   Args:
     files: An iterable container containing file paths.
     root: Path where to stop searching.
@@ -747,19 +750,38 @@ def ListRelevantPresubmitFiles(files, root):
   Return:
     List of absolute paths of the existing PRESUBMIT.py scripts.
   """
-  entries = []
-  for f in files:
-    f = normpath(os.path.join(root, f))
-    while f:
-      f = os.path.dirname(f)
-      if f in entries:
+  files = [normpath(os.path.join(root, f)) for f in files]
+
+  # List all the individual directories containing files.
+  directories = set([os.path.dirname(f) for f in files])
+
+  # Ignore root if inherit-review-settings-ok is present.
+  if os.path.isfile(os.path.join(root, 'inherit-review-settings-ok')):
+    root = None
+
+  # Collect all unique directories that may contain PRESUBMIT.py.
+  candidates = set()
+  for directory in directories:
+    while True:
+      if directory in candidates:
         break
-      entries.append(f)
-      if f == root:
+      candidates.add(directory)
+      if directory == root:
         break
-  entries.sort()
-  entries = map(lambda x: os.path.join(x, 'PRESUBMIT.py'), entries)
-  return filter(lambda x: os.path.isfile(x), entries)
+      parent_dir = os.path.dirname(directory)
+      if parent_dir == directory:
+        # We hit the system root directory.
+        break
+      directory = parent_dir
+
+  # Look for PRESUBMIT.py in all candidate directories.
+  results = []
+  for directory in sorted(list(candidates)):
+    p = os.path.join(directory, 'PRESUBMIT.py')
+    if os.path.isfile(p):
+      results.append(p)
+
+  return results
 
 
 class GetTrySlavesExecuter(object):
@@ -1024,12 +1046,14 @@ def Main(argv):
   parser.add_option("--description", default='')
   parser.add_option("--issue", type='int', default=0)
   parser.add_option("--patchset", type='int', default=0)
-  parser.add_option("--root", default='')
+  parser.add_option("--root", default=os.getcwd(),
+                    help="Search for PRESUBMIT.py up to this directory. "
+                    "If inherit-review-settings-ok is present in this "
+                    "directory, parent directories up to the root file "
+                    "system directories will also be searched.")
   parser.add_option("--default_presubmit")
   parser.add_option("--may_prompt", action='store_true', default=False)
   options, args = parser.parse_args(argv[1:])
-  if not options.root:
-    options.root = os.getcwd()
   if os.path.isdir(os.path.join(options.root, '.git')):
     change_class = GitChange
     if not options.files:

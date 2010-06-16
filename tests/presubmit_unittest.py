@@ -57,6 +57,9 @@ def GetPreferredTrySlaves():
 
 class PresubmitUnittest(PresubmitTestsBase):
   """General presubmit_support.py tests (excluding InputApi and OutputApi)."""
+
+  _INHERIT_SETTINGS = 'inherit-review-settings-ok'
+
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
@@ -83,6 +86,9 @@ class PresubmitUnittest(PresubmitTestsBase):
       join('moo', 'mat', 'gat', 'yo.h'),
       join('foo', 'luck.h'),
     ]
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.path.isfile(join(self.fake_root_dir,
                                   'PRESUBMIT.py')).AndReturn(True)
     presubmit.os.path.isfile(join(self.fake_root_dir, 'foo',
@@ -107,6 +113,36 @@ class PresubmitUnittest(PresubmitTestsBase):
           join(self.fake_root_dir, 'foo', 'haspresubmit', 'PRESUBMIT.py'),
           join(self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
                'PRESUBMIT.py')
+        ])
+
+  def testListRelevantPresubmitFilesInheritSettings(self):
+    join = presubmit.os.path.join
+    sys_root_dir = self._OS_SEP
+    root_dir = join(sys_root_dir, 'foo', 'bar')
+    files = [
+      'test.cc',
+      join('moo', 'test2.cc'),
+      join('zoo', 'test3.cc')
+    ]
+    inherit_path = presubmit.os.path.join(root_dir, self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(True)
+    presubmit.os.path.isfile(join(sys_root_dir,
+                                  'PRESUBMIT.py')).AndReturn(False)
+    presubmit.os.path.isfile(join(sys_root_dir, 'foo',
+                                  'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.path.isfile(join(sys_root_dir, 'foo', 'bar',
+                                  'PRESUBMIT.py')).AndReturn(False)
+    presubmit.os.path.isfile(join(sys_root_dir, 'foo', 'bar', 'moo',
+                                  'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.path.isfile(join(sys_root_dir, 'foo', 'bar', 'zoo',
+                                  'PRESUBMIT.py')).AndReturn(False)
+    self.mox.ReplayAll()
+
+    presubmit_files = presubmit.ListRelevantPresubmitFiles(files, root_dir)
+    self.assertEqual(presubmit_files,
+        [
+          join(sys_root_dir, 'foo', 'PRESUBMIT.py'),
+          join(sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')
         ])
 
   def testTagLineRe(self):
@@ -286,6 +322,9 @@ class PresubmitUnittest(PresubmitTestsBase):
     ]
     haspresubmit_path = join(self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
     root_path = join(self.fake_root_dir, 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.path.isfile(root_path).AndReturn(True)
     presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
     presubmit.gclient_utils.FileRead(root_path,
@@ -313,7 +352,10 @@ class PresubmitUnittest(PresubmitTestsBase):
     ]
     presubmit_path = join(self.fake_root_dir, 'PRESUBMIT.py')
     haspresubmit_path = join(self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
     for i in range(2):
+      presubmit.os.path.isfile(inherit_path).AndReturn(False)
       presubmit.os.path.isfile(presubmit_path).AndReturn(True)
       presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
       presubmit.gclient_utils.FileRead(presubmit_path, 'rU'
@@ -350,6 +392,9 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit_path = join(self.fake_root_dir, 'PRESUBMIT.py')
     haspresubmit_path = join(self.fake_root_dir, 'haspresubmit',
                              'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.path.isfile(presubmit_path).AndReturn(True)
     presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
     presubmit.gclient_utils.FileRead(presubmit_path, 'rU'
@@ -383,6 +428,9 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.path.isfile(join(self.fake_root_dir, 'PRESUBMIT.py')
         ).AndReturn(False)
     presubmit.os.path.isfile(join(self.fake_root_dir,
@@ -458,6 +506,9 @@ def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
     presubmit.random.randint(0, 4).AndReturn(1)
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -504,11 +555,15 @@ def CheckChangeOnCommit(input_api, output_api):
     filename_linux = join('linux_only', 'penguin.cc')
     root_presubmit = join(self.fake_root_dir, 'PRESUBMIT.py')
     linux_presubmit = join(self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
 
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.path.isfile(root_presubmit).AndReturn(True)
     presubmit.gclient_utils.FileRead(root_presubmit, 'rU').AndReturn(
         self.presubmit_tryslave % '["win"]')
 
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
     presubmit.os.path.isfile(root_presubmit).AndReturn(True)
     presubmit.os.path.isfile(linux_presubmit).AndReturn(True)
     presubmit.gclient_utils.FileRead(root_presubmit, 'rU').AndReturn(
