@@ -21,6 +21,9 @@
 #include "grit/locale_settings.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
+// http://crbug.com/46663 disabled since it never worked.
+#define DISABLE_VERIFY_CONTROL_ORDER 1
+
 // Colors for translate infobar gradient background.
 const int kGreyTopColor[] = {0xC0, 0xC0, 0xC0};
 const int kGreyBottomColor[] = {0xCC, 0xCC, 0xCC};
@@ -61,17 +64,26 @@ void VerticallyCenterView(NSView *toMove) {
 // Check that the control |before| is ordered visually before the |after|
 // control.
 // Also, check that there is space between them.
+// http://crbug.com/46663 the code below seems to be the reverse of this
+// comment.
+#if !defined(DISABLE_VERIFY_CONTROL_ORDER)
 bool VerifyControlOrderAndSpacing(id before, id after) {
-  NSRect beforeFrame = [before frame];
-  NSRect afterFrame = [after frame];
-  NSUInteger spaceBetweenControls = -1;
-
+  CGFloat spaceBetweenControls = 0;
+  if (before && after) {
+    // When messaging nil, the rects won't always be zeroed (only sizeof(id) is
+    // going to be zeroed by the Objective-C runtime, rest will be uninitialized
+    // memory).
+    NSRect beforeFrame = [before frame];
+    NSRect afterFrame = [after frame];
     spaceBetweenControls = NSMaxX(beforeFrame) - NSMinX(afterFrame);
     // RTL case to be used when we have an RTL version of this UI.
     // spaceBetweenControls = NSMaxX(afterFrame) - NSMinX(beforeFrame);
 
+  }
+
   return (spaceBetweenControls >= 0);
 }
+#endif  // !defined(DISABLE_VERIFY_CONTROL_ORDER)
 
 // Creates a label control in the style we need for the translate infobar's
 // labels within |bounds|.
@@ -771,6 +783,13 @@ class TranslateNotificationObserverBridge :
   }
 
   // Step 2: Check that controls are ordered correctly with no overlap.
+#if !defined(DISABLE_VERIFY_CONTROL_ORDER)
+  // http://crbug.com/46663 this appears to be invalid.
+  // VerifyControlOrderAndSpacing had an unsigned >= 0 bug, so it used to always
+  // return true.  With that bug fixed, this loop now can return a failure.
+  // Scanning the code, it's not clear how this would pass since not all
+  // controls are visible and it needs the array order to always match display
+  // order.
   id previousControl = nil;
   for (NSUInteger i = 0; i < [allControls count]; ++i) {
     id control = [allControls objectAtIndex:i];
@@ -783,6 +802,7 @@ class TranslateNotificationObserverBridge :
     }
     previousControl = control;
   }
+#endif  // !defined(DISABLE_VERIFY_CONTROL_ORDER)
 
   // Step 3: Check other misc. attributes of layout.
   if (state == TranslateInfoBarDelegate::kTranslateError && translationPending)
