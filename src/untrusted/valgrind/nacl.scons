@@ -8,6 +8,10 @@
 
 Import('env')
 
+# we do not have proper arm support and definitely no bitcode support
+if env['TARGET_ARCHITECTURE'] == 'arm' or ARGUMENTS.get('bitcode'):
+  Return()
+
 sources = ['valgrind_interceptors.c']
 
 env.ComponentLibrary('libvalgrind', sources)
