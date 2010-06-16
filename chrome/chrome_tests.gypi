@@ -320,7 +320,7 @@
         'browser/pref_service_uitest.cc',
         'browser/printing/printing_layout_uitest.cc',
         'browser/process_singleton_linux_uitest.cc',
-        'browser/process_singleton_win_uitest.cc',
+        'browser/process_singleton_uitest.cc',
         'browser/renderer_host/resource_dispatcher_host_uitest.cc',
         'browser/repost_form_warning_uitest.cc',
         'browser/sanity_uitest.cc',
@@ -383,6 +383,10 @@
           'dependencies+++': [
             '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
+          'sources!': [
+            # ProcessSingletonMac doesn't do anything.
+            'browser/process_singleton_uitest.cc',
+          ],
         }],
         ['OS=="win"', {
           'include_dirs': [
@@ -413,7 +417,6 @@
           'sources!': [
             # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_uitest.cc',
-            'browser/process_singleton_win_uitest.cc',
           ],
         }],
         ['OS=="linux" or OS=="freebsd"', {

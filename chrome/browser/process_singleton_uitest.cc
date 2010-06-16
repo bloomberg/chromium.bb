@@ -1,27 +1,27 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This test validates that the ProcessSingleton class properly makes sure
 // that there is only one main browser process.
 //
-// It is currently compiled and ran on the windows platform only but has been
-// written in a platform independent way (using the process/threads/sync
-// routines from base). So it does compile fine on Mac and Linux but fails to
-// launch the app and thus have not been tested for success/failures. Since it
-// was written to validate a change made to fix a bug only seen on Windows, it
-// was left as is until it gets to be needed on the other platforms.
-
+// It is currently compiled and run on Windows and Posix(non-Mac) platforms.
+// Mac uses system services and ProcessSingletonMac is a noop.  (Maybe it still
+// makes sense to test that the system services are giving the behavior we
+// want?)
 
 #include <list>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,18 +46,29 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   void Reset() {
     ready_event_.Reset();
     done_event_.Reset();
-    if (process_handle_ != NULL)
+    if (process_handle_ != base::kNullProcessHandle)
       base::CloseProcessHandle(process_handle_);
-    process_handle_ = NULL;
+    process_handle_ = base::kNullProcessHandle;
     process_terminated_ = false;
   }
 
-  void StartChrome(base::WaitableEvent* start_event) {
-    // TODO(port): For some reason the LaunchApp call below fails even though
-    // we use the platform independent constant for the executable path.
-    // This is the current blocker for running this test on Mac & Linux.
-    CommandLine command_line(FilePath::FromWStringHack(
-        chrome::kBrowserProcessExecutablePath));
+  void StartChrome(base::WaitableEvent* start_event, bool first_run) {
+    // TODO(mattm): maybe stuff should be refactored to use
+    // UITest::LaunchBrowserHelper somehow?
+    FilePath browser_directory;
+    PathService::Get(chrome::DIR_APP, &browser_directory);
+    CommandLine command_line(browser_directory.Append(
+        FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath)));
+
+    FilePath user_data_directory;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+    command_line.AppendSwitchWithValue(switches::kUserDataDir,
+                                       user_data_directory.ToWStringHack());
+
+    if (first_run)
+      command_line.AppendSwitch(switches::kFirstRun);
+    else
+      command_line.AppendSwitch(switches::kNoFirstRun);
 
     // Try to get all threads to launch the app at the same time.
     // So let the test know we are ready.
@@ -71,7 +82,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     // wait here, we would never get a handle to the main process...
     base::LaunchApp(command_line, false /* wait */,
                     false /* hidden */, &process_handle_);
-    ASSERT_NE(static_cast<base::ProcessHandle>(NULL), process_handle_);
+    ASSERT_NE(base::kNullProcessHandle, process_handle_);
 
     // We can wait on the handle here, we should get stuck on one and only
     // one process. The test below will take care of killing that process
@@ -92,7 +103,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   friend class base::RefCountedThreadSafe<ChromeStarter>;
 
   ~ChromeStarter() {
-    if (process_handle_ != NULL)
+    if (process_handle_ != base::kNullProcessHandle)
       base::CloseProcessHandle(process_handle_);
   }
 
@@ -102,9 +113,9 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
 };
 
 // Our test fixture that initializes and holds onto a few global vars.
-class ProcessSingletonWinTest : public UITest {
+class ProcessSingletonTest : public UITest {
  public:
-  ProcessSingletonWinTest()
+  ProcessSingletonTest()
       // We use a manual reset so that all threads wake up at once when signaled
       // and thus we must manually reset it for each attempt.
       : threads_waker_(true /* manual */, false /* signaled */) {
@@ -182,8 +193,7 @@ class ProcessSingletonWinTest : public UITest {
   base::WaitableEvent threads_waker_;
 };
 
-// http://crbug.com/38572
-TEST_F(ProcessSingletonWinTest, FAILS_StartupRaceCondition) {
+TEST_F(ProcessSingletonTest, StartupRaceCondition) {
   // We use this to stop the attempts loop on the first failure.
   bool failed = false;
   for (size_t attempt = 0; attempt < kNbAttempts && !failed; ++attempt) {
@@ -191,6 +201,20 @@ TEST_F(ProcessSingletonWinTest, FAILS_StartupRaceCondition) {
     // We use a single event to get all threads to do the AppLaunch at the same
     // time...
     threads_waker_.Reset();
+
+    // Test both with and without the first-run dialog, since they exercise
+    // different paths.
+#if defined(OS_POSIX)
+    // TODO(mattm): test first run dialog singleton handling on linux too.
+    // On posix if we test the first run dialog, GracefulShutdownHandler gets
+    // the TERM signal, but since the message loop isn't running during the gtk
+    // first run dialog, the ShutdownDetector never handles it, and KillProcess
+    // has to time out (60 sec!) and SIGKILL.
+    bool first_run = false;
+#else
+    // Test for races in both regular start up and first run start up cases.
+    bool first_run = attempt % 2;
+#endif
 
     // Here we prime all the threads with a ChromeStarter that will wait for
     // our signal to launch its chrome process.
@@ -205,7 +229,8 @@ TEST_F(ProcessSingletonWinTest, FAILS_StartupRaceCondition) {
       chrome_starter_threads_[i]->message_loop()->PostTask(
           FROM_HERE, NewRunnableMethod(chrome_starters_[i].get(),
                                        &ChromeStarter::StartChrome,
-                                       &threads_waker_));
+                                       &threads_waker_,
+                                       first_run));
     }
 
     // Wait for all the starters to be ready.
@@ -249,7 +274,8 @@ TEST_F(ProcessSingletonWinTest, FAILS_StartupRaceCondition) {
         failed = true;
         // But we let the last loop turn finish so that we can properly
         // kill all remaining processes. Starting with this one...
-        if (chrome_starters_[starter_index]->process_handle_ != NULL) {
+        if (chrome_starters_[starter_index]->process_handle_ !=
+            base::kNullProcessHandle) {
           KillProcessTree(chrome_starters_[starter_index]->process_handle_);
         }
       }
@@ -260,7 +286,8 @@ TEST_F(ProcessSingletonWinTest, FAILS_StartupRaceCondition) {
     ASSERT_EQ(static_cast<size_t>(1), pending_starters.size());
     size_t last_index = pending_starters.front();
     pending_starters.empty();
-    if (chrome_starters_[last_index]->process_handle_ != NULL) {
+    if (chrome_starters_[last_index]->process_handle_ !=
+        base::kNullProcessHandle) {
       KillProcessTree(chrome_starters_[last_index]->process_handle_);
       chrome_starters_[last_index]->done_event_.Wait();
     }
