@@ -251,16 +251,12 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
                                     URLRequestContextGetter* request_context) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
-  if (channel_.get()) {
-    // Ensure that |is_extensions_process| doesn't change across multiple calls
-    // to Init().
-    if (!run_renderer_in_process()) {
-      DCHECK_EQ(extension_process_, is_extensions_process);
-    }
+  if (channel_.get())
     return true;
-  }
 
-  extension_process_ = is_extensions_process;
+  // It is possible for an extension process to be reused for non-extension
+  // content, e.g. if an extension calls window.open.
+  extension_process_ = extension_process_ || is_extensions_process;
 
   // run the IPC channel on the shared IO thread.
   base::Thread* io_thread = g_browser_process->io_thread();

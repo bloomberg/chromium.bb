@@ -2414,6 +2414,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   // still allow that.
   if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
       is_content_initiated && frame->parent() == NULL &&
+      type != WebKit::WebNavigationTypeFormSubmitted &&
       !url.SchemeIs(chrome::kAboutScheme)) {
     // When we received such unsolicited navigations, we sometimes want to
     // punt them up to the browser to handle.
@@ -2431,7 +2432,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // Note that we've already forwarded cross-extension extents navigations
     // above.
     if (BindingsPolicy::is_extension_enabled(enabled_bindings_) &&
-      IsNonLocalTopLevelNavigation(url, frame, type)) {
+        IsNonLocalTopLevelNavigation(url, frame, type)) {
         OpenURL(url, GURL(), default_policy);
         return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
