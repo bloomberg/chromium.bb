@@ -121,8 +121,6 @@
   bug_46177_a
   Memcheck:Leak
   ...
-  fun:FcCharSetFindLeafCreate
-  fun:FcCharSetAddLeaf
   fun:FcCharSetOperate
   fun:FcFontSetSort
   fun:FcFontSort
@@ -3401,4 +3399,3 @@
    fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
 }
-
