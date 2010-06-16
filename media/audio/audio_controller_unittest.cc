@@ -15,6 +15,13 @@ using ::testing::Exactly;
 using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 
+static const int kSampleRate = AudioManager::kAudioCDSampleRate;
+static const int kBitsPerSample = 16;
+static const int kChannels = 2;
+static const int kHardwareBufferSize = kSampleRate * kBitsPerSample *
+                                       kChannels / 8;
+static const int kBufferCapacity = 3 * kHardwareBufferSize;
+
 namespace media {
 
 class MockAudioControllerEventHandler : public AudioController::EventHandler {
@@ -86,8 +93,8 @@ TEST(AudioControllerTest, PlayAndClose) {
       .WillRepeatedly(SignalEvent(&event, &count, 10));
 
   scoped_refptr<AudioController> controller = AudioController::Create(
-      &event_handler, AudioManager::AUDIO_PCM_LINEAR, 1,
-      AudioManager::kAudioCDSampleRate, 16, 4096);
+      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
+      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to be called.
@@ -135,8 +142,8 @@ TEST(AudioControllerTest, PlayPauseClose) {
       .WillOnce(InvokeWithoutArgs(&event, &base::WaitableEvent::Signal));
 
   scoped_refptr<AudioController> controller = AudioController::Create(
-      &event_handler, AudioManager::AUDIO_PCM_LINEAR, 1,
-      AudioManager::kAudioCDSampleRate, 16, 4096);
+      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
+      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to be called.
@@ -159,6 +166,22 @@ TEST(AudioControllerTest, PlayPauseClose) {
   // TODO(hclam): Make sure releasing the reference to this
   // object actually destruct it.
   controller = NULL;
+}
+
+TEST(AudioControllerTest, HardwareBufferTooLarge) {
+  if (!HasAudioDevices() || IsRunningHeadless())
+    return;
+
+  // Create an audio device with a very large hardware buffer size.
+  MockAudioControllerEventHandler event_handler;
+  scoped_refptr<AudioController> controller = AudioController::Create(
+      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
+      kSampleRate, kBitsPerSample, kHardwareBufferSize * 1000,
+      kBufferCapacity);
+
+  // Use assert because we don't stop the device and assume we can't
+  // create one.
+  ASSERT_FALSE(controller);
 }
 
 }  // namespace media

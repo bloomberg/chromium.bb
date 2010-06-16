@@ -4,16 +4,10 @@
 
 #include "media/audio/audio_controller.h"
 
-// This constant governs the hardware audio buffer size, this value should be
-// choosen carefully and is platform specific.
-static const int kSamplesPerHardwarePacket = 8192;
-
-static const uint32 kMegabytes = 1024 * 1024;
-
 // The following parameters limit the request buffer and packet size from the
 // renderer to avoid renderer from requesting too much memory.
-static const uint32 kMaxDecodedPacketSize = 2 * kMegabytes;
-static const uint32 kMaxBufferCapacity = 5 * kMegabytes;
+static const int kMegabytes = 1024 * 1024;
+static const int kMaxHardwareBufferSize = 2 * kMegabytes;
 static const int kMaxChannels = 32;
 static const int kMaxBitsPerSample = 64;
 static const int kMaxSampleRate = 192000;
@@ -21,13 +15,17 @@ static const int kMaxSampleRate = 192000;
 // Return true if the parameters for creating an audio stream is valid.
 // Return false otherwise.
 static bool CheckParameters(int channels, int sample_rate,
-                            int bits_per_sample) {
+                            int bits_per_sample, int hardware_buffer_size) {
   if (channels <= 0 || channels > kMaxChannels)
     return false;
   if (sample_rate <= 0 || sample_rate > kMaxSampleRate)
     return false;
   if (bits_per_sample <= 0 || bits_per_sample > kMaxBitsPerSample)
     return false;
+  if (hardware_buffer_size <= 0 ||
+      hardware_buffer_size > kMaxHardwareBufferSize) {
+    return false;
+  }
   return true;
 }
 
@@ -54,9 +52,11 @@ scoped_refptr<AudioController> AudioController::Create(
     int channels,
     int sample_rate,
     int bits_per_sample,
+    int hardware_buffer_size,
     uint32 buffer_capacity) {
 
-  if (!CheckParameters(channels, sample_rate, bits_per_sample))
+  if (!CheckParameters(channels, sample_rate, bits_per_sample,
+                       hardware_buffer_size))
     return NULL;
 
   // Starts the audio controller thread.
@@ -69,7 +69,8 @@ scoped_refptr<AudioController> AudioController::Create(
   source->thread_.message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(source.get(), &AudioController::DoCreate,
-                        format, channels, sample_rate, bits_per_sample));
+                        format, channels, sample_rate, bits_per_sample,
+                        hardware_buffer_size));
   return source;
 }
 
@@ -80,11 +81,13 @@ scoped_refptr<AudioController> AudioController::CreateLowLatency(
     int channels,
     int sample_rate,
     int bits_per_sample,
+    int hardware_buffer_size,
     SyncReader* sync_reader) {
 
   DCHECK(sync_reader);
 
-  if (!CheckParameters(channels, sample_rate, bits_per_sample))
+  if (!CheckParameters(channels, sample_rate, bits_per_sample,
+                       hardware_buffer_size))
     return NULL;
 
   // Starts the audio controller thread.
@@ -97,7 +100,8 @@ scoped_refptr<AudioController> AudioController::CreateLowLatency(
   source->thread_.message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(source.get(), &AudioController::DoCreate,
-                        format, channels, sample_rate, bits_per_sample));
+                        format, channels, sample_rate, bits_per_sample,
+                        hardware_buffer_size));
   return source;
 }
 
@@ -145,7 +149,8 @@ void AudioController::EnqueueData(const uint8* data, uint32 size) {
 }
 
 void AudioController::DoCreate(AudioManager::Format format, int channels,
-                               int sample_rate, int bits_per_sample) {
+                               int sample_rate, int bits_per_sample,
+                               int hardware_buffer_size) {
   // Create the stream in the first place.
   stream_ = AudioManager::GetAudioManager()->MakeAudioStream(
       format, channels, sample_rate, bits_per_sample);
@@ -156,9 +161,7 @@ void AudioController::DoCreate(AudioManager::Format format, int channels,
     return;
   }
 
-  uint32 hardware_packet_size = kSamplesPerHardwarePacket * channels *
-      bits_per_sample / 8;
-  if (stream_ && !stream_->Open(hardware_packet_size)) {
+  if (stream_ && !stream_->Open(hardware_buffer_size)) {
     stream_->Close();
     stream_ = NULL;
 
