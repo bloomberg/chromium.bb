@@ -756,3 +756,9 @@
    fun:CreatePlugin
 }
 
+{
+   bug_46715
+   Heapcheck:Leak
+   fun:WebCore::makeExternalString
+   fun:WebCore::v8ExternalStringSlow
+}

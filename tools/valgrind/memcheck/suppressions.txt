@@ -3399,12 +3399,3 @@
    fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
 }
-
-{
-   bug_46715
-   Heapcheck:Leak
-   fun:WebCore::makeExternalString
-   fun:WebCore::v8ExternalStringSlow
-   fun:WebCore::v8ExternalString
-   fun:WebCore::v8String
-}
