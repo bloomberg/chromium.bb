@@ -142,7 +142,25 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
 
   virtual void SetPageThumbnail(const MostVisitedURL& url, int url_rank,
                                 const TopSites::Images& thumbnail) {
-    // Update the list of URLs
+    SetPageRank(url, url_rank);
+    // Update thubmnail
+    thumbnails_map_[url.url] = thumbnail;
+  }
+
+  virtual void UpdatePageRank(const MostVisitedURL& url, int new_rank) {
+    MostVisitedURLList::iterator pos = std::find(top_sites_list_.begin(),
+                                                 top_sites_list_.end(),
+                                                 url);
+    // Is it in the right position?
+    int rank = pos - top_sites_list_.begin();
+    if (rank != new_rank) {
+      // Move the URL to a new position.
+      top_sites_list_.erase(pos);
+      top_sites_list_.insert(top_sites_list_.begin() + new_rank, url);
+    }
+  }
+
+  virtual void SetPageRank(const MostVisitedURL& url, int url_rank) {
     // Check if this url is in the list, and at which position.
     MostVisitedURLList::iterator pos = std::find(top_sites_list_.begin(),
                                                  top_sites_list_.end(),
@@ -151,16 +169,8 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
       // Add it to the list.
       top_sites_list_.insert(top_sites_list_.begin() + url_rank, url);
     } else {
-      // Is it in the right position?
-      int rank = pos - top_sites_list_.begin();
-      if (rank != url_rank) {
-        // Move the URL to a new position.
-        top_sites_list_.erase(pos);
-        top_sites_list_.insert(top_sites_list_.begin() + url_rank, url);
-      }
+      UpdatePageRank(url, url_rank);
     }
-    // Update thubmnail
-    thumbnails_map_[url.url] = thumbnail;
   }
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
@@ -230,6 +240,7 @@ static void AppendMostVisitedURLWithRedirect(
 }
 
 TEST_F(TopSitesTest, GetCanonicalURL) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   // Have two chains:
   //   google.com -> www.google.com
   //   news.google.com (no redirects)
@@ -296,6 +307,7 @@ TEST_F(TopSitesTest, DiffMostVisited) {
 }
 
 TEST_F(TopSitesTest, SetPageThumbnail) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   GURL url1a("http://google.com/");
   GURL url1b("http://www.google.com/");
   GURL url2("http://images.google.com/");
@@ -682,6 +694,10 @@ TEST_F(TopSitesTest, DeleteNotifications) {
 }
 
 TEST_F(TopSitesTest, GetUpdateDelay) {
+  top_sites().last_num_urls_changed_ = 0;
+  EXPECT_EQ(30, top_sites().GetUpdateDelay().InSeconds());
+
+  top_sites().top_sites_.resize(20);
   top_sites().last_num_urls_changed_ = 0;
   EXPECT_EQ(60, top_sites().GetUpdateDelay().InMinutes());
 

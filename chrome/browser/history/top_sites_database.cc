@@ -104,14 +104,54 @@ void TopSitesDatabaseImpl::SetRedirects(const std::string& redirects,
     url->redirects.push_back(GURL(redirects_vector[i]));
 }
 
-
 void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
                                             int new_rank,
                                             const TopSites::Images& thumbnail) {
   sql::Transaction transaction(&db_);
   transaction.Begin();
 
-  int prev_rank = GetURLRank(url);
+  int rank = GetURLRank(url);
+  if (rank == -1) {
+    AddPageThumbnail(url, new_rank, thumbnail);
+  } else {
+    UpdatePageRankNoTransaction(url, new_rank);
+    UpdatePageThumbnail(url, thumbnail);
+  }
+
+  transaction.Commit();
+}
+
+void TopSitesDatabaseImpl::UpdatePageThumbnail(
+    const MostVisitedURL& url, const TopSites::Images& thumbnail) {
+  sql::Statement statement(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE thumbnails SET "
+      "title = ?, thumbnail = ?, redirects = ?, "
+      "boring_score = ?, good_clipping = ?, at_top = ?, last_updated = ? "
+      "WHERE url = ? "));
+  if (!statement)
+    return;
+
+  statement.BindString16(0, url.title);
+  if (thumbnail.thumbnail.get()) {
+    statement.BindBlob(1, &thumbnail.thumbnail->data.front(),
+                       static_cast<int>(thumbnail.thumbnail->data.size()));
+  }
+  statement.BindString(2, GetRedirects(url));
+  const ThumbnailScore& score = thumbnail.thumbnail_score;
+  statement.BindDouble(3, score.boring_score);
+  statement.BindBool(4, score.good_clipping);
+  statement.BindBool(5, score.at_top);
+  statement.BindInt64(6, score.time_at_snapshot.ToInternalValue());
+  statement.BindString(7, url.url.spec());
+  if (!statement.Run())
+    NOTREACHED() << db_.GetErrorMessage();
+}
+
+void TopSitesDatabaseImpl::AddPageThumbnail(const MostVisitedURL& url,
+                                            int new_rank,
+                                            const TopSites::Images& thumbnail) {
+  int count = GetRowCount();
 
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
@@ -123,7 +163,7 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
     return;
 
   statement.BindString(0, url.url.spec());
-  statement.BindInt(1, -1);  // Temporary value
+  statement.BindInt(1, count);  // Make it the last url.
   statement.BindString16(2, url.title);
   if (thumbnail.thumbnail.get()) {
     statement.BindBlob(3, &thumbnail.thumbnail->data.front(),
@@ -135,21 +175,31 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
   statement.BindBool(6, score.good_clipping);
   statement.BindBool(7, score.at_top);
   statement.BindInt64(8, score.time_at_snapshot.ToInternalValue());
-
   if (!statement.Run())
     NOTREACHED() << db_.GetErrorMessage();
 
-  // Shift the ranks.
+  UpdatePageRankNoTransaction(url, new_rank);
+}
+
+void TopSitesDatabaseImpl::UpdatePageRank(const MostVisitedURL& url,
+                                          int new_rank) {
+  sql::Transaction transaction(&db_);
+  transaction.Begin();
+  UpdatePageRankNoTransaction(url, new_rank);
+  transaction.Commit();
+}
+
+// Caller should have a transaction open.
+void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
+    const MostVisitedURL& url, int new_rank) {
+  int prev_rank = GetURLRank(url);
   if (prev_rank == -1) {
-    // Shift up
-    sql::Statement shift_statement(db_.GetCachedStatement(
-        SQL_FROM_HERE,
-        "UPDATE thumbnails "
-        "SET url_rank = url_rank + 1 WHERE url_rank >= ?"));
-    shift_statement.BindInt(0, new_rank);
-    if (shift_statement)
-      shift_statement.Run();
-  } else if (prev_rank > new_rank) {
+    NOTREACHED() << "Updating rank of an unknown URL.";
+    return;
+  }
+
+  // Shift the ranks.
+  if (prev_rank > new_rank) {
     // Shift up
     sql::Statement shift_statement(db_.GetCachedStatement(
         SQL_FROM_HERE,
@@ -173,16 +223,16 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
       shift_statement.Run();
   }
 
-  // Set the real rank.
+  // Set the url's rank.
   sql::Statement set_statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE thumbnails "
       "SET url_rank = ? "
-      "WHERE url_rank == -1"));
+      "WHERE url == ?"));
   set_statement.BindInt(0, new_rank);
+  set_statement.BindString(1, url.url.spec());
   if (set_statement)
     set_statement.Run();
-  transaction.Commit();
 }
 
 bool TopSitesDatabaseImpl::GetPageThumbnail(const GURL& url,
@@ -210,6 +260,22 @@ bool TopSitesDatabaseImpl::GetPageThumbnail(const GURL& url,
   thumbnail->thumbnail_score.time_at_snapshot =
       base::Time::FromInternalValue(statement.ColumnInt64(4));
   return true;
+}
+
+int TopSitesDatabaseImpl::GetRowCount() {
+  int result = -1;
+  sql::Statement select_statement(db_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT COUNT (url) FROM thumbnails"));
+  if (!select_statement) {
+    LOG(WARNING) << db_.GetErrorMessage();
+    return result;
+  }
+
+  if (select_statement.Step())
+    result = select_statement.ColumnInt(0);
+
+  return result;
 }
 
 int TopSitesDatabaseImpl::GetURLRank(const MostVisitedURL& url) {

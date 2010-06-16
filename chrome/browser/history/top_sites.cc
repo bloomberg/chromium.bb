@@ -19,9 +19,10 @@
 namespace history {
 
 // How many top sites to store in the cache.
-static const int kTopSitesNumber = 20;
+static const size_t kTopSitesNumber = 20;
 static const int kDaysOfHistory = 90;
-static const int64 kUpdateIntervalSecs = 15;  // Time from startup to DB query.
+// Time from startup to first HistoryService query.
+static const int64 kUpdateIntervalSecs = 15;
 // Intervals between requests to HistoryService.
 static const int64 kMinUpdateIntervalMinutes = 1;
 static const int64 kMaxUpdateIntervalMinutes = 60;
@@ -32,6 +33,8 @@ TopSites::TopSites(Profile* profile) : profile_(profile),
                                        last_num_urls_changed_(0) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
+  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                 NotificationService::AllSources());
 }
 
 TopSites::~TopSites() {
@@ -67,10 +70,14 @@ void TopSites::ReadDatabase() {
   }  // Lock is released here.
 
   for (size_t i = 0; i < top_sites_.size(); i++) {
-    MostVisitedURL url = top_sites_[i];
-    Images thumbnail = thumbnails[url.url];
-    SetPageThumbnailNoDB(url.url, thumbnail.thumbnail,
-                         thumbnail.thumbnail_score);
+    GURL url = top_sites_[i].url;
+    Images thumbnail = thumbnails[url];
+    if (!thumbnail.thumbnail.get() || !thumbnail.thumbnail->size()) {
+      LOG(INFO) << "No thumnbail for " << url.spec();
+    } else {
+      SetPageThumbnailNoDB(url, thumbnail.thumbnail,
+                           thumbnail.thumbnail_score);
+    }
   }
 }
 
@@ -89,7 +96,14 @@ bool TopSites::SetPageThumbnail(const GURL& url,
       &thumbnail_data->data);
   if (!encoded)
     return false;
-  if (!SetPageThumbnailNoDB(url, thumbnail_data, score))
+
+  return SetPageThumbnail(url, thumbnail_data, score);
+}
+
+bool TopSites::SetPageThumbnail(const GURL& url,
+                                const RefCountedBytes* thumbnail,
+                                const ThumbnailScore& score) {
+  if (!SetPageThumbnailNoDB(url, thumbnail, score))
     return false;
 
   // Update the database.
@@ -191,21 +205,44 @@ void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
     if (db_.get()) {
       // Write both added and moved urls.
       for (size_t i = 0; i < added.size(); i++) {
-        MostVisitedURL added_url = most_visited[added[i]];
+        MostVisitedURL& added_url = most_visited[added[i]];
         db_->SetPageThumbnail(added_url, added[i], Images());
       }
       for (size_t i = 0; i < moved.size(); i++) {
         MostVisitedURL moved_url = most_visited[moved[i]];
-        db_->SetPageThumbnail(moved_url, moved[i], Images());
+        db_->UpdatePageRank(moved_url, moved[i]);
       }
     }
   }
-  AutoLock lock(lock_);
+
   StoreMostVisited(&most_visited);
+  for (size_t i = 0; i < top_sites_.size(); i++) {
+    GURL& url = top_sites_[i].url;
+    Images& img = top_images_[url];
+    if (!img.thumbnail.get() || !img.thumbnail->size()) {
+      StartQueryForThumbnail(i);
+    }
+  }
+
+  timer_.Stop();
+  timer_.Start(GetUpdateDelay(), this,
+               &TopSites::StartQueryForMostVisited);
+}
+
+void TopSites::StartQueryForThumbnail(size_t index) {
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  // |hs| may be null during unit tests.
+  if (!hs)
+    return;
+  HistoryService::Handle handle =
+      hs->GetPageThumbnail(top_sites_[index].url,
+                           &cancelable_consumer_,
+                           NewCallback(this, &TopSites::OnThumbnailAvailable));
+  cancelable_consumer_.SetClientData(hs, handle, index);
 }
 
 void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
-  lock_.AssertAcquired();
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // Take ownership of the most visited data.
   top_sites_.clear();
   top_sites_.swap(*most_visited);
@@ -218,7 +255,7 @@ void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
 
 void TopSites::StoreRedirectChain(const RedirectList& redirects,
                                   size_t destination) {
-  lock_.AssertAcquired();
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
 
   if (redirects.empty()) {
     NOTREACHED();
@@ -316,16 +353,15 @@ void TopSites::StartQueryForMostVisited() {
       LOG(INFO) << "History Service not available.";
     }
   }
-
-  timer_.Stop();
-  timer_.Start(GetUpdateDelay(), this,
-               &TopSites::StartQueryForMostVisited);
 }
 
 base::TimeDelta TopSites::GetUpdateDelay() {
+  if (top_sites_.size() == 0)
+    return base::TimeDelta::FromSeconds(30);
+
   int64 range = kMaxUpdateIntervalMinutes - kMinUpdateIntervalMinutes;
   int64 minutes = kMaxUpdateIntervalMinutes -
-      last_num_urls_changed_ * range / kTopSitesNumber;
+      last_num_urls_changed_ * range / top_sites_.size();
   return base::TimeDelta::FromMinutes(minutes);
 }
 
@@ -336,6 +372,17 @@ void TopSites::OnTopSitesAvailable(
       this, &TopSites::UpdateMostVisited, pages));
 }
 
+void TopSites::OnThumbnailAvailable(CancelableRequestProvider::Handle handle,
+                                    scoped_refptr<RefCountedBytes> thumbnail) {
+  HistoryService* hs = profile_ ->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  size_t index = cancelable_consumer_.GetClientData(hs, handle);
+  DCHECK(static_cast<size_t>(index) < top_sites_.size());
+  if (!thumbnail.get() || !thumbnail->size())
+    return;
+  const MostVisitedURL& url = top_sites_[index];
+  SetPageThumbnail(url.url, thumbnail, ThumbnailScore());
+}
+
 void TopSites::SetMockHistoryService(MockHistoryService* mhs) {
   mock_history_service_ = mhs;
 }
@@ -343,17 +390,18 @@ void TopSites::SetMockHistoryService(MockHistoryService* mhs) {
 void TopSites::Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-  if (type != NotificationType::HISTORY_URLS_DELETED) {
-    NOTREACHED();
-    return;
+  if (type == NotificationType::HISTORY_URLS_DELETED) {
+    Details<history::URLsDeletedDetails> deleted_details(details);
+    if (deleted_details->all_history) {
+      ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+                             NewRunnableMethod(this, &TopSites::ResetDatabase));
+    }
+    StartQueryForMostVisited();
+  } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+    if (top_sites_.size() < kTopSitesNumber) {
+      StartQueryForMostVisited();
+    }
   }
-
-  Details<history::URLsDeletedDetails> deleted_details(details);
-  if (deleted_details->all_history) {
-    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
-                           NewRunnableMethod(this, &TopSites::ResetDatabase));
-  }
-  StartQueryForMostVisited();
 }
 
 void TopSites::ResetDatabase() {

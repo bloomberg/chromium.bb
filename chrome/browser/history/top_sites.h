@@ -102,11 +102,26 @@ class TopSites : public NotificationObserver,
                             const RefCountedBytes* thumbnail_data,
                             const ThumbnailScore& score);
 
+  // A version of SetPageThumbnail that takes RefCountedBytes as
+  // returned by HistoryService.
+  bool SetPageThumbnail(const GURL& url,
+                        const RefCountedBytes* thumbnail,
+                        const ThumbnailScore& score);
+
+  // Query history service for the list of available thumnbails.
   void StartQueryForMostVisited();
 
-  // Handler for the query response.
+  // Query history service for the thumnbail for a given url. |index|
+  // is the index into top_sites_.
+  void StartQueryForThumbnail(size_t index);
+
+  // Called when history service returns a list of top URLs.
   void OnTopSitesAvailable(CancelableRequestProvider::Handle handle,
                            MostVisitedURLList data);
+
+  // Called when history service returns a thumbnail.
+  void OnThumbnailAvailable(CancelableRequestProvider::Handle handle,
+                            scoped_refptr<RefCountedBytes> thumnbail);
 
   // Saves the set of the top URLs visited by this user. The 0th item is the
   // most popular.
@@ -179,7 +194,7 @@ class TopSites : public NotificationObserver,
   // A mockup to use for testing. If NULL, use the real HistoryService
   // from the profile_. See SetMockHistoryService.
   MockHistoryService* mock_history_service_;
-  CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;
+  CancelableRequestConsumerTSimple<size_t> cancelable_consumer_;
   mutable Lock lock_;
 
   // The cached version of the top sites. The 0th item in this vector is the

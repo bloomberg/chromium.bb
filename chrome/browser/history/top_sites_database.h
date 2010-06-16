@@ -47,6 +47,9 @@ class TopSitesDatabase {
                                 int url_rank,
                                 const TopSites::Images& thumbnail) = 0;
 
+  // Update rank of a URL that's already in the database.
+  virtual void UpdatePageRank(const MostVisitedURL& url, int new_rank) = 0;
+
   // Convenience wrapper.
   bool GetPageThumbnail(const MostVisitedURL& url,
                         TopSites::Images* thumbnail) {
@@ -76,6 +79,7 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
   // WARNING: clears both input arguments.
   virtual void GetPageThumbnails(MostVisitedURLList* urls,
                                  std::map<GURL, TopSites::Images>* thumbnails);
+
   // Set a thumbnail for a URL. |url_rank| is the position of the URL
   // in the list of TopURLs, zero-based.
   // If the URL is not in the table, add it. If it is, replace its
@@ -83,6 +87,10 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
   virtual void SetPageThumbnail(const MostVisitedURL& url,
                                 int new_rank,
                                 const TopSites::Images& thumbnail);
+
+  // Sets the rank for a given URL. The URL must be in the database.
+  // Use SetPageThumbnail if it's not.
+  virtual void UpdatePageRank(const MostVisitedURL& url, int new_rank);
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   virtual bool GetPageThumbnail(const GURL& url,
@@ -96,14 +104,23 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
   // or was successfully created.
   bool InitThumbnailTable();
 
+  // Adds a new URL to the database.
+  void AddPageThumbnail(const MostVisitedURL& url,
+                        int new_rank,
+                        const TopSites::Images& thumbnail);
+
+  // Sets the page rank. Should be called within an open transaction.
+  void UpdatePageRankNoTransaction(const MostVisitedURL& url, int new_rank);
+
+  // Updates thumbnail of a URL that's already in the database.
+  void UpdatePageThumbnail(const MostVisitedURL& url,
+                           const TopSites::Images& thumbnail);
+
   // Returns the URL's current rank or -1 if it is not present.
   int GetURLRank(const MostVisitedURL& url);
 
-  // Gets the URL at |rank|. Returns true if the URL is there.
-  bool GetURLAtRank(int rank, MostVisitedURL* url);
-
-  // Sets the rank of a URL. The URL must be present in the DB.
-  void SetURLRank(const MostVisitedURL& url, int rank);
+  // Returns the number of URLs (rows) in the database.
+  int GetRowCount();
 
   // Encodes redirects into a string.
   static std::string GetRedirects(const MostVisitedURL& url);
