@@ -7,30 +7,78 @@
 
 #include "base/lock_impl.h"
 
-// A convenient wrapper for an OS specific critical section.
+// A convenient wrapper for an OS specific critical section.  The only real
+// intelligence in this class is in debug mode for the support for the
+// AssertAcquired() method.
 
 class Lock {
  public:
+#if defined(NDEBUG)             // Optimized wrapper implementation
   Lock() : lock_() {}
   ~Lock() {}
   void Acquire() { lock_.Lock(); }
   void Release() { lock_.Unlock(); }
+
   // If the lock is not held, take it and return true. If the lock is already
   // held by another thread, immediately return false.
   bool Try() { return lock_.Try(); }
 
-  // In debug builds this method checks that the lock has been acquired by the
-  // calling thread.  If the lock has not been acquired, then the method
-  // will DCHECK().  In non-debug builds, the LockImpl's implementation of
-  // AssertAcquired() is an empty inline method.
-  void AssertAcquired() const { return lock_.AssertAcquired(); }
+  // Null implementation if not debug.
+  void AssertAcquired() const {}
+#else
+  Lock();
+  ~Lock() {}
 
-  // Return the underlying lock implementation.
-  // TODO(awalker): refactor lock and condition variables so that this is
-  // unnecessary.
-  LockImpl* lock_impl() { return &lock_; }
+  // NOTE: Although windows critical sections support recursive locks, we do not
+  // allow this, and we will commonly fire a DCHECK() if a thread attempts to
+  // acquire the lock a second time (while already holding it).
+  void Acquire() {
+    lock_.Lock();
+    CheckUnheldAndMark();
+  }
+  void Release() {
+    CheckHeldAndUnmark();
+    lock_.Unlock();
+  }
+
+  bool Try() {
+    bool rv = lock_.Try();
+    if (rv) {
+      CheckUnheldAndMark();
+    }
+    return rv;
+  }
+
+  void AssertAcquired() const;
+#endif                          // NDEBUG
+
+#if defined(OS_POSIX)
+  // The posix implementation of ConditionVariable needs to be able
+  // to see our lock and tweak our debugging counters, as it releases
+  // and acquires locks inside of pthread_cond_{timed,}wait.
+  // Windows doesn't need to do this as it calls the Lock::* methods.
+  friend class ConditionVariable;
+#endif
 
  private:
+#if !defined(NDEBUG)
+  // Members and routines taking care of locks assertions.
+  // Note that this checks for recursive locks and allows them
+  // if the variable is set.  This is allowed by the underlying implementation
+  // on windows but not on Posix, so we're doing unneeded checks on Posix.
+  // It's worth it to share the code.
+  void CheckHeldAndUnmark();
+  void CheckUnheldAndMark();
+
+  // All private data is implicitly protected by lock_.
+  // Be VERY careful to only access members under that lock.
+
+  // Determines validity of owning_thread_id_.  Needed as we don't have
+  // a null owning_thread_id_ value.
+  bool owned_by_thread_;
+  PlatformThreadId owning_thread_id_;
+#endif  // NDEBUG
+
   LockImpl lock_;  // Platform specific underlying lock implementation.
 
   DISALLOW_COPY_AND_ASSIGN(Lock);

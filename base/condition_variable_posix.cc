@@ -16,7 +16,11 @@ using base::Time;
 using base::TimeDelta;
 
 ConditionVariable::ConditionVariable(Lock* user_lock)
-    : user_mutex_(user_lock->lock_impl()->os_lock()) {
+  : user_mutex_(user_lock->lock_.os_lock())
+#if !defined(NDEBUG)
+  , user_lock_(user_lock)
+#endif
+{
   int rv = pthread_cond_init(&condition_, NULL);
   DCHECK(rv == 0);
 }
@@ -27,8 +31,14 @@ ConditionVariable::~ConditionVariable() {
 }
 
 void ConditionVariable::Wait() {
+#if !defined(NDEBUG)
+  user_lock_->CheckHeldAndUnmark();
+#endif
   int rv = pthread_cond_wait(&condition_, user_mutex_);
   DCHECK(rv == 0);
+#if !defined(NDEBUG)
+  user_lock_->CheckUnheldAndMark();
+#endif
 }
 
 void ConditionVariable::TimedWait(const TimeDelta& max_time) {
@@ -46,8 +56,14 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   abstime.tv_nsec %= Time::kNanosecondsPerSecond;
   DCHECK(abstime.tv_sec >= now.tv_sec);  // Overflow paranoia
 
+#if !defined(NDEBUG)
+  user_lock_->CheckHeldAndUnmark();
+#endif
   int rv = pthread_cond_timedwait(&condition_, user_mutex_, &abstime);
   DCHECK(rv == 0 || rv == ETIMEDOUT);
+#if !defined(NDEBUG)
+  user_lock_->CheckUnheldAndMark();
+#endif
 }
 
 void ConditionVariable::Broadcast() {
