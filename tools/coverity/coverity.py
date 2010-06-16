@@ -84,9 +84,10 @@ def _ReadPassword(pwfilename):
   pwfile.close()
   return password.rstrip()
 
-def _RunCommand(cmd, dry_run, shell=False):
+def _RunCommand(cmd, dry_run, shell=False, echo_cmd=True):
   """Runs the command if dry_run is false, otherwise just prints the command."""
-  print cmd
+  if echo_cmd:
+    print cmd
   # TODO(wtc): Check the return value of subprocess.call, which is the return
   # value of the command.
   if not dry_run:
@@ -134,6 +135,8 @@ def main(options, args):
   elif sys.platform == 'win32':
     rm_path = os.path.join(options.source_dir,options.solution_dir,
                            options.target)
+  elif sys.platform == 'darwin':
+    rm_path = os.path.join(options.source_dir,'src','xcodebuild')
   else:
     print 'Platform "%s" unrecognized, don\'t know how to proceed'
     _ReleaseLock(lock_file, lock_filename)
@@ -158,6 +161,15 @@ def main(options, args):
     cmd = '%s\\cov-build.exe --dir %s devenv.com %s\\%s /build %s' % (
       options.coverity_bin_dir, options.coverity_intermediate_dir,
       options.source_dir, options.solution_file, options.target)
+  elif sys.platform == 'darwin':
+    use_shell_during_make = True
+    os.chdir('src/build')
+    _RunCommand('pwd', options.dry_run, shell=True)
+    cmd = ('%s/cov-build --dir %s xcodebuild -project all.xcodeproj '
+           '-configuration %s -target All') % (
+      options.coverity_bin_dir, options.coverity_intermediate_dir,
+      options.target)
+
 
   _RunCommand(cmd, options.dry_run, shell=use_shell_during_make)
   print 'Elapsed time: %ds' % (time.time() - start_time)
@@ -192,7 +204,8 @@ def main(options, args):
                              coverity_target,
                              options.coverity_user,
                              coverity_password)
-  _RunCommand(cmd, options.dry_run, shell=use_shell_during_make)
+  # Avoid echoing the Commit command because it has a password in it
+  _RunCommand(cmd, options.dry_run, shell=use_shell_during_make, echo_cmd=False)
 
   print 'Total time: %ds' % (time.time() - start_time)
 
