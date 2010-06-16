@@ -18,13 +18,13 @@
 #include "views/widget/widget_delegate.h"
 
 namespace views {
-class ImageView;
 class NativeButton;
 class WidgetGtk;
-class Throbber;
 }
 
 namespace chromeos {
+
+class UserView;
 
 // UserController manages the set of windows needed to login a single existing
 // user or first time login for a new user. ExistingUserController creates
@@ -97,9 +97,6 @@ class UserController : public views::ButtonListener,
   virtual void OnLoginOffTheRecord();
   virtual void ClearErrors();
 
-  // Max size needed when an entry is selected.
-  static const int kSize;
-
   // Padding between the user windows.
   static const int kPadding;
 
@@ -148,12 +145,10 @@ class UserController : public views::ButtonListener,
   views::WidgetGtk* unselected_label_window_;
 
   // View that shows user image on image window.
-  views::ImageView* image_view_;
+  UserView* user_view_;
 
   // View that that is used for new user login.
   NewUserView* new_user_view_;
-
-  views::Throbber* throbber_;
 
   NotificationRegistrar registrar_;
 

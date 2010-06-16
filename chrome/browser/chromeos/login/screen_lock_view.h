@@ -18,7 +18,7 @@ class ImageView;
 namespace chromeos {
 
 class ScreenLocker;
-class SignoutView;
+class UserView;
 
 namespace test {
 class ScreenLockerTester;
@@ -65,15 +65,9 @@ class ScreenLockView : public views::View,
  private:
   friend class test::ScreenLockerTester;
 
-  // Set the user's image.
-  void SetImage(const SkBitmap& image,
-                int desired_width,
-                int desired_height);
-
-  SignoutView* signout_view_;
+  UserView* user_view_;
 
   // For editing the password.
-  views::ImageView* image_view_;
   views::Textfield* password_field_;
   views::TextButton* unlock_button_;
 

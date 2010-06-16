@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -67,7 +68,7 @@ ExistingUserController::ExistingUserController(
   int screen_width = background_bounds.width();
   if (screen_width > 0) {
     max_users = std::max(static_cast<size_t>(2), std::min(kMaxUsers,
-        static_cast<size_t>((screen_width - UserController::kSize)
+        static_cast<size_t>((screen_width - login::kUserImageSize)
                             / (UserController::kUnselectedSize +
                                UserController::kPadding))));
   }

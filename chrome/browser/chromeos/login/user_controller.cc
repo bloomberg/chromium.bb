@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -18,12 +19,9 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"
-#include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/button/native_button.h"
-#include "views/controls/throbber.h"
 #include "views/grid_layout.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -36,9 +34,6 @@ namespace chromeos {
 
 namespace {
 
-// Gap between edge and image view, and image view and controls.
-const int kBorderSize = 4;
-
 // Gap between the border around the image/buttons and user name.
 const int kUserNameGap = 4;
 
@@ -46,16 +41,12 @@ const int kUserNameGap = 4;
 // case to make border window size close to exsisting users.
 const int kControlsHeight = 30;
 
-// Background color.
-const SkColor kBackgroundColor = SK_ColorWHITE;
-
-// Text color.
-const SkColor kTextColor = SK_ColorWHITE;
-
 }  // namespace
 
-// static
-const int UserController::kSize = 260;
+using login::kBackgroundColor;
+using login::kBorderSize;
+using login::kTextColor;
+using login::kUserImageSize;
 
 // static
 const int UserController::kPadding = 20;
@@ -73,9 +64,8 @@ UserController::UserController(Delegate* delegate)
       border_window_(NULL),
       label_window_(NULL),
       unselected_label_window_(NULL),
-      image_view_(NULL),
-      new_user_view_(NULL),
-      throbber_(NULL) {
+      user_view_(NULL),
+      new_user_view_(NULL) {
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -94,9 +84,8 @@ UserController::UserController(Delegate* delegate,
       border_window_(NULL),
       label_window_(NULL),
       unselected_label_window_(NULL),
-      image_view_(NULL),
-      new_user_view_(NULL),
-      throbber_(NULL) {
+      user_view_(NULL),
+      new_user_view_(NULL) {
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -106,7 +95,7 @@ UserController::UserController(Delegate* delegate,
 UserController::~UserController() {
   controls_window_->Close();
   image_window_->Close();
-  image_view_ = NULL;
+  user_view_ = NULL;
   new_user_view_ = NULL;
   border_window_->Close();
   label_window_->Close();
@@ -128,7 +117,7 @@ void UserController::SetPasswordEnabled(bool enable) {
   DCHECK(!is_guest_);
   password_field_->SetEnabled(enable);
   submit_button_->SetEnabled(enable);
-  enable ? throbber_->Stop() : throbber_->Start();
+  enable ? user_view_->StopThrobber() : user_view_->StartThrobber();
 }
 
 void UserController::ClearAndEnablePassword() {
@@ -161,7 +150,7 @@ void UserController::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   if (type != NotificationType::LOGIN_USER_IMAGE_CHANGED ||
-      !image_view_)
+      !user_view_)
     return;
 
   UserManager::User* user = Details<UserManager::User>(details).ptr();
@@ -169,7 +158,7 @@ void UserController::Observe(
     return;
 
   user_.set_image(user->image());
-  SetImage(user_.image());
+  user_view_->SetImage(user_.image());
 }
 
 void UserController::Login() {
@@ -219,7 +208,7 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
   window->Init(NULL, gfx::Rect());
   window->SetContentsView(control_view);
   window->SetWidgetDelegate(this);
-  *height = is_guest_ ? kSize + kControlsHeight
+  *height = is_guest_ ? kUserImageSize + kControlsHeight
                       : control_view->GetPreferredSize().height();
   std::vector<int> params;
   params.push_back(index);
@@ -227,30 +216,24 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
       window->GetNativeView(),
       WM_IPC_WINDOW_LOGIN_CONTROLS,
       &params);
-  window->SetBounds(gfx::Rect(0, 0, kSize, *height));
+  window->SetBounds(gfx::Rect(0, 0, kUserImageSize, *height));
   window->Show();
   return window;
 }
 
 WidgetGtk* UserController::CreateImageWindow(int index) {
-  image_view_ = new views::ImageView();
-  image_view_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
-  if (!is_guest_)
-    SetImage(user_.image());
-  else
-    SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                 IDR_LOGIN_OTHER_USER));
+  user_view_ = new UserView();
 
-  throbber_ = CreateDefaultSmoothedThrobber();
-  int w = throbber_->GetPreferredSize().width();
-  int h = throbber_->GetPreferredSize().height();
-  throbber_->SetBounds(kSize / 2 - w / 2, kSize / 2 - h / 2 , w, h);
-  image_view_->AddChildView(throbber_);
+  if (!is_guest_)
+    user_view_->SetImage(user_.image());
+  else
+    user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_LOGIN_OTHER_USER));
 
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
-  window->Init(NULL, gfx::Rect(0, 0, kSize, kSize));
-  window->SetContentsView(image_view_);
+  window->Init(NULL, gfx::Rect(user_view_->GetPreferredSize()));
+  window->SetContentsView(user_view_);
+
   std::vector<int> params;
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
@@ -281,8 +264,8 @@ WidgetGtk* UserController::CreateBorderWindow(int index,
   // Guest login controls window is much higher than exsisting user's controls
   // window so window manager will place the control instead of image window.
   int height = kBorderSize * 2 + controls_height;
-  height += is_guest_ ? 0 : kBorderSize + kSize;
-  window->SetBounds(gfx::Rect(0, 0, kSize + kBorderSize * 2, height));
+  height += is_guest_ ? 0 : kBorderSize + kUserImageSize;
+  window->SetBounds(gfx::Rect(0, 0, kUserImageSize + kBorderSize * 2, height));
   window->Show();
   return window;
 }
@@ -294,7 +277,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
       rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD) :
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   int width = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
-      kSize : kUnselectedSize;
+      kUserImageSize : kUnselectedSize;
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->MakeTransparent();
   window->Init(NULL, gfx::Rect());
@@ -311,15 +294,6 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   window->SetBounds(gfx::Rect(0, 0, width, height));
   window->Show();
   return window;
-}
-
-void UserController::SetImage(const SkBitmap& image) {
-  int desired_size = std::min(image.width(), image.height());
-  // Desired size is not preserved if it's greater than 75% of kSize.
-  if (desired_size * 4 > 3 * kSize)
-    desired_size = kSize;
-  image_view_->SetImageSize(gfx::Size(desired_size, desired_size));
-  image_view_->SetImage(image);
 }
 
 gfx::Rect UserController::GetScreenBounds() const {
