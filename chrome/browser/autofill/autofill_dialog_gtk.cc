@@ -70,7 +70,6 @@ typedef struct _CreditCardWidgets {
   GtkWidget* card_number;
   GtkWidget* expiration_month;
   GtkWidget* expiration_year;
-  GtkWidget* verification_code;
   GtkWidget* billing_address;
   GtkWidget* phone;
   string16 original_card_number;
@@ -456,8 +455,6 @@ static CreditCard CreditCardFromWidgetValues(
                       GetEntryText(widgets.expiration_month));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                       GetEntryText(widgets.expiration_year));
-  credit_card.SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                      GetEntryText(widgets.verification_code));
 
   // If the CC number starts with an asterisk, then we know that the user has
   // not modified the credit card number at the least, so use the original CC
@@ -859,8 +856,6 @@ GtkWidget* AutoFillDialog::AddNewCreditCard(bool expand) {
       name_cc_table, 1, 0, 3, IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER);
   widgets.expiration_month = FormTableAddSizedEntry(name_cc_table, 1, 3, 2, 0);
   widgets.expiration_year = FormTableAddSizedEntry(name_cc_table, 1, 4, 4, 0);
-  widgets.verification_code = FormTableAddSizedEntry(
-      name_cc_table, 1, 5, 5, IDS_AUTOFILL_DIALOG_CVC);
 
   FormTableSetLabel(name_cc_table, 1, 3, 2,
                     IDS_AUTOFILL_DIALOG_EXPIRATION_DATE);
@@ -971,9 +966,6 @@ void AutoFillDialog::AddCreditCard(const CreditCard& credit_card) {
   SetEntryText(
       widgets.expiration_year,
       credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
-  SetEntryText(
-      widgets.verification_code,
-      credit_card.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE)));
 
   // Two cases to consider:
   //  address not found - This means the address is not set and
