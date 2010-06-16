@@ -10,5 +10,6 @@ BUG46674 SKIP WIN LINUX MAC : fast/js/missing-title-end-tag-js.html = FAIL
 
 // Before bulach/andreip rebaseline these tests (changed at r61234 / new html5 parser).
 BUG46674 WIN : fast/text/international/hindi-whitespace.html = FAIL
-// Whoops -- need to rebaseline this.
-BUG_DGLAZKOV : css1/box_properties/float_elements_in_series.html = IMAGE
+// Whoops -- need to rebaseline these.
+BUG_DGLAZKOV MAC : css1/box_properties/float_elements_in_series.html = IMAGE
+BUG_DGLAZKOV LINUX : fast/dom/stripNullFromTextNodes.html = TEXT
