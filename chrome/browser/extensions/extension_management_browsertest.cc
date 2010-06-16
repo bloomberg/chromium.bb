@@ -137,16 +137,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_Incognito) {
   UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
 }
 
-#if defined(OS_LINUX)
-// See http://crbug.com/32906 and http://crbug.com/36890
-#define MAYBE_UpdatePermissions DISABLED_UpdatePermissions
-#else
-#define MAYBE_UpdatePermissions UpdatePermissions
-#endif
-
 // Tests the process of updating an extension to one that requires higher
 // permissions.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_UpdatePermissions) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   ASSERT_TRUE(InstallAndUpdateIncreasingPermissionsExtension());
   const size_t size_before = service->extensions()->size();
