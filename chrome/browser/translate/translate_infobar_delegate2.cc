@@ -167,10 +167,12 @@ bool TranslateInfoBarDelegate2::IsLanguageBlacklisted() {
 void TranslateInfoBarDelegate2::ToggleLanguageBlacklist() {
   const std::string& original_lang =
       GetLanguageCodeAt(original_language_index());
-  if (prefs_.IsLanguageBlacklisted(original_lang))
+  if (prefs_.IsLanguageBlacklisted(original_lang)) {
     prefs_.RemoveLanguageFromBlacklist(original_lang);
-  else
+  } else {
     prefs_.BlacklistLanguage(original_lang);
+    tab_contents_->RemoveInfoBar(this);
+  }
 }
 
 bool TranslateInfoBarDelegate2::IsSiteBlacklisted() {
@@ -183,10 +185,12 @@ void TranslateInfoBarDelegate2::ToggleSiteBlacklist() {
   if (host.empty())
     return;
 
-  if (prefs_.IsSiteBlacklisted(host))
+  if (prefs_.IsSiteBlacklisted(host)) {
     prefs_.RemoveSiteFromBlacklist(host);
-  else
+  } else {
     prefs_.BlacklistSite(host);
+    tab_contents_->RemoveInfoBar(this);
+  }
 }
 
 bool TranslateInfoBarDelegate2::ShouldAlwaysTranslate() {
