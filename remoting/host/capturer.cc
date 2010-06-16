@@ -43,7 +43,7 @@ void Capturer::FinishCapture(Task* done_task) {
   delete done_task;
 
   // Select the next buffer to be the current buffer.
-  current_buffer_ = ++current_buffer_ % kNumBuffers;
+  current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 }
 
 }  // namespace remoting
