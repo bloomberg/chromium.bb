@@ -153,7 +153,7 @@ class FetcherDelegate {
 FetcherDelegate* FetcherDelegate::instance_ = NULL;
 
 // Test a fetch from the test server.
-TEST_F(ResourceFetcherTests, DISABLED_ResourceFetcherDownload) {
+TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
   scoped_refptr<UnittestTestServer> server =
       UnittestTestServer::CreateServer();
   ASSERT_TRUE(NULL != server.get());
