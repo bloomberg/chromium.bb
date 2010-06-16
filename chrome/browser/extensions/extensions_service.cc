@@ -176,7 +176,7 @@ ExtensionsService::~ExtensionsService() {
 void ExtensionsService::InitEventRouters() {
   ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
-  ExtensionBrowserEventRouter::GetInstance()->Init();
+  ExtensionBrowserEventRouter::GetInstance()->Init(profile_);
   ExtensionBookmarkEventRouter::GetSingleton()->Observe(
       profile_->GetBookmarkModel());
   ExtensionCookiesEventRouter::GetInstance()->Init();

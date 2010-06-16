@@ -14,6 +14,12 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_registrar.h"
+#if defined(TOOLKIT_VIEWS)
+#include "views/view.h"
+#include "views/focus/focus_manager.h"
+#elif defined(TOOLKIT_GTK)
+#include "app/active_window_watcher_x.h"
+#endif
 
 // The ExtensionBrowserEventRouter listens to Browser window & tab events
 // and routes them to listeners inside extension process renderers.
@@ -21,6 +27,11 @@
 // events from windows/tabs within a profile to extension processes in the same
 // profile.
 class ExtensionBrowserEventRouter : public TabStripModelObserver,
+#if defined(TOOLKIT_VIEWS)
+                                    public views::WidgetFocusChangeListener,
+#elif defined(TOOLKIT_GTK)
+                                    public ActiveWindowWatcherX::Observer,
+#endif
                                     public BrowserList::Observer,
                                     public NotificationObserver {
  public:
@@ -28,12 +39,19 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   static ExtensionBrowserEventRouter* GetInstance();
 
   // Must be called once. Subsequent calls have no effect.
-  void Init();
+  void Init(Profile* profile);
 
   // BrowserList::Observer
   virtual void OnBrowserAdded(const Browser* browser);
   virtual void OnBrowserRemoving(const Browser* browser);
   virtual void OnBrowserSetLastActive(const Browser* browser);
+
+#if defined(TOOLKIT_VIEWS)
+  virtual void NativeFocusWillChange(gfx::NativeView focused_before,
+                                     gfx::NativeView focused_now);
+#elif defined(TOOLKIT_GTK)
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
+#endif
 
   // Called from Observe() on BROWSER_WINDOW_READY (not a part of
   // BrowserList::Observer).
@@ -143,6 +161,10 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // The currently focused window. We keep this so as to avoid sending multiple
   // windows.onFocusChanged events with the same windowId.
   int focused_window_id_;
+
+  // The main profile (non-OTR) profile which will be used to send events not
+  // associated with any browser.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBrowserEventRouter);
 };

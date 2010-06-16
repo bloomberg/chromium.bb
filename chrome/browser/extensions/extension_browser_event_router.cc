@@ -94,11 +94,17 @@ static void DispatchSimpleBrowserEvent(Profile* profile,
   DispatchEvent(profile, event_name, json_args);
 }
 
-void ExtensionBrowserEventRouter::Init() {
+void ExtensionBrowserEventRouter::Init(Profile* profile) {
   if (initialized_)
     return;
-
+  DCHECK(!profile->IsOffTheRecord());
+  profile_ = profile;
   BrowserList::AddObserver(this);
+#if defined(TOOLKIT_VIEWS)
+  views::FocusManager::GetWidgetFocusManager()->AddFocusChangeListener(this);
+#elif defined(TOOLKIT_GTK)
+  ActiveWindowWatcherX::AddObserver(this);
+#endif
 
   // Init() can happen after the browser is running, so catch up with any
   // windows that already exist.
@@ -184,15 +190,36 @@ void ExtensionBrowserEventRouter::OnBrowserRemoving(const Browser* browser) {
                              events::kOnWindowRemoved);
 }
 
+#if defined(TOOLKIT_VIEWS)
+void ExtensionBrowserEventRouter::NativeFocusWillChange(
+    gfx::NativeView focused_before,
+    gfx::NativeView focused_now) {
+  if (!focused_now)
+    OnBrowserSetLastActive(NULL);
+}
+#elif defined(TOOLKIT_GTK)
+void ExtensionBrowserEventRouter::ActiveWindowChanged(
+    GdkWindow* active_window) {
+  if (!active_window)
+    OnBrowserSetLastActive(NULL);
+}
+#endif
+
 void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
     const Browser* browser) {
+  int window_id = extension_misc::kUnknownWindowId;
+  if (browser)
+    window_id = ExtensionTabUtil::GetWindowId(browser);
 
-  int window_id = ExtensionTabUtil::GetWindowId(browser);
   if (focused_window_id_ == window_id)
     return;
 
   focused_window_id_ = window_id;
-  DispatchSimpleBrowserEvent(browser->profile(),
+  // Note: because we use the default profile when |browser| is NULL, it means
+  // that all extensions hear about the event regardless of whether the browser
+  // that lost focus was OTR or if the extension is OTR-enabled.
+  // See crbug.com/46610.
+  DispatchSimpleBrowserEvent(browser ? browser->profile() : profile_,
                              focused_window_id_,
                              events::kOnWindowFocusedChanged);
 }

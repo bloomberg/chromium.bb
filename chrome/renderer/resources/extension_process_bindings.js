@@ -400,6 +400,28 @@ var chrome = chrome || {};
       }
 
 
+      // Parse any values defined for properties.
+      if (apiDef.properties) {
+        for (var prop in apiDef.properties) {
+          if (!apiDef.properties.hasOwnProperty(prop))
+            continue;
+
+          var property = apiDef.properties[prop];
+          if (property.value) {
+            var value = property.value;
+            if (property.type === 'integer') {
+              value = parseInt(value);
+            } else if (property.type === 'boolean') {
+              value = value === "true";
+            } else if (property.type !== 'string') {
+              throw "NOT IMPLEMENTED (extension_api.json error): Cannot " +
+                  "parse values for type \"" + property.type + "\"";
+            }
+            module[prop] = value;
+          }
+        }
+      }
+
       // getTabContentses is retained for backwards compatibility
       // See http://crbug.com/21433
       chrome.extension.getTabContentses = chrome.extension.getExtensionTabs
