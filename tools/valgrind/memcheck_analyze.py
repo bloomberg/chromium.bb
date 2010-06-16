@@ -12,6 +12,7 @@ import gdb_helper
 import logging
 import optparse
 import os
+import re
 import subprocess
 import sys
 import time
@@ -368,14 +369,29 @@ class MemcheckAnalyze:
       # Wait up to three minutes for valgrind to finish writing all files,
       # but after that, just skip incomplete files and warn.
       f = open(file, "r+")
+      pid = re.match(".*\.([0-9]+)$", file)
+      if pid:
+        pid = pid.groups()[0]
       found = False
+      running = True
       firstrun = True
       origsize = os.path.getsize(file)
-      while (not found and (firstrun or ((time.time() - start) < 180.0))):
+      while (running and not found and
+             (firstrun or ((time.time() - start) < 180.0))):
         firstrun = False
         f.seek(0)
+        if pid:
+          # Make sure the process is still running so we don't wait for
+          # 3 minutes if it was killed. See http://crbug.com/17453
+          ps_out = subprocess.Popen("ps p %s" % pid, shell=True,
+                                    stdout=subprocess.PIPE).stdout
+          if ps_out.readlines() < 2:
+            running = False
         found = find_and_truncate(f)
-        if not found:
+        if not running and not found:
+          logging.warn("Valgrind process PID = %s is not running but "
+                       "its XML log has not been finished correctly." % pid)
+        if running and not found:
           time.sleep(1)
       f.close()
       if not found:
