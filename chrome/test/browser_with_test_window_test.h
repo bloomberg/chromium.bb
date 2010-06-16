@@ -51,7 +51,6 @@ class BrowserWithTestWindowTest : public testing::Test {
   TestRenderViewHost* TestRenderViewHostForTab(TabContents* tab_contents);
 
  protected:
-
   TestBrowserWindow* window() const { return window_.get(); }
   void set_window(TestBrowserWindow* window) {
     window_.reset(window);
@@ -66,6 +65,8 @@ class BrowserWithTestWindowTest : public testing::Test {
   void set_profile(TestingProfile* profile) {
     profile_.reset(profile);
   }
+
+  MessageLoop* message_loop() { return &ui_loop_; }
 
   // Adds a tab to |browser| with the given URL and commits the load.
   // This is a convenience function. The new tab will be added at index 0.

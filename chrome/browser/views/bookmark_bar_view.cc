@@ -444,13 +444,16 @@ void BookmarkBarView::SetProfile(Profile* profile) {
   registrar_.Add(this, NotificationType::BOOKMARK_BUBBLE_SHOWN, ns_source);
   registrar_.Add(this, NotificationType::BOOKMARK_BUBBLE_HIDDEN, ns_source);
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                  NotificationService::AllSources());
+                 NotificationService::AllSources());
+
+  // Remove any existing bookmark buttons.
+  while (GetBookmarkButtonCount())
+    delete GetChildViewAt(0);
 
   model_ = profile_->GetBookmarkModel();
   model_->AddObserver(this);
   if (model_->IsLoaded())
     Loaded(model_);
-
   // else case: we'll receive notification back from the BookmarkModel when done
   // loading, then we'll populate the bar.
 }
@@ -948,14 +951,11 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
   return button;
 }
 
-int BookmarkBarView::GetBookmarkButtonCount() {
-  // We contain at least four non-bookmark button views: other bookmarks,
-  // bookmarks separator, chevrons (for overflow), the instruction label and
-  // the sync error button.
-  return GetChildViewCount() - 5;
-}
-
 void BookmarkBarView::Loaded(BookmarkModel* model) {
+  volatile int button_count = GetBookmarkButtonCount();
+  CHECK(button_count == 0);  // If non-zero it means Load was invoked more than
+                             // once, or we didn't properly clear things. Either
+                             // of which shouldn't happen
   const BookmarkNode* node = model_->GetBookmarkBarNode();
   DCHECK(node && model_->other_node());
   // Create a button for each of the children on the bookmark bar.
@@ -966,6 +966,8 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
 
   Layout();
   SchedulePaint();
+
+  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkModelBeingDeleted(BookmarkModel* model) {
@@ -1555,6 +1557,13 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
   // Use a large number so that the button continues to throb.
   if (throbbing_view_)
     throbbing_view_->StartThrobbing(std::numeric_limits<int>::max());
+}
+
+int BookmarkBarView::GetBookmarkButtonCount() {
+  // We contain at least four non-bookmark button views: other bookmarks,
+  // bookmarks separator, chevrons (for overflow), the instruction label and
+  // the sync error button.
+  return GetChildViewCount() - 5;
 }
 
 void BookmarkBarView::StopThrobbing(bool immediate) {
