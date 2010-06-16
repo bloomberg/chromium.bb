@@ -589,7 +589,7 @@
         'browser/bookmarks/bookmark_model_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
-        'browser/browser_accessibility_unittest.cc',
+        'browser/browser_accessibility_win_unittest.cc',
         'browser/browser_commands_unittest.cc',
         'browser/browser_theme_pack_unittest.cc',
         'browser/browser_theme_provider_unittest.cc',
@@ -1246,7 +1246,7 @@
           'sources!': [
             'browser/bookmarks/bookmark_codec_unittest.cc',
             'browser/bookmarks/bookmark_drag_data_unittest.cc',
-            'browser/browser_accessibility_unittest.cc',
+            'browser/browser_accessibility_win_unittest.cc',
             'browser/chrome_plugin_unittest.cc',
             'browser/extensions/extension_process_manager_unittest.cc',
             'browser/importer/importer_unittest.cc',

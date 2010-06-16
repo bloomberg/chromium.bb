@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_ACCESSIBILITY_H_
-#define CHROME_BROWSER_BROWSER_ACCESSIBILITY_H_
+#ifndef CHROME_BROWSER_BROWSER_ACCESSIBILITY_WIN_H_
+#define CHROME_BROWSER_BROWSER_ACCESSIBILITY_WIN_H_
 
 #include <atlbase.h>
 #include <atlcom.h>
@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/scoped_comptr_win.h"
-#include "chrome/browser/browser_accessibility_manager.h"
+#include "chrome/browser/browser_accessibility_manager_win.h"
 #include "ia2_api_all.h"  // Generated
 #include "webkit/glue/webaccessibility.h"
 
@@ -396,4 +396,4 @@ class ATL_NO_VTABLE BrowserAccessibility
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
 };
 
-#endif  // CHROME_BROWSER_BROWSER_ACCESSIBILITY_H_
+#endif  // CHROME_BROWSER_BROWSER_ACCESSIBILITY_WIN_H_

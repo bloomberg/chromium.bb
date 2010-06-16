@@ -49,7 +49,7 @@
 
 #if defined(OS_WIN)
 // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
-#include "chrome/browser/browser_accessibility_manager.h"
+#include "chrome/browser/browser_accessibility_manager_win.h"
 #endif
 
 using base::TimeDelta;

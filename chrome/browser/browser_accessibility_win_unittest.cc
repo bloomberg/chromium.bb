@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_accessibility_manager.h"
-#include "chrome/browser/browser_accessibility.h"
+#include "chrome/browser/browser_accessibility_manager_win.h"
+#include "chrome/browser/browser_accessibility_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using webkit_glue::WebAccessibility;
