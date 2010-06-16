@@ -108,7 +108,13 @@ class HeapcheckWrapper(object):
               description = supp.description
               break
           if cur_stack:
-            # Print the report and set the return code to 1.
+            if not cur_leak_signature:
+              print 'Missing leak signature for the following stack: '
+              for frame in cur_stack:
+                print '   ' + frame
+              print 'Aborting...'
+              return 3
+           # Print the report and set the return code to 1.
             print ('Leak of %d bytes in %d objects allocated from:'
                    % tuple(cur_leak_signature))
             print '\n'.join(cur_report)
