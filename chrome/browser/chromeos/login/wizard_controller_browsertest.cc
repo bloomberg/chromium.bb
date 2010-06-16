@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
+#include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/common/chrome_switches.h"
@@ -19,6 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "unicode/locid.h"
+#include "views/accelerator.h"
 
 namespace {
 
@@ -174,6 +176,42 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   controller()->OnExit(chromeos::ScreenObserver::NETWORK_OFFLINE);
   EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, Accelerators) {
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+
+  views::FocusManager* focus_manager =
+      controller()->contents()->GetFocusManager();
+  views::Accelerator accel_account_screen(base::VKEY_A, false, true, true);
+  views::Accelerator accel_login_screen(base::VKEY_L, false, true, true);
+  views::Accelerator accel_network_screen(base::VKEY_N, false, true, true);
+  views::Accelerator accel_update_screen(base::VKEY_U, false, true, true);
+  views::Accelerator accel_image_screen(base::VKEY_I, false, true, true);
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_account_screen_, Show()).Times(1);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(accel_account_screen));
+  EXPECT_EQ(controller()->GetAccountScreen(), controller()->current_screen());
+
+  EXPECT_CALL(*mock_account_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_login_screen_, Show()).Times(1);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(accel_login_screen));
+  EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
+
+  EXPECT_CALL(*mock_login_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(accel_network_screen));
+  EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(accel_update_screen));
+  EXPECT_EQ(controller()->GetUpdateScreen(), controller()->current_screen());
+
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_TRUE(focus_manager->ProcessAccelerator(accel_image_screen));
+  EXPECT_EQ(controller()->GetUserImageScreen(), controller()->current_screen());
 }
 
 COMPILE_ASSERT(chromeos::ScreenObserver::EXIT_CODES_COUNT == 14,
