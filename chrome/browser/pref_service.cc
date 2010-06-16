@@ -8,6 +8,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -104,7 +105,9 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
 
   // The ConfigurationPolicyPrefStore take the ownership of the passed
   // |provider|.
-  managed_prefs = new ConfigurationPolicyPrefStore(managed_prefs_provider);
+  managed_prefs = new ConfigurationPolicyPrefStore(
+      CommandLine::ForCurrentProcess(),
+      managed_prefs_provider);
 
   // The PrefValueStore takes to ownership of the parameters.
   PrefValueStore* value_store = new PrefValueStore(

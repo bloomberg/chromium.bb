@@ -60,15 +60,14 @@ void CheckCurrentlyOnMainThread() {
 // ----------------------------------------------------------------------------
 
 net::ProxyConfigService* CreateProxyConfigService(
-    const CommandLine& command_line) {
+    const PrefService* pref_service) {
   // The linux gconf-based proxy settings getter relies on being initialized
   // from the UI thread.
   CheckCurrentlyOnMainThread();
 
-  scoped_ptr<net::ProxyConfig> proxy_config_from_cmd_line(
-      CreateProxyConfig(command_line));
+  scoped_ptr<net::ProxyConfig> proxy_config(CreateProxyConfig(pref_service));
 
-  if (!proxy_config_from_cmd_line.get()) {
+  if (!proxy_config.get()) {
     // Use system settings.
     // TODO(port): the IO and FILE message loops are only used by Linux.  Can
     // that code be moved to chrome/browser instead of being in net, so that it
@@ -79,7 +78,7 @@ net::ProxyConfigService* CreateProxyConfigService(
   }
 
   // Otherwise use the fixed settings from the command line.
-  return new net::ProxyConfigServiceFixed(*proxy_config_from_cmd_line.get());
+  return new net::ProxyConfigServiceFixed(*proxy_config.get());
 }
 
 // Create a proxy service according to the options on command line.
@@ -213,9 +212,7 @@ class FactoryForOriginal : public ChromeURLRequestContextFactory {
         // We need to initialize the ProxyConfigService from the UI thread
         // because on linux it relies on initializing things through gconf,
         // and needs to be on the main thread.
-        proxy_config_service_(
-            CreateProxyConfigService(
-                *CommandLine::ForCurrentProcess())) {
+        proxy_config_service_(CreateProxyConfigService(profile->GetPrefs())) {
   }
 
   virtual ChromeURLRequestContext* Create();
@@ -547,6 +544,15 @@ URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
   }
 
   return url_request_context_;
+}
+
+void ChromeURLRequestContextGetter::RegisterUserPrefs(
+    PrefService* pref_service) {
+  pref_service->RegisterBooleanPref(prefs::kNoProxyServer, false);
+  pref_service->RegisterBooleanPref(prefs::kProxyAutoDetect, false);
+  pref_service->RegisterStringPref(prefs::kProxyServer, L"");
+  pref_service->RegisterStringPref(prefs::kProxyPacUrl, L"");
+  pref_service->RegisterStringPref(prefs::kProxyBypassList, L"");
 }
 
 net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
@@ -1024,59 +1030,53 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
 
 // ----------------------------------------------------------------------------
 
-net::ProxyConfig* CreateProxyConfig(const CommandLine& command_line) {
+net::ProxyConfig* CreateProxyConfig(const PrefService* pref_service) {
   // Scan for all "enable" type proxy switches.
-  static const char* proxy_switches[] = {
-    switches::kProxyServer,
-    switches::kProxyPacUrl,
-    switches::kProxyAutoDetect,
-    switches::kProxyBypassList
+  static const wchar_t* proxy_prefs[] = {
+    prefs::kProxyPacUrl,
+    prefs::kProxyServer,
+    prefs::kProxyBypassList,
+    prefs::kProxyAutoDetect
   };
 
-  bool found_enable_proxy_switch = false;
-  for (size_t i = 0; i < arraysize(proxy_switches); i++) {
-    if (command_line.HasSwitch(proxy_switches[i])) {
-      found_enable_proxy_switch = true;
+  bool found_enable_proxy_pref = false;
+  for (size_t i = 0; i < arraysize(proxy_prefs); i++) {
+    if (pref_service->HasPrefPath(proxy_prefs[i])) {
+      found_enable_proxy_pref = true;
       break;
     }
   }
 
-  if (!found_enable_proxy_switch &&
-      !command_line.HasSwitch(switches::kNoProxyServer)) {
+  if (!found_enable_proxy_pref &&
+      !pref_service->GetBoolean(prefs::kNoProxyServer)) {
     return NULL;
   }
 
   net::ProxyConfig* proxy_config = new net::ProxyConfig();
-  if (command_line.HasSwitch(switches::kNoProxyServer)) {
-    // Ignore (and warn about) all the other proxy config switches we get if
-    // the --no-proxy-server command line argument is present.
-    if (found_enable_proxy_switch) {
-      LOG(WARNING) << "Additional command line proxy switches found when --"
-                   << switches::kNoProxyServer << " was specified.";
-    }
+  if (pref_service->GetBoolean(prefs::kNoProxyServer)) {
+    // Ignore all the other proxy config preferences if the use of a proxy
+    // has been explicitly disabled.
     return proxy_config;
   }
 
-  if (command_line.HasSwitch(switches::kProxyServer)) {
-    const std::wstring& proxy_server =
-        command_line.GetSwitchValue(switches::kProxyServer);
+  if (pref_service->HasPrefPath(prefs::kProxyServer)) {
+    std::wstring proxy_server = pref_service->GetString(prefs::kProxyServer);
     proxy_config->proxy_rules().ParseFromString(WideToASCII(proxy_server));
   }
 
-  if (command_line.HasSwitch(switches::kProxyPacUrl)) {
-    proxy_config->set_pac_url(
-        GURL(WideToASCII(command_line.GetSwitchValue(
-            switches::kProxyPacUrl))));
+  if (pref_service->HasPrefPath(prefs::kProxyPacUrl)) {
+    std::wstring proxy_pac = pref_service->GetString(prefs::kProxyPacUrl);
+    proxy_config->set_pac_url(GURL(WideToASCII(proxy_pac)));
   }
 
-  if (command_line.HasSwitch(switches::kProxyAutoDetect)) {
-    proxy_config->set_auto_detect(true);
-  }
+  proxy_config->set_auto_detect(pref_service->GetBoolean(
+      prefs::kProxyAutoDetect));
 
-  if (command_line.HasSwitch(switches::kProxyBypassList)) {
+  if (pref_service->HasPrefPath(prefs::kProxyBypassList)) {
+    std::wstring proxy_bypass =
+        pref_service->GetString(prefs::kProxyBypassList);
     proxy_config->proxy_rules().bypass_rules.ParseFromString(
-        WideToASCII(command_line.GetSwitchValue(
-            switches::kProxyBypassList)));
+        WideToASCII(proxy_bypass));
   }
 
   return proxy_config;

@@ -26,6 +26,7 @@
 #include "webkit/database/database_tracker.h"
 
 class CommandLine;
+class PrefService;
 class Profile;
 
 namespace net {
@@ -273,6 +274,8 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   ChromeURLRequestContextGetter(Profile* profile,
                                 ChromeURLRequestContextFactory* factory);
 
+  static void RegisterUserPrefs(PrefService* user_prefs);
+
   // Note that GetURLRequestContext() can only be called from the IO
   // thread (it will assert otherwise). GetCookieStore() and
   // GetIOMessageLoopProxy however can be called from any thread.
@@ -416,8 +419,9 @@ class ChromeURLRequestContextFactory {
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextFactory);
 };
 
-// Creates a proxy configuration using the overrides specified on the command
-// line. Returns NULL if the system defaults should be used instead.
-net::ProxyConfig* CreateProxyConfig(const CommandLine& command_line);
+// Creates a proxy configuration from proxy-related preferences fetched
+// from |pref_service|. The relevant preferences in |pref_service| are
+// initialized from the process' command line or by applicable proxy policies.
+net::ProxyConfig* CreateProxyConfig(const PrefService* pref_service);
 
 #endif  // CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_

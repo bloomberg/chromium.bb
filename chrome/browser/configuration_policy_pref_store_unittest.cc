@@ -4,8 +4,11 @@
 
 #include <gtest/gtest.h>
 
+#include "base/command_line.h"
 #include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/mock_configuration_policy_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/chrome_switches.h"
 
 class ConfigurationPolicyPrefStoreTest : public testing::Test {
  public:
@@ -45,7 +48,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
 
 void ConfigurationPolicyPrefStoreTest::TestStringPolicyGetDefault(
     const wchar_t* pref_name) {
-  ConfigurationPolicyPrefStore store(0);
+  ConfigurationPolicyPrefStore store(NULL, NULL);
   std::wstring result;
   store.prefs()->GetString(pref_name, &result);
   EXPECT_EQ(result, L"");
@@ -53,7 +56,7 @@ void ConfigurationPolicyPrefStoreTest::TestStringPolicyGetDefault(
 
 void ConfigurationPolicyPrefStoreTest::TestStringPolicySetValue(
     const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
-  ConfigurationPolicyPrefStore store(0);
+  ConfigurationPolicyPrefStore store(NULL, NULL);
   store.Apply(type, Value::CreateStringValue("http://chromium.org"));
   std::wstring result;
   store.prefs()->GetString(pref_name, &result);
@@ -68,7 +71,7 @@ void ConfigurationPolicyPrefStoreTest::TestStringPolicy(
 
 void ConfigurationPolicyPrefStoreTest::TestBooleanPolicyGetDefault(
     const wchar_t* pref_name) {
-  ConfigurationPolicyPrefStore store(0);
+  ConfigurationPolicyPrefStore store(NULL, NULL);
   bool result = false;
   store.prefs()->GetBoolean(pref_name, &result);
   EXPECT_FALSE(result);
@@ -79,7 +82,7 @@ void ConfigurationPolicyPrefStoreTest::TestBooleanPolicyGetDefault(
 
 void ConfigurationPolicyPrefStoreTest::TestBooleanPolicySetValue(
     const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
-  ConfigurationPolicyPrefStore store(0);
+  ConfigurationPolicyPrefStore store(NULL, NULL);
   store.Apply(type, Value::CreateBooleanValue(false));
   bool result = true;
   store.prefs()->GetBoolean(pref_name, &result);
@@ -99,7 +102,7 @@ void ConfigurationPolicyPrefStoreTest::TestBooleanPolicy(
 
 void ConfigurationPolicyPrefStoreTest::TestIntegerPolicyGetDefault(
     const wchar_t* pref_name) {
-  ConfigurationPolicyPrefStore store(0);
+  ConfigurationPolicyPrefStore store(NULL, NULL);
   int result = 0;
   store.prefs()->GetInteger(pref_name, &result);
   EXPECT_EQ(result, 0);
@@ -107,7 +110,7 @@ void ConfigurationPolicyPrefStoreTest::TestIntegerPolicyGetDefault(
 
 void ConfigurationPolicyPrefStoreTest::TestIntegerPolicySetValue(
     const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
-  ConfigurationPolicyPrefStore store(0);
+  ConfigurationPolicyPrefStore store(NULL, NULL);
   store.Apply(type, Value::CreateIntegerValue(2));
   int result = 0;
   store.prefs()->GetInteger(pref_name, &result);
@@ -122,7 +125,7 @@ void ConfigurationPolicyPrefStoreTest::TestIntegerPolicy(
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingHomePageDefault) {
   TestStringPolicy(prefs::kHomePage,
-      ConfigurationPolicyPrefStore::kPolicyHomePage);
+                   ConfigurationPolicyPrefStore::kPolicyHomePage);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyHomepageIsNewTabPage) {
@@ -132,31 +135,259 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyHomepageIsNewTabPage) {
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyAlternateErrorPagesEnabled) {
   TestBooleanPolicy(prefs::kAlternateErrorPagesEnabled,
-     ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled);
+      ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicySearchSuggestEnabled) {
   TestBooleanPolicy(prefs::kSearchSuggestEnabled,
-     ConfigurationPolicyStore::kPolicySearchSuggestEnabled);
+      ConfigurationPolicyStore::kPolicySearchSuggestEnabled);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyDnsPrefetchingEnabled) {
   TestBooleanPolicy(prefs::kDnsPrefetchingEnabled,
-     ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled);
+      ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicySafeBrowsingEnabled) {
   TestBooleanPolicy(prefs::kSafeBrowsingEnabled,
-     ConfigurationPolicyStore::kPolicySafeBrowsingEnabled);
+      ConfigurationPolicyStore::kPolicySafeBrowsingEnabled);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyMetricsReportingEnabled) {
   TestBooleanPolicy(prefs::kMetricsReportingEnabled,
-     ConfigurationPolicyStore::kPolicyMetricsReportingEnabled);
+      ConfigurationPolicyStore::kPolicyMetricsReportingEnabled);
 }
 
-TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingCookiesEnabledDefault) {
-  TestIntegerPolicy(prefs::kCookieBehavior,
-      ConfigurationPolicyPrefStore::kPolicyCookiesMode);
+TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingProxyServer) {
+  TestStringPolicy(prefs::kProxyServer,
+                   ConfigurationPolicyPrefStore::kPolicyProxyServer);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingProxyPacUrl) {
+  TestStringPolicy(prefs::kProxyPacUrl,
+                   ConfigurationPolicyPrefStore::kPolicyProxyPacUrl);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingProxyBypassList) {
+  TestStringPolicy(prefs::kProxyBypassList,
+                   ConfigurationPolicyPrefStore::kPolicyProxyBypassList);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingsProxyConfig) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  command_line.AppendSwitch(switches::kNoProxyServer);
+  command_line.AppendSwitch(switches::kProxyAutoDetect);
+  command_line.AppendSwitchWithValue(switches::kProxyPacUrl,
+                                     L"http://chromium.org/test.pac");
+  command_line.AppendSwitchWithValue(switches::kProxyServer,
+                                     L"http://chromium2.org");
+  command_line.AppendSwitchWithValue(switches::kProxyBypassList,
+                                     L"http://chromium3.org");
+
+  ConfigurationPolicyPrefStore store(&command_line, NULL);
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  // Ensure that all traces of the command-line specified proxy
+  // switches have been overriden.
+  std::wstring string_result;
+  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                       &string_result));
+  EXPECT_EQ(string_result, L"http://chromium3.org");
+
+  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
+  EXPECT_EQ(string_result, L"http://chromium.org/test.pac");
+  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  EXPECT_EQ(string_result, L"http://chromium2.org");
+  bool bool_result;
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
+  EXPECT_TRUE(bool_result);
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
+                                         &bool_result));
+  EXPECT_TRUE(bool_result);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  command_line.AppendSwitch(switches::kNoProxyServer);
+  command_line.AppendSwitch(switches::kProxyAutoDetect);
+  command_line.AppendSwitchWithValue(switches::kProxyPacUrl,
+                                     L"http://chromium.org/test.pac");
+  command_line.AppendSwitchWithValue(switches::kProxyServer,
+                                     L"http://chromium.org");
+  command_line.AppendSwitchWithValue(switches::kProxyBypassList,
+                                     L"http://chromium.org");
+
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
+      Value::CreateIntegerValue(
+          ConfigurationPolicyStore::kPolicyManuallyConfiguredProxyMode));
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
+      Value::CreateStringValue(L"http://chromium.org/override"));
+
+  ConfigurationPolicyPrefStore store(&command_line,
+                                     provider.release());
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  // Ensure that all traces of the command-line specified proxy
+  // switches have been overriden.
+  std::wstring string_result;
+  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                       &string_result));
+  EXPECT_EQ(string_result, L"http://chromium.org/override");
+
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  bool bool_result;
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
+  EXPECT_FALSE(bool_result);
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
+                                        &bool_result));
+  EXPECT_FALSE(bool_result);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigNoProxy) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
+      Value::CreateStringValue(L"http://chromium.org/override"));
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
+      Value::CreateIntegerValue(
+          ConfigurationPolicyStore::kPolicyNoProxyServerMode));
+
+  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  std::wstring string_result;
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                        &string_result));
+
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  bool bool_result;
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
+  EXPECT_TRUE(bool_result);
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
+                                        &bool_result));
+  EXPECT_FALSE(bool_result);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest,
+    TestPolicyProxyConfigNoProxyReversedApplyOrder) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
+      Value::CreateIntegerValue(
+          ConfigurationPolicyStore::kPolicyNoProxyServerMode));
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
+      Value::CreateStringValue(L"http://chromium.org/override"));
+
+  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  std::wstring string_result;
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                        &string_result));
+
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  bool bool_result;
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
+  EXPECT_TRUE(bool_result);
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
+                                        &bool_result));
+  EXPECT_FALSE(bool_result);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigAutoDetect) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
+      Value::CreateStringValue(L"http://chromium.org/override"));
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
+      Value::CreateIntegerValue(
+          ConfigurationPolicyStore::kPolicyAutoDetectProxyMode));
+
+  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  // Ensure that all traces of the command-line specified proxy
+  // switches have been overriden.
+  std::wstring string_result;
+  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                       &string_result));
+  EXPECT_EQ(string_result, L"http://chromium.org/override");
+
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  bool bool_result;
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
+  EXPECT_FALSE(bool_result);
+  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
+                                        &bool_result));
+  EXPECT_TRUE(bool_result);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfiguseSystem) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
+      Value::CreateStringValue(L"http://chromium.org/override"));
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
+      Value::CreateIntegerValue(
+          ConfigurationPolicyStore::kPolicyUseSystemProxyMode));
+
+  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  std::wstring string_result;
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                       &string_result));
+  EXPECT_EQ(string_result, L"");
+
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  bool bool_result;
+  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
+  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
+                                         &bool_result));
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest,
+    TestPolicyProxyConfiguseSystemReversedApplyOrder) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
+      Value::CreateIntegerValue(
+          ConfigurationPolicyStore::kPolicyUseSystemProxyMode));
+  provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
+      Value::CreateStringValue(L"http://chromium.org/override"));
+
+  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  std::wstring string_result;
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                       &string_result));
+  EXPECT_EQ(string_result, L"");
+
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
+  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  bool bool_result;
+  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
+  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
+                                         &bool_result));
 }
 

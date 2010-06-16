@@ -882,4 +882,18 @@ const wchar_t kCloudPrintXMPPAuthToken[] = L"cloud_print.xmpp_auth_token";
 // server.
 extern const wchar_t kCloudPrintEmail[] = L"cloud_print.email";
 
+// Boolean to disable proxy altogether. If true, other proxy
+// preferences are ignored.
+const wchar_t kNoProxyServer[] = L"proxy.disabled";
+// Boolean specifying if proxy should be auto-detected.
+const wchar_t kProxyAutoDetect[] = L"proxy.auto_detect";
+// String specifying the proxy server. For a specification of the expected
+// syntax see net::ProxyConfig::ProxyRules::ParseFromString().
+const wchar_t kProxyServer[] = L"proxy.server";
+// URL to the proxy .pac file.
+const wchar_t kProxyPacUrl[] = L"proxy.pac_url";
+// String containing proxy bypass rules. For a specification of the
+// expected syntax see net::ProxyBypassRules::ParseFromString().
+const wchar_t kProxyBypassList[] = L"proxy.bypass_list";
+
 }  // namespace prefs

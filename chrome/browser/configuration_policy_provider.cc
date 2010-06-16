@@ -22,6 +22,14 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
       Value::TYPE_STRING, "Homepage" },
   { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
       Value::TYPE_BOOLEAN, "HomepageIsNewTabPage" },
+  { ConfigurationPolicyStore::kPolicyProxyServerMode,
+      Value::TYPE_BOOLEAN, "ProxyServerMode" },
+  { ConfigurationPolicyStore::kPolicyProxyServer,
+      Value::TYPE_STRING, "ProxyServer" },
+  { ConfigurationPolicyStore::kPolicyProxyPacUrl,
+      Value::TYPE_STRING, "ProxyPacUrl" },
+  { ConfigurationPolicyStore::kPolicyProxyBypassList,
+       Value::TYPE_STRING, "ProxyBypassList" },
   { ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
       Value::TYPE_BOOLEAN, "AlternateErrorPagesEnabled" },
   { ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
@@ -31,9 +39,7 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
   { ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
       Value::TYPE_BOOLEAN, "SafeBrowsingEnabled" },
   { ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
-      Value::TYPE_BOOLEAN, "MetricsReportingEnabled" },
-  { ConfigurationPolicyStore::kPolicyCookiesMode,
-      Value::TYPE_INTEGER, "CookiesMode" }
+      Value::TYPE_BOOLEAN, "MetricsReportingEnabled" }
 };
 
 }  // namespace

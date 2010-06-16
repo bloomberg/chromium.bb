@@ -91,17 +91,6 @@ void TestConfigurationPolicyProviderWin::SetBooleanPolicy(
   EXPECT_TRUE(key.WriteValue(NameForPolicy(type).c_str(), value));
 }
 
-void TestConfigurationPolicyProviderWin::SetCookiesMode(
-    HKEY hive,
-    uint32 value) {
-  RegKey key(hive,
-      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
-      KEY_ALL_ACCESS);
-  EXPECT_TRUE(key.WriteValue(
-      NameForPolicy(ConfigurationPolicyStore::kPolicyCookiesMode).c_str(),
-      value));
-}
-
 // This test class provides sandboxing and mocking for the parts of the
 // Windows Registry implementing Group Policy. The |SetUp| method prepares
 // two temporary sandbox keys in |kUnitTestRegistrySubKey|, one for HKLM and one
@@ -317,34 +306,5 @@ TEST_F(ConfigurationPolicyProviderWinTest,
 TEST_F(ConfigurationPolicyProviderWinTest,
     TestPolicyMetricsReportingEnabled) {
   TestBooleanPolicy(ConfigurationPolicyStore::kPolicyMetricsReportingEnabled);
-}
-
-TEST_F(ConfigurationPolicyProviderWinTest,
-    TestCookiesModePolicyDefault) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  EXPECT_FALSE(ContainsKey(map,
-                           ConfigurationPolicyStore::kPolicyCookiesMode));
-}
-
-TEST_F(ConfigurationPolicyProviderWinTest,
-    TestCookiesModePolicyHKLM) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderWin provider;
-  provider.SetCookiesMode(HKEY_LOCAL_MACHINE, 2);
-
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyCookiesMode);
-  ASSERT_TRUE(i != map.end());
-  int value = 0;
-  i->second->GetAsInteger(&value);
-  EXPECT_EQ(2, value);
 }
 

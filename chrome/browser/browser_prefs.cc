@@ -25,6 +25,7 @@
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/page_info_model.h"
@@ -115,6 +116,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   GeolocationContentSettingsMap::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
   DesktopNotificationService::RegisterUserPrefs(user_prefs);
+  ChromeURLRequestContextGetter::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)

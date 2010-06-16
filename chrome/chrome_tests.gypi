@@ -849,6 +849,7 @@
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_response_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
+        'browser/mock_configuration_policy_provider.h',
         'browser/mock_configuration_policy_store.h',
         'browser/net/chrome_url_request_context_unittest.cc',
         'browser/net/connection_tester_unittest.cc',

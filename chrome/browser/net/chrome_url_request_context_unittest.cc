@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/pref_value_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
@@ -155,8 +157,11 @@ TEST(ChromeURLRequestContextTest, CreateProxyConfigTest) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); i++) {
     SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
                               tests[i].description.c_str()));
-    scoped_ptr<net::ProxyConfig> config(CreateProxyConfig(
-        CommandLine(tests[i].command_line)));
+    CommandLine command_line(tests[i].command_line);
+    PrefService prefs(new PrefValueStore(
+        new ConfigurationPolicyPrefStore(&command_line, NULL), NULL, NULL));
+    ChromeURLRequestContextGetter::RegisterUserPrefs(&prefs);
+    scoped_ptr<net::ProxyConfig> config(CreateProxyConfig(&prefs));
 
     if (tests[i].is_null) {
       EXPECT_TRUE(config == NULL);
@@ -168,3 +173,4 @@ TEST(ChromeURLRequestContextTest, CreateProxyConfigTest) {
     }
   }
 }
+

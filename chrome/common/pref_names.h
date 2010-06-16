@@ -329,6 +329,12 @@ extern const wchar_t kCloudPrintAuthToken[];
 extern const wchar_t kCloudPrintXMPPAuthToken[];
 extern const wchar_t kCloudPrintEmail[];
 
+extern const wchar_t kNoProxyServer[];
+extern const wchar_t kProxyAutoDetect[];
+extern const wchar_t kProxyServer[];
+extern const wchar_t kProxyPacUrl[];
+extern const wchar_t kProxyBypassList[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

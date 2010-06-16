@@ -17,13 +17,21 @@ class ConfigurationPolicyStore {
   enum PolicyType {
     kPolicyHomePage,
     kPolicyHomepageIsNewTabPage,
+    kPolicyProxyServerMode,
+    kPolicyProxyServer,
+    kPolicyProxyPacUrl,
+    kPolicyProxyBypassList,
     kPolicyAlternateErrorPagesEnabled,
     kPolicySearchSuggestEnabled,
     kPolicyDnsPrefetchingEnabled,
     kPolicySafeBrowsingEnabled,
     kPolicyMetricsReportingEnabled,
-    kPolicyCookiesMode
   };
+
+  static const int kPolicyNoProxyServerMode = 0;
+  static const int kPolicyAutoDetectProxyMode = 1;
+  static const int kPolicyManuallyConfiguredProxyMode = 2;
+  static const int kPolicyUseSystemProxyMode = 3;
 
   // A |ConfigurationPolicyProvider| specifes the value of a policy setting
   // through a call to |Apply|.

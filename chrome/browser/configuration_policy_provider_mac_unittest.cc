@@ -117,26 +117,3 @@ TEST(ConfigurationPolicyProviderMacTest, TestHomepageIsNewTabPagePolicy) {
   EXPECT_EQ(true, value);
 }
 
-TEST(ConfigurationPolicyProviderMacTest, TestCookiesModePolicy) {
-  MockConfigurationPolicyStore store;
-  TestConfigurationPolicyProviderMac provider;
-  int test_value = 2;
-  scoped_cftyperef<CFNumberRef> test_number(
-      CFNumberCreate(kCFAllocatorDefault,
-                     kCFNumberIntType,
-                     &test_value));
-  provider.AddTestItem(ConfigurationPolicyStore::kPolicyCookiesMode,
-                       test_number,
-                       true);
-
-  provider.Provide(&store);
-
-  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
-  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
-      map.find(ConfigurationPolicyStore::kPolicyCookiesMode);
-  ASSERT_TRUE(i != map.end());
-  int value = 0;
-  i->second->GetAsInteger(&value);
-  EXPECT_EQ(2, value);
-}
-
