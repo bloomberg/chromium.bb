@@ -39,33 +39,18 @@ class SslInitializationSingleton {
 };
 
 TalkMediatorImpl::TalkMediatorImpl(
-      chrome_common_net::NetworkChangeNotifierThread*
-          network_change_notifier_thread,
-      bool invalidate_xmpp_auth_token)
+    MediatorThread* mediator_thread,
+    bool initialize_ssl,
+    bool connect_immediately,
+    bool invalidate_xmpp_auth_token)
     : delegate_(NULL),
-      mediator_thread_(
-        new MediatorThreadImpl(network_change_notifier_thread)),
+      mediator_thread_(mediator_thread),
       invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  // Ensure the SSL library is initialized.
-  SslInitializationSingleton::GetInstance()->RegisterClient();
-
-  // Construct the callback channel with the shutdown event.
-  TalkMediatorInitialization(false);
-}
-
-TalkMediatorImpl::TalkMediatorImpl(MediatorThread *thread)
-    : delegate_(NULL),
-      mediator_thread_(thread),
-      invalidate_xmpp_auth_token_(false) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  // When testing we do not initialize the SSL library.
-  TalkMediatorInitialization(true);
-}
-
-void TalkMediatorImpl::TalkMediatorInitialization(bool should_connect) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  if (should_connect) {
+  if (initialize_ssl) {
+    SslInitializationSingleton::GetInstance()->RegisterClient();
+  }
+  if (connect_immediately) {
     mediator_thread_->SetDelegate(this);
     state_.connected = 1;
   }

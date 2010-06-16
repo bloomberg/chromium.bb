@@ -12,6 +12,7 @@
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
+#include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/net/service_network_change_notifier_thread.h"
@@ -286,8 +287,14 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
 
   // TODO(sanjeevr): Validate the tokens.
   auth_token_ = cloud_print_token;
+
+  const bool kInitializeSsl = true;
+  const bool kConnectImmediately = false;
+  const bool kInvalidateXmppAuthToken = false;
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
-      g_service_process->network_change_notifier_thread(), false));
+      new notifier::MediatorThreadImpl(
+          g_service_process->network_change_notifier_thread()),
+      kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken));
   talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
   talk_mediator_->SetDelegate(this);
   talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,

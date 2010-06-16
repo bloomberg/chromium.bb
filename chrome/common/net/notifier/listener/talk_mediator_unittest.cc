@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_mock.h"
+#include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 #include "talk/xmpp/xmppengine.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,6 +39,25 @@ class TalkMediatorImplTest : public testing::Test {
   TalkMediatorImplTest() {}
   virtual ~TalkMediatorImplTest() {}
 
+  TalkMediatorImpl* NewTalkMediator() {
+    const bool kInitializeSsl = true;
+    const bool kConnectImmediately = false;
+    const bool kInvalidateXmppAuthToken = false;
+    return new TalkMediatorImpl(
+        new MediatorThreadImpl(&fake_network_change_notifier_thread_),
+        kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken);
+  }
+
+  TalkMediatorImpl* NewMockedTalkMediator(
+      MockMediatorThread* mock_mediator_thread) {
+    const bool kInitializeSsl = false;
+    const bool kConnectImmediately = true;
+    const bool kInvalidateXmppAuthToken = false;
+    return new TalkMediatorImpl(mock_mediator_thread,
+                                kInitializeSsl, kConnectImmediately,
+                                kInvalidateXmppAuthToken);
+  }
+
   chrome_common_net::FakeNetworkChangeNotifierThread
       fake_network_change_notifier_thread_;
   int last_message_;
@@ -51,42 +71,41 @@ class TalkMediatorImplTest : public testing::Test {
 
 TEST_F(TalkMediatorImplTest, ConstructionOfTheClass) {
   // Constructing a single talk mediator enables SSL through the singleton.
-  scoped_ptr<TalkMediatorImpl> talk1(
-      new TalkMediatorImpl(&fake_network_change_notifier_thread_, false));
+  scoped_ptr<TalkMediatorImpl> talk1(NewTalkMediator());
 }
 
 TEST_F(TalkMediatorImplTest, SetAuthTokenWithBadInput) {
-  scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(
-      new MockMediatorThread()));
+  scoped_ptr<TalkMediatorImpl> talk1(
+      NewMockedTalkMediator(new MockMediatorThread()));
   EXPECT_FALSE(talk1->SetAuthToken("@missinguser.com", "", "fake_service"));
   EXPECT_FALSE(talk1->state_.initialized);
 
-  scoped_ptr<TalkMediatorImpl> talk2(new TalkMediatorImpl(
-      new MockMediatorThread()));
+  scoped_ptr<TalkMediatorImpl> talk2(
+      NewMockedTalkMediator(new MockMediatorThread()));
   EXPECT_FALSE(talk2->SetAuthToken("", "1234567890", "fake_service"));
   EXPECT_FALSE(talk2->state_.initialized);
 
-  scoped_ptr<TalkMediatorImpl> talk3(new TalkMediatorImpl(
-      new MockMediatorThread()));
+  scoped_ptr<TalkMediatorImpl> talk3(
+      NewMockedTalkMediator(new MockMediatorThread()));
   EXPECT_FALSE(talk3->SetAuthToken("missingdomain", "abcde",  "fake_service"));
   EXPECT_FALSE(talk3->state_.initialized);
 }
 
 TEST_F(TalkMediatorImplTest, SetAuthTokenWithGoodInput) {
-  scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(
-      new MockMediatorThread()));
+  scoped_ptr<TalkMediatorImpl> talk1(
+      NewMockedTalkMediator(new MockMediatorThread()));
   EXPECT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token",
                                   "fake_service"));
   EXPECT_TRUE(talk1->state_.initialized);
 
-  scoped_ptr<TalkMediatorImpl> talk2(new TalkMediatorImpl(
-      new MockMediatorThread()));
+  scoped_ptr<TalkMediatorImpl> talk2(
+      NewMockedTalkMediator(new MockMediatorThread()));
   EXPECT_TRUE(talk2->SetAuthToken("chromium@mail.google.com", "token",
                                   "fake_service"));
   EXPECT_TRUE(talk2->state_.initialized);
 
-  scoped_ptr<TalkMediatorImpl> talk3(new TalkMediatorImpl(
-      new MockMediatorThread()));
+  scoped_ptr<TalkMediatorImpl> talk3(
+      NewMockedTalkMediator(new MockMediatorThread()));
   EXPECT_TRUE(talk3->SetAuthToken("chromium@chromium.org", "token",
                                   "fake_service"));
   EXPECT_TRUE(talk3->state_.initialized);
@@ -95,7 +114,7 @@ TEST_F(TalkMediatorImplTest, SetAuthTokenWithGoodInput) {
 TEST_F(TalkMediatorImplTest, LoginWiring) {
   // The TalkMediatorImpl owns the mock.
   MockMediatorThread* mock = new MockMediatorThread();
-  scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(mock));
+  scoped_ptr<TalkMediatorImpl> talk1(NewMockedTalkMediator(mock));
 
   // Login checks states for initialization.
   EXPECT_FALSE(talk1->Login());
@@ -122,7 +141,7 @@ TEST_F(TalkMediatorImplTest, LoginWiring) {
 TEST_F(TalkMediatorImplTest, SendNotification) {
   // The TalkMediatorImpl owns the mock.
   MockMediatorThread* mock = new MockMediatorThread();
-  scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(mock));
+  scoped_ptr<TalkMediatorImpl> talk1(NewMockedTalkMediator(mock));
 
   // Failure due to not being logged in.
   OutgoingNotificationData data;
@@ -153,7 +172,7 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
 TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   // The TalkMediatorImpl owns the mock.
   MockMediatorThread* mock = new MockMediatorThread();
-  scoped_ptr<TalkMediatorImpl> talk1(new TalkMediatorImpl(mock));
+  scoped_ptr<TalkMediatorImpl> talk1(NewMockedTalkMediator(mock));
 
   MockTalkMediatorDelegate mock_delegate;
   EXPECT_CALL(mock_delegate, OnNotificationStateChange(true));

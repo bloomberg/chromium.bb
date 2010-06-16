@@ -20,20 +20,17 @@
 #include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
-namespace chrome_common_net {
-class NetworkChangeNotifierThread;
-}  // namespace chrome_common_net
-
 namespace notifier {
 
 class TalkMediatorImpl
     : public TalkMediator, public MediatorThread::Delegate {
  public:
+  // Takes ownership of |mediator_thread|.
   TalkMediatorImpl(
-      chrome_common_net::NetworkChangeNotifierThread*
-          network_change_notifier_thread,
+      MediatorThread* mediator_thread,
+      bool initialize_ssl,
+      bool connect_immediately,
       bool invalidate_xmpp_auth_token);
-  explicit TalkMediatorImpl(MediatorThread* thread);
   virtual ~TalkMediatorImpl();
 
   // TalkMediator implementation.
@@ -76,11 +73,6 @@ class TalkMediatorImpl
     unsigned int logged_in : 1;    // Logged in the mediator's authenticator.
     unsigned int subscribed : 1;   // Subscribed to the xmpp receiving channel.
   };
-
-  // Completes common initialization between the constructors.  Set should
-  // connect to true if the talk mediator should connect to the controlled
-  // mediator thread's SignalStateChange object.
-  void TalkMediatorInitialization(bool should_connect);
 
   NonThreadSafe non_thread_safe_;
 

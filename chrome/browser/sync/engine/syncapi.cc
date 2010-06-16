@@ -52,6 +52,7 @@
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "chrome/common/net/network_change_notifier_proxy.h"
+#include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
 #include "chrome/common/net/notifier/listener/notification_constants.h"
 #include "chrome/common/net/notifier/listener/talk_mediator.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
@@ -1250,8 +1251,11 @@ bool SyncManager::SyncInternal::Init(
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
 
+  const bool kInitializeSsl = true;
+  const bool kConnectImmediately = false;
   talk_mediator_.reset(new TalkMediatorImpl(
-      network_change_notifier_thread, invalidate_xmpp_auth_token));
+      new notifier::MediatorThreadImpl(network_change_notifier_thread),
+      kInitializeSsl, kConnectImmediately, invalidate_xmpp_auth_token));
   if (notification_method != browser_sync::NOTIFICATION_LEGACY) {
     if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
       talk_mediator_->AddSubscribedServiceUrl(
