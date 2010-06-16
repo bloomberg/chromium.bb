@@ -109,7 +109,7 @@ struct WebPreferences {
         experimental_webgl_enabled(false),
         show_composited_layer_borders(false),
         accelerated_compositing_enabled(false),
-        enable_html5_parser(false) {
+        enable_html5_parser(true) {
   }
 
   void Apply(WebKit::WebView* web_view) const;

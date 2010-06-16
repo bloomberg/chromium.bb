@@ -324,7 +324,7 @@ public:
       return dev_tools_agent_.get();
     }
 
-    static void enable_html5_parser() { enable_html5_parser_ = true; }
+    static void disable_html5_parser() { enable_html5_parser_ = false; }
 
 protected:
     void CreateDevToolsClient(TestShellDevToolsAgent* agent);
