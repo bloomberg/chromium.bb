@@ -83,8 +83,7 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context) {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_BLEND);
 
-  GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-  glTexEnvi(target, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
   for (PluginWindowToContainerMap::const_iterator i =
           plugin_window_to_container_map_.begin();
@@ -96,6 +95,7 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context) {
   // Unbind any texture from the texture target to ensure that the
   // next time through we will have to re-bind the texture and thereby
   // pick up modifications from the other process.
+  GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   glBindTexture(target, 0);
 
   glFlush();
