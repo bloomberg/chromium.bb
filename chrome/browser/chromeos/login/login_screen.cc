@@ -51,7 +51,8 @@ void LoginScreen::OnLogin(const std::string& username,
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::AuthenticateToLogin,
-                        profile, username, password));
+                        profile, username, password,
+                        std::string(), std::string()));
 }
 
 void LoginScreen::OnLoginOffTheRecord() {

@@ -59,6 +59,16 @@ const char GoogleAuthenticator::kFormat[] =
     "source=%s&"
     "service=%s";
 // static
+const char GoogleAuthenticator::kFormatCaptcha[] =
+    "Email=%s&"
+    "Passwd=%s&"
+    "PersistentCookie=%s&"
+    "accountType=%s&"
+    "source=%s&"
+    "service=%s&"
+    "logintoken=%s&"
+    "logincaptcha=%s";
+// static
 const char GoogleAuthenticator::kSecondFactor[] = "Info=InvalidSecondFactor";
 
 // static
@@ -102,21 +112,36 @@ URLFetcher* GoogleAuthenticator::CreateClientLoginFetcher(
   return to_return;
 }
 
-bool GoogleAuthenticator::AuthenticateToLogin(Profile* profile,
-                                              const std::string& username,
-                                              const std::string& password) {
+bool GoogleAuthenticator::AuthenticateToLogin(
+    Profile* profile,
+    const std::string& username,
+    const std::string& password,
+    const std::string& login_token,
+    const std::string& login_captcha) {
   unlock_ = false;
   getter_ = profile->GetRequestContext();
 
   // TODO(cmasone): be more careful about zeroing memory that stores
   // the user's password.
-  request_body_ = StringPrintf(kFormat,
-                               UrlEncodeString(username).c_str(),
-                               UrlEncodeString(password).c_str(),
-                               kCookiePersistence,
-                               kAccountType,
-                               kSource,
-                               kService);
+  if (login_token.empty() || login_captcha.empty()) {
+    request_body_ = StringPrintf(kFormat,
+                                 UrlEncodeString(username).c_str(),
+                                 UrlEncodeString(password).c_str(),
+                                 kCookiePersistence,
+                                 kAccountType,
+                                 kSource,
+                                 kService);
+  } else {
+    request_body_ = StringPrintf(kFormatCaptcha,
+                                 UrlEncodeString(username).c_str(),
+                                 UrlEncodeString(password).c_str(),
+                                 kCookiePersistence,
+                                 kAccountType,
+                                 kSource,
+                                 kService,
+                                 UrlEncodeString(login_token).c_str(),
+                                 UrlEncodeString(login_captcha).c_str());
+  }
   // TODO(cmasone): Figure out how to parallelize fetch, username/password
   // processing without impacting testability.
   username_.assign(Canonicalize(username));

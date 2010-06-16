@@ -50,19 +50,6 @@ const char kAuthPrefix[] = "Auth=";
 // Suffix for Auth token received from ClientLogin request.
 const char kAuthSuffix[] = "\n";
 
-// Find Auth token in given response from ClientLogin request.
-// Returns the token if found, empty string otherwise.
-std::string get_auth_token(const std::string& credentials) {
-  size_t auth_start = credentials.find(kAuthPrefix);
-  if (auth_start == std::string::npos)
-    return std::string();
-  auth_start += arraysize(kAuthPrefix) - 1;
-  size_t auth_end = credentials.find(kAuthSuffix, auth_start);
-  if (auth_end == std::string::npos)
-    return std::string();
-  return credentials.substr(auth_start, auth_end - auth_start);
-}
-
 }  // namespace
 
 class LoginUtilsImpl : public LoginUtils,
@@ -218,7 +205,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // delete itself.
   CookieFetcher* cf = new CookieFetcher(profile);
   cf->AttemptFetch(credentials);
-  auth_token_ = get_auth_token(credentials);
+  auth_token_ = ExtractClientLoginParam(credentials, kAuthPrefix, kAuthSuffix);
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin() {
@@ -293,6 +280,20 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
                              std::wstring(),
                              true,
                              &return_code);
+}
+
+std::string LoginUtils::ExtractClientLoginParam(
+    const std::string& credentials,
+    const std::string& param_prefix,
+    const std::string& param_suffix) {
+  size_t start = credentials.find(param_prefix);
+  if (start == std::string::npos)
+    return std::string();
+  start += param_prefix.size();
+  size_t end = credentials.find(param_suffix, start);
+  if (end == std::string::npos)
+    return std::string();
+  return credentials.substr(start, end - start);
 }
 
 }  // namespace chromeos

@@ -31,7 +31,9 @@ class MockAuthenticator : public Authenticator {
   // This is called on the FILE thread now, so we need to do this.
   virtual bool AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
-                                   const std::string& password) {
+                                   const std::string& password,
+                                   const std::string& login_token,
+                                   const std::string& login_captcha) {
     if (expected_username_ == username &&
         expected_password_ == password) {
       ChromeThread::PostTask(
@@ -52,7 +54,8 @@ class MockAuthenticator : public Authenticator {
 
   virtual bool AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) {
-    return AuthenticateToLogin(NULL /* not used */, username, password);
+    return AuthenticateToLogin(NULL /* not used */, username, password,
+                               std::string(), std::string());
   }
 
   virtual void LoginOffTheRecord() {

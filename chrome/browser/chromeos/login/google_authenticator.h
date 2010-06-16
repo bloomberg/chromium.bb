@@ -39,11 +39,15 @@ class GoogleAuthenticator : public Authenticator,
   // authentication cookies or a callback to consumer_->OnLoginFailure() with
   // an error message.  Uses |profile| when doing URL fetches.
   // Should be called on the FILE thread!
+  // Optionally could pass CAPTCHA challenge token - |login_token| and
+  // |login_captcha| string that user has entered.
   //
   // Returns true if the attempt gets sent successfully and false if not.
   bool AuthenticateToLogin(Profile* profile,
                            const std::string& username,
-                           const std::string& password);
+                           const std::string& password,
+                           const std::string& login_token,
+                           const std::string& login_captcha);
 
   // Given a |username| and |password|, this method attempts to
   // authenticate to the cached credentials. This will never contact
@@ -148,6 +152,9 @@ class GoogleAuthenticator : public Authenticator,
 
   // The format of said POST body.
   static const char kFormat[];
+
+  // The format of said POST body when CAPTCHA token & answer are specified.
+  static const char kFormatCaptcha[];
 
   // Magic string indicating that, while a second factor is still
   // needed to complete authentication, the user provided the right password.

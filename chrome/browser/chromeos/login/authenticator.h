@@ -29,11 +29,14 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
 
   // Given a |username| and |password|, this method attempts to authenticate
   // to login.
+  // Optionally |login_token| and |login_captcha| could be provided.
   // Returns true if we kick off the attempt successfully and false if we can't.
   // Must be called on the FILE thread.
   virtual bool AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
-                                   const std::string& password) = 0;
+                                   const std::string& password,
+                                   const std::string& login_token,
+                                   const std::string& login_captcha) = 0;
 
   // Given a |username| and |password|, this method attempts to
   // authenticate to unlock the computer.

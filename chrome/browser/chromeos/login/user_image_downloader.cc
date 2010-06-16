@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -77,43 +78,15 @@ void UserImageDownloader::OnURLFetchComplete(const URLFetcher* source,
       return;
     }
     LOG(INFO) << "Sending request to " << image_url;
-    picture_fetcher_.reset(
-        new URLFetcher(GURL(image_url), URLFetcher::GET, this));
-    picture_fetcher_->set_request_context(
-        ProfileManager::GetDefaultProfile()->GetRequestContext());
-    picture_fetcher_->set_extra_request_headers(
-        StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
-    picture_fetcher_->Start();
-  } else if (source == picture_fetcher_.get()) {
-    LOG(INFO) << "Decoding the image...";
-    std::vector<unsigned char> image_data(data.begin(), data.end());
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this, &UserImageDownloader::DecodeImageInSandbox,
-            g_browser_process->resource_dispatcher_host(),
-            image_data));
+    new ImageDownloader(this, GURL(image_url), auth_token_);
   }
 }
 
-void UserImageDownloader::OnDecodeImageSucceeded(
-    const SkBitmap& decoded_image) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
+void UserImageDownloader::OnImageDecoded(const SkBitmap& decoded_image) {
   // Save the image to file and its path to preferences.
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   if (user_manager)
     user_manager->SaveUserImage(username_, decoded_image);
-}
-
-void UserImageDownloader::DecodeImageInSandbox(
-    ResourceDispatcherHost* rdh,
-    const std::vector<unsigned char>& image_data) {
-  UtilityProcessHost* utility_process_host =
-      new UtilityProcessHost(rdh,
-                             this,
-                             ChromeThread::UI);
-  utility_process_host->StartImageDecoding(image_data);
 }
 
 bool UserImageDownloader::GetImageURL(const std::string& json_data,
@@ -213,4 +186,3 @@ bool UserImageDownloader::GetImageURLFromLinks(ListValue* link_list,
 }
 
 }  // namespace chromeos
-

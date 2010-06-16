@@ -9,20 +9,20 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/utility_process_host.h"
+#include "chrome/browser/chromeos/login/image_decoder.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class ListValue;
-class ResourceDispatcherHost;
 
 namespace chromeos {
 
 // Gets user image URL from user's Google Profile, downloads the image,
-// converts it to PNG format and stores the converted image in a file with
+// executes image decode and calls UserManager to store image in a file with
 // path to it stored in local state dictionary.
 class UserImageDownloader : public URLFetcher::Delegate,
-                            public UtilityProcessHost::Client {
+                            public ImageDecoder::Delegate {
  public:
   // |auth_token| is a authentication token received in ClientLogin
   // response, used for requests sent to Contacts API.
@@ -43,12 +43,8 @@ class UserImageDownloader : public URLFetcher::Delegate,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-  // Overriden from UtilityProcessHost::Client:
-  virtual void OnDecodeImageSucceeded(const SkBitmap& decoded_image);
-
-  // Launches sandboxed process that will decode the image.
-  void DecodeImageInSandbox(ResourceDispatcherHost* rdh,
-                            const std::vector<unsigned char>& image_data);
+  // Overriden from ImageDecoder::Delegate:
+  virtual void OnImageDecoded(const SkBitmap& decoded_image);
 
   // Parses received JSON data looking for user image url.
   // If succeeded, returns true and stores the url in |image_url| parameter.
@@ -74,9 +70,6 @@ class UserImageDownloader : public URLFetcher::Delegate,
 
   // Fetcher for user's profile page.
   scoped_ptr<URLFetcher> profile_fetcher_;
-
-  // Fetcher for user's profile picture.
-  scoped_ptr<URLFetcher> picture_fetcher_;
 
   // Username saved to use as a key for user picture in preferences.
   std::string username_;

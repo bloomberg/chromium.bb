@@ -453,7 +453,8 @@ TEST_F(GoogleAuthenticatorTest, FullLoginTest) {
   URLFetcher::set_factory(&factory);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->AuthenticateToLogin(&profile, username_, hash_ascii_);
+  auth->AuthenticateToLogin(
+      &profile, username_, hash_ascii_, std::string(), std::string());
 
   URLFetcher::set_factory(NULL);
   message_loop.RunAllPending();

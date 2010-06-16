@@ -28,6 +28,8 @@
 #include "grit/theme_resources.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
+#include "views/widget/widget_gtk.h"
+#include "views/window/window.h"
 
 namespace chromeos {
 
@@ -39,6 +41,16 @@ const size_t kMaxUsers = 6;
 
 // Used to indicate no user has been selected.
 const size_t kNotSelected = -1;
+
+// ClientLogin response parameters.
+const char kError[] = "Error=";
+const char kCaptchaError[] = "CaptchaRequired";
+const char kCaptchaUrlParam[] = "CaptchaUrl=";
+const char kCaptchaTokenParam[] = "CaptchaToken=";
+const char kParamSuffix[] = "\n";
+
+// URL prefix for CAPTCHA image.
+const char kCaptchaUrlPrefix[] = "http://www.google.com/accounts/";
 
 }  // namespace
 
@@ -129,7 +141,9 @@ void ExistingUserController::Login(UserController* source,
                         &Authenticator::AuthenticateToLogin,
                         profile,
                         controllers_[selected_view_index_]->user().email(),
-                        UTF16ToUTF8(password)));
+                        UTF16ToUTF8(password),
+                        login_token_,
+                        login_captcha_));
 
   // Disable clicking on other windows.
   SendSetLoginState(false);
@@ -160,6 +174,7 @@ void ExistingUserController::OnUserSelected(UserController* source) {
   if (new_selected_index != selected_view_index_ &&
       selected_view_index_ != kNotSelected) {
     controllers_[selected_view_index_]->ClearAndEnablePassword();
+    ClearCaptchaState();
   }
   selected_view_index_ = new_selected_index;
 }
@@ -182,6 +197,7 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 
 void ExistingUserController::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "OnLoginFailure";
+  ClearCaptchaState();
 
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
@@ -191,13 +207,43 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   } else if (!network->Connected()) {
     ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
-    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+    std::string error_code = LoginUtils::ExtractClientLoginParam(error,
+                                                                 kError,
+                                                                 kParamSuffix);
+    std::string captcha_url;
+    if (error_code == kCaptchaError)
+      captcha_url = LoginUtils::ExtractClientLoginParam(error,
+                                                        kCaptchaUrlParam,
+                                                        kParamSuffix);
+    if (captcha_url.empty()) {
+      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+    } else {
+      // Save token for next login retry.
+      login_token_ = LoginUtils::ExtractClientLoginParam(error,
+                                                         kCaptchaTokenParam,
+                                                         kParamSuffix);
+      gfx::NativeWindow parent = GTK_WINDOW(
+          static_cast<views::WidgetGtk*>(background_window_)->GetNativeView());
+      CaptchaView* view =
+          new CaptchaView(GURL(kCaptchaUrlPrefix + captcha_url));
+      view->set_delegate(this);
+      views::Window* window = views::Window::CreateChromeWindow(parent,
+                                                                gfx::Rect(),
+                                                                view);
+      window->SetIsAlwaysOnTop(true);
+      window->Show();
+    }
   }
 
   controllers_[selected_view_index_]->ClearAndEnablePassword();
 
   // Reenable clicking on other windows.
   SendSetLoginState(true);
+}
+
+void ExistingUserController::ClearCaptchaState() {
+  login_token_.clear();
+  login_captcha_.clear();
 }
 
 void ExistingUserController::ShowError(int error_id,
@@ -236,6 +282,10 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
 
 void ExistingUserController::OnOffTheRecordLoginSuccess() {
   LoginUtils::Get()->CompleteOffTheRecordLogin();
+}
+
+void ExistingUserController::OnCaptchaEntered(const std::string& captcha) {
+  login_captcha_ = captcha;
 }
 
 }  // namespace chromeos

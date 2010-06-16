@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
@@ -41,7 +42,8 @@ class MessageBubble;
 class ExistingUserController : public WmMessageListener::Observer,
                                public UserController::Delegate,
                                public LoginStatusConsumer,
-                               public InfoBubbleDelegate {
+                               public InfoBubbleDelegate,
+                               public CaptchaView::Delegate {
  public:
   // Initializes views for known users. |background_bounds| determines the
   // bounds of background view.
@@ -84,6 +86,12 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
 
+  // CaptchaView::Delegate:
+  virtual void OnCaptchaEntered(const std::string& captcha);
+
+  // Clears existing captcha state;
+  void ClearCaptchaState();
+
   // Show error message. |error_id| error message ID in resources.
   // If |details| string is not empty, it specify additional error text
   // provided by authenticator, it is not localized.
@@ -114,6 +122,12 @@ class ExistingUserController : public WmMessageListener::Observer,
   // Pointer to shown message bubble. We don't need to delete it because
   // it will be deleted on bubble closing.
   MessageBubble* bubble_;
+
+  // Token representing the specific CAPTCHA challenge.
+  std::string login_token_;
+
+  // String entered by the user as an answer to a CAPTCHA challenge.
+  std::string login_captcha_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };
