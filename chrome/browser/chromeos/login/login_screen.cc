@@ -48,7 +48,7 @@ void LoginScreen::OnLogin(const std::string& username,
                           const std::string& password) {
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
   ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+      ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::AuthenticateToLogin,
                         profile, username, password));
