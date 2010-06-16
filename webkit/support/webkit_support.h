@@ -91,6 +91,9 @@ WebKit::WebURL CreateURLForPathOrURL(
 // Converts file:///tmp/LayoutTests URLs to the actual location on disk.
 WebKit::WebURL RewriteLayoutTestsURL(const std::string& utf8_url);
 
+// Set the directory of specified file: URL as the current working directory.
+bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl);
+
 // - Database
 void SetDatabaseQuota(int quota);
 void ClearAllDatabases();

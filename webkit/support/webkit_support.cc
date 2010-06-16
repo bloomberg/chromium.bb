@@ -304,6 +304,12 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
   return WebURL(GURL(newUrl));
 }
 
+bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl) {
+  FilePath localPath;
+  return net::FileURLToFilePath(fileUrl, &localPath)
+      && file_util::SetCurrentDirectory(localPath.DirName());
+}
+
 // Bridge for SimpleDatabaseSystem
 
 void SetDatabaseQuota(int quota) {
