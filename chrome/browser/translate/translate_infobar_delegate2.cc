@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "chrome/browser/translate/translate_infobar_delegate2.h"
 
 #include "app/l10n_util.h"
@@ -287,9 +289,7 @@ void TranslateInfoBarDelegate2::GetAfterTranslateStrings(
 
   if (offsets[0] > offsets[1]) {
     // Target language comes before source.
-    int tmp = offsets[0];
-    offsets[0] = offsets[0];
-    offsets[1] = tmp;
+    std::swap(offsets[0], offsets[1]);
     *swap_languages = true;
   } else {
     *swap_languages = false;
