@@ -570,9 +570,10 @@ class ThreadSanitizerBase(object):
     return True
 
   def ExtendOptionParser(self, parser):
-    parser.add_option("", "--pure-happens-before", default="yes",
-                      dest="pure_happens_before",
-                      help="Less false reports, more missed races")
+    parser.add_option("", "--hybrid", default="no",
+                      dest="hybrid",
+                      help="Finds more data races, may give false positive "
+                      "reports unless the code is annotated")
     parser.add_option("", "--announce-threads", default="yes",
                       dest="announce_threads",
                       help="Show the the stack traces of thread creation")
@@ -605,8 +606,8 @@ class ThreadSanitizerBase(object):
     # This should shorten filepaths for functions intercepted in TSan.
     ret += ["--file-prefix-to-cut=scripts/tsan/tsan/"]
 
-    if self.EvalBoolFlag(self._options.pure_happens_before):
-      ret += ["--pure-happens-before=yes"] # "no" is the default value for TSAN
+    if self.EvalBoolFlag(self._options.hybrid):
+      ret += ["--hybrid=yes"] # "no" is the default value for TSAN
 
     if self.EvalBoolFlag(self._options.announce_threads):
       ret += ["--announce-threads"]
