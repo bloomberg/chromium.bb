@@ -101,6 +101,8 @@ HttpBridge::RequestContext::RequestContext(URLRequestContext* baseline_context)
   // We default to the browser's user agent. This can (and should) be overridden
   // with set_user_agent.
   user_agent_ = webkit_glue::GetUserAgent(GURL());
+
+  net_log_ = baseline_context->net_log();
 }
 
 HttpBridge::RequestContext::~RequestContext() {
