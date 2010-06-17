@@ -9,7 +9,7 @@
 
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/options/language_config_view.h"
+#include "chrome/browser/chromeos/options/language_config_model.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

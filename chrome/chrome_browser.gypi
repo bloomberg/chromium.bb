@@ -491,6 +491,8 @@
         'browser/chromeos/options/internet_page_view.h',
         'browser/chromeos/options/ip_config_view.cc',
         'browser/chromeos/options/ip_config_view.h',
+        'browser/chromeos/options/language_config_model.cc',
+        'browser/chromeos/options/language_config_model.h',
         'browser/chromeos/options/language_config_util.h',
         'browser/chromeos/options/language_config_view.cc',
         'browser/chromeos/options/language_config_view.h',

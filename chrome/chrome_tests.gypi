@@ -612,7 +612,7 @@
         'browser/chromeos/login/cookie_fetcher_unittest.cc',
         'browser/chromeos/login/google_authenticator_unittest.cc',
         'browser/chromeos/login/mock_auth_response_handler.cc',
-        'browser/chromeos/options/language_config_view_test.cc',
+        'browser/chromeos/options/language_config_model_unittest.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/status/language_menu_button_unittest.cc',
         'browser/chromeos/status/language_menu_l10n_util_unittest.cc',
