@@ -226,6 +226,31 @@ struct ParamTraits<unsigned long long> {
   }
 };
 
+// Note that the IPC layer doesn't sanitize NaNs and +/- INF values.  Clients
+// should be sure to check the sanity of these values after receiving them over
+// IPC.
+template <>
+struct ParamTraits<float> {
+  typedef float param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteData(reinterpret_cast<const char*>(&p), sizeof(param_type));
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    const char *data;
+    int data_size;
+    if (!m->ReadData(iter, &data, &data_size) ||
+        data_size != sizeof(param_type)) {
+      NOTREACHED();
+      return false;
+    }
+    memcpy(r, data, sizeof(param_type));
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(StringPrintf(L"e", p));
+  }
+};
+
 template <>
 struct ParamTraits<double> {
   typedef double param_type;
@@ -234,16 +259,14 @@ struct ParamTraits<double> {
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     const char *data;
-    int data_size = 0;
-    bool result = m->ReadData(iter, &data, &data_size);
-    if (result && data_size == sizeof(param_type)) {
-      memcpy(r, data, sizeof(param_type));
-    } else {
-      result = false;
+    int data_size;
+    if (!m->ReadData(iter, &data, &data_size) ||
+        data_size != sizeof(param_type)) {
       NOTREACHED();
+      return false;
     }
-
-    return result;
+    memcpy(r, data, sizeof(param_type));
+    return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(StringPrintf(L"e", p));

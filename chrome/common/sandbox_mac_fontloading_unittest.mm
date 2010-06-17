@@ -17,6 +17,48 @@ namespace {
 
 using sandboxtest::MacSandboxTest;
 
+bool CGFontFromFontContainer(ATSFontContainerRef container, CGFontRef* out) {
+  // Count the number of fonts that were loaded.
+  ItemCount fontCount = 0;
+  OSStatus err = ATSFontFindFromContainer(container, kATSOptionFlagsDefault, 0,
+                    NULL, &fontCount);
+
+  if (err != noErr || fontCount < 1) {
+    return false;
+  }
+
+  // Load font from container.
+  ATSFontRef font_ref_ats = 0;
+  ATSFontFindFromContainer(container, kATSOptionFlagsDefault, 1,
+      &font_ref_ats, NULL);
+
+  if (!font_ref_ats) {
+    return false;
+  }
+
+  // Convert to cgFont.
+  CGFontRef font_ref_cg = CGFontCreateWithPlatformFont(&font_ref_ats);
+
+  if (!font_ref_cg) {
+    return false;
+  }
+
+  *out = font_ref_cg;
+  return true;
+}
+
+class ScopedFontContainer {
+ public:
+  explicit ScopedFontContainer(ATSFontContainerRef ref)
+      : container_ref(ref) {}
+
+  ~ScopedFontContainer() {
+    ATSFontDeactivate(container_ref, NULL, kATSOptionFlagsDefault);
+  }
+
+  ATSFontContainerRef container_ref;
+};
+
 class FontLoadingTestCase : public sandboxtest::MacSandboxTestCase {
  public:
   FontLoadingTestCase() : font_data_length_(-1) {}
@@ -74,19 +116,27 @@ bool FontLoadingTestCase::SandboxedTest() {
     return false;
   }
 
-  CGFontRef font_ref;
-  if (!FontLoader::CreateCGFontFromBuffer(shmem_handle, font_data_length_,
-          &font_ref)) {
+  ATSFontContainerRef font_container;
+  if (!FontLoader::ATSFontContainerFromBuffer(shmem_handle, font_data_length_,
+          &font_container)) {
     LOG(ERROR) << "Call to CreateCGFontFromBuffer() failed";
     return false;
   }
 
-  scoped_cftyperef<CGFontRef> cgfont;
+  // Unload the font container when done.
+  ScopedFontContainer scoped_unloader(font_container);
+
+  CGFontRef font_ref;
+  if (!CGFontFromFontContainer(font_container, &font_ref)) {
+    LOG(ERROR) << "CGFontFromFontContainer failed";
+    return false;
+  }
 
   if (!font_ref) {
     LOG(ERROR) << "Got NULL CGFontRef";
     return false;
   }
+  scoped_cftyperef<CGFontRef> cgfont;
   cgfont.reset(font_ref);
 
   const NSFont* nsfont = reinterpret_cast<const NSFont*>(
@@ -116,7 +166,8 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
 
   base::SharedMemory font_data;
   uint32 font_data_size;
-  EXPECT_TRUE(FontLoader::LoadFontIntoBuffer(ASCIIToUTF16("Geeza Pro"), 16.0,
+  NSFont* srcFont = [NSFont fontWithName:@"Geeza Pro" size:16.0];
+  EXPECT_TRUE(FontLoader::LoadFontIntoBuffer(srcFont,
                   &font_data, &font_data_size));
   EXPECT_GT(font_data_size, 0U);
 

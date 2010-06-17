@@ -22,6 +22,7 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/font_descriptor_mac.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
@@ -911,6 +912,24 @@ struct ParamTraits<webkit_glue::FormField> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<FormField>");
+  }
+};
+
+// Traits for FontDescriptor structure to pack/unpack.
+template <>
+struct ParamTraits<FontDescriptor> {
+  typedef FontDescriptor param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.font_name);
+    WriteParam(m, p.font_point_size);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return(
+        ReadParam(m, iter, &p->font_name) &&
+        ReadParam(m, iter, &p->font_point_size));
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<FontDescriptor>");
   }
 };
 

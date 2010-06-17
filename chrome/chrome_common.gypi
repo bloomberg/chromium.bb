@@ -47,6 +47,8 @@
           'common/debug_flags.h',
           'common/devtools_messages.h',
           'common/devtools_messages_internal.h',
+          'common/font_descriptor_mac.h',
+          'common/font_descriptor_mac.mm',
           'common/geoposition.cc',
           'common/geoposition.h',
           'common/gpu_messages.h',

@@ -10,6 +10,12 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 
+#ifdef __OBJC__
+@class NSFont;
+#else
+class NSFont;
+#endif
+
 // Provides functionality to transmit fonts over IPC.
 //
 // Note about font formats: .dfont (datafork suitcase) fonts are currently not
@@ -18,32 +24,32 @@
 
 class FontLoader {
  public:
-  // Load a font specified by |font_name| and |font_point_size| into a shared
-  // memory buffer suitable for sending over IPC.
+  // Load a font specified by |font_to_encode| into a shared memory buffer
+  // suitable for sending over IPC.
   //
   // On return:
   //  returns true on success, false on failure.
   //  |font_data| - shared memory buffer containing the raw data for the font
   // file.
   //  |font_data_size| - size of data contained in |font_data|.
-  static bool LoadFontIntoBuffer(const string16& font_name,
-                                 float font_point_size,
+  static bool LoadFontIntoBuffer(NSFont* font_to_encode,
                                  base::SharedMemory* font_data,
                                  uint32* font_data_size);
 
   // Given a shared memory buffer containing the raw data for a font file, load
-  // the font into a CGFontRef.
+  // the font and return a container ref.
   //
   // |data| - A shared memory handle pointing to the raw data from a font file.
   // |data_size| - Size of |data|.
   //
   // On return:
   //  returns true on success, false on failure.
-  //  |font| - A CGFontRef containing the designated font, the caller is
-  // responsible for releasing this value.
-  static bool CreateCGFontFromBuffer(base::SharedMemoryHandle font_data,
-                                     uint32 font_data_size,
-                                     CGFontRef* font);
+  //  |font_container| - A font container corresponding to the designated font.
+  //  The caller is responsible for releasing this value via ATSFontDeactivate()
+  //  when done
+  static bool ATSFontContainerFromBuffer(base::SharedMemoryHandle font_data,
+                                         uint32 font_data_size,
+                                         ATSFontContainerRef* font_container);
 };
 
 #endif // CHROME_COMMON_FONT_LOADER_MAC_H_

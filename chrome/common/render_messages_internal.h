@@ -39,6 +39,10 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/common/font_descriptor_mac.h"
+#endif
+
 // TODO(mpcomplete): rename ViewMsg and ViewHostMsg to something that makes
 // more sense with our current design.
 
@@ -1433,6 +1437,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
 #if defined(OS_MACOSX)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
       string16 /* text */)
+
+  // Request that the browser load a font into shared memory for us.
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_LoadFont,
+                             FontDescriptor /* font to load */,
+                             uint32 /* buffer size */,
+                             base::SharedMemoryHandle /* font data */)
 #endif
 
 #if defined(OS_WIN)

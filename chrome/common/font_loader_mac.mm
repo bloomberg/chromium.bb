@@ -15,17 +15,16 @@
 #include "base/sys_string_conversions.h"
 
 // static
-bool FontLoader::LoadFontIntoBuffer(const string16& font_name,
-                                    float font_point_size,
+bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
                                     base::SharedMemory* font_data,
                                     uint32* font_data_size) {
   CHECK(font_data && font_data_size);
   *font_data_size = 0;
 
+  // Used only for logging.
+  std::string font_name([[font_to_encode fontName] UTF8String]);
+
   // Load appropriate NSFont.
-  NSString* font_name_ns = base::SysUTF16ToNSString(font_name);
-  NSFont* font_to_encode =
-      [NSFont fontWithName:font_name_ns size:font_point_size];
   if (!font_to_encode) {
     LOG(ERROR) << "Failed to load font " << font_name;
     return false;
@@ -90,9 +89,12 @@ bool FontLoader::LoadFontIntoBuffer(const string16& font_name,
 }
 
 // static
-bool FontLoader::CreateCGFontFromBuffer(base::SharedMemoryHandle font_data,
-                                        uint32 font_data_size,
-                                        CGFontRef *font) {
+bool FontLoader::ATSFontContainerFromBuffer(base::SharedMemoryHandle font_data,
+                                            uint32 font_data_size,
+                                            ATSFontContainerRef* font_container)
+{
+  CHECK(font_container);
+
   using base::SharedMemory;
   DCHECK(SharedMemory::IsHandleValid(font_data));
   DCHECK_GT(font_data_size, 0U);
@@ -101,41 +103,14 @@ bool FontLoader::CreateCGFontFromBuffer(base::SharedMemoryHandle font_data,
   if (!shm.Map(font_data_size))
     return false;
 
-  ATSFontContainerRef font_container = 0;
+  // A value of 3 means the font is private and can't be seen by anyone else.
+  // This is the value used by WebKit when activating remote fonts.
+  const ATSFontContext kFontContextPrivate = 3;
   OSStatus err = ATSFontActivateFromMemory(shm.memory(), font_data_size,
-                    kATSFontContextLocal, kATSFontFormatUnspecified,
-                    NULL, kATSOptionFlagsDefault, &font_container );
+                    kFontContextPrivate, kATSFontFormatUnspecified, NULL,
+                    kATSOptionFlagsDefault, font_container);
   if (err != noErr || !font_container)
     return false;
 
-  // Count the number of fonts that were loaded.
-  ItemCount fontCount = 0;
-  err = ATSFontFindFromContainer(font_container, kATSOptionFlagsDefault, 0,
-             NULL, &fontCount);
-
-  if (err != noErr || fontCount < 1) {
-    ATSFontDeactivate(font_container, NULL, kATSOptionFlagsDefault);
-    return false;
-  }
-
-  // Load font from container.
-  ATSFontRef font_ref_ats = 0;
-  ATSFontFindFromContainer(font_container, kATSOptionFlagsDefault, 1,
-      &font_ref_ats, NULL);
-
-  if (!font_ref_ats) {
-    ATSFontDeactivate(font_container, NULL, kATSOptionFlagsDefault);
-    return false;
-  }
-
-  // Convert to cgFont.
-  CGFontRef font_ref_cg = CGFontCreateWithPlatformFont(&font_ref_ats);
-
-  if (!font_ref_cg) {
-    ATSFontDeactivate(font_container, NULL, kATSOptionFlagsDefault);
-    return false;
-  }
-
-  *font = font_ref_cg;
   return true;
 }
