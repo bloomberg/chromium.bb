@@ -66,6 +66,9 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   // Connects to network if needed and updates screen state.
   void ConnectToNetwork(NetworkList::NetworkType type, const string16& id);
 
+  // Enables WiFi device.
+  void EnableWiFi();
+
   // Subscribes to network change notifications.
   void SubscribeNetworkNotification();
 
@@ -100,6 +103,9 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
 
   // Networks model, contains current state of available networks.
   NetworkList networks_;
+
+  // True if WiFi is currently disabled.
+  bool wifi_disabled_;
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_;

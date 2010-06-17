@@ -30,6 +30,7 @@ namespace chromeos {
 NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate, bool is_out_of_box)
     : ViewScreen<NetworkSelectionView>(delegate),
       is_network_subscribed_(false),
+      wifi_disabled_(false),
       is_out_of_box_(is_out_of_box),
       is_waiting_for_connect_(false),
       ethernet_preselected_(false),
@@ -47,7 +48,9 @@ NetworkScreen::~NetworkScreen() {
 int NetworkScreen::GetItemCount() {
   // Item with index = 0 is either "no networks are available" or
   // "no selection".
-  return static_cast<int>(networks_.GetNetworkCount()) + 1;
+  // If WiFi is disabled adding extra item to enable it.
+  return static_cast<int>(networks_.GetNetworkCount()) + 1 +
+      (wifi_disabled_ ? 1 : 0);
 }
 
 std::wstring NetworkScreen::GetItemAt(int index) {
@@ -55,6 +58,12 @@ std::wstring NetworkScreen::GetItemAt(int index) {
     return networks_.IsEmpty() ?
         l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
         l10n_util::GetString(IDS_NETWORK_SELECTION_NONE);
+  }
+  if (wifi_disabled_ &&
+      index == static_cast<int>(networks_.GetNetworkCount()) + 1) {
+    return l10n_util::GetStringF(
+        IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+        l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
   }
   NetworkList::NetworkItem* network =
       networks_.GetNetworkAt(index - 1);
@@ -71,6 +80,14 @@ void NetworkScreen::ItemChanged(views::Combobox* sender,
   // Corner case: item with index 0 is "No selection". Just select it.
   if (new_index == prev_index || new_index <= 0 || prev_index < 0)
     return;
+
+  if (wifi_disabled_ &&
+      new_index == static_cast<int>(networks_.GetNetworkCount()) + 1) {
+    view()->EnableContinue(false);
+    MessageLoop::current()->PostTask(FROM_HERE,
+        task_factory_.NewRunnableMethod(&NetworkScreen::EnableWiFi));
+    return;
+  }
 
   if (networks_.IsEmpty())
     return;
@@ -113,6 +130,10 @@ void NetworkScreen::NetworkChanged(NetworkLibrary* network_lib) {
   if (!view())
     return;
 
+  // TODO(nkostylev): Reuse network menu button - http://crosbug.com/4133
+  wifi_disabled_ = !chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary()->wifi_enabled();
+
   // Save network selection in case it would be available after refresh.
   NetworkList::NetworkType network_type = NetworkList::NETWORK_EMPTY;
   string16 network_id;
@@ -146,6 +167,7 @@ void NetworkScreen::NetworkChanged(NetworkLibrary* network_lib) {
 // NetworkLibrary::Observer implementation:
 
 void NetworkScreen::OnDialogCancelled() {
+  view()->EnableContinue(false);
   view()->SetSelectedNetworkItem(0);
 }
 
@@ -165,8 +187,10 @@ NetworkSelectionView* NetworkScreen::AllocateView() {
 // NetworkScreen, public:
 
 void NetworkScreen::Refresh() {
-  SubscribeNetworkNotification();
-  NetworkChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    SubscribeNetworkNotification();
+    NetworkChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +215,13 @@ void NetworkScreen::ConnectToNetwork(NetworkList::NetworkType type,
       chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
           ConnectToCellularNetwork(network->cellular_network);
     }
+  }
+}
+
+void NetworkScreen::EnableWiFi() {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+        EnableWifiNetworkDevice(true);
   }
 }
 
