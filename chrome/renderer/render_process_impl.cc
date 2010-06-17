@@ -182,7 +182,7 @@ RenderProcessImpl::RenderProcessImpl()
   }
 #endif
 
-#if defined(OS_WIN) or defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // Load the pdf plugin before the sandbox is turned on.  This is for Mac and
   // Windows.  On Linux, this needs to be done in the zygote process.
   FilePath pdf;
