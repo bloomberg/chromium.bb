@@ -245,7 +245,7 @@ void ResetBeforeTestRun(WebView* view) {
   // Reset the main frame name since tests always expect it to be empty.  It
   // is normally not reset between page loads (even in IE and FF).
   if (web_frame)
-    web_frame->clearName();
+    web_frame->setName(WebString());
 
 #if defined(OS_WIN)
   // Reset the last click information so the clicks generated from previous
