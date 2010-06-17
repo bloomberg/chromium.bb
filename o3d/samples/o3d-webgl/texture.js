@@ -185,6 +185,34 @@ o3d.Texture.nextHighestPowerOfTwo_ = function(value) {
 
 
 /**
+ * Returns the GL texture format that is closest to this texture's O3D texture
+ * format. Not all formats specified in o3d.Texture have a webgl equivalent,
+ * thus we return the one with the correct number of channels, if such exists.
+ *
+ * @return {number} A webgl format.
+ * @private
+ */
+o3d.Texture.prototype.getGLTextureFormat_ = function() {
+  switch (this.format) {
+    case o3d.Texture.XRGB8:
+      return this.gl.RGB;
+
+    case o3d.Texture.ARGB8:
+    case o3d.Texture.ABGR16F:
+    case o3d.Texture.ABGR32F:
+      return this.gl.RGBA;
+
+    case o3d.Texture.R32F:
+    case o3d.Texture.DXT1:
+    case o3d.Texture.DXT3:
+    case o3d.Texture.DXT5:
+      notImplemented();
+      return 0;
+  }
+}
+
+
+/**
  * Creates a webgl texture from the given image object rescaling to the
  * smallest power of 2 in each dimension still no smaller than the original
  * size.
@@ -231,6 +259,54 @@ o3d.Texture.prototype.setFromCanvas_ =
 
 
 /**
+ * Sets the values of the data stored in the texture.
+ *
+ * It is not recommend that you call this for large textures but it is useful
+ * for making simple ramps or noise textures for shaders.
+ *
+ * NOTE: the number of values must equal the size of the texture * the number
+ *  of elements. In other words, for a XRGB8 texture there must be
+ *  width * height * 3 values. For an ARGB8, ABGR16F or ABGR32F texture there
+ *  must be width * height * 4 values. For an R32F texture there must be
+ *  width * height values.
+ *
+ * NOTE: the order of channels is R G B for XRGB8 textures and R G B A
+ * for ARGB8, ABGR16F and ABGR32F textures so for example for XRGB8 textures
+ *
+ * [1, 0, 0] = a red pixel
+ * [0, 0, 1] = a blue pixel
+ *
+ * For ARGB8, ABGR16F, ABGR32F textures
+ *
+ * [1, 0, 0, 0] = a red pixel with zero alpha
+ * [1, 0, 0, 1] = a red pixel with one alpha
+ * [0, 0, 1, 1] = a blue pixel with one alpha
+ *
+ * @param {number} level the mip level to update.
+ * @param {number} values Values to be stored in the buffer.
+ */
+o3d.Texture.prototype.set =
+    function(level, values) {
+  var target = this.texture_target_;
+  if (target == this.gl.TEXTURE_CUBE_MAP) {
+    target = this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + face;
+  }
+
+  var pixels = new WebGLUnsignedByteArray(values.length);
+  for (var i = 0; i < values.length; ++i) {
+    pixels[i] = Math.min(255, Math.max(0, values[i] * 256.0));
+  }
+
+  var format = this.getGLTextureFormat_();
+
+  this.gl.bindTexture(target, this.texture_);
+  this.gl.texSubImage2D(
+      target, level, 0, 0, this.texture_width_, this.texture_height_,
+      format, this.gl.UNSIGNED_BYTE, pixels);
+};
+
+
+/**
  * A class for 2D textures that defines the interface for getting
  * the dimensions of the texture, its memory format and number of mipmap levels.
  *
@@ -264,7 +340,6 @@ o3d.inherit('Texture2D', 'Texture');
 o3d.ParamObject.setUpO3DParam_(o3d.Texture2D, 'width', 'ParamInteger');
 o3d.ParamObject.setUpO3DParam_(o3d.Texture2D, 'height', 'ParamInteger');
 
-
 /**
  * Initializes this Texture2D object of the specified size and format and
  * reserves the necessary resources for it.
@@ -285,6 +360,7 @@ o3d.Texture2D.prototype.init_ =
     function(width, height, format, levels, enable_render_surfaces) {
   this.width = width;
   this.height = height;
+  this.format = format;
   this.levels = levels;
   this.texture_ = this.gl.createTexture();
   this.texture_target_ = this.gl.TEXTURE_2D;
@@ -292,11 +368,13 @@ o3d.Texture2D.prototype.init_ =
   if (width != undefined && height != undefined) {
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_);
 
+    var format = this.getGLTextureFormat_();
+
     // TODO(petersont): remove this allocation once Firefox supports
     // passing null as argument to this form of ... some function.
-    var t = new WebGLUnsignedByteArray(width * height * 4);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height,
-        0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, t);
+    var pixels = new WebGLUnsignedByteArray(width * height * 4);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, format, width, height,
+        0, format, this.gl.UNSIGNED_BYTE, pixels);
     this.texture_width_ = width;
     this.texture_height_ = height;
   }
@@ -319,39 +397,6 @@ o3d.Texture2D.prototype.getRenderSurface =
   }
 
   return this.renderSurfaces_[mip_level];
-};
-
-
-/**
- * Sets the values of the data stored in the texture.
- *
- * It is not recommend that you call this for large textures but it is useful
- * for making simple ramps or noise textures for shaders.
- *
- * NOTE: the number of values must equal the size of the texture * the number
- *  of elements. In other words, for a XRGB8 texture there must be
- *  width * height * 3 values. For an ARGB8, ABGR16F or ABGR32F texture there
- *  must be width * height * 4 values. For an R32F texture there must be
- *  width * height values.
- *
- * NOTE: the order of channels is R G B for XRGB8 textures and R G B A
- * for ARGB8, ABGR16F and ABGR32F textures so for example for XRGB8 textures\n
- * \n
- * [1, 0, 0] = a red pixel\n
- * [0, 0, 1] = a blue pixel\n
- * \n
- * For ARGB8, ABGR16F, ABGR32F textures\n
- * \n
- * [1, 0, 0, 0] = a red pixel with zero alpha\n
- * [1, 0, 0, 1] = a red pixel with one alpha\n
- * [0, 0, 1, 1] = a blue pixel with one alpha\n
- *
- * @param {number} level the mip level to update.
- * @param {number} values Values to be stored in the buffer.
- */
-o3d.Texture2D.prototype.set =
-    function(level, values) {
-  o3d.notImplemented();
 };
 
 
