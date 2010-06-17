@@ -1,6 +1,55 @@
+diff -NaurbB src/gap.c src.patched/gap.c
+--- src/gap.c	1999-02-18 06:38:43.000000000 -0500
++++ src.patched/gap.c	2010-06-16 14:46:20.000000000 -0400
+@@ -98,7 +98,9 @@
+ *H
+ */
+ 
++#if 0 /* @LOCALMOD */
+ #include        <setjmp.h>              /* definition of setjmp buffer     */
++#endif 0 /* @LOCALMOD */
+ 
+ #include        "system.h"              /* system dependent functions      */
+ #include        "gasman.h"              /* dynamic storage manager         */
+@@ -126,7 +127,7 @@
+ **  read-eval-print loop.  If you 'quit;' a break  loop  control  returns  to
+ **  that place.
+ */
+-jmp_buf         ErrRet;
++/* jmp_buf         ErrRet; */ /* @LOCALMOD */
+ 
+ 
+ /****************************************************************************
+@@ -179,7 +180,7 @@
+     InitGap( argc, argv );
+ 
+     /* set the environment to return in case of an error                   */
+-    setjmp( ErrRet );
++    /* setjmp( ErrRet ); */ /* @LOCALMOD */
+ 
+     /* repeat the read-eval-print cycle until end of input                 */
+     while ( Symbol != S_EOF ) {
+@@ -469,7 +470,7 @@
+     /* close "*errout*" and return to the main read-eval-print loop        */
+     while ( CloseOutput() ) ;
+     while ( CloseInput() ) ;
+-    longjmp( ErrRet, 1 );
++    /* longjmp( ErrRet, 1 ); */ /* @LOCALMOD */
+     return 0;                           /* just to please lint ...         */
+ }
+ 
+@@ -1760,7 +1761,7 @@
+     InstIntFunc( "CoefficientsInt", FunCoefficients );
+ 
+     /* read all init files, stop doing so after quiting from Error         */
+-    if ( ! setjmp( ErrRet ) ) {
++    if ( 1 /* ! setjmp( ErrRet ) */ ) { /* @LOCALMOD */ 
+         for ( i=0; i<sizeof(SyInitfiles)/sizeof(SyInitfiles[0]); ++i ) {
+             if ( SyInitfiles[i][0] != '\0' ) {
+                 if ( OpenInput( SyInitfiles[i] ) ) {
 diff -NaurbB src/system.c src.patched/system.c
---- src/system.c	2010-06-03 09:44:01.000000000 -0400
-+++ src.patched/system.c	2010-06-02 16:16:57.000000000 -0400
+--- src/system.c	2001-04-24 23:41:02.000000000 -0400
++++ src.patched/system.c	2010-06-16 14:29:21.000000000 -0400
 @@ -1572,6 +1572,9 @@
  */
  #if SYS_USG
