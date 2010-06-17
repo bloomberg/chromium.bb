@@ -1293,6 +1293,13 @@ def CMDhelp(args):
 
 
 def main(argv):
+  if not argv:
+    argv = ['help']
+  command = Command(argv[0])
+  # Help can be run from anywhere.
+  if command == CMDhelp:
+    return command(argv[1:])
+
   try:
     GetRepositoryRoot()
   except gclient_utils.Error:
@@ -1308,9 +1315,6 @@ def main(argv):
   if not os.path.exists(GetCacheDir()):
     os.mkdir(GetCacheDir())
 
-  if not argv:
-    argv = ['help']
-  command = Command(argv[0])
   if command:
     return command(argv[1:])
   # Unknown command, try to pass that to svn
