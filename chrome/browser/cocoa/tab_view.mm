@@ -609,11 +609,11 @@ const CGFloat kRapidCloseDist = 2.5;
   BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
   BOOL selected = [self state];
 
-  // Inset by 0.5 in order to draw on pixels rather than on borders (which would
-  // cause blurry pixels). Decrease height by 1 in order to move away from the
-  // edge for the dark shadow.
+  // Outset by 0.5 in order to draw on pixels rather than on borders (which
+  // would cause blurry pixels). Subtract 1px of height to compensate,
+  // otherwise clipping will occur.
   rect = NSInsetRect(rect, -0.5, -0.5);
-  rect.origin.y -= 1;
+  rect.size.height -= 1;
 
   NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2);
   NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2);
@@ -756,14 +756,21 @@ const CGFloat kRapidCloseDist = 2.5;
   [path stroke];
   [context restoreGraphicsState];
 
-  // Draw the bottom border.
+  // Mimic the tab strip's bottom border, which consists of a dark border
+  // and light highlight.
   if (!selected) {
     [path addClip];
-    NSRect borderRect, contentRect;
-    NSDivideRect(rect, &borderRect, &contentRect, 2.5, NSMinYEdge);
-    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.3 : 0.15] set];
+    NSRect borderRect = rect;
+    borderRect.origin.y = 1;
+    borderRect.size.height = 1;
+    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.2 : 0.15] set];
+    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+
+    borderRect.origin.y = 0;
+    [[NSColor colorWithCalibratedWhite:0.96 alpha:1.0] set];
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
+
   [context restoreGraphicsState];
 }
 

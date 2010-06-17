@@ -380,7 +380,7 @@ private:
 }
 
 + (CGFloat)defaultTabHeight {
-  return 24.0;
+  return 25.0;
 }
 
 + (CGFloat)defaultIndentForControls {

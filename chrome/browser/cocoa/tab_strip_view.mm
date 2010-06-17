@@ -31,9 +31,17 @@
 - (void)drawRect:(NSRect)rect {
   NSRect boundsRect = [self bounds];
   NSRect borderRect, contentRect;
-  NSDivideRect(boundsRect, &borderRect, &contentRect, 1, NSMinYEdge);
-  [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
 
+  // Draw bottom border (a dark border and light highlight). Each tab is
+  // responsible for mimicing this bottom border, unless it's the selected
+  // tab.
+  borderRect = boundsRect;
+  borderRect.origin.y = 1;
+  borderRect.size.height = 1;
+  [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
+  NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+  NSDivideRect(boundsRect, &borderRect, &contentRect, 1, NSMinYEdge);
+  [[NSColor colorWithCalibratedWhite:0.96 alpha:1.0] set];
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 
   // Draw drop-indicator arrow (if appropriate).
