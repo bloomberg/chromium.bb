@@ -52,13 +52,13 @@ class Point {
     y_ += delta_y;
   }
 
-  Point Add(const Point& other) {
+  Point Add(const Point& other) const{
     Point copy = *this;
     copy.Offset(other.x_, other.y_);
     return copy;
   }
 
-  Point Subtract(const Point& other) {
+  Point Subtract(const Point& other) const {
     Point copy = *this;
     copy.Offset(-other.x_, -other.y_);
     return copy;
