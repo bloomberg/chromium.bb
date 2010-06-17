@@ -35,7 +35,7 @@ class DrMemoryAnalyze:
       files: A list of filenames.
     '''
 
-    self.races = []
+    self.reports = []
     self.used_suppressions = {}
     for file in files:
       self.ParseReportFile(file)
@@ -107,7 +107,9 @@ class DrMemoryAnalyze:
       if match:
         self.line_ = match.groups()[0].strip() + "\n"
         tmp.extend(self.ReadSection())
-        self.races.append(tmp)
+        self.reports.append(tmp)
+      elif self.line_.startswith("ASSERT FAILURE"):
+        self.reports.append(self.line_.strip())
 
     self.cur_fd_.close()
 
@@ -115,9 +117,9 @@ class DrMemoryAnalyze:
     sys.stdout.flush()
     #TODO(timurrrr): support positive tests / check_sanity==True
 
-    if len(self.races) > 0:
-      logging.error("Found %i error reports" % len(self.races))
-      for report_list in self.races:
+    if len(self.reports) > 0:
+      logging.error("Found %i error reports" % len(self.reports))
+      for report_list in self.reports:
         report = ''
         for line in report_list:
           report += str(line)
