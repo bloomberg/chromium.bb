@@ -218,6 +218,8 @@
                 </li><li>
                   <a href="#default_locale">default_locale</a>
                 </li><li>
+                  <a href="#key">key</a>
+                </li><li>
                   <a href="#minimum_chrome_version">minimum_chrome_version</a>
                 </li><li>
                   <a href="#name">name</a>
@@ -308,6 +310,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
   "<a href="override.html">chrome_url_overrides</a>": {...},
   "<a href="content_scripts.html">content_scripts</a>": [...],
+  "<a href="#key">key</a>": "<em>publicKey</em>",
   "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "<em>versionString</em>",
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
   "<a href="#permissions">permissions</a>": [...],
@@ -408,6 +411,35 @@ it <b>must be absent</b> in extensions
 that have no <code>_locales</code> directory.
 For details, see
 <a href="i18n.html">Internationalization</a>.
+</p>
+
+<h3 id="key">key</h3>
+
+<p>
+This value can be used to control
+the unique ID of an extension when
+it is loaded during development.
+</p>
+
+<p class="note">
+<b>Note:</b> Most extensions should not need to
+use this value. Instead, write your
+code so that the key value doesn't matter
+by using <a href="overview.html#relative-urls">relative paths</a>
+and <a href="extension.html#method-getURL">chrome.extension.getURL()</a>.
+</p>
+
+<p>
+To get a suitable key value, first
+install your extension from a <code>.crx</code> file
+(you may need to
+<a href="hosting.html#gallery">upload your extension to the gallery</a>,
+or <a href="packaging.html">package it manually</a>).
+Then, in your
+<a href="http://www.chromium.org/user-experience/user-data-directory">user
+data directory</a>, look in the file
+<code>Default/Extensions/<em>&lt;extensionId&gt;</em>/<em>&lt;versionString&gt;</em>/manifest.json</code>.
+You will see the key value filled in there.
 </p>
 
 <h3 id="minimum_chrome_version">minimum_chrome_version</h3>
