@@ -48,6 +48,27 @@ const char kDefaultDomain[] = "@gmail.com";
 const char kAccountRecoveryHelpUrl[] =
     "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
 
+// Textfield that adds domain to the entered username if focus is lost and
+// username doesn't have full domain.
+class UsernameField : public views::Textfield {
+ public:
+  UsernameField() {}
+
+  // views::Textfield overrides:
+  virtual void WillLoseFocus() {
+    if (!text().empty()) {
+      std::string username = UTF16ToUTF8(text());
+
+      if (username.find('@') == std::string::npos) {
+        username += kDefaultDomain;
+        SetText(UTF8ToUTF16(username));
+      }
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(UsernameField);
+};
+
 }  // namespace
 
 namespace chromeos {
@@ -96,7 +117,7 @@ void NewUserView::Init() {
   title_label_->SetMultiLine(true);
   AddChildView(title_label_);
 
-  username_field_ = new views::Textfield;
+  username_field_ = new UsernameField();
   AddChildView(username_field_);
 
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
@@ -367,17 +388,7 @@ bool NewUserView::HandleKeystroke(views::Textfield* s,
   if (!CrosLibrary::Get()->EnsureLoaded() || login_in_process_)
     return false;
 
-  if (keystroke.GetKeyboardCode() == base::VKEY_TAB) {
-    if (username_field_->text().length() != 0) {
-      std::string username = UTF16ToUTF8(username_field_->text());
-
-      if (username.find('@') == std::string::npos) {
-        username += kDefaultDomain;
-        username_field_->SetText(UTF8ToUTF16(username));
-      }
-      return false;
-    }
-  } else if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
+  if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
     Login();
     // Return true so that processing ends
     return true;
