@@ -79,7 +79,7 @@ class PluginLib : public base::RefCounted<PluginLib> {
   void PreventLibraryUnload();
 
   // Loads the library now and ensures it's never unloaded.
-  void EnsureAlwaysLoaded();
+  bool EnsureAlwaysLoaded();
 
   // protected for testability.
  protected:

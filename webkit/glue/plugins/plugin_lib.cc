@@ -139,9 +139,9 @@ void PluginLib::PreventLibraryUnload() {
   skip_unload_ = true;
 }
 
-void PluginLib::EnsureAlwaysLoaded() {
+bool PluginLib::EnsureAlwaysLoaded() {
   always_loaded_ = true;
-  Load();
+  return Load();
 }
 
 PluginInstance* PluginLib::CreateInstance(const std::string& mime_type) {
