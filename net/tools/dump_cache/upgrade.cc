@@ -210,6 +210,8 @@ class MasterSM : public BaseSM {
   MasterSM(const std::wstring& path, HANDLE channel, bool dump_to_disk)
       : BaseSM(channel), path_(path), dump_to_disk_(dump_to_disk),
         ALLOW_THIS_IN_INITIALIZER_LIST(
+            create_callback_(this, &MasterSM::DoCreateEntryComplete)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
             write_callback_(this, &MasterSM::DoReadDataComplete)) {
   }
   virtual ~MasterSM() {
@@ -236,6 +238,7 @@ class MasterSM : public BaseSM {
   void SendGetPrevEntry();
   void DoGetEntry();
   void DoGetKey(int bytes_read);
+  void DoCreateEntryComplete(int result);
   void DoGetUseTimes();
   void SendGetDataSize();
   void DoGetDataSize();
@@ -259,6 +262,7 @@ class MasterSM : public BaseSM {
   CacheDumpWriter* writer_;
   const std::wstring& path_;
   bool dump_to_disk_;
+  net::CompletionCallbackImpl<MasterSM> create_callback_;
   net::CompletionCallbackImpl<MasterSM> write_callback_;
 };
 
@@ -388,8 +392,17 @@ void MasterSM::DoGetKey(int bytes_read) {
   std::string key(input_->buffer);
   DCHECK(key.size() == static_cast<size_t>(input_->msg.buffer_bytes - 1));
 
-  if (!writer_->CreateEntry(key,
-                            reinterpret_cast<disk_cache::Entry**>(&entry_))) {
+  int rv = writer_->CreateEntry(key,
+                                reinterpret_cast<disk_cache::Entry**>(&entry_),
+                                &create_callback_);
+
+  if (rv != net::ERR_IO_PENDING)
+    DoCreateEntryComplete(rv);
+}
+
+void MasterSM::DoCreateEntryComplete(int result) {
+  std::string key(input_->buffer);
+  if (result != net::OK) {
     printf("Skipping entry \"%s\": %d\n", key.c_str(), GetLastError());
     return SendGetPrevEntry();
   }

@@ -5,15 +5,17 @@
 #include "net/tools/dump_cache/cache_dumper.h"
 
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/disk_cache/entry_impl.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
 
-bool CacheDumper::CreateEntry(const std::string& key,
-                              disk_cache::Entry** entry) {
-  return cache_->CreateEntry(key, entry);
+int CacheDumper::CreateEntry(const std::string& key,
+                             disk_cache::Entry** entry,
+                             net::CompletionCallback* callback) {
+  return cache_->CreateEntry(key, entry, callback);
 }
 
 int CacheDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
@@ -61,8 +63,9 @@ bool SafeCreateDirectory(const std::wstring& path) {
 #endif
 }
 
-bool DiskDumper::CreateEntry(const std::string& key,
-                             disk_cache::Entry** entry) {
+int DiskDumper::CreateEntry(const std::string& key,
+                            disk_cache::Entry** entry,
+                            net::CompletionCallback* callback) {
   FilePath path(path_);
   // The URL may not start with a valid protocol; search for it.
   int urlpos = key.find("http");
@@ -94,10 +97,10 @@ bool DiskDumper::CreateEntry(const std::string& key,
                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
   if (entry_ == INVALID_HANDLE_VALUE)
     wprintf(L"CreateFileW (%s) failed: %d\n", file.c_str(), GetLastError());
-  return entry_ != INVALID_HANDLE_VALUE;
+  return (entry_ != INVALID_HANDLE_VALUE) ? net::OK : net::ERR_FAILED;
 #else
   entry_ = file_util::OpenFile(entry_path_, "w+");
-  return entry_ != NULL;
+  return (entry_ != NULL) ? net::OK : net::ERR_FAILED;
 #endif
 }
 

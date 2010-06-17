@@ -26,12 +26,13 @@ class CacheDumpWriter {
 
   // Creates an entry to be written.
   // On success, populates the |entry|.
-  // Returns true on success, false otherwise.
-  virtual bool CreateEntry(const std::string& key,
-                           disk_cache::Entry** entry) = 0;
+  // Returns a net error code.
+  virtual int CreateEntry(const std::string& key,
+                          disk_cache::Entry** entry,
+                          net::CompletionCallback* callback) = 0;
 
   // Write to the current entry.
-  // Returns true on success, false otherwise.
+  // Returns a net error code.
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
                          net::CompletionCallback* callback) = 0;
@@ -46,7 +47,8 @@ class CacheDumper : public CacheDumpWriter {
  public:
   explicit CacheDumper(disk_cache::Backend* cache) : cache_(cache) {}
 
-  virtual bool CreateEntry(const std::string& key, disk_cache::Entry** entry);
+  virtual int CreateEntry(const std::string& key, disk_cache::Entry** entry,
+                          net::CompletionCallback* callback);
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
                          net::CompletionCallback* callback);
@@ -63,7 +65,8 @@ class DiskDumper : public CacheDumpWriter {
   explicit DiskDumper(const std::wstring& path) : path_(path), entry_(NULL) {
     file_util::CreateDirectory(FilePath(path));
   }
-  virtual bool CreateEntry(const std::string& key, disk_cache::Entry** entry);
+  virtual int CreateEntry(const std::string& key, disk_cache::Entry** entry,
+                          net::CompletionCallback* callback);
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
                          net::CompletionCallback* callback);
