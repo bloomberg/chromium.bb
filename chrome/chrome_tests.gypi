@@ -1906,7 +1906,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/bzip2/bzip2.gyp:bzip2',        
+        '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'profile_import',
         'syncapi',
@@ -2447,6 +2447,8 @@
               'dependencies': [
                 # Reason for disabling UI tests on non-Linux above.
                 'ui_tests',
+                # Win bot needs to be turned into an interactive bot.
+                'test/interactive_ui/interactive_ui_tests.gypi:interactive_ui_tests',
               ]}],
             ['OS=="mac"', {
               'dependencies': [
