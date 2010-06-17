@@ -1309,14 +1309,24 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
   EXPECT_CALL(mock, OnFileDownload(_, _))
       .Times(testing::AnyNumber());
 
-  testing::InSequence s;
+  ProtocolPatchMethod patch_method = GetPatchMethod();
+
+  //testing::InSequence s;
   const wchar_t* url = L"http://localhost:1337/files/meta_tag.html";
   const wchar_t* kDialogClass = L"#32770";
+
   EXPECT_CALL(mock, OnBeforeNavigate2(_,
       testing::Field(&VARIANT::bstrVal,
       testing::StrCaseEq(url)), _, _, _, _, _))
       .Times(1)
       .WillOnce(WatchWindow(&mock, kDialogClass));
+
+  if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
+    EXPECT_CALL(mock, OnBeforeNavigate2(_,
+        testing::Field(&VARIANT::bstrVal,
+        testing::HasSubstr(L"res://")), _, _, _, _, _))
+        .Times(1);
+  }
 
   EXPECT_CALL(mock, OnNavigateComplete2(_,
       testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(url)))).Times(1);
