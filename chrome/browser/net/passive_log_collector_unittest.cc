@@ -100,14 +100,12 @@ TEST(RequestTrackerTest, DropsAfterMaximumSize) {
 
   EXPECT_EQ(RequestTracker::kMaxNumSources, GetLiveSources(tracker).size());
 
-  // Add 5 more -- this should cause it to exceed its expected peak, and
+  // Add 1 more -- this should cause it to exceed its expected peak, and
   // therefore reset all of its data.
-  for (size_t i = 0; i < 5u; ++i) {
-    tracker.OnAddEntry(
-        MakeStartLogEntry(i + RequestTracker::kMaxNumSources));
-  }
+  tracker.OnAddEntry(
+      MakeStartLogEntry(1 + RequestTracker::kMaxNumSources));
 
-  EXPECT_EQ(4u, GetLiveSources(tracker).size());
+  EXPECT_EQ(1u, GetLiveSources(tracker).size());
 }
 
 TEST(RequestTrackerTest, BasicBounded) {
@@ -439,7 +437,7 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDeletedSource) {
                    NetLog::PHASE_BEGIN,
                    NULL);
   }
-  ASSERT_EQ(0u, GetLiveSources(log.socket_tracker_).size());
+  ASSERT_EQ(1u, GetLiveSources(log.socket_tracker_).size());
 
   // End the original request. Then saturate the graveyard with enough other
   // requests to cause it to be deleted. Once that source is deleted, it will

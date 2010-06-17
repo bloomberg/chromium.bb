@@ -141,8 +141,20 @@ PassiveLogCollector::SourceTracker::SourceTracker(
 PassiveLogCollector::SourceTracker::~SourceTracker() {}
 
 void PassiveLogCollector::SourceTracker::OnAddEntry(const Entry& entry) {
-  SourceInfo& info = sources_[entry.source.id];
-  info.source_id = entry.source.id;  // In case this is a new entry.
+  // Lookup or insert a new entry into the bounded map.
+  SourceIDToInfoMap::iterator it = sources_.find(entry.source.id);
+  if (it == sources_.end()) {
+    if (sources_.size() >= max_num_sources_) {
+      LOG(WARNING) << "The passive log data has grown larger "
+                      "than expected, resetting";
+      Clear();
+    }
+    it = sources_.insert(
+        SourceIDToInfoMap::value_type(entry.source.id, SourceInfo())).first;
+    it->second.source_id = entry.source.id;
+  }
+
+  SourceInfo& info = it->second;
   Action result = DoAddEntry(entry, &info);
 
   if (result != ACTION_NONE) {
@@ -163,14 +175,6 @@ void PassiveLogCollector::SourceTracker::OnAddEntry(const Entry& entry) {
           break;
       }
     }
-  }
-
-  if (sources_.size() > max_num_sources_) {
-    // This is a safety net in case something went wrong, to avoid continually
-    // growing memory.
-    LOG(WARNING) << "The passive log data has grown larger "
-                    "than expected, resetting";
-    Clear();
   }
 }
 
