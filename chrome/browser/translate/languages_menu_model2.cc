@@ -29,7 +29,7 @@ bool LanguagesMenuModel2::IsCommandIdChecked(int command_id) const {
 bool LanguagesMenuModel2::IsCommandIdEnabled(int command_id) const {
   // Prevent from having the same language selectable in original and target.
   if (language_type_ == ORIGINAL)
-    return true;
+    return command_id != translate_infobar_delegate_->target_language_index();
   return command_id != translate_infobar_delegate_->original_language_index();
 }
 
