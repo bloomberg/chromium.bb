@@ -249,19 +249,24 @@ InfoBubble* InfoBubble::Show(views::Widget* parent,
 }
 
 void InfoBubble::Close() {
+  if (show_status_ != kOpen)
+    return;
+
+  show_status_ = kClosing;
+    
   GetFocusManager()->UnregisterAccelerator(
       views::Accelerator(base::VKEY_ESCAPE, false, false, false), this);
 
   if (fade_away_on_close_)
     FadeOut();
   else
-    Close(false);
+    DoClose(false);
 }
 
 void InfoBubble::AnimationEnded(const Animation* animation) {
   if (static_cast<int>(animation_->GetCurrentValue()) == 0) {
     // When fading out we just need to close the bubble at the end
-    Close(false);
+    DoClose(false);
   } else {
 #if defined(OS_WIN)
     // When fading in we need to remove the layered window style flag, since
@@ -297,7 +302,7 @@ InfoBubble::InfoBubble()
       border_(NULL),
 #endif
       delegate_(NULL),
-      closed_(false),
+      show_status_(kOpen),
       fade_away_on_close_(false) {
 }
 
@@ -306,7 +311,7 @@ InfoBubble::InfoBubble(views::WidgetGtk::Type type)
     : WidgetGtk(type),
       border_contents_(NULL),
       delegate_(NULL),
-      closed_(false),
+      show_status_(kOpen),
       fade_away_on_close_(false) {
 }
 #endif
@@ -456,8 +461,6 @@ void InfoBubble::SizeToContents() {
 void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // The popup should close when it is deactivated.
   if (action == WA_INACTIVE) {
-    if (closed_ || (animation_.get() && animation_->IsClosing()))
-      return;
     Close();
   } else if (action == WA_ACTIVE) {
     DCHECK(GetRootView()->GetChildViewCount() > 0);
@@ -471,13 +474,13 @@ void InfoBubble::IsActiveChanged() {
 }
 #endif
 
-void InfoBubble::Close(bool closed_by_escape) {
-  if (closed_)
+void InfoBubble::DoClose(bool closed_by_escape) {
+  if (show_status_ == kClosed)
     return;
 
   if (delegate_)
     delegate_->InfoBubbleClosing(this, closed_by_escape);
-  closed_ = true;
+  show_status_ = kClosed;
 #if defined(OS_WIN)
   border_->Close();
   WidgetWin::Close();
@@ -518,7 +521,7 @@ void InfoBubble::Fade(bool fade_in) {
 
 bool InfoBubble::AcceleratorPressed(const views::Accelerator& accelerator) {
   if (!delegate_ || delegate_->CloseOnEscape()) {
-    Close(true);
+    DoClose(true);
     return true;
   }
   return false;

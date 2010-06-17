@@ -252,9 +252,15 @@ class InfoBubble
 #endif
 
  private:
+  enum ShowStatus {
+    kOpen,
+    kClosing,
+    kClosed
+  };
+
   // Closes the window notifying the delegate. |closed_by_escape| is true if
   // the close is the result of pressing escape.
-  void Close(bool closed_by_escape);
+  void DoClose(bool closed_by_escape);
 
   // Animates to a visible state.
   void FadeIn();
@@ -273,8 +279,8 @@ class InfoBubble
   // The animation used to fade the bubble out.
   scoped_ptr<SlideAnimation> animation_;
 
-  // Have we been closed?
-  bool closed_;
+  // The current visibility status of the bubble.
+  ShowStatus show_status_;
 
   // Whether to fade away when the bubble closes.
   bool fade_away_on_close_;
