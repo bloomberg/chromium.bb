@@ -41,7 +41,6 @@ to route both incoming and outgoing chats through this central roster.
     // New central jid listener.
     // Update with current central roster jid, and add to tracking array.
     if (port.name == 'centralJidListener') {
-      port.postMessage({jid: centralRosterJid});
       centralJidListenerPorts.push(port);
 
       // Clear tracking array entry when content script closes.
@@ -54,6 +53,9 @@ to route both incoming and outgoing chats through this central roster.
           }
         }
       });
+      if (centralRosterJid) {
+        port.postMessage({jid: centralRosterJid});
+      }
     // New central jid broadcaster.
     // Add listener for jid changes, and track port for forwarding chats.
     } else if (port.name == 'centralJidBroadcaster') {
