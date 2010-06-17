@@ -385,7 +385,7 @@ void FirstRunOEMBubbleView::FocusWillChange(View* focused_before,
 
 class FirstRunMinimalBubbleView : public FirstRunBubbleViewBase {
  public:
-  explicit FirstRunMinimalBubbleView(FirstRunBubble* bubble_window);
+  FirstRunMinimalBubbleView(FirstRunBubble* bubble_window, Profile* profile);
 
  private:
   virtual ~FirstRunMinimalBubbleView() { }
@@ -403,6 +403,7 @@ class FirstRunMinimalBubbleView : public FirstRunBubbleViewBase {
   virtual void FocusWillChange(View* focused_before, View* focused_now);
 
   FirstRunBubble* bubble_window_;
+  Profile* profile_;
   views::Label* label1_;
   views::Label* label2_;
 
@@ -410,14 +411,17 @@ class FirstRunMinimalBubbleView : public FirstRunBubbleViewBase {
 };
 
 FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
-    FirstRunBubble* bubble_window)
+    FirstRunBubble* bubble_window,
+    Profile* profile)
     : bubble_window_(bubble_window),
+      profile_(profile),
       label1_(NULL),
       label2_(NULL) {
   const gfx::Font& font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
 
-  label1_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_TITLE));
+  label1_ = new views::Label(l10n_util::GetStringF(IDS_FR_SE_BUBBLE_TITLE,
+      GetDefaultSearchEngineName(profile_)));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);
@@ -488,7 +492,7 @@ FirstRunBubble* FirstRunBubble::Show(Profile* profile,
       view = new FirstRunBubbleView(window, profile);
       break;
     case FirstRun::MINIMALBUBBLE:
-      view = new FirstRunMinimalBubbleView(window);
+      view = new FirstRunMinimalBubbleView(window, profile);
       break;
     default:
       NOTREACHED();

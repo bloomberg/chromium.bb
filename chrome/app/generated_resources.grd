@@ -5356,6 +5356,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Try it out - type "orchids" and press Enter.
       </message>
 
+      <!-- First run bubble popup with new search engine dialog -->
+      <message name="IDS_FR_SE_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
+        Search using <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> from right here
+      </message>
+
       <!-- Sad Tab Strings -->
       <message name="IDS_SAD_TAB_TITLE" desc="The title of the sad tab page that is shown when a tab crashes. This is intended to be a humorous exclamation of dismay.">
         Aw, Snap!
