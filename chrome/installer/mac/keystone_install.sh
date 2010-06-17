@@ -327,16 +327,16 @@ is_ksadmin_version_ge() {
                             "${BASH_REMATCH[4]}")
 
   local i
-  for i in 0 1 2 3; do
+  for i in "${!check_components[@]}"; do
     local check_component="${check_components[${i}]}"
     local ksadmin_component="${ksadmin_components[${i}]}"
 
     if [[ ${ksadmin_component} -lt ${check_component} ]]; then
-      # ksadmin_version is less than check_version
+      # ksadmin_version is less than check_version.
       return 1
     fi
     if [[ ${ksadmin_component} -gt ${check_component} ]]; then
-      # ksadmin_version is greater than check_version
+      # ksadmin_version is greater than check_version.
       return 0
     fi
   done
