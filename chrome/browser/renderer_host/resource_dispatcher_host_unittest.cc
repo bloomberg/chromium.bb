@@ -348,7 +348,7 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
   MakeTestRequest(0, 3, URLRequestTestJob::test_url_3());
 
   // flush all the pending requests
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -375,7 +375,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   MakeCancelRequest(2);
 
   // flush all the pending requests
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
@@ -463,7 +463,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   test_receiver.has_canceled_ = true;
 
   // Flush all the pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.pending_requests());
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
@@ -496,7 +496,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   MakeTestRequest(3, 6, URLRequestTestJob::test_url_3());
 
   // Flush all the pending requests
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   // Sort out all the messages we saw by request
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -511,7 +511,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   // Resume requests for RVH 1 and flush pending requests.
   host_.ResumeBlockedRequestsForRoute(id(), 1);
   KickOffRequest();
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   msgs.clear();
   accum_.GetClassifiedMessages(&msgs);
@@ -521,7 +521,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
 
   // Test that new requests are not blocked for RVH 1.
   MakeTestRequest(1, 7, URLRequestTestJob::test_url_1());
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
   msgs.clear();
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
@@ -531,7 +531,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   host_.ResumeBlockedRequestsForRoute(id(), 2);
   host_.ResumeBlockedRequestsForRoute(id(), 3);
   KickOffRequest();
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0,
             host_.GetOutstandingRequestsMemoryCost(id()));
@@ -556,7 +556,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   MakeTestRequest(1, 4, URLRequestTestJob::test_url_1());
 
   // Flush all the pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   // Sort out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -571,7 +571,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   // Cancel requests for RVH 1.
   host_.CancelBlockedRequestsForRoute(id(), 1);
   KickOffRequest();
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0,
             host_.GetOutstandingRequestsMemoryCost(id()));
@@ -602,7 +602,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   host_.CancelRequestsForProcess(second_receiver.id());
 
   // Flush all the pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
       id()));
@@ -642,7 +642,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
   MakeTestRequest(this, 2, 6, URLRequestTestJob::test_url_3());
 
   // Flush all the pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 }
 
 // Test the private helper method "CalculateApproximateMemoryCost()".
@@ -741,7 +741,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
                   URLRequestTestJob::test_url_2());
 
   // Flush all the pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(0,
@@ -801,7 +801,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
   MakeTestRequest(0, 1, GURL("http:bla"));
 
   // Flush all pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -830,7 +830,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
   MakeTestRequest(0, 1, GURL("http:bla"));
 
   // Flush all pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -858,7 +858,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
   MakeTestRequest(0, 1, GURL("http:bla"));
 
   // Flush all pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -885,7 +885,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
   MakeTestRequest(0, 1, GURL("http:bla"));
 
   // Flush all pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
@@ -918,7 +918,7 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   MakeTestRequest(0, 1, GURL("http:bla"));
 
   // Flush all pending requests.
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 

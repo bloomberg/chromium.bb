@@ -24,4 +24,7 @@ bool FaxField::GetFieldInfo(FieldTypeMap* field_type_map) const {
 
 FaxField::FaxField() : number_(NULL) {}
 
-FaxField::FaxField(const FaxField& fax_field) : number_(fax_field.number_) {}
+FaxField::FaxField(const FaxField& fax_field)
+    : FormField(),
+      number_(fax_field.number_) {
+}

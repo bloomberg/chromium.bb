@@ -21,8 +21,8 @@ extern const CFStringRef kAppPrefsID;
 extern const CFStringRef kLastRunAppBundlePathPrefsKey;
 
 // Current major/minor version numbers of |ChromeAppModeInfo| (defined below).
-const unsigned kCurrentChromeAppModeInfoMajorVersion = 0;
-const unsigned kCurrentChromeAppModeInfoMinorVersion = 1;
+const unsigned kCurrentChromeAppModeInfoMajorVersion = 1;
+const unsigned kCurrentChromeAppModeInfoMinorVersion = 0;
 
 // The structure used to pass information from the app mode loader to the
 // (browser) framework. This is versioned using major and minor version numbers,
@@ -36,29 +36,29 @@ struct ChromeAppModeInfo {
   unsigned minor_version;  // Required: all versions
 
   // Original |argc| and |argv|.
-  int argc;  // Required: v0.1
-  char** argv;  // Required: v0.1
+  int argc;  // Required: v1.0
+  char** argv;  // Required: v1.0
 
   // Versioned path to the browser which is being loaded.
-  char* chrome_versioned_path;  // Required: v0.1
+  char* chrome_versioned_path;  // Required: v1.0
 
   // Information about the App Mode shortcut:
 
   // Path to the App Mode Loader application bundle originally run.
-  char* app_mode_bundle_path;  // Optional: v0.1
+  char* app_mode_bundle_path;  // Optional: v1.0
 
   // Short ID string, preferably derived from |app_mode_short_name|. Should be
   // safe for the file system.
-  char* app_mode_id;  // Required: v0.1
+  char* app_mode_id;  // Required: v1.0
 
   // Short (e.g., one-word) UTF8-encoded name for the shortcut.
-  char* app_mode_short_name;  // Optional: v0.1
+  char* app_mode_short_name;  // Optional: v1.0
 
   // Unrestricted (e.g., several-word) UTF8-encoded name for the shortcut.
-  char* app_mode_name;  // Optional: v0.1
+  char* app_mode_name;  // Optional: v1.0
 
   // URL for the shortcut. Must be a valid URL.
-  char* app_mode_url;  // Required: v0.1
+  char* app_mode_url;  // Required: v1.0
 };
 
 }  // namespace app_mode
