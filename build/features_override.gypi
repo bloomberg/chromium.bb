@@ -62,6 +62,7 @@
          'WTF_USE_ACCELERATED_COMPOSITING=1',
          'ENABLE_3D_RENDERING=1',
         ],
+        'use_accelerated_compositing': 1,
       }],
     ],
     # TODO: If the need arises, create a mechanism that will intelligently
