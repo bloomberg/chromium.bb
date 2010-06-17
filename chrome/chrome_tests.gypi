@@ -2436,18 +2436,19 @@
           ],  # 'dependencies'
           'conditions': [
             ['OS=="win"', {
-              'coverage_bundles': [
+              'dependencies': [
                 # Courgette has not been ported from Windows.
                 # Note build/win/chrome_win.croc uniquely has the
                 # courgette source directory in an include path.
                 '../courgette/courgette.gyp:courgette_unittests',
                 ]}],
             ['OS=="linux"', {
-              'coverage_bundles': [
-              # Placeholder; empty for now.
+              'dependencies': [
+                # Reason for disabling UI tests on non-Linux above.
+                'ui_tests',
               ]}],
             ['OS=="mac"', {
-              'coverage_bundles': [
+              'dependencies': [
               # Placeholder; empty for now.
               ]}],
           ],  # 'conditions'
