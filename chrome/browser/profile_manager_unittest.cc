@@ -114,9 +114,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
 
 #endif
 
-// TODO(timsteele): This is disabled while I try to track down a purify
-// regression (http://crbug.com/10553).
-TEST_F(ProfileManagerTest, DISABLED_CreateAndUseTwoProfiles) {
+TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   FilePath source_path;
   PathService::Get(chrome::DIR_TEST_DATA, &source_path);
   source_path = source_path.Append(FILE_PATH_LITERAL("profiles"));
