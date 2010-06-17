@@ -2,3 +2,5 @@
 IPCSyncChannelTest.ChattyServer
 # Hangs on Linux sometimes.  See http://crbug.com/22141
 IPCChannelTest.ChannelTest
+# Crashes under Valgrind. TODO(timurrrr): file a bug when crbug is working
+IPCSyncChannelTest.Multiple
