@@ -16,6 +16,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
+#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/thread_local.h"
 #include "base/utf_string_conversions.h"
@@ -1211,5 +1212,67 @@ HRESULT ReadStream(IStream* stream, size_t size, std::string* data) {
   }
 
   return hr;
+}
+
+bool ParseAttachExternalTabUrl(const std::wstring& url, uint64* cookie,
+                               gfx::Rect* dimensions, int* disposition) {
+  if (!StartsWith(url, kChromeAttachExternalTabPrefix, true)) {
+    DLOG(WARNING) << "Invalid url passed in:"
+                  << url.c_str();
+    return false;
+  }
+
+  if (!cookie || !dimensions || !disposition)
+    return false;
+
+  WStringTokenizer tokenizer(url, L"&");
+  // Skip over kChromeAttachExternalTabPrefix
+  tokenizer.GetNext();
+
+  // Read the following items in order.
+  // 1. cookie
+  // 2. disposition
+  // 3. dimension.x
+  // 4. dimension.y
+  // 5. dimension.width
+  // 6. dimension.height.
+  if (tokenizer.GetNext()) {
+    wchar_t* end_ptr = 0;
+    *cookie = _wcstoui64(tokenizer.token().c_str(), &end_ptr, 10);
+  } else {
+    return false;
+  }
+
+  if (tokenizer.GetNext()) {
+    *disposition = _wtoi(tokenizer.token().c_str());
+  } else {
+    return false;
+  }
+
+  if (tokenizer.GetNext()) {
+    dimensions->set_x(_wtoi(tokenizer.token().c_str()));
+  } else {
+    return false;
+  }
+
+  if (tokenizer.GetNext()) {
+    dimensions->set_y(_wtoi(tokenizer.token().c_str()));
+  } else {
+    return false;
+  }
+
+  if (tokenizer.GetNext()) {
+    dimensions->set_width(_wtoi(tokenizer.token().c_str()));
+  } else {
+    return false;
+  }
+
+  if (tokenizer.GetNext()) {
+    dimensions->set_height(_wtoi(tokenizer.token().c_str()));
+  } else {
+    return false;
+  }
+
+  return true;
 }
 

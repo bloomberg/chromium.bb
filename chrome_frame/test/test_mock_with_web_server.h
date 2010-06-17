@@ -106,6 +106,23 @@ ACTION_P4(DelaySendScanCode, loop, delay, c, mod) {
         simulate_input::SendScanCode, c, mod), delay);
 }
 
+ACTION_P5(ValidateWindowSize, mock, left, top, width, height) {
+  long actual_left = 0;
+  long actual_top = 0;
+  long actual_width = 0;
+  long actual_height = 0;
+
+  mock->web_browser2()->get_Left(&actual_left);
+  mock->web_browser2()->get_Top(&actual_top);
+  mock->web_browser2()->get_Width(&actual_width);
+  mock->web_browser2()->get_Height(&actual_height);
+
+  EXPECT_EQ(actual_left, left);
+  EXPECT_EQ(actual_top, top);
+  EXPECT_EQ(actual_width, width);
+  EXPECT_EQ(actual_height, height);
+}
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_MOCK_WITH_WEB_SERVER_H_

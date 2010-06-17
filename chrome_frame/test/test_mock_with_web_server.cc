@@ -371,6 +371,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   EXPECT_CALL(new_window_mock, OnLoad(testing::StrCaseEq(kWindowOpenPopupUrl)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&new_window_mock),
+          ValidateWindowSize(&new_window_mock, 10, 10, 250, 250),
           CloseBrowserMock(&new_window_mock)));
 
   EXPECT_CALL(new_window_mock, OnQuit())
@@ -389,6 +390,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
   ASSERT_TRUE(mock.web_browser2() != NULL);
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  ASSERT_TRUE(new_window_mock.web_browser2() != NULL);
 }
 
 const wchar_t kSubFrameUrl1[] =

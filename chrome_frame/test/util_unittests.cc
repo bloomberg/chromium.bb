@@ -112,3 +112,28 @@ TEST(UtilTests, GetTempInternetFiles) {
   FilePath path = GetIETemporaryFilesFolder();
   EXPECT_FALSE(path.empty());
 }
+
+TEST(UtilTests, ParseAttachTabUrlTest) {
+  std::wstring url = L"attach_external_tab&10&1&0&0&100&100";
+
+  uint64 cookie = 0;
+  gfx::Rect dimensions;
+  int disposition = 0;
+
+  EXPECT_TRUE(ParseAttachExternalTabUrl(url, &cookie, &dimensions,
+                                        &disposition));
+  EXPECT_EQ(10, cookie);
+  EXPECT_EQ(1, disposition);
+  EXPECT_EQ(0, dimensions.x());
+  EXPECT_EQ(0, dimensions.y());
+  EXPECT_EQ(100, dimensions.width());
+  EXPECT_EQ(100, dimensions.height());
+
+  url = L"http://www.foobar.com?&10&1&0&0&100&100";
+  EXPECT_FALSE(ParseAttachExternalTabUrl(url, &cookie, &dimensions,
+                                         &disposition));
+  url = L"attach_external_tab&10&1";
+  EXPECT_FALSE(ParseAttachExternalTabUrl(url, &cookie, &dimensions,
+                                         &disposition));
+}
+

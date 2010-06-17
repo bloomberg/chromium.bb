@@ -65,7 +65,8 @@ ChromeActiveDocument::ChromeActiveDocument()
     : first_navigation_(true),
       is_automation_client_reused_(false),
       popup_allowed_(false),
-      accelerator_table_(NULL) {
+      accelerator_table_(NULL),
+      is_new_navigation_(false) {
   TRACE_EVENT_BEGIN("chromeframe.createactivedocument", this, "");
 
   url_fetcher_.set_frame_busting(false);
@@ -518,6 +519,23 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
         SetFocus();
       } else {
         m_hWnd = Create(parent_window, position_rect, 0, 0, WS_EX_CLIENTEDGE);
+      }
+
+      ScopedComPtr<IWebBrowser2> web_browser2;
+      DoQueryService(SID_SWebBrowserApp, m_spClientSite,
+                     web_browser2.Receive());
+      if (web_browser2) {
+        if (!dimensions_.IsEmpty()) {
+          web_browser2->put_Width(dimensions_.width());
+          web_browser2->put_Height(dimensions_.height());
+          web_browser2->put_Left(dimensions_.x());
+          web_browser2->put_Top(dimensions_.y());
+          web_browser2->put_MenuBar(VARIANT_FALSE);
+          web_browser2->put_ToolBar(VARIANT_FALSE);
+
+          dimensions_.set_height(0);
+          dimensions_.set_width(0);
+        }
       }
     }
     SetObjectRects(&position_rect, &clip_rect);
@@ -976,14 +994,13 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
   std::string utf8_url;
 
   if (!is_new_navigation) {
-    WStringTokenizer tokenizer(url, L"&");
-    // Skip over kChromeAttachExternalTabPrefix
-    tokenizer.GetNext();
-
+    int disposition = 0;
     uint64 external_tab_cookie = 0;
-    if (tokenizer.GetNext()) {
-      wchar_t* end_ptr = 0;
-      external_tab_cookie = _wcstoui64(tokenizer.token().c_str(), &end_ptr, 10);
+
+    if (!ParseAttachExternalTabUrl(url, &external_tab_cookie, &dimensions_,
+                                   &disposition)) {
+      NOTREACHED() << "Failed to parse attach tab url:" << url;
+      return false;
     }
 
     if (external_tab_cookie == 0) {
@@ -991,8 +1008,10 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
       return false;
     }
 
+    is_new_navigation_ = false;
     automation_client_->AttachExternalTab(external_tab_cookie);
   } else {
+    is_new_navigation_ = true;
     // Initiate navigation before launching chrome so that the url will be
     // cached and sent with launch settings.
     if (url_.Length()) {

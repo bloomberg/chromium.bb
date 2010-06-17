@@ -454,6 +454,10 @@ END_EXEC_COMMAND_MAP()
   UrlmonUrlRequestManager::PrivacyInfo::PrivacyRecords::iterator
       next_privacy_record_;
 
+  // Dimensions of the window. Used only when opening popups.
+  gfx::Rect dimensions_;
+  // Set to true if the document was loaded by a window.open in chrome.
+  bool is_new_navigation_;
  public:
   ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
   OLEINPLACEFRAMEINFO frame_info_;

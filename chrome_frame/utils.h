@@ -18,7 +18,7 @@
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/thread.h"
-
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
 // utils.h : Various utility functions and classes
@@ -463,5 +463,14 @@ std::string Bscf2Str(DWORD flags);
 
 // Reads data from a stream into a string.
 HRESULT ReadStream(IStream* stream, size_t size, std::string* data);
+
+// Parses the attach external tab url, which comes in from Chrome in the course
+// of a window.open operation. The format of this URL is as below:-
+// gcf:attach_external_tab&n1&n2&x&y&width&height
+// n1 -> cookie, n2 -> disposition, x, y, width, height -> dimensions of the
+// window.
+// Returns true on success.
+bool ParseAttachExternalTabUrl(const std::wstring& url, uint64* cookie,
+                               gfx::Rect* dimensions, int* disposition);
 
 #endif  // CHROME_FRAME_UTILS_H_

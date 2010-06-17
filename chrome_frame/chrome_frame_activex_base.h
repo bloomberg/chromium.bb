@@ -444,8 +444,14 @@ END_MSG_MAP()
   virtual void OnAttachExternalTab(int tab_handle,
       const IPC::AttachExternalTabParams& params) {
     std::string url;
-    url = StringPrintf("%lsattach_external_tab&%ls&%d", kChromeProtocolPrefix,
-        Uint64ToWString(params.cookie).c_str(), params.disposition);
+    url = StringPrintf("%lsattach_external_tab&%ls&%d&%d&%d&%d&%d",
+                       kChromeProtocolPrefix,
+                       Uint64ToWString(params.cookie).c_str(),
+                       params.disposition,
+                       params.dimensions.x(),
+                       params.dimensions.y(),
+                       params.dimensions.width(),
+                       params.dimensions.height());
     HostNavigate(GURL(url), GURL(), params.disposition);
   }
 
