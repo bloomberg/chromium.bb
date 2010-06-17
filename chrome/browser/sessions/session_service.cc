@@ -431,8 +431,13 @@ SessionService::Handle SessionService::GetCurrentSession(
 void SessionService::Save() {
   bool had_commands = !pending_commands().empty();
   BaseSessionService::Save();
-  if (had_commands)
+  if (had_commands) {
     RecordSaveHistogramData();
+    NotificationService::current()->Notify(
+        NotificationType::SESSION_SERVICE_SAVED,
+        NotificationService::AllSources(),
+        NotificationService::NoDetails());
+  }
 }
 
 

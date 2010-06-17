@@ -981,6 +981,11 @@ class NotificationType {
     // The sync service is finished the configuration process.
     SYNC_CONFIGURE_DONE,
 
+    // The session service has been saved.  This notification type is only sent
+    // if there were new SessionService commands to save, and not for no-op save
+    // operations.
+    SESSION_SERVICE_SAVED,
+
     // Cookies -----------------------------------------------------------------
 
     // Sent when a cookie changes. The source is a Profile object, the details

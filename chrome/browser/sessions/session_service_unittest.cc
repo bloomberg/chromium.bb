@@ -16,13 +16,18 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/file_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class SessionServiceTest : public BrowserWithTestWindowTest {
+class SessionServiceTest : public BrowserWithTestWindowTest,
+                           public NotificationObserver {
  public:
-  SessionServiceTest() : window_bounds(0, 1, 2, 3) {}
+  SessionServiceTest() : window_bounds(0, 1, 2, 3), sync_save_count_(0){}
 
  protected:
   virtual void SetUp() {
@@ -40,6 +45,14 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
 
     service()->SetWindowType(window_id, Browser::TYPE_NORMAL);
     service()->SetWindowBounds(window_id, window_bounds, false);
+  }
+
+  // Upon notification, increment the sync_save_count variable
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    ASSERT_EQ(type.value, NotificationType::SESSION_SERVICE_SAVED);
+    sync_save_count_++;
   }
 
   virtual void TearDown() {
@@ -80,7 +93,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   // and the pinned state of the read back tab is returned.
   bool CreateAndWriteSessionWithOneTab(bool pinned_state, bool write_always) {
     SessionID tab_id;
-
     TabNavigation nav1(0, GURL("http://google.com"),
                        GURL("http://www.referrer.com"),
                        ASCIIToUTF16("abc"), "def",
@@ -115,6 +127,8 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   const gfx::Rect window_bounds;
 
   SessionID window_id;
+
+  int sync_save_count_;
 
   // Path used in testing.
   FilePath path_;
@@ -616,6 +630,15 @@ TEST_F(SessionServiceTest, GetCurrentSession) {
   GetCurrentSessionCallbackHandler handler;
   service()->GetCurrentSession(&consumer,
       NewCallback(&handler, &GetCurrentSessionCallbackHandler::OnGotSession));
+}
+
+// Test that the notification for SESSION_SERVICE_SAVED is working properly.
+TEST_F(SessionServiceTest, SavedSessionNotification) {
+  NotificationRegistrar registrar_;
+  registrar_.Add(this, NotificationType::SESSION_SERVICE_SAVED,
+                 NotificationService::AllSources());
+  service()->Save();
+  EXPECT_EQ(sync_save_count_, 1);
 }
 
 // Makes sure a tab closed by a user gesture is not restored.
