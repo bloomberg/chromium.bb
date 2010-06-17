@@ -10,7 +10,7 @@ set -eu
 # We use the trusted compiler because llvm-fake.py (used in the
 # untrusted compiler) doesn't support -nodefaultlibs.
 dir=$(pwd)
-cd ../../../../..
+cd ../../../..
 source tools/llvm/setup_arm_trusted_toolchain.sh
 topdir=$(pwd)
 cd $dir

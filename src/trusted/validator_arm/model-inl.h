@@ -68,8 +68,10 @@ inline uint32_t Instruction::bits(int hi, int lo) const {
    * Curiously, even at aggressive optimization levels, GCC 4.3.2 generates a
    * less-efficient sequence of ands, bics, and shifts.
    */
-  uint32_t mask = (1 << (hi + 1)) - 1;
-  return (_bits & mask) >> lo;
+  uint32_t right_justified = _bits >> lo;
+  int bit_count = hi - lo + 1;
+  uint32_t mask = (1 << bit_count) - 1;
+  return right_justified & mask;
 }
 
 inline const Register Instruction::reg(int hi, int lo) const {

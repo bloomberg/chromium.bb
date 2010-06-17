@@ -14,6 +14,20 @@
 
 namespace nacl_arm_dec {
 
+/*
+ * A utility function: given a modified-immediate-form instruction, extracts
+ * the immediate value.  This is used to analyze BIC and TST.
+ *
+ * This encoding is described in Section A5.2.4.
+ */
+static uint32_t get_modified_immediate(Instruction i) {
+  int rotation = i.bits(11, 8) * 2;
+  uint32_t value = i.bits(7, 0);
+
+  if (rotation == 0) return value;
+
+  return (value >> rotation) | (value << (32 - rotation));
+}
 
 /*
  * Breakpoint
@@ -47,15 +61,18 @@ RegisterList Test::defs(const Instruction i) const {
 }
 
 
-bool ImmediateBic::clears_bits(const Instruction i, uint32_t mask) const {
-  // This implements the Modified Immediate field described in Section A5.2.4.
-  // We haven't pulled this out into a utility function because we only use it
-  // once.
-  int rotation = i.bits(11, 8) * 2;
-  uint32_t value = i.bits(7, 0);
+bool TestImmediate::sets_Z_if_bits_clear(Instruction i,
+                                         Register r,
+                                         uint32_t mask) const {
+  // Rn = 19:16 for TST(immediate) - section A8.6.230
+  return i.reg(19, 16) == r
+      && (get_modified_immediate(i) & mask) == mask
+      && defs(i)[kRegisterFlags];
+}
 
-  uint32_t immediate = (value >> rotation) | (value << (32 - rotation));
-  return (immediate & mask) == mask;
+
+bool ImmediateBic::clears_bits(const Instruction i, uint32_t mask) const {
+  return (get_modified_immediate(i) & mask) == mask;
 }
 
 
