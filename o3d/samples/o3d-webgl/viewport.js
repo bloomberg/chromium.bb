@@ -38,7 +38,7 @@
  * area. The depth range is represented by an array in the format
  * [min Z, max Z]. The depth range provides the mapping of the clip space
  * coordinates into normalized z buffer coordinates.
- * 
+ *
  * @param {o3d.math.Float4} viewport The viewport setting.
  * @param {o3d.math.Float2} depthRange ParamFloat2 The depth range setting.
  * @constructor
@@ -80,7 +80,8 @@ o3d.ParamObject.setUpO3DParam_(o3d.Viewport, 'depthRange', 'ParamFloat2');
  */
 o3d.Viewport.prototype.before = function() {
   var x = this.viewport[0] * this.gl.displayInfo.width;
-  var y = this.viewport[1] * this.gl.displayInfo.height;
+  var y = (1 - this.viewport[1] - this.viewport[3]) *
+      this.gl.displayInfo.height;
   var width = this.viewport[2] * this.gl.displayInfo.width;
   var height = this.viewport[3] * this.gl.displayInfo.height;
 
