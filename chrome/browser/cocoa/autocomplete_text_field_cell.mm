@@ -27,6 +27,9 @@ namespace {
 
 const CGFloat kBaselineAdjust = 2.0;
 
+// Matches the clipping radius of |GradientButtonCell|.
+const CGFloat kCornerRadius = 4.0;
+
 // How far to offset the keyword token into the field.
 const NSInteger kKeywordXOffset = 3;
 
@@ -194,6 +197,10 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 
 - (CGFloat)baselineAdjust {
   return kBaselineAdjust;
+}
+
+- (CGFloat)cornerRadius {
+  return kCornerRadius;
 }
 
 - (void)setKeywordString:(NSString*)fullString

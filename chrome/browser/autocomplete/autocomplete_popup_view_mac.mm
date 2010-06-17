@@ -15,7 +15,6 @@
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
-#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
 namespace {
 
@@ -30,6 +29,9 @@ const int kCellHeightAdjust = 7.0;
 // How to round off the popup's corners.  Goal is to match star and go
 // buttons.
 const CGFloat kPopupRoundingRadius = 3.5;
+
+// Gap between the field and the popup.
+const CGFloat kPopupFieldGap = 2.0;
 
 // How opaque the popup window should be.  This matches Windows (see
 // autocomplete_popup_contents_view.cc, kGlassPopupTransparency).
@@ -63,6 +65,11 @@ const CGFloat kFieldVisualInset = 1.0;
 // which has to be backed out to line the borders up with the field
 // borders.
 const CGFloat kWindowBorderWidth = 1.0;
+
+// |AutocompleteButtonCell| and |AutocompleteTextFieldCell| draw their
+// text somewhat differently.  The image needs to be adjusted slightly
+// downward to align with the text the same.
+const CGFloat kImageBaselineAdjust = 1.0;
 
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
@@ -318,8 +325,11 @@ void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   popupFrame.size.height = matrixHeight * [popup_ userSpaceScaleFactor];
   popupFrame.origin.y -= NSHeight(popupFrame) + kWindowBorderWidth;
 
-  // Inset to account for the horizontal border.
+  // Inset to account for the horizontal border drawn by the window.
   popupFrame = NSInsetRect(popupFrame, kWindowBorderWidth, 0.0);
+
+  // Leave a gap between the popup and the field.
+  popupFrame.origin.y -= kPopupFieldGap * [popup_ userSpaceScaleFactor];
 
   // Do nothing if the popup is already animating to the given |frame|.
   if (NSEqualRects(popupFrame, targetPopupFrame_))
@@ -482,7 +492,7 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   if (image) {
     NSRect imageRect = cellFrame;
     imageRect.size = [image size];
-    imageRect.origin.y +=
+    imageRect.origin.y += kImageBaselineAdjust +
         floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
     imageRect.origin.x += kLeftRightMargin;
     [image drawInRect:imageRect
@@ -688,15 +698,10 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 // This handles drawing the decorations of the rounded popup window,
 // calling on NSMatrix to draw the actual contents.
 - (void)drawRect:(NSRect)rect {
-  // Apparently this expects flipped coordinates, because in order to
-  // round the bottom corners visually, I need to specify the top
-  // corners here.
   NSBezierPath* path =
-     [NSBezierPath gtm_bezierPathWithRoundRect:[self bounds]
-                           topLeftCornerRadius:kPopupRoundingRadius
-                          topRightCornerRadius:kPopupRoundingRadius
-                        bottomLeftCornerRadius:0.0
-                       bottomRightCornerRadius:0.0];
+     [NSBezierPath bezierPathWithRoundedRect:[self bounds]
+                                     xRadius:kPopupRoundingRadius
+                                     yRadius:kPopupRoundingRadius];
 
   // Draw the matrix clipped to our border.
   [NSGraphicsContext saveGraphicsState];

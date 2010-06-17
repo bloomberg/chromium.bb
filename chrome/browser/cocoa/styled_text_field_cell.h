@@ -17,6 +17,9 @@
 // override as needed.
 - (CGFloat)baselineAdjust;
 
+// Radius of the corners of the field.  Defaults to square corners (0.0).
+- (CGFloat)cornerRadius;
+
 // Return the portion of the cell to show the text cursor over.  The default
 // implementation returns the full |cellFrame|.  Subclasses should override this
 // method if they add any decorations.

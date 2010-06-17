@@ -14,29 +14,41 @@
 namespace {
 
 NSBezierPath* RectPathWithInset(const NSRect frame,
-                                const CGFloat inset) {
+                                const CGFloat inset,
+                                const CGFloat outerRadius) {
   const NSRect insetFrame = NSInsetRect(frame, inset, inset);
-  return [NSBezierPath bezierPathWithRect:insetFrame];
+  if (outerRadius > 0.0) {
+    return [NSBezierPath bezierPathWithRoundedRect:insetFrame
+                                           xRadius:outerRadius - inset
+                                           yRadius:outerRadius - inset];
+  } else {
+    return [NSBezierPath bezierPathWithRect:insetFrame];
+  }
 }
 
 // Similar to |NSRectFill()|, additionally sets |color| as the fill
-// color.
+// color.  |outerRadius| greater than 0.0 uses rounded corners, with
+// inset backed out of the radius.
 void FillRectWithInset(const NSRect frame,
                        const CGFloat inset,
+                       const CGFloat outerRadius,
                        NSColor* color) {
-  NSBezierPath* path = RectPathWithInset(frame, inset);
+  NSBezierPath* path = RectPathWithInset(frame, inset, outerRadius);
   [color setFill];
   [path fill];
 }
 
 // Similar to |NSFrameRectWithWidth()|, additionally sets |color| as
-// the stroke color (as opposed to the fill color).
+// the stroke color (as opposed to the fill color).  |outerRadius|
+// greater than 0.0 uses rounded corners, with inset backed out of the
+// radius.
 void FrameRectWithInset(const NSRect frame,
                         const CGFloat inset,
+                        const CGFloat outerRadius,
                         const CGFloat lineWidth,
                         NSColor* color) {
   const CGFloat finalInset = inset + (lineWidth / 2.0);
-  NSBezierPath* path = RectPathWithInset(frame, finalInset);
+  NSBezierPath* path = RectPathWithInset(frame, finalInset, outerRadius);
   [color setStroke];
   [path setLineWidth:lineWidth];
   [path stroke];
@@ -66,6 +78,10 @@ private:
 @implementation StyledTextFieldCell
 
 - (CGFloat)baselineAdjust {
+  return 0.0;
+}
+
+- (CGFloat)cornerRadius {
   return 0.0;
 }
 
@@ -105,6 +121,7 @@ private:
   // TODO(shess): This inset is also reflected by |kFieldVisualInset|
   // in autocomplete_popup_view_mac.mm.
   const NSRect frame = NSInsetRect(cellFrame, 0, 1);
+  const CGFloat radius = [self cornerRadius];
 
   // Paint button background image if there is one (otherwise the border won't
   // look right).
@@ -121,7 +138,7 @@ private:
       // NOTE(shess): This seems like it should be using a 0.0 inset,
       // but AFAICT using a 0.5 inset is important in mixing the
       // toolbar background and the omnibox background.
-      FillRectWithInset(frame, 0.5, backgroundImageColor);
+      FillRectWithInset(frame, 0.5, radius, backgroundImageColor);
     }
 
     // Draw the outer stroke (over the background).
@@ -130,11 +147,11 @@ private:
         active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
                  BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true);
-    FrameRectWithInset(frame, 0.0, 1.0, strokeColor);
+    FrameRectWithInset(frame, 0.0, radius, 1.0, strokeColor);
   }
 
   // Fill interior with background color.
-  FillRectWithInset(frame, 1.0, [self backgroundColor]);
+  FillRectWithInset(frame, 1.0, radius, [self backgroundColor]);
 
   // Draw the shadow.  For the rounded-rect case, the shadow needs to
   // slightly turn in at the corners.  |shadowFrame| is at the same
@@ -143,17 +160,17 @@ private:
   // will clip the bottom and right edges (and corner).
   {
     ScopedSaveGraphicsState state;
-    [RectPathWithInset(frame, 1.0) addClip];
+    [RectPathWithInset(frame, 1.0, radius) addClip];
     const NSRect shadowFrame = NSOffsetRect(frame, 0.5, 0.5);
     NSColor* shadowShade = [NSColor colorWithCalibratedWhite:0.0 alpha:0.05];
-    FrameRectWithInset(shadowFrame, 0.5, 1.0, shadowShade);
+    FrameRectWithInset(shadowFrame, 0.5, radius - 0.5, 1.0, shadowShade);
   }
 
   // Draw the focus ring if needed.
   if ([self showsFirstResponder]) {
     NSColor* color =
         [[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:0.5];
-    FrameRectWithInset(frame, 0.0, 2.0, color);
+    FrameRectWithInset(frame, 0.0, radius, 2.0, color);
   }
 
   [self drawInteriorWithFrame:cellFrame inView:controlView];
