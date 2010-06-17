@@ -100,23 +100,35 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
  private:
   // Returns a list of values from the stored profiles that match |type| and the
-  // value of |field| and returns the labels of the matching profiles.
-  void GetProfileSuggestions(const webkit_glue::FormField& field,
-                             AutoFillFieldType type,
+  // value of |field| and returns the labels of the matching profiles. |labels|
+  // is filled with the Profile label and possibly the last four digits of a
+  // corresponding credit card: 'Home; 1258' - Home is the Profile label and
+  // 1258 is the last four digits of the credit card.
+  void GetProfileSuggestions(FormStructure* form,
+                             const webkit_glue::FormField& field,
+                             AutoFillType type,
                              std::vector<string16>* values,
                              std::vector<string16>* labels);
 
+  // Same as GetProfileSuggestions, but the list of stored profiles is limited
+  // to the linked billing addresses from the list of credit cards.
+  void GetBillingProfileSuggestions(const webkit_glue::FormField& field,
+                                    AutoFillType type,
+                                    std::vector<string16>* values,
+                                    std::vector<string16>* labels);
+
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
-  void GetCreditCardSuggestions(const webkit_glue::FormField& field,
-                                AutoFillFieldType type,
+  void GetCreditCardSuggestions(FormStructure* form,
+                                const webkit_glue::FormField& field,
+                                AutoFillType type,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels);
 
   // Set |field| argument's value based on |type| and contents of the
   // |credit_card|.  The |type| field is expected to have main group type of
   // ADDRESS_BILLING.  The address information is retrieved from the billing
-  // profile asscociated with the |credit_card|, if there is one set.
+  // profile associated with the |credit_card|, if there is one set.
   void FillBillingFormField(const CreditCard* credit_card,
                             AutoFillType type,
                             webkit_glue::FormField* field);

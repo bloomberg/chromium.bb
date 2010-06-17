@@ -34,6 +34,8 @@ class CreditCard : public FormGroup {
   string16 ObfuscatedNumber() const;
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
   string16 PreviewSummary() const;
+  // The last four digits of the credit card number.
+  string16 LastFourDigits() const;
 
   const string16& billing_address() const { return billing_address_; }
   const string16& shipping_address() const { return shipping_address_; }

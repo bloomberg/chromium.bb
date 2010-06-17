@@ -66,6 +66,14 @@ class FormStructure {
   // is not empty.
   bool HasAutoFillableValues() const;
 
+  // Returns true if at least one of the form fields is a billing field, which
+  // includes billing address fields and credit card fields.
+  bool HasBillingFields() const;
+
+  // Returns true if at least one of the form fields is a non-billing field,
+  // which includes billing address fields and credit card fields.
+  bool HasNonBillingFields() const;
+
   // Resets |autofill_count_| and counts the number of auto-fillable fields.
   // This is used when we receive server data for form fields.  At that time,
   // we may have more known fields than just the number of fields we matched

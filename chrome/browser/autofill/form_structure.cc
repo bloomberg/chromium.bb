@@ -245,6 +245,47 @@ bool FormStructure::HasAutoFillableValues() const {
     if (field && !field->IsEmpty() && field->IsFieldFillable())
       return true;
   }
+
+  return false;
+}
+
+// TODO(jhawkins): Cache this result.
+bool FormStructure::HasBillingFields() const {
+  for (std::vector<AutoFillField*>::const_iterator iter = begin();
+       iter != end(); ++iter) {
+    if (!*iter)
+      return false;
+
+    AutoFillField* field = *iter;
+    if (!field)
+      continue;
+
+    AutoFillType type(field->type());
+    if (type.group() == AutoFillType::ADDRESS_BILLING ||
+        type.group() == AutoFillType::CREDIT_CARD)
+      return true;
+  }
+
+  return false;
+}
+
+// TODO(jhawkins): Cache this result.
+bool FormStructure::HasNonBillingFields() const {
+  for (std::vector<AutoFillField*>::const_iterator iter = begin();
+       iter != end(); ++iter) {
+    if (!*iter)
+      return false;
+
+    AutoFillField* field = *iter;
+    if (!field)
+      continue;
+
+    AutoFillType type(field->type());
+    if (type.group() != AutoFillType::ADDRESS_BILLING &&
+        type.group() != AutoFillType::CREDIT_CARD)
+      return true;
+  }
+
   return false;
 }
 

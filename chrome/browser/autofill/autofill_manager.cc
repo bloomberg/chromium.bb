@@ -6,7 +6,8 @@
 
 #include <string>
 
-#include "base/command_line.h"
+#include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
@@ -34,6 +35,8 @@ const int kAutoFillPhoneNumberPrefixOffset = 0;
 const int kAutoFillPhoneNumberPrefixCount = 3;
 const int kAutoFillPhoneNumberSuffixOffset = 3;
 const int kAutoFillPhoneNumberSuffixCount = 4;
+
+const string16::value_type kLabelSeparator[] = {';',' ',0};
 
 }  // namespace
 
@@ -130,37 +133,48 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
       personal_data_->credit_cards().empty())
     return false;
 
-  AutoFillField* form_field = NULL;
-  for (std::vector<FormStructure*>::iterator form = form_structures_.begin();
-       form != form_structures_.end(); ++form) {
+  // Loops through the cached FormStructures looking for the FormStructure that
+  // contains |field| and the associated AutoFillFieldType.
+  FormStructure* form = NULL;
+  AutoFillField* autofill_field = NULL;
+  for (std::vector<FormStructure*>::iterator form_iter =
+           form_structures_.begin();
+       form_iter != form_structures_.end(); ++form_iter) {
+    form = *form_iter;
+
     // Don't send suggestions for forms that aren't auto-fillable.
-    if (!(*form)->IsAutoFillable())
+    if (!form->IsAutoFillable())
       continue;
 
-    for (std::vector<AutoFillField*>::const_iterator iter = (*form)->begin();
-         iter != (*form)->end(); ++iter) {
+    for (std::vector<AutoFillField*>::const_iterator iter = form->begin();
+         iter != form->end(); ++iter) {
       // The field list is terminated with a NULL AutoFillField, so don't try to
       // dereference it.
       if (!*iter)
         break;
 
       if ((**iter) == field) {
-        form_field = *iter;
+        autofill_field = *iter;
         break;
       }
     }
   }
 
-  if (form_field == NULL)
+  if (autofill_field == NULL)
     return false;
 
   std::vector<string16> values;
   std::vector<string16> labels;
+  AutoFillType type(autofill_field->type());
 
-  if (AutoFillType(form_field->type()).group() != AutoFillType::CREDIT_CARD)
-    GetProfileSuggestions(field, form_field->type(), &values, &labels);
+  if (type.group() == AutoFillType::CREDIT_CARD)
+    GetCreditCardSuggestions(form, field, type, &values, &labels);
+  else if (type.group() == AutoFillType::ADDRESS_BILLING)
+    GetBillingProfileSuggestions(field, type, &values, &labels);
   else
-    GetCreditCardSuggestions(field, form_field->type(), &values, &labels);
+    GetProfileSuggestions(form, field, type, &values, &labels);
+
+  DCHECK_EQ(values.size(), labels.size());
 
   // No suggestions.
   if (values.empty())
@@ -170,6 +184,7 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   return true;
 }
 
+// TODO(jhawkins): Remove the |value| parameter.
 bool AutoFillManager::FillAutoFillFormData(int query_id,
                                            const FormData& form,
                                            const string16& value,
@@ -183,35 +198,66 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
 
   const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
   const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+
+  // No data to return if the profiles are empty.
   if (profiles.empty() && credit_cards.empty())
     return false;
 
-  // Find profile that matches the |value| and |label| in question.
-  const AutoFillProfile* profile = NULL;
-  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
-       iter != profiles.end(); ++iter) {
-    if ((*iter)->Label() != label)
-      continue;
-
-    FieldTypeSet field_types;
-    (*iter)->GetPossibleFieldTypes(value, &field_types);
-    for (FieldTypeSet::const_iterator type = field_types.begin();
-         type != field_types.end(); ++type) {
-      if ((*iter)->GetFieldText(AutoFillType(*type)) == value) {
-        profile = *iter;
-        break;
-      }
+  // Find the FormStructure that corresponds to |form|.
+  FormData result = form;
+  FormStructure* form_structure = NULL;
+  for (std::vector<FormStructure*>::const_iterator iter =
+           form_structures_.begin();
+       iter != form_structures_.end(); ++iter) {
+    if (**iter == form) {
+      form_structure = *iter;
+      break;
     }
   }
 
-  // Only look for credit card info if we're not filling profile.
+  if (!form_structure)
+    return false;
+
+  // No data to return if there are no auto-fillable fields.
+  if (!form_structure->autofill_count())
+    return false;
+
+  // |cc_digits| will contain the last four digits of a credit card number only
+  // if the form has billing fields.
+  string16 profile_label = label;
+  string16 cc_digits;
+
+  // If the form has billing fields, |label| will contain at least one "; "
+  // followed by the last four digits of a credit card number.
+  if (form_structure->HasBillingFields()) {
+    // We must search for the last "; " as it's possible the profile label
+    // proper can contain this sequence of characters.
+    size_t index = label.find_last_of(kLabelSeparator);
+    if (index != string16::npos) {
+      profile_label = label.substr(0, index - 1);
+
+      size_t cc_index = index + 1;
+      cc_digits = label.substr(cc_index);
+    }
+  }
+
+  // Find the profile that matches the |profile_label|.
+  const AutoFillProfile* profile = NULL;
+  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    if ((*iter)->Label() == profile_label) {
+      profile = *iter;
+    }
+  }
+
+  // Don't look for a matching credit card if we fully-matched the profile using
+  // the entire label.
   const CreditCard* credit_card = NULL;
-  if (!profile) {
+  if (!cc_digits.empty()) {
+    // Find the credit card that matches the |cc_label|.
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
          iter != credit_cards.end(); ++iter) {
-      // Labels are unique, so we only need to verify the label for the credit
-      // card.
-      if ((*iter)->Label() == label) {
+      if ((*iter)->LastFourDigits() == cc_digits) {
         credit_card = *iter;
         break;
       }
@@ -221,56 +267,44 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
   if (!profile && !credit_card)
     return false;
 
-  // We fill either the profile or the credit card, not both.
-  DCHECK((profile && !credit_card) || (!profile && credit_card));
+  // The list of fields in |form_structure| and |result.fields| often match
+  // directly and we can fill these corresponding fields; however, when the
+  // |form_structure| and |result.fields| do not match directly we search
+  // ahead in the |form_structure| for the matching field.
+  // See unit tests: AutoFillManagerTest.FormChangesRemoveField and
+  // AutoFillManagerTest.FormChangesAddField for usage.
+  for (size_t i = 0, j = 0;
+       i < form_structure->field_count() && j < result.fields.size();
+       j++) {
+    size_t k = i;
 
-  FormData result = form;
-  for (std::vector<FormStructure*>::const_iterator iter =
-           form_structures_.begin();
-       iter != form_structures_.end(); ++iter) {
-    const FormStructure* form_structure = *iter;
-    if (*form_structure != form)
+    // Search forward in the |form_structure| for a corresponding field.
+    while (k < form_structure->field_count() &&
+           *form_structure->field(k) != result.fields[j]) {
+      k++;
+    }
+
+    // If we've found a match then fill the |result| field with the found
+    // field in the |form_structure|.
+    if (k >= form_structure->field_count())
       continue;
 
-    // The list of fields in |form_structure| and |result.fields| often match
-    // directly and we can fill these corresponding fields; however, when the
-    // |form_structure| and |result.fields| do not match directly we search
-    // ahead in the |form_structure| for the matching field.
-    // See unit tests: AutoFillManagerTest.FormChangesRemoveField and
-    // AutoFillManagerTest.FormChangesAddField for usage.
-    for (size_t i = 0, j = 0;
-         i < form_structure->field_count() && j < result.fields.size();
-         j++) {
-      size_t k = i;
-
-      // Search forward in the |form_structure| for a corresponding field.
-      while (k < form_structure->field_count() &&
-             *form_structure->field(k) != result.fields[j]) {
-        k++;
-      }
-
-      // If we've found a match then fill the |result| field with the found
-      // field in the |form_structure|.
-      if (k >= form_structure->field_count())
-        continue;
-
-      const AutoFillField* field = form_structure->field(k);
-      AutoFillType autofill_type(field->type());
-      if (credit_card &&
-          autofill_type.group() == AutoFillType::CREDIT_CARD) {
-        result.fields[i].set_value(
-            credit_card->GetFieldText(autofill_type));
-      } else if (credit_card &&
-                 autofill_type.group() == AutoFillType::ADDRESS_BILLING) {
-        FillBillingFormField(credit_card, autofill_type, &result.fields[j]);
-      } else if (profile) {
-        FillFormField(profile, autofill_type, &result.fields[j]);
-      }
-
-      // We found a matching field in the |form_structure| so we
-      // proceed to the next |result| field, and the next |form_structure|.
-      ++i;
+    const AutoFillField* field = form_structure->field(k);
+    AutoFillType autofill_type(field->type());
+    if (credit_card &&
+        autofill_type.group() == AutoFillType::CREDIT_CARD) {
+      result.fields[i].set_value(
+          credit_card->GetFieldText(autofill_type));
+    } else if (credit_card &&
+               autofill_type.group() == AutoFillType::ADDRESS_BILLING) {
+      FillBillingFormField(credit_card, autofill_type, &result.fields[j]);
+    } else if (profile) {
+      FillFormField(profile, autofill_type, &result.fields[j]);
     }
+
+    // We found a matching field in the |form_structure| so we
+    // proceed to the next |result| field, and the next |form_structure|.
+    ++i;
   }
 
   host->AutoFillFormDataFilled(query_id, result);
@@ -400,8 +434,9 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
   DCHECK(tab_contents);
 }
 
-void AutoFillManager::GetProfileSuggestions(const FormField& field,
-                                            AutoFillFieldType type,
+void AutoFillManager::GetProfileSuggestions(FormStructure* form,
+                                            const FormField& field,
+                                            AutoFillType type,
                                             std::vector<string16>* values,
                                             std::vector<string16>* labels) {
   const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
@@ -410,37 +445,110 @@ void AutoFillManager::GetProfileSuggestions(const FormField& field,
     AutoFillProfile* profile = *iter;
 
     // The value of the stored data for this field type in the |profile|.
-    string16 profile_field_value = profile->GetFieldText(AutoFillType(type));
+    string16 profile_field_value = profile->GetFieldText(type);
 
     if (!profile_field_value.empty() &&
         StartsWith(profile_field_value, field.value(), false)) {
-      values->push_back(profile_field_value);
-      labels->push_back(profile->Label());
+      if (!form->HasBillingFields()) {
+        values->push_back(profile_field_value);
+        labels->push_back(profile->Label());
+      } else {
+        for (std::vector<CreditCard*>::const_iterator cc =
+                 personal_data_->credit_cards().begin();
+             cc != personal_data_->credit_cards().end(); ++cc) {
+          values->push_back(profile_field_value);
+
+          string16 label = profile->Label() + kLabelSeparator +
+                           (*cc)->LastFourDigits();
+          labels->push_back(label);
+        }
+      }
     }
   }
 }
 
-void AutoFillManager::GetCreditCardSuggestions(const FormField& field,
-                                               AutoFillFieldType type,
+void AutoFillManager::GetBillingProfileSuggestions(
+    const FormField& field,
+    AutoFillType type,
+    std::vector<string16>* values,
+    std::vector<string16>* labels) {
+  std::vector<CreditCard*> matching_creditcards;
+  std::vector<AutoFillProfile*> matching_profiles;
+  std::vector<string16> cc_values;
+  std::vector<string16> cc_labels;
+
+  for (std::vector<CreditCard*>::const_iterator cc =
+           personal_data_->credit_cards().begin();
+       cc != personal_data_->credit_cards().end(); ++cc) {
+    string16 label = (*cc)->billing_address();
+    AutoFillProfile* billing_profile = NULL;
+
+    // The value of the stored data for this field type in the |profile|.
+    string16 profile_field_value;
+
+    for (std::vector<AutoFillProfile*>::const_iterator iter =
+             personal_data_->profiles().begin();
+         iter != personal_data_->profiles().end(); ++iter) {
+      AutoFillProfile* profile = *iter;
+
+      // This assumes that labels are unique.
+      if (profile->Label() == label &&
+          !profile->GetFieldText(type).empty() &&
+          StartsWith(profile->GetFieldText(type), field.value(), false)) {
+        billing_profile = profile;
+        break;
+      }
+    }
+
+    if (!billing_profile)
+      continue;
+
+    for (std::vector<AutoFillProfile*>::const_iterator iter =
+             personal_data_->profiles().begin();
+         iter != personal_data_->profiles().end(); ++iter) {
+      values->push_back(billing_profile->GetFieldText(type));
+
+      string16 label = (*iter)->Label() +
+                       ASCIIToUTF16("; ") +
+                       (*cc)->LastFourDigits();
+      labels->push_back(label);
+    }
+  }
+}
+
+void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
+                                               const FormField& field,
+                                               AutoFillType type,
                                                std::vector<string16>* values,
                                                std::vector<string16>* labels) {
-  // TODO(jhawkins): Only return suggestions for the credit card number until
-  // the AutoFill dropdown is redesigned to show a credit card icon.
-  if (type != CREDIT_CARD_NUMBER)
-    return;
-
-  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
-  for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
-       iter != credit_cards.end(); ++iter) {
+  for (std::vector<CreditCard*>::const_iterator iter =
+           personal_data_->credit_cards().begin();
+       iter != personal_data_->credit_cards().end(); ++iter) {
     CreditCard* credit_card = *iter;
 
     // The value of the stored data for this field type in the |credit_card|.
     string16 creditcard_field_value =
-        credit_card->GetFieldText(AutoFillType(type));
+        credit_card->GetFieldText(type);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field.value(), false)) {
-      values->push_back(credit_card->ObfuscatedNumber());
-      labels->push_back(credit_card->Label());
+      if (type.field_type() == CREDIT_CARD_NUMBER)
+        creditcard_field_value = credit_card->ObfuscatedNumber();
+
+      if (!form->HasNonBillingFields()) {
+        values->push_back(creditcard_field_value);
+        labels->push_back(credit_card->Label());
+      } else {
+        for (std::vector<AutoFillProfile*>::const_iterator iter =
+                 personal_data_->profiles().begin();
+             iter != personal_data_->profiles().end(); ++iter) {
+          values->push_back(creditcard_field_value);
+
+          string16 label = (*iter)->Label() +
+                           ASCIIToUTF16("; ") +
+                           credit_card->LastFourDigits();
+          labels->push_back(label);
+        }
+      }
     }
   }
 }

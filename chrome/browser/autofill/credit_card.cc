@@ -236,6 +236,15 @@ string16 CreditCard::PreviewSummary() const {
   return preview;
 }
 
+string16 CreditCard::LastFourDigits() const {
+  static const size_t kNumLastDigits = 4;
+
+  if (number().size() < kNumLastDigits)
+    return string16();
+
+  return number().substr(number().size() - kNumLastDigits, kNumLastDigits);
+}
+
 void CreditCard::operator=(const CreditCard& source) {
   number_ = source.number_;
   name_on_card_ = source.name_on_card_;

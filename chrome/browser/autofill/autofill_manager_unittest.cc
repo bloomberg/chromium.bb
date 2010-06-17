@@ -49,6 +49,16 @@ class TestPersonalDataManager : public PersonalDataManager {
     return NULL;
   }
 
+  void AddSemicolonAutoFillProfile() {
+    AutoFillProfile* profile = new AutoFillProfile;
+    autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
+                                      "flatlander@gmail.com", "MCA",
+                                      "916 16th St.", "Apt. 6", "Lubbock",
+                                      "Texas", "79401", "USA",
+                                      "12345678901", "");
+    web_profiles_->push_back(profile);
+  }
+
  private:
   void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
     AutoFillProfile* profile = new AutoFillProfile;
@@ -105,6 +115,10 @@ class TestAutoFillManager : public AutoFillManager {
     return test_personal_data_->GetLabeledProfile(label);
   }
 
+  void AddSemicolonAutoFillProfile() {
+    test_personal_data_->AddSemicolonAutoFillProfile();
+  }
+
  private:
   scoped_refptr<TestPersonalDataManager> test_personal_data_;
 
@@ -148,14 +162,6 @@ void CreateTestFormData(FormData* form) {
   CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
   form->fields.push_back(field);
   CreateTestFormField("Email", "email", "", "text", &field);
-  form->fields.push_back(field);
-  CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-  form->fields.push_back(field);
-  CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
-  form->fields.push_back(field);
-  CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
-  form->fields.push_back(field);
-  CreateTestFormField("", "ccyear", "", "text", &field);
   form->fields.push_back(field);
 }
 
@@ -243,6 +249,10 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
     return true;
   }
 
+  void AddSemicolonAutoFillProfile() {
+    autofill_manager_->AddSemicolonAutoFillProfile();
+  }
+
  protected:
   scoped_ptr<TestAutoFillManager> autofill_manager_;
 
@@ -312,7 +322,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   FormData form;
-  CreateTestFormData(&form);
+  CreateTestFormDataBilling(&form);
 
   // Set up our FormStructures.
   std::vector<FormData> forms;
@@ -333,17 +343,25 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   std::vector<string16> labels;
   EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
   EXPECT_EQ(kPageID, page_id);
-  ASSERT_EQ(2U, values.size());
+  ASSERT_EQ(6U, values.size());
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[0]);
-  EXPECT_EQ(ASCIIToUTF16("************8765"), values[1]);
-  ASSERT_EQ(2U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("First"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Second"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("************3456"), values[1]);
+  EXPECT_EQ(ASCIIToUTF16("************3456"), values[2]);
+  EXPECT_EQ(ASCIIToUTF16("************8765"), values[3]);
+  EXPECT_EQ(ASCIIToUTF16("************8765"), values[4]);
+  EXPECT_EQ(ASCIIToUTF16("************8765"), values[5]);
+  ASSERT_EQ(6U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Home; 8765"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Work; 8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; 8765"), labels[5]);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   FormData form;
-  CreateTestFormData(&form);
+  CreateTestFormDataBilling(&form);
 
   // Set up our FormStructures.
   std::vector<FormData> forms;
@@ -364,15 +382,19 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   std::vector<string16> labels;
   EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
   EXPECT_EQ(kPageID, page_id);
-  ASSERT_EQ(1U, values.size());
+  ASSERT_EQ(3U, values.size());
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[0]);
-  ASSERT_EQ(1U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("First"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("************3456"), values[1]);
+  EXPECT_EQ(ASCIIToUTF16("************3456"), values[2]);
+  ASSERT_EQ(3U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   FormData form;
-  CreateTestFormData(&form);
+  CreateTestFormDataBilling(&form);
 
   // Set up our FormStructures.
   std::vector<FormData> forms;
@@ -384,23 +406,144 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
+  CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
+
+  // Test that we sent the right message to the renderer.
   int page_id = 0;
   std::vector<string16> values;
   std::vector<string16> labels;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  EXPECT_EQ(kPageID, page_id);
+  ASSERT_EQ(6U, values.size());
+  EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[1]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[2]);
+  EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[3]);
+  EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[4]);
+  EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[5]);
+  ASSERT_EQ(6U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Home; 8765"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Work; 8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; 8765"), labels[5]);
+}
+
+TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
+  AddSemicolonAutoFillProfile();
+
+  FormData form;
+  CreateTestFormDataBilling(&form);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+
+  webkit_glue::FormField field;
   CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
-  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
 
-  CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
-  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
-
-  CreateTestFormField("", "ccyear", "", "text", &field);
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
-  EXPECT_FALSE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  EXPECT_EQ(kPageID, page_id);
+  ASSERT_EQ(8U, values.size());
+  EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[1]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[2]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[3]);
+  EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[4]);
+  EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[5]);
+  EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[6]);
+  EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[7]);
+  ASSERT_EQ(8U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Home; 8765; 3456"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Home; 8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("Work; 8765"), labels[5]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; 8765"), labels[6]);
+  EXPECT_EQ(ASCIIToUTF16("Home; 8765; 8765"), labels[7]);
 }
 
 TEST_F(AutoFillManagerTest, FillCreditCardForm) {
+  FormData form;
+  CreateTestFormDataBilling(&form);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+  EXPECT_TRUE(
+      autofill_manager_->FillAutoFillFormData(kPageID,
+                                              form,
+                                              string16(),
+                                              ASCIIToUTF16("Home; 3456")));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
+  EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
+  EXPECT_EQ(GURL("http://myform.com/form.html"), results.origin);
+  EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
+  ASSERT_EQ(15U, results.fields.size());
+
+  webkit_glue::FormField field;
+  CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
+  CreateTestFormField("Middle Name", "middlename", "Aaron", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
+  CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
+  CreateTestFormField("Address Line 1", "billingAddr1",
+                      "3734 Elvis Presley Blvd.", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
+  CreateTestFormField(
+      "Address Line 2", "billingAddr2", "Apt. 10", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
+  CreateTestFormField("City", "billingCity", "Memphis", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[5]));
+  CreateTestFormField("State", "billingState", "Tennessee", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[6]));
+  CreateTestFormField("Postal Code", "billingZipcode", "38116", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[7]));
+  CreateTestFormField("Country", "billingCountry", "USA", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[8]));
+  CreateTestFormField(
+      "Phone Number", "phonenumber", "12345678901", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[9]));
+  CreateTestFormField("Email", "email", "theking@gmail.com", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
+  CreateTestFormField(
+      "Name on Card", "nameoncard", "Elvis Presley", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[11]));
+  CreateTestFormField(
+      "Card Number", "cardnumber", "1234567890123456", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[12]));
+  CreateTestFormField("Expiration Date", "ccmonth", "04", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[13]));
+  CreateTestFormField("", "ccyear", "2012", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
+}
+
+TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
+  AddSemicolonAutoFillProfile();
+
   FormData form;
   CreateTestFormData(&form);
 
@@ -415,8 +558,62 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   EXPECT_TRUE(
       autofill_manager_->FillAutoFillFormData(kPageID,
                                               form,
-                                              ASCIIToUTF16("cardnumber"),
-                                              ASCIIToUTF16("First")));
+                                              string16(),
+                                              ASCIIToUTF16("Home; 8765")));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
+  EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
+  EXPECT_EQ(GURL("http://myform.com/form.html"), results.origin);
+  EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
+  ASSERT_EQ(11U, results.fields.size());
+
+  webkit_glue::FormField field;
+  CreateTestFormField("First Name", "firstname", "Joe", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
+  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
+  CreateTestFormField("Last Name", "lastname", "Ely", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
+  CreateTestFormField(
+      "Address Line 1", "addr1", "916 16th St.", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
+  CreateTestFormField(
+      "Address Line 2", "addr2", "Apt. 6", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
+  CreateTestFormField("City", "city", "Lubbock", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[5]));
+  CreateTestFormField("State", "state", "Texas", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[6]));
+  CreateTestFormField("Postal Code", "zipcode", "79401", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[7]));
+  CreateTestFormField("Country", "country", "USA", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[8]));
+  CreateTestFormField(
+      "Phone Number", "phonenumber", "12345678901", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[9]));
+  CreateTestFormField("Email", "email", "flatlander@gmail.com", "text", &field);
+  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
+}
+
+TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
+  AddSemicolonAutoFillProfile();
+
+  FormData form;
+  CreateTestFormDataBilling(&form);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+      kPageID, form, string16(), ASCIIToUTF16("Home; 8765; 3456")));
 
   int page_id = 0;
   FormData results;
@@ -428,27 +625,30 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   ASSERT_EQ(15U, results.fields.size());
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  CreateTestFormField("First Name", "firstname", "Joe", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
   CreateTestFormField("Middle Name", "middlename", "", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
-  CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  CreateTestFormField("Last Name", "lastname", "Ely", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
-  CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
+  CreateTestFormField("Address Line 1", "billingAddr1",
+                      "3734 Elvis Presley Blvd.", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
-  CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
+  CreateTestFormField(
+      "Address Line 2", "billingAddr2", "Apt. 10", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
-  CreateTestFormField("City", "city", "", "text", &field);
+  CreateTestFormField("City", "billingCity", "Memphis", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[5]));
-  CreateTestFormField("State", "state", "", "text", &field);
+  CreateTestFormField("State", "billingState", "Tennessee", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[6]));
-  CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
+  CreateTestFormField("Postal Code", "billingZipcode", "38116", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[7]));
-  CreateTestFormField("Country", "country", "", "text", &field);
+  CreateTestFormField("Country", "billingCountry", "USA", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[8]));
-  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  CreateTestFormField(
+      "Phone Number", "phonenumber", "12345678901", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[9]));
-  CreateTestFormField("Email", "email", "", "text", &field);
+  CreateTestFormField("Email", "email", "flatlander@gmail.com", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
   CreateTestFormField(
       "Name on Card", "nameoncard", "Elvis Presley", "text", &field);
@@ -525,73 +725,6 @@ TEST_F(AutoFillManagerTest, FillPhoneNumberTest) {
   }
 
   work_profile->SetInfo(phone_type, saved_phone);
-}
-
-TEST_F(AutoFillManagerTest, FillCreditCardFormWithBilling) {
-  FormData form;
-  CreateTestFormDataBilling(&form);
-
-  // Set up our FormStructures.
-  std::vector<FormData> forms;
-  forms.push_back(form);
-  autofill_manager_->FormsSeen(forms);
-
-  // The page ID sent to the AutoFillManager from the RenderView, used to send
-  // an IPC message back to the renderer.
-  const int kPageID = 1;
-  EXPECT_TRUE(
-      autofill_manager_->FillAutoFillFormData(kPageID,
-                                              form,
-                                              ASCIIToUTF16("cardnumber"),
-                                              ASCIIToUTF16("First")));
-
-  int page_id = 0;
-  FormData results;
-  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
-  EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
-  EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
-  EXPECT_EQ(GURL("http://myform.com/form.html"), results.origin);
-  EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
-  ASSERT_EQ(15U, results.fields.size());
-
-  webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
-  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
-  CreateTestFormField("Last Name", "lastname", "", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
-  CreateTestFormField(
-      "Address Line 1", "billingAddr1", "3734 Elvis Presley Blvd.", "text",
-      &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
-  CreateTestFormField(
-      "Address Line 2", "billingAddr2", "Apt. 10", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
-  CreateTestFormField("City", "billingCity", "Memphis", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[5]));
-  CreateTestFormField("State", "billingState", "Tennessee", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[6]));
-  CreateTestFormField("Postal Code", "billingZipcode", "38116", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[7]));
-  CreateTestFormField("Country", "billingCountry", "USA", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[8]));
-  CreateTestFormField(
-      "Phone Number", "phonenumber", "", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[9]));
-  CreateTestFormField(
-      "Email", "email", "", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
-  CreateTestFormField(
-      "Name on Card", "nameoncard", "Elvis Presley", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[11]));
-  CreateTestFormField(
-      "Card Number", "cardnumber", "1234567890123456", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[12]));
-  CreateTestFormField("Expiration Date", "ccmonth", "04", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[13]));
-  CreateTestFormField("", "ccyear", "2012", "text", &field);
-  EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
 }
 
 TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
