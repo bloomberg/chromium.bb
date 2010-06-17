@@ -31,8 +31,10 @@ class Network {
   bool failed() const { return state_ == STATE_FAILURE; }
   ConnectionError error() const { return error_; }
 
-  void set_connecting(bool connecting) { state_ = STATE_CONFIGURATION; }
-  void set_connected(bool connected) { state_ = STATE_READY; }
+  void set_connecting(bool connecting) { state_ = (connecting ?
+      STATE_ASSOCIATION : STATE_IDLE); }
+  void set_connected(bool connected) { state_ = (connected ?
+      STATE_READY : STATE_IDLE); }
 
   // Clear the fields.
   virtual void Clear();
@@ -435,9 +437,11 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // Force an update of the system info.
   void UpdateSystemInfo();
 
-  // Gets the WifiNetwork with the given name. Returns whether the wifi network
-  // was found or not.
-  bool GetWifiNetworkByName(const std::string& name, WifiNetwork* wifi);
+  // Gets the WifiNetwork with the given name. Returns NULL if not found.
+  WifiNetwork* GetWifiNetworkByName(const std::string& name);
+
+  // Gets the WifiNetwork with the given path. Returns NULL if not found.
+  WifiNetwork* GetWifiNetworkByPath(const std::string& path);
 
   // Enables/disables the specified network device.
   void EnableNetworkDeviceType(ConnectionType device, bool enable);

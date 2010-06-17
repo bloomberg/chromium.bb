@@ -18,6 +18,7 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::NetworkLibraryImpl);
 
 namespace chromeos {
 
+static const std::string kGoogleWifi = "Google";
 static const std::string kGoogleAWifi = "Google-A";
 
 // Helper function to wrap Html with <th> tag.
@@ -257,31 +258,37 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
   // TODO(chocobo): Add the concept of preferred network to libcros.
   // So that we don't have to hard-code Google-A here.
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    LOG(INFO) << "Attempting to auto-connect to Google-A wifi.";
+    LOG(INFO) << "Attempting to auto-connect to Google wifi.";
     // First force a refresh of the system info.
     UpdateSystemInfo();
 
     // If ethernet is connected, then don't bother.
     if (ethernet_connected()) {
-      LOG(INFO) << "Ethernet connected, so don't need Google-A.";
+      LOG(INFO) << "Ethernet connected, so don't need Google wifi.";
       return false;
     }
 
-    // Find Google-A network.
-    WifiNetwork wifi;
-    bool found = GetWifiNetworkByName(kGoogleAWifi, &wifi);
-    if (!found) {
-      LOG(INFO) << "Google-A wifi not found.";
+    // First look for Google-A then look for Google.
+    // Only care if set to auto-connect.
+    WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
+    // If wifi found and set to not auto-connect, then ignore it.
+    if (wifi && !wifi->auto_connect())
+      wifi = NULL;
+
+    if (!wifi) {
+      wifi = GetWifiNetworkByName(kGoogleWifi);
+      // If wifi found and set to not auto-connect, then ignore it.
+      if (wifi && !wifi->auto_connect())
+        wifi = NULL;
+    }
+
+    if (!wifi) {
+      LOG(INFO) << "Google-A/Google wifi not found or set to not auto-connect.";
       return false;
     }
 
-    // Make sure we want to auto-connect.
-    // Since auto-connect is true, we assume the identity and certificate
-    // is setup propertly. If it's not, the connection will fail.
-    if (!wifi.auto_connect()) {
-      LOG(INFO) << "Google-A wifi is set to not auto-connect.";
-      return false;
-    }
+    // Save the wifi path, so we know which one we want to auto-connect to.
+    const std::string wifi_path = wifi->service_path();
 
     // It takes some time for the enterprise daemon to start up and populate the
     // certificate and identity. So we wait at most 3 seconds here. And every
@@ -291,10 +298,10 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
     for (int i = 0; i < 30; i++) {
       // Update the system and refetch the network.
       UpdateSystemInfo();
-      GetWifiNetworkByName(kGoogleAWifi, &wifi);
+      wifi = GetWifiNetworkByPath(wifi_path);
       // See if identity and certpath are available.
-      if (!wifi.identity().empty() && !wifi.cert_path().empty()) {
-        LOG(INFO) << "Google-A wifi set up after " << (i*0.1) << " seconds.";
+      if (wifi && !wifi->identity().empty() && !wifi->cert_path().empty()) {
+        LOG(INFO) << "Google wifi set up after " << (i*0.1) << " seconds.";
         setup = true;
         break;
       }
@@ -302,27 +309,25 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
     }
 
     if (!setup) {
-      LOG(INFO) << "Google-A wifi not set up after 3 seconds.";
+      LOG(INFO) << "Google wifi not set up after 3 seconds.";
       return false;
     }
 
-    // Now that we have a setup Google-A, we can connect to it.
-    ConnectToNetwork(wifi.service_path().c_str(), NULL);
+    // Now that we have a setup Google wifi, we can connect to it.
+    ConnectToNetwork(wifi_path.c_str(), NULL);
     return true;
   }
   return false;
 }
 
 bool NetworkLibraryImpl::PreferredNetworkConnected() {
-  WifiNetwork wifi;
-  bool found = GetWifiNetworkByName(kGoogleAWifi, &wifi);
-  return found && wifi.connected();
+  WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
+  return wifi && wifi->connected();
 }
 
 bool NetworkLibraryImpl::PreferredNetworkFailed() {
-  WifiNetwork wifi;
-  bool found = GetWifiNetworkByName(kGoogleAWifi, &wifi);
-  return !found || wifi.failed();
+  WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
+  return !wifi || wifi->failed();
 }
 
 void NetworkLibraryImpl::ConnectToWifiNetwork(WifiNetwork network,
@@ -378,6 +383,12 @@ void NetworkLibraryImpl::DisconnectFromWirelessNetwork(
 }
 
 void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
+  // Update the wifi network in the local cache.
+  WifiNetwork* wifi = GetWifiNetworkByPath(network.service_path());
+  if (wifi)
+    *wifi = network;
+
+  // Update the wifi network with libcros.
   if (CrosLibrary::Get()->EnsureLoaded()) {
     SetPassphrase(network.service_path().c_str(), network.passphrase().c_str());
     SetIdentity(network.service_path().c_str(), network.identity().c_str());
@@ -580,15 +591,22 @@ void NetworkLibraryImpl::UpdateSystemInfo() {
   }
 }
 
-bool NetworkLibraryImpl::GetWifiNetworkByName(const std::string& name,
-                                              WifiNetwork* wifi) {
+WifiNetwork* NetworkLibraryImpl::GetWifiNetworkByName(const std::string& name) {
   for (size_t i = 0; i < wifi_networks_.size(); ++i) {
     if (wifi_networks_[i].name().compare(name) == 0) {
-      *wifi = wifi_networks_[i];
-      return true;
+      return &wifi_networks_[i];
     }
   }
-  return false;
+  return NULL;
+}
+
+WifiNetwork* NetworkLibraryImpl::GetWifiNetworkByPath(const std::string& path) {
+  for (size_t i = 0; i < wifi_networks_.size(); ++i) {
+    if (wifi_networks_[i].service_path().compare(path) == 0) {
+      return &wifi_networks_[i];
+    }
+  }
+  return NULL;
 }
 
 void NetworkLibraryImpl::EnableNetworkDeviceType(ConnectionType device,
