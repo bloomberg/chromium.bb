@@ -3,6 +3,3 @@ KeygenHandlerTest.*SmokeTest
 
 # Fails Valgrind with varying stack traces. http://crbug.com/43179
 SpdyNetworkTransactionTest.PostWithEarlySynReply
-
-# See http://crbug.com/46638
-ClientSocketPoolBaseTest.LoadState
