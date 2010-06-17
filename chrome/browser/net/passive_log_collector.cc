@@ -181,7 +181,12 @@ void PassiveLogCollector::SourceTracker::OnAddEntry(const Entry& entry) {
 void PassiveLogCollector::SourceTracker::DeleteSourceInfo(
     uint32 source_id) {
   SourceIDToInfoMap::iterator it = sources_.find(source_id);
-  DCHECK(it != sources_.end());
+  if (it == sources_.end()) {
+    // TODO(eroman): Is this happening? And if so, why. Remove this
+    //               once the cause is understood.
+    LOG(WARNING) << "Tried to delete info for nonexistent source";
+    return;
+  }
   // The source should not be in the deletion queue.
   DCHECK(std::find(deletion_queue_.begin(), deletion_queue_.end(),
                    source_id) == deletion_queue_.end());
