@@ -105,7 +105,17 @@ SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
 
 RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
-  return LoadResourceBytes(resources_data_, resource_id);
+  RefCountedStaticMemory* bytes =
+      LoadResourceBytes(resources_data_, resource_id);
+
+  // Check all our additional data packs for the resources if it wasn't loaded
+  // from our main source.
+  for (std::vector<LoadedDataPack*>::const_iterator it = data_packs_.begin();
+       !bytes && it != data_packs_.end(); ++it) {
+    bytes = (*it)->GetStaticMemory(resource_id);
+  }
+
+  return bytes;
 }
 
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
@@ -198,11 +208,8 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
 // LoadedDataPack implementation
 ResourceBundle::LoadedDataPack::LoadedDataPack(const FilePath& path)
     : path_(path) {
-  // On unicies, we preload data packs so background updates don't cause us to
-  // load the wrong data.
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Always preload the data packs so we can maintain constness.
   Load();
-#endif
 }
 
 void ResourceBundle::LoadedDataPack::Load() {
@@ -212,9 +219,12 @@ void ResourceBundle::LoadedDataPack::Load() {
   CHECK(success) << "Failed to load " << path_.value();
 }
 
-bool ResourceBundle::LoadedDataPack::GetStringPiece(int resource_id,
-                                                    base::StringPiece* data) {
-  if (!data_pack_.get())
-    Load();
+bool ResourceBundle::LoadedDataPack::GetStringPiece(
+    int resource_id, base::StringPiece* data) const {
   return data_pack_->GetStringPiece(static_cast<uint32>(resource_id), data);
+}
+
+RefCountedStaticMemory* ResourceBundle::LoadedDataPack::GetStaticMemory(
+    int resource_id) const {
+  return data_pack_->GetStaticMemory(resource_id);
 }

@@ -26,7 +26,6 @@ enum {
                                 // by DOMUI and component extensions.
   DIR_BOOKMARK_MANAGER,         // Directory containing the bookmark manager.
   DIR_INSPECTOR,                // Directory where web inspector is located.
-  DIR_NET_INTERNALS,            // Directory where net internals is located.
   DIR_APP_DICTIONARIES,         // Directory where the global dictionaries are.
   DIR_USER_DOCUMENTS,           // Directory for a user's "My Documents".
   DIR_DEFAULT_DOWNLOADS_SAFE,   // Directory for a user's

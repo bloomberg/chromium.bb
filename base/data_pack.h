@@ -35,12 +35,12 @@ class DataPack {
   // Get resource by id |resource_id|, filling in |data|.
   // The data is owned by the DataPack object and should not be modified.
   // Returns false if the resource id isn't found.
-  bool GetStringPiece(uint32 resource_id, StringPiece* data);
+  bool GetStringPiece(uint32 resource_id, StringPiece* data) const;
 
   // Like GetStringPiece(), but returns a reference to memory. This interface
   // is used for image data, while the StringPiece interface is usually used
   // for localization strings.
-  RefCountedStaticMemory* GetStaticMemory(uint32 resource_id);
+  RefCountedStaticMemory* GetStaticMemory(uint32 resource_id) const;
 
   // Writes a pack file containing |resources| to |path|.
   static bool WritePack(const FilePath& path,
