@@ -98,12 +98,12 @@ class WebPluginImplWithPageDelegate
 FilePath GetWebKitRootDirFilePath() {
   FilePath basePath;
   PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
-  FilePath path = basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-  if (!file_util::PathExists(path)) {
+  if (file_util::PathExists(basePath.Append(FILE_PATH_LITERAL("chrome")))) {
+    return basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+  } else {
     // WebKit/WebKit/chromium/ -> WebKit/
-    path = basePath.Append(FILE_PATH_LITERAL("../.."));
+    return basePath.Append(FILE_PATH_LITERAL("../.."));
   }
-  return path;
 }
 
 }  // namespace
