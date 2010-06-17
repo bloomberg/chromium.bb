@@ -144,9 +144,12 @@ o3d.ArchiveRequest.prototype.open =
 };
 
 /**
- * Send the request.
- * Unlike XMLHttpRequest the onreadystatechange callback will be called no
- * matter what, with success or failure.
+ * Sends the request.  In this implementation, this function sets up a callback
+ * which searches the json it loads for more files to load.  It then sends
+ * requests for each of those files.  When the last of those files has loaded,
+ * the onreadystatechange callback will get called.  Unlike XMLHttpRequest the
+ * onreadystatechange callback will be called no matter what, with success or
+ * failure.
  */
 o3d.ArchiveRequest.prototype.send = function() {
   var that = this;
@@ -158,12 +161,9 @@ o3d.ArchiveRequest.prototype.send = function() {
     // elsewhere to reconstitute it, which is risky.
     var filteredJSON = JSON.stringify(JSON.parse(sourceJSON));
 
-    if (that.onfileavailable) {
-      var rawData = new o3d.RawData();
-      rawData.uri = 'scene.json';
-      rawData.stringValue = filteredJSON;
-      that.onfileavailable(rawData);
-    }
+    var rawData = new o3d.RawData();
+    rawData.uri = 'scene.json';
+    rawData.stringValue = filteredJSON;
 
     // In o3d-webgl, the "archive" is really just the top-level
     // scene.json. We run a regexp on it to find URIs for certain
@@ -176,7 +176,8 @@ o3d.ArchiveRequest.prototype.send = function() {
       uris.push(matchArray[1]);
     }
 
-    that.pendingRequests_ = uris.length;
+    // Plus one for the current request.
+    that.pendingRequests_ = uris.length + 1;
 
     // Issue requests for each of these URIs.
     for (var ii = 0; ii < uris.length; ++ii) {
@@ -189,7 +190,7 @@ o3d.ArchiveRequest.prototype.send = function() {
               rawData.uri = uri;
               rawData.stringValue = value;
             }
-            that.decrementPendingRequests_(rawData, exc);
+            that.resolvePendingRequest_(rawData, exc);
           };
           o3djs.io.loadTextFile(that.relativeToAbsoluteURI_(uri),
                                 completion);
@@ -203,16 +204,18 @@ o3d.ArchiveRequest.prototype.send = function() {
             var rawData = new o3d.RawData();
             rawData.uri = uri;
             rawData.image_ = image;
-            that.decrementPendingRequests_(rawData, exc);
+            that.resolvePendingRequest_(rawData, exc);
           };
           image.onerror = function() {
-            that.decrementPendingRequests_(null, exc);
+            that.resolvePendingRequest_(null, exc);
           }
           image.src = that.relativeToAbsoluteURI_(uri);
         };
         func(uris[ii]);
       }
     }
+
+    that.resolvePendingRequest_(rawData);
   };
 
   o3djs.io.loadTextFile(this.uri, callback);
@@ -247,10 +250,15 @@ o3d.ArchiveRequest.prototype.stringEndsWith_ = function(string, suffix) {
 };
 
 /**
- * Decrements the number of pending requests.
+ * Decrements the number of pending requests.  Calls onfileavailable callback
+ * if one is provided, calls onreadystatechange if this is the last of the
+ * requests.
+ * @param {o3d.RawData} rawData The current raw data object.
+ * @param {function(!o3d.RawData): void} An optional callback to call passing
+ *     the current raw data as an argument.
  * @private
  */
-o3d.ArchiveRequest.prototype.decrementPendingRequests_ =
+o3d.ArchiveRequest.prototype.resolvePendingRequest_ =
     function(rawData, opt_exc) {
   this.success = this.success && rawData && (!opt_exc);
   if (opt_exc != null) {
