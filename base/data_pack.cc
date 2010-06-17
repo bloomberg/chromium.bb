@@ -96,7 +96,7 @@ bool DataPack::Load(const FilePath& path) {
   return true;
 }
 
-bool DataPack::GetStringPiece(uint32 resource_id, StringPiece* data) const {
+bool DataPack::GetStringPiece(uint32 resource_id, StringPiece* data) {
   // It won't be hard to make this endian-agnostic, but it's not worth
   // bothering to do right now.
 #if defined(__BYTE_ORDER)
@@ -119,7 +119,7 @@ bool DataPack::GetStringPiece(uint32 resource_id, StringPiece* data) const {
   return true;
 }
 
-RefCountedStaticMemory* DataPack::GetStaticMemory(uint32 resource_id) const {
+RefCountedStaticMemory* DataPack::GetStaticMemory(uint32 resource_id) {
   base::StringPiece piece;
   if (!GetStringPiece(resource_id, &piece))
     return NULL;
