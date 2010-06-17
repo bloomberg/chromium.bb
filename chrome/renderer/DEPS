@@ -16,8 +16,5 @@ include_rules = [
   "+third_party/npapi/bindings",
   "+third_party/sqlite/preprocessed",
   "+third_party/tcmalloc",
-
-  # FIXME - refactor code and remove these dependencies
-  "+chrome/browser/net",
 ]
 
