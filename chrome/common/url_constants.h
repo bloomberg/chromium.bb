@@ -54,15 +54,16 @@ extern const char kChromeUIBookmarksURL[];
 extern const char kChromeUIDevToolsURL[];
 extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIExtensionsURL[];
-extern const char kChromeUIHistoryURL[];
-extern const char kChromeUIPluginsURL[];
-extern const char kChromeUIPrintURL[];
 extern const char kChromeUIFavIconURL[];
 extern const char kChromeUIFileBrowseURL[];
-extern const char kChromeUIMediaplayerURL[];
+extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIIPCURL[];
+extern const char kChromeUIMediaplayerURL[];
+extern const char kChromeUIOptionsURL[];
 extern const char kChromeUINetworkURL[];
 extern const char kChromeUINewTabURL[];
+extern const char kChromeUIPluginsURL[];
+extern const char kChromeUIPrintURL[];
 
 // chrome components of URLs. Should be kept in sync with the full URLs
 // above.
@@ -72,15 +73,16 @@ extern const char kChromeUIDialogHost[];
 extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIExtensionsHost[];
 extern const char kChromeUIFavIconHost[];
+extern const char kChromeUIFileBrowseHost[];
 extern const char kChromeUIHistoryHost[];
+extern const char kChromeUIInspectorHost[];
+extern const char kChromeUIMediaplayerHost[];
+extern const char kChromeUINetInternalsHost[];
+extern const char kChromeUINewTabHost[];
+extern const char kChromeUIOptionsHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
 extern const char kChromeUIResourcesHost[];
-extern const char kChromeUIFileBrowseHost[];
-extern const char kChromeUIMediaplayerHost[];
-extern const char kChromeUIInspectorHost[];
-extern const char kChromeUINetInternalsHost[];
-extern const char kChromeUINewTabHost[];
 extern const char kChromeUIThumbnailPath[];
 extern const char kChromeUIThemePath[];
 
