@@ -7,7 +7,7 @@
 
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "views/controls/button/text_button.h"
+#include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 
@@ -69,7 +69,7 @@ class ScreenLockView : public views::View,
 
   // For editing the password.
   views::Textfield* password_field_;
-  views::TextButton* unlock_button_;
+  views::Button* unlock_button_;
 
   // ScreenLocker is owned by itself.
   ScreenLocker* screen_locker_;

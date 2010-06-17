@@ -254,9 +254,6 @@ void InfoBubble::Close() {
 
   show_status_ = kClosing;
     
-  GetFocusManager()->UnregisterAccelerator(
-      views::Accelerator(base::VKEY_ESCAPE, false, false, false), this);
-
   if (fade_away_on_close_)
     FadeOut();
   else
@@ -478,6 +475,8 @@ void InfoBubble::DoClose(bool closed_by_escape) {
   if (show_status_ == kClosed)
     return;
 
+  GetFocusManager()->UnregisterAccelerator(
+      views::Accelerator(base::VKEY_ESCAPE, false, false, false), this);
   if (delegate_)
     delegate_->InfoBubbleClosing(this, closed_by_escape);
   show_status_ = kClosed;

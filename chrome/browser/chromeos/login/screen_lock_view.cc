@@ -16,6 +16,7 @@
 #include "grit/theme_resources.h"
 #include "views/background.h"
 #include "views/border.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
@@ -50,9 +51,8 @@ void ScreenLockView::Init() {
   password_field_->SetController(this);
 
   // Unlock button.
-  // TODO(sky|oshima): change ids
   unlock_button_ = new views::TextButton(
-      this, l10n_util::GetString(IDS_LOGIN_BUTTON));
+      this, l10n_util::GetString(IDS_UNLOCK_BUTTON));
   unlock_button_->set_tag(login::UNLOCK);
 
   // User icon.
