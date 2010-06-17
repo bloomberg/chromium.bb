@@ -8,9 +8,8 @@ DownloadTest.UnknownSize
 ErrorPageTest.DNSError_GoBack2AndForward
 ErrorPageTest.DNSError_GoBack2Forward2
 
-# Flaky timeout on Linux; see http://crbug.com/22927
-UnloadTest.BrowserCloseInfiniteBeforeUnload
-UnloadTest.BrowserCloseInfiniteBeforeUnloadAlert
+# Flaky timeout on Linux; TODO(timurrrr):file a meta-bug when crbug is working
+UnloadTest.*
 
 # Don't run reference tests under Valgrind
 # On the Mac, they don't have symbols, even, so suppressions don't work

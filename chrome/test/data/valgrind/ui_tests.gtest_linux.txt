@@ -11,11 +11,3 @@ BrowserTest.PosixSessionEnd
 ResourceDispatcherTest.CrossSiteAfterCrash
 # http://crbug.com/45574   Unhappy on ChromeOS valgrind
 LayoutPluginTester.UnloadNoCrash
-
-# See http://crbug.com/29587.
-UnloadTest.CrossSiteInfiniteBeforeUnloadSync
-# See http://crbug.com/45562
-UnloadTest.*BrowserCloseTabWhenOtherTabHasListener
-# See http://crbug.com/46211
-UnloadTest.BrowserCloseBeforeUnloadOK
-UnloadTest.BrowserCloseWithInnerFocusedFrame

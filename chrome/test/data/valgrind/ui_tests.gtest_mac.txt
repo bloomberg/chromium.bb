@@ -9,7 +9,6 @@ AutomatedUITestBase.CloseBrowserWindow
 AutomatedUITestBase.OpenBrowserWindow
 ErrorPageTest.DNSError_GoBack2
 ResourceDispatcherTest.CrossSiteNavigationErrorPage
-SessionHistoryTest.JavascriptHistory
 TabRestoreUITest.RestoreCrossSiteWithExistingSiteInstance
 # Hung 7 times on the mac bots!
 ResourceDispatcherTest.SyncXMLHttpRequest_DuringUnload
@@ -34,7 +33,6 @@ ErrorPageTest.DNSError_GoBack1
 ErrorPageTest.DNSError_GoBack2
 ErrorPageTest.DNSError_GoBack2AndForward
 ErrorPageTest.DNSError_GoBack2Forward2
-SessionHistoryTest.LocationReplace
 # See http://crbug.com/30367.
 NewTabUITest.NTPHasThumbnails
 NewTabUITest.UpdateUserPrefsVersion
@@ -78,6 +76,7 @@ BookmarksUITest.CommandAgainGoesBackToBookmarksTab
 # See http://crbug.com/45564
 ChromeMainTest.AppLaunch
 
-# See http://crbug.com/39057
-# Hanging on mac valgrind ui bots.
-UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
+# TODO(timurrrr): create a crbug issue when crbug is working again
+SessionHistoryTest.FrameBackForward
+SessionHistoryTest.JavascriptHistory
+SessionHistoryTest.LocationReplace
