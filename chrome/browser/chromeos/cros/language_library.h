@@ -18,17 +18,17 @@ namespace chromeos {
 
 // This class handles the interaction with the ChromeOS language library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
-// library class like this: LanguageLibrary::Get()
-class LanguageLibrary {
+// library class like this: InputMethodLibrary::Get()
+class InputMethodLibrary {
  public:
   class Observer {
    public:
     virtual ~Observer() = 0;
-    virtual void InputMethodChanged(LanguageLibrary* obj) = 0;
-    virtual void ImePropertiesChanged(LanguageLibrary* obj) = 0;
-    virtual void ActiveInputMethodsChanged(LanguageLibrary* obj) = 0;
+    virtual void InputMethodChanged(InputMethodLibrary* obj) = 0;
+    virtual void ImePropertiesChanged(InputMethodLibrary* obj) = 0;
+    virtual void ActiveInputMethodsChanged(InputMethodLibrary* obj) = 0;
   };
-  virtual ~LanguageLibrary() {}
+  virtual ~InputMethodLibrary() {}
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -118,13 +118,13 @@ class LanguageLibrary {
 
 // This class handles the interaction with the ChromeOS language library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
-// library class like this: LanguageLibrary::Get()
-class LanguageLibraryImpl : public LanguageLibrary {
+// library class like this: InputMethodLibrary::Get()
+class InputMethodLibraryImpl : public InputMethodLibrary {
  public:
-  LanguageLibraryImpl();
-  virtual ~LanguageLibraryImpl();
+  InputMethodLibraryImpl();
+  virtual ~InputMethodLibraryImpl();
 
-  // LanguageLibrary overrides.
+  // InputMethodLibrary overrides.
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
   virtual InputMethodDescriptors* GetActiveInputMethods();
@@ -218,9 +218,9 @@ class LanguageLibraryImpl : public LanguageLibrary {
 
   // A timer for retrying to send |pendning_config_commands_| to the input
   // method config daemon.
-  base::OneShotTimer<LanguageLibraryImpl> timer_;
+  base::OneShotTimer<InputMethodLibraryImpl> timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(LanguageLibraryImpl);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryImpl);
 };
 
 }  // namespace chromeos

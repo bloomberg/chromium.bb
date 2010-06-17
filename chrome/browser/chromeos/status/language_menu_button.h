@@ -25,7 +25,7 @@ class StatusAreaHost;
 class LanguageMenuButton : public views::MenuButton,
                            public views::ViewMenuDelegate,
                            public menus::MenuModel,
-                           public LanguageLibrary::Observer,
+                           public InputMethodLibrary::Observer,
                            public NotificationObserver {
  public:
   explicit LanguageMenuButton(StatusAreaHost* host);
@@ -49,10 +49,10 @@ class LanguageMenuButton : public views::MenuButton,
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow();
 
-  // LanguageLibrary::Observer implementation.
-  virtual void InputMethodChanged(LanguageLibrary* obj);
-  virtual void ImePropertiesChanged(LanguageLibrary* obj);
-  virtual void ActiveInputMethodsChanged(LanguageLibrary* obj);
+  // InputMethodLibrary::Observer implementation.
+  virtual void InputMethodChanged(InputMethodLibrary* obj);
+  virtual void ImePropertiesChanged(InputMethodLibrary* obj);
+  virtual void ActiveInputMethodsChanged(InputMethodLibrary* obj);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

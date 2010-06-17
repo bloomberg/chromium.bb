@@ -22,7 +22,7 @@ namespace chromeos {
 CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              crypto_lib_(NULL),
                              keyboard_lib_(NULL),
-                             language_lib_(NULL),
+                             input_method_lib_(NULL),
                              login_lib_(NULL),
                              mount_lib_(NULL),
                              network_lib_(NULL),
@@ -34,7 +34,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_library_loader_(true),
                              own_cryptohome_lib_(true),
                              own_keyboard_lib_(true),
-                             own_language_lib_(true),
+                             own_input_method_lib_(true),
                              own_login_lib_(true),
                              own_mount_lib_(true),
                              own_network_lib_(true),
@@ -56,8 +56,8 @@ CrosLibrary::~CrosLibrary() {
     delete crypto_lib_;
   if (own_keyboard_lib_)
     delete keyboard_lib_;
-  if (own_language_lib_)
-    delete language_lib_;
+  if (own_input_method_lib_)
+    delete input_method_lib_;
   if (own_login_lib_)
     delete login_lib_;
   if (own_mount_lib_)
@@ -94,10 +94,10 @@ KeyboardLibrary* CrosLibrary::GetKeyboardLibrary() {
   return keyboard_lib_;
 }
 
-LanguageLibrary* CrosLibrary::GetLanguageLibrary() {
-  if (!language_lib_)
-    language_lib_ = new LanguageLibraryImpl();
-  return language_lib_;
+InputMethodLibrary* CrosLibrary::GetInputMethodLibrary() {
+  if (!input_method_lib_)
+    input_method_lib_ = new InputMethodLibraryImpl();
+  return input_method_lib_;
 }
 
 LoginLibrary* CrosLibrary::GetLoginLibrary() {
@@ -193,12 +193,12 @@ void CrosLibrary::TestApi::SetKeyboardLibrary(KeyboardLibrary* library,
   library_->keyboard_lib_ = library;
 }
 
-void CrosLibrary::TestApi::SetLanguageLibrary(LanguageLibrary* library,
+void CrosLibrary::TestApi::SetInputMethodLibrary(InputMethodLibrary* library,
                                               bool own) {
-  if (library_->own_language_lib_)
-    delete library_->language_lib_;
-  library_->own_language_lib_ = own;
-  library_->language_lib_ = library;
+  if (library_->own_input_method_lib_)
+    delete library_->input_method_lib_;
+  library_->own_input_method_lib_ = own;
+  library_->input_method_lib_ = library;
 }
 
 void CrosLibrary::TestApi::SetLoginLibrary(LoginLibrary* library, bool own) {

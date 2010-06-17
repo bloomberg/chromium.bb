@@ -118,7 +118,7 @@ namespace chromeos {
 
 LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
     : MenuButton(NULL, std::wstring(), this, false),
-      input_method_descriptors_(CrosLibrary::Get()->GetLanguageLibrary()->
+      input_method_descriptors_(CrosLibrary::Get()->GetInputMethodLibrary()->
                                 GetActiveInputMethods()),
       model_(NULL),
       // Be aware that the constructor of |language_menu_| calls GetItemCount()
@@ -150,7 +150,7 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
   // InputMethodChanged() will be called soon and the indicator will be updated.
-  LanguageLibrary* library = CrosLibrary::Get()->GetLanguageLibrary();
+  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
   PrefService* pref_service = GetPrefService(host_);
   if (pref_service) {
     previous_input_method_pref_.Init(
@@ -172,7 +172,7 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
 }
 
 LanguageMenuButton::~LanguageMenuButton() {
-  CrosLibrary::Get()->GetLanguageLibrary()->RemoveObserver(this);
+  CrosLibrary::Get()->GetInputMethodLibrary()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -200,13 +200,13 @@ bool LanguageMenuButton::IsItemCheckedAt(int index) const {
   if (IndexIsInInputMethodList(index)) {
     const InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
-    return input_method == CrosLibrary::Get()->GetLanguageLibrary()->
+    return input_method == CrosLibrary::Get()->GetInputMethodLibrary()->
           current_input_method();
   }
 
   if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     return property_list.at(index).is_selection_item_checked;
   }
 
@@ -223,7 +223,7 @@ int LanguageMenuButton::GetGroupIdAt(int index) const {
 
   if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     return property_list.at(index).selection_item_id;
   }
 
@@ -280,7 +280,7 @@ menus::MenuModel::ItemType LanguageMenuButton::GetTypeAt(int index) const {
 
   if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     if (property_list.at(index).is_selection_item) {
       return menus::MenuModel::TYPE_RADIO;
     }
@@ -303,14 +303,14 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
   std::wstring name;
   if (IndexIsInInputMethodList(index)) {
     const std::string language_code =
-        LanguageLibrary::GetLanguageCodeFromDescriptor(
+        InputMethodLibrary::GetLanguageCodeFromDescriptor(
             input_method_descriptors_->at(index));
     bool need_method_name = (need_method_name_.count(language_code) > 0);
     name = GetTextForMenu(input_method_descriptors_->at(index),
                           need_method_name);
   } else if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
-        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     return LanguageMenuL10nUtil::GetStringUTF16(
         property_list.at(index).label);
   }
@@ -331,7 +331,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
     // Inter-IME switching.
     const InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
-    CrosLibrary::Get()->GetLanguageLibrary()->ChangeInputMethod(
+    CrosLibrary::Get()->GetInputMethodLibrary()->ChangeInputMethod(
         input_method.id);
     return;
   }
@@ -339,7 +339,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
   if (GetPropertyIndex(index, &index)) {
     // Intra-IME switching (e.g. Japanese-Hiragana to Japanese-Katakana).
     const ImePropertyList& property_list
-        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     const std::string key = property_list.at(index).key;
     if (property_list.at(index).is_selection_item) {
       // Radio button is clicked.
@@ -347,17 +347,17 @@ void LanguageMenuButton::ActivatedAt(int index) {
       // First, deactivate all other properties in the same radio group.
       for (int i = 0; i < static_cast<int>(property_list.size()); ++i) {
         if (i != index && id == property_list.at(i).selection_item_id) {
-          CrosLibrary::Get()->GetLanguageLibrary()->SetImePropertyActivated(
+          CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(
               property_list.at(i).key, false);
         }
       }
       // Then, activate the property clicked.
-      CrosLibrary::Get()->GetLanguageLibrary()->SetImePropertyActivated(key,
+      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(key,
                                                                         true);
     } else {
       // Command button like "Switch to half punctuation mode" is clicked.
       // We can always use "Deactivate" for command buttons.
-      CrosLibrary::Get()->GetLanguageLibrary()->SetImePropertyActivated(key,
+      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(key,
                                                                         false);
     }
     return;
@@ -372,7 +372,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
 void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   UserMetrics::RecordAction(
       UserMetricsAction("LanguageMenuButton_Open"));
-  input_method_descriptors_.reset(CrosLibrary::Get()->GetLanguageLibrary()->
+  input_method_descriptors_.reset(CrosLibrary::Get()->GetInputMethodLibrary()->
                                   GetActiveInputMethods());
   RebuildModel();
   language_menu_.Rebuild();
@@ -381,9 +381,9 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LanguageLibrary::Observer implementation:
+// InputMethodLibrary::Observer implementation:
 
-void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
+void LanguageMenuButton::InputMethodChanged(InputMethodLibrary* obj) {
   UserMetrics::RecordAction(
       UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
 
@@ -400,13 +400,13 @@ void LanguageMenuButton::InputMethodChanged(LanguageLibrary* obj) {
   }
 }
 
-void LanguageMenuButton::ActiveInputMethodsChanged(LanguageLibrary* obj) {
+void LanguageMenuButton::ActiveInputMethodsChanged(InputMethodLibrary* obj) {
   // Update the icon if active input methods are changed. See also
   // comments in UpdateIndicator()
   UpdateIndicatorFromInputMethod(obj->current_input_method());
 }
 
-void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
+void LanguageMenuButton::ImePropertiesChanged(InputMethodLibrary* obj) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -414,7 +414,7 @@ void LanguageMenuButton::ImePropertiesChanged(LanguageLibrary* obj) {
 
 void LanguageMenuButton::LocaleChanged() {
   const InputMethodDescriptor& input_method =
-      CrosLibrary::Get()->GetLanguageLibrary()->current_input_method();
+      CrosLibrary::Get()->GetInputMethodLibrary()->current_input_method();
   UpdateIndicatorFromInputMethod(input_method);
   Layout();
   SchedulePaint();
@@ -430,9 +430,9 @@ void LanguageMenuButton::UpdateIndicator(
   // types of input methods as these might have intra input method modes,
   // like Hiragana and Katakana modes in Japanese input methods.
   scoped_ptr<InputMethodDescriptors> active_input_methods(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveInputMethods());
+      CrosLibrary::Get()->GetInputMethodLibrary()->GetActiveInputMethods());
   if (active_input_methods->size() == 1 &&
-      LanguageLibrary::IsKeyboardLayout(active_input_methods->at(0).id)) {
+      InputMethodLibrary::IsKeyboardLayout(active_input_methods->at(0).id)) {
     // As the disabled color is set to invisible, disabling makes the
     // button disappear.
     SetEnabled(false);
@@ -468,7 +468,7 @@ void LanguageMenuButton::RebuildModel() {
       model_->AddRadioItem(COMMAND_ID_INPUT_METHODS, dummy_label, i);
 
       const std::string language_code
-          = LanguageLibrary::GetLanguageCodeFromDescriptor(
+          = InputMethodLibrary::GetLanguageCodeFromDescriptor(
               input_method_descriptors_->at(i));
       // If there is more than one input method for this language, then we need
       // to display the method name.
@@ -482,7 +482,7 @@ void LanguageMenuButton::RebuildModel() {
   }
 
   const ImePropertyList& property_list
-      = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+      = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
   if (!property_list.empty()) {
     if (need_separator)
       model_->AddSeparator();
@@ -528,7 +528,7 @@ bool LanguageMenuButton::GetPropertyIndex(
       (model_->GetCommandIdAt(index) == COMMAND_ID_IME_PROPERTIES)) {
     const int tmp_property_index = model_->GetGroupIdAt(index);
     const ImePropertyList& property_list
-        = CrosLibrary::Get()->GetLanguageLibrary()->current_ime_properties();
+        = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     if (tmp_property_index < static_cast<int>(property_list.size())) {
       *property_index = tmp_property_index;
       return true;
@@ -570,7 +570,7 @@ std::wstring LanguageMenuButton::GetTextForIndicator(
   if (text.empty()) {
     const size_t kMaxLanguageNameLen = 2;
     const std::wstring language_code = UTF8ToWide(
-        LanguageLibrary::GetLanguageCodeFromDescriptor(input_method));
+        InputMethodLibrary::GetLanguageCodeFromDescriptor(input_method));
     text = StringToUpperASCII(language_code).substr(0, kMaxLanguageNameLen);
   }
   DCHECK(!text.empty());
@@ -580,7 +580,7 @@ std::wstring LanguageMenuButton::GetTextForIndicator(
 std::wstring LanguageMenuButton::GetTextForMenu(
     const InputMethodDescriptor& input_method, bool add_method_name) {
   const std::string language_code
-      = LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
+      = InputMethodLibrary::GetLanguageCodeFromDescriptor(input_method);
 
   std::wstring text;
   if (language_code == "t") {

@@ -8,47 +8,47 @@
 
 namespace chromeos {
 
-TEST(LanguageLibraryTest, NormalizeLanguageCode) {
+TEST(InputMethodLibraryTest, NormalizeLanguageCode) {
   // TODO(yusukes): test all language codes that IBus provides.
-  EXPECT_EQ("ja", LanguageLibrary::NormalizeLanguageCode("ja"));
-  EXPECT_EQ("ja", LanguageLibrary::NormalizeLanguageCode("jpn"));
-  EXPECT_EQ("t", LanguageLibrary::NormalizeLanguageCode("t"));
-  EXPECT_EQ("zh-CN", LanguageLibrary::NormalizeLanguageCode("zh-CN"));
-  EXPECT_EQ("zh-CN", LanguageLibrary::NormalizeLanguageCode("zh_CN"));
-  EXPECT_EQ("en-US", LanguageLibrary::NormalizeLanguageCode("EN_us"));
+  EXPECT_EQ("ja", InputMethodLibrary::NormalizeLanguageCode("ja"));
+  EXPECT_EQ("ja", InputMethodLibrary::NormalizeLanguageCode("jpn"));
+  EXPECT_EQ("t", InputMethodLibrary::NormalizeLanguageCode("t"));
+  EXPECT_EQ("zh-CN", InputMethodLibrary::NormalizeLanguageCode("zh-CN"));
+  EXPECT_EQ("zh-CN", InputMethodLibrary::NormalizeLanguageCode("zh_CN"));
+  EXPECT_EQ("en-US", InputMethodLibrary::NormalizeLanguageCode("EN_us"));
   // See app/l10n_util.cc for es-419.
-  EXPECT_EQ("es-419", LanguageLibrary::NormalizeLanguageCode("es_419"));
+  EXPECT_EQ("es-419", InputMethodLibrary::NormalizeLanguageCode("es_419"));
 
   // Special three-letter language codes.
-  EXPECT_EQ("cs", LanguageLibrary::NormalizeLanguageCode("cze"));
-  EXPECT_EQ("de", LanguageLibrary::NormalizeLanguageCode("ger"));
-  EXPECT_EQ("el", LanguageLibrary::NormalizeLanguageCode("gre"));
-  EXPECT_EQ("hr", LanguageLibrary::NormalizeLanguageCode("scr"));
-  EXPECT_EQ("ro", LanguageLibrary::NormalizeLanguageCode("rum"));
-  EXPECT_EQ("sk", LanguageLibrary::NormalizeLanguageCode("slo"));
+  EXPECT_EQ("cs", InputMethodLibrary::NormalizeLanguageCode("cze"));
+  EXPECT_EQ("de", InputMethodLibrary::NormalizeLanguageCode("ger"));
+  EXPECT_EQ("el", InputMethodLibrary::NormalizeLanguageCode("gre"));
+  EXPECT_EQ("hr", InputMethodLibrary::NormalizeLanguageCode("scr"));
+  EXPECT_EQ("ro", InputMethodLibrary::NormalizeLanguageCode("rum"));
+  EXPECT_EQ("sk", InputMethodLibrary::NormalizeLanguageCode("slo"));
 }
 
-TEST(LanguageLibraryTest, IsKeyboardLayout) {
-  EXPECT_TRUE(LanguageLibrary::IsKeyboardLayout("xkb:us::eng"));
-  EXPECT_FALSE(LanguageLibrary::IsKeyboardLayout("anthy"));
+TEST(InputMethodLibraryTest, IsKeyboardLayout) {
+  EXPECT_TRUE(InputMethodLibrary::IsKeyboardLayout("xkb:us::eng"));
+  EXPECT_FALSE(InputMethodLibrary::IsKeyboardLayout("anthy"));
 }
 
-TEST(LanguageLibraryTest, GetLanguageCodeFromDescriptor) {
-  EXPECT_EQ("ja", LanguageLibrary::GetLanguageCodeFromDescriptor(
+TEST(InputMethodLibraryTest, GetLanguageCodeFromDescriptor) {
+  EXPECT_EQ("ja", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("anthy", "Anthy", "us", "ja")));
-  EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
+  EXPECT_EQ("zh-TW", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("chewing", "Chewing", "us", "zh")));
-  EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
+  EXPECT_EQ("zh-TW", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("bopomofo", "Bopomofo(Zhuyin)", "us", "zh")));
-  EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
+  EXPECT_EQ("zh-TW", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("m17n:zh:cangjie", "Cangjie", "us", "zh")));
-  EXPECT_EQ("zh-TW", LanguageLibrary::GetLanguageCodeFromDescriptor(
+  EXPECT_EQ("zh-TW", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("m17n:zh:quick", "Quick", "us", "zh")));
-  EXPECT_EQ("zh-CN", LanguageLibrary::GetLanguageCodeFromDescriptor(
+  EXPECT_EQ("zh-CN", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("pinyin", "Pinyin", "us", "zh")));
-  EXPECT_EQ("en-US", LanguageLibrary::GetLanguageCodeFromDescriptor(
+  EXPECT_EQ("en-US", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng")));
-  EXPECT_EQ("en-UK", LanguageLibrary::GetLanguageCodeFromDescriptor(
+  EXPECT_EQ("en-UK", InputMethodLibrary::GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "us", "eng")));
 }
 

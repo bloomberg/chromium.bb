@@ -14,7 +14,7 @@ namespace chromeos {
 
 class MockCryptohomeLibrary;
 class MockKeyboardLibrary;
-class MockLanguageLibrary;
+class MockInputMethodLibrary;
 class MockLibraryLoader;
 class MockNetworkLibrary;
 class MockPowerLibrary;
@@ -49,7 +49,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   // Initialization of mocks.
   void InitMockCryptohomeLibrary();
   void InitMockKeyboardLibrary();
-  void InitMockLanguageLibrary();
+  void InitMockInputMethodLibrary();
   void InitMockNetworkLibrary();
   void InitMockPowerLibrary();
   void InitMockScreenLockLibrary();
@@ -65,7 +65,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
 
   // Methods to setup minimal mocks expectations for status area.
   void SetKeyboardLibraryStatusAreaExpectations();
-  void SetLanguageLibraryStatusAreaExpectations();
+  void SetInputMethodLibraryStatusAreaExpectations();
   void SetNetworkLibraryStatusAreaExpectations();
   void SetPowerLibraryStatusAreaExpectations();
   void SetSynapticsLibraryExpectations();
@@ -80,7 +80,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   MockLibraryLoader* loader_;
   MockCryptohomeLibrary* mock_cryptohome_library_;
   MockKeyboardLibrary* mock_keyboard_library_;
-  MockLanguageLibrary* mock_language_library_;
+  MockInputMethodLibrary* mock_input_method_library_;
   MockNetworkLibrary* mock_network_library_;
   MockPowerLibrary* mock_power_library_;
   MockScreenLockLibrary* mock_screen_lock_library_;

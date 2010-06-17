@@ -37,11 +37,11 @@ class LoginTestBase : public InProcessBrowserTest {
         .WillRepeatedly(Return(true));
 
     testApi_->SetKeyboardLibrary(&mock_keyboard_library_, false);
-    testApi_->SetLanguageLibrary(&mock_language_library_, false);
-    EXPECT_CALL(mock_language_library_, GetActiveInputMethods())
+    testApi_->SetInputMethodLibrary(&mock_input_method_library_, false);
+    EXPECT_CALL(mock_input_method_library_, GetActiveInputMethods())
         .WillRepeatedly(
             InvokeWithoutArgs(CreateFallbackInputMethodDescriptors));
-    EXPECT_CALL(mock_language_library_, current_ime_properties())
+    EXPECT_CALL(mock_input_method_library_, current_ime_properties())
         .WillOnce((ReturnRef(ime_properties_)));
 
     testApi_->SetNetworkLibrary(&mock_network_library_, false);
@@ -59,7 +59,7 @@ class LoginTestBase : public InProcessBrowserTest {
   NiceMock<MockLibraryLoader> loader_;
   NiceMock<MockCryptohomeLibrary> mock_cryptohome_library_;
   NiceMock<MockKeyboardLibrary> mock_keyboard_library_;
-  NiceMock<MockLanguageLibrary> mock_language_library_;
+  NiceMock<MockInputMethodLibrary> mock_input_method_library_;
   NiceMock<MockNetworkLibrary> mock_network_library_;
   NiceMock<MockPowerLibrary> mock_power_library_;
   NiceMock<MockScreenLockLibrary> mock_screen_lock_library_;

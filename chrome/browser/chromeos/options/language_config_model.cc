@@ -425,11 +425,11 @@ void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
 
   // GetSupportedLanguages() never return NULL.
   scoped_ptr<InputMethodDescriptors> supported_input_methods(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetSupportedInputMethods());
+      CrosLibrary::Get()->GetInputMethodLibrary()->GetSupportedInputMethods());
   for (size_t i = 0; i < supported_input_methods->size(); ++i) {
     const InputMethodDescriptor& input_method = supported_input_methods->at(i);
     const std::string language_code =
-        LanguageLibrary::GetLanguageCodeFromDescriptor(input_method);
+        InputMethodLibrary::GetLanguageCodeFromDescriptor(input_method);
     AddInputMethodToMaps(language_code, input_method);
     // Add the language code and the input method id to the sets.
     supported_language_code_set.insert(language_code);

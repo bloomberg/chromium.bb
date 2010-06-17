@@ -86,8 +86,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
         // The LockScreen function is also called when the OS is suspended, and
         // in that case |saved_active_input_method_list_| might be non-empty.
         saved_active_input_method_list_.empty()) {
-      chromeos::LanguageLibrary* language =
-          chromeos::CrosLibrary::Get()->GetLanguageLibrary();
+      chromeos::InputMethodLibrary* language =
+          chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
       saved_previous_input_method_id_ = language->previous_input_method().id;
       saved_current_input_method_id_ = language->current_input_method().id;
       scoped_ptr<chromeos::InputMethodDescriptors> active_input_method_list(
@@ -116,8 +116,8 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   void RestoreInputMethods() {
     if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
         !saved_active_input_method_list_.empty()) {
-      chromeos::LanguageLibrary* language =
-          chromeos::CrosLibrary::Get()->GetLanguageLibrary();
+      chromeos::InputMethodLibrary* language =
+          chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
 
       chromeos::ImeConfigValue value;
       value.type = chromeos::ImeConfigValue::kValueTypeStringList;
@@ -410,8 +410,9 @@ void ScreenLocker::OnLoginFailure(const std::string& error) {
   if (!error.empty())
     msg += L"\n" + ASCIIToWide(error);
 
-  LanguageLibrary* language_library = CrosLibrary::Get()->GetLanguageLibrary();
-  if (language_library->GetNumActiveInputMethods() > 1)
+  InputMethodLibrary* input_method_library =
+      CrosLibrary::Get()->GetInputMethodLibrary();
+  if (input_method_library->GetNumActiveInputMethods() > 1)
     msg += L"\n" + l10n_util::GetString(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
 
   error_info_ = MessageBubble::ShowNoGrab(

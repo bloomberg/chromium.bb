@@ -13,7 +13,7 @@ namespace chromeos {
 
 class CryptohomeLibrary;
 class KeyboardLibrary;
-class LanguageLibrary;
+class InputMethodLibrary;
 class LibraryLoader;
 class LoginLibrary;
 class MountLibrary;
@@ -43,8 +43,8 @@ class CrosLibrary {
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
     // Setter for KeyboardLibrary
     void SetKeyboardLibrary(KeyboardLibrary* library, bool own);
-    // Setter for LanguageLibrary
-    void SetLanguageLibrary(LanguageLibrary* library, bool own);
+    // Setter for InputMethodLibrary
+    void SetInputMethodLibrary(InputMethodLibrary* library, bool own);
     // Setter for LoginLibrary.
     void SetLoginLibrary(LoginLibrary* library, bool own);
     // Setter for MountLibrary.
@@ -77,8 +77,8 @@ class CrosLibrary {
   // Getter for KeyboardLibrary
   KeyboardLibrary* GetKeyboardLibrary();
 
-  // Getter for LanguageLibrary
-  LanguageLibrary* GetLanguageLibrary();
+  // Getter for InputMethodLibrary
+  InputMethodLibrary* GetInputMethodLibrary();
 
   // Getter for LoginLibrary.
   LoginLibrary* GetLoginLibrary();
@@ -126,7 +126,7 @@ class CrosLibrary {
   LibraryLoader* library_loader_;
   CryptohomeLibrary* crypto_lib_;
   KeyboardLibrary* keyboard_lib_;
-  LanguageLibrary* language_lib_;
+  InputMethodLibrary* input_method_lib_;
   LoginLibrary* login_lib_;
   MountLibrary* mount_lib_;
   NetworkLibrary* network_lib_;
@@ -139,7 +139,7 @@ class CrosLibrary {
   bool own_library_loader_;
   bool own_cryptohome_lib_;
   bool own_keyboard_lib_;
-  bool own_language_lib_;
+  bool own_input_method_lib_;
   bool own_login_lib_;
   bool own_mount_lib_;
   bool own_network_lib_;

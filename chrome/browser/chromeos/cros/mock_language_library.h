@@ -12,10 +12,10 @@
 
 namespace chromeos {
 
-class MockLanguageLibrary : public LanguageLibrary {
+class MockInputMethodLibrary : public InputMethodLibrary {
  public:
-  MockLanguageLibrary() {}
-  virtual ~MockLanguageLibrary() {}
+  MockInputMethodLibrary() {}
+  virtual ~MockInputMethodLibrary() {}
 
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));

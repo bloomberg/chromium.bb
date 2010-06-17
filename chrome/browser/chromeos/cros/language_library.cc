@@ -15,7 +15,7 @@
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::LanguageLibraryImpl);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::InputMethodLibraryImpl);
 
 namespace {
 
@@ -60,7 +60,7 @@ const char kDefaultKeyboardLayout[] = "us";
 
 namespace chromeos {
 
-std::string LanguageLibrary::NormalizeLanguageCode(
+std::string InputMethodLibrary::NormalizeLanguageCode(
     const std::string& language_code) {
   // Some ibus engines return locale codes like "zh_CN" as language codes.
   // Normalize these to like "zh-CN".
@@ -100,12 +100,12 @@ std::string LanguageLibrary::NormalizeLanguageCode(
   return two_letter_code;
 }
 
-bool LanguageLibrary::IsKeyboardLayout(const std::string& input_method_id) {
+bool InputMethodLibrary::IsKeyboardLayout(const std::string& input_method_id) {
   const bool kCaseInsensitive = false;
   return StartsWithASCII(input_method_id, "xkb:", kCaseInsensitive);
 }
 
-std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
+std::string InputMethodLibrary::GetLanguageCodeFromDescriptor(
     const InputMethodDescriptor& descriptor) {
   // Handle some Chinese input methods as zh-CN/zh-TW, rather than zh.
   // TODO: we should fix this issue in engines rather than here.
@@ -121,7 +121,7 @@ std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
   }
 
   std::string language_code =
-      LanguageLibrary::NormalizeLanguageCode(descriptor.language_code);
+      InputMethodLibrary::NormalizeLanguageCode(descriptor.language_code);
 
   // Add country codes to language codes of some XKB input methods to make
   // these compatible with Chrome's application locale codes like "en-US".
@@ -142,7 +142,7 @@ std::string LanguageLibrary::GetLanguageCodeFromDescriptor(
   return language_code;
 }
 
-LanguageLibraryImpl::LanguageLibraryImpl()
+InputMethodLibraryImpl::InputMethodLibraryImpl()
     : input_method_status_connection_(NULL),
       previous_input_method_("", "", "", ""),
       current_input_method_("", "", "", "") {
@@ -151,24 +151,25 @@ LanguageLibraryImpl::LanguageLibraryImpl()
   current_input_method_ = input_method_descriptors->at(0);
 }
 
-LanguageLibraryImpl::~LanguageLibraryImpl() {
+InputMethodLibraryImpl::~InputMethodLibraryImpl() {
   if (input_method_status_connection_) {
     chromeos::DisconnectInputMethodStatus(input_method_status_connection_);
   }
 }
 
-LanguageLibraryImpl::Observer::~Observer() {
+InputMethodLibraryImpl::Observer::~Observer() {
 }
 
-void LanguageLibraryImpl::AddObserver(Observer* observer) {
+void InputMethodLibraryImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void LanguageLibraryImpl::RemoveObserver(Observer* observer) {
+void InputMethodLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
+chromeos::InputMethodDescriptors*
+InputMethodLibraryImpl::GetActiveInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetActiveInputMethods(input_method_status_connection_);
@@ -179,13 +180,13 @@ chromeos::InputMethodDescriptors* LanguageLibraryImpl::GetActiveInputMethods() {
   return result;
 }
 
-size_t LanguageLibraryImpl::GetNumActiveInputMethods() {
+size_t InputMethodLibraryImpl::GetNumActiveInputMethods() {
   scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
   return input_methods->size();
 }
 
 chromeos::InputMethodDescriptors*
-LanguageLibraryImpl::GetSupportedInputMethods() {
+InputMethodLibraryImpl::GetSupportedInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetSupportedInputMethods(
@@ -197,7 +198,7 @@ LanguageLibraryImpl::GetSupportedInputMethods() {
   return result;
 }
 
-void LanguageLibraryImpl::ChangeInputMethod(
+void InputMethodLibraryImpl::ChangeInputMethod(
     const std::string& input_method_id) {
   if (EnsureLoadedAndStarted()) {
     chromeos::ChangeInputMethod(
@@ -205,7 +206,7 @@ void LanguageLibraryImpl::ChangeInputMethod(
   }
 }
 
-void LanguageLibraryImpl::SetImePropertyActivated(const std::string& key,
+void InputMethodLibraryImpl::SetImePropertyActivated(const std::string& key,
                                                   bool activated) {
   DCHECK(!key.empty());
   if (EnsureLoadedAndStarted()) {
@@ -214,10 +215,10 @@ void LanguageLibraryImpl::SetImePropertyActivated(const std::string& key,
   }
 }
 
-bool LanguageLibraryImpl::InputMethodIsActivated(
+bool InputMethodLibraryImpl::InputMethodIsActivated(
     const std::string& input_method_id) {
   scoped_ptr<InputMethodDescriptors> active_input_method_descriptors(
-      CrosLibrary::Get()->GetLanguageLibrary()->GetActiveInputMethods());
+      CrosLibrary::Get()->GetInputMethodLibrary()->GetActiveInputMethods());
   for (size_t i = 0; i < active_input_method_descriptors->size(); ++i) {
     if (active_input_method_descriptors->at(i).id == input_method_id) {
       return true;
@@ -226,7 +227,7 @@ bool LanguageLibraryImpl::InputMethodIsActivated(
   return false;
 }
 
-bool LanguageLibraryImpl::GetImeConfig(
+bool InputMethodLibraryImpl::GetImeConfig(
     const char* section, const char* config_name, ImeConfigValue* out_value) {
   bool success = false;
   if (EnsureLoadedAndStarted()) {
@@ -236,7 +237,7 @@ bool LanguageLibraryImpl::GetImeConfig(
   return success;
 }
 
-bool LanguageLibraryImpl::SetImeConfig(
+bool InputMethodLibraryImpl::SetImeConfig(
     const char* section, const char* config_name, const ImeConfigValue& value) {
   const ConfigKeyType key = std::make_pair(section, config_name);
   pending_config_requests_.erase(key);
@@ -245,7 +246,7 @@ bool LanguageLibraryImpl::SetImeConfig(
   return pending_config_requests_.empty();
 }
 
-void LanguageLibraryImpl::FlushImeConfig() {
+void InputMethodLibraryImpl::FlushImeConfig() {
   bool active_input_methods_are_changed = false;
   if (EnsureLoadedAndStarted()) {
     LOG(INFO) << "Sending " << pending_config_requests_.size()
@@ -276,7 +277,7 @@ void LanguageLibraryImpl::FlushImeConfig() {
     if (!timer_.IsRunning()) {
       static const int64 kTimerIntervalInSec = 1;
       timer_.Start(base::TimeDelta::FromSeconds(kTimerIntervalInSec), this,
-                   &LanguageLibraryImpl::FlushImeConfig);
+                   &InputMethodLibraryImpl::FlushImeConfig);
     }
   }
   if (active_input_methods_are_changed) {
@@ -285,36 +286,37 @@ void LanguageLibraryImpl::FlushImeConfig() {
 }
 
 // static
-void LanguageLibraryImpl::InputMethodChangedHandler(
+void InputMethodLibraryImpl::InputMethodChangedHandler(
     void* object, const chromeos::InputMethodDescriptor& current_input_method) {
-  LanguageLibraryImpl* language_library =
-      static_cast<LanguageLibraryImpl*>(object);
-  language_library->UpdateCurrentInputMethod(current_input_method);
+  InputMethodLibraryImpl* input_method_library =
+      static_cast<InputMethodLibraryImpl*>(object);
+  input_method_library->UpdateCurrentInputMethod(current_input_method);
 }
 
 // static
-void LanguageLibraryImpl::RegisterPropertiesHandler(
+void InputMethodLibraryImpl::RegisterPropertiesHandler(
     void* object, const ImePropertyList& prop_list) {
-  LanguageLibraryImpl* language_library =
-      static_cast<LanguageLibraryImpl*>(object);
-  language_library->RegisterProperties(prop_list);
+  InputMethodLibraryImpl* input_method_library =
+      static_cast<InputMethodLibraryImpl*>(object);
+  input_method_library->RegisterProperties(prop_list);
 }
 
 // static
-void LanguageLibraryImpl::UpdatePropertyHandler(
+void InputMethodLibraryImpl::UpdatePropertyHandler(
     void* object, const ImePropertyList& prop_list) {
-  LanguageLibraryImpl* language_library =
-      static_cast<LanguageLibraryImpl*>(object);
-  language_library->UpdateProperty(prop_list);
+  InputMethodLibraryImpl* input_method_library =
+      static_cast<InputMethodLibraryImpl*>(object);
+  input_method_library->UpdateProperty(prop_list);
 }
 
 // static
-void LanguageLibraryImpl::FocusChangedHandler(void* object, bool is_focused) {
+void InputMethodLibraryImpl::FocusChangedHandler(void* object,
+                                                 bool is_focused) {
   // TODO(yusukes): Remove this function. Modify MonitorInputMethodStatuslibcros
   // API as well.
 }
 
-bool LanguageLibraryImpl::EnsureStarted() {
+bool InputMethodLibraryImpl::EnsureStarted() {
   if (input_method_status_connection_) {
     if (chromeos::InputMethodStatusConnectionIsAlive(
             input_method_status_connection_)) {
@@ -332,12 +334,12 @@ bool LanguageLibraryImpl::EnsureStarted() {
   return input_method_status_connection_ != NULL;
 }
 
-bool LanguageLibraryImpl::EnsureLoadedAndStarted() {
+bool InputMethodLibraryImpl::EnsureLoadedAndStarted() {
   return CrosLibrary::Get()->EnsureLoaded() &&
          EnsureStarted();
 }
 
-void LanguageLibraryImpl::UpdateCurrentInputMethod(
+void InputMethodLibraryImpl::UpdateCurrentInputMethod(
     const chromeos::InputMethodDescriptor& new_input_method) {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
@@ -346,7 +348,7 @@ void LanguageLibraryImpl::UpdateCurrentInputMethod(
         ChromeThread::UI, FROM_HERE,
         // NewRunnableMethod() copies |new_input_method| by value.
         NewRunnableMethod(
-            this, &LanguageLibraryImpl::UpdateCurrentInputMethod,
+            this, &InputMethodLibraryImpl::UpdateCurrentInputMethod,
             new_input_method));
     return;
   }
@@ -363,12 +365,13 @@ void LanguageLibraryImpl::UpdateCurrentInputMethod(
   FOR_EACH_OBSERVER(Observer, observers_, InputMethodChanged(this));
 }
 
-void LanguageLibraryImpl::RegisterProperties(const ImePropertyList& prop_list) {
+void InputMethodLibraryImpl::RegisterProperties(
+    const ImePropertyList& prop_list) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
-            this, &LanguageLibraryImpl::RegisterProperties, prop_list));
+            this, &InputMethodLibraryImpl::RegisterProperties, prop_list));
     return;
   }
 
@@ -377,12 +380,12 @@ void LanguageLibraryImpl::RegisterProperties(const ImePropertyList& prop_list) {
   FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
 }
 
-void LanguageLibraryImpl::UpdateProperty(const ImePropertyList& prop_list) {
+void InputMethodLibraryImpl::UpdateProperty(const ImePropertyList& prop_list) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
-            this, &LanguageLibraryImpl::UpdateProperty, prop_list));
+            this, &InputMethodLibraryImpl::UpdateProperty, prop_list));
     return;
   }
 

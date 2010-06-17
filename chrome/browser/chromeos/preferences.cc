@@ -253,7 +253,8 @@ void Preferences::SetLanguageConfigBoolean(const char* section,
   ImeConfigValue config;
   config.type = ImeConfigValue::kValueTypeBool;
   config.bool_value = value;
-  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
+  CrosLibrary::Get()->GetInputMethodLibrary()->
+      SetImeConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigInteger(const char* section,
@@ -262,7 +263,8 @@ void Preferences::SetLanguageConfigInteger(const char* section,
   ImeConfigValue config;
   config.type = ImeConfigValue::kValueTypeInt;
   config.int_value = value;
-  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
+  CrosLibrary::Get()->GetInputMethodLibrary()->
+      SetImeConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigString(const char* section,
@@ -271,7 +273,8 @@ void Preferences::SetLanguageConfigString(const char* section,
   ImeConfigValue config;
   config.type = ImeConfigValue::kValueTypeString;
   config.string_value = WideToUTF8(value);
-  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
+  CrosLibrary::Get()->GetInputMethodLibrary()->
+      SetImeConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigStringList(
@@ -283,7 +286,8 @@ void Preferences::SetLanguageConfigStringList(
   for (size_t i = 0; i < values.size(); ++i) {
     config.string_list_value.push_back(WideToUTF8(values[i]));
   }
-  CrosLibrary::Get()->GetLanguageLibrary()->SetImeConfig(section, name, config);
+  CrosLibrary::Get()->GetInputMethodLibrary()->
+      SetImeConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigStringListAsCSV(const char* section,

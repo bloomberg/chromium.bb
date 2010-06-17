@@ -35,7 +35,7 @@ CrosInProcessBrowserTest::CrosInProcessBrowserTest()
     : loader_(NULL),
       mock_cryptohome_library_(NULL),
       mock_keyboard_library_(NULL),
-      mock_language_library_(NULL),
+      mock_input_method_library_(NULL),
       mock_network_library_(NULL),
       mock_power_library_(NULL),
       mock_screen_lock_library_(NULL),
@@ -50,7 +50,7 @@ chromeos::CrosLibrary::TestApi* CrosInProcessBrowserTest::test_api() {
 
 void CrosInProcessBrowserTest::InitStatusAreaMocks() {
   InitMockKeyboardLibrary();
-  InitMockLanguageLibrary();
+  InitMockInputMethodLibrary();
   InitMockNetworkLibrary();
   InitMockPowerLibrary();
   InitMockSynapticsLibrary();
@@ -82,12 +82,12 @@ void CrosInProcessBrowserTest::InitMockKeyboardLibrary() {
   test_api()->SetKeyboardLibrary(mock_keyboard_library_, true);
 }
 
-void CrosInProcessBrowserTest::InitMockLanguageLibrary() {
+void CrosInProcessBrowserTest::InitMockInputMethodLibrary() {
   InitMockLibraryLoader();
-  if (mock_language_library_)
+  if (mock_input_method_library_)
     return;
-  mock_language_library_ = new MockLanguageLibrary();
-  test_api()->SetLanguageLibrary(mock_language_library_, true);
+  mock_input_method_library_ = new MockInputMethodLibrary();
+  test_api()->SetInputMethodLibrary(mock_input_method_library_, true);
 }
 
 void CrosInProcessBrowserTest::InitMockNetworkLibrary() {
@@ -124,7 +124,7 @@ void CrosInProcessBrowserTest::InitMockSynapticsLibrary() {
 
 void CrosInProcessBrowserTest::SetStatusAreaMocksExpectations() {
   SetKeyboardLibraryStatusAreaExpectations();
-  SetLanguageLibraryStatusAreaExpectations();
+  SetInputMethodLibraryStatusAreaExpectations();
   SetNetworkLibraryStatusAreaExpectations();
   SetPowerLibraryStatusAreaExpectations();
   SetSynapticsLibraryExpectations();
@@ -149,23 +149,23 @@ void CrosInProcessBrowserTest::SetKeyboardLibraryStatusAreaExpectations() {
       .RetiresOnSaturation();
 }
 
-void CrosInProcessBrowserTest::SetLanguageLibraryStatusAreaExpectations() {
-  EXPECT_CALL(*mock_language_library_, AddObserver(_))
+void CrosInProcessBrowserTest::SetInputMethodLibraryStatusAreaExpectations() {
+  EXPECT_CALL(*mock_input_method_library_, AddObserver(_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_language_library_, GetActiveInputMethods())
+  EXPECT_CALL(*mock_input_method_library_, GetActiveInputMethods())
       .Times(AnyNumber())
       .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_language_library_, current_ime_properties())
+  EXPECT_CALL(*mock_input_method_library_, current_ime_properties())
       .Times(1)
       .WillOnce((ReturnRef(ime_properties_)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_language_library_, SetImeConfig(_, _, _))
+  EXPECT_CALL(*mock_input_method_library_, SetImeConfig(_, _, _))
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_language_library_, RemoveObserver(_))
+  EXPECT_CALL(*mock_input_method_library_, RemoveObserver(_))
       .Times(1)
       .RetiresOnSaturation();
 }
@@ -251,8 +251,8 @@ void CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture() {
     test_api()->SetCryptohomeLibrary(NULL, false);
   if (mock_keyboard_library_)
     test_api()->SetKeyboardLibrary(NULL, false);
-  if (mock_language_library_)
-    test_api()->SetLanguageLibrary(NULL, false);
+  if (mock_input_method_library_)
+    test_api()->SetInputMethodLibrary(NULL, false);
   if (mock_network_library_)
     test_api()->SetNetworkLibrary(NULL, false);
   if (mock_power_library_)
