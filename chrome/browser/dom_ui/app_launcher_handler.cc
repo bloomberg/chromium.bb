@@ -178,7 +178,7 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
     return;
   }
 
-  Extension::LaunchContainer container = Extension::LAUNCH_TAB;
+  Extension::LaunchContainer container = extension->launch_container();
   if (launch_container == "tab")
     container = Extension::LAUNCH_TAB;
   else if (launch_container == "panel")
