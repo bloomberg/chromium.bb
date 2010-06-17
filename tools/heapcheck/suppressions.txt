@@ -748,12 +748,23 @@
    fun:testing::Test::Run
 }
 
+# '*ChromotingPlugin' stands for 'ChromotingPlugin' and
+# 'remoting::ChromotingPlugin::ChromotingPlugin'.
 {
    bug_46678_d
    Heapcheck:Leak
    ...
-   fun:remoting::ChromotingPlugin::ChromotingPlugin
+   fun:*ChromotingPlugin
    fun:CreatePlugin
+}
+
+{
+   bug_46678_e
+   Heapcheck:Leak
+   fun:Callback3::Type* NewCallback
+   fun:remoting::SessionManager::DoEncode
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
 }
 
 {
