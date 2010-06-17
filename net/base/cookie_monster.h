@@ -147,6 +147,8 @@ class CookieMonster : public CookieStore {
   // Override the default list of schemes that are allowed to be set in
   // this cookie store.  Calling his overrides the value of
   // "enable_file_scheme_".
+  // If this this method is called, it must be called before first use of
+  // the instance (i.e. as part of the instance initialization process.)
   void SetCookieableSchemes(const char* schemes[], size_t num_schemes);
 
   // There are some unknowns about how to correctly handle file:// cookies,

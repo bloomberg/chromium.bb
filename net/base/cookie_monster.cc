@@ -551,6 +551,9 @@ void CookieMonster::SetCookieableSchemes(
     const char* schemes[], size_t num_schemes) {
   AutoLock autolock(lock_);
 
+  // Cookieable Schemes must be set before first use of function.
+  DCHECK(!initialized_);
+
   cookieable_schemes_.clear();
   cookieable_schemes_.insert(cookieable_schemes_.end(),
                              schemes, schemes + num_schemes);
