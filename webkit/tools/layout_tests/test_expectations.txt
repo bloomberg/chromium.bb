@@ -7,6 +7,7 @@
 
 // Before bulach/andreip rebaseline these tests (changed at r61234 / new html5 parser).
 BUG46674 WIN : fast/text/international/hindi-whitespace.html = FAIL
-// Whoops -- need to rebaseline these.
+// Will go away with the next roll.
 BUG_DGLAZKOV MAC : css1/box_properties/float_elements_in_series.html = IMAGE
 BUG_DGLAZKOV LINUX : fast/dom/stripNullFromTextNodes.html = TEXT
+BUG_DGLAZKOV SKIP WIN LINUX : fast/js/missing-title-end-tag-js.html = MISSING
