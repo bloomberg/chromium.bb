@@ -29,10 +29,11 @@ void HistoryPublisher::PublishPageContent(const base::Time& time,
                                           const GURL& url,
                                           const std::wstring& title,
                                           const string16& contents) const {
+  std::wstring wide_contents = UTF16ToWide(contents);
   PageData page_data = {
     time,
     url,
-    UTF16ToWide(contents).c_str(),
+    wide_contents.c_str(),
     title.c_str(),
     NULL,
     NULL,
