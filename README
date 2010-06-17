@@ -33,7 +33,7 @@ This package contains:
 Note: svn and python will be installed automatically if not accessible (on
 Windows only).
 
-To update this distribution manually, run bootstrap\update.bat on Windows,
-or bootstrap/update.sh on Linux or Mac.
+To update this distribution manually, run bootstrap\gclient.bat on Windows,
+or bootstrap/gclient.sh on Linux or Mac.
 
 To disable automatic updating, set the environment variable DEPOT_TOOLS_UPDATE=0
