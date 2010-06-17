@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #endif
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser.h"
@@ -229,6 +230,15 @@ class BrowserProxy : public AutomationResourceProxy {
   // Experimental generic pattern.
   bool SendJSONRequest(const std::string& request,
                        std::string* response) WARN_UNUSED_RESULT;
+
+  // Gets the load times for all tabs started from the command line.
+  // Puts the time of the first tab to start loading into |min_start_time|,
+  // the time when loading stopped into |max_stop_time| (should be similar to
+  // the delay that WaitForInitialLoads waits for), and a list of all
+  // finished timestamps into |stop_times|. Returns true on success.
+  bool GetInitialLoadTimes(float* min_start_time, float* max_stop_time,
+                           std::vector<float>* stop_times);
+
 
  protected:
   virtual ~BrowserProxy() {}

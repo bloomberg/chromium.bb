@@ -31,6 +31,16 @@ class StartupTest : public UITest {
   void SetUp() {}
   void TearDown() {}
 
+  enum TestColdness {
+    WARM,
+    COLD
+  };
+
+  enum TestImportance {
+    NOT_IMPORTANT,
+    IMPORTANT
+  };
+
   // Load a file on startup rather than about:blank.  This tests a longer
   // startup path, including resource loading and the loading of gears.dll.
   void SetUpWithFileURL() {
@@ -72,11 +82,18 @@ class StartupTest : public UITest {
     launch_arguments_.AppendSwitch(switches::kEnableExtensionToolstrips);
   }
 
-  void RunPerfTestWithManyTabs(const char *test_name,
-      int tab_count, bool restore_session);
+  // Runs a test which loads |tab_count| tabs on startup, either as command line
+  // arguments or, if |restore_session| is true, by using session restore.
+  // |nth_timed_tab|, if non-zero, will measure time to load the first n+1 tabs.
+  void RunPerfTestWithManyTabs(const char* test_name,
+                               int tab_count, int nth_timed_tab,
+                               bool restore_session);
 
   void RunStartupTest(const char* graph, const char* trace,
-      bool test_cold, bool important, UITest::ProfileType profile_type) {
+                      TestColdness test_cold, TestImportance test_importance,
+                      UITest::ProfileType profile_type,
+                      int num_tabs, int nth_timed_tab) {
+    bool important = (test_importance == IMPORTANT);
     profile_type_ = profile_type;
 
     // Sets the profile data for the run.  For now, this is only used for
@@ -104,9 +121,17 @@ class StartupTest : public UITest {
       }
     }
 
-    TimeDelta timings[kNumCyclesMax];
+    struct TimingInfo {
+      TimeDelta end_to_end;
+      float first_start_ms;
+      float last_stop_ms;
+      float first_stop_ms;
+      float nth_tab_stop_ms;
+    };
+    TimingInfo timings[kNumCyclesMax];
+
     for (int i = 0; i < numCycles; ++i) {
-      if (test_cold) {
+      if (test_cold == COLD) {
         FilePath dir_app;
         ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app));
 
@@ -130,7 +155,29 @@ class StartupTest : public UITest {
       }
       UITest::SetUp();
       TimeTicks end_time = TimeTicks::Now();
-      timings[i] = end_time - browser_launch_time_;
+      if (num_tabs > 0) {
+        float min_start;
+        float max_stop;
+        std::vector<float> times;
+        scoped_refptr<BrowserProxy> browser_proxy(
+            automation()->GetBrowserWindow(0));
+        ASSERT_TRUE(browser_proxy.get());
+
+        if (browser_proxy->GetInitialLoadTimes(&min_start, &max_stop, &times) &&
+            !times.empty()) {
+          ASSERT_LT(nth_timed_tab, num_tabs);
+          ASSERT_EQ(times.size(), static_cast<size_t>(num_tabs));
+          timings[i].first_start_ms = min_start;
+          timings[i].last_stop_ms = max_stop;
+          timings[i].first_stop_ms = times[0];
+          timings[i].nth_tab_stop_ms = times[nth_timed_tab];
+        } else {
+          // Browser might not support initial load times.
+          // Only use end-to-end time for this test.
+          num_tabs = 0;
+        }
+      }
+      timings[i].end_to_end = end_time - browser_launch_time_;
       UITest::TearDown();
 
       if (i == 0) {
@@ -145,31 +192,64 @@ class StartupTest : public UITest {
 
     std::string times;
     for (int i = 0; i < numCycles; ++i)
-      StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
+      StringAppendF(&times, "%.2f,", timings[i].end_to_end.InMillisecondsF());
     PrintResultList(graph, "", trace, times, "ms", important);
+
+    if (num_tabs > 0) {
+      std::string name_base = trace;
+      std::string name;
+
+      times.clear();
+      name = name_base + "-start";
+      for (int i = 0; i < numCycles; ++i)
+        StringAppendF(&times, "%.2f,", timings[i].first_start_ms);
+      PrintResultList(graph, "", name.c_str(), times, "ms", important);
+
+      times.clear();
+      name = name_base + "-first";
+      for (int i = 0; i < numCycles; ++i)
+        StringAppendF(&times, "%.2f,", timings[i].first_stop_ms);
+      PrintResultList(graph, "", name.c_str(), times, "ms", important);
+
+      if (nth_timed_tab > 0) {
+        // Display only the time necessary to load the first n tabs.
+        times.clear();
+        name = name_base + "-" + IntToString(nth_timed_tab);
+        for (int i = 0; i < numCycles; ++i)
+          StringAppendF(&times, "%.2f,", timings[i].nth_tab_stop_ms);
+        PrintResultList(graph, "", name.c_str(), times, "ms", important);
+      }
+
+      if (num_tabs > 1) {
+        // Display the time necessary to load all of the tabs.
+        times.clear();
+        name = name_base + "-all";
+        for (int i = 0; i < numCycles; ++i)
+          StringAppendF(&times, "%.2f,", timings[i].last_stop_ms);
+        PrintResultList(graph, "", name.c_str(), times, "ms", important);
+      }
+    }
   }
 };
 
 TEST_F(StartupTest, PerfWarm) {
-  RunStartupTest("warm", "t", false /* not cold */, true /* important */,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "t", WARM, IMPORTANT, UITest::DEFAULT_THEME, 0, 0);
 }
 
 TEST_F(StartupTest, PerfReferenceWarm) {
   UseReferenceBuild();
-  RunStartupTest("warm", "t_ref", false /* not cold */,
-                 true /* important */, UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "t_ref", WARM, IMPORTANT, UITest::DEFAULT_THEME, 0, 0);
 }
 
 // TODO(mpcomplete): Should we have reference timings for all these?
 
 TEST_F(StartupTest, PerfCold) {
-  RunStartupTest("cold", "t", true /* cold */, false /* not important */,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("cold", "t", COLD, NOT_IMPORTANT, UITest::DEFAULT_THEME, 0, 0);
 }
 
-void StartupTest::RunPerfTestWithManyTabs(const char *test_name,
-    int tab_count, bool restore_session) {
+void StartupTest::RunPerfTestWithManyTabs(const char* test_name,
+                                          int tab_count, int nth_timed_tab,
+                                          bool restore_session) {
   // Initialize session with |tab_count| tabs.
   for (int i = 0; i < tab_count; ++i)
     SetUpWithComplexFileURL(i);
@@ -193,17 +273,16 @@ void StartupTest::RunPerfTestWithManyTabs(const char *test_name,
     launch_arguments_.AppendSwitchWithValue(switches::kRestoreLastSession,
                                             IntToWString(tab_count));
   }
-  RunStartupTest("warm", test_name,
-                 false, false,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("warm", test_name, WARM, NOT_IMPORTANT, UITest::DEFAULT_THEME,
+                 tab_count, nth_timed_tab);
 }
 
 TEST_F(StartupTest, PerfFewTabs) {
-  RunPerfTestWithManyTabs("few_tabs", 5, false);
+  RunPerfTestWithManyTabs("few_tabs", 5, 2, false);
 }
 
 TEST_F(StartupTest, PerfRestoreFewTabs) {
-  RunPerfTestWithManyTabs("restore_few_tabs", 5, true);
+  RunPerfTestWithManyTabs("restore_few_tabs", 5, 2, true);
 }
 
 // http://crbug.com/46609
@@ -216,87 +295,82 @@ TEST_F(StartupTest, PerfRestoreFewTabs) {
 #endif
 
 TEST_F(StartupTest, MAYBE_PerfSeveralTabs) {
-  RunPerfTestWithManyTabs("several_tabs", 10, false);
+  RunPerfTestWithManyTabs("several_tabs", 10, 4, false);
 }
 
 TEST_F(StartupTest, MAYBE_PerfRestoreSeveralTabs) {
-  RunPerfTestWithManyTabs("restore_several_tabs", 10, true);
+  RunPerfTestWithManyTabs("restore_several_tabs", 10, 4, true);
 }
 
 TEST_F(StartupTest, PerfExtensionEmpty) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
-  RunStartupTest("warm", "extension_empty",
-                 false /* cold */, false /* not important */,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "extension_empty", WARM, NOT_IMPORTANT,
+                 UITest::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfExtensionToolstrips1) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("toolstrips1");
-  RunStartupTest("warm", "extension_toolstrip1",
-                 false /* cold */, false /* not important */,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "extension_toolstrip1", WARM, NOT_IMPORTANT,
+                 UITest::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfExtensionToolstrips50) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("toolstrips50");
-  RunStartupTest("warm", "extension_toolstrip50",
-                 false /* cold */, false /* not important */,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "extension_toolstrip50", WARM, NOT_IMPORTANT,
+                 UITest::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfExtensionContentScript1) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts1");
-  RunStartupTest("warm", "extension_content_scripts1",
-                 false /* cold */, false /* not important */,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "extension_content_scripts1", WARM, NOT_IMPORTANT,
+                 UITest::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfExtensionContentScript50) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts50");
-  RunStartupTest("warm", "extension_content_scripts50",
-                 false /* cold */, false /* not important */,
-                 UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "extension_content_scripts50", WARM, NOT_IMPORTANT,
+                 UITest::DEFAULT_THEME, 1, 0);
 }
 
 #if defined(OS_WIN)
 // TODO(port): Enable gears tests on linux/mac once gears is working.
 TEST_F(StartupTest, PerfGears) {
   SetUpWithFileURL();
-  RunStartupTest("warm", "gears", false /* not cold */,
-                 false /* not important */, UITest::DEFAULT_THEME);
+  RunStartupTest("warm", "gears", WARM, NOT_IMPORTANT,
+                 UITest::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfColdGears) {
   SetUpWithFileURL();
-  RunStartupTest("cold", "gears", true /* cold */,
-                 false /* not important */, UITest::DEFAULT_THEME);
+  RunStartupTest("cold", "gears", COLD, NOT_IMPORTANT,
+                 UITest::DEFAULT_THEME, 1, 0);
 }
 #endif
 
-TEST_F(StartupTest, PerfColdComplexTheme) {
-  RunStartupTest("warm", "t-theme", false /* warm */,
-                 false /* not important */, UITest::COMPLEX_THEME);
+TEST_F(StartupTest, PerfComplexTheme) {
+  RunStartupTest("warm", "t-theme", WARM, NOT_IMPORTANT,
+                 UITest::COMPLEX_THEME, 0, 0);
 }
 
 #if defined(OS_LINUX)
-TEST_F(StartupTest, PerfColdGtkTheme) {
-  RunStartupTest("warm", "gtk-theme", false /* warm */,
-                 false /* not important */, UITest::NATIVE_THEME);
+TEST_F(StartupTest, PerfGtkTheme) {
+  RunStartupTest("warm", "gtk-theme", WARM, NOT_IMPORTANT,
+                 UITest::NATIVE_THEME, 0, 0);
 }
 
-TEST_F(StartupTest, PrefColdNativeFrame) {
-  RunStartupTest("warm", "custom-frame", false /* warm */,
-                 false /* not important */, UITest::CUSTOM_FRAME);
+TEST_F(StartupTest, PrefNativeFrame) {
+  RunStartupTest("warm", "custom-frame", WARM, NOT_IMPORTANT,
+                 UITest::CUSTOM_FRAME, 0, 0);
 }
 
-TEST_F(StartupTest, PerfColdNativeFrameGtkTheme) {
-  RunStartupTest("warm", "custom-frame-gtk-theme", false /* warm */,
-                 false /* not important */, UITest::CUSTOM_FRAME_NATIVE_THEME);
+TEST_F(StartupTest, PerfNativeFrameGtkTheme) {
+  RunStartupTest("warm", "custom-frame-gtk-theme", WARM, NOT_IMPORTANT,
+                 UITest::CUSTOM_FRAME_NATIVE_THEME, 0, 0);
 }
 #endif
 
