@@ -43,7 +43,6 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
         browser_view_(browser_view) {
     AddCheckItemWithStringId(IDC_TOGGLE_VERTICAL_TABS,
                              IDS_TAB_CXMENU_USE_VERTICAL_TABS);
-    AddCheckItemWithStringId(IDC_COMPACT_NAVBAR, IDS_COMPACT_NAVBAR);
     AddSeparator();
 
     AddCheckItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
@@ -60,8 +59,6 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
   virtual bool IsCommandIdChecked(int command_id) const {
     if (command_id == IDC_TOGGLE_VERTICAL_TABS)
       return browser_view_->UseVerticalTabs();
-    if (command_id == IDC_COMPACT_NAVBAR)
-      return browser_view_->is_compact_style();
     return StatusAreaView::GetOpenTabsMode() == command_id;
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
@@ -70,13 +67,11 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       menus::Accelerator* accelerator) {
-    return command_id == IDC_COMPACT_NAVBAR ?
-        browser_view_->GetAccelerator(command_id, accelerator) : false;
+    return false;
   }
   virtual void ExecuteCommand(int command_id) {
     switch (command_id) {
       case IDC_TOGGLE_VERTICAL_TABS:
-      case IDC_COMPACT_NAVBAR:
         browser_view_->browser()->ExecuteCommand(command_id);
         break;
       case StatusAreaView::OPEN_TABS_ON_LEFT:

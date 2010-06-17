@@ -1460,8 +1460,6 @@
         }],
         ['OS=="linux" and chromeos==1', {
           'sources': [
-            'browser/chromeos/compact_location_bar_host_browsertest.cc',
-            'browser/chromeos/compact_navigation_bar_browsertest.cc',
             'browser/chromeos/cros/cros_in_process_browser_test.cc',
             'browser/chromeos/cros/cros_in_process_browser_test.h',
             'browser/chromeos/cros/mock_cros_library.h',
