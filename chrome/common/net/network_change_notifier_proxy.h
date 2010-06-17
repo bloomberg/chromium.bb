@@ -21,19 +21,18 @@ namespace chrome_common_net {
 class NetworkChangeNotifierThread;
 class NetworkChangeObserverProxy;
 
-class NetworkChangeNotifierProxy : public net::NetworkChangeNotifier {
+class NetworkChangeNotifierProxy : public net::NetworkChangeNotifier,
+                                   public NonThreadSafe {
  public:
   // |source_thread| must be guaranteed to outlive the current thread.
   // Does not take ownership of any arguments.
-  NetworkChangeNotifierProxy(
+  explicit NetworkChangeNotifierProxy(
       NetworkChangeNotifierThread* source_thread);
 
   virtual ~NetworkChangeNotifierProxy();
 
   // net::NetworkChangeNotifier implementation.
-
   virtual void AddObserver(net::NetworkChangeNotifier::Observer* observer);
-
   virtual void RemoveObserver(net::NetworkChangeNotifier::Observer* observer);
 
  private:
@@ -42,8 +41,8 @@ class NetworkChangeNotifierProxy : public net::NetworkChangeNotifier {
 
   // Utility class that routes received notifications to a list of
   // observers.
-  class ObserverRepeater : public NonThreadSafe,
-                           public net::NetworkChangeNotifier::Observer {
+  class ObserverRepeater : public net::NetworkChangeNotifier::Observer,
+                           public NonThreadSafe {
    public:
     // Does not take ownership of the given observer list.
     explicit ObserverRepeater(NetworkObserverList* observers);

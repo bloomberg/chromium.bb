@@ -15,13 +15,6 @@ NetworkChangeNotifierProxy::NetworkChangeNotifierProxy(
     : observer_proxy_(new NetworkChangeObserverProxy(
         source_thread, MessageLoop::current())),
       observer_repeater_(&observers_) {
-  // TODO(akalin): We get this from NonThreadSafe, which
-  // net::NetworkChangeNotifier inherits from.  Interface classes
-  // really shouldn't be inheriting from NonThreadSafe; make it so
-  // that all the implementations of net::NetworkChangeNotifier
-  // inherit from NonThreadSafe directly and
-  // net::NetworkChangeNotifier doesn't.
-  DCHECK(CalledOnValidThread());
   DCHECK(observer_proxy_);
   observer_proxy_->Attach(&observer_repeater_);
 }
@@ -44,16 +37,19 @@ void NetworkChangeNotifierProxy::RemoveObserver(
 }
 
 NetworkChangeNotifierProxy::ObserverRepeater::ObserverRepeater(
-    NetworkObserverList* observers) : observers_(observers) {
+    NetworkObserverList* observers)
+    : observers_(observers) {
   DCHECK(observers_);
 }
 
-NetworkChangeNotifierProxy::ObserverRepeater::~ObserverRepeater() {}
+NetworkChangeNotifierProxy::ObserverRepeater::~ObserverRepeater() {
+  DCHECK(CalledOnValidThread());
+}
 
 void NetworkChangeNotifierProxy::ObserverRepeater::OnIPAddressChanged() {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(net::NetworkChangeNotifier::Observer,
-                    *observers_, OnIPAddressChanged());
+  FOR_EACH_OBSERVER(net::NetworkChangeNotifier::Observer, *observers_,
+                    OnIPAddressChanged());
 }
 
 }  // namespace chrome_common_net
