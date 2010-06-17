@@ -12,6 +12,21 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+@interface OCMockObject(PreventRetainCycle)
+- (void)clearRecordersAndExpectations;
+@end
+
+@implementation OCMockObject(PreventRetainCycle)
+
+// We need a mechanism to clear the invocation handlers to break a
+// retain cycle (see below; search for "retain cycle").
+- (void)clearRecordersAndExpectations {
+  [recorders removeAllObjects];
+  [expectations removeAllObjects];
+}
+
+@end
+
 
 class BookmarkFolderTargetTest : public CocoaTest {
  public:
@@ -20,9 +35,14 @@ class BookmarkFolderTargetTest : public CocoaTest {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
     bmbNode_ = model->GetBookmarkBarNode();
   }
+  virtual void TearDown() {
+    pool_.Recycle();
+    CocoaTest::TearDown();
+  }
 
   BrowserTestHelper helper_;
   const BookmarkNode* bmbNode_;
+  base::ScopedNSAutoreleasePool pool_;
 };
 
 TEST_F(BookmarkFolderTargetTest, StartWithNothing) {
@@ -54,7 +74,9 @@ TEST_F(BookmarkFolderTargetTest, ReopenSameFolder) {
   // Fake controller
   id controller = [OCMockObject mockForClass:[BookmarkBarFolderController
                                                class]];
-  // YES a current folder.  Self-mock that as well, so "same" will be true.
+  // YES a current folder.  Self-mock that as well, so "same" will be
+  // true.  Note this creates a retain cycle in OCMockObject; we
+  // accomodate at the end of this function.
   [[[controller stub] andReturn:controller] folderController];
   [[[controller stub] andReturn:sender] parentButton];
 
@@ -67,6 +89,12 @@ TEST_F(BookmarkFolderTargetTest, ReopenSameFolder) {
 
   [target openBookmarkFolderFromButton:sender];
   [controller verify];
+
+  // Our use of OCMockObject means an object can return itself.  This
+  // creates a retain cycle, since OCMock retains all objects used in
+  // mock creation.  Clear out the invocation handlers of all
+  // OCMockRecorders we used to break the cycles.
+  [controller clearRecordersAndExpectations];
 }
 
 TEST_F(BookmarkFolderTargetTest, ReopenNotSame) {
@@ -90,4 +118,7 @@ TEST_F(BookmarkFolderTargetTest, ReopenNotSame) {
 
   [target openBookmarkFolderFromButton:sender];
   [controller verify];
+
+  // Break retain cycles.
+  [controller clearRecordersAndExpectations];
 }

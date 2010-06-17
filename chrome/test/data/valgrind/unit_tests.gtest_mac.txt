@@ -36,6 +36,3 @@ RenderViewTest.Print*
 TabStripControllerTest.AddRemoveTabs
 # See http://crbug.com/30398.
 TaskManagerWindowControllerTest.*
-
-# Already has suppressions, but new variants keep popping up. crbug.com/39282
-BookmarkFolderTargetTest.*
