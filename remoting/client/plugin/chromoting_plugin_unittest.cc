@@ -13,6 +13,7 @@
 pepper::PepperPlugin* CreatePlugin(NPNetscapeFuncs* browser_funcs,
                                    NPP instance);
 
+namespace remoting {
 
 class ChromotingPluginTest : public testing::Test {
  protected:
@@ -24,10 +25,10 @@ class ChromotingPluginTest : public testing::Test {
     instance_.reset(new NPP_t());
 
     // Create the ChromotingPlugin for testing.
-    pepper::PepperPlugin* pepper_plugin;
-    pepper_plugin = CreatePlugin(browser_funcs_, instance_.get());
+    pepper::PepperPlugin* pepper_plugin =
+        CreatePlugin(browser_funcs_, instance_.get());
     plugin_.reset(
-        reinterpret_cast<remoting::ChromotingPlugin*>(pepper_plugin));
+        static_cast<ChromotingPlugin*>(pepper_plugin));
   }
 
   virtual void TearDown() {
@@ -35,48 +36,44 @@ class ChromotingPluginTest : public testing::Test {
 
   FakeBrowser* fake_browser_;
   scoped_ptr<NPP_t> instance_;
-  scoped_ptr<remoting::ChromotingPlugin> plugin_;
+  scoped_ptr<ChromotingPlugin> plugin_;
 };
 
-TEST_F(ChromotingPluginTest, TestSetup) {
+TEST_F(ChromotingPluginTest, TestCaseSetup) {
   ASSERT_TRUE(plugin_->browser() != NULL);
   ASSERT_TRUE(plugin_->extensions() != NULL);
   ASSERT_TRUE(plugin_->instance() != NULL);
 
-  ASSERT_TRUE(plugin_->device() != NULL);
+  // Device is not set until New() is called.
+  ASSERT_TRUE(plugin_->device() == NULL);
 }
 
+#if 0
+TODO(ajwong): reenable once we have the threading sorted out.
 TEST_F(ChromotingPluginTest, TestNew) {
   NPMIMEType mimetype =
       const_cast<NPMIMEType>("pepper-application/x-chromoting-plugin");
   int16 argc;
   char* argn[4];
   char* argv[4];
-  NPError result;
-
-  // Test 0 arguments (NULL arrays).
-  argc = 0;
-  result = plugin_->New(mimetype, argc, NULL, NULL);
-  ASSERT_EQ(NPERR_GENERIC_ERROR, result);
 
   // Test 0 arguments.
   argc = 0;
-  result = plugin_->New(mimetype, argc, argn, argv);
-  ASSERT_EQ(NPERR_GENERIC_ERROR, result);
+  ASSERT_EQ(NPERR_GENERIC_ERROR, plugin_->New(mimetype, argc, argn, argv));
 
   // Test 1 argument (missing "src").
   argc = 1;
   argn[0] = const_cast<char*>("noturl");
   argv[0] = const_cast<char*>("random.value");
-  result = plugin_->New(mimetype, argc, argn, argv);
-  ASSERT_EQ(NPERR_GENERIC_ERROR, result);
+  ASSERT_EQ(NPERR_GENERIC_ERROR, plugin_->New(mimetype, argc, argn, argv));
 
   // Test "src" argument.
   argc = 1;
   argn[0] = const_cast<char*>("src");
-  argv[0] = const_cast<char*>("chromotocol:name@chromoting.org");
-  result = plugin_->New(mimetype, argc, argn, argv);
-  ASSERT_EQ(NPERR_NO_ERROR, result);
+  argv[0] = const_cast<char*>("chromotocol://name?user=u&auth=a&jid=j");
+  ASSERT_EQ(NPERR_NO_ERROR, plugin_->New(mimetype, argc, argn, argv));
+
+  ASSERT_EQ(NPERR_NO_ERROR, plugin_->Destroy(NULL));
 }
 
 TEST_F(ChromotingPluginTest, TestSetWindow) {
@@ -86,3 +83,19 @@ TEST_F(ChromotingPluginTest, TestSetWindow) {
   result = plugin_->SetWindow(window);
   ASSERT_EQ(NPERR_NO_ERROR, result);
 }
+#endif
+
+TEST_F(ChromotingPluginTest, ParseUrl) {
+  const char url[] = "chromotocol://hostid?user=auser&auth=someauth&jid=ajid";
+  std::string user_id;
+  std::string auth_token;
+  std::string host_jid;
+  ASSERT_TRUE(
+      ChromotingPlugin::ParseUrl(url, &user_id, &auth_token, &host_jid));
+
+  EXPECT_EQ("auser", user_id);
+  EXPECT_EQ("someauth", auth_token);
+  EXPECT_EQ("ajid", host_jid);
+}
+
+}  // namespace remoting

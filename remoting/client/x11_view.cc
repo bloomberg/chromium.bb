@@ -8,6 +8,8 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/Xcomposite.h>
+
+#include "base/logging.h"
 #include "remoting/client/decoder_verbatim.h"
 
 namespace remoting {
@@ -72,6 +74,26 @@ void X11View::Paint() {
 
   XRenderFreePicture(display_, picture);
   XFreePixmap(display_, pixmap);
+}
+
+void X11View::SetSolidFill(uint32 color) {
+  // TODO(ajwong): Implement.
+  NOTIMPLEMENTED();
+}
+
+void X11View::UnsetSolidFill() {
+  // TODO(ajwong): Implement.
+  NOTIMPLEMENTED();
+}
+
+void X11View::SetViewport(int x, int y, int width, int height) {
+  // TODO(ajwong): Implement.
+  NOTIMPLEMENTED();
+}
+
+void X11View::SetBackingStoreSize(int width, int height) {
+  // TODO(ajwong): Implement.
+  NOTIMPLEMENTED();
 }
 
 void X11View::InitPaintTarget() {

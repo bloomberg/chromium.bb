@@ -25,6 +25,10 @@ class X11View : public ChromotingView {
 
   // ChromotingView implementations.
   virtual void Paint();
+  virtual void SetSolidFill(uint32 color);
+  virtual void UnsetSolidFill();
+  virtual void SetViewport(int x, int y, int width, int height);
+  virtual void SetBackingStoreSize(int width, int height);
   virtual void HandleBeginUpdateStream(HostMessage* msg);
   virtual void HandleUpdateStreamPacket(HostMessage* msg);
   virtual void HandleEndUpdateStream(HostMessage* msg) ;
@@ -53,5 +57,7 @@ class X11View : public ChromotingView {
 };
 
 }  // namespace remoting
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::X11View);
 
 #endif  // REMOTING_CLIENT_X11_VIEW_H_

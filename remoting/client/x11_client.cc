@@ -28,8 +28,7 @@ using remoting::JingleThread;
 
 namespace remoting {
 
-class X11Client : public base::RefCountedThreadSafe<X11Client>,
-                  public HostConnection::HostEventCallback {
+class X11Client : public HostConnection::HostEventCallback {
  public:
   X11Client(MessageLoop* loop, base::WaitableEvent* client_done)
       : message_loop_(loop),
@@ -145,7 +144,7 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
     XResizeWindow(display_, window_, width_, height_);
 
     // Now construct the X11View that renders the remote desktop.
-    view_ = new X11View(display_, window_, width_, height_);
+    view_.reset(new X11View(display_, window_, width_, height_));
 
     // Schedule the event handler to process the event queue of X11.
     ScheduleX11EventHandler();
@@ -215,12 +214,14 @@ class X11Client : public base::RefCountedThreadSafe<X11Client>,
   int width_;
   int height_;
 
-  scoped_refptr<ChromotingView> view_;
+  scoped_ptr<ChromotingView> view_;
 
   DISALLOW_COPY_AND_ASSIGN(X11Client);
 };
 
 }  // namespace remoting
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::X11Client);
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
@@ -237,20 +238,18 @@ int main(int argc, char** argv) {
   network_thread.Start();
 
   base::WaitableEvent client_done(false, false);
-  scoped_refptr<remoting::X11Client> client =
-      new remoting::X11Client(network_thread.message_loop(), &client_done);
-  scoped_refptr<JingleHostConnection> connection =
-      new JingleHostConnection(&network_thread, client);
-  connection->Connect(username, auth_token, host_jid);
+  remoting::X11Client client(network_thread.message_loop(), &client_done);
+  JingleHostConnection connection(&network_thread);
+  connection.Connect(username, auth_token, host_jid, &client);
 
-  client->InitX11();
+  client.InitX11();
 
   // Wait until the main loop is done.
   client_done.Wait();
 
-  connection->Disconnect();
+  connection.Disconnect();
 
-  client->DestroyX11();
+  client.DestroyX11();
 
   // Quit the current message loop.
   network_thread.message_loop()->PostTask(FROM_HERE,

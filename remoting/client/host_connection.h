@@ -39,7 +39,8 @@ class HostConnection {
   // TODO(ajwong): We need to generalize this API.
   virtual void Connect(const std::string& username,
                        const std::string& auth_token,
-                       const std::string& host_jid) = 0;
+                       const std::string& host_jid,
+                       HostEventCallback* event_callback) = 0;
   virtual void Disconnect() = 0;
 
  protected:

@@ -9,9 +9,9 @@
 
 namespace remoting {
 
-JingleHostConnection::JingleHostConnection(JingleThread* network_thread,
-                                           HostEventCallback* event_callback)
-    : network_thread_(network_thread), event_callback_(event_callback) {
+JingleHostConnection::JingleHostConnection(JingleThread* network_thread)
+    : network_thread_(network_thread),
+      event_callback_(NULL) {
 }
 
 JingleHostConnection::~JingleHostConnection() {
@@ -19,12 +19,13 @@ JingleHostConnection::~JingleHostConnection() {
 
 void JingleHostConnection::Connect(const std::string& username,
                                    const std::string& password,
-                                   const std::string& host_jid) {
+                                   const std::string& host_jid,
+                                   HostEventCallback* event_callback) {
   message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &JingleHostConnection::DoConnect,
-                        username, password, host_jid));
+      NewRunnableMethod(this, &JingleHostConnection::DoConnect,
+                        username, password, host_jid,
+                        event_callback));
 }
 
 void JingleHostConnection::Disconnect() {
@@ -109,8 +110,11 @@ MessageLoop* JingleHostConnection::message_loop() {
 
 void JingleHostConnection::DoConnect(const std::string& username,
                                      const std::string& auth_token,
-                                     const std::string& host_jid) {
+                                     const std::string& host_jid,
+                                     HostEventCallback* event_callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  event_callback_ = event_callback;
 
   jingle_client_ = new JingleClient(network_thread_);
   jingle_client_->Init(username, auth_token, kChromotingTokenServiceName, this);

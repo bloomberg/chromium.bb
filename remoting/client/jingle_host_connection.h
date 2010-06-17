@@ -20,6 +20,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "remoting/base/protocol_decoder.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/jingle_glue/jingle_channel.h"
@@ -31,19 +32,17 @@ namespace remoting {
 
 class JingleThread;
 
-class JingleHostConnection :
-    public base::RefCountedThreadSafe<JingleHostConnection>,
-    public HostConnection,
-    public JingleChannel::Callback,
-    public JingleClient::Callback {
+class JingleHostConnection : public HostConnection,
+                             public JingleChannel::Callback,
+                             public JingleClient::Callback {
  public:
-  JingleHostConnection(JingleThread* network_thread,
-                       HostEventCallback* event_callback);
+  explicit JingleHostConnection(JingleThread* network_thread);
   virtual ~JingleHostConnection();
 
   virtual void Connect(const std::string& username,
                        const std::string& auth_token,
-                       const std::string& host_jid);
+                       const std::string& host_jid,
+                       HostEventCallback* event_callback);
   virtual void Disconnect();
 
   // JingleChannel::Callback interface.
@@ -64,7 +63,8 @@ class JingleHostConnection :
 
   void DoConnect(const std::string& username,
                  const std::string& auth_token,
-                 const std::string& host_jid);
+                 const std::string& host_jid,
+                 HostEventCallback* event_callback);
   void DoDisconnect();
 
   JingleThread* network_thread_;
@@ -79,5 +79,7 @@ class JingleHostConnection :
 };
 
 }  // namespace remoting
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::JingleHostConnection);
 
 #endif  // REMOTING_CLIENT_JINGLE_HOST_CONNECTION_H_

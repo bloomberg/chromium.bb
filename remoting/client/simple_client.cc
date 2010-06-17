@@ -129,14 +129,13 @@ int main(int argc, char** argv) {
 
   base::WaitableEvent client_done(false, false);
   SimpleHostEventCallback handler(network_thread.message_loop(), &client_done);
-  scoped_refptr<JingleHostConnection> connection =
-      new JingleHostConnection(&network_thread, &handler);
-  connection->Connect(username, auth_token, host_jid);
+  JingleHostConnection connection(&network_thread);
+  connection.Connect(username, auth_token, host_jid, &handler);
 
   // Wait until the mainloop has been signaled to exit.
   client_done.Wait();
 
-  connection->Disconnect();
+  connection.Disconnect();
   network_thread.message_loop()->PostTask(FROM_HERE,
                                           new MessageLoop::QuitTask());
   network_thread.Stop();

@@ -8,7 +8,7 @@
 // This information needs to live outside of the PepperPlugin since it can
 // be requested by the browser before the PepperPlugin has been instantiated.
 void InitializePluginInfo(pepper::PepperPlugin::Info* plugin_info) {
-  plugin_info->mime_description = remoting::kMimeType;
+  plugin_info->mime_description = remoting::ChromotingPlugin::kMimeType;
   plugin_info->plugin_name = "Chromoting";
   plugin_info->plugin_description = "Remote access for Chrome";
 }

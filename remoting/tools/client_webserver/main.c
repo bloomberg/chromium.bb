@@ -106,7 +106,10 @@ void handle_request(int connection) {
   // However, we return empty content, but with the requested plugin mimetype.
   write_data(connection, "HTTP/1.0 200 OK\r\n");
   write_data(connection, "Content-Type: ");
-  write_data(connection, mime_type);
+  // TODO(ajwong): Currently hardcoding the mimetype rather than parsing out of
+  // URL to make it easier to invoke the plugin.  Change this back to writing
+  // |mime_type| out after we get things cleaned up.
+  write_data(connection, "pepper-application/x-chromoting-plugin");
   write_data(connection, "\r\n\r\n");
 
   // This dummy data is unused, but must be present or else the reader may hang.

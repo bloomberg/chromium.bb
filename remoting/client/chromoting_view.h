@@ -14,13 +14,32 @@ class HostMessage;
 // ChromotingView defines the behavior of an object that draws a view of the
 // remote desktop. Its main function is to choose the right decoder and render
 // the update stream onto the screen.
-class ChromotingView : public base::RefCountedThreadSafe<ChromotingView> {
+class ChromotingView {
  public:
   virtual ~ChromotingView() {}
 
   // Tells the ChromotingView to paint the current image on the screen.
   // TODO(hclam): Add rects as parameter if needed.
   virtual void Paint() = 0;
+
+  // Fill the screen with one single static color, and ignore updates.
+  // Useful for debugging.
+  virtual void SetSolidFill(uint32 color) = 0;
+
+  // Removes a previously set solid fill.  If no fill was previous set, this
+  // does nothing.
+  virtual void UnsetSolidFill() = 0;
+
+  // Reposition and resize the viewport into the backing store. If the viewport
+  // extends past the end of the backing store, it is filled with black.
+  virtual void SetViewport(int x, int y, int width, int height) = 0;
+
+  // Resize the underlying image that is displayed.  This should match the size
+  // of the output from the decoder.
+  //
+  // TODO(ajwong): We need a better name.  Look at how Java represents this
+  // stuff?
+  virtual void SetBackingStoreSize(int width, int height) = 0;
 
   // Handle the BeginUpdateStream message.
   virtual void HandleBeginUpdateStream(HostMessage* msg) = 0;
