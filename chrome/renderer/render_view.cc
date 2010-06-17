@@ -565,9 +565,8 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
-  // TODO(atwilson): Enable this when setName() becomes available upstream.
-  // if (!frame_name.empty)
-  //   webview()->mainFrame()->setName(frame_name);
+  if (!frame_name.empty())
+    webview()->mainFrame()->setName(frame_name);
   webview()->setDevToolsAgent(
       WebDevToolsAgent::create(webview(), devtools_agent_.get()));
 
@@ -1603,14 +1602,6 @@ void RenderView::OnMissingPluginStatus(
 }
 
 // WebKit::WebViewClient ------------------------------------------------------
-
-// TODO(atwilson): Remove this older API when we've pushed the related changes
-// upstream.
-WebView* RenderView::createView(
-    WebFrame* creator,
-    const WebWindowFeatures& features) {
-  return createView(creator, features, WebString());
-}
 
 WebView* RenderView::createView(
     WebFrame* creator,

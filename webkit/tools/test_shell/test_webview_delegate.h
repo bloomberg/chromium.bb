@@ -76,10 +76,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   typedef std::vector<CapturedContextMenuEvent> CapturedContextMenuEvents;
 
   // WebKit::WebViewClient
-  // TODO(atwilson): Remove this API when we push related changes upstream
-  virtual WebKit::WebView* createView(
-      WebKit::WebFrame* creator,
-      const WebKit::WebWindowFeatures& window_features);
   virtual WebKit::WebView* createView(
       WebKit::WebFrame* creator,
       const WebKit::WebWindowFeatures& features,
