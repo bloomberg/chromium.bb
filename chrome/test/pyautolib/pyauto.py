@@ -667,8 +667,11 @@ class Main(object):
         '-D', '--wait-for-debugger', action='store_true', default=False,
         help='Block PyAuto on startup for attaching debugger.')
     parser.add_option(
-        '', '--ui-test-flags', type='string', default='',
-        help='Flags passed to the UI test suite. Refer ui_test.h for options')
+        '', '--chrome-flags', type='string', default='',
+        help='Flags passed to Chrome.  This is in addition to the usual flags '
+             'like suppressing first-run dialogs, enabling automation.  '
+             'See chrome/common/chrome_switches.cc for the list of flags '
+             'chrome understands.')
     parser.add_option(
         '', '--list-missing-tests', action='store_true', default=False,
         help='Print a list of tests not included in PYAUTO_TESTS, and exit')
@@ -830,7 +833,10 @@ class Main(object):
     if self._options.wait_for_debugger:
       raw_input('Attach debugger to process %s and hit <enter> ' % os.getpid())
 
-    pyauto_suite = PyUITestSuite(re.split('\s+', self._options.ui_test_flags))
+    suite_args = [sys.argv[0]]
+    if self._options.chrome_flags:
+      suite_args.append('--extra-chrome-flags=' + self._options.chrome_flags)
+    pyauto_suite = PyUITestSuite(suite_args)
     loaded_tests = self._LoadTests(self._args)
     pyauto_suite.addTests(loaded_tests)
     verbosity = 1
