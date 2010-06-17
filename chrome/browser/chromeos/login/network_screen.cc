@@ -153,7 +153,7 @@ void NetworkScreen::OnDialogCancelled() {
 // NetworkScreen, ViewScreen implementation:
 
 void NetworkScreen::CreateView() {
-  language_switch_model_.InitLanguageMenu();
+  language_switch_menu_.InitLanguageMenu();
   ViewScreen<NetworkSelectionView>::CreateView();
 }
 

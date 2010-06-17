@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
@@ -252,7 +252,7 @@ void WizardController::Init(const std::string& first_screen_name,
   if (customization_ != NULL) {
     const std::string locale = customization_->initial_locale();
     if (!locale.empty()) {
-      chromeos::LanguageSwitchModel::SwitchLanguage(locale);
+      chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
     }
   }
 

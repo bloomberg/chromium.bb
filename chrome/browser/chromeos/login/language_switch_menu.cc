@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "chrome/browser/chromeos/login/language_switch_menu.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -25,14 +25,14 @@ const int kMoreLanguagesSubMenu = 200;
 
 namespace chromeos {
 
-LanguageSwitchModel::LanguageSwitchModel()
+LanguageSwitchMenu::LanguageSwitchMenu()
     : ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)),
       delta_x_(0),
       delta_y_(0) {
 }
 
-void LanguageSwitchModel::InitLanguageMenu() {
+void LanguageSwitchMenu::InitLanguageMenu() {
   // Update LanguageList to contain entries in current locale.
   language_list_.reset(new LanguageList);
   language_list_->CopySpecifiedLanguagesUp(kLanguagesTopped);
@@ -60,7 +60,7 @@ void LanguageSwitchModel::InitLanguageMenu() {
   menu_.reset(new views::Menu2(&menu_model_));
 }
 
-std::wstring LanguageSwitchModel::GetCurrentLocaleName() const {
+std::wstring LanguageSwitchMenu::GetCurrentLocaleName() const {
   DCHECK(g_browser_process);
   const std::string locale = g_browser_process->GetApplicationLocale();
   return language_list_->GetLanguageNameAt(
@@ -69,20 +69,20 @@ std::wstring LanguageSwitchModel::GetCurrentLocaleName() const {
 
 // Currently, views::Menu is implemented directly with the Gtk
 // widgets. So we use native gtk callbacks to get its future size.
-int LanguageSwitchModel::GetFirstLevelMenuWidth() const {
+int LanguageSwitchMenu::GetFirstLevelMenuWidth() const {
   DCHECK(menu_ != NULL);
   GtkRequisition box_size;
   gtk_widget_size_request(menu_->GetNativeMenu(), &box_size);
   return box_size.width;
 }
 
-void LanguageSwitchModel::SetFirstLevelMenuWidth(int width) {
+void LanguageSwitchMenu::SetFirstLevelMenuWidth(int width) {
   DCHECK(menu_ != NULL);
   gtk_widget_set_size_request(menu_->GetNativeMenu(), width, -1);
 }
 
 // static
-void LanguageSwitchModel::SwitchLanguage(const std::string& locale) {
+void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
   // Save new locale.
   DCHECK(g_browser_process);
   PrefService* prefs = g_browser_process->local_state();
@@ -99,7 +99,7 @@ void LanguageSwitchModel::SwitchLanguage(const std::string& locale) {
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation.
 
-void LanguageSwitchModel::RunMenu(views::View* source, const gfx::Point& pt) {
+void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   DCHECK(menu_ != NULL);
   gfx::Point point(pt);
   point.Offset(delta_x_, delta_y_);
@@ -109,20 +109,20 @@ void LanguageSwitchModel::RunMenu(views::View* source, const gfx::Point& pt) {
 ////////////////////////////////////////////////////////////////////////////////
 // menus::SimpleMenuModel::Delegate implementation.
 
-bool LanguageSwitchModel::IsCommandIdChecked(int command_id) const {
+bool LanguageSwitchMenu::IsCommandIdChecked(int command_id) const {
   return false;
 }
 
-bool LanguageSwitchModel::IsCommandIdEnabled(int command_id) const {
+bool LanguageSwitchMenu::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool LanguageSwitchModel::GetAcceleratorForCommandId(
+bool LanguageSwitchMenu::GetAcceleratorForCommandId(
     int command_id, menus::Accelerator* accelerator) {
   return false;
 }
 
-void LanguageSwitchModel::ExecuteCommand(int command_id) {
+void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   const std::string locale = language_list_->GetLocaleFromIndex(command_id);
   SwitchLanguage(locale);
   InitLanguageMenu();

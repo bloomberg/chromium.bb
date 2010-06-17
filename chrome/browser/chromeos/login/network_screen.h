@@ -11,7 +11,7 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
-#include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/network_list.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -30,8 +30,8 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   virtual ~NetworkScreen();
 
   // NetworkScreenDelegate implementation:
-  virtual LanguageSwitchModel* language_switch_model() {
-    return &language_switch_model_;
+  virtual LanguageSwitchMenu* language_switch_menu() {
+    return &language_switch_menu_;
   }
 
   // ComboboxModel implementation:
@@ -117,7 +117,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   NetworkList::NetworkItem connecting_network_;
 
   ScopedRunnableMethodFactory<NetworkScreen> task_factory_;
-  LanguageSwitchModel language_switch_model_;
+  LanguageSwitchMenu language_switch_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

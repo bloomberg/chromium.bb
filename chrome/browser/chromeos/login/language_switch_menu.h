@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LANGUAGE_SWITCH_MODEL_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_LANGUAGE_SWITCH_MODEL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LANGUAGE_SWITCH_MENU_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_LANGUAGE_SWITCH_MENU_H_
 
 #include <string>
 
@@ -21,10 +21,10 @@ namespace chromeos {
 
 class ScreenObserver;
 
-class LanguageSwitchModel : public views::ViewMenuDelegate,
-                            public menus::SimpleMenuModel::Delegate {
+class LanguageSwitchMenu : public views::ViewMenuDelegate,
+                           public menus::SimpleMenuModel::Delegate {
  public:
-  LanguageSwitchModel();
+  LanguageSwitchMenu();
 
   // Initializes language selection menu contents.
   void InitLanguageMenu();
@@ -66,9 +66,9 @@ class LanguageSwitchModel : public views::ViewMenuDelegate,
   int delta_x_, delta_y_;
 
   FRIEND_TEST(::WizardControllerTest, SwitchLanguage);
-  DISALLOW_COPY_AND_ASSIGN(LanguageSwitchModel);
+  DISALLOW_COPY_AND_ASSIGN(LanguageSwitchMenu);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LANGUAGE_SWITCH_MODEL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LANGUAGE_SWITCH_MENU_H_

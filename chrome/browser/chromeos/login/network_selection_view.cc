@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -116,9 +116,9 @@ void NetworkSelectionView::Init() {
   network_combobox_->set_listener(delegate_);
 
   languages_menubutton_ = new views::MenuButton(
-      NULL, std::wstring(), delegate_->language_switch_model(), true);
+      NULL, std::wstring(), delegate_->language_switch_menu(), true);
   languages_menubutton_->SetNormalHasBorder(true);
-  delegate_->language_switch_model()->set_menu_offset(
+  delegate_->language_switch_menu()->set_menu_offset(
       kMenuButtonHorizontalOffset, kMenuButtonVerticalOffset);
 
   AddChildView(welcome_label_);
@@ -134,7 +134,7 @@ void NetworkSelectionView::Init() {
 void NetworkSelectionView::UpdateLocalizedStrings() {
   RecreateNativeControls();
   languages_menubutton_->SetText(
-      delegate_->language_switch_model()->GetCurrentLocaleName());
+      delegate_->language_switch_menu()->GetCurrentLocaleName());
   welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
                           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   select_language_label_->SetText(
@@ -180,14 +180,14 @@ void NetworkSelectionView::Layout() {
   y += welcome_label_->GetPreferredSize().height() + kSpacing;
 
   // Use menu preffered size to calculate boxes width accordingly.
-  int box_width = delegate_->language_switch_model()->GetFirstLevelMenuWidth() +
+  int box_width = delegate_->language_switch_menu()->GetFirstLevelMenuWidth() +
       kMenuButtonHorizontalOffset * 2;
   const int widest_label = std::max(
       select_language_label_->GetPreferredSize().width(),
       select_network_label_->GetPreferredSize().width());
   if (box_width < kSelectionBoxWidthMin) {
     box_width = kSelectionBoxWidthMin;
-    delegate_->language_switch_model()->SetFirstLevelMenuWidth(
+    delegate_->language_switch_menu()->SetFirstLevelMenuWidth(
         box_width - kMenuButtonHorizontalOffset * 2);
   } else if (widest_label + box_width + 2 * kHorizontalSpacing > width()) {
     box_width = width() - widest_label - 2 * kHorizontalSpacing;

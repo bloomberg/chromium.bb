@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/language_switch_model.h"
+#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
@@ -149,7 +149,7 @@ class NewUserView : public views::View,
 
   ScopedRunnableMethodFactory<NewUserView> focus_grabber_factory_;
 
-  LanguageSwitchModel language_switch_model_;
+  LanguageSwitchMenu language_switch_menu_;
 
   // Dialog used to display help like "Can't access your account".
   scoped_ptr<LoginHtmlDialog> dialog_;

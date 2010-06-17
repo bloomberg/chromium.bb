@@ -130,9 +130,9 @@ void NewUserView::Init() {
   InitLink(&cant_access_account_link_);
   InitLink(&browse_without_signin_link_);
 
-  language_switch_model_.InitLanguageMenu();
+  language_switch_menu_.InitLanguageMenu();
   languages_menubutton_ = new views::MenuButton(
-      NULL, std::wstring(), &language_switch_model_, true);
+      NULL, std::wstring(), &language_switch_menu_, true);
   AddChildView(languages_menubutton_);
 
   AddAccelerator(accel_focus_user_);
@@ -189,7 +189,7 @@ void NewUserView::UpdateLocalizedStrings() {
   browse_without_signin_link_->SetText(
       l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
   delegate_->ClearErrors();
-  languages_menubutton_->SetText(language_switch_model_.GetCurrentLocaleName());
+  languages_menubutton_->SetText(language_switch_menu_.GetCurrentLocaleName());
 }
 
 void NewUserView::LocaleChanged() {
