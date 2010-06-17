@@ -63,6 +63,26 @@ NetworkChangeObserverProxy::NetworkChangeObserverProxy(
   DCHECK_EQ(MessageLoop::current(), target_message_loop_);
 }
 
+void NetworkChangeObserverProxy::Attach(
+    net::NetworkChangeNotifier::Observer* target_observer) {
+  DCHECK_EQ(MessageLoop::current(), target_message_loop_);
+  DCHECK(!target_observer_);
+  target_observer_ = target_observer;
+  DCHECK(target_observer_);
+  source_thread_->GetMessageLoop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &NetworkChangeObserverProxy::Observe));
+}
+
+void NetworkChangeObserverProxy::Detach() {
+  DCHECK_EQ(MessageLoop::current(), target_message_loop_);
+  DCHECK(target_observer_);
+  target_observer_ = NULL;
+  source_thread_->GetMessageLoop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &NetworkChangeObserverProxy::Unobserve));
+}
+
 NetworkChangeObserverProxy::~NetworkChangeObserverProxy() {
   MessageLoop* current_message_loop = MessageLoop::current();
   // We can be deleted on either the source or target thread, so the
@@ -93,26 +113,6 @@ void NetworkChangeObserverProxy::Unobserve() {
   source_network_change_notifier->RemoveObserver(this);
 }
 
-void NetworkChangeObserverProxy::Attach(
-    net::NetworkChangeNotifier::Observer* target_observer) {
-  DCHECK_EQ(MessageLoop::current(), target_message_loop_);
-  DCHECK(!target_observer_);
-  target_observer_ = target_observer;
-  DCHECK(target_observer_);
-  source_thread_->GetMessageLoop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &NetworkChangeObserverProxy::Observe));
-}
-
-void NetworkChangeObserverProxy::Detach() {
-  DCHECK_EQ(MessageLoop::current(), target_message_loop_);
-  DCHECK(target_observer_);
-  target_observer_ = NULL;
-  source_thread_->GetMessageLoop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &NetworkChangeObserverProxy::Unobserve));
-}
-
 // Although we may get this event after Detach() has been called on
 // the target thread, we know that Unobserve() hasn't been called yet.
 // But we know that it has been posted, so it at least holds a
@@ -130,9 +130,8 @@ void NetworkChangeObserverProxy::OnIPAddressChanged() {
 // us (this is how we can get deleted on the target thread).
 void NetworkChangeObserverProxy::TargetObserverOnIPAddressChanged() {
   DCHECK_EQ(MessageLoop::current(), target_message_loop_);
-  if (target_observer_) {
+  if (target_observer_)
     target_observer_->OnIPAddressChanged();
-  }
 }
 
 }  // namespace chrome_common_net
