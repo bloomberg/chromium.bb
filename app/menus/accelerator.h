@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,18 @@ namespace menus {
 
 class Accelerator {
  public:
-  Accelerator() : key_code_(base::VKEY_UNKNOWN), modifiers_(0) { }
-  virtual ~Accelerator() { }
+  Accelerator() : key_code_(base::VKEY_UNKNOWN), modifiers_(0) {}
+
+  Accelerator(base::KeyboardCode keycode, int modifiers)
+      : key_code_(keycode),
+        modifiers_(modifiers) {}
+
   Accelerator(const Accelerator& accelerator) {
     key_code_ = accelerator.key_code_;
     modifiers_ = accelerator.modifiers_;
   }
+
+  virtual ~Accelerator() {}
 
   Accelerator& operator=(const Accelerator& accelerator) {
     if (this != &accelerator) {
@@ -54,7 +60,7 @@ class Accelerator {
   }
 
  protected:
-  // The window keycode (VK_...).
+  // The keycode (VK_...).
   base::KeyboardCode key_code_;
 
   // The state of the Shift/Ctrl/Alt keys (platform-dependent).

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,19 @@ class TextButtonBorder : public Border {
 ////////////////////////////////////////////////////////////////////////////////
 class TextButton : public CustomButton {
  public:
+  // Enumeration of how the prefix ('&') character is processed. The default
+  // is |PREFIX_NONE|.
+  enum PrefixType {
+    // No special processing is done.
+    PREFIX_NONE,
+
+    // The character following the prefix character is not rendered specially.
+    PREFIX_HIDE,
+
+    // The character following the prefix character is underlined.
+    PREFIX_SHOW
+  };
+
   TextButton(ButtonListener* listener, const std::wstring& text);
   virtual ~TextButton();
 
@@ -87,6 +100,8 @@ class TextButton : public CustomButton {
   };
 
   void set_alignment(TextAlignment alignment) { alignment_ = alignment; }
+
+  void set_prefix_type(PrefixType type) { prefix_type_ = type; }
 
   // Sets the icon.
   void SetIcon(const SkBitmap& icon);
@@ -136,7 +151,6 @@ class TextButton : public CustomButton {
   static const SkColor kHoverColor;
 
  protected:
-  virtual bool OnMousePressed(const MouseEvent& e);
   virtual void Paint(gfx::Canvas* canvas);
 
   // Called when enabled or disabled state changes, or the colors for those
@@ -144,6 +158,10 @@ class TextButton : public CustomButton {
   virtual void UpdateColor();
 
  private:
+  // Updates text_size_ and max_text_size_ from the current text/font. This is
+  // invoked when the font or text changes.
+  void UpdateTextSize();
+
   // The text string that is displayed in the button.
   std::wstring text_;
 
@@ -188,6 +206,8 @@ class TextButton : public CustomButton {
 
   // Whether or not to show the highlighted (i.e. hot) state.
   bool show_highlighted_;
+
+  PrefixType prefix_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButton);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,9 @@ namespace views {
 class Accelerator : public menus::Accelerator {
  public:
   Accelerator() : menus::Accelerator() {}
+
+  Accelerator(base::KeyboardCode keycode, int modifiers)
+      : menus::Accelerator(keycode, modifiers) {}
 
   Accelerator(base::KeyboardCode keycode,
               bool shift_pressed, bool ctrl_pressed, bool alt_pressed) {

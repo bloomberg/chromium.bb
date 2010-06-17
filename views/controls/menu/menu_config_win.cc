@@ -20,13 +20,17 @@ namespace views {
 // static
 MenuConfig* MenuConfig::Create() {
   MenuConfig* config = new MenuConfig();
+
+  config->text_color = NativeTheme::instance()->GetThemeColorWithDefault(
+      NativeTheme::MENU, MENU_POPUPITEM, MPI_NORMAL, TMT_TEXTCOLOR,
+      COLOR_MENUTEXT);
+
   NONCLIENTMETRICS metrics;
   win_util::GetNonClientMetrics(&metrics);
   l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
   HFONT font = CreateFontIndirect(&metrics.lfMenuFont);
   DLOG_ASSERT(font);
   config->font = gfx::Font::CreateFont(font);
-  config->font_with_controls = config->font.DeriveFont(0, gfx::Font::BOLD);
 
   HDC dc = GetDC(NULL);
   RECT bounds = { 0, 0, 200, 200 };

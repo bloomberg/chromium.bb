@@ -6,6 +6,7 @@
 #define VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
 
 #include "gfx/font.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace views {
 
@@ -13,7 +14,8 @@ namespace views {
 // the MenuConfig for the current platform.
 struct MenuConfig {
   MenuConfig()
-      : item_top_margin(3),
+      : text_color(SK_ColorBLACK),
+        item_top_margin(3),
         item_bottom_margin(4),
         item_no_icon_top_margin(1),
         item_no_icon_bottom_margin(3),
@@ -44,8 +46,8 @@ struct MenuConfig {
   // Font used by menus.
   gfx::Font font;
 
-  // Font used when the menu has children.
-  gfx::Font font_with_controls;
+  // Normal text color.
+  SkColor text_color;
 
   // Margins between the top of the item and the label.
   int item_top_margin;
