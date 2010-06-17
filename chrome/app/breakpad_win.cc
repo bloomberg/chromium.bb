@@ -148,6 +148,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
         switch1.set_value(TrimToBreakpadMax(args[1]).c_str());
       if (num_args > 2)
         switch2.set_value(TrimToBreakpadMax(args[2]).c_str());
+      // The caller must free the memory allocated for |args|.
+      ::LocalFree(args);
     }
 
     g_custom_entries->push_back(switch1);
