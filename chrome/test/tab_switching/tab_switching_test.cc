@@ -182,7 +182,7 @@ class TabSwitchingUITest : public UITest {
 
 #if defined(OS_WIN)
 // Started failing with a webkit roll in r49936. See http://crbug.com/46751
-#define MAYBE_TabSwitch DISABLED_TabSwitch
+#define MAYBE_TabSwitch FAILS_TabSwitch
 #else
 #define MAYBE_TabSwitch TabSwitch
 #endif
