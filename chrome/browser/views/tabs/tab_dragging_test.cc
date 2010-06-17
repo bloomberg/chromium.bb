@@ -26,7 +26,7 @@
 #define MAYBE_Tab2OutOfTabStrip Tab2OutOfTabStrip
 #endif
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#if defined(OS_LINUX)
 // Disabled on Toolkit views bot. See http://crbug.com/42614
 #define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
 #else
@@ -34,6 +34,14 @@
 #define MAYBE_Tab1Tab3Escape FLAKY_Tab1Tab3Escape
 #endif
 
+// These tests fail on Linux. See http://crbug.com/10941
+#if defined(OS_LINUX)
+#define MAYBE_Tab1Tab2 FAILS_Tab1Tab2
+#define MAYBE_Tab1Tab3 FAILS_Tab1Tab3
+#else
+#define MAYBE_Tab1Tab2 Tab1Tab2
+#define MAYBE_Tab1Tab3 Tab1Tab3
+#endif
 
 class TabDraggingTest : public UITest {
  protected:
@@ -44,8 +52,7 @@ class TabDraggingTest : public UITest {
 
 // Automated UI test to open three tabs in a new window, and drag Tab_1 into
 // the position of Tab_2.
-// Disabled as per http://crbug.com/10941
-TEST_F(TabDraggingTest, DISABLED_Tab1Tab2) {
+TEST_F(TabDraggingTest, MAYBE_Tab1Tab2) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
@@ -144,8 +151,7 @@ TEST_F(TabDraggingTest, DISABLED_Tab1Tab2) {
 }
 
 // Drag Tab_1 into the position of Tab_3.
-// Disabled as per http://crbug.com/10941
-TEST_F(TabDraggingTest, DISABLED_Tab1Tab3) {
+TEST_F(TabDraggingTest, MAYBE_Tab1Tab3) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
