@@ -8,7 +8,7 @@ DownloadTest.UnknownSize
 ErrorPageTest.DNSError_GoBack2AndForward
 ErrorPageTest.DNSError_GoBack2Forward2
 
-# Flaky timeout on Linux; TODO(timurrrr):file a meta-bug when crbug is working
+# Flaky timeout on Linux; see http://crbug.com/46781
 UnloadTest.*
 
 # Don't run reference tests under Valgrind

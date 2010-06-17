@@ -76,7 +76,7 @@ BookmarksUITest.CommandAgainGoesBackToBookmarksTab
 # See http://crbug.com/45564
 ChromeMainTest.AppLaunch
 
-# TODO(timurrrr): create a crbug issue when crbug is working again
+# See http://crbug.com/46783
 SessionHistoryTest.FrameBackForward
 SessionHistoryTest.JavascriptHistory
 SessionHistoryTest.LocationReplace
