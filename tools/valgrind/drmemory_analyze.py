@@ -103,7 +103,7 @@ class DrMemoryAnalyze:
         break
 
       tmp = []
-      match = re.search("Error .*: (.*)", self.line_)
+      match = re.search("Error #[0-9]+: (.*)", self.line_)
       if match:
         self.line_ = match.groups()[0].strip() + "\n"
         tmp.extend(self.ReadSection())

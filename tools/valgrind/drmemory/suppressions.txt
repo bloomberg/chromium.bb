@@ -1,0 +1,27 @@
+############################
+# Suppress some false reports due to bugs in Dr.Memory like wrong analysis
+# assumptions or unhandled syscalls
+
+# False reports during printing using fprintf
+UNINITIALIZED READ
+system call NtRaiseException
+KERNEL32.dll!RaiseException
+*!DebuggerProbe
+*!DebuggerKnownHandle
+
+UNADDRESSABLE ACCESS
+ntdll.dll!towlower
+ntdll.dll!KiUserExceptionDispatcher
+*!DebuggerProbe
+*!DebuggerKnownHandle
+
+# LoadLibrary calls give some strange reports
+UNADDRESSABLE ACCESS
+ntdll.dll!strchr
+KERNEL32.dll!LoadLibraryExW
+
+############################
+# Real issues in Chromium
+
+# Currently - none found.
+
