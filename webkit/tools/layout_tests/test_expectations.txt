@@ -5,9 +5,6 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// tonyg-cr1
-BUG46674 SKIP WIN LINUX MAC : fast/js/missing-title-end-tag-js.html = FAIL
-
 // Before bulach/andreip rebaseline these tests (changed at r61234 / new html5 parser).
 BUG46674 WIN : fast/text/international/hindi-whitespace.html = FAIL
 // Whoops -- need to rebaseline these.
