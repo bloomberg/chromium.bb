@@ -216,14 +216,14 @@ bool ExtensionModelAssociator::OnClientUpdate(const std::string& id) {
 
   sync_pb::ExtensionSpecifics client_data;
   if (GetExtensionDataFromClient(id, &client_data)) {
-    sync_pb::ExtensionSpecifics server_data;
-    if (!GetExtensionDataFromServer(id, &trans, root, &server_data)) {
-      LOG(ERROR) << "Could not get server data for extension " << id;
-      return false;
-    }
     ExtensionData extension_data =
-        ExtensionData::FromData(ExtensionData::SERVER, server_data);
-    extension_data.SetData(ExtensionData::CLIENT, true, client_data);
+        ExtensionData::FromData(ExtensionData::CLIENT, client_data);
+    sync_pb::ExtensionSpecifics server_data;
+    if (GetExtensionDataFromServer(id, &trans, root, &server_data)) {
+      extension_data =
+          ExtensionData::FromData(ExtensionData::SERVER, server_data);
+      extension_data.SetData(ExtensionData::CLIENT, true, client_data);
+    }
     if (extension_data.NeedsUpdate(ExtensionData::SERVER)) {
       if (!UpdateServer(&extension_data, &trans, root)) {
         LOG(ERROR) << "Could not update server data for extension " << id;
@@ -252,13 +252,14 @@ bool ExtensionModelAssociator::OnClientUpdate(const std::string& id) {
 void ExtensionModelAssociator::OnServerUpdate(
     const sync_pb::ExtensionSpecifics& server_data) {
   DcheckIsExtensionSpecificsValid(server_data);
-  sync_pb::ExtensionSpecifics client_data;
-  if (!GetExtensionDataFromClient(server_data.id(), &client_data)) {
-    client_data = sync_pb::ExtensionSpecifics();
-  }
   ExtensionData extension_data =
-      ExtensionData::FromData(ExtensionData::CLIENT, client_data);
-  extension_data.SetData(ExtensionData::SERVER, true, server_data);
+      ExtensionData::FromData(ExtensionData::SERVER, server_data);
+  sync_pb::ExtensionSpecifics client_data;
+  if (GetExtensionDataFromClient(server_data.id(), &client_data)) {
+    ExtensionData extension_data =
+        ExtensionData::FromData(ExtensionData::CLIENT, client_data);
+    extension_data.SetData(ExtensionData::SERVER, true, server_data);
+  }
   DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
   if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
     TryUpdateClient(&extension_data);
