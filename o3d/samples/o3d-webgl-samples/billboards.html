@@ -1,0 +1,257 @@
+<!--
+Copyright 2009, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!--
+Billboard example.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>
+Billboard Example
+</title>
+<!-- Include sample javascript library functions-->
+<script type="text/javascript" src="../o3d-webgl/base.js"></script>
+<script type="text/javascript" src="../o3djs/base.js"></script>
+
+<!-- Our javascript code -->
+<script type="text/javascript" id="o3dscript">
+o3djs.base.o3d = o3d;
+o3djs.require('o3djs.webgl');
+o3djs.require('o3djs.util');
+o3djs.require('o3djs.math');
+o3djs.require('o3djs.rendergraph');
+o3djs.require('o3djs.primitives');
+o3djs.require('o3djs.material');
+o3djs.require('o3djs.io');
+o3djs.require('o3djs.loader');
+
+// Events
+// init() once the page has finished loading.
+// unload() when the page is unloaded.
+window.onload = init;
+window.onunload = unload;
+
+// global variables
+var g_o3dElement;
+var g_o3d;
+var g_math;
+var g_client;
+var g_viewInfo;
+var g_pack;
+var g_root;
+var g_globalParams;
+var g_o3dElement;
+var g_clock = 0;
+var g_timeMult = 1;
+var g_finished = false;  // for selenium testing
+var g_cameraRadius = 35;
+var g_cameraSpeed = 0.3;
+var g_randSeed = 0;
+var g_textures = {};
+
+/**
+ * Creates the client area.
+ */
+function init() {
+  o3djs.webgl.makeClients(initStep2);
+}
+
+/**
+ * Initializes O3D and creates one shape.
+ * @param {Array} clientElements Array of o3d object elements.
+ */
+function initStep2(clientElements) {
+  // Initializes global variables and libraries.
+  g_o3dElement = clientElements[0];
+  g_o3d = g_o3dElement.o3d;
+  g_math = o3djs.math;
+  g_client = g_o3dElement.client;
+
+  // Creates a pack to manage our resources/assets
+  g_pack = g_client.createPack();
+
+  g_root = g_pack.createObject('Transform');
+
+  g_viewInfo = o3djs.rendergraph.createBasicView(
+      g_pack,
+      g_root,
+      g_client.renderGraphRoot);
+
+  g_viewInfo.drawContext.projection = g_math.matrix4.perspective(
+    g_math.degToRad(45),               // field of view.
+    g_client.width / g_client.height,  // aspect ratio
+    0.1,                               // Near plane.
+    5000);                             // Far plane.
+
+  var loader = o3djs.loader.createLoader(initStep3);
+  loadTexture(loader, 'purple-flower.png');
+  loadTexture(loader, 'pillar.png');
+  loader.finish();
+}
+
+function loadTexture(loader, filename) {
+  loader.loadTexture(g_pack,
+                     o3djs.util.getAbsoluteURI('../assets/' + filename),
+                     rememberTexture);
+
+  function rememberTexture(texture, exception) {
+    if (exception) {
+      alert(exception);
+    } else {
+      g_textures[filename] = texture;
+    }
+  }
+}
+
+function initStep3() {
+  var redMaterial = o3djs.material.createBasicMaterial(
+    g_pack,
+    g_viewInfo,
+    [0.2, 1, 0.2, 1]);  // green
+
+  var checkerMaterial = o3djs.material.createCheckerMaterial(g_pack,
+                                                             g_viewInfo);
+
+  var billboardMaterial = o3djs.material.createMaterialFromFile(
+      g_pack, '../shaders/billboard-glsl.shader', g_viewInfo.zOrderedDrawList);
+
+  var imposterMaterial = o3djs.material.createMaterialFromFile(
+      g_pack, '../shaders/imposter-glsl.shader', g_viewInfo.zOrderedDrawList);
+
+  // Set the textures.
+  var sampler = g_pack.createObject('Sampler');
+  sampler.texture = g_textures['purple-flower.png'];
+  sampler.addressModeU = g_o3d.Sampler.CLAMP;
+  sampler.addressModeV = g_o3d.Sampler.CLAMP;
+  billboardMaterial.getParam('texSampler0').value = sampler;
+
+  var sampler2 = g_pack.createObject('Sampler');
+  sampler2.texture = g_textures['pillar.png'];
+  sampler2.addressModeU = g_o3d.Sampler.CLAMP;
+  sampler2.addressModeV = g_o3d.Sampler.CLAMP;
+  imposterMaterial.getParam('texSampler0').value = sampler2;
+
+  // Create and bind standard params so we can see the light parameters
+  // for the standard shaders globably.
+  g_globalParams = o3djs.material.createAndBindStandardParams(g_pack);
+  g_globalParams.lightWorldPos.value = [30, 60, 40];
+  g_globalParams.lightColor.value = [1, 1, 1, 1];
+
+  // Create a ground plane.
+  var shape = o3djs.primitives.createPlane(
+      g_pack, checkerMaterial, 100, 100, 10, 10);
+
+  // Put on a transform.
+  var transform = g_pack.createObject('Transform');
+  transform.parent = g_root;
+  transform.addShape(shape);
+
+  // Create a cylinder.
+  var cylinderShape = o3djs.primitives.createCylinder(
+      g_pack, redMaterial, 0.5, 5, 20, 1,
+      g_math.matrix4.translation([0, 2.5, 0]));
+
+  // Create an XY plane for the billboard.
+  var purpleFlowerPlane = o3djs.primitives.createPlane(
+      g_pack, billboardMaterial, 5, 5, 1, 1,
+      g_math.matrix4.rotationX(g_math.degToRad(90)));
+
+  // Create an XY plane for the imposter.
+  var pillarPlane = o3djs.primitives.createPlane(
+      g_pack, imposterMaterial, 5, 5, 1, 1,
+      g_math.matrix4.rotationX(g_math.degToRad(90)));
+
+  // Create 30 cylinders and put a billboard or imposter on top of each one.
+  for (var ii = 0; ii < 30; ++ii) {
+    transform = g_pack.createObject('Transform');
+    transform.parent = g_root;
+    transform.translate((g_math.pseudoRandom() - 0.5) * 90,
+                        0,
+                        (g_math.pseudoRandom() - 0.5) * 90);
+    transform.addShape(cylinderShape);
+
+    var topTransform = g_pack.createObject('Transform');
+    topTransform.parent = transform;
+    topTransform.translate(0, 7, 0);
+    if (ii % 4 > 1) {
+      topTransform.addShape(purpleFlowerPlane);
+    } else {
+      topTransform.addShape(pillarPlane);
+    }
+  }
+
+  // Setup a render callback for per frame processing.
+  g_client.setRenderCallback(onRender);
+
+  g_finished = true;  // for selenium testing.
+}
+
+/**
+ * Called every frame.
+ * @param {!o3d.RenderEvent} renderEvent Rendering Information.
+ */
+function onRender(renderEvent) {
+  var elapsedTime = renderEvent.elapsedTime;
+  g_clock += elapsedTime * g_timeMult;
+
+  var eye = [
+      Math.sin(g_clock * g_cameraSpeed) * g_cameraRadius,
+      20 + 10 * Math.sin(g_clock * g_cameraSpeed * 4),
+      Math.cos(g_clock * g_cameraSpeed) * g_cameraRadius];
+
+  g_viewInfo.drawContext.view = g_math.matrix4.lookAt(
+      eye,
+      [0, 0, 0],  // target
+      [0, 1, 0]); // up
+};
+
+/**
+ * Remove any callbacks so they don't get called after the page has unloaded.
+ */
+function unload() {
+  if (g_client) {
+    g_client.cleanup();
+  }
+}
+</script>
+</head>
+<body>
+<h1>Billboards</h1>
+<div>
+Flowers always face the camera.<br/>
+Pillars rotate around Y toward the camera.
+</div>
+<div id="o3d" style="width: 800px; height: 600px;"></div>
+</body>
+</html>
