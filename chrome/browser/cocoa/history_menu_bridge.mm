@@ -298,28 +298,27 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
                [title substringFromIndex:([title length] -
                                           kMenuTrimSizeInChars)]];
   }
-  scoped_nsobject<NSMenuItem> menu_item(
+  item->menu_item.reset(
       [[NSMenuItem alloc] initWithTitle:title
                                  action:nil
                           keyEquivalent:@""]);
-  [menu_item setTarget:controller_];
-  [menu_item setAction:@selector(openHistoryMenuItem:)];
-  [menu_item setTag:tag];
+  [item->menu_item setTarget:controller_];
+  [item->menu_item setAction:@selector(openHistoryMenuItem:)];
+  [item->menu_item setTag:tag];
   if (item->icon.get())
-    [menu_item setImage:item->icon.get()];
+    [item->menu_item setImage:item->icon.get()];
   else if (!item->tabs.size())
-    [menu_item setImage:default_favicon_.get()];
+    [item->menu_item setImage:default_favicon_.get()];
 
   // Add a tooltip.
   NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", full_title,
                                 url_string.c_str()];
-  [menu_item setToolTip:tooltip];
+  [item->menu_item setToolTip:tooltip];
 
-  [menu insertItem:menu_item atIndex:index];
-  item->menu_item = menu_item.get();
-  menu_item_map_.insert(std::make_pair(menu_item.get(), item));
+  [menu insertItem:item->menu_item.get() atIndex:index];
+  menu_item_map_.insert(std::make_pair(item->menu_item.get(), item));
 
-  return menu_item;
+  return item->menu_item.get();
 }
 
 void HistoryMenuBridge::Init() {

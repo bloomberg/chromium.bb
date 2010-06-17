@@ -369,8 +369,7 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
 
   // Set up the HistoryItem.
   HistoryMenuBridge::HistoryItem item;
-  scoped_nsobject<NSMenuItem> menu_item([[NSMenuItem alloc] init]);
-  item.menu_item = menu_item.get();
+  item.menu_item.reset([[NSMenuItem alloc] init]);
   GetFaviconForHistoryItem(&item);
 
   // Pretend to be called back.

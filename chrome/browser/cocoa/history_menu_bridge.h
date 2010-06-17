@@ -88,8 +88,12 @@ class HistoryMenuBridge : public NotificationObserver,
     // The Handle given to us by the FaviconService for the icon fetch request.
     FaviconService::Handle icon_handle;
 
-    // The pointer to the item after it has been created. Weak.
-    NSMenuItem* menu_item;
+    // The pointer to the item after it has been created. Strong; NSMenu also
+    // retains this. During a rebuild flood (if the user closes a lot of tabs
+    // quickly), the NSMenu can release the item before the HistoryItem has
+    // been fully deleted. If this were a weak pointer, it would result in a
+    // zombie.
+    scoped_nsobject<NSMenuItem> menu_item;
 
     // This ID is unique for a browser session and can be passed to the
     // TabRestoreService to re-open the closed window or tab that this
