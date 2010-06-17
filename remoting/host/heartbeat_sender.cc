@@ -29,7 +29,7 @@ HeartbeatSender::HeartbeatSender()
     : started_(false) {
 }
 
-void HeartbeatSender::Start(HostConfig* config, JingleClient* jingle_client) {
+void HeartbeatSender::Start(MutableHostConfig* config, JingleClient* jingle_client) {
   DCHECK(jingle_client);
   DCHECK(!started_);
 
@@ -37,6 +37,11 @@ void HeartbeatSender::Start(HostConfig* config, JingleClient* jingle_client) {
 
   jingle_client_ = jingle_client;
   config_ = config;
+
+  if (!config_->GetString(kHostIdConfigPath, &host_id_)) {
+    LOG(ERROR) << "host_id is not defined in the config.";
+    return;
+  }
 
   jingle_client_->message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoStart));
@@ -58,7 +63,7 @@ void HeartbeatSender::DoSendStanza() {
   LOG(INFO) << "Sending heartbeat stanza to " << kChromotingBotJid;
 
   buzz::XmlElement* stanza = new buzz::XmlElement(kHeartbeatQuery);
-  stanza->AddAttr(kHostIdAttr, config_->host_id());
+  stanza->AddAttr(kHostIdAttr, host_id_);
   request_->SendIq(buzz::STR_SET, kChromotingBotJid, stanza);
 
   // Schedule next heartbeat.

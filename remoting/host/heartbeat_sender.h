@@ -15,7 +15,7 @@ namespace remoting {
 
 class IqRequest;
 class JingleClient;
-class HostConfig;
+class MutableHostConfig;
 
 // HeartbeatSender periodically sends hertbeats to the chromoting bot.
 // TODO(sergeyu): Write unittest for this class.
@@ -24,7 +24,7 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   HeartbeatSender();
 
   // Starts heart-beating for |jingle_client|.
-  void Start(HostConfig* config, JingleClient* jingle_client);
+  void Start(MutableHostConfig* config, JingleClient* jingle_client);
 
  private:
   void DoStart();
@@ -33,9 +33,10 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   void ProcessResponse(const buzz::XmlElement* response);
 
   bool started_;
-  scoped_refptr<HostConfig> config_;
+  scoped_refptr<MutableHostConfig> config_;
   JingleClient* jingle_client_;
   scoped_ptr<IqRequest> request_;
+  std::string host_id_;
 };
 
 }  // namespace remoting

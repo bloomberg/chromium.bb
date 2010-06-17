@@ -15,7 +15,7 @@
 
 namespace remoting {
 
-ChromotingHost::ChromotingHost(HostConfig* config,
+ChromotingHost::ChromotingHost(MutableHostConfig* config,
                                Capturer* capturer,
                                Encoder* encoder,
                                EventExecutor* executor,
@@ -80,9 +80,17 @@ void ChromotingHost::RegisterHost() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(!jingle_client_);
 
+  std::string xmpp_login;
+  std::string xmpp_auth_token;
+  if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
+      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
+    LOG(ERROR) << "XMMP credentials are not defined in config.";
+    return;
+  }
+
   // Connect to the talk network with a JingleClient.
   jingle_client_ = new JingleClient(&network_thread_);
-  jingle_client_->Init(config_->xmpp_login(), config_->xmpp_auth_token(),
+  jingle_client_->Init(xmpp_login, xmpp_auth_token,
                        kChromotingTokenServiceName, this);
 }
 
@@ -184,13 +192,14 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
 
     // Start heartbeating after we connected
     heartbeat_sender_ = new HeartbeatSender();
-    // TODO(sergeyu): where do we get host id?
     heartbeat_sender_->Start(config_, jingle_client_.get());
   } else if (state == JingleClient::CLOSED) {
     LOG(INFO) << "Host disconnected from talk network." << std::endl;
     heartbeat_sender_ = NULL;
 
     // Quit the message loop if disconected.
+    // TODO(sergeyu): We should try reconnecting here instead of terminating
+    // the host.
     message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
     host_done_->Signal();
   }

@@ -23,7 +23,7 @@ class WaitableEvent;
 
 namespace remoting {
 
-class HostConfig;
+class MutableHostConfig;
 
 // A class to implement the functionality of a host process.
 //
@@ -54,8 +54,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                    public ClientConnection::EventHandler,
                    public JingleClient::Callback {
  public:
-  ChromotingHost(HostConfig* config, Capturer* capturer, Encoder* encoder,
-                 EventExecutor* executor, base::WaitableEvent* host_done);
+  ChromotingHost(MutableHostConfig* config, Capturer* capturer,
+                 Encoder* encoder, EventExecutor* executor,
+                 base::WaitableEvent* host_done);
   virtual ~ChromotingHost();
 
   // Run the host porcess. This method returns only after the message loop
@@ -109,7 +110,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // A thread that hosts encode operations.
   base::Thread encode_thread_;
 
-  scoped_refptr<HostConfig> config_;
+  scoped_refptr<MutableHostConfig> config_;
 
   // Capturer to be used by SessionManager. Once the SessionManager is
   // constructed this is set to NULL.

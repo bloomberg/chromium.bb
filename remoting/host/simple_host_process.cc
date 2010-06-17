@@ -17,16 +17,16 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
-#include <termios.h>
-#endif  // defined (OS_POSIX)
-
 #include "base/at_exit.h"
+#include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/logging.h"
+#include "base/thread.h"
 #include "base/waitable_event.h"
 #include "remoting/host/capturer_fake.h"
-#include "remoting/host/encoder_verbatim.h"
-#include "remoting/host/host_config.h"
 #include "remoting/host/chromoting_host.h"
+#include "remoting/host/encoder_verbatim.h"
+#include "remoting/host/json_host_config.h"
 
 #if defined(OS_WIN)
 #include "remoting/host/capturer_gdi.h"
@@ -39,49 +39,20 @@
 #include "remoting/host/event_executor_mac.h"
 #endif
 
+#if defined(OS_WIN)
+const std::wstring kDefaultConfigPath = L"ChromotingConfig.json";
+#else
+const std::string kDefaultConfigPath = "ChromotingConfig.json";
+#endif
+
+const std::string kFakeSwitchName = "fake";
+const std::string kConfigSwitchName = "config";
+
 int main(int argc, char** argv) {
+  CommandLine::Init(argc, argv);
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+
   base::AtExitManager exit_manager;
-
-  std::string username;
-  std::string auth_token;
-
-  // Check the argument to see if we should use a fake capturer and encoder.
-  bool fake = false;
-  // True if the JID was specified on the command line.
-  bool has_jid = false;
-  // True if the auth token was specified on the command line.
-  bool has_auth = false;
-
-  for (int i = 1; i < argc; i++) {
-    std::string arg = argv[i];
-    if (arg == "--fake") {
-      fake = true;
-    } else if (arg == "--jid") {
-      if (++i >= argc) {
-        std::cerr << "Expected JID to follow --jid option" << std::endl;
-        return 1;
-      }
-      has_jid = true;
-      username = argv[i];
-    } else if (arg == "--auth") {
-      if (++i >= argc) {
-        std::cerr << "Expected auth token to follow --auth option" << std::endl;
-        return 1;
-      }
-      has_auth = true;
-      auth_token = argv[i];
-    }
-  }
-
-  // Prompt user for username and auth token.
-  if (!has_jid) {
-    std::cout << "JID: ";
-    std::cin >> username;
-  }
-  if (!has_auth) {
-    std::cout << "Auth Token: ";
-    std::cin >> auth_token;
-  }
 
   scoped_ptr<remoting::Capturer> capturer;
   scoped_ptr<remoting::Encoder> encoder;
@@ -98,19 +69,31 @@ int main(int argc, char** argv) {
 #endif
   encoder.reset(new remoting::EncoderVerbatim());
 
+  // Check the argument to see if we should use a fake capturer and encoder.
+  bool fake = cmd_line->HasSwitch(kFakeSwitchName);
+
+  FilePath config_path(kDefaultConfigPath);
+  if (cmd_line->HasSwitch(kConfigSwitchName)) {
+    config_path = cmd_line->GetSwitchValuePath(kConfigSwitchName);
+  }
+
   if (fake) {
     // Inject a fake capturer.
     capturer.reset(new remoting::CapturerFake());
   }
 
-  // TODO(sergeyu): Implement HostConfigStorage and use it here to load
-  // settings.
-  scoped_refptr<remoting::HostConfig> config(new remoting::HostConfig());
-  config->set_xmpp_login(username);
-  config->set_xmpp_auth_token(auth_token);
-  config->set_host_id("foo");
+  base::Thread file_io_thread("FileIO");
+  file_io_thread.Start();
 
-  // Construct a chromoting host with username and auth_token.
+  scoped_refptr<remoting::JsonHostConfig> config(
+      new remoting::JsonHostConfig(
+          config_path, file_io_thread.message_loop_proxy()));
+
+  if (!config->Read()) {
+    LOG(ERROR) << "Failed to read configuration file " << config_path.value();
+    return 1;
+  }
+
   base::WaitableEvent host_done(false, false);
   scoped_refptr<remoting::ChromotingHost> host =
       new remoting::ChromotingHost(config,
@@ -120,5 +103,7 @@ int main(int argc, char** argv) {
                                    &host_done);
   host->Run();
   host_done.Wait();
+
+  file_io_thread.Stop();
   return 0;
 }

@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/common/net",
+  "+chrome/common",
   "+gfx",
   "+google/protobuf",
   "+media/base",

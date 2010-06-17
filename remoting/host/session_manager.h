@@ -69,10 +69,10 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // Construct a SessionManager. Message loops and threads are provided.
   // Ownership of Capturer and Encoder are given to this object.
   SessionManager(MessageLoop* capture_loop,
-                MessageLoop* encode_loop,
-                MessageLoop* network_loop,
-                Capturer* capturer,
-                Encoder* encoder);
+                 MessageLoop* encode_loop,
+                 MessageLoop* network_loop,
+                 Capturer* capturer,
+                 Encoder* encoder);
 
   virtual ~SessionManager();
 

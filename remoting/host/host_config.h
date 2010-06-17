@@ -9,69 +9,58 @@
 
 #include "base/ref_counted.h"
 
+class Task;
+
 namespace remoting {
 
-// HostConfig class implements container for all host settings.
+// Following constants define names for configuration parameters.
+
+// Login used to authenticate in XMPP network.
+extern const std::wstring kXmppLoginConfigPath;
+// Auth token used to authenticate in XMPP network.
+extern const std::wstring kXmppAuthTokenConfigPath;
+// Unique identifier of the host used to register the host in directory.
+// Normally a random UUID.
+extern const std::wstring kHostIdConfigPath;
+// Readable host name.
+extern const std::wstring kHostNameConfigPath;
+// Public key used by the host for authentication.
+extern const std::wstring kPublicKeyConfigPath;
+
+// TODO(sergeyu): Add a property for private key.
+
+// HostConfig interace provides read-only access to host configuration.
 class HostConfig : public base::RefCountedThreadSafe<HostConfig> {
  public:
-  HostConfig() { }
+  HostConfig() { };
+  virtual ~HostConfig() { }
 
-  // Login used to authenticate in XMPP network.
-  const std::string& xmpp_login() const {
-    return xmpp_login_;
-  }
-  void set_xmpp_login(const std::string& xmpp_login) {
-    xmpp_login_ = xmpp_login;
-  }
-
-  // Auth token used to authenticate in XMPP network.
-  const std::string& xmpp_auth_token() const {
-    return xmpp_auth_token_;
-  }
-  void set_xmpp_auth_token(const std::string& xmpp_auth_token) {
-    xmpp_auth_token_ = xmpp_auth_token;
-  }
-
-  // Unique identifier of the host used to register the host in directory.
-  // Normally a random UUID.
-  const std::string& host_id() const {
-    return host_id_;
-  }
-  void set_host_id(const std::string& host_id) {
-    host_id_ = host_id;
-  }
-
-  // Public key used by the host for authentication.
-  // TODO(sergeyu): Do we need to use other type to store public key? E.g.
-  // DataBuffer? Revisit this when public key generation is implemented.
-  const std::string& public_key() const {
-    return public_key_;
-  }
-  void set_public_key(const std::string& public_key) {
-    public_key_ = public_key;
-  }
-
-  // TODO(sergeyu): Add a property for private key.
-
- private:
-  std::string xmpp_login_;
-  std::string xmpp_auth_token_;
-  std::string host_id_;
-  std::string public_key_;
+  virtual bool GetString(const std::wstring& path,
+                         std::wstring* out_value) = 0;
+  virtual bool GetString(const std::wstring& path,
+                         std::string* out_value) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HostConfig);
 };
 
-// Interface for host configuration storage provider.
-class HostConfigStorage {
-  // Load() and Save() are used to load/save settings to/from permanent
-  // storage. For example FileHostConfig stores all settings in a file.
-  // Simularly RegistryHostConfig stores settings in windows registry.
-  // Both methods return false if operation has failed, true otherwise.
-  virtual bool Load(HostConfig* config) = 0;
-  virtual bool Save(const HostConfig& config) = 0;
+// MutableHostConfig extends HostConfig for mutability.
+class MutableHostConfig : public HostConfig {
+ public:
+  MutableHostConfig() { };
 
-  DISALLOW_COPY_AND_ASSIGN(HostConfigStorage);
+  // Update() must be used to update config values.
+  // It acquires lock, calls the specified task, releases the lock and
+  // then schedules the config to be written to storage.
+  virtual void Update(Task* task) = 0;
+
+  // SetString() updates specified config value. This methods must only
+  // be called from task specified in Update().
+  virtual void SetString(const std::wstring& path,
+                         const std::wstring& in_value) = 0;
+  virtual void SetString(const std::wstring& path,
+                         const std::string& in_value) = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(MutableHostConfig);
 };
 
 }  // namespace remoting

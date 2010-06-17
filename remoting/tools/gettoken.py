@@ -11,7 +11,8 @@ import getpass
 import os
 import urllib
 
-url = "https://www.google.com:443/accounts/ClientLogin"
+import gaia_auth
+
 auth_filename = '.chromotingAuthToken'
 
 print "Email:",
@@ -19,32 +20,19 @@ email = raw_input()
 
 passwd = getpass.getpass("Password: ")
 
-params = urllib.urlencode({'Email': email, 'Passwd': passwd,
-                           'source': 'chromoting', 'service': 'chromiumsync',
-                           'PersistentCookie': 'true', 'accountType': 'GOOGLE'})
-f = urllib.urlopen(url, params);
+authenticator = gaia_auth.GaiaAuthenticator('chromiumsync');
+auth_token = authenticator.authenticate(email, passwd)
 
-auth_found = False
-for line in f:
-  if line.startswith('Auth='):
-    auth_string = line[5:]
+# Set permission mask for created file.
+os.umask(0066)
+auth_file = open(auth_filename, 'w')
+auth_file.write(email)
+auth_file.write('\n')
+auth_file.write(auth_token)
+auth_file.close()
 
-    # Set permission mask for created file.
-    os.umask(0066)
-    auth_file = open(auth_filename, 'w')
-    auth_file.write(email)
-    auth_file.write('\n')
-    auth_file.write(auth_string)
-    auth_file.close()
-
-    print
-    print 'Auth token:'
-    print
-    print auth_string
-    print '...saved in', auth_filename
-    auth_found = True
-
-if not auth_found:
-  print 'ERROR - Unable to find Auth token in output:'
-  for line in f:
-    print line,
+print
+print 'Auth token:'
+print
+print auth_token
+print '...saved in', auth_filename

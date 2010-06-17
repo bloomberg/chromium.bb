@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# register_host.py registers new hosts in chromoting directory. It
+# asks for username/password and then writes these settings to config file.
+
+import getpass
+import os
+import urllib
+import urllib2
+import uuid
+import sys
+
+import gaia_auth
+
+server = 'www-googleapis-test.sandbox.google.com'
+url = 'http://' + server + '/chromoting/v1/@me/hosts'
+
+settings_filename = 'ChromotingConfig.json'
+
+print "Email:",
+email = raw_input()
+password = getpass.getpass("Password: ")
+
+xapi_auth = gaia_auth.GaiaAuthenticator('xapi')
+xapi_token = xapi_auth.authenticate(email, password)
+
+host_id = str(uuid.uuid1())
+print "HostId:", host_id
+host_name = os.uname()[1]
+print "HostName:", host_name
+# TODO(sergeyu): Implement keypair generaion.
+public_key = '123123'
+jingle_id = ''
+
+#f = urllib.urlopen(url, params);
+#print params
+params = ('{"data":{' + \
+          '"host_id": "%(host_id)s",' + \
+          '"host_name": "%(host_name)s",' + \
+          '"public_key": "%(public_key)s",' + \
+          '"jingle_id": "%(jingle_id)s"}}') % \
+          {'host_id': host_id, 'host_name': host_name,
+           'public_key': public_key, 'jingle_id': jingle_id}
+headers = {"Authorization": "GoogleLogin auth=" + xapi_token,
+           "Content-Type": "application/json" }
+request = urllib2.Request(url, params, headers)
+
+opener = urllib2.OpenerDirector()
+opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+
+print
+print "Registering host with directory service..."
+try:
+  res = urllib2.urlopen(request)
+  data = res.read()
+except urllib2.HTTPError, err:
+  print >> sys.stderr, "Directory returned error:", err
+  print >> sys.stderr, err.fp.read()
+  sys.exit(1)
+
+print "Done"
+
+# Get token that the host will use to athenticate in talk network.
+authenticator = gaia_auth.GaiaAuthenticator('chromiumsync');
+auth_token = authenticator.authenticate(email, password)
+
+# Write settings file.
+os.umask(0066) # Set permission mask for created file.
+settings_file = open(settings_filename, 'w')
+settings_file.write('{\n');
+settings_file.write('  "xmpp_login" : "' + email + '",\n')
+settings_file.write('  "xmpp_auth_token" : "' + auth_token + '",\n')
+settings_file.write('  "host_id" : "' + host_id + '",\n')
+settings_file.write('  "host_name" : "' + host_name + '",\n')
+settings_file.write('  "public_key" : "' + public_key + '"\n')
+settings_file.write('}\n')
+settings_file.close()
+
+print 'Configuration saved in', settings_filename

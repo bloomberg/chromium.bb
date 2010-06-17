@@ -162,6 +162,7 @@
       'target_name': 'chromoting_host',
       'type': '<(library)',
       'dependencies': [
+        '../chrome/chrome.gyp:common',
         'chromoting_base',
         'chromoting_jingle_glue',
       ],
@@ -187,7 +188,10 @@
         'host/session_manager.h',
         'host/heartbeat_sender.cc',
         'host/heartbeat_sender.h',
+        'host/host_config.cc',
         'host/host_config.h',
+        'host/json_host_config.cc',
+        'host/json_host_config.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -341,6 +345,7 @@
         'client/decoder_verbatim_unittest.cc',
         'host/differ_unittest.cc',
         'host/differ_block_unittest.cc',
+        'host/json_host_config_unittest.cc',
         'host/mock_objects.h',
         'host/session_manager_unittest.cc',
         # TODO(hclam): Enable VP8 in the build.
