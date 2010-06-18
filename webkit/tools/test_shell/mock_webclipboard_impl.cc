@@ -86,3 +86,8 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
     m_writeSmartPaste = false;
   }
 }
+
+void MockWebClipboardImpl::writeData(const WebKit::WebDragData& data) {
+  // TODO(dcheng): Implement this stub.
+}
+

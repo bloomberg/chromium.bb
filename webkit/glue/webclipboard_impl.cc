@@ -167,6 +167,10 @@ void WebClipboardImpl::writeImage(
   }
 }
 
+void WebClipboardImpl::writeData(const WebKit::WebDragData& data) {
+  // TODO(dcheng): Implement this stub.
+}
+
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
                                          Clipboard::Buffer* result) {
   switch (buffer) {
