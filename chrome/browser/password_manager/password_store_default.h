@@ -29,7 +29,6 @@ class PasswordStoreDefault : public PasswordStore,
   virtual ~PasswordStoreDefault();
 
   // Implements PasswordStore interface.
-  void ReportMetricsImpl();
   void AddLoginImpl(const webkit_glue::PasswordForm& form);
   void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
   void RemoveLoginImpl(const webkit_glue::PasswordForm& form);

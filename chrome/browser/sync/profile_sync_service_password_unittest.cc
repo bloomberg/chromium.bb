@@ -84,7 +84,6 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD2(GetLogins, int(const PasswordForm&, PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const PasswordForm&));
-  MOCK_METHOD0(ReportMetricsImpl, void());
   MOCK_METHOD1(AddLoginImpl, void(const PasswordForm&));
   MOCK_METHOD1(UpdateLoginImpl, void(const PasswordForm&));
   MOCK_METHOD1(RemoveLoginImpl, void(const PasswordForm&));

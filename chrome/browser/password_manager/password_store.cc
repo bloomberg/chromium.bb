@@ -16,16 +16,11 @@ PasswordStore::PasswordStore() : handle_(0) {
 }
 
 bool PasswordStore::Init() {
-  ReportMetrics();
   return true;
 }
 
 void PasswordStore::ScheduleTask(Task* task) {
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, task);
-}
-
-void PasswordStore::ReportMetrics() {
-  ScheduleTask(NewRunnableMethod(this, &PasswordStore::ReportMetricsImpl));
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
