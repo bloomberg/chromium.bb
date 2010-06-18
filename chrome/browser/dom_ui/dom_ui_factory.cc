@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
@@ -13,19 +14,20 @@
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
+#include "chrome/browser/dom_ui/options_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
-#include "chrome/browser/dom_ui/options_ui.h"
 #endif
 
 const DOMUITypeID DOMUIFactory::kNoDOMUI = NULL;
@@ -114,6 +116,13 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
     return &NewDOMUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIOptionsHost)
     return &NewDOMUI<OptionsUI>;
+#else
+  if (url.host() == chrome::kChromeUIOptionsHost) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableTabbedOptions)) {
+      return &NewDOMUI<OptionsUI>;
+    }
+  }
 #endif
 
   return NULL;
@@ -169,6 +178,9 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
 
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes();
+
+  if (page_url.host() == chrome::kChromeUIOptionsHost)
+    return OptionsUI::GetFaviconResourceBytes();
 
   return NULL;
 }

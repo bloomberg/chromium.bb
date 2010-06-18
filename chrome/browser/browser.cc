@@ -631,6 +631,12 @@ void Browser::OpenHelpWindow(Profile* profile) {
   browser->OpenHelpTab();
   browser->window()->Show();
 }
+
+void Browser::OpenOptionsWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->ShowOptionsTab();
+  browser->window()->Show();
+}
 #endif
 
 // static
@@ -1697,6 +1703,11 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
   ShowSingletonTab(GURL(report_page_url));
 }
 
+void Browser::ShowOptionsTab() {
+  UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
+  ShowSingletonTab(GURL(chrome::kChromeUIOptionsURL));
+}
+
 void Browser::OpenClearBrowsingDataDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"),
                             profile_);
@@ -1704,8 +1715,13 @@ void Browser::OpenClearBrowsingDataDialog() {
 }
 
 void Browser::OpenOptionsDialog() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
-  ShowOptionsWindow(OPTIONS_PAGE_DEFAULT, OPTIONS_GROUP_NONE, profile_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab();
+  } else {
+    UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
+    ShowOptionsWindow(OPTIONS_PAGE_DEFAULT, OPTIONS_GROUP_NONE, profile_);
+  }
 }
 
 void Browser::OpenKeywordEditor() {

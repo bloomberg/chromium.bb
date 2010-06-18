@@ -116,6 +116,14 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
           make_scoped_refptr(html_source)));
 }
 
+// static
+RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
+// TODO(csilv): uncomment this once we have a FAVICON
+//  return ResourceBundle::GetSharedInstance().
+//      LoadDataResourceBytes(IDR_OPTIONS_FAVICON);
+  return NULL;
+}
+
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
                                         OptionsPageUIHandler* handler) {
   DCHECK(handler);

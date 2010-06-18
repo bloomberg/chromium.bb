@@ -43,8 +43,8 @@ without changes to the corresponding grd file.  tiiittttrrr -->
         <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />   
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_OPTIONS_HTML" file="resources\options.html" flattenhtml="true" type="BINDATA" />
       </if>
+      <include name="IDR_OPTIONS_HTML" file="resources\options.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_APP_GALLERY_ICON" file="resources\app_gallery_icon.png" type="BINDATA" />
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
       <include name="IDR_GMAIL_APP_MANIFEST" file="resources\gmail_app\manifest.json" type="BINDATA" />

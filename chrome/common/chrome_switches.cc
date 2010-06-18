@@ -369,6 +369,9 @@ const char kEnableSyncThemes[]              = "enable-sync-themes";
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 
+// Enable tabbed options, ie: dom-ui version of options window.
+const char kEnableTabbedOptions[]           = "enable-tabbed-options";
+
 // Whether or not the touch events API is exposed.
 const char kEnableTouch[]                   = "enable-touch";
 

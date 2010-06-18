@@ -783,6 +783,9 @@ void RecordLastRunAppBundlePath() {
                                 defaultProfile);
       TaskManagerMac::Show();
       break;
+    case IDC_OPTIONS:
+      [self showPreferences:sender];
+      break;
   }
 }
 
@@ -926,9 +929,20 @@ void RecordLastRunAppBundlePath() {
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender {
-  [self showPreferencesWindow:sender
-                         page:OPTIONS_PAGE_DEFAULT
-                      profile:[self defaultProfile]];
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(switches::kEnableTabbedOptions)) {
+    if (Browser* browser = ActivateBrowser([self defaultProfile])) {
+      // Show options tab in the active browser window.
+      browser->ShowOptionsTab();
+    } else {
+      // No browser window, so create one for the options tab.
+      Browser::OpenOptionsWindow([self defaultProfile]);
+    }
+  } else {
+    [self showPreferencesWindow:sender
+                           page:OPTIONS_PAGE_DEFAULT
+                        profile:[self defaultProfile]];
+  }
 }
 
 - (void)showPreferencesWindow:(id)sender

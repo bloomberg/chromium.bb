@@ -259,11 +259,12 @@ class Browser : public TabStripModelDelegate,
   static void OpenBookmarkManagerWindow(Profile* profile);
 
 #if defined(OS_MACOSX)
-  // Open a new window with history/downloads/help (needed on Mac when there are
-  // no windows).
+  // Open a new window with history/downloads/help/options (needed on Mac when
+  // there are no windows).
   static void OpenHistoryWindow(Profile* profile);
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
+  static void OpenOptionsWindow(Profile* profile);
 #endif
 
   // Opens a window with the extensions tab in it - needed by long-lived
@@ -521,6 +522,7 @@ class Browser : public TabStripModelDelegate,
   void ShowDownloadsTab();
   void ShowExtensionsTab();
   void ShowBrokenPageTab(TabContents* contents);
+  void ShowOptionsTab();
   void OpenClearBrowsingDataDialog();
   void OpenOptionsDialog();
   void OpenKeywordEditor();

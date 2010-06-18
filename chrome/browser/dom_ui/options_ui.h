@@ -73,6 +73,8 @@ class OptionsUI : public DOMUI {
   explicit OptionsUI(TabContents* contents);
   virtual ~OptionsUI() {}
 
+  static RefCountedMemory* GetFaviconResourceBytes();
+
  private:
   void AddOptionsPageUIHandler(DictionaryValue* localized_strings,
                                OptionsPageUIHandler* handler);
