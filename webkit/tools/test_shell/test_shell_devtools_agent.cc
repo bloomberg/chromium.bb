@@ -18,6 +18,30 @@ using WebKit::WebDevToolsMessageData;
 using WebKit::WebString;
 using WebKit::WebView;
 
+namespace {
+
+class WebKitClientMessageLoopImpl
+    : public WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop {
+ public:
+  WebKitClientMessageLoopImpl() : message_loop_(MessageLoop::current()) { }
+  virtual ~WebKitClientMessageLoopImpl() {
+    message_loop_ = NULL;
+  }
+  virtual void run() {
+    bool old_state = message_loop_->NestableTasksAllowed();
+    message_loop_->SetNestableTasksAllowed(true);
+    message_loop_->Run();
+    message_loop_->SetNestableTasksAllowed(old_state);
+  }
+  virtual void quitNow() {
+    message_loop_->QuitNow();
+  }
+ private:
+  MessageLoop* message_loop_;
+};
+
+} //  namespace
+
 // static
 void TestShellDevToolsAgent::DispatchMessageLoop() {
   MessageLoop* current = MessageLoop::current();
@@ -76,6 +100,11 @@ WebCString TestShellDevToolsAgent::debuggerScriptSource() {
   base::StringPiece debuggerScriptjs =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
   return WebCString(debuggerScriptjs.data(), debuggerScriptjs.length());
+}
+
+WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
+    TestShellDevToolsAgent::createClientMessageLoop() {
+  return new WebKitClientMessageLoopImpl();
 }
 
 void TestShellDevToolsAgent::AsyncCall(const TestShellDevToolsCallArgs &args) {

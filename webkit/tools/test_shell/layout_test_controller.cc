@@ -104,6 +104,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("objCIdentityIsEqual", &LayoutTestController::objCIdentityIsEqual);
   BindMethod("setAlwaysAcceptCookies", &LayoutTestController::setAlwaysAcceptCookies);
   BindMethod("showWebInspector", &LayoutTestController::showWebInspector);
+  BindMethod("closeWebInspector", &LayoutTestController::closeWebInspector);
   BindMethod("setWindowIsKey", &LayoutTestController::setWindowIsKey);
   BindMethod("setTabKeyCyclesThroughElements", &LayoutTestController::setTabKeyCyclesThroughElements);
   BindMethod("setUserStyleSheetLocation", &LayoutTestController::setUserStyleSheetLocation);
@@ -581,6 +582,12 @@ void LayoutTestController::setAlwaysAcceptCookies(
 void LayoutTestController::showWebInspector(
     const CppArgumentList& args, CppVariant* result) {
   shell_->ShowDevTools();
+  result->SetNull();
+}
+
+void LayoutTestController::closeWebInspector(
+    const CppArgumentList& args, CppVariant* result) {
+  shell_->CloseDevTools();
   result->SetNull();
 }
 

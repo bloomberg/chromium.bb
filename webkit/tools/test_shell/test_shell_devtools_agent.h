@@ -37,6 +37,9 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual WebKit::WebCString injectedScriptDispatcherSource();
   virtual WebKit::WebCString debuggerScriptSource();
 
+  virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
+      createClientMessageLoop();
+
   void AsyncCall(const TestShellDevToolsCallArgs& args);
 
   void attach(TestShellDevToolsClient* client);
