@@ -25,12 +25,12 @@ class VolumeBubbleView : public views::View {
   // Set the volume progress bar to the specified position and redraw it.
   void Update(int volume_level_percent);
 
- private:
   // views::View implementation:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
+ private:
   views::ProgressBar* progress_bar_;
   SkBitmap* volume_icon_;
 

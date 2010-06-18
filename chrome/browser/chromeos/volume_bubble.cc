@@ -12,9 +12,16 @@
 #include "views/widget/root_view.h"
 
 namespace {
+
 const int kBubbleShowTimeoutSec = 2;
 const int kAnimationDurationMs = 200;
-const int kVolumeBubbleX = 300, kVolumeBubbleY = 700;
+
+// Horizontal relative position: 0 - leftmost, 0.5 - center, 1 - rightmost.
+const double kVolumeBubbleXRatio = 0.18;
+
+// Vertical gap from the bottom of the screen in pixels.
+const int kVolumeBubbleBottomGap = 30;
+
 }  // namespace
 
 namespace chromeos {
@@ -64,11 +71,19 @@ void VolumeBubble::ShowVolumeBubble(int percent) {
     DCHECK(view_ == NULL);
     view_ = new VolumeBubbleView;
     view_->Init(previous_percent_);
+    // Calculate position of the volume bubble.
     // TODO(glotov): Place volume bubble over the keys initiated the
     // volume change. This metric must be specific to the given
     // architecture. crosbug.com/4028
-    bubble_ = InfoBubble::Show(widget,
-                               gfx::Rect(kVolumeBubbleX, kVolumeBubbleY, 0, 0),
+    gfx::Rect bounds;
+    widget->GetBounds(&bounds, false);
+    const gfx::Size view_size = view_->GetPreferredSize();
+    // Note that (x, y) is the point of the center of the bubble.
+    const int x = view_size.width() / 2 +
+        kVolumeBubbleXRatio * (bounds.width() - view_size.width());
+    const int y = bounds.height() - view_size.height() / 2 -
+        kVolumeBubbleBottomGap;
+    bubble_ = InfoBubble::Show(widget, gfx::Rect(x, y, 0, 20),
                                BubbleBorder::FLOAT, view_, this);
   } else {
     DCHECK(view_);
