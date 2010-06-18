@@ -259,13 +259,13 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
 #endif
   prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename, FilePath());
   prefs->RegisterStringPref(prefs::kCurrentThemeID,
-                            UTF8ToWide(BrowserThemeProvider::kDefaultThemeID));
+                            BrowserThemeProvider::kDefaultThemeID);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeImages);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeColors);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeTints);
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties);
   prefs->RegisterBooleanPref(prefs::kDisableExtensions, false);
-  prefs->RegisterStringPref(prefs::kSelectFileLastDirectory, L"");
+  prefs->RegisterStringPref(prefs::kSelectFileLastDirectory, "");
 }
 
 // static

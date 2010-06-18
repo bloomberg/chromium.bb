@@ -19,20 +19,20 @@ namespace chromeos {
 
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kTimeZone, L"US/Pacific");
+  prefs->RegisterStringPref(prefs::kTimeZone, "US/Pacific");
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
   prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
   prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 9);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
-  prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, L"");
-  prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, L"");
+  prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
+  prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
                             kHotkeyNextEngineInMenu);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
                             kHotkeyPreviousEngine);
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
-                            UTF8ToWide(kFallbackInputMethodId));  // EN layout
+                            kFallbackInputMethodId);  // EN layout
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(kChewingBooleanPrefs[i].pref_name,
                                kChewingBooleanPrefs[i].default_pref_value);
@@ -40,7 +40,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         kChewingMultipleChoicePrefs[i].pref_name,
-        UTF8ToWide(kChewingMultipleChoicePrefs[i].default_pref_value));
+        kChewingMultipleChoicePrefs[i].default_pref_value);
   }
   prefs->RegisterIntegerPref(kChewingHsuSelKeyType.pref_name,
                              kChewingHsuSelKeyType.default_pref_value);
@@ -49,8 +49,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     prefs->RegisterIntegerPref(kChewingIntegerPrefs[i].pref_name,
                                kChewingIntegerPrefs[i].default_pref_value);
   }
-  prefs->RegisterStringPref(prefs::kLanguageHangulKeyboard,
-                            kHangulKeyboardNameIDPairs[0].keyboard_id);
+  prefs->RegisterStringPref(
+      prefs::kLanguageHangulKeyboard,
+      WideToUTF8(kHangulKeyboardNameIDPairs[0].keyboard_id));
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(kPinyinBooleanPrefs[i].pref_name,
                                kPinyinBooleanPrefs[i].default_pref_value);
@@ -69,7 +70,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         kMozcMultipleChoicePrefs[i].pref_name,
-        UTF8ToWide(kMozcMultipleChoicePrefs[i].default_pref_value));
+        kMozcMultipleChoicePrefs[i].default_pref_value);
   }
 }
 

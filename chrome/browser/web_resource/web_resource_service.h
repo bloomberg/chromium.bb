@@ -31,7 +31,7 @@ class WebResourceService
   static const wchar_t* kTipCachePrefName;
 
   // Default server from which to gather resources.
-  static const wchar_t* kDefaultResourceServer;
+  static const char* kDefaultResourceServer;
 
  private:
   class WebResourceFetcher;
@@ -56,7 +56,7 @@ class WebResourceService
   FilePath web_resource_dir_;
 
   // Server from which we are currently pulling web resource data.
-  std::wstring web_resource_server_;
+  std::string web_resource_server_;
 
   WebResourceFetcher* web_resource_fetcher_;
 

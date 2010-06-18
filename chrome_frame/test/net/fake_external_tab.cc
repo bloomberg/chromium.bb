@@ -225,7 +225,7 @@ void FakeExternalTab::Initialize() {
   WebCacheManager::RegisterPrefs(prefs);
 
   PrefService* local_state = browser_process_->local_state();
-  local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
+  local_state->RegisterStringPref(prefs::kApplicationLocale, "");
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
 
   browser::RegisterLocalState(local_state);

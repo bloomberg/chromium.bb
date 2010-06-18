@@ -307,7 +307,7 @@ FilePath DownloadItem::GetFileName() const {
 // static
 void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPromptForDownload, false);
-  prefs->RegisterStringPref(prefs::kDownloadExtensionsToOpen, L"");
+  prefs->RegisterStringPref(prefs::kDownloadExtensionsToOpen, "");
   prefs->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
 
   // The default download path is userprofile\download.

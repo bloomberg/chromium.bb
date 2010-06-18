@@ -99,7 +99,7 @@ class PrefService : public NonThreadSafe {
   void RegisterRealPref(const wchar_t* path,
                         double default_value);
   void RegisterStringPref(const wchar_t* path,
-                          const std::wstring& default_value);
+                          const std::string& default_value);
   void RegisterFilePathPref(const wchar_t* path,
                             const FilePath& default_value);
   void RegisterListPref(const wchar_t* path);

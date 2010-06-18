@@ -599,7 +599,7 @@ class ExtensionUpdaterTest : public testing::Test {
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs);
     service.pref_service()->
-      RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion, L"0");
+      RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion, "0");
     GURL test_url("http://localhost/extension.crx");
 
     std::string id = "com.google.crx.blacklist";

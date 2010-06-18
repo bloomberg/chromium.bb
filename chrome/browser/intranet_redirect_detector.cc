@@ -55,7 +55,7 @@ GURL IntranetRedirectDetector::RedirectOrigin() {
 // static
 void IntranetRedirectDetector::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLastKnownIntranetRedirectOrigin,
-                            std::wstring());
+                            std::string());
 }
 
 void IntranetRedirectDetector::FinishSleep() {

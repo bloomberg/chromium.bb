@@ -89,7 +89,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
 
   const wchar_t pref_name[] = L"homepage";
-  prefs.RegisterStringPref(pref_name, L"");
+  prefs.RegisterStringPref(pref_name, "");
 
   const std::wstring new_pref_value(L"http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
@@ -130,7 +130,7 @@ TEST(PrefServiceTest, HasPrefPath) {
 
   // Register the path. This doesn't set a value, so the path still shouldn't
   // exist.
-  prefs.RegisterStringPref(path, std::wstring());
+  prefs.RegisterStringPref(path, std::string());
   EXPECT_FALSE(prefs.HasPrefPath(path));
 
   // Set a value and make sure we have a path.
@@ -146,7 +146,7 @@ TEST(PrefServiceTest, Observers) {
   DummyPrefStore* pref_store = new DummyPrefStore();
   pref_store->set_prefs(dict);
   PrefService prefs(new PrefValueStore(NULL, pref_store, NULL));
-  prefs.RegisterStringPref(pref_name, L"");
+  prefs.RegisterStringPref(pref_name, "");
 
   const std::wstring new_pref_value(L"http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
@@ -210,7 +210,7 @@ const wchar_t PrefServiceSetValueTest::name_[] = L"name";
 const wchar_t PrefServiceSetValueTest::value_[] = L"value";
 
 TEST_F(PrefServiceSetValueTest, SetStringValue) {
-  const wchar_t default_string[] = L"default";
+  const char default_string[] = "default";
   scoped_ptr<Value> default_value(Value::CreateStringValue(default_string));
   prefs_.RegisterStringPref(name_, default_string);
   prefs_.AddPrefObserver(name_, &observer_);

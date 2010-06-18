@@ -326,11 +326,11 @@ class MetricsService::InitTask : public Task {
 // static
 void MetricsService::RegisterPrefs(PrefService* local_state) {
   DCHECK(IsSingleThreaded());
-  local_state->RegisterStringPref(prefs::kMetricsClientID, L"");
+  local_state->RegisterStringPref(prefs::kMetricsClientID, "");
   local_state->RegisterInt64Pref(prefs::kMetricsClientIDTimestamp, 0);
   local_state->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
   local_state->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
-  local_state->RegisterStringPref(prefs::kStabilityStatsVersion, L"");
+  local_state->RegisterStringPref(prefs::kStabilityStatsVersion, "");
   local_state->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
   local_state->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
   local_state->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);

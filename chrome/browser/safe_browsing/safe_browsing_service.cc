@@ -272,8 +272,8 @@ void SafeBrowsingService::OnEnable(bool enabled) {
 
 // static
 void SafeBrowsingService::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kSafeBrowsingClientKey, L"");
-  prefs->RegisterStringPref(prefs::kSafeBrowsingWrappedKey, L"");
+  prefs->RegisterStringPref(prefs::kSafeBrowsingClientKey, "");
+  prefs->RegisterStringPref(prefs::kSafeBrowsingWrappedKey, "");
 }
 
 void SafeBrowsingService::CloseDatabase() {

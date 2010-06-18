@@ -416,7 +416,7 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
   // Initialize ResourceBundle which handles files loaded from external
   // sources. This has to be done before uninstall code path and before prefs
   // are registered.
-  local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
+  local_state->RegisterStringPref(prefs::kApplicationLocale, "");
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
       GoogleUpdateSettings::GetCollectStatsConsent());
 
@@ -447,7 +447,7 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
     scoped_ptr<PrefService> parent_local_state(
         PrefService::CreatePrefService(parent_profile));
     parent_local_state->RegisterStringPref(prefs::kApplicationLocale,
-                                           std::wstring());
+                                           std::string());
     // Right now, we only inherit the locale setting from the parent profile.
     local_state->SetString(
         prefs::kApplicationLocale,

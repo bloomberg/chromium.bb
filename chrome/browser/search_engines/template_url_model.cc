@@ -873,15 +873,15 @@ void TemplateURLModel::RegisterPrefs(PrefService* prefs) {
   if (prefs->FindPreference(prefs::kDefaultSearchProviderName))
     return;
   prefs->RegisterStringPref(
-      prefs::kDefaultSearchProviderName, std::wstring());
+      prefs::kDefaultSearchProviderName, std::string());
   prefs->RegisterStringPref(
-      prefs::kDefaultSearchProviderID, std::wstring());
+      prefs::kDefaultSearchProviderID, std::string());
   prefs->RegisterStringPref(
-      prefs::kDefaultSearchProviderPrepopulateID, std::wstring());
+      prefs::kDefaultSearchProviderPrepopulateID, std::string());
   prefs->RegisterStringPref(
-      prefs::kDefaultSearchProviderSuggestURL, std::wstring());
+      prefs::kDefaultSearchProviderSuggestURL, std::string());
   prefs->RegisterStringPref(
-      prefs::kDefaultSearchProviderSearchURL, std::wstring());
+      prefs::kDefaultSearchProviderSearchURL, std::string());
 }
 
 bool TemplateURLModel::CanReplaceKeywordForHost(

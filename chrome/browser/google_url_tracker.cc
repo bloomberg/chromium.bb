@@ -63,7 +63,7 @@ void GoogleURLTracker::RequestServerCheck() {
 // static
 void GoogleURLTracker::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLastKnownGoogleURL,
-                            ASCIIToWide(kDefaultGoogleHomepage));
+                            kDefaultGoogleHomepage);
 }
 
 // static

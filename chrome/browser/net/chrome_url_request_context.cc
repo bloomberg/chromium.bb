@@ -550,9 +550,9 @@ void ChromeURLRequestContextGetter::RegisterUserPrefs(
     PrefService* pref_service) {
   pref_service->RegisterBooleanPref(prefs::kNoProxyServer, false);
   pref_service->RegisterBooleanPref(prefs::kProxyAutoDetect, false);
-  pref_service->RegisterStringPref(prefs::kProxyServer, L"");
-  pref_service->RegisterStringPref(prefs::kProxyPacUrl, L"");
-  pref_service->RegisterStringPref(prefs::kProxyBypassList, L"");
+  pref_service->RegisterStringPref(prefs::kProxyServer, "");
+  pref_service->RegisterStringPref(prefs::kProxyPacUrl, "");
+  pref_service->RegisterStringPref(prefs::kProxyBypassList, "");
 }
 
 net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {

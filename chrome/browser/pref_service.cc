@@ -214,7 +214,7 @@ void PrefService::RegisterRealPref(const wchar_t* path,
 }
 
 void PrefService::RegisterStringPref(const wchar_t* path,
-                                     const std::wstring& default_value) {
+                                     const std::string& default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateStringValue(default_value));
   RegisterPreference(pref);

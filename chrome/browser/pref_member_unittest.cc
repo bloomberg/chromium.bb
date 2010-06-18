@@ -21,7 +21,7 @@ void RegisterTestPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(kBoolPref, false);
   prefs->RegisterIntegerPref(kIntPref, 0);
   prefs->RegisterRealPref(kRealPref, 0.0);
-  prefs->RegisterStringPref(kStringPref, L"default");
+  prefs->RegisterStringPref(kStringPref, "default");
 }
 
 class PrefMemberTestClass : public NotificationObserver {

@@ -43,7 +43,7 @@ class ProfileSyncServicePreferenceTest
         example_url1_(L"http://example.com/1"),
         example_url2_(L"http://example.com/2"),
         not_synced_preference_name_(L"nonsense_pref_name"),
-        not_synced_preference_default_value_(L"default"),
+        not_synced_preference_default_value_("default"),
         non_default_charset_value_(L"foo") {}
 
   virtual void SetUp() {
@@ -192,7 +192,7 @@ class ProfileSyncServicePreferenceTest
   std::wstring example_url1_;
   std::wstring example_url2_;
   std::wstring not_synced_preference_name_;
-  std::wstring not_synced_preference_default_value_;
+  std::string not_synced_preference_default_value_;
   std::wstring non_default_charset_value_;
 };
 

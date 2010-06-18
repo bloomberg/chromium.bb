@@ -19,7 +19,7 @@ class ManagedPrefsBannerBaseTest : public testing::Test {
     default_prefs_ = new DummyPrefStore;
     pref_service_.reset(new PrefService(
         new PrefValueStore(managed_prefs_, user_prefs_, default_prefs_)));
-    pref_service_->RegisterStringPref(prefs::kHomePage, L"http://google.com");
+    pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com");
     pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, false);
   }
 

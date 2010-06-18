@@ -50,10 +50,10 @@ const char kPreviousEngineConfigName[] = "previous_engine";
 // Chrome OS actually generates Zenkaku_Hankaku when the keyboard gets ready.
 
 // ibus-daemon accepts up to 5 next-engine hot-keys.
-const wchar_t kHotkeyNextEngineInMenu[] =
-    L"Alt+Shift_L,Shift+Meta_L,Control+Shift+space,Zenkaku_Hankaku";
+const char kHotkeyNextEngineInMenu[] =
+    "Alt+Shift_L,Shift+Meta_L,Control+Shift+space,Zenkaku_Hankaku";
 // TODO(suzhe): Add more key bindings?
-const wchar_t kHotkeyPreviousEngine[] = L"Control+space";
+const char kHotkeyPreviousEngine[] = "Control+space";
 
 // For Simplified Chinese input method (ibus-chewing)
 const char kChewingSectionName[] = "engine/Chewing";

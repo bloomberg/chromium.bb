@@ -50,7 +50,7 @@ class WebResourceService::WebResourceFetcher
       web_resource_service_->in_fetch_ = true;
 
     url_fetcher_.reset(new URLFetcher(GURL(
-        WideToUTF8(web_resource_service_->web_resource_server_)),
+        web_resource_service_->web_resource_server_),
         URLFetcher::GET, this));
     // Do not let url fetcher affect existing state in profile (by setting
     // cookies, for example.
@@ -179,13 +179,13 @@ class WebResourceService::UnpackerClient
 };
 
 // TODO(mirandac): replace these servers tomorrow!
-const wchar_t* WebResourceService::kDefaultResourceServer =
+const char* WebResourceService::kDefaultResourceServer =
 #if defined(OS_MACOSX)
-  L"https://clients2.google.com/tools/service/npredir?r=chrometips_mac&hl=";
+  "https://clients2.google.com/tools/service/npredir?r=chrometips_mac&hl=";
 #elif defined(OS_LINUX)
-  L"https://clients2.google.com/tools/service/npredir?r=chrometips_linux&hl=";
+  "https://clients2.google.com/tools/service/npredir?r=chrometips_linux&hl=";
 #else
-  L"https://clients2.google.com/tools/service/npredir?r=chrometips_win&hl=";
+  "https://clients2.google.com/tools/service/npredir?r=chrometips_win&hl=";
 #endif
 
 const char* WebResourceService::kResourceDirectoryName =
@@ -203,11 +203,12 @@ WebResourceService::~WebResourceService() { }
 void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_ = new WebResourceFetcher(this);
-  prefs_->RegisterStringPref(prefs::kNTPTipsCacheUpdate, L"0");
-  std::wstring locale = ASCIIToWide(g_browser_process->GetApplicationLocale());
+  prefs_->RegisterStringPref(prefs::kNTPTipsCacheUpdate, "0");
+  std::string locale = g_browser_process->GetApplicationLocale();
 
   if (prefs_->HasPrefPath(prefs::kNTPTipsServer)) {
-     web_resource_server_ = prefs_->GetString(prefs::kNTPTipsServer);
+     web_resource_server_ =
+         WideToASCII(prefs_->GetString(prefs::kNTPTipsServer));
      // If we are in the correct locale, initialization is done.
      if (EndsWith(web_resource_server_, locale, false))
        return;
@@ -293,5 +294,5 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
   // Update resource server and cache update time in preferences.
   prefs_->SetString(prefs::kNTPTipsCacheUpdate,
       DoubleToWString(base::Time::Now().ToDoubleT()));
-  prefs_->SetString(prefs::kNTPTipsServer, web_resource_server_);
+  prefs_->SetString(prefs::kNTPTipsServer, ASCIIToWide(web_resource_server_));
 }

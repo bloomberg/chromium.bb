@@ -346,7 +346,7 @@ static void EnsureInt64PrefRegistered(PrefService* prefs,
 
 static void EnsureBlacklistVersionPrefRegistered(PrefService* prefs) {
   if (!prefs->FindPreference(kExtensionBlacklistUpdateVersion))
-    prefs->RegisterStringPref(kExtensionBlacklistUpdateVersion, L"0");
+    prefs->RegisterStringPref(kExtensionBlacklistUpdateVersion, "0");
 }
 
 // The overall goal here is to balance keeping clients up to date while

@@ -98,13 +98,13 @@
 
 namespace internal_cloud_print_helpers {
 
+const char kDefaultCloudPrintServiceURL[] = "https://www.google.com/cloudprint";
+
 void CloudPrintService::RegisterPreferences() {
   DCHECK(profile_);
   PrefService* pref_service = profile_->GetPrefs();
   if (pref_service->FindPreference(prefs::kCloudPrintServiceURL))
     return;
-  std::wstring kDefaultCloudPrintServiceURL(
-      L"https://www.google.com/cloudprint");
   pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
                                    kDefaultCloudPrintServiceURL);
 }

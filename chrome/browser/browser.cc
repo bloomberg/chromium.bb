@@ -1809,7 +1809,7 @@ void Browser::RegisterPrefs(PrefService* prefs) {
 // static
 void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kHomePage,
-                            ASCIIToWide(chrome::kChromeUINewTabURL));
+                            chrome::kChromeUINewTabURL);
   prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
   prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit, false);
   prefs->RegisterBooleanPref(prefs::kShowHomeButton, false);
@@ -1825,7 +1825,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kShowPageOptionsButtons, false);
   prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
 #endif
-  prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding, L"");
+  prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding, "");
   prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory, true);
   prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory, true);
   prefs->RegisterBooleanPref(prefs::kDeleteCache, true);
