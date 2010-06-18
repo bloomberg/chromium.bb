@@ -74,6 +74,9 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // Cancels a previous Get*Logins query (async)
   void CancelLoginsQuery(int handle);
 
+  // Reports usage metrics for the database.
+  virtual void ReportMetrics();
+
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
   friend class browser_sync::PasswordDataTypeController;
@@ -104,6 +107,8 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   void ScheduleTask(Task* task);
 
   // These will be run in PasswordStore's own thread.
+  // Synchronous implementation that reports usage metrics.
+  virtual void ReportMetricsImpl() = 0;
   // Synchronous implementation to add the given login.
   virtual void AddLoginImpl(const webkit_glue::PasswordForm& form) = 0;
   // Synchronous implementation to update the given login.

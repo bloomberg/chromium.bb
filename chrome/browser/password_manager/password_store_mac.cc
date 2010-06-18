@@ -744,6 +744,9 @@ void PasswordStoreMac::ScheduleTask(Task* task) {
   }
 }
 
+void PasswordStoreMac::ReportMetricsImpl() {
+}
+
 void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
   if (AddToKeychainIfNecessary(form)) {
     if (login_metadata_db_->AddLogin(form)) {
