@@ -16,6 +16,8 @@
 #include "webkit/glue/devtools_message_data.h"
 
 using WebKit::WebDevToolsAgent;
+using WebKit::WebDevToolsMessageData;
+using WebKit::WebDevToolsMessageTransport;
 using WebKit::WebString;
 
 // static
@@ -64,8 +66,21 @@ void DevToolsAgentFilter::OnDebuggerPauseScript() {
   WebDevToolsAgent::debuggerPauseScript();
 }
 
+namespace {
+
+class WebDevToolsMessageTransportImpl : public WebDevToolsMessageTransport {
+ public:
+  void sendMessageToFrontendOnIOThread(const WebDevToolsMessageData& data) {
+    DevToolsAgentFilter::SendRpcMessage(DevToolsMessageData(data));
+  }
+};
+
+}  // namespace
+
 void DevToolsAgentFilter::OnRpcMessage(const DevToolsMessageData& data) {
+  WebDevToolsMessageTransportImpl transport;
   message_handled_ = WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
+      &transport,
       data.ToWebDevToolsMessageData());
 }
 
