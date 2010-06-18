@@ -3678,7 +3678,7 @@ void Browser::OpenURLAtIndex(TabContents* source,
     delegate->OnUserGesture();
   }
 
-  transition = AdjustWindowOpenDispositionForTab(
+  disposition = AdjustWindowOpenDispositionForTab(
       current_tab && IsPinned(current_tab),
       url,
       referrer,
