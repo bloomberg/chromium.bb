@@ -278,6 +278,11 @@ class WriteNode : public BaseNode {
                             const BaseNode& parent,
                             const std::string& client_tag);
 
+  // Each server-created permanent node is tagged with a unique string.
+  // Look up the node with the particular tag.  If it does not exist,
+  // return false.
+  bool InitByTagLookup(const std::string& tag);
+
   // These Set() functions correspond to the Get() functions of BaseNode.
   void SetIsFolder(bool folder);
   void SetTitle(const std::wstring& title);
@@ -406,9 +411,7 @@ class ReadNode : public BaseNode {
 
   // Each server-created permanent node is tagged with a unique string.
   // Look up the node with the particular tag.  If it does not exist,
-  // return false.  Since these nodes are special, lookup is only
-  // provided through ReadNode.
-  // TODO(chron): Rename this function.
+  // return false.
   bool InitByTagLookup(const std::string& tag);
 
   // Implementation of BaseNode's abstract virtual accessors.

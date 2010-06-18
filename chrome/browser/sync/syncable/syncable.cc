@@ -1168,6 +1168,12 @@ MutableEntry::MutableEntry(WriteTransaction* trans, GetByClientTag,
   trans->SaveOriginal(kernel_);
 }
 
+MutableEntry::MutableEntry(WriteTransaction* trans, GetByServerTag,
+                           const string& tag)
+    : Entry(trans, GET_BY_SERVER_TAG, tag), write_transaction_(trans) {
+  trans->SaveOriginal(kernel_);
+}
+
 bool MutableEntry::PutIsDel(bool is_del) {
   DCHECK(kernel_);
   if (is_del == kernel_->ref(IS_DEL)) {

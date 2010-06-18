@@ -460,6 +460,7 @@ class MutableEntry : public Entry {
   MutableEntry(WriteTransaction* trans, GetByHandle, int64);
   MutableEntry(WriteTransaction* trans, GetById, const Id&);
   MutableEntry(WriteTransaction* trans, GetByClientTag, const std::string& tag);
+  MutableEntry(WriteTransaction* trans, GetByServerTag, const std::string& tag);
 
   inline WriteTransaction* write_transaction() const {
     return write_transaction_;

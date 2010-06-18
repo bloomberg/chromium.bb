@@ -469,6 +469,21 @@ bool WriteNode::InitByClientTagLookup(syncable::ModelType model_type,
   return (entry_->good() && !entry_->Get(syncable::IS_DEL));
 }
 
+bool WriteNode::InitByTagLookup(const std::string& tag) {
+  DCHECK(!entry_) << "Init called twice";
+  if (tag.empty())
+    return false;
+  entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
+                                      syncable::GET_BY_SERVER_TAG, tag);
+  if (!entry_->good())
+    return false;
+  if (entry_->Get(syncable::IS_DEL))
+    return false;
+  syncable::ModelType model_type = GetModelType();
+  DCHECK(model_type == syncable::NIGORI);
+  return true;
+}
+
 void WriteNode::PutModelType(syncable::ModelType model_type) {
   // Set an empty specifics of the appropriate datatype.  The presence
   // of the specific extension will identify the model type.
