@@ -26,15 +26,19 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+static int IsEnvironmentVariableSet(char const *env_name) {
+  return NULL != getenv(env_name);
+}
+
 static int ShouldEnableDynamicLoading() {
   /* Later we will make dynamic loading enabled by default. */
-  const char *var = getenv("NACLDYNCODE");
-  return NULL != var && '\0' != *var;
+  return IsEnvironmentVariableSet("NACLDYNCODE");
 }
 
 int NaClAppCtor(struct NaClApp  *nap) {
@@ -812,6 +816,24 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   UNREFERENCED_PARAMETER(out_args);
 
   NaClLog(4, "NaClLoadModuleRpc: entered, finding shm size\n");
+
+  /*
+   * Temporary hack to enable debugging when an environment variable
+   * is set.  This is done here to avoid a Chromium-side change, since
+   * the current DLL-based startup duplicates much of the
+   * functionality of sel_main.c in chrome/nacl/sel_main.cc because
+   * NaCl is not an independent process.
+   */
+
+  NaClLog(4, "Checking for DANGEROUS modes\n");
+  if (IsEnvironmentVariableSet("NACL_DANGEROUS_IGNORE_VALIDATOR")) {
+    nap->ignore_validator_result = 1;
+    NaClLog(LOG_INFO, "DANGER: IGNORING VALIDATOR\n");
+  }
+  if (IsEnvironmentVariableSet("NACL_DANGEROUS_ENABLE_FILE_ACCESS")) {
+    NaClInsecurelyBypassAllAclChecks();
+    NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
+  }
 
   errcode = NACL_SRPC_RESULT_INTERNAL;
 
