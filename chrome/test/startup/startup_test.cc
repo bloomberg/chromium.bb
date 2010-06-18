@@ -85,7 +85,7 @@ class StartupTest : public UITest {
   // Runs a test which loads |tab_count| tabs on startup, either as command line
   // arguments or, if |restore_session| is true, by using session restore.
   // |nth_timed_tab|, if non-zero, will measure time to load the first n+1 tabs.
-  void RunPerfTestWithManyTabs(const char* test_name,
+  void RunPerfTestWithManyTabs(const char* graph, const char* trace,
                                int tab_count, int nth_timed_tab,
                                bool restore_session);
 
@@ -155,6 +155,18 @@ class StartupTest : public UITest {
       }
       UITest::SetUp();
       TimeTicks end_time = TimeTicks::Now();
+
+      // HACK: Chrome < 5.0.368.0 did not yet implement SendJSONRequest.
+      {
+        std::string server_version = automation()->server_version();
+        std::vector<std::string> version_numbers;
+        SplitString(server_version, '.', &version_numbers);
+        int chrome_buildnum = 0;
+        ASSERT_TRUE(StringToInt(version_numbers[2], &chrome_buildnum));
+        if (chrome_buildnum < 368) {
+          num_tabs = 0;
+        }
+      }
       if (num_tabs > 0) {
         float min_start;
         float max_stop;
@@ -247,7 +259,7 @@ TEST_F(StartupTest, PerfCold) {
   RunStartupTest("cold", "t", COLD, NOT_IMPORTANT, UITest::DEFAULT_THEME, 0, 0);
 }
 
-void StartupTest::RunPerfTestWithManyTabs(const char* test_name,
+void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
                                           int tab_count, int nth_timed_tab,
                                           bool restore_session) {
   // Initialize session with |tab_count| tabs.
@@ -273,33 +285,53 @@ void StartupTest::RunPerfTestWithManyTabs(const char* test_name,
     launch_arguments_.AppendSwitchWithValue(switches::kRestoreLastSession,
                                             IntToWString(tab_count));
   }
-  RunStartupTest("warm", test_name, WARM, NOT_IMPORTANT, UITest::DEFAULT_THEME,
+  RunStartupTest(graph, trace, WARM, NOT_IMPORTANT, UITest::DEFAULT_THEME,
                  tab_count, nth_timed_tab);
 }
 
 TEST_F(StartupTest, PerfFewTabs) {
-  RunPerfTestWithManyTabs("few_tabs", 5, 2, false);
+  RunPerfTestWithManyTabs("few_tabs", "cmdline", 5, 2, false);
+}
+
+TEST_F(StartupTest, PerfFewTabsReference) {
+  UseReferenceBuild();
+  RunPerfTestWithManyTabs("few_tabs", "cmdline-ref", 5, 2, false);
 }
 
 TEST_F(StartupTest, PerfRestoreFewTabs) {
-  RunPerfTestWithManyTabs("restore_few_tabs", 5, 2, true);
+  RunPerfTestWithManyTabs("few_tabs", "restore", 5, 2, true);
+}
+
+TEST_F(StartupTest, PerfRestoreFewTabsReference) {
+  UseReferenceBuild();
+  RunPerfTestWithManyTabs("few_tabs", "restore-ref", 5, 2, true);
 }
 
 // http://crbug.com/46609
 #if defined(OS_MACOSX)
+#define MAYBE_PerfSeveralTabsReference FLAKY_PerfSeveralTabsReference
 #define MAYBE_PerfSeveralTabs FLAKY_PerfSeveralTabs
-#define MAYBE_PerfRestoreSeveralTabs FLAKY_PerfRestoreSeveralTabs
 #else
+#define MAYBE_PerfSeveralTabsReference PerfSeveralTabsReference
 #define MAYBE_PerfSeveralTabs PerfSeveralTabs
-#define MAYBE_PerfRestoreSeveralTabs PerfRestoreSeveralTabs
 #endif
 
 TEST_F(StartupTest, MAYBE_PerfSeveralTabs) {
-  RunPerfTestWithManyTabs("several_tabs", 10, 4, false);
+  RunPerfTestWithManyTabs("several_tabs", "cmdline", 10, 4, false);
 }
 
-TEST_F(StartupTest, MAYBE_PerfRestoreSeveralTabs) {
-  RunPerfTestWithManyTabs("restore_several_tabs", 10, 4, true);
+TEST_F(StartupTest, MAYBE_PerfSeveralTabsReference) {
+  UseReferenceBuild();
+  RunPerfTestWithManyTabs("several_tabs", "cmdline-ref", 10, 4, false);
+}
+
+TEST_F(StartupTest, PerfRestoreSeveralTabs) {
+  RunPerfTestWithManyTabs("several_tabs", "restore", 10, 4, true);
+}
+
+TEST_F(StartupTest, PerfRestoreSeveralTabsReference) {
+  UseReferenceBuild();
+  RunPerfTestWithManyTabs("several_tabs", "restore-ref", 10, 4, true);
 }
 
 TEST_F(StartupTest, PerfExtensionEmpty) {
