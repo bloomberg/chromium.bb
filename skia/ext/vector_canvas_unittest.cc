@@ -924,7 +924,7 @@ TEST_F(VectorCanvasTest, ClippingClean) {
   }
 }
 
-TEST_F(VectorCanvasTest, DISABLED_Matrix) {
+TEST_F(VectorCanvasTest, FAILS_Matrix) {
   SkBitmap bitmap;
   LoadPngFileToSkBitmap(test_file(L"..\\bitmaps\\bitmap_opaque.png"), &bitmap,
                         true);
