@@ -236,7 +236,7 @@ class NullModelTableViewTest : public TableViewTest {
 
 // Failing: http://crbug.com/45015
 // Tests various sorting permutations.
-TEST_F(TableViewTest, FAILS_Sort) {
+TEST_F(TableViewTest, DISABLED_Sort) {
   // Sort by first column descending.
   TableView::SortDescriptors sort;
   sort.push_back(TableView::SortDescriptor(0, false));
