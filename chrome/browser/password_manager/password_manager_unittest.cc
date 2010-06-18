@@ -42,7 +42,7 @@ class TestingProfileWithPasswordStore : public TestingProfile {
 class MockPasswordStore : public PasswordStore {
  public:
   MOCK_METHOD1(RemoveLogin, void(const PasswordForm&));
-  MOCK_METHOD0(ReportMetricsImpl void());
+  MOCK_METHOD0(ReportMetricsImpl, void());
   MOCK_METHOD2(GetLogins, int(const PasswordForm&, PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const PasswordForm&));
