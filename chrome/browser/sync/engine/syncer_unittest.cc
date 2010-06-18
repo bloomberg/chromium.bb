@@ -2558,7 +2558,6 @@ TEST_F(SyncerTest, ServerDeletingFolderWeHaveMovedSomethingInto) {
 // interesting case the 4th time SyncShare is called.
 // TODO(chron): The fourth time that SyncShare is called it crashes.
 // This seems to be due to a bug in the conflict set building logic.
-// http://crbug.com/46621
 TEST_F(SyncerTest, DISABLED_ServerDeletingFolderWeHaveAnOpenEntryIn) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());

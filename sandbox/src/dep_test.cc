@@ -166,8 +166,8 @@ SBOX_TESTS_COMMAND int CheckDepLevel(int argc, wchar_t **argv) {
 
 }  // namespace
 
-// This test fails. See bug 1275842
-TEST_F(DepTest, FAILS_TestDepDisable) {
+// This test is disabled. See bug 1275842
+TEST_F(DepTest, DISABLED_TestDepDisable) {
   TestRunner runner(JOB_UNPROTECTED, USER_INTERACTIVE, USER_INTERACTIVE);
 
   runner.SetTimeout(INFINITE);
