@@ -206,14 +206,13 @@ class AutocompleteEditModel : public NotificationObserver {
   void AcceptInput(WindowOpenDisposition disposition,
                    bool for_drop);
 
-  // As necessary, sends out notification that the user is accepting a URL in
-  // the edit.  If the accepted URL is from selecting a keyword, |keyword| is
-  // the selected keyword.
-  // If |selected_line| is kNoMatch, the currently selected line is used for the
-  // metrics log record; otherwise, the provided value is used as the selected
-  // line.  This is used when the user opens a URL without actually selecting
-  // its entry, such as middle-clicking it.
-  void SendOpenNotification(size_t selected_line, const std::wstring& keyword);
+  // Asks the browser to load the item at |index|, with the given properties.
+  void OpenURL(const GURL& url,
+               WindowOpenDisposition disposition,
+               PageTransition::Type transition,
+               const GURL& alternate_nav_url,
+               size_t index,
+               const std::wstring& keyword);
 
   bool has_focus() const { return has_focus_; }
 

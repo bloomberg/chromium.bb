@@ -266,16 +266,6 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   GURL alternate_nav_url;
   GetInfoForCurrentText(&match, &alternate_nav_url);
 
-  if (match.template_url && match.template_url->IsExtensionKeyword()) {
-    // Strip the keyword + leading space off the input.
-    size_t prefix_length = match.template_url->keyword().size() + 1;
-    ExtensionOmniboxEventRouter::OnInputEntered(
-        profile_, match.template_url->GetExtensionId(),
-        WideToUTF8(match.fill_into_edit.substr(prefix_length)));
-    view_->RevertAll();
-    return;
-  }
-
   if (!match.destination_url.is_valid())
     return;
 
@@ -299,14 +289,18 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
                  is_keyword_hint_ ? std::wstring() : keyword_);
 }
 
-void AutocompleteEditModel::SendOpenNotification(size_t selected_line,
-                                                 const std::wstring& keyword) {
+void AutocompleteEditModel::OpenURL(const GURL& url,
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition,
+                                    const GURL& alternate_nav_url,
+                                    size_t index,
+                                    const std::wstring& keyword) {
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_->IsOpen()) {
     scoped_ptr<AutocompleteLog> log(popup_->GetAutocompleteLog());
-    if (selected_line != AutocompletePopupModel::kNoMatch)
-      log->selected_index = selected_line;
+    if (index != AutocompletePopupModel::kNoMatch)
+      log->selected_index = index;
     else if (!has_temporary_text_)
       log->inline_autocompleted_length = inline_autocomplete_text_.length();
     NotificationService::current()->Notify(
@@ -315,18 +309,42 @@ void AutocompleteEditModel::SendOpenNotification(size_t selected_line,
   }
 
   TemplateURLModel* template_url_model = profile_->GetTemplateURLModel();
-  if (keyword.empty() || !template_url_model)
-    return;
+  if (template_url_model && !keyword.empty()) {
+    const TemplateURL* const template_url =
+        template_url_model->GetTemplateURLForKeyword(keyword);
 
-  const TemplateURL* const template_url =
-      template_url_model->GetTemplateURLForKeyword(keyword);
-  if (template_url) {
-    UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"), profile_);
-    template_url_model->IncrementUsageCount(template_url);
+    // Special case for extension keywords. Don't increment usage count for
+    // these.
+    if (template_url && template_url->IsExtensionKeyword()) {
+      AutocompleteMatch current_match;
+      GetInfoForCurrentText(&current_match, NULL);
+
+      const AutocompleteMatch& match =
+          index == AutocompletePopupModel::kNoMatch ?
+              current_match : result().match_at(index);
+
+      // Strip the keyword + leading space off the input.
+      size_t prefix_length = match.template_url->keyword().size() + 1;
+      ExtensionOmniboxEventRouter::OnInputEntered(
+          profile_, match.template_url->GetExtensionId(),
+          WideToUTF8(match.fill_into_edit.substr(prefix_length)));
+      view_->RevertAll();
+      return;
+    }
+
+    if (template_url) {
+      UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"), profile_);
+      template_url_model->IncrementUsageCount(template_url);
+    }
+
+    // NOTE: We purposefully don't increment the usage count of the default
+    // search engine, if applicable; see comments in template_url.h.
   }
 
-  // NOTE: We purposefully don't increment the usage count of the default search
-  // engine, if applicable; see comments in template_url.h.
+  if (disposition != NEW_BACKGROUND_TAB)
+    view_->RevertAll();  // Revert the box to its unedited state
+  controller_->OnAutocompleteAccept(url, disposition, transition,
+                                    alternate_nav_url);
 }
 
 void AutocompleteEditModel::AcceptKeyword() {

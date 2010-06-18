@@ -285,12 +285,8 @@ void AutocompleteEditViewMac::OpenURL(const GURL& url,
     return;
   }
 
-  model_->SendOpenNotification(selected_line, keyword);
-
-  if (disposition != NEW_BACKGROUND_TAB)
-    RevertAll();  // Revert the box to its unedited state.
-  controller_->OnAutocompleteAccept(url, disposition, transition,
-                                    alternate_nav_url);
+  model_->OpenURL(url, disposition, transition, alternate_nav_url,
+                  selected_line, keyword);
 }
 
 std::wstring AutocompleteEditViewMac::GetText() const {

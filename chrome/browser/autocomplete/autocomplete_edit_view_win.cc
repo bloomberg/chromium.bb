@@ -590,13 +590,13 @@ void AutocompleteEditViewWin::OpenURL(const GURL& url,
   if (!url.is_valid())
     return;
 
-  model_->SendOpenNotification(selected_line, keyword);
-
+  // When we navigate, we first revert to the unedited state, then if necessary
+  // synchronously change the permanent text to the new URL.  If we don't freeze
+  // here, the user could potentially see a flicker of the current URL before
+  // the new one reappears, which would look glitchy.
   ScopedFreeze freeze(this, GetTextObjectModel());
-  if (disposition != NEW_BACKGROUND_TAB)
-    RevertAll();  // Revert the box to its unedited state
-  controller_->OnAutocompleteAccept(url, disposition, transition,
-                                    alternate_nav_url);
+  model_->OpenURL(url, disposition, transition, alternate_nav_url,
+                  selected_line, keyword);
 }
 
 std::wstring AutocompleteEditViewWin::GetText() const {
