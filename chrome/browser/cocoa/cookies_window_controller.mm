@@ -326,6 +326,23 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
   }
 }
 
+// Override keyDown on the controller (which is the first responder) to allow
+// both backspace and delete to be captured by the Remove button.
+- (void)keyDown:(NSEvent*)theEvent {
+  NSString* keys = [theEvent characters];
+  if ([keys length]) {
+    unichar key = [keys characterAtIndex:0];
+    // The button has a key equivalent of backspace, so examine this event for
+    // forward delete.
+    if ((key == NSDeleteCharacter || key == NSDeleteFunctionKey) &&
+        [self removeButtonEnabled]) {
+      [removeButton_ performClick:self];
+      return;
+    }
+  }
+  [super keyDown:theEvent];
+}
+
 #pragma mark Getters and Setters
 
 - (CocoaCookieTreeNode*)cocoaTreeModel {

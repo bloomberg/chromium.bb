@@ -103,6 +103,7 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
   IBOutlet NSOutlineView* outlineView_;
   IBOutlet NSSearchField* searchField_;
   IBOutlet NSView* cookieDetailsViewPlaceholder_;
+  IBOutlet NSButton* removeButton_;
 
   scoped_nsobject<CookieDetailsViewController> detailsViewController_;
   Profile* profile_;  // weak
