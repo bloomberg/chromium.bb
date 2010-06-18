@@ -11,6 +11,7 @@
 #include "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
+#include "chrome/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -382,6 +383,36 @@ TEST_F(BookmarkBubbleControllerTest, TestMenuIndentation) {
         << "Unexpected indent for menu item #" << itemNo;
   }
 }
+
+// Confirm bubble goes away when a new tab is created.
+TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
+
+  BookmarkModel* model = GetBookmarkModel();
+  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+                                           0,
+                                           L"Bookie markie title",
+                                           GURL("http://www.google.com"));
+  EXPECT_EQ(edits_, 0);
+
+  BookmarkBubbleController* controller = ControllerForNode(node);
+  EXPECT_TRUE(controller);
+  EXPECT_FALSE(IsWindowClosing());
+
+  // We can't actually create a new tab here, e.g.
+  //   helper_.browser()->AddTabWithURL(...);
+  // Many of our browser objects (Browser, Profile, RequestContext)
+  // are "just enough" to run tests without being complete.  Instead
+  // we fake the notification that would be triggered by a tab
+  // creation.
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENTS_CONNECTED,
+      Source<TabContentsDelegate>(NULL),
+      Details<TabContents>(NULL));
+
+  // Confirm bubble going bye-bye.
+  EXPECT_TRUE(IsWindowClosing());
+}
+
 
 }  // namespace
 
