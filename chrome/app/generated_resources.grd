@@ -4132,7 +4132,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE" desc="Radio button for including a new screen image on the bug report dialog box">
-          Send last active tab Screenshot
+          Send last active tab screen shot
         </message>
         <message name="IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE" desc="Radio button for including the last screen image on the bug report dialog box">
           Send last saved screen shot
@@ -4142,9 +4142,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
           Send system information
-        </message>
-        <message name="IDS_BUGREPORT_SYSTEM_INFORMATION_URL" desc="URL for system information on the bug report dialog box">
-          about:blank
         </message>
         <message name="IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT" desc="Text for system information url on the bug report dialog box">
           Included system information...
@@ -5614,7 +5611,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Learn more
       </message>
       <message name="IDS_AUTOFILL_OPTIONS_MENU_ITEM" desc="The entry in the suggestions dropdown that opens the AutoFill dialog.">
-        AutoFill Options...
+        AutoFill options...
       </message>
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
         Clear form
@@ -7661,7 +7658,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Languages
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
-               desc="The title for the Chewing input settings dialog">
+               desc="The title for the Chewing input settings dialog. Please note that 'Chewing' here is name of an input method and not 'an act of biting and grinding with the teeth'.">
         Chewing Input Settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_AUTO_SHIFT_CUR"
