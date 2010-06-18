@@ -94,6 +94,11 @@ void ExtensionViewMac::RenderViewCreated() {
   }
 }
 
+void ExtensionViewMac::WindowFrameChanged() {
+  if (render_widget_host_view_)
+    render_widget_host_view_->WindowFrameChanged();
+}
+
 void ExtensionViewMac::CreateWidgetHostView() {
   DCHECK(!render_widget_host_view_);
   render_widget_host_view_ = new RenderWidgetHostViewMac(render_view_host());

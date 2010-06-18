@@ -617,22 +617,36 @@ gfx::Rect NSRectToRect(const NSRect rect) {
   return new_rect;
 }
 
+// Returns the window that visually contains the given view. This is different
+// from [view window] in the case of tab dragging, where the view's owning
+// window is a floating panel attached to the actual browser window that the tab
+// is visually part of.
+NSWindow* ApparentWindowForView(NSView* view) {
+  // TODO(shess): In case of !window, the view has been removed from
+  // the view hierarchy because the tab isn't main.  Could retrieve
+  // the information from the main tab for our window.
+  NSWindow* enclosing_window = [view window];
+
+  // See if this is a tab drag window. The width check is to distinguish that
+  // case from extension popup windows.
+  NSWindow* ancestor_window = [enclosing_window parentWindow];
+  if (ancestor_window && ([enclosing_window frame].size.width ==
+                          [ancestor_window frame].size.width)) {
+    enclosing_window = ancestor_window;
+  }
+
+  return enclosing_window;
+}
+
 }  // namespace
 
 gfx::Rect RenderWidgetHostViewMac::GetWindowRect() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
-  NSWindow* enclosing_window = [cocoa_view_ window];
-  if (!cocoa_view_ || !enclosing_window) {
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  if (!enclosing_window)
     return gfx::Rect();
-  }
-
-  // During dragging of a torn-off tab, [cocoa_view_ window] is a floating panel
-  // attached to the actual browser window that the tab is visually part of; we
-  // want the bounds of the browser window rather than the panel.
-  if ([enclosing_window parentWindow])
-    enclosing_window = [enclosing_window parentWindow];
 
   NSRect bounds = [cocoa_view_ bounds];
   bounds = [cocoa_view_ convertRect:bounds toView:nil];
@@ -644,16 +658,9 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
-  NSWindow* enclosing_window = [cocoa_view_ window];
-  if (!enclosing_window) {
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  if (!enclosing_window)
     return gfx::Rect();
-  }
-
-  // During dragging of a torn-off tab, [cocoa_view_ window] is a floating panel
-  // attached to the actual browser window that the tab is visually part of; we
-  // want the bounds of the browser window rather than the panel.
-  if ([enclosing_window parentWindow])
-    enclosing_window = [enclosing_window parentWindow];
 
   NSRect bounds = [enclosing_window frame];
   return NSRectToRect(bounds);

@@ -311,6 +311,18 @@ class DevtoolsNotificationBridge : public NotificationObserver {
   [[self window] makeKeyAndOrderFront:self];
 }
 
+- (void)windowDidResize:(NSNotification*)notification {
+  // Let the extension view know, so that it can tell plugins.
+  if (host_->view())
+    host_->view()->WindowFrameChanged();
+}
+
+- (void)windowDidMove:(NSNotification*)notification {
+  // Let the extension view know, so that it can tell plugins.
+  if (host_->view())
+    host_->view()->WindowFrameChanged();
+}
+
 // Private (TestingAPI)
 - (NSView*)view {
   return extensionView_;

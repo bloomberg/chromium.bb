@@ -49,6 +49,9 @@ class ExtensionViewMac {
   // connection.
   void RenderViewCreated();
 
+  // Informs the view that its containing window's frame changed.
+  void WindowFrameChanged();
+
   // The minimum/maximum dimensions of the popup.
   // The minimum is just a little larger than the size of the button itself.
   // The maximum is an arbitrary number that should be smaller than most
