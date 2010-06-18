@@ -34,7 +34,6 @@
 #include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
 #endif
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
-#include "native_client/src/trusted/service_runtime/expiration.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
@@ -233,13 +232,6 @@ int main(int  ac,
    */
   mallopt(M_MMAP_MAX, 0);
 #endif
-
-  /* do expiration check first */
-  if (NaClHasExpired()) {
-    fprintf(stderr, "This version of Native Client has expired.\n");
-    fprintf(stderr, "Please visit: http://code.google.com/p/nativeclient/\n");
-    exit(-1);
-  }
 
   /* SDL does not pass 3 args to re-defined main */
   envp = (char const *const *) environ;
