@@ -224,11 +224,13 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
 WidgetGtk* UserController::CreateImageWindow(int index) {
   user_view_ = new UserView();
 
-  if (!is_guest_)
+  if (!is_guest_) {
     user_view_->SetImage(user_.image());
-  else
+    user_view_->SetTooltipText(UTF8ToWide(user_.email()));
+  } else {
     user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_LOGIN_OTHER_USER));
+  }
 
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, gfx::Rect(user_view_->GetPreferredSize()));

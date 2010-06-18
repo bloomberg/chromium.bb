@@ -106,6 +106,9 @@ void UserView::Init() {
   int h = throbber_->GetPreferredSize().height();
   throbber_->SetBounds(kUserImageSize / 2 - w / 2, kUserImageSize / 2 - h / 2 ,
                        w, h);
+  // Throbber should be actually hidden while stopped so tooltip manager
+  // doesn't find it.
+  throbber_->SetVisible(false);
   image_view_->AddChildView(throbber_);
 
   // UserView's layout never changes, so let's layout once here.
@@ -127,12 +130,19 @@ void UserView::SetImage(const SkBitmap& image) {
   image_view_->SetImage(image);
 }
 
+void UserView::SetTooltipText(const std::wstring& text) {
+  DCHECK(image_view_);
+  image_view_->SetTooltipText(text);
+}
+
 void UserView::StartThrobber() {
+  throbber_->SetVisible(true);
   throbber_->Start();
 }
 
 void UserView::StopThrobber() {
   throbber_->Stop();
+  throbber_->SetVisible(false);
 }
 
 gfx::Size UserView::GetPreferredSize() {

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_VIEW_H_
 
+#include <string>
+
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
@@ -36,6 +38,9 @@ class UserView : public views::View {
 
   // Sets the user's image.
   void SetImage(const SkBitmap& image);
+
+  // Sets tooltip over the image.
+  void SetTooltipText(const std::wstring& text);
 
   // Start/Stop throbber.
   void StartThrobber();
