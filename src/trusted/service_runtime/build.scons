@@ -3,6 +3,8 @@
 # of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import platform
+import sys
 
 Import('env')
 
@@ -434,7 +436,12 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
       # TODO: maybe move this magic into CommandTest()
       command=[mmap_test_exe[0],
                env.File(arch_testdata_dir + '/hello_world.nexe')])
-  sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
+  # This test fails for arm on 32-bit machines running qemu.
+  # So don't run it there.
+  if not (env['BUILD_ARCHITECTURE'] == 'arm' and
+          'linux' in sys.platform and
+          'i686' in platform.platform()):
+    sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
 
   # also seems to have issues with windows coverage
   # NOTE: uses sdl and validator

@@ -28,9 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import platform
-import sys
-
 Import('env')
 
 env.ComponentProgram('mmap_test.nexe',
@@ -40,13 +37,6 @@ node = env.CommandSelLdrTestNacl('mmap_test.out',
                                  command=[env.File('mmap_test.nexe')],
                                  stdout_golden=env.File('mmap_test.stdout'),
                                  )
-
-# This test fails for arm on 32-bit machines running qemu.
-# So don't run it there.
-if (env['BUILD_ARCHITECTURE'] == 'arm' and
-   'linux' in sys.platform and
-   'i686' in platform.platform()):
-  Return()
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
