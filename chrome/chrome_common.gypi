@@ -134,6 +134,7 @@
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
+        '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
