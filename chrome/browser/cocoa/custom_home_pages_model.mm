@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,9 +106,9 @@ NSString* const kHomepageEntryChangedNotification =
     url = [NSString stringWithString:@""];
 
   // Make sure the url is valid before setting it by fixing it up.
-  std::string urlToFix(base::SysNSStringToUTF8(url));
-  urlToFix = URLFixerUpper::FixupURL(urlToFix, "");
-  url_.reset([base::SysUTF8ToNSString(urlToFix) retain]);
+  std::string fixedUrl(URLFixerUpper::FixupURL(
+      base::SysNSStringToUTF8(url), std::string()).possibly_invalid_spec());
+  url_.reset([base::SysUTF8ToNSString(fixedUrl) retain]);
 
   // Broadcast that an individual item has changed.
   [[NSNotificationCenter defaultCenter]

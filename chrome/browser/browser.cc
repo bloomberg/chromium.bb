@@ -1438,8 +1438,8 @@ void Browser::ViewSource() {
   TabContents* current_tab = GetSelectedTabContents();
   NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
   if (entry) {
-    GURL url("view-source:" + entry->url().spec());
-    OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+    OpenURL(GURL(chrome::kViewSourceScheme + std::string(":") +
+        entry->url().spec()), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   }
 }
 
@@ -3828,17 +3828,15 @@ GURL Browser::GetHomePage() const {
   if (command_line.HasSwitch(switches::kHomePage)) {
     FilePath browser_directory;
     PathService::Get(base::DIR_CURRENT, &browser_directory);
-    std::string new_homepage = URLFixerUpper::FixupRelativeFile(
-        browser_directory,
-        command_line.GetSwitchValuePath(switches::kHomePage));
-    GURL home_page = GURL(new_homepage);
+    GURL home_page(URLFixerUpper::FixupRelativeFile(browser_directory,
+        command_line.GetSwitchValuePath(switches::kHomePage)));
     if (home_page.is_valid())
       return home_page;
   }
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
     return GURL(chrome::kChromeUINewTabURL);
-  GURL home_page = GURL(URLFixerUpper::FixupURL(
+  GURL home_page(URLFixerUpper::FixupURL(
       WideToUTF8(profile_->GetPrefs()->GetString(prefs::kHomePage)),
       std::string()));
   if (!home_page.is_valid())

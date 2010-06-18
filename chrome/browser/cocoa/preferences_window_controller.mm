@@ -60,7 +60,8 @@
 namespace {
 
 std::string GetNewTabUIURLString() {
-  return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL, std::string());
+  return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL,
+      std::string()).possibly_invalid_spec();
 }
 
 // Helper to remove all but the last view from the view hierarchy.
@@ -1034,7 +1035,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
   // to something valid ("http://google.com").
   std::string unfixedURL = urlString ? base::SysNSStringToUTF8(urlString) :
                                        chrome::kChromeUINewTabURL;
-  [self setHomepage:GURL(URLFixerUpper::FixupURL(unfixedURL, std::string()))];
+  [self setHomepage:URLFixerUpper::FixupURL(unfixedURL, std::string())];
 }
 
 // Returns whether the home button should be checked based on the preference.

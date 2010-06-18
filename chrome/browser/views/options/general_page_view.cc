@@ -287,8 +287,8 @@ void GeneralPageView::ContentsChanged(views::Textfield* sender,
     // through the fixer upper to allow input like "google.com" to be converted
     // to something valid ("http://google.com"). If the field contains an
     // empty or null-host URL, a blank homepage is synced to prefs.
-    SetHomepage(GURL(URLFixerUpper::FixupURL(
-        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string())));
+    SetHomepage(URLFixerUpper::FixupURL(
+        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string()));
   }
 }
 

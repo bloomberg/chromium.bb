@@ -572,23 +572,13 @@ void AutocompleteProvider::SetProfile(Profile* profile) {
 }
 
 // static
-size_t AutocompleteProvider::TrimHttpPrefix(std::wstring* url) {
+bool AutocompleteProvider::HasHTTPScheme(const std::wstring& input) {
+  std::string utf8_input(WideToUTF8(input));
   url_parse::Component scheme;
-  if (!url_util::FindAndCompareScheme(WideToUTF8(*url), chrome::kHttpScheme,
-                                      &scheme))
-    return 0;  // Not "http".
-
-  // Erase scheme plus up to two slashes.
-  size_t prefix_len = scheme.end() + 1;  // "http:"
-  const size_t after_slashes = std::min(url->length(),
-                                        static_cast<size_t>(scheme.end() + 3));
-  while ((prefix_len < after_slashes) && ((*url)[prefix_len] == L'/'))
-    ++prefix_len;
-  if (prefix_len == url->length())
-    url->clear();
-  else
-    url->erase(url->begin(), url->begin() + prefix_len);
-  return prefix_len;
+  if (url_util::FindAndCompareScheme(utf8_input, chrome::kViewSourceScheme,
+                                     &scheme))
+    utf8_input.erase(0, scheme.end() + 1);
+  return url_util::FindAndCompareScheme(utf8_input, chrome::kHttpScheme, NULL);
 }
 
 void AutocompleteProvider::UpdateStarredStateOfMatches() {

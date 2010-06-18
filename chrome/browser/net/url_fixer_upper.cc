@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "googleurl/src/url_file.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
@@ -462,20 +461,32 @@ std::string URLFixerUpper::SegmentURL(const std::string& text,
   return scheme;
 }
 
-std::string URLFixerUpper::FixupURL(const std::string& text,
-                                    const std::string& desired_tld) {
+GURL URLFixerUpper::FixupURL(const std::string& text,
+                             const std::string& desired_tld) {
   std::string trimmed;
   TrimWhitespaceUTF8(text, TRIM_ALL, &trimmed);
   if (trimmed.empty())
-    return std::string();  // Nothing here.
+    return GURL();  // Nothing here.
 
   // Segment the URL.
   url_parse::Parsed parts;
   std::string scheme(SegmentURL(trimmed, &parts));
 
+  // For view-source: URLs, we strip "view-source:", do fixup, and stick it back
+  // on.  This allows us to handle things like "view-source:google.com".
+  if (scheme == chrome::kViewSourceScheme) {
+    // Reject "view-source:view-source:..." to avoid deep recursion.
+    std::string view_source(chrome::kViewSourceScheme + std::string(":"));
+    if (!StartsWithASCII(text, view_source + view_source, false)) {
+      return GURL(chrome::kViewSourceScheme + std::string(":") +
+          FixupURL(trimmed.substr(scheme.length() + 1),
+                   desired_tld).possibly_invalid_spec());
+    }
+  }
+
   // We handle the file scheme separately.
-  if (scheme == "file")
-    return (parts.scheme.is_valid() ? text : FixupPath(text));
+  if (scheme == chrome::kFileScheme)
+    return GURL(parts.scheme.is_valid() ? text : FixupPath(text));
 
   // For some schemes whose layouts we understand, we rebuild it.
   if (url_util::IsStandard(scheme.c_str(),
@@ -498,7 +509,7 @@ std::string URLFixerUpper::FixupURL(const std::string& text,
     FixupQuery(trimmed, parts.query, &url);
     FixupRef(trimmed, parts.ref, &url);
 
-    return url;
+    return GURL(url);
   }
 
   // In the worst-case, we insert a scheme if the URL lacks one.
@@ -508,7 +519,7 @@ std::string URLFixerUpper::FixupURL(const std::string& text,
     trimmed.insert(0, fixed_scheme);
   }
 
-  return trimmed;
+  return GURL(trimmed);
 }
 
 // The rules are different here than for regular fixup, since we need to handle
@@ -516,8 +527,8 @@ std::string URLFixerUpper::FixupURL(const std::string& text,
 // fixup will look for cues that it is actually a file path before trying to
 // figure out what file it is.  If our logic doesn't work, we will fall back on
 // regular fixup.
-std::string URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
-                                             const FilePath& text) {
+GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
+                                      const FilePath& text) {
   FilePath old_cur_directory;
   if (!base_dir.empty()) {
     // Save the old current directory before we move to the new one.
@@ -550,16 +561,15 @@ std::string URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
   }
 
   // Put back the current directory if we saved it.
-  if (!base_dir.empty()) {
+  if (!base_dir.empty())
     file_util::SetCurrentDirectory(old_cur_directory);
-  }
 
   if (is_file) {
     GURL file_url = net::FilePathToFileURL(full_path);
     if (file_url.is_valid())
-      return WideToUTF8(net::FormatUrl(file_url, std::wstring(),
+      return GURL(WideToUTF8(net::FormatUrl(file_url, std::wstring(),
           net::kFormatUrlOmitUsernamePassword, UnescapeRule::NORMAL, NULL,
-          NULL, NULL));
+          NULL, NULL)));
     // Invalid files fall through to regular processing.
   }
 
@@ -569,7 +579,7 @@ std::string URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
 #elif defined(OS_POSIX)
   std::string text_utf8 = text.value();
 #endif
-  return FixupURL(text_utf8, "");
+  return FixupURL(text_utf8, std::string());
 }
 
 // Deprecated functions. To be removed when all callers are updated.
@@ -581,8 +591,8 @@ std::wstring URLFixerUpper::SegmentURL(const std::wstring& text,
   UTF8PartsToWideParts(text_utf8, parts_utf8, parts);
   return UTF8ToWide(scheme_utf8);
 }
-std::wstring URLFixerUpper::FixupRelativeFile(const std::wstring& base_dir,
-                                              const std::wstring& text) {
-  return UTF8ToWide(FixupRelativeFile(FilePath::FromWStringHack(base_dir),
-                                      FilePath::FromWStringHack(text)));
+GURL URLFixerUpper::FixupRelativeFile(const std::wstring& base_dir,
+                                      const std::wstring& text) {
+  return FixupRelativeFile(FilePath::FromWStringHack(base_dir),
+                           FilePath::FromWStringHack(text));
 }

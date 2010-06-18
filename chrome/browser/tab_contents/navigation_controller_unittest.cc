@@ -1624,7 +1624,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
 TEST_F(NavigationControllerTest, ViewSourceRedirect) {
   const char kUrl[] = "view-source:http://redirect.to/google.com";
   const char kResult[] = "http://google.com";
-  const char kExpected[] = "view-source:http://google.com";
+  const char kExpected[] = "view-source:google.com";
   const GURL url(kUrl);
   const GURL result_url(kResult);
 

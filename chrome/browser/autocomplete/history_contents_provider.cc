@@ -75,8 +75,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
 
   // Change input type so matches will be marked up properly.
   input_type_ = input.type();
-  trim_http_ = !url_util::FindAndCompareScheme(WideToUTF8(input.text()),
-                                               chrome::kHttpScheme, NULL);
+  trim_http_ = !HasHTTPScheme(input.text());
 
   // Decide what to do about any previous query/results.
   if (!minimal_changes) {

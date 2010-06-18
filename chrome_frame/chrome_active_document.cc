@@ -782,9 +782,8 @@ void ChromeActiveDocument::OnFindInPage() {
 
 void ChromeActiveDocument::OnViewSource() {
   DCHECK(navigation_info_.url.is_valid());
-  std::string url_to_open = "view-source:";
-  url_to_open += navigation_info_.url.spec();
-  HostNavigate(GURL(url_to_open), GURL(), NEW_WINDOW);
+  HostNavigate(GURL(chrome::kViewSourceScheme + std::string(":") +
+      navigation_info_.url.spec()), GURL(), NEW_WINDOW);
 }
 
 void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,

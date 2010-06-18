@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -348,6 +348,7 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
     { L"view-source:http://www.foo.com/", Component(12, 4), Component(19, 11) },
     { L"view-source:https://example.com/",
       Component(12, 5), Component(20, 11) },
+    { L"view-source:www.foo.com", kInvalidComponent, Component(12, 11) },
     { L"view-source:", Component(0, 11), kInvalidComponent },
     { L"view-source:garbage", kInvalidComponent, Component(12, 7) },
     { L"view-source:http://http://foo", Component(12, 4), Component(19, 4) },

@@ -261,6 +261,12 @@ class HistoryURLProvider : public AutocompleteProvider {
   // output that surprises the user ("Search Google for xn--6ca.com").
   static std::wstring FixupUserInput(const AutocompleteInput& input);
 
+  // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
+  // number of characters that were trimmed.
+  // NOTE: For a view-source: URL, this will trim from after "view-source:" and
+  // return 0.
+  static size_t TrimHttpPrefix(std::wstring* url);
+
   // Returns true if |url| is just a host (e.g. "http://www.google.com/") and
   // not some other subpage (e.g. "http://www.google.com/foo.html").
   static bool IsHostOnly(const GURL& url);

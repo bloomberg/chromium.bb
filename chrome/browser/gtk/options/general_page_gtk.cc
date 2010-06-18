@@ -650,9 +650,8 @@ void GeneralPageGtk::SetHomepage(const GURL& homepage) {
 }
 
 void GeneralPageGtk::SetHomepageFromEntry() {
-  GURL url(URLFixerUpper::FixupURL(
-      gtk_entry_get_text(GTK_ENTRY(homepage_use_url_entry_)), ""));
-  SetHomepage(url);
+  SetHomepage(URLFixerUpper::FixupURL(
+      gtk_entry_get_text(GTK_ENTRY(homepage_use_url_entry_)), std::string()));
 }
 
 void GeneralPageGtk::EnableCustomHomepagesControls(bool enable) {

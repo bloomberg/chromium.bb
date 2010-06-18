@@ -278,9 +278,8 @@ void BookmarkEditorGtk::Reset() {
 GURL BookmarkEditorGtk::GetInputURL() const {
   if (!url_entry_)
     return GURL();  // Happens when we're editing a folder.
-
-  return GURL(URLFixerUpper::FixupURL(
-      gtk_entry_get_text(GTK_ENTRY(url_entry_)), ""));
+  return URLFixerUpper::FixupURL(gtk_entry_get_text(GTK_ENTRY(url_entry_)),
+                                 std::string());
 }
 
 std::wstring BookmarkEditorGtk::GetInputTitle() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_NET_URL_FIXER_UPPER_H_
 
 #include <string>
+
+#include "googleurl/src/gurl.h"
 
 namespace url_parse {
   struct Parsed;
@@ -22,6 +24,8 @@ namespace URLFixerUpper {
   // Segments the given text string into parts of a URL.  This is most useful
   // for schemes such as http, https, and ftp where |SegmentURL| will find many
   // segments.  Currently does not segment "file" schemes.
+  // Returns the canonicalized scheme, or the empty string when |text| is only
+  // whitespace.
   std::string SegmentURL(const std::string& text, url_parse::Parsed* parts);
   // Deprecated temporary compatibility function.
   std::wstring SegmentURL(const std::wstring& text, url_parse::Parsed* parts);
@@ -32,7 +36,8 @@ namespace URLFixerUpper {
   // "file:" URL.
   //
   // The result will be a "more" valid URL than the input. It may still not
-  // be valid, convert to a GURL for that.
+  // be valid, so check the return value's validity or use
+  // possibly_invalid_spec().
   //
   // If |desired_tld| is non-empty, it represents the TLD the user wishes to
   // append in the case of an incomplete domain.  We check that this is not a
@@ -40,8 +45,7 @@ namespace URLFixerUpper {
   // |desired_tld| to the domain and prepend "www." (unless it, or a scheme,
   // are already present.)  This TLD should not have a leading '.' (use "com"
   // instead of ".com").
-  std::string FixupURL(const std::string& text,
-                       const std::string& desired_tld);
+  GURL FixupURL(const std::string& text, const std::string& desired_tld);
 
   // Converts |text| to a fixed-up URL, allowing it to be a relative path on
   // the local filesystem.  Begin searching in |base_dir|; if empty, use the
@@ -52,11 +56,10 @@ namespace URLFixerUpper {
   // For "regular" input, even if it is possibly a file with a full path, you
   // should use FixupURL() directly.  This function should only be used when
   // relative path handling is desired, as for command line processing.
-  std::string FixupRelativeFile(const FilePath& base_dir,
-                                const FilePath& text);
+  GURL FixupRelativeFile(const FilePath& base_dir, const FilePath& text);
   // Deprecated temporary compatibility function.
-  std::wstring FixupRelativeFile(const std::wstring& base_dir,
-                                 const std::wstring& text);
+  GURL FixupRelativeFile(const std::wstring& base_dir,
+                         const std::wstring& text);
 
   // For paths like ~, we use $HOME for the current user's home
   // directory.  For tests, we allow our idea of $HOME to be overriden

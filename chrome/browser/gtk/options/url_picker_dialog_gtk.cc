@@ -180,9 +180,8 @@ UrlPickerDialogGtk::~UrlPickerDialogGtk() {
 }
 
 void UrlPickerDialogGtk::AddURL() {
-  GURL url(URLFixerUpper::FixupURL(
-      gtk_entry_get_text(GTK_ENTRY(url_entry_)), ""));
-  callback_->Run(url);
+  callback_->Run(URLFixerUpper::FixupURL(
+      gtk_entry_get_text(GTK_ENTRY(url_entry_)), std::string()));
 }
 
 void UrlPickerDialogGtk::EnableControls() {
@@ -263,8 +262,7 @@ void UrlPickerDialogGtk::OnHistorySelectionChanged(
 void UrlPickerDialogGtk::OnHistoryRowActivated(GtkWidget* tree_view,
                                                GtkTreePath* path,
                                                GtkTreeViewColumn* column) {
-  GURL url(URLFixerUpper::FixupURL(GetURLForPath(path), ""));
-  callback_->Run(url);
+  callback_->Run(URLFixerUpper::FixupURL(GetURLForPath(path), std::string()));
   gtk_widget_destroy(dialog_);
 }
 

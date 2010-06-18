@@ -445,9 +445,8 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
           site_val->IsType(Value::TYPE_STRING) &&
           site_val->GetAsString(&site_name)) {
         // We can't blindly trust the URL coming from the server to be valid.
-        GURL result_url =
-            GURL(URLFixerUpper::FixupURL(WideToUTF8(suggestion_str),
-                                         std::string()));
+        GURL result_url(URLFixerUpper::FixupURL(WideToUTF8(suggestion_str),
+                                                std::string()));
         if (result_url.is_valid())
           navigation_results.push_back(NavigationResult(result_url, site_name));
       }
@@ -737,9 +736,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   AutocompleteMatch match(this, relevance, false,
                           AutocompleteMatch::NAVSUGGEST);
   match.destination_url = navigation.url;
-  const bool trim_http = !url_util::FindAndCompareScheme(
-      WideToUTF8(input_text), chrome::kHttpScheme, NULL);
-  match.contents = StringForURLDisplay(navigation.url, true, trim_http);
+  match.contents =
+      StringForURLDisplay(navigation.url, true, !HasHTTPScheme(input_text));
   AutocompleteMatch::ClassifyMatchInString(input_text, match.contents,
                                            ACMatchClassification::URL,
                                            &match.contents_class);

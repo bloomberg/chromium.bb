@@ -163,7 +163,7 @@ bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
   if (type != AutocompleteInput::URL)
     return false;
 
-  *url = GURL(URLFixerUpper::FixupURL(WideToUTF8(text), std::string()));
+  *url = URLFixerUpper::FixupURL(WideToUTF8(text), std::string());
   return true;
 }
 

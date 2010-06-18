@@ -830,9 +830,7 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
           profile->GetTemplateURLModel()->GetDefaultSearchProvider();
       if (!default_provider || !default_provider->url()) {
         // No search provider available. Just treat this as regular URL.
-        urls.push_back(
-            GURL(WideToUTF8(URLFixerUpper::FixupRelativeFile(cur_dir_,
-                                                             value))));
+        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir_, value));
         continue;
       }
       const TemplateURLRef* search_url = default_provider->url();
@@ -842,8 +840,7 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()))));
     } else {
       // This will create a file URL or a regular URL.
-      GURL url = GURL(WideToUTF8(
-          URLFixerUpper::FixupRelativeFile(cur_dir_, value)));
+      GURL url(URLFixerUpper::FixupRelativeFile(cur_dir_, value));
       // Exclude dangerous schemes.
       if (url.is_valid()) {
         ChildProcessSecurityPolicy *policy =

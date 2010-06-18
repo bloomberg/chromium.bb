@@ -365,7 +365,7 @@ std::wstring HistoryURLProvider::FixupUserInput(
   const std::wstring& input_text = input.text();
   // Fixup and canonicalize user input.
   const GURL canonical_gurl(URLFixerUpper::FixupURL(WideToUTF8(input_text),
-      std::string()));
+                                                    std::string()));
   std::string canonical_gurl_str(canonical_gurl.possibly_invalid_spec());
   if (canonical_gurl_str.empty()) {
     // This probably won't happen, but there are no guarantees.
@@ -425,6 +425,23 @@ std::wstring HistoryURLProvider::FixupUserInput(
     output.erase(output.length() - num_output_slashes + num_input_slashes);
 
   return output;
+}
+
+// static
+size_t HistoryURLProvider::TrimHttpPrefix(std::wstring* url) {
+  // Find any "http:".
+  if (!HasHTTPScheme(*url))
+    return 0;
+  size_t scheme_pos = url->find(ASCIIToWide(chrome::kHttpScheme) + L":");
+  DCHECK(scheme_pos != std::wstring::npos);
+
+  // Erase scheme plus up to two slashes.
+  size_t prefix_end = scheme_pos + strlen(chrome::kHttpScheme) + 1;
+  const size_t after_slashes = std::min(url->length(), prefix_end + 2);
+  while ((prefix_end < after_slashes) && ((*url)[prefix_end] == L'/'))
+    ++prefix_end;
+  url->erase(scheme_pos, prefix_end - scheme_pos);
+  return (scheme_pos == 0) ? prefix_end : 0;
 }
 
 // static
@@ -627,8 +644,7 @@ void HistoryURLProvider::RunAutocompletePasses(
   // Create a match for exactly what the user typed.  This will only be used as
   // a fallback in case we can't get the history service or URL DB; otherwise,
   // we'll run this again in DoAutocomplete() and use that result instead.
-  const bool trim_http = !url_util::FindAndCompareScheme(
-      WideToUTF8(input.text()), chrome::kHttpScheme, NULL);
+  const bool trim_http = !HasHTTPScheme(input.text());
   // Don't do this for queries -- while we can sometimes mark up a match for
   // this, it's not what the user wants, and just adds noise.
   if ((input.type() != AutocompleteInput::QUERY) &&

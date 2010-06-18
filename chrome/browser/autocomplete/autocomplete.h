@@ -560,9 +560,8 @@ class AutocompleteProvider
 
   virtual ~AutocompleteProvider();
 
-  // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
-  // number of characters that were trimmed.
-  static size_t TrimHttpPrefix(std::wstring* url);
+  // Returns whether |input| begins "http:" or "view-source:http:".
+  static bool HasHTTPScheme(const std::wstring& input);
 
   // Updates the starred state of each of the matches in matches_ from the
   // profile's bookmark bar model.

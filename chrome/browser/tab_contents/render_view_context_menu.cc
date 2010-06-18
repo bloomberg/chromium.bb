@@ -1106,8 +1106,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
 
     case IDC_VIEW_SOURCE:
-      OpenURL(GURL("view-source:" + params_.page_url.spec()),
-              NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(GURL(chrome::kViewSourceScheme + std::string(":") +
+          params_.page_url.spec()), NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
@@ -1165,8 +1165,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-      OpenURL(GURL("view-source:" + params_.frame_url.spec()),
-              NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(GURL(chrome::kViewSourceScheme + std::string(":") +
+          params_.frame_url.spec()), NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
