@@ -1329,7 +1329,8 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
   }
 
   EXPECT_CALL(mock, OnNavigateComplete2(_,
-      testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(url)))).Times(1);
+      testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(url))))
+      .Times(testing::AtMost(1));
 
   const char* kAlertDlgCaption = "Security Alert";
   EXPECT_CALL(mock, OnWindowDetected(_, testing::StrEq(kAlertDlgCaption)))
