@@ -30,8 +30,12 @@ class NetworkConfigView : public views::View,
  public:
   class Delegate {
    public:
+    // Called when dialog "OK" button is pressed.
+    virtual void OnDialogAccepted() = 0;
+
     // Called when dialog "Cancel" button is pressed.
     virtual void OnDialogCancelled() = 0;
+
    protected:
      virtual ~Delegate() {}
   };

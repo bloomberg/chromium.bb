@@ -89,13 +89,16 @@ bool NetworkConfigView::Cancel() {
 }
 
 bool NetworkConfigView::Accept() {
+  bool result = true;
   if (flags_ & FLAG_WIFI) {
     if (flags_ & FLAG_LOGIN_ONLY)
-      return wificonfig_view_->Login();
+      result = wificonfig_view_->Login();
     else
-      return wificonfig_view_->Save();
+      result = wificonfig_view_->Save();
   }
-  return true;
+  if (result && delegate_)
+    delegate_->OnDialogAccepted();
+  return result;
 }
 
 std::wstring NetworkConfigView::GetWindowTitle() const {

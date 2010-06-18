@@ -18,7 +18,7 @@
 namespace {
 
 // Time in seconds for connection timeout.
-const int kConnectionTimeoutSec = 10;
+const int kConnectionTimeoutSec = 15;
 
 }  // namespace
 
@@ -33,6 +33,7 @@ NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate, bool is_out_of_box)
       wifi_disabled_(false),
       is_out_of_box_(is_out_of_box),
       is_waiting_for_connect_(false),
+      continue_pressed_(false),
       ethernet_preselected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
@@ -112,8 +113,10 @@ void NetworkScreen::ButtonPressed(views::Button* sender,
     MessageLoop::current()->PostTask(FROM_HERE,
         task_factory_.NewRunnableMethod(&NetworkScreen::NotifyOnConnection));
   } else {
-    WaitForConnection(network);
-    if (!networks_.IsNetworkConnecting(network->network_type, network->label)) {
+    continue_pressed_ = true;
+    if (is_waiting_for_connect_) {
+      ShowConnectingStatus();
+    } else {
       MessageLoop::current()->PostTask(
           FROM_HERE,
           task_factory_.NewRunnableMethod(&NetworkScreen::ConnectToNetwork,
@@ -148,9 +151,11 @@ void NetworkScreen::NetworkChanged(NetworkLibrary* network_lib) {
                                    connecting_network_.label)) {
     // Stop waiting & don't update spinner status.
     StopWaitingForConnection(false);
-    MessageLoop::current()->PostTask(FROM_HERE,
-        task_factory_.NewRunnableMethod(&NetworkScreen::NotifyOnConnection));
-    return;
+    if (continue_pressed_) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+          task_factory_.NewRunnableMethod(&NetworkScreen::NotifyOnConnection));
+      return;
+    }
   }
   view()->NetworkModelChanged();
   // Prefer Ethernet when it's connected (only once).
@@ -165,6 +170,12 @@ void NetworkScreen::NetworkChanged(NetworkLibrary* network_lib) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary::Observer implementation:
+
+void NetworkScreen::OnDialogAccepted() {
+  const NetworkList::NetworkItem* network = GetSelectedNetwork();
+  if (network)
+    WaitForConnection(network);
+}
 
 void NetworkScreen::OnDialogCancelled() {
   view()->EnableContinue(false);
@@ -207,11 +218,13 @@ void NetworkScreen::ConnectToNetwork(NetworkList::NetworkType type,
         OpenPasswordDialog(network->wifi_network);
         return;
       } else {
+        WaitForConnection(network);
         chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
             ConnectToWifiNetwork(network->wifi_network,
                                  string16(), string16(), string16());
       }
     } else if (NetworkList::NETWORK_CELLULAR == network->network_type) {
+      WaitForConnection(network);
       chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
           ConnectToCellularNetwork(network->cellular_network);
     }
@@ -254,6 +267,7 @@ void NetworkScreen::NotifyOnConnection() {
 }
 
 void NetworkScreen::OnConnectionTimeout() {
+  continue_pressed_ = false;
   // TODO(nkostylev): Notify on connection error.
   if (is_waiting_for_connect_) {
     // Stop waiting & show selection combobox.
@@ -282,6 +296,11 @@ void NetworkScreen::SelectNetwork(NetworkList::NetworkType type,
   }
 }
 
+void NetworkScreen::ShowConnectingStatus() {
+  view()->ShowConnectingStatus(is_waiting_for_connect_,
+                               connecting_network_.label);
+}
+
 void NetworkScreen::StopWaitingForConnection(bool show_combobox) {
   if (connection_timer_.IsRunning())
     connection_timer_.Stop();
@@ -289,8 +308,7 @@ void NetworkScreen::StopWaitingForConnection(bool show_combobox) {
   connecting_network_.network_type = NetworkList::NETWORK_EMPTY;
   connecting_network_.label.clear();
   if (show_combobox)
-    view()->ShowConnectingStatus(is_waiting_for_connect_,
-                                 connecting_network_.label);
+    ShowConnectingStatus();
 }
 
 void NetworkScreen::WaitForConnection(const NetworkList::NetworkItem* network) {
@@ -303,8 +321,8 @@ void NetworkScreen::WaitForConnection(const NetworkList::NetworkItem* network) {
   connection_timer_.Start(base::TimeDelta::FromSeconds(kConnectionTimeoutSec),
                           this,
                           &NetworkScreen::OnConnectionTimeout);
-  view()->ShowConnectingStatus(is_waiting_for_connect_,
-                               connecting_network_.label);
+  if (continue_pressed_)
+    ShowConnectingStatus();
 }
 
 }  // namespace chromeos

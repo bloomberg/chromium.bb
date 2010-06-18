@@ -51,6 +51,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type) {}
 
   // NetworkConfigView::Delegate implementation:
+  virtual void OnDialogAccepted();
   virtual void OnDialogCancelled();
 
  protected:
@@ -91,6 +92,9 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   void SelectNetwork(NetworkList::NetworkType type,
                      const string16& id);
 
+  // Switches connecting status based on |is_waiting_for_connect_|.
+  void ShowConnectingStatus();
+
   // Stops waiting for network to connect.
   // If |show_combobox| is false, spinner is left on screen. Used on exit.
   void StopWaitingForConnection(bool show_combobox);
@@ -112,6 +116,10 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
 
   // True if we're waiting for the selected network being connected.
   bool is_waiting_for_connect_;
+
+  // True if "Continue" button was pressed.
+  // Set only when there's a network selected.
+  bool continue_pressed_;
 
   // True if Ethernet was already preselected in combobox.
   bool ethernet_preselected_;
