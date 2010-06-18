@@ -8,13 +8,16 @@
 #include "chrome/browser/chromeos/login/camera.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
 
 class UserImageScreen: public ViewScreen<UserImageView>,
                        public Camera::Delegate,
-                       public UserImageView::Delegate {
+                       public UserImageView::Delegate,
+                       public NotificationObserver {
  public:
   explicit UserImageScreen(WizardScreenDelegate* delegate);
   virtual ~UserImageScreen();
@@ -31,9 +34,16 @@ class UserImageScreen: public ViewScreen<UserImageView>,
   virtual void OnOK(const SkBitmap& image);
   virtual void OnCancel();
 
+  // NotificationObserver implementation:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   // Object that handles video capturing.
   scoped_ptr<Camera> camera_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreen);
 };

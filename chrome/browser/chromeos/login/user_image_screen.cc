@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 
 namespace chromeos {
 
@@ -29,6 +31,10 @@ const int kFrameRate = 40;
 UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
     : ViewScreen<UserImageView>(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(camera_(new Camera(this))) {
+  registrar_.Add(
+      this,
+      NotificationType::SCREEN_LOCK_STATE_CHANGED,
+      NotificationService::AllSources());
   if (!camera_->Initialize(kFrameWidth, kFrameHeight))
     camera_.reset();
 }
@@ -78,6 +84,20 @@ void UserImageScreen::OnCancel() {
   }
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SKIPPED);
+}
+
+void UserImageScreen::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  if (type != NotificationType::SCREEN_LOCK_STATE_CHANGED ||
+      !camera_.get())
+    return;
+
+  bool is_screen_locked = *Details<bool>(details).ptr();
+  if (is_screen_locked)
+    camera_->StopCapturing();
+  else
+    camera_->StartCapturing(base::TimeDelta::FromMilliseconds(kFrameRate));
 }
 
 }  // namespace chromeos
