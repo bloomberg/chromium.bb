@@ -28,12 +28,12 @@ found in the LICENSE file.
     <!-- Tab switcher for main categories. -->
     <div id=categoryTabHandles>
       <ul>
+        <li><a href="#data" id=dataTab>Data</a></li>
         <li><a href="#proxy" id=proxyTab>Proxy</a></li>
         <li><a href="#requests" id=requestsTab>Requests</a></li>
         <li><a href="#dns" id=dnsTab>DNS</a></li>
         <li><a href="#sockets" id=socketsTab>Sockets</a></li>
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
-        <li><a href="#data" id=dataTab>Data</a></li>
         <li><a href="#tests" id=testTab>Tests</a></li>
       </ul>
       <div style="clear: both;"></div>
@@ -98,7 +98,69 @@ found in the LICENSE file.
     </div>
     <!-- Import/Export data -->
     <div id=dataTabContent>
-       <button id=exportToText><b>Dump to text</b></button>
+
+<h2>How to get data for bug reports</h2>
+
+<ol>
+<li>Reproduce the network problem.</li>
+<li>Click this button:
+  <button id=exportToText style="font-size: 110%"><b>Dump to text</b> </button>
+</li>
+
+<li>Copy-paste the data on this page to a text file.</li>
+
+<li>Email the text file to the bug investigator,
+  <b>along with an explanation of what went wrong.</b>
+</li>
+
+</ol>
+
+<script>
+function toggleMoreExplanation() {
+  var div = document.getElementById('moreExplanation');
+  var isToggled = div.style.display == '';
+  document.getElementById('moreExplanationIcon').innerText =
+      isToggled ? 'Show' : 'Hide';
+  setNodeDisplay(div, !isToggled);
+}
+</script>
+
+<a href="javascript:toggleMoreExplanation()">
+  <span id=moreExplanationIcon>Show</span> more explanation</a>
+
+<div style="display:none; margin-left: 15px;" id=moreExplanation>
+
+<ul>
+<li>The network log <b>may contain personally identifying information</b> like
+  IP addresses, URLs, and cookies.</li>
+<ul>
+<li>You can edit the log to obscure information if you like, but sometimes it
+  is relevant to the bug.</li>
+</ul>
+<li>Ideally you would have this tool running <b>before</b> you reproduce the 
+  bug.
+  If that isn't possible (perhaps the bug happens unpredictably), then the
+  next best thing is to load chrome://net-internals/ <b>as soon as you can
+  after</b> the problem has occurred.</li>
+</ul>
+
+<h2>How it works</h2>
+
+<ul>
+<li>While this page is open, it will capture the network events that are
+  happening in Chrome. You can view that in real-time by going to the
+  <a href='#requests'>Requests</a> tab.</li>
+<li>Once you close this window, the data it had captured is discarded.</li>
+<li>Chrome keeps around a small buffer of network events for the
+  <b>most recent</b> requests. That way if you open chrome://net-internals/
+  <b>shortly after</b> encountering a problem, you can still find the relevant
+  data. </b>
+  These <b>passively captured</b> events are less accurate however, and will
+  be prefixed in the log with <span style="font-family: monospace;">(P)</span>.
+</li>
+</ul>
+</div>
+
        <pre id=exportedDataText></pre>
     </div>
     <!-- Connection tests -->
