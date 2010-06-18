@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,9 @@ WidgetWin::WidgetWin()
       is_mouse_down_(false),
       is_window_(false),
       restore_focus_when_enabled_(false),
-      delegate_(NULL) {
+      delegate_(NULL),
+      accessibility_view_events_index_(-1),
+      accessibility_view_events_(kMaxAccessibilityViewEvents) {
 }
 
 WidgetWin::~WidgetWin() {
@@ -110,6 +112,31 @@ void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
     LayoutRootView();
   else
     contents_.reset(NULL);
+}
+
+View* WidgetWin::GetAccessibilityViewEventAt(int id) {
+  // Convert from MSAA child id.
+  id = -(id + 1);
+  DCHECK(id >= 0 && id < kMaxAccessibilityViewEvents);
+  return accessibility_view_events_[id];
+}
+
+int WidgetWin::AddAccessibilityViewEvent(View* view) {
+  accessibility_view_events_index_ =
+      (accessibility_view_events_index_ + 1) % kMaxAccessibilityViewEvents;
+  accessibility_view_events_[accessibility_view_events_index_] = view;
+
+  // Convert to MSAA child id.
+  return -(accessibility_view_events_index_ + 1);
+}
+
+void WidgetWin::ClearAccessibilityViewEvent(View* view) {
+  for (std::vector<View*>::iterator it = accessibility_view_events_.begin();
+      it != accessibility_view_events_.end();
+      ++it) {
+    if (*it == view)
+      *it = NULL;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -428,6 +455,9 @@ void WidgetWin::ViewHierarchyChanged(bool is_add, View *parent,
                                      View *child) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
+
+  if (!is_add)
+    ClearAccessibilityViewEvent(child);
 }
 
 

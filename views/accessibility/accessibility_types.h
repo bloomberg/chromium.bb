@@ -64,6 +64,18 @@ class AccessibilityTypes {
     ROLE_WINDOW
   };
 
+  // This defines an enumeration of the supported accessibility events in our
+  // Views (e.g. used in View::NotifyAccessibilityEvent). Any interface using
+  // events must provide a conversion to its own events (see e.g.
+  // ViewAccessibility::MSAAEvent).
+  enum Event {
+    EVENT_FOCUS,
+    EVENT_MENUSTART,
+    EVENT_MENUEND,
+    EVENT_MENUPOPUPSTART,
+    EVENT_MENUPOPUPEND
+  };
+
  private:
   // Do not instantiate this class.
   AccessibilityTypes() {}

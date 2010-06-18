@@ -290,9 +290,24 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
   // Check to see if child is out-of-bounds.
   if (IsValidChild((var_child.lVal - 1), view_)) {
     child_view = view_->GetChildViewAt(var_child.lVal - 1);
+
+    // Parents handle leaf IAccessible's.
+    if (child_view && child_view->GetChildViewCount() == 0)
+      return S_FALSE;
   } else {
-    // Child is located elsewhere in the hierarchy, get ID and adjust for MSAA.
-    child_view = view_->GetViewByID(static_cast<int>(var_child.lVal));
+    // Child is located elsewhere in this view's subtree.
+    // Positive child id's are 1-based indexes so you can iterate over all
+    // children, and negative values are direct references to objects.
+    // Note that we return full IAccessible's for leafs that have
+    // negative child id's.
+    if (var_child.lVal > 0) {
+      child_view = view_->GetViewByID(static_cast<int>(var_child.lVal));
+    } else {
+      // Retrieve it from our cache of views that have fired events.
+      views::WidgetWin* view_widget =
+          static_cast<views::WidgetWin*>(view_->GetWidget());
+      child_view = view_widget->GetAccessibilityViewEventAt(var_child.lVal);
+    }
   }
 
   if (!child_view) {
@@ -754,6 +769,25 @@ STDMETHODIMP ViewAccessibility::put_accValue(VARIANT var_id, BSTR put_val) {
   }
   // Deprecated.
   return E_NOTIMPL;
+}
+
+int32 ViewAccessibility::MSAAEvent(AccessibilityTypes::Event event) {
+  switch (event) {
+    case AccessibilityTypes::EVENT_FOCUS:
+      return EVENT_OBJECT_FOCUS;
+    case AccessibilityTypes::EVENT_MENUSTART:
+      return EVENT_SYSTEM_MENUSTART;
+    case AccessibilityTypes::EVENT_MENUEND:
+      return EVENT_SYSTEM_MENUEND;
+    case AccessibilityTypes::EVENT_MENUPOPUPSTART:
+      return EVENT_SYSTEM_MENUPOPUPSTART;
+    case AccessibilityTypes::EVENT_MENUPOPUPEND:
+      return EVENT_SYSTEM_MENUPOPUPEND;
+    default:
+      // Not supported or invalid event.
+      NOTREACHED();
+      return -1;
+  }
 }
 
 int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {

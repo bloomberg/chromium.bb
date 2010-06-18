@@ -16,8 +16,7 @@ void FocusManager::ClearNativeFocus() {
   // We need to let assistive technologies know which child view got focus so
   // they can obtain the proper accessibility object for that child view.
   if (focused_view_) {
-    ::NotifyWinEvent(EVENT_OBJECT_FOCUS, widget_->GetNativeView(), OBJID_CLIENT,
-                     static_cast<LONG>(focused_view_->GetID()));
+    focused_view_->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
   }
 }
 

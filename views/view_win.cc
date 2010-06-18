@@ -8,10 +8,12 @@
 #include "base/string_util.h"
 #include "gfx/canvas.h"
 #include "gfx/path.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/accessibility/view_accessibility_wrapper.h"
 #include "views/border.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
+#include "views/widget/widget_win.h"
 
 namespace views {
 
@@ -26,6 +28,17 @@ int View::GetMenuShowDelay() {
   if (!delay && !SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &delay, 0))
     delay = View::kShowFolderDropMenuDelay;
   return delay;
+}
+
+// Notifies accessibility clients of the event_type on this view.
+// Clients will call get_accChild found in ViewAccessibility with the supplied
+// child id we generate here to retrieve the IAccessible associated with this
+// view.
+void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
+  WidgetWin* view_widget = static_cast<WidgetWin*>(GetWidget());
+  int child_id = view_widget->AddAccessibilityViewEvent(this);
+  ::NotifyWinEvent(ViewAccessibility::MSAAEvent(event_type),
+      view_widget->GetNativeView(), OBJID_CLIENT, child_id);
 }
 
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {

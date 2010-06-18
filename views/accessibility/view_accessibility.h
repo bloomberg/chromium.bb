@@ -103,6 +103,10 @@ class ATL_NO_VTABLE ViewAccessibility
   STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name);
   STDMETHODIMP put_accValue(VARIANT var_id, BSTR put_val);
 
+  // Returns a conversion from the event (as defined in accessibility_types.h)
+  // to an MSAA event.
+  static int32 MSAAEvent(AccessibilityTypes::Event event);
+
   // Returns a conversion from the Role (as defined in accessibility_types.h)
   // to an MSAA role.
   static int32 MSAARole(AccessibilityTypes::Role role);

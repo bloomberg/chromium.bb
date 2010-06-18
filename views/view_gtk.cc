@@ -20,6 +20,10 @@ int View::GetMenuShowDelay() {
   return kShowFolderDropMenuDelay;
 }
 
+void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
+  // Not implemented on GTK.
+}
+
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
   NOTIMPLEMENTED();
   return NULL;
