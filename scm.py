@@ -459,7 +459,7 @@ class SVN(object):
                 # Warning: It's bad, it assumes args[2] is the directory
                 # argument.
                 if os.path.isdir(args[2]):
-                  chromium_utils.RemoveDirectory(args[2])
+                  gclient_utils.RemoveDirectory(args[2])
                 break
             else:
               # No known svn error was found, bail out.
