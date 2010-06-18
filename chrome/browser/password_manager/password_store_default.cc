@@ -33,10 +33,6 @@ PasswordStoreDefault::PasswordStoreDefault(LoginDatabase* login_db,
 PasswordStoreDefault::~PasswordStoreDefault() {
 }
 
-void PasswordStoreDefault::ReportMetricsImpl() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-}
-
 void PasswordStoreDefault::AddLoginImpl(const PasswordForm& form) {
   if (login_db_->AddLogin(form)) {
     PasswordStoreChangeList changes;
