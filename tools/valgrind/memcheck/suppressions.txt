@@ -3414,3 +3414,46 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+  bug_46886
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN3net15SpdySessionPool3GetERKNS_12HostPortPairEPNS_18HttpNetworkSessionERKNS_11BoundNetLogE
+  fun:_ZN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc*SpdyHttpStreamTest17CreateSpdySessionEv
+  fun:_ZN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc*SpdyHttpStreamTest_SendRequest_Test8TestBodyEv
+}
+{
+   bug_19775
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3HashInsert
+   fun:sqlite3CreateIndex
+   fun:yy_reduce
+   fun:sqlite3Parser
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
+   fun:sqlite3_prepare
+   fun:sqlite3_exec
+   fun:sqlite3InitCallback
+   fun:sqlite3_exec
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN7history11URLDatabase18CreateMainURLIndexEv
+}
+{
+   bug_46894
+   Memcheck:Addr4
+   fun:_ZNK12BookmarkNode9is_folderEv
+   fun:-[BookmarkButton isFolder]
+   fun:-[BookmarkBarFolderController openBookmarkFolderFromButtonAndCloseOldOne:]
+   fun:__NSFireDelayedPerform
+   fun:CFRunLoopRunSpecific
+}
