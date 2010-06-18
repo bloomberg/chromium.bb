@@ -268,20 +268,7 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
       return false;
     }
 
-    // First look for Google-A then look for Google.
-    // Only care if set to auto-connect.
-    WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
-    // If wifi found and set to not auto-connect, then ignore it.
-    if (wifi && !wifi->auto_connect())
-      wifi = NULL;
-
-    if (!wifi) {
-      wifi = GetWifiNetworkByName(kGoogleWifi);
-      // If wifi found and set to not auto-connect, then ignore it.
-      if (wifi && !wifi->auto_connect())
-        wifi = NULL;
-    }
-
+    WifiNetwork* wifi = GetPreferredNetwork();
     if (!wifi) {
       LOG(INFO) << "Google-A/Google wifi not found or set to not auto-connect.";
       return false;
@@ -321,12 +308,12 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
 }
 
 bool NetworkLibraryImpl::PreferredNetworkConnected() {
-  WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
+  WifiNetwork* wifi = GetPreferredNetwork();
   return wifi && wifi->connected();
 }
 
 bool NetworkLibraryImpl::PreferredNetworkFailed() {
-  WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
+  WifiNetwork* wifi = GetPreferredNetwork();
   return !wifi || wifi->failed();
 }
 
@@ -589,6 +576,23 @@ void NetworkLibraryImpl::UpdateSystemInfo() {
     UpdateNetworkStatus(system);
     FreeSystemInfo(system);
   }
+}
+
+WifiNetwork* NetworkLibraryImpl::GetPreferredNetwork() {
+  // First look for Google-A then look for Google.
+  // Only care if set to auto-connect.
+  WifiNetwork* wifi = GetWifiNetworkByName(kGoogleAWifi);
+  // If wifi found and set to not auto-connect, then ignore it.
+  if (wifi && !wifi->auto_connect())
+    wifi = NULL;
+
+  if (!wifi) {
+    wifi = GetWifiNetworkByName(kGoogleWifi);
+    // If wifi found and set to not auto-connect, then ignore it.
+    if (wifi && !wifi->auto_connect())
+      wifi = NULL;
+  }
+  return wifi;
 }
 
 WifiNetwork* NetworkLibraryImpl::GetWifiNetworkByName(const std::string& name) {

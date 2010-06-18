@@ -437,6 +437,9 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // Force an update of the system info.
   void UpdateSystemInfo();
 
+  // Returns the preferred wifi network.
+  WifiNetwork* GetPreferredNetwork();
+
   // Gets the WifiNetwork with the given name. Returns NULL if not found.
   WifiNetwork* GetWifiNetworkByName(const std::string& name);
 
