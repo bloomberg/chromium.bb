@@ -89,16 +89,20 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :
       NonClientBorderThickness();
-  // minimize_button_offset assumes LTR layout since the window controls
-  // themselves are not flipped, so we need to adjust the tabstrip's x
-  // position for them in RTL languages.
-  if (base::i18n::IsRTL())
-    tabstrip_x += (width() - minimize_button_offset);
+  // In RTL languages, we have moved an avatar icon left by the size of window
+  // controls to prevent it from being rendered over them. So, we use its x
+  // position to move this tab strip left when maximized. Also, we can render
+  // a tab strip until the left end of this window without considering the size
+  // of window controls in RTL languages.
+  if (base::i18n::IsRTL()) {
+    if (!browser_view_->ShouldShowOffTheRecordAvatar() &&
+        frame_->GetWindow()->IsMaximized())
+      tabstrip_x += otr_avatar_bounds_.x();
+    minimize_button_offset = width();
+  }
   int tabstrip_width = minimize_button_offset - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
           kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
-  if (base::i18n::IsRTL())
-    tabstrip_width += tabstrip_x;
   return gfx::Rect(tabstrip_x, NonClientTopBorderHeight(),
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredHeight());
@@ -423,6 +427,12 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 
 void GlassBrowserFrameView::LayoutOTRAvatar() {
   int otr_x = NonClientBorderThickness() + kOTRSideSpacing;
+  // Move this avatar icon by the size of window controls to prevent it from
+  // being rendered over them in RTL languages. This code also needs to adjust
+  // the width of a tab strip to avoid decreasing this size twice. (See the
+  // comment in GetBoundsForTabStrip().)
+  if (base::i18n::IsRTL())
+    otr_x += width() - frame_->GetMinimizeButtonOffset();
   SkBitmap otr_avatar_icon = browser_view_->GetOTRAvatarIcon();
   int otr_height = browser_view_->IsTabStripVisible() ?
       otr_avatar_icon.height() : 0;
