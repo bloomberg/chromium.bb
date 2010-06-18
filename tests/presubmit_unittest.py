@@ -1161,6 +1161,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api1 = self.MockInputApi(change1, False)
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     affected_file.LocalPath().AndReturn('foo.cc')
+    # Format is (file, line number, line content)
     output1 = [
       (affected_file, 42, 'yo, ' + content1),
       (affected_file, 43, 'yer'),
@@ -1326,6 +1327,44 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(presubmit_canned_checks.CheckChangeHasNoTabs,
                      'blah blah', 'blah\tblah',
                      presubmit.OutputApi.PresubmitPromptWarning)
+
+    # Make sure makefiles are ignored.
+    change1 = presubmit.Change('foo1', 'foo1\n', self.fake_root_dir, None,
+                               0, 0)
+    input_api1 = self.MockInputApi(change1, False)
+    affected_file1 = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    affected_file1.LocalPath().AndReturn('foo.cc')
+    affected_file2 = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    affected_file2.LocalPath().AndReturn('foo/Makefile')
+    affected_file3 = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    affected_file3.LocalPath().AndReturn('makefile')
+    # Only this one will trigger.
+    affected_file4 = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    affected_file4.LocalPath().AndReturn('makefile.foo')
+    affected_file4.LocalPath().AndReturn('makefile.foo')
+    output1 = [
+      (affected_file1, 42, 'yo, '),
+      (affected_file2, 43, 'yer\t'),
+      (affected_file3, 45, 'yr\t'),
+      (affected_file4, 46, 'ye\t'),
+    ]
+    def test(source_filter):
+      for i in output1:
+        if source_filter(i[0]):
+          yield i
+    # Override the mock of these functions.
+    input_api1.FilterSourceFile = lambda x: x
+    input_api1.RightHandSideLines = test
+    self.mox.ReplayAll()
+
+    results1 = presubmit_canned_checks.CheckChangeHasNoTabs(input_api1,
+        presubmit.OutputApi, None)
+    self.assertEquals(len(results1), 1)
+    self.assertEquals(results1[0].__class__,
+        presubmit.OutputApi.PresubmitPromptWarning)
+    self.assertEquals(results1[0]._long_text,
+        'makefile.foo, line 46')
+
 
   def testCannedCheckLongLines(self):
     check = lambda x,y,z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)

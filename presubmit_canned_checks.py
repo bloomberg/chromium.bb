@@ -213,8 +213,16 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
   """Checks that there are no tab characters in any of the text files to be
   submitted.
   """
+  # In addition to the filter, make sure that makefiles are blacklisted.
+  if not source_file_filter:
+    # It's the default filter.
+    source_file_filter = input_api.FilterSourceFile
+  def filter_more(affected_file):
+    return (not input_api.os_path.basename(affected_file.LocalPath()) in
+                ('Makefile', 'makefile') and
+            source_file_filter(affected_file))
   tabs = []
-  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
+  for f, line_num, line in input_api.RightHandSideLines(filter_more):
     if '\t' in line:
       tabs.append('%s, line %s' % (f.LocalPath(), line_num))
   if tabs:
