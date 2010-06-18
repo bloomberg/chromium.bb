@@ -88,3 +88,8 @@ TEST_F(PPAPITest, ImageData) {
 #endif
   RunTest(FILE_PATH_LITERAL("test_image_data.html"));
 }
+
+TEST_F(PPAPITest, DISABLED_Buffer) {
+  RunTest(FILE_PATH_LITERAL("test_buffer.html"));
+}
+
