@@ -14,6 +14,8 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
+#include "base/logging.h"
+#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -33,7 +35,7 @@ namespace net {
 //
 // TODO(deanm) Implement CookieMonster, the cookie database.
 //  - Verify that our domain enforcement and non-dotted handling is correct
-class CookieMonster : public CookieStore {
+class CookieMonster : public CookieStore, NonThreadSafe {
  public:
   class CanonicalCookie;
   class Delegate;
@@ -88,7 +90,10 @@ class CookieMonster : public CookieStore {
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
-  virtual CookieMonster* GetCookieMonster() { return this; }
+  virtual CookieMonster* GetCookieMonster() {
+    DCHECK(CalledOnValidThread());
+    return this;
+  }
 
   // Sets a cookie given explicit user-provided cookie attributes. The cookie
   // name, value, domain, etc. are each provided as separate strings. This
@@ -112,6 +117,7 @@ class CookieMonster : public CookieStore {
   bool SetCookieWithCreationTime(const GURL& url,
                                  const std::string& cookie_line,
                                  const base::Time& creation_time) {
+    DCHECK(CalledOnValidThread());
     return SetCookieWithCreationTimeAndOptions(url, cookie_line, creation_time,
                                                CookieOptions());
   }
@@ -283,6 +289,8 @@ class CookieMonster : public CookieStore {
 
   scoped_refptr<Delegate> delegate_;
 
+  // TODO(willchan): Remove this lock after making sure CookieMonster is
+  // completely single threaded.
   // Lock for thread-safety
   Lock lock_;
 

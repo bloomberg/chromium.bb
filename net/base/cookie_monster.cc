@@ -549,6 +549,7 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
 
 void CookieMonster::SetCookieableSchemes(
     const char* schemes[], size_t num_schemes) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
 
   // Cookieable Schemes must be set before first use of function.
@@ -564,6 +565,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     const std::string& cookie_line,
     const Time& creation_time_or_null,
     const CookieOptions& options) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url)) {
@@ -619,6 +621,7 @@ bool CookieMonster::SetCookieWithDetails(
     const GURL& url, const std::string& name, const std::string& value,
     const std::string& domain, const std::string& path,
     const base::Time& expiration_time, bool secure, bool http_only) {
+  DCHECK(CalledOnValidThread());
 
   // Expect a valid domain attribute with no illegal characters.
   std::string parsed_domain = ParsedCookie::ParseValueString(domain);
@@ -836,6 +839,7 @@ int CookieMonster::GarbageCollectExpired(
 }
 
 int CookieMonster::DeleteAll(bool sync_to_store) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -853,6 +857,7 @@ int CookieMonster::DeleteAll(bool sync_to_store) {
 int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
                                            const Time& delete_end,
                                            bool sync_to_store) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -874,11 +879,13 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
 
 int CookieMonster::DeleteAllCreatedAfter(const Time& delete_begin,
                                          bool sync_to_store) {
+  DCHECK(CalledOnValidThread());
   return DeleteAllCreatedBetween(delete_begin, Time(), sync_to_store);
 }
 
 int CookieMonster::DeleteAllForURL(const GURL& url,
                                    bool sync_to_store) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -895,6 +902,7 @@ int CookieMonster::DeleteAllForURL(const GURL& url,
 bool CookieMonster::DeleteCookie(const std::string& domain,
                                  const CanonicalCookie& cookie,
                                  bool sync_to_store) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -922,6 +930,7 @@ static bool CookieSorter(CookieMonster::CanonicalCookie* cc1,
 bool CookieMonster::SetCookieWithOptions(const GURL& url,
                                          const std::string& cookie_line,
                                          const CookieOptions& options) {
+  DCHECK(CalledOnValidThread());
   return SetCookieWithCreationTimeAndOptions(url, cookie_line, Time(), options);
 }
 
@@ -939,6 +948,7 @@ bool CookieMonster::SetCookieWithOptions(const GURL& url,
 // should be fast and simple enough for now.
 std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
                                                  const CookieOptions& options) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -971,6 +981,7 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
 
 void CookieMonster::DeleteCookie(const GURL& url,
                                  const std::string& cookie_name) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -1002,6 +1013,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
 }
 
 CookieMonster::CookieList CookieMonster::GetAllCookies() {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -1025,6 +1037,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
 }
 
 CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
+  DCHECK(CalledOnValidThread());
   AutoLock autolock(lock_);
   InitIfNecessary();
 

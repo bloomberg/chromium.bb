@@ -94,12 +94,11 @@ GURL GetURLFromCookiePair(
 }
 
 void AppendMatchingCookiesToList(
-    net::CookieStore* cookie_store, const std::string& store_id,
+    const net::CookieMonster::CookieList& all_cookies,
+    const std::string& store_id,
     const GURL& url, const DictionaryValue* details,
     const Extension* extension,
     ListValue* match_list) {
-  net::CookieMonster::CookieList all_cookies = GetCookieListFromStore(
-      cookie_store, url);
   net::CookieMonster::CookieList::const_iterator it;
   for (it = all_cookies.begin(); it != all_cookies.end(); ++it) {
     // Ignore any cookie whose domain doesn't match the extension's
