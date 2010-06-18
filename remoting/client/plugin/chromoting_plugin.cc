@@ -25,7 +25,8 @@ const char* ChromotingPlugin::kMimeType =
 
 ChromotingPlugin::ChromotingPlugin(NPNetscapeFuncs* browser_funcs,
                                    NPP instance)
-    : PepperPlugin(browser_funcs, instance) {
+    : PepperPlugin(browser_funcs, instance), width_(0), height_(0),
+      device_(NULL) {
 }
 
 ChromotingPlugin::~ChromotingPlugin() {
