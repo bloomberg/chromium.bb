@@ -256,26 +256,10 @@ int SpdyNetworkTransaction::DoSendRequest() {
     if (!upload_data)
       return error_code;
   }
-  scoped_refptr<SpdyStream> spdy_stream;
-  if (request_->method == "GET")
-    spdy_stream = spdy_->GetPushStream(request_->url, net_log_);
-  if (spdy_stream.get()) {
-    DCHECK(spdy_stream->pushed());
-    CHECK(spdy_stream->GetDelegate() == NULL);
-    stream_ = new SpdyHttpStream(spdy_stream);
-    stream_->InitializeRequest(*request_, base::Time::Now(), NULL);
-    // "vary" field?
-  } else {
-    spdy_stream = spdy_->CreateStream(request_->url,
-                                      request_->priority,
-                                      net_log_);
-    DCHECK(!spdy_stream->pushed());
-    CHECK(spdy_stream->GetDelegate() == NULL);
-    stream_ = new SpdyHttpStream(spdy_stream);
-    stream_->InitializeRequest(*request_, base::Time::Now(), upload_data);
-  }
+  stream_ = spdy_->GetOrCreateStream(*request_, upload_data, net_log_);
+  // Release the reference to |spdy_| since we don't need it anymore.
   spdy_ = NULL;
-  return stream_->SendRequest(&response_, &io_callback_);
+  return stream_->SendRequest(upload_data, &response_, &io_callback_);
 }
 
 int SpdyNetworkTransaction::DoSendRequestComplete(int result) {
