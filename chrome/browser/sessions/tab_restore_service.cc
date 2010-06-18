@@ -112,13 +112,33 @@ typedef std::map<SessionID::id_type, TabRestoreService::Entry*> IDToEntry;
 void RemoveEntryByID(SessionID::id_type id,
                      IDToEntry* id_to_entry,
                      std::vector<TabRestoreService::Entry*>* entries) {
+  // Look for the entry in the map. If it is present, erase it from both
+  // collections and return.
   IDToEntry::iterator i = id_to_entry->find(id);
-  if (i == id_to_entry->end())
+  if (i != id_to_entry->end()) {
+    entries->erase(std::find(entries->begin(), entries->end(), i->second));
+    delete i->second;
+    id_to_entry->erase(i);
     return;
+  }
 
-  entries->erase(std::find(entries->begin(), entries->end(), i->second));
-  delete i->second;
-  id_to_entry->erase(i);
+  // Otherwise, loop over all items in the map and see if any of the Windows
+  // have Tabs with the |id|.
+  for (IDToEntry::iterator i = id_to_entry->begin(); i != id_to_entry->end();
+       ++i) {
+    if (i->second->type == TabRestoreService::WINDOW) {
+      TabRestoreService::Window* window =
+          static_cast<TabRestoreService::Window*>(i->second);
+      std::vector<TabRestoreService::Tab>::iterator j = window->tabs.begin();
+      for ( ; j != window->tabs.end(); ++j) {
+        // If the ID matches one of this window's tabs, remove it from the list.
+        if ((*j).id == id) {
+          window->tabs.erase(j);
+          return;
+        }
+      }
+    }
+  }
 }
 
 }  // namespace
@@ -262,64 +282,75 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
 
   restoring_ = true;
   Entry* entry = *i;
-  entries_.erase(i);
-  i = entries_.end();
+
+  // If the entry's ID does not match the ID that is being restored, then the
+  // entry is a window from which a single tab will be restored.
+  bool restoring_tab_in_window = entry->id != id;
+
+  if (!restoring_tab_in_window) {
+    entries_.erase(i);
+    i = entries_.end();
+  }
 
   // |browser| will be NULL in cases where one isn't already available (eg,
   // when invoked on Mac OS X with no windows open). In this case, create a
   // new browser into which we restore the tabs.
   if (entry->type == TAB) {
     Tab* tab = static_cast<Tab*>(entry);
-    if (replace_existing_tab && browser) {
-      browser->ReplaceRestoredTab(tab->navigations,
-                                  tab->current_navigation_index,
-                                  tab->from_last_session,
-                                  tab->extension_app_id);
-    } else {
-      // Use the tab's former browser and index, if available.
-      Browser* tab_browser = NULL;
-      int tab_index = -1;
-      if (tab->has_browser())
-        tab_browser = BrowserList::FindBrowserWithID(tab->browser_id);
-
-      if (tab_browser) {
-        tab_index = tab->tabstrip_index;
-      } else {
-        tab_browser = Browser::Create(profile());
-        if (tab->has_browser()) {
-          UpdateTabBrowserIDs(tab->browser_id,
-                              tab_browser->session_id().id());
-        }
-        tab_browser->window()->Show();
-      }
-
-      if (tab_index < 0 || tab_index > tab_browser->tab_count())
-        tab_index = tab_browser->tab_count();
-      tab_browser->AddRestoredTab(tab->navigations, tab_index,
-                                  tab->current_navigation_index,
-                                  tab->extension_app_id, true, tab->pinned,
-                                  tab->from_last_session);
-    }
+    browser = RestoreTab(*tab, browser, replace_existing_tab);
   } else if (entry->type == WINDOW) {
     Browser* current_browser = browser;
-    const Window* window = static_cast<Window*>(entry);
-    browser = Browser::Create(profile());
-    for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
-      const Tab& tab = window->tabs[tab_i];
-      TabContents* restored_tab =
-          browser->AddRestoredTab(tab.navigations, browser->tab_count(),
-                                  tab.current_navigation_index,
-                                  tab.extension_app_id,
-                                  (static_cast<int>(tab_i) ==
-                                   window->selected_tab_index),
-                                  tab.pinned, tab.from_last_session);
-      if (restored_tab)
-        restored_tab->controller().LoadIfNecessary();
-    }
-    // All the window's tabs had the same former browser_id.
-    if (window->tabs[0].has_browser()) {
-      UpdateTabBrowserIDs(window->tabs[0].browser_id,
-                          browser->session_id().id());
+    Window* window = static_cast<Window*>(entry);
+
+    // When restoring a window, either the entire window can be restored, or a
+    // single tab within it. If the entry's ID matches the one to restore, then
+    // the entire window will be restored.
+    if (!restoring_tab_in_window) {
+      browser = Browser::Create(profile());
+      for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
+        const Tab& tab = window->tabs[tab_i];
+        TabContents* restored_tab =
+            browser->AddRestoredTab(tab.navigations, browser->tab_count(),
+                                    tab.current_navigation_index,
+                                    tab.extension_app_id,
+                                    (static_cast<int>(tab_i) ==
+                                        window->selected_tab_index),
+                                    tab.pinned, tab.from_last_session);
+        if (restored_tab)
+          restored_tab->controller().LoadIfNecessary();
+      }
+      // All the window's tabs had the same former browser_id.
+      if (window->tabs[0].has_browser()) {
+        UpdateTabBrowserIDs(window->tabs[0].browser_id,
+                            browser->session_id().id());
+      }
+    } else {
+      // Restore a single tab from the window. Find the tab that matches the ID
+      // in the window and restore it.
+      for (std::vector<Tab>::iterator tab_i = window->tabs.begin();
+           tab_i != window->tabs.end(); ++tab_i) {
+        const Tab& tab = *tab_i;
+        if (tab.id == id) {
+          browser = RestoreTab(tab, browser, replace_existing_tab);
+          window->tabs.erase(tab_i);
+          // If restoring the tab leaves the window with nothing else, delete it
+          // as well.
+          if (!window->tabs.size()) {
+            entries_.erase(i);
+            delete entry;
+          } else {
+            // Update the browser ID of the rest of the tabs in the window so if
+            // any one is restored, it goes into the same window as the tab
+            // being restored now.
+            for (std::vector<Tab>::iterator tab_j = window->tabs.begin();
+                 tab_j != window->tabs.end(); ++tab_j) {
+              UpdateTabBrowserIDs((*tab_j).browser_id,
+                                  browser->session_id().id());
+            }
+          }
+          break;
+        }
+      }
     }
     browser->window()->Show();
 
@@ -331,7 +362,10 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
     NOTREACHED();
   }
 
-  delete entry;
+  if (!restoring_tab_in_window) {
+    delete entry;
+  }
+
   restoring_ = false;
   NotifyTabsChanged();
 }
@@ -458,6 +492,18 @@ TabRestoreService::Entries::iterator TabRestoreService::GetEntryIteratorById(
   for (Entries::iterator i = entries_.begin(); i != entries_.end(); ++i) {
     if ((*i)->id == id)
       return i;
+
+    // For Window entries, see if the ID matches a tab. If so, report the window
+    // as the Entry.
+    if ((*i)->type == WINDOW) {
+      std::vector<Tab>& tabs = static_cast<Window*>(*i)->tabs;
+      for (std::vector<Tab>::iterator j = tabs.begin();
+           j != tabs.end(); ++j) {
+        if ((*j).id == id) {
+          return i;
+        }
+      }
+    }
   }
   return entries_.end();
 }
@@ -784,6 +830,45 @@ void TabRestoreService::CreateEntriesFromCommands(
 
   loaded_entries->swap(entries.get());
 }
+
+Browser* TabRestoreService::RestoreTab(const Tab& tab,
+                                       Browser* browser,
+                                       bool replace_existing_tab) {
+  // |browser| will be NULL in cases where one isn't already available (eg,
+  // when invoked on Mac OS X with no windows open). In this case, create a
+  // new browser into which we restore the tabs.
+  if (replace_existing_tab && browser) {
+    browser->ReplaceRestoredTab(tab.navigations,
+                                tab.current_navigation_index,
+                                tab.from_last_session,
+                                tab.extension_app_id);
+  } else {
+    if (tab.has_browser())
+      browser = BrowserList::FindBrowserWithID(tab.browser_id);
+
+    int tab_index = -1;
+    if (browser) {
+      tab_index = tab.tabstrip_index;
+    } else {
+      browser = Browser::Create(profile());
+      if (tab.has_browser()) {
+        UpdateTabBrowserIDs(tab.browser_id, browser->session_id().id());
+      }
+    }
+
+    if (tab_index < 0 || tab_index > browser->tab_count()) {
+      tab_index = browser->tab_count();
+    }
+
+    browser->AddRestoredTab(tab.navigations,
+                            tab_index,
+                            tab.current_navigation_index,
+                            tab.extension_app_id,
+                            true, tab.pinned, tab.from_last_session);
+  }
+  return browser;
+}
+
 
 bool TabRestoreService::ValidateTab(Tab* tab) {
   if (tab->navigations.empty())

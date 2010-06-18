@@ -211,7 +211,10 @@ class TabRestoreService : public BaseSessionService {
   // Prunes entries_ to contain only kMaxEntries and invokes NotifyTabsChanged.
   void PruneAndNotify();
 
-  // Returns an iterator into entries_ whose id matches |id|.
+  // Returns an iterator into entries_ whose id matches |id|. If |id| identifies
+  // a Window, then its iterator position will be returned. If it identifies a
+  // tab, then the iterator position of the Window in which the Tab resides is
+  // returned.
   Entries::iterator GetEntryIteratorById(SessionID::id_type id);
 
   // Schedules the commands for a window close.
@@ -253,6 +256,14 @@ class TabRestoreService : public BaseSessionService {
   void CreateEntriesFromCommands(
       scoped_refptr<InternalGetCommandsRequest> request,
       std::vector<Entry*>* loaded_entries);
+
+  // This is a helper function for RestoreEntryById() for restoring a single
+  // tab. If |replace_existing_tab| is true, the newly created tab replaces the
+  // selected tab in |browser|. If |browser| is NULL, this creates a new window
+  // for the entry. This returns the Browser into which the tab was restored.
+  Browser* RestoreTab(const Tab& tab,
+                      Browser* browser,
+                      bool replace_existing_tab);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based

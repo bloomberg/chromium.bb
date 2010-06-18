@@ -6,7 +6,9 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -59,3 +61,57 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // And the first url should be url.
   EXPECT_EQ(url, new_browser->GetTabContentsAt(0)->GetURL());
 }
+
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
+  GURL url1(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+  GURL url2(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title2.html"))));
+  GURL url3(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title3.html"))));
+
+  // Add and navigate three tabs.
+  ui_test_utils::NavigateToURL(browser(), url1);
+  browser()->AddTabWithURL(url2, GURL(), PageTransition::LINK, 1,
+                           Browser::ADD_SELECTED, NULL, std::string());
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+
+  browser()->AddTabWithURL(url3, GURL(), PageTransition::LINK, 2,
+                           Browser::ADD_SELECTED, NULL, std::string());
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+
+  TabRestoreService* service = browser()->profile()->GetTabRestoreService();
+  service->ClearEntries();
+
+  browser()->window()->Close();
+
+  // Expect a window with three tabs.
+  EXPECT_EQ(1U, service->entries().size());
+  ASSERT_EQ(TabRestoreService::WINDOW, service->entries().front()->type);
+  const TabRestoreService::Window* window =
+      static_cast<TabRestoreService::Window*>(service->entries().front());
+  EXPECT_EQ(3U, window->tabs.size());
+
+  // Find the SessionID for entry2. Since the session service was destroyed,
+  // there is no guarantee that the SessionID for the tab has remained the same.
+  std::vector<TabRestoreService::Tab>::const_iterator it = window->tabs.begin();
+  for ( ; it != window->tabs.end(); ++it) {
+    const TabRestoreService::Tab& tab = *it;
+    // If this tab held url2, then restore this single tab.
+    if (tab.navigations[0].virtual_url() == url2) {
+      service->RestoreEntryById(NULL, tab.id, false);
+      break;
+    }
+  }
+
+  // Make sure that the Window got updated.
+  EXPECT_EQ(1U, service->entries().size());
+  ASSERT_EQ(TabRestoreService::WINDOW, service->entries().front()->type);
+  window = static_cast<TabRestoreService::Window*>(service->entries().front());
+  EXPECT_EQ(2U, window->tabs.size());
+}
+
