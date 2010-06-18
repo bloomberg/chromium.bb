@@ -8,13 +8,12 @@
 #include <functional>
 #include <utility>
 
-#include "app/l10n_util_collator.h"
+#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/preferences.h"
-#include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 
@@ -25,34 +24,6 @@ namespace {
 // The code should be compatible with one of codes used for UI languages,
 // defined in app/l10_util.cc.
 const char kDefaultLanguageCode[] = "en-US";
-
-// The list of language that do not have associated input methods. For
-// these languages, we associate input methods here.
-const struct ExtraLanguage {
-  const char* language_code;
-  const char* input_method_id;
-} kExtraLanguages[] = {
-  { "id", "xkb:us::eng" }, // For Indonesian, use US keyboard layout.
-  // The code "fil" comes from app/l10_util.cc.
-  { "fil", "xkb:us::eng" },  // For Filipino, use US keyboard layout.
-  // The code "es-419" comes from app/l10_util.cc.
-  // For Spanish in Latin America, use Spanish keyboard layout.
-  { "es-419", "xkb:es::spa" },
-};
-
-// The list defines pairs of language code and the default input method
-// id. The list is used for reordering input method ids.
-//
-// TODO(satorux): We may need to handle secondary, and ternary input
-// methods, rather than handling the default input method only.
-const struct LanguageDefaultInputMethodId {
-  const char* language_code;
-  const char* input_method_id;
-} kLanguageDefaultInputMethodIds[] = {
-  { "en-US", "xkb:us::eng", },  // US - English
-  { "fr",    "xkb:fr::fra", },  // France - French
-  { "de",    "xkb:de::ger", },  // Germany - German
-};
 
 }  // namespace
 
@@ -73,7 +44,7 @@ std::wstring AddLanguageComboboxModel::GetItemAt(int index) {
     return l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX);
   }
-  return LanguageConfigModel::MaybeRewriteLanguageName(
+  return input_method::MaybeRewriteLanguageName(
       GetLanguageNameAt(GetLanguageIndex(index)));
 }
 
@@ -127,12 +98,11 @@ void LanguageConfigModel::Init() {
 size_t LanguageConfigModel::CountNumActiveInputMethods(
     const std::string& language_code) {
   int num_selected_active_input_methods = 0;
-  std::pair<LanguageCodeToIdsMap::const_iterator,
-            LanguageCodeToIdsMap::const_iterator> range =
-      language_code_to_ids_map_.equal_range(language_code);
-  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
-       iter != range.second; ++iter) {
-    if (InputMethodIsActivated(iter->second)) {
+  std::vector<std::string> input_method_ids;
+  input_method::GetInputMethodIdsByLanguageCode(
+      language_code, false /* keyboard_layout_only */, &input_method_ids);
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    if (InputMethodIsActivated(input_method_ids[i])) {
       ++num_selected_active_input_methods;
     }
   }
@@ -153,7 +123,7 @@ size_t LanguageConfigModel::AddLanguageCode(
   // acceptable as the language list is about 40 item long at most.  In
   // theory, we could find the position to insert rather than sorting, but
   // it would be complex as we need to use unicode string comparator.
-  SortLanguageCodesByNames(&preferred_language_codes_);
+  input_method::SortLanguageCodesByNames(&preferred_language_codes_);
   // Find the language code just added in the sorted language codes.
   const int added_at =
       std::distance(preferred_language_codes_.begin(),
@@ -173,7 +143,8 @@ void LanguageConfigModel::UpdateInputMethodPreferences(
   // Note: Since |new_input_method_ids| is alphabetically sorted and the sort
   // function below uses stable sort, the relateve order of input methods that
   // belong to the same language (e.g. "mozc" and "xkb:jp::jpn") is maintained.
-  SortInputMethodIdsByNames(id_to_language_code_map_, &new_input_method_ids);
+  input_method::SortInputMethodIdsByNames(
+      id_to_language_code_map_, &new_input_method_ids);
   preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
 }
 
@@ -256,16 +227,12 @@ void LanguageConfigModel::GetInputMethodIdsFromLanguageCode(
     std::vector<std::string>* input_method_ids) const {
   DCHECK(input_method_ids);
   input_method_ids->clear();
+  input_method::GetInputMethodIdsByLanguageCode(
+      language_code, false /* keyboard_layout_only */, input_method_ids);
 
-  std::pair<LanguageCodeToIdsMap::const_iterator,
-            LanguageCodeToIdsMap::const_iterator> range =
-      language_code_to_ids_map_.equal_range(language_code);
-  for (LanguageCodeToIdsMap::const_iterator iter = range.first;
-       iter != range.second; ++iter) {
-    input_method_ids->push_back(iter->second);
-  }
   // Reorder the input methods.
-  ReorderInputMethodIdsForLanguageCode(language_code, input_method_ids);
+  input_method::ReorderInputMethodIdsForLanguageCode(
+      language_code, input_method_ids);
 }
 
 void LanguageConfigModel::NotifyPrefChanged() {
@@ -282,7 +249,7 @@ void LanguageConfigModel::NotifyPrefChanged() {
   preferred_language_codes_.clear();
   preferred_language_codes_.assign(
       language_code_set.begin(), language_code_set.end());
-  LanguageConfigModel::SortLanguageCodesByNames(&preferred_language_codes_);
+  input_method::SortLanguageCodesByNames(&preferred_language_codes_);
 }
 
 void LanguageConfigModel::Observe(NotificationType type,
@@ -290,129 +257,6 @@ void LanguageConfigModel::Observe(NotificationType type,
                                   const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED) {
     NotifyPrefChanged();
-  }
-}
-
-std::wstring LanguageConfigModel::MaybeRewriteLanguageName(
-    const std::wstring& language_name) {
-  // "t" is used as the language code for input methods that don't fall
-  // under any other languages.
-  if (language_name == L"t") {
-    return l10n_util::GetString(
-        IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS);
-  }
-  return language_name;
-}
-
-std::wstring LanguageConfigModel::GetLanguageDisplayNameFromCode(
-    const std::string& language_code) {
-  return MaybeRewriteLanguageName(UTF16ToWide(
-      l10n_util::GetDisplayNameForLocale(
-          language_code, g_browser_process->GetApplicationLocale(),
-          true)));
-}
-
-namespace {
-
-// The comparator is used for sorting language codes by their
-// corresponding language names, using the ICU collator.
-struct CompareLanguageCodesByLanguageName
-    : std::binary_function<const std::string&, const std::string&, bool> {
-  explicit CompareLanguageCodesByLanguageName(icu::Collator* collator)
-      : collator_(collator) {
-  }
-
-  // Calling GetLanguageDisplayNameFromCode() in the comparator is not
-  // efficient, but acceptable as the function is cheap, and the language
-  // list is short (about 40 at most).
-  bool operator()(const std::string& s1, const std::string& s2) const {
-    const std::wstring key1 =
-            LanguageConfigModel::GetLanguageDisplayNameFromCode(s1);
-    const std::wstring key2 =
-            LanguageConfigModel::GetLanguageDisplayNameFromCode(s2);
-    return l10n_util::StringComparator<std::wstring>(collator_)(key1, key2);
-  }
-
-  icu::Collator* collator_;
-};
-
-// The comparator is used for sorting input method ids by their
-// corresponding language names, using the ICU collator.
-struct CompareInputMethodIdsByLanguageName
-    : std::binary_function<const std::string&, const std::string&, bool> {
-  CompareInputMethodIdsByLanguageName(
-      icu::Collator* collator,
-      const std::map<std::string, std::string>& id_to_language_code_map)
-      : comparator_(collator),
-        id_to_language_code_map_(id_to_language_code_map) {
-  }
-
-  bool operator()(const std::string& s1, const std::string& s2) const {
-    std::string language_code_1;
-    std::map<std::string, std::string>::const_iterator iter =
-        id_to_language_code_map_.find(s1);
-    if (iter != id_to_language_code_map_.end()) {
-      language_code_1 = iter->second;
-    }
-    std::string language_code_2;
-    iter = id_to_language_code_map_.find(s2);
-    if (iter != id_to_language_code_map_.end()) {
-      language_code_2 = iter->second;
-    }
-    return comparator_(language_code_1, language_code_2);
-  }
-
-  const CompareLanguageCodesByLanguageName comparator_;
-  const std::map<std::string, std::string>& id_to_language_code_map_;
-};
-
-}  // namespace
-
-void LanguageConfigModel::SortLanguageCodesByNames(
-    std::vector<std::string>* language_codes) {
-  // We should build collator outside of the comparator. We cannot have
-  // scoped_ptr<> in the comparator for a subtle STL reason.
-  UErrorCode error = U_ZERO_ERROR;
-  icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
-  scoped_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(locale, error));
-  if (U_FAILURE(error)) {
-    collator.reset();
-  }
-  std::sort(language_codes->begin(), language_codes->end(),
-            CompareLanguageCodesByLanguageName(collator.get()));
-}
-
-void LanguageConfigModel::SortInputMethodIdsByNames(
-    const std::map<std::string, std::string>& id_to_language_code_map,
-    std::vector<std::string>* input_method_ids) {
-  UErrorCode error = U_ZERO_ERROR;
-  icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
-  scoped_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(locale, error));
-  if (U_FAILURE(error)) {
-    collator.reset();
-  }
-  std::stable_sort(input_method_ids->begin(), input_method_ids->end(),
-                   CompareInputMethodIdsByLanguageName(
-                       collator.get(), id_to_language_code_map));
-}
-
-void LanguageConfigModel::ReorderInputMethodIdsForLanguageCode(
-    const std::string& language_code,
-    std::vector<std::string>* input_method_ids) {
-  for (size_t i = 0; i < arraysize(kLanguageDefaultInputMethodIds); ++i) {
-    if (language_code == kLanguageDefaultInputMethodIds[i].language_code) {
-      std::vector<std::string>::iterator iter =
-          std::find(input_method_ids->begin(), input_method_ids->end(),
-                    kLanguageDefaultInputMethodIds[i].input_method_id);
-      // If it's not on the top of |input_method_id|, swap it with the top one.
-      if (iter != input_method_ids->end() &&
-          iter != input_method_ids->begin()) {
-        std::swap(*input_method_ids->begin(), *iter);
-      }
-      break;  // Don't have to check other language codes.
-    }
   }
 }
 
@@ -429,7 +273,7 @@ void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
   for (size_t i = 0; i < supported_input_methods->size(); ++i) {
     const InputMethodDescriptor& input_method = supported_input_methods->at(i);
     const std::string language_code =
-        InputMethodLibrary::GetLanguageCodeFromDescriptor(input_method);
+        input_method::GetLanguageCodeFromDescriptor(input_method);
     AddInputMethodToMaps(language_code, input_method);
     // Add the language code and the input method id to the sets.
     supported_language_code_set.insert(language_code);
@@ -440,9 +284,10 @@ void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
   }
 
   // Go through the languages listed in kExtraLanguages.
-  for (size_t i = 0; i < arraysize(kExtraLanguages); ++i) {
-    const char* language_code = kExtraLanguages[i].language_code;
-    const char* input_method_id = kExtraLanguages[i].input_method_id;
+  for (size_t i = 0; i < arraysize(input_method::kExtraLanguages); ++i) {
+    const char* language_code = input_method::kExtraLanguages[i].language_code;
+    const char* input_method_id =
+        input_method::kExtraLanguages[i].input_method_id;
     std::map<std::string, const InputMethodDescriptor*>::const_iterator iter =
         id_to_descriptor_map.find(input_method_id);
     // If the associated input method descriptor is found, add the
@@ -469,10 +314,8 @@ void LanguageConfigModel::AddInputMethodToMaps(
   id_to_language_code_map_.insert(
       std::make_pair(input_method.id, language_code));
   id_to_display_name_map_.insert(
-      std::make_pair(input_method.id, LanguageMenuL10nUtil::GetStringUTF8(
-          input_method.display_name)));
-  language_code_to_ids_map_.insert(
-      std::make_pair(language_code, input_method.id));
+      std::make_pair(input_method.id,
+                     input_method::GetStringUTF8(input_method.display_name)));
 }
 
 }  // namespace chromeos

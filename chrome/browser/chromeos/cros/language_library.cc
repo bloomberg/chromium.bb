@@ -37,110 +37,12 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
   return false;
 }
 
-// There are some differences between ISO 639-2 (T) and ISO 639-2 B, and
-// some language codes are not recognized by ICU (i.e. ICU cannot convert
-// these codes to two-letter language codes and display names). Hence we
-// convert these codes to ones that ICU recognize.
-//
-// See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for details.
-const char* kIso639VariantMapping[][2] = {
-  {"cze", "ces"},
-  {"ger", "deu"},
-  {"gre", "ell"},
-  // "scr" is not a ISO 639 code. For some reason, evdev.xml uses "scr" as
-  // the language code for Croatian.
-  {"scr", "hrv"},
-  {"rum", "ron"},
-  {"slo", "slk"},
-};
-
 // The default keyboard layout.
 const char kDefaultKeyboardLayout[] = "us";
+
 }  // namespace
 
 namespace chromeos {
-
-std::string InputMethodLibrary::NormalizeLanguageCode(
-    const std::string& language_code) {
-  // Some ibus engines return locale codes like "zh_CN" as language codes.
-  // Normalize these to like "zh-CN".
-  if (language_code.size() >= 5 && language_code[2] == '_') {
-    std::string copied_language_code = language_code;
-    copied_language_code[2] = '-';
-    // Downcase the language code part.
-    for (size_t i = 0; i < 2; ++i) {
-      copied_language_code[i] = ToLowerASCII(copied_language_code[i]);
-    }
-    // Upcase the country code part.
-    for (size_t i = 3; i < copied_language_code.size(); ++i) {
-      copied_language_code[i] = ToUpperASCII(copied_language_code[i]);
-    }
-    return copied_language_code;
-  }
-  // We only handle three-letter codes from here.
-  if (language_code.size() != 3) {
-    return language_code;
-  }
-
-  // Convert special language codes. See comments at kIso639VariantMapping.
-  std::string copied_language_code = language_code;
-  for (size_t i = 0; i < arraysize(kIso639VariantMapping); ++i) {
-    if (language_code == kIso639VariantMapping[i][0]) {
-      copied_language_code = kIso639VariantMapping[i][1];
-    }
-  }
-  // Convert the three-letter code to two letter-code.
-  UErrorCode error = U_ZERO_ERROR;
-  char two_letter_code[ULOC_LANG_CAPACITY];
-  uloc_getLanguage(copied_language_code.c_str(),
-                   two_letter_code, sizeof(two_letter_code), &error);
-  if (U_FAILURE(error)) {
-    return language_code;
-  }
-  return two_letter_code;
-}
-
-bool InputMethodLibrary::IsKeyboardLayout(const std::string& input_method_id) {
-  const bool kCaseInsensitive = false;
-  return StartsWithASCII(input_method_id, "xkb:", kCaseInsensitive);
-}
-
-std::string InputMethodLibrary::GetLanguageCodeFromDescriptor(
-    const InputMethodDescriptor& descriptor) {
-  // Handle some Chinese input methods as zh-CN/zh-TW, rather than zh.
-  // TODO: we should fix this issue in engines rather than here.
-  if (descriptor.language_code == "zh") {
-    if (descriptor.id == "pinyin") {
-      return "zh-CN";
-    } else if (descriptor.id == "bopomofo" ||
-               descriptor.id == "chewing" ||
-               descriptor.id == "m17n:zh:cangjie" ||
-               descriptor.id == "m17n:zh:quick") {
-      return "zh-TW";
-    }
-  }
-
-  std::string language_code =
-      InputMethodLibrary::NormalizeLanguageCode(descriptor.language_code);
-
-  // Add country codes to language codes of some XKB input methods to make
-  // these compatible with Chrome's application locale codes like "en-US".
-  // TODO(satorux): Maybe we need to handle "es" for "es-419".
-  // TODO: We should not rely on the format of the engine name. Should we add
-  //       |country_code| in InputMethodDescriptor?
-  if (IsKeyboardLayout(descriptor.id) &&
-      (language_code == "en" ||
-       language_code == "zh" ||
-       language_code == "pt")) {
-    std::vector<std::string> portions;
-    SplitString(descriptor.id, ':', &portions);
-    if (portions.size() >= 2 && !portions[1].empty()) {
-      language_code.append("-");
-      language_code.append(StringToUpperASCII(portions[1]));
-    }
-  }
-  return language_code;
-}
 
 InputMethodLibraryImpl::InputMethodLibraryImpl()
     : input_method_status_connection_(NULL),

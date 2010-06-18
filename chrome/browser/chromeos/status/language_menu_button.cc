@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
-#include "chrome/browser/chromeos/status/language_menu_l10n_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
@@ -303,7 +303,7 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
   std::wstring name;
   if (IndexIsInInputMethodList(index)) {
     const std::string language_code =
-        InputMethodLibrary::GetLanguageCodeFromDescriptor(
+        input_method::GetLanguageCodeFromDescriptor(
             input_method_descriptors_->at(index));
     bool need_method_name = (need_method_name_.count(language_code) > 0);
     name = GetTextForMenu(input_method_descriptors_->at(index),
@@ -311,8 +311,7 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
   } else if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
         = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
-    return LanguageMenuL10nUtil::GetStringUTF16(
-        property_list.at(index).label);
+    return input_method::GetStringUTF16(property_list.at(index).label);
   }
 
   return WideToUTF16(name);
@@ -432,7 +431,7 @@ void LanguageMenuButton::UpdateIndicator(
   scoped_ptr<InputMethodDescriptors> active_input_methods(
       CrosLibrary::Get()->GetInputMethodLibrary()->GetActiveInputMethods());
   if (active_input_methods->size() == 1 &&
-      InputMethodLibrary::IsKeyboardLayout(active_input_methods->at(0).id)) {
+      input_method::IsKeyboardLayout(active_input_methods->at(0).id)) {
     // As the disabled color is set to invisible, disabling makes the
     // button disappear.
     SetEnabled(false);
@@ -468,7 +467,7 @@ void LanguageMenuButton::RebuildModel() {
       model_->AddRadioItem(COMMAND_ID_INPUT_METHODS, dummy_label, i);
 
       const std::string language_code
-          = InputMethodLibrary::GetLanguageCodeFromDescriptor(
+          = input_method::GetLanguageCodeFromDescriptor(
               input_method_descriptors_->at(i));
       // If there is more than one input method for this language, then we need
       // to display the method name.
@@ -570,7 +569,7 @@ std::wstring LanguageMenuButton::GetTextForIndicator(
   if (text.empty()) {
     const size_t kMaxLanguageNameLen = 2;
     const std::wstring language_code = UTF8ToWide(
-        InputMethodLibrary::GetLanguageCodeFromDescriptor(input_method));
+        input_method::GetLanguageCodeFromDescriptor(input_method));
     text = StringToUpperASCII(language_code).substr(0, kMaxLanguageNameLen);
   }
   DCHECK(!text.empty());
@@ -580,7 +579,7 @@ std::wstring LanguageMenuButton::GetTextForIndicator(
 std::wstring LanguageMenuButton::GetTextForMenu(
     const InputMethodDescriptor& input_method, bool add_method_name) {
   const std::string language_code
-      = InputMethodLibrary::GetLanguageCodeFromDescriptor(input_method);
+      = input_method::GetLanguageCodeFromDescriptor(input_method);
 
   std::wstring text;
   if (language_code == "t") {
@@ -594,7 +593,7 @@ std::wstring LanguageMenuButton::GetTextForMenu(
     text = GetLanguageName(language_code);
     if (add_method_name) {
       text += L" - ";
-      text += LanguageMenuL10nUtil::GetString(input_method.display_name);
+      text += input_method::GetString(input_method.display_name);
     }
   }
   DCHECK(!text.empty());

@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/options/language_chewing_config_view.h"
 #include "chrome/browser/chromeos/options/language_hangul_config_view.h"
 #include "chrome/browser/chromeos/options/language_mozc_config_view.h"
@@ -238,8 +239,8 @@ void LanguageConfigView::OnSelectionChanged() {
 std::wstring LanguageConfigView::GetText(int row, int column_id) {
   if (row >= 0 && row < static_cast<int>(
           model.num_preferred_language_codes())) {
-    return LanguageConfigModel::
-        GetLanguageDisplayNameFromCode(model.preferred_language_code_at(row));
+    return input_method::GetLanguageDisplayNameFromCode(
+        model.preferred_language_code_at(row));
   }
   NOTREACHED();
   return L"";
@@ -523,8 +524,7 @@ void LanguageConfigView::AddUiLanguageSection(const std::string& language_code,
   const string16 language_name16 = l10n_util::GetDisplayNameForLocale(
       language_code, application_locale, true);
   const std::wstring language_name
-      = LanguageConfigModel::MaybeRewriteLanguageName(
-          UTF16ToWide(language_name16));
+      = input_method::MaybeRewriteLanguageName(UTF16ToWide(language_name16));
   views::Label* language_name_label = new views::Label(language_name);
   language_name_label->SetFont(
       language_name_label->font().DeriveFont(0, gfx::Font::BOLD));

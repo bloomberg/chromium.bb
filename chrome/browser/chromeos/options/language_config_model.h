@@ -132,41 +132,6 @@ class LanguageConfigModel : public NotificationObserver {
     return supported_language_codes_;
   }
 
-  // Rewrites the language name and returns the modified version if
-  // necessary. Otherwise, returns the given language name as is.
-  // In particular, this rewrites the special language name used for input
-  // methods that don't fall under any other languages.
-  static std::wstring MaybeRewriteLanguageName(
-      const std::wstring& language_name);
-
-  // Converts a language code to a language display name, using the
-  // current application locale. MaybeRewriteLanguageName() is called
-  // internally.
-  // Examples: "fr"    => "French"
-  //           "en-US" => "English (United States)"
-  static std::wstring GetLanguageDisplayNameFromCode(
-      const std::string& language_code);
-
-  // Sorts the given language codes by their corresponding language names,
-  // using the unicode string comparator. Uses unstable sorting.
-  static void SortLanguageCodesByNames(
-      std::vector<std::string>* language_codes);
-
-  // Sorts the given input method ids by their corresponding language names,
-  // using the unicode string comparator. Uses stable sorting.
-  static void SortInputMethodIdsByNames(
-      const std::map<std::string, std::string>& id_to_language_code_map,
-      std::vector<std::string>* input_method_ids);
-
-  // Reorders the given input method ids for the language code. For
-  // example, if |language_codes| is "fr" and |input_method_ids| contains
-  // ["xkb:be::fra", and "xkb:fr::fra"], the list is reordered to
-  // ["xkb:fr::fra", and "xkb:be::fra"], so that French keyboard layout
-  // comes before Belgian keyboard layout.
-  static void ReorderInputMethodIdsForLanguageCode(
-      const std::string& language_code,
-      std::vector<std::string>* input_method_ids);
-
  private:
   // Initializes id_to_{code,display_name}_map_ maps,
   // as well as supported_{language_codes,input_method_ids}_ vectors.
@@ -186,9 +151,6 @@ class LanguageConfigModel : public NotificationObserver {
   std::vector<std::string> supported_language_codes_;
   // List of supported IME IDs like "pinyin" and "m17n:ar:kbd".
   std::vector<std::string> supported_input_method_ids_;
-  // Map from language code to associated input method IDs.
-  typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
-  LanguageCodeToIdsMap language_code_to_ids_map_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageConfigModel);
 };

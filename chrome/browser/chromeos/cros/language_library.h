@@ -84,36 +84,6 @@ class InputMethodLibrary {
   virtual const InputMethodDescriptor& current_input_method() const = 0;
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
-
-  // Normalizes the language code and returns the normalized version.  The
-  // function normalizes the given language code to be compatible with the
-  // one used in Chrome's application locales. Otherwise, returns the
-  // given language code as-is.
-  //
-  // Examples:
-  //
-  // - "zh_CN" => "zh-CN" (Use - instead of _)
-  // - "jpn"   => "ja"    (Use two-letter code)
-  // - "t"     => "t"     (Return as-is if unknown)
-  static std::string NormalizeLanguageCode(const std::string& language_code);
-
-  // Returns true if the given input method id is for a keyboard layout.
-  static bool IsKeyboardLayout(const std::string& input_method_id);
-
-  // Gets the language code from the given input method descriptor.  This
-  // encapsulates differences between the language codes used in
-  // InputMethodDescriptor and Chrome's application locale codes.
-  static std::string GetLanguageCodeFromDescriptor(
-      const InputMethodDescriptor& descriptor);
-
-  // Gets the keyboard layout name from the given input method ID.
-  // If the ID is invalid, the default layout name will be returned.
-  //
-  // Examples:
-  //
-  // "xkb:us::eng"       => "us"
-  // "xkb:us:dvorak:eng" => "us(dvorak)"
-  static std::string GetKeyboardLayoutName(const std::string& input_method_id);
 };
 
 // This class handles the interaction with the ChromeOS language library APIs.
