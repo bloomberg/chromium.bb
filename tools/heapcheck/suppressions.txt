@@ -400,20 +400,6 @@
   fun:net::SpdyNetworkTransactionTest_PostWithEarlySynReply_Test::TestBody
 }
 {
-   bug_44130
-   Heapcheck:Leak
-   ...
-   fun:history::TopSitesTest_*
-   fun:testing::Test::Run
-   fun:testing::internal::TestInfoImpl::Run
-   fun:testing::TestCase::Run
-   fun:testing::internal::UnitTestImpl::RunAllTests
-   fun:testing::UnitTest::Run
-   fun:TestSuite::Run
-   fun:main
-   fun:__libc_start_main
-}
-{
    bug_44354
    Heapcheck:Leak
    ...

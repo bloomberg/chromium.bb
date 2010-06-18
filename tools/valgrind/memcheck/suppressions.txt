@@ -2932,12 +2932,6 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 {
-   bug_44130
-   Memcheck:Leak
-   ...
-   fun:_ZN7history32TopSitesTest_*
-}
-{
    bug_44341
    Memcheck:Cond
    fun:memcpy
