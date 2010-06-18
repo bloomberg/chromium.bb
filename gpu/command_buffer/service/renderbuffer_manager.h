@@ -26,7 +26,8 @@ class RenderbufferManager {
 
     explicit RenderbufferInfo(GLuint service_id)
         : service_id_(service_id),
-          cleared_(false) {
+          cleared_(false),
+          internal_format_(GL_RGBA4) {
     }
 
     GLuint service_id() const {
@@ -39,6 +40,14 @@ class RenderbufferManager {
 
     void set_cleared() {
       cleared_ = true;
+    }
+
+    GLenum internal_format() const {
+      return internal_format_;
+    }
+
+    void set_internal_format(GLenum internalformat) {
+      internal_format_ = internalformat;
     }
 
     bool IsDeleted() {
@@ -60,6 +69,9 @@ class RenderbufferManager {
 
     // Whether this renderbuffer has been cleared
     bool cleared_;
+
+    // Renderbuffer internalformat set through RenderbufferStorage().
+    GLenum internal_format_;
   };
 
   RenderbufferManager() { }

@@ -1314,6 +1314,7 @@ _FUNCTION_INFO = {
   'RenderbufferStorage': {
     'decoder_func': 'DoRenderbufferStorage',
     'gl_test_func': 'glRenderbufferStorageEXT',
+    'expectation': False,
   },
   'ReadPixels': {
     'cmd_comment':

@@ -176,9 +176,15 @@ void GLES2DecoderTestBase::SpecializedSetup<Uniform4fvImmediate, 0>(
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<RenderbufferStorage, 0>(
-    bool /* valid */) {
+    bool valid) {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
+  if (valid) {
+    EXPECT_CALL(*gl_,
+                RenderbufferStorageEXT(GL_RENDERBUFFER, _, 3, 4))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
 };
 
 template <>

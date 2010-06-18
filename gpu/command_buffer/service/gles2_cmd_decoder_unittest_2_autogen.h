@@ -293,7 +293,6 @@ TEST_F(GLES2DecoderTest2, PolygonOffsetValidArgs) {
 // TODO(gman): ReleaseShaderCompiler
 
 TEST_F(GLES2DecoderTest2, RenderbufferStorageValidArgs) {
-  EXPECT_CALL(*gl_, RenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA4, 3, 4));
   SpecializedSetup<RenderbufferStorage, 0>(true);
   RenderbufferStorage cmd;
   cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
