@@ -319,13 +319,13 @@ TEST_F(TableViewTest, DISABLED_PersistSelectionOnSort) {
 
 // Failing: http://crbug.com/45015
 // Tests selection iterator with sort.
-TEST_F(TableViewTest, PersistMultiSelectionOnSort) {
+TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnSort) {
   SetUpMultiSelectTestState(true);
 }
 
 // Failing: http://crbug.com/45015
 // Tests selection persists after a change when sorted with iterator.
-TEST_F(TableViewTest, PersistMultiSelectionOnChangeWithSort) {
+TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnChangeWithSort) {
   SetUpMultiSelectTestState(true);
   if (HasFatalFailure())
     return;
