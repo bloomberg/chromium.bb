@@ -336,6 +336,23 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // Stops scrolling.
   void StopScrolling();
 
+  // Updates |active_mouse_view_| from the location of the event and sends it
+  // the appropriate events. This is used to send mouse events to child views so
+  // that they react to click-drag-release as if the user clicked on the view
+  // itself.
+  void UpdateActiveMouseView(SubmenuView* event_source,
+                             const MouseEvent& event,
+                             View* target_menu);
+
+  // Sends a mouse release event to the current |active_mouse_view_| and sets
+  // it to null.
+  void SendMouseReleaseToActiveView(SubmenuView* event_source,
+                                    const MouseEvent& event,
+                                    bool cancel);
+
+  // Variant of above that sends a cancel mouse release.
+  void SendMouseReleaseToActiveView();
+
   // The active instance.
   static MenuController* active_instance_;
 
@@ -416,6 +433,10 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   scoped_ptr<MenuScrollTask> scroll_task_;
 
   MenuButton* menu_button_;
+
+  // If non-null mouse drag events are forwarded to this view. See
+  // UpdateActiveMouseView for details.
+  View* active_mouse_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

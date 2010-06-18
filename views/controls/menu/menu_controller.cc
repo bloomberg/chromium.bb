@@ -382,6 +382,8 @@ void MenuController::Cancel(ExitType type) {
   MenuItemView* selected = state_.item;
   exit_type_ = type;
 
+  SendMouseReleaseToActiveView();
+
   // Hide windows immediately.
   SetSelection(NULL, false, true);
 
@@ -403,6 +405,8 @@ void MenuController::OnMousePressed(SubmenuView* source,
 #endif
   if (!blocking_run_)
     return;
+
+  DCHECK(!active_mouse_view_);
 
   MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
   if (part.is_scroll())
@@ -489,13 +493,17 @@ void MenuController::OnMouseDragged(SubmenuView* source,
     }
     return;
   }
+  MenuItemView* mouse_menu = NULL;
   if (part.type == MenuPart::MENU_ITEM) {
     if (!part.menu)
       part.menu = source->GetMenuItem();
+    else
+      mouse_menu = part.menu;
     SetSelection(part.menu ? part.menu : state_.item, true, false);
   } else if (part.type == MenuPart::NONE) {
     ShowSiblingMenu(source, event);
   }
+  UpdateActiveMouseView(source, event, mouse_menu);
 }
 
 void MenuController::OnMouseReleased(SubmenuView* source,
@@ -521,16 +529,23 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
 
     // If we open a context menu just return now
-    if (part.menu->GetDelegate()->ShowContextMenu(part.menu,
-        part.menu->GetCommand(), loc, true))
+    if (part.menu->GetDelegate()->ShowContextMenu(
+            part.menu, part.menu->GetCommand(), loc, true)) {
+      SendMouseReleaseToActiveView(source, event, true);
       return;
+    }
   }
 
   // We can use Ctrl+click or the middle mouse button to recursively open urls
   // for selected folder menu items. If it's only a left click, show the
   // contents of the folder.
-  if (!part.is_scroll() && part.menu && !(part.menu->HasSubmenu() &&
-      (event.GetFlags() == MouseEvent::EF_LEFT_BUTTON_DOWN))) {
+  if (!part.is_scroll() && part.menu &&
+      !(part.menu->HasSubmenu() &&
+        (event.GetFlags() == MouseEvent::EF_LEFT_BUTTON_DOWN))) {
+    if (active_mouse_view_) {
+      SendMouseReleaseToActiveView(source, event, false);
+      return;
+    }
     if (part.menu->GetDelegate()->IsTriggerableEvent(event)) {
       Accept(part.menu, event.GetFlags());
       return;
@@ -539,6 +554,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     // User either clicked on empty space, or a menu that has children.
     SetSelection(part.menu ? part.menu : state_.item, true, true);
   }
+  SendMouseReleaseToActiveView(source, event, true);
 }
 
 void MenuController::OnMouseMoved(SubmenuView* source,
@@ -894,7 +910,8 @@ MenuController::MenuController(bool blocking)
       drag_in_progress_(false),
       valid_drop_coordinates_(false),
       showing_submenu_(false),
-      menu_button_(NULL) {
+      menu_button_(NULL),
+      active_mouse_view_(NULL) {
 #ifdef DEBUG_MENU
   instance_count++;
   DLOG(INFO) << "created MC, count=" << instance_count;
@@ -1639,6 +1656,87 @@ void MenuController::UpdateScrolling(const MenuPart& part) {
 
 void MenuController::StopScrolling() {
   scroll_task_.reset(NULL);
+}
+
+void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
+                                           const MouseEvent& event,
+                                           View* target_menu) {
+  View* target = NULL;
+  gfx::Point target_menu_loc(event.location());
+  if (target_menu && target_menu->GetChildViewCount()) {
+    // Locate the deepest child view to send events to.  This code assumes we
+    // don't have to walk up the tree to find a view interested in events. This
+    // is currently true for the cases we are embedding views, but if we embed
+    // more complex hierarchies it'll need to change.
+    View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
+                               &target_menu_loc);
+    View::ConvertPointToView(NULL, target_menu, &target_menu_loc);
+    target = target_menu->GetViewForPoint(target_menu_loc);
+    if (target == target_menu || !target->IsEnabled())
+      target = NULL;
+  }
+  if (target != active_mouse_view_) {
+    if (active_mouse_view_) {
+      // Send a mouse release with cancel set to true.
+      MouseEvent release_event(Event::ET_MOUSE_RELEASED, -1, -1, 0);
+      active_mouse_view_->OnMouseReleased(release_event, true);
+
+      active_mouse_view_ = NULL;
+    }
+    active_mouse_view_ = target;
+    if (active_mouse_view_) {
+      gfx::Point target_point(target_menu_loc);
+      View::ConvertPointToView(target_menu, active_mouse_view_, &target_point);
+      MouseEvent mouse_entered_event(MouseEvent::ET_MOUSE_ENTERED,
+                                     target_point.x(), target_point.y(), 0);
+      active_mouse_view_->OnMouseEntered(mouse_entered_event);
+
+      MouseEvent mouse_pressed_event(MouseEvent::ET_MOUSE_PRESSED,
+                                     target_point.x(), target_point.y(),
+                                     event.GetFlags());
+      active_mouse_view_->OnMousePressed(mouse_pressed_event);
+    }
+  }
+
+  if (active_mouse_view_) {
+    gfx::Point target_point(target_menu_loc);
+    View::ConvertPointToView(target_menu, active_mouse_view_, &target_point);
+    MouseEvent mouse_dragged_event(MouseEvent::ET_MOUSE_DRAGGED,
+                                   target_point.x(), target_point.y(),
+                                   event.GetFlags());
+    active_mouse_view_->OnMouseDragged(mouse_dragged_event);
+  }
+}
+
+void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
+                                                  const MouseEvent& event,
+                                                  bool cancel) {
+  if (!active_mouse_view_)
+    return;
+
+  gfx::Point target_loc(event.location());
+  View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
+                             &target_loc);
+  View::ConvertPointToView(NULL, active_mouse_view_, &target_loc);
+  MouseEvent release_event(Event::ET_MOUSE_RELEASED, target_loc.x(),
+                           target_loc.y(), event.GetFlags());
+  // Reset the active_mouse_view_ before sending mouse released. That way if if
+  // calls back to use we aren't in a weird state.
+  View* active_view = active_mouse_view_;
+  active_mouse_view_ = NULL;
+  active_view->OnMouseReleased(release_event, cancel);
+}
+
+void MenuController::SendMouseReleaseToActiveView() {
+  if (!active_mouse_view_)
+    return;
+
+  MouseEvent release_event(Event::ET_MOUSE_RELEASED, -1, -1, 0);
+  // Reset the active_mouse_view_ before sending mouse released. That way if if
+  // calls back to use we aren't in a weird state.
+  View* active_view = active_mouse_view_;
+  active_mouse_view_ = NULL;
+  active_view->OnMouseReleased(release_event, true);
 }
 
 }  // namespace views
