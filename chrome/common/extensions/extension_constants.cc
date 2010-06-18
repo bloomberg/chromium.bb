@@ -7,6 +7,7 @@
 namespace extension_manifest_keys {
 
 const wchar_t* kAllFrames = L"all_frames";
+const wchar_t* kApp = L"app";
 const wchar_t* kBackground = L"background_page";
 const wchar_t* kBrowserAction = L"browser_action";
 const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
@@ -18,11 +19,11 @@ const wchar_t* kDefaultLocale = L"default_locale";
 const wchar_t* kDescription = L"description";
 const wchar_t* kIcons = L"icons";
 const wchar_t* kJs = L"js";
-const wchar_t* kLaunch = L"launch";
-const wchar_t* kLaunchContainer = L"launch.container";
-const wchar_t* kLaunchFullscreen = L"launch.fullscreen";
-const wchar_t* kLaunchLocalPath = L"launch.local_path";
-const wchar_t* kLaunchWebURL = L"launch.web_url";
+const wchar_t* kLaunch = L"app.launch";
+const wchar_t* kLaunchContainer = L"app.launch.container";
+const wchar_t* kLaunchFullscreen = L"app.launch.fullscreen";
+const wchar_t* kLaunchLocalPath = L"app.launch.local_path";
+const wchar_t* kLaunchWebURL = L"app.launch.web_url";
 const wchar_t* kMatches = L"matches";
 const wchar_t* kMinimumChromeVersion = L"minimum_chrome_version";
 const wchar_t* kIncludeGlobs = L"include_globs";
@@ -58,10 +59,9 @@ const wchar_t* kType = L"type";
 const wchar_t* kVersion = L"version";
 const wchar_t* kUpdateURL = L"update_url";
 const wchar_t* kOptionsPage = L"options_page";
-const wchar_t* kWebContent = L"web_content";
-const wchar_t* kWebContentEnabled = L"web_content.enabled";
-const wchar_t* kWebOrigin = L"web_content.origin";
-const wchar_t* kWebPaths = L"web_content.paths";
+const wchar_t* kWebContent = L"app.web_content";
+const wchar_t* kWebOrigin = L"app.web_content.origin";
+const wchar_t* kWebPaths = L"app.web_content.paths";
 const wchar_t* kOmniboxKeyword = L"omnibox_keyword";
 }  // namespace extension_manifest_keys
 
@@ -113,13 +113,13 @@ const char* kInvalidJs =
 const char* kInvalidJsList =
     "Required value 'content_scripts[*].js' is invalid.";
 const char* kInvalidLaunchContainer =
-    "Invalid value for 'launch.container'.";
+    "Invalid value for 'app.launch.container'.";
 const char* kInvalidLaunchFullscreen =
-    "Invalid value for 'launch.fullscreen'.";
+    "Invalid value for 'app.launch.fullscreen'.";
 const char* kInvalidLaunchLocalPath =
-    "Invalid value for 'launch.local_path'.";
+    "Invalid value for 'app.launch.local_path'.";
 const char* kInvalidLaunchWebURL =
-    "Invalid value for 'launch.web_url'.";
+    "Invalid value for 'app.launch.web_url'.";
 const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidManifest =
@@ -209,23 +209,23 @@ const char* kInvalidThemeTints =
 const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
 const char* kInvalidWebContentEnabled =
-    "Invalid value for 'web_content.enabled'.";
+    "Invalid value for 'app.web_content.enabled'.";
 const char* kInvalidWebOrigin =
-    "Invalid value for 'web_content.origin'.";
+    "Invalid value for 'app.web_content.origin'.";
 const char* kInvalidWebPaths =
-    "Invalid value for 'web_content.paths'.";
+    "Invalid value for 'app.web_content.paths'.";
 const char* kInvalidWebPath =
-    "Invalid value for 'web_contents.paths[*]'.";
+    "Invalid value for 'app.web_contents.paths[*]'.";
 const char* kInvalidDefaultLocale =
     "Invalid value for default locale - locale name must be a string.";
 const char* kOneUISurfaceOnly =
     "An extension cannot have both a page action and a browser action.";
 const char* kThemesCannotContainExtensions =
     "A theme cannot contain extensions code.";
-const char* kLaunchContainerWithoutURL =
-    "Launch container specified, but no local_path or web_url to launch.";
 const char* kLaunchPathAndURLAreExclusive =
-    "The 'launch.local_path' and 'launch.web_url' keys cannot both be set.";
+    "The 'app.launch.local_path' and 'launch.web_url' keys cannot both be set.";
+const char* kLaunchURLRequired =
+    "Either 'app.launch.local_path' or 'app.launch.web_url' is required.";
 const char* kLocalesNoDefaultLocaleSpecified =
     "Localization used, but default_locale wasn't specified in the manifest.";
 const char* kLocalesNoDefaultMessages =
@@ -243,8 +243,6 @@ const char* kReservedMessageFound =
 const char* kCannotAccessPage = "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
 const char* kCannotScriptGallery = "The extensions gallery cannot be scripted.";
-const char* kWebContentMustBeEnabled = "The 'web_content.enabled' property "
-    "must be set to true in order to use any other web content features.";
 const char* kInvalidOmniboxKeyword =
     "Invalid value for 'omnibox_keyword'.";
 const char* kOmniboxExperimental =

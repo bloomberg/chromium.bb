@@ -82,13 +82,11 @@ TEST_F(ManifestTest, AppsDisabledByDefault) {
 #endif
 
   enable_apps_ = false;
-  LoadAndExpectError("web_content_disabled.json", errors::kAppsNotEnabled);
   LoadAndExpectError("launch_local_path.json", errors::kAppsNotEnabled);
 }
 
 TEST_F(ManifestTest, ValidApp) {
   scoped_ptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));
-  EXPECT_TRUE(extension->web_content_enabled());
   EXPECT_EQ(GURL("http://www.google.com/"), extension->web_extent().origin());
   EXPECT_EQ(2u, extension->web_extent().paths().size());
   EXPECT_EQ("mail/", extension->web_extent().paths()[0]);
@@ -96,15 +94,6 @@ TEST_F(ManifestTest, ValidApp) {
   EXPECT_EQ(Extension::LAUNCH_WINDOW, extension->launch_container());
   EXPECT_EQ(false, extension->launch_fullscreen());
   EXPECT_EQ("mail/", extension->launch_web_url());
-}
-
-TEST_F(ManifestTest, AppWebContentEnabled) {
-  LoadAndExpectError("web_content_enabled_invalid.json",
-                     errors::kInvalidWebContentEnabled);
-  LoadAndExpectError("web_content_disabled.json",
-                     errors::kWebContentMustBeEnabled);
-  LoadAndExpectError("web_content_not_enabled.json",
-                     errors::kWebContentMustBeEnabled);
 }
 
 TEST_F(ManifestTest, AppWebOrigin) {
@@ -152,7 +141,7 @@ TEST_F(ManifestTest, AppLaunchContainer) {
   LoadAndExpectError("launch_container_invalid_value.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_without_launch_url.json",
-                     errors::kLaunchContainerWithoutURL);
+                     errors::kLaunchURLRequired);
   LoadAndExpectError("launch_fullscreen_invalid.json",
                      errors::kInvalidLaunchFullscreen);
 }

@@ -326,7 +326,7 @@ BrowserThemePack::~BrowserThemePack() {
 BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(extension);
-  DCHECK(extension->IsTheme());
+  DCHECK(extension->is_theme());
 
   BrowserThemePack* pack = new BrowserThemePack;
   pack->BuildHeader(extension);

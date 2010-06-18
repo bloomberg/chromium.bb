@@ -17,11 +17,11 @@
 namespace browser_sync {
 
 bool IsExtensionSyncable(const Extension& extension) {
-  if (extension.IsTheme()) {
+  if (extension.is_theme()) {
     return false;
   }
 
-  // TODO(akalin): Add Extensions::IsApp().
+  // TODO(akalin): Add Extensions::is_app().
   // TODO(akalin): Figure out if we want to treat extensions and apps
   // identically after all.
   if (!extension.GetFullLaunchURL().is_empty()) {

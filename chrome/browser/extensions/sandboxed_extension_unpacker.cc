@@ -276,10 +276,7 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
       static_cast<DictionaryValue*>(manifest.DeepCopy()));
   final_manifest->SetString(extension_manifest_keys::kPublicKey, public_key_);
 
-  bool web_content_enabled = false;
-  if (final_manifest->GetBoolean(extension_manifest_keys::kWebContentEnabled,
-                                 &web_content_enabled) &&
-      web_content_enabled) {
+  if (final_manifest->HasKey(extension_manifest_keys::kApp)) {
     bool has_web_origin =
         final_manifest->Get(extension_manifest_keys::kWebOrigin, NULL);
     if (force_web_origin_override_) {

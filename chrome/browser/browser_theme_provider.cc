@@ -269,7 +269,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   FreePlatformCaches();
 
   DCHECK(extension);
-  DCHECK(extension->IsTheme());
+  DCHECK(extension->is_theme());
 
   BuildFromExtension(extension);
   SaveThemeID(extension->id());
@@ -289,7 +289,7 @@ void BrowserThemeProvider::RemoveUnusedThemes() {
   const ExtensionList* extensions = service->extensions();
   for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    if ((*it)->IsTheme() && (*it)->id() != current_theme) {
+    if ((*it)->is_theme() && (*it)->id() != current_theme) {
       remove_list.push_back((*it)->id());
     }
   }

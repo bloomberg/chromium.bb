@@ -139,7 +139,7 @@ InstallDialogContent2::InstallDialogContent2(
     right_column_width_ = kNoPermissionsRightColumnWidth;
   } else {
     right_column_width_ = kPermissionBoxWidth;
-    int label = extension->IsApp() ?
+    int label = extension->is_app() ?
                 IDS_EXTENSION_PROMPT2_APP_WILL_HAVE_ACCESS_TO :
                 IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO;
     will_have_access_to_ = new views::Label(l10n_util::GetString(label));

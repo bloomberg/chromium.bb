@@ -158,7 +158,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   // We special-case themes to not show any confirm UI. Instead they are
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
   // to allow the user to revert if they don't like it.
-  if (extension->IsTheme()) {
+  if (extension->is_theme()) {
     // Remember the current theme in case the user pressed undo.
     Extension* previous_theme = profile_->GetTheme();
     if (previous_theme)
@@ -190,7 +190,7 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
 }
 
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
-  if (extension->IsTheme()) {
+  if (extension->is_theme()) {
     ShowThemeInfoBar(previous_theme_id_, previous_use_system_theme_,
                      extension, profile_);
     return;
@@ -302,7 +302,7 @@ void ExtensionInstallUI::OnImageLoaded(
 void ExtensionInstallUI::ShowThemeInfoBar(
     const std::string& previous_theme_id, bool previous_use_system_theme,
     Extension* new_theme, Profile* profile) {
-  if (!new_theme->IsTheme())
+  if (!new_theme->is_theme())
     return;
 
   // Get last active normal browser of profile.

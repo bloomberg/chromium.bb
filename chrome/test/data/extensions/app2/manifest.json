@@ -1,9 +1,10 @@
 {
-  "name": "test",
+  "name": "Test App 2",
   "version": "1",
   "app": {
     "web_content": {
-      "origin": "wiggity"
+      "origin": "http://www.example.com/",
+      "paths": ["path3", "path4"]
     },
     "launch": {
       "web_url": "foo.html"
