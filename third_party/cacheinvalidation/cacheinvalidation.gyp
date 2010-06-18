@@ -86,6 +86,7 @@
       'type': '<(library)',
       'sources': [
         'overrides/google/cacheinvalidation/callback.h',
+        'overrides/google/cacheinvalidation/compiler-specific.h',
         'overrides/google/cacheinvalidation/googletest.h',
         'overrides/google/cacheinvalidation/logging.h',
         'overrides/google/cacheinvalidation/mutex.h',
