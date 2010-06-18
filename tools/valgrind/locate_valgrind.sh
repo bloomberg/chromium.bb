@@ -26,6 +26,9 @@ then
     # Didn't test other kernels.
     PLATFORM="mac"
     ;;
+  *Darwin*10.[0-9].[0-9]*i386*)
+    PLATFORM="mac_10.6"
+    ;;
   *)
     echo "Unknown platform:" >&2
     uname -a >&2
@@ -40,7 +43,7 @@ then
     CHROME_VALGRIND="$THISDIR/../../third_party/valgrind/$PLATFORM"
 
     # TODO(timurrrr): readlink -f is not present on Mac...
-    if [ "$PLATFORM" != "mac" ]
+    if [ "$PLATFORM" != "mac" ] && [ "$PLATFORM" != "mac_10.6" ]
     then
       # Get rid of all "../" dirs
       CHROME_VALGRIND=`readlink -f $CHROME_VALGRIND`
