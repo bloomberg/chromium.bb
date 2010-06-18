@@ -5,6 +5,10 @@
 #ifndef VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 #define VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
@@ -292,6 +296,16 @@ class MenuItemView : public View {
   // Actual paint implementation. If for_drag is true, portions of the menu
   // are not rendered.
   void Paint(gfx::Canvas* canvas, bool for_drag);
+
+#if defined(OS_WIN)
+  // Paints the check/radio button indicator. |part_id| is the id passed to the
+  // native theme drawing routines.
+  void PaintCheck(HDC dc,
+                  int part_id,
+                  bool render_selection,
+                  int icon_width,
+                  int icon_height);
+#endif
 
   // Paints the accelerator.
   void PaintAccelerator(gfx::Canvas* canvas);

@@ -45,6 +45,17 @@ MenuConfig* MenuConfig::Create() {
     config->check_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
+  SIZE radio_size;
+  if (NativeTheme::instance()->GetThemePartSize(
+          NativeTheme::MENU, dc, MENU_POPUPCHECK, MC_BULLETNORMAL, &bounds,
+          TS_TRUE, &radio_size) == S_OK) {
+    config->radio_width = radio_size.cx;
+    config->radio_height = radio_size.cy;
+  } else {
+    config->radio_width = GetSystemMetrics(SM_CXMENUCHECK);
+    config->radio_height = GetSystemMetrics(SM_CYMENUCHECK);
+  }
+
   SIZE arrow_size;
   if (NativeTheme::instance()->GetThemePartSize(
           NativeTheme::MENU, dc, MENU_POPUPSUBMENU, MSM_NORMAL, &bounds,

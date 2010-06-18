@@ -43,8 +43,8 @@ class MenuDelegate : Controller {
     DROP_ON
   };
 
-  // Whether or not an item should be shown as checked.
-  // TODO(sky): need checked support.
+  // Whether or not an item should be shown as checked. This is invoked for
+  // radio buttons and check buttons.
   virtual bool IsItemChecked(int id) const {
     return false;
   }

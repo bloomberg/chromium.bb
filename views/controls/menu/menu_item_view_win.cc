@@ -4,7 +4,6 @@
 
 #include "views/controls/menu/menu_item_view.h"
 
-#include <windows.h>
 #include <uxtheme.h>
 #include <Vssym32.h>
 
@@ -58,33 +57,16 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
         &item_rect);
   }
 
-  int icon_x = config.item_left_margin;
   int top_margin = GetTopMargin();
   int bottom_margin = GetBottomMargin();
-  int icon_y = top_margin + (height() - config.item_top_margin -
-                             bottom_margin - config.check_height) / 2;
-  int icon_height = config.check_height;
-  int icon_width = config.check_width;
 
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
-    // Draw the check background.
-    gfx::Rect check_bg_bounds(0, 0, icon_x + icon_width, height());
-    const int bg_state = IsEnabled() ? MCB_NORMAL : MCB_DISABLED;
-    AdjustBoundsForRTLUI(&check_bg_bounds);
-    RECT check_bg_rect = check_bg_bounds.ToRECT();
-    NativeTheme::instance()->PaintMenuCheckBackground(
-        NativeTheme::MENU, dc, MENU_POPUPCHECKBACKGROUND, bg_state,
-        &check_bg_rect);
-
-    // And the check.
-    gfx::Rect check_bounds(icon_x, icon_y, icon_width, icon_height);
-    const int check_state = IsEnabled() ? MC_CHECKMARKNORMAL :
-                                          MC_CHECKMARKDISABLED;
-    AdjustBoundsForRTLUI(&check_bounds);
-    RECT check_rect = check_bounds.ToRECT();
-    NativeTheme::instance()->PaintMenuCheck(
-        NativeTheme::MENU, dc, MENU_POPUPCHECK, check_state, &check_rect,
-        render_selection);
+    PaintCheck(dc,
+               IsEnabled() ? MC_CHECKMARKNORMAL : MC_CHECKMARKDISABLED,
+               render_selection, config.check_height, config.check_width);
+  } else if (type_ == RADIO && GetDelegate()->IsItemChecked(GetCommand())) {
+    PaintCheck(dc, IsEnabled() ? MC_BULLETNORMAL : MC_BULLETDISABLED,
+               render_selection, config.radio_height, config.radio_width);
   }
 
   // Render the foreground.
@@ -150,6 +132,32 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
         arrow_direction, render_selection);
   }
   canvas->endPlatformPaint();
+}
+void MenuItemView::PaintCheck(HDC dc,
+                              int state_id,
+                              bool render_selection,
+                              int icon_width,
+                              int icon_height) {
+  int top_margin = GetTopMargin();
+  int icon_x = MenuConfig::instance().item_left_margin;
+  int icon_y = top_margin +
+      (height() - top_margin - GetBottomMargin() - icon_height) / 2;
+  // Draw the background.
+  gfx::Rect bg_bounds(0, 0, icon_x + icon_width, height());
+  int bg_state = IsEnabled() ? MCB_NORMAL : MCB_DISABLED;
+  AdjustBoundsForRTLUI(&bg_bounds);
+  RECT bg_rect = bg_bounds.ToRECT();
+  NativeTheme::instance()->PaintMenuCheckBackground(
+      NativeTheme::MENU, dc, MENU_POPUPCHECKBACKGROUND, bg_state,
+      &bg_rect);
+
+  // And the check.
+  gfx::Rect icon_bounds(icon_x / 2, icon_y, icon_width, icon_height);
+  AdjustBoundsForRTLUI(&icon_bounds);
+  RECT icon_rect = icon_bounds.ToRECT();
+  NativeTheme::instance()->PaintMenuCheck(
+      NativeTheme::MENU, dc, MENU_POPUPCHECK, state_id, &icon_rect,
+      render_selection);
 }
 
 }  // namespace views

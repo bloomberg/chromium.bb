@@ -8,6 +8,7 @@
 #include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/submenu_view.h"
@@ -20,6 +21,23 @@ static const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
 #else
 static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
 #endif
+
+// Size of the radio button inciator.
+static const int kSelectedIndicatorSize = 5;
+static const int kIndicatorSize = 10;
+
+// Used for the radio indicator. See theme_draw for details.
+static const double kGradientStop = .5;
+static const SkColor kGradient0 = SkColorSetRGB(255, 255, 255);
+static const SkColor kGradient1 = SkColorSetRGB(255, 255, 255);
+static const SkColor kGradient2 = SkColorSetRGB(0xD8, 0xD8, 0xD8);
+static const SkColor kBaseStroke = SkColorSetRGB(0x8F, 0x8F, 0x8F);
+static const SkColor kRadioButtonIndicatorGradient0 =
+    SkColorSetRGB(0, 0, 0);
+static const SkColor kRadioButtonIndicatorGradient1 =
+    SkColorSetRGB(0x83, 0x83, 0x83);
+
+static const SkColor kIndicatorStroke = SkColorSetRGB(0, 0, 0);
 
 gfx::Size MenuItemView::GetPreferredSize() {
   const gfx::Font& font = MenuConfig::instance().font;
@@ -62,6 +80,64 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
     gfx::Rect check_bounds(icon_x, icon_y, check->width(), icon_height);
     AdjustBoundsForRTLUI(&check_bounds);
     canvas->DrawBitmapInt(*check, check_bounds.x(), check_bounds.y());
+  } else if (type_ == RADIO) {
+    // This code comes from theme_draw.cc. See it for details.
+    canvas->TranslateInt(
+        icon_x,
+        top_margin + (height() - top_margin - bottom_margin -
+                      kIndicatorSize) / 2);
+
+    SkPoint gradient_points[3];
+    gradient_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
+    gradient_points[1].set(
+        SkIntToScalar(0),
+        SkIntToScalar(static_cast<int>(kIndicatorSize * kGradientStop)));
+    gradient_points[2].set(SkIntToScalar(0), SkIntToScalar(kIndicatorSize));
+    SkColor gradient_colors[3] = { kGradient0, kGradient1, kGradient2 };
+    SkShader* shader = SkGradientShader::CreateLinear(
+        gradient_points, gradient_colors, NULL, arraysize(gradient_points),
+        SkShader::kClamp_TileMode, NULL);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setAntiAlias(true);
+    paint.setShader(shader);
+    shader->unref();
+    int radius = kIndicatorSize / 2;
+    canvas->drawCircle(radius, radius, radius, paint);
+
+    paint.setStrokeWidth(SkIntToScalar(0));
+    paint.setShader(NULL);
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(kBaseStroke);
+    canvas->drawCircle(radius, radius, radius, paint);
+
+    if (GetDelegate()->IsItemChecked(GetCommand())) {
+      SkPoint selected_gradient_points[2];
+      selected_gradient_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
+      selected_gradient_points[1].set(
+          SkIntToScalar(0),
+          SkIntToScalar(kSelectedIndicatorSize));
+      SkColor selected_gradient_colors[2] = { kRadioButtonIndicatorGradient0,
+                                              kRadioButtonIndicatorGradient1 };
+      shader = SkGradientShader::CreateLinear(
+          selected_gradient_points, selected_gradient_colors, NULL,
+          arraysize(selected_gradient_points), SkShader::kClamp_TileMode, NULL);
+      paint.setShader(shader);
+      shader->unref();
+      paint.setStyle(SkPaint::kFill_Style);
+      canvas->drawCircle(radius, radius, kSelectedIndicatorSize / 2, paint);
+
+      paint.setStrokeWidth(SkIntToScalar(0));
+      paint.setShader(NULL);
+      paint.setStyle(SkPaint::kStroke_Style);
+      paint.setColor(kIndicatorStroke);
+      canvas->drawCircle(radius, radius, kSelectedIndicatorSize / 2, paint);
+    }
+
+    canvas->TranslateInt(
+        -icon_x,
+        -(top_margin + (height() - top_margin - bottom_margin -
+                        kIndicatorSize) / 2));
   }
 
   // Render the foreground.
