@@ -801,3 +801,34 @@
    ...
    fun:net::::SpdyHttpStreamTest_SendRequest_Test::TestBody
 }
+
+{
+   bug_19775_a
+   Heapcheck:Leak
+   ...
+   fun:history::InMemoryHistoryBackend::Init
+   fun:history::HistoryBackend::InitImpl
+}
+
+{
+   bug_19775_b
+   Heapcheck:Leak
+   ...
+   fun:history::HistoryBackend::InitImpl
+   fun:history::HistoryBackend::Init
+}
+
+{
+   bug_19775_c
+   Heapcheck:Leak
+   fun:CancelableTask* NewRunnableMethod
+   fun:HistoryService::BackendDelegate::DBLoaded
+   fun:history::HistoryBackend::Init
+}
+
+{
+   bug_19775_d
+   Heapcheck:Leak
+   ...
+   fun:ProfileManagerTest_CreateAndUseTwoProfiles_Test::TestBody
+}
