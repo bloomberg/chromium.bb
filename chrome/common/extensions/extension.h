@@ -299,7 +299,7 @@ class Extension {
   DictionaryValue* GetThemeDisplayProperties() const {
     return theme_display_properties_.get();
   }
-  bool is_theme() const { return is_theme_; }
+  bool IsTheme() const { return is_theme_; }
 
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
@@ -329,8 +329,12 @@ class Extension {
 
   const std::string omnibox_keyword() const { return omnibox_keyword_; }
 
-  bool is_app() const { return is_app_; }
+  // Is this extension an App?
+  bool IsApp() const;
+
+  bool web_content_enabled() const { return web_content_enabled_; }
   const ExtensionExtent& web_extent() const { return web_extent_; }
+
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
   LaunchContainer launch_container() const { return launch_container_; }
@@ -379,8 +383,13 @@ class Extension {
                        void(UserScript::*add_method)(const std::string& glob),
                        UserScript *instance);
 
+  // Checks that apps features are enabled if the manifest tries to use any of
+  // them.
+  bool CheckAppsAreEnabled(const DictionaryValue* manifest, std::string* error);
+
   // Helpers to load various chunks of the manifest.
-  bool LoadIsApp(const DictionaryValue* manifest, std::string* error);
+  bool LoadWebContentEnabled(const DictionaryValue* manifest,
+                             std::string* error);
   bool LoadWebOrigin(const DictionaryValue* manifest, std::string* error);
   bool LoadWebPaths(const DictionaryValue* manifest, std::string* error);
   bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
@@ -501,8 +510,8 @@ class Extension {
   // Defaults to the value from --enable-extension-apps.
   bool apps_enabled_;
 
-  // Whether this extension uses app features.
-  bool is_app_;
+  // Whether the extension can contain live web content. Defaults to false.
+  bool web_content_enabled_;
 
   // Defines the set of URLs in the extension's web content.
   ExtensionExtent web_extent_;

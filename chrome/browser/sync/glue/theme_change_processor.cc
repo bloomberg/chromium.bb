@@ -19,7 +19,7 @@ namespace browser_sync {
 namespace {
 std::string GetThemeId(Extension* current_theme) {
   if (current_theme) {
-    DCHECK(current_theme->is_theme());
+    DCHECK(current_theme->IsTheme());
   }
   return current_theme ? current_theme->id() : "default/system";
 }
@@ -56,7 +56,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       DCHECK_EQ(Source<BrowserThemeProvider>(source).ptr(),
                 profile_->GetThemeProvider());
       if (extension != NULL) {
-        DCHECK(extension->is_theme());
+        DCHECK(extension->IsTheme());
         DCHECK_EQ(extension->id(), current_or_future_theme_id);
         if (!current_theme || (current_theme->id() != extension->id())) {
           return;
@@ -71,7 +71,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       // installed successfully.
       DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
       CHECK(extension);
-      if (!extension->is_theme()) {
+      if (!extension->IsTheme()) {
         return;
       }
       LOG(INFO) << "Got EXTENSION_LOADED notification for theme "
@@ -87,7 +87,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       // theme).
       DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
       CHECK(extension);
-      if (!extension->is_theme()) {
+      if (!extension->IsTheme()) {
         return;
       }
       LOG(INFO) << "Got EXTENSION_UNLOADED notification for theme "
@@ -101,7 +101,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
 
   DCHECK_EQ(extension, current_theme);
   if (extension) {
-    DCHECK(extension->is_theme());
+    DCHECK(extension->IsTheme());
   }
   LOG(INFO) << "Theme changed to " << GetThemeId(extension);
 

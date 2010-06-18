@@ -1,9 +1,7 @@
 {
   "name": "test",
   "version": "1",
-  "app": {
-    "launch": {
-      "local_path": "launch.html"
-    }
+  "launch": {
+    "local_path": "launch.html"
   }
 }

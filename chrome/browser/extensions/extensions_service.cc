@@ -504,7 +504,7 @@ void ExtensionsService::ContinueLoadAllExtensions(
     if ((*ex)->location() == Extension::LOAD)
       continue;
 
-    if ((*ex)->is_theme()) {
+    if ((*ex)->IsTheme()) {
       theme_count++;
     } else if ((*ex)->converted_from_user_script()) {
       user_script_count++;
@@ -780,7 +780,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
   // TODO(aa): Need to re-evaluate this branch. Does this still make sense now
   // that extensions are enabled by default?
   if (extensions_enabled() ||
-      extension->is_theme() ||
+      extension->IsTheme() ||
       extension->location() == Extension::LOAD ||
       Extension::IsExternalLocation(extension->location())) {
     Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
@@ -842,7 +842,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
   std::set<std::string> extension_ids;
   for (size_t i = 0; i < extensions_.size(); ++i) {
-    if (!extensions_[i]->is_theme())
+    if (!extensions_[i]->IsTheme())
       extension_ids.insert(extensions_[i]->id());
   }
 
@@ -854,9 +854,9 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   PendingExtensionMap::iterator it =
       pending_extensions_.find(extension->id());
   if (it != pending_extensions_.end() &&
-      (it->second.is_theme != extension->is_theme())) {
+      (it->second.is_theme != extension->IsTheme())) {
     LOG(WARNING) << "Not installing pending extension " << extension->id()
-                 << " with is_theme = " << extension->is_theme()
+                 << " with is_theme = " << extension->IsTheme()
                  << "; expected is_theme = " << it->second.is_theme;
     // Delete the extension directory since we're not going to load
     // it.
@@ -871,7 +871,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.
-  if (extension->is_theme()) {
+  if (extension->IsTheme()) {
     NotificationService::current()->Notify(
         NotificationType::THEME_INSTALLED,
         Source<Profile>(profile_),

@@ -91,7 +91,7 @@ void SetCurrentThemeFromThemeSpecifics(
     CHECK(extensions_service);
     Extension* extension = extensions_service->GetExtensionById(id, true);
     if (extension) {
-      if (!extension->is_theme()) {
+      if (!extension->IsTheme()) {
         LOG(INFO) << "Extension " << id << " is not a theme; aborting";
         return;
       }
@@ -111,7 +111,7 @@ void SetCurrentThemeFromThemeSpecifics(
       {
         const Extension* current_theme = profile->GetTheme();
         if (current_theme) {
-          DCHECK(current_theme->is_theme());
+          DCHECK(current_theme->IsTheme());
           previous_theme_id = current_theme->id();
         }
       }
@@ -159,7 +159,7 @@ void GetThemeSpecificsFromCurrentTheme(
   DCHECK(profile);
   const Extension* current_theme = profile->GetTheme();
   if (current_theme) {
-    DCHECK(current_theme->is_theme());
+    DCHECK(current_theme->IsTheme());
   }
   GetThemeSpecificsFromCurrentThemeHelper(
       current_theme,
@@ -183,7 +183,7 @@ void GetThemeSpecificsFromCurrentThemeHelper(
   }
   if (use_custom_theme) {
     DCHECK(current_theme);
-    DCHECK(current_theme->is_theme());
+    DCHECK(current_theme->IsTheme());
     theme_specifics->set_custom_theme_name(current_theme->name());
     theme_specifics->set_custom_theme_id(current_theme->id());
     theme_specifics->set_custom_theme_update_url(

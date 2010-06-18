@@ -146,7 +146,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Theme resource validation.
-  if (extension->is_theme()) {
+  if (extension->IsTheme()) {
     DictionaryValue* images_value = extension->GetThemeImages();
     if (images_value) {
       for (DictionaryValue::key_iterator iter = images_value->begin_keys();

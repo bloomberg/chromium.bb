@@ -2,7 +2,6 @@
   "name": "test",
   "version": "1",
   "web_content": {
-    "enabled": true,
-    "origin": 42
+    "enabled": 42
   }
 }

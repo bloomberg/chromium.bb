@@ -1,9 +1,7 @@
 {
   "name": "test",
   "version": "1",
-  "app": {
-    "launch": {
-      "web_url": "http://www.google.com/launch.html"
-    }
+  "launch": {
+    "web_url": "http://www.google.com/launch.html"
   }
 }

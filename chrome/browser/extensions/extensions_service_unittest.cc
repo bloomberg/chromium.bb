@@ -61,6 +61,7 @@ const char* const good_crx = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char* const page_action = "obcimlgaoabeegjmmpldobjndiealpln";
 const char* const theme_crx = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char* const theme2_crx = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
+const char* const app_crx = "hnbefahlpjbkldcaldefcnonockppomb";
 
 struct ExtensionsOrder {
   bool operator()(const Extension* a, const Extension* b) {
@@ -380,22 +381,6 @@ class ExtensionsServiceTest
  protected:
   void TestExternalProvider(MockExtensionProvider* provider,
                             Extension::Location location);
-
-  void PackAndInstallExtension(const FilePath& dir_path,
-                               bool should_succeed) {
-    FilePath crx_path;
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &crx_path));
-    crx_path = crx_path.AppendASCII("temp.crx");
-    FilePath pem_path = crx_path.DirName().AppendASCII("temp.pem");
-
-    ASSERT_TRUE(file_util::Delete(crx_path, false));
-    ASSERT_TRUE(file_util::Delete(pem_path, false));
-    scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
-    ASSERT_TRUE(creator->Run(dir_path, crx_path, FilePath(), pem_path));
-    ASSERT_TRUE(file_util::PathExists(crx_path));
-
-    InstallExtension(crx_path, should_succeed);
-  }
 
   void InstallExtension(const FilePath& path,
                         bool should_succeed) {
@@ -996,15 +981,28 @@ TEST_F(ExtensionsServiceTest, LoadLocalizedTheme) {
 }
 
 TEST_F(ExtensionsServiceTest, InstallLocalizedTheme) {
+  // Pack.
   InitializeEmptyExtensionsService();
-  FilePath theme_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &theme_path));
-  theme_path = theme_path
+  FilePath extension_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
+  extension_path = extension_path
       .AppendASCII("extensions")
       .AppendASCII("theme_i18n");
 
-  PackAndInstallExtension(theme_path, true);
+  FilePath crx_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &crx_path));
+  crx_path = crx_path.AppendASCII("theme.crx");
+  FilePath pem_path = crx_path.DirName().AppendASCII("theme.pem");
 
+  ASSERT_TRUE(file_util::Delete(crx_path, false));
+  ASSERT_TRUE(file_util::Delete(pem_path, false));
+  scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
+  ASSERT_TRUE(creator->Run(extension_path, crx_path, FilePath(), pem_path));
+  ASSERT_TRUE(file_util::PathExists(crx_path));
+
+  // Install.
+  service_->UnloadAllExtensions();
+  InstallExtension(crx_path, true);
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ("name", service_->extensions()->at(0)->name());
@@ -1018,20 +1016,18 @@ TEST_F(ExtensionsServiceTest, InstallApps) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   // An empty app.
-  PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
+  InstallExtension(extensions_path.AppendASCII("app1.crx"), true);
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
-  ASSERT_EQ(1u, service_->extensions()->size());
-  std::string id = service_->extensions()->at(0)->id();
-  ValidateIntegerPref(id, L"state", Extension::ENABLED);
-  ValidateIntegerPref(id, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(app_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(app_crx, L"location", Extension::INTERNAL);
 
   // Another app with non-overlapping extent. Should succeed.
-  PackAndInstallExtension(extensions_path.AppendASCII("app2"), true);
+  InstallExtension(extensions_path.AppendASCII("app2.crx"), true);
   ValidatePrefKeyCount(++pref_count);
 
   // A third app whose extent overlaps the first. Should fail.
-  PackAndInstallExtension(extensions_path.AppendASCII("app3"), false);
+  InstallExtension(extensions_path.AppendASCII("app3.crx"), false);
   ValidatePrefKeyCount(pref_count);
 }
 
@@ -1303,7 +1299,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   // balk.
   service_->AddPendingExtensionInternal(
       good->id(), good->update_url(), *good->version(),
-      good->is_theme(), kGoodInstallSilently);
+      good->IsTheme(), kGoodInstallSilently);
 
   UpdateExtension(good->id(), path, true, true, false);
 

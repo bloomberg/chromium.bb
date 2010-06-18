@@ -1,18 +1,17 @@
 {
   "name": "test",
   "version": "1",
-  "app": {
-    "web_content": {
-      "origin": "http://www.google.com/",
-      "paths": [
-        "mail/",
-        "foobar/"
-      ]
-    },
-    "launch": {
-      "container": "window",
-      "web_url": "mail/"
-    }
+  "web_content": {
+    "enabled": true,
+    "origin": "http://www.google.com/",
+    "paths": [
+      "mail/",
+      "foobar/"
+    ]
+  },
+  "launch": {
+    "container": "window",
+    "web_url": "mail/"
   },
   "permissions": [
     "notifications"

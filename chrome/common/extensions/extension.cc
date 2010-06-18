@@ -518,15 +518,33 @@ bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
   return false;
 }
 
-bool Extension::LoadIsApp(const DictionaryValue* manifest,
-                          std::string* error) {
-  if (manifest->HasKey(keys::kApp)) {
-    if (!apps_enabled_) {
+bool Extension::CheckAppsAreEnabled(const DictionaryValue* manifest,
+                                    std::string* error) {
+  if (!apps_enabled_) {
+    if (manifest->HasKey(keys::kWebContent) ||
+        manifest->HasKey(keys::kLaunch)) {
       *error = errors::kAppsNotEnabled;
       return false;
-    } else {
-      is_app_ = true;
     }
+  }
+
+  return true;
+}
+
+bool Extension::LoadWebContentEnabled(const DictionaryValue* manifest,
+                                      std::string* error) {
+  Value* temp = NULL;
+  if (manifest->Get(keys::kWebContentEnabled, &temp)) {
+    if (!temp->GetAsBoolean(&web_content_enabled_)) {
+      *error = errors::kInvalidWebContentEnabled;
+      return false;
+    }
+  }
+
+  // The enabled flag must be set to use the web_content dictionary at all.
+  if (!web_content_enabled_ && manifest->HasKey(keys::kWebContent)) {
+    *error = errors::kWebContentMustBeEnabled;
+    return false;
   }
 
   return true;
@@ -648,9 +666,6 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
     }
 
     launch_web_url_ = launch_url;
-  } else if (is_app_) {
-    *error = errors::kLaunchURLRequired;
-    return false;
   }
 
   return true;
@@ -665,6 +680,11 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
   std::string launch_container_string;
   if (!temp->GetAsString(&launch_container_string)) {
     *error = errors::kInvalidLaunchContainer;
+    return false;
+  }
+
+  if (launch_local_path_.empty() && launch_web_url_.empty()) {
+    *error = errors::kLaunchContainerWithoutURL;
     return false;
   }
 
@@ -699,7 +719,7 @@ bool Extension::LoadLaunchFullscreen(const DictionaryValue* manifest,
 Extension::Extension(const FilePath& path)
     : converted_from_user_script_(false),
       is_theme_(false),
-      is_app_(false),
+      web_content_enabled_(false),
       launch_container_(LAUNCH_TAB),
       launch_fullscreen_(false),
       background_page_ready_(false),
@@ -1448,7 +1468,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
   }
 
-  if (!LoadIsApp(manifest_value_.get(), error) ||
+  if (!CheckAppsAreEnabled(manifest_value_.get(), error) ||
+      !LoadWebContentEnabled(manifest_value_.get(), error) ||
       !LoadWebOrigin(manifest_value_.get(), error) ||
       !LoadWebPaths(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
@@ -1516,6 +1537,10 @@ std::set<FilePath> Extension::GetBrowserImages() {
   }
 
   return image_paths;
+}
+
+bool Extension::IsApp() const {
+  return !GetFullLaunchURL().is_empty();
 }
 
 GURL Extension::GetFullLaunchURL() const {
