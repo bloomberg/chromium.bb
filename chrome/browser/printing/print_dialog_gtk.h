@@ -17,6 +17,8 @@ typedef struct _GtkPrintJob GtkPrintJob;
 // Currently this dialog only allows the user to choose a printer.
 class PrintDialogGtk {
  public:
+  static bool DialogShowing();
+
   // Called on the IO thread.
   static void CreatePrintDialogForPdf(const FilePath& path);
 

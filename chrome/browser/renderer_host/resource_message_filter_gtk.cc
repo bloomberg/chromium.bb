@@ -193,8 +193,15 @@ void ResourceMessageFilter::DoOnAllocateTempFileForPrinting(
   temp_file_fd.fd = fd_in_browser = -1;
   temp_file_fd.auto_close = false;
 
+  bool allow_print =
+#if defined(TOOLKIT_GTK)
+    !PrintDialogGtk::DialogShowing();
+#else
+    true;
+#endif
   FilePath path;
-  if (file_util::CreateTemporaryFile(&path)) {
+  if (allow_print &&
+      file_util::CreateTemporaryFile(&path)) {
     int fd = open(path.value().c_str(), O_WRONLY);
     if (fd >= 0) {
       FdMap* map = &Singleton<PrintingFileDescriptorMap>::get()->map;
