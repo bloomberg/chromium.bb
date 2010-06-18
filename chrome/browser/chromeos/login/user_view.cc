@@ -48,6 +48,7 @@ class SignoutView : public views::View {
     signout_button_->SetEnabledColor(kTextColor);
     signout_button_->SetNormalHasBorder(false);
     signout_button_->set_tag(login::SIGN_OUT);
+    signout_button_->SetFocusable(true);
 
     AddChildView(active_user_label_);
     AddChildView(signout_button_);

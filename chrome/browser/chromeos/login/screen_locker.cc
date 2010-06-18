@@ -222,7 +222,7 @@ void GrabWidget::TryGrabAllInputs() {
                          GDK_CURRENT_TIME);
   }
   if ((kbd_grab_status_ != GDK_GRAB_SUCCESS ||
-       kbd_grab_status_ != GDK_GRAB_SUCCESS) &&
+       mouse_grab_status_ != GDK_GRAB_SUCCESS) &&
       grab_failure_count_++ < kGrabFailureLimit) {
     DLOG(WARNING) << "Failed to grab inputs. Trying again in 1 second: kbd="
                   << kbd_grab_status_ << ", mouse=" << mouse_grab_status_;
@@ -379,7 +379,6 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
     MessageLoopForUI::current()->AddObserver(input_event_observer_.get());
   }
 
-
   lock_widget_ = new GrabWidget(this);
   lock_widget_->MakeTransparent();
   lock_widget_->InitWithWidget(lock_window_,
@@ -391,6 +390,13 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
     lock_widget_->SetContentsView(screen_lock_view_);
   lock_widget_->GetRootView()->SetVisible(false);
   lock_widget_->Show();
+
+  // Don't let X draw default background, which was causing flash on
+  // resume.
+  gdk_window_set_back_pixmap(lock_window_->GetNativeView()->window,
+                             NULL, false);
+  gdk_window_set_back_pixmap(lock_widget_->GetNativeView()->window,
+                             NULL, false);
 }
 
 void ScreenLocker::OnLoginFailure(const std::string& error) {
