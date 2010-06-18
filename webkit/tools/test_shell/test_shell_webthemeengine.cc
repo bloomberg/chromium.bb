@@ -24,10 +24,6 @@
 #include "webkit/tools/test_shell/test_shell_webthemecontrol.h"
 #include "third_party/skia/include/core/SkRect.h"
 
-#ifndef CHECK_EQ
-#define CHECK_EQ(a, b) CHECK((a) == (b))
-#endif
-
 // We define this for clarity, although there really should be a DFCS_NORMAL
 // in winuser.h.
 namespace {
