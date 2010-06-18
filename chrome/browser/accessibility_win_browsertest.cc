@@ -19,9 +19,42 @@
 namespace {
 
 class AccessibilityWinBrowserTest : public InProcessBrowserTest {
+ public:
+  AccessibilityWinBrowserTest() : screenreader_running_(FALSE) {}
+
+  // InProcessBrowserTest
+  void SetUpInProcessBrowserTestFixture();
+  void TearDownInProcessBrowserTestFixture();
+
  protected:
   IAccessible* GetRenderWidgetHostViewClientAccessible();
+
+ private:
+  BOOL screenreader_running_;
 };
+
+void AccessibilityWinBrowserTest::SetUpInProcessBrowserTestFixture() {
+  // This test assumes the windows system-wide SPI_SETSCREENREADER flag is
+  // cleared.
+  if (SystemParametersInfo(SPI_GETSCREENREADER, 0, &screenreader_running_, 0) &&
+      screenreader_running_) {
+    // Clear the SPI_SETSCREENREADER flag and notify active applications about
+    // the setting change.
+    ::SystemParametersInfo(SPI_SETSCREENREADER, FALSE, NULL, 0);
+    ::SendNotifyMessage(
+        HWND_BROADCAST, WM_SETTINGCHANGE, SPI_GETSCREENREADER, 0);
+  }
+}
+
+void AccessibilityWinBrowserTest::TearDownInProcessBrowserTestFixture() {
+  if (screenreader_running_) {
+    // Restore the SPI_SETSCREENREADER flag and notify active applications about
+    // the setting change.
+    ::SystemParametersInfo(SPI_SETSCREENREADER, TRUE, NULL, 0);
+    ::SendNotifyMessage(
+        HWND_BROADCAST, WM_SETTINGCHANGE, SPI_GETSCREENREADER, 0);
+  }
+}
 
 class AccessibleChecker {
  public:
