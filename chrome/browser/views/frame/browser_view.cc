@@ -407,6 +407,8 @@ void BrowserView::SetShowState(int state) {
 
 BrowserView::BrowserView(Browser* browser)
     : views::ClientView(NULL, NULL),
+      last_focused_view_storage_id_(
+          views::ViewStorage::GetSharedInstance()->CreateStorageID()),
       frame_(NULL),
       browser_(browser),
       active_bookmark_bar_(NULL),
@@ -425,8 +427,6 @@ BrowserView::BrowserView(Browser* browser)
       ticker_(0),
 #endif
       extension_shelf_(NULL),
-      last_focused_view_storage_id_(
-          views::ViewStorage::GetSharedInstance()->CreateStorageID()),
       extension_app_icon_loader_(this) {
   browser_->tabstrip_model()->AddObserver(this);
 }
@@ -648,17 +648,6 @@ void BrowserView::PrepareToRunSystemMenu(HMENU menu) {
 }
 #endif
 
-void BrowserView::TraverseNextAccessibleToolbar(bool forward) {
-  // TODO(mohamed) This needs to be smart, that applies to all toolbars.
-  //               Currently it just traverses between bookmarks and toolbar.
-  if (!forward && toolbar_->IsVisible() && toolbar_->IsEnabled()) {
-    toolbar_->RequestFocus();
-  } else if (forward && bookmark_bar_view_->IsVisible() &&
-             bookmark_bar_view_->IsEnabled()) {
-    bookmark_bar_view_->RequestFocus();
-  }
-}
-
 // static
 void BrowserView::RegisterBrowserViewPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
@@ -872,7 +861,14 @@ void BrowserView::FocusToolbar() {
   // Start the traversal within the main toolbar, passing it the storage id
   // of the view where focus should be returned if the user exits the toolbar.
   SaveFocusedView();
-  toolbar_->InitiateTraversal(last_focused_view_storage_id_);
+  toolbar_->SetToolbarFocus(last_focused_view_storage_id_, NULL);
+}
+
+void BrowserView::FocusBookmarksToolbar() {
+  if (active_bookmark_bar_ && bookmark_bar_view_->IsVisible()) {
+    SaveFocusedView();
+    bookmark_bar_view_->SetToolbarFocus(last_focused_view_storage_id_, NULL);
+  }
 }
 
 void BrowserView::FocusPageAndAppMenus() {
@@ -884,7 +880,65 @@ void BrowserView::FocusPageAndAppMenus() {
   //
   // Not used on the Mac, which has a normal menu bar.
   SaveFocusedView();
-  toolbar_->EnterMenuBarEmulationMode(last_focused_view_storage_id_, NULL);
+  toolbar_->SetToolbarFocusAndFocusPageMenu(last_focused_view_storage_id_);
+}
+
+void BrowserView::RotatePaneFocus(bool forwards) {
+  // This gets called when the user presses F6 (forwards) or Shift+F6
+  // (backwards) to rotate to the next pane. Here, our "panes" are the
+  // tab contents and each of our accessible toolbars. When a toolbar has
+  // pane focus, all of its controls are accessible in the tab traversal,
+  // and the tab traversal is "trapped" within that pane.
+
+  // Get a vector of all panes in the order we want them to be focused -
+  // each of the accessible toolbars, then NULL to represent the tab contents
+  // getting focus. If one of these is currently invisible or has no
+  // focusable children it will be automatically skipped.
+  std::vector<AccessibleToolbarView*> accessible_toolbars;
+  GetAccessibleToolbars(&accessible_toolbars);
+  // Add NULL, which represents the tab contents getting focus
+  accessible_toolbars.push_back(NULL);
+
+  // Figure out which toolbar (if any) currently has the focus.
+  AccessibleToolbarView* current_toolbar = NULL;
+  views::View* focused_view = GetRootView()->GetFocusedView();
+  int index = -1;
+  int count = static_cast<int>(accessible_toolbars.size());
+  if (focused_view) {
+    for (int i = 0; i < count; i++) {
+      if (accessible_toolbars[i]->IsParentOf(focused_view)) {
+        current_toolbar = accessible_toolbars[i];
+        index = i;
+        break;
+      }
+    }
+  }
+
+  // If the focus isn't currently in a toolbar, save the focus so we
+  // can restore it if the user presses Escape.
+  if (focused_view && !current_toolbar)
+    SaveFocusedView();
+
+  // Try to focus the next pane; if SetToolbarFocusAndFocusDefault returns
+  // false it means the toolbar didn't have any focusable controls, so skip
+  // it and try the next one.
+  for (;;) {
+    if (forwards)
+      index = (index + 1) % count;
+    else
+      index = ((index - 1) + count + count) % count;
+    AccessibleToolbarView* next_toolbar = accessible_toolbars[index];
+
+    if (next_toolbar) {
+      if (next_toolbar->SetToolbarFocusAndFocusDefault(
+              last_focused_view_storage_id_)) {
+        break;
+      }
+    } else {
+      GetTabContentsContainerView()->RequestFocus();
+      break;
+    }
+  }
 }
 
 void BrowserView::SaveFocusedView() {
@@ -1600,6 +1654,18 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
 
 gfx::Size BrowserView::GetMinimumSize() {
   return GetBrowserViewLayout()->GetMinimumSize();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, protected
+
+void BrowserView::GetAccessibleToolbars(
+    std::vector<AccessibleToolbarView*>* toolbars) {
+  // This should be in the order of pane traversal of the toolbars using F6.
+  // If one of these is invisible or has no focusable children, it will be
+  // automatically skipped.
+  toolbars->push_back(toolbar_);
+  toolbars->push_back(bookmark_bar_view_.get());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -54,6 +54,7 @@ View::View()
       group_(-1),
       enabled_(true),
       focusable_(false),
+      accessibility_focusable_(false),
       bounds_(0, 0, 0, 0),
       parent_(NULL),
       is_visible_(true),
@@ -281,11 +282,15 @@ void View::SetEnabled(bool state) {
 }
 
 bool View::IsFocusable() const {
-  return focusable_ && enabled_ && is_visible_;
+  return focusable_ && IsEnabled() && IsVisible();
 }
 
 void View::SetFocusable(bool focusable) {
   focusable_ = focusable;
+}
+
+bool View::IsAccessibilityFocusable() const {
+  return (focusable_ || accessibility_focusable_) && IsEnabled() && IsVisible();
 }
 
 FocusManager* View::GetFocusManager() {
@@ -351,8 +356,10 @@ void View::PaintBorder(gfx::Canvas* canvas) {
 }
 
 void View::PaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && IsFocusable())
+  if (HasFocus() && (IsFocusable() ||
+                     IsAccessibilityFocusable())) {
     canvas->DrawFocusRect(0, 0, width(), height());
+  }
 }
 
 void View::PaintChildren(gfx::Canvas* canvas) {
@@ -472,7 +479,7 @@ void View::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
 /////////////////////////////////////////////////////////////////////////////
 
 bool View::ProcessMousePressed(const MouseEvent& e, DragInfo* drag_info) {
-  const bool enabled = enabled_;
+  const bool enabled = IsEnabled();
   int drag_operations =
       (enabled && e.IsOnlyLeftMouseButton() && HitTest(e.location())) ?
       GetDragOperations(e.location()) : 0;

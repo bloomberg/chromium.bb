@@ -503,6 +503,10 @@ class Browser : public TabStripModelDelegate,
   void FocusLocationBar();  // Also selects any existing text.
   void FocusSearch();
   void FocusPageAndAppMenus();
+  void FocusBookmarksToolbar();
+  void FocusChromeOSStatus();
+  void FocusNextPane();
+  void FocusPreviousPane();
 
   // Show various bits of UI
   void OpenFile();

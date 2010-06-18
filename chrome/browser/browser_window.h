@@ -148,6 +148,15 @@ class BrowserWindow {
   // Not used on the Mac, which has a "normal" menu bar.
   virtual void FocusPageAndAppMenus() = 0;
 
+  // Focuses the bookmarks toolbar (for accessibility).
+  virtual void FocusBookmarksToolbar() = 0;
+
+  // Focuses the Chrome OS status view (for accessibility).
+  virtual void FocusChromeOSStatus() = 0;
+
+  // Moves keyboard focus to the next pane.
+  virtual void RotatePaneFocus(bool forwards) = 0;
+
   // Returns whether the bookmark bar is visible or not.
   virtual bool IsBookmarkBarVisible() const = 0;
 

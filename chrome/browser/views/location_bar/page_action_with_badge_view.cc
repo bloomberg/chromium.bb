@@ -13,6 +13,12 @@ PageActionWithBadgeView::PageActionWithBadgeView(
   AddChildView(image_view_);
 }
 
+bool PageActionWithBadgeView::GetAccessibleRole(
+    AccessibilityTypes::Role* role) {
+  *role = AccessibilityTypes::ROLE_GROUPING;
+  return true;
+}
+
 gfx::Size PageActionWithBadgeView::GetPreferredSize() {
   return gfx::Size(Extension::kPageActionIconMaxSize,
                    Extension::kPageActionIconMaxSize);

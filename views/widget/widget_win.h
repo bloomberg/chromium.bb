@@ -24,10 +24,11 @@ class Rect;
 
 namespace views {
 
+class DefaultThemeProvider;
 class DropTargetWin;
+class FocusSearch;
 class RootView;
 class TooltipManagerWin;
-class DefaultThemeProvider;
 class Window;
 
 bool SetRootViewForHWND(HWND hwnd, RootView* root_view);
@@ -222,12 +223,7 @@ class WidgetWin : public app::WindowImpl,
   virtual void DidProcessMessage(const MSG& msg);
 
   // Overridden from FocusTraversable:
-  virtual View* FindNextFocusableView(View* starting_view,
-                                      bool reverse,
-                                      Direction direction,
-                                      bool check_starting_view,
-                                      FocusTraversable** focus_traversable,
-                                      View** focus_traversable_view);
+  virtual FocusSearch* GetFocusSearch();
   virtual FocusTraversable* GetFocusTraversableParent();
   virtual View* GetFocusTraversableParentView();
 

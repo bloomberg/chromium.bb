@@ -490,6 +490,11 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
     ::BrowserView::SetFocusToLocationBar(select_all);
 }
 
+void BrowserView::FocusChromeOSStatus() {
+  SaveFocusedView();
+  status_area_->SetToolbarFocus(last_focused_view_storage_id(), NULL);
+}
+
 void BrowserView::ToggleCompactNavigationBar() {
   UIStyle new_style = static_cast<UIStyle>((ui_style_ + 1) % 2);
   if (new_style != StandardStyle && UseVerticalTabs())
@@ -592,6 +597,15 @@ void BrowserView::ShowCompactLocationBarUnderSelectedTab(bool select_all) {
     return;
   int index = browser()->selected_index();
   compact_location_bar_host_->Update(index, true, select_all);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserView protected:
+
+void BrowserView::GetAccessibleToolbars(
+    std::vector<AccessibleToolbarView*>* toolbars) {
+  ::BrowserView::GetAccessibleToolbars(toolbars);
+  toolbars->push_back(status_area_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -179,6 +179,10 @@
 #define IDC_FOCUS_LOCATION              39001
 #define IDC_FOCUS_SEARCH                39002
 #define IDC_FOCUS_MENU_BAR              39003
+#define IDC_FOCUS_NEXT_PANE             39004
+#define IDC_FOCUS_PREVIOUS_PANE         39005
+#define IDC_FOCUS_BOOKMARKS             39006
+#define IDC_FOCUS_CHROMEOS_STATUS       39007
 
 // Show various bits of UI
 #define IDC_OPEN_FILE                   40000

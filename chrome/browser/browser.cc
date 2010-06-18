@@ -1024,6 +1024,9 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   const bool show_main_ui = (type() == TYPE_NORMAL);
 #endif
 
+  bool main_not_fullscreen_or_popup =
+      show_main_ui && !is_fullscreen && (type() & TYPE_POPUP) == 0;
+
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
 
@@ -1036,8 +1039,15 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
   command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_MENU_BAR,
-      show_main_ui && !is_fullscreen && (type() & TYPE_POPUP) == 0);
+      IDC_FOCUS_MENU_BAR, main_not_fullscreen_or_popup);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_NEXT_PANE, main_not_fullscreen_or_popup);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_PREVIOUS_PANE, main_not_fullscreen_or_popup);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_BOOKMARKS, main_not_fullscreen_or_popup);
+  command_updater_.UpdateCommandEnabled(
+      IDC_FOCUS_CHROMEOS_STATUS, main_not_fullscreen_or_popup);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
@@ -1547,6 +1557,27 @@ void Browser::FocusLocationBar() {
   window_->SetFocusToLocationBar(true);
 }
 
+void Browser::FocusBookmarksToolbar() {
+  UserMetrics::RecordAction(UserMetricsAction("FocusBookmarksToolbar"),
+                            profile_);
+  window_->FocusBookmarksToolbar();
+}
+
+void Browser::FocusChromeOSStatus() {
+  UserMetrics::RecordAction(UserMetricsAction("FocusChromeOSStatus"), profile_);
+  window_->FocusChromeOSStatus();
+}
+
+void Browser::FocusNextPane() {
+  UserMetrics::RecordAction(UserMetricsAction("FocusNextPane"), profile_);
+  window_->RotatePaneFocus(true);
+}
+
+void Browser::FocusPreviousPane() {
+  UserMetrics::RecordAction(UserMetricsAction("FocusPreviousPane"), profile_);
+  window_->RotatePaneFocus(false);
+}
+
 void Browser::FocusSearch() {
   // TODO(beng): replace this with FocusLocationBar
   UserMetrics::RecordAction(UserMetricsAction("FocusSearch"), profile_);
@@ -1993,6 +2024,10 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_FOCUS_LOCATION:        FocusLocationBar();               break;
     case IDC_FOCUS_SEARCH:          FocusSearch();                    break;
     case IDC_FOCUS_MENU_BAR:        FocusPageAndAppMenus();           break;
+    case IDC_FOCUS_BOOKMARKS:       FocusBookmarksToolbar();          break;
+    case IDC_FOCUS_CHROMEOS_STATUS: FocusChromeOSStatus();            break;
+    case IDC_FOCUS_NEXT_PANE:       FocusNextPane();                  break;
+    case IDC_FOCUS_PREVIOUS_PANE:   FocusPreviousPane();              break;
 
     // Show various bits of UI
     case IDC_OPEN_FILE:             OpenFile();                       break;

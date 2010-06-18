@@ -12,6 +12,7 @@ class CommandUpdater;
 class InfoBubble;
 
 namespace views {
+class KeyEvent;
 class MouseEvent;
 }
 
@@ -28,6 +29,7 @@ class StarView : public views::ImageView, public InfoBubbleDelegate {
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual bool OnKeyPressed(const views::KeyEvent& e);
 
   // InfoBubbleDelegate overrides:
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,

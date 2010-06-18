@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_VIEW_H_
 
+#include <vector>
+
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
 
+class AccessibleToolbarView;
 class TabStripModel;
 
 namespace menus {
@@ -59,6 +62,7 @@ class BrowserView : public ::BrowserView,
   virtual void Show();
   virtual bool IsToolbarVisible() const;
   virtual void SetFocusToLocationBar(bool select_all);
+  virtual void FocusChromeOSStatus();
   virtual void ToggleCompactNavigationBar();
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual void InitTabStrip(TabStripModel* tab_strip_model);
@@ -87,6 +91,10 @@ class BrowserView : public ::BrowserView,
   bool is_compact_style() const {
     return ui_style_ == CompactStyle;
   }
+
+ protected:
+  virtual void GetAccessibleToolbars(
+      std::vector<AccessibleToolbarView*>* toolbars);
 
  private:
   friend class CompactLocationBarHostTest;

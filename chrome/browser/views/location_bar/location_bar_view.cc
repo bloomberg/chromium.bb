@@ -764,11 +764,13 @@ void LocationBarView::RefreshPageActionViews() {
 
     page_action_views_.resize(page_actions.size());
 
-    for (size_t i = 0; i < page_actions.size(); ++i) {
+    // Add the page actions in reverse order, so that the child views are
+    // inserted in left-to-right order for accessibility.
+    for (int i = page_actions.size() - 1; i >= 0; --i) {
       page_action_views_[i] = new PageActionWithBadgeView(
           new PageActionImageView(this, profile_, page_actions[i]));
       page_action_views_[i]->SetVisible(false);
-      AddChildView(page_action_views_[i]);
+      AddChildView(GetChildIndex(star_view_), page_action_views_[i]);
     }
   }
 

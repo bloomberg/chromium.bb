@@ -233,6 +233,8 @@
         'focus/focus_manager_win.cc',
         'focus/focus_manager.cc',
         'focus/focus_manager.h',
+        'focus/focus_search.cc',
+        'focus/focus_search.h',
         'focus/focus_util_win.cc',
         'focus/focus_util_win.h',
         'focus/view_storage.cc',

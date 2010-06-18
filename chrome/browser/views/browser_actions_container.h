@@ -89,6 +89,7 @@ class BrowserActionButton : public views::MenuButton,
   virtual void OnMouseReleased(const views::MouseEvent& e, bool canceled);
   virtual bool OnKeyReleased(const views::KeyEvent& e);
   virtual void OnMouseExited(const views::MouseEvent& event);
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
 
   // Does this button's action have a popup?
   virtual bool IsPopup();

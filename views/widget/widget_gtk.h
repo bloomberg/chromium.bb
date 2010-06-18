@@ -25,6 +25,7 @@ namespace views {
 
 class DefaultThemeProvider;
 class DropTargetGtk;
+class FocusSearch;
 class TooltipManagerGtk;
 class View;
 class WindowGtk;
@@ -188,14 +189,8 @@ class WidgetGtk
                                     View *child);
   virtual bool ContainsNativeView(gfx::NativeView native_view);
 
-
   // Overridden from FocusTraversable:
-  virtual View* FindNextFocusableView(View* starting_view,
-                                      bool reverse,
-                                      Direction direction,
-                                      bool check_starting_view,
-                                      FocusTraversable** focus_traversable,
-                                      View** focus_traversable_view);
+  virtual FocusSearch* GetFocusSearch();
   virtual FocusTraversable* GetFocusTraversableParent();
   virtual View* GetFocusTraversableParentView();
 

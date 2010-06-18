@@ -22,7 +22,6 @@
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/focus/focus_manager.h"
 #include "views/view.h"
 
 class BrowserActionsContainer;
@@ -36,7 +35,6 @@ class Menu2;
 // The Browser Window's toolbar.
 class ToolbarView : public AccessibleToolbarView,
                     public views::ViewMenuDelegate,
-                    public views::FocusChangeListener,
                     public menus::SimpleMenuModel::Delegate,
                     public LocationBarView::Delegate,
                     public AnimationDelegate,
@@ -63,18 +61,15 @@ class ToolbarView : public AccessibleToolbarView,
   // Sets the app menu model.
   void SetAppMenuModel(menus::SimpleMenuModel* model);
 
-  // Focuses the page menu and enters a special mode where the page
-  // and app menus are focusable and allow for keyboard navigation just
-  // like a normal menu bar. As soon as focus leaves one of the menus,
-  // the special mode is exited.
-  //
-  // Pass it the storage id of the view where focus should be returned
-  // if the user escapes, and the menu button to focus initially. If
-  // |menu_to_focus| is NULL, it will focus the page menu by default.
-  //
-  // Not used on the Mac, which has a "normal" menu bar.
-  void EnterMenuBarEmulationMode(int last_focused_view_storage_id,
-                                 views::MenuButton* menu_to_focus);
+  // Set focus to the toolbar with complete keyboard access, with the
+  // focus initially set to the location bar. Focus will be restored
+  // to the ViewStorage with id |view_storage_id| if the user escapes.
+  void SetToolbarFocusAndFocusLocationBar(int view_storage_id);
+
+  // Set focus to the toolbar with complete keyboard access, with the
+  // focus initially set to the page menu. Focus will be restored
+  // to the ViewStorage with id |view_storage_id| if the user escapes.
+  void SetToolbarFocusAndFocusPageMenu(int view_storage_id);
 
   // Add a listener to receive a callback when the menu opens.
   void AddMenuListener(views::MenuListener* listener);
@@ -91,13 +86,6 @@ class ToolbarView : public AccessibleToolbarView,
   views::MenuButton* app_menu() const { return app_menu_; }
   bool collapsed() const { return collapsed_; }
   void SetCollapsed(bool val);
-
-  // Overridden from views::FocusChangeListener:
-  virtual void FocusWillChange(views::View* focused_before,
-                               views::View* focused_now);
-
-  // Overridden from AccessibleToolbarView:
-  virtual bool IsAccessibleViewTraversable(views::View* view);
 
   // Overridden from Menu::BaseControllerDelegate:
   virtual bool GetAcceleratorInfo(int id, menus::Accelerator* accel);
@@ -131,11 +119,15 @@ class ToolbarView : public AccessibleToolbarView,
   virtual void ExecuteCommand(int command_id);
 
   // Overridden from views::View:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
   virtual void ThemeChanged();
+
+ protected:
+  // Override this so that when the user presses F6 to rotate toolbar panes,
+  // the location bar gets focus, not the first control in the toolbar.
+  virtual views::View* GetDefaultFocusableChild();
 
  private:
   // Returns the number of pixels above the location bar in non-normal display.
@@ -164,14 +156,6 @@ class ToolbarView : public AccessibleToolbarView,
   bool IsDisplayModeNormal() const {
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
-
-  // Take the menus out of the focus traversal, unregister accelerators,
-  // and stop listening to focus change events.
-  void ExitMenuBarEmulationMode();
-
-  // Restore the view that was focused before EnterMenuBarEmulationMode
-  // was called.
-  void RestoreLastFocusedView();
 
   // Starts the recurring timer that periodically asks the upgrade notifier
   // to pulsate.
@@ -221,14 +205,6 @@ class ToolbarView : public AccessibleToolbarView,
   scoped_ptr<views::Menu2> page_menu_menu_;
   scoped_ptr<views::Menu2> app_menu_menu_;
 
-  // Save the focus manager rather than calling GetFocusManager(),
-  // so that we can remove focus listeners in the destructor.
-  views::FocusManager* focus_manager_;
-
-  // Storage id for the last view that was focused before focus
-  // was given to one of the toolbar views.
-  int last_focused_view_storage_id_;
-
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
 
@@ -238,10 +214,6 @@ class ToolbarView : public AccessibleToolbarView,
   // We periodically restart the animation after it has been showed
   // once, to create a pulsating effect.
   base::RepeatingTimer<ToolbarView> upgrade_reminder_pulse_timer_;
-
-  // Are we in the menu bar emulation mode, where the app and page menu
-  // are temporarily focusable?
-  bool menu_bar_emulation_mode_;
 
   // Used to post tasks to switch to the next/previous menu.
   ScopedRunnableMethodFactory<ToolbarView> method_factory_;

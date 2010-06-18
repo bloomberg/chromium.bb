@@ -52,6 +52,7 @@ Button::Button(ButtonListener* listener)
     : listener_(listener),
       tag_(-1),
       mouse_event_flags_(0) {
+  set_accessibility_focusable(true);
 }
 
 void Button::NotifyClick(const views::Event& event) {

@@ -10,6 +10,7 @@
 
 #include "base/ref_counted.h"
 #include "views/focus/focus_manager.h"
+#include "views/focus/focus_search.h"
 #include "views/view.h"
 
 #if defined(OS_LINUX)
@@ -104,10 +105,6 @@ class RootView : public View,
   // Make the provided view focused. Also make sure that our Widget is focused.
   void FocusView(View* view);
 
-  // Check whether the provided view is in the focus path. The focus path is the
-  // path between the focused view (included) to the root view.
-  bool IsInFocusPath(View* view);
-
   // Returns the View in this RootView hierarchy that has the focus, or NULL if
   // no View currently has the focus.
   View* GetFocusedView();
@@ -138,12 +135,7 @@ class RootView : public View,
   virtual bool IsVisibleInRootView() const;
 
   // FocusTraversable implementation.
-  virtual View* FindNextFocusableView(View* starting_view,
-                                      bool reverse,
-                                      Direction direction,
-                                      bool check_starting_view,
-                                      FocusTraversable** focus_traversable,
-                                      View** focus_traversable_view);
+  virtual FocusSearch* GetFocusSearch();
   virtual FocusTraversable* GetFocusTraversableParent();
   virtual View* GetFocusTraversableParentView();
 
@@ -284,6 +276,9 @@ class RootView : public View,
 
   // The host Widget
   Widget* widget_;
+
+  // The focus search algorithm.
+  FocusSearch focus_search_;
 
   // The rectangle that should be painted
   gfx::Rect invalid_rect_;

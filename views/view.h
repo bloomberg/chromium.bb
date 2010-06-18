@@ -514,6 +514,17 @@ class View : public AcceleratorTarget {
   // not get the focus.
   virtual void SetFocusable(bool focusable);
 
+  // Return whether this view is focusable when the user requires
+  // full keyboard access, even though it may not be normally focusable.
+  virtual bool IsAccessibilityFocusable() const;
+
+  // Set whether this view can be made focusable if the user requires
+  // full keyboard access, even though it's not normally focusable.
+  // Note that this is false by default.
+  virtual void set_accessibility_focusable(bool accessibility_focusable) {
+    accessibility_focusable_ = accessibility_focusable;
+  }
+
   // Convenience method to retrieve the FocusManager associated with the
   // Widget that contains this view.  This can return NULL if this view is not
   // part of a view hierarchy with a Widget.
@@ -931,6 +942,13 @@ class View : public AcceleratorTarget {
   // FocusTraversable for the focus traversal to work properly.
   virtual FocusTraversable* GetFocusTraversable() { return NULL; }
 
+  // Subclasses that can act as a "pane" must implement their own
+  // FocusTraversable to keep the focus trapped within the pane.
+  // If this method returns an object, any view that's a direct or
+  // indirect child of this view will always use this FocusTraversable
+  // rather than the one from the widget.
+  virtual FocusTraversable* GetPaneFocusTraversable() { return NULL; }
+
 #ifndef NDEBUG
   // Debug method that logs the view hierarchy to the output.
   void PrintViewHierarchy();
@@ -1100,6 +1118,10 @@ class View : public AcceleratorTarget {
 
   // Whether the view can be focused.
   bool focusable_;
+
+  // Whether this view is focusable if the user requires full keyboard access,
+  // even though it may not be normally focusable.
+  bool accessibility_focusable_;
 
  private:
   friend class RootView;

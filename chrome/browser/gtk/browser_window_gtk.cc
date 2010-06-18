@@ -847,6 +847,18 @@ void BrowserWindowGtk::FocusPageAndAppMenus() {
   NOTIMPLEMENTED();
 }
 
+void BrowserWindowGtk::FocusBookmarksToolbar() {
+  NOTIMPLEMENTED();
+}
+
+void BrowserWindowGtk::FocusChromeOSStatus() {
+  NOTIMPLEMENTED();
+}
+
+void BrowserWindowGtk::RotatePaneFocus(bool forwards) {
+  NOTIMPLEMENTED();
+}
+
 bool BrowserWindowGtk::IsBookmarkBarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       bookmark_bar_.get() &&

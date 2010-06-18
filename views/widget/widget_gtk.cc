@@ -831,16 +831,8 @@ bool WidgetGtk::ContainsNativeView(gfx::NativeView native_view) {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, FocusTraversable implementation:
 
-View* WidgetGtk::FindNextFocusableView(
-    View* starting_view, bool reverse, Direction direction,
-    bool check_starting_view, FocusTraversable** focus_traversable,
-    View** focus_traversable_view) {
-  return root_view_->FindNextFocusableView(starting_view,
-                                           reverse,
-                                           direction,
-                                           check_starting_view,
-                                           focus_traversable,
-                                           focus_traversable_view);
+FocusSearch* WidgetGtk::GetFocusSearch() {
+  return root_view_->GetFocusSearch();
 }
 
 FocusTraversable* WidgetGtk::GetFocusTraversableParent() {

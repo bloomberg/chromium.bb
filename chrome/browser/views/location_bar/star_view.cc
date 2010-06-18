@@ -16,6 +16,7 @@ StarView::StarView(CommandUpdater* command_updater)
     : command_updater_(command_updater) {
   SetID(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
+  set_accessibility_focusable(true);
 }
 
 StarView::~StarView() {
@@ -48,6 +49,15 @@ void StarView::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
 }
 
+bool StarView::OnKeyPressed(const views::KeyEvent& e) {
+  if (e.GetKeyCode() == base::VKEY_SPACE ||
+      e.GetKeyCode() == base::VKEY_RETURN) {
+    command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+    return true;
+  }
+  return false;
+}
+
 void StarView::InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape) {
 }
@@ -55,4 +65,3 @@ void StarView::InfoBubbleClosing(InfoBubble* info_bubble,
 bool StarView::CloseOnEscape() {
   return true;
 }
-

@@ -42,6 +42,8 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
                                  Extension::kPageActionIconMaxSize),
                        ImageLoadingTracker::DONT_CACHE);
   }
+
+  set_accessibility_focusable(true);
 }
 
 PageActionImageView::~PageActionImageView() {
@@ -98,6 +100,11 @@ void PageActionImageView::ExecuteAction(int button,
   }
 }
 
+bool PageActionImageView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  *role = AccessibilityTypes::ROLE_PUSHBUTTON;
+  return true;
+}
+
 bool PageActionImageView::OnMousePressed(const views::MouseEvent& event) {
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.  (Also, triggering on mouse press causes bugs like
@@ -119,22 +126,34 @@ void PageActionImageView::OnMouseReleased(const views::MouseEvent& event,
     // Get the top left point of this button in screen coordinates.
     gfx::Point menu_origin;
     ConvertPointToScreen(this, &menu_origin);
-
     // Make the menu appear below the button.
     menu_origin.Offset(0, height());
-
-    Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
-        page_action()->extension_id(), false);
-    Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
-        platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
-    context_menu_contents_ =
-        new ExtensionContextMenuModel(extension, browser, this);
-    context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
-    context_menu_menu_->RunContextMenuAt(menu_origin);
+    ShowContextMenu(menu_origin, true);
     return;
   }
 
   ExecuteAction(button, false);  // inspect_with_devtools
+}
+
+bool PageActionImageView::OnKeyPressed(const views::KeyEvent& e) {
+  if (e.GetKeyCode() == base::VKEY_SPACE ||
+      e.GetKeyCode() == base::VKEY_RETURN) {
+    ExecuteAction(1, false);
+    return true;
+  }
+  return false;
+}
+
+void PageActionImageView::ShowContextMenu(const gfx::Point& p,
+                                          bool is_mouse_gesture) {
+  Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
+      page_action()->extension_id(), false);
+  Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
+      platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
+  context_menu_contents_ =
+      new ExtensionContextMenuModel(extension, browser, this);
+  context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
+  context_menu_menu_->RunContextMenuAt(p);
 }
 
 void PageActionImageView::OnImageLoaded(

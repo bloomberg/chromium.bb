@@ -57,8 +57,8 @@ class MenuButton : public TextButton {
   // behavior
   virtual bool OnMousePressed(const MouseEvent& e);
   virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
-  virtual bool OnKeyReleased(const KeyEvent& e);
   virtual void OnMouseExited(const MouseEvent& event);
+  virtual bool OnKeyPressed(const KeyEvent& e);
 
   // Accessibility accessors, overridden from View.
   virtual bool GetAccessibleDefaultAction(std::wstring* action);

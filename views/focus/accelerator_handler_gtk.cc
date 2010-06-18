@@ -55,6 +55,7 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
     gtk_main_do_event(event);
     return true;
   }
+
   DCHECK(ptr);
 
   // The top-level window or window widget is expected to always be associated

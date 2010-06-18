@@ -19,7 +19,11 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_BROWSER_SEARCH, false, false, false, IDC_FOCUS_SEARCH },
   { base::VKEY_L, false, true, false, IDC_FOCUS_LOCATION },
   { base::VKEY_D, false, false, true, IDC_FOCUS_LOCATION },
-  { base::VKEY_F6, false, false, false, IDC_FOCUS_LOCATION },
+  { base::VKEY_T, true, false, true, IDC_FOCUS_TOOLBAR },
+  { base::VKEY_B, true, false, true, IDC_FOCUS_BOOKMARKS },
+  { base::VKEY_S, true, false, true, IDC_FOCUS_CHROMEOS_STATUS },
+  { base::VKEY_F6, false, false, false, IDC_FOCUS_NEXT_PANE },
+  { base::VKEY_F6, true, false, false, IDC_FOCUS_PREVIOUS_PANE },
   { base::VKEY_F10, false, false, false, IDC_FOCUS_MENU_BAR },
   { base::VKEY_MENU, false, false, false, IDC_FOCUS_MENU_BAR },
 

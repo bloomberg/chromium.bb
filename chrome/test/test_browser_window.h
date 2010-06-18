@@ -48,6 +48,9 @@ class TestBrowserWindow : public BrowserWindow {
                              bool should_restore_state) {}
   virtual void FocusToolbar() {}
   virtual void FocusPageAndAppMenus() {}
+  virtual void FocusBookmarksToolbar() {}
+  virtual void FocusChromeOSStatus() {}
+  virtual void RotatePaneFocus(bool forwards) {}
   virtual void ShowPageMenu() {}
   virtual void ShowAppMenu() {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

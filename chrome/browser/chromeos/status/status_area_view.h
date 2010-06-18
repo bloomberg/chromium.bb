@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_VIEW_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/views/accessible_toolbar_view.h"
 #include "views/view.h"
 
 namespace chromeos {
@@ -19,7 +20,7 @@ class StatusAreaHost;
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
-class StatusAreaView : public views::View {
+class StatusAreaView : public AccessibleToolbarView {
  public:
   enum OpenTabsMode {
     OPEN_TABS_ON_LEFT = 1,

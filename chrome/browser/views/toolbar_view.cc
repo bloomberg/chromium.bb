@@ -81,8 +81,6 @@ ToolbarView::ToolbarView(Browser* browser)
       profile_(NULL),
       browser_(browser),
       profiles_menu_contents_(NULL),
-      last_focused_view_storage_id_(-1),
-      menu_bar_emulation_mode_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       destroyed_flag_(NULL),
       collapsed_(false) {
@@ -113,11 +111,6 @@ ToolbarView::~ToolbarView() {
   // NOTE: Don't remove the command observers here.  This object gets destroyed
   // after the Browser (which owns the CommandUpdater), so the CommandUpdater is
   // already gone.
-
-  if (menu_bar_emulation_mode_) {
-    focus_manager_->UnregisterAccelerators(this);
-    focus_manager_->RemoveFocusChangeListener(this);
-  }
 }
 
 void ToolbarView::Init(Profile* profile) {
@@ -175,7 +168,6 @@ void ToolbarView::Init(Profile* profile) {
     page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
     page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
     page_menu_->SetID(VIEW_ID_PAGE_MENU);
-    AddChildView(page_menu_);
   }
 
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
@@ -186,19 +178,23 @@ void ToolbarView::Init(Profile* profile) {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kBookmarkMenu)) {
     bookmark_menu_ = new BookmarkMenuButton(browser_);
-    AddChildView(bookmark_menu_);
   } else {
     bookmark_menu_ = NULL;
   }
 
   LoadImages();
 
+  // Always add children in order from left to right, for accessibility.
   AddChildView(back_);
   AddChildView(forward_);
   AddChildView(home_);
   AddChildView(reload_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
+  if (bookmark_menu_)
+    AddChildView(bookmark_menu_);
+  if (page_menu_)
+    AddChildView(page_menu_);
   AddChildView(app_menu_);
 
   location_bar_->Init();
@@ -216,8 +212,6 @@ void ToolbarView::Init(Profile* profile) {
       SetAppMenuModel(new AppMenuModel(this, browser_));
     }
   }
-
-  focus_manager_ = GetFocusManager();
 }
 
 void ToolbarView::SetProfile(Profile* profile) {
@@ -240,44 +234,15 @@ void ToolbarView::SetAppMenuModel(menus::SimpleMenuModel* model) {
   app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
 }
 
-void ToolbarView::EnterMenuBarEmulationMode(int last_focused_view_storage_id,
-                                            views::MenuButton* menu_to_focus) {
-  last_focused_view_storage_id_ = last_focused_view_storage_id;
-  if (!menu_to_focus)
-    menu_to_focus = page_menu_;
+void ToolbarView::SetToolbarFocusAndFocusLocationBar(int view_storage_id) {
+  SetToolbarFocus(view_storage_id, location_bar_);
+}
 
-  // If we're already in the menu bar emulation mode, just set the focus.
-  if (menu_bar_emulation_mode_) {
-    menu_to_focus->RequestFocus();
-    return;
-  }
-
-  // Make the menus focusable and set focus to the initial menu.
-  menu_bar_emulation_mode_ = true;
-  page_menu_->SetFocusable(true);
-  app_menu_->SetFocusable(true);
-  menu_to_focus->RequestFocus();
-
-  // Listen so we know when focus has moved to something other than one
-  // of these menus.
-  focus_manager_->AddFocusChangeListener(this);
-
-  // Add accelerators so that the usual keys used to interact with a
-  // menu bar work as expected.
-  views::Accelerator return_key(base::VKEY_RETURN, false, false, false);
-  focus_manager_->RegisterAccelerator(return_key, this);
-  views::Accelerator space(base::VKEY_SPACE, false, false, false);
-  focus_manager_->RegisterAccelerator(space, this);
-  views::Accelerator escape(base::VKEY_ESCAPE, false, false, false);
-  focus_manager_->RegisterAccelerator(escape, this);
-  views::Accelerator down(base::VKEY_DOWN, false, false, false);
-  focus_manager_->RegisterAccelerator(down, this);
-  views::Accelerator up(base::VKEY_UP, false, false, false);
-  focus_manager_->RegisterAccelerator(up, this);
-  views::Accelerator left(base::VKEY_LEFT, false, false, false);
-  focus_manager_->RegisterAccelerator(left, this);
-  views::Accelerator right(base::VKEY_RIGHT, false, false, false);
-  focus_manager_->RegisterAccelerator(right, this);
+void ToolbarView::SetToolbarFocusAndFocusPageMenu(int view_storage_id) {
+  if (page_menu_)
+    SetToolbarFocus(view_storage_id, page_menu_);
+  else
+    SetToolbarFocus(view_storage_id, app_menu_);
 }
 
 void ToolbarView::AddMenuListener(views::MenuListener* listener) {
@@ -308,32 +273,6 @@ void ToolbarView::SetCollapsed(bool val) {
     location_bar_->PushForceHidden();
   else
     location_bar_->PopForceHidden();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, FocusChangeListener overrides:
-
-void ToolbarView::FocusWillChange(views::View* focused_before,
-                                  views::View* focused_now) {
-  // If the focus is switching to something outside the menu bar,
-  // take it out of the focus traversal.
-  if ((focused_now != NULL) && (focused_now != page_menu_) &&
-      (focused_now != app_menu_)) {
-    // Post ExitMenuBarEmulationMode to the queue rather than running it
-    // right away, because otherwise we'll remove ourselves from the
-    // list of listeners while FocusManager is in the middle of iterating
-    // over that list.
-    MessageLoop::current()->PostTask(
-        FROM_HERE, method_factory_.NewRunnableMethod(
-            &ToolbarView::ExitMenuBarEmulationMode));
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, AccessibleToolbarView overrides:
-
-bool ToolbarView::IsAccessibleViewTraversable(views::View* view) {
-  return view != location_bar_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -475,42 +414,6 @@ void ToolbarView::ExecuteCommand(int command_id) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::View overrides:
-
-bool ToolbarView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
-  // The only accelerators we handle here are if the menus are focused.
-  views::View* focused_view = GetFocusManager()->GetFocusedView();
-  if (focused_view != page_menu_ && focused_view != app_menu_) {
-    ExitMenuBarEmulationMode();
-    return false;
-  }
-
-  // Safe to cast, given the check above.
-  views::MenuButton* menu = static_cast<views::MenuButton*>(focused_view);
-  switch (accelerator.GetKeyCode()) {
-    case base::VKEY_ESCAPE:
-      RestoreLastFocusedView();
-      return true;
-    case base::VKEY_LEFT:
-    case base::VKEY_RIGHT:
-      if (page_menu_) {
-        ((menu == app_menu_) ? page_menu_ : app_menu_)->RequestFocus();
-        return true;
-      }
-      return false;
-    case base::VKEY_UP:
-    case base::VKEY_DOWN:
-    case base::VKEY_RETURN:
-    case base::VKEY_SPACE:
-      // Hide the tooltip before activating a menu button.
-      if (GetWidget()->GetTooltipManager())
-        GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
-      ActivateMenuButton(menu);
-      return true;
-    default:
-      return false;
-  }
-}
 
 gfx::Size ToolbarView::GetPreferredSize() {
   if (IsDisplayModeNormal()) {
@@ -658,6 +561,13 @@ void ToolbarView::Paint(gfx::Canvas* canvas) {
 
 void ToolbarView::ThemeChanged() {
   LoadImages();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ToolbarView, protected:
+
+views::View* ToolbarView::GetDefaultFocusableChild() {
+  return location_bar_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -875,34 +785,6 @@ void ToolbarView::ActivateMenuButton(views::MenuButton* menu_button) {
   menu_button->Activate();
 
 #if defined(OS_WIN)
-  EnterMenuBarEmulationMode(last_focused_view_storage_id_, menu_button);
+  SetToolbarFocus(NULL, menu_button);
 #endif
-}
-
-void ToolbarView::ExitMenuBarEmulationMode() {
-  if ((page_menu_ && page_menu_->HasFocus()) || app_menu_->HasFocus())
-    RestoreLastFocusedView();
-
-  focus_manager_->UnregisterAccelerators(this);
-  focus_manager_->RemoveFocusChangeListener(this);
-  if (page_menu_)
-    page_menu_->SetFocusable(false);
-  app_menu_->SetFocusable(false);
-  menu_bar_emulation_mode_ = false;
-}
-
-void ToolbarView::RestoreLastFocusedView() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
-  views::View* last_focused_view =
-      view_storage->RetrieveView(last_focused_view_storage_id_);
-  if (last_focused_view) {
-    last_focused_view->RequestFocus();
-  } else {
-    // Focus the location bar
-    views::View* view = GetAncestorWithClassName(BrowserView::kViewClassName);
-    if (view) {
-      BrowserView* browser_view = static_cast<BrowserView*>(view);
-      browser_view->SetFocusToLocationBar(false);
-    }
-  }
 }

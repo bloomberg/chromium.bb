@@ -227,10 +227,7 @@ bool BrowserActionButton::Activate() {
 }
 
 bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
-  showing_context_menu_ = e.IsRightMouseButton();
-  if (showing_context_menu_) {
-    SetButtonPushed();
-
+  if (e.IsRightMouseButton()) {
     // Get the top left point of this button in screen coordinates.
     gfx::Point point = gfx::Point(0, 0);
     ConvertPointToScreen(this, &point);
@@ -238,15 +235,7 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
     // Make the menu appear below the button.
     point.Offset(0, height());
 
-    // Reconstructs the menu every time because the menu's contents are dynamic.
-    context_menu_contents_ = new ExtensionContextMenuModel(
-        extension(), panel_->browser(), panel_);
-    context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
-    context_menu_menu_->RunContextMenuAt(point);
-
-    SetButtonNotPushed();
-    showing_context_menu_ = false;
-
+    ShowContextMenu(point, true);
     return false;
   } else if (IsPopup()) {
     return MenuButton::OnMousePressed(e);
@@ -276,6 +265,21 @@ void BrowserActionButton::OnMouseExited(const views::MouseEvent& e) {
     MenuButton::OnMouseExited(e);
   else
     TextButton::OnMouseExited(e);
+}
+
+void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
+                                          bool is_mouse_gesture) {
+  showing_context_menu_ = true;
+  SetButtonPushed();
+
+  // Reconstructs the menu every time because the menu's contents are dynamic.
+  context_menu_contents_ = new ExtensionContextMenuModel(
+      extension(), panel_->browser(), panel_);
+  context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));
+  context_menu_menu_->RunContextMenuAt(p);
+
+  SetButtonNotPushed();
+  showing_context_menu_ = false;
 }
 
 void BrowserActionButton::SetButtonPushed() {

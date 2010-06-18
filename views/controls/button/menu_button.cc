@@ -213,17 +213,17 @@ void MenuButton::OnMouseReleased(const MouseEvent& e,
   }
 }
 
-// When the space bar or the enter key is pressed we need to show the menu.
-bool MenuButton::OnKeyReleased(const KeyEvent& e) {
-#if defined(OS_WIN)
-  if ((e.GetKeyCode() == base::VKEY_SPACE) ||
-      (e.GetKeyCode() == base::VKEY_RETURN)) {
-    return Activate();
+bool MenuButton::OnKeyPressed(const KeyEvent& e) {
+  if (e.GetKeyCode() == base::VKEY_SPACE ||
+      e.GetKeyCode() == base::VKEY_RETURN ||
+      e.GetKeyCode() == base::VKEY_UP ||
+      e.GetKeyCode() == base::VKEY_DOWN) {
+    bool result = Activate();
+    if (GetFocusManager()->GetFocusedView() == NULL)
+      RequestFocus();
+    return result;
   }
-#else
-  NOTIMPLEMENTED();
-#endif
-  return true;
+  return false;
 }
 
 // The reason we override View::OnMouseExited is because we get this event when

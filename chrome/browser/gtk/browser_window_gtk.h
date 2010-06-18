@@ -76,6 +76,9 @@ class BrowserWindowGtk : public BrowserWindow,
                              bool should_restore_state);
   virtual void FocusToolbar();
   virtual void FocusPageAndAppMenus();
+  virtual void FocusBookmarksToolbar();
+  virtual void FocusChromeOSStatus();
+  virtual void RotatePaneFocus(bool forwards);
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
   virtual bool IsToolbarVisible() const;

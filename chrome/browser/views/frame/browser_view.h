@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
@@ -38,6 +39,7 @@
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
+class AccessibleToolbarView;
 class AccessibleViewHelper;
 class BookmarkBarView;
 class Browser;
@@ -211,10 +213,6 @@ class BrowserView : public BrowserBubbleHost,
   void PrepareToRunSystemMenu(HMENU menu);
 #endif
 
-  // Traverses to the next toolbar. |forward| when true, will navigate from left
-  // to right and vice versa when false.
-  void TraverseNextAccessibleToolbar(bool forward);
-
   // Returns true if the Browser object associated with this BrowserView is a
   // normal-type window (i.e. a browser window, not an app or popup).
   bool IsBrowserTypeNormal() const {
@@ -287,6 +285,9 @@ class BrowserView : public BrowserBubbleHost,
   virtual void UpdateToolbar(TabContents* contents, bool should_restore_state);
   virtual void FocusToolbar();
   virtual void FocusPageAndAppMenus();
+  virtual void FocusBookmarksToolbar();
+  virtual void FocusChromeOSStatus() {}
+  virtual void RotatePaneFocus(bool forwards);
   virtual void DestroyBrowser();
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
@@ -397,6 +398,19 @@ class BrowserView : public BrowserBubbleHost,
   virtual void InfoBarSizeChanged(bool is_animating);
 
  protected:
+  // Appends to |toolbars| a pointer to each AccessibleToolbarView that
+  // can be traversed using F6, in the order they should be traversed.
+  // Abstracted here so that it can be extended for Chrome OS.
+  virtual void GetAccessibleToolbars(
+      std::vector<AccessibleToolbarView*>* toolbars);
+
+  // Save the current focused view to view storage
+  void SaveFocusedView();
+
+  int last_focused_view_storage_id() const {
+    return last_focused_view_storage_id_;
+  }
+
   // Overridden from views::View:
   virtual std::string GetClassName() const;
   virtual void Layout();
@@ -487,11 +501,11 @@ class BrowserView : public BrowserBubbleHost,
   // Initialize the hung plugin detector.
   void InitHangMonitor();
 
-  // Save the current focused view to view storage
-  void SaveFocusedView();
-
   // Initialize class statics.
   static void InitClass();
+
+  // Last focused view that issued a tab traversal.
+  int last_focused_view_storage_id_;
 
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_;
@@ -591,9 +605,6 @@ class BrowserView : public BrowserBubbleHost,
   ExtensionShelf* extension_shelf_;
 
   scoped_ptr<BrowserExtender> browser_extender_;
-
-  // Last focused view that issued a tab traversal.
-  int last_focused_view_storage_id_;
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 

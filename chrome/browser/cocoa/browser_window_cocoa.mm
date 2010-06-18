@@ -217,11 +217,23 @@ void BrowserWindowCocoa::UpdateToolbar(TabContents* contents,
 }
 
 void BrowserWindowCocoa::FocusToolbar() {
-  NOTIMPLEMENTED();
+  // Not needed on the Mac.
 }
 
 void BrowserWindowCocoa::FocusPageAndAppMenus() {
   // Chrome uses the standard Mac OS X menu bar, so this isn't needed.
+}
+
+void BrowserWindowCocoa::RotatePaneFocus(bool forwards) {
+  // Not needed on the Mac.
+}
+
+void BrowserWindowCocoa::FocusBookmarksToolbar() {
+  // Not needed on the Mac.
+}
+
+void BrowserWindowCocoa::FocusChromeOSStatus() {
+  // Not needed on the Mac.
 }
 
 bool BrowserWindowCocoa::IsBookmarkBarVisible() const {

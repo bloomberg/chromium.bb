@@ -7,201 +7,178 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/native/native_view_host.h"
+#include "views/focus/focus_search.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 
 AccessibleToolbarView::AccessibleToolbarView()
-    : selected_focused_view_(NULL),
+    : toolbar_has_focus_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      focus_manager_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(focus_search_(this, true, true)),
+      home_key_(base::VKEY_HOME, false, false, false),
+      end_key_(base::VKEY_END, false, false, false),
+      escape_key_(base::VKEY_ESCAPE, false, false, false),
+      left_key_(base::VKEY_LEFT, false, false, false),
+      right_key_(base::VKEY_RIGHT, false, false, false),
       last_focused_view_storage_id_(-1) {
 }
 
 AccessibleToolbarView::~AccessibleToolbarView() {
+  if (toolbar_has_focus_) {
+    focus_manager_->RemoveFocusChangeListener(this);
+  }
 }
 
-void AccessibleToolbarView::InitiateTraversal(int view_storage_id) {
-  // We only traverse if accessibility is active.
-  if (selected_focused_view_)
-    return;
+bool AccessibleToolbarView::SetToolbarFocus(int view_storage_id,
+                                            views::View* initial_focus) {
+  if (!IsVisible())
+    return false;
 
   // Save the storage id to the last focused view. This would be used to request
   // focus to the view when the traversal is ended.
   last_focused_view_storage_id_ = view_storage_id;
 
-  // Request focus to the toolbar.
-  RequestFocus();
-}
+  if (!focus_manager_)
+    focus_manager_ = GetFocusManager();
 
-views::View* AccessibleToolbarView::GetNextAccessibleView(int view_index,
-                                                          bool forward) {
-  int modifier = forward ? 1 : -1;
-  int current_view_index = view_index + modifier;
-
-  while ((current_view_index >= 0) &&
-         (current_view_index < GetChildViewCount())) {
-    // Try to find the next available view that can be interacted with. That
-    // view must be enabled, visible, and traversable.
-    views::View* current_view = GetChildViewAt(current_view_index);
-    if (current_view->IsEnabled() && current_view->IsVisible() &&
-        IsAccessibleViewTraversable(current_view)) {
-      return current_view;
-    }
-    current_view_index += modifier;
+  // Use the provided initial focus if it's visible and enabled, otherwise
+  // use the first focusable child.
+  if (!initial_focus ||
+      !IsParentOf(initial_focus) ||
+      !initial_focus->IsVisible() ||
+      !initial_focus->IsEnabled()) {
+    initial_focus = GetFirstFocusableChild();
   }
 
-  // No button is available in the specified direction.
-  return NULL;
-}
+  // Return false if there are no focusable children.
+  if (!initial_focus)
+    return false;
 
-bool AccessibleToolbarView::IsAccessibleViewTraversable(views::View* view) {
+  // Set focus to the initial view
+  focus_manager_->SetFocusedView(initial_focus);
+
+  // If we already have toolbar focus, we're done.
+  if (toolbar_has_focus_)
+    return true;
+
+  // Otherwise, set accelerators and start listening for focus change events.
+  toolbar_has_focus_ = true;
+  focus_manager_->RegisterAccelerator(home_key_, this);
+  focus_manager_->RegisterAccelerator(end_key_, this);
+  focus_manager_->RegisterAccelerator(escape_key_, this);
+  focus_manager_->RegisterAccelerator(left_key_, this);
+  focus_manager_->RegisterAccelerator(right_key_, this);
+  focus_manager_->AddFocusChangeListener(this);
+
   return true;
 }
 
-void AccessibleToolbarView::DidGainFocus() {
-  // Check to see if the accessible focus should be restored to previously
-  // focused button. The must be enabled and visible in the toolbar.
-  if (!selected_focused_view_ ||
-      !selected_focused_view_->IsEnabled() ||
-      !selected_focused_view_->IsVisible()) {
-    // Find first accessible child (-1 to start search at parent).
-    selected_focused_view_ = GetNextAccessibleView(-1, true);
+bool AccessibleToolbarView::SetToolbarFocusAndFocusDefault(
+    int view_storage_id) {
+  return SetToolbarFocus(view_storage_id, GetDefaultFocusableChild());
+}
 
-    // No buttons enabled or visible.
-    if (!selected_focused_view_)
-      return;
+void AccessibleToolbarView::RemoveToolbarFocusIfNoChildHasFocus() {
+  views::View* focused_view = focus_manager_->GetFocusedView();
+  if (toolbar_has_focus_ && (!focused_view || !IsParentOf(focused_view)))
+    RemoveToolbarFocus();
+}
+
+void AccessibleToolbarView::RemoveToolbarFocus() {
+  focus_manager_->RemoveFocusChangeListener(this);
+  toolbar_has_focus_ = false;
+
+  focus_manager_->UnregisterAccelerator(home_key_, this);
+  focus_manager_->UnregisterAccelerator(end_key_, this);
+  focus_manager_->UnregisterAccelerator(escape_key_, this);
+  focus_manager_->UnregisterAccelerator(left_key_, this);
+  focus_manager_->UnregisterAccelerator(right_key_, this);
+}
+
+void AccessibleToolbarView::RestoreLastFocusedView() {
+  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::View* last_focused_view =
+      view_storage->RetrieveView(last_focused_view_storage_id_);
+  if (last_focused_view) {
+    focus_manager_->SetFocusedView(last_focused_view);
+  } else {
+    // Focus the location bar
+    views::View* view = GetAncestorWithClassName(BrowserView::kViewClassName);
+    if (view) {
+      BrowserView* browser_view = static_cast<BrowserView*>(view);
+      browser_view->SetFocusToLocationBar(false);
+    }
+  }
+}
+
+views::View* AccessibleToolbarView::GetFirstFocusableChild() {
+  FocusTraversable* dummy_focus_traversable;
+  views::View* dummy_focus_traversable_view;
+  return focus_search_.FindNextFocusableView(
+      NULL, false, views::FocusSearch::DOWN, false,
+      &dummy_focus_traversable, &dummy_focus_traversable_view);
+}
+
+views::View* AccessibleToolbarView::GetLastFocusableChild() {
+  FocusTraversable* dummy_focus_traversable;
+  views::View* dummy_focus_traversable_view;
+  return focus_search_.FindNextFocusableView(
+      this, true, views::FocusSearch::DOWN, false,
+      &dummy_focus_traversable, &dummy_focus_traversable_view);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// View overrides:
+
+views::FocusTraversable* AccessibleToolbarView::GetPaneFocusTraversable() {
+  if (toolbar_has_focus_)
+    return this;
+  else
+    return NULL;
+}
+
+bool AccessibleToolbarView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  // Special case: don't handle arrows for native views, like the
+  // location bar's edit text view, which needs them for text editing.
+  views::View* focused_view = focus_manager_->GetFocusedView();
+  if (focused_view->GetClassName() == views::NativeViewHost::kViewClassName &&
+      (accelerator.GetKeyCode() == base::VKEY_LEFT ||
+       accelerator.GetKeyCode() == base::VKEY_RIGHT)) {
+    return false;
   }
 
-  // Set the focus to the current accessible view.
-  SetFocusToAccessibleView();
-}
-
-void AccessibleToolbarView::WillLoseFocus() {
-  // Any tooltips that are active should be hidden when toolbar loses focus.
-  if (GetWidget() && GetWidget()->GetTooltipManager())
-    GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
-
-  // Removes the child accessibility view's focus when toolbar loses focus. It
-  // will not remove the view from the ViewStorage because it might be
-  // traversing to another toolbar hence the last focused view should not be
-  // removed.
-  if (selected_focused_view_) {
-    selected_focused_view_->SetHotTracked(false);
-    selected_focused_view_ = NULL;
-  }
-}
-
-void AccessibleToolbarView::ShowContextMenu(const gfx::Point& p,
-                                            bool is_mouse_gesture) {
-  if (selected_focused_view_)
-    selected_focused_view_->ShowContextMenu(p, is_mouse_gesture);
-}
-
-void AccessibleToolbarView::RequestFocus() {
-  // When the toolbar needs to request focus, the default implementation of
-  // View::RequestFocus requires the View to be focusable. Since ToolbarView is
-  // not technically focused, we need to temporarily set and remove focus so
-  // that it can focus back to its focused state. |selected_focused_view_| is
-  // not necessarily set since it can be null if this view has already lost
-  // focus, such as traversing through the context menu.
-  SetFocusable(true);
-  View::RequestFocus();
-  SetFocusable(false);
-}
-
-bool AccessibleToolbarView::OnKeyPressed(const views::KeyEvent& e) {
-  if (!HasFocus())
-    return View::OnKeyPressed(e);
-
-  int focused_view = GetChildIndex(selected_focused_view_);
-  views::View* next_view = NULL;
-
-  switch (e.GetKeyCode()) {
+  switch (accelerator.GetKeyCode()) {
+    case base::VKEY_ESCAPE:
+      RemoveToolbarFocus();
+      RestoreLastFocusedView();
+      return true;
     case base::VKEY_LEFT:
-      next_view = GetNextAccessibleView(focused_view, false);
-      break;
+      focus_manager_->AdvanceFocus(true);
+      return true;
     case base::VKEY_RIGHT:
-      next_view = GetNextAccessibleView(focused_view, true);
-      break;
-    case base::VKEY_DOWN:
-    case base::VKEY_RETURN:
-      if (selected_focused_view_ && selected_focused_view_->GetClassName() ==
-          views::MenuButton::kViewClassName) {
-        // If a menu button is activated and its menu is displayed, then the
-        // active tooltip should be hidden.
-        if (GetWidget()->GetTooltipManager())
-          GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
-
-        // Safe to cast, given to above check.
-        static_cast<views::MenuButton*>(selected_focused_view_)->Activate();
-
-        // If activate did not trigger a focus change, the menu button should
-        // remain hot tracked since the view is still focused.
-        if (selected_focused_view_)
-          selected_focused_view_->SetHotTracked(true);
-        return true;
-      }
+      focus_manager_->AdvanceFocus(false);
+      return true;
+    case base::VKEY_HOME:
+      focus_manager_->SetFocusedView(GetFirstFocusableChild());
+      return true;
+    case base::VKEY_END:
+      focus_manager_->SetFocusedView(GetLastFocusableChild());
+      return true;
     default:
-      // If key is not handled explicitly, pass it on to view.
-      if (selected_focused_view_)
-        return selected_focused_view_->OnKeyPressed(e);
-      else
-        return View::OnKeyPressed(e);
+      return false;
   }
-
-  // No buttons enabled, visible, or focus hasn't moved.
-  if (!next_view || !selected_focused_view_)
-    return false;
-
-  // Remove hot-tracking from old focused button.
-  selected_focused_view_->SetHotTracked(false);
-
-  // All is well, update the focused child member variable.
-  selected_focused_view_ = next_view;
-
-  // Set the focus to the current accessible view.
-  SetFocusToAccessibleView();
-  return true;
 }
 
-bool AccessibleToolbarView::OnKeyReleased(const views::KeyEvent& e) {
-  if (!selected_focused_view_)
-    return false;
-
-  // Have keys be handled by the views themselves.
-  return selected_focused_view_->OnKeyReleased(e);
-}
-
-bool AccessibleToolbarView::SkipDefaultKeyEventProcessing(
-    const views::KeyEvent& e) {
-  // Accessibility focus must be present in order to handle ESC and TAB related
-  // key events.
-  if (!HasFocus())
-    return false;
-
-  // The ancestor *must* be a BrowserView.
-  views::View* view = GetAncestorWithClassName(BrowserView::kViewClassName);
-  if (!view)
-    return false;
-
-  // Given the check above, we can ensure its a BrowserView.
-  BrowserView* browser_view = static_cast<BrowserView*>(view);
-
-  // Handle ESC and TAB events.
-  switch (e.GetKeyCode()) {
-    case base::VKEY_ESCAPE: {
-      SetFocusToLastFocusedView();
-      return true;
-    }
-    case base::VKEY_TAB: {
-      if (e.IsShiftDown()) {
-        browser_view->TraverseNextAccessibleToolbar(false);
-      } else {
-        browser_view->TraverseNextAccessibleToolbar(true);
-      }
-      return true;
-    }
-    default: return false;
+void AccessibleToolbarView::SetVisible(bool flag) {
+  if (IsVisible() && !flag && toolbar_has_focus_) {
+    RemoveToolbarFocus();
+    RestoreLastFocusedView();
   }
+  View::SetVisible(flag);
 }
 
 bool AccessibleToolbarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
@@ -211,53 +188,41 @@ bool AccessibleToolbarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-void AccessibleToolbarView::ViewHierarchyChanged(bool is_add, View* parent,
-                                                 View* child) {
-  // When the toolbar is removed, traverse to the next accessible toolbar.
-  if (child == selected_focused_view_ && !is_add) {
-    selected_focused_view_->SetHotTracked(false);
-    selected_focused_view_ = NULL;
-    SetFocusToLastFocusedView();
+////////////////////////////////////////////////////////////////////////////////
+// FocusChangeListener overrides:
+
+void AccessibleToolbarView::FocusWillChange(views::View* focused_before,
+                                            views::View* focused_now) {
+  if (!focused_now || !IsParentOf(focused_now)) {
+    // The focus is no longer in the toolbar, so we should remove toolbar
+    // focus (i.e. make most of the controls not focusable again).
+    // Defer this rather than running it right away, for two reasons:
+    // 1. Sometimes the focus gets sets to NULL and then immediately back
+    //    to something in this toolbar. We don't want to do anything in
+    //    that case.
+    // 2. If we do want to remove toolbar focus, we can't remove this as
+    //    a focus change listener while FocusManager is in the middle of
+    //    iterating over the list of listeners.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, method_factory_.NewRunnableMethod(
+            &AccessibleToolbarView::RemoveToolbarFocusIfNoChildHasFocus));
   }
 }
 
-void AccessibleToolbarView::SetFocusToAccessibleView() {
-  // Hot-track new focused button.
-  selected_focused_view_->SetHotTracked(true);
+////////////////////////////////////////////////////////////////////////////////
+// FocusTraversable overrides:
 
-  // Show the tooltip for the view that got the focus.
-  if (GetWidget()->GetTooltipManager()) {
-    GetWidget()->GetTooltipManager()->ShowKeyboardTooltip(
-        selected_focused_view_);
-  }
-
-#if defined(OS_WIN)
-  // Retrieve information to generate an accessible focus event.
-  gfx::NativeView wnd = GetWidget()->GetNativeView();
-  int view_id = selected_focused_view_->GetID();
-  // Notify Access Technology that there was a change in keyboard focus.
-  ::NotifyWinEvent(EVENT_OBJECT_FOCUS, wnd, OBJID_CLIENT,
-                   static_cast<LONG>(view_id));
-#else
-  NOTIMPLEMENTED();
-#endif
+views::FocusSearch* AccessibleToolbarView::GetFocusSearch() {
+  DCHECK(toolbar_has_focus_);
+  return &focus_search_;
 }
 
-void AccessibleToolbarView::SetFocusToLastFocusedView() {
-    views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
-    views::View* focused_view =
-        view_storage->RetrieveView(last_focused_view_storage_id_);
-    if (focused_view) {
-      view_storage->RemoveView(last_focused_view_storage_id_);
-      focused_view->RequestFocus();
-    } else {
-      // The ancestor *must* be a BrowserView. The check below can ensure that.
-      views::View* view = GetAncestorWithClassName(BrowserView::kViewClassName);
-      if (!view)
-        return;
-      BrowserView* browser_view = static_cast<BrowserView*>(view);
+views::FocusTraversable* AccessibleToolbarView::GetFocusTraversableParent() {
+  DCHECK(toolbar_has_focus_);
+  return NULL;
+}
 
-      // Force the focus to be set on the location bar.
-      browser_view->SetFocusToLocationBar(false);
-    }
+views::View* AccessibleToolbarView::GetFocusTraversableParentView() {
+  DCHECK(toolbar_has_focus_);
+  return NULL;
 }
