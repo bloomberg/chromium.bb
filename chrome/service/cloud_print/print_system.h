@@ -11,6 +11,8 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/values.h"
+#include "googleurl/src/gurl.h"
 
 // This is the interface for platform-specific code for cloud print
 namespace cloud_print {
@@ -149,9 +151,11 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   // Generate unique for proxy.
   static std::string GenerateProxyId();
 
-  // Call this function to obtain current printing system. Return NULL if no
-  // print system available. Delete returned PrintSystem pointer using delete.
-  static scoped_refptr<PrintSystem> CreateInstance();
+  // Call this function to obtain printing system for specified print server.
+  // If print settings are NULL, default settings will be used.
+  // Return NULL if no print system available.
+  static scoped_refptr<PrintSystem> CreateInstance(
+      const DictionaryValue* print_system_settings);
 };
 
 

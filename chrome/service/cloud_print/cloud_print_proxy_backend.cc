@@ -29,8 +29,11 @@ class CloudPrintProxyBackend::Core
       public PrinterJobHandlerDelegate,
       public notifier::TalkMediator::Delegate {
  public:
+  // It is OK for print_server_url to be empty. In this case system should
+  // use system default (local) print server.
   explicit Core(CloudPrintProxyBackend* backend,
-                const GURL& cloud_print_server_url);
+                const GURL& cloud_print_server_url,
+                const DictionaryValue* print_system_settings);
 
   // Note:
   //
@@ -127,6 +130,7 @@ class CloudPrintProxyBackend::Core
   CloudPrintProxyBackend* backend_;
 
   GURL cloud_print_server_url_;
+  scoped_ptr<DictionaryValue> print_system_settings_;
   // Pointer to current print system.
   scoped_refptr<cloud_print::PrintSystem> print_system_;
   // The list of printers to be registered with the cloud print server.
@@ -167,12 +171,14 @@ class CloudPrintProxyBackend::Core
 };
 
 CloudPrintProxyBackend::CloudPrintProxyBackend(
-    CloudPrintProxyFrontend* frontend, const GURL& cloud_print_server_url)
+    CloudPrintProxyFrontend* frontend,
+    const GURL& cloud_print_server_url,
+    const DictionaryValue* print_system_settings)
       : core_thread_("Chrome_CloudPrintProxyCoreThread"),
         frontend_loop_(MessageLoop::current()),
         frontend_(frontend) {
   DCHECK(frontend_);
-  core_ = new Core(this, cloud_print_server_url);
+  core_ = new Core(this, cloud_print_server_url, print_system_settings);
 }
 
 CloudPrintProxyBackend::~CloudPrintProxyBackend() {
@@ -231,10 +237,16 @@ void CloudPrintProxyBackend::HandlePrinterNotification(
 }
 
 CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
-                                   const GURL& cloud_print_server_url)
+                                   const GURL& cloud_print_server_url,
+                                   const DictionaryValue* print_system_settings)
     : backend_(backend), cloud_print_server_url_(cloud_print_server_url),
       next_upload_index_(0), server_error_count_(0),
       next_response_handler_(NULL), new_printers_available_(false) {
+  if (print_system_settings) {
+    // It is possible to have no print settings specified.
+    print_system_settings_.reset(
+        reinterpret_cast<DictionaryValue*>(print_system_settings->DeepCopy()));
+  }
 }
 
 void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
@@ -279,7 +291,8 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     const std::string email, const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
 
-  print_system_ = cloud_print::PrintSystem::CreateInstance();
+  print_system_ =
+      cloud_print::PrintSystem::CreateInstance(print_system_settings_.get());
   if (!print_system_.get()) {
     NOTREACHED();
     return;  // No print system available, fail initalization.

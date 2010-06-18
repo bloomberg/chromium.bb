@@ -8,6 +8,11 @@
 #include <list>
 #include <map>
 
+#include <gnutls/gnutls.h>
+#include <gcrypt.h>
+#include <errno.h>
+#include <pthread.h>
+
 #include "base/json/json_reader.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -17,16 +22,72 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "base/values.h"
 #include "base/utf_string_conversions.h"
 
 namespace cloud_print {
 
 static const char kCUPSPrinterInfoOpt[] = "printer-info";
 static const char kCUPSPrinterStateOpt[] = "printer-state";
+static const wchar_t kCUPSPrintServerURL[] = L"print_server_url";
+
+// Default port for IPP print servers.
+static const int kDefaultIPPServerPort = 631;
+
+// Init GCrypt library (needed for CUPS) using pthreads.
+// I've hit a bug in CUPS library, when it crashed with: "ath.c:184:
+// _gcry_ath_mutex_lock: Assertion `*lock == ((ath_mutex_t) 0)' failed."
+// It happened whe multiple threads tried printing simultaneously.
+// Google search for 'gnutls thread safety' provided with following solution.
+
+GCRY_THREAD_OPTION_PTHREAD_IMPL;
+
+void init_gcrypt() {
+  static bool gcrypt_initialized = false;
+  if (!gcrypt_initialized) {
+    gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+    gnutls_global_init();
+    gcrypt_initialized = true;
+  }
+}
+
+// Helper wrapper around http_t structure, with connection and cleanup
+// functionality.
+class HttpConnectionCUPS {
+ public:
+   explicit HttpConnectionCUPS(const GURL& print_server_url) : http_(NULL) {
+    // If we have an empty url, use default print server.
+    if (print_server_url.is_empty())
+      return;
+
+    int port = print_server_url.IntPort();
+    if (port == url_parse::PORT_UNSPECIFIED)
+      port = kDefaultIPPServerPort;
+
+    http_ = httpConnectEncrypt(print_server_url.host().c_str(), port,
+                               HTTP_ENCRYPT_NEVER);
+    if (http_ == NULL) {
+      LOG(ERROR) << "CP_CUPS: Failed connecting to print server: " <<
+          print_server_url;
+    }
+  }
+
+  ~HttpConnectionCUPS() {
+    if (http_ != NULL)
+      httpClose(http_);
+  }
+
+  http_t* http() {
+    return http_;
+  }
+
+ private:
+  http_t* http_;
+};
 
 class PrintSystemCUPS : public PrintSystem {
  public:
+  explicit PrintSystemCUPS(const GURL& print_server_url);
+
   virtual void EnumeratePrinters(PrinterList* printer_list);
 
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
@@ -123,14 +184,32 @@ class PrintSystemCUPS : public PrintSystem {
   bool GetPrinterInfo(const std::string& printer_name, PrinterBasicInfo* info);
   bool ParsePrintTicket(const std::string& print_ticket,
                         std::map<std::string, std::string>* options);
+
+ private:
+  // Following functions are wrappers around corresponding CUPS functions.
+  // <functions>2()  are called when print server is specified, and plain
+  // version in another case. There is an issue specifing CUPS_HTTP_DEFAULT
+  // in the <functions>2(), it does not work in CUPS prior to 1.4.
+  int GetDests(cups_dest_t** dests);
+  FilePath GetPPD(const char* name);
+  int PrintFile(const char* name, const char* filename, const char* title,
+                int num_options, cups_option_t* options);
+  int GetJobs(cups_job_t** jobs, const char* name,
+              int myjobs, int whichjobs);
+
+  GURL print_server_url_;
 };
+
+PrintSystemCUPS::PrintSystemCUPS(const GURL& print_server_url)
+    : print_server_url_(print_server_url) {
+}
 
 void PrintSystemCUPS::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);
   printer_list->clear();
 
   cups_dest_t* destinations = NULL;
-  int num_dests = cupsGetDests(&destinations);
+  int num_dests = GetDests(&destinations);
 
   for (int printer_index = 0; printer_index < num_dests; printer_index++) {
     const cups_dest_t& printer = destinations[printer_index];
@@ -159,28 +238,19 @@ void PrintSystemCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
   cupsFreeDests(num_dests, destinations);
 
-  DLOG(INFO) << "CP_CUPS: Enumerated " << printer_list->size() << " printers.";
+  LOG(INFO) << "CP_CUPS: Enumerated " << printer_list->size() << " printers.";
 }
 
 bool PrintSystemCUPS::GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info) {
   DCHECK(printer_info);
 
-  DLOG(INFO) << "CP_CUPS: Getting Caps and Defaults for: " << printer_name;
+  LOG(INFO) << "CP_CUPS: Getting Caps and Defaults for: " << printer_name;
 
-  static Lock ppd_lock;
-  // cupsGetPPD returns a filename stored in a static buffer in CUPS.
-  // Protect this code with lock.
-  ppd_lock.Acquire();
-  FilePath ppd_path;
-  const char* ppd_file_path = cupsGetPPD(printer_name.c_str());
-  if (ppd_file_path)
-    ppd_path = FilePath(ppd_file_path);
-  ppd_lock.Release();
-
+  FilePath ppd_path(GetPPD(printer_name.c_str()));
   // In some cases CUPS failed to get ppd file.
   if (ppd_path.empty()) {
-    DLOG(ERROR) << "CP_CUPS: Failed to get PPD for: " << printer_name;
+    LOG(ERROR) << "CP_CUPS: Failed to get PPD for: " << printer_name;
     return false;
   }
 
@@ -238,10 +308,10 @@ bool PrintSystemCUPS::SpoolPrintJob(const std::string& print_ticket,
                                     PlatformJobId* job_id_ret) {
   DCHECK(job_id_ret);
 
-  DLOG(INFO) << "CP_CUPS: Spooling print job for: " << printer_name;
+  LOG(INFO) << "CP_CUPS: Spooling print job for: " << printer_name;
 
   // We need to store options as char* string for the duration of the
-  // cupsPrintFile call. We'll use map here to store options, since
+  // cupsPrintFile2 call. We'll use map here to store options, since
   // Dictionary value from JSON parser returns wchat_t.
   std::map<std::string, std::string> options;
   bool res = ParsePrintTicket(print_ticket, &options);
@@ -256,13 +326,13 @@ bool PrintSystemCUPS::SpoolPrintJob(const std::string& print_ticket,
     cups_options.push_back(opt);
   }
 
-  int job_id = cupsPrintFile(printer_name.c_str(),
-                             print_data_file_path.value().c_str(),
-                             job_title.c_str(),
-                             cups_options.size(),
-                             &(cups_options[0]));
+  int job_id = PrintFile(printer_name.c_str(),
+                         print_data_file_path.value().c_str(),
+                         job_title.c_str(),
+                         cups_options.size(),
+                         &(cups_options[0]));
 
-  DLOG(INFO) << "CP_CUPS: Job spooled, id: " << job_id;
+  LOG(INFO) << "CP_CUPS: Job spooled, id: " << job_id;
 
   if (job_id == 0)
     return false;
@@ -276,11 +346,8 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
                                     PrintJobDetails *job_details) {
   DCHECK(job_details);
 
-  DLOG(INFO) << "CP_CUPS: Getting job details for: " << printer_name <<
-      " job_id: " << job_id;
-
   cups_job_t* jobs = NULL;
-  int num_jobs = cupsGetJobs(&jobs, printer_name.c_str(), 1, -1);
+  int num_jobs = GetJobs(&jobs, printer_name.c_str(), 1, -1);
 
   bool found = false;
   for (int i = 0; i < num_jobs; i++) {
@@ -310,6 +377,13 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
     }
   }
 
+  if (found)
+    LOG(INFO) << "CP_CUPS: Job details for: " << printer_name <<
+        " job_id: " << job_id << " job status: " << job_details->status;
+  else
+    LOG(WARNING) << "CP_CUPS: Job not found for: " << printer_name <<
+        " job_id: " << job_id;
+
   cupsFreeJobs(num_jobs, jobs);
   return found;
 }
@@ -318,7 +392,7 @@ bool PrintSystemCUPS::GetPrinterInfo(const std::string& printer_name,
                                      PrinterBasicInfo* info) {
   DCHECK(info);
 
-  DLOG(INFO) << "CP_CUPS: Getting printer info for: " << printer_name;
+  LOG(INFO) << "CP_CUPS: Getting printer info for: " << printer_name;
 
   // This is not very efficient way to get specific printer info. CUPS 1.4
   // supports cupsGetNamedDest() function. However, CUPS 1.4 is not available
@@ -361,8 +435,68 @@ std::string PrintSystem::GenerateProxyId() {
   return id;
 }
 
-scoped_refptr<PrintSystem> PrintSystem::CreateInstance() {
-  return new PrintSystemCUPS;
+scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
+    const DictionaryValue* print_system_settings) {
+  // Initialize gcrypt library.
+  init_gcrypt();
+
+  std::string print_server_url_str;
+  if (print_system_settings) {
+    print_system_settings->GetString(
+        kCUPSPrintServerURL, &print_server_url_str);
+  }
+  GURL print_server_url(print_server_url_str.c_str());
+  return new PrintSystemCUPS(print_server_url);
+}
+
+int PrintSystemCUPS::GetDests(cups_dest_t** dests) {
+  if (print_server_url_.is_empty()) {  // Use default (local) print server.
+    return cupsGetDests(dests);
+  } else {
+    HttpConnectionCUPS http(print_server_url_);
+    return cupsGetDests2(http.http(), dests);
+  }
+}
+
+FilePath PrintSystemCUPS::GetPPD(const char* name) {
+  // cupsGetPPD returns a filename stored in a static buffer in CUPS.
+  // Protect this code with lock.
+  static Lock ppd_lock;
+  ppd_lock.Acquire();
+  FilePath ppd_path;
+  const char* ppd_file_path = NULL;
+  if (print_server_url_.is_empty()) {  // Use default (local) print server.
+    ppd_file_path = cupsGetPPD(name);
+  } else {
+    HttpConnectionCUPS http(print_server_url_);
+    ppd_file_path = cupsGetPPD2(http.http(), name);
+  }
+  if (ppd_file_path)
+    ppd_path = FilePath(ppd_file_path);
+  ppd_lock.Release();
+  return ppd_path;
+}
+
+int PrintSystemCUPS::PrintFile(const char* name, const char* filename,
+                               const char* title, int num_options,
+                               cups_option_t* options) {
+  if (print_server_url_.is_empty()) {  // Use default (local) print server.
+    return cupsPrintFile(name, filename, title, num_options, options);
+  } else {
+    HttpConnectionCUPS http(print_server_url_);
+    return cupsPrintFile2(http.http(), name, filename,
+                          title, num_options, options);
+  }
+}
+
+int PrintSystemCUPS::GetJobs(cups_job_t** jobs, const char* name,
+                             int myjobs, int whichjobs) {
+  if (print_server_url_.is_empty()) {  // Use default (local) print server.
+    return cupsGetJobs(jobs, name, myjobs, whichjobs);
+  } else {
+    HttpConnectionCUPS http(print_server_url_);
+    return cupsGetJobs2(http.http(), jobs, name, myjobs, whichjobs);
+  }
 }
 
 }  // namespace cloud_print

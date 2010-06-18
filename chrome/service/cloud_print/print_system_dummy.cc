@@ -17,7 +17,8 @@ std::string PrintSystem::GenerateProxyId() {
   return std::string();
 }
 
-scoped_refptr<PrintSystem> PrintSystem::CreateInstance() {
+scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
+    const DictionaryValue* print_system_settings) {
   NOTREACHED();
   return NULL;
 }

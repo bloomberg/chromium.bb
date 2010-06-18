@@ -1117,6 +1117,8 @@
           'link_settings': {
             'libraries': [
               '-lcups',
+              '-lgcrypt',
+              '-lgnutls',
             ],
           },
           'defines': [

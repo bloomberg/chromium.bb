@@ -610,7 +610,8 @@ std::string PrintSystem::GenerateProxyId() {
   return ret;
 }
 
-scoped_refptr<PrintSystem> PrintSystem::CreateInstance() {
+scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
+    const DictionaryValue* print_system_settings) {
   return new PrintSystemWin;
 }
 

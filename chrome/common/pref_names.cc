@@ -881,6 +881,9 @@ const wchar_t kCloudPrintXMPPAuthToken[] = L"cloud_print.xmpp_auth_token";
 // The email address of the account used to authenticate with the Cloud Print
 // server.
 extern const wchar_t kCloudPrintEmail[] = L"cloud_print.email";
+// Settings specific to underlying print system.
+extern const wchar_t kCloudPrintPrintSystemSettings[] =
+    L"cloud_print.print_system_settings";
 
 // Boolean to disable proxy altogether. If true, other proxy
 // preferences are ignored.

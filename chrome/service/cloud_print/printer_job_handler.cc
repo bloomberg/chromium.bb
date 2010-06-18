@@ -57,7 +57,8 @@ bool PrinterJobHandler::Initialize() {
 }
 
 PrinterJobHandler::~PrinterJobHandler() {
-  printer_watcher_->StopWatching();
+  if (printer_watcher_)
+    printer_watcher_->StopWatching();
 }
 
 void PrinterJobHandler::Reset() {

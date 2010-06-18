@@ -44,8 +44,11 @@ class CloudPrintProxyFrontend {
 
 class CloudPrintProxyBackend {
  public:
+  // It is OK for print_system_settings to be NULL. In this case system should
+  // use system default settings.
   explicit CloudPrintProxyBackend(CloudPrintProxyFrontend* frontend,
-                                  const GURL& cloud_print_server_url);
+                                  const GURL& cloud_print_server_url,
+                                  const DictionaryValue* print_sys_settings);
   ~CloudPrintProxyBackend();
 
   bool InitializeWithLsid(const std::string& lsid, const std::string& proxy_id);

@@ -35,6 +35,11 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     service_prefs_->WritePrefs();
   }
 
+  // Getting print system specific settings from the preferences.
+  DictionaryValue* print_system_settings = NULL;
+  service_prefs_->prefs()->GetDictionary(prefs::kCloudPrintPrintSystemSettings,
+                                         &print_system_settings);
+
   // Check if there is an override for the cloud print server URL.
   std::string cloud_print_server_url_str;
   service_prefs_->prefs()->GetString(prefs::kCloudPrintServiceURL,
@@ -45,7 +50,8 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
 
   GURL cloud_print_server_url(cloud_print_server_url_str.c_str());
   DCHECK(cloud_print_server_url.is_valid());
-  backend_.reset(new CloudPrintProxyBackend(this, cloud_print_server_url));
+  backend_.reset(new CloudPrintProxyBackend(this, cloud_print_server_url,
+                                            print_system_settings));
   // If we have been passed in an LSID, we want to use this to authenticate.
   // Else we will try and retrieve the last used auth tokens from prefs.
   if (!lsid.empty()) {

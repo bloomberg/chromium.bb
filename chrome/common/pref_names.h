@@ -328,6 +328,7 @@ extern const wchar_t kCloudPrintProxyId[];
 extern const wchar_t kCloudPrintAuthToken[];
 extern const wchar_t kCloudPrintXMPPAuthToken[];
 extern const wchar_t kCloudPrintEmail[];
+extern const wchar_t kCloudPrintPrintSystemSettings[];
 
 extern const wchar_t kNoProxyServer[];
 extern const wchar_t kProxyAutoDetect[];
