@@ -29,7 +29,6 @@
 #include "chrome/test/thread_observer_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_field.h"
 
 using base::Time;

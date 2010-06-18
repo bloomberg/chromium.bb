@@ -6,6 +6,10 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
@@ -31,7 +35,6 @@
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 
 namespace {
 

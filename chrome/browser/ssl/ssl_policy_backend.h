@@ -9,9 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/tab_contents/security_style.h"
 #include "net/base/x509_certificate.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 
 class NavigationController;
 class SSLHostState;

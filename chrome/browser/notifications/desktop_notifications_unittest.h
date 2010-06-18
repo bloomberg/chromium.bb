@@ -17,7 +17,6 @@
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class DesktopNotificationsTest;
 typedef LoggingNotificationProxyBase<DesktopNotificationsTest>

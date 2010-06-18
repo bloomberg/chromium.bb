@@ -26,7 +26,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 
