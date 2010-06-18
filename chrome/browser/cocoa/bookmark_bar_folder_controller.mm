@@ -1267,6 +1267,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   NSPoint poofPoint = NSMakePoint(NSMidX(poofFrame), NSMidY(poofFrame));
   poofPoint = [oldButton convertPoint:poofPoint toView:nil];
   poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
+
+  // If a hover-open is pending, cancel it.
+  if (oldButton == buttonThatMouseIsIn_)
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
   [oldButton removeFromSuperview];
   if (animate && !ignoreAnimations_)
     NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,

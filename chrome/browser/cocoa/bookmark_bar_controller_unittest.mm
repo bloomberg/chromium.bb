@@ -7,6 +7,7 @@
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
@@ -580,6 +581,56 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
       EXPECT_FALSE([bar_ folderController]);
     } else {
       EXPECT_TRUE([bar_ folderController]);
+    }
+  }
+}
+
+// http://crbug.com/46175 is a crash when deleting bookmarks from the
+// off-the-side menu while it is open.  This test tries to bang hard
+// in this area to reproduce the crash.
+TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  [bar_ setIgnoreAnimations:YES];
+  [bar_ loaded:model];
+
+  // Add a lot of bookmarks (per the bug).
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  for (int i = 0; i < 100; i++) {
+    std::ostringstream title;
+    title << "super duper wide title " << i;
+    model->AddURL(parent, parent->GetChildCount(),
+                  ASCIIToWide(title.str().c_str()),
+                  GURL("http://superfriends.hall-of-justice.edu"));
+  }
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Open "off the side" menu.
+  NSButton* offTheSideButton = [bar_ offTheSideButton];
+  [bar_ openBookmarkFolderFromButton:offTheSideButton];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+  [bbfc setIgnoreAnimations:YES];
+
+  // Start deleting items; try and delete randomish ones in case it
+  // makes a difference.
+  int indices[] = { 2, 4, 5, 1, 7, 9, 2, 0, 10, 9 };
+  while (parent->GetChildCount()) {
+    for (unsigned int i = 0; i < arraysize(indices); i++) {
+      if (indices[i] < parent->GetChildCount()) {
+        // First we mouse-enter the button to make things harder.
+        NSArray* buttons = [bbfc buttons];
+        for (BookmarkButton* button in buttons) {
+          if ([button bookmarkNode] == parent->GetChild(indices[i])) {
+            [bbfc mouseEnteredButton:button event:nil];
+            break;
+          }
+        }
+        // Then we remove the node.  This triggers the button to get
+        // deleted.
+        model->Remove(parent, indices[i]);
+        // Force visual update which is otherwise delayed.
+        [[bbfc window] displayIfNeeded];
+      }
     }
   }
 }
