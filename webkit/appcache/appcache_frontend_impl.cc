@@ -53,6 +53,13 @@ void AppCacheFrontendImpl::OnProgressEventRaised(
   }
 }
 
+void AppCacheFrontendImpl::OnLogMessage(int host_id, LogLevel log_level,
+                                        const std::string& message) {
+  WebApplicationCacheHostImpl* host = GetHost(host_id);
+  if (host)
+    host->OnLogMessage(log_level, message);
+}
+
 void AppCacheFrontendImpl::OnContentBlocked(int host_id) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)

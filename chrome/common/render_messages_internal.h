@@ -633,6 +633,12 @@ IPC_BEGIN_MESSAGES(View)
                        int /* total */,
                        int /* complete */)
 
+  // Notifies the renderer of an AppCache logging message.
+  IPC_MESSAGE_CONTROL3(AppCacheMsg_LogMessage,
+                       int /* host_id */,
+                       int /* log_level */,
+                       std::string /* message */)
+
   // Notifies the renderer of the fact that AppCache access was blocked.
   IPC_MESSAGE_CONTROL1(AppCacheMsg_ContentBlocked,
                        int /* host_id */)

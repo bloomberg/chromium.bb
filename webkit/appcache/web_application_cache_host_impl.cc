@@ -92,6 +92,12 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
     client_->notifyEventListener(WebApplicationCacheHost::ProgressEvent);
 }
 
+void WebApplicationCacheHostImpl::OnLogMessage(
+    LogLevel log_level, const std::string& message) {
+  // TODO(michaeln): Widen the webkit api with this addition.
+  // client_->notifyLogMessage(log_level, message);
+}
+
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(
     WebURLRequest& request) {
   request.setAppCacheHostID(host_id_);

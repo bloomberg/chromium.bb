@@ -115,6 +115,22 @@ class SimpleFrontendProxy
       NOTREACHED();
   }
 
+  virtual void OnLogMessage(int host_id,
+                            appcache::LogLevel log_level,
+                            const std::string& message) {
+    if (!system_)
+      return;
+    if (system_->is_io_thread())
+      system_->ui_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &SimpleFrontendProxy::OnLogMessage,
+          host_id, log_level, message));
+    else if (system_->is_ui_thread())
+      system_->frontend_impl_.OnLogMessage(
+          host_id, log_level, message);
+    else
+      NOTREACHED();
+  }
+
   virtual void OnContentBlocked(int host_id) {}
 
  private:

@@ -38,6 +38,10 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
                                      int num_total, int num_complete) {
   }
 
+  virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
+                            const std::string& message) {
+  }
+
   virtual void OnContentBlocked(int host_id) {
   }
 

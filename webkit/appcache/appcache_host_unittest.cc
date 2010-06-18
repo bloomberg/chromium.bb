@@ -57,6 +57,10 @@ class AppCacheHostTest : public testing::Test {
       last_event_id_ = PROGRESS_EVENT;
     }
 
+    virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
+                              const std::string& message) {
+    }
+
     virtual void OnContentBlocked(int host_id) {
     }
 

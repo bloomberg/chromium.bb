@@ -29,6 +29,12 @@ void AppCacheFrontendProxy::OnProgressEventRaised(
       host_ids, url, num_total, num_complete));
 }
 
+void AppCacheFrontendProxy::OnLogMessage(int host_id,
+                                         appcache::LogLevel log_level,
+                                         const std::string& message) {
+  sender_->Send(new AppCacheMsg_LogMessage(host_id, log_level, message));
+}
+
 void AppCacheFrontendProxy::OnContentBlocked(int host_id) {
   sender_->Send(new AppCacheMsg_ContentBlocked(host_id));
 }

@@ -44,6 +44,12 @@ enum EventID {
   OBSOLETE_EVENT
 };
 
+enum LogLevel {
+  LOG_INFO,
+  LOG_WARNING,
+  LOG_ERROR,
+};
+
 // Interface used by backend (browser-process) to talk to frontend (renderer).
 class AppCacheFrontend {
  public:
@@ -57,7 +63,8 @@ class AppCacheFrontend {
                                      const GURL& url,
                                      int num_total, int num_complete) = 0;
   virtual void OnContentBlocked(int host_id) = 0;
-
+  virtual void OnLogMessage(int host_id, LogLevel log_level,
+                            const std::string& message) = 0;
   virtual ~AppCacheFrontend() {}
 };
 
