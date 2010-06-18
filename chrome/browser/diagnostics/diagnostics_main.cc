@@ -9,6 +9,8 @@
 #include <unistd.h>
 #endif
 
+#include <iostream>
+
 #include "app/app_paths.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -152,8 +154,13 @@ class PosixConsole : public SimpleConsole {
   }
 
   virtual bool Read(std::wstring* txt) {
-    // TODO(mattm): implement this.
-    return false;
+    std::string input;
+    if (!std::getline(std::cin, input)) {
+      std::cin.clear();
+      return false;
+    }
+    *txt = UTF8ToWide(input);
+    return true;
   }
 
   virtual bool SetColor(Color color) {
