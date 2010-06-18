@@ -41,7 +41,6 @@ BalloonHost::BalloonHost(Balloon* balloon)
 
 void BalloonHost::Shutdown() {
   if (render_view_host_) {
-    NotifyDisconnect();
     render_view_host_->Shutdown();
     render_view_host_ = NULL;
   }
@@ -55,6 +54,7 @@ WebPreferences BalloonHost::GetWebkitPrefs() {
 
 void BalloonHost::Close(RenderViewHost* render_view_host) {
   balloon_->CloseByScript();
+  NotifyDisconnect();
 }
 
 void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
