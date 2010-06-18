@@ -761,27 +761,6 @@
 }
 
 {
-   bug_46882_a
-   Heapcheck:Leak
-   ...
-   fun:remoting::JsonHostConfig::Read
-}
-
-{
-   bug_46882_b
-   Heapcheck:Leak
-   ...
-   fun:remoting::JsonHostConfigTest_Write_Test::TestBody
-}
-
-{
-   bug_46882_c
-   Heapcheck:Leak
-   fun:base::MessageLoopProxy::CreateForCurrentThread
-   fun:remoting::JsonHostConfigTest::SetUp
-}
-
-{
    bug_46886
    Heapcheck:Leak
    ...

@@ -40,6 +40,7 @@ void JsonHostConfig::Update(Task* task) {
     AutoLock auto_lock(lock_);
     task->Run();
   }
+  delete task;
   message_loop_proxy_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JsonHostConfig::DoWrite));
 }
