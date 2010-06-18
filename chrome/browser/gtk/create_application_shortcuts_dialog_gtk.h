@@ -40,6 +40,9 @@ class CreateApplicationShortcutsDialogGtk
   CHROMEGTK_CALLBACK_1(CreateApplicationShortcutsDialogGtk, void,
                        OnErrorDialogResponse, int);
 
+  CHROMEGTK_CALLBACK_0(CreateApplicationShortcutsDialogGtk, void,
+                       OnToggleCheckbox);
+
   void CreateDesktopShortcut(
       const ShellIntegration::ShortcutInfo& shortcut_info);
   void ShowErrorDialog();

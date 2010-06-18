@@ -68,12 +68,16 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), desktop_checkbox_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(desktop_checkbox_), true);
+  g_signal_connect(desktop_checkbox_, "toggled",
+                   G_CALLBACK(OnToggleCheckboxThunk), this);
 
   // Menu checkbox.
   menu_checkbox_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_MENU_CHKBOX).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), menu_checkbox_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(menu_checkbox_), false);
+  g_signal_connect(menu_checkbox_, "toggled",
+                   G_CALLBACK(OnToggleCheckboxThunk), this);
 
   g_signal_connect(create_dialog_, "response",
                    G_CALLBACK(OnCreateDialogResponseThunk), this);
@@ -173,4 +177,17 @@ void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
   g_signal_connect(error_dialog_, "response",
                    G_CALLBACK(OnErrorDialogResponseThunk), this);
   gtk_widget_show_all(error_dialog_);
+}
+
+void CreateApplicationShortcutsDialogGtk::OnToggleCheckbox(GtkWidget* sender) {
+  gboolean can_accept = FALSE;
+
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_)) ||
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_))) {
+    can_accept = TRUE;
+  }
+
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(create_dialog_),
+                                    GTK_RESPONSE_ACCEPT,
+                                    can_accept);
 }
