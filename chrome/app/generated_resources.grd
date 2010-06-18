@@ -2594,8 +2594,8 @@ each locale. -->
       <message name="IDS_CERT_INFO_COMMON_NAME_LABEL" desc="The label of the Common Name field in the general page of the certificate info dialog.  (CN) is the name of this field in the standard">
         Common Name (CN)
       </message>
-      <message name="IDS_CERT_INFO_IDN_VALUE_FORMAT" desc="The format of values for Common Name and SubjectAltName fields in the certificate info dialog when a name is an Internationalized Domain Name.">
-        <ph name="ASCII_NAME">$1<ex>xn--hxajbheg2az3al.xn--jxalpdlp</ex></ph> (<ph name="UNICODE_NAME">$2<ex>παράδειγμα.δοκιμή</ex></ph>)
+      <message name="IDS_CERT_INFO_IDN_VALUE_FORMAT" desc="The format of values for Common Name and SubjectAltName fields in the certificate info dialog when a name is an Internationalized Domain Name (eg, παράδειγμα.δοκιμή).">
+        <ph name="ASCII_NAME">$1<ex>xn--hxajbheg2az3al.xn--jxalpdlp</ex></ph> (<ph name="UNICODE_NAME">$2<ex>see desc; only ASCII allowed in ph.</ex></ph>)
       </message>
       <message name="IDS_CERT_INFO_ORGANIZATION_LABEL" desc="The label of the Organization field in the general page of the certificate info dialog.  (O) is the name of this field in the standard">
         Organization (O)
