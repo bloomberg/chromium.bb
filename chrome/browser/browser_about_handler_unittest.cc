@@ -5,8 +5,8 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_about_handler.h"
+#include "chrome/common/about_handler.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/about_handler.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,7 +87,8 @@ TEST(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     GURL url(test_data[i].test_url);
-    EXPECT_EQ(test_data[i].about_handled, AboutHandler::WillHandle(url));
+    EXPECT_EQ(test_data[i].about_handled,
+              chrome_about_handler::WillHandle(url));
     EXPECT_EQ(test_data[i].browser_handled,
               WillHandleBrowserAboutURL(&url, NULL));
     EXPECT_EQ(test_data[i].result_url, url);

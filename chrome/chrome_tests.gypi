@@ -1038,6 +1038,7 @@
         'renderer/render_view_unittest.cc',
         'renderer/render_view_unittest_mac.mm',
         'renderer/render_widget_unittest.cc',
+        'renderer/renderer_about_handler_unittest.cc',
         'renderer/renderer_main_unittest.cc',
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',

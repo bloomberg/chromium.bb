@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_about_handler.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -37,12 +38,12 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/about_handler.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -53,17 +54,13 @@
 #include "v8/include/v8.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/syslogs_library.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/views/about_ipc_dialog.h"
 #include "chrome/browser/views/about_network_dialog.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/cocoa/about_ipc_dialog.h"
@@ -200,7 +197,7 @@ class ChromeOSAboutVersionHandler {
   chromeos::VersionLoader loader_;
 
   // Used to request the version.
- CancelableRequestConsumer consumer_;
+  CancelableRequestConsumer consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSAboutVersionHandler);
 };
@@ -368,7 +365,7 @@ std::string AboutStats() {
     std::string full_name = table->GetRowName(index);
     if (full_name.length() == 0)
       break;
-    DCHECK(full_name[1] == ':');
+    DCHECK_EQ(':', full_name[1]);
     char counter_type = full_name[0];
     std::string name = full_name.substr(2);
 
@@ -996,7 +993,7 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 
   // There are a few about: URLs that we hand over to the renderer. If the
   // renderer wants them, don't do any rewriting.
-  if (AboutHandler::WillHandle(*url))
+  if (chrome_about_handler::WillHandle(*url))
     return false;
 
   // Anything else requires our special handler, make sure its initialized.

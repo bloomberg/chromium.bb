@@ -5,48 +5,33 @@
 #include "chrome/renderer/about_handler.h"
 
 #include "base/platform_thread.h"
-#include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
+#include "chrome/common/about_handler.h"
 
-struct AboutHandlerUrl {
-  const char *url;
-  void (*action)();
+typedef void (*AboutHandlerFuncPtr)();
+
+// This needs to match up with chrome_about_handler::about_urls in
+// chrome/common/about_handler.cc.
+static const AboutHandlerFuncPtr about_urls_handlers[] = {
+    AboutHandler::AboutCrash,
+    AboutHandler::AboutHang,
+    AboutHandler::AboutShortHang,
+    NULL,
 };
-
-static AboutHandlerUrl about_urls[] = {
-  { chrome::kAboutCrashURL, AboutHandler::AboutCrash },
-  { chrome::kAboutHangURL, AboutHandler::AboutHang },
-  { chrome::kAboutShorthangURL, AboutHandler::AboutShortHang },
-  { NULL, NULL }
-};
-
-static const char* kAboutScheme = "about";
-
-bool AboutHandler::WillHandle(const GURL& url) {
-  if (url.scheme() != kAboutScheme)
-    return false;
-
-  struct AboutHandlerUrl* url_handler = about_urls;
-  while (url_handler->url) {
-    if (url == GURL(url_handler->url))
-      return true;
-    url_handler++;
-  }
-  return false;
-}
 
 // static
 bool AboutHandler::MaybeHandle(const GURL& url) {
-  if (url.scheme() != kAboutScheme)
+  if (url.scheme() != chrome_about_handler::kAboutScheme)
     return false;
 
-  struct AboutHandlerUrl* url_handler = about_urls;
-  while (url_handler->url) {
-    if (url == GURL(url_handler->url)) {
-      url_handler->action();
+  int about_urls_handler_index = 0;
+  const char* const* url_handler = chrome_about_handler::about_urls;
+  while (*url_handler) {
+    if (GURL(*url_handler) == url) {
+      about_urls_handlers[about_urls_handler_index]();
       return true;  // theoretically :]
     }
     url_handler++;
+    about_urls_handler_index++;
   }
   return false;
 }
@@ -67,4 +52,9 @@ void AboutHandler::AboutHang() {
 // static
 void AboutHandler::AboutShortHang() {
   PlatformThread::Sleep(20000);
+}
+
+// static
+size_t AboutHandler::AboutURLHandlerSize() {
+  return arraysize(about_urls_handlers);
 }

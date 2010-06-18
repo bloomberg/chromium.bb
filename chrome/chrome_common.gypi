@@ -23,6 +23,8 @@
           # .cc, .h, and .mm files under chrome/common that are used on all
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are not included.
+          'common/about_handler.cc',
+          'common/about_handler.h',
           'common/app_mode_common_mac.h',
           'common/app_mode_common_mac.mm',
           'common/bindings_policy.h',
@@ -59,7 +61,7 @@
           'common/message_router.cc',
           'common/message_router.h',
           'common/metrics_helpers.cc',
-          'common/metrics_helpers.h',          
+          'common/metrics_helpers.h',
           'common/nacl_cmd_line.cc',
           'common/nacl_cmd_line.h',
           'common/nacl_messages.h',
@@ -371,7 +373,7 @@
             '../app/app.gyp:app_resources',
             '../base/base.gyp:base_nacl_win64',
             '../ipc/ipc.gyp:ipc_win64',
-            '../third_party/libxml/libxml.gyp:libxml',            
+            '../third_party/libxml/libxml.gyp:libxml',
           ],
           'include_dirs': [
             '../third_party/npapi',
