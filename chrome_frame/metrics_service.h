@@ -139,6 +139,12 @@ class MetricsService : public MetricsServiceBase {
 
   PlatformThreadId thread_;
 
+  // Indicates if this is the first uma upload from this instance.
+  bool initial_uma_upload_;
+
+  // The transmission timer id returned by SetTimer
+  int transmission_timer_id_;
+
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 

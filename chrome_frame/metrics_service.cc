@@ -69,10 +69,11 @@ using base::TimeDelta;
 static const char kMetricsType[] =
     "Content-Type: application/vnd.mozilla.metrics.bz2\r\n";
 
-// The delay, in seconds, after startup before sending the first log message.
-static const int kInitialInterlogDuration = 60;  // one minute
+// The first UMA upload occurs after this interval.
+static const int kInitialUMAUploadTimeoutMilliSeconds = 30000;
 
-static const int kUMAUploadTimeoutMilliSeconds = 30000;
+// Default to one UMA upload per 10 mins.
+static const int kMinMilliSecondsPerUMAUpload = 600000;
 
 base::LazyInstance<base::ThreadLocalPointer<MetricsService> >
     MetricsService::g_metrics_instance_(base::LINKER_INITIALIZED);
@@ -231,7 +232,9 @@ MetricsService::MetricsService()
       reporting_active_(false),
       user_permits_upload_(false),
       state_(INITIALIZED),
-      thread_(NULL) {
+      thread_(NULL),
+      initial_uma_upload_(true),
+      transmission_timer_id_(0) {
 }
 
 MetricsService::~MetricsService() {
@@ -319,6 +322,15 @@ void CALLBACK MetricsService::TransmissionTimerProc(HWND window,
   DLOG(INFO) << "Transmission timer notified";
   DCHECK(GetInstance() != NULL);
   GetInstance()->UploadData();
+  if (GetInstance()->initial_uma_upload_) {
+    // If this is the first uma upload by this process then subsequent uma
+    // uploads should occur once every 10 minutes(default).
+    GetInstance()->initial_uma_upload_ = false;
+    DCHECK(GetInstance()->transmission_timer_id_ != 0);
+    SetTimer(NULL, GetInstance()->transmission_timer_id_,
+             kMinMilliSecondsPerUMAUpload,
+             reinterpret_cast<TIMERPROC>(TransmissionTimerProc));
+  }
 }
 
 void MetricsService::SetReporting(bool enable) {
@@ -328,8 +340,10 @@ void MetricsService::SetReporting(bool enable) {
   if (reporting_active_ != enable) {
     reporting_active_ = enable;
     if (reporting_active_) {
-      SetTimer(NULL, kChromeFrameMetricsTimerId, kUMAUploadTimeoutMilliSeconds,
-          reinterpret_cast<TIMERPROC>(TransmissionTimerProc));
+      transmission_timer_id_ =
+          SetTimer(NULL, kChromeFrameMetricsTimerId,
+                   kInitialUMAUploadTimeoutMilliSeconds,
+                   reinterpret_cast<TIMERPROC>(TransmissionTimerProc));
     }
   }
 }
