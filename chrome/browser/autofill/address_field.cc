@@ -21,7 +21,7 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
 
   switch (type_) {
     case kShippingAddress:
-     // Fallthrough. Autofill no longer supports shipping addresses.
+     // Fall through. AutoFill does not support shipping addresses.
     case kGenericAddress:
       address_company = COMPANY_NAME;
       address_line1 = ADDRESS_HOME_LINE1;
@@ -141,12 +141,7 @@ AddressType AddressField::FindType() const {
   // here, but there's no need to since ECML's prefixes Ecom_BillTo
   // and Ecom_ShipTo contain "bill" and "ship" anyway.
   string16 name = StringToLowerASCII(address1_->name());
-  AddressType address_type = AddressTypeFromText(name);
-  if (address_type)
-    return address_type;
-
-  // TODO(jhawkins): Look at table cells above this point.
-  return kGenericAddress;
+  return AddressTypeFromText(name);
 }
 
 AddressField::AddressField()
