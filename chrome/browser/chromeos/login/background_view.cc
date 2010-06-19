@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/feedback_menu_button.h"
 #include "chrome/browser/chromeos/status/language_menu_button.h"
@@ -35,8 +35,7 @@ BackgroundView::BackgroundView() : status_area_(NULL),
                                    os_version_label_(NULL),
                                    boot_times_label_(NULL),
                                    did_paint_(false) {
-  views::Painter* painter = chromeos::CreateWizardPainter(
-      &chromeos::BorderDefinition::kWizardBorder);
+  views::Painter* painter = CreateBackgroundPainter();
   set_background(views::Background::CreateBackgroundPainter(true, painter));
   InitStatusArea();
   InitInfoLabels();
@@ -86,9 +85,7 @@ void BackgroundView::Paint(gfx::Canvas* canvas) {
 }
 
 void BackgroundView::Layout() {
-  int corner_padding =
-      chromeos::BorderDefinition::kWizardBorder.padding +
-      chromeos::BorderDefinition::kWizardBorder.corner_radius / 2;
+  int corner_padding = 5;
   int kInfoLeftPadding = 60;
   int kInfoBottomPadding = 40;
   int kInfoBetweenLinesPadding = 4;

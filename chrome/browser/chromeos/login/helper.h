@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace views {
+class Painter;
 class Throbber;
 }  // namespace views
 
@@ -20,6 +21,9 @@ views::Throbber* CreateDefaultSmoothedThrobber();
 
 // Creates default throbber.
 views::Throbber* CreateDefaultThrobber();
+
+// Creates painter for login background.
+views::Painter* CreateBackgroundPainter();
 
 // Define the constants in |login| namespace to avoid potential
 // conflict with other chromeos components.

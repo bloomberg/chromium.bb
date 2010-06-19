@@ -16,13 +16,12 @@ namespace chromeos {
 
 namespace {
 
-const int kBackgroundPadding = 10;
-const int kCornerRadius = 12;
-const int kScreenShadow = 10;
+const int kCornerRadius = 5;
+const SkColor kScreenTopColor = SkColorSetRGB(250, 251, 251);
+const SkColor kScreenBottomColor = SkColorSetRGB(204, 209, 212);
 const SkColor kScreenShadowColor = SkColorSetARGB(64, 34, 54, 115);
-const SkColor kBackgroundTopColor = SkColorSetRGB(82, 139, 224);
-const SkColor kBackgroundBottomColor = SkColorSetRGB(50, 102, 204);
 const SkColor kShadowStrokeColor = SkColorSetRGB(40, 90, 177);
+const int kScreenShadow = 10;
 
 static void DrawRoundedRect(
       gfx::Canvas* canvas,
@@ -187,13 +186,13 @@ void RoundedRectBorder::GetInsets(gfx::Insets* insets) const {
 
 // static
 const BorderDefinition BorderDefinition::kWizardBorder = {
-  kBackgroundPadding,
+  0,
   SK_ColorBLACK,
   0,
   SK_ColorBLACK,
-  kCornerRadius,
-  kBackgroundTopColor,
-  kBackgroundBottomColor
+  0,
+  SK_ColorBLACK,
+  SK_ColorBLACK
 };
 const BorderDefinition BorderDefinition::kScreenBorder = {
   0,
@@ -201,8 +200,8 @@ const BorderDefinition BorderDefinition::kScreenBorder = {
   kScreenShadow,
   kScreenShadowColor,
   kCornerRadius,
-  SK_ColorWHITE,
-  SK_ColorWHITE
+  kScreenTopColor,
+  kScreenBottomColor
 };
 
 views::Painter* CreateWizardPainter(const BorderDefinition* const border) {

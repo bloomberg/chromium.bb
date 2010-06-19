@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "app/resource_bundle.h"
+#include "gfx/canvas.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/throbber.h"
+#include "views/painter.h"
 
 namespace chromeos {
 
@@ -15,6 +18,40 @@ const int kThrobberFrameMs = 60;
 
 // Time in ms before smothed throbber is shown.
 const int kThrobberStartDelayMs = 500;
+
+const SkColor kBackgroundCenterColor = SkColorSetRGB(41, 50, 67);
+const SkColor kBackgroundEdgeColor = SK_ColorBLACK;
+
+class BackgroundPainter : public views::Painter {
+ public:
+  BackgroundPainter() {}
+
+  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
+    SkRect rect;
+    rect.set(SkIntToScalar(0),
+             SkIntToScalar(0),
+             SkIntToScalar(w),
+             SkIntToScalar(h));
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    SkColor colors[2] = { kBackgroundCenterColor, kBackgroundEdgeColor };
+    SkShader* s = SkGradientShader::CreateRadial(
+        SkPoint::Make(SkIntToScalar(w / 2), SkIntToScalar(h / 2)),
+        SkIntToScalar(w / 2),
+        colors,
+        NULL,
+        2,
+        SkShader::kClamp_TileMode,
+        NULL);
+    paint.setShader(s);
+    s->unref();
+    canvas->drawRect(rect, paint);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BackgroundPainter);
+};
 
 }  // namespace
 
@@ -32,6 +69,10 @@ views::Throbber* CreateDefaultThrobber() {
   throbber->SetFrames(
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SPINNER));
   return throbber;
+}
+
+views::Painter* CreateBackgroundPainter() {
+  return new BackgroundPainter();
 }
 
 }  // namespace chromeos
