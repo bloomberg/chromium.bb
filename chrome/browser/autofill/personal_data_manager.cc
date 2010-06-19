@@ -119,8 +119,6 @@ void PersonalDataManager::RemoveObserver(
 bool PersonalDataManager::ImportFormData(
     const std::vector<FormStructure*>& form_structures,
     AutoFillManager* autofill_manager) {
-  InitializeIfNeeded();
-
   AutoLock lock(unique_ids_lock_);
   // Parse the form and construct a profile based on the information that is
   // possible to import.
@@ -374,8 +372,6 @@ void PersonalDataManager::SetCreditCards(
 
 void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
                                                 FieldTypeSet* possible_types) {
-  InitializeIfNeeded();
-
   string16 clean_info = StringToLowerASCII(CollapseWhitespace(text, false));
   if (clean_info.empty()) {
     possible_types->insert(EMPTY_TYPE);
@@ -409,7 +405,6 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
 }
 
 bool PersonalDataManager::HasPassword() {
-  InitializeIfNeeded();
   return !password_hash_.empty();
 }
 
@@ -457,7 +452,6 @@ void PersonalDataManager::Refresh() {
 
 PersonalDataManager::PersonalDataManager()
     : profile_(NULL),
-      is_initialized_(false),
       is_data_loaded_(false),
       pending_profiles_query_(0),
       pending_creditcards_query_(0) {
@@ -467,14 +461,6 @@ void PersonalDataManager::Init(Profile* profile) {
   profile_ = profile;
   LoadProfiles();
   LoadCreditCards();
-}
-
-void PersonalDataManager::InitializeIfNeeded() {
-  if (is_initialized_)
-    return;
-
-  is_initialized_ = true;
-  // TODO(jhawkins): Load data.
 }
 
 int PersonalDataManager::CreateNextUniqueID(std::set<int>* unique_ids) {

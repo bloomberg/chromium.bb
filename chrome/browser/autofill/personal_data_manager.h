@@ -159,11 +159,6 @@ class PersonalDataManager
   // Returns the profile of the tab contents.
   Profile* profile();
 
-  // Initializes the object if needed.  This should be called at the beginning
-  // of all the public functions to make sure that the object has been properly
-  // initialized before use.
-  virtual void InitializeIfNeeded();
-
   // This will create and reserve a new unique ID for a profile.
   int CreateNextUniqueID(std::set<int>* unique_ids);
 
@@ -199,9 +194,6 @@ class PersonalDataManager
 
   // The profile hosting this PersonalDataManager.
   Profile* profile_;
-
-  // True if PersonalDataManager is initialized.
-  bool is_initialized_;
 
   // True if personal data has been loaded from the web database.
   bool is_data_loaded_;
