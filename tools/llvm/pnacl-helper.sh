@@ -170,9 +170,30 @@ organize-native-code() {
     ${x86_src}/nacl64/lib/crt*.o \
     ${x86_src}/nacl64/lib/libcrt*.a \
     ${PNACL_X8664_ROOT}
-  # NOTE: we do not yet have a this for x86-64
-  #cp ${x86_src}/nacl64/lib/intrinsics.o ${X8664_ROOT}
+
+  HAS_INTRINSICS=0
+  if [ -f ${x86_src}/nacl64/lib/intrinsics.o ]; then
+    cp -f ${x86_src}/nacl64/lib/intrinsics.o ${PNACL_X8664_ROOT}
+    HAS_INTRINSICS=1
+  fi
   ls -l ${PNACL_X8664_ROOT}
+
+  # TODO(pdox): Remove this banner when it is safe to assume
+  #             that the SDK is up to date.
+  #
+  if [ $HAS_INTRINSICS -eq 0 ]; then
+    echo ""
+    echo ""
+    echo "---------------------------- Warning -----------------------------"
+    echo "|                                                                |"
+    echo "|                                                                |"
+    echo "|                  X86-64 intrinsics.o not found.                |"
+    echo "|                                                                |"
+    echo "|                                                                |"
+    echo "--------------------- Please update your SDK. --------------------"
+    echo ""
+    echo ""
+  fi
 }
 
 #@
