@@ -117,9 +117,6 @@ void PhoneNumber::SetInfo(const AutoFillType& type, const string16& value) {
     set_whole_number(number);
   else
     NOTREACHED();
-  // TODO(jhawkins): Add extension support.
-  // else if (subgroup == AutoFillType::PHONE_EXTENSION)
-  //   set_extension(number);
 }
 
 // Static.
