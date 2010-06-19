@@ -107,7 +107,7 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
                      !show_permissions, !show_permissions, 0);
 
   if (show_permissions) {
-    int label = extension->IsApp() ?
+    int label = extension->is_app() ?
                 IDS_EXTENSION_PROMPT2_APP_WILL_HAVE_ACCESS_TO :
                 IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO;
     GtkWidget* warning_label = gtk_label_new(l10n_util::GetStringUTF8(

@@ -8,6 +8,7 @@
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {
   extern const wchar_t* kAllFrames;
+  extern const wchar_t* kApp;
   extern const wchar_t* kBackground;
   extern const wchar_t* kBrowserAction;
   extern const wchar_t* kMinimumChromeVersion;
@@ -60,7 +61,6 @@ namespace extension_manifest_keys {
   extern const wchar_t* kUpdateURL;
   extern const wchar_t* kOptionsPage;
   extern const wchar_t* kWebContent;
-  extern const wchar_t* kWebContentEnabled;
   extern const wchar_t* kWebLaunchUrl;
   extern const wchar_t* kWebOrigin;
   extern const wchar_t* kWebPaths;
@@ -150,8 +150,8 @@ namespace extension_manifest_errors {
   extern const char* kMultipleOverrides;
   extern const char* kInvalidUpdateURL;
   extern const char* kInvalidDefaultLocale;
-  extern const char* kLaunchContainerWithoutURL;
   extern const char* kLaunchPathAndURLAreExclusive;
+  extern const char* kLaunchURLRequired;
   extern const char* kLocalesNoDefaultLocaleSpecified;
   extern const char* kLocalesNoDefaultMessages;
   extern const char* kLocalesNoValidLocaleNamesListed;

@@ -4,7 +4,9 @@
   "permissions": [
     "notifications"
   ],
-  "launch": {
-    "web_url": "http://www.example.com/empty.html"
+  "app": {
+    "launch": {
+      "web_url": "http://www.example.com/empty.html"
+    }
   }
 }

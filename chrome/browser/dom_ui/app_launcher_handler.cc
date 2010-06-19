@@ -115,7 +115,7 @@ void AppLauncherHandler::HandleGetApps(const Value* value) {
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-     if ((*it)->IsApp()) {
+     if ((*it)->is_app()) {
        DictionaryValue* app_info = new DictionaryValue();
        CreateAppInfo(*it, app_info);
        list->Append(app_info);

@@ -1,8 +1,12 @@
 {
   "name": "test",
   "version": "1",
-  "web_content": {
-    "enabled": true,
-    "origin": 42
+  "app": {
+    "web_content": {
+      "origin": 42
+    },
+    "launch": {
+      "web_url": "foo.html"
+    }
   }
 }

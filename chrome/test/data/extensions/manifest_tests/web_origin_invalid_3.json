@@ -1,8 +1,12 @@
 {
   "name": "test",
   "version": "1",
-  "web_content": {
-    "enabled": true,
-    "origin": "https://www.google.com/monkey"
+  "app": {
+    "web_content": {
+      "origin": "https://www.google.com/monkey"
+    },
+    "launch": {
+      "web_url": "foo.html"
+    }
   }
 }

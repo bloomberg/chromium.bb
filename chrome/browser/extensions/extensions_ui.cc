@@ -55,7 +55,7 @@ namespace {
 static bool ShouldShowExtension(Extension* extension) {
   // Don't show the themes since this page's UI isn't really useful for
   // themes.
-  if (extension->IsTheme())
+  if (extension->is_theme())
     return false;
 
   // Don't show component extensions because they are only extensions as an

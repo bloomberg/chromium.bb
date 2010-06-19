@@ -1,8 +1,10 @@
 {
   "name": "test",
   "version": "1",
-  "launch": {
-    "container": "window",
-    "local_path": "bar.html"
+  "app": {
+    "launch": {
+      "container": "window",
+      "local_path": "bar.html"
+    }
   }
 }

@@ -1,10 +1,14 @@
 {
   "name": "test",
   "version": "1",
-  "web_content": {
-    "enabled": true,
-    "paths": [
-      42
-    ]
+  "app": {
+    "web_content": {
+      "paths": [
+        42
+      ]
+    },
+    "launch": {
+      "web_url": "foo.html"
+    }
   }
 }

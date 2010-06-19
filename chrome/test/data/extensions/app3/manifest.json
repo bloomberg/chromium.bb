@@ -1,0 +1,13 @@
+{
+  "name": "Test App 3",
+  "version": "1",
+  "app": {
+    "web_content": {
+      "origin": "http://www.example.com/",
+      "paths": ["path1/should_overlap", "path5"]
+    },
+    "launch": {
+      "web_url": "foo.html"
+    }
+  }
+}

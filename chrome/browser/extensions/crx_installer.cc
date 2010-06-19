@@ -137,7 +137,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
 
   // Determine whether to allow installation. We always allow themes and
   // external installs.
-  if (!extensions_enabled_ && !extension->IsTheme() &&
+  if (!extensions_enabled_ && !extension->is_theme() &&
       !Extension::IsExternalLocation(install_source_)) {
     ReportFailureFromFileThread("Extensions are not enabled.");
     return;

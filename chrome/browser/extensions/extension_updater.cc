@@ -166,7 +166,7 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
                    extension.id(),
                    *extension.version(),
                    extension.converted_from_user_script(),
-                   extension.IsTheme(),
+                   extension.is_theme(),
                    extension.update_url());
 }
 

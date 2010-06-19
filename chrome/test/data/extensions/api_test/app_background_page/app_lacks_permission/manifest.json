@@ -1,11 +1,12 @@
 {
   "name": "App",
   "version": "0.1",
-  "web_content": {
-    "enabled" : true,
-    "origin": "http://a.com:1337"
-  },
-  "launch": {
-    "web_url": "http://a.com:1337"
+  "app": {
+    "web_content": {
+      "origin": "http://a.com:1337"
+    },
+    "launch": {
+      "web_url": "/"
+    }
   }
 }
