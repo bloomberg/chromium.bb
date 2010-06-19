@@ -13,15 +13,7 @@
 namespace views {
 
 void FocusManager::ClearNativeFocus() {
-  GtkWidget* gtk_widget = widget_->GetNativeView();
-  if (!gtk_widget) {
-    NOTREACHED();
-    return;
-  }
-
-  // Since only top-level WidgetGtk have a focus manager, the native view is
-  // expected to be a GtkWindow.
-  gtk_window_set_focus(GTK_WINDOW(gtk_widget), NULL);
+  static_cast<WidgetGtk*>(widget_)->ClearNativeFocus();
 }
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {

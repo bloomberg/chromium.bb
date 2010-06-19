@@ -194,6 +194,9 @@ class WidgetGtk
   virtual FocusTraversable* GetFocusTraversableParent();
   virtual View* GetFocusTraversableParentView();
 
+  // Clears the focus on the native widget having the focus.
+  virtual void ClearNativeFocus();
+
  protected:
   // If widget containes another widget, translates event coordinates to the
   // contained widget's coordinates, else returns original event coordinates.

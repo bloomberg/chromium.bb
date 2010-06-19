@@ -23,6 +23,31 @@
 
 namespace chromeos {
 
+namespace {
+
+// A Textfield for password, which also sets focus to itself
+// when a mouse is clicked on it. This is necessary in screen locker
+// as mouse events are grabbed in the screen locker.
+class PasswordField : public views::Textfield {
+ public:
+  PasswordField()
+      : views::Textfield(views::Textfield::STYLE_PASSWORD) {
+    set_text_to_display_when_empty(
+        l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
+  }
+
+  // views::View overrides.
+  virtual bool OnMousePressed(const views::MouseEvent& e) {
+    RequestFocus();
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordField);
+};
+
+}  // namespace
+
 using views::GridLayout;
 using login::kBorderSize;
 
@@ -45,9 +70,7 @@ void ScreenLockView::Init() {
       views::Background::CreateSolidBackground(login::kBackgroundColor));
 
   // Password field.
-  password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
-  password_field_->set_text_to_display_when_empty(
-      l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
+  password_field_ = new PasswordField();
   password_field_->SetController(this);
 
   // Unlock button.

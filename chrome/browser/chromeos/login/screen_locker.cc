@@ -145,6 +145,50 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
+// A ScreenLock window that covers entire screen to keeps the keyboard
+// focus/events inside the grab widget.
+class LockWindow : public views::WidgetGtk {
+ public:
+  LockWindow()
+      : WidgetGtk(views::WidgetGtk::TYPE_POPUP),
+        toplevel_focus_widget_(NULL) {
+  }
+
+  // GTK propagates key events from parents to children.
+  // Make sure LockWindow will never handle key events.
+  virtual gboolean OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
+    // Don't handle key event in the lock window.
+    return false;
+  }
+
+  virtual gboolean OnKeyRelease(GtkWidget* widget, GdkEventKey* event) {
+    // Don't handle key event in the lock window.
+    return false;
+  }
+
+  virtual void ClearNativeFocus() {
+    DCHECK(toplevel_focus_widget_);
+    gtk_widget_grab_focus(toplevel_focus_widget_);
+  }
+
+  // Sets the widget to move the focus to when clearning the native
+  // widget's focus.
+  void set_toplevel_focus_widget(GtkWidget* widget) {
+    GTK_WIDGET_SET_FLAGS(widget, GTK_CAN_FOCUS);
+    toplevel_focus_widget_ = widget;
+  }
+
+ private:
+  // The widget we set focus to when clearning the focus on native
+  // widget.  In screen locker, gdk input is grabbed in GrabWidget,
+  // and resetting the focus by using gtk_window_set_focus seems to
+  // confuse gtk and doesn't let focus move to native widget under
+  // GrabWidget.
+  GtkWidget* toplevel_focus_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(LockWindow);
+};
+
 // A child widget that grabs both keyboard and pointer input.
 // TODO(oshima): catch grab-broke event and quit if it ever happenes.
 class GrabWidget : public views::WidgetGtk {
@@ -352,7 +396,8 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
 void ScreenLocker::Init(const gfx::Rect& bounds) {
   // TODO(oshima): Figure out which UI to keep and remove in the background.
   views::View* screen = new BackgroundView();
-  lock_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
+  LockWindow* lock_window = new LockWindow();
+  lock_window_ = lock_window;
   lock_window_->Init(NULL, bounds);
   g_signal_connect(lock_window_->GetNativeView(),
                    "map-event",
@@ -383,7 +428,7 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
   lock_widget_->MakeTransparent();
   lock_widget_->InitWithWidget(lock_window_,
                                gfx::Rect((bounds.width() - size.width()) / 2,
-                                         (bounds.height() - size.width()) / 2,
+                                         (bounds.height() - size.height()) / 2,
                                          size.width(),
                                          size.height()));
   if (screen_lock_view_)
@@ -397,6 +442,7 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
                              NULL, false);
   gdk_window_set_back_pixmap(lock_widget_->GetNativeView()->window,
                              NULL, false);
+  lock_window->set_toplevel_focus_widget(lock_widget_->window_contents());
 }
 
 void ScreenLocker::OnLoginFailure(const std::string& error) {

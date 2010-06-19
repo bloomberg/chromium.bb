@@ -849,6 +849,15 @@ View* WidgetGtk::GetFocusTraversableParentView() {
   return NULL;
 }
 
+void WidgetGtk::ClearNativeFocus() {
+  DCHECK(type_ != TYPE_CHILD);
+  if (!GetNativeView()) {
+    NOTREACHED();
+    return;
+  }
+  gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, protected:
 
