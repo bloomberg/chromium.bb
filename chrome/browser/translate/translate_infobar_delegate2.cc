@@ -300,9 +300,8 @@ void TranslateInfoBarDelegate2::GetAfterTranslateStrings(
   strings->push_back(text.substr(offsets[1]));
 }
 
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
-// Necessary so we link OK on Mac and Linux while the new translate infobars
-// are being ported to these platforms.
+#if !defined(OS_WIN) && !defined(OS_LINUX)
+// Necessary so we link OK on Mac until Mac uses the new delegate as well.
 InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
   return NULL;
 }
