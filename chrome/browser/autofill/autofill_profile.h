@@ -58,8 +58,7 @@ class AutoFillProfile : public FormGroup {
   // For use in STL containers.
   void operator=(const AutoFillProfile&);
 
-  // Used by tests.
-  // TODO(jhawkins): Move these to private and add the test as a friend.
+  // For WebData and Sync.
   bool operator==(const AutoFillProfile& profile) const;
   bool operator!=(const AutoFillProfile& profile) const;
   void set_label(const string16& label) { label_ = label; }
