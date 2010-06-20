@@ -20,6 +20,8 @@
 #include <map>
 #include "base/lock.h"
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebSandboxSupport.h"
+#elif defined(OS_MACOSX)
+#include "third_party/WebKit/WebKit/chromium/public/mac/WebSandboxSupport.h"
 #endif
 
 namespace IPC {
@@ -113,6 +115,11 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
     Lock unicode_font_families_mutex_;
     std::map<std::string, std::string> unicode_font_families_;
   };
+#elif defined(OS_MACOSX)
+  class SandboxSupport : public WebKit::WebSandboxSupport {
+   public:
+    virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
+  };
 #endif
 
   // Helper function to send synchronous message from any thread.
@@ -123,9 +130,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   FileSystem file_system_;
 
   MimeRegistry mime_registry_;
-#if defined(OS_WIN) || defined(OS_LINUX)
+
   SandboxSupport sandbox_support_;
-#endif
 
   // This counter keeps track of the number of times sudden termination is
   // enabled or disabled. It starts at 0 (enabled) and for every disable

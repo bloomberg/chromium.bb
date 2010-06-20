@@ -5,8 +5,6 @@
 #ifndef CHROME_COMMON_FONT_LOADER_MAC_H_
 #define CHROME_COMMON_FONT_LOADER_MAC_H_
 
-#include <ApplicationServices/ApplicationServices.h>
-
 #include "base/shared_memory.h"
 #include "base/string16.h"
 
@@ -15,6 +13,8 @@
 #else
 class NSFont;
 #endif
+
+typedef uintptr_t ATSFontContainerRef;
 
 // Provides functionality to transmit fonts over IPC.
 //
