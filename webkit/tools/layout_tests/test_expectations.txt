@@ -8,6 +8,5 @@
 // Need rebaseline because METER_TAG and PROGRESS_TAG were enabled.
 // fast/dom/HTMLProgressElement/*.html and fast/dom/HTMLMeterElement/*.html also
 // need rebaseline.
-BUGTKENT : fast/dom/prototype-inheritance.html = TEXT
-BUGTKENT MAC : fast/dom/HTMLMeterElement/meter-styles-changing-pseudo.html = IMAGE
-BUGTKENT MAC : fast/dom/HTMLMeterElement/meter-styles.html = IMAGE
+BUGTKENT MAC DEBUG : fast/dom/HTMLMeterElement/meter-styles-changing-pseudo.html = IMAGE
+BUGTKENT MAC DEBUG : fast/dom/HTMLMeterElement/meter-styles.html = IMAGE
