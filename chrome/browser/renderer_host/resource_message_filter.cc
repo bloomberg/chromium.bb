@@ -14,7 +14,6 @@
 #include "base/histogram.h"
 #include "base/process_util.h"
 #include "base/thread.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -56,10 +55,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
-#if defined(OS_MACOSX)
-#include "chrome/common/font_descriptor_mac.h"
-#include "chrome/common/font_loader_mac.h"
-#endif
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -478,9 +473,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                       OnGetRawCookies)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookiesEnabled, OnGetCookiesEnabled)
-#if defined(OS_MACOSX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
-#endif
 #if defined(OS_WIN)  // This hack is Windows-specific.
       IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
@@ -761,27 +753,6 @@ void ResourceMessageFilter::OnGetCookiesEnabled(
   *enabled = GetRequestContextForURL(url)->AreCookiesEnabled();
 }
 
-#if defined(OS_MACOSX)
-void ResourceMessageFilter::OnLoadFont(const FontDescriptor& font,
-                                       uint32* handle_size,
-                                       base::SharedMemoryHandle* handle) {
-  base::SharedMemory font_data;
-  uint32 font_data_size = 0;
-  bool ok = FontLoader::LoadFontIntoBuffer(font.nsFont(), &font_data,
-                &font_data_size);
-  if (!ok || font_data_size == 0) {
-    LOG(ERROR) << "Couldn't load font data for " << font.font_name <<
-        " ok=" << ok << " font_data_size=" << font_data_size;
-    *handle_size = 0;
-    *handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-
-  *handle_size = font_data_size;
-  font_data.GiveToProcess(base::GetCurrentProcessHandle(), handle);
-}
-#endif  // OS_MACOSX
-
 #if defined(OS_WIN)  // This hack is Windows-specific.
 void ResourceMessageFilter::OnPreCacheFont(LOGFONT font) {
   // If the renderer is running in a sandbox, GetTextMetrics()
@@ -824,7 +795,7 @@ void ResourceMessageFilter::OnPreCacheFont(LOGFONT font) {
   hdcs[font_index] = hdc;
   font_index = (font_index + 1) % kFontCacheSize;
 }
-#endif  // OS_WIN
+#endif
 
 void ResourceMessageFilter::OnGetPlugins(bool refresh,
                                          IPC::Message* reply_msg) {

@@ -13,10 +13,8 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
-#include "base/shared_memory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_util.h"
-#include "chrome/common/font_loader_mac.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/plugin/npobject_util.h"
@@ -34,13 +32,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/common/font_descriptor_mac.h"
-#endif
 
 #if defined(OS_LINUX)
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
@@ -82,7 +77,11 @@ WebKit::WebFileSystem* RendererWebKitClientImpl::fileSystem() {
 }
 
 WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
+#if defined(OS_WIN) || defined(OS_LINUX)
   return &sandbox_support_;
+#else
+  return NULL;
+#endif
 }
 
 WebKit::WebCookieJar* RendererWebKitClientImpl::cookieJar() {
@@ -332,34 +331,6 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
 void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
     const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
   renderer_sandbox_support::getRenderStyleForStrike(family, sizeAndStyle, out);
-}
-
-#elif defined(OS_MACOSX)
-
-bool RendererWebKitClientImpl::SandboxSupport::loadFont(NSFont* srcFont,
-    ATSFontContainerRef* out) {
-  DCHECK(srcFont);
-  DCHECK(out);
-
-  uint32 font_data_size;
-  FontDescriptor src_font_descriptor(srcFont);
-  base::SharedMemoryHandle font_data;
-  if (!RenderThread::current()->Send(new ViewHostMsg_LoadFont(
-        src_font_descriptor, &font_data_size, &font_data))) {
-    LOG(ERROR) << "Sending ViewHostMsg_LoadFont() IPC failed for " <<
-        src_font_descriptor.font_name;
-    *out = kATSFontContainerRefUnspecified;
-    return false;
-  }
-
-  if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle()) {
-    LOG(ERROR) << "Bad response from ViewHostMsg_LoadFont() for " <<
-        src_font_descriptor.font_name;
-    *out = kATSFontContainerRefUnspecified;
-    return false;
-  }
-
-  return FontLoader::ATSFontContainerFromBuffer(font_data, font_data_size, out);
 }
 
 #endif

@@ -39,7 +39,6 @@ class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 class ExtensionMessageService;
-class FontDescriptor;
 class GeolocationDispatcherHost;
 class HostZoomMap;
 class IndexedDBDispatcherHost;
@@ -62,6 +61,10 @@ class PrintJobManager;
 
 namespace webkit_glue {
 struct WebCookie;
+}
+
+namespace WebKit {
+struct WebScreenInfo;
 }
 
 struct ViewHostMsg_ScriptedPrint_Params;
@@ -156,12 +159,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                           const std::wstring& title,
                           const std::wstring& filter,
                           uint32 user_data);
-
-#if defined(OS_MACOSX)
-  void OnLoadFont(const FontDescriptor& font,
-                  uint32* handle_size,
-                  base::SharedMemoryHandle* handle);
-#endif
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
   // Cache fonts for the renderer. See ResourceMessageFilter::OnPreCacheFont
