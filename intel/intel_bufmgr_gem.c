@@ -1608,7 +1608,7 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 
 	if (ret != 0) {
 		ret = -errno;
-		if (ret == -ENOMEM) {
+		if (ret == -ENOSPC) {
 			fprintf(stderr,
 				"Execbuffer fails to pin. "
 				"Estimate: %u. Actual: %u. Available: %u\n",
