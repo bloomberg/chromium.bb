@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForAllowedOrigin) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, FLAKY_NoInfobarForOffTheRecord) {
   // First, check infobar will be created for regular profile
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
