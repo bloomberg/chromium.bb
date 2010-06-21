@@ -403,16 +403,15 @@ test-x86-64-currently-working() {
 }
 
 #@
-#@ test-arm-spec <official-spec-dir>
+#@ test-spec <official-spec-dir> <setup>
 #@
-#@   run spec via arm
-test-arm-spec() {
+#@   run spec tests
+test-spec() {
   official=$(readlink -f $1)
   cd  tests/spec2k
   ./run_all.sh CleanBenchmarks
   ./run_all.sh PoplateFromSpecHarness ${official}
-  ./run_all.sh BuildAndRunBenchmarks
-
+  ./run_all.sh BuildAndRunBenchmarks $2
 }
 
 #@

@@ -29,10 +29,7 @@ SCRIPT=./run.train.sh
 export VERIFY=yes
 
 # Pick a setup
-#readonly SETUP=SetupPnaclArm
-#readonly SETUP=SetupGccX8632
-#readonly SETUP=SetupNaclX8632
-readonly SETUP=SetupPnaclArmOpt
+
 ######################################################################
 # Helper
 ######################################################################
@@ -51,13 +48,24 @@ Usage() {
 ######################################################################
 # Various Setups
 ######################################################################
+#@ invocation
+#@    run_all.sh <mode> <mode-arg>*
 
+#@ ------------------------------------------------------------
+#@ Available Setups:
+#@ ------------------------------------------------------------
+
+#@
+#@ SetupGccX8632
+#@   use system compiler
 SetupGccX8632() {
   PREFIX=
   SUFFIX=gcc.x8632
 }
 
-
+#@
+#@ SetupNaClX8632
+#@   use nacl-gcc compiler
 SetupNaclX8632() {
   SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
   if [[ ! -x ${SEL_LDR} ]] ; then
@@ -69,8 +77,33 @@ SetupNaclX8632() {
   SUFFIX=nacl.x8632
 }
 
+SetupPnaclX8664Common() {
+  SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
+  if [[ ! -x ${SEL_LDR} ]] ; then
+    echo "you have not build the sel_ldr yet"
+    exit -1
+  fi
+  SEL_LDR=$(readlink -f ${SEL_LDR})
+  PREFIX="${SEL_LDR} -d -f"
+}
 
-SetupPnaclX8632() {
+#@
+#@ SetupNaclX8632
+#@    use pnacl x8632 compiler (no lto)
+SetupPnaclX8664() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl.x8664
+}
+
+#@
+#@ SetupNaclX8632Opt
+#@    use pnacl x8632 compiler (with lto)
+SetupPnaclX8664Opt() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl.opt.x8664
+}
+
+SetupPnaclX8632Common() {
   SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
   if [[ ! -x ${SEL_LDR} ]] ; then
     echo "you have not build the sel_ldr yet"
@@ -78,10 +111,27 @@ SetupPnaclX8632() {
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
   PREFIX="${SEL_LDR} -d -f"
+}
+
+#@
+#@ SetupNaclX8632
+#@    use pnacl x8632 compiler (no lto)
+SetupPnaclX8632() {
+  SetupPnaclX8632Common
   SUFFIX=pnacl.x8632
 }
 
+#@
+#@ SetupNaclX8632Opt
+#@    use pnacl x8632 compiler (with lto)
+SetupPnaclX8632Opt() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl.opt.x8632
+}
 
+#@
+#@ SetupGccArm
+#@   use CS cross compiler
 SetupGccArm() {
   PREFIX=$(readlink -f ../../toolchain/linux_arm-trusted/qemu_tool.sh run)
   SUFFIX=gcc.arm
@@ -101,13 +151,17 @@ SetupPnaclArmCommon() {
   SUFFIX=pnacl.arm
 }
 
-
+#@
+#@ SetupPnaclArm
+#@    use pnacl arm compiler (no lto)
 SetupPnaclArmOpt() {
   SetupPnaclArmCommon
   SUFFIX=pnacl.opt.arm
 }
 
-
+#@
+#@ SetupPnaclArmOpt
+#@    use pnacl arm compiler (with lto)
 SetupPnaclArm() {
   SetupPnaclArmCommon
   SUFFIX=pnacl.arm
@@ -126,6 +180,10 @@ ConfigInfo() {
 ######################################################################
 # Functions intended to be called
 ######################################################################
+#@
+#@ ------------------------------------------------------------
+#@ Available Modes:
+#@ ------------------------------------------------------------
 
 #@
 #@ GetBenchmarkList
@@ -142,7 +200,7 @@ GetBenchmarkList() {
 #@
 #@ CleanBenchmarks
 #@
-#@
+#@   this is a deep clean and you have to rerun PoplateFromSpecHarness
 CleanBenchmarks() {
   local list=$(GetBenchmarkList "$@")
 
@@ -156,12 +214,13 @@ CleanBenchmarks() {
 }
 
 #@
-#@ BuildBenchmarks
+#@ BuildBenchmarks <setup> <benchmark>*
 #@
-#@
+#@  Build all benchmarks according to the setup
 BuildBenchmarks() {
   export PREFIX=
-  eval ${SETUP}
+  "$1"
+  shift
   local list=$(GetBenchmarkList "$@")
 
   ConfigInfo
@@ -177,12 +236,13 @@ done
 
 
 #@
-#@ RunBenchmarks
+#@ RunBenchmarks <setup> <benchmark>*
 #@
-#@
+#@  Run all benchmarks according to the setup
 RunBenchmarks() {
   export PREFIX=
-  eval ${SETUP}
+  "$1"
+  shift
   local list=$(GetBenchmarkList "$@")
 
   ConfigInfo
@@ -196,9 +256,9 @@ RunBenchmarks() {
 }
 
 #@
-#@ BuildAndRunBenchmarks
+#@ BuildAndRunBenchmarks <setup> <benchmark>*
 #@
-#@   builds and run benchmarks fro the current configuration
+#@   Builds and run all benchmarks according to the setup
 BuildAndRunBenchmarks() {
   BuildBenchmarks "$@"
   RunBenchmarks "$@"
@@ -234,8 +294,10 @@ PoplateFromSpecHarness() {
 # Main
 ######################################################################
 
+#@
+#@ Default mode is:  BuildAndRunBenchmarks SetupPnaclArm
 if [[ $# = 0 ]] ; then
-  BuildAndRunBenchmarks
+  BuildAndRunBenchmarks SetupPnaclArm
 elif [ "$(type -t $1)" != "function" ]; then
   Usage
   echo "ERROR: unknown mode '$1'." >&2
