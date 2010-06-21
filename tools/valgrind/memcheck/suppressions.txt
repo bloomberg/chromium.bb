@@ -3431,7 +3431,7 @@
    fun:_ZN3net14SpdyHttpStream11SendRequestEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
 }
 {
-   bug_19775
+   bug_19775_a
    Memcheck:Leak
    ...
    fun:malloc
@@ -3455,6 +3455,51 @@
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
    fun:_ZN7history11URLDatabase18CreateMainURLIndexEv
+}
+{
+   bug_19775_b
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3HashInsert
+   fun:createModule
+   fun:sqlite3_create_module_v2
+   fun:sqlite3Fts2Init
+   fun:openDatabase
+   fun:sqlite3_open
+   fun:_ZN3sql10Connection12OpenInternalERKSs
+   fun:_ZN3sql10Connection12OpenInMemoryEv
+   fun:_ZN7history16InMemoryDatabase6InitDBEv
+   fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
+}
+{
+   bug_19775_c
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3_malloc
+   fun:pcache1Create
+   fun:sqlite3PcacheFetch
+   fun:sqlite3PagerAcquire2
+   fun:sqlite3PagerAcquire
+   fun:btreeGetPage
+   fun:lockBtree
+   fun:sqlite3BtreeBeginTrans
+   fun:sqlite3InitOne
+   fun:sqlite3Init
+   fun:sqlite3ReadSchema
+   fun:sqlite3Pragma
+   fun:yy_reduce
+   fun:sqlite3Parser
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
 }
 {
    bug_46894
