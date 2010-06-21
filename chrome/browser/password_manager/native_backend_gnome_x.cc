@@ -17,8 +17,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 
-using std::map;
-using std::string;
 using webkit_glue::PasswordForm;
 
 /* Many of the gnome_keyring_* functions use variable arguments, which makes
@@ -95,11 +93,35 @@ const struct {
 #define gnome_keyring_found_list_free \
     wrap_gnome_keyring_found_list_free
 
+// Older versions of GNOME Keyring have bugs that prevent them from working
+// correctly with this code. (In particular, the non-pageable memory allocator
+// is rather busted.) There is no official way to check the version, but newer
+// versions provide several symbols that older versions did not. It would be
+// best if we could check for a new official API, but the only new symbols are
+// "private" symbols. Still, it is probable that they will not change, and it's
+// the best we can do for now. (And eventually we won't care about the older
+// versions anyway so we can remove this version check some day.)
+bool GnomeKeyringVersionOK(void* handle) {
+  dlerror();
+  dlsym(handle, "gnome_keyring_socket_connect_daemon");
+  return !dlerror();
+}
+
 /* Load the library and initialize the function pointers. */
 bool LoadGnomeKeyring() {
   void* handle = dlopen("libgnome-keyring.so.0", RTLD_NOW | RTLD_GLOBAL);
   if (!handle) {
-    LOG(INFO) << "Could not find libgnome-keyring.so.0";
+    // We wanted to use GNOME Keyring, but we couldn't load it. Warn, because
+    // either the user asked for this, or we autodetected it incorrectly. (Or
+    // the system has broken libraries, which is also good to warn about.)
+    LOG(WARNING) << "Could not load libgnome-keyring.so.0: " << dlerror();
+    return false;
+  }
+  if (!GnomeKeyringVersionOK(handle)) {
+    // GNOME Keyring is too old. Only info, not a warning, as this can happen
+    // on older systems without the user actually asking for it explicitly.
+    LOG(INFO) << "libgnome-keyring.so.0 is too old!";
+    dlclose(handle);
     return false;
   }
   for (size_t i = 0; gnome_keyring_functions[i].name; ++i) {
@@ -120,17 +142,19 @@ bool LoadGnomeKeyring() {
 
 }  // namespace
 
-#else  // DLOPEN_GNOME_KEYRING
+#else  // !defined(DLOPEN_GNOME_KEYRING)
 
 namespace {
 
 bool LoadGnomeKeyring() {
+  // We don't do the hacky version check here. When linking directly, we assume
+  // that whoever is compiling this code has checked that the version is OK.
   return true;
 }
 
 }  // namespace
 
-#endif  // DLOPEN_GNOME_KEYRING
+#endif  // !defined(DLOPEN_GNOME_KEYRING)
 
 #define GNOME_KEYRING_APPLICATION_CHROME "chrome"
 
@@ -398,47 +422,39 @@ void NativeBackendGnome::ConvertFormList(GList* found,
   GList* element = g_list_first(found);
   while (element != NULL) {
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
-    char* password = data->secret;
 
-    GnomeKeyringAttributeList* attributes = data->attributes;
+    GnomeKeyringAttributeList* attrs = data->attributes;
     // Read the string and int attributes into the appropriate map.
-    map<string, string> string_attribute_map;
-    map<string, uint32> uint_attribute_map;
-    for (unsigned int i = 0; i < attributes->len; ++i) {
-      GnomeKeyringAttribute attribute =
-          gnome_keyring_attribute_list_index(attributes, i);
-      if (attribute.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
-        string_attribute_map[string(attribute.name)] =
-            string(attribute.value.string);
-      } else if (attribute.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
-        uint_attribute_map[string(attribute.name)] = attribute.value.integer;
+    std::map<std::string, std::string> string_attr_map;
+    std::map<std::string, uint32_t> uint_attr_map;
+    for (guint i = 0; i < attrs->len; ++i) {
+      GnomeKeyringAttribute attr = gnome_keyring_attribute_list_index(attrs, i);
+      if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
+        string_attr_map[attr.name] = attr.value.string;
+      } else if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
+        uint_attr_map[attr.name] = attr.value.integer;
       }
     }
 
     PasswordForm* form = new PasswordForm();
-    form->origin = GURL(string_attribute_map["origin_url"]);
-    form->action = GURL(string_attribute_map["action_url"]);
-    form->username_element =
-        UTF8ToUTF16(string(string_attribute_map["username_element"]));
-    form->username_value =
-        UTF8ToUTF16(string(string_attribute_map["username_value"]));
-    form->password_element =
-        UTF8ToUTF16(string(string_attribute_map["password_element"]));
-    form->password_value = UTF8ToUTF16(string(password));
-    form->submit_element =
-        UTF8ToUTF16(string(string_attribute_map["submit_element"]));
-    form->signon_realm = string_attribute_map["signon_realm"];
-    form->ssl_valid = uint_attribute_map["ssl_valid"];
-    form->preferred = uint_attribute_map["preferred"];
-    string date = string_attribute_map["date_created"];
+    form->origin = GURL(string_attr_map["origin_url"]);
+    form->action = GURL(string_attr_map["action_url"]);
+    form->username_element = UTF8ToUTF16(string_attr_map["username_element"]);
+    form->username_value = UTF8ToUTF16(string_attr_map["username_value"]);
+    form->password_element = UTF8ToUTF16(string_attr_map["password_element"]);
+    form->password_value = UTF8ToUTF16(data->secret);
+    form->submit_element = UTF8ToUTF16(string_attr_map["submit_element"]);
+    form->signon_realm = string_attr_map["signon_realm"];
+    form->ssl_valid = uint_attr_map["ssl_valid"];
+    form->preferred = uint_attr_map["preferred"];
     int64 date_created = 0;
-    bool date_ok = StringToInt64(date, &date_created);
+    bool date_ok = StringToInt64(string_attr_map["date_created"],
+                                 &date_created);
     DCHECK(date_ok);
     DCHECK_NE(date_created, 0);
     form->date_created = base::Time::FromTimeT(date_created);
-    form->blacklisted_by_user = uint_attribute_map["blacklisted_by_user"];
-    form->scheme = static_cast<PasswordForm::Scheme>(
-        uint_attribute_map["scheme"]);
+    form->blacklisted_by_user = uint_attr_map["blacklisted_by_user"];
+    form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
 
     forms->push_back(form);
 
