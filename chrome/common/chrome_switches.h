@@ -28,7 +28,6 @@ extern const char kAppId[];
 extern const char kAppLaunchAsPanel[];
 extern const char kAppsDebug[];
 extern const char kAppsPanel[];
-extern const char kAppsGalleryTitle[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsNoThrob[];
 extern const char kAuthServerWhitelist[];

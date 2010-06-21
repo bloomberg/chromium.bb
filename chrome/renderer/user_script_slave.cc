@@ -14,7 +14,6 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
@@ -151,7 +150,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
 
   // Don't inject user scripts into the gallery itself.  This prevents
   // a user script from removing the "report abuse" link, for example.
-  if (frame_url.host() == GURL(extension_urls::kGalleryBrowsePrefix).host())
+  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host())
     return true;
 
   PerfTimer timer;

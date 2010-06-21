@@ -33,7 +33,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -100,12 +99,12 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringF(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
           std::wstring(L"<a href='") +
           ASCIIToWide(google_util::AppendGoogleLocaleParam(
-              GURL(extension_urls::kGalleryBrowsePrefix)).spec()) + L"'>",
+              GURL(Extension::ChromeStoreURL())).spec()) + L"'>",
           L"</a>"));
   localized_strings.SetString(L"getMoreExtensions",
       std::wstring(L"<a href='") +
           ASCIIToWide(google_util::AppendGoogleLocaleParam(
-              GURL(extension_urls::kGalleryBrowsePrefix)).spec()) + L"'>" +
+              GURL(Extension::ChromeStoreURL())).spec()) + L"'>" +
           l10n_util::GetString(IDS_GET_MORE_EXTENSIONS) +
           L"</a>");
   localized_strings.SetString(L"extensionDisabled",

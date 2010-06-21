@@ -1467,12 +1467,20 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   return true;
 }
 
+// static
+std::string Extension::ChromeStoreURL() {
+  std::string gallery_prefix = extension_urls::kGalleryBrowsePrefix;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
+    gallery_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kAppsGalleryURL);
+  return gallery_prefix;
+}
+
 GURL Extension::GalleryUrl() const {
   if (!update_url_.DomainIs("google.com"))
     return GURL();
 
-  GURL url(std::string(extension_urls::kGalleryBrowsePrefix) +
-           std::string("/detail/") + id_);
+  GURL url(ChromeStoreURL() + std::string("/detail/") + id_);
 
   return url;
 }
@@ -1620,7 +1628,7 @@ bool Extension::CanExecuteScriptOnHost(const GURL& url,
                                        std::string* error) const {
   // No extensions are allowed to execute script on the gallery because that
   // would allow extensions to manipulate their own install pages.
-  if (url.host() == GURL(extension_urls::kGalleryBrowsePrefix).host()) {
+  if (url.host() == GURL(ChromeStoreURL()).host()) {
     if (error)
       *error = errors::kCannotScriptGallery;
     return false;

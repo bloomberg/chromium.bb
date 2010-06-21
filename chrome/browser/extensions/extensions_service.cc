@@ -104,7 +104,7 @@ bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
   if (StartsWithASCII(download_url.spec(),
                       extension_urls::kGalleryDownloadPrefix, false) &&
       StartsWithASCII(referrer_url.spec(),
-                      extension_urls::kGalleryBrowsePrefix, false)) {
+                      Extension::ChromeStoreURL(), false)) {
     return true;
   }
 

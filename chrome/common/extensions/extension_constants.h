@@ -172,6 +172,9 @@ namespace extension_urls {
   extern const char* kGalleryBrowsePrefix;
   extern const char* kGalleryDownloadPrefix;
 
+  // The update url used by gallery/webstore extensions.
+  extern const char* kGalleryUpdateURL;
+
   // Same thing for the "minigallery". The minigallery is the temporary static
   // themes gallery that we put up when we launched themes.
   extern const char* kMiniGalleryBrowsePrefix;
