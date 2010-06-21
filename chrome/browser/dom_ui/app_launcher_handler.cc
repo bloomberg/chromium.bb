@@ -55,6 +55,8 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleGetApps));
   dom_ui_->RegisterMessageCallback("launchApp",
       NewCallback(this, &AppLauncherHandler::HandleLaunchApp));
+  dom_ui_->RegisterMessageCallback("uninstallApp",
+      NewCallback(this, &AppLauncherHandler::HandleUninstallApp));
 }
 
 void AppLauncherHandler::Observe(NotificationType type,
@@ -80,6 +82,7 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
   value->SetString(L"name", extension->name());
   value->SetString(L"description", extension->description());
   value->SetString(L"launch_url", extension->GetFullLaunchURL().spec());
+  value->SetString(L"options_url", extension->options_url().spec());
 
   FilePath relative_path =
       extension->GetIconPath(Extension::EXTENSION_ICON_LARGE).relative_path();
@@ -95,20 +98,10 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
 }
 
 void AppLauncherHandler::HandleGetApps(const Value* value) {
-  std::string gallery_title;
-  std::string gallery_url;
-
-  // TODO(aa): Decide the final values for these and remove the switches.
-  gallery_title = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAppsGalleryTitle);
-  gallery_url = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAppsGalleryURL);
   bool show_debug_link = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppsDebug);
 
   DictionaryValue dictionary;
-  dictionary.SetString(L"galleryTitle", gallery_title);
-  dictionary.SetString(L"galleryURL", gallery_url);
   dictionary.SetBoolean(L"showDebugLink", show_debug_link);
 
   ListValue* list = new ListValue();
@@ -216,4 +209,25 @@ void AppLauncherHandler::AnimateAppIcon(Extension* extension,
     NOTIMPLEMENTED();
 #endif
   }
+}
+
+void AppLauncherHandler::HandleUninstallApp(const Value* value) {
+  if (!value->IsType(Value::TYPE_LIST)) {
+    NOTREACHED();
+    return;
+  }
+
+  std::string extension_id;
+  const ListValue* list = static_cast<const ListValue*>(value);
+  if (!list->GetString(0, &extension_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  // Make sure that the extension exists.
+  Extension* extension =
+      extensions_service_->GetExtensionById(extension_id, false);
+  DCHECK(extension);
+
+  extensions_service_->UninstallExtension(extension_id, false);
 }

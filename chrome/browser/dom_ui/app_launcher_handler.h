@@ -35,11 +35,14 @@ class AppLauncherHandler
   // Populate a dictionary with the information from an extension.
   static void CreateAppInfo(Extension* extension, DictionaryValue* value);
 
-  // Callback for the "getAll" message.
+  // Callback for the "getApps" message.
   void HandleGetApps(const Value* value);
 
-  // Callback for the "launch" message.
+  // Callback for the "launchApp" message.
   void HandleLaunchApp(const Value* value);
+
+  // Callback for the "uninstallApp" message.
+  void HandleUninstallApp(const Value* value);
 
  private:
   // Starts the animation of the app icon.

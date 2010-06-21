@@ -1,0 +1,154 @@
+/* Apps */
+
+#apps-section .app,
+#apps-section .app[new=installed] {
+  -webkit-box-sizing: border-box;
+  -webkit-perspective: 400;
+  border-radius: 10px;
+  color: black;
+  display: inline-block;
+  margin: 5px 3px;
+  position: relative;
+  height: 136px;
+  width: 124px; /* 920 / 7 - margin * 2 */
+}
+
+.app > .front,
+.app > .back,
+.app a {
+  border-radius: 10px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.app > .front,
+.app > .back {
+  -webkit-backface-visibility: hidden;
+  -webkit-transition: -webkit-transform .15s;
+}
+
+.app a {
+  -webkit-transition: background-color .5s;
+  background: rgba(255, 255, 255, 0) /* transparent white */
+              no-repeat center 10px;
+  background-size: 96px 96px;
+  font-weight: bold;
+  overflow: hidden;
+  padding: 111px 10px 10px;  /* 10 + 96 + 5 */
+  text-align: center;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app .flip {
+  background-color: transparent;
+  border: 0;
+  height: 14px;
+  padding: 0;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 14px;
+}
+
+.app > .front > .flip {
+  -webkit-transition: opacity .3s;
+  -webkit-transition-delay: 0;
+  background-image: url(chrome://theme/balloon_wrench);
+  opacity: 0;
+}
+
+.app > .front > .flip:hover {
+  -webkit-transition: none;
+  background-image: url(chrome://theme/balloon_wrench_hover);
+}
+
+.app:hover > .front > .flip,
+.app > .front > .flip:focus {
+  -webkit-transition-delay: .5s;
+  opacity: .9;
+}
+
+.app > .back > .flip {
+  background-image: url(chrome://theme/balloon_close);
+  opacity: .9;
+}
+
+.app > .back > .flip:hover {
+  background-image: url(chrome://theme/balloon_close_hover);
+}
+
+.app > .back {
+  padding: 10px;
+}
+
+.app > .back > h2 {
+  font-size: 100%;
+  margin: 10px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app > .back > button:not(.flip) {
+  width: 100%;
+}
+
+@-webkit-keyframes bounce {
+  0% {
+    -webkit-transform: scale(0, 0);
+  }
+
+  60% {
+    -webkit-transform: scale(1.2, 1.2);
+  }
+
+  100% {
+    -webkit-transform: scale(1, 1);
+  }
+}
+
+#apps-section .app[new=new] {
+  opacity: 0;
+}
+
+#apps-section .app[new=installed] {
+  -webkit-animation: bounce .5s ease-in-out;
+  -webkit-transition: opacity .5s;
+}
+
+/* Make items on the wrong side non focusable by hiding them. */
+.app:not(.config) > .back button,
+.app.config > .front button,
+.app.config > .front a {
+  display: none;
+}
+
+html[has_3d=true] .app.config > .front {
+  -webkit-transform: rotateY(180deg);
+}
+
+html[has_3d=true] .app > .back {
+  -webkit-transform: rotateY(-180deg);
+}
+
+html[has_3d=true] .app.config > .back {
+  -webkit-transform: rotateY(0deg);
+}
+
+html[has_3d=false] .app.config > .front {
+  display: none;
+}
+
+html[has_3d=false] .app > .back {
+  display: none;
+}
+
+html[has_3d=false] .app.config > .back {
+  display: block;
+}
+

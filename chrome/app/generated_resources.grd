@@ -6207,10 +6207,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
          desc="The action text to show as the close link for the notification shown after the user has set his/her home page.">
         Close
       </message>
-
       <message name="IDS_NEW_TAB_MAKE_THIS_HOMEPAGE"
                desc="Text for link that sets new tab page as home page">
         Make this my home page
+      </message>
+      <message name="IDS_NEW_TAB_APP_SETTINGS"
+               desc="Text for the tooltip that is used for the button that shows the settings for an app icon.">
+        Settings
+      </message>
+      <message name="IDS_NEW_TAB_APP_UNINSTALL"
+               desc="Text for the button that allows uninstalling an app.">
+        Uninstall
+      </message>
+      <message name="IDS_NEW_TAB_APP_OPTIONS"
+               desc="Text for the button that takes the user to the options of an app.">
+        Options
       </message>
 
       <!-- SafeBrowsing -->

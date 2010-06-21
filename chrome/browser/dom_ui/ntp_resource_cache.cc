@@ -286,6 +286,12 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString(L"tips",
       l10n_util::GetString(IDS_NEW_TAB_TIPS));
   localized_strings.SetString(L"close", l10n_util::GetString(IDS_CLOSE));
+  localized_strings.SetString(L"appsettings",
+      l10n_util::GetString(IDS_NEW_TAB_APP_SETTINGS));
+  localized_strings.SetString(L"appuninstall",
+      l10n_util::GetString(IDS_NEW_TAB_APP_UNINSTALL));
+  localized_strings.SetString(L"appoptions",
+      l10n_util::GetString(IDS_NEW_TAB_APP_OPTIONS));
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
@@ -300,6 +306,11 @@ void NTPResourceCache::CreateNewTabHTML() {
   std::string anim =
       Animation::ShouldRenderRichAnimation() ? "true" : "false";
   localized_strings.SetString(L"anim", anim);
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool has_3d =
+      command_line->HasSwitch(switches::kEnableAcceleratedCompositing);
+  localized_strings.SetString(L"has_3d", has_3d ? "true" : "false");
 
   // Pass the shown_sections pref early so that we can prevent flicker.
   ShownSectionsHandler::SetFirstAppLauncherRunPref(profile_->GetPrefs());
