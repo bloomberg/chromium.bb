@@ -4637,6 +4637,40 @@ void RenderView::DumpLoadHistograms() const {
     }
   }
 
+
+  static bool use_idle_socket_timeout_histogram(
+      FieldTrialList::Find("IdleSktToImpact") &&
+      !FieldTrialList::Find("IdleSktToImpact")->group_name().empty());
+  if (use_idle_socket_timeout_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.Abandoned", "IdleSktToImpact"),
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad", "IdleSktToImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal", "IdleSktToImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadReload", "IdleSktToImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadStaleOk", "IdleSktToImpact"),
+            begin_to_finish);
+        break;
+      default:
+        break;
+    }
+  }
+
   // Histograms to determine if SDCH has an impact.
   // TODO(jar): Consider removing per-link load types and the enumeration.
   static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&

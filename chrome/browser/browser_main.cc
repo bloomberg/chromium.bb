@@ -784,9 +784,44 @@ int BrowserMain(const MainFunctionParams& parameters) {
   } else if (conn_trial_grp == conn_16) {
     net::HttpNetworkSession::set_max_sockets_per_group(16);
   } else {
-    DCHECK(false);
+    NOTREACHED();
   }
 
+  // A/B test for determining a value for unused socket timeout.  Currently the
+  // timeout defaults to 10 seconds.  Having this value set too low won't allow
+  // us to take advantage of idle sockets.  Setting it to too high could
+  // possibly result in more ERR_CONNECT_RESETs, requiring one RTT to receive
+  // the RST packet and possibly another RTT to re-establish the connection.
+  const FieldTrial::Probability kIdleSktToDivisor = 100;  // Idle socket timeout
+  const FieldTrial::Probability kSktToProb = 25;  // 25% probability
+
+  scoped_refptr<FieldTrial> socket_timeout_trial =
+      new FieldTrial("IdleSktToImpact", kIdleSktToDivisor);
+
+  const int socket_timeout_5 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_5", kSktToProb);
+  const int socket_timeout_10 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_10", kSktToProb);
+  const int socket_timeout_20 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_20", kSktToProb);
+  const int socket_timeout_60 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_60",
+                                        FieldTrial::kAllRemainingProbability);
+
+  const int idle_to_trial_grp = socket_timeout_trial->group();
+
+  if (idle_to_trial_grp == socket_timeout_5) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(5);
+  } else if (idle_to_trial_grp == socket_timeout_10) {
+    // This (10 seconds) is the current default value.
+    net::ClientSocketPool::set_unused_idle_socket_timeout(10);
+  } else if (idle_to_trial_grp == socket_timeout_20) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(20);
+  } else if (idle_to_trial_grp == socket_timeout_60) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(60);
+  } else {
+    NOTREACHED();
+  }
 
   // When --use-spdy not set, users will be in A/B test for spdy.
   // group A (_npn_with_spdy): this means npn and spdy are enabled. In

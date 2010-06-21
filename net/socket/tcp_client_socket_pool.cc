@@ -181,7 +181,8 @@ TCPClientSocketPool::TCPClientSocketPool(
     NetworkChangeNotifier* network_change_notifier,
     NetLog* net_log)
     : base_(max_sockets, max_sockets_per_group, histograms,
-            base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
+            base::TimeDelta::FromSeconds(
+                ClientSocketPool::unused_idle_socket_timeout()),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
             new TCPConnectJobFactory(client_socket_factory,
                                      host_resolver, net_log),
