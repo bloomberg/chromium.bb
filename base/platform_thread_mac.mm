@@ -8,7 +8,6 @@
 #include <dlfcn.h>
 
 #include "base/logging.h"
-#include "base/safe_strerror_posix.h"
 
 // A simple class that demonstrates our impressive ability to do nothing.
 @interface NoOp : NSObject
@@ -63,7 +62,6 @@ void PlatformThread::SetName(const char* name) {
   // hardcode it.
   const int kMaxNameLength = 63;
   std::string shortened_name = std::string(name).substr(0, kMaxNameLength);
-  int err = dynamic_pthread_setname_np(shortened_name.c_str());
-  if (err < 0)
-    LOG(ERROR) << "pthread_setname_np: " << safe_strerror(err);
+  if (dynamic_pthread_setname_np(shortened_name.c_str()) < 0)
+    PLOG(ERROR) << "pthread_setname_np";
 }
