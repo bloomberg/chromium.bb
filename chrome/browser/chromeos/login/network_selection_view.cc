@@ -117,6 +117,7 @@ void NetworkSelectionView::Init() {
 
   languages_menubutton_ = new views::MenuButton(
       NULL, std::wstring(), delegate_->language_switch_menu(), true);
+  languages_menubutton_->SetFocusable(true);
   languages_menubutton_->SetNormalHasBorder(true);
   delegate_->language_switch_menu()->set_menu_offset(
       kMenuButtonHorizontalOffset, kMenuButtonVerticalOffset);
@@ -125,8 +126,8 @@ void NetworkSelectionView::Init() {
   AddChildView(select_language_label_);
   AddChildView(select_network_label_);
   AddChildView(connecting_network_label_);
-  AddChildView(network_combobox_);
   AddChildView(languages_menubutton_);
+  AddChildView(network_combobox_);
 
   UpdateLocalizedStrings();
 }
