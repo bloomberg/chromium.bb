@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(arv): Now that this is driven by a data model, implement a data model
+//            that handles the loading and the events from the bookmark backend.
 
 cr.define('bmm', function() {
   // require cr.ui.define
@@ -9,8 +11,37 @@ cr.define('bmm', function() {
   // require cr.ui.contextMenuHandler
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
 
-  var listLookup = {};
+  /**
+   * Basic array data model for use with bookmarks.
+   * @param {!Array.<!BookmarkTreeNode>} items The bookmark items.
+   * @constructor
+   * @extends {ArrayDataModel}
+   */
+  function BookmarksArrayDataModel(items) {
+    this.bookmarksArrayDataModelArray_ = items;
+    ArrayDataModel.call(this, items);
+  }
+
+  BookmarksArrayDataModel.prototype = {
+    __proto__: ArrayDataModel.prototype,
+
+    /**
+     * Finds the index of the bookmark with the given ID.
+     * @param {string} id The ID of the bookmark node to find.
+     * @return {number} The index of the found node or -1 if not found.
+     */
+    findIndexById: function(id) {
+      var arr = this.bookmarksArrayDataModelArray_;
+      var length = arr.length
+      for (var i = 0; i < length; i++) {
+        if (arr[i].id == id)
+          return i;
+      }
+      return -1;
+    }
+  };
 
   /**
    * Removes all children and appends a new child.
@@ -36,19 +67,26 @@ cr.define('bmm', function() {
   BookmarkList.prototype = {
     __proto__: List.prototype,
 
+    /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
       this.addEventListener('click', this.handleClick_);
       this.addEventListener('mousedown', this.handleMouseDown_);
 
       // HACK(arv): http://crbug.com/40902
-      var self = this;
-      window.addEventListener('resize', function() {
-        self.fixWidth_();
-      });
+      window.addEventListener('resize', cr.bind(this.redraw, this));
+    },
+
+    createItem: function(bookmarkNode) {
+      return new BookmarkListItem(bookmarkNode);
     },
 
     parentId_: '',
+
+    /**
+     * The ID of the bookmark folder we are displaying.
+     * @type {string}
+     */
     get parentId() {
       return this.parentId_;
     },
@@ -70,7 +108,7 @@ cr.define('bmm', function() {
     reload: function() {
       var parentId = this.parentId;
 
-      var callback = cr.bind(this.handleBookmarkCallback, this);
+      var callback = cr.bind(this.handleBookmarkCallback_, this);
       this.loading_ = true;
 
       if (!parentId) {
@@ -84,29 +122,21 @@ cr.define('bmm', function() {
       }
     },
 
-    handleBookmarkCallback: function(items) {
+    /**
+     * Callback function for loading items.
+     * @param {Array.<!BookmarkTreeNode>} items The loaded items.
+     * @private
+     */
+    handleBookmarkCallback_: function(items) {
       if (!items) {
-        // Failed to load bookmarks. Most likely due to the bookmark beeing
+        // Failed to load bookmarks. Most likely due to the bookmark being
         // removed.
         cr.dispatchSimpleEvent(this, 'invalidId');
         this.loading_ = false;
         return;
       }
-      // Remove all fields without recreating the object since other code
-      // references it.
-      for (var id in listLookup){
-        delete listLookup[id];
-      }
-      this.clear();
-      try {
-        this.startBatchAdd();
-        items.forEach(function(item) {
-          var li = createListItem(item);
-          this.add(li);
-        }, this);
-      } finally {
-        this.finishBatchAdd();
-      }
+
+      this.dataModel = new BookmarksArrayDataModel(items);
 
       this.loading_ = false;
       this.fixWidth_();
@@ -125,33 +155,18 @@ cr.define('bmm', function() {
       return treeItem && treeItem.bookmarkNode;
     },
 
+    /**
+     * @return {boolean} Whether we are currently showing search results.
+     */
     isSearch: function() {
       return this.parentId_[0] == 'q';
     },
 
+    /**
+     * @return {boolean} Whether we are currently showing recent bookmakrs.
+     */
     isRecent: function() {
       return this.parentId_ == 'recent';
-    },
-
-    /** @inheritDoc */
-    addAt: function(item, index) {
-      // Override to work around list width bug in flex box.
-      List.prototype.addAt.call(this, item, index);
-      this.fixWidth_();
-    },
-
-    /** @inheritDoc */
-    remove: function(item) {
-      // Override to work around list width bug in flex box.
-      List.prototype.remove.call(this, item);
-      this.fixWidth_();
-    },
-
-    /** @inheritDoc */
-    clear: function() {
-      // Override to work around list width bug in flex box.
-      List.prototype.clear.call(this);
-      this.fixWidth_();
     },
 
     /**
@@ -205,32 +220,39 @@ cr.define('bmm', function() {
 
     // Bookmark model update callbacks
     handleBookmarkChanged: function(id, changeInfo) {
-      var listItem = listLookup[id];
-      if (listItem) {
-        listItem.bookmarkNode.title = changeInfo.title;
+      var dataModel = this.dataModel;
+      var index = dataModel.findIndexById(id);
+      if (index != -1) {
+        var bookmarkNode = this.dataModel.item(index);
+        bookmarkNode.title = changeInfo.title;
         if ('url' in changeInfo)
-          listItem.bookmarkNode.url = changeInfo['url'];
-        updateListItem(listItem, listItem.bookmarkNode);
+          bookmarkNode.url = changeInfo['url'];
+
+        dataModel.updateIndex(index);
       }
     },
 
     handleChildrenReordered: function(id, reorderInfo) {
       if (this.parentId == id) {
-        var self = this;
-        reorderInfo.childIds.forEach(function(id, i) {
-          var li = listLookup[id]
-          self.addAt(li, i);
-          // At this point we do not read the index from the bookmark node so we
-          // do not need to update it.
-          li.bookmarkNode.index = i;
-        });
+        // We create a new data model with updated items in the right order.
+        var dataModel = this.dataModel;
+        var items = {};
+        for (var i = this.dataModel.length -1 ; i >= 0; i--) {
+          var bookmarkNode = dataModel.item(i);
+          items[bookmarkNode.id] = bookmarkNode;
+        }
+        var newArray = [];
+        for (var i = 0; i < reorderInfo.childIds.length; i++) {
+          newArray[i] = items[reorderInfo.childIds[i]];
+        }
+
+        this.dataModel = new BookmarksArrayDataModel(newArray);
       }
     },
 
     handleCreated: function(id, bookmarkNode) {
       if (this.parentId == bookmarkNode.parentId) {
-        var li = createListItem(bookmarkNode, false);
-        this.addAt(li, bookmarkNode.index);
+        this.dataModel.splice(bookmarkNode.index, 0, bookmarkNode);
       }
     },
 
@@ -238,27 +260,33 @@ cr.define('bmm', function() {
       if (moveInfo.parentId == this.parentId ||
           moveInfo.oldParentId == this.parentId) {
 
+        var dataModel = this.dataModel;
+
         if (moveInfo.oldParentId == moveInfo.parentId) {
-          var listItem = listLookup[id];
-          if (listItem) {
-            this.remove(listItem);
-            this.addAt(listItem, moveInfo.index);
-          }
+          // Reorder within this folder
+
+          this.startBatchUpdates();
+
+          var bookmarkNode = this.dataModel.item(moveInfo.oldIndex);
+          this.dataModel.splice(moveInfo.oldIndex, 1);
+          this.dataModel.splice(moveInfo.index, 0, bookmarkNode);
+
+          this.endBatchUpdates();
         } else {
           if (moveInfo.oldParentId == this.parentId) {
-            var listItem = listLookup[id];
-            if (listItem) {
-              this.remove(listItem);
-              delete listLookup[id];
-            }
+            // Move out of this folder
+
+            var index = dataModel.findIndexById(id);
+            if (index != -1)
+              dataModel.splice(index, 1);
           }
 
           if (moveInfo.parentId == list.parentId) {
+            // Move to this folder
             var self = this;
             chrome.bookmarks.get(id, function(bookmarkNodes) {
               var bookmarkNode = bookmarkNodes[0];
-              var li = createListItem(bookmarkNode, false);
-              self.addAt(li, bookmarkNode.index);
+              dataModel.splice(bookmarkNode.index, 0, bookmarkNode);
             });
           }
         }
@@ -266,11 +294,10 @@ cr.define('bmm', function() {
     },
 
     handleRemoved: function(id, removeInfo) {
-      var listItem = listLookup[id];
-      if (listItem) {
-        this.remove(listItem);
-        delete listLookup[id];
-      }
+      var dataModel = this.dataModel;
+      var index = dataModel.findIndexById(id);
+      if (index != -1)
+        dataModel.splice(index, 1);
     },
 
     /**
@@ -304,14 +331,66 @@ cr.define('bmm', function() {
 
   /**
    * Creates a new bookmark list item.
-   * @param {Object=} opt_propertyBag Optional properties.
+   * @param {!BookmarkTreeNode} bookmarkNode The bookmark node this represents.
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  var BookmarkListItem = cr.ui.define('li');
+  function BookmarkListItem(bookmarkNode) {
+    var el = cr.doc.createElement('div');
+    el.bookmarkNode = bookmarkNode;
+    BookmarkListItem.decorate(el);
+    return el;
+  }
+
+  /**
+   * Decorates an element as a bookmark list item.
+   * @param {!HTMLElement} el The element to decorate.
+   */
+  BookmarkListItem.decorate = function(el) {
+    el.__proto__ = BookmarkListItem.prototype;
+    el.decorate();
+  };
 
   BookmarkListItem.prototype = {
     __proto__: ListItem.prototype,
+
+    /** @inheritDoc */
+    decorate: function() {
+      ListItem.prototype.decorate.call(this);
+
+      var bookmarkNode = this.bookmarkNode;
+
+      this.draggable = true;
+
+      var labelEl = this.ownerDocument.createElement('span');
+      labelEl.className = 'label';
+      labelEl.textContent = bookmarkNode.title;
+
+      var urlEl = this.ownerDocument.createElement('span');
+      urlEl.className = 'url';
+      urlEl.dir = 'ltr';
+
+      if (bmm.isFolder(bookmarkNode)) {
+        this.className = 'folder';
+        labelEl.href = '#' + bookmarkNode.id;
+      } else {
+        labelEl.style.backgroundImage = url('chrome://favicon/' +
+                                            bookmarkNode.url);
+        labelEl.href = urlEl.textContent = bookmarkNode.url;
+      }
+
+      this.appendChild(labelEl);
+      this.appendChild(urlEl);
+    },
+
+    /**
+     * The ID of the bookmark folder we are currently showing or loading.
+     * @type {string}
+     */
+    get bookmarkId() {
+      return this.bookmarkNode.id;
+    },
+
     /**
      * Whether the user is currently able to edit the list item.
      * @type {boolean}
@@ -464,41 +543,7 @@ cr.define('bmm', function() {
     }
   };
 
-  function createListItem(bookmarkNode) {
-    var li = listItemPromo.cloneNode(true);
-    BookmarkListItem.decorate(li);
-    updateListItem(li, bookmarkNode);
-    li.bookmarkId = bookmarkNode.id;
-    li.bookmarkNode = bookmarkNode;
-    li.draggable = true;
-    listLookup[bookmarkNode.id] = li;
-    return li;
-  }
-
-  function updateListItem(el, bookmarkNode) {
-    var labelEl = el.firstChild;
-    labelEl.textContent = bookmarkNode.title;
-    if (!bmm.isFolder(bookmarkNode)) {
-      labelEl.style.backgroundImage = url('chrome://favicon/' +
-                                          bookmarkNode.url);
-
-      var urlEl = el.childNodes[1];
-      labelEl.href = urlEl.textContent = bookmarkNode.url;
-    } else {
-      labelEl.href = '#' + bookmarkNode.id;
-      el.className = 'folder';
-    }
-  }
-
-  var listItemPromo = (function() {
-    var div = cr.doc.createElement('div');
-    div.innerHTML = '<span class=label></span><span class=url dir=ltr></span>';
-    return div;
-  })();
-
   return {
-    createListItem: createListItem,
-    BookmarkList: BookmarkList,
-    listLookup: listLookup
+    BookmarkList: BookmarkList
   };
 });

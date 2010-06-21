@@ -27,30 +27,25 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Whether the item is the lead in a selection. Setting this does not update
-     * the underlying selection model. This is only used for display purpose.
-     * @type {boolean}
-     */
-    get lead() {
-      return this.hasAttribute('lead');
-    },
-    set lead(lead) {
-      if (lead) {
-        this.setAttribute('lead', '');
-        this.scrollIntoViewIfNeeded(false);
-      } else {
-        this.removeAttribute('lead');
-      }
-    },
-
-    /**
      * Called when an element is decorated as a list item.
      */
     decorate: function() {
     }
   };
 
+  /**
+   * Whether the item is selected. Setting this does not update the underlying
+   * selection model. This is only used for display purpose.
+   * @type {boolean}
+   */
   cr.defineProperty(ListItem, 'selected', cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * Whether the item is the lead in a selection. Setting this does not update
+   * the underlying selection model. This is only used for display purpose.
+   * @type {boolean}
+   */
+  cr.defineProperty(ListItem, 'lead', cr.PropertyKind.BOOL_ATTR);
 
   return {
     ListItem: ListItem

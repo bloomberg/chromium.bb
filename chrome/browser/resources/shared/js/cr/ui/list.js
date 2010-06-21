@@ -10,6 +10,7 @@
 
 cr.define('cr.ui', function() {
   const ListSelectionModel = cr.ui.ListSelectionModel;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
    * Whether a mouse event is inside the element viewport. This will return
@@ -29,6 +30,35 @@ cr.define('cr.ui', function() {
   }
 
   /**
+   * Creates an item (dataModel.item(0)) and measures its height.
+   * @param {!List} list The list to create the item for.
+   * @return {number} The height of the item, taking margins into account.
+   */
+  function measureItem(list) {
+    var dataModel = list.dataModel;
+    if (!dataModel || !dataModel.length)
+      return 0;
+    var item = list.createItem(dataModel.item(0));
+    list.appendChild(item);
+    var cs = item.ownerDocument.defaultView.getComputedStyle(item);
+    var mt = parseFloat(cs.marginTop);
+    var mb = parseFloat(cs.marginBottom);
+    var h = item.offsetHeight;
+
+    // Handle margin collapsing.
+    if (mt < 0 && mb < 0) {
+      h += Math.min(mt, mb);
+    } else if (mt >= 0 && mb >= 0) {
+      h += Math.max(mt, mb);
+    } else {
+      h += mt + mb;
+    }
+
+    list.removeChild(item);
+    return h;
+  }
+
+  /**
    * Creates a new list element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
@@ -38,6 +68,58 @@ cr.define('cr.ui', function() {
 
   List.prototype = {
     __proto__: HTMLUListElement.prototype,
+
+    /**
+     * The height of list items. This is lazily calculated the first time it is
+     * needed.
+     * @type {number}
+     * @private
+     */
+    itemHeight_: 0,
+
+    dataModel_: null,
+
+    /**
+     * The data model driving the list.
+     * @type {ListDataModel}
+     */
+    set dataModel(dataModel) {
+      if (this.dataModel_ != dataModel) {
+        if (!this.boundHandleDataModelSplice_) {
+          this.boundHandleDataModelSplice_ =
+              cr.bind(this.handleDataModelSplice_, this);
+          this.boundHandleDataModelChange_ =
+              cr.bind(this.handleDataModelChange_, this);
+        }
+
+        if (this.dataModel_) {
+          this.dataModel_.removeEventListener('splice',
+                                              this.boundHandleDataModelSplice_);
+          this.dataModel_.removeEventListener('change',
+                                              this.boundHandleDataModelChange_);
+        }
+
+        this.dataModel_ = dataModel;
+
+        this.cachedItems_ = {};
+        this.selectionModel.clear();
+        if (dataModel)
+          this.selectionModel.adjust(0, 0, dataModel.length);
+
+        if (this.dataModel_) {
+          this.dataModel_.addEventListener('splice',
+                                           this.boundHandleDataModelSplice_);
+          this.dataModel_.addEventListener('change',
+                                           this.boundHandleDataModelChange_);
+        }
+
+        this.redraw();
+      }
+    },
+
+    get dataModel() {
+      return this.dataModel_;
+    },
 
     /**
      * The selection model to use.
@@ -58,14 +140,15 @@ cr.define('cr.ui', function() {
 
       if (oldSm) {
         oldSm.removeEventListener('change', this.boundHandleOnChange_);
-        oldSm.removeEventListener('leadItemChange', this.boundHandleLeadChange_);
+        oldSm.removeEventListener('leadIndexChange',
+                                  this.boundHandleLeadChange_);
       }
 
       this.selectionModel_ = sm;
 
       if (sm) {
         sm.addEventListener('change', this.boundHandleOnChange_);
-        sm.addEventListener('leadItemChange', this.boundHandleLeadChange_);
+        sm.addEventListener('leadIndexChange', this.boundHandleLeadChange_);
       }
     },
 
@@ -74,10 +157,20 @@ cr.define('cr.ui', function() {
      * @type {cr.ui.ListItem}
      */
     get selectedItem() {
-      return this.selectionModel.selectedItem;
+      var dataModel = this.dataModel;
+      if (dataModel) {
+        var index = this.selectionModel.selectedIndex;
+        if (index != -1)
+          return dataModel.item(index);
+      }
+      return null;
     },
     set selectedItem(selectedItem) {
-      this.selectionModel.selectedItem = selectedItem;
+      var dataModel = this.dataModel;
+      if (dataModel) {
+        var index = this.dataModel.indexOf(selectedItem);
+        this.selectionModel.selectedIndex = index;
+      }
     },
 
     /**
@@ -85,7 +178,14 @@ cr.define('cr.ui', function() {
      * @type {!Array<cr.ui.ListItem>}
      */
     get selectedItems() {
-      return this.selectionModel.selectedItems;
+      var indexes = this.selectionModel.selectedIndexes;
+      var dataModel = this.dataModel;
+      if (dataModel) {
+        return indexes.map(function(i) {
+          return dataModel.item(i);
+        });
+      }
+      return [];
     },
 
     /**
@@ -100,78 +200,41 @@ cr.define('cr.ui', function() {
     batchCount_: 0,
 
     /**
-     * When adding a large collection of items to the list, the code should be
-     * wrapped in the startBatchAdd and startBatchEnd to increase performance.
-     * This hides the list while it is being built, and prevents it from
-     * incurring measurement performance hits in between each item.
-     * Be sure that the code will not return without calling finishBatchAdd
-     * or the list will not be shown.
-     * @private
+     * When making a lot of updates to the list, the code could be wrapped in
+     * the startBatchUpdates and finishBatchUpdates to increase performance. Be
+     * sure that the code will not return without calling endBatchUpdates or the
+     * list will not be correctly updated.
      */
-    startBatchAdd: function() {
-      // If we're already in a batch, don't overwrite original display style.
-      if (this.batchCount_ == 0) {
-        this.originalDisplayStyle_ = this.style.display;
-        this.style.display = 'none';
-      }
+    startBatchUpdates: function() {
       this.batchCount_++;
     },
 
     /**
-     * See startBatchAdd.
-     * @private
+     * See startBatchUpdates.
      */
-    finishBatchAdd: function() {
+    endBatchUpdates: function() {
       this.batchCount_--;
-      if (this.batchCount_ == 0) {
-        this.style.display = this.originalDisplayStyle_;
-        delete this.originalDisplayStyle;
-      }
-    },
-
-    add: function(listItem) {
-      this.appendChild(listItem);
-
-      var uid = cr.getUid(listItem);
-      this.uidToListItem_[uid] = listItem;
-
-      this.selectionModel.add(listItem);
-    },
-
-    addAt: function(listItem, index) {
-      this.insertBefore(listItem, this.items[index]);
-
-      var uid = cr.getUid(listItem);
-      this.uidToListItem_[uid] = listItem;
-
-      this.selectionModel.add(listItem);
-    },
-
-    remove: function(listItem) {
-      this.selectionModel.remove(listItem);
-
-      this.removeChild(listItem);
-
-      var uid = cr.getUid(listItem);
-      delete this.uidToListItem_[uid];
-    },
-
-    clear: function() {
-      this.innerHTML = '';
-      this.selectionModel.clear();
+      if (this.batchCount_ == 0)
+        this.redraw();
     },
 
     /**
      * Initializes the element.
      */
     decorate: function() {
-      this.uidToListItem_ = {};
+      // Add fillers.
+      this.beforeFiller_ = this.ownerDocument.createElement('div');
+      this.afterFiller_ = this.ownerDocument.createElement('div');
+      this.appendChild(this.beforeFiller_);
+      this.appendChild(this.afterFiller_);
 
-      this.selectionModel = new ListSelectionModel(this);
+      var length = this.dataModel ? this.dataModel.length : 0;
+      this.selectionModel = new ListSelectionModel(length);
 
       this.addEventListener('mousedown', this.handleMouseDownUp_);
       this.addEventListener('mouseup', this.handleMouseDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
+      this.addEventListener('scroll', cr.bind(this.redraw, this));
 
       // Make list focusable
       if (!this.hasAttribute('tabindex'))
@@ -195,7 +258,13 @@ cr.define('cr.ui', function() {
         target = target.parentNode;
       }
 
-      this.selectionModel.handleMouseDownUp(e, target);
+      if (!target) {
+        this.selectionModel.handleMouseDownUp(e, -1);
+      } else {
+        var top = target.offsetTop;
+        var index = Math.floor(top / this.itemHeight_);
+        this.selectionModel.handleMouseDownUp(e, index);
+      }
     },
 
     /**
@@ -215,8 +284,9 @@ cr.define('cr.ui', function() {
      */
     handleOnChange_: function(ce) {
       ce.changes.forEach(function(change) {
-        var listItem = this.uidToListItem_[change.uid];
-        listItem.selected = change.selected;
+        var listItem = this.getListItemByIndex(change.index);
+        if (listItem)
+          listItem.selected = change.selected;
       }, this);
 
       cr.dispatchSimpleEvent(this, 'change');
@@ -228,23 +298,66 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleLeadChange_: function(pe) {
-      if (pe.oldValue) {
-        pe.oldValue.lead = false;
+      var element;
+      if (pe.oldValue != -1) {
+        if ((element = this.getListItemByIndex(pe.oldValue)))
+          element.lead = false;
       }
-      if (pe.newValue) {
-        pe.newValue.lead = true;
+
+      if (pe.newValue != -1) {
+        this.scrollIndexIntoView(pe.newValue);
+        if ((element = this.getListItemByIndex(pe.newValue)))
+          element.lead = true;
+      }
+    },
+
+    handleDataModelSplice_: function(e) {
+      this.selectionModel.adjust(e.index, e.removed.length, e.added.length);
+      // Remove the cache of everything above index.
+      for (var index in this.cachedItems_) {
+        if (index >= e.index)
+          delete this.cachedItems_[index];
+      }
+      this.redraw();
+    },
+
+    handleDataModelChange_: function(e) {
+      if (e.index >= this.firstIndex_ && e.index < this.lastIndex_) {
+        delete this.cachedItems_;
+        this.redraw();
       }
     },
 
     /**
-     * Gets a unique ID for an item. This needs to be unique to the list but
-     * does not have to be gloabally unique. This uses {@code cr.getUid} by
-     * default. Override to provide a more efficient way to get the unique ID.
-     * @param {cr.ui.ListItem} item The item to get the unique ID for.
-     * @return
+     * Ensures that a given index is inside the viewport.
+     * @param {number} index The index of the item to scroll into view.
+     * @return {boolean} Whether any scrolling was needed.
      */
-    itemToUid: function(item) {
-      return cr.getUid(item);
+    scrollIndexIntoView: function(index) {
+      var dataModel = this.dataModel;
+      if (!dataModel || index < 0 || index >= dataModel.length)
+        return false;
+
+      var itemHeight = this.itemHeight_;
+      var scrollTop = this.scrollTop;
+      var top = index * itemHeight;
+
+      if (top < scrollTop) {
+        this.scrollTop = top;
+        return true;
+      } else {
+        var clientHeight = this.clientHeight;
+        var cs = this.ownerDocument.defaultView.getComputedStyle(this);
+        var paddingY = parseInt(cs.paddingTop, 10) +
+                       parseInt(cs.paddingBottom, 10);
+
+        if (top + itemHeight > scrollTop + clientHeight - paddingY) {
+          this.scrollTop = top + itemHeight - clientHeight + paddingY;
+          return true;
+        }
+      }
+
+      return false;
     },
 
     /**
@@ -253,9 +366,130 @@ cr.define('cr.ui', function() {
     getRectForContextMenu: function() {
       // TODO(arv): Add trait support so we can share more code between trees
       // and lists.
-      if (this.selectedItem)
-        return this.selectedItem.getBoundingClientRect();
+      var index = this.selectionModel.selectedIndex;
+      var el = this.getListItemByIndex(index);
+      if (el)
+        return el.getBoundingClientRect();
       return this.getBoundingClientRect();
+    },
+
+    /**
+     * Takes a value from the data model and finds the associated list item.
+     * @param {*} value The value in the data model that we want to get the list
+     *     item for.
+     * @return {ListItem} The first found list item or null if not found.
+     */
+    getListItem: function(value) {
+      var dataModel = this.dataModel;
+      if (dataModel) {
+        var index = dataModel.indexOf(value);
+        return this.getListItemByIndex(index);
+      }
+      return null;
+    },
+
+    /**
+     * Find the list item element at the given index.
+     * @param {number} index The index of the list item to get.
+     * @return {ListItem} The found list item or null if not found.
+     */
+    getListItemByIndex: function(index) {
+      if (index < this.firstIndex_ || index >= this.lastIndex_)
+        return null;
+
+      return this.children[index - this.firstIndex_ + 1];
+    },
+
+    /**
+     * Creates a new list item.
+     * @param {*} value The value to use for the item.
+     * @return {!ListItem} The newly created list item.
+     */
+    createItem: function(value) {
+      return new cr.ui.ListItem({label: value});
+    },
+
+    /**
+     * Redraws the viewport.
+     */
+    redraw: function() {
+      if (this.batchCount_ != 0)
+        return;
+
+      var dataModel = this.dataModel;
+      if (!dataModel) {
+        this.textContent = '';
+        return;
+      }
+
+      console.time('redraw');
+      var scrollTop = this.scrollTop;
+      var clientHeight = this.clientHeight;
+
+      if (!this.itemHeight_) {
+        this.itemHeight_ = measureItem(this);
+      }
+
+      var itemHeight = this.itemHeight_;
+
+      // We cache the list items since creating the DOM nodes is the most
+      // expensive part of redrawing.
+      var cachedItems = this.cachedItems_ || {};
+      var newCachedItems = {};
+
+      var desiredScrollHeight = dataModel.length * itemHeight;
+
+      var firstIndex = Math.floor(scrollTop / itemHeight);
+      var itemsInViewPort = Math.min(dataModel.length - firstIndex,
+          Math.ceil((scrollTop + clientHeight - firstIndex * itemHeight) /
+                    itemHeight));
+      var lastIndex = firstIndex + itemsInViewPort;
+
+      this.textContent = '';
+
+      var oldFirstIndex = this.firstIndex_ || 0;
+      var oldLastIndex = this.lastIndex_ || 0;
+
+      this.beforeFiller_.style.height = firstIndex * itemHeight + 'px';
+      this.appendChild(this.beforeFiller_);
+
+      var sm = this.selectionModel;
+      var leadIndex = sm.leadIndex;
+
+      for (var y = firstIndex; y < lastIndex; y++) {
+        var dataItem = dataModel.item(y);
+        var listItem = cachedItems[y] || this.createItem(dataItem);
+        if (y == leadIndex) {
+          listItem.lead = true;
+        }
+        if (sm.getIndexSelected(y)) {
+          listItem.selected = true;
+        }
+        this.appendChild(listItem);
+        newCachedItems[y] = listItem;
+      }
+
+      this.afterFiller_.style.height =
+          (dataModel.length - firstIndex - itemsInViewPort) * itemHeight + 'px';
+      this.appendChild(this.afterFiller_);
+
+      this.firstIndex_ = firstIndex;
+      this.lastIndex_ = lastIndex;
+
+      this.cachedItems_ = newCachedItems;
+
+      console.timeEnd('redraw');
+    },
+
+    /**
+     * Redraws a single item
+     * @param {number} index The row index to redraw.
+     */
+    redrawItem: function(index) {
+      if (index >= this.firstIndex_ && index < this.lastIndex_) {
+        delete this.cachedItems_[index];
+        this.redraw();
+      }
     }
   };
 

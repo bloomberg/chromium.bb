@@ -3431,6 +3431,7 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/shared/js/cr/ui',
           'files': [
+            'browser/resources/shared/js/cr/ui/array_data_model.js',
             'browser/resources/shared/js/cr/ui/command.js',
             'browser/resources/shared/js/cr/ui/context_menu_handler.js',
             'browser/resources/shared/js/cr/ui/list.js',

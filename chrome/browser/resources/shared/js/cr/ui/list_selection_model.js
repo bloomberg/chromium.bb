@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(arv): Refactor parts of this into a SelectionController.
+
 cr.define('cr.ui', function() {
   const Event = cr.Event;
   const EventTarget = cr.EventTarget;
@@ -9,144 +11,162 @@ cr.define('cr.ui', function() {
   /**
    * Creates a new selection model that is to be used with lists. This is
    * implemented for vertical lists but changing the behavior for horizontal
-   * lists or icon views is a matter of overriding {@code getItemBefore},
-   * {@code getItemAfter}, {@code getItemAbove} as well as {@code getItemBelow}.
+   * lists or icon views is a matter of overriding {@code getIndexBefore},
+   * {@code getIndexAfter}, {@code getIndexAbove} as well as
+   * {@code getIndexBelow}.
+   *
+   * @param {number=} opt_length The number items in the selection.
    *
    * @constructor
    * @extends {!cr.EventTarget}
    */
-  function ListSelectionModel(list) {
-    this.list = list;
-    this.selectedItems_ = {};
+  function ListSelectionModel(opt_length) {
+    this.length_ = opt_length || 0;
+    // Even though selectedIndexes_ is really a map we use an array here to get
+    // iteration in the order of the indexes.
+    this.selectedIndexes_ = [];
   }
 
   ListSelectionModel.prototype = {
     __proto__: EventTarget.prototype,
 
     /**
-     * Returns the item below (y axis) the given element.
-     * @param {*} item The item to get the item below.
-     * @return {*} The item below or null if not found.
+     * The number of items in the model.
+     * @type {number}
      */
-    getItemBelow: function(item) {
-      return item.nextElementSibling;
+    get length() {
+      return this.length_;
     },
 
     /**
-     * Returns the item above (y axis) the given element.
-     * @param {*} item The item to get the item above.
-     * @return {*} The item below or null if not found.
+     * Returns the index below (y axis) the given element.
+     * @param {*} index The index to get the index below.
+     * @return {*} The index below or -1 if not found.
      */
-    getItemAbove: function(item) {
-      return item.previousElementSibling;
+    getIndexBelow: function(index) {
+      if (index == this.getLastIndex())
+        return -1;
+      return index + 1;
     },
 
     /**
-     * Returns the item before (x axis) the given element. This returns null
+     * Returns the index above (y axis) the given element.
+     * @param {*} index The index to get the index above.
+     * @return {*} The index below or -1 if not found.
+     */
+    getIndexAbove: function(index) {
+      return index - 1;
+    },
+
+    /**
+     * Returns the index before (x axis) the given element. This returns -1
      * by default but override this for icon view and horizontal selection
      * models.
      *
-     * @param {*} item The item to get the item before.
-     * @return {*} The item before or null if not found.
+     * @param {*} index The index to get the index before.
+     * @return {*} The index before or -1 if not found.
      */
-    getItemBefore: function(item) {
-      return null;
+    getIndexBefore: function(index) {
+      return -1;
     },
 
     /**
-     * Returns the item after (x axis) the given element. This returns null
+     * Returns the index after (x axis) the given element. This returns -1
      * by default but override this for icon view and horizontal selection
      * models.
      *
-     * @param {*} item The item to get the item after.
-     * @return {*} The item after or null if not found.
+     * @param {*} index The index to get the index after.
+     * @return {*} The index after or -1 if not found.
      */
-    getItemAfter: function(item) {
-      return null;
+    getIndexAfter: function(index) {
+      return -1;
     },
 
     /**
-     * Returns the next list item. This is the next logical and should not
+     * Returns the next list index. This is the next logical and should not
      * depend on any kind of layout of the list.
-     * @param {*} item The item to get the next item for.
-     * @return {*} The next item or null if not found.
+     * @param {*} index The index to get the next index for.
+     * @return {*} The next index or -1 if not found.
      */
-    getNextItem: function(item) {
-      return item.nextElementSibling;
+    getNextIndex: function(index) {
+      if (index == this.getLastIndex())
+        return -1;
+      return index + 1;
     },
 
     /**
-     * Returns the prevous list item. This is the previous logical and should
+     * Returns the prevous list index. This is the previous logical and should
      * not depend on any kind of layout of the list.
-     * @param {*} item The item to get the previous item for.
-     * @return {*} The previous item or null if not found.
+     * @param {*} index The index to get the previous index for.
+     * @return {*} The previous index or -1 if not found.
      */
-    getPreviousItem: function(item) {
-      return item.previousElementSibling;
+    getPreviousIndex: function(index) {
+      return index - 1;
     },
 
     /**
-     * @return {*} The first item.
+     * @return {*} The first index.
      */
-    getFirstItem: function() {
-      return this.list.firstElementChild;
+    getFirstIndex: function() {
+      return 0;
     },
 
     /**
-     * @return {*} The last item.
+     * @return {*} The last index.
      */
-    getLastItem: function() {
-      return this.list.lastElementChild;
+    getLastIndex: function() {
+      return this.length_ - 1;
     },
 
     /**
      * Called by the view when the user does a mousedown or mouseup on the list.
      * @param {!Event} e The browser mousedown event.
-     * @param {*} item The item that was under the mouse pointer, null if none.
+     * @param {*} index The index that was under the mouse pointer, -1 if none.
      */
-    handleMouseDownUp: function(e, item) {
-      var anchorItem = this.anchorItem;
+    handleMouseDownUp: function(e, index) {
+      var anchorIndex = this.anchorIndex;
       var isDown = e.type == 'mousedown';
 
       this.beginChange_();
 
-      if (!item) {
+      if (index == -1) {
         // On Mac we always clear the selection if the user clicks a blank area.
         // On Windows, we only clear the selection if neither Shift nor Ctrl are
         // pressed.
         if (cr.isMac) {
           this.clear();
         } else if (!isDown && !e.shiftKey && !e.ctrlKey)
-          // Keep anchor and lead items.
+          // Keep anchor and lead indexes. Note that this is intentionally
+          // different than on the Mac.
           this.clearAllSelected_();
       } else {
         if (cr.isMac ? e.metaKey : e.ctrlKey) {
           // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
           if (cr.isMac? isDown : !isDown) {
-            // toggle the current one and make it anchor item
-            this.setItemSelected(item, !this.getItemSelected(item));
-            this.leadItem = item;
-            this.anchorItem = item;
+            // toggle the current one and make it anchor index
+            this.setIndexSelected(index, !this.getIndexSelected(index));
+            this.leadIndex = index;
+            this.anchorIndex = index;
           }
-        } else if (e.shiftKey && anchorItem && anchorItem != item) {
+        } else if (e.shiftKey && anchorIndex != -1 && anchorIndex != index) {
           // Shift is done in mousedown
           if (isDown) {
             this.clearAllSelected_();
-            this.leadItem = item;
-            this.selectRange(anchorItem, item);
+            this.leadIndex = index;
+            this.selectRange(anchorIndex, index);
           }
         } else {
           // Right click for a context menu need to not clear the selection.
           var isRightClick = e.button == 2;
 
-          // If the item is selected this is handled in mouseup.
-          var itemSelected = this.getItemSelected(item);
-          if ((itemSelected && !isDown || !itemSelected && isDown) &&
-              !(itemSelected && isRightClick)) {
+          // If the index is selected this is handled in mouseup.
+          var indexSelected = this.getIndexSelected(index);
+          if ((indexSelected && !isDown || !indexSelected && isDown) &&
+              !(indexSelected && isRightClick)) {
             this.clearAllSelected_();
-            this.setItemSelected(item, true);
-            this.leadItem = item;
-            this.anchorItem = item;
+            this.setIndexSelected(index, true);
+            this.leadIndex = index;
+            this.anchorIndex = index;
           }
         }
       }
@@ -159,8 +179,8 @@ cr.define('cr.ui', function() {
      * @param {Event} e The keydown event.
      */
     handleKeyDown: function(e) {
-      var newItem = null;
-      var leadItem = this.leadItem;
+      var newIndex = -1;
+      var leadIndex = this.leadIndex;
       var prevent = true;
 
       // Ctrl/Meta+A
@@ -173,11 +193,11 @@ cr.define('cr.ui', function() {
 
       // Space
       if (e.keyCode == 32) {
-        if (leadItem != null) {
-          var selected = this.getItemSelected(leadItem);
+        if (leadIndex != -1) {
+          var selected = this.getIndexSelected(leadIndex);
           if (e.ctrlKey || !selected) {
             this.beginChange_();
-            this.setItemSelected(leadItem, !selected);
+            this.setIndexSelected(leadIndex, !selected);
             this.endChange_();
             return;
           }
@@ -186,51 +206,51 @@ cr.define('cr.ui', function() {
 
       switch (e.keyIdentifier) {
         case 'Home':
-          newItem = this.getFirstItem();
+          newIndex = this.getFirstIndex();
           break;
         case 'End':
-          newItem = this.getLastItem();
+          newIndex = this.getLastIndex();
           break;
         case 'Up':
-          newItem = !leadItem  ?
-              this.getLastItem() : this.getItemAbove(leadItem);
+          newIndex = leadIndex == -1 ?
+              this.getLastIndex() : this.getIndexAbove(leadIndex);
           break;
         case 'Down':
-          newItem = !leadItem ?
-              this.getFirstItem() : this.getItemBelow(leadItem);
+          newIndex = leadIndex == -1 ?
+              this.getFirstIndex() : this.getIndexBelow(leadIndex);
           break;
         case 'Left':
-          newItem = !leadItem ?
-              this.getLastItem() : this.getItemBefore(leadItem);
+          newIndex = leadIndex == -1 ?
+              this.getLastIndex() : this.getIndexBefore(leadIndex);
           break;
         case 'Right':
-          newItem = !leadItem ?
-              this.getFirstItem() : this.getItemAfter(leadItem);
+          newIndex = leadIndex == -1 ?
+              this.getFirstIndex() : this.getIndexAfter(leadIndex);
           break;
         default:
           prevent = false;
       }
 
-      if (newItem) {
+      if (newIndex != -1) {
         this.beginChange_();
 
-        this.leadItem = newItem;
+        this.leadIndex = newIndex;
         if (e.shiftKey) {
-          var anchorItem = this.anchorItem;
+          var anchorIndex = this.anchorIndex;
           this.clearAllSelected_();
-          if (!anchorItem) {
-            this.setItemSelected(newItem, true);
-            this.anchorItem = newItem;
+          if (anchorIndex == -1) {
+            this.setIndexSelected(newIndex, true);
+            this.anchorIndex = newIndex;
           } else {
-            this.selectRange(anchorItem, newItem);
+            this.selectRange(anchorIndex, newIndex);
           }
         } else if (e.ctrlKey && !cr.isMac) {
-          // Setting the lead item is done above
+          // Setting the lead index is done above
           // Mac does not allow you to change the lead.
         } else {
           this.clearAllSelected_();
-          this.setItemSelected(newItem, true);
-          this.anchorItem = newItem;
+          this.setIndexSelected(newIndex, true);
+          this.anchorIndex = newIndex;
         }
 
         this.endChange_();
@@ -241,53 +261,55 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @type {!Array} The selected items.
+     * @type {!Array} The selected indexes.
      */
-    get selectedItems() {
-      return Object.keys(this.selectedItems_).map(function(uid) {
-        return this.selectedItems_[uid];
-      }, this);
+    get selectedIndexes() {
+      return Object.keys(this.selectedIndexes_).map(Number);
     },
-    set selectedItems(selectedItems) {
+    set selectedIndexes(selectedIndexes) {
       this.beginChange_();
       this.clearAllSelected_();
-      for (var i = 0; i < selectedItems.length; i++) {
-        this.setItemSelected(selectedItems[i], true);
+      for (var i = 0; i < selectedIndexes.length; i++) {
+        this.setIndexSelected(selectedIndexes[i], true);
       }
-      this.leadItem = this.anchorItem = selectedItems[0] || null;
+      if (selectedIndexes.length) {
+        this.leadIndex = this.anchorIndex = selectedIndexes[0];
+      } else {
+        this.leadIndex = this.anchorIndex = -1;
+      }
       this.endChange_();
     },
 
     /**
-     * Convenience getter which returns the first selected item.
+     * Convenience getter which returns the first selected index.
      * @type {*}
      */
-    get selectedItem() {
-      for (var uid in this.selectedItems_) {
-        return this.selectedItems_[uid];
+    get selectedIndex() {
+      for (var i in this.selectedIndexes_) {
+        return Number(i);
       }
-      return null;
+      return -1;
     },
-    set selectedItem(selectedItem) {
+    set selectedIndex(selectedIndex) {
       this.beginChange_();
       this.clearAllSelected_();
-      if (selectedItem) {
-        this.selectedItems = [selectedItem];
+      if (selectedIndex != -1) {
+        this.selectedIndexes = [selectedIndex];
       } else {
-        this.leadItem = this.anchorItem = null;
+        this.leadIndex = this.anchorIndex = -1;
       }
       this.endChange_();
     },
 
     /**
-     * Selects a range of items, starting with {@code start} and ends with
+     * Selects a range of indexes, starting with {@code start} and ends with
      * {@code end}.
-     * @param {*} start The first item to select.
-     * @param {*} end The last item to select.
+     * @param {*} start The first index to select.
+     * @param {*} end The last index to select.
      */
     selectRange: function(start, end) {
       // Swap if starts comes after end.
-      if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) {
+      if (start > end) {
         var tmp = start;
         start = end;
         end = tmp;
@@ -295,19 +317,19 @@ cr.define('cr.ui', function() {
 
       this.beginChange_();
 
-      for (var item = start; item != end; item = this.getNextItem(item)) {
-        this.setItemSelected(item, true);
+      for (var index = start; index != end; index++) {
+        this.setIndexSelected(index, true);
       }
-      this.setItemSelected(end, true);
+      this.setIndexSelected(end, true);
 
       this.endChange_();
     },
 
     /**
-     * Selects all items.
+     * Selects all indexes.
      */
     selectAll: function() {
-      this.selectRange(this.getFirstItem(), this.getLastItem());
+      this.selectRange(this.getFirstIndex(), this.getLastIndex());
     },
 
     /**
@@ -315,7 +337,8 @@ cr.define('cr.ui', function() {
      */
     clear: function() {
       this.beginChange_();
-      this.anchorItem = this.leadItem = null;
+      this.length_ = 0;
+      this.anchorIndex = this.leadIndex = -1;
       this.clearAllSelected_();
       this.endChange_();
     },
@@ -325,34 +348,33 @@ cr.define('cr.ui', function() {
      * @private
      */
     clearAllSelected_: function() {
-      for (var uid in this.selectedItems_) {
-        this.setItemSelected(this.selectedItems_[uid], false);
+      for (var i in this.selectedIndexes_) {
+        this.setIndexSelected(i, false);
       }
     },
 
     /**
-     * Sets the selecte state for an item.
-     * @param {*} item The item to set the selected state for.
-     * @param {boolean} b Whether to select the item or not.
+     * Sets the selected state for an index.
+     * @param {*} index The index to set the selected state for.
+     * @param {boolean} b Whether to select the index or not.
      */
-    setItemSelected: function(item, b) {
-      var uid = this.list.itemToUid(item);
-      var oldSelected = uid in this.selectedItems_;
+    setIndexSelected: function(index, b) {
+      var oldSelected = index in this.selectedIndexes_;
       if (oldSelected == b)
         return;
 
       if (b)
-        this.selectedItems_[uid] = item;
+        this.selectedIndexes_[index] = true;
       else
-        delete this.selectedItems_[uid];
+        delete this.selectedIndexes_[index];
 
       this.beginChange_();
 
       // Changing back?
-      if (uid in this.changedUids_ && this.changedUids_[uid] == !b) {
-        delete this.changedUids_[uid];
+      if (index in this.changedIndexes_ && this.changedIndexes_[index] == !b) {
+        delete this.changedIndexes_[index];
       } else {
-        this.changedUids_[uid] = b;
+        this.changedIndexes_[index] = b;
       }
 
       // End change dispatches an event which in turn may update the view.
@@ -360,13 +382,12 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Whether a given item is selected or not.
-     * @param {*} item The item to check.
-     * @return {boolean} Whether an item is selected.
+     * Whether a given index is selected or not.
+     * @param {*} index The index to check.
+     * @return {boolean} Whether an index is selected.
      */
-    getItemSelected: function(item) {
-      var uid = this.list.itemToUid(item);
-      return uid in this.selectedItems_;
+    getIndexSelected: function(index) {
+      return index in this.selectedIndexes_;
     },
 
     /**
@@ -377,7 +398,7 @@ cr.define('cr.ui', function() {
     beginChange_: function() {
       if (!this.changeCount_) {
         this.changeCount_ = 0;
-        this.changedUids_ = {};
+        this.changedIndexes_ = {};
       }
       this.changeCount_++;
     },
@@ -390,59 +411,95 @@ cr.define('cr.ui', function() {
     endChange_: function() {
       this.changeCount_--;
       if (!this.changeCount_) {
-        var uids = Object.keys(this.changedUids_);
-        if (uids.length) {
+        var indexes = Object.keys(this.changedIndexes_);
+        if (indexes.length) {
           var e = new Event('change');
-          e.changes = uids.map(function(uid) {
+          e.changes = indexes.map(function(index) {
             return {
-              uid: uid,
-              selected: this.changedUids_[uid]
+              index: index,
+              selected: this.changedIndexes_[index]
             };
           }, this);
           this.dispatchEvent(e);
         }
-        delete this.changedUids_;
+        delete this.changedIndexes_;
         delete this.changeCount_;
       }
     },
 
-    /**
-     * Called when an item is removed from the lisst.
-     * @param {cr.ui.ListItem} item The list item that was removed.
-     */
-    remove: function(item) {
-      if (item == this.leadItem)
-        this.leadItem = this.getNextItem(item) || this.getPreviousItem(item);
-      if (item == this.anchorItem)
-        this.anchorItem = this.getNextItem(item) || this.getPreviousItem(item);
+    leadIndex_: -1,
 
-      // Deselect when removing items.
-      if (this.getItemSelected(item))
-        this.setItemSelected(item, false);
+    /**
+     * The leadIndex is used with multiple selection and it is the index that
+     * the user is moving using the arrow keys.
+     * @type {*}
+     */
+    get leadIndex() {
+      return this.leadIndex_;
+    },
+    set leadIndex(leadIndex) {
+      var li = Math.max(-1, Math.min(this.length_ - 1, leadIndex));
+      if (li != this.leadIndex_) {
+        var oldLeadIndex = this.leadIndex_;
+        this.leadIndex_ = li;
+        cr.dispatchPropertyChange(this, 'leadIndex', li, oldLeadIndex);
+      }
+    },
+
+    anchorIndex_: -1,
+
+    /**
+     * The anchorIndex is used with multiple selection.
+     * @type {*}
+     */
+    get anchorIndex() {
+      return this.anchorIndex_;
+    },
+    set anchorIndex(anchorIndex) {
+      var ai = Math.max(-1, Math.min(this.length_ - 1, anchorIndex));
+      if (ai != this.anchorIndex_) {
+        var oldAnchorIndex = this.anchorIndex_;
+        this.anchorIndex_ = ai;
+        cr.dispatchPropertyChange(this, 'anchorIndex', ai, oldAnchorIndex);
+      }
     },
 
     /**
-     * Called when an item was added to the list.
-     * @param {cr.ui.ListItem} item The list item to add.
+     * Adjust the selection by adding or removing a certain numbers of items.
+     * This should be called by the owner of the selection model as items are
+     * added and removed from the underlying data model.
+     * @param {number} index The index of the first change.
+     * @param {number} itemsRemoved Number of items removed.
+     * @param {number} itemsAdded Number of items added.
      */
-    add: function(item) {
-      // We could (should?) check if the item is selected here and update the
-      // selection model.
+    adjust: function(index, itemsRemoved, itemsAdded) {
+      function getNewAdjustedIndex(i) {
+        if (i > index && i < index + itemsRemoved) {
+          return index
+        } else if (i >= index) {
+          return i + itemsAdded - itemsRemoved;
+        }
+        return i;
+      }
+
+      this.length_ += itemsAdded - itemsRemoved;
+
+      var newMap = [];
+      for (var i in this.selectedIndexes_) {
+        if (i < index) {
+          newMap[i] = true;
+        } else if (i < index + itemsRemoved) {
+          // noop
+        } else {
+          newMap[Number(i) + itemsAdded - itemsRemoved] = true;
+        }
+      }
+      this.selectedIndexes_ = newMap;
+
+      this.leadIndex = getNewAdjustedIndex(this.leadIndex);
+      this.anchorIndex = getNewAdjustedIndex(this.anchorIndex);
     }
   };
-
-  /**
-   * The anchorItem is used with multiple selection.
-   * @type {*}
-   */
-  cr.defineProperty(ListSelectionModel, 'anchorItem', cr.PropertyKind.JS, null);
-
-  /**
-   * The leadItem is used with multiple selection and it is the item that the
-   * user is moving uysing the arrow keys.
-   * @type {*}
-   */
-  cr.defineProperty(ListSelectionModel, 'leadItem', cr.PropertyKind.JS, null);
 
   return {
     ListSelectionModel: ListSelectionModel
