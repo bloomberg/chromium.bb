@@ -988,14 +988,16 @@ Common tasks:
 * build libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_update
 * purge libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_clean
 * rebuild sdk:              scons --mode=nacl_extra_sdk \
-                                extra_sdk_clean \
-                                extra_sdk_update_header \
-                                install_libpthread \
-                                extra_sdk_update
+extra_sdk_clean \
+extra_sdk_update_header \
+install_libpthread \
+extra_sdk_update
 
-* dump system info    scons --mode=nacl,opt-linux dummy
+* dump system info:   scons --mode=nacl,opt-linux dummy
+
 Options:
 --------
+
 sdl=<mode>        where <mode>:
 
                     'none': don't use SDL (default)
@@ -1531,11 +1533,12 @@ if not ARGUMENTS.get('nocpp'):
   nacl_extra_sdk_env.Append(
       BUILD_SCONSCRIPTS = [
         ####  ALPHABETICALLY SORTED ####
-        'src/third_party/protobuf/nacl.scons',
-        'src/untrusted/gpu/nacl.scons',
         'src/shared/imc/nacl.scons',
         'src/shared/npruntime/nacl.scons',
         'src/shared/platform/nacl.scons',
+        'src/third_party/protobuf/nacl.scons',
+        'src/untrusted/gpu/nacl.scons',
+        'src/untrusted/ppapi/nacl.scons',
         ####  ALPHABETICALLY SORTED ####
       ],
   )

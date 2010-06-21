@@ -1,8 +1,8 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
-
   "native_client_trunk": "http://nativeclient.googlecode.com/svn/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
+
   "breakpad_rev": "452",
   "chrome_rev": "47602",
   "nacl_breakpad_gyp_rev": "1806",
@@ -12,6 +12,7 @@ vars = {
   "tools_rev": "2271",
   "python_rev": "22967",
   "wix_rev": "153",
+  "ppapi_rev": "58",
 }
 
 deps = {
@@ -58,8 +59,7 @@ deps = {
      Var("tools_rev")),
   "third_party/zlib":
     Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
-  # Includes needed for using Chromium NPAPI
-  "third_party/npapi/bindings":
+  "third_party/npapi/bindings":  # Includes needed for using Chromium NPAPI
     (Var("chromium_trunk") + "/src/third_party/npapi/bindings@" +
      Var("chrome_rev")),
   "base":
@@ -72,6 +72,8 @@ deps = {
     Var("chromium_trunk") + "/src/gpu/pgl@" + Var("chrome_rev"),
   "gpu/command_buffer":
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
+  "ppapi":
+    "http://ppapi.googlecode.com/svn/trunk@" +  Var("ppapi_rev"),
 }
 
 deps_os = {
