@@ -3502,6 +3502,51 @@
    fun:sqlite3LockAndPrepare
 }
 {
+   bug_19775_d
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3MallocZero
+   fun:sqlite3PagerOpen
+   fun:sqlite3BtreeOpen
+   fun:sqlite3BtreeFactory
+   fun:openDatabase
+   fun:sqlite3_open
+   fun:_ZN3sql10Connection12OpenInternalERKSs
+   fun:_ZN3sql10Connection12OpenInMemoryEv
+   fun:_ZN7history16InMemoryDatabase6InitDBEv
+   fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
+}
+{
+   bug_19775_e
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3DbMallocRaw
+   fun:sqlite3DbMallocZero
+   fun:sqlite3StartTable
+   fun:yy_reduce
+   fun:sqlite3Parser
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
+   fun:sqlite3_prepare
+   fun:sqlite3_exec
+   fun:sqlite3InitCallback
+   fun:sqlite3_exec
+   fun:sqlite3InitOne
+   fun:sqlite3Init
+   fun:sqlite3ReadSchema
+   fun:sqlite3CreateIndex
+   fun:yy_reduce
+}
+{
    bug_46894
    Memcheck:Addr4
    fun:_ZNK12BookmarkNode9is_folderEv
