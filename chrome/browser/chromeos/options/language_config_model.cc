@@ -11,7 +11,7 @@
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/common/notification_type.h"

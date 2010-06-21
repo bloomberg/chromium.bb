@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_MOCK_LANGUAGE_LIBRARY_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_MOCK_LANGUAGE_LIBRARY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CROS_MOCK_INPUT_METHOD_LIBRARY_H_
+#define CHROME_BROWSER_CHROMEOS_CROS_MOCK_INPUT_METHOD_LIBRARY_H_
 
 #include <string>
 
-#include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -36,5 +36,5 @@ class MockInputMethodLibrary : public InputMethodLibrary {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_MOCK_LANGUAGE_LIBRARY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CROS_MOCK_INPUT_METHOD_LIBRARY_H_
 

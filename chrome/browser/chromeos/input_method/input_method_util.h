@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
 
 namespace chromeos {
 namespace input_method {

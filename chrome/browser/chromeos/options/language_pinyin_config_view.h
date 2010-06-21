@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/cros/language_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"
