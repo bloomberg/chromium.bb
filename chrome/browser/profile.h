@@ -40,6 +40,7 @@ class DatabaseTracker;
 }
 
 class AutocompleteClassifier;
+class BackgroundContentsService;
 class Blacklist;
 class BookmarkModel;
 class BrowserThemeProvider;
@@ -403,6 +404,9 @@ class Profile {
   // Returns the provider of desktop notifications for this profile.
   virtual DesktopNotificationService* GetDesktopNotificationService() = 0;
 
+  // Returns the service that manages BackgroundContents for this profile.
+  virtual BackgroundContentsService* GetBackgroundContentsService() = 0;
+
   // Marks the profile as cleanly shutdown.
   //
   // NOTE: this is invoked internally on a normal shutdown, but is public so
@@ -537,6 +541,7 @@ class ProfileImpl : public Profile,
   virtual void ReinitializeSpellCheckHost(bool force);
   virtual WebKitContext* GetWebKitContext();
   virtual DesktopNotificationService* GetDesktopNotificationService();
+  virtual BackgroundContentsService* GetBackgroundContentsService();
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
   virtual void InitWebResources();
@@ -634,6 +639,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<BrowserThemeProvider> theme_provider_;
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
+  scoped_ptr<BackgroundContentsService> background_contents_service_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_ptr<PinnedTabService> pinned_tab_service_;
   bool history_service_created_;

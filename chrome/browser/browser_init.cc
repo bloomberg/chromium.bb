@@ -439,7 +439,7 @@ bool BrowserInit::LaunchBrowser(
   }
 #endif
 
-  if (command_line.HasSwitch(switches::kLongLivedExtensions)) {
+  if (command_line.HasSwitch(switches::kRestoreBackgroundContents)) {
     // Create status icons
     StatusTrayManager* tray = g_browser_process->status_tray_manager();
     if (tray)

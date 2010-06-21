@@ -265,6 +265,9 @@ class TestingProfile : public Profile {
   virtual DesktopNotificationService* GetDesktopNotificationService() {
     return NULL;
   }
+  virtual BackgroundContentsService* GetBackgroundContentsService() {
+    return NULL;
+  }
   virtual FilePath last_selected_directory() {
     return last_selected_directory_;
   }

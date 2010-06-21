@@ -868,6 +868,11 @@ const wchar_t kLoginDatabaseMigrated[] = L"login_database.migrated";
 // The root URL of the cloud print service.
 const wchar_t kCloudPrintServiceURL[] = L"cloud_print.service_url";
 
+// The list of BackgroundContents that should be loaded when the browser
+// launches.
+const wchar_t kRegisteredBackgroundContents[] =
+    L"background_contents.registered";
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

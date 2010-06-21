@@ -28,6 +28,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -698,8 +699,13 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
     case NotificationType::RENDER_VIEW_HOST_DELETED:
-    case NotificationType::BACKGROUND_CONTENTS_DELETED:
       deleting_rvh_ = Details<RenderViewHost>(details).ptr();
+      MaybeUpdateAfterNotification();
+      break;
+    case NotificationType::BACKGROUND_CONTENTS_DELETED:
+      deleting_rvh_ = Details<BackgroundContents>(details)->render_view_host();
+      MaybeUpdateAfterNotification();
+      break;
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_PROCESS_CREATED:
     case NotificationType::EXTENSION_UNLOADED:
@@ -709,14 +715,17 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED:
     case NotificationType::NAV_ENTRY_COMMITTED:
     case NotificationType::BACKGROUND_CONTENTS_NAVIGATED:
-      if (!ignore_notifications_ && dom_ui_->tab_contents())
-        HandleRequestExtensionsData(NULL);
-      deleting_rvh_ = NULL;
+      MaybeUpdateAfterNotification();
       break;
-
     default:
       NOTREACHED();
   }
+}
+
+void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {
+  if (!ignore_notifications_ && dom_ui_->tab_contents())
+    HandleRequestExtensionsData(NULL);
+  deleting_rvh_ = NULL;
 }
 
 static void CreateScriptFileDetailValue(

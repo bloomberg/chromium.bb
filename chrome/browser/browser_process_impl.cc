@@ -576,10 +576,8 @@ void BrowserProcessImpl::RestartPersistentInstance() {
       }
   }
 
-  // TODO(atwilson): Uncomment the following two lines to add the "persistence"
-  // switch when the corresponding CL is committed.
-  // if (!new_cl->HasSwitch(switches::kLongLivedExtensions))
-  //  new_cl->AppendSwitch(switches::kLongLivedExtensions);
+  if (!new_cl->HasSwitch(switches::kRestoreBackgroundContents))
+    new_cl->AppendSwitch(switches::kRestoreBackgroundContents);
 
   DLOG(WARNING) << "Shutting down current instance of the browser.";
   BrowserList::CloseAllBrowsersAndExit();

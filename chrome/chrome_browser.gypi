@@ -221,6 +221,8 @@
         'browser/automation/ui_controls.h',
         'browser/back_forward_menu_model.cc',
         'browser/back_forward_menu_model.h',
+        'browser/background_contents_service.h',
+        'browser/background_contents_service.cc',
         'browser/blocked_popup_container.cc',
         'browser/blocked_popup_container.h',
         'browser/bookmarks/bookmark_codec.cc',

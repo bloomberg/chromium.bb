@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/background_contents.h"
 
+#include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browsing_instance.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/render_messages.h"
 
@@ -32,13 +34,15 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
                                          session_storage_namespace_id);
   render_view_host_->AllowScriptToClose(true);
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-  registrar_.Add(this, NotificationType::BROWSER_CLOSED,
-                 NotificationService::AllSources());
-#elif defined(OS_MACOSX)
-  registrar_.Add(this, NotificationType::APP_TERMINATING,
-                 NotificationService::AllSources());
-#endif
+  // Register for our parent profile to shutdown, so we can shut ourselves down
+  // as well.
+  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                 Source<Profile>(profile));
+}
+
+// Exposed to allow creating mocks.
+BackgroundContents::BackgroundContents()
+    : render_view_host_(NULL) {
 }
 
 void BackgroundContents::Observe(NotificationType type,
@@ -47,19 +51,10 @@ void BackgroundContents::Observe(NotificationType type,
   // TODO(rafaelw): Implement pagegroup ref-counting so that non-persistent
   // background pages are closed when the last referencing frame is closed.
   switch (type.value) {
-#if defined(OS_WIN) || defined(OS_LINUX)
-    case NotificationType::BROWSER_CLOSED: {
-      bool app_closing = *Details<bool>(details).ptr();
-      if (app_closing)
-        delete this;
-      break;
-    }
-#elif defined(OS_MACOSX)
-    case NotificationType::APP_TERMINATING: {
+    case NotificationType::PROFILE_DESTROYED: {
       delete this;
       break;
     }
-#endif
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
@@ -67,10 +62,13 @@ void BackgroundContents::Observe(NotificationType type,
 }
 
 BackgroundContents::~BackgroundContents() {
+  if (!render_view_host_)   // Will be null for unit tests.
+    return;
+  Profile* profile = render_view_host_->process()->profile();
   NotificationService::current()->Notify(
       NotificationType::BACKGROUND_CONTENTS_DELETED,
-      Source<BackgroundContents>(this),
-      Details<RenderViewHost>(render_view_host_));
+      Source<Profile>(profile),
+      Details<BackgroundContents>(this));
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
@@ -90,10 +88,11 @@ void BackgroundContents::DidNavigate(
   // extent a background page will be opened but will remain at about:blank.
   url_ = params.url;
 
+  Profile* profile = render_view_host->process()->profile();
   NotificationService::current()->Notify(
       NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
-      Source<BackgroundContents>(this),
-      Details<RenderViewHost>(render_view_host_));
+      Source<Profile>(profile),
+      Details<BackgroundContents>(this));
 }
 
 void BackgroundContents::RunJavaScriptMessage(
@@ -126,6 +125,11 @@ void BackgroundContents::OnMessageBoxClosed(IPC::Message* reply_msg,
 }
 
 void BackgroundContents::Close(RenderViewHost* render_view_host) {
+  Profile* profile = render_view_host->process()->profile();
+  NotificationService::current()->Notify(
+      NotificationType::BACKGROUND_CONTENTS_CLOSED,
+      Source<Profile>(profile),
+      Details<BackgroundContents>(this));
   delete this;
 }
 

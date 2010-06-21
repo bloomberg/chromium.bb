@@ -514,9 +514,6 @@ const char kLoadExtension[]                 = "load-extension";
 // Load an NPAPI plugin from the specified path.
 const char kLoadPlugin[]                    = "load-plugin";
 
-// Long lived extensions.
-const char kLongLivedExtensions[]           = "long-lived-extensions";
-
 // Will filter log messages to show only the messages that are prefixed
 // with the specified value. See also kEnableLogging and kLoggingLevel.
 const char kLogFilterPrefix[]               = "log-filter-prefix";
@@ -710,6 +707,10 @@ const char kRendererProcess[]               = "renderer";
 
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
+
+// Causes the URLs of BackgroundContents to be remembered and re-launched when
+// the browser restarts.
+const char kRestoreBackgroundContents[]     = "restore-background-contents";
 
 // Indicates the last session should be restored on startup. This overrides
 // the preferences value and is primarily intended for testing. The value of

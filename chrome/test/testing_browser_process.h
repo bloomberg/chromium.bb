@@ -26,6 +26,7 @@ class TestingBrowserProcess : public BrowserProcess {
  public:
   TestingBrowserProcess()
       : shutdown_event_(new base::WaitableEvent(true, false)),
+        module_ref_count_(0),
         app_locale_("en") {
   }
 
@@ -125,10 +126,15 @@ class TestingBrowserProcess : public BrowserProcess {
   }
 
   virtual unsigned int AddRefModule() {
-    return 1;
+    return ++module_ref_count_;
   }
   virtual unsigned int ReleaseModule() {
-    return 1;
+    DCHECK(module_ref_count_ > 0);
+    return --module_ref_count_;
+  }
+
+  unsigned int module_ref_count() {
+    return module_ref_count_;
   }
 
   virtual bool IsShuttingDown() {
@@ -165,6 +171,7 @@ class TestingBrowserProcess : public BrowserProcess {
  private:
   NotificationService notification_service_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
+  unsigned int module_ref_count_;
   scoped_ptr<Clipboard> clipboard_;
   std::string app_locale_;
 

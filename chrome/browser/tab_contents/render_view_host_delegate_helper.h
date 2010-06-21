@@ -16,6 +16,7 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class BackgroundContents;
 class Browser;
 class ExtensionsService;
 class PrefService;
@@ -68,10 +69,12 @@ class RenderViewHostDelegateViewHelper {
   void RenderWidgetHostDestroyed(RenderWidgetHost* host);
 
  private:
-  bool ShouldOpenBackgroundContents(WindowContainerType window_container_type,
-                                    GURL opener_url,
-                                    RenderProcessHost* opener_process,
-                                    Profile* profile);
+  BackgroundContents* MaybeCreateBackgroundContents(
+      int route_id,
+      Profile* profile,
+      SiteInstance* site,
+      GURL opener_url,
+      const string16& frame_name);
 
   // Tracks created RenderViewHost objects that have not been shown yet.
   // They are identified by the route ID passed to CreateNewWindow.

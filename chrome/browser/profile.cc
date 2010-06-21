@@ -16,6 +16,7 @@
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_prefs.h"
@@ -309,6 +310,8 @@ class OffTheRecordProfileImpl : public Profile,
     // (cookies, downloads...).
     registrar_.Add(this, NotificationType::BROWSER_CLOSED,
                    NotificationService::AllSources());
+    background_contents_service_.reset(
+        new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
   }
 
   virtual ~OffTheRecordProfileImpl() {
@@ -364,6 +367,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual ExtensionsService* GetExtensionsService() {
     return GetOriginalProfile()->GetExtensionsService();
+  }
+
+  virtual BackgroundContentsService* GetBackgroundContentsService() {
+    return background_contents_service_.get();
   }
 
   virtual UserScriptMaster* GetUserScriptMaster() {
@@ -721,6 +728,9 @@ class OffTheRecordProfileImpl : public Profile,
 
   FilePath last_selected_directory_;
 
+  // Tracks all BackgroundContents running under this profile.
+  scoped_ptr<BackgroundContentsService> background_contents_service_;
+
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
 
@@ -807,6 +817,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 #endif
 
   pinned_tab_service_.reset(new PinnedTabService(this));
+
+  background_contents_service_.reset(
+      new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
 
   // Log the profile size after a reasonable startup delay.
   ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE,
@@ -1047,6 +1060,10 @@ VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
 
 ExtensionsService* ProfileImpl::GetExtensionsService() {
   return extensions_service_.get();
+}
+
+BackgroundContentsService* ProfileImpl::GetBackgroundContentsService() {
+  return background_contents_service_.get();
 }
 
 UserScriptMaster* ProfileImpl::GetUserScriptMaster() {

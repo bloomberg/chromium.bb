@@ -482,12 +482,23 @@ class NotificationType {
 
     // BackgroundContents ------------------------------------------------------
 
+    // A new background contents was opened by script. The source is the parent
+    // profile and the details are BackgroundContentsOpenedDetails.
+    BACKGROUND_CONTENTS_OPENED,
+
     // The background contents navigated to a new location. The source is the
-    // BackgroundContents, and the details are contained RenderViewHost.
+    // parent Profile, and the details are the BackgroundContents that was
+    // navigated.
     BACKGROUND_CONTENTS_NAVIGATED,
 
+    // The background contents were closed by someone invoking window.close()
+    // or the parent application was uninstalled.
+    // The source is the parent profile, and the details are the
+    // BackgroundContents.
+    BACKGROUND_CONTENTS_CLOSED,
+
     // The background contents is being deleted. The source is the
-    // BackgroundContents, and the details are the contained RendeViewHost.
+    // parent Profile, and the details are the BackgroundContents being deleted.
     BACKGROUND_CONTENTS_DELETED,
 
     // Child Processes ---------------------------------------------------------

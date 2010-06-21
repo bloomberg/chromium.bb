@@ -32,7 +32,7 @@ class BackgroundContents : public RenderViewHostDelegate,
  public:
   BackgroundContents(SiteInstance* site_instance,
                      int routing_id);
-  ~BackgroundContents();
+  virtual ~BackgroundContents();
 
   // Provide access to the RenderViewHost for the
   // RenderViewHostDelegateViewHelper
@@ -109,6 +109,10 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual TabContents* AsTabContents() { return NULL; }
   virtual ExtensionHost* AsExtensionHost() { return NULL; }
 
+ protected:
+  // Exposed for testing.
+  BackgroundContents();
+
  private:
   // The host for our HTML content.
   RenderViewHost* render_view_host_;
@@ -122,6 +126,18 @@ class BackgroundContents : public RenderViewHostDelegate,
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContents);
+};
+
+// This is the data sent out as the details with BACKGROUND_CONTENTS_OPENED.
+struct BackgroundContentsOpenedDetails {
+  // The BackgroundContents object that has just been opened.
+  BackgroundContents* contents;
+
+  // The name of the parent frame for these contents.
+  const string16& frame_name;
+
+  // The ID of the parent application (if any).
+  const string16& application_id;
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_BACKGROUND_CONTENTS_H_

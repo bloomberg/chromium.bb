@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -21,35 +22,56 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
-bool RenderViewHostDelegateViewHelper::ShouldOpenBackgroundContents(
-    WindowContainerType window_container_type,
+BackgroundContents*
+RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
+    int route_id,
+    Profile* profile,
+    SiteInstance* site,
     GURL opener_url,
-    RenderProcessHost* opener_process,
-    Profile* profile) {
+    const string16& frame_name) {
   ExtensionsService* extensions_service = profile->GetExtensionsService();
-  if (window_container_type != WINDOW_CONTAINER_TYPE_BACKGROUND ||
-      !opener_url.is_valid() ||
+
+  if (!opener_url.is_valid() ||
+      frame_name.empty() ||
       !extensions_service ||
       !extensions_service->is_ready())
-    return false;
+    return NULL;
 
   Extension* extension = extensions_service->GetExtensionByURL(opener_url);
   if (!extension)
     extension = extensions_service->GetExtensionByWebExtent(opener_url);
   if (!extension ||
       !extension->HasApiPermission(Extension::kBackgroundPermission))
-    return false;
+    return NULL;
 
+  // Only allow a single background contents per app.
+  if (!profile->GetBackgroundContentsService() ||
+      profile->GetBackgroundContentsService()->GetAppBackgroundContents(
+          ASCIIToUTF16(extension->id())))
+    return NULL;
+
+  // Ensure that we're trying to open this from the extension's process.
   ExtensionProcessManager* process_manager =
       profile->GetExtensionProcessManager();
-  if (!opener_process || !process_manager ||
-      opener_process != process_manager->GetExtensionProcess(opener_url))
-    return false;
+  if (!site->GetProcess() || !process_manager ||
+      site->GetProcess() != process_manager->GetExtensionProcess(opener_url))
+    return NULL;
 
-  return true;
+  // Passed all the checks, so this should be created as a BackgroundContents.
+  BackgroundContents* contents = new BackgroundContents(site, route_id);
+  string16 appid = ASCIIToUTF16(extension->id());
+  BackgroundContentsOpenedDetails details = { contents, frame_name, appid };
+  NotificationService::current()->Notify(
+      NotificationType::BACKGROUND_CONTENTS_OPENED,
+      Source<Profile>(profile),
+      Details<BackgroundContentsOpenedDetails>(&details));
+
+  return contents;
 }
+
 TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     int route_id,
     Profile* profile,
@@ -58,13 +80,17 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     RenderViewHostDelegate* opener,
     WindowContainerType window_container_type,
     const string16& frame_name) {
-  if (ShouldOpenBackgroundContents(window_container_type,
-                                   opener->GetURL(),
-                                   site->GetProcess(),
-                                   profile)) {
-    BackgroundContents* contents = new BackgroundContents(site, route_id);
-    pending_contents_[route_id] = contents->render_view_host();
-    return NULL;
+  if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
+    BackgroundContents* contents = MaybeCreateBackgroundContents(
+        route_id,
+        profile,
+        site,
+        opener->GetURL(),
+        frame_name);
+    if (contents) {
+      pending_contents_[route_id] = contents->render_view_host();
+      return NULL;
+    }
   }
 
   // Create the new web contents. This will automatically create the new

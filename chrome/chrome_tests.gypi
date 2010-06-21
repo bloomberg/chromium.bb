@@ -582,6 +582,7 @@
         'browser/autofill/phone_number_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',
         'browser/back_forward_menu_model_unittest.cc',
+        'browser/background_contents_service_unittest.cc',
         'browser/bookmarks/bookmark_codec_unittest.cc',
         'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/bookmarks/bookmark_drag_data_unittest.cc',

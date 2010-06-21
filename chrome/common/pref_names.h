@@ -336,6 +336,8 @@ extern const wchar_t kProxyServer[];
 extern const wchar_t kProxyPacUrl[];
 extern const wchar_t kProxyBypassList[];
 
+extern const wchar_t kRegisteredBackgroundContents[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

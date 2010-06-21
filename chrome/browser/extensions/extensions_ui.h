@@ -170,6 +170,9 @@ class ExtensionsDOMHandler
   // Callback for "selectFilePath" message.
   void HandleSelectFilePathMessage(const Value* value);
 
+  // Forces a UI update if appropriate after a notification is received.
+  void MaybeUpdateAfterNotification();
+
   // SelectFileDialog::Listener
   virtual void FileSelected(const FilePath& path,
                             int index, void* params);
