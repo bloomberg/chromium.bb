@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 
 class Task;
+class WebURLLoaderMockFactory;
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -21,6 +22,7 @@ class WebPlugin;
 class WebString;
 class WebThemeEngine;
 class WebURL;
+class WebURLResponse;
 struct WebPluginParams;
 }
 
@@ -35,11 +37,17 @@ namespace webkit_support {
 // |unit_test_mode| should be set to true when running in a TestSuite, in which
 // case no AtExitManager is created and ICU is not initialized (as it is already
 // done by the TestSuite).
-// SetUpTestEnvironment() calls WebKit::initialize().
+// SetUpTestEnvironment() and SetUpTestEnvironmentForUnitTests() calls
+// WebKit::initialize().
 // TearDownTestEnvironment() calls WebKit::shutdown().
-// TODO(jcivelli): remove the next method once DumpRenderTree.cpp is not using
-//                 it anymore upstream.
+// SetUpTestEnvironmentForUnitTests() should be used when running in a
+// TestSuite, in which case no AtExitManager is created and ICU is not
+// initialized (as it is already done by the TestSuite).
 void SetUpTestEnvironment();
+void SetUpTestEnvironmentForUnitTests();
+// TODO(jcivelli): the method below is deprecated and should be removed when
+//                 DumpRenderTree has been modified to use the version with no
+//                 parameter.
 void SetUpTestEnvironment(bool unit_test_mode);
 void TearDownTestEnvironment();
 
@@ -62,6 +70,21 @@ WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
 
 // Returns the root directory of the WebKit code.
 WebKit::WebString GetWebKitRootDir();
+
+// ------- URL load mocking.
+// Registers the file at |file_path| to be served when |url| is requested.
+// |response| is the response provided with the contents.
+void RegisterMockedURL(const WebKit::WebURL& url,
+                       const WebKit::WebURLResponse& response,
+                       const WebKit::WebString& file_path);
+
+// Unregisters URLs so they are no longer mocked.
+void UnregisterMockedURL(const WebKit::WebURL& url);
+void UnregisterAllMockedURLs();
+
+// Causes all pending asynchronous requests to be served.  When this method
+// returns all the pending requests have been processed.
+void ServeAsynchronousMockedRequests();
 
 // Wrappers to minimize dependecy.
 

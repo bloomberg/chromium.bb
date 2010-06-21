@@ -31,6 +31,10 @@
         'webkit_support.cc',
         'webkit_support.h',
         'webkit_support_glue.cc',
+        'weburl_loader_mock.cc',
+        'weburl_loader_mock.h',
+        'weburl_loader_mock_factory.cc',
+        'weburl_loader_mock_factory.h',
         # TODO(tkent): Move the following files to here.
         '<(DEPTH)/webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h',
         '<(DEPTH)/webkit/tools/test_shell/mac/DumpRenderTreePasteboard.m',

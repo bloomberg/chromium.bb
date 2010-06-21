@@ -59,7 +59,7 @@ class TestEnvironment {
     SimpleResourceLoaderBridge::Shutdown();
   }
 
-  WebKit::WebKitClient* webkit_client() { return webkit_client_.get(); }
+  TestWebKitClient* webkit_client() { return webkit_client_.get(); }
 
 #if defined(OS_WIN)
   void set_theme_engine(WebKit::WebThemeEngine* engine) {
@@ -112,11 +112,7 @@ namespace webkit_support {
 
 static TestEnvironment* test_environment;
 
-void SetUpTestEnvironment() {
-  SetUpTestEnvironment(false);
-}
-
-void SetUpTestEnvironment(bool unit_test_mode) {
+static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   base::EnableTerminationOnHeapCorruption();
 
   // Initialize the singleton CommandLine with fixed values.  Some code refer to
@@ -130,14 +126,26 @@ void SetUpTestEnvironment(bool unit_test_mode) {
   const char* kFixedArguments[] = {"DumpRenderTree"};
   CommandLine::Init(arraysize(kFixedArguments), kFixedArguments);
 
-  BeforeInitialize();
-  test_environment = new TestEnvironment(unit_test_mode);
-  AfterInitialize();
+  webkit_support::BeforeInitialize();
+  webkit_support::test_environment = new TestEnvironment(unit_test_mode);
+  webkit_support::AfterInitialize();
   if (!unit_test_mode) {
     // Load ICU data tables.  This has to run after TestEnvironment is created
     // because on Linux, we need base::AtExitManager.
     icu_util::Initialize();
   }
+}
+
+void SetUpTestEnvironment(bool unit_test_mode) {
+  SetUpTestEnvironment();
+}
+
+void SetUpTestEnvironment() {
+  SetUpTestEnvironmentImpl(false);
+}
+
+void SetUpTestEnvironmentForUnitTests() {
+  SetUpTestEnvironmentImpl(true);
 }
 
 void TearDownTestEnvironment() {
@@ -216,6 +224,26 @@ WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
 WebKit::WebString GetWebKitRootDir() {
   FilePath path = GetWebKitRootDirFilePath();
   return WebKit::WebString::fromUTF8(WideToUTF8(path.ToWStringHack()).c_str());
+}
+
+void RegisterMockedURL(const WebKit::WebURL& url,
+                     const WebKit::WebURLResponse& response,
+                     const WebKit::WebString& file_path) {
+  test_environment->webkit_client()->url_loader_factory()->
+      RegisterURL(url, response, file_path);
+}
+
+void UnregisterMockedURL(const WebKit::WebURL& url) {
+  test_environment->webkit_client()->url_loader_factory()->UnregisterURL(url);
+}
+
+void UnregisterAllMockedURLs() {
+  test_environment->webkit_client()->url_loader_factory()->UnregisterAllURLs();
+}
+
+void ServeAsynchronousMockedRequests() {
+  test_environment->webkit_client()->url_loader_factory()->
+      ServeAsynchronousRequests();
 }
 
 // Wrapper for debug_util

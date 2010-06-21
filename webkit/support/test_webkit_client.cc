@@ -34,6 +34,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/support/test_webkit_client.h"
+#include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
@@ -51,7 +52,7 @@
 
 using WebKit::WebScriptController;
 
-TestWebKitClient::TestWebKitClient() : url_loader_factory_(NULL) {
+TestWebKitClient::TestWebKitClient() {
   v8::V8::SetCounterFunction(StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -193,9 +194,8 @@ void TestWebKitClient::prefetchHostName(const WebKit::WebString&) {
 }
 
 WebKit::WebURLLoader* TestWebKitClient::createURLLoader() {
-  if (url_loader_factory_)
-    return url_loader_factory_->createURLLoader();
-  return webkit_glue::WebKitClientImpl::createURLLoader();
+  return url_loader_factory_.CreateURLLoader(
+      webkit_glue::WebKitClientImpl::createURLLoader());
 }
 
 WebKit::WebData TestWebKitClient::loadResource(const char* name) {
