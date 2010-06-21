@@ -84,19 +84,6 @@ class LanguageConfigModel : public NotificationObserver {
   void GetActiveInputMethodIds(
       std::vector<std::string>* out_input_method_ids);
 
-  // Converts an input method ID to a language code of the IME. Returns "Eng"
-  // when |input_method_id| is unknown.
-  // Example: "hangul" => "ko"
-  std::string GetLanguageCodeFromInputMethodId(
-      const std::string& input_method_id) const;
-
-  // Converts an input method ID to a display name of the IME. Returns
-  // "USA" (US keyboard) when |input_method_id| is unknown.
-  // Examples: "pinyin" => "Pinyin"
-  //           "m17n:ar:kbd" => "kbd (m17n)"
-  std::string GetInputMethodDisplayNameFromId(
-      const std::string& input_method_id) const;
-
   // Gets the list of input method ids associated with the given language
   // code.  The original contents of |input_method_ids| will be lost.
   void GetInputMethodIdsFromLanguageCode(
@@ -135,18 +122,12 @@ class LanguageConfigModel : public NotificationObserver {
  private:
   // Initializes id_to_{code,display_name}_map_ maps,
   // as well as supported_{language_codes,input_method_ids}_ vectors.
-  void InitInputMethodIdMapsAndVectors();
-
-  // Adds the given language code and input method pair to the internal maps.
-  void AddInputMethodToMaps(const std::string& language_code,
-                            const InputMethodDescriptor& input_method);
+  void InitInputMethodIdVectors();
 
   PrefService* pref_service_;
   // The codes of the preferred languages.
   std::vector<std::string> preferred_language_codes_;
   StringPrefMember preload_engines_;
-  std::map<std::string, std::string> id_to_language_code_map_;
-  std::map<std::string, std::string> id_to_display_name_map_;
   // List of supported language codes like "en" and "ja".
   std::vector<std::string> supported_language_codes_;
   // List of supported IME IDs like "pinyin" and "m17n:ar:kbd".

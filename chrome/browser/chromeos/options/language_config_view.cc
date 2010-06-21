@@ -576,8 +576,8 @@ void LanguageConfigView::AddInputMethodSection(
 
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
-    const std::string display_name = model.GetInputMethodDisplayNameFromId(
-        input_method_id);
+    const std::string display_name =
+        input_method::GetInputMethodDisplayNameFromId(input_method_id);
     layout->StartRow(0, kPerLanguageDoubleColumnSetId);
     InputMethodCheckbox* checkbox
         = new InputMethodCheckbox(UTF8ToWide(display_name),

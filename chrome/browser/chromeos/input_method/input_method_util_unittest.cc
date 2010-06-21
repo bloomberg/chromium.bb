@@ -102,7 +102,7 @@ TEST(LanguageConfigModelTest, SortLanguageCodesByNames) {
   ASSERT_EQ("t",  language_codes[3]);  // Others
 }
 
-TEST(LanguageConfigModelTest, SortInputMethodIdsByNames) {
+TEST(LanguageConfigModelTest, SortInputMethodIdsByNamesInternal) {
   std::map<std::string, std::string> id_to_language_code_map;
   id_to_language_code_map.insert(std::make_pair("mozc", "ja"));
   id_to_language_code_map.insert(std::make_pair("mozc-jp", "ja"));
@@ -112,24 +112,24 @@ TEST(LanguageConfigModelTest, SortInputMethodIdsByNames) {
 
   std::vector<std::string> input_method_ids;
   // Check if this function can handle an empty list.
-  SortInputMethodIdsByNames(id_to_language_code_map,
-                            &input_method_ids);
+  SortInputMethodIdsByNamesInternal(id_to_language_code_map,
+                                    &input_method_ids);
 
   input_method_ids.push_back("mozc");           // Japanese
   input_method_ids.push_back("xkb:fr::fra");    // French
   input_method_ids.push_back("m17n:latn-pre");  // Others
-  SortInputMethodIdsByNames(id_to_language_code_map,
-                            &input_method_ids);
+  SortInputMethodIdsByNamesInternal(id_to_language_code_map,
+                                    &input_method_ids);
   ASSERT_EQ(3U, input_method_ids.size());
   ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
   ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
   ASSERT_EQ("m17n:latn-pre",  input_method_ids[2]);  // Others
 
   // Add a duplicate entry and see if it works.
-  // Note that SortInputMethodIdsByNames uses std::stable_sort.
+  // Note that SortInputMethodIdsByNamesInternal uses std::stable_sort.
   input_method_ids.push_back("xkb:jp::jpn");  // also Japanese
-  SortInputMethodIdsByNames(id_to_language_code_map,
-                            &input_method_ids);
+  SortInputMethodIdsByNamesInternal(id_to_language_code_map,
+                                    &input_method_ids);
   ASSERT_EQ(4U, input_method_ids.size());
   ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
   ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
@@ -137,8 +137,8 @@ TEST(LanguageConfigModelTest, SortInputMethodIdsByNames) {
   ASSERT_EQ("m17n:latn-pre",  input_method_ids[3]);  // Others
 
   input_method_ids.push_back("mozc-jp");  // also Japanese
-  SortInputMethodIdsByNames(id_to_language_code_map,
-                            &input_method_ids);
+  SortInputMethodIdsByNamesInternal(id_to_language_code_map,
+                                    &input_method_ids);
   ASSERT_EQ(5U, input_method_ids.size());
   ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
   ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese

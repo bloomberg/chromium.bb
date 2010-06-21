@@ -77,6 +77,18 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id);
 // methods that don't fall under any other languages.
 std::wstring MaybeRewriteLanguageName(const std::wstring& language_name);
 
+// Converts an input method ID to a language code of the IME. Returns "Eng"
+// when |input_method_id| is unknown.
+// Example: "hangul" => "ko"
+std::string GetLanguageCodeFromInputMethodId(
+    const std::string& input_method_id);
+
+// Converts an input method ID to a display name of the IME. Returns
+// "USA" (US keyboard) when |input_method_id| is unknown.
+// Examples: "pinyin" => "Pinyin"
+//           "m17n:ar:kbd" => "kbd (m17n)"
+std::string GetInputMethodDisplayNameFromId(const std::string& input_method_id);
+
 // Converts a language code to a language display name, using the
 // current application locale. MaybeRewriteLanguageName() is called
 // internally.
@@ -90,7 +102,10 @@ void SortLanguageCodesByNames(std::vector<std::string>* language_codes);
 
 // Sorts the given input method ids by their corresponding language names,
 // using the unicode string comparator. Uses stable sorting.
-void SortInputMethodIdsByNames(
+void SortInputMethodIdsByNames(std::vector<std::string>* input_method_ids);
+
+// This function is only for unit tests. Do not use this.
+void SortInputMethodIdsByNamesInternal(
     const std::map<std::string, std::string>& id_to_language_code_map,
     std::vector<std::string>* input_method_ids);
 
@@ -108,7 +123,7 @@ void ReorderInputMethodIdsForLanguageCode(
 // that are not for keybord layout switching. Returns true on success. Note that
 // the function might return false if ibus-daemon is not running, or
 // |language_code| is unknown.
-bool GetInputMethodIdsByLanguageCode(
+bool GetInputMethodIdsFromLanguageCode(
     const std::string& language_code,
     bool keyboard_layout_only,
     std::vector<std::string>* out_input_method_ids);

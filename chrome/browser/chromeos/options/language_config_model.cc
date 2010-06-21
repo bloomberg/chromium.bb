@@ -19,14 +19,6 @@
 
 namespace chromeos {
 
-namespace {
-
-// The code should be compatible with one of codes used for UI languages,
-// defined in app/l10_util.cc.
-const char kDefaultLanguageCode[] = "en-US";
-
-}  // namespace
-
 AddLanguageComboboxModel::AddLanguageComboboxModel(
     Profile* profile,
     const std::vector<std::string>& locale_codes)
@@ -85,7 +77,7 @@ LanguageConfigModel::LanguageConfigModel(PrefService* pref_service)
 
 void LanguageConfigModel::Init() {
   // Initialize the maps and vectors.
-  InitInputMethodIdMapsAndVectors();
+  InitInputMethodIdVectors();
 
   preload_engines_.Init(
       prefs::kLanguagePreloadEngines, pref_service_, this);
@@ -99,7 +91,7 @@ size_t LanguageConfigModel::CountNumActiveInputMethods(
     const std::string& language_code) {
   int num_selected_active_input_methods = 0;
   std::vector<std::string> input_method_ids;
-  input_method::GetInputMethodIdsByLanguageCode(
+  input_method::GetInputMethodIdsFromLanguageCode(
       language_code, false /* keyboard_layout_only */, &input_method_ids);
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     if (InputMethodIsActivated(input_method_ids[i])) {
@@ -143,15 +135,14 @@ void LanguageConfigModel::UpdateInputMethodPreferences(
   // Note: Since |new_input_method_ids| is alphabetically sorted and the sort
   // function below uses stable sort, the relateve order of input methods that
   // belong to the same language (e.g. "mozc" and "xkb:jp::jpn") is maintained.
-  input_method::SortInputMethodIdsByNames(
-      id_to_language_code_map_, &new_input_method_ids);
+  input_method::SortInputMethodIdsByNames(&new_input_method_ids);
   preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
 }
 
 void LanguageConfigModel::DeactivateInputMethodsFor(
     const std::string& language_code) {
   for (size_t i = 0; i < num_supported_input_method_ids(); ++i) {
-    if (GetLanguageCodeFromInputMethodId(
+    if (input_method::GetLanguageCodeFromInputMethodId(
             supported_input_method_id_at(i)) ==
         language_code) {
       // What happens if we disable the input method currently active?
@@ -202,32 +193,12 @@ void LanguageConfigModel::GetActiveInputMethodIds(
   }
 }
 
-std::string LanguageConfigModel::GetLanguageCodeFromInputMethodId(
-    const std::string& input_method_id) const {
-  std::map<std::string, std::string>::const_iterator iter
-      = id_to_language_code_map_.find(input_method_id);
-  return (iter == id_to_language_code_map_.end()) ?
-      // Returning |kDefaultLanguageCode| is not for Chrome OS but for Ubuntu
-      // where the ibus-xkb-layouts module could be missing.
-      kDefaultLanguageCode : iter->second;
-}
-
-std::string LanguageConfigModel::GetInputMethodDisplayNameFromId(
-    const std::string& input_method_id) const {
-  // |kDefaultDisplayName| is not for Chrome OS. See the comment above.
-  static const char kDefaultDisplayName[] = "USA";
-  std::map<std::string, std::string>::const_iterator iter
-      = id_to_display_name_map_.find(input_method_id);
-  return (iter == id_to_display_name_map_.end()) ?
-      kDefaultDisplayName : iter->second;
-}
-
 void LanguageConfigModel::GetInputMethodIdsFromLanguageCode(
     const std::string& language_code,
     std::vector<std::string>* input_method_ids) const {
   DCHECK(input_method_ids);
   input_method_ids->clear();
-  input_method::GetInputMethodIdsByLanguageCode(
+  input_method::GetInputMethodIdsFromLanguageCode(
       language_code, false /* keyboard_layout_only */, input_method_ids);
 
   // Reorder the input methods.
@@ -242,7 +213,7 @@ void LanguageConfigModel::NotifyPrefChanged() {
   std::set<std::string> language_code_set;
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string language_code =
-        GetLanguageCodeFromInputMethodId(input_method_ids[i]);
+        input_method::GetLanguageCodeFromInputMethodId(input_method_ids[i]);
     language_code_set.insert(language_code);
   }
 
@@ -260,7 +231,7 @@ void LanguageConfigModel::Observe(NotificationType type,
   }
 }
 
-void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
+void LanguageConfigModel::InitInputMethodIdVectors() {
   // The two sets are used to build lists without duplication.
   std::set<std::string> supported_language_code_set;
   std::set<std::string> supported_input_method_id_set;
@@ -274,7 +245,6 @@ void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
     const InputMethodDescriptor& input_method = supported_input_methods->at(i);
     const std::string language_code =
         input_method::GetLanguageCodeFromDescriptor(input_method);
-    AddInputMethodToMaps(language_code, input_method);
     // Add the language code and the input method id to the sets.
     supported_language_code_set.insert(language_code);
     supported_input_method_id_set.insert(input_method.id);
@@ -294,7 +264,6 @@ void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
     // language code and the input method.
     if (iter != id_to_descriptor_map.end()) {
       const InputMethodDescriptor& input_method = *(iter->second);
-      AddInputMethodToMaps(language_code, input_method);
       // Add the language code and the input method id to the sets.
       supported_language_code_set.insert(language_code);
       supported_input_method_id_set.insert(input_method.id);
@@ -306,16 +275,6 @@ void LanguageConfigModel::InitInputMethodIdMapsAndVectors() {
                                    supported_language_code_set.end());
   supported_input_method_ids_.assign(supported_input_method_id_set.begin(),
                                      supported_input_method_id_set.end());
-}
-
-void LanguageConfigModel::AddInputMethodToMaps(
-    const std::string& language_code,
-    const InputMethodDescriptor& input_method) {
-  id_to_language_code_map_.insert(
-      std::make_pair(input_method.id, language_code));
-  id_to_display_name_map_.insert(
-      std::make_pair(input_method.id,
-                     input_method::GetStringUTF8(input_method.display_name)));
 }
 
 }  // namespace chromeos
