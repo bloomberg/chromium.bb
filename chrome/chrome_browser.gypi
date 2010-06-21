@@ -2798,6 +2798,7 @@
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
             'browser/jankometer.cc',
+            'browser/password_manager/login_database_posix.cc',
             'browser/renderer_host/backing_store_proxy.cc',
             'browser/renderer_host/backing_store_proxy.h',
             'browser/renderer_host/gpu_view_host.cc',
