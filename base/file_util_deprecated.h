@@ -17,9 +17,6 @@
 
 namespace file_util {
 
-bool EndsWithSeparator(std::wstring* path);
-bool EndsWithSeparator(const std::wstring& path);
-
 // Use FilePath::DirName instead.
 void UpOneDirectory(std::wstring* dir);
 // Use FilePath::DirName instead.
