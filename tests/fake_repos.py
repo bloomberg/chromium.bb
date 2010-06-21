@@ -337,8 +337,8 @@ class FakeRepos(object):
     # - deps_os
     # - var
     # - hooks
-    # - From
     # TODO(maruel):
+    # - From
     # - File
     # - $matching_files
     # - use_relative_paths
@@ -360,8 +360,8 @@ deps_os = {
     fs = file_system(2, """
 deps = {
   'src/other': 'svn://%(host)s/svn/trunk/other',
-  #'src/third_party/foo': '/trunk/third_party/foo@1',
-  'src/third_party/foo': From('src/other', 'foo/bar'),
+  'src/third_party/foo': '/trunk/third_party/foo@1',
+  #'src/third_party/foo': From('src/other', 'foo/bar'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
@@ -405,8 +405,8 @@ deps = {
     # - deps_os
     # - var
     # - hooks
-    # - From
     # TODO(maruel):
+    # - From
     # - File
     # - $matching_files
     # - use_relative_paths
@@ -467,8 +467,8 @@ deps = {
       'DEPS': """
 deps = {
   'src/repo2': 'git://%(host)s/git/repo_2@%(hash)s',
-  #'src/repo2/repo_renamed': '/repo_3',
-  'src/repo2/repo_renamed': From('src/repo2', 'foo/bar'),
+  'src/repo2/repo_renamed': '/repo_3',
+  #'src/repo2/repo_renamed': From('src/repo2', 'foo/bar'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
