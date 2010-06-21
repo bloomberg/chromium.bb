@@ -877,6 +877,8 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   root.Set(L"child_data", child_data);
 
   ProcessData process = browser_processes[0];  // Chrome is the first browser.
+  root.SetString(L"current_browser_name", process.name);
+
   for (size_t index = 0; index < process.processes.size(); index++) {
     if (process.processes[index].type == ChildProcessInfo::BROWSER_PROCESS)
       BindProcessMetrics(browser_data, &process.processes[index]);

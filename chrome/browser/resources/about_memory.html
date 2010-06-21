@@ -411,11 +411,14 @@ function enableHelpTooltips() {
         <div class='help'>
           <div>
             <p>
-		Summary of memory used by currently active browsers.
-		For browsers which use multiple processes, memory reflects
-		aggregate memory used across all browser processes.<p>
-		For Chromium, processes used to to display diagnostics
-		information (such as this "about:memory") are excluded.
+              Summary of memory used by currently active browsers. For browsers
+              which use multiple processes, memory reflects aggregate memory
+              used across all browser processes.
+            </p>
+            <p>
+              For <span jscontent="current_browser_name"></span>, processes used
+              to to display diagnostics information (such as this
+              "about:memory") are excluded.
             </p>
           </div>
         </div>
@@ -442,17 +445,20 @@ function enableHelpTooltips() {
                 </p>
                 <p>
                   <strong>Private:</strong>
-                  Resident memory size that is not shared with any other process.
-                  This is the best indicator of browser memory resource usage.
+                  Resident memory size that is not shared with any other
+                  process.  This is the best indicator of browser memory
+                  resource usage.
                 </p>
                 <p>
                   <strong>Shared:</strong>
-                  Resident memory size that is currently shared with 2 or more processes.
-                  Note: For browsers using multiple processes, if we simply added the shared memory
-                  of each individual process, this value would be inflated. Therefore, this value
-                  is computed as an approximate value for shared memory in each of the browser's
-                  processes. Note also that shared memory varies depending on what other processes
-                  are running on the system, and may be difficult to measure reproducibly.
+                  Resident memory size that is currently shared with 2 or more
+                  processes.  Note: For browsers using multiple processes, if we
+                  simply added the shared memory of each individual process,
+                  this value would be inflated. Therefore, this value is
+                  computed as an approximate value for shared memory in each of
+                  the browser's processes. Note also that shared memory varies
+                  depending on what other processes are running on the system,
+                  and may be difficult to measure reproducibly.
                 </p>
                 <p>
                   <strong>Total:</strong>
@@ -470,13 +476,14 @@ function enableHelpTooltips() {
                 </p>
                 <p>
                   <strong>Private:</strong>
-                  The resident and paged bytes committed for use by only this process.
+                  The resident and paged bytes committed for use by only this
+                  process.
                 </p>
                 <p>
                   <strong>Mapped:</strong>
                   Total bytes allocated by this process that are mapped into the
-                  view of a section, backed by either system pagefile or file system. This
-                  is primarily memory-mapped files.
+                  view of a section, backed by either system pagefile or file
+                  system. This is primarily memory-mapped files.
                 </p>
               </div>
             </div>
@@ -488,7 +495,6 @@ function enableHelpTooltips() {
           </th>
           <th class='name'>
             Private
-          </th>
           </th>
           <th class='number'>
             Shared
@@ -506,23 +512,31 @@ function enableHelpTooltips() {
         <tr jsselect="browsers">
           <td class='name'>
             <div>
-              <strong jscontent="name"></strong> <span jscontent="version"></span>
+              <strong jscontent="name"></strong>
+              <span jscontent="version"></span>
             </div>
           </td>
           <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_priv + ws_shareable - ws_shared)"></span><span class='k'>k</span>
+            <span class='th'
+                jscontent="formatNumber(ws_priv + ws_shareable - ws_shared)">
+            </span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_shared / processes)"></span><span class='k'>k</span>
+            <span class='th' jscontent="formatNumber(ws_shared / processes)">
+            </span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_priv + ws_shareable - ws_shared + (ws_shared / processes))"></span><span class='k'>k</span>
+            <span class='th'
+                jscontent="formatNumber(ws_priv + ws_shareable - ws_shared +
+                (ws_shared / processes))"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="formatNumber(comm_priv)"></span><span class='k'>k</span>
+            <span class='th' jscontent="formatNumber(comm_priv)"></span>
+            <span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="formatNumber(comm_map)"></span><span class='k'>k</span>
+            <span class='th' jscontent="formatNumber(comm_map)"></span>
+            <span class='k'>k</span>
           </td>
         </tr>
       </table>
@@ -538,7 +552,8 @@ function enableHelpTooltips() {
         <div class='help'>
           <div>
             <p>
-		Details of memory usage for each of Chromium's processes.
+              Details of memory usage for each of
+              <span jscontent="current_browser_name"></span>'s processes.
             </p>
           </div>
         </div>
@@ -601,19 +616,26 @@ function enableHelpTooltips() {
             </div>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv + $this.ws_shareable - $this.ws_shared)" jscontent="ws_priv + ws_shareable - ws_shared"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv +
+                $this.ws_shareable - $this.ws_shared)" jscontent="ws_priv +
+            ws_shareable - ws_shared"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="ws_shared"></span><span class='k'>k</span>
+            <span class='th' jscontent="ws_shared"></span>
+            <span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_tot', $this.ws_priv + $this.ws_shareable)" jscontent="ws_priv + ws_shareable"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_ws_tot', $this.ws_priv +
+                $this.ws_shareable)" jscontent="ws_priv +
+            ws_shareable"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_priv', $this.comm_priv)" jscontent="comm_priv"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_comm_priv', $this.comm_priv)"
+                jscontent="comm_priv"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_map', $this.comm_map)" jscontent="comm_map"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_comm_map', $this.comm_map)"
+                jscontent="comm_map"></span><span class='k'>k</span>
           </td>
         </tr>
         <tr jsselect="child_data">
@@ -627,19 +649,26 @@ function enableHelpTooltips() {
             </div>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv + $this.ws_shareable - $this.ws_shared)" jscontent="ws_priv + ws_shareable - ws_shared"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv +
+                $this.ws_shareable - $this.ws_shared)" jscontent="ws_priv +
+            ws_shareable - ws_shared"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="ws_shared"></span><span class='k'>k</span>
+            <span class='th' jscontent="ws_shared"></span><span
+                class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_tot', $this.ws_priv + $this.ws_shareable)" jscontent="ws_priv + ws_shareable"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_ws_tot', $this.ws_priv +
+                $this.ws_shareable)" jscontent="ws_priv +
+            ws_shareable"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_priv', $this.comm_priv)" jscontent="comm_priv"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_comm_priv', $this.comm_priv)"
+                jscontent="comm_priv"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_map', $this.comm_map)" jscontent="comm_map"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_comm_map', $this.comm_map)"
+                jscontent="comm_map"></span><span class='k'>k</span>
           </td>
         </tr>
         <tr class='total doNotFilter'>
@@ -664,11 +693,10 @@ function enableHelpTooltips() {
               <div>
                 <p>
                   This is an approximation. Conceptually, this is the total
-                  amount of in-memory pages for the entire logical Chromium
-                  application, without double counting shared pages (e.g.
-                  mapped
-                  DLLs, SharedMemory bitmaps, etc.) across the browser and
-                  renderers.
+                  amount of in-memory pages for the entire logical
+                  <span jscontent="current_browser_name"></span> application,
+                  without double counting shared pages (e.g.  mapped DLLs,
+                  SharedMemory bitmaps, etc.) across the browser and renderers.
                 </p>
               </div>
             </div>
