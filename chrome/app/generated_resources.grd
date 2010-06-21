@@ -8216,6 +8216,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the Japanese input method for US keyboard">
         Japanese input method (for US keyboard)
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_DV_INPUT_METHOD"
+               desc="The label for the Japanese input method for US Dvorak keyboard">
+        Japanese input method (for US Dvorak keyboard)
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_JP_INPUT_METHOD"
                desc="The label for the Japanese input method for Japanese keyboard">
         Japanese input method (for Japanese keyboard)
@@ -8223,6 +8227,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_INPUT_METHOD"
                desc="The label for the Google Japanese Input input method for US keyboard">
         Google Japanese Input (for US keyboard)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_DV_INPUT_METHOD"
+               desc="The label for the Google Japanese Input input method for US Dvorak keyboard">
+        Google Japanese Input (for US Dvorak keyboard)
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_JP_INPUT_METHOD"
                desc="The label for the Google Japanese Input input method for Japanese keyboard">

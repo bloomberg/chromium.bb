@@ -14,7 +14,16 @@
 namespace chromeos {
 namespace input_method {
 
-TEST(InputMethodUtilTest, FindLocalizedStringTest) {
+TEST(InputMethodUtilTest, GetStringUTF8) {
+  EXPECT_EQ("Pinyin input method",
+            GetStringUTF8("Pinyin"));
+  EXPECT_EQ("Japanese input method (for US Dvorak keyboard)",
+            GetStringUTF8("Mozc (US Dvorak keyboard layout)"));
+  EXPECT_EQ("Google Japanese Input (for US Dvorak keyboard)",
+            GetStringUTF8("Google Japanese Input (US Dvorak keyboard layout)"));
+}
+
+TEST(InputMethodUtilTest, StringIsSupported) {
   EXPECT_TRUE(StringIsSupported("Hiragana"));
   EXPECT_TRUE(StringIsSupported("Latin"));
   EXPECT_TRUE(StringIsSupported("Direct input"));
@@ -65,20 +74,20 @@ TEST(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
       InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "us", "eng")));
 }
 
-TEST(LanguageConfigModelTest, MaybeRewriteLanguageName) {
+TEST(InputMethodUtilTest, MaybeRewriteLanguageName) {
   EXPECT_EQ(L"English", MaybeRewriteLanguageName(L"English"));
   EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
             MaybeRewriteLanguageName(L"t"));
 }
 
-TEST(LanguageConfigModelTest, GetLanguageDisplayNameFromCode) {
+TEST(InputMethodUtilTest, GetLanguageDisplayNameFromCode) {
   EXPECT_EQ(L"French", GetLanguageDisplayNameFromCode("fr"));
   // MaybeRewriteLanguageName() should be applied.
   EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
             GetLanguageDisplayNameFromCode("t"));
 }
 
-TEST(LanguageConfigModelTest, SortLanguageCodesByNames) {
+TEST(InputMethodUtilTest, SortLanguageCodesByNames) {
   std::vector<std::string> language_codes;
   // Check if this function can handle an empty list.
   SortLanguageCodesByNames(&language_codes);
@@ -147,7 +156,7 @@ TEST(LanguageConfigModelTest, SortInputMethodIdsByNamesInternal) {
   ASSERT_EQ("m17n:latn-pre",  input_method_ids[4]);  // Others
 }
 
-TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_DE) {
+TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_DE) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back("xkb:ch::ger");  // Switzerland - German
   input_method_ids.push_back("xkb:de::ger");  // Germany - German
@@ -158,7 +167,7 @@ TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_DE) {
   EXPECT_EQ("xkb:ch::ger", input_method_ids[1]);
 }
 
-TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_FR) {
+TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_FR) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back("xkb:be::fra");  // Belgium - French
   input_method_ids.push_back("xkb:fr::fra");  // France - French
@@ -169,7 +178,7 @@ TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_FR) {
   EXPECT_EQ("xkb:be::fra", input_method_ids[1]);
 }
 
-TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_EN_US) {
+TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_EN_US) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back("xkb:us:dvorak:eng");  // US - Dvorak - English
   input_method_ids.push_back("xkb:us::eng");  // US - English
@@ -180,7 +189,7 @@ TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_EN_US) {
   EXPECT_EQ("xkb:us:dvorak:eng", input_method_ids[1]);
 }
 
-TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_FI) {
+TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_FI) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back("xkb:fi::fin");  // Finland - Finnish
   ReorderInputMethodIdsForLanguageCode("fi", &input_method_ids);
@@ -189,7 +198,7 @@ TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_FI) {
   EXPECT_EQ("xkb:fi::fin", input_method_ids[0]);
 }
 
-TEST(LanguageConfigModelTest, ReorderInputMethodIdsForLanguageCode_Noop) {
+TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_Noop) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back("xkb:fr::fra");  // France - French
   input_method_ids.push_back("xkb:be::fra");  // Belgium - French
