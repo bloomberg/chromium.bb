@@ -6834,6 +6834,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CUSTOMIZE_SYNC_DESCRIPTION" desc="The first line of the Customize Sync dialog, explaining what this box does.">
         Sync the following items automatically:
       </message>
+      <message name="IDS_SYNC_CHOOSE_DATATYPES_HEADER" desc="Title of the 'Choose Datatypes' dialog.">
+        Sync information from your computer
+      </message>
+      <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will now sync your data.
+      </message>
+      <message name="IDS_SYNC_EVERYTHING" desc="A radio button for users who want to sync all data types.">
+        Keep everything synced
+      </message>
+      <message name="IDS_SYNC_CHOOSE_DATATYPES" desc="A radio button for users who want to select some datatypes to sync">
+        Choose what to sync:
+      </message>
       <message name="IDS_SYNC_DATATYPE_BOOKMARKS" desc="Bookmarks, one of the data types that we allow syncing.">
         Bookmarks
       </message>
@@ -6855,6 +6867,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_DATATYPE_TYPED_URLS" desc="Typed URLs, one of the data types that we allow syncing.">
         Typed URLs
       </message>
+      <message name="IDS_SYNC_DATATYPE_APPLICATIONS" desc="Applications, one of the data types that we allow syncing.">
+        Applications
+      </message>
+
 
       <!-- Login dialog strings -->
       <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Title of the sync login dialog.">
