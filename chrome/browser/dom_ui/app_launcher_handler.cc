@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 
 #include "app/animation.h"
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/base64.h"
 #include "base/utf_string_conversions.h"
@@ -17,14 +16,12 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/rect.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 
 namespace {
 
@@ -98,15 +95,20 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
 }
 
 void AppLauncherHandler::HandleGetApps(const Value* value) {
-  std::string gallery_title =
-      l10n_util::GetStringUTF8(IDS_EXTENSION_WEB_STORE_TITLE);
+  std::string gallery_title;
+  std::string gallery_url;
 
+  // TODO(aa): Decide the final values for these and remove the switches.
+  gallery_title = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAppsGalleryTitle);
+  gallery_url = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAppsGalleryURL);
   bool show_debug_link = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppsDebug);
 
   DictionaryValue dictionary;
   dictionary.SetString(L"galleryTitle", gallery_title);
-  dictionary.SetString(L"galleryURL", Extension::ChromeStoreURL());
+  dictionary.SetString(L"galleryURL", gallery_url);
   dictionary.SetBoolean(L"showDebugLink", show_debug_link);
 
   ListValue* list = new ListValue();

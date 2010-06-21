@@ -26,7 +26,6 @@
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -46,6 +45,11 @@ using base::TimeDelta;
 using prefs::kExtensionBlacklistUpdateVersion;
 using prefs::kLastExtensionsUpdateCheck;
 using prefs::kNextExtensionsUpdateCheck;
+
+// The default URL to fall back to if an extension doesn't have an
+// update URL.
+const char kDefaultUpdateURL[] =
+    "http://clients2.google.com/service/update2/crx";
 
 // NOTE: HTTPS is used here to ensure the response from omaha can be trusted.
 // The response contains a url for fetching the blacklist and a hash value
@@ -237,7 +241,7 @@ void ManifestFetchesBuilder::AddExtensionData(
   } else if (update_url.is_empty()) {
     url_stats_.no_url_count++;
     // Fill in default update URL.
-    update_url = GURL(extension_urls::kGalleryUpdateURL);
+    update_url = GURL(kDefaultUpdateURL);
   } else {
     url_stats_.other_url_count++;
   }

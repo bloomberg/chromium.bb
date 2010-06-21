@@ -20,7 +20,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/browser_resources.h"
@@ -135,17 +134,6 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // The unpack dir we don't have to delete explicity since it is a child of
   // the temp dir.
   unpacked_extension_root_ = extension_dir;
-
-  // Only allow extensions with a gallery update url to be installed after
-  // having been directly downloaded from the gallery.
-  if (extension->update_url() == GURL(extension_urls::kGalleryUpdateURL) &&
-      !StartsWithASCII(original_url_.spec(),
-          extension_urls::kGalleryDownloadPrefix, false)) {
-    ReportFailureFromUIThread(l10n_util::GetStringFUTF8(
-        IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
-    return;
-  }
 
   // Determine whether to allow installation. We always allow themes and
   // external installs.
