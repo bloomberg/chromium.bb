@@ -5,7 +5,6 @@
 // This file contains the tests for the RingBuffer class.
 
 #include "gpu/command_buffer/client/ring_buffer.h"
-#include "base/at_exit.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsautorelease_pool.h"
@@ -69,7 +68,6 @@ class BaseRingBufferTest : public testing::Test {
   }
 
   base::ScopedNSAutoreleasePool autorelease_pool_;
-  base::AtExitManager at_exit_manager_;
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;

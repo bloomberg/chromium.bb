@@ -300,8 +300,16 @@
         }],
         ['OS=="linux"', {
           'sources': [
+            'gfx/gl/gl_context_egl.cc',
+            'gfx/gl/gl_context_egl.h',
+            '<(gl_binding_output_dir)/gl_bindings_autogen_egl.cc',
+            '<(gl_binding_output_dir)/gl_bindings_autogen_egl.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_glx.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_glx.h',
+          ],
+          'include_dirs': [
+            # We don't use angle, but pull the EGL/GLES headers from there.
+            '../third_party/angle/include',
           ],
           'all_dependent_settings': {
             'defines': [

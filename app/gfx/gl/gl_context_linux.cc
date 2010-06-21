@@ -9,6 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_context_egl.h"
 #include "app/gfx/gl/gl_context_osmesa.h"
 #include "app/gfx/gl/gl_context_stub.h"
 #include "app/gfx/gl/gl_implementation.h"
@@ -120,9 +121,11 @@ static bool InitializeOneOff() {
   // Initialize the GL bindings if they haven't already been initialized. If
   // the GPU unit tests are running, the mock GL implementation will already
   // have been initialized.
-  if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
-    LOG(ERROR) << "Could not initialize GL.";
-    return false;
+  if (!InitializeGLBindings(kGLImplementationEGLGLES2)) {
+    if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
+      LOG(ERROR) << "Could not initialize GL.";
+      return false;
+    }
   }
 
   // Only check the GLX version if we are in fact using GLX. We might actually
@@ -251,6 +254,14 @@ GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
       scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
 
       if (!context->Initialize(multisampled))
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationEGLGLES2: {
+      scoped_ptr<NativeViewEGLContext> context(
+          new NativeViewEGLContext(reinterpret_cast<void *>(window)));
+      if (!context->Initialize())
         return NULL;
 
       return context.release();
@@ -517,6 +528,14 @@ GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
         return context_pixmap.release();
 
       return NULL;
+    }
+    case kGLImplementationEGLGLES2: {
+      scoped_ptr<SecondaryEGLContext> context(
+          new SecondaryEGLContext());
+      if (!context->Initialize(shared_context))
+        return NULL;
+
+      return context.release();
     }
     case kGLImplementationMockGL:
       return new StubGLContext;

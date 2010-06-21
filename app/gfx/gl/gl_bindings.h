@@ -42,7 +42,7 @@
 typedef struct osmesa_context *OSMesaContext;
 typedef void (*OSMESAproc)();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 
 // Forward declare EGL types.
 typedef unsigned int EGLBoolean;
@@ -55,7 +55,17 @@ typedef void *EGLSurface;
 typedef void *EGLClientBuffer;
 typedef void (*__eglMustCastToProperFunctionPointerType)(void);
 
-#endif  // OS_WIN
+#if defined(OS_WIN)
+typedef HDC     EGLNativeDisplayType;
+typedef HBITMAP EGLNativePixmapType;
+typedef HWND    EGLNativeWindowType;
+#else
+typedef Display *EGLNativeDisplayType;
+typedef Pixmap   EGLNativePixmapType;
+typedef Window   EGLNativeWindowType;
+#endif
+
+#endif  // OS_WIN || OS_LINUX
 
 #include "gl_bindings_autogen_gl.h"
 #include "gl_bindings_autogen_osmesa.h"
@@ -64,6 +74,7 @@ typedef void (*__eglMustCastToProperFunctionPointerType)(void);
 #include "gl_bindings_autogen_egl.h"
 #include "gl_bindings_autogen_wgl.h"
 #elif defined(OS_LINUX)
+#include "gl_bindings_autogen_egl.h"
 #include "gl_bindings_autogen_glx.h"
 #endif
 

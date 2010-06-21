@@ -83,6 +83,7 @@ class SecondaryEGLContext : public BaseEGLContext {
  private:
   // All offscreen
   EGLSurface surface_;
+  bool own_surface_;
   EGLContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(SecondaryEGLContext);

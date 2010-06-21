@@ -4,6 +4,11 @@
 
 #include <EGL/egl.h>
 
+#include "build/build_config.h"
+#if defined(OS_LINUX)
+#include "app/x11_util.h"
+#define EGL_HAS_PBUFFERS 1
+#endif
 #include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context_egl.h"
@@ -21,7 +26,12 @@ bool InitializeOneOff() {
   if (initialized)
     return true;
 
-  g_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+#ifdef OS_LINUX
+  EGLNativeDisplayType native_display = x11_util::GetXDisplay();
+#else
+  EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;
+#endif
+  g_display = eglGetDisplay(native_display);
   if (!g_display)
     return false;
 
@@ -34,9 +44,14 @@ bool InitializeOneOff() {
     EGL_ALPHA_SIZE, 8,
     EGL_BLUE_SIZE, 8,
     EGL_RED_SIZE, 8,
-    EGL_DEPTH_SIZE, 24,
+    EGL_DEPTH_SIZE, 16,
     EGL_STENCIL_SIZE, 8,
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#ifdef EGL_HAS_PBUFFERS
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+#else
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+#endif
     EGL_NONE
   };
 
@@ -85,10 +100,10 @@ bool NativeViewEGLContext::Initialize() {
     return NULL;
 
   // Create a surface for the native window.
-  surface_ = eglCreateWindowSurface(g_display,
-                                    g_config,
-                                    static_cast<EGLNativeWindowType>(window_),
-                                    NULL);
+  EGLNativeWindowType native_window =
+      reinterpret_cast<EGLNativeWindowType>(window_);
+  surface_ = eglCreateWindowSurface(g_display, g_config, native_window, NULL);
+
   if (!surface_) {
     Destroy();
     return false;
@@ -152,8 +167,13 @@ gfx::Size NativeViewEGLContext::GetSize() {
   CHECK(GetClientRect(static_cast<HWND>(window_), &rect));
   return gfx::Size(rect.right - rect.left, rect.bottom - rect.top);
 #else
-  NOTREACHED()
-      << "NativeViewEGLContext::GetSize not implemented on this platform.";
+  // TODO(piman): This doesn't work correctly on Windows yet, the size doesn't
+  // get updated on resize. When it does, we can share the code.
+  EGLint width;
+  EGLint height;
+  CHECK(eglQuerySurface(g_display, surface_, EGL_WIDTH, &width));
+  CHECK(eglQuerySurface(g_display, surface_, EGL_HEIGHT, &height));
+  return gfx::Size(width, height);
 #endif
 }
 
@@ -167,6 +187,7 @@ EGLSurface NativeViewEGLContext::GetSurface() {
 
 SecondaryEGLContext::SecondaryEGLContext()
     : surface_(NULL),
+      own_surface_(false),
       context_(NULL)
 {
 }
@@ -175,20 +196,51 @@ SecondaryEGLContext::~SecondaryEGLContext() {
 }
 
 bool SecondaryEGLContext::Initialize(GLContext* shared_context) {
-  DCHECK(shared_context);
   DCHECK(!context_);
 
   if (!InitializeOneOff())
     return NULL;
 
-  surface_ = static_cast<BaseEGLContext*>(shared_context)->GetSurface();
+  static const EGLint kContextAttributes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_NONE
+  };
 
-  // Create a context.
-  context_ = eglCreateContext(g_display,
-                              g_config,
-                              shared_context->GetHandle(),
-                              NULL);
+  if (shared_context) {
+    surface_ = static_cast<BaseEGLContext*>(shared_context)->GetSurface();
+    own_surface_ = false;
+
+    // Create a context.
+    context_ = eglCreateContext(g_display,
+                                g_config,
+                                shared_context->GetHandle(),
+                                kContextAttributes);
+  } else {
+#ifdef EGL_HAS_PBUFFERS
+    static const EGLint kPbufferAttribs[] = {
+      EGL_WIDTH, 1,
+      EGL_HEIGHT, 1,
+      EGL_NONE
+    };
+
+    surface_ = eglCreatePbufferSurface(g_display, g_config, kPbufferAttribs);
+    if (!surface_) {
+      EGLint error = eglGetError();
+      LOG(ERROR) << "Error creating Pbuffer: " << error;
+      return false;
+    }
+    own_surface_ = true;
+
+    context_ = eglCreateContext(g_display, g_config, NULL, kContextAttributes);
+#else
+    NOTIMPLEMENTED() << "Offscreen non-shared GLES context";
+    return false;
+#endif
+  }
+
   if (!context_) {
+    EGLint error = eglGetError();
+    LOG(ERROR) << "Error creating context: " << error;
     Destroy();
     return false;
   }
@@ -197,6 +249,10 @@ bool SecondaryEGLContext::Initialize(GLContext* shared_context) {
 }
 
 void SecondaryEGLContext::Destroy() {
+  if (own_surface_) {
+    eglDestroySurface(g_display, surface_);
+    own_surface_ = false;
+  }
   surface_ = NULL;
 
   if (context_) {

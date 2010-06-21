@@ -246,7 +246,7 @@ OSMESA_FUNCTIONS = [
 
 EGL_FUNCTIONS = [
 ['EGLint', ['eglGetError'], 'void'],
-['EGLDisplay', ['eglGetDisplay'], 'void* display_id'],
+['EGLDisplay', ['eglGetDisplay'], 'EGLNativeDisplayType display_id'],
 ['EGLBoolean', ['eglInitialize'],
     'EGLDisplay dpy, EGLint* major, EGLint* minor'],
 ['EGLBoolean', ['eglTerminate'], 'EGLDisplay dpy'],
@@ -260,11 +260,11 @@ EGL_FUNCTIONS = [
 ['EGLBoolean', ['eglGetConfigAttrib'],
     'EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint* value'],
 ['EGLSurface', ['eglCreateWindowSurface'],
-    'EGLDisplay dpy, EGLConfig config, void* win, const EGLint* attrib_list'],
+    'EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, const EGLint* attrib_list'],
 ['EGLSurface', ['eglCreatePbufferSurface'],
     'EGLDisplay dpy, EGLConfig config, const EGLint* attrib_list'],
 ['EGLSurface', ['eglCreatePixmapSurface'],
-    'EGLDisplay dpy, EGLConfig config, void* pixmap, '
+    'EGLDisplay dpy, EGLConfig config, EGLNativePixmapType pixmap, '
     'const EGLint* attrib_list'],
 ['EGLBoolean', ['eglDestroySurface'], 'EGLDisplay dpy, EGLSurface surface'],
 ['EGLBoolean', ['eglQuerySurface'],
@@ -298,7 +298,7 @@ EGL_FUNCTIONS = [
 ['EGLBoolean', ['eglWaitNative'], 'EGLint engine'],
 ['EGLBoolean', ['eglSwapBuffers'], 'EGLDisplay dpy, EGLSurface surface'],
 ['EGLBoolean', ['eglCopyBuffers'],
-    'EGLDisplay dpy, EGLSurface surface, void* target'],
+    'EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target'],
 ['__eglMustCastToProperFunctionPointerType', ['eglGetProcAddress'],
     'const char* procname'],
 ]
