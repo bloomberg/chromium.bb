@@ -90,8 +90,8 @@ bool IsRunningHeadless() {
 // value not being null to dermine if this path contains a valid dll.
 HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
-#ifdef _WIN64
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+#ifdef _WIN64
   if ((cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
       switches::kNaClBrokerProcess) ||
       (cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
@@ -111,7 +111,6 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   // The idea is to pre read significant portion of chrome.dll in advance
   // so that subsequent hard page faults are avoided.
   DWORD pre_read_size_mb = 0;
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   if (!cmd_line.HasSwitch(switches::kProcessType) &&
       (IsRunningHeadless() || InstallUtil::IsChromeFrameProcess())) {
     HKEY key = NULL;
