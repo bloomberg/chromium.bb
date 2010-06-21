@@ -81,6 +81,10 @@ bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
   return true;
 }
 
+bool IsRunningHeadless() {
+  return (0 != ::GetEnvironmentVariableW(L"CHROME_HEADLESS", NULL, 0));
+}
+
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to dermine if this path contains a valid dll.
@@ -102,6 +106,59 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
 #else
   dir->append(installer_util::kChromeDll);
 #endif
+
+  // Experimental pre-reading optimization
+  // The idea is to pre read significant portion of chrome.dll in advance
+  // so that subsequent hard page faults are avoided.
+  DWORD pre_read_size_mb = 0;
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  if (!cmd_line.HasSwitch(switches::kProcessType) &&
+      (IsRunningHeadless() || InstallUtil::IsChromeFrameProcess())) {
+    HKEY key = NULL;
+    if (::RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Google\\ChromeFrame",
+                       0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
+      DWORD unused = sizeof(pre_read_size_mb);
+      RegQueryValueEx(key, L"PreRead", NULL, NULL,
+                      reinterpret_cast<LPBYTE>(&pre_read_size_mb), &unused);
+      RegCloseKey(key);
+      key = NULL;
+    } else {
+      pre_read_size_mb = 16; // Read in first 16 MB by default.
+    }
+  }
+
+  if (pre_read_size_mb) {
+    HANDLE chrome_dll = CreateFile(dir->c_str(),
+                                       GENERIC_READ,
+                                       FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                       NULL,
+                                       OPEN_EXISTING,
+                                       FILE_FLAG_SEQUENTIAL_SCAN,
+                                       NULL);
+    if (chrome_dll == INVALID_HANDLE_VALUE) {
+      DWORD error = GetLastError();
+      DLOG(ERROR) << __FUNCTION__ << " CreateFile( "
+          << dir->c_str() << " ) failed. Error: " << error;
+    } else {
+      const size_t kChunkSize = 1024 * 1024; // 1 MB
+      void* buffer = VirtualAlloc(NULL, kChunkSize, MEM_COMMIT, PAGE_READWRITE);
+      if (buffer) {
+        size_t read_size = pre_read_size_mb * kChunkSize;
+        DWORD read = 0;
+        while (::ReadFile(chrome_dll, buffer, kChunkSize, &read, NULL)) {
+          // nothing to do here...
+          read_size -= std::min(size_t(read), read_size);
+          if (!read || !read_size)
+            break;
+        }
+
+        VirtualFree(buffer, 0, MEM_RELEASE);
+      }
+
+      CloseHandle(chrome_dll);
+    }
+  }
+
   return ::LoadLibraryExW(dir->c_str(), NULL,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }
