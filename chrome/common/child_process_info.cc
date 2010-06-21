@@ -18,6 +18,7 @@
 ChildProcessInfo::ChildProcessInfo(const ChildProcessInfo& original)
     : type_(original.type_),
       name_(original.name_),
+      version_(original.version_),
       id_(original.id_),
       process_(original.process_) {
 }
@@ -30,6 +31,7 @@ ChildProcessInfo& ChildProcessInfo::operator=(
   if (&original != this) {
     type_ = original.type_;
     name_ = original.name_;
+    version_ = original.version_;
     id_ = original.id_;
     process_ = original.process_;
   }
@@ -73,9 +75,16 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
   if (type_ == ChildProcessInfo::PLUGIN_PROCESS && title.empty())
     title = l10n_util::GetString(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
 
+  // Explicitly mark name as LTR if there is no strong RTL character,
+  // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
+  // best web-based Email: NIGULP", in which "NIGULP" stands for the Hebrew
+  // or Arabic word for "plugin".
+  base::i18n::AdjustStringForLocaleDirection(title, &title);
+
   int message_id;
   if (type_ == ChildProcessInfo::PLUGIN_PROCESS) {
     message_id = IDS_TASK_MANAGER_PLUGIN_PREFIX;
+    return l10n_util::GetStringF(message_id, title, version_.c_str());
   } else if (type_ == ChildProcessInfo::WORKER_PROCESS) {
     message_id = IDS_TASK_MANAGER_WORKER_PREFIX;
   } else if (type_ == ChildProcessInfo::UTILITY_PROCESS) {
@@ -91,11 +100,6 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
     return title;
   }
 
-  // Explicitly mark name as LTR if there is no strong RTL character,
-  // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
-  // best web-based Email: NIGULP", in which "NIGULP" stands for the Hebrew
-  // or Arabic word for "plugin".
-  base::i18n::AdjustStringForLocaleDirection(title, &title);
   return l10n_util::GetStringF(message_id, title);
 }
 

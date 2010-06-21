@@ -3255,7 +3255,7 @@ each locale. -->
         Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
       </message>
       <message name="IDS_TASK_MANAGER_PLUGIN_PREFIX" desc="The prefix for a Task Manager plugin row">
-        Plug-in: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
+        Plug-in: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph> (<ph name="PLUGIN_VERSION">$2<ex>3.4.255.1b</ex></ph>)
       </message>
       <message name="IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME" desc="The prefix for a Task Manager plugin row">
         Unknown plug-in

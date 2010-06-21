@@ -41,6 +41,10 @@ class ChildProcessInfo {
   // for workers it might be the domain that it's from.
   std::wstring name() const { return name_; }
 
+  // Returns the version of the exe, this only appliest to plugins. Otherwise
+  // the string is empty.
+  std::wstring version() const { return version_; }
+
   // Getter to the process handle.
   base::ProcessHandle handle() const { return process_.handle(); }
 
@@ -93,11 +97,13 @@ class ChildProcessInfo {
 
   void set_type(ProcessType type) { type_ = type; }
   void set_name(const std::wstring& name) { name_ = name; }
+  void set_version(const std::wstring& ver) { version_ = ver; }
   void set_handle(base::ProcessHandle handle) { process_.set_handle(handle); }
 
  private:
   ProcessType type_;
   std::wstring name_;
+  std::wstring version_;
   int id_;
 
   // The handle to the process.
