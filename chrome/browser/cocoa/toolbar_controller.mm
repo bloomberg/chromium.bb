@@ -55,10 +55,6 @@ NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 // Height of the toolbar in pixels when the bookmark bar is closed.
 const CGFloat kBaseToolbarHeight = 36.0;
 
-// The distance from the location bar to the Browser Actions container
-// in pixels.
-const CGFloat kBrowserActionsContainerLeftPadding = 5.0;
-
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
 
@@ -558,9 +554,6 @@ class PrefObserverBridge : public NotificationObserver {
       NSWidth([browserActionsContainerView_ frame]);
   if (containerWidth > 0.0)
     [self adjustLocationSizeBy:(containerWidth * -1) animate:NO];
-  // Right border should always be visible because wrench menu can no longer
-  // hide.
-  [browserActionsContainerView_ setRightBorderShown:YES];
 }
 
 - (void)adjustBrowserActionsContainerForNewWindow:
@@ -592,22 +585,20 @@ class PrefObserverBridge : public NotificationObserver {
 
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
   CGFloat locationBarXPos = NSMaxX([locationBar_ frame]);
-  CGFloat leftPadding;
+  CGFloat leftDistance;
 
   if ([browserActionsContainerView_ isHidden]) {
     CGFloat edgeXPos = [wrenchButton_ frame].origin.x;
-    leftPadding = edgeXPos - locationBarXPos;
+    leftDistance = edgeXPos - locationBarXPos;
   } else {
     NSRect containerFrame = animate ?
         [browserActionsContainerView_ animationEndFrame] :
         [browserActionsContainerView_ frame];
 
-    leftPadding = containerFrame.origin.x - locationBarXPos;
+    leftDistance = containerFrame.origin.x - locationBarXPos;
   }
-  if (leftPadding != kBrowserActionsContainerLeftPadding) {
-    CGFloat dX = leftPadding - kBrowserActionsContainerLeftPadding;
-    [self adjustLocationSizeBy:dX animate:animate];
-  }
+  if (leftDistance != 0.0)
+    [self adjustLocationSizeBy:leftDistance animate:animate];
 }
 
 - (void)maintainMinimumLocationBarWidth {
@@ -633,8 +624,7 @@ class PrefObserverBridge : public NotificationObserver {
     NSRect containerFrame = [browserActionsContainerView_ frame];
     // Determine how much the container needs to move in case it's overlapping
     // with the location bar.
-    CGFloat dX = NSMaxX([locationBar_ frame]) -
-        containerFrame.origin.x + kBrowserActionsContainerLeftPadding;
+    CGFloat dX = NSMaxX([locationBar_ frame]) - containerFrame.origin.x;
     containerFrame = NSOffsetRect(containerFrame, dX, 0);
     containerFrame.size.width -= dX;
     [browserActionsContainerView_ setFrame:containerFrame];

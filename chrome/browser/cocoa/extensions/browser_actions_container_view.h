@@ -37,9 +37,6 @@ extern NSString* const kBrowserActionGrippyDragFinishedNotification;
   // The maximum width of the container.
   CGFloat maxWidth_;
 
-  // Whether there is a border to the right of the last Browser Action.
-  BOOL rightBorderShown_;
-
   // Whether the container is currently being resized by the user.
   BOOL userIsResizing_;
 
@@ -80,7 +77,6 @@ extern NSString* const kBrowserActionGrippyDragFinishedNotification;
 @property(nonatomic,getter=isResizable) BOOL resizable;
 @property(nonatomic) CGFloat maxWidth;
 @property(readonly, nonatomic) BOOL userIsResizing;
-@property(nonatomic) BOOL rightBorderShown;
 
 @end
 

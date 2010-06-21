@@ -40,10 +40,8 @@ const CGFloat kAnimationDuration = 0.2;
 const CGFloat kButtonOpacityLeadPadding = 5.0;
 const CGFloat kChevronHeight = 28.0;
 const CGFloat kChevronLowerPadding = 5.0;
-const CGFloat kChevronRightPadding = 5.0;
 const CGFloat kChevronWidth = 14.0;
-const CGFloat kContainerPadding = 2.0;
-const CGFloat kGrippyXOffset = 8.0;
+const CGFloat kGrippyXOffset = 7.0;
 }  // namespace
 
 @interface BrowserActionsController(Private)
@@ -345,7 +343,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
         profile_->GetPrefs()->GetReal(prefs::kBrowserActionContainerWidth);
     if (predefinedWidth != 0) {
       int iconWidth = kBrowserActionWidth + kBrowserActionButtonPadding;
-      int extraWidth = kContainerPadding + kChevronWidth;
+      int extraWidth = kChevronWidth;
       toolbarModel_->SetVisibleIconCount(
           (predefinedWidth - extraWidth) / iconWidth);
     }
@@ -552,22 +550,19 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (CGFloat)containerWidthWithButtonCount:(NSUInteger)buttonCount {
   CGFloat width = 0.0;
   if (buttonCount > 0) {
-    width = kGrippyXOffset + kContainerPadding +
+    width = kGrippyXOffset +
         (buttonCount * (kBrowserActionWidth + kBrowserActionButtonPadding));
   }
   // Make room for the chevron if any buttons are hidden.
-  if ([self buttonCount] != [self visibleButtonCount]) {
+  if ([self buttonCount] != [self visibleButtonCount])
     width += kChevronWidth + kBrowserActionButtonPadding;
-    // Add extra padding if all buttons are hidden.
-    if ([self visibleButtonCount] == 0)
-      width += 3 * kBrowserActionButtonPadding;
-  }
+
   return width;
 }
 
 - (NSUInteger)containerButtonCapacity {
   CGFloat containerWidth = [self savedWidth];
-  return (containerWidth - kGrippyXOffset + kContainerPadding) /
+  return (containerWidth - kGrippyXOffset) /
       (kBrowserActionWidth + kBrowserActionButtonPadding);
 }
 
@@ -733,7 +728,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (void)updateChevronPositionInFrame:(NSRect)frame {
-  CGFloat xPos = NSWidth(frame) - kChevronWidth - kChevronRightPadding;
+  CGFloat xPos = NSWidth(frame) - kChevronWidth;
   NSRect buttonFrame = NSMakeRect(xPos,
                                   kChevronLowerPadding,
                                   kChevronWidth,
