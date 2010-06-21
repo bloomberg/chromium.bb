@@ -29,23 +29,6 @@ class Tab : public BaseTab {
   explicit Tab(TabController* controller);
   virtual ~Tab();
 
-  // Sizes the renderer to the size of the new tab images. This is used
-  // during the new tab animation. See TabStrip's description of AnimationType
-  // for details.
-  void SizeToNewTabButtonImages();
-
-  // Used during new tab animation to force the tab to render a new tab like
-  // animation.
-  void set_render_as_new_tab(bool value) { render_as_new_tab_ = value; }
-
-  // Sets the alpha value to render the tab at. This is used during the new
-  // tab animation.
-  void set_alpha(double value) { alpha_ = value; }
-
-  // Forces the tab to render unselected even though it is selected.
-  void set_render_unselected(bool value) { render_unselected_ = value; }
-  bool render_unselected() const { return render_unselected_; }
-
   // Start/stop the mini-tab title animation.
   void StartMiniTabTitleAnimation();
   void StopMiniTabTitleAnimation();
@@ -97,7 +80,6 @@ class Tab : public BaseTab {
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
-  void PaintAsNewTab(gfx::Canvas* canvas);
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
@@ -152,15 +134,6 @@ class Tab : public BaseTab {
 
   // The current color of the close button.
   SkColor close_button_color_;
-
-  // See description above setter.
-  bool render_as_new_tab_;
-
-  // See description above setter.
-  bool render_unselected_;
-
-  // See description above setter.
-  double alpha_;
 
   static bool initialized_;
 

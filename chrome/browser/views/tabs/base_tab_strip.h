@@ -21,7 +21,6 @@ class ThemeProvider;
 
 // Base class for the view tab strip implementations.
 class BaseTabStrip : public views::View,
-                     public views::BoundsAnimatorObserver,
                      public TabController {
  public:
   enum Type {
@@ -160,9 +159,6 @@ class BaseTabStrip : public views::View,
     BaseTab* tab;
     gfx::Rect ideal_bounds;
   };
-
-  // BoundsAnimator::Observer overrides:
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) {}
 
   // View overrides.
   virtual bool OnMouseDragged(const views::MouseEvent& event);

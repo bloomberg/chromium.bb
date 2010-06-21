@@ -46,22 +46,6 @@
 
 using views::DropTargetEvent;
 
-// Duration of the first step in a new tab animation.
-static const int kNewTabDurationMs = 50;
-
-// Duration of the last step in the new tab animation.
-static const int kNewTab3DurationMs = 100;
-
-// Amount in pixels newly inserted tabs go past target bounds before animating
-// to final position. This is used for ANIMATION_NEW_TAB_2.
-static const int kNewTabOvershoot = 9;
-
-// Amount in pixels the newly inserted tab is clipped against the previous
-// tab while animating. This is used to make sure the user doesn't see the
-// newly inserted tab behind other tabs and so that its shadow isn't visible
-// until the user can actually see the tab.
-static const int kNetTabSelectedOffset = -13;
-
 static const int kNewTabButtonHOffset = -5;
 static const int kNewTabButtonVOffset = 5;
 static const int kResizeTabsTimeMs = 300;
@@ -85,25 +69,6 @@ static inline int Round(double x) {
 }
 
 namespace {
-
-// Animation delegate used during new tab animation step 2 to vary the alpha of
-// the tab.
-class NewTabAlphaDelegate
-    : public views::BoundsAnimator::OwnedAnimationDelegate {
- public:
-  explicit NewTabAlphaDelegate(Tab* tab) : tab_(tab) {
-  }
-
-  virtual void AnimationProgressed(const Animation* animation) {
-    if (tab_->render_unselected())
-      tab_->set_alpha(animation->GetCurrentValue());
-  }
-
- private:
-  Tab* tab_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabAlphaDelegate);
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
@@ -168,9 +133,7 @@ TabStrip::TabStrip(TabStripController* controller)
       available_width_for_tabs_(-1),
       in_tab_close_(false),
       animation_container_(new AnimationContainer()),
-      animation_type_(ANIMATION_DEFAULT),
-      new_tab_button_enabled_(true),
-      cancelling_animation_(false) {
+      new_tab_button_enabled_(true) {
   Init();
 }
 
@@ -243,10 +206,6 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
 }
 
 void TabStrip::SetDraggedTabBounds(int tab_index, const gfx::Rect& tab_bounds) {
-}
-
-bool TabStrip::IsAnimating() const {
-  return BaseTabStrip::IsAnimating() || new_tab_timer_.IsRunning();
 }
 
 TabStrip* TabStrip::AsTabStrip() {
@@ -366,8 +325,6 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
 
   Tab* dragging_tab = NULL;
 
-  int model_count = GetModelCount();
-
   for (int i = tab_count() - 1; i >= 0; --i) {
     Tab* tab = GetTabAtTabDataIndex(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
@@ -377,20 +334,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       if (tab->dragging()) {
         dragging_tab = tab;
       } else if (!tab->IsSelected()) {
-        if (tab->render_unselected() && model_count > 1) {
-          // See comment above kNetTabAnimationSelectedOffset as to why we do
-          // this.
-          Tab* last_tab = GetTabAtModelIndex(model_count - 2);
-          canvas->save();
-          int clip_x = last_tab->bounds().right() + kNetTabSelectedOffset;
-          int clip_width = width() - clip_x;
-          clip_x = MirroredXWithWidthInsideView(clip_x, clip_width);
-          canvas->ClipRectInt(clip_x, 0, clip_width, height());
-          tab->ProcessPaint(canvas);
-          canvas->restore();
-        } else {
-          tab->ProcessPaint(canvas);
-        }
+        tab->ProcessPaint(canvas);
       } else {
         selected_tab = tab;
       }
@@ -409,19 +353,12 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
         paint);
   }
 
-  if (animation_type_ == ANIMATION_NEW_TAB_3)
-    newtab_button_->ProcessPaint(canvas);
-
   // Paint the selected tab last, so it overlaps all the others.
   if (selected_tab)
     selected_tab->ProcessPaint(canvas);
 
   // Paint the New Tab button.
-  if (animation_type_ != ANIMATION_NEW_TAB_1 &&
-      animation_type_ != ANIMATION_NEW_TAB_2 &&
-      animation_type_ != ANIMATION_NEW_TAB_3) {
-    newtab_button_->ProcessPaint(canvas);
-  }
+  newtab_button_->ProcessPaint(canvas);
 
   // And the dragged tab.
   if (dragging_tab)
@@ -532,15 +469,6 @@ void TabStrip::ThemeChanged() {
   LoadNewTabButtonImage();
 }
 
-void TabStrip::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  AnimationType last_type = animation_type_;
-
-  ResetAnimationState(false);
-
-  if (!cancelling_animation_ && last_type == ANIMATION_NEW_TAB_2)
-    NewTabAnimation2Done();
-}
-
 BaseTab* TabStrip::CreateTab() {
   Tab* tab = new Tab(this);
   tab->set_animation_container(animation_container_.get());
@@ -548,12 +476,27 @@ BaseTab* TabStrip::CreateTab() {
 }
 
 void TabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
-  if (!IsDragSessionActive() && !attaching_dragged_tab() &&
-      ShouldStartIntertTabAnimationAtEnd(model_index, foreground)) {
-    StartInsertTabAnimationAtEnd();
+  PrepareForAnimation();
+
+  // The TabStrip can now use its entire width to lay out Tabs.
+  in_tab_close_ = false;
+  available_width_for_tabs_ = -1;
+
+  GenerateIdealBounds();
+
+  int tab_data_index = ModelIndexToTabIndex(model_index);
+  BaseTab* tab = base_tab_at_tab_index(tab_data_index);
+  if (model_index == 0) {
+    tab->SetBounds(0, ideal_bounds(tab_data_index).y(), 0,
+                   ideal_bounds(tab_data_index).height());
   } else {
-    StartInsertTabAnimationImpl(model_index);
+    BaseTab* last_tab = base_tab_at_tab_index(tab_data_index - 1);
+    tab->SetBounds(last_tab->bounds().right() + kTabHOffset,
+                   ideal_bounds(tab_data_index).y(), 0,
+                   ideal_bounds(tab_data_index).height());
   }
+
+  AnimateToIdealBounds();
 }
 
 void TabStrip::StartMoveTabAnimation() {
@@ -570,18 +513,11 @@ void TabStrip::AnimateToIdealBounds() {
       bounds_animator().AnimateViewTo(tab, ideal_bounds(i));
   }
 
-  if (animation_type_ != ANIMATION_NEW_TAB_3) {
-    bounds_animator().AnimateViewTo(newtab_button_, newtab_button_bounds_);
-  }
+  bounds_animator().AnimateViewTo(newtab_button_, newtab_button_bounds_);
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
-}
-
-void TabStrip::PrepareForAnimation() {
-  BaseTabStrip::PrepareForAnimation();
-  ResetAnimationState(true);
 }
 
 void TabStrip::ViewHierarchyChanged(bool is_add,
@@ -596,10 +532,7 @@ void TabStrip::ViewHierarchyChanged(bool is_add,
 
 bool TabStrip::IsTabSelected(const BaseTab* btr) const {
   const Tab* tab = static_cast<const Tab*>(btr);
-  if (tab->closing() || tab->render_unselected())
-    return false;
-
-  return BaseTabStrip::IsTabSelected(btr);
+  return !tab->closing() && BaseTabStrip::IsTabSelected(btr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1105,111 +1038,9 @@ void TabStrip::GenerateIdealBounds() {
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
 }
 
-void TabStrip::NewTabAnimation1Done() {
-  int tab_data_index = tab_count() - 1;
-  Tab* tab = GetTabAtTabDataIndex(tab_data_index);
-
-  gfx::Rect old_tab_bounds = tab->bounds();
-
-  GenerateIdealBounds();
-
-  gfx::Rect end_bounds = ideal_bounds(tab_data_index);
-  end_bounds.Offset(kNewTabOvershoot, 0);
-  set_ideal_bounds(tab_data_index, end_bounds);
-
-  int x = old_tab_bounds.right() - end_bounds.width();
-  int w = end_bounds.width();
-  if (x < 0) {
-    w += x;
-    x = 0;
-  }
-  tab->SetBounds(x, old_tab_bounds.y(), w, end_bounds.height());
-
-  AnimateToIdealBounds();
-
-  animation_type_ = ANIMATION_NEW_TAB_2;
-  tab->set_render_as_new_tab(false);
-  tab->set_render_unselected(true);
-  tab->set_alpha(0);
-
-  // BoundsAnimator takes ownership of NewTabAlphaDelegate.
-  bounds_animator().SetAnimationDelegate(tab, new NewTabAlphaDelegate(tab),
-                                         true);
-}
-
-void TabStrip::NewTabAnimation2Done() {
-  animation_type_ = ANIMATION_NEW_TAB_3;
-
-  GenerateIdealBounds();
-
-  AnimateToIdealBounds();
-
-  SlideAnimation* animation = new SlideAnimation(NULL);
-  animation->SetSlideDuration(kNewTab3DurationMs);
-  animation->SetTweenType(Tween::EASE_IN_OUT);
-
-  // BoundsAnimator takes ownership of animation.
-  bounds_animator().SetAnimationForView(
-      GetTabAtTabDataIndex(tab_count() - 1), animation);
-}
-
-bool TabStrip::ShouldStartIntertTabAnimationAtEnd(int model_index,
-                                                  bool foreground) {
-  return foreground && (model_index + 1 == GetModelCount()) &&
-      controller()->IsNewTabPage(model_index);
-}
-
 void TabStrip::StartResizeLayoutAnimation() {
   PrepareForAnimation();
   GenerateIdealBounds();
-  AnimateToIdealBounds();
-}
-
-void TabStrip::StartInsertTabAnimationAtEnd() {
-  PrepareForAnimation();
-
-  // The TabStrip can now use its entire width to lay out Tabs.
-  in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
-
-  animation_type_ = ANIMATION_NEW_TAB_1;
-
-  GenerateIdealBounds();
-
-  int tab_data_index = ModelIndexToTabIndex(GetModelCount() - 1);
-  Tab* tab = GetTabAtTabDataIndex(tab_data_index);
-  tab->SizeToNewTabButtonImages();
-  tab->SetBounds(newtab_button_->x() +
-                     (newtab_button_->width() - tab->width()) / 2,
-                 ideal_bounds(tab_data_index).y(),
-                 tab->width(), tab->height());
-  tab->set_render_as_new_tab(true);
-
-  new_tab_timer_.Start(base::TimeDelta::FromMilliseconds(kNewTabDurationMs),
-                       this, &TabStrip::NewTabAnimation1Done);
-}
-
-void TabStrip::StartInsertTabAnimationImpl(int model_index) {
-  PrepareForAnimation();
-
-  // The TabStrip can now use its entire width to lay out Tabs.
-  in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
-
-  GenerateIdealBounds();
-
-  int tab_data_index = ModelIndexToTabIndex(model_index);
-  BaseTab* tab = base_tab_at_tab_index(tab_data_index);
-  if (model_index == 0) {
-    tab->SetBounds(0, ideal_bounds(tab_data_index).y(), 0,
-                   ideal_bounds(tab_data_index).height());
-  } else {
-    BaseTab* last_tab = base_tab_at_tab_index(tab_data_index - 1);
-    tab->SetBounds(last_tab->bounds().right() + kTabHOffset,
-                   ideal_bounds(tab_data_index).y(), 0,
-                   ideal_bounds(tab_data_index).height());
-  }
-
   AnimateToIdealBounds();
 }
 
@@ -1271,46 +1102,12 @@ void TabStrip::StopAnimating(bool layout) {
   if (!IsAnimating())
     return;
 
-  new_tab_timer_.Stop();
-
-  if (bounds_animator().IsAnimating()) {
-    // Cancelling the animation triggers OnBoundsAnimatorDone, which invokes
-    // ResetAnimationState.
-    cancelling_animation_ = true;
-    bounds_animator().Cancel();
-    cancelling_animation_ = false;
-  } else {
-    ResetAnimationState(false);
-  }
+  bounds_animator().Cancel();
 
   DCHECK(!IsAnimating());
 
   if (layout)
     Layout();
-}
-
-void TabStrip::ResetAnimationState(bool stop_new_tab_timer) {
-  if (animation_type_ == ANIMATION_NEW_TAB_2) {
-    newtab_button_->SchedulePaint();
-    if (tab_count() > 0) {
-      // Paint the last tab as it's visual appearance changes when transitioning
-      // between ANIMATION_NEW_TAB_2 and ANIMATION_NEW_TAB_3.
-      GetTabAtTabDataIndex(tab_count() - 1)->SchedulePaint();
-    }
-  }
-
-  if (stop_new_tab_timer)
-    new_tab_timer_.Stop();
-
-  animation_type_ = ANIMATION_DEFAULT;
-
-  // Reset the animation state of each tab.
-  for (int i = 0; i < tab_count(); ++i) {
-    Tab* tab = GetTabAtTabDataIndex(i);
-    tab->set_render_as_new_tab(false);
-    tab->set_render_unselected(false);
-    tab->set_alpha(1);
-  }
 }
 
 int TabStrip::GetMiniTabCount() const {

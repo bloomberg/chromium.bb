@@ -120,7 +120,6 @@ BaseTabStrip::BaseTabStrip(TabStripController* controller, Type type)
       type_(type),
       attaching_dragged_tab_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
-  bounds_animator_.set_observer(this);
 }
 
 BaseTabStrip::~BaseTabStrip() {

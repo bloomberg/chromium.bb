@@ -54,10 +54,6 @@ static const int kMiniTabRendererAsNormalTabWidth =
 // How opaque to make the hover state (out of 1).
 static const double kHoverOpacity = 0.33;
 
-// Used when |render_as_new_tab| is true.
-static SkBitmap* new_tab_mask = NULL;
-static SkBitmap* new_tab_shadow = NULL;
-
 Tab::TabImage Tab::tab_alpha = {0};
 Tab::TabImage Tab::tab_active = {0};
 Tab::TabImage Tab::tab_active_nano = {0};
@@ -109,18 +105,11 @@ Tab::Tab(TabController* controller)
     : BaseTab(controller, true),
       showing_icon_(false),
       showing_close_button_(false),
-      close_button_color_(NULL),
-      render_as_new_tab_(false),
-      render_unselected_(false),
-      alpha_(1) {
+      close_button_color_(NULL) {
   InitTabResources();
 }
 
 Tab::~Tab() {
-}
-
-void Tab::SizeToNewTabButtonImages() {
-  SetBounds(x(), y(), new_tab_shadow->width(), new_tab_shadow->height());
 }
 
 void Tab::StartMiniTabTitleAnimation() {
@@ -199,15 +188,6 @@ void Tab::DataChanged(const TabRendererData& old) {
 // Tab, views::View overrides:
 
 void Tab::Paint(gfx::Canvas* canvas) {
-  if (render_as_new_tab_) {
-    if (base::i18n::IsRTL()) {
-      canvas->TranslateInt(width(), 0);
-      canvas->ScaleInt(-1, 1);
-    }
-    PaintAsNewTab(canvas);
-    return;
-  }
-
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
   if (width() < GetMinimumUnselectedSize().width() && !data().mini)
@@ -585,47 +565,6 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(*tab_image->image_r, width() - tab_image->r_width, 0);
 }
 
-void Tab::PaintAsNewTab(gfx::Canvas* canvas) {
-  bool is_otr = data().off_the_record;
-
-  // The tab image needs to be lined up with the background image
-  // so that it feels partially transparent.  These offsets represent the tab
-  // position within the frame background image.
-  int offset = GetX(views::View::APPLY_MIRRORING_TRANSFORMATION) +
-      background_offset_.x();
-
-  int tab_id;
-  if (GetWidget() &&
-      GetWidget()->GetWindow()->GetNonClientView()->UseNativeFrame()) {
-    tab_id = IDR_THEME_TAB_BACKGROUND_V;
-  } else {
-    tab_id = is_otr ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :
-                      IDR_THEME_TAB_BACKGROUND;
-  }
-
-  SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
-
-  // If the theme is providing a custom background image, then its top edge
-  // should be at the top of the tab. Otherwise, we assume that the background
-  // image is a composited foreground + frame image.
-  int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
-      0 : background_offset_.y();
-
-  SkBitmap image = SkBitmapOperations::CreateTiledBitmap(
-      *tab_bg, offset, bg_offset_y, new_tab_mask->width(),
-      new_tab_mask->height());
-  image = SkBitmapOperations::CreateMaskedBitmap(image, *new_tab_mask);
-  canvas->DrawBitmapInt(image,
-      0, 0, image.width(), image.height(),
-      0, 0, image.width(), image.height(),
-      false);
-
-  canvas->DrawBitmapInt(*new_tab_shadow,
-      0, 0, new_tab_shadow->width(), new_tab_shadow->height(),
-      0, 0, new_tab_shadow->width(), new_tab_shadow->height(),
-      false);
-}
-
 int Tab::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
@@ -651,9 +590,6 @@ bool Tab::ShouldShowCloseBox() const {
 }
 
 double Tab::GetThrobValue() {
-  if (alpha_ != 1)
-    return alpha_;
-
   if (pulse_animation() && pulse_animation()->is_animating())
     return pulse_animation()->GetCurrentValue() * kHoverOpacity;
 
@@ -705,7 +641,4 @@ void Tab::LoadTabImages() {
   tab_inactive_nano.l_width = tab_inactive_nano.image_l->width();
   tab_inactive_nano.r_width = tab_inactive_nano.image_r->width();
   tab_inactive_nano.y_offset = kNanoTabDiffHeight;
-
-  new_tab_mask = rb.GetBitmapNamed(IDR_TAB_ALPHA_NEW_TAB);
-  new_tab_shadow = rb.GetBitmapNamed(IDR_TAB_NEW_TAB_SHADOW);
 }

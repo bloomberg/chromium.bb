@@ -67,7 +67,6 @@ class TabStrip : public BaseTabStrip,
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
   virtual void SetDraggedTabBounds(int tab_index,
                                    const gfx::Rect& tab_bounds);
-  virtual bool IsAnimating() const;
   virtual TabStrip* AsTabStrip();
   virtual void PrepareForCloseAt(int model_index);
   virtual void RemoveTabAt(int model_index);
@@ -92,9 +91,6 @@ class TabStrip : public BaseTabStrip,
   virtual views::View* GetViewForPoint(const gfx::Point& point);
   virtual void ThemeChanged();
 
-  // BoundsAnimator::Observer overrides:
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator);
-
  protected:
   // BaseTabStrip overrides:
   virtual BaseTab* CreateTab();
@@ -102,7 +98,6 @@ class TabStrip : public BaseTabStrip,
   virtual void StartMoveTabAnimation();
   virtual void AnimateToIdealBounds();
   virtual bool ShouldHighlightCloseButtonAfterRemove();
-  virtual void PrepareForAnimation();
 
   // views::View implementation:
   virtual void ViewHierarchyChanged(bool is_add,
@@ -133,30 +128,6 @@ class TabStrip : public BaseTabStrip,
 
  private:
   friend class DraggedTabController;
-
-  // AnimationType used for tracking animations that require additional
-  // state beyond just animating the bounds of a view.
-  //
-  // Currently the only animation special cased is that of inserting the new tab
-  // page at the end of the tab strip. Here's the steps that take place when
-  // this happens.
-  // . The newly inserted tab is set to render for the new tab animation
-  //   |set_render_as_new_tab|. The timer new_tab_timer_ is used to determine
-  //   when to turn this off. This is represented by state ANIMATION_NEW_TAB_1.
-  // . The new tab is rendered in the background with an ever increasing alpha
-  //   value and the tab goes slightly past the new tab button. The new tab
-  //   button is not visible during this animation. This is represented by the
-  //   state ANIMATION_NEW_TAB_2.
-  // . The new tab is animated to its final position and the new tab button is
-  //   rendered beneath the selected tab. This is represented by the state
-  //   ANIMATION_NEW_TAB_3.
-  enum AnimationType {
-    ANIMATION_DEFAULT,
-
-    ANIMATION_NEW_TAB_1,
-    ANIMATION_NEW_TAB_2,
-    ANIMATION_NEW_TAB_3
-  };
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
@@ -272,20 +243,8 @@ class TabStrip : public BaseTabStrip,
   // stable representations of Tab positions.
   void GenerateIdealBounds();
 
-  // Both of these are invoked when a part of the new tab animation completes.
-  // They configure state for the next step in the animation and start it.
-  void NewTabAnimation1Done();
-  void NewTabAnimation2Done();
-
-  // Returns true if a new tab inserted at specified index should start the
-  // new tab animation. See description above AnimationType for details on
-  // this animation.
-  bool ShouldStartIntertTabAnimationAtEnd(int model_index, bool foreground);
-
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
-  void StartInsertTabAnimationAtEnd();
-  void StartInsertTabAnimationImpl(int model_index);
   void StartMoveTabAnimation(int from_model_index,
                              int to_model_index);
   void StartMiniTabAnimation();
@@ -294,11 +253,6 @@ class TabStrip : public BaseTabStrip,
   // Stops any ongoing animations. If |layout| is true and an animation is
   // ongoing this does a layout.
   virtual void StopAnimating(bool layout);
-
-  // Resets all state related to animations. This is invoked when an animation
-  // completes, prior to starting an animation or when we cancel an animation.
-  // If |stop_new_tab_timer| is true, |new_tab_timer_| is stopped.
-  void ResetAnimationState(bool stop_new_tab_timer);
 
   // Calculates the available width for tabs, assuming a Tab is to be closed.
   int GetAvailableWidthForTabs(Tab* last_tab) const;
@@ -366,14 +320,8 @@ class TabStrip : public BaseTabStrip,
   // Used for stage 1 of new tab animation.
   base::OneShotTimer<TabStrip> new_tab_timer_;
 
-  // Set for special animations.
-  AnimationType animation_type_;
-
   // Whether the new tab button is being displayed.
   bool new_tab_button_enabled_;
-
-  // If true, we're cancelling the animation.
-  bool cancelling_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
