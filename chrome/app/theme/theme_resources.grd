@@ -274,8 +274,6 @@
       <include name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_NANO_LEFT" file="tab_alpha_nano_left.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_NANO_RIGHT" file="tab_alpha_nano_right.png" type="BINDATA" />
-      <include name="IDR_TAB_ALPHA_NEW_TAB" file="tab_alpha_new_tab.png" type="BINDATA" />
-      <include name="IDR_TAB_NEW_TAB_SHADOW" file="tab_new_tab_shadow.png" type="BINDATA" />
 
       <include name="IDR_DOCK_MAX" file="dock_tab_max.png" type="BINDATA" />
       <include name="IDR_DOCK_HIGH" file="dock_tab_high.png" type="BINDATA" />
@@ -313,6 +311,8 @@
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_MINIMIZE_BUTTON_MASK" file="minimize_button_mask.png" type="BINDATA" />
       <include name="IDR_MAXIMIZE_BUTTON_MASK" file="maximize_button_mask.png" type="BINDATA" />
+
+      <include name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" type="BINDATA" />
 
       <!-- Desktop notifications -->
       <include name="IDR_BALLOON_BORDER" file="balloon_frame.png" type="BINDATA" />

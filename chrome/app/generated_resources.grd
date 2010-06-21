@@ -715,6 +715,9 @@ each locale. -->
         <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
           New &amp;incognito window
         </message>
+        <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
+          Edit
+        </message>
         <message name="IDS_UNDO" desc="The text label of the Undo menu item">
           &amp;Undo
         </message>
@@ -745,14 +748,26 @@ each locale. -->
         <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
           &amp;Zoom
         </message>
+        <message name="IDS_ZOOM_MENU2" desc="The text label of the Zoom menu in the merged menu">
+          Zoom
+        </message>
         <message name="IDS_ZOOM_PLUS" desc="The text label of the Make Text Larger menu item">
           &amp;Larger
+        </message>
+        <message name="IDS_ZOOM_PLUS2" desc="The text label of the Make Text Larger menu item in the merged menu">
+          +
         </message>
         <message name="IDS_ZOOM_NORMAL" desc="The text label of the Make Text Normal Size menu item">
           &amp;Normal
         </message>
         <message name="IDS_ZOOM_MINUS" desc="The text label of the Make Text Smaller menu item">
           &amp;Smaller
+        </message>
+        <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
+          -
+        </message>
+        <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
+        <ph name="VALUE">$1<ex>100</ex></ph>%
         </message>
         <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
           &amp;Encoding
