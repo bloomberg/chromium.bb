@@ -33,10 +33,6 @@ MetadataParserManager::MetadataParserManager() {
   RegisterParserFactory(factory);
 }
 
-MetadataParserManager::~MetadataParserManager() {
-  STLDeleteContainerPointers(factories_.begin(), factories_.end());
-}
-
 MetadataParser* MetadataParserManager::GetParserForFile(const FilePath& path) {
 
   char buffer[kAmountToRead];
