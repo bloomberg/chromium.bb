@@ -650,6 +650,8 @@ bool TabContents::ShouldDisplayFavIcon() {
 }
 
 bool TabContents::IsContentBlocked(ContentSettingsType content_type) const {
+  DCHECK(content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
+      << "Geolocation settings handled by GeolocationContentSettingsMap";
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS)
     return blocked_popups_ != NULL;
 
@@ -658,10 +660,6 @@ bool TabContents::IsContentBlocked(ContentSettingsType content_type) const {
       content_type == CONTENT_SETTINGS_TYPE_PLUGINS ||
       content_type == CONTENT_SETTINGS_TYPE_COOKIES)
     return content_blocked_[content_type];
-
-  // TODO(joth): remove once fully implemented.
-  if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
-    return false;
 
   NOTREACHED();
   return false;
@@ -2137,8 +2135,8 @@ void TabContents::DocumentLoadedInFrame() {
 }
 
 void TabContents::OnContentBlocked(ContentSettingsType type) {
-  // TODO(joth): remove once fully implemented.
-  DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
+      << "Geolocation settings handled by OnGeolocationPermissionSet";
   content_blocked_[type] = true;
   if (delegate_)
     delegate_->OnContentSettingsChange(this);
