@@ -4,71 +4,46 @@
  * be found in the LICENSE file.
  */
 
-
-// NPAPI Simple RPC shared memory objects.
+// A portable representation of a scriptable shared memory object.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SHARED_MEMORY_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SHARED_MEMORY_H_
 
 #include <setjmp.h>
 #include <stdio.h>
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
-namespace nacl_srpc {
+namespace plugin {
 
-// Class declarations.
 class Plugin;
 
-struct SharedMemoryInitializer: DescHandleInitializer {
- public:
-  SharedMemoryInitializer(BrowserInterface* browser_interface,
-                          nacl::DescWrapper* desc,
-                          Plugin* plugin):
-      DescHandleInitializer(browser_interface, desc, plugin),
-      length_(0) {}
-
-  SharedMemoryInitializer(BrowserInterface* browser_interface,
-                          Plugin* plugin,
-                          off_t length):
-      DescHandleInitializer(browser_interface, NULL, plugin),
-      length_(length) {}
-
- public:
-  off_t length_;
-};
-
-// SharedMemory is used to represent shared memory descriptors
+// SharedMemory is used to represent shared memory descriptors.
 class SharedMemory : public DescBasedHandle {
  public:
-  explicit SharedMemory();
+  static SharedMemory* New(Plugin* plugin, nacl::DescWrapper* wrapper);
+  static SharedMemory* New(Plugin* plugin, off_t length);
+
+  void* map_addr() const { return map_addr_; }
+  size_t size() const { return size_; }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(SharedMemory);
+  // These are private because there are no derived classes from
+  // SharedMemory.
+  SharedMemory();
   ~SharedMemory();
-
-  bool Init(struct PortableHandleInitializer* init_info);
-
+  bool Init(Plugin* plugin, nacl::DescWrapper* wrapper, off_t length);
   void LoadMethods();
-  static int number_alive() { return number_alive_counter; }
-  void* buffer() { return map_addr_; }
-
-
- private:
-  static void SignalHandler(int value);
-
-  // registered functions
-  static bool RpcRead(void* obj, SrpcParams* params);
-  static bool RpcWrite(void* obj, SrpcParams* params);
-
- private:
-  static int number_alive_counter;
   NaClHandle handle_;
   void* map_addr_;
   size_t size_;
 };
 
-}  // namespace nacl_srpc
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SHARED_MEMORY_H_

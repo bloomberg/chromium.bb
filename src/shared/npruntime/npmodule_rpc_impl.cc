@@ -1,6 +1,8 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #include <limits>
 
@@ -147,12 +149,12 @@ NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
     NPModule* module = NPModule::GetModule(wire_npp);
     nacl::string url_origin = nacl::UrlToOrigin(url);
 
-    nacl_srpc::NpGetUrlClosure* closure = new(std::nothrow)
-        nacl_srpc::NpGetUrlClosure(WireFormatToNPP(wire_npp),
-                                   module,
-                                   url,
-                                   notify_data,
-                                   (call_url_notify != 0));
+    plugin::NpGetUrlClosure* closure = new(std::nothrow)
+        plugin::NpGetUrlClosure(WireFormatToNPP(wire_npp),
+                                module,
+                                url,
+                                notify_data,
+                                (call_url_notify != 0));
     if (NULL == closure) {
       *nperr = NPERR_GENERIC_ERROR;
     }

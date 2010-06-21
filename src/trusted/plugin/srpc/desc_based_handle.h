@@ -4,8 +4,7 @@
  * be found in the LICENSE file.
  */
 
-
-// NPAPI Simple RPC Interface
+// Portable representation of scriptable NaClDesc.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_DESC_BASED_HANDLE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_DESC_BASED_HANDLE_H_
@@ -13,57 +12,47 @@
 #include <stdio.h>
 #include <map>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
-namespace nacl_srpc {
+struct NaClDesc;
 
-  struct DescHandleInitializer : PortableHandleInitializer {
-    nacl::DescWrapper* wrapper_;
-    Plugin* plugin_;
-    DescHandleInitializer(BrowserInterface* browser_interface,
-                          nacl::DescWrapper* wrapper,
-                          Plugin *plugin):
-        PortableHandleInitializer(browser_interface),
-        wrapper_(wrapper),
-        plugin_(plugin) {}
-  };
+namespace nacl {
+class DescWrapper;
+}  // namespace nacl
 
+namespace plugin {
 
-  // PortableHandle is the struct used to represent handles that are opaque to
-  // the javascript bridge.
-  class DescBasedHandle : public PortableHandle {
-   public:
+class Plugin;
 
-    // Get the contained descriptor.
-    nacl::DescWrapper* wrapper() { return wrapper_; }
-    struct NaClDesc* desc() { return wrapper_->desc(); }
+// DescBasedHandles are used to make NaClDesc objects scriptable by JavaScript.
+class DescBasedHandle : public PortableHandle {
+ public:
+  static DescBasedHandle* New(Plugin* plugin, nacl::DescWrapper* wrapper);
 
-    // There are derived classes, so the constructor and destructor must
-    // be visible.
-    explicit DescBasedHandle();
-    virtual ~DescBasedHandle();
+  virtual BrowserInterface* browser_interface() const;
+  virtual Plugin* plugin() const { return plugin_; }
+  // Get the contained descriptor.
+  nacl::DescWrapper* wrapper() const { return wrapper_; }
+  struct NaClDesc* desc() const { return wrapper_->desc(); }
 
-    bool Init(struct PortableHandleInitializer* init_info);
+  // Only DescBasedHandles can be conveyed over SRPC channels.
+  virtual bool IsDescBasedHandle() const { return true; }
 
+ protected:
+  DescBasedHandle();
+  virtual ~DescBasedHandle();
+  bool Init(Plugin* plugin, nacl::DescWrapper* wrapper);
 
-    void LoadMethods();
-    virtual Plugin* GetPlugin();
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DescBasedHandle);
+  void LoadMethods();
+  Plugin* plugin_;
+  nacl::DescWrapper* wrapper_;
+};
 
-    static int number_alive() { return number_alive_counter; }
-
-   private:
-    // class-specific methods - to be invoked by the browser
-    static bool Map(void *obj, SrpcParams *params);
-
-   public:
-    Plugin* plugin_;
-   private:
-    nacl::DescWrapper* wrapper_;
-    static int number_alive_counter;
-  };
-
-}  // namespace nacl_srpc
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_DESC_BASED_HANDLE_H_

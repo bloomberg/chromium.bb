@@ -25,41 +25,41 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
 
-namespace nacl_srpc {
+namespace {
 
-int SharedMemory::number_alive_counter = 0;
-
-bool SharedMemory::RpcRead(void *obj, SrpcParams *params) {
-  SharedMemory* shared_memory = reinterpret_cast<SharedMemory*>(obj);
+bool RpcRead(void* obj, plugin::SrpcParams* params) {
+  plugin::SharedMemory* shared_memory =
+      reinterpret_cast<plugin::SharedMemory*>(obj);
   uint32_t offset;
   uint32_t len;
 
   // TODO(gregoryd) - the old code was able to handle both ints and doubles
   // it should be handled in the marshalling code,
   // otherwise the call will be rejected
-  if (params->Input(0)->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
-    offset = static_cast<uint32_t>(params->Input(0)->u.dval);
+  if (params->ins()[0]->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
+    offset = static_cast<uint32_t>(params->ins()[0]->u.dval);
   } else {
-    offset = static_cast<uint32_t>(params->Input(0)->u.ival);
+    offset = static_cast<uint32_t>(params->ins()[0]->u.ival);
   }
 
-  if (params->Input(1)->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
-    len = static_cast<uint32_t>(params->Input(1)->u.dval);
+  if (params->ins()[1]->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
+    len = static_cast<uint32_t>(params->ins()[1]->u.dval);
   } else {
-    len = static_cast<uint32_t>(params->Input(1)->u.ival);
+    len = static_cast<uint32_t>(params->ins()[1]->u.ival);
   }
 
   // Ensure we will access valid addresses.
-  if (NULL == shared_memory->map_addr_) {
-    params->SetExceptionInfo("Shared memory not mapped");
+  if (NULL == shared_memory->map_addr()) {
+    params->set_exception_string("Shared memory not mapped");
     return false;
   }
   if (offset + len < offset) {
-    params->SetExceptionInfo("Offset + length overflows");
+    params->set_exception_string("Offset + length overflows");
     return false;
   }
-  if (offset + len > shared_memory->size_) {
-    params->SetExceptionInfo("Offset + length overlaps end of shared memory");
+  if (offset + len > shared_memory->size()) {
+    params->set_exception_string(
+        "Offset + length overlaps end of shared memory");
     return false;
   }
 
@@ -70,18 +70,18 @@ bool SharedMemory::RpcRead(void *obj, SrpcParams *params) {
   if ((utf8_buffer_len < len) ||
       (utf8_buffer_len + 1 < utf8_buffer_len)) {
     // Unsigned overflow.
-    params->SetExceptionInfo("len too large to hold requested UTF8 chars");
+    params->set_exception_string("len too large to hold requested UTF8 chars");
     return false;
   }
 
   char* ret_string = reinterpret_cast<char*>(malloc(utf8_buffer_len + 1));
   if (NULL == ret_string) {
-    params->SetExceptionInfo("out of memory");
+    params->set_exception_string("out of memory");
     return false;
   }
 
   unsigned char* shm_addr =
-    reinterpret_cast<unsigned char*>(shared_memory->map_addr_) + offset;
+    reinterpret_cast<unsigned char*>(shared_memory->map_addr()) + offset;
   unsigned char* out = reinterpret_cast<unsigned char*>(ret_string);
   // NPAPI wants length to be the number of bytes, not UTF-8 characters.
   for (unsigned int i = 0; i < len; ++i) {
@@ -101,54 +101,56 @@ bool SharedMemory::RpcRead(void *obj, SrpcParams *params) {
   // Terminate the result string with 0.
   *out = 0;
 
-  params->Output(0)->tag = NACL_SRPC_ARG_TYPE_STRING;
-  params->Output(0)->u.sval = ret_string;
+  params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_STRING;
+  params->outs()[0]->u.sval = ret_string;
 
   return true;
 }
 
-bool SharedMemory::RpcWrite(void *obj, SrpcParams *params) {
-  SharedMemory* shared_memory = reinterpret_cast<SharedMemory*>(obj);
+bool RpcWrite(void* obj, plugin::SrpcParams* params) {
+  plugin::SharedMemory* shared_memory =
+      reinterpret_cast<plugin::SharedMemory*>(obj);
   uint32_t offset;
   uint32_t len;
 
   // TODO(gregoryd) - the old code was able to handle both ints and doubles
   // it should be handled in the marshalling code,
   // otherwise the call will be rejected
-  if (params->Input(0)->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
-    offset = static_cast<uint32_t>(params->Input(0)->u.dval);
+  if (params->ins()[0]->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
+    offset = static_cast<uint32_t>(params->ins()[0]->u.dval);
   } else {
-    offset = static_cast<uint32_t>(params->Input(0)->u.ival);
+    offset = static_cast<uint32_t>(params->ins()[0]->u.ival);
   }
 
-  if (params->Input(1)->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
-    len = static_cast<uint32_t>(params->Input(1)->u.dval);
+  if (params->ins()[1]->tag == NACL_SRPC_ARG_TYPE_DOUBLE) {
+    len = static_cast<uint32_t>(params->ins()[1]->u.dval);
   } else {
-    len = static_cast<uint32_t>(params->Input(1)->u.ival);
+    len = static_cast<uint32_t>(params->ins()[1]->u.ival);
   }
 
   // Ensure we will access valid addresses.
-  if (NULL == shared_memory->map_addr_) {
-    params->SetExceptionInfo("Shared memory not mapped");
+  if (NULL == shared_memory->map_addr()) {
+    params->set_exception_string("Shared memory not mapped");
     return false;
   }
   if (offset + len < offset) {
-    params->SetExceptionInfo("Offset + length overflows");
+    params->set_exception_string("Offset + length overflows");
     return false;
   }
-  if (offset + len > shared_memory->size_) {
-    params->SetExceptionInfo("Offset + length overlaps end of shared memory");
+  if (offset + len > shared_memory->size()) {
+    params->set_exception_string(
+        "Offset + length overlaps end of shared memory");
     return false;
   }
 
   // The input is a JavaScript string, which must consist of UFT-8
   // characters with character codes between 0 and 255 inclusive.
-  NaClSrpcArg *str_param = params->Input(2);
+  NaClSrpcArg* str_param = params->ins()[2];
   const unsigned char* str =
     reinterpret_cast<unsigned const char*>(str_param->u.sval);
   uint32_t utf_bytes = nacl::saturate_cast<uint32_t>(strlen(str_param->u.sval));
   unsigned char* shm_addr =
-    reinterpret_cast<unsigned char*>(shared_memory->map_addr_) + offset;
+    reinterpret_cast<unsigned char*>(shared_memory->map_addr()) + offset;
 
   // TODO(sehr): pull this code out for better testability.
   for (unsigned int i = 0; i < len;) {
@@ -173,7 +175,7 @@ bool SharedMemory::RpcWrite(void *obj, SrpcParams *params) {
       // The first character must contain 110xxxxxb and the
       // second must contain 10xxxxxxb.
       if (((c1 & 0xc3) != c1) || ((c2 & 0xbf) != c2)) {
-        params->SetExceptionInfo("Bad utf8 character value");
+        params->set_exception_string("Bad utf8 character value");
         return false;
       }
       *shm_addr = (c1 << 6) | (c2 & 0x3f);
@@ -190,46 +192,45 @@ bool SharedMemory::RpcWrite(void *obj, SrpcParams *params) {
   return true;
 }
 
+}  // namespace
+
+namespace plugin {
+
 void SharedMemory::LoadMethods() {
-  PortableHandle::AddMethodToMap(RpcRead,
-    "read", METHOD_CALL, "ii", "s");
-  PortableHandle::AddMethodToMap(RpcWrite,
-    "write", METHOD_CALL, "iis", "");
+  AddMethodCall(RpcRead, "read", "ii", "s");
+  AddMethodCall(RpcWrite, "write", "iis", "");
 }
 
-bool SharedMemory::Init(struct PortableHandleInitializer* init_info) {
-  struct SharedMemoryInitializer *shm_init_info =
-      static_cast<SharedMemoryInitializer*>(init_info);
+bool SharedMemory::Init(Plugin* plugin,
+                        nacl::DescWrapper* wrapper,
+                        off_t length) {
   bool allocated_memory = false;
 
-  if (NULL == shm_init_info->wrapper_) {
+  if (NULL == wrapper) {
     // Creating a new object by size
-    size_t size = static_cast<size_t>(shm_init_info->length_);
+    size_t size = static_cast<size_t>(length);
     // The Map virtual function rounds up to the nearest AllocPage.
     size_t rounded_size = NaClRoundAllocPage(size);
-    nacl::DescWrapper* wrapper =
-        shm_init_info->plugin_->wrapper_factory()->MakeShm(rounded_size);
+    wrapper = plugin->wrapper_factory()->MakeShm(rounded_size);
     if (NULL == wrapper) {
       return false;
     }
 
-    dprintf(("SharedMemory::Init(%p, 0x%08x)\n",
-             static_cast<void *>(shm_init_info->plugin_),
-             static_cast<unsigned>(shm_init_info->length_)));
-    shm_init_info->wrapper_ = wrapper;
+    PLUGIN_PRINTF(("SharedMemory::Init(%p, 0x%08x)\n",
+                   static_cast<void*>(plugin),
+                   static_cast<unsigned>(length)));
     // Now allocate the object through the canonical factory and return.
     allocated_memory = true;
   }
 
-  if (!DescBasedHandle::Init(init_info)) {
+  if (!DescBasedHandle::Init(plugin, wrapper)) {
     if (allocated_memory) {
-      shm_init_info->wrapper_->Delete();
-      shm_init_info->wrapper_ = NULL;
+      wrapper->Delete();
     }
     return false;
   }
 
-  if (0 > wrapper()->Map(&map_addr_, &size_)) {
+  if (0 > wrapper->Map(&map_addr_, &size_)) {
     // BUG: we are leaking the shared memory object here.
     return false;
   }
@@ -238,18 +239,36 @@ bool SharedMemory::Init(struct PortableHandleInitializer* init_info) {
   return true;
 }
 
+SharedMemory* SharedMemory::New(Plugin* plugin, nacl::DescWrapper* wrapper) {
+  PLUGIN_PRINTF(("SharedMemory::New()\n"));
+
+  SharedMemory* shared_memory = new(std::nothrow) SharedMemory();
+  if (shared_memory == NULL || !shared_memory->Init(plugin, wrapper, 0)) {
+    return NULL;
+  }
+  return shared_memory;
+}
+
+SharedMemory* SharedMemory::New(Plugin* plugin, off_t length) {
+  PLUGIN_PRINTF(("SharedMemory::New()\n"));
+
+  SharedMemory* shared_memory = new(std::nothrow) SharedMemory();
+  if (shared_memory == NULL || !shared_memory->Init(plugin, NULL, length)) {
+    return NULL;
+  }
+  return shared_memory;
+}
+
 SharedMemory::SharedMemory() : handle_(0),
                                map_addr_(NULL),
                                size_(0) {
-  dprintf(("SharedMemory::SharedMemory(%p, %d)\n",
-           static_cast<void *>(this),
-           ++number_alive_counter));
+  PLUGIN_PRINTF(("SharedMemory::SharedMemory(%p)\n",
+                 static_cast<void*>(this)));
 }
 
 SharedMemory::~SharedMemory() {
-  dprintf(("SharedMemory::~SharedMemory(%p, %d)\n",
-           static_cast<void *>(this),
-           --number_alive_counter));
+  PLUGIN_PRINTF(("SharedMemory::~SharedMemory(%p)\n",
+                 static_cast<void*>(this)));
 
   // Invalidates are called by Firefox in abitrary order.  Hence, the plugin
   // could have been freed/trashed before we get invalidated.  Therefore, we
@@ -276,4 +295,4 @@ SharedMemory::~SharedMemory() {
   // constructed during the initialization of this object?
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

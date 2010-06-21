@@ -1,0 +1,71 @@
+/*
+ * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
+
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_PLUGIN_NPAPI_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_PLUGIN_NPAPI_H_
+
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/plugin/npapi/npinstance.h"
+#include "native_client/src/trusted/plugin/srpc/plugin.h"
+
+namespace nacl {
+
+class NPModule;
+
+}  // namespace
+
+namespace plugin {
+
+class PluginNpapi : public nacl::NPInstance, public Plugin {
+ public:
+  static PluginNpapi* New(InstanceIdentifier instance_id,
+                          int argc,
+                          char* argn[],
+                          char* argv[]);
+
+  // Each of the following methods corresponds to an NPP_ method in NPAPI.
+  // Please consult the relevant Mozilla documentation for details.
+  // See https://developer.mozilla.org/En/NPP_<method_name>.
+  NPError Destroy(NPSavedData** save);
+  NPError SetWindow(NPWindow* window);
+  NPError GetValue(NPPVariable variable, void* value);
+  int16_t HandleEvent(void* event);
+  NPError NewStream(NPMIMEType type,
+                    NPStream* stream,
+                    NPBool seekable,
+                    uint16_t* stype);
+  int32_t WriteReady(NPStream* stream);
+  int32_t Write(NPStream* stream,
+                int32_t offset,
+                int32_t len,
+                void* buf);
+
+  void StreamAsFile(NPStream* stream, const char* filename);
+  NPError DestroyStream(NPStream* stream, NPError reason);
+  void URLNotify(const char* url, NPReason reason, void* notify_data);
+
+  // These are "constants" initialized when a PluginNpapi has been created.
+  static NPIdentifier kHrefIdent;
+  static NPIdentifier kLengthIdent;
+  static NPIdentifier kLocationIdent;
+
+  // Support for the NaCl NPAPI proxy.
+  nacl::NPModule* module() const { return module_; }
+  void set_module(nacl::NPModule* module);
+  NPObject* nacl_instance() const { return nacl_instance_; }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PluginNpapi);
+  PluginNpapi() : module_(NULL), nacl_instance_(NULL) { }
+  ~PluginNpapi();
+  nacl::NPModule* module_;
+  NPObject* nacl_instance_;
+};
+
+}  // namespace plugin
+
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_PLUGIN_NPAPI_H_

@@ -20,58 +20,107 @@
 
 using nacl::assert_cast;
 
-namespace nacl_srpc {
+namespace {
+
+uint32_t ArgsLength(NaClSrpcArg** index) {
+  uint32_t i;
+  for (i = 0; (i < NACL_SRPC_MAX_ARGS) && NULL != index[i]; ++i) {
+    // Empty body.  Avoids warning.
+  }
+  return i;
+}
+
+}  // namespace
+
+namespace plugin {
+
+bool SrpcParams::Init(const char* in_types, const char* out_types) {
+  if (!FillVec(ins_, in_types)) {
+    return false;
+  }
+  if (!FillVec(outs_, out_types)) {
+    FreeArguments(ins_);
+    return false;
+  }
+  return true;
+}
+
+uint32_t SrpcParams::OutputLength() const {
+  return ArgsLength(const_cast<NaClSrpcArg**>(outs_));
+}
+
+uint32_t SrpcParams::SignatureLength() const {
+  uint32_t in_length = ArgsLength(const_cast<NaClSrpcArg**>(ins_));
+  uint32_t out_length = ArgsLength(const_cast<NaClSrpcArg**>(outs_));
+  uint32_t array_outs = 0;
+
+  for (uint32_t i = 0; i < out_length; ++i) {
+    switch (outs_[i]->tag) {
+      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+        ++array_outs;
+        break;
+      case NACL_SRPC_ARG_TYPE_STRING:
+      case NACL_SRPC_ARG_TYPE_BOOL:
+      case NACL_SRPC_ARG_TYPE_DOUBLE:
+      case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_HANDLE:
+      case NACL_SRPC_ARG_TYPE_INVALID:
+      case NACL_SRPC_ARG_TYPE_OBJECT:
+      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      default:
+        break;
+    }
+  }
+  return in_length + array_outs;
+}
+
+void SrpcParams::FreeAll() {
+  FreeArguments(ins_);
+  FreeArguments(outs_);
+  memset(ins_, 0, sizeof(ins_));
+  memset(outs_, 0, sizeof(outs_));
+}
+
+bool SrpcParams::FillVec(NaClSrpcArg* vec[], const char* types) {
+  const size_t kLength = strlen(types);
+  if (kLength > NACL_SRPC_MAX_ARGS) {
+    return false;
+  }
+  // We use malloc/new here rather than new/delete, because the SRPC layer
+  // is written in C, and hence will use malloc/free.
+  NaClSrpcArg* args =
+      reinterpret_cast<NaClSrpcArg*>(malloc(kLength * sizeof(*args)));
+  if (NULL == args) {
+    return false;
+  }
+
+  memset(static_cast<void*>(args), 0, kLength * sizeof(*args));
+  for (size_t i = 0; i < kLength; ++i) {
+    vec[i] = &args[i];
+    args[i].tag = static_cast<NaClSrpcArgType>(types[i]);
+  }
+  vec[kLength] = NULL;
+  return true;
+}
+
+void SrpcParams::FreeArguments(NaClSrpcArg* vec[]) {
+  if (NULL == vec[0]) {
+    return;
+  }
+  for (NaClSrpcArg** argp = vec; *argp; ++argp) {
+    FreeSrpcArg(*argp);
+  }
+  // Free the vector containing the arguments themselves.
+  free(vec[0]);
+}
 
 MethodInfo::~MethodInfo() {
     free(reinterpret_cast<void*>(name_));
     free(reinterpret_cast<void*>(ins_));
     free(reinterpret_cast<void*>(outs_));
   }
-
-char* MethodInfo::TypeName(NaClSrpcArgType type) {
-  const char* str;
-
-  str = "BAD_TYPE";
-  switch (type) {
-    case NACL_SRPC_ARG_TYPE_INVALID:
-      str = "INVALID";
-      break;
-    case NACL_SRPC_ARG_TYPE_DOUBLE:
-      str = "double";
-      break;
-    case NACL_SRPC_ARG_TYPE_INT:
-      str = "int";
-      break;
-    case NACL_SRPC_ARG_TYPE_STRING:
-      str = "string";
-      break;
-    case NACL_SRPC_ARG_TYPE_HANDLE:
-      str = "handle";
-      break;
-    case NACL_SRPC_ARG_TYPE_BOOL:
-      str = "bool";
-      break;
-    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      str = "char[]";
-      break;
-    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      str = "int[]";
-      break;
-    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      str = "double[]";
-      break;
-    case NACL_SRPC_ARG_TYPE_OBJECT:
-      str = "object";
-      break;
-    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      str = "variant[]";
-      break;
-    default:
-      str = "BAD TYPE";
-      break;
-  }
-  return strdup(str);
-}
 
 bool InitSrpcArgArray(NaClSrpcArg* arr, int size) {
   arr->tag = NACL_SRPC_ARG_TYPE_VARIANT_ARRAY;
@@ -124,80 +173,6 @@ void FreeSrpcArg(NaClSrpcArg* arg) {
   }
 }
 
-bool MethodInfo::Signature(NaClSrpcArg* toplevel) {
-  InitSrpcArgArray(toplevel, 3);
-
-  dprintf(("Signature: %p->[0] = %p (%s)\n",
-           static_cast<void *>(toplevel), static_cast<void *>(name_), name_));
-
-  NaClSrpcArg* name_arg = &toplevel->u.vaval.varr[0];
-  char *temp_name = strdup(name_);
-  // The ownership of this memory, if this method is successful, is
-  // passed to the NaClSrpcArg object *toplevel.  This code is used by
-  // GetSignatureObject in ConnectedSocket (via SrpcClient's
-  // GetSignatureObject), and the dtor for ConnectedSocket performs
-  // the deallocation.
-
-  STRINGZ_TO_SRPCARG(temp_name, *name_arg);
-
-  NaClSrpcArg *args = &toplevel->u.vaval.varr[1];
-
-  // Using int rather than uint32_t here (and on outs_length and i, below) to
-  // match the signature of InitSrpcArray.
-  int ins_length = assert_cast<int>(strlen(ins_));
-
-  if (!InitSrpcArgArray(args, ins_length)) {
-    free(temp_name);
-    return false;
-  }
-
-  dprintf(("Signature: %p->[1] = %p\n",
-           static_cast<void *>(toplevel),
-           static_cast<void *>(args)));
-
-  int i;
-  for (i = 0; i < ins_length; ++i) {
-    dprintf(("Signature: %p->[1][%d] = %p (%s)\n",
-             static_cast<void *>(&args->u.vaval.varr[i]),
-             i,
-             static_cast<void *>(
-                 TypeName(static_cast<NaClSrpcArgType>(ins_[i]))),
-             TypeName(static_cast<NaClSrpcArgType>(ins_[i]))));
-    STRINGZ_TO_SRPCARG(TypeName(static_cast<NaClSrpcArgType>(ins_[i])),
-                         args->u.vaval.varr[i]);
-  }
-
-  NaClSrpcArg *rets = &toplevel->u.vaval.varr[2];
-  int const outs_length = assert_cast<int>(strlen(outs_));
-
-  if (!InitSrpcArgArray(rets, outs_length)) {
-    FreeSrpcArg(args);
-    free(temp_name);
-    return false;
-  }
-
-  dprintf(("Signature: %p->[2] = %p\n",
-           static_cast<void *>(toplevel),
-           static_cast<void *>(rets)));
-
-  for (i = 0; i < outs_length; ++i) {
-    dprintf(("Signature: %p->[2][%d] = %p (%s)\n",
-             static_cast<void *>(&rets->u.vaval.varr[i]),
-             i,
-             static_cast<void *>(
-                 TypeName(static_cast<NaClSrpcArgType>(outs_[i]))),
-             TypeName(static_cast<NaClSrpcArgType>(outs_[i]))));
-    STRINGZ_TO_SRPCARG(TypeName(static_cast<NaClSrpcArgType>(outs_[i])),
-                         rets->u.vaval.varr[i]);
-  }
-  return true;
-}
-
-void MethodInfo::PrintType(Plugin* plugin, NaClSrpcArgType type) {
-  UNREFERENCED_PARAMETER(plugin);
-  UNREFERENCED_PARAMETER(type);
-}
-
 MethodMap::~MethodMap() {
   MethodMapStorage::iterator it;
   while ((it = method_map_.begin()) != method_map_.end()) {
@@ -218,4 +193,4 @@ void MethodMap::AddMethod(uintptr_t method_id, MethodInfo *info) {
   method_map_[method_id] = info;
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

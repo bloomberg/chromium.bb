@@ -4,37 +4,35 @@
  * be found in the LICENSE file.
  */
 
+// Lookup table types for method dispatching.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_METHOD_MAP_H
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_METHOD_MAP_H
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include <limits.h>
 #include <map>
 
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-
-namespace nacl_srpc {
+namespace plugin {
 
 class Plugin;
 
 bool InitSrpcArgArray(NaClSrpcArg* arr, int size);
 void FreeSrpcArg(NaClSrpcArg* arg);
 
-
-// A utility class that builds and deletes parameter vectors used in
-// rpcs.
+// A utility class that builds and deletes parameter vectors used in rpcs.
 class SrpcParams {
  public:
-
-  SrpcParams() : exception_info_(NULL) {
-    memset(ins, 0, sizeof(ins));
-    memset(outs, 0, sizeof(outs));
+  SrpcParams() : exception_string_(NULL) {
+    memset(ins_, 0, sizeof(ins_));
+    memset(outs_, 0, sizeof(outs_));
   }
 
   SrpcParams(const char* in_types, const char* out_types)
-      : exception_info_(NULL) {
+      : exception_string_(NULL) {
     if (!Init(in_types, out_types)) {
       FreeAll();
     }
@@ -42,91 +40,34 @@ class SrpcParams {
 
   ~SrpcParams() {
     FreeAll();
-    free(exception_info_);
+    free(exception_string_);
   }
 
-  bool Init(const char* in_types, const char* out_types) {
-    if (!FillVec(ins, in_types)) {
-      return false;
-    }
-    if (!FillVec(outs, out_types)) {
-      FreeArguments(ins);
-      return false;
-    }
-    return true;
-  }
+  bool Init(const char* in_types, const char* out_types);
+  uint32_t SignatureLength() const;
+  uint32_t OutputLength() const;
 
-  NaClSrpcArg* Input(int index) {
-    return ins[index];
-  }
+  NaClSrpcArg** ins() const { return const_cast<NaClSrpcArg**>(ins_); }
+  NaClSrpcArg** outs() const { return const_cast<NaClSrpcArg**>(outs_); }
 
-  NaClSrpcArg* Output(int index) {
-    return outs[index];
-  }
-
-  void SetExceptionInfo(const char *msg) {
-    exception_info_ = STRDUP(msg);
-  }
-
-  bool HasExceptionInfo() {
-    return (NULL != exception_info_);
-  }
-
-  char* GetExceptionInfo() {
-    return exception_info_;
+  char* exception_string() const { return exception_string_; }
+  void set_exception_string(const char* msg) {
+    exception_string_ = STRDUP(msg);
   }
 
  private:
-  void FreeAll() {
-    FreeArguments(ins);
-    FreeArguments(outs);
-    memset(ins, 0, sizeof(ins));
-    memset(outs, 0, sizeof(outs));
-  }
-
-  bool FillVec(NaClSrpcArg* vec[], const char* types) {
-    const size_t kLength = strlen(types);
-    if (kLength > NACL_SRPC_MAX_ARGS)
-      return false;
-    // We use malloc/new here rather than new/delete, because the SRPC layer
-    // is written in C, and hence will use malloc/free.
-    NaClSrpcArg* args =
-        reinterpret_cast<NaClSrpcArg*>(malloc(kLength * sizeof(*args)));
-    if (NULL == args) {
-      return false;
-    }
-
-    memset(static_cast<void*>(args), 0, kLength * sizeof(*args));
-    for (size_t i = 0; i < kLength; ++i) {
-      vec[i] = &args[i];
-      args[i].tag = static_cast<NaClSrpcArgType>(types[i]);
-    }
-    vec[kLength] = NULL;
-    return true;
-  }
-
-  void FreeArguments(NaClSrpcArg* vec[]) {
-    if (NULL == vec[0]) {
-      return;
-    }
-    for (NaClSrpcArg** argp = vec; *argp; ++argp) {
-      FreeSrpcArg(*argp);
-    }
-    // Free the vector containing the arguments themselves.
-    free(vec[0]);
-  }
-
- public:
-  // The ins and outs arrays contain one more element, to hold a NULL pointer
+  NACL_DISALLOW_COPY_AND_ASSIGN(SrpcParams);
+  void FreeAll();
+  bool FillVec(NaClSrpcArg* vec[], const char* types);
+  void FreeArguments(NaClSrpcArg* vec[]);
+  // The ins_ and outs_ arrays contain one more element, to hold a NULL pointer
   // to indicate the end of the list.
-  NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
-  NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
-
- private:
-  char *exception_info_;
+  NaClSrpcArg* ins_[NACL_SRPC_MAX_ARGS + 1];
+  NaClSrpcArg* outs_[NACL_SRPC_MAX_ARGS + 1];
+  char* exception_string_;
 };
 
-typedef bool(*RpcFunction)(void *obj, SrpcParams *params);
+typedef bool (*RpcFunction)(void* obj, SrpcParams* params);
 
 // MethodInfo records the method names and type signatures of an SRPC server.
 class MethodInfo {
@@ -147,12 +88,14 @@ class MethodInfo {
     index_(index) { }
   ~MethodInfo();
 
-  char* TypeName(NaClSrpcArgType type);
-  bool Signature(NaClSrpcArg* toplevel);
+  RpcFunction function_ptr() const { return function_ptr_; }
+  char* name() const { return name_; }
+  char* ins() const { return ins_; }
+  char* outs() const { return outs_; }
+  uint32_t index() const { return index_; }
 
  private:
-  void PrintType(Plugin* plugin, NaClSrpcArgType type);
- public:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MethodInfo);
   RpcFunction function_ptr_;
   char* name_;
   char* ins_;
@@ -165,14 +108,14 @@ class MethodMap {
   MethodMap() {}
   ~MethodMap();
   MethodInfo* GetMethod(uintptr_t method_id);
-  void AddMethod(uintptr_t method_id, MethodInfo *info);
+  void AddMethod(uintptr_t method_id, MethodInfo* info);
 
  private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MethodMap);
   typedef std::map<uintptr_t, MethodInfo*> MethodMapStorage;
   MethodMapStorage method_map_;
 };
 
-
-}  // namespace nacl_srpc
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_METHOD_MAP_H

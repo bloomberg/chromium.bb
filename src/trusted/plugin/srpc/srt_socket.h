@@ -4,52 +4,46 @@
  * be found in the LICENSE file.
  */
 
+// A representation of a connected socket connection to the service runtime.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SRT_SOCKET_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SRT_SOCKET_H_
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
-namespace nacl_srpc {
+struct NaClDesc;
+
+namespace plugin {
 
 class SrtSocket {
  public:
-  SrtSocket(ScriptableHandle<ConnectedSocket> *s,
-            BrowserInterface* browser_interface);
+  SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface);
   ~SrtSocket();
 
   bool HardShutdown();
   bool SetOrigin(nacl::string origin);
-  bool StartModule(int *load_status);
-  bool LoadModule(NaClSrpcImcDescType desc);
+  bool StartModule(int* load_status);
+  bool LoadModule(NaClDesc* desc);
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
-  bool InitHandlePassing(NaClSrpcImcDescType desc, nacl::Handle sel_ldr_handle);
+  bool InitHandlePassing(NaClDesc* desc, nacl::Handle sel_ldr_handle);
 #endif
   bool Log(int severity, nacl::string msg);
 
-  ConnectedSocket *connected_socket() const {
-    return static_cast<ConnectedSocket*>(connected_socket_->get_handle());
+  ConnectedSocket* connected_socket() const {
+    return static_cast<ConnectedSocket*>(connected_socket_->handle());
   }
 
-  // Not really constants.  Do not modify.  Use only after at least
-  // one SrtSocket instance has been constructed.
-  static uintptr_t kHardShutdownIdent;
-  static uintptr_t kSetOriginIdent;
-  static uintptr_t kStartModuleIdent;
-  static uintptr_t kLogIdent;
-  static uintptr_t kLoadModule;
-  static uintptr_t kInitHandlePassing;
  private:
-  ScriptableHandle<ConnectedSocket> *connected_socket_;
-  BrowserInterface *browser_interface_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(SrtSocket);
+  ScriptableHandle* connected_socket_;
+  BrowserInterface* browser_interface_;
   bool is_shut_down_;
-
-  static void InitializeIdentifiers(BrowserInterface *browser_interface);
 };  // class SrtSocket
 
-}  // namespace nacl_srpc
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SRT_SOCKET_H_

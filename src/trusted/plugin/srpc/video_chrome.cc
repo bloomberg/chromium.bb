@@ -9,11 +9,9 @@
 // avoid multiple changes in many places in the code, we just provide this
 // dummy implementation.
 
-namespace nacl_srpc {
-  class Plugin;
-}
+namespace plugin {
 
-namespace nacl {
+class Plugin;
 
 void VideoGlobalLock() {
   return;
@@ -97,8 +95,7 @@ int16_t VideoMap::HandleEvent(void *param) {
   return 0;
 }
 
-nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
-    VideoMap::VideoSharedMemorySetup() {
+ScriptableHandle* VideoMap::VideoSharedMemorySetup() {
   return NULL;
 }
 
@@ -106,10 +103,9 @@ void VideoMap::Invalidate() {
   return;
 }
 
-// TODO(sehr): eliminating the nacl_srpc namespace will fix line length.
 VideoCallbackData* VideoMap::InitCallbackData(nacl::DescWrapper* desc,
                                               BrowserInterface *p,
-                                              nacl_srpc::MultimediaSocket *msp) {
+                                              MultimediaSocket *msp) {
   return NULL;
 }
 
@@ -144,4 +140,4 @@ VideoMap::VideoMap(BrowserInterface *browser_interface) {
 VideoMap::~VideoMap() {
 }
 
-}  // namespace nacl
+}  // namespace plugin

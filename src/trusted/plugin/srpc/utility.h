@@ -4,18 +4,20 @@
  * be found in the LICENSE file.
  */
 
+// A collection of debugging related interfaces.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_UTILITY_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_UTILITY_H_
 
 #include <setjmp.h>
 #include <signal.h>
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 
 #define SRPC_PLUGIN_DEBUG 1
 
-namespace nacl_srpc {
+namespace plugin {
 
 // CatchSignals encapsulates the setup and removal of application-defined
 // signal handlers.
@@ -40,7 +42,9 @@ class ScopedCatchSignals {
     signal(SIGPIPE, prev_pipe_handler_);
 #endif
   }
+
  private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ScopedCatchSignals);
   SigHandlerType prev_segv_handler_;
   SigHandlerType prev_ill_handler_;
 #ifndef _MSC_VER
@@ -64,22 +68,22 @@ class ScopedCatchSignals {
 extern int gNaClPluginDebugPrintEnabled;
 extern int NaClPluginDebugPrintCheckEnv();
 #if SRPC_PLUGIN_DEBUG
-#  define dprintf(args) do {                                          \
-    if (-1 == ::nacl_srpc::gNaClPluginDebugPrintEnabled) {            \
-      ::nacl_srpc::gNaClPluginDebugPrintEnabled =                     \
-          ::nacl_srpc::NaClPluginDebugPrintCheckEnv();                \
+#  define PLUGIN_PRINTF(args) do {                                    \
+    if (-1 == ::plugin::gNaClPluginDebugPrintEnabled) {               \
+      ::plugin::gNaClPluginDebugPrintEnabled =                        \
+          ::plugin::NaClPluginDebugPrintCheckEnv();                   \
     }                                                                 \
-    if (0 != ::nacl_srpc::gNaClPluginDebugPrintEnabled) {             \
+    if (0 != ::plugin::gNaClPluginDebugPrintEnabled) {                \
       printf("%08"NACL_PRIx32":", NaClThreadId());                    \
       printf args;                                                    \
       fflush(stdout);                                                 \
     }                                                                 \
   } while (0)
 #else
-#  define dprintf(args) do { if (0) { printf args; } } while (0)
+#  define PLUGIN_PRINTF(args) do { if (0) { printf args; } } while (0)
 /* allows DCE but compiler can still do format string checks */
 #endif
 
-}  // namespace nacl_srpc
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_UTILITY_H_

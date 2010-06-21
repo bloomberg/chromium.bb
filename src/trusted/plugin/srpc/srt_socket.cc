@@ -10,44 +10,48 @@
 #include "native_client/src/trusted/plugin/srpc/srt_socket.h"
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
-namespace nacl_srpc {
+namespace {
 
-uintptr_t SrtSocket::kHardShutdownIdent;
-uintptr_t SrtSocket::kSetOriginIdent;
-uintptr_t SrtSocket::kStartModuleIdent;
-uintptr_t SrtSocket::kLogIdent;
-uintptr_t SrtSocket::kLoadModule;
-uintptr_t SrtSocket::kInitHandlePassing;
+// Not really constants.  Do not modify.  Use only after at least
+// one SrtSocket instance has been constructed.
+uintptr_t kHardShutdownIdent;
+uintptr_t kSetOriginIdent;
+uintptr_t kStartModuleIdent;
+uintptr_t kLogIdent;
+uintptr_t kLoadModule;
+uintptr_t kInitHandlePassing;
 
 // NB: InitializeIdentifiers is not thread-safe.
-void SrtSocket::InitializeIdentifiers(
-    BrowserInterface* browser_interface) {
+void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
   static bool initialized = false;
 
-  UNREFERENCED_PARAMETER(browser_interface);
   if (!initialized) {  // branch likely
     kHardShutdownIdent =
-        BrowserInterface::GetStrIdentifierCallback("hard_shutdown");
+        browser_interface->StringToIdentifier("hard_shutdown");
     kSetOriginIdent =
-        BrowserInterface::GetStrIdentifierCallback("set_origin");
+        browser_interface->StringToIdentifier("set_origin");
     kStartModuleIdent =
-        BrowserInterface::GetStrIdentifierCallback("start_module");
-    kLogIdent = BrowserInterface::GetStrIdentifierCallback("log");
+        browser_interface->StringToIdentifier("start_module");
+    kLogIdent = browser_interface->StringToIdentifier("log");
     kLoadModule =
-        BrowserInterface::GetStrIdentifierCallback("load_module");
+        browser_interface->StringToIdentifier("load_module");
     kInitHandlePassing =
-        BrowserInterface::GetStrIdentifierCallback(
-            "init_handle_passing");
+        browser_interface->StringToIdentifier("init_handle_passing");
     initialized = true;
   }
 }
 
-SrtSocket::SrtSocket(ScriptableHandle<ConnectedSocket> *s,
+}  // namespace
+
+namespace plugin {
+
+SrtSocket::SrtSocket(ScriptableHandle* s,
                      BrowserInterface* browser_interface)
     : connected_socket_(s),
       browser_interface_(browser_interface),
@@ -63,11 +67,11 @@ SrtSocket::~SrtSocket() {
 
 bool SrtSocket::HardShutdown() {
   if (is_shut_down_) {
-    dprintf(("SrtSocket::HardShutdown: already shut down.\n"));
+    PLUGIN_PRINTF(("SrtSocket::HardShutdown: already shut down.\n"));
     return true;
   }
   if (!(connected_socket()->HasMethod(kHardShutdownIdent, METHOD_CALL))) {
-    dprintf(("No hard_shutdown method was found\n"));
+    PLUGIN_PRINTF(("No hard_shutdown method was found\n"));
     return false;
   }
   SrpcParams params;
@@ -81,8 +85,8 @@ bool SrtSocket::HardShutdown() {
   bool rpc_result = (connected_socket()->Invoke(kHardShutdownIdent,
                                                 METHOD_CALL,
                                                 &params));
-  dprintf(("SrtSocket::HardShutdown %s\n",
-           rpc_result ? "succeeded" : "failed"));
+  PLUGIN_PRINTF(("SrtSocket::HardShutdown %s\n",
+                 rpc_result ? "succeeded" : "failed"));
   if (rpc_result) {
     // invoke succeeded, so mark the module as shut down.
     is_shut_down_ = true;
@@ -92,7 +96,7 @@ bool SrtSocket::HardShutdown() {
 
 bool SrtSocket::SetOrigin(nacl::string origin) {
   if (!(connected_socket()->HasMethod(kSetOriginIdent, METHOD_CALL))) {
-    dprintf(("No set_origin method was found\n"));
+    PLUGIN_PRINTF(("No set_origin method was found\n"));
     return false;
   }
   SrpcParams params;
@@ -104,7 +108,7 @@ bool SrtSocket::SetOrigin(nacl::string origin) {
     return false;
   }
 
-  params.Input(0)->u.sval = strdup(origin.c_str());
+  params.ins()[0]->u.sval = strdup(origin.c_str());
   bool rpc_result = (connected_socket()->Invoke(kSetOriginIdent,
                                                 METHOD_CALL,
                                                 &params));
@@ -114,7 +118,7 @@ bool SrtSocket::SetOrigin(nacl::string origin) {
 
 bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
   if (!(connected_socket()->HasMethod(kLoadModule, METHOD_CALL))) {
-    dprintf(("No load_module method was found\n"));
+    PLUGIN_PRINTF(("No load_module method was found\n"));
     return false;
   }
   SrpcParams params;
@@ -126,7 +130,7 @@ bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
     return false;
   }
 
-  params.Input(0)->u.hval = desc;
+  params.ins()[0]->u.hval = desc;
 
   bool rpc_result = connected_socket()->Invoke(kLoadModule,
                                                METHOD_CALL,
@@ -134,10 +138,10 @@ bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
   return rpc_result;
 }
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
-bool SrtSocket::InitHandlePassing(NaClSrpcImcDescType desc,
+bool SrtSocket::InitHandlePassing(NaClDesc* desc,
                                   nacl::Handle sel_ldr_handle) {
   if (!(connected_socket()->HasMethod(kInitHandlePassing, METHOD_CALL))) {
-    dprintf(("No load_module method was found\n"));
+    PLUGIN_PRINTF(("No load_module method was found\n"));
     return false;
   }
   SrpcParams params;
@@ -163,9 +167,9 @@ bool SrtSocket::InitHandlePassing(NaClSrpcImcDescType desc,
     return false;
   }
 
-  params.Input(0)->u.hval = desc;
-  params.Input(1)->u.ival = my_pid;
-  params.Input(2)->u.ival = reinterpret_cast<int>(my_handle_in_selldr);
+  params.ins()[0]->u.hval = desc;
+  params.ins()[1]->u.ival = my_pid;
+  params.ins()[2]->u.ival = reinterpret_cast<int>(my_handle_in_selldr);
 
   bool rpc_result = connected_socket()->Invoke(kInitHandlePassing,
                                                METHOD_CALL,
@@ -177,7 +181,7 @@ bool SrtSocket::InitHandlePassing(NaClSrpcImcDescType desc,
 // make the start_module rpc
 bool SrtSocket::StartModule(int *load_status) {
   if (!(connected_socket()->HasMethod(kStartModuleIdent, METHOD_CALL))) {
-    dprintf(("No start_module method was found\n"));
+    PLUGIN_PRINTF(("No start_module method was found\n"));
     return false;
   }
   SrpcParams params;
@@ -192,10 +196,10 @@ bool SrtSocket::StartModule(int *load_status) {
                                                 METHOD_CALL,
                                                 &params);
   if (rpc_result) {
-    if (NACL_SRPC_ARG_TYPE_INT == params.Output(0)->tag) {
-      int status = params.Output(0)->u.ival;
-      dprintf(("StartModule: start_module RPC returned status code %d\n",
-               status));
+    if (NACL_SRPC_ARG_TYPE_INT == params.outs()[0]->tag) {
+      int status = params.outs()[0]->u.ival;
+      PLUGIN_PRINTF(("StartModule: start_module RPC returned status code %d\n",
+                     status));
       if (NULL != load_status) {
         *load_status = status;
       }
@@ -206,7 +210,7 @@ bool SrtSocket::StartModule(int *load_status) {
 
 bool SrtSocket::Log(int severity, nacl::string msg) {
   if (!connected_socket()->HasMethod(kLogIdent, METHOD_CALL)) {
-    dprintf(("No log method was found\n"));
+    PLUGIN_PRINTF(("No log method was found\n"));
     return false;
   }
   SrpcParams params;
@@ -217,12 +221,12 @@ bool SrtSocket::Log(int severity, nacl::string msg) {
   if (!success) {
     return false;
   }
-  params.Input(0)->u.ival = severity;
-  params.Input(1)->u.sval = strdup(msg.c_str());
+  params.ins()[0]->u.ival = severity;
+  params.ins()[1]->u.sval = strdup(msg.c_str());
   bool rpc_result = (connected_socket()->Invoke(kLogIdent,
                                                 METHOD_CALL,
                                                 &params));
   return rpc_result;
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

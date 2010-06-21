@@ -1,14 +1,14 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2010 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
 
 
-// Portable interface for browser interaction
+// NPAPI implementation of the interface to call browser functionality.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_BROWSER_IMPL_NPAPI_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_BROWSER_IMPL_NPAPI_H_
 
 #include <stdio.h>
 #include <map>
@@ -18,6 +18,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 
 namespace nacl {
 
@@ -27,49 +28,46 @@ class NPModule;
 
 namespace plugin {
 
-class ScriptableHandle;
-class PortableHandle;
-
-// BrowserInterface represents the interface to the browser from
-// the plugin, independent of whether it is the ActiveX or NPAPI instance.
-// I.e., when the plugin needs to request an alert, it uses these interfaces.
-class BrowserInterface {
+class BrowserImplNpapi : public BrowserInterface {
  public:
-  virtual ~BrowserInterface() { }
+  BrowserImplNpapi() {}
+  virtual ~BrowserImplNpapi() {}
 
   // Functions for communication with the browser.
-  virtual uintptr_t StringToIdentifier(const nacl::string& str) = 0;
+  virtual uintptr_t StringToIdentifier(const nacl::string& str);
   // Convert an identifier to a string.
-  virtual nacl::string IdentifierToString(uintptr_t ident) = 0;
+  virtual nacl::string IdentifierToString(uintptr_t ident);
 
   // Pops up an alert box.  Returns false if that failed for any reason.
   virtual bool Alert(InstanceIdentifier instance_id,
-                     const nacl::string& text) = 0;
+                     const nacl::string& text);
 
   // Returns true iff |filename| appears to be a valid ELF file;
   // returns an informative error message otherwise.
   virtual bool MightBeElfExecutable(const nacl::string& filename,
-                                    nacl::string* error) = 0;
+                                    nacl::string* error);
 
   // Returns true iff the first |size| bytes of |buffer| appear to be
   // a valid ELF file; returns an informative error message otherwise.
   virtual bool MightBeElfExecutable(const char* buffer,
                                     size_t size,
-                                    nacl::string* error) = 0;
+                                    nacl::string* error);
 
   // Evaluate a JavaScript string in the browser.
   virtual bool EvalString(InstanceIdentifier plugin_identifier,
-                          const nacl::string& str) = 0;
+                          const nacl::string& handler_string);
 
   // Gets the origin of current page.
   virtual bool GetOrigin(InstanceIdentifier instance_id,
-                         nacl::string* origin) = 0;
+                         nacl::string* origin);
 
   // Creates a browser scriptable handle for a given portable handle.
-  // If handle is NULL, returns NULL.
-  virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle) = 0;
+  virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BrowserImplNpapi);
 };
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_BROWSER_IMPL_NPAPI_H_

@@ -1,6 +1,8 @@
-// Copyright (c) 2008 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 // NaCl-NPAPI Interface
 
@@ -18,6 +20,10 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/plugin/npapi/npinstance.h"
+#ifndef __native_client__
+#include "native_client/src/trusted/plugin/api_defines.h"
+#include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
+#endif  // __native_client__
 
 namespace nacl {
 // Incomplete class declarations.
@@ -60,8 +66,8 @@ class NPBridge {
     if (NULL == npp->pdata) {
       return NULL;
     }
-    return reinterpret_cast<NPBridge*>(
-        (reinterpret_cast<NPInstance*>(npp->pdata))->module());
+    plugin::PluginNpapi* plugin = static_cast<plugin::PluginNpapi*>(npp->pdata);
+    return reinterpret_cast<NPBridge*>(plugin->module());
 #endif
   }
 

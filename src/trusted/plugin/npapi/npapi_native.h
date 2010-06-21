@@ -5,31 +5,26 @@
  */
 
 
-#ifndef NATIVE_CLIENT_NPAPI_PLUGIN_SRPC_NPAPI_NATIVE_H_
-#define NATIVE_CLIENT_NPAPI_PLUGIN_SRPC_NPAPI_NATIVE_H_
+#ifndef NATIVE_CLIENT_NPAPI_PLUGIN_NPAPI_NPAPI_NATIVE_H_
+#define NATIVE_CLIENT_NPAPI_PLUGIN_NPAPI_NPAPI_NATIVE_H_
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/ret_array.h"
+#include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
+#include "native_client/src/trusted/plugin/npapi/ret_array.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 #ifndef SIZE_T_MAX
 # define SIZE_T_MAX (~((size_t) 0))
 #endif  // SIZE_T_MAX
 
-namespace nacl_srpc {
-
-// Extern class declaration.
-class Plugin;
-template <typename HandleType>
-class ScriptableHandle;
+namespace plugin {
 
 // A utility method that gets the length value from an array NPVariant.
 // It returns true if the NPVariant is an array, false otherwise.
 extern bool NPVariantObjectLength(const NPVariant* variant,
-                                  PluginIdentifier npp,
+                                  InstanceIdentifier npp,
                                   uint32_t* length);
 
 // ScalarToNPVariant converts a given native type to an NPVariant.
@@ -40,12 +35,32 @@ template<typename T> bool ScalarToNPVariant(T value, NPVariant* var) {
   return true;
 }
 
-template<> bool ScalarToNPVariant<bool>(bool value, NPVariant* var);
-template<> bool ScalarToNPVariant<double>(double value, NPVariant* var);
-template<> bool ScalarToNPVariant<char*>(char* value, NPVariant* var);
-template<> bool ScalarToNPVariant<const char*>(const char* value,
-                                               NPVariant* var);
-template<> bool ScalarToNPVariant<NPObject*>(NPObject* value, NPVariant* var);
+bool ScalarToNPVariant(bool value, NPVariant* var);
+bool ScalarToNPVariant(double value, NPVariant* var);
+bool ScalarToNPVariant(char* value, NPVariant* var);
+bool ScalarToNPVariant(const char* value, NPVariant* var);
+bool ScalarToNPVariant(NPObject* value, NPVariant* var);
+
+template<typename T> bool ArrayToNPVariant(T* array,
+                                           uint32_t length,
+                                           InstanceIdentifier instance_id,
+                                           NPVariant* value) {
+  // Create an array object that can be indexed from NPAPI.
+  RetArray nparray(instance_id);
+  // Create an object for the elements of the array.
+  NPVariant element;
+  for (uint32_t i = 0; i < length; ++i) {
+    // Convert the element, failing if types don't conform correctly.
+    if (!ScalarToNPVariant(array[i], &element)) {
+      return false;
+    }
+    // Move the element into the array.
+    nparray.SetAt(i, &element);
+  }
+  // Set the value to return the array.
+  nparray.ExportVariant(value);
+  return true;
+}
 
 // NPVariantToScalar extracts a scalar value of the template type from
 // an NPVariant value.  If the type of the NPVariant is compatible, it
@@ -68,14 +83,10 @@ template<typename T> bool NPVariantToScalar(const NPVariant* var,
   }
 }
 
-/*
-template<> bool NPVariantToScalar<NaClDesc*>(const NPVariant* var,
-                                             NaClDesc** value);
-                                             */
-template<> bool NPVariantToScalar<bool>(const NPVariant* var, bool* b);
-template<> bool NPVariantToScalar<char*>(const NPVariant* var, char** s);
-template<> bool NPVariantToScalar<NPObject*>(const NPVariant* var,
-                                             NPObject** obj);
+bool NPVariantToScalar(const NPVariant* var, NaClDesc** value);
+bool NPVariantToScalar(const NPVariant* var, bool* b);
+bool NPVariantToScalar(const NPVariant* var, char** s);
+bool NPVariantToScalar(const NPVariant* var, NPObject** obj);
 
 // NPVariantToArray extracts an array value of the template type from
 // an NPVariant value.  If the type of the NPVariant is compatible, it
@@ -83,7 +94,7 @@ template<> bool NPVariantToScalar<NPObject*>(const NPVariant* var,
 // to zero and returns false.
 template<typename T> bool NPVariantToArray(
     const NPVariant* nparg,
-    PluginIdentifier npp,
+    InstanceIdentifier npp,
     uint32_t* array_length,
     T* array_data) {
   // Initialize result values for error cases.
@@ -185,6 +196,6 @@ template<typename T> bool NPVariantToAllocatedArray(const NPVariant* var,
   return true;
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin
 
-#endif  // NATIVE_CLIENT_NPAPI_PLUGIN_SRPC_NPAPI_NATIVE_H_
+#endif  // NATIVE_CLIENT_NPAPI_PLUGIN_NPAPI_NPAPI_NATIVE_H_

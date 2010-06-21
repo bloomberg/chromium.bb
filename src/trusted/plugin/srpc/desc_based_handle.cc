@@ -11,75 +11,87 @@
 
 #include <map>
 
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
+#include "native_client/src/trusted/plugin/srpc/plugin.h"
 
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
-namespace nacl_srpc {
+namespace {
 
-  int DescBasedHandle::number_alive_counter = 0;
+bool Map(void* obj, plugin::SrpcParams* params) {
+  plugin::DescBasedHandle *ptr =
+      reinterpret_cast<plugin::DescBasedHandle*>(obj);
+  // Create a copy of the wrapper to go on the SharedMemory object.
+  nacl::DescWrapper* shm_wrapper =
+      ptr->plugin()->wrapper_factory()->MakeGeneric(ptr->wrapper()->desc());
+  // Increment the ref count of the contained object.
+  NaClDescRef(shm_wrapper->desc());
 
-  DescBasedHandle::DescBasedHandle(): plugin_(NULL),
-                                      wrapper_(NULL) {
-    dprintf(("DescBasedHandle::DescBasedHandle(%p, %d)\n",
-             static_cast<void *>(this),
-             ++number_alive_counter));
+  plugin::SharedMemory* portable_shared_memory =
+      plugin::SharedMemory::New(ptr->plugin(), shm_wrapper);
+  plugin::ScriptableHandle* shared_memory =
+    ptr->plugin()->browser_interface()->NewScriptableHandle(
+        portable_shared_memory);
+  if (NULL == shared_memory) {
+    return false;
   }
+  PLUGIN_PRINTF(("ScriptableHandle::Invoke: new returned %p\n",
+                 static_cast<void *>(shared_memory)));
+  params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
+  params->outs()[0]->u.oval =
+      static_cast<plugin::ScriptableHandle*>(shared_memory);
+  return true;
+}
 
-  DescBasedHandle::~DescBasedHandle() {
-    dprintf(("DescBasedHandle::~DescBasedHandle(%p, %d)\n",
-             static_cast<void *>(this),
-             --number_alive_counter));
-    if (NULL != wrapper_) {
-      wrapper_->Delete();
-      wrapper_ = NULL;
-    }
-  }
+}  // namespace
 
-  bool DescBasedHandle::Init(struct PortableHandleInitializer* init_info) {
-    if (!PortableHandle::Init(init_info)) {
-      return false;
-    }
-    DescHandleInitializer *desc_init_info =
-        static_cast<DescHandleInitializer*>(init_info);
-    wrapper_ = desc_init_info->wrapper_;
-    plugin_ = desc_init_info->plugin_;
-    LoadMethods();
-    return true;
-  }
+namespace plugin {
 
-  void DescBasedHandle::LoadMethods() {
-    // the only method supported by PortableHandle
-    AddMethodToMap(Map, "map", METHOD_CALL, "", "h");
-  }
+DescBasedHandle::DescBasedHandle(): plugin_(NULL),
+                                    wrapper_(NULL) {
+  PLUGIN_PRINTF(("DescBasedHandle::DescBasedHandle(%p)\n",
+                 static_cast<void *>(this)));
+}
 
-  bool DescBasedHandle::Map(void* obj, SrpcParams* params) {
-    DescBasedHandle *ptr = reinterpret_cast<DescBasedHandle*>(obj);
-    // Create a copy of the wrapper to go on the SharedMemory object.
-    nacl::DescWrapper* shm_wrapper =
-        ptr->plugin_->wrapper_factory()->MakeGeneric(ptr->wrapper_->desc());
-    // Increment the ref count of the contained object.
-    NaClDescRef(shm_wrapper->desc());
-    struct SharedMemoryInitializer init_info(ptr->GetBrowserInterface(),
-        shm_wrapper, ptr->plugin_);
-
-    ScriptableHandle<SharedMemory>* shared_memory =
-      ScriptableHandle<SharedMemory>::New(
-          static_cast<PortableHandleInitializer*>(&init_info));
-    if (NULL == shared_memory) {
-      return false;
-    }
-    dprintf(("ScriptableHandle::Invoke: new returned %p\n",
-             static_cast<void *>(shared_memory)));
-    params->outs[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-    params->outs[0]->u.oval =
-        static_cast<BrowserScriptableObject*>(shared_memory);
-    return true;
-  }
-
-  Plugin* DescBasedHandle::GetPlugin() {
-    return plugin_;
+DescBasedHandle::~DescBasedHandle() {
+  PLUGIN_PRINTF(("DescBasedHandle::~DescBasedHandle(%p)\n",
+                 static_cast<void *>(this)));
+  if (NULL != wrapper_) {
+    wrapper_->Delete();
+    wrapper_ = NULL;
   }
 }
+
+DescBasedHandle* DescBasedHandle::New(Plugin* plugin,
+                                      nacl::DescWrapper* wrapper) {
+  PLUGIN_PRINTF(("DescBasedHandle::New()\n"));
+
+  DescBasedHandle* desc_based_handle = new(std::nothrow) DescBasedHandle();
+
+  if (desc_based_handle == NULL || !desc_based_handle->Init(plugin, wrapper)) {
+    return NULL;
+  }
+
+  return desc_based_handle;
+}
+
+bool DescBasedHandle::Init(Plugin* plugin, nacl::DescWrapper* wrapper) {
+  plugin_ = plugin;
+  wrapper_ = wrapper;
+  LoadMethods();
+  return true;
+}
+
+BrowserInterface* DescBasedHandle::browser_interface() const {
+  return plugin_->browser_interface();
+}
+
+void DescBasedHandle::LoadMethods() {
+  // Methods supported by DescBasedHandle.
+  AddMethodCall(Map, "map", "", "h");
+}
+
+}  // namespace plugin

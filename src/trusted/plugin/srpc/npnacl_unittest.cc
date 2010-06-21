@@ -4,16 +4,14 @@
  * be found in the LICENSE file.
  */
 
-/* TODO(sehr): move this file to use _ rather than - in it's name. */
-
 #include <dlfcn.h>
 #include <stdio.h>
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
-void* dl_handle;
+void* g_DlHandle;
 
 void* GetSymbolHandle(const char* name) {
-  void*  sym_handle = dlsym(dl_handle, name);
+  void*  sym_handle = dlsym(g_DlHandle, name);
   char*  error_string = dlerror();
   if (!sym_handle || error_string) {
     fprintf(stderr, "Couldn't get symbol %s: %s\n", name, error_string);
@@ -54,9 +52,9 @@ bool TestInitialize() {
 }
 
 bool TestEntryPoints() {
-  typedef NPError (*FP)(NPPluginFuncs*);
+  typedef NPError (*FP)(NPPluginFuncs* funcs);
   FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_GetEntryPoints"));
-  if (!func) {
+  if (NULL == func) {
     return false;
   }
   NPPluginFuncs plugin_funcs;
@@ -70,7 +68,7 @@ bool TestEntryPoints() {
 bool TestShutdown() {
   typedef NPError (*FP)(void);
   FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_Shutdown"));
-  if (!func) {
+  if (NULL == func) {
     return false;
   }
   if (NPERR_NO_ERROR != (*func)()) {
@@ -86,8 +84,8 @@ int main(int argc, char** argv) {
     return 1;
   }
   // Test opening the .so
-  dl_handle = dlopen(argv[1], RTLD_NOW);
-  if (!dl_handle) {
+  g_DlHandle = dlopen(argv[1], RTLD_NOW);
+  if (NULL == g_DlHandle) {
     fprintf(stderr, "Couldn't open: %s\n", dlerror());
     return 1;
   }
@@ -99,7 +97,7 @@ int main(int argc, char** argv) {
      TestShutdown());
 
   // Test closing the .so
-  if (dlclose(dl_handle)) {
+  if (dlclose(g_DlHandle)) {
     fprintf(stderr, "Couldn't close: %s\n", dlerror());
     return 1;
   }

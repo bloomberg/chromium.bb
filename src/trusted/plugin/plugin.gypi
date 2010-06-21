@@ -35,29 +35,33 @@
       # Currently this results inlink time symbol clashes
       '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/np_entry.cc',
       '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/npn_gate.cc',
+      # NPAPI specific code
+      'npapi/browser_impl_npapi.cc',
+      'npapi/npapi_native.cc',
       'npapi/npp_gate.cc',
       'npapi/npp_launcher.cc',
-      # SRPC support
-      'srpc/browser_impl_npapi.cc',
+      'npapi/plugin_npapi.cc',
+      'npapi/ret_array.cc',
+      'npapi/scriptable_impl_npapi.cc',
+      # generic URL-origin / same-domain handling
+      'origin.cc',
+      # Portable plugin code
       'srpc/closure.cc',
       'srpc/connected_socket.cc',
       'srpc/desc_based_handle.cc',
       'srpc/method_map.cc',
       'srpc/multimedia_socket.cc',
       'srpc/nexe_arch.cc',
-      'srpc/npapi_native.cc',
       'srpc/plugin.cc',
       'srpc/portable_handle.cc',
-      'srpc/ret_array.cc',
       'srpc/service_runtime_interface.cc',
       'srpc/shared_memory.cc',
       'srpc/socket_address.cc',
-      'srpc/srpc.cc',
       'srpc/srpc_client.cc',
       'srpc/srt_socket.cc',
+      'srpc/scriptable_handle.cc',
+      'srpc/stream_shm_buffer.cc',
       'srpc/utility.cc',
-      # generic URL-origin / same-domain handling
-      'origin.cc',
     ],
   },
   'includes': [
@@ -87,6 +91,10 @@
         ],
         'cflags': [
           '-Wno-long-long',
+        ],
+        'sources': [
+          'osx/open_mac_file.cc',
+          'osx/open_mac_file.h',
         ],
         'link_settings': {
           'libraries': [

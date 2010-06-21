@@ -7,15 +7,12 @@
 #include "native_client/src/trusted/plugin/srpc/nexe_arch.h"
 
 #include <stdio.h>
-#include <string>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
-using std::string;
-
-namespace nacl_srpc {
+namespace plugin {
 
 // Returns the kind of SFI sandbox implemented by sel_ldr on this
 // platform: ARM, x86-32, x86-64.
@@ -30,11 +27,11 @@ namespace nacl_srpc {
 // TODO(adonovan): this function changes over time as we deploy
 // different things.  It should be defined once, authoritatively,
 // instead of guessed at where it's needed, e.g. here.
-static string GetSandbox();
+static nacl::string GetSandbox();
 
 #if NACL_ARCH_CPU_X86_FAMILY
 
-static string GetSandbox() {
+static nacl::string GetSandbox() {
 #if !defined(NACL_STANDALONE) && NACL_ARCH_CPU_X86_64 && NACL_LINUX
   return "x86-64";  // 64-bit Chrome on Linux
 #else
@@ -46,7 +43,7 @@ static string GetSandbox() {
 
 #elif NACL_ARCH_CPU_ARM_FAMILY
 
-static string GetSandbox() { return "ARM"; }
+static nacl::string GetSandbox() { return "ARM"; }
 
 #else /* hopefully unreachable */
 
@@ -55,29 +52,31 @@ static string GetSandbox() { return "ARM"; }
 #endif
 
 // Removes leading and trailing ASCII whitespace from |*s|.
-static string TrimWhitespace(const string& s) {
+static nacl::string TrimWhitespace(const nacl::string& s) {
   size_t start = s.find_first_not_of(" \t");
   size_t end = s.find_last_not_of(" \t");
-  return start == string::npos
+  return start == nacl::string::npos
       ? ""
       : s.substr(start, end + 1 - start);
 }
 
 // Parse one line of the nexes attribute.
 // Returns true iff it's a match, and writes URL to |*url|.
-static bool ParseOneNexeLine(const string& nexe_line,
-                             const string& sandbox,
-                             string* url) {
+static bool ParseOneNexeLine(const nacl::string& nexe_line,
+                             const nacl::string& sandbox,
+                             nacl::string* url) {
   size_t semi = nexe_line.find(':');
-  if (semi == string::npos) {
-    dprintf(("missing colon in line of 'nexes' attribute"));
+  if (semi == nacl::string::npos) {
+    PLUGIN_PRINTF(("missing colon in line of 'nexes' attribute"));
     return false;
   }
-  string attr_sandbox = TrimWhitespace(nexe_line.substr(0, semi));
-  string attr_url = TrimWhitespace(nexe_line.substr(semi + 1));
+  nacl::string attr_sandbox = TrimWhitespace(nexe_line.substr(0, semi));
+  nacl::string attr_url = TrimWhitespace(nexe_line.substr(semi + 1));
   bool match = sandbox == attr_sandbox;
-  dprintf(("ParseOneNexeLine %s %s: match=%d\n",
-           attr_sandbox.c_str(), attr_url.c_str(), match));
+  PLUGIN_PRINTF(("ParseOneNexeLine %s %s: match=%d\n",
+                 attr_sandbox.c_str(),
+                 attr_url.c_str(),
+                 match));
   if (match) *url = attr_url;
   return match;
 }
@@ -91,12 +90,12 @@ static bool ParseOneNexeLine(const string& nexe_line,
 //
 // Spaces surrounding <sandbox> and <nexe-url> are ignored, but
 // <nexe-url> may contain internal spaces.
-static bool FindNexeForSandbox(const string& nexes_attr,
-                               const string& sandbox,
-                               string* url) {
+static bool FindNexeForSandbox(const nacl::string& nexes_attr,
+                               const nacl::string& sandbox,
+                               nacl::string* url) {
   size_t pos, oldpos;
   for (oldpos = 0, pos = nexes_attr.find('\n', oldpos);
-       pos != string::npos;
+       pos != nacl::string::npos;
        oldpos = pos +  1, pos = nexes_attr.find('\n', oldpos)) {
     if (ParseOneNexeLine(nexes_attr.substr(oldpos, pos - oldpos), sandbox,
                          url)) {
@@ -111,14 +110,14 @@ static bool FindNexeForSandbox(const string& nexes_attr,
 
 // See nexe_arch.h.
 // An entry point for testing.
-bool GetNexeURL(const char* nexes_attr, string* result) {
-  const string sandbox = GetSandbox();
-  dprintf(("GetNexeURL(): sandbox='%s' nexes='%s'.\n",
-           sandbox.c_str(), nexes_attr));
+bool GetNexeURL(const char* nexes_attr, nacl::string* result) {
+  const nacl::string sandbox = GetSandbox();
+  PLUGIN_PRINTF(("GetNexeURL(): sandbox='%s' nexes='%s'.\n",
+                 sandbox.c_str(), nexes_attr));
   if (FindNexeForSandbox(nexes_attr, sandbox, result)) return true;
   *result = "No Native Client executable was provided for the " + sandbox
       + " sandbox.";
   return false;
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

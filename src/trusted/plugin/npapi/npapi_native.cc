@@ -8,9 +8,10 @@
 #include <string.h>
 
 #include "native_client/src/include/checked_cast.h"
+#include "native_client/src/trusted/plugin/npapi/npapi_native.h"
+#include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/npapi_native.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 using nacl::assert_cast;
@@ -22,28 +23,27 @@ using nacl::assert_cast;
   (_v).value.stringValue = str;                                 \
   NP_END_MACRO
 
-namespace nacl_srpc {
+namespace plugin {
 
-// Specializations for ScalarToNPVariant -- to avoid multiply defined issue
+// Overloads for ScalarToNPVariant -- to avoid multiply defined issue
 // when they are placed in the header.
-template<> bool ScalarToNPVariant<bool>(bool value, NPVariant* var) {
+bool ScalarToNPVariant(bool value, NPVariant* var) {
   // Boolean specialization always succeeds.
   BOOLEAN_TO_NPVARIANT(value, *var);
   return true;
 }
 
-template<> bool ScalarToNPVariant<double>(double value, NPVariant* var) {
+bool ScalarToNPVariant(double value, NPVariant* var) {
   // Double specialization always succeeds.
   DOUBLE_TO_NPVARIANT(value, *var);
   return true;
 }
 
-template<> bool ScalarToNPVariant<char*>(char* value, NPVariant* var) {
-  return ScalarToNPVariant<const char*>(static_cast<const char*>(value), var);
+bool ScalarToNPVariant(char* value, NPVariant* var) {
+  return ScalarToNPVariant(static_cast<const char*>(value), var);
 }
 
-template<> bool ScalarToNPVariant<const char*>(const char* value,
-                                               NPVariant* var) {
+bool ScalarToNPVariant(const char* value, NPVariant* var) {
   // Initialize return value for failure cases.
   VOID_TO_NPVARIANT(*var);
   if (NULL == value) {
@@ -60,34 +60,33 @@ template<> bool ScalarToNPVariant<const char*>(const char* value,
   return true;
 }
 
-template<> bool ScalarToNPVariant<NPObject*>(NPObject* value, NPVariant* var) {
+bool ScalarToNPVariant(NPObject* value, NPVariant* var) {
   // NPObject specialization always succeeds.
   OBJECT_TO_NPVARIANT(value, *var);
   return true;
 }
 
-// Specializations for NPVariantToScalar -- to avoid multiply defined issue
+// Overloads for NPVariantToScalar -- to avoid multiply defined issue
 // when they are placed in the header.
-template<> bool NPVariantToScalar<NaClDesc*>(const NPVariant* var,
-                                             NaClDesc** value) {
+bool NPVariantToScalar(const NPVariant* var, NaClDesc** value) {
   // Initialize return value for failure cases.
   *value = NULL;
   if (!NPVARIANT_IS_OBJECT(*var)) {
     return false;
   }
   NPObject* obj = NPVARIANT_TO_OBJECT(*var);
-  ScriptableHandleBase* scriptable_base =
-    static_cast<ScriptableHandleBase*>(obj);
+  ScriptableImplNpapi* scriptable_handle =
+      static_cast<ScriptableImplNpapi*>(obj);
   // This function is called only when we are dealing with a DescBasedHandle
   DescBasedHandle *desc_handle =
-    static_cast<DescBasedHandle*>(scriptable_base->get_handle());
+      static_cast<DescBasedHandle*>(scriptable_handle->handle());
 
   // Make result available to the caller.
   *value = desc_handle->desc();
   return true;
 }
 
-template<> bool NPVariantToScalar<bool>(const NPVariant* var, bool* b) {
+bool NPVariantToScalar(const NPVariant* var, bool* b) {
   *b = false;
   if (!NPVARIANT_IS_BOOLEAN(*var)) {
     return false;
@@ -96,7 +95,7 @@ template<> bool NPVariantToScalar<bool>(const NPVariant* var, bool* b) {
   return true;
 }
 
-template<> bool NPVariantToScalar<char*>(const NPVariant* var, char** s) {
+bool NPVariantToScalar(const NPVariant* var, char** s) {
   // Initialize return value for failure cases.
   *s = NULL;
   if (!NPVARIANT_IS_STRING(*var)) {
@@ -117,8 +116,7 @@ template<> bool NPVariantToScalar<char*>(const NPVariant* var, char** s) {
   return true;
 }
 
-template<> bool NPVariantToScalar<NPObject*>(const NPVariant* var,
-                                             NPObject** obj) {
+bool NPVariantToScalar(const NPVariant* var, NPObject** obj) {
   // Initialize return value for failure cases.
   *obj = NULL;
   // Check that the variant is in fact an object.
@@ -131,7 +129,7 @@ template<> bool NPVariantToScalar<NPObject*>(const NPVariant* var,
 }
 
 // Utility function to get the property of an object.
-static bool GetNPObjectProperty(nacl_srpc::PluginIdentifier npp,
+static bool GetNPObjectProperty(InstanceIdentifier npp,
                                 const NPVariant* variant,
                                 NPIdentifier ident,
                                 NPVariant* value) {
@@ -154,7 +152,7 @@ static bool GetNPObjectProperty(nacl_srpc::PluginIdentifier npp,
 
 // Utility function to get the length property of an array object.
 bool NPVariantObjectLength(const NPVariant* variant,
-                           nacl_srpc::PluginIdentifier npp,
+                           InstanceIdentifier npp,
                            uint32_t* length) {
   // Initialize the length for error returns.
   *length = 0;
@@ -162,7 +160,7 @@ bool NPVariantObjectLength(const NPVariant* variant,
   NPVariant nplength;
   if (!GetNPObjectProperty(npp,
                            variant,
-                           (NPIdentifier)BrowserInterface::kLengthIdent,
+                           PluginNpapi::kLengthIdent,
                            &nplength)) {
     return false;
   }
@@ -184,4 +182,4 @@ bool NPVariantObjectLength(const NPVariant* variant,
   return true;
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

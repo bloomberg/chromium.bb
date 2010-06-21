@@ -8,7 +8,7 @@
 
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
-namespace nacl_srpc {
+namespace plugin {
 
 int gNaClPluginDebugPrintEnabled = -1;
 
@@ -18,8 +18,8 @@ int gNaClPluginDebugPrintEnabled = -1;
  * of verbosity level.
  */
 int NaClPluginDebugPrintCheckEnv() {
-  char *env = getenv("NACL_PLUGIN_DEBUG");
+  char* env = getenv("NACL_PLUGIN_DEBUG");
   return (NULL != env);
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

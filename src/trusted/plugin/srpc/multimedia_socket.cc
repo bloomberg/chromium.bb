@@ -16,6 +16,7 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
@@ -23,25 +24,29 @@
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/trusted/plugin/srpc/video.h"
 
-namespace nacl_srpc {
+namespace {
 
-uintptr_t MultimediaSocket::kNaClMultimediaBridgeIdent;
+uintptr_t kNaClMultimediaBridgeIdent;
+
+int const kMaxUpcallThreadWaitSec = 5;
+int const kNanoXinMicroX = 1000;
 
 // NB: InitializeIdentifiers is not thread-safe.
-void MultimediaSocket::InitializeIdentifiers(
-    BrowserInterface *browser_interface) {
+void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
   static bool identifiers_initialized = false;
 
-  UNREFERENCED_PARAMETER(browser_interface);
   if (!identifiers_initialized) {
     kNaClMultimediaBridgeIdent =
-        BrowserInterface::GetStrIdentifierCallback(
-          "nacl_multimedia_bridge");
+        browser_interface->StringToIdentifier("nacl_multimedia_bridge");
     identifiers_initialized = true;
   }
 }
 
-MultimediaSocket::MultimediaSocket(ScriptableHandle<ConnectedSocket>* s,
+}  // namespace
+
+namespace plugin {
+
+MultimediaSocket::MultimediaSocket(ScriptableHandle* s,
                                    BrowserInterface* browser_interface,
                                    ServiceRuntimeInterface* sri)
     : connected_socket_(s),
@@ -62,32 +67,32 @@ MultimediaSocket::~MultimediaSocket() {
   struct nacl_abi_timespec giveup;
   bool murdered(false);
 
-  dprintf(("MultimediaSocket::~MultimediaSocket: entered\n"));
+  PLUGIN_PRINTF(("MultimediaSocket::~MultimediaSocket: entered\n"));
   NaClXMutexLock(&mu_);
   if (NULL == getenv("NACLTEST_DISABLE_SHUTDOWN")) {
     upcall_thread_should_exit_ = true;
-    dprintf((" set flag to tell upcall thread to exit.\n"));
+    PLUGIN_PRINTF((" set flag to tell upcall thread to exit.\n"));
   } else {
-    dprintf((" NOT telling upcall thread to exit.\n"));
+    PLUGIN_PRINTF((" NOT telling upcall thread to exit.\n"));
   }
-  dprintf((" upcall_thread_state_ %d\n", upcall_thread_state_));
+  PLUGIN_PRINTF((" upcall_thread_state_ %d\n", upcall_thread_state_));
   if (UPCALL_THREAD_NOT_STARTED != (ts = upcall_thread_state_)) {
-    dprintf((" computing giveup time.\n"));
+    PLUGIN_PRINTF((" computing giveup time.\n"));
     NaClGetTimeOfDay(&now);
     giveup.tv_sec = now.nacl_abi_tv_sec + kMaxUpcallThreadWaitSec;
     giveup.tv_nsec = now.nacl_abi_tv_usec * kNanoXinMicroX;
     while (UPCALL_THREAD_EXITED != upcall_thread_state_) {
-      dprintf(("MultimediaSocket::~MultimediaSocket:"
-               " waiting for upcall thread to exit\n"));
+      PLUGIN_PRINTF(("MultimediaSocket::~MultimediaSocket:"
+                     " waiting for upcall thread to exit\n"));
       if (!murdered) {
         if (NACL_SYNC_CONDVAR_TIMEDOUT ==
             NaClCondVarTimedWaitAbsolute(&cv_, &mu_, &giveup)) {
-          dprintf(("MultimediaSocket::~MultimediaSocket:"
-                   " timed out, killing service runtime process\n"));
+          PLUGIN_PRINTF(("MultimediaSocket::~MultimediaSocket:"
+                         " timed out, killing service runtime process\n"));
           if (!service_runtime_->Kill()) {
             // We try our best, but if KillChild fails, we just keep
             // going.
-            dprintf(("Could not kill child!\n"));
+            PLUGIN_PRINTF(("Could not kill child!\n"));
           }
           murdered = true;
         }
@@ -105,7 +110,7 @@ MultimediaSocket::~MultimediaSocket() {
   }
   NaClCondVarDtor(&cv_);
   NaClMutexDtor(&mu_);
-  dprintf(("MultimediaSocket::~MultimediaSocket: done.\n"));
+  PLUGIN_PRINTF(("MultimediaSocket::~MultimediaSocket: done.\n"));
 }
 
 void MultimediaSocket::UpcallThreadExiting() {
@@ -124,29 +129,29 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
   UNREFERENCED_PARAMETER(outs);
   ret = NACL_SRPC_RESULT_BREAK;
   if (channel) {
-    nacl::VideoScopedGlobalLock video_lock;
-    nacl::VideoCallbackData *video_cb_data;
-    BrowserInterface *browser_interface;
-    MultimediaSocket *msp;
+    VideoScopedGlobalLock video_lock;
+    VideoCallbackData* video_cb_data;
+    Plugin* portable_plugin;
+    MultimediaSocket* msp;
 
-    dprintf(("Upcall: channel %p\n", static_cast<void *>(channel)));
-    dprintf(("Upcall: server_instance_data %p\n",
-             static_cast<void *>(channel->server_instance_data)));
-    video_cb_data = reinterpret_cast<nacl::VideoCallbackData*>
+    PLUGIN_PRINTF(("Upcall: channel %p\n", static_cast<void*>(channel)));
+    PLUGIN_PRINTF(("Upcall: server_instance_data %p\n",
+                   static_cast<void*>(channel->server_instance_data)));
+    video_cb_data = reinterpret_cast<VideoCallbackData*>
         (channel->server_instance_data);
-    browser_interface = video_cb_data->portable_plugin;
-    if (NULL != browser_interface) {
-      nacl::VideoMap *video = browser_interface->video();
+    portable_plugin = video_cb_data->portable_plugin;
+    if (NULL != portable_plugin) {
+      VideoMap* video = portable_plugin->video();
       if (video) {
         video->RequestRedraw();
       }
       ret = NACL_SRPC_RESULT_OK;
     } else if (NULL != getenv("NACLTEST_DISABLE_SHUTDOWN")) {
-      dprintf(("Upcall: SrpcPlugin dtor invoked VideoMap dtor, but pretending"
-               " that the channel is okay for testing\n"));
+      PLUGIN_PRINTF(("Upcall: SrpcPlugin dtor invoked VideoMap dtor,"
+                     "but pretending that the channel is okay for testing\n"));
       ret = NACL_SRPC_RESULT_OK;
     } else {
-      dprintf(("Upcall: plugin was NULL\n"));
+      PLUGIN_PRINTF(("Upcall: plugin was NULL\n"));
     }
     msp = video_cb_data->msp;
     if (NULL != msp) {
@@ -156,11 +161,11 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
     }
   }
   if (NACL_SRPC_RESULT_OK == ret) {
-    dprintf(("Upcall: success\n"));
+    PLUGIN_PRINTF(("Upcall: success\n"));
   } else if (NACL_SRPC_RESULT_BREAK == ret) {
-    dprintf(("Upcall: break detected, thread exiting\n"));
+    PLUGIN_PRINTF(("Upcall: break detected, thread exiting\n"));
   } else {
-    dprintf(("Upcall: failure\n"));
+    PLUGIN_PRINTF(("Upcall: failure\n"));
   }
   return ret;
 }
@@ -180,20 +185,20 @@ void MultimediaSocket::set_upcall_thread_id(uint32_t tid) {
   NaClMutexUnlock(&mu_);
 }
 
-static void WINAPI UpcallThread(void *arg) {
-  nacl::VideoCallbackData *cbdata;
+static void WINAPI UpcallThread(void* arg) {
+  VideoCallbackData* cbdata;
   NaClSrpcHandlerDesc handlers[] = {
     { "upcall::", handleUpcall },
     { NULL, NULL }
   };
 
-  cbdata = reinterpret_cast<nacl::VideoCallbackData*>(arg);
-  dprintf(("MultimediaSocket::UpcallThread(%p)\n", arg));
-  dprintf(("MultimediaSocket::cbdata->portable_plugin %p\n",
-           static_cast<void *>(cbdata->portable_plugin)));
+  cbdata = reinterpret_cast<VideoCallbackData*>(arg);
+  PLUGIN_PRINTF(("MultimediaSocket::UpcallThread(%p)\n", arg));
+  PLUGIN_PRINTF(("MultimediaSocket::cbdata->portable_plugin %p\n",
+                 static_cast<void*>(cbdata->portable_plugin)));
   // Set up the DescWrapper* the server will be placed on.
   if (NULL == cbdata->handle) {
-    dprintf(("MultimediaSocket::UpcallThread(%p) FAILED\n", arg));
+    PLUGIN_PRINTF(("MultimediaSocket::UpcallThread(%p) FAILED\n", arg));
     return;
   }
   cbdata->msp->set_upcall_thread_id(NaClThreadId());
@@ -201,28 +206,25 @@ static void WINAPI UpcallThread(void *arg) {
   NaClSrpcServerLoop(cbdata->handle->desc(), handlers, cbdata);
   // release the cbdata
   cbdata->msp->UpcallThreadExiting();
-  nacl::VideoGlobalLock();
-  nacl::VideoMap::ReleaseCallbackData(cbdata);
-  nacl::VideoGlobalUnlock();
-  dprintf(("MultimediaSocket::UpcallThread: End\n"));
+  VideoGlobalLock();
+  VideoMap::ReleaseCallbackData(cbdata);
+  VideoGlobalUnlock();
+  PLUGIN_PRINTF(("MultimediaSocket::UpcallThread: End\n"));
 }
 
 // Support for initializing the NativeClient multimedia system.
-bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
-  dprintf(("MultimediaSocket::InitializeModuleMultimedia(%p)\n",
-           static_cast<void *>(this)));
+bool MultimediaSocket::InitializeModuleMultimedia(Plugin* plugin) {
+  PLUGIN_PRINTF(("MultimediaSocket::InitializeModuleMultimedia(%p)\n",
+                 static_cast<void*>(this)));
 
-  BrowserInterface *browser_interface =
-      connected_socket_->get_handle()->GetBrowserInterface();
-  nacl::VideoMap *video = browser_interface->video();
-  ScriptableHandle<SharedMemory> *video_shared_memory =
-      video->VideoSharedMemorySetup();
+  VideoMap* video = plugin->video();
+  ScriptableHandle* video_shared_memory = video->VideoSharedMemorySetup();
 
   // If there is no display shared memory region, don't initialize.
   // TODO(nfullagar,sehr): make sure this makes sense with NPAPI call order.
   if (NULL == video_shared_memory) {
-    dprintf(("MultimediaSocket::InitializeModuleMultimedia:"
-             "No video_shared_memory.\n"));
+    PLUGIN_PRINTF(("MultimediaSocket::InitializeModuleMultimedia:"
+                   "No video_shared_memory.\n"));
     // trivial success case.  NB: if NaCl module and HTML disagrees,
     // then the HTML wins.
     return true;
@@ -231,24 +233,24 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
   // "nacl_multimedia_bridge".
   if (!(connected_socket()->HasMethod(kNaClMultimediaBridgeIdent,
                                       METHOD_CALL))) {
-    dprintf(("No nacl_multimedia_bridge method was found.\n"));
+    PLUGIN_PRINTF(("No nacl_multimedia_bridge method was found.\n"));
     return false;
   }
   // Create a socket pair.
   nacl::DescWrapper* desc[2];
   if (0 != plugin->wrapper_factory()->MakeSocketPair(desc)) {
-    dprintf(("MakeSocketPair failed!\n"));
+    PLUGIN_PRINTF(("MakeSocketPair failed!\n"));
     return false;
   }
   // Start a thread to handle the upcalls.
-  nacl::VideoCallbackData *cbdata;
-  cbdata = video->InitCallbackData(desc[0], browser_interface, this);
-  dprintf((
-      "MultimediaSocket::InitializeModuleMultimedia: launching thread\n"));
+  VideoCallbackData* cbdata;
+  cbdata = video->InitCallbackData(desc[0], plugin, this);
+  PLUGIN_PRINTF(("MultimediaSocket::InitializeModuleMultimedia:"
+                 " launching thread\n"));
   uint32_t tid;
   NaClXMutexLock(&mu_);
   if (upcall_thread_state_ != UPCALL_THREAD_NOT_STARTED) {
-    dprintf(("Internal error: upcall thread already running\n"));
+    PLUGIN_PRINTF(("Internal error: upcall thread already running\n"));
     NaClXMutexUnlock(&mu_);
     return false;
   }
@@ -270,26 +272,26 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
            "MultimediaSocket upcall thread %x (%d)",
            tid,
            tid);
-  service_runtime_->LogAtServiceRuntime(4, buf);
+  service_runtime_->Log(4, buf);
 
   SrpcParams params("oo", "");
 
-  params.Input(0)->tag = NACL_SRPC_ARG_TYPE_HANDLE;
+  params.ins()[0]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
   SharedMemory* internal_video_shared_memory =
-      static_cast<SharedMemory*>(video_shared_memory->get_handle());
-  params.Input(0)->u.hval = internal_video_shared_memory->desc();
-  params.Input(1)->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-  params.Input(1)->u.hval = desc[1]->desc();
+      static_cast<SharedMemory*>(video_shared_memory->handle());
+  params.ins()[0]->u.hval = internal_video_shared_memory->desc();
+  params.ins()[1]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
+  params.ins()[1]->u.hval = desc[1]->desc();
 
-  dprintf(("CS:IMM params %p\n", static_cast<void *>(&params)));
+  PLUGIN_PRINTF(("CS:IMM params %p\n", static_cast<void*>(&params)));
 
   bool rpc_result = (connected_socket()->Invoke(kNaClMultimediaBridgeIdent,
                                                 METHOD_CALL,
                                                 &params));
-  dprintf(("CS:IMM returned %d\n", static_cast<int>(rpc_result)));
+  PLUGIN_PRINTF(("CS:IMM returned %d\n", static_cast<int>(rpc_result)));
   desc[1]->Delete();
 
   return rpc_result;
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

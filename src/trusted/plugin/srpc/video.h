@@ -4,6 +4,8 @@
  * be found in the LICENSE file.
  */
 
+//  The representation of 2D graphics used by the av interface.
+
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
 
@@ -26,30 +28,30 @@
 
 #endif  //  NACL_STANDALONE
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
-#include "native_client/src/shared/imc/nacl_htp.h"
-
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/srpc/srpc.h"
 
 typedef NPWindow PluginWindow;
 
-// TODO(nfullagar): prune headers.
-#include "native_client/src/trusted/plugin/srpc/multimedia_socket.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/shared_memory.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
-
-
 namespace nacl {
+
+class DescWrapper;
+
+}  // namespace nacl
+
+namespace plugin {
+
+class MultimediaSocket;
+class Plugin;
+class ScriptableHandle;
 
 enum VideoUpdateMode {
   kVideoUpdatePluginPaint = 0,   // update via browser plugin paint
@@ -62,57 +64,60 @@ enum {
 };
 
 struct VideoCallbackData {
-  DescWrapper *handle;
-  BrowserInterface *portable_plugin;
-  int  refcount;
-  nacl_srpc::MultimediaSocket *msp;
-
-  VideoCallbackData(DescWrapper *h,
-                    BrowserInterface *p,
+ public:
+  VideoCallbackData(nacl::DescWrapper* h,
+                    Plugin* p,
                     int r,
-                    nacl_srpc::MultimediaSocket *sockp):
+                    MultimediaSocket* sockp):
       handle(h), portable_plugin(p), refcount(r), msp(sockp) {}
+  nacl::DescWrapper* handle;
+  Plugin* portable_plugin;
+  int  refcount;
+  MultimediaSocket* msp;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VideoCallbackData);
 };
 
 class VideoMap {
  public:
-
   void Disable() { video_enabled_ = false; }
   void Enable() { video_enabled_ = true; }
-  int EventQueuePut(union NaClMultimediaEvent *event);
+  int EventQueuePut(union NaClMultimediaEvent* event);
   int EventQueueIsFull();
-  static void ForceDeleteCallbackData(VideoCallbackData *vcd);
+  static void ForceDeleteCallbackData(VideoCallbackData* vcd);
   int GetButton();
   int GetKeyMod();
-  void GetMotion(uint16_t *x, uint16_t *y);
-  void GetRelativeMotion(uint16_t x, uint16_t y,
-      int16_t *rel_x, int16_t *rel_y);
+  void GetMotion(uint16_t* x, uint16_t* y);
+  void GetRelativeMotion(uint16_t x,
+                         uint16_t y,
+                         int16_t* rel_x,
+                         int16_t* rel_y);
   int32_t GetVideoUpdateMode() { return video_update_mode_; }
   int16_t HandleEvent(void* event);
   int InitializeSharedMemory(PluginWindow* window);
-  VideoCallbackData* InitCallbackData(DescWrapper* desc,
-                                      BrowserInterface *p,
-                                      nacl_srpc::MultimediaSocket *msp);
+  VideoCallbackData* InitCallbackData(nacl::DescWrapper* desc,
+                                      Plugin* p,
+                                      MultimediaSocket* msp);
   void Invalidate();
   bool IsEnabled() { return video_enabled_; }
   int Paint();
   void Redraw();
-  void RedrawAsync(void *platform_specific);
-  static VideoCallbackData* ReleaseCallbackData(VideoCallbackData *vcd);
+  void RedrawAsync(void* platform_specific);
+  static VideoCallbackData* ReleaseCallbackData(VideoCallbackData* vcd);
   void RequestRedraw();
   void SetButton(int button, int state);
   void SetMotion(uint16_t x, uint16_t y, int last_valid);
   void SetKeyMod(int nsym, int state);
   bool SetWindow(PluginWindow* window);
-  void set_platform_specific(void *sp) { platform_specific_ = sp; }
+  void set_platform_specific(void* sp) { platform_specific_ = sp; }
   void* platform_specific() { return platform_specific_; }
-  DescWrapper* video_handle() { return video_handle_; }
-  nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>* video_shared_memory()
+  nacl::DescWrapper* video_handle() { return video_handle_; }
+  ScriptableHandle* video_shared_memory()
       { return video_shared_memory_; }
-  nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
-      VideoSharedMemorySetup();
+  ScriptableHandle* VideoSharedMemorySetup();
 
-  explicit VideoMap(BrowserInterface *browser_interface);
+  explicit VideoMap(Plugin* plugin);
   ~VideoMap();
 
 #ifdef NACL_STANDALONE
@@ -132,22 +137,23 @@ class VideoMap {
 #endif  // NACL_STANDALONE
 
  private:
-  volatile int             event_state_button_;
-  volatile int             event_state_key_mod_;
-  volatile uint16_t        event_state_motion_last_x_;
-  volatile uint16_t        event_state_motion_last_y_;
-  volatile int             event_state_motion_last_valid_;
-  void*                    platform_specific_;
-  volatile bool            request_redraw_;
-  BrowserInterface*        browser_interface_;
-  NaClVideoShare*          untrusted_video_share_;
-  DescWrapper*             video_handle_;
-  uint32_t                 video_size_;
-  bool                     video_enabled_;
-  VideoCallbackData*       video_callback_data_;
-  nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>* video_shared_memory_;
-  int                      video_update_mode_;
-  PluginWindow*            window_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(VideoMap);
+  volatile int event_state_button_;
+  volatile int event_state_key_mod_;
+  volatile uint16_t event_state_motion_last_x_;
+  volatile uint16_t event_state_motion_last_y_;
+  volatile int event_state_motion_last_valid_;
+  void* platform_specific_;
+  volatile bool request_redraw_;
+  Plugin* plugin_;
+  NaClVideoShare* untrusted_video_share_;
+  nacl::DescWrapper* video_handle_;
+  uint32_t video_size_;
+  bool video_enabled_;
+  VideoCallbackData* video_callback_data_;
+  ScriptableHandle* video_shared_memory_;
+  int video_update_mode_;
+  PluginWindow* window_;
 };
 
 extern void VideoGlobalLock();
@@ -157,8 +163,11 @@ class VideoScopedGlobalLock {
  public:
   VideoScopedGlobalLock() { VideoGlobalLock(); }
   ~VideoScopedGlobalLock() { VideoGlobalUnlock(); }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VideoScopedGlobalLock);
 };
 
-}  // namespace nacl
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_

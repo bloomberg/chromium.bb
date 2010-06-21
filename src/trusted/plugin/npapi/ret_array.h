@@ -5,12 +5,13 @@
  */
 
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_RET_ARRAY_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_RET_ARRAY_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_RET_ARRAY_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_RET_ARRAY_H_
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
-namespace nacl_srpc {
+namespace plugin {
 
 // RetArray is the struct used to encapsulate the return value from invoking
 // a method from JavaScript.  Invoking a method with multiple return values
@@ -18,21 +19,21 @@ namespace nacl_srpc {
 // return value from the SRPC type signature.
 class RetArray : public NPObject {
  public:
-   explicit RetArray(NPP);
-   ~RetArray();
-   void SetAt(int index, NPVariant* value);
+  explicit RetArray(NPP npp);
+  ~RetArray();
+
+  void SetAt(int index, NPVariant* value);
+
   // initializes NPVariant pointed by the argument to point to the same object
   bool ExportVariant(NPVariant* copy);
   NPObject* ExportObject();
-  static int number_alive() { return number_alive_counter; }
- public:
-  NPP npp_;
-  NPVariant array_;
 
  private:
-  static int number_alive_counter;
+  NACL_DISALLOW_COPY_AND_ASSIGN(RetArray);
+  NPP npp_;
+  NPVariant array_;
 };
 
-}  // namespace nacl_srpc
+}  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_RET_ARRAY_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_RET_ARRAY_H_

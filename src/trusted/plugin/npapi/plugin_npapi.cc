@@ -1,0 +1,411 @@
+/*
+ * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
+
+
+#include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
+
+#include <stdio.h>
+#include <string.h>
+
+#include <limits>
+#include <set>
+
+#include "native_client/src/include/checked_cast.h"
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/portability.h"
+
+#include "native_client/src/shared/npruntime/npmodule.h"
+
+#include "native_client/src/trusted/handle_pass/browser_handle.h"
+
+#include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
+#include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
+#include "native_client/src/trusted/plugin/origin.h"
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
+#include "native_client/src/trusted/plugin/srpc/closure.h"
+#include "native_client/src/trusted/plugin/srpc/plugin.h"
+#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
+#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/srpc/video.h"
+
+namespace {
+
+static bool identifiers_initialized = false;
+
+void InitializeIdentifiers() {
+  if (identifiers_initialized) {
+    return;
+  }
+  plugin::PluginNpapi::kHrefIdent = NPN_GetStringIdentifier("href");
+  plugin::PluginNpapi::kLengthIdent = NPN_GetStringIdentifier("length");
+  plugin::PluginNpapi::kLocationIdent = NPN_GetStringIdentifier("location");
+  identifiers_initialized = true;
+}
+
+}  // namespace
+
+namespace plugin {
+
+NPIdentifier PluginNpapi::kHrefIdent;
+NPIdentifier PluginNpapi::kLengthIdent;
+NPIdentifier PluginNpapi::kLocationIdent;
+
+PluginNpapi* PluginNpapi::New(InstanceIdentifier instance_id,
+                              int argc,
+                              char* argn[],
+                              char* argv[]) {
+  PLUGIN_PRINTF(("PluginNpapi::New(%p, %d)\n",
+                 static_cast<void*>(instance_id),
+                 argc));
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+  if (!NaClHandlePassBrowserCtor()) {
+    return NULL;
+  }
+#endif
+  InitializeIdentifiers();
+  // TODO(sehr): use scoped_ptr for proper delete semantics.
+  BrowserInterface* browser_interface =
+      static_cast<BrowserInterface*>(new(std::nothrow) BrowserImplNpapi);
+  if (browser_interface == NULL) {
+    return NULL;
+  }
+  PluginNpapi* plugin = new(std::nothrow) PluginNpapi();
+  if (plugin == NULL ||
+      !plugin->Init(browser_interface, instance_id, argc, argn, argv)) {
+    PLUGIN_PRINTF(("PluginNpapi::New: Init failed\n"));
+    return NULL;
+  }
+  ScriptableHandle* handle = browser_interface->NewScriptableHandle(plugin);
+  // handle will be NULL if plugin was NULL.
+  if (NULL == handle) {
+    PLUGIN_PRINTF(("PluginNpapi::New: NewScriptableHandle returned null\n"));
+    return NULL;
+  }
+  plugin->set_scriptable_handle(handle);
+  PLUGIN_PRINTF(("PluginNpapi::New(%p): done\n", static_cast<void*>(plugin)));
+  return plugin;
+}
+
+PluginNpapi::~PluginNpapi() {
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+  NaClHandlePassBrowserDtor();
+#endif
+
+  PLUGIN_PRINTF(("PluginNpapi::~PluginNpapi(%p)\n", static_cast<void* >(this)));
+  // Delete the NPModule for this plugin.
+  if (NULL != module_) {
+    delete module_;
+  }
+  // Destroying PluginNpapi releases ownership of the plugin.
+  scriptable_handle()->Unref();
+}
+
+NPError PluginNpapi::Destroy(NPSavedData** save) {
+  PLUGIN_PRINTF(("PluginNpapi::Destroy(%p, %p)\n", static_cast<void*>(this),
+                 static_cast<void*>(save)));
+  delete this;
+  return NPERR_NO_ERROR;
+}
+
+// SetWindow is called by the browser as part of the NPAPI interface for
+// setting up a plugin that has the ability to draw into a window.  It is
+// passed a semi-custom window descriptor (some is platform-neutral, some not)
+// as documented in the NPAPI documentation.
+NPError PluginNpapi::SetWindow(NPWindow* window) {
+  NPError ret = NPERR_GENERIC_ERROR;
+  PLUGIN_PRINTF(("PluginNpapi::SetWindow(%p, %p)\n", static_cast<void* >(this),
+                 static_cast<void*>(window)));
+  if (NULL == module_) {
+    if (video() && video()->SetWindow(window)) {
+        ret = NPERR_NO_ERROR;
+    }
+    return ret;
+  } else {
+    // Send NPP_SetWindow to NPModule.
+    return module_->SetWindow(instance_id(), window);
+  }
+}
+
+NPError PluginNpapi::GetValue(NPPVariable variable, void* value) {
+  const char** stringp = static_cast<const char**>(value);
+
+  PLUGIN_PRINTF(("PluginNpapi::GetValue(%p, %d)\n", static_cast<void*>(this),
+                 variable));
+
+  switch (variable) {
+    case NPPVpluginNameString:
+      *stringp = "NativeClient Simple RPC + multimedia a/v interface";
+      return NPERR_NO_ERROR;
+    case NPPVpluginDescriptionString:
+      *stringp = "NativeClient Simple RPC interaction w/ multimedia.";
+      return NPERR_NO_ERROR;
+    case NPPVpluginScriptableNPObject:
+      // Anyone requesting access to the scriptable instance is given shared
+      // ownership of the scriptable handle.
+      *(static_cast<NPObject**>(value)) =
+          static_cast<ScriptableImplNpapi*>(scriptable_handle()->AddRef());
+      return NPERR_NO_ERROR;
+    case NPPVpluginWindowBool:
+    case NPPVpluginTransparentBool:
+    case NPPVjavaClass:
+    case NPPVpluginWindowSize:
+    case NPPVpluginTimerInterval:
+    case NPPVpluginScriptableInstance:
+    case NPPVpluginScriptableIID:
+    case NPPVjavascriptPushCallerBool:
+    case NPPVpluginKeepLibraryInMemory:
+    case NPPVpluginNativeAccessibleAtkPlugId:
+    case NPPVpluginNeedsXEmbed:
+    case NPPVformValue:
+    case NPPVpluginUrlRequestsDisplayedBool:
+    case NPPVpluginWantsAllNetworkStreams:
+    case NPPVpluginCancelSrcStream:
+#ifdef XP_MACOSX
+    // Mac has several drawing, event, etc. models in NPAPI that are unique.
+    case NPPVpluginDrawingModel:
+    case NPPVpluginEventModel:
+    case NPPVpluginCoreAnimationLayer:
+#endif  // XP_MACOSX
+    default:
+      return NPERR_INVALID_PARAM;
+  }
+}
+
+int16_t PluginNpapi::HandleEvent(void* param) {
+  int16_t ret;
+  PLUGIN_PRINTF(("PluginNpapi::HandleEvent(%p, %p)\n", static_cast<void*>(this),
+                 static_cast<void*>(param)));
+  if (NULL == module_) {
+    if (video()) {
+      ret = video()->HandleEvent(param);
+    } else {
+      ret = 0;
+    }
+  } else {
+    return module_->HandleEvent(instance_id(), param);
+  }
+  return ret;
+}
+
+// Downloading resources can be caused implicitly (by the browser in response
+// to src= in the embed/object tag) or explicitly (by calls to NPN_GetURL or
+// NPN_GetURLNotify).  Implicit downloading is happening whenever
+// notifyData==NULL, and always results in calling Load on the Plugin object.
+// Explicit downloads place a pointer to a Closure object in notifyData.  How
+// these closures are manipulated depends on which browser we are running
+// within.  If we are in Chrome (NACL_STANDALONE is not defined):
+// - NewStream creates a StreamShmBuffer object and attaches that to
+//   stream->pdata and the buffer member of the closure (if there was one).
+// - WriteReady and Write populate the buffer object.
+// - DestroyStream signals the end of WriteReady/Write processing.  If the
+//   reason is NPRES_DONE, then the closure's Run method is invoked and
+//   the closure is deleted.  If there is no closure, Load is called.
+// If we are not in Chrome (NACL_STANDALONE is defined):
+// - NewStream returns NP_ASFILEONLY, which causes StreamAsFile to be invoked.
+// - StreamAsFile indicates that the browser has fully downloaded the resource
+//   and placed it in the local file system.  This causes the closure's Run
+//   method to be invoked.  If there is no closure, Load is called.
+// In both cases, URLNotify is used to report any errors.
+
+NPError PluginNpapi::NewStream(NPMIMEType type,
+                               NPStream* stream,
+                               NPBool seekable,
+                               uint16_t* stype) {
+  PLUGIN_PRINTF(("PluginNpapi::NewStream(%p, %s, %p, %d)\n",
+                 static_cast<void*>(this), type, static_cast<void*>(stream),
+                 seekable));
+#ifdef NACL_STANDALONE
+  *stype = NP_ASFILEONLY;
+#else
+  // When running as a built-in plugin in Chrome we cannot access the
+  // file system, therefore we use normal streams to get the data.
+  *stype = NP_NORMAL;
+  // Stream pdata should not be set until the stream is created.
+  if (NULL != stream->pdata) {
+    return NPERR_GENERIC_ERROR;
+  }
+  // StreamShmBuffer is used to download large files in chunks in Chrome.
+  StreamShmBuffer* stream_buffer = new(std::nothrow) StreamShmBuffer();
+  // Remember the stream buffer on the stream.
+  stream->pdata = reinterpret_cast<void*>(stream_buffer);
+  // Other than the default "src=" download, there should have been a
+  // closure attached to the stream by NPN_GetURLNotify.
+  Closure* closure = static_cast<Closure*>(stream->notifyData);
+  if (NULL != closure) {
+    closure->set_buffer(stream_buffer);
+  }
+#endif
+  return NPERR_NO_ERROR;
+}
+
+int32_t PluginNpapi::WriteReady(NPStream* stream) {
+  if (NULL == stream) {
+    return -1;
+  }
+  return 32 * 1024;
+}
+
+int32_t PluginNpapi::Write(NPStream* stream,
+                           int32_t offset,
+                           int32_t len,
+                           void* buf) {
+  if (NULL == stream) {
+    return -1;
+  }
+  StreamShmBuffer* stream_buffer =
+      reinterpret_cast<StreamShmBuffer*>(stream->pdata);
+  // Should have been set during call to NewStream.
+  if (NULL == stream_buffer) {
+    return -1;
+  }
+  return stream_buffer->write(offset, len, buf);
+}
+
+void PluginNpapi::StreamAsFile(NPStream* stream,
+                               const char* fname) {
+  PLUGIN_PRINTF(("PluginNpapi::StreamAsFile(%p, %p, %s)\n",
+                 static_cast<void*>(this), static_cast<void*>(stream), fname));
+  // The stream should be valid until the destroy call is complete.
+  // Furthermore, a valid filename should have been passed.
+  if (NULL == fname || NULL == stream) {
+    PLUGIN_PRINTF(("StreamAsFile: FAILED: fname or stream was NULL.\n"));
+    return;
+  }
+  // When StreamAsFile is called a file for the stream is presented to the
+  // plugin.  This only happens outside of Chrome.  So this handler calls the
+  // appropriate load method to transfer the requested resource to the sel_ldr
+  // instance.
+  if (NULL == stream->notifyData) {
+    // If there was no closure, there was no explicit plugin call to
+    // NPN_GetURL{Notify}.  Hence this resource was downloaded by default,
+    // typically through src=... in the embed/object tag.
+    PLUGIN_PRINTF(("StreamAsFile: default run\n"));
+    Load(stream->url, fname);
+  } else {
+    // Otherwise, we invoke the Run on the closure that was set up by
+    // the requestor.
+    Closure* closure = static_cast<Closure*>(stream->notifyData);
+    closure->RunFromFile(stream, fname);
+  }
+}
+
+NPError PluginNpapi::DestroyStream(NPStream* stream,
+                                   NPReason reason) {
+  PLUGIN_PRINTF(("PluginNpapi::DestroyStream(%p, %p, %d)\n",
+                 static_cast<void*>(this), static_cast<void*>(stream), reason));
+
+  // DestroyStream is called whenever a request for a resource either succeeds
+  // or fails.  If the request succeeded, we would already have called
+  // StreamAsFile (for non-Chrome browsers, which already invoked the Run
+  // method on the closure), or would have done all the Writes (for Chrome,
+  // and we still need to invoke the Run method).
+
+  // The stream should be valid until the destroy call is complete.
+  if (NULL == stream || NULL == stream->url) {
+    return NPERR_GENERIC_ERROR;
+  }
+  // Defer error handling to URLNotify.
+  if (NPRES_DONE != reason) {
+    return NPERR_NO_ERROR;
+  }
+  if (NULL == stream->notifyData) {
+    // Here we handle only the default, src=...  streams (statically obtained)
+    // Stream download completed so start the nexe load into the service
+    // runtime.
+    PLUGIN_PRINTF(("default run\n"));
+    StreamShmBuffer* stream_buffer =
+        reinterpret_cast<StreamShmBuffer*>(stream->pdata);
+    // We are running outside of Chrome, so StreamAsFile does the load.
+    if (NULL == stream_buffer) {
+      return NPERR_NO_ERROR;
+    }
+    // Note, we cannot access the HTTP status code, so we might have
+    // been returned a 404 error page.  This is reported in the ELF
+    // validity checks that Load precipitates.
+    Load(stream->url, stream->url, stream_buffer);
+    delete(stream_buffer);
+    stream->pdata = NULL;
+  } else {
+    // Otherwise there was a closure.
+    Closure* closure = static_cast<Closure*>(stream->notifyData);
+    StreamShmBuffer* stream_buffer = closure->buffer();
+    if (NULL != stream_buffer) {
+      // There was a buffer attached, so we are in Chrome. Invoke its Run.
+      // If we are not in Chrome, Run was invoked by StreamAsFile.
+      closure->RunFromBuffer(stream->url, stream_buffer);
+      delete stream_buffer;
+    }
+    delete closure;
+    stream->notifyData = NULL;
+  }
+  return NPERR_NO_ERROR;
+}
+
+void PluginNpapi::URLNotify(const char* url,
+                            NPReason reason,
+                            void* notifyData) {
+  PLUGIN_PRINTF(("PluginNpapi::URLNotify(%p, %s, %d, %p)\n",
+                 static_cast<void*>(this), url, reason, notifyData));
+
+  // The url should always be non-NULL.
+  if (NULL == url) {
+    PLUGIN_PRINTF(("URLNotify: FAILED: url was NULL.\n"));
+    return;
+  }
+  // If we succeeded, there is nothing to do.
+  if (NPRES_DONE == reason) {
+    return;
+  }
+  // If the request failed, we need to report the failure.
+  PLUGIN_PRINTF(("URLNotify: Unable to open: '%s' reason=%d\n", url, reason));
+  if (NULL == notifyData) {
+    // The implicit download failed, run the embed/object's onfail= handler.
+    RunOnfailHandler();
+  } else {
+    // Convert the reason to a string and abuse the closure's Run method
+    // slightly by passing that the reason as the file name.
+    Closure* closure = static_cast<Closure*>(notifyData);
+    nacl::stringstream msg;
+    msg << "reason: " << reason;
+    closure->RunFromFile(static_cast<NPStream*>(NULL), msg.str());
+    delete closure;
+  }
+}
+
+void PluginNpapi::set_module(nacl::NPModule* module) {
+  PLUGIN_PRINTF(("PluginNpapi::set_module(%p, %p)\n",
+                 static_cast<void*>(this),
+                 static_cast<void*>(module)));
+  module_ = module;
+  if (NULL != module_) {
+    // Set the origins.
+    module_->set_nacl_module_origin(nacl_module_origin());
+    module_->set_origin(origin());
+    // Initialize the NaCl module's NPAPI interface.
+    // This should only be done for the first instance in a given group.
+    module_->Initialize();
+    // Create a new instance of that group.
+    const char mime_type[] = "application/nacl-npapi-over-srpc";
+    NPError err = module->New(const_cast<char*>(mime_type),
+                              instance_id(),
+                              argc(),
+                              argn(),
+                              argv());
+    // Remember the scriptable version of the NaCl instance.
+    err = module_->GetValue(instance_id(),
+                            NPPVpluginScriptableNPObject,
+                            reinterpret_cast<void*>(&nacl_instance_));
+    // Send an initial NPP_SetWindow to the plugin.
+    NPWindow window;
+    window.height = height();
+    window.width = width();
+    module->SetWindow(instance_id(), &window);
+  }
+}
+
+}  // namespace plugin

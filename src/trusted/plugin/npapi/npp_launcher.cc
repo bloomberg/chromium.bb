@@ -30,10 +30,13 @@
 
 #include "native_client/src/include/elf.h"
 #include "native_client/src/include/nacl_elf.h"
-#include "native_client/src/trusted/plugin/srpc/srpc.h"
-#include "native_client/src/trusted/service_runtime/expiration.h"
-#include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "native_client/src/trusted/desc/nrd_all_modules.h"
+#if NACL_OSX
+#include "native_client/src/trusted/plugin/osx/open_mac_file.h"
+#endif  // NACL_OSX
+#include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
+#include "native_client/src/trusted/service_runtime/expiration.h"
 
 using nacl::DebugPrintf;
 
@@ -97,19 +100,24 @@ NPError NPP_New(NPMIMEType plugin_type,
   }
   if (strcmp(plugin_type, "application/x-nacl-srpc") == 0) {
     instance->pdata = static_cast<nacl::NPInstance*>(
-        new(std::nothrow) nacl::SRPC_Plugin(instance, argc, argn, argv));
+        plugin::PluginNpapi::New(instance, argc, argn, argv));
+    if (instance->pdata == NULL) {
+      return NPERR_OUT_OF_MEMORY_ERROR;
+    }
   }
   if (instance->pdata == NULL) {
     return NPERR_OUT_OF_MEMORY_ERROR;
   }
 #ifndef NACL_STANDALONE
-  // NaCl is a windowless plugin
+  // NaCl is a windowless plugin in Chrome.
   NPN_SetValue(instance, NPPVpluginWindowBool, false);
 #endif
   return NPERR_NO_ERROR;
 }
 
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
+  NPError nperr = NPERR_NO_ERROR;
+
   DebugPrintf("NPP_Destroy\n");
   if (instance == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
@@ -117,10 +125,10 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
   if (module != NULL) {
     instance->pdata = NULL;
-    NPError nperr = module->Destroy(save);  // module must delete itself.
-    return nperr;
+    nperr = module->Destroy(save);  // module must delete itself.
   }
-  return NPERR_NO_ERROR;
+  // TODO(sehr): we are leaking browser_interface, extension, and SRPC_Plugin.
+  return nperr;
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
@@ -202,76 +210,6 @@ int32_t NPP_Write(NPP instance, NPStream* stream, int32_t offset, int32_t len,
   nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
   return module->Write(stream, offset, len, buffer);
 }
-
-#if NACL_OSX
-static void OpenMacFile(NPStream* stream,
-                        const char* filename,
-                        nacl::NPInstance* module) {
-  // This ugliness is necessary due to the fact that Safari on Mac returns
-  // a pathname in "Mac" format, rather than a unix pathname.  To use the
-  // resulting name requires conversion, which is done by a couple of Mac
-  // library routines.
-  // TODO(sehr): pull this code out into a separate file.
-  if (filename && filename[0] != '/') {
-    // The filename we were given is a "classic" pathname, which needs
-    // to be converted to a posix pathname.
-    Boolean got_posix_name = FALSE;
-    CFStringRef cf_hfs_filename =
-      CFStringCreateWithCString(NULL, filename, kCFStringEncodingMacRoman);
-    if (cf_hfs_filename) {
-      printf("Pathname after hfs\n");
-      CFURLRef cf_url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-                                                      cf_hfs_filename,
-                                                      kCFURLHFSPathStyle,
-                                                      false);
-      if (cf_url) {
-        CFStringRef cf_posix_filename =
-          CFURLCopyFileSystemPath(cf_url, kCFURLPOSIXPathStyle);
-        if (cf_posix_filename) {
-          CFIndex len
-             = CFStringGetMaximumSizeOfFileSystemRepresentation(
-                 cf_posix_filename);
-          if (len > 0) {
-            char *posix_filename =
-              static_cast<char*>(malloc(sizeof(posix_filename[0]) * len));
-            if (posix_filename) {
-              got_posix_name =
-                CFStringGetFileSystemRepresentation(cf_posix_filename,
-                                                    posix_filename,
-                                                    len);
-              if (got_posix_name) {
-                module->StreamAsFile(stream, posix_filename);
-                // Safari on OS X apparently wants the NPP_StreamAsFile
-                // call to delete the file object after processing.
-                // This was discovered in investigations by Shiki.
-                FSRef ref;
-                Boolean is_dir;
-                if (FSPathMakeRef(reinterpret_cast<UInt8*>(posix_filename),
-                                  &ref,
-                                  &is_dir) == noErr) {
-                  FSDeleteObject(&ref);
-                }
-              }
-              free(posix_filename);
-            }
-          }
-          CFRelease(cf_posix_filename);
-        }
-        CFRelease(cf_url);
-      }
-      CFRelease(cf_hfs_filename);
-    }
-    if (got_posix_name) {
-      // If got_posix_name was true than we succesfully created
-      // our posix path and called StreamAsFile above, so we
-      // can exit without falling through to the case below.
-      return;
-    }
-    filename =  NULL;
-  }
-  module->StreamAsFile(stream, filename);
-}
-#endif  // NACL_OSX
 
 void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* filename) {
   DebugPrintf("NPP_StreamAsFile: %s\n", filename);

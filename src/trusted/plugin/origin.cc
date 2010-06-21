@@ -154,7 +154,7 @@ namespace nacl {
     // filesystem) due to the same-origin policy.
     //
     // We are still potentially vulnerable to DNS rebinding,
-    // anti-anti-DNS-rebindng, ..., (anti-)^(2n)-rebinding attacks,
+    // anti-anti-DNS-rebinding, ..., (anti-)^(2n)-rebinding attacks,
     // etc. but we assume that the browser's defense mechanisms --
     // (anti-)^(2n+1)-rebinding attack mechanisms -- take care of
     // that.

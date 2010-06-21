@@ -23,26 +23,22 @@
 #endif  // NACL_LINUX && defined(MOZ_X11)
 
 #include "native_client/src/include/checked_cast.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/npapi_native.h"
-#include "native_client/src/trusted/plugin/srpc/srpc.h"
-
-
+#include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
+#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 
 using nacl::can_cast;
 using nacl::saturate_cast;
-
-namespace nacl_srpc {
-  class Plugin;
-}
 
 // TODO(nfullagar): this could be cleaner/more readable for
 // platform-specific implementations to go into separate files under
 // platform subdirectories, rather than using ifdefs.
 
-namespace nacl {
+namespace plugin {
+
+class Plugin;
 
 class GlobalVideoMutex {
  private:
@@ -155,7 +151,8 @@ static int XKeysymToNaCl(KeySym xsym) {
 }
 
 void VideoMap::RedrawAsync(void *platform_parm) {
-  dprintf(("VideoMap::RedrawAsync %p\n", static_cast<void *>(platform_parm)));
+  PLUGIN_PRINTF(("VideoMap::RedrawAsync %p\n",
+                 static_cast<void *>(platform_parm)));
   if (0 != untrusted_video_share_->u.h.video_ready) {
     Display *display = reinterpret_cast<Display *>(platform_parm);
     Drawable window = reinterpret_cast<Drawable>(window_->window);
@@ -305,7 +302,7 @@ void VideoMap::XEventHandler(Widget widget,
       break;
     default:
       // Other types of events should be handled here.
-      dprintf(("VideoMap::XEventHandler()     Other\n"));
+      PLUGIN_PRINTF(("VideoMap::XEventHandler()     Other\n"));
       break;
   }
 }
@@ -321,7 +318,7 @@ static void GlobalToLocalHelper(NPWindow* window, Point *point) {
   GetPort(&save);
   SetPort(reinterpret_cast<GrafPtr>(our_port));
   GlobalToLocal(point);
-  dprintf(("mouse local pos %d %d\n", point->h, point->v));
+  PLUGIN_PRINTF(("mouse local pos %d %d\n", point->h, point->v));
   SetPort(save);
 }
 
@@ -426,9 +423,9 @@ static int MacKeyToNaCl(int mk) {
 }
 
 int16_t VideoMap::HandleEvent(void *param) {
-  dprintf(("VideoMap::HandleEvent(%p, %p)\n",
-           static_cast<void *>(this),
-           static_cast<void *>(param)));
+  PLUGIN_PRINTF(("VideoMap::HandleEvent(%p, %p)\n",
+                 static_cast<void *>(this),
+                 static_cast<void *>(param)));
   uint16_t x;
   uint16_t y;
   uint16_t button;
@@ -446,7 +443,7 @@ int16_t VideoMap::HandleEvent(void *param) {
   if (!event) {
     return 0;
   }
-  dprintf(("Event type %d\n", event->what));
+  PLUGIN_PRINTF(("Event type %d\n", event->what));
 
   // poll the mouse and see if it moved within our window
   // TODO(nfullagar): only mouse events during updateEvt seem to
@@ -470,10 +467,10 @@ int16_t VideoMap::HandleEvent(void *param) {
         GetMotion(&last_x, &last_y);
         if ((x != last_x) ||
             (y != last_y)) {
-          dprintf(("The mouse moved %d %d  (event %d)\n",
-                   static_cast<int>(x),
-                   static_cast<int>(y),
-                   event->what));
+          PLUGIN_PRINTF(("The mouse moved %d %d  (event %d)\n",
+                         static_cast<int>(x),
+                         static_cast<int>(y),
+                         event->what));
           nacl_event.type = NACL_EVENT_MOUSE_MOTION;
           nacl_event.motion.which = 0;
           nacl_event.motion.state = GetButton();
@@ -489,21 +486,21 @@ int16_t VideoMap::HandleEvent(void *param) {
   }
 
   if ((event->what != 0) && (event->what != updateEvt))
-    dprintf(("an event happened %d\n", event->what));
+    PLUGIN_PRINTF(("an event happened %d\n", event->what));
 
   switch (event->what) {
     case (osEvt + 16): {  // NPAPI getFocusEvent:
       nacl_event.type = NACL_EVENT_ACTIVE;
       nacl_event.active.state = kSet;
       EventQueuePut(&nacl_event);
-      dprintf(("Focus gained\n"));
+      PLUGIN_PRINTF(("Focus gained\n"));
       break;
     }
     case (osEvt + 17): {  // NPAPI loseFocusEvent:
       nacl_event.type = NACL_EVENT_ACTIVE;
       nacl_event.active.state = kClear;
       EventQueuePut(&nacl_event);
-      dprintf(("Focus lost\n"));
+      PLUGIN_PRINTF(("Focus lost\n"));
       break;
     }
     case keyUp:
@@ -524,12 +521,12 @@ int16_t VideoMap::HandleEvent(void *param) {
       nacl_event.key.keysym.mod = event_state_key_mod_;
       nacl_event.key.keysym.unicode = 0;
       EventQueuePut(&nacl_event);
-      dprintf(("A key press (scan: %d sym: %d state: %d)\n",
-          scancode, nsym, nacl_event.key.state));
+      PLUGIN_PRINTF(("A key press (scan: %d sym: %d state: %d)\n",
+                     scancode, nsym, nacl_event.key.state));
       break;
     }
     case mouseDown: {
-      dprintf(("A mouse down happened\n"));
+      PLUGIN_PRINTF(("A mouse down happened\n"));
       button = 1;
       if (event->modifiers & rightMouseButtonMod) {
         button = 3;
@@ -544,7 +541,7 @@ int16_t VideoMap::HandleEvent(void *param) {
       break;
     }
     case mouseUp: {
-      dprintf(("A mouse up happened\n"));
+      PLUGIN_PRINTF(("A mouse up happened\n"));
       button = 1;
       if (event->modifiers & rightMouseButtonMod) {
         button = 3;
@@ -581,7 +578,8 @@ int16_t VideoMap::HandleEvent(void *param) {
 }
 
 void VideoMap::RedrawAsync(void* platform_parm) {
-  dprintf(("VideoMap::RedrawAsync(%p)\n", static_cast<void*>(platform_parm)));
+  PLUGIN_PRINTF(("VideoMap::RedrawAsync(%p)\n",
+                 static_cast<void*>(platform_parm)));
   if (NULL == platform_parm) return;
 
   if (!window_ || !window_->window || !untrusted_video_share_ ||
@@ -786,7 +784,7 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
                                            UINT msg,
                                            WPARAM wparam,
                                            LPARAM lparam) {
-  dprintf(("VideoMap::VideoWindowProcedure()\n"));
+  PLUGIN_PRINTF(("VideoMap::VideoWindowProcedure()\n"));
   VideoScopedGlobalLock video_lock;
   uint16_t x;
   uint16_t y;
@@ -917,7 +915,7 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
 }
 
 void VideoMap::RedrawAsync(void *platform_parm) {
-  dprintf(("VideoMap::RedrawAsync()\n"));
+  PLUGIN_PRINTF(("VideoMap::RedrawAsync()\n"));
   HWND hwnd = static_cast<HWND>(window_->window);
   HDC hdc = GetDC(hwnd);
 
@@ -1083,29 +1081,25 @@ int VideoMap::GetKeyMod() {
 
 // handle video map specific NPAPI SetWindow
 bool VideoMap::SetWindow(PluginWindow *window) {
-  dprintf(("VideoMap::SetWindow(%p)\n", static_cast<void *>(window)));
+  PLUGIN_PRINTF(("VideoMap::SetWindow(%p)\n", static_cast<void *>(window)));
 
   // first check window->width & window->height...
   if ((NULL == window_) && (window->window) &&
       (window->width > 0) && (window->height > 0)) {
     int width, height;
     // then check width & height properties... (needed for Safari)
-    nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>* scriptable_plugin =
-        browser_interface_->plugin();
-    nacl_srpc::Plugin* plugin =
-        static_cast<nacl_srpc::Plugin*>(scriptable_plugin->get_handle());
-    width = plugin->width();
-    height = plugin->height();
+    width = plugin_->width();
+    height = plugin_->height();
     if ((width > 0) && (height > 0)) {
-      dprintf(("VideoMap::SetWindow calling Initialize(%p)\n",
-               static_cast<void *>(window)));
+      PLUGIN_PRINTF(("VideoMap::SetWindow calling Initialize(%p)\n",
+                     static_cast<void*>(window)));
       // don't allow invalid window sizes
       if ((width < kNaClVideoMinWindowSize) ||
           (width > kNaClVideoMaxWindowSize) ||
           (height < kNaClVideoMinWindowSize) ||
           (height > kNaClVideoMaxWindowSize)) {
-        dprintf(("VideoMap::SetWindow got invalid window size (%d, %d)\n",
-                width, height));
+        PLUGIN_PRINTF(("VideoMap::SetWindow got invalid window size (%d, %d)\n",
+                       width, height));
         return false;
       }
 
@@ -1114,7 +1108,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
       }
 
 #if NACL_WINDOWS
-      dprintf(("VideoMap::SetWindow adding Windows event listener\n"));
+      PLUGIN_PRINTF(("VideoMap::SetWindow adding Windows event listener\n"));
       HWND hwnd = static_cast<HWND>(window->window);
       original_window_procedure_ = SubclassWindow(hwnd,
           reinterpret_cast<WNDPROC>(VideoMap::WindowProcedure));
@@ -1122,9 +1116,9 @@ bool VideoMap::SetWindow(PluginWindow *window) {
 #endif  // NACL_WINDOWS
 #if NACL_LINUX && defined(MOZ_X11)
       // open X11 display, add X11 event listener
-      dprintf(("VideoMap::SetWindow adding X11 display\n"));
+      PLUGIN_PRINTF(("VideoMap::SetWindow adding X11 display\n"));
       set_platform_specific(XOpenDisplay(NULL));
-      dprintf(("VideoMap::SetWindow adding X11 event listener\n"));
+      PLUGIN_PRINTF(("VideoMap::SetWindow adding X11 event listener\n"));
       Window xwin = reinterpret_cast<Window>(window->window);
       NPSetWindowCallbackStruct* npsw =
           reinterpret_cast<NPSetWindowCallbackStruct*>(window->ws_info);
@@ -1146,54 +1140,44 @@ bool VideoMap::SetWindow(PluginWindow *window) {
 
 #if !NACL_OSX
 int16_t VideoMap::HandleEvent(void *param) {
-  dprintf(("VideoMap::HandleEvent(%p, %p)\n",
-           static_cast<void *>(this),
-           static_cast<void *>(param)));
+  PLUGIN_PRINTF(("VideoMap::HandleEvent(%p, %p)\n",
+                 static_cast<void *>(this),
+                 static_cast<void *>(param)));
   return 0;
 }
 #endif  // !NACL_OSX
 
-nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
-    VideoMap::VideoSharedMemorySetup() {
-  dprintf(("VideoMap::VideoSharedMemorySetup(%p, %p, %p)\n",
-           static_cast<void *>(this),
-           static_cast<void *>(video_shared_memory_),
-           static_cast<void *>(video_handle_)));
+ScriptableHandle* VideoMap::VideoSharedMemorySetup() {
+  PLUGIN_PRINTF(("VideoMap::VideoSharedMemorySetup(%p, %p, %p)\n",
+                 static_cast<void *>(this),
+                 static_cast<void *>(video_shared_memory_),
+                 static_cast<void *>(video_handle_)));
   if (NULL == video_shared_memory_) {
     if (NULL  == video_handle_) {
       // The plugin has not set up a shared memory object for the display.
       // This indicates either the plugin was set to be invisible, or had
       // an error when SetWindow was invoked.  In either case, it is an
       // error to get the shared memory object.
-      dprintf(("VideoMap::VideoSharedMemorySetup returning NULL\n"));
+      PLUGIN_PRINTF(("VideoMap::VideoSharedMemorySetup returning NULL\n"));
       return NULL;
     } else {
       // Create a SharedMemory object that the script can get at.
       // SRPC_Plugin initially takes exclusive ownership
-      dprintf(("VideoMap::VideoSharedMemorySetup browser_interface_ (%p)\n",
-               static_cast<void *>(browser_interface_)));
-      dprintf(("VideoMap::VideoSharedMemorySetup plugin (%p)\n",
-               static_cast<void *>(browser_interface_->plugin())));
-      nacl_srpc::SharedMemoryInitializer init_info(
-        static_cast<BrowserInterface*>(browser_interface_),
-        video_handle_,
-        static_cast<nacl_srpc::Plugin*>(
-            browser_interface_->plugin()->get_handle()));
+      PLUGIN_PRINTF(("VideoMap::VideoSharedMemorySetup plugin (%p)\n",
+                     static_cast<void *>(plugin_)));
 
       video_shared_memory_ =
-          nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>::
-        New(static_cast<nacl_srpc::PortableHandleInitializer*>(&init_info));
+          plugin_->browser_interface()->NewScriptableHandle(
+              SharedMemory::New(plugin_, video_handle_));
     }
   }
-  dprintf(("VideoMap::VideoSharedMemorySetup returns %p\n",
-           static_cast<void *>(video_shared_memory_)));
+  PLUGIN_PRINTF(("VideoMap::VideoSharedMemorySetup returns %p\n",
+                 static_cast<void *>(video_shared_memory_)));
   // Anyone requesting video_shared_memory_ begins sharing ownership.
   video_shared_memory_->AddRef();
   return video_shared_memory_;
 }
 
-// Note: Graphics functionality similar to npapi_bridge.
-// TODO(sehr): Make only one copy of the graphics code.
 void VideoMap::Invalidate() {
   if (window_ && window_->window) {
 #if NACL_WINDOWS
@@ -1211,15 +1195,14 @@ void VideoMap::Invalidate() {
     rect.top = 0;
     rect.right = window_->width;
     rect.bottom = window_->height;
-    ::NPN_InvalidateRect(browser_interface_->GetPluginIdentifier(),
-                         const_cast<NPRect*>(&rect));
+    ::NPN_InvalidateRect(plugin_->instance_id(), const_cast<NPRect*>(&rect));
 #endif
   }
 }
 
-VideoCallbackData* VideoMap::InitCallbackData(DescWrapper* desc,
-                                            BrowserInterface *p,
-                                            nacl_srpc::MultimediaSocket *msp) {
+VideoCallbackData* VideoMap::InitCallbackData(nacl::DescWrapper* desc,
+                                              Plugin *p,
+                                              MultimediaSocket *msp) {
   // initialize with refcount set to 2
   video_callback_data_ = new(std::nothrow) VideoCallbackData(desc, p, 2, msp);
   return video_callback_data_;
@@ -1227,8 +1210,8 @@ VideoCallbackData* VideoMap::InitCallbackData(DescWrapper* desc,
 
 // static method
 VideoCallbackData* VideoMap::ReleaseCallbackData(VideoCallbackData* vcd) {
-  dprintf(("VideoMap::ReleaseCallbackData (%p), refcount was %d\n",
-           static_cast<void *>(vcd), vcd->refcount));
+  PLUGIN_PRINTF(("VideoMap::ReleaseCallbackData (%p), refcount was %d\n",
+                 static_cast<void *>(vcd), vcd->refcount));
   --vcd->refcount;
   if (0 == vcd->refcount) {
     delete vcd;
@@ -1242,8 +1225,8 @@ VideoCallbackData* VideoMap::ReleaseCallbackData(VideoCallbackData* vcd) {
 // in some cases we may just need to forcefully delete the callback data,
 // and ignore the refcount.
 void VideoMap::ForceDeleteCallbackData(VideoCallbackData* vcd) {
-  dprintf(("VideoMap::ForceDeleteCallbackData (%p)\n",
-           static_cast<void *>(vcd)));
+  PLUGIN_PRINTF(("VideoMap::ForceDeleteCallbackData (%p)\n",
+                 static_cast<void *>(vcd)));
   delete vcd;
 }
 
@@ -1256,29 +1239,30 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
   int image_size = width * height * bytes_per_pixel;
   size_t vps_size = sizeof(struct NaClVideoShare) + image_size;
 
-  dprintf(("VideoMap::Initialize(%p)  this: %p\n",
-           static_cast<void *>(window),
-           static_cast<void *>(this)));
-  dprintf(("VideoMap::Initialize width, height: %d, %d\n", width, height));
+  PLUGIN_PRINTF(("VideoMap::Initialize(%p)  this: %p\n",
+                 static_cast<void *>(window),
+                 static_cast<void *>(this)));
+  PLUGIN_PRINTF(("VideoMap::Initialize width, height: %d, %d\n",
+                 width, height));
   if (NULL == window_) {
     // verify event struct size
     if (sizeof(union NaClMultimediaEvent) >
         sizeof(struct NaClMultimediaPadEvent)) {
-      dprintf(("VideoMap::Initialize event struct size failed\n"));
+      PLUGIN_PRINTF(("VideoMap::Initialize event struct size failed\n"));
       return -1;
     }
     // verify header size
     if ((NACL_VIDEO_SHARE_HEADER_SIZE + NACL_VIDEO_SHARE_PIXEL_PAD) !=
         sizeof(struct NaClVideoShare)) {
-      dprintf(("VideoMap::Initialize video share size failed\n"));
+      PLUGIN_PRINTF(("VideoMap::Initialize video share size failed\n"));
       return -1;
     }
-    dprintf(("VideoMap::Initialize assigning window to this(%p)\n",
-             static_cast<void *>(this)));
+    PLUGIN_PRINTF(("VideoMap::Initialize assigning window to this(%p)\n",
+                   static_cast<void *>(this)));
     // map video & event shared memory structure between trusted & untrusted
     window_ = window;
 
-    if(!can_cast<uint32_t>(vps_size)) {
+    if (!can_cast<uint32_t>(vps_size)) {
       // overflow
       video_size_ = 0;
       return -1;
@@ -1286,15 +1270,12 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
     video_size_ = saturate_cast<uint32_t>(vps_size);
 
     vps_size = NaClRoundAllocPage(vps_size);
-    nacl_srpc::Plugin* plugin =
-        reinterpret_cast<nacl_srpc::Plugin*>(
-            browser_interface_->plugin()->get_handle());
-    video_handle_ = plugin->wrapper_factory()->MakeShm(video_size_);
+    video_handle_ = plugin_->wrapper_factory()->MakeShm(video_size_);
     if (NULL  == video_handle_) {
       video_size_ = 0;
       return -1;
     }
-    dprintf(("VideoMap::Initialize about to Map...\n"));
+    PLUGIN_PRINTF(("VideoMap::Initialize about to Map...\n"));
 
     void* map_addr;
     size_t mem_size = video_size_;
@@ -1351,7 +1332,7 @@ void VideoMap::RequestRedraw() {
 #endif
 }
 
-VideoMap::VideoMap(BrowserInterface *browser_interface)
+VideoMap::VideoMap(Plugin *plugin)
   : event_state_button_(kClear),
     event_state_key_mod_(kClear),
     event_state_motion_last_x_(0),
@@ -1366,29 +1347,27 @@ VideoMap::VideoMap(BrowserInterface *browser_interface)
     video_callback_data_(NULL),
     video_shared_memory_(NULL),
     video_update_mode_(0) {
-  browser_interface_ = browser_interface;
+  plugin_ = plugin;
   window_ = NULL;
   // retrieve update property from plugin
-  if (NULL != browser_interface_) {
-    nacl_srpc::ScriptableHandle<nacl_srpc::Plugin> *plugin =
-        browser_interface_->plugin();
-    if (NULL != plugin) {
-      NPVariant variant;
-      nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::GetProperty(plugin,
-          (NPIdentifier)BrowserInterface::kVideoUpdateModeIdent,
-          &variant);
-      if (!nacl_srpc::NPVariantToScalar(&variant, &video_update_mode_)) {
-        // BUG: unhandled type error in the constructor.
-        // TODO(nfullagar,sehr): Break the constructor to handle errors.
-      }
+  if (NULL != plugin) {
+#ifdef SEHR_NEEDS_TO_FIX_THIS
+    NPVariant variant;
+    ScriptableHandleGetProperty(plugin,
+        (NPIdentifier)BrowserInterface::kVideoUpdateModeIdent,
+        &variant);
+    if (!NPVariantToScalar(&variant, &video_update_mode_)) {
+      // BUG: unhandled type error in the constructor.
+      // TODO(nfullagar,sehr): Break the constructor to handle errors.
     }
+#endif  // SEHR_NEEDS_TO_FIX_THIS
   }
 }
 
 VideoMap::~VideoMap() {
   Disable();
-  dprintf(("VideoMap::~VideoMap() releasing video_callback_data_ (%p)\n",
-           static_cast<void *>(video_callback_data_)));
+  PLUGIN_PRINTF(("VideoMap::~VideoMap() releasing video_callback_data_ (%p)\n",
+                 static_cast<void *>(video_callback_data_)));
   if (NULL != video_callback_data_) {
     video_callback_data_->portable_plugin = NULL;
     video_callback_data_ = ReleaseCallbackData(video_callback_data_);
@@ -1407,4 +1386,4 @@ VideoMap::~VideoMap() {
 #endif  // NACL_WINDOWS
 }
 
-}  // namespace nacl
+}  // namespace plugin

@@ -5,34 +5,38 @@
  */
 
 
+#include "native_client/src/trusted/plugin/srpc/closure.h"
+
 #include <string.h>
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/srpc/npapi_native.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-
+#include "native_client/src/trusted/plugin/npapi/npapi_native.h"
+#include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
+#include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
 #include "native_client/src/trusted/plugin/origin.h"
-#include "native_client/src/trusted/plugin/srpc/closure.h"
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
+#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
-#include "native_client/src/trusted/plugin/srpc/srpc.h"
+#include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+
+// TODO(sehr): This file really needs to be split to separate out NPAPI.
 
 struct NPObject;
 
-namespace nacl_srpc {
+namespace plugin {
 
 bool Closure::StartDownload() {
-  dprintf(("StartDownload plugin_identifier_=%p, requested_url_=%s, this=%p\n",
-           reinterpret_cast<void*>(plugin_identifier_),
-           requested_url_.c_str(),
-           reinterpret_cast<void*>(this)));
-  NPError err = NPN_GetURLNotify(plugin_identifier_,
+  PLUGIN_PRINTF(("StartDownload instance_id_=%p, requested_url_=%s, this=%p\n",
+                 reinterpret_cast<void*>(instance_id_),
+                 requested_url_.c_str(),
+                 reinterpret_cast<void*>(this)));
+  NPError err = NPN_GetURLNotify(instance_id_,
                                  requested_url_.c_str(),
                                  NULL,
                                  this);
@@ -41,133 +45,135 @@ bool Closure::StartDownload() {
 
 LoadNaClAppNotify::LoadNaClAppNotify(Plugin* plugin, nacl::string url)
     : Closure(plugin, url) {
-  dprintf(("LoadNaClAppNotify ctor\n"));
+  PLUGIN_PRINTF(("LoadNaClAppNotify ctor\n"));
 }
 
 LoadNaClAppNotify::~LoadNaClAppNotify() {
-  dprintf(("LoadNaClAppNotify dtor\n"));
+  PLUGIN_PRINTF(("LoadNaClAppNotify dtor\n"));
 }
 
-void LoadNaClAppNotify::Run(NPStream* stream, const char* fname) {
-  dprintf(("LoadNaClAppNotify Run %p, %s\n",
-           static_cast<void*>(stream),
-           fname));
-  if (NULL != fname) {
-    plugin()->Load(stream->url, fname);
-  }
+void LoadNaClAppNotify::RunFromFile(NPStream* stream,
+                                    const nacl::string& fname) {
+  PLUGIN_PRINTF(("LoadNaClAppNotify::RunFromFile(%p, %s)\n",
+                 static_cast<void*>(stream),
+                 fname.c_str()));
+  plugin()->Load(stream->url, fname.c_str());
 }
 
-void LoadNaClAppNotify::Run(const char *url,
-                            nacl::StreamShmBuffer* shmbufp) {
-  dprintf(("LoadNaClAppNotify Run %s, %p\n", url,
-           static_cast<void*>(shmbufp)));
+void LoadNaClAppNotify::RunFromBuffer(const nacl::string& url,
+                                      StreamShmBuffer* shmbufp) {
+  PLUGIN_PRINTF(("LoadNaClAppNotify RunFromBuffer(%s, %p)\n", url.c_str(),
+                 static_cast<void*>(shmbufp)));
   if (NULL != shmbufp) {
-    plugin()->Load(url, url, shmbufp);
+    plugin()->Load(url.c_str(), url.c_str(), shmbufp);
   }
 }
-
 
 UrlAsNaClDescNotify::UrlAsNaClDescNotify(Plugin* plugin,
                                          nacl::string url,
                                          void* callback_obj) :
     Closure(plugin, url),
     np_callback_(reinterpret_cast<NPObject*>(callback_obj)) {
-  dprintf(("UrlAsNaClDescNotify ctor\n"));
+  PLUGIN_PRINTF(("UrlAsNaClDescNotify ctor\n"));
   NPN_RetainObject(np_callback_);
 }
 
 UrlAsNaClDescNotify::~UrlAsNaClDescNotify() {
-  dprintf(("UrlAsNaClDescNotify dtor\n"));
+  PLUGIN_PRINTF(("UrlAsNaClDescNotify dtor\n"));
   NPN_ReleaseObject(np_callback_);
   np_callback_ = NULL;
 }
 
-void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
+void UrlAsNaClDescNotify::RunFromFile(NPStream* stream,
+                                      const nacl::string& fname) {
   // open file in DescWrapper, make available via np_callback_
   NPVariant retval;
   NPVariant status;
-  NPObject *nacl_desc = NULL;
-  NPIdentifier callback_selector =
-      (NPIdentifier)BrowserInterface::kOnfailIdent;
+  ScriptableImplNpapi* nacl_desc = NULL;
+  BrowserInterface* browser_interface = plugin()->browser_interface();
+  NPIdentifier callback_selector = reinterpret_cast<NPIdentifier>(
+      browser_interface->StringToIdentifier("onfail"));
 
-  dprintf(("UrlAsNaClDescNotify::Run(%p, %s)\n",
-           static_cast<void *>(stream),
-           fname));
+  PLUGIN_PRINTF(("UrlAsNaClDescNotify::RunFromFile(%p, %s)\n",
+                 static_cast<void*>(stream),
+                 fname.c_str()));
 
   VOID_TO_NPVARIANT(retval);
   VOID_TO_NPVARIANT(status);
 
   // execute body once; construct to use break statement to exit body early
   do {
-    if (NULL == fname || NULL == stream) {
-      dprintf(("fetch failed\n"));
-      ScalarToNPVariant("URL get failed", &status);
+    if (NULL == stream) {
+      PLUGIN_PRINTF(("fetch failed\n"));
+      // If stream is null, the filename contains a message.
+      nacl::stringstream msg;
+      msg << "URL get failed: " << fname;
+      ScalarToNPVariant(msg.str().c_str(), &status);
       break;
     }
 
-    dprintf(("fetched FQ URL %s\n", stream->url));
+    PLUGIN_PRINTF(("fetched FQ URL %s\n", stream->url));
     nacl::string url_origin = nacl::UrlToOrigin(stream->url);
     if (url_origin != plugin()->origin()) {
-      dprintf(("same origin policy forbids access: "
-        " page from origin %s attempted to"
-        " fetch page with origin %s\n",
-        plugin()->origin().c_str(),
-        url_origin.c_str()));
+      PLUGIN_PRINTF(("same origin policy forbids access: "
+                     " page from origin %s attempted to"
+                     " fetch page with origin %s\n",
+                     plugin()->origin().c_str(),
+                     url_origin.c_str()));
       ScalarToNPVariant("Same origin violation", &status);
       break;
     }
 
+    nacl::DescWrapperFactory* factory = plugin()->wrapper_factory();
     nacl::DescWrapper* ndiod =
-        plugin()->wrapper_factory()->OpenHostFile(const_cast<char *>(fname),
-                                                  NACL_ABI_O_RDONLY,
-                                                  0);
+        factory->OpenHostFile(const_cast<char*>(fname.c_str()),
+                              NACL_ABI_O_RDONLY,
+                              0);
     if (NULL == ndiod) {
-      dprintf(("NaClHostDescOpen failed\n"));
+      PLUGIN_PRINTF(("NaClHostDescOpen failed\n"));
 
       ScalarToNPVariant("NaClHostDescOpen failed", &status);
       break;
     }
-    dprintf(("created ndiod %p\n",
-             static_cast<void *>(ndiod)));
-    DescHandleInitializer init_info(plugin()->GetBrowserInterface(),
-                                    ndiod,
-                                    plugin());
+    PLUGIN_PRINTF(("created ndiod %p\n", static_cast<void*>(ndiod)));
 
-    nacl_desc = ScriptableHandle<DescBasedHandle>::New(&init_info);
+    nacl_desc = ScriptableImplNpapi::New(DescBasedHandle::New(plugin(), ndiod));
     // nacl_desc takes ownership of ndiod.
-    callback_selector = (NPIdentifier)BrowserInterface::kOnloadIdent;
+    callback_selector = reinterpret_cast<NPIdentifier>(
+        browser_interface->StringToIdentifier("onload"));
 
     ScalarToNPVariant(static_cast<NPObject*>(nacl_desc), &status);
     // NPVariant takes ownership of NPObject nacl_desc
   } while (0);
 
-  dprintf(("calling np_callback_ %p, nacl_desc %p, status %p\n",
-           static_cast<void *>(np_callback_),
-           static_cast<void *>(nacl_desc),
-           static_cast<void *>(&status)));
-  NPN_Invoke(plugin()->GetBrowserInterface()->GetPluginIdentifier(),
+  PLUGIN_PRINTF(("calling np_callback_ %p, nacl_desc %p, status %p\n",
+                 static_cast<void*>(np_callback_),
+                 static_cast<void*>(nacl_desc),
+                 static_cast<void*>(&status)));
+  NPN_Invoke(plugin()->instance_id(),
              np_callback_,
              callback_selector,
              &status,
              1,
              &retval);
 
-  dprintf(("releasing status %p\n", static_cast<void *>(&status)));
+  PLUGIN_PRINTF(("releasing status %p\n", static_cast<void*>(&status)));
   NPN_ReleaseVariantValue(&status);
   NPN_ReleaseVariantValue(&retval);
 }
 
-void UrlAsNaClDescNotify::Run(const char *url,
-                              nacl::StreamShmBuffer* shmbufp) {
+void UrlAsNaClDescNotify::RunFromBuffer(const nacl::string& url,
+                                        StreamShmBuffer* shmbufp) {
   // create a SharedMemory object, make it available via np_callback_
   NPVariant retval;
   NPVariant status;
-  NPObject *nacl_desc = NULL;
-  NPIdentifier callback_selector =
-    (NPIdentifier)BrowserInterface::kOnfailIdent;
+  ScriptableHandle* nacl_desc = NULL;
+  BrowserInterface* browser_interface = plugin()->browser_interface();
+  NPIdentifier callback_selector = reinterpret_cast<NPIdentifier>(
+      browser_interface->StringToIdentifier("onfail"));
 
-  dprintf(("UrlAsNaClDescNotify::Run(%s, %p )\n", url,
-           static_cast<void*>(shmbufp)));
+  PLUGIN_PRINTF(("UrlAsNaClDescNotify::RunFromBuffer(%s, %p)\n",
+                 url.c_str(), static_cast<void*>(shmbufp)));
 
   VOID_TO_NPVARIANT(retval);
   VOID_TO_NPVARIANT(status);
@@ -175,116 +181,114 @@ void UrlAsNaClDescNotify::Run(const char *url,
   // execute body once; construct to use break statement to exit body early
   do {
     if (NULL == shmbufp) {
-      dprintf(("bad buffer - stream handling failed\n"));
+      PLUGIN_PRINTF(("bad buffer - stream handling failed\n"));
       ScalarToNPVariant("Same origin violation", &status);
       break;
     }
 
-    dprintf(("fetched FQ URL %s\n", url));
+    PLUGIN_PRINTF(("fetched FQ URL %s\n", url.c_str()));
     nacl::string url_origin = nacl::UrlToOrigin(url);
     if (url_origin != plugin()->origin()) {
-      dprintf(("same origin policy forbids access: "
-              " page from origin %s attempted to"
-              " fetch page with origin %s\n",
-              plugin()->origin().c_str(),
-              url_origin.c_str()));
+      PLUGIN_PRINTF(("same origin policy forbids access: "
+                     " page from origin %s attempted to"
+                     " fetch page with origin %s\n",
+                     plugin()->origin().c_str(),
+                     url_origin.c_str()));
       ScalarToNPVariant("Same origin violation", &status);
       break;
     }
 
     int32_t size;
-    NaClDesc *raw_desc = shmbufp->shm(&size);
+    NaClDesc* raw_desc = shmbufp->shm(&size);
     if (NULL == raw_desc) {
-      dprintf((" extracting shm failed\n"));
+      PLUGIN_PRINTF((" extracting shm failed\n"));
       break;
     }
-    nacl::DescWrapper *wrapped_shm =
+    nacl::DescWrapper* wrapped_shm =
         plugin()->wrapper_factory()->MakeGeneric(NaClDescRef(raw_desc));
-    SharedMemoryInitializer init_info(plugin()->GetBrowserInterface(),
-                                      wrapped_shm,
-                                      plugin());
-    ScriptableHandle<SharedMemory> *shared_memory =
-        ScriptableHandle<SharedMemory>::New(&init_info);
+    ScriptableImplNpapi* shared_memory =
+        ScriptableImplNpapi::New(SharedMemory::New(plugin(), wrapped_shm));
 
-    callback_selector = (NPIdentifier)BrowserInterface::kOnloadIdent;
+    callback_selector = reinterpret_cast<NPIdentifier>(
+        browser_interface->StringToIdentifier("onload"));
 
     ScalarToNPVariant(static_cast<NPObject*>(shared_memory), &status);
-    // NPVariant takes ownership of NPObject nacl_desc
+    // NPVariant takes ownership of ScriptableHandle nacl_desc
   } while (0);
 
-  dprintf(("calling np_callback_ %p, nacl_desc %p, status %p\n",
-          static_cast<void *>(np_callback_),
-          static_cast<void *>(nacl_desc),
-          static_cast<void *>(&status)));
-  NPN_Invoke(plugin()->GetBrowserInterface()->GetPluginIdentifier(),
+  PLUGIN_PRINTF(("calling np_callback_ %p, nacl_desc %p, status %p\n",
+                  static_cast<void*>(np_callback_),
+           static_cast<void*>(nacl_desc),
+           static_cast<void*>(&status)));
+  NPN_Invoke(plugin()->instance_id(),
              np_callback_,
              callback_selector,
              &status,
              1,
              &retval);
 
-  dprintf(("releasing status %p\n", static_cast<void *>(&status)));
+  PLUGIN_PRINTF(("releasing status %p\n", static_cast<void*>(&status)));
   NPN_ReleaseVariantValue(&status);
   NPN_ReleaseVariantValue(&retval);
 }
 
-NpGetUrlClosure::NpGetUrlClosure(NPP npp,
+NpGetUrlClosure::NpGetUrlClosure(InstanceIdentifier instance_id,
                                  nacl::NPModule* module,
                                  nacl::string url,
                                  int32_t notify_data,
                                  bool call_url_notify) :
   Closure(NULL, url),
   module_(module),
-  npp_(npp),
+  instance_id_(instance_id),
   notify_data_(notify_data),
   call_url_notify_(call_url_notify) {
-  nacl::SRPC_Plugin* srpc = reinterpret_cast<nacl::SRPC_Plugin*>(npp->pdata);
-  Plugin* plugin = static_cast<Plugin*>(srpc->plugin()->get_handle());
+  PluginNpapi* plugin = reinterpret_cast<PluginNpapi*>(instance_id_->pdata);
   set_plugin(plugin);
-  dprintf(("NpGetUrlClosure ctor\n"));
+  PLUGIN_PRINTF(("NpGetUrlClosure ctor\n"));
 }
 
 NpGetUrlClosure::~NpGetUrlClosure() {
-  dprintf(("NpGetUrlClosure dtor\n"));
+  PLUGIN_PRINTF(("NpGetUrlClosure dtor\n"));
   module_ = NULL;
-  npp_ = NULL;
+  instance_id_ = NULL;
 }
 
-void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
+void NpGetUrlClosure::RunFromFile(NPStream* stream,
+                                  const nacl::string& fname) {
   // open file in DescWrapper, make available via np_callback_
   nacl::DescWrapperFactory factory;
   nacl::DescWrapper* ndiod = NULL;
 
-  dprintf(("NpGetUrlClosure::Run(%p, %s)\n",
-           static_cast<void *>(stream),
-           fname));
+  PLUGIN_PRINTF(("NpGetUrlClosure::RunFromFile(%p, %s)\n",
+                  static_cast<void*>(stream), fname.c_str()));
 
-  // execute body once; construct to use break statement to exit body early
+  // execute body once; construct to use break statement to exit body early.
   do {
-    if (NULL == fname || NULL == stream) {
-      dprintf(("fetch failed\n"));
+    if (NULL == stream) {
+      // If stream is null, the filename contains a message.
+      PLUGIN_PRINTF(("NpGetUrlClosure: fetch failed: %s\n", fname.c_str()));
       break;
     }
 
-    dprintf(("fetched FQ URL %s\n", stream->url));
+    PLUGIN_PRINTF(("fetched FQ URL %s\n", stream->url));
     nacl::string url_origin = nacl::UrlToOrigin(stream->url);
     if (url_origin != module_->origin()) {
-      dprintf(("same origin policy forbids access: "
-        " page from origin %s attempted to"
-        " fetch page with origin %s\n",
-        module_->origin().c_str(),
-        url_origin.c_str()));
+      PLUGIN_PRINTF(("same origin policy forbids access: "
+                     " page from origin %s attempted to"
+                     " fetch page with origin %s\n",
+                     module_->origin().c_str(),
+                     url_origin.c_str()));
       break;
     }
 
-    ndiod = factory.OpenHostFile(const_cast<char *>(fname),
+    ndiod = factory.OpenHostFile(const_cast<char*>(fname.c_str()),
                                  NACL_ABI_O_RDONLY,
                                  0);
     if (NULL == ndiod) {
-      dprintf(("NaClHostDescOpen failed\n"));
+      PLUGIN_PRINTF(("NaClHostDescOpen failed\n"));
       break;
     }
-    dprintf(("created ndiod %p\n", static_cast<void *>(ndiod)));
+    PLUGIN_PRINTF(("created ndiod %p\n", static_cast<void*>(ndiod)));
   } while (0);
 
   // The following two variables are passed when NPP_URLNotify is invoked.
@@ -292,11 +296,11 @@ void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
   // fails.  We do not know the reason from the browser, so we use a default.
   NPReason notify_reason = NPRES_NETWORK_ERR;
   // On error, we return the requested URL.
-  char* notify_url = const_cast<char*>(requested_url().c_str());
+  nacl::string notify_url = requested_url();
 
   // If successful, invoke NPP_StreamAsFile.
   if (NULL != ndiod) {
-    module_->StreamAsFile(npp_,
+    module_->StreamAsFile(instance_id_,
                           ndiod->desc(),
                           const_cast<char*>(stream->url),
                           stream->end);
@@ -304,74 +308,75 @@ void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
     // We return success and the version of the URL that the browser returns.
     // The latter is typically the fully qualified URL for the request.
     notify_reason = NPRES_DONE;
-    notify_url = const_cast<char*>(stream->url);
+    notify_url = stream->url;
   }
-  // If the user requested a notification, invoke NPP_URLNotify.
+  // If the user requested a notification, invoke URLNotify.
   if (call_url_notify_) {
-    module_->URLNotify(npp_,
-                       notify_url,
+    module_->URLNotify(instance_id_,
+                       notify_url.c_str(),
                        notify_reason,
                        reinterpret_cast<void*>(notify_data_));
   }
 }
 
-void NpGetUrlClosure::Run(const char* url, nacl::StreamShmBuffer* shmbufp) {
+void NpGetUrlClosure::RunFromBuffer(const nacl::string& url,
+                                    StreamShmBuffer* shmbufp) {
   // create a SharedMemory object, make it available via np_callback_
   nacl::DescWrapperFactory factory;
-  dprintf(("NpGetUrlClosure::Run(%s, %p)\n", url,
-           static_cast<void*>(shmbufp)));
+  PLUGIN_PRINTF(("NpGetUrlClosure::RunFromBuffer(%s, %p)\n", url.c_str(),
+                 static_cast<void*>(shmbufp)));
 
   // The following two variables are passed when NPP_URLNotify is invoked.
   // Both default to the values to be passed when the requested NPN_GetURL*
   // fails.  We do not know the reason from the browser, so we use a default.
   NPReason notify_reason = NPRES_NETWORK_ERR;
   // On error, we return the requested URL.
-  char* notify_url = const_cast<char*>(requested_url().c_str());
+  nacl::string notify_url = requested_url();
 
   // execute body once; construct to use break statement to exit body early
   do {
-    if (NULL == shmbufp || NULL == url) {
-      dprintf(("bad buffer or URL - stream handling failed\n"));
+    if (NULL == shmbufp) {
+      PLUGIN_PRINTF(("bad buffer or URL - stream handling failed\n"));
       break;
     }
 
-    dprintf(("fetched FQ URL %s\n", url));
+    PLUGIN_PRINTF(("fetched FQ URL %s\n", url.c_str()));
     nacl::string url_origin = nacl::UrlToOrigin(url);
     if (url_origin != module_->origin()) {
-      dprintf(("same origin policy forbids access: "
-              " page from origin %s attempted to"
-              " fetch page with origin %s\n",
-              module_->origin().c_str(),
-              url_origin.c_str()));
+      PLUGIN_PRINTF(("same origin policy forbids access: "
+                     " page from origin %s attempted to"
+                     " fetch page with origin %s\n",
+                     module_->origin().c_str(),
+                     url_origin.c_str()));
       break;
     }
 
     int32_t size;
-    NaClDesc *raw_desc = shmbufp->shm(&size);
+    NaClDesc* raw_desc = shmbufp->shm(&size);
     if (NULL == raw_desc) {
-      dprintf((" extracting shm failed\n"));
+      PLUGIN_PRINTF((" extracting shm failed\n"));
       return;
     }
-    nacl::DescWrapper *wrapped_shm =
+    nacl::DescWrapper* wrapped_shm =
         plugin()->wrapper_factory()->MakeGeneric(NaClDescRef(raw_desc));
-    module_->StreamAsFile(npp_,
+    module_->StreamAsFile(instance_id_,
                           wrapped_shm->desc(),
-                          const_cast<char*>(url),
+                          const_cast<char*>(url.c_str()),
                           size);
     wrapped_shm->Delete();
     // We return success and the version of the URL that the browser returns.
     // The latter is typically the fully qualified URL for the request.
     notify_reason = NPRES_DONE;
-    notify_url = const_cast<char*>(url);
+    notify_url = url;
   } while (0);
 
   // If the user requested a notification, invoke NPP_URLNotify.
   if (call_url_notify_) {
-    module_->URLNotify(npp_,
-                       notify_url,
+    module_->URLNotify(instance_id_,
+                       notify_url.c_str(),
                        notify_reason,
                        reinterpret_cast<void*>(notify_data_));
   }
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin

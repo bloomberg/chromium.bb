@@ -118,13 +118,18 @@ nacl_npplugin_inputs = [
     env.ComponentObject('npn_gate',
                         '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
                         'npn_gate.cc'),
+    # NPAPI specific code
+    'npapi/browser_impl_npapi.cc',
+    'npapi/npapi_native.cc',
     'npapi/npp_gate.cc',
     'npapi/npp_launcher.cc',
-    # SRPC support
-    'srpc/srpc.cc',
-    'srpc/npapi_native.cc',
+    'npapi/plugin_npapi.cc',
+    'npapi/ret_array.cc',
+    'npapi/scriptable_impl_npapi.cc',
+    # generic URL-origin / same-domain handling
+    'origin.cc',
+    # Portable plugin code
     'srpc/plugin.cc',
-    'srpc/ret_array.cc',
     'srpc/connected_socket.cc',
     'srpc/multimedia_socket.cc',
     'srpc/shared_memory.cc',
@@ -132,7 +137,6 @@ nacl_npplugin_inputs = [
     'srpc/srpc_client.cc',
     'srpc/service_runtime_interface.cc',
     'srpc/srt_socket.cc',
-    'srpc/browser_impl_npapi.cc',
     'srpc/portable_handle.cc',
     'srpc/desc_based_handle.cc',
     'srpc/nexe_arch.cc',
@@ -140,16 +144,20 @@ nacl_npplugin_inputs = [
     'srpc/video.cc',
     'srpc/closure.cc',
     'srpc/method_map.cc',
-    # generic URL-origin / same-domain handling
-    'origin.cc',
+    'srpc/scriptable_handle.cc',
+    'srpc/stream_shm_buffer.cc',
 ]
 
-if env['TARGET_PLATFORM'] == 'WINDOWS':
+if env.Bit('windows'):
   if not env.Bit('chrome'):
     nacl_npplugin_inputs += [
         'win/nacl_plugin.def',
         env.RES('win/nacl_plugin.rc'),
     ]
+elif env.Bit('mac'):
+  nacl_npplugin_inputs += [
+      'osx/open_mac_file.cc',
+  ]
 
 npGoogleNaClPlugin = 'npGoogleNaClPlugin'
 

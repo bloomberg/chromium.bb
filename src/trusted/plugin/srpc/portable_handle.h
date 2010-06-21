@@ -5,32 +5,24 @@
  */
 
 
-// NPAPI Simple RPC Interface
+// The abstract portable scriptable object base class.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_PORTABLE_HANDLE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_PORTABLE_HANDLE_H_
 
-// TODO(gregoryd): probably too many includes here.
 #include <stdio.h>
 #include <map>
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/plugin/srpc/method_map.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 
-namespace nacl_srpc {
+namespace plugin {
 
 // Forward declarations for externals.
+class BrowserInterface;
 class Plugin;
-
-struct PortableHandleInitializer {
-  BrowserInterface* browser_interface_;
-  explicit PortableHandleInitializer(BrowserInterface* browser_interface):
-      browser_interface_(browser_interface) {}
-};
-
 
 typedef enum {
   METHOD_CALL = 0,
@@ -39,64 +31,65 @@ typedef enum {
 } CallType;
 
 
-// PortableHandle is the struct used to represent handles that are opaque to
-// the javascript bridge.
+// PortableHandle represents scriptable objects used by the browser plugin.
+// The classes in this hierarchy are independent of the browser plugin API
+// used to implement them.  PortableHandle is an abstract base class.
 class PortableHandle {
  public:
-  // There are derived classes, so the constructor and destructor must
-  // be visible.
-  explicit PortableHandle();
-  virtual ~PortableHandle();
+  // Delete this object.
+  void Delete() { delete this; }
 
-  bool Init(struct PortableHandleInitializer* init_info);
-  BrowserInterface* GetBrowserInterface() {
-    return browser_interface_;
-  }
-
-  // generic NPAPI/IDispatch interface
+  // Generic NPAPI/IDispatch interface
   bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
   bool HasMethod(uintptr_t method_id, CallType call_type);
 
-  // get the method signature so ScritableHandle can marshal the inputs
+  // Get the method signature so ScriptableHandle can marshal the inputs
   bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
+
+  // DescBasedHandles can be conveyed over SRPC channels.
+  virtual bool IsDescBasedHandle() const { return false; }
+
+  // The interface to the browser.
+  virtual BrowserInterface* browser_interface() const = 0;
+
+  // Every portable object has a pointer to the root plugin object.
+  virtual Plugin* plugin() const = 0;
+
+ protected:
+  PortableHandle();
+  virtual ~PortableHandle();
+
+  // Derived classes can set the properties and methods they export by
+  // the following three methods.
+  void AddPropertyGet(RpcFunction function_ptr,
+                      const char *name,
+                      const char *outs);
+  void AddPropertySet(RpcFunction function_ptr,
+                      const char *name,
+                      const char *ins);
+  void AddMethodCall(RpcFunction function_ptr,
+                     const char *name,
+                     const char *ins,
+                     const char *outs);
+
+  // Every derived class should provide an implementation for these functions
+  // to allow handling of method calls that cannot be registered at build time.
   virtual bool InitParamsEx(uintptr_t method_id,
                             CallType call_type,
                             SrpcParams* params);
-  static int number_alive() { return number_alive_counter; }
-
- protected:
-  // function_ptr must be static
-  void AddMethodToMap(RpcFunction function_ptr,
-                      const char* name,
-                      CallType call_type,
-                      const char* ins,
-                      const char* outs);
-  // Add a function that will be called through the default handler
-  // Dynamic methods are called by index
-  // that is provided as part of the MethodInfo
-  void AddDynamicMethodToMap(MethodInfo* method_info);
-
-  // Every derived class should provide an implementation
-  // for the next two functions to allow handling of method calls
-  // that cannot be registered at build time.
   virtual bool InvokeEx(uintptr_t method_id,
                         CallType call_type,
                         SrpcParams* params);
   virtual bool HasMethodEx(uintptr_t method_id, CallType call_type);
-  virtual Plugin* GetPlugin() = 0;
- private:
-  MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
 
- public:
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PortableHandle);
+  MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
   MethodMap methods_;
   MethodMap property_get_methods_;
   MethodMap property_set_methods_;
-
- private:
-  static int number_alive_counter;
-  BrowserInterface* browser_interface_;
 };
 
-}  // namespace nacl_srpc
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_PORTABLE_HANDLE_H_

@@ -5,142 +5,140 @@
  */
 
 
+#include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include <stdio.h>
 #include <string.h>
-
 #include <map>
 
-#include "native_client/src/trusted/plugin/srpc/portable_handle.h"
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 
-namespace nacl_srpc {
+namespace plugin {
 
-  int PortableHandle::number_alive_counter = 0;
+PortableHandle::PortableHandle() {
+  PLUGIN_PRINTF(("PortableHandle::PortableHandle(%p)\n",
+                 static_cast<void*>(this)));
+}
 
+PortableHandle::~PortableHandle() {
+  PLUGIN_PRINTF(("PortableHandle::~PortableHandle(%p)\n",
+                 static_cast<void*>(this)));
+}
 
-  PortableHandle::PortableHandle() : browser_interface_(NULL) {
-    dprintf(("PortableHandle::PortableHandle(%p, %d)\n",
-             static_cast<void *>(this),
-             ++number_alive_counter));
+void PortableHandle::AddPropertyGet(RpcFunction function_ptr,
+                                    const char* name,
+                                    const char* outs) {
+  PLUGIN_PRINTF(("PortableHandle::AddPropertyGet\n"));
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  MethodInfo* new_method =
+      new(std::nothrow) MethodInfo(function_ptr, name, "", outs);
+  if (NULL == new_method) {
+    return;
   }
+  property_get_methods_.AddMethod(method_id, new_method);
+}
 
-  PortableHandle::~PortableHandle() {
-    dprintf(("PortableHandle::~PortableHandle(%p, %d)\n",
-             static_cast<void *>(this),
-             --number_alive_counter));
+void PortableHandle::AddPropertySet(RpcFunction function_ptr,
+                                    const char* name,
+                                    const char* ins) {
+  PLUGIN_PRINTF(("PortableHandle::AddPropertySet\n"));
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  MethodInfo* new_method =
+      new(std::nothrow) MethodInfo(function_ptr, name, ins, "");
+  if (NULL == new_method) {
+    return;
   }
+  property_set_methods_.AddMethod(method_id, new_method);
+}
 
-  void PortableHandle::AddMethodToMap(RpcFunction function_ptr,
-                                      const char *name,
-                                      CallType call_type,
-                                      const char *ins,
-                                      const char *outs) {
-    uintptr_t method_id =
-        BrowserInterface::GetStrIdentifierCallback(name);
-    MethodInfo* new_method = new(std::nothrow) MethodInfo(function_ptr,
-                                                          name,
-                                                          ins,
-                                                          outs);
-    if (NULL == new_method) {
-      return;
-    }
-    switch (call_type) {
-      case METHOD_CALL:
-        methods_.AddMethod(method_id, new_method);
-        break;
-      case PROPERTY_GET:
-        property_get_methods_.AddMethod(method_id, new_method);
-        break;
-      case PROPERTY_SET:
-        property_set_methods_.AddMethod(method_id, new_method);
-        break;
-      default:
-        dprintf(("PortableHandle::AddMethodToMap(%p) - unknown call type %d\n",
-                 static_cast<void *>(this), call_type));
-    }
+void PortableHandle::AddMethodCall(RpcFunction function_ptr,
+                                   const char* name,
+                                   const char* ins,
+                                   const char* outs) {
+  PLUGIN_PRINTF(("PortableHandle::AddMethodCall\n"));
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  MethodInfo* new_method =
+      new(std::nothrow) MethodInfo(function_ptr, name, ins, outs);
+  if (NULL == new_method) {
+    return;
   }
+  methods_.AddMethod(method_id, new_method);
+}
 
-  bool PortableHandle::Init(struct PortableHandleInitializer* init_info)  {
-    browser_interface_ = init_info->browser_interface_;
-    return true;
-  }
-
-  bool PortableHandle::InitParams(uintptr_t method_id,
-                                  CallType call_type,
-                                  SrpcParams *params) {
-    MethodInfo *method_info = GetMethodInfo(method_id, call_type);
-    if (method_info) {
-      return params->Init(method_info->ins_, method_info->outs_);
-    } else {
-      return InitParamsEx(method_id, call_type, params);
-    }
-  }
-
-  bool PortableHandle::InitParamsEx(uintptr_t method_id,
-                                    CallType call_type,
-                                    SrpcParams *params) {
-    UNREFERENCED_PARAMETER(method_id);
-    UNREFERENCED_PARAMETER(call_type);
-    UNREFERENCED_PARAMETER(params);
-    return false;
-  }
-
-  MethodInfo* PortableHandle::GetMethodInfo(uintptr_t method_id,
-                                            CallType call_type) {
-    MethodInfo *method_info = NULL;
-    switch (call_type) {
-      case METHOD_CALL:
-        method_info = methods_.GetMethod(method_id);
-        break;
-      case PROPERTY_GET:
-        method_info = property_get_methods_.GetMethod(method_id);
-        break;
-      case PROPERTY_SET:
-        method_info = property_set_methods_.GetMethod(method_id);
-        break;
-      default:
-        dprintf(("PortableHandle::Invoke(%p) - unknown call type %d\n",
-                 static_cast<void *>(this), call_type));
-    }
-
-    return method_info;
-  }
-
-  bool PortableHandle::HasMethod(uintptr_t method_id, CallType call_type) {
-    if (GetMethodInfo(method_id, call_type)) {
-      return true;
-    }
-    // Call class-specific implementation - see ConnectedSocket and Plugin
-    // classes for examples.
-    return HasMethodEx(method_id, call_type);
-  }
-
-  // TODO(gregoryd) - consider adding a function that will first initialize
-  // params and then call Invoke
-  bool PortableHandle::Invoke(uintptr_t method_id,
-                              CallType call_type,
-                              SrpcParams* params) {
-    MethodInfo *method_info = GetMethodInfo(method_id, call_type);
-
-    if (method_info) {
-      return method_info->function_ptr_(reinterpret_cast<void*>(this), params);
-    } else {
-      // This should be handled by the class-specific handler
-      return InvokeEx(method_id, call_type, params);
-    }
-  }
-
-  bool PortableHandle::InvokeEx(uintptr_t method_id,
+bool PortableHandle::InitParams(uintptr_t method_id,
                                 CallType call_type,
-                                SrpcParams *params) {
-    UNREFERENCED_PARAMETER(method_id);
-    UNREFERENCED_PARAMETER(call_type);
-    params->SetExceptionInfo("Unrecognized method specified");
-    return false;
-  }
-
-  bool PortableHandle::HasMethodEx(uintptr_t method_id, CallType call_type) {
-    UNREFERENCED_PARAMETER(method_id);
-    UNREFERENCED_PARAMETER(call_type);
-    return false;
+                                SrpcParams* params) {
+  MethodInfo* method_info = GetMethodInfo(method_id, call_type);
+  if (NULL == method_info) {
+    return InitParamsEx(method_id, call_type, params);
+  } else {
+    return params->Init(method_info->ins(), method_info->outs());
   }
 }
+
+MethodInfo* PortableHandle::GetMethodInfo(uintptr_t method_id,
+                                          CallType call_type) {
+  MethodInfo* method_info = NULL;
+  switch (call_type) {
+    case METHOD_CALL:
+      method_info = methods_.GetMethod(method_id);
+      break;
+    case PROPERTY_GET:
+      method_info = property_get_methods_.GetMethod(method_id);
+      break;
+    case PROPERTY_SET:
+      method_info = property_set_methods_.GetMethod(method_id);
+      break;
+  }
+
+  return method_info;
+}
+
+bool PortableHandle::HasMethod(uintptr_t method_id, CallType call_type) {
+  if (GetMethodInfo(method_id, call_type)) {
+    return true;
+  }
+  // Call class-specific implementation - see ConnectedSocket and Plugin
+  // classes for examples.
+  return HasMethodEx(method_id, call_type);
+}
+
+// TODO(gregoryd) - consider adding a function that will first initialize
+// params and then call Invoke
+bool PortableHandle::Invoke(uintptr_t method_id,
+                            CallType call_type,
+                            SrpcParams* params) {
+  MethodInfo* method_info = GetMethodInfo(method_id, call_type);
+
+  if (NULL != method_info && NULL != method_info->function_ptr()) {
+    return method_info->function_ptr()(reinterpret_cast<void*>(this), params);
+  } else {
+    // This should be handled by the class-specific handler
+    return InvokeEx(method_id, call_type, params);
+  }
+}
+
+bool PortableHandle::InitParamsEx(uintptr_t method_id,
+                                  CallType call_type,
+                                  SrpcParams* params) {
+  UNREFERENCED_PARAMETER(method_id);
+  UNREFERENCED_PARAMETER(call_type);
+  UNREFERENCED_PARAMETER(params);
+  return false;
+}
+
+bool PortableHandle::InvokeEx(uintptr_t method_id,
+                              CallType call_type,
+                              SrpcParams* params) {
+  UNREFERENCED_PARAMETER(method_id);
+  UNREFERENCED_PARAMETER(call_type);
+  UNREFERENCED_PARAMETER(params);
+  return false;
+}
+
+bool PortableHandle::HasMethodEx(uintptr_t method_id, CallType call_type) {
+  UNREFERENCED_PARAMETER(method_id);
+  UNREFERENCED_PARAMETER(call_type);
+  return false;
+}
+
+}  // namespace plugin

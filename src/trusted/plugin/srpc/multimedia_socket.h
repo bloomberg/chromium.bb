@@ -4,21 +4,24 @@
  * be found in the LICENSE file.
  */
 
+// The socket class used for the av library to talk to the plugin.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_MULTIMEDIA_SOCKET_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_MULTIMEDIA_SOCKET_H_
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
-namespace nacl_srpc {
+namespace plugin {
 
+class BrowserInterface;
 class ServiceRuntimeInterface;
 
 class MultimediaSocket {
  public:
-  MultimediaSocket(ScriptableHandle<ConnectedSocket>* s,
+  MultimediaSocket(ScriptableHandle* s,
                    BrowserInterface* browser_interface,
                    ServiceRuntimeInterface* serv_rtm_info);
 
@@ -29,19 +32,16 @@ class MultimediaSocket {
 
   // accessor
   ConnectedSocket *connected_socket() const {
-    return static_cast<ConnectedSocket*>(connected_socket_->get_handle());
+    return static_cast<ConnectedSocket*>(connected_socket_->handle());
   }
-
-  // Not really constants.  Do not modify.  Use only after at least
-  // one MultimediaSocket instance has been constructed.
-  static uintptr_t kNaClMultimediaBridgeIdent;
 
   void UpcallThreadExiting();
   bool UpcallThreadShouldExit();
   void set_upcall_thread_id(uint32_t tid);
 
  private:
-  ScriptableHandle<ConnectedSocket>* connected_socket_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(MultimediaSocket);
+  ScriptableHandle* connected_socket_;
   struct NaClThread upcall_thread_;
 
   BrowserInterface* browser_interface_;
@@ -57,13 +57,8 @@ class MultimediaSocket {
 
   bool upcall_thread_should_exit_;
   uint32_t upcall_thread_id_;
-
-  static void InitializeIdentifiers(BrowserInterface* browser_interface);
-
-  static int const kMaxUpcallThreadWaitSec = 5;
-  static int const kNanoXinMicroX = 1000;
 };
 
-}  // namespace nacl_srpc
+}  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_MULTIMEDIA_SOCKET_H_

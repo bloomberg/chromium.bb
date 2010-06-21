@@ -20,12 +20,19 @@
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/trusted/plugin/srpc/video.h"
 
-namespace nacl_srpc {
+namespace {
 
+PLUGIN_JMPBUF socket_env;
 
-// Define all the static variables.
-int ConnectedSocket::number_alive_counter = 0;
-PLUGIN_JMPBUF ConnectedSocket::socket_env;
+void SignalHandler(int value) {
+  PLUGIN_PRINTF(("ConnectedSocket::SignalHandler()\n"));
+
+  PLUGIN_LONGJMP(socket_env, value);
+}
+
+}  // namespace
+
+namespace plugin {
 
 // ConnectedSocket implements a method for each method exported from
 // the NaCl service runtime
@@ -34,7 +41,7 @@ bool ConnectedSocket::InvokeEx(uintptr_t method_id,
                                SrpcParams *params) {
   // All ConnectedSocket does for dynamic calls
   // is forward it to the SrpcClient object
-  dprintf(("ConnectedSocket::InvokeEx()\n"));
+  PLUGIN_PRINTF(("ConnectedSocket::InvokeEx()\n"));
   if (srpc_client_)
     return srpc_client_->Invoke(method_id, params);
   return PortableHandle::InvokeEx(method_id, call_type, params);
@@ -56,127 +63,94 @@ bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
   return false;
 }
 
-void ConnectedSocket::SignalHandler(int value) {
-  dprintf(("ConnectedSocket::SignalHandler()\n"));
+ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
+                                      nacl::DescWrapper* desc,
+                                      bool is_srpc_client,
+                                      ServiceRuntimeInterface* serv_rtm_info) {
+  PLUGIN_PRINTF(("ConnectedSocket::New()\n"));
 
-  PLUGIN_LONGJMP(socket_env, value);
+  ConnectedSocket* connected_socket = new(std::nothrow) ConnectedSocket();
+
+  if (connected_socket == NULL ||
+      !connected_socket->Init(plugin, desc, is_srpc_client, serv_rtm_info)) {
+    // Ok to delete if NULL.
+    delete connected_socket;
+    return NULL;
+  }
+
+  return connected_socket;
 }
 
-NaClSrpcArg* ConnectedSocket::GetSignatureObject() {
-  dprintf(("ConnectedSocket::GetSignatureObject(%p)\n",
-           static_cast<void *>(this)));
-  // Get the exported methods.
-  return srpc_client_->GetSignatureObject();
-}
+bool ConnectedSocket::Init(Plugin* plugin,
+                           nacl::DescWrapper* wrapper,
+                           bool is_srpc_client,
+                           ServiceRuntimeInterface* serv_rtm_info) {
+  VideoScopedGlobalLock video_lock;
 
-
-bool ConnectedSocket::SignaturesGetProperty(void *obj, SrpcParams *params) {
-  // TODO(gregoryd): is this still required?
-  UNREFERENCED_PARAMETER(obj);
-  UNREFERENCED_PARAMETER(params);
-  return true;
-}
-
-void ConnectedSocket::LoadMethods() {
-  // ConnectedSocket exports the signature property
-  // TODO(sehr) - keep the following comment for documentation
-  // - see previous version of this file
-  // Safari apparently wants us to return false here.  This means programmers
-  // will have to use a JavaScript function object to wrap NativeClient
-  // methods they intend to invoke indirectly.
-
-  PortableHandle::AddMethodToMap(SignaturesGetProperty,
-                                 "__signatures",
-                                 PROPERTY_GET, "", "");
-}
-
-
-bool ConnectedSocket::Init(
-    struct PortableHandleInitializer* init_info) {
-  nacl::VideoScopedGlobalLock video_lock;
-
-  if (!DescBasedHandle::Init(init_info)) {
-    dprintf(("ConnectedSocket::Init - DescBasedHandle::Init failed\n"));
+  if (!DescBasedHandle::Init(plugin, wrapper)) {
+    PLUGIN_PRINTF(("ConnectedSocket::Init - DescBasedHandle::Init failed\n"));
     return false;
   }
 
-  ConnectedSocketInitializer *socket_init_info =
-      static_cast<ConnectedSocketInitializer*>(init_info);
+  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p, %d, %d, %p)\n",
+                 static_cast<void *>(plugin),
+                 static_cast<void *>(wrapper),
+                 is_srpc_client,
+                 (NULL == serv_rtm_info),
+                 static_cast<void *>(serv_rtm_info)));
 
-  dprintf(("ConnectedSocket::Init(%p, %p, %d, %d, %p)\n",
-           static_cast<void *>(socket_init_info->plugin_),
-           static_cast<void *>(socket_init_info->wrapper_),
-           socket_init_info->is_srpc_client_,
-           socket_init_info->is_command_channel_,
-           static_cast<void *>(socket_init_info->serv_rtm_info_)));
-
-  service_runtime_info_ = socket_init_info->serv_rtm_info_;
+  service_runtime_info_ = serv_rtm_info;
 
 
-  if (socket_init_info->is_srpc_client_) {
+  if (is_srpc_client) {
     // Get SRPC client interface going over socket.  Only the JavaScript main
     // channel may use proxied NPAPI (not the command channels).
-    srpc_client_
-        = new(std::nothrow) SrpcClient(!socket_init_info->is_command_channel_);
+    srpc_client_ = new(std::nothrow) SrpcClient(NULL != serv_rtm_info);
     if (NULL == srpc_client_) {
       // Return an error.
       // TODO(sehr): make sure that clients check for this as well.
       // BUG: This leaks socket.
-      dprintf(("ConnectedSocket::Init -- new failed.\n"));
+      PLUGIN_PRINTF(("ConnectedSocket::Init -- new failed.\n"));
       return false;
     }
-    if (!srpc_client_->Init(GetBrowserInterface(), this)) {
+    if (!srpc_client_->Init(browser_interface(), this)) {
       delete srpc_client_;
       srpc_client_ = NULL;
       // BUG: This leaks socket.
-      dprintf(("ConnectedSocket::Init -- SrpcClient::Init failed.\n"));
+      PLUGIN_PRINTF(("ConnectedSocket::Init -- SrpcClient::Init failed.\n"));
       return false;
     }
 
-    // Prefetch the signatures for use by clients.
-    signatures_ = GetSignatureObject();
     // only enable display on socket with service_runtime_info
     if (NULL != service_runtime_info_) {
-      GetBrowserInterface()->video()->Enable();
+      plugin->video()->Enable();
     }
-  } else {
-    signatures_ = NULL;
   }
-  LoadMethods();
   return true;
 }
 
 ConnectedSocket::ConnectedSocket()
-  : signatures_(NULL),
-    service_runtime_info_(NULL),
+  : service_runtime_info_(NULL),
     srpc_client_(NULL) {
-  dprintf(("ConnectedSocket::ConnectedSocket(%p, %d)\n",
-           static_cast<void *>(this),
-           ++number_alive_counter));
+  PLUGIN_PRINTF(("ConnectedSocket::ConnectedSocket(%p)\n",
+                 static_cast<void *>(this)));
 }
 
 ConnectedSocket::~ConnectedSocket() {
-  dprintf(("ConnectedSocket::~ConnectedSocket(%p, %d)\n",
-           static_cast<void *>(this),
-           --number_alive_counter));
-
-  // Release the other NPAPI objects.
-  if (signatures_) {
-    FreeSrpcArg(signatures_);
-    signatures_ = NULL;
-  }
+  PLUGIN_PRINTF(("ConnectedSocket::~ConnectedSocket(%p)\n",
+                 static_cast<void *>(this)));
 
   // Free the SRPC connection.
   delete srpc_client_;
   //  Free the rpc method descriptors and terminate the connection to
   //  the service runtime instance.
-  dprintf(("ConnectedSocket(%p): deleting SRI %p\n",
-           static_cast<void *>(this),
-           static_cast<void *>(service_runtime_info_)));
+  PLUGIN_PRINTF(("ConnectedSocket(%p): deleting SRI %p\n",
+                 static_cast<void *>(this),
+                 static_cast<void *>(service_runtime_info_)));
 
   if (service_runtime_info_) {
     delete service_runtime_info_;
   }
 }
 
-}  // namespace nacl_srpc
+}  // namespace plugin
