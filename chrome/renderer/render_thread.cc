@@ -113,6 +113,8 @@ static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
 static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
 static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 
+// Keep the global RenderThread in a TLS slot so it is impossible to access
+// incorrectly from the wrong thread.
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
 

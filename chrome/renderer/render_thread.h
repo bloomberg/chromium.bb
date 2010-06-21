@@ -58,11 +58,32 @@ class WebStorageEventDispatcher;
 // expects from a render thread. The interface basically abstracts a way to send
 // and receive messages.
 //
-// TODO(brettw) this should be refactored like RenderProcess/RenderProcessImpl:
-// This class should be named RenderThread and the implementation below should
-// be RenderThreadImpl. The ::current() getter on the impl should then be moved
-// here so we can provide another implementation of RenderThread for tests
-// without having to check for NULL all the time.
+// TODO(brettw): This has two different and opposing usage patterns which
+// make it confusing.
+//
+// In the first mode, callers call RenderThread::current() to get the one and
+// only global RenderThread (bug 10837: this should be renamed get()). Then
+// they access it. Since RenderThread is a concrete class, this can be NULL
+// during unit tests. Callers need to NULL check this every time. Some callers
+// don't happen to get called during unit tests and don't do the NULL checks,
+// which is also confusing since it's not clear if you need to or not.
+//
+// In the second mode, the abstract base class RenderThreadBase is passed to
+// RenderView and RenderWidget. Normally, this points to
+// RenderThread::current() so it's quite confusing which accessing mode should
+// be used. However, during unit testing, this class is replaced with a mock
+// to support testing functions, and is guaranteed non-NULL.
+//
+// It might be nice not to have the ::current() call and put all of the
+// functions on the abstract class so they can be mocked. However, there are
+// some standalone functions like in ChromiumBridge that are not associated
+// with a view that need to access the current thread to send messages to the
+// browser process. These need the ::current() paradigm. So instead, we should
+// probably remove the render_thread_ parameter to RenderView/Widget in
+// preference to just getting the global singleton. We can make it easier to
+// understand by moving everything to the abstract interface and saying that
+// there should never be a NULL RenderThread::current(). Tests would be
+// responsible for setting up the mock one.
 class RenderThreadBase {
  public:
   virtual ~RenderThreadBase() {}
