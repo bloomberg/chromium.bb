@@ -75,6 +75,10 @@ class DirectoryBackingStore {
   // calls SaveChanges *must* be the thread that owns/destroys |this|.
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot);
 
+  // Removes each entry whose metahandle is in |handles| from the database.
+  // Does synchronous I/O.  Returns false on error.
+  bool DeleteEntries(const MetahandleSet& handles);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion67To68);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion68To69);
@@ -82,7 +86,9 @@ class DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion70To71);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
   FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
+  friend class MigrationTest;
 
   // General Directory initialization and load helpers.
   DirOpenResult InitializeTables();
@@ -149,7 +155,7 @@ class DirectoryBackingStore {
   int GetVersion();
   bool MigrateToSpecifics(const char* old_columns,
                           const char* specifics_column,
-                          void (*handler_function) (
+                          void(*handler_function) (
                               SQLStatement* old_value_query,
                               int old_value_column,
                               sync_pb::EntitySpecifics* mutable_new_value));

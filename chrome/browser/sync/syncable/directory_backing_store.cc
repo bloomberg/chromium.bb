@@ -581,6 +581,35 @@ bool DirectoryBackingStore::DeleteExtendedAttributeFromDB(
   return true;
 }
 
+bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
+  if (handles.empty())
+    return true;
+
+  sqlite3* db_handle = NULL;
+  if (!OpenAndConfigureHandleHelper(&db_handle))
+    return false;
+
+  sqlite_utils::scoped_sqlite_db_ptr scoped_handle(db_handle);
+  string query = "DELETE FROM metas WHERE metahandle IN (";
+  for (MetahandleSet::const_iterator it = handles.begin(); it != handles.end();
+       ++it) {
+    if (it != handles.begin())
+      query.append(",");
+    query.append(Int64ToString(*it));
+  }
+  query.append(")");
+  SQLStatement statement;
+  int result = statement.prepare(scoped_handle.get(), query.data(),
+                                 query.size());
+  if (SQLITE_OK == result) {
+    result = statement.step();
+    if (SQLITE_DONE == result)
+      statement.finalize();
+  }
+
+  return SQLITE_DONE == result;
+}
+
 bool DirectoryBackingStore::DropDeletedEntries() {
   static const char delete_extended_attributes[] =
       "DELETE FROM extended_attributes WHERE metahandle IN "
