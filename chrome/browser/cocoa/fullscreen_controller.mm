@@ -169,6 +169,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
 - (void)dealloc {
   DCHECK(!isFullscreen_);
+  DCHECK(!trackingArea_);
   [super dealloc];
 }
 

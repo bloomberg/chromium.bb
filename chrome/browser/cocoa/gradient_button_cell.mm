@@ -88,6 +88,14 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   return self;
 }
 
+- (void)dealloc {
+  if (trackingArea_) {
+    [[self controlView] removeTrackingArea:trackingArea_];
+    trackingArea_.reset();
+  }
+  [super dealloc];
+}
+
 - (NSGradient*)gradientForHoverAlpha:(CGFloat)hoverAlpha
                             isThemed:(BOOL)themed {
   CGFloat startAlpha = 0.6 + 0.3 * hoverAlpha;
@@ -146,6 +154,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   if (showOnly) {
     if (trackingArea_.get()) {
       [self setShowsBorderOnlyWhileMouseInside:NO];
+      [[self controlView] removeTrackingArea:trackingArea_];
     }
     trackingArea_.reset([[NSTrackingArea alloc]
                           initWithRect:[[self controlView]

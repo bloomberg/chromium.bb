@@ -219,6 +219,14 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
     [completionAnimation_ stopAnimation];
   if ([hideStatusAnimation_ isAnimating])
     [hideStatusAnimation_ stopAnimation];
+  if (trackingAreaButton_) {
+    [[self controlView] removeTrackingArea:trackingAreaButton_];
+    trackingAreaButton_.reset();
+  }
+  if (trackingAreaDropdown_) {
+    [[self controlView] removeTrackingArea:trackingAreaDropdown_];
+    trackingAreaDropdown_.reset();
+  }
   [secondaryTitle_ release];
   [secondaryFont_ release];
   [super dealloc];

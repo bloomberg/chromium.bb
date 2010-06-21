@@ -58,6 +58,10 @@ namespace {
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
+  if (widgetTrackingArea_) {
+    [[self frameView] removeTrackingArea:widgetTrackingArea_];
+    widgetTrackingArea_.reset();
+  }
   [super dealloc];
 }
 
