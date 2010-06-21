@@ -166,6 +166,8 @@ class Dependency(GClientKeywords):
     self.deps_hooks = []
     self.dependencies = []
     self.deps_file = deps_file or self.DEPS_FILE
+    self.deps_parsed = False
+    self.direct_reference = False
 
     # Sanity checks
     if not self.name and self.parent:
@@ -179,49 +181,39 @@ class Dependency(GClientKeywords):
       raise gclient_utils.Error('deps_file name must not be a path, just a '
                                 'filename. %s' % self.deps_file)
 
-  def _ParseSolutionDeps(self, solution_name, solution_deps_content,
-                         custom_vars, parse_hooks):
-    """Parses the DEPS file for the specified solution.
+  def ParseDepsFile(self, direct_reference):
+    """Parses the DEPS file for this dependency."""
+    if direct_reference:
+      # Maybe it was referenced earlier by a From() keyword but it's now
+      # directly referenced.
+      self.direct_reference = direct_reference
+    if self.deps_parsed:
+      return
+    self.deps_parsed = True
+    filepath = os.path.join(self.root_dir(), self.name, self.deps_file)
+    if not os.path.isfile(filepath):
+      return
+    deps_content = gclient_utils.FileRead(filepath)
 
-    Args:
-      solution_name: The name of the solution to query.
-      solution_deps_content: Content of the DEPS file for the solution
-      custom_vars: A dict of vars to override any vars defined in the DEPS file.
-
-    Returns:
-      A dict mapping module names (as relative paths) to URLs or an empty
-      dict if the solution does not have a DEPS file.
-    """
-    # Skip empty
-    if not solution_deps_content:
-      return {}
-    # Eval the content
+    # Eval the content.
+    # One thing is unintuitive, vars= {} must happen before Var() use.
     local_scope = {}
-    var = self.VarImpl(custom_vars, local_scope)
+    var = self.VarImpl(self.custom_vars, local_scope)
     global_scope = {
-      "File": self.FileImpl,
-      "From": self.FromImpl,
-      "Var": var.Lookup,
-      "deps_os": {},
+      'File': self.FileImpl,
+      'From': self.FromImpl,
+      'Var': var.Lookup,
+      'deps_os': {},
     }
-    exec(solution_deps_content, global_scope, local_scope)
-    deps = local_scope.get("deps", {})
-
+    exec(deps_content, global_scope, local_scope)
+    deps = local_scope.get('deps', {})
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
-    if "deps_os" in local_scope:
-      if self._options.deps_os is not None:
-        deps_to_include = self._options.deps_os.split(",")
-        if "all" in deps_to_include:
-          deps_to_include = list(set(self.DEPS_OS_CHOICES.itervalues()))
-      else:
-        deps_to_include = [self.DEPS_OS_CHOICES.get(sys.platform, "unix")]
-
-      deps_to_include = set(deps_to_include)
-      for deps_os_key in deps_to_include:
-        os_deps = local_scope["deps_os"].get(deps_os_key, {})
-        if len(deps_to_include) > 1:
-          # Ignore any overrides when including deps for more than one
+    if 'deps_os' in local_scope:
+      for deps_os_key in self.enforced_os():
+        os_deps = local_scope['deps_os'].get(deps_os_key, {})
+        if len(self.enforced_os()) > 1:
+          # Ignore any conflict when including deps for more than one
           # platform, so we collect the broadest set of dependencies available.
           # We may end up with the wrong revision of something for our
           # platform, but this is the best we can do.
@@ -229,36 +221,35 @@ class Dependency(GClientKeywords):
         else:
           deps.update(os_deps)
 
-    if 'hooks' in local_scope and parse_hooks:
-      # TODO(maruel): Temporary Hack. Since this function is misplaced, find the
-      # right 'self' to add the hooks.
-      for d in self.dependencies:
-        if d.name == solution_name:
-          d.deps_hooks.extend(local_scope['hooks'])
-          break
+    self.deps_hooks.extend(local_scope.get('hooks', []))
+
+    # If a line is in custom_deps, but not in the solution, we want to append
+    # this line to the solution.
+    for d in self.custom_deps:
+      if d not in deps:
+        deps[d] = self.custom_deps[d]
 
     # If use_relative_paths is set in the DEPS file, regenerate
     # the dictionary using paths relative to the directory containing
     # the DEPS file.
-    if local_scope.get('use_relative_paths'):
+    use_relative_paths = local_scope.get('use_relative_paths', False)
+    if use_relative_paths:
       rel_deps = {}
       for d, url in deps.items():
         # normpath is required to allow DEPS to use .. in their
         # dependency local path.
-        rel_deps[os.path.normpath(os.path.join(solution_name, d))] = url
-      return rel_deps
-    else:
-      return deps
+        rel_deps[os.path.normpath(os.path.join(self.name, d))] = url
+      deps = rel_deps
+    # TODO(maruel): Add these dependencies into self.dependencies.
+    return deps
 
-  def _ParseAllDeps(self, solution_urls, solution_deps_content):
+  def _ParseAllDeps(self, solution_urls):
     """Parse the complete list of dependencies for the client.
 
     Args:
       solution_urls: A dict mapping module names (as relative paths) to URLs
         corresponding to the solutions specified by the client.  This parameter
         is passed as an optimization.
-      solution_deps_content: A dict mapping module names to the content
-        of their DEPS files
 
     Returns:
       A dict mapping module names (as relative paths) to URLs corresponding
@@ -269,11 +260,7 @@ class Dependency(GClientKeywords):
     """
     deps = {}
     for solution in self.dependencies:
-      solution_deps = self._ParseSolutionDeps(
-                              solution.name,
-                              solution_deps_content[solution.name],
-                              solution.custom_vars,
-                              True)
+      solution_deps = solution.ParseDepsFile(True)
 
       # If a line is in custom_deps, but not in the solution, we want to append
       # this line to the solution.
@@ -379,6 +366,12 @@ class Dependency(GClientKeywords):
       if matching_file_list:
         self._RunHookAction(hook_dict, matching_file_list)
 
+  def root_dir(self):
+    return self.parent.root_dir()
+
+  def enforced_os(self):
+    return self.parent.enforced_os()
+
 
 class GClient(Dependency):
   """Main gclient checkout root where .gclient resides."""
@@ -428,8 +421,15 @@ solutions = [
 
   def __init__(self, root_dir, options):
     Dependency.__init__(self, None, None, None)
-    self._root_dir = root_dir
     self._options = options
+    if options.deps_os:
+      enforced_os = options.deps_os.split(',')
+    else:
+      enforced_os = [self.DEPS_OS_CHOICES.get(sys.platform, 'unix')]
+    if 'all' in enforced_os:
+      enforced_os = self.DEPS_OS_CHOICES.itervalues()
+    self._enforced_os = list(set(enforced_os))
+    self._root_dir = root_dir
     self.config_content = None
 
   def SetConfig(self, content):
@@ -567,7 +567,6 @@ solutions = [
     run_scm = not (command == 'runhooks' and self._options.force)
 
     entries = {}
-    entries_deps_content = {}
     file_list = []
     # Run on the base solutions first.
     for solution in self.dependencies:
@@ -582,18 +581,10 @@ solutions = [
         scm.RunCommand(command, self._options, args, file_list)
         file_list = [os.path.join(name, f.strip()) for f in file_list]
         self._options.revision = None
-      try:
-        deps_content = gclient_utils.FileRead(
-            os.path.join(self.root_dir(), name, solution.deps_file))
-      except IOError, e:
-        if e.errno != errno.ENOENT:
-          raise
-        deps_content = ""
-      entries_deps_content[name] = deps_content
 
     # Process the dependencies next (sort alphanumerically to ensure that
     # containing directories get populated first and for readability)
-    deps = self._ParseAllDeps(entries, entries_deps_content)
+    deps = self._ParseAllDeps(entries)
     deps_to_process = deps.keys()
     deps_to_process.sort()
 
@@ -625,16 +616,12 @@ solutions = [
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
       if isinstance(deps[d], self.FromImpl):
-        filename = os.path.join(self.root_dir(),
-                                deps[d].module_name,
-                                self.DEPS_FILE)
-        content =  gclient_utils.FileRead(filename)
-        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
-                                           False)
         # Getting the URL from the sub_deps file can involve having to resolve
         # a File() or having to resolve a relative URL.  To resolve relative
         # URLs, we need to pass in the orignal sub deps URL.
         sub_deps_base_url = deps[deps[d].module_name]
+        sub_deps = Dependency(self, deps[d].module_name, sub_deps_base_url
+            ).ParseDepsFile(False)
         url = deps[d].GetUrl(d, sub_deps_base_url, self.root_dir(), sub_deps)
         entries[d] = url
         if run_scm:
@@ -722,7 +709,6 @@ solutions = [
     # Dictionary of { path : SCM url } to ensure no duplicate solutions
     solution_names = {}
     entries = {}
-    entries_deps_content = {}
     # Run on the base solutions first.
     for solution in self.dependencies:
       # Dictionary of { path : SCM url } to describe the gclient checkout
@@ -732,22 +718,10 @@ solutions = [
       (url, rev) = GetURLAndRev(name, solution.url)
       entries[name] = "%s@%s" % (url, rev)
       solution_names[name] = "%s@%s" % (url, rev)
-      deps_file = solution.deps_file
-      if '/' in deps_file or '\\' in deps_file:
-        raise gclient_utils.Error('deps_file name must not be a path, just a '
-                                  'filename.')
-      try:
-        deps_content = gclient_utils.FileRead(
-            os.path.join(self.root_dir(), name, deps_file))
-      except IOError, e:
-        if e.errno != errno.ENOENT:
-          raise
-        deps_content = ""
-      entries_deps_content[name] = deps_content
 
     # Process the dependencies next (sort alphanumerically to ensure that
     # containing directories get populated first and for readability)
-    deps = self._ParseAllDeps(entries, entries_deps_content)
+    deps = self._ParseAllDeps(entries)
     deps_to_process = deps.keys()
     deps_to_process.sort()
 
@@ -764,13 +738,11 @@ solutions = [
         if deps_parent_url.find("@") < 0:
           raise gclient_utils.Error("From %s missing revisioned url" %
                                         deps[d].module_name)
-        content =  gclient_utils.FileRead(os.path.join(
-                                            self.root_dir(),
-                                            deps[d].module_name,
-                                            self.DEPS_FILE))
-        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {},
-                                           False)
-        (url, rev) = GetURLAndRev(d, sub_deps[d])
+        sub_deps_base_url = deps[deps[d].module_name]
+        sub_deps = Dependency(self, deps[d].module_name, sub_deps_base_url
+            ).ParseDepsFile(False)
+        url = deps[d].GetUrl(d, sub_deps_base_url, self.root_dir(), sub_deps)
+        (url, rev) = GetURLAndRev(d, url)
         entries[d] = "%s@%s" % (url, rev)
 
     # Build the snapshot configuration string
@@ -798,6 +770,9 @@ solutions = [
 
   def root_dir(self):
     return self._root_dir
+
+  def enforced_os(self):
+    return self._enforced_os
 
 
 #### gclient commands.
