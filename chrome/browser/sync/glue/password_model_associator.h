@@ -108,9 +108,11 @@ class PasswordModelAssociator
 
   static std::string MakeTag(const webkit_glue::PasswordForm& password);
   static std::string MakeTag(const sync_pb::PasswordSpecificsData& password);
-  static std::string MakeTag(const std::string& signon_realm,
-                             const std::string& origin,
-                             const std::string& action);
+  static std::string MakeTag(const std::string& origin_url,
+                             const std::string& username_element,
+                             const std::string& username_value,
+                             const std::string& password_element,
+                             const std::string& signon_realm);
 
   static void CopyPassword(const sync_pb::PasswordSpecificsData& password,
                            webkit_glue::PasswordForm* new_password);

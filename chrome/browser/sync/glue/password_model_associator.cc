@@ -373,27 +373,35 @@ void PasswordModelAssociator::WriteToSyncNode(
 // static
 std::string PasswordModelAssociator::MakeTag(
                 const webkit_glue::PasswordForm& password) {
-  return MakeTag(password.signon_realm,
-                 password.origin.spec(),
-                 password.action.spec());
+  return MakeTag(password.origin.spec(),
+                 UTF16ToASCII(password.username_element),
+                 UTF16ToASCII(password.username_value),
+                 UTF16ToASCII(password.password_element),
+                 password.signon_realm);
 }
 
 // static
 std::string PasswordModelAssociator::MakeTag(
                 const sync_pb::PasswordSpecificsData& password) {
-  return MakeTag(password.signon_realm(),
-                 password.origin(),
-                 password.action());
+  return MakeTag(password.origin(),
+                 password.username_element(),
+                 password.username_value(),
+                 password.password_element(),
+                 password.signon_realm());
 }
 
 // static
 std::string PasswordModelAssociator::MakeTag(
-                const std::string& signon_realm,
-                const std::string& origin,
-                const std::string& action) {
-  return EscapePath(signon_realm) + "|" +
-         EscapePath(origin) + "|" +
-         EscapePath(action);
+    const std::string& origin_url,
+    const std::string& username_element,
+    const std::string& username_value,
+    const std::string& password_element,
+    const std::string& signon_realm) {
+  return EscapePath(origin_url) + "|" +
+         EscapePath(username_element) + "|" +
+         EscapePath(username_value) + "|" +
+         EscapePath(password_element) + "|" +
+         EscapePath(signon_realm);
 }
 
 }  // namespace browser_sync

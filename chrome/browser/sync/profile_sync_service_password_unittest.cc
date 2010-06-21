@@ -339,6 +339,59 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySync) {
   EXPECT_TRUE(ComparePasswords(expected_forms[0], sync_forms[0]));
 }
 
+TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySyncSameUsername) {
+  std::vector<PasswordForm*> forms;
+  std::vector<PasswordForm> expected_forms;
+
+  {
+    PasswordForm* new_form = new PasswordForm;
+    new_form->scheme = PasswordForm::SCHEME_HTML;
+    new_form->signon_realm = "pie";
+    new_form->origin = GURL("http://pie.com");
+    new_form->action = GURL("http://pie.com/submit");
+    new_form->username_element = UTF8ToUTF16("name");
+    new_form->username_value = UTF8ToUTF16("tom");
+    new_form->password_element = UTF8ToUTF16("cork");
+    new_form->password_value = UTF8ToUTF16("password1");
+    new_form->ssl_valid = true;
+    new_form->preferred = false;
+    new_form->date_created = base::Time::FromInternalValue(1234);
+    new_form->blacklisted_by_user = false;
+    forms.push_back(new_form);
+    expected_forms.push_back(*new_form);
+  }
+  {
+    PasswordForm* new_form = new PasswordForm;
+    new_form->scheme = PasswordForm::SCHEME_HTML;
+    new_form->signon_realm = "pie";
+    new_form->origin = GURL("http://pie.com");
+    new_form->action = GURL("http://pie.com/submit");
+    new_form->username_element = UTF8ToUTF16("name");
+    new_form->username_value = UTF8ToUTF16("pete");
+    new_form->password_element = UTF8ToUTF16("cork");
+    new_form->password_value = UTF8ToUTF16("password2");
+    new_form->ssl_valid = true;
+    new_form->preferred = false;
+    new_form->date_created = base::Time::FromInternalValue(1234);
+    new_form->blacklisted_by_user = false;
+    forms.push_back(new_form);
+    expected_forms.push_back(*new_form);
+  }
+
+  EXPECT_CALL(*(password_store_.get()), FillAutofillableLogins(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(forms), Return(true)));
+  EXPECT_CALL(*(password_store_.get()), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
+  SetIdleChangeProcessorExpectations();
+  CreatePasswordRootTask task(this);
+  StartSyncService(&task);
+  std::vector<PasswordForm> sync_forms;
+  GetPasswordEntriesFromSyncDB(&sync_forms);
+  ASSERT_EQ(2U, sync_forms.size());
+  EXPECT_TRUE(ComparePasswords(expected_forms[0], sync_forms[1]));
+  EXPECT_TRUE(ComparePasswords(expected_forms[1], sync_forms[0]));
+}
+
 TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
   std::vector<PasswordForm*> native_forms;
   std::vector<PasswordForm> sync_forms;
@@ -426,9 +479,9 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncMergeEntry) {
     new_form.signon_realm = "pie";
     new_form.origin = GURL("http://pie.com");
     new_form.action = GURL("http://pie.com/submit");
-    new_form.username_element = UTF8ToUTF16("name2");
-    new_form.username_value = UTF8ToUTF16("tom2");
-    new_form.password_element = UTF8ToUTF16("cork2");
+    new_form.username_element = UTF8ToUTF16("name");
+    new_form.username_value = UTF8ToUTF16("tom");
+    new_form.password_element = UTF8ToUTF16("cork");
     new_form.password_value = UTF8ToUTF16("password12");
     new_form.ssl_valid = false;
     new_form.preferred = true;
@@ -443,9 +496,9 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncMergeEntry) {
     new_form.signon_realm = "pie";
     new_form.origin = GURL("http://pie.com");
     new_form.action = GURL("http://pie.com/submit");
-    new_form.username_element = UTF8ToUTF16("name2");
-    new_form.username_value = UTF8ToUTF16("tom2");
-    new_form.password_element = UTF8ToUTF16("cork2");
+    new_form.username_element = UTF8ToUTF16("name");
+    new_form.username_value = UTF8ToUTF16("tom");
+    new_form.password_element = UTF8ToUTF16("cork");
     new_form.password_value = UTF8ToUTF16("password12");
     new_form.ssl_valid = false;
     new_form.preferred = true;
