@@ -743,6 +743,9 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 		size = drm_intel_gem_bo_tile_size(bufmgr_gem, size, tiling_mode);
 	} while (*tiling_mode != tiling);
 
+	if (*tiling_mode == I915_TILING_NONE)
+		stride = 0;
+
 	bo = drm_intel_gem_bo_alloc_internal(bufmgr, name, size, flags,
 					     *tiling_mode, stride);
 	if (!bo)
