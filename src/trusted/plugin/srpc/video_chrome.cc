@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "native_client/src/trusted/plugin/srpc/video.h"
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 
 // This file provides empty implementation for video functions used in NaCl code
 // These functions should not be used when running as part of Chrome, but to
