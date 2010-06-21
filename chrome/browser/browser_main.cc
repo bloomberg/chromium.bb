@@ -1112,8 +1112,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // from other browsers. In case this process is a short-lived "import"
   // process that another browser runs just to import the settings, we
   // don't want to be checking for another browser process, by design.
-  if (!parsed_command_line.HasSwitch(switches::kImport) ||
-      parsed_command_line.HasSwitch(switches::kImportFromFile)) {
+  if (!(parsed_command_line.HasSwitch(switches::kImport) ||
+        parsed_command_line.HasSwitch(switches::kImportFromFile))) {
 #endif
     // When another process is running, use that process instead of starting a
     // new one. NotifyOtherProcess will currently give the other process up to
