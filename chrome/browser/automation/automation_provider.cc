@@ -18,11 +18,9 @@
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/waitable_event.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/app_modal_dialog.h"
@@ -1119,112 +1117,6 @@ Browser* AutomationProvider::FindAndActivateTab(
   return browser;
 }
 
-namespace {
- 
-class GetCookiesTask : public Task {
- public:
-  GetCookiesTask(const GURL& url,
-                 URLRequestContextGetter* context_getter,
-                 base::WaitableEvent* event,
-                 std::string* cookies)
-      : url_(url),
-        context_getter_(context_getter),
-        event_(event),
-        cookies_(cookies) {}
-
-  virtual void Run() {
-    *cookies_ = context_getter_->GetCookieStore()->GetCookies(url_);
-    event_->Signal();
-  }
-
- private:
-  const GURL& url_;
-  URLRequestContextGetter* const context_getter_;
-  base::WaitableEvent* const event_;
-  std::string* const cookies_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCookiesTask);
-};
-
-std::string GetCookiesForURL(
-    const GURL& url,
-    URLRequestContextGetter* context_getter) {
-  std::string cookies;
-  base::WaitableEvent event(true /* manual reset */,
-                            false /* not initially signaled */);
-  CHECK(ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      new GetCookiesTask(url, context_getter, &event, &cookies)));
-  event.Wait();
-  return cookies;
-}
-
-class SetCookieTask : public Task {
- public:
-  SetCookieTask(const GURL& url,
-                const std::string& value,
-                URLRequestContextGetter* context_getter,
-                base::WaitableEvent* event,
-                bool* rv)
-      : url_(url),
-        value_(value),
-        context_getter_(context_getter),
-        event_(event),
-        rv_(rv) {}
-
-  virtual void Run() {
-    *rv_ = context_getter_->GetCookieStore()->SetCookie(url_, value_);
-    event_->Signal();
-  }
-
- private:
-  const GURL& url_;
-  const std::string& value_;
-  URLRequestContextGetter* const context_getter_;
-  base::WaitableEvent* const event_;
-  bool* const rv_;
-
-  DISALLOW_COPY_AND_ASSIGN(SetCookieTask);
-};
-
-bool SetCookieForURL(
-    const GURL& url,
-    const std::string& value,
-    URLRequestContextGetter* context_getter) {
-  base::WaitableEvent event(true /* manual reset */,
-                            false /* not initially signaled */);
-  bool rv = false;
-  CHECK(ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      new SetCookieTask(url, value, context_getter, &event, &rv)));
-  event.Wait();
-  return rv;
-}
-
-class DeleteCookieTask : public Task {
- public:
-  DeleteCookieTask(const GURL& url,
-                   const std::string& name,
-                   const scoped_refptr<URLRequestContextGetter>& context_getter)
-      : url_(url),
-        name_(name),
-        context_getter_(context_getter) {}
-
-  virtual void Run() {
-    net::CookieStore* cookie_store = context_getter_->GetCookieStore();
-    cookie_store->DeleteCookie(url_, name_);
-  }
-
- private:
-  const GURL url_;
-  const std::string name_;
-  const scoped_refptr<URLRequestContextGetter> context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteCookieTask);
-};
-
-}  // namespace
-
 void AutomationProvider::GetCookies(const GURL& url, int handle,
                                     int* value_size,
                                     std::string* value) {
@@ -1238,7 +1130,9 @@ void AutomationProvider::GetCookies(const GURL& url, int handle,
     if (!request_context.get())
       request_context = tab->profile()->GetRequestContext();
 
-    *value = GetCookiesForURL(url, request_context.get());
+    net::CookieStore* cookie_store = request_context->GetCookieStore();
+
+    *value = cookie_store->GetCookies(url);
     *value_size = static_cast<int>(value->size());
   }
 }
@@ -1257,7 +1151,11 @@ void AutomationProvider::SetCookie(const GURL& url,
     if (!request_context.get())
       request_context = tab->profile()->GetRequestContext();
 
-    if (SetCookieForURL(url, value, request_context.get()))
+    // Since we are running on the UI thread don't call GetURLRequestContext().
+    scoped_refptr<net::CookieStore> cookie_store =
+        request_context->GetCookieStore();
+
+    if (cookie_store->SetCookie(url, value))
       *response_value = 1;
   }
 }
@@ -1268,10 +1166,9 @@ void AutomationProvider::DeleteCookie(const GURL& url,
   *success = false;
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        new DeleteCookieTask(url, cookie_name,
-                             tab->profile()->GetRequestContext()));
+    net::CookieStore* cookie_store =
+        tab->profile()->GetRequestContext()->GetCookieStore();
+    cookie_store->DeleteCookie(url, cookie_name);
     *success = true;
   }
 }

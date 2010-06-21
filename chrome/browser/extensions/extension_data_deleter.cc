@@ -23,28 +23,18 @@ ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
 
 void ExtensionDataDeleter::StartDeleting() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &ExtensionDataDeleter::DeleteCookiesOnIOThread));
-
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(
-          this, &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread));
-
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &ExtensionDataDeleter::DeleteDatabaseOnFileThread));
-}
-
-void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   net::CookieMonster* cookie_monster =
       extension_request_context_->GetCookieStore()->GetCookieMonster();
   if (cookie_monster)
     cookie_monster->DeleteAllForURL(extension_url_, true);
+
+  ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE,
+      NewRunnableMethod(this,
+          &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread));
+
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &ExtensionDataDeleter::DeleteDatabaseOnFileThread));
 }
 
 void ExtensionDataDeleter::DeleteDatabaseOnFileThread() {

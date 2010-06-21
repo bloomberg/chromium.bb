@@ -33,10 +33,6 @@ class ExtensionDataDeleter
   void StartDeleting();
 
  private:
-  // Deletes the cookies for the extension. May only be called on the io
-  // thread.
-  void DeleteCookiesOnIOThread();
-
   // Deletes the database for the extension. May only be called on the file
   // thread.
   void DeleteDatabaseOnFileThread();

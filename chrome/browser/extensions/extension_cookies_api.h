@@ -10,16 +10,14 @@
 
 #include <string>
 
-#include "base/ref_counted.h"
 #include "base/singleton.h"
-#include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/common/notification_registrar.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/cookie_monster.h"
 
-class URLRequestContextGetter;
+namespace net {
+class CookieStore;
+}  // namespace net
 
 // Observes CookieMonster notifications and routes them as events to the
 // extension system.
@@ -60,12 +58,10 @@ class ExtensionCookiesEventRouter : public NotificationObserver {
 
 // Serves as a base class for all cookies API functions, and defines some
 // common functionality for parsing cookies API function arguments.
-// Note that all of the functions in this file derive from
-// AsyncExtensionFunction, and are not threadsafe, so they should not be
-// concurrently accessed from multiple threads. They modify |result_| and other
-// member variables directly.
-// See chrome/browser/extensions/extension_function.h for more information.
-class CookiesFunction : public AsyncExtensionFunction {
+// Note that all of the functions in this file derive from ExtensionFunction,
+// and are not threadsafe. They modify the result_ member variable directly;
+// see chrome/browser/extensions/extension_function.h for more information.
+class CookiesFunction : public SyncExtensionFunction {
  protected:
   // Looks for a 'url' value in the given details dictionary and constructs a
   // GURL from it. Returns false and assigns the internal error_ value if the
@@ -76,84 +72,41 @@ class CookiesFunction : public AsyncExtensionFunction {
                 bool check_host_permissions);
 
   // Checks the given details dictionary for a 'storeId' value, and retrieves
-  // the cookie store context and the store ID associated with it.  If the
-  // 'storeId' value isn't found in the dictionary, the current execution
-  // context's cookie store context is retrieved. Returns false on error and
-  // assigns the internal error_ value if that occurs.
+  // the cookie store and the store ID associated with it.  If the 'storeId'
+  // value isn't found in the dictionary, the current execution context's
+  // cookie store is retrieved. Returns false on error and assigns the
+  // internal error_ value if that occurs.
   // At least one of the output parameters store and store_id should be
-  // non-NULL.
-  bool ParseStoreContext(const DictionaryValue* details,
-                         URLRequestContextGetter** context,
-                         std::string* store_id);
+  // non-null.
+  bool ParseCookieStore(const DictionaryValue* details,
+                        net::CookieStore** store, std::string* store_id);
 };
 
 // Implements the experimental.cookies.get() extension function.
 class GetCookieFunction : public CookiesFunction {
  public:
-  GetCookieFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.get")
-
- private:
-  void GetCookieOnIOThread();
-  void RespondOnUIThread();
-
-  std::string name_;
-  GURL url_;
-  std::string store_id_;
-  scoped_refptr<URLRequestContextGetter> store_context_;
-  net::CookieMonster::CookieList cookie_list_;
 };
 
 // Implements the experimental.cookies.getAll() extension function.
 class GetAllCookiesFunction : public CookiesFunction {
  public:
-  GetAllCookiesFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.getAll")
-
- private:
-  void GetAllCookiesOnIOThread();
-  void RespondOnUIThread();
-
-  DictionaryValue* details_;
-  GURL url_;
-  std::string store_id_;
-  scoped_refptr<URLRequestContextGetter> store_context_;
-  net::CookieMonster::CookieList cookie_list_;
 };
 
 // Implements the experimental.cookies.set() extension function.
 class SetCookieFunction : public CookiesFunction {
  public:
-  SetCookieFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.set")
-
- private:
-  void SetCookieOnIOThread();
-  void RespondOnUIThread();
-
-  GURL url_;
-  std::string name_;
-  std::string value_;
-  std::string domain_;
-  std::string path_;
-  bool secure_;
-  bool http_only_;
-  base::Time expiration_time_;
-  bool success_;
-  scoped_refptr<URLRequestContextGetter> store_context_;
 };
 
 // Implements the experimental.cookies.remove() extension function.
 class RemoveCookieFunction : public CookiesFunction {
  public:
   virtual bool RunImpl();
-  // RemoveCookieFunction is sync.
-  virtual void Run() {
-    SendResponse(RunImpl());
-  }
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.remove")
 };
 
@@ -161,10 +114,6 @@ class RemoveCookieFunction : public CookiesFunction {
 class GetAllCookieStoresFunction : public CookiesFunction {
  public:
   virtual bool RunImpl();
-  // GetAllCookieStoresFunction is sync.
-  virtual void Run() {
-    SendResponse(RunImpl());
-  }
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.getAllCookieStores")
 };
 

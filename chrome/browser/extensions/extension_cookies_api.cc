@@ -7,9 +7,7 @@
 #include "chrome/browser/extensions/extension_cookies_api.h"
 
 #include "base/json/json_writer.h"
-#include "base/task.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -101,10 +99,10 @@ bool CookiesFunction::ParseUrl(const DictionaryValue* details, GURL* url,
   return true;
 }
 
-bool CookiesFunction::ParseStoreContext(const DictionaryValue* details,
-                                        URLRequestContextGetter** context,
-                                        std::string* store_id) {
-  DCHECK(details && (context || store_id));
+bool CookiesFunction::ParseCookieStore(const DictionaryValue* details,
+                                       net::CookieStore** store,
+                                       std::string* store_id) {
+  DCHECK(details && (store || store_id));
   Profile* store_profile = NULL;
   if (details->HasKey(keys::kStoreIdKey)) {
     // The store ID was explicitly specified in the details dictionary.
@@ -132,16 +130,13 @@ bool CookiesFunction::ParseStoreContext(const DictionaryValue* details,
     store_profile = current_browser->profile();
   }
   DCHECK(store_profile);
-
-  if (context)
-    *context = store_profile->GetRequestContext();
+  if (store)
+    *store = store_profile->GetRequestContext()->GetCookieStore();
   if (store_id)
-    *store_id = extension_cookies_helpers::GetStoreIdFromProfile(store_profile);
-
+    *store_id =
+        extension_cookies_helpers::GetStoreIdFromProfile(store_profile);
   return true;
 }
-
-GetCookieFunction::GetCookieFunction() {}
 
 bool GetCookieFunction::RunImpl() {
   // Return false if the arguments are malformed.
@@ -150,114 +145,61 @@ bool GetCookieFunction::RunImpl() {
   DCHECK(details);
 
   // Read/validate input parameters.
-  if (!ParseUrl(details, &url_, true))
+  GURL url;
+  if (!ParseUrl(details, &url, true))
     return false;
 
+  std::string name;
   // Get the cookie name string or return false.
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name_));
+  EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
 
-  URLRequestContextGetter* store_context = NULL;
-  if (!ParseStoreContext(details, &store_context, &store_id_))
+  net::CookieStore* cookie_store;
+  std::string store_id;
+  if (!ParseCookieStore(details, &cookie_store, &store_id))
     return false;
+  DCHECK(cookie_store && !store_id.empty());
 
-  DCHECK(store_context && !store_id_.empty());
-  store_context_ = store_context;
-
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &GetCookieFunction::GetCookieOnIOThread));
-  DCHECK(rv);
-
-  // Will finish asynchronously.
-  return true;
-}
-
-void GetCookieFunction::GetCookieOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  net::CookieStore* cookie_store = store_context_->GetCookieStore();
-  cookie_list_ =
-      extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
-
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &GetCookieFunction::RespondOnUIThread));
-  DCHECK(rv);
-}
-
-void GetCookieFunction::RespondOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
+  net::CookieMonster::CookieList cookie_list =
+      extension_cookies_helpers::GetCookieListFromStore(cookie_store, url);
   net::CookieMonster::CookieList::iterator it;
-  for (it = cookie_list_.begin(); it != cookie_list_.end(); ++it) {
+  for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster retrieves them in reverse domain-length order.
     const net::CookieMonster::CanonicalCookie& cookie = it->second;
-    if (cookie.Name() == name_) {
+    if (cookie.Name() == name) {
       result_.reset(
-          extension_cookies_helpers::CreateCookieValue(*it, store_id_));
-      break;
+          extension_cookies_helpers::CreateCookieValue(*it, store_id));
+      return true;
     }
   }
-
   // The cookie doesn't exist; return null.
-  if (it == cookie_list_.end())
-    result_.reset(Value::CreateNullValue());
-
-  SendResponse(true);
-}
-
-GetAllCookiesFunction::GetAllCookiesFunction() {}
-
-bool GetAllCookiesFunction::RunImpl() {
-  // Return false if the arguments are malformed.
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details_));
-  DCHECK(details_);
-
-  // Read/validate input parameters.
-  if (details_->HasKey(keys::kUrlKey) && !ParseUrl(details_, &url_, false))
-    return false;
-
-  URLRequestContextGetter* store_context = NULL;
-  if (!ParseStoreContext(details_, &store_context, &store_id_))
-    return false;
-  DCHECK(store_context);
-  store_context_ = store_context;
-
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &GetAllCookiesFunction::GetAllCookiesOnIOThread));
-  DCHECK(rv);
-
-  // Will finish asynchronously.
+  result_.reset(Value::CreateNullValue());
   return true;
 }
 
-void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  net::CookieStore* cookie_store = store_context_->GetCookieStore();
-  cookie_list_ =
-      extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
+bool GetAllCookiesFunction::RunImpl() {
+  // Return false if the arguments are malformed.
+  DictionaryValue* details;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  DCHECK(details);
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &GetAllCookiesFunction::RespondOnUIThread));
-  DCHECK(rv);
+  // Read/validate input parameters.
+  GURL url;
+  if (details->HasKey(keys::kUrlKey) && !ParseUrl(details, &url, false))
+    return false;
+
+  net::CookieStore* cookie_store;
+  std::string store_id;
+  if (!ParseCookieStore(details, &cookie_store, &store_id))
+    return false;
+  DCHECK(cookie_store);
+
+  ListValue* matching_list = new ListValue();
+  extension_cookies_helpers::AppendMatchingCookiesToList(
+      cookie_store, store_id, url, details, GetExtension(), matching_list);
+  result_.reset(matching_list);
+  return true;
 }
-
-void GetAllCookiesFunction::RespondOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  const Extension* extension = GetExtension();
-  if (extension) {
-    ListValue* matching_list = new ListValue();
-    extension_cookies_helpers::AppendMatchingCookiesToList(
-        cookie_list_, store_id_, url_, details_, GetExtension(), matching_list);
-    result_.reset(matching_list);
-  }
-  SendResponse(true);
-}
-
-SetCookieFunction::SetCookieFunction() : secure_(false), http_only_(false) {}
 
 bool SetCookieFunction::RunImpl() {
   // Return false if the arguments are malformed.
@@ -266,26 +208,36 @@ bool SetCookieFunction::RunImpl() {
   DCHECK(details);
 
   // Read/validate input parameters.
-  if (!ParseUrl(details, &url_, true))
+  GURL url;
+  if (!ParseUrl(details, &url, true))
       return false;
   // The macros below return false if argument types are not as expected.
-  if (details->HasKey(keys::kNameKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name_));
-  if (details->HasKey(keys::kValueKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kValueKey, &value_));
-  if (details->HasKey(keys::kDomainKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kDomainKey, &domain_));
-  if (details->HasKey(keys::kPathKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kPathKey, &path_));
-
-  if (details->HasKey(keys::kSecureKey)) {
-    EXTENSION_FUNCTION_VALIDATE(
-        details->GetBoolean(keys::kSecureKey, &secure_));
+  std::string name;
+  if (details->HasKey(keys::kNameKey)) {
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
   }
+  std::string value;
+  if (details->HasKey(keys::kValueKey)) {
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kValueKey, &value));
+  }
+  std::string domain;
+  if (details->HasKey(keys::kDomainKey)) {
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kDomainKey, &domain));
+  }
+  std::string path;
+  if (details->HasKey(keys::kPathKey)) {
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kPathKey, &path));
+  }
+  bool secure = false;
+  if (details->HasKey(keys::kSecureKey)) {
+    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(keys::kSecureKey, &secure));
+  }
+  bool http_only = false;
   if (details->HasKey(keys::kHttpOnlyKey)) {
     EXTENSION_FUNCTION_VALIDATE(
-        details->GetBoolean(keys::kHttpOnlyKey, &http_only_));
+        details->GetBoolean(keys::kHttpOnlyKey, &http_only));
   }
+  base::Time expiration_time;
   if (details->HasKey(keys::kExpirationDateKey)) {
     Value* expiration_date_value;
     EXTENSION_FUNCTION_VALIDATE(details->Get(keys::kExpirationDateKey,
@@ -300,72 +252,23 @@ bool SetCookieFunction::RunImpl() {
       EXTENSION_FUNCTION_VALIDATE(
           expiration_date_value->GetAsReal(&expiration_date));
     }
-    expiration_time_ = base::Time::FromDoubleT(expiration_date);
+    expiration_time = base::Time::FromDoubleT(expiration_date);
   }
 
-  URLRequestContextGetter* store_context = NULL;
-  if (!ParseStoreContext(details, &store_context, NULL))
+  net::CookieStore* cookie_store;
+  if (!ParseCookieStore(details, &cookie_store, NULL))
     return false;
-  DCHECK(store_context);
-  store_context_ = store_context;
+  DCHECK(cookie_store);
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &SetCookieFunction::SetCookieOnIOThread));
-  DCHECK(rv);
-
-  // Will finish asynchronously.
+  if (!cookie_store->GetCookieMonster()->SetCookieWithDetails(
+          url, name, value, domain, path, expiration_time, secure,
+          http_only)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kCookieSetFailedError, name);
+    return false;
+  }
   return true;
 }
-
-void SetCookieFunction::SetCookieOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  net::CookieMonster* cookie_monster =
-      store_context_->GetCookieStore()->GetCookieMonster();
-  success_ = cookie_monster->SetCookieWithDetails(
-      url_, name_, value_, domain_, path_, expiration_time_,
-      secure_, http_only_);
-
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &SetCookieFunction::RespondOnUIThread));
-  DCHECK(rv);
-}
-
-void SetCookieFunction::RespondOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (!success_) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kCookieSetFailedError, name_);
-  }
-  SendResponse(success_);
-}
-
-namespace {
-
-class RemoveCookieTask : public Task {
- public:
-  RemoveCookieTask(const GURL& url,
-                   const std::string& name,
-                   const scoped_refptr<URLRequestContextGetter>& context_getter)
-      : url_(url),
-        name_(name),
-        context_getter_(context_getter) {}
-
-  virtual void Run() {
-    net::CookieStore* cookie_store = context_getter_->GetCookieStore();
-    cookie_store->DeleteCookie(url_, name_);
-  }
-
- private:
-  const GURL url_;
-  const std::string name_;
-  const scoped_refptr<URLRequestContextGetter> context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveCookieTask);
-};
-
-}  // namespace
 
 bool RemoveCookieFunction::RunImpl() {
   // Return false if the arguments are malformed.
@@ -382,19 +285,12 @@ bool RemoveCookieFunction::RunImpl() {
   // Get the cookie name string or return false.
   EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
 
-  URLRequestContextGetter* store_context = NULL;
-  if (!ParseStoreContext(details, &store_context, NULL))
+  net::CookieStore* cookie_store;
+  if (!ParseCookieStore(details, &cookie_store, NULL))
     return false;
-  DCHECK(store_context);
+  DCHECK(cookie_store);
 
-  // We don't bother to synchronously wait for the result here, because
-  // CookieMonster is only ever accessed on the IO thread, so any other accesses
-  // should happen after this.
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      new RemoveCookieTask(url, name, store_context));
-  DCHECK(rv);
-
+  cookie_store->DeleteCookie(url, name);
   return true;
 }
 
