@@ -445,6 +445,7 @@
                     '<(PRODUCT_DIR)/resources/gmail_app/',
                     '<(PRODUCT_DIR)/resources/calendar_app/',
                     '<(PRODUCT_DIR)/resources/docs_app/',
+                    '<(PRODUCT_DIR)/resources/net_internals/'
                   ],
                   'conditions': [
                     ['mac_breakpad==1', {
@@ -479,12 +480,6 @@
                         '<(PRODUCT_DIR)/PDF.plugin',
                       ],
                     }],
-                  ],
-                },
-                {
-                  'destination': '<(PRODUCT_DIR)',
-                  'files': [
-                      '<(INTERMEDIATE_DIR)/repack/resources.pak'
                   ],
                 },
               ],

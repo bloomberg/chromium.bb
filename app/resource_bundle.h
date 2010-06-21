@@ -159,9 +159,8 @@ class ResourceBundle {
   // Helper class for managing data packs.
   class LoadedDataPack {
    public:
-    explicit LoadedDataPack(const FilePath& path);
-    bool GetStringPiece(int resource_id, base::StringPiece* data) const;
-    RefCountedStaticMemory* GetStaticMemory(int resource_id) const;
+    LoadedDataPack(const FilePath& path);
+    bool GetStringPiece(int resource_id, base::StringPiece* data);
 
    private:
     void Load();

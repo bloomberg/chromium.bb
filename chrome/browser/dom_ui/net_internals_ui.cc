@@ -36,8 +36,6 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
-#include "grit/net_internals_resources.h"
-#include "grit/net_internals_resources_map.h"
 #include "net/base/escape.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_errors.h"
@@ -318,57 +316,51 @@ NetInternalsHTMLSource::NetInternalsHTMLSource()
 void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
                                               bool is_off_the_record,
                                               int request_id) {
+  // The provided |path| identifies a file in resources/net_internals/.
+  std::string data_string;
+  FilePath file_path;
+  PathService::Get(chrome::DIR_NET_INTERNALS, &file_path);
+  std::string filename;
+
   // The provided "path" may contain a fragment, or query section. We only
   // care about the path itself, and will disregard anything else.
-  std::string filename =
-      GURL(std::string("chrome://net/") + path).path().substr(1);
+  filename = GURL(std::string("chrome://net/") + path).path().substr(1);
+
   if (filename.empty())
     filename = "index.html";
 
-  // The name of the files in the grd list are prefixed with the following
-  // directory:
-  std::string key("net_internals/");
-  key += filename;
+  file_path = file_path.AppendASCII(filename);
 
-  const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  for (size_t i = 0; i < kNetInternalsResourcesSize; ++i) {
-    if (kNetInternalsResources[i].name == key) {
-      scoped_refptr<RefCountedStaticMemory> bytes(
-          rb.LoadDataResourceBytes(kNetInternalsResources[i].value));
-      if (bytes && bytes->front()) {
-        SendResponse(request_id, bytes);
-        return;
-      }
-    }
+  if (!file_util::ReadFileToString(file_path, &data_string)) {
+    LOG(WARNING) << "Could not read resource: " << file_path.value();
+    data_string = StringPrintf("<p style='color:red'>Failed to read file "
+                               "RESOURCES/net_internals/%s</p>",
+                               EscapeForHTML(filename).c_str());
+
+    // During the transition from old implementation to new implementation,
+    // users may be entering the URLs for the old frontend.
+    data_string.append(
+        "<p>Note that the URL scheme for net-internals has changed because of "
+        "its new implementation (bug 37421):</p>"
+        "<ul>"
+        "<li>chrome://net-internals/proxyservice.* &rarr; "
+        "<a href='chrome://net-internals#proxy'>chrome://net-internals#proxy"
+        "</a></li>"
+        "<li>chrome://net-internals/hostresolver.* &rarr; <a href='chrome://net"
+        "-internals#dns'>chrome://net-internals#dns</a></li>"
+        "<li>chrome://net-internals/urlrequest.* &rarr; <a href='chrome://net-"
+        "internals#requests'>chrome://net-internals#requests</a></li>"
+        "<li>chrome://net-internals/ (overview for copy-pasting) &rarr; <a href"
+        "='chrome://net-internals#data'>chrome://net-internals#data</a></li>"
+        "<li>chrome://net-internals/view-cache/* &rarr; <a href="
+        "'chrome://view-http-cache'>chrome://view-http-cache</a></li>"
+        "</ul>");
   }
-
-  LOG(WARNING) << "Could not read resource: " << path;
-  std::string data_string = "<p style='color:red'>Failed to read resource";
-  data_string.append(EscapeForHTML(filename));
-  data_string.append("</p>");
-
-  // During the transition from old implementation to new implementation,
-  // users may be entering the URLs for the old frontend.
-  data_string.append(
-      "<p>Note that the URL scheme for net-internals has changed because of "
-      "its new implementation (bug 37421):</p>"
-      "<ul>"
-      "<li>chrome://net-internals/proxyservice.* &rarr; "
-      "<a href='chrome://net-internals#proxy'>chrome://net-internals#proxy"
-      "</a></li>"
-      "<li>chrome://net-internals/hostresolver.* &rarr; <a href='chrome://net"
-      "-internals#dns'>chrome://net-internals#dns</a></li>"
-      "<li>chrome://net-internals/urlrequest.* &rarr; <a href='chrome://net-"
-      "internals#requests'>chrome://net-internals#requests</a></li>"
-      "<li>chrome://net-internals/ (overview for copy-pasting) &rarr; <a href"
-      "='chrome://net-internals#data'>chrome://net-internals#data</a></li>"
-      "<li>chrome://net-internals/view-cache/* &rarr; <a href="
-      "'chrome://view-http-cache'>chrome://view-http-cache</a></li>"
-      "</ul>");
 
   scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes);
   bytes->data.resize(data_string.size());
   std::copy(data_string.begin(), data_string.end(), bytes->data.begin());
+
   SendResponse(request_id, bytes);
 }
 
