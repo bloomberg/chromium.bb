@@ -1020,6 +1020,8 @@
         'browser/dom_ui/plugins_ui.h',
         'browser/dom_ui/shown_sections_handler.cc',
         'browser/dom_ui/shown_sections_handler.h',
+        'browser/dom_ui/slideshow_ui.cc',
+        'browser/dom_ui/slideshow_ui.h',
         'browser/dom_ui/tips_handler.cc',
         'browser/dom_ui/tips_handler.h',
         'browser/download/download_exe.cc',

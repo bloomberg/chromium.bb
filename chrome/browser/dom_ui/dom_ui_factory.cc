@@ -16,6 +16,7 @@
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
 #include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/browser/dom_ui/slideshow_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
@@ -117,6 +118,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
     return &NewDOMUI<FileBrowseUI>;
   if (url.host() == chrome::kChromeUIMediaplayerHost)
     return &NewDOMUI<MediaplayerUI>;
+  if (url.host() == chrome::kChromeUISlideshowHost)
+    return &NewDOMUI<SlideshowUI>;
   if (url.host() == chrome::kChromeUIOptionsHost)
     return &NewDOMUI<OptionsUI>;
 #else

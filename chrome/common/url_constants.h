@@ -60,6 +60,7 @@ extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIHistory2URL[];
 extern const char kChromeUIIPCURL[];
 extern const char kChromeUIMediaplayerURL[];
+extern const char kChromeUISlideshowURL[];
 extern const char kChromeUIOptionsURL[];
 extern const char kChromeUINetworkURL[];
 extern const char kChromeUINewTabURL[];
@@ -85,6 +86,7 @@ extern const char kChromeUIOptionsHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
 extern const char kChromeUIResourcesHost[];
+extern const char kChromeUISlideshowHost[];
 extern const char kChromeUIThumbnailPath[];
 extern const char kChromeUIThemePath[];
 
