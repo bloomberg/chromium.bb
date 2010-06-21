@@ -83,8 +83,8 @@ void VolumeBubble::ShowVolumeBubble(int percent) {
         kVolumeBubbleXRatio * (bounds.width() - view_size.width());
     const int y = bounds.height() - view_size.height() / 2 -
         kVolumeBubbleBottomGap;
-    bubble_ = InfoBubble::Show(widget, gfx::Rect(x, y, 0, 20),
-                               BubbleBorder::FLOAT, view_, this);
+    bubble_ = InfoBubble::ShowFocusless(widget, gfx::Rect(x, y, 0, 20),
+                                        BubbleBorder::FLOAT, view_, this);
   } else {
     DCHECK(view_);
     timeout_timer_.Stop();

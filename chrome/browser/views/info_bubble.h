@@ -196,6 +196,16 @@ class InfoBubble
                           views::View* contents,
                           InfoBubbleDelegate* delegate);
 
+#if defined(OS_CHROMEOS)
+  // Shows the InfoBubble not grabbing the focus. Others are the same as above.
+  // TYPE_POPUP widget is used to achieve the focusless effect.
+  static InfoBubble* ShowFocusless(views::Widget* parent,
+                                   const gfx::Rect& position_relative_to,
+                                   BubbleBorder::ArrowLocation arrow_location,
+                                   views::View* contents,
+                                   InfoBubbleDelegate* delegate);
+#endif
+
   // Resizes and potentially moves the InfoBubble to best accommodate the
   // contents preferred size.
   void SizeToContents();

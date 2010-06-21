@@ -248,12 +248,27 @@ InfoBubble* InfoBubble::Show(views::Widget* parent,
   return window;
 }
 
+#if defined(OS_CHROMEOS)
+// static
+InfoBubble* InfoBubble::ShowFocusless(
+    views::Widget* parent,
+    const gfx::Rect& position_relative_to,
+    BubbleBorder::ArrowLocation arrow_location,
+    views::View* contents,
+    InfoBubbleDelegate* delegate) {
+  InfoBubble* window = new InfoBubble(views::WidgetGtk::TYPE_POPUP);
+  window->Init(parent, position_relative_to, arrow_location,
+               contents, delegate);
+  return window;
+}
+#endif
+
 void InfoBubble::Close() {
   if (show_status_ != kOpen)
     return;
 
   show_status_ = kClosing;
-    
+
   if (fade_away_on_close_)
     FadeOut();
   else
@@ -460,7 +475,7 @@ void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   if (action == WA_INACTIVE) {
     Close();
   } else if (action == WA_ACTIVE) {
-    DCHECK(GetRootView()->GetChildViewCount() > 0);
+    DCHECK_GT(GetRootView()->GetChildViewCount(), 0);
     GetRootView()->GetChildViewAt(0)->RequestFocus();
   }
 }
