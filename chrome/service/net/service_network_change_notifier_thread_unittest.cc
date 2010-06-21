@@ -65,7 +65,7 @@ void CheckNullNetworkChangeNotifier(
 
 TEST_F(ServiceNetworkChangeNotifierThreadTest, Basic) {
   scoped_refptr<ServiceNetworkChangeNotifierThread> change_notifier_thread =
-      new ServiceNetworkChangeNotifierThread(io_thread_.message_loop());
+      new ServiceNetworkChangeNotifierThread(io_thread_.message_loop(), NULL);
   EXPECT_EQ(io_thread_.message_loop(),
             change_notifier_thread->GetMessageLoop());
   change_notifier_thread->Initialize();
@@ -81,7 +81,7 @@ TEST_F(ServiceNetworkChangeNotifierThreadTest, Basic) {
 
 TEST_F(ServiceNetworkChangeNotifierThreadTest, Uninitialized) {
   scoped_refptr<ServiceNetworkChangeNotifierThread> change_notifier_thread =
-      new ServiceNetworkChangeNotifierThread(io_thread_.message_loop());
+      new ServiceNetworkChangeNotifierThread(io_thread_.message_loop(), NULL);
   EXPECT_EQ(io_thread_.message_loop(),
             change_notifier_thread->GetMessageLoop());
   // We have not called Initialize. Expect the GetNetworkChangeNotifier() call
@@ -97,4 +97,3 @@ TEST_F(ServiceNetworkChangeNotifierThreadTest, Uninitialized) {
 }
 
 }  // namespace
-
