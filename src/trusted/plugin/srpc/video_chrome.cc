@@ -105,7 +105,7 @@ void VideoMap::Invalidate() {
 }
 
 VideoCallbackData* VideoMap::InitCallbackData(nacl::DescWrapper* desc,
-                                              BrowserInterface *p,
+                                              Plugin *p,
                                               MultimediaSocket *msp) {
   return NULL;
 }
@@ -134,8 +134,7 @@ void VideoMap::RequestRedraw() {
   return;
 }
 
-VideoMap::VideoMap(BrowserInterface *browser_interface) {
-  browser_interface_ = browser_interface;
+VideoMap::VideoMap(Plugin *plugin) {
 }
 
 VideoMap::~VideoMap() {
