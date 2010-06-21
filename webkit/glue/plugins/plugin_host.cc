@@ -561,29 +561,18 @@ const char* NPN_UserAgent(NPP id) {
   // Flash passes in a null id during the NP_initialize call.  We need to
   // default to the Mozilla user agent if we don't have an NPP instance or
   // else Flash won't request windowless mode.
-  bool use_mozilla_user_agent = true;
   if (id) {
     scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
     if (plugin.get() && !plugin->use_mozilla_user_agent())
-      use_mozilla_user_agent = false;
+      return webkit_glue::GetUserAgent(GURL()).c_str();
   }
 
-  if (use_mozilla_user_agent)
-    return "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9a1) Gecko/20061103 Firefox/2.0a1";
-#elif defined(OS_MACOSX)
-  // Silverlight 4 doesn't handle events correctly unless we claim to be Safari.
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin.get()) {
-    WebPluginInfo plugin_info = plugin->plugin_lib()->plugin_info();
-    if (plugin_info.name == L"Silverlight Plug-In" &&
-        StartsWith(plugin_info.version, L"4.", false)) {
-      return "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-us) "
-          "AppleWebKit/534.1+ (KHTML, like Gecko) Version/5.0 Safari/533.16";
-    }
-  }
-#endif
-
+  return "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9a1) Gecko/20061103 Firefox/2.0a1";
+#else
+  // TODO(port): For now we always use our real useragent on Mac and Linux.
+  // We might eventually need to spoof for some plugins.
   return webkit_glue::GetUserAgent(GURL()).c_str();
+#endif
 }
 
 void NPN_Status(NPP id, const char* message) {
