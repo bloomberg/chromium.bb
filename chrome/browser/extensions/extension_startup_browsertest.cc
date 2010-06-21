@@ -161,7 +161,7 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
 };
 
 // Flaky (times out) on Mac/Windows. http://crbug.com/46301.
-#if defined(OS_MAC) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_Test FLAKY_Test
 #else
 #define MAYBE_Test Test
