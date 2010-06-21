@@ -13,7 +13,6 @@
 class MessageLoop;
 
 namespace net {
-class NetLog;
 class NetworkChangeNotifier;
 }  // namespace net
 
@@ -26,9 +25,8 @@ class ServiceNetworkChangeNotifierThread
   // Does not take ownership of |io_thread_message_loop|. This instance must
   // live no longer than |io_thread_message_loop|.
   // TODO(sanjeevr): Change NetworkChangeNotifierThread to use MessageLoopProxy
-  ServiceNetworkChangeNotifierThread(
-      MessageLoop* io_thread_message_loop,
-      net::NetLog* net_log);
+  explicit ServiceNetworkChangeNotifierThread(
+      MessageLoop* io_thread_message_loop);
   virtual ~ServiceNetworkChangeNotifierThread();
 
   // Initialize MUST be called before this class can be used.
@@ -41,13 +39,12 @@ class ServiceNetworkChangeNotifierThread
   virtual net::NetworkChangeNotifier* GetNetworkChangeNotifier() const;
 
  private:
-  void CreateNetworkChangeNotifier();
-
   MessageLoop* const io_thread_message_loop_;
-  net::NetLog* const net_log_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
+  void CreateNetworkChangeNotifier();
   DISALLOW_COPY_AND_ASSIGN(ServiceNetworkChangeNotifierThread);
 };
 
 #endif  // CHROME_SERVICE_NET_SERVICE_NETWORK_CHANGE_NOTIFIER_THREAD_H_
+

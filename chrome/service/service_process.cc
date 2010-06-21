@@ -27,7 +27,7 @@ bool ServiceProcess::Initialize() {
     return false;
   }
   network_change_notifier_thread_ =
-      new ServiceNetworkChangeNotifierThread(io_thread_->message_loop(), NULL);
+      new ServiceNetworkChangeNotifierThread(io_thread_->message_loop());
   network_change_notifier_thread_->Initialize();
   return true;
 }
@@ -53,3 +53,4 @@ ServiceProcess::~ServiceProcess() {
   DCHECK(cloud_print_proxy_list_.size() == 0);
   g_service_process = NULL;
 }
+

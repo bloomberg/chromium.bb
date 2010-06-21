@@ -186,9 +186,9 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     explicit ConnectJobTracker(PassiveLogCollector* parent);
 
-   private:
+   protected:
     virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
-
+   private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobTracker);
   };
 
@@ -200,9 +200,10 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     SocketTracker();
 
-   private:
+   protected:
     virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(SocketTracker);
   };
 
@@ -214,9 +215,10 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     explicit RequestTracker(PassiveLogCollector* parent);
 
-   private:
+   protected:
     virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(RequestTracker);
   };
 
@@ -229,9 +231,10 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     InitProxyResolverTracker();
 
-   private:
+   protected:
     virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
   };
 
@@ -243,23 +246,11 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     SpdySessionTracker();
 
-   private:
+   protected:
     virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(SpdySessionTracker);
-  };
-
-  class NetworkChangeNotifierTracker : public SourceTracker {
-   public:
-    static const size_t kMaxNumSources;
-    static const size_t kMaxGraveyardSize;
-
-    NetworkChangeNotifierTracker();
-
-   private:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
-
-    DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierTracker);
   };
 
   PassiveLogCollector();
@@ -295,7 +286,6 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   RequestTracker socket_stream_tracker_;
   InitProxyResolverTracker init_proxy_resolver_tracker_;
   SpdySessionTracker spdy_session_tracker_;
-  NetworkChangeNotifierTracker network_change_notifier_tracker_;
 
   // This array maps each NetLog::SourceType to one of the tracker instances
   // defined above. Use of this array avoid duplicating the list of trackers

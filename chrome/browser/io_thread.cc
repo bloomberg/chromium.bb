@@ -133,10 +133,9 @@ void IOThread::Init() {
   DCHECK(!globals_);
   globals_ = new Globals;
 
-  ChromeNetLog* net_log = new ChromeNetLog();
-  globals_->net_log.reset(net_log);
+  globals_->net_log.reset(new ChromeNetLog());
   globals_->network_change_notifier.reset(
-      net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier(net_log));
+      net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier());
   globals_->host_resolver =
       CreateGlobalHostResolver(globals_->network_change_notifier.get());
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory());

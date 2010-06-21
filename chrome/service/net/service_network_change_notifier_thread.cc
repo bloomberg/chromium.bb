@@ -9,10 +9,8 @@
 #include "net/base/network_change_notifier.h"
 
 ServiceNetworkChangeNotifierThread::ServiceNetworkChangeNotifierThread(
-    MessageLoop* io_thread_message_loop,
-    net::NetLog* net_log)
-        : io_thread_message_loop_(io_thread_message_loop),
-          net_log_(net_log) {
+    MessageLoop* io_thread_message_loop)
+        : io_thread_message_loop_(io_thread_message_loop) {
   DCHECK(io_thread_message_loop_);
 }
 
@@ -36,12 +34,13 @@ MessageLoop* ServiceNetworkChangeNotifierThread::GetMessageLoop() const {
 
 net::NetworkChangeNotifier*
 ServiceNetworkChangeNotifierThread::GetNetworkChangeNotifier() const {
-  DCHECK_EQ(MessageLoop::current(), io_thread_message_loop_);
+  DCHECK(MessageLoop::current() == io_thread_message_loop_);
   return network_change_notifier_.get();
 }
 
 void ServiceNetworkChangeNotifierThread::CreateNetworkChangeNotifier() {
-  DCHECK_EQ(MessageLoop::current(), io_thread_message_loop_);
+  DCHECK(MessageLoop::current() == io_thread_message_loop_);
   network_change_notifier_.reset(
-      net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier(net_log_));
+      net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier());
 }
+

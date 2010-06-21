@@ -56,8 +56,6 @@ PassiveLogCollector::PassiveLogCollector()
   trackers_[net::NetLog::SOURCE_INIT_PROXY_RESOLVER] =
       &init_proxy_resolver_tracker_;
   trackers_[net::NetLog::SOURCE_SPDY_SESSION] = &spdy_session_tracker_;
-  trackers_[net::NetLog::SOURCE_NETWORK_CHANGE_NOTIFIER] =
-      &network_change_notifier_tracker_;
 
   // Make sure our mapping is up-to-date.
   for (size_t i = 0; i < arraysize(trackers_); ++i)
@@ -460,27 +458,4 @@ PassiveLogCollector::SpdySessionTracker::DoAddEntry(const Entry& entry,
   } else {
     return ACTION_NONE;
   }
-}
-
-//----------------------------------------------------------------------------
-// NetworkChangeNotifierTracker
-//----------------------------------------------------------------------------
-
-typedef PassiveLogCollector::NetworkChangeNotifierTracker
-    NetworkChangeNotifierTracker;
-
-const size_t
-NetworkChangeNotifierTracker::kMaxNumSources = 50;
-const size_t
-NetworkChangeNotifierTracker::kMaxGraveyardSize = 10;
-
-NetworkChangeNotifierTracker::NetworkChangeNotifierTracker()
-    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
-}
-
-PassiveLogCollector::SourceTracker::Action
-NetworkChangeNotifierTracker::DoAddEntry(
-    const Entry& entry, SourceInfo* out_info) {
-  AddEntryToSourceInfo(entry, out_info);
-  return ACTION_MOVE_TO_GRAVEYARD;
 }
