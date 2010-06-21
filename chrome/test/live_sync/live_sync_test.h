@@ -5,18 +5,16 @@
 #ifndef CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_
 #define CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_
 
-#include <string>
-
-#include "base/command_line.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "googleurl/src/gurl.h"
+
+#include "base/scoped_vector.h"
+#include "chrome/test/live_sync/profile_sync_service_test_harness.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/socket/ssl_test_util.h"
 
-class BookmarkModel;
-class BookmarkNode;
 class Profile;
+class CommandLine;
+
 namespace net {
 class ScopedDefaultHostResolverProc;
 }
@@ -26,97 +24,145 @@ extern const wchar_t kSyncUserForTest[];
 extern const wchar_t kSyncPasswordForTest[];
 }
 
-// TODO(timsteele): This should be moved out of personalization_unit_tests into
-// its own project that doesn't get run by default on the standard buildbot
-// without a valid sync server set up.
+// This is the base class for integration tests for all sync data types. Derived
+// classes must be defined for each sync data type. Individual tests are defined
+// using the IN_PROC_BROWSER_TEST_F macro.
 class LiveSyncTest : public InProcessBrowserTest {
  public:
-  LiveSyncTest();
-  ~LiveSyncTest();
+  // The different types of live sync tests that can be implemented.
+  enum TestType {
+    // Tests where only one client profile is synced with the server. Typically
+    // sanity level tests.
+    SINGLE_CLIENT,
 
-  virtual void SetUp() {
-    // At this point, the browser hasn't been launched, and no services are
-    // available.  But we can verify our command line parameters and fail
-    // early.
-    const CommandLine* cl = CommandLine::ForCurrentProcess();
-    username_ = WideToUTF8(cl->GetSwitchValue(switches::kSyncUserForTest));
-    password_ = WideToUTF8(cl->GetSwitchValue(switches::kSyncPasswordForTest));
-    ASSERT_FALSE(username_.empty()) << "Can't run live server test "
-        << "without specifying --" << switches::kSyncUserForTest;
-    ASSERT_FALSE(password_.empty()) << "Can't run live server test "
-        << "without specifying --" << switches::kSyncPasswordForTest;
+    // Tests where two client profiles are synced with the server. Typically
+    // functionality level tests.
+    TWO_CLIENT,
 
-    // Unless a sync server was explicitly provided, run a test one locally.
-    // TODO(ncarter): It might be better to allow the user to specify a choice
-    // of sync server "providers" -- a script that could locate (or allocate)
-    // a sync server instance, possibly on some remote host.  The provider
-    // would be invoked before each test.
-    if (!cl->HasSwitch(switches::kSyncServiceURL))
-      SetUpLocalTestServer();
+    // Tests where three client profiles are synced with the server. Typically,
+    // these tests create client side races and verify that sync works.
+    MULTIPLE_CLIENT,
 
-    // Yield control back to the InProcessBrowserTest framework.
-    InProcessBrowserTest::SetUp();
+    // Tests where several client profiles are synced with the server. Only used
+    // by stress tests.
+    MANY_CLIENT
+  };
+
+  // A LiveSyncTest must be associated with a particular test type.
+  explicit LiveSyncTest(TestType test_type)
+      : test_type_(test_type),
+        num_clients_(-1),
+        started_local_test_server_(false) {
+    InProcessBrowserTest::set_show_window(true);
+    switch (test_type_) {
+      case SINGLE_CLIENT: {
+        num_clients_ = 1;
+        break;
+      }
+      case TWO_CLIENT: {
+        num_clients_ = 2;
+        break;
+      }
+      case MULTIPLE_CLIENT: {
+        num_clients_ = 3;
+        break;
+      }
+      case MANY_CLIENT: {
+        num_clients_ = 10;
+        break;
+      }
+    }
   }
 
-  virtual void TearDown() {
-    // Allow the InProcessBrowserTest framework to perform its tear down.
-    InProcessBrowserTest::TearDown();
+  virtual ~LiveSyncTest() {}
 
-    // Stop the local test sync server if one was used.
-    if (started_local_test_server_)
-      TearDownLocalTestServer();
-  }
+  // Validates command line parameters and creates a local python test server if
+  // specified.
+  virtual void SetUp();
 
-  virtual void SetUpLocalTestServer() {
-    bool success = server_.Start(net::TestServerLauncher::ProtoHTTP,
-        server_.kHostName, server_.kOKHTTPSPort,
-        FilePath(), FilePath(), std::wstring());
-    ASSERT_TRUE(success);
-
-    started_local_test_server_ = true;
-
-    CommandLine* cl = CommandLine::ForCurrentProcess();
-    cl->AppendSwitchWithValue(switches::kSyncServiceURL,
-        StringPrintf("http://%s:%d/chromiumsync", server_.kHostName,
-            server_.kOKHTTPSPort));
-  }
-
-  virtual void TearDownLocalTestServer() {
-    bool success = server_.Stop();
-    ASSERT_TRUE(success);
-  }
+  // Brings down local python test server if one was created.
+  virtual void TearDown();
 
   // Append command line flag to enable sync.
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-  }
-
-  // Helper to get a handle on a bookmark in |m| when the url is known to be
-  // unique.
-  static const BookmarkNode* GetByUniqueURL(BookmarkModel* m, const GURL& url);
+  virtual void SetUpCommandLine(CommandLine* command_line) {}
 
   // Helper to ProfileManager::CreateProfile that handles path creation.
-  static Profile* MakeProfile(const FilePath::CharType* name);
+  static Profile* MakeProfile(const FilePath::StringType name);
 
-  // Utility to block (by running the current MessageLoop) until the model has
-  // loaded.  Note this is required instead of using m->BlockTillLoaded, as that
-  // cannot be called from the main thread (deadlock will occur).
-  static void BlockUntilLoaded(BookmarkModel* m);
+  // Used to access a particular sync profile.
+  Profile* GetProfile(int index);
+
+  // Used to access a particular sync client.
+  ProfileSyncServiceTestHarness* GetClient(int index);
+
+  // Used to verify changes to individual sync profiles.
+  Profile* verifier();
+
+  // Initializes sync clients and profiles but does not sync any of them.
+  virtual bool SetupClients();
+
+  // Initializes sync clients and profiles if required and syncs each of them.
+  virtual bool SetupSync();
 
  protected:
-  std::string username_;
-  std::string password_;
+  // InProcessBrowserTest override. Destroys all the sync clients and sync
+  // profiles created by a test.
+  virtual void CleanUpOnMainThread();
 
+  // InProcessBrowserTest override. Changes behavior of the default host
+  // resolver to avoid DNS lookup errors.
   virtual void SetUpInProcessBrowserTestFixture();
+
+  // InProcessBrowserTest override. Resets the host resolver its default
+  // behavior.
   virtual void TearDownInProcessBrowserTestFixture();
 
- private:
-  // LiveBookmarksSyncTests need to make live DNS requests for access to
-  // GAIA and sync server URLs under google.com.  We use a scoped version
+  // GAIA account used by the test case.
+  std::string username_;
+
+  // GAIA password used by the test case.
+  std::string password_;
+
+private:
+  // Helper method used to create a local python test server.
+  virtual void SetUpLocalTestServer();
+
+  // Helper method used to destroy the local python test server if one was
+  // created.
+  virtual void TearDownLocalTestServer();
+
+  // Used to differentiate between single-client, two-client, multi-client and
+  // many-client tests.
+  TestType test_type_;
+
+  // Number of sync clients that will be created by a test.
+  int num_clients_;
+
+  // Collection of sync profiles used by a test. A sync profile maintains sync
+  // data contained within its own subdirectory under the chrome user data
+  // directory.
+  ScopedVector<Profile> profiles_;
+
+  // Collection of sync clients used by a test. A sync client is associated with
+  // a sync profile, and implements methods that sync the contents of the
+  // profile with the server.
+  ScopedVector<ProfileSyncServiceTestHarness> clients_;
+
+  // Sync profile against which changes to individual profiles are verified. We
+  // don't need a corresponding verifier sync client because the contents of the
+  // verifier profile are strictly local, and are not meant to be synced.
+  scoped_ptr<Profile> verifier_;
+
+  // Local instance of python sync server.
+  net::TestServerLauncher server_;
+
+  // Keeps track of whether a local python sync server was used for a test.
+  bool started_local_test_server_;
+
+  // Sync integration tests need to make live DNS requests for access to
+  // GAIA and sync server URLs under google.com. We use a scoped version
   // to override the default resolver while the test is active.
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
-
-  net::TestServerLauncher server_;
-  bool started_local_test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };

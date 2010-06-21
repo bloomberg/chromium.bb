@@ -28,6 +28,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
+#include "chrome/test/bookmark_load_observer.h"
 #if defined(TOOLKIT_VIEWS)
 #include "views/focus/accelerator_handler.h"
 #endif
@@ -537,6 +538,16 @@ void RegisterAndWait(NotificationObserver* observer,
   NotificationRegistrar registrar;
   registrar.Add(observer, type, source);
   RunMessageLoop();
+}
+
+void WaitForBookmarkModelToLoad(BookmarkModel* model) {
+  if (model->IsLoaded())
+    return;
+  BookmarkLoadObserver observer;
+  model->AddObserver(&observer);
+  RunMessageLoop();
+  model->RemoveObserver(&observer);
+  ASSERT_TRUE(model->IsLoaded());
 }
 
 TimedMessageLoopRunner::TimedMessageLoopRunner()

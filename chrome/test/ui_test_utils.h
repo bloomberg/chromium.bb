@@ -21,6 +21,8 @@
 #include "chrome/test/automation/dom_element_proxy.h"
 
 class AppModalDialog;
+class BookmarkModel;
+class BookmarkNode;
 class Browser;
 class CommandLine;
 class DownloadManager;
@@ -180,6 +182,9 @@ void WaitForNotification(NotificationType::Type type);
 void RegisterAndWait(NotificationObserver* observer,
                      NotificationType::Type type,
                      const NotificationSource& source);
+
+// Blocks until |model| finishes loading.
+void WaitForBookmarkModelToLoad(BookmarkModel* model);
 
 // Run a message loop only for the specified amount of time.
 class TimedMessageLoopRunner {
