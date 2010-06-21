@@ -324,21 +324,22 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   // into keyword templates.
   FillInURLAndContents(remaining_input, element, &result);
 
-  // Create popup entry description based on the keyword name.
-  int message_id = element->IsExtensionKeyword() ?
-      IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_DESCRIPTION :
-      IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION;
-  result.description.assign(l10n_util::GetStringF(message_id, keyword));
   if (supports_replacement)
     result.template_url = element;
-  static const std::wstring kKeywordDesc(l10n_util::GetString(message_id));
-  AutocompleteMatch::ClassifyLocationInString(kKeywordDesc.find(L"%s"),
-                                              prefix_length,
-                                              result.description.length(),
-                                              ACMatchClassification::DIM,
-                                              &result.description_class);
-
   result.transition = PageTransition::KEYWORD;
+
+  // Create popup entry description based on the keyword name.
+  if (!element->IsExtensionKeyword()) {
+    result.description.assign(l10n_util::GetStringF(
+        IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION, keyword));
+    static const std::wstring kKeywordDesc(
+        l10n_util::GetString(IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION));
+    AutocompleteMatch::ClassifyLocationInString(kKeywordDesc.find(L"%s"),
+                                                prefix_length,
+                                                result.description.length(),
+                                                ACMatchClassification::DIM,
+                                                &result.description_class);
+  }
 
   return result;
 }
@@ -350,8 +351,9 @@ void KeywordProvider::Observe(NotificationType type,
   // AutocompleteProvider::kMaxMatches.
   DCHECK(type == NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY);
 
-  int suggest_id = Details<ExtensionOmniboxSuggestions>(details).ptr()->first;
-  if (suggest_id != current_input_id_)
+  const ExtensionOmniboxSuggestions& suggestions =
+      *Details<ExtensionOmniboxSuggestions>(details).ptr();
+  if (suggestions.request_id != current_input_id_)
     return;  // This is an old result. Just ignore.
 
   const AutocompleteInput& input = extension_suggest_last_input_;
@@ -364,16 +366,8 @@ void KeywordProvider::Observe(NotificationType type,
   TemplateURLModel* model =
       profile_ ? profile_->GetTemplateURLModel() : model_;
 
-  ListValue* suggestions =
-      Details<ExtensionOmniboxSuggestions>(details).ptr()->second;
-  for (size_t i = 0; i < suggestions->GetSize(); ++i) {
-    DictionaryValue* suggestion;
-    string16 content, description;
-    if (!suggestions->GetDictionary(i, &suggestion) ||
-        !suggestion->GetString("content", &content) ||
-        !suggestion->GetString("description", &description))
-      break;
-
+  for (size_t i = 0; i < suggestions.suggestions.size(); ++i) {
+    const ExtensionOmniboxSuggestion& suggestion = suggestions.suggestions[i];
     // We want to order these suggestions in descending order, so start with
     // the relevance of the first result (added synchronously in Start()),
     // and subtract 1 for each subsequent suggestion from the extension.
@@ -382,20 +376,14 @@ void KeywordProvider::Observe(NotificationType type,
     int first_relevance =
         CalculateRelevance(input.type(), true, input.prefer_keyword());
     extension_suggest_matches_.push_back(CreateAutocompleteMatch(
-        model, keyword, input, keyword.length(), UTF16ToWide(content),
-        first_relevance - (i + 1)));
+        model, keyword, input, keyword.length(),
+        UTF16ToWide(suggestion.content), first_relevance - (i + 1)));
 
-    if (!description.empty()) {
-      AutocompleteMatch* match = &extension_suggest_matches_.back();
-      std::vector<size_t> offsets;
-      match->contents.assign(l10n_util::GetStringF(
-          IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_CONTENT,
-          match->contents, UTF16ToWide(description), &offsets));
-      CHECK_EQ(2U, offsets.size()) <<
-          "Expected 2 params for IDS_AUTOCOMPLETE_EXTENSION_KEYWORD_CONTENT";
-      match->contents_class.push_back(
-          ACMatchClassification(offsets[1], ACMatchClassification::NONE));
-    }
+    AutocompleteMatch* match = &extension_suggest_matches_.back();
+    match->contents.assign(UTF16ToWide(suggestion.description));
+    match->contents_class = suggestion.description_styles;
+    match->description.clear();
+    match->description_class.clear();
   }
 
   done_ = true;

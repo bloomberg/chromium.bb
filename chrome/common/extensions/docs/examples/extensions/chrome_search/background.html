@@ -1,0 +1,95 @@
+<script>
+var currentRequest = null;
+
+chrome.experimental.omnibox.onInputChanged.addListener(
+  function(text, suggest) {
+    if (text == '') {
+      return;
+    }
+
+    if (currentRequest != null) {
+      currentRequest.onreadystatechange = null;
+      currentRequest.abort();
+      currentRequest = null;
+    }
+
+    currentRequest = search(text, function(xml) {
+      var results = [];
+      var entries = xml.getElementsByTagName("entry");
+
+      for (var i = 0, entry; i < 5 && (entry = entries[i]); i++) {
+        var path = entry.getElementsByTagName("file")[0].getAttribute("name");
+        var line =
+            entry.getElementsByTagName("match")[0].getAttribute("lineNumber");
+        var file = path.split("/").pop();
+
+        // Remove HTML tags from description since omnibox cannot display them.
+        var description = entry.getElementsByTagName("content")[0].textContent;
+        description = description.replace(/<\/?.+?>/g, '');
+        description = file + ': ' + description; 
+
+        results.push({
+          content: path + '@' + line,
+          description: description,
+          descriptionStyles: [
+            chrome.experimental.omnibox.styleMatch(0),
+            chrome.experimental.omnibox.styleNone(file.length),
+          ],
+        });
+      }
+
+      suggest(results);
+    });
+  }
+);
+
+function search(query, callback) {
+  var url = "http://www.google.com/codesearch/feeds/search?" +
+      "q=package:git.chromium.org/chromium.git+" + query;
+  var req = new XMLHttpRequest();
+  req.open("GET", url, true);
+  req.setRequestHeader("GData-Version", "2");
+  req.onreadystatechange = function() {
+    if (req.readyState == 4) {
+      callback(req.responseXML);
+    }
+  }
+  req.send(null);
+  return req;
+}
+
+function getUrl(path, line) {
+  var url =
+    "http://src.chromium.org/cgi-bin/gitweb.cgi?p=chromium.git;a=blob;hb=HEAD;f=" +
+    path + "#l" + line;
+  return url;
+}
+
+function getEntryUrl(entry) {
+  return getUrl(
+      entry.getElementsByTagName("file")[0].getAttribute("name"),
+      entry.getElementsByTagName("match")[0].getAttribute("lineNumber"));
+  return url;
+}
+
+function navigate(url) {
+  chrome.tabs.getSelected(null, function(tab) {
+    chrome.tabs.update(tab.id, {url: url});
+  });
+}
+
+chrome.experimental.omnibox.onInputEntered.addListener(
+  function(text) {
+    if (text.indexOf('@') > 0) {
+      var chunks = text.split('@');
+      var path = chunks[0];
+      var line = chunks[1];
+      navigate(getUrl(path, line));
+    } else {
+      search(text, function(xml) {
+        navigate(getEntryUrl(xml.getElementsByTagName("entry")[0]));
+      });
+    }
+  }
+);
+</script>

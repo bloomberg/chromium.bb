@@ -431,6 +431,8 @@ int AutocompleteResultView::DrawString(
       const ResultViewState state = GetState();
       if (style & ACMatchClassification::URL)
         current_data->color = GetColor(state, URL);
+      else if (style & ACMatchClassification::DIM)
+        current_data->color = GetColor(state, DIMMED_TEXT);
       else
         current_data->color = GetColor(state, force_dim ? DIMMED_TEXT : TEXT);
       current_data->pixel_width =

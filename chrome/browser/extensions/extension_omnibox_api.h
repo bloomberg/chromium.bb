@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
 
+#include "base/string16.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/extensions/extension_function.h"
-
-class ListValue;
 
 // Event router class for events related to the omnibox API.
 class ExtensionOmniboxEventRouter {
@@ -34,6 +34,20 @@ class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.omnibox.sendSuggestions");
 };
 
-typedef std::pair<int, ListValue*> ExtensionOmniboxSuggestions;
+struct ExtensionOmniboxSuggestion {
+  // The text that gets put in the edit box.
+  string16 content;
+
+  // The text that is displayed in the drop down.
+  string16 description;
+
+  // Contains style ranges for the description.
+  ACMatchClassifications description_styles;
+};
+
+struct ExtensionOmniboxSuggestions {
+  int request_id;
+  std::vector<ExtensionOmniboxSuggestion> suggestions;
+};
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_

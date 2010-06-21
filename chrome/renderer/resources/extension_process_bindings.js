@@ -654,6 +654,19 @@ var chrome = chrome || {};
       return newArgs;
     };
 
+    apiFunctions["experimental.omnibox.styleNone"].handleRequest =
+        function(offset) {
+      return {type: "none", offset: offset};
+    }
+    apiFunctions["experimental.omnibox.styleMatch"].handleRequest =
+        function(offset) {
+      return {type: "match", offset: offset};
+    }
+    apiFunctions["experimental.omnibox.styleDim"].handleRequest =
+        function(offset) {
+      return {type: "dim", offset: offset};
+    }
+
     if (chrome.test) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
     }

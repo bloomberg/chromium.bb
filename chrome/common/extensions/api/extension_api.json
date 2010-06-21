@@ -3025,27 +3025,71 @@
   },
   {
     "namespace": "experimental.omnibox",
-    "types": [],
+    "types": [
+      {
+        "id": "SuggestResult",
+        "type": "object",
+        "description": "A suggest result.",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The text that is put into the URL bar, and that is sent to the extension when the user chooses this entry."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The text that is displayed in the URL dropdown. Can optionally be stylized by the descriptionStyles parameter."
+          },
+          "descriptionStyles": {
+            "type": "array",
+            "optional": true,
+            "items": {
+              "type": "object",
+              "description": "A style object, created using styleNone, styleMatch, or styleDim. A style applies to the region of text starting at the style's offset, until either the next style or the end of the description.",
+              "properties": {
+                "type": {"type": "string", "enum": ["none", "match", "dim"]},
+                "offset": {"type": "integer"}
+              }
+            }
+          }
+        }
+      }
+    ],
     "functions": [
       {
         "name": "sendSuggestions",
         "nodoc": true,
         "type": "function",
-        "description": "",
+        "description": "A callback passed to the onInputChanged event used for sending suggestions back to the browser.",
         "parameters": [
           {"type": "integer", "name": "requestId"},
           {
             "type": "array",
             "description": "Array of suggest results",
             "items": {
-              "type": "object",
-              "properties": {
-                "content": {"type": "string"},
-                "description": {"type": "string"}
-              }
+              "$ref": "SuggestResult"
             }
           }
         ]
+      },
+      {
+        "name": "styleNone",
+        "type": "function",
+        "description": "Constructor for the descriptionStyles parameter of the suggest callback.",
+        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
+      },
+      {
+        "name": "styleMatch",
+        "type": "function",
+        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed.",
+        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
+      },
+      {
+        "name": "styleDim",
+        "type": "function",
+        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text.",
+        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
       }
     ],
     "events": [
@@ -3059,18 +3103,16 @@
             "name": "text"
           },
           {
-            "type": "function",
             "name": "suggest",
+            "type": "function",
+            "description": "A callback passed to the onInputChanged event used for sending suggestions back to the browser.",
             "parameters": [
+              {"type": "integer", "name": "requestId"},
               {
                 "type": "array",
                 "description": "Array of suggest results",
                 "items": {
-                  "type": "object",
-                  "properties": {
-                    "content": {"type": "string"},
-                    "description": {"type": "string"}
-                  }
+                  "$ref": "SuggestResult"
                 }
               }
             ]

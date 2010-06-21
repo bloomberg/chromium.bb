@@ -16,6 +16,20 @@ const char kOnInputChanged[] = "experimental.omnibox.onInputChanged/";
 const char kOnInputEntered[] = "experimental.omnibox.onInputEntered/";
 };  // namespace events
 
+namespace {
+const char kDescriptionStylesOrderError[] =
+    "Suggestion descriptionStyles must be in increasing non-overlapping order.";
+const char kDescriptionStylesLengthError[] =
+    "Suggestion descriptionStyles contains an offset longer than the"
+    " description text";
+
+const wchar_t kSuggestionContent[] = L"content";
+const wchar_t kSuggestionDescription[] = L"description";
+const wchar_t kSuggestionDescriptionStyles[] = L"descriptionStyles";
+const wchar_t kDescriptionStylesType[] = L"type";
+const wchar_t kDescriptionStylesOffset[] = L"offset";
+};  // namespace
+
 // static
 bool ExtensionOmniboxEventRouter::OnInputChanged(
     Profile* profile, const std::string& extension_id,
@@ -51,17 +65,74 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 }
 
 bool OmniboxSendSuggestionsFunction::RunImpl() {
-  int request_id;
+  ExtensionOmniboxSuggestions suggestions;
   ListValue* suggestions_value;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &suggestions.request_id));
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &suggestions_value));
 
-  ExtensionOmniboxSuggestions details(request_id, suggestions_value);
+  suggestions.suggestions.resize(suggestions_value->GetSize());
+  for (size_t i = 0; i < suggestions_value->GetSize(); ++i) {
+    ExtensionOmniboxSuggestion& suggestion = suggestions.suggestions[i];
+    DictionaryValue* suggestion_value;
+    EXTENSION_FUNCTION_VALIDATE(suggestions_value->GetDictionary(
+        i, &suggestion_value));
+    EXTENSION_FUNCTION_VALIDATE(suggestion_value->GetStringAsUTF16(
+        kSuggestionContent, &suggestion.content));
+    EXTENSION_FUNCTION_VALIDATE(suggestion_value->GetStringAsUTF16(
+        kSuggestionDescription, &suggestion.description));
+
+    if (suggestion_value->HasKey(kSuggestionDescriptionStyles)) {
+      ListValue* styles;
+      EXTENSION_FUNCTION_VALIDATE(
+          suggestion_value->GetList(kSuggestionDescriptionStyles, &styles));
+
+      suggestion.description_styles.clear();
+
+      int last_offset = -1;
+      for (size_t j = 0; j < styles->GetSize(); ++j) {
+        DictionaryValue* style;
+        std::string type;
+        int offset;
+        EXTENSION_FUNCTION_VALIDATE(styles->GetDictionary(j, &style));
+        EXTENSION_FUNCTION_VALIDATE(
+            style->GetString(kDescriptionStylesType, &type));
+        EXTENSION_FUNCTION_VALIDATE(
+            style->GetInteger(kDescriptionStylesOffset, &offset));
+
+        int type_class =
+            (type == "none") ? ACMatchClassification::NONE :
+            (type == "match") ? ACMatchClassification::MATCH :
+            (type == "dim") ? ACMatchClassification::DIM : -1;
+        EXTENSION_FUNCTION_VALIDATE(type_class != -1);
+
+        if (offset <= last_offset) {
+          error_ = kDescriptionStylesOrderError;
+          return false;
+        }
+        if (static_cast<size_t>(offset) >= suggestion.description.length()) {
+          error_ = kDescriptionStylesLengthError;
+          return false;
+        }
+
+        suggestion.description_styles.push_back(
+            ACMatchClassification(offset, type_class));
+        last_offset = offset;
+      }
+    }
+
+    // Ensure the styles cover the whole range of text.
+    if (suggestion.description_styles.empty() ||
+        suggestion.description_styles[0].offset != 0) {
+      suggestion.description_styles.insert(
+          suggestion.description_styles.begin(),
+          ACMatchClassification(0, ACMatchClassification::NONE));
+    }
+  }
+
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY,
       Source<Profile>(profile_),
-      Details<ExtensionOmniboxSuggestions>(&details));
+      Details<ExtensionOmniboxSuggestions>(&suggestions));
 
   return true;
 }
-
