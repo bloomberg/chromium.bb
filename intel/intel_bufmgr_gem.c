@@ -93,6 +93,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	/** Array of lists of cached gem objects of power-of-two sizes */
 	struct drm_intel_gem_bo_bucket cache_bucket[14 * 4];
 	int num_buckets;
+	time_t time;
 
 	uint64_t gtt_size;
 	int available_fences;
@@ -848,6 +849,9 @@ drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
 {
 	int i;
 
+	if (bufmgr_gem->time == time)
+		return;
+
 	for (i = 0; i < bufmgr_gem->num_buckets; i++) {
 		struct drm_intel_gem_bo_bucket *bucket =
 		    &bufmgr_gem->cache_bucket[i];
@@ -865,6 +869,8 @@ drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
 			drm_intel_gem_bo_free(&bo_gem->bo);
 		}
 	}
+
+	bufmgr_gem->time = time;
 }
 
 static void
@@ -910,8 +916,6 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 		bo_gem->validate_index = -1;
 
 		DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
-
-		drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time);
 	} else {
 		drm_intel_gem_bo_free(bo);
 	}
@@ -941,6 +945,7 @@ static void drm_intel_gem_bo_unreference(drm_intel_bo *bo)
 
 		pthread_mutex_lock(&bufmgr_gem->lock);
 		drm_intel_gem_bo_unreference_final(bo, time.tv_sec);
+		drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time.tv_sec);
 		pthread_mutex_unlock(&bufmgr_gem->lock);
 	}
 }
