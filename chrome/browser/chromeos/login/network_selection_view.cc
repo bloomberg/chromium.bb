@@ -36,7 +36,7 @@ using views::WidgetGtk;
 
 namespace {
 
-const int kWelcomeLabelY = 150;
+const int kWelcomeLabelY = 170;
 const int kContinueButtonSpacingX = 30;
 const int kSpacing = 25;
 const int kHorizontalSpacing = 25;
@@ -95,6 +95,7 @@ void NetworkSelectionView::Init() {
   welcome_label_ = new views::Label();
   welcome_label_->SetColor(kWelcomeColor);
   welcome_label_->SetFont(welcome_label_font);
+  welcome_label_->SetMultiLine(true);
 
   select_language_label_ = new views::Label();
   select_language_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
@@ -172,7 +173,12 @@ gfx::Size NetworkSelectionView::GetPreferredSize() {
 }
 
 void NetworkSelectionView::Layout() {
+  gfx::Insets insets = GetInsets();
+  int max_width = this->width() - insets.width() - 2 * kHorizontalSpacing;
+  welcome_label_->SizeToFit(max_width);
   int y = kWelcomeLabelY;
+  y -= welcome_label_->GetPreferredSize().height() / 2;
+
   welcome_label_->SetBounds(
       (width() - welcome_label_->GetPreferredSize().width()) / 2,
       y,
