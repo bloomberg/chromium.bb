@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/theme_resources_util.h"
+#include "chrome/browser/resources_util.h"
 
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
@@ -41,6 +41,6 @@ static base::LazyInstance<ThemeMap> g_theme_ids(base::LINKER_INITIALIZED);
 
 }  // namespace
 
-int ThemeResourcesUtil::GetId(const std::string& resource_name) {
+int ResourcesUtil::GetThemeResourceId(const std::string& resource_name) {
   return g_theme_ids.Get().GetId(resource_name);
 }

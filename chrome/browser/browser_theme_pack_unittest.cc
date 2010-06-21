@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
-#include "chrome/browser/theme_resources_util.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"

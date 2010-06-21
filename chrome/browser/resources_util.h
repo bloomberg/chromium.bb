@@ -9,14 +9,14 @@
 
 #include "base/basictypes.h"
 
-class ThemeResourcesUtil {
+class ResourcesUtil {
  public:
   // Returns the theme resource id or -1 if no resource with the name exists.
-  static int GetId(const std::string& resource_name);
+  static int GetThemeResourceId(const std::string& resource_name);
 
  private:
-  ThemeResourcesUtil() {}
-  DISALLOW_COPY_AND_ASSIGN(ThemeResourcesUtil);
+  ResourcesUtil() {}
+  DISALLOW_COPY_AND_ASSIGN(ResourcesUtil);
 };
 
 #endif  // CHROME_BROWSER_THEME_RESOURCES_UTIL_H_

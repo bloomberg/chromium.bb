@@ -11,7 +11,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/theme_resources_util.h"
+#include "chrome/browser/resources_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
@@ -50,7 +50,7 @@ void DOMUIThemeSource::StartDataRequest(const std::string& path,
     SendResponse(request_id, css_bytes_);
     return;
   } else {
-    int resource_id = ThemeResourcesUtil::GetId(uncached_path);
+    int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
     if (resource_id != -1) {
       SendThemeBitmap(request_id, resource_id);
       return;
@@ -83,7 +83,7 @@ MessageLoop* DOMUIThemeSource::MessageLoopForRequestPath(
   }
 
   // If it's not a themeable image, we don't need to go to the UI thread.
-  int resource_id = ThemeResourcesUtil::GetId(uncached_path);
+  int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
   if (!BrowserThemeProvider::IsThemeableImage(resource_id))
     return NULL;
 

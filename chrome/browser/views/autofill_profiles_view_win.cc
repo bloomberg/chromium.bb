@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/theme_resources_util.h"
 #include "chrome/browser/views/list_background.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/pref_names.h"
