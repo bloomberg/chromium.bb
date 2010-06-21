@@ -201,8 +201,9 @@ drm_intel_gem_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    uint32_t * swizzle_mode);
 
 static int
-drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
-			    uint32_t stride);
+drm_intel_gem_bo_set_tiling_internal(drm_intel_bo *bo,
+				     uint32_t tiling_mode,
+				     uint32_t stride);
 
 static void drm_intel_gem_bo_unreference_locked_timed(drm_intel_bo *bo,
 						      time_t time);
@@ -550,7 +551,9 @@ static drm_intel_bo *
 drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr,
 				const char *name,
 				unsigned long size,
-				unsigned long flags)
+				unsigned long flags,
+				uint32_t tiling_mode,
+				unsigned long stride)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
 	drm_intel_bo_gem *bo_gem;
@@ -616,6 +619,13 @@ retry:
 								    bucket);
 				goto retry;
 			}
+
+			if (drm_intel_gem_bo_set_tiling_internal(&bo_gem->bo,
+								 tiling_mode,
+								 stride)) {
+				drm_intel_gem_bo_free(&bo_gem->bo);
+				goto retry;
+			}
 		}
 	}
 	pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -643,6 +653,17 @@ retry:
 			return NULL;
 		}
 		bo_gem->bo.bufmgr = bufmgr;
+
+		bo_gem->tiling_mode = I915_TILING_NONE;
+		bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
+		bo_gem->stride = 0;
+
+		if (drm_intel_gem_bo_set_tiling_internal(&bo_gem->bo,
+							 tiling_mode,
+							 stride)) {
+		    drm_intel_gem_bo_free(&bo_gem->bo);
+		    return NULL;
+		}
 	}
 
 	bo_gem->name = name;
@@ -651,9 +672,6 @@ retry:
 	bo_gem->reloc_tree_fences = 0;
 	bo_gem->used_as_reloc_target = 0;
 	bo_gem->has_error = 0;
-	bo_gem->tiling_mode = I915_TILING_NONE;
-	bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
-	bo_gem->stride = 0;
 	bo_gem->reusable = 1;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
@@ -671,7 +689,8 @@ drm_intel_gem_bo_alloc_for_render(drm_intel_bufmgr *bufmgr,
 				  unsigned int alignment)
 {
 	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size,
-					       BO_ALLOC_FOR_RENDER);
+					       BO_ALLOC_FOR_RENDER,
+					       I915_TILING_NONE, 0);
 }
 
 static drm_intel_bo *
@@ -680,7 +699,8 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr,
 		       unsigned long size,
 		       unsigned int alignment)
 {
-	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, 0);
+	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, 0,
+					       I915_TILING_NONE, 0);
 }
 
 static drm_intel_bo *
@@ -692,7 +712,6 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 	drm_intel_bo *bo;
 	unsigned long size, stride;
 	uint32_t tiling;
-	int ret;
 
 	do {
 		unsigned long aligned_y;
@@ -724,18 +743,12 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 		size = drm_intel_gem_bo_tile_size(bufmgr_gem, size, tiling_mode);
 	} while (*tiling_mode != tiling);
 
-	bo = drm_intel_gem_bo_alloc_internal(bufmgr, name, size, flags);
+	bo = drm_intel_gem_bo_alloc_internal(bufmgr, name, size, flags,
+					     *tiling_mode, stride);
 	if (!bo)
 		return NULL;
 
-	ret = drm_intel_gem_bo_set_tiling(bo, tiling_mode, stride);
-	if (ret != 0) {
-		drm_intel_gem_bo_unreference(bo);
-		return NULL;
-	}
-
 	*pitch = stride;
-
 	return bo;
 }
 
@@ -857,7 +870,6 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_intel_gem_bo_bucket *bucket;
-	uint32_t tiling_mode;
 	int i;
 
 	/* Unreference all the target buffers */
@@ -886,9 +898,7 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
-	tiling_mode = I915_TILING_NONE;
 	if (bufmgr_gem->bo_reuse && bo_gem->reusable && bucket != NULL &&
-	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0 &&
 	    drm_intel_gem_bo_madvise_internal(bufmgr_gem, bo_gem,
 					      I915_MADV_DONTNEED)) {
 		bo_gem->free_time = time;
@@ -1674,39 +1684,52 @@ drm_intel_gem_bo_unpin(drm_intel_bo *bo)
 }
 
 static int
-drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
-			    uint32_t stride)
+drm_intel_gem_bo_set_tiling_internal(drm_intel_bo *bo,
+				     uint32_t tiling_mode,
+				     uint32_t stride)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_i915_gem_set_tiling set_tiling;
 	int ret;
 
-	if (bo_gem->global_name == 0)
-		return 0;
-
-	if (*tiling_mode == bo_gem->tiling_mode &&
+	if (tiling_mode == bo_gem->tiling_mode &&
 	    stride == bo_gem->stride)
 		return 0;
 
 	memset(&set_tiling, 0, sizeof(set_tiling));
-	set_tiling.handle = bo_gem->gem_handle;
-
 	do {
-		set_tiling.tiling_mode = *tiling_mode;
+		set_tiling.handle = bo_gem->gem_handle;
+		set_tiling.tiling_mode = tiling_mode;
 		set_tiling.stride = stride;
 
 		ret = ioctl(bufmgr_gem->fd,
 			    DRM_IOCTL_I915_GEM_SET_TILING,
 			    &set_tiling);
 	} while (ret == -1 && errno == EINTR);
-	if (ret == 0) {
-		bo_gem->tiling_mode = set_tiling.tiling_mode;
-		bo_gem->swizzle_mode = set_tiling.swizzle_mode;
-		bo_gem->stride = stride;
+	if (ret == -1)
+		return -errno;
+
+	bo_gem->tiling_mode = set_tiling.tiling_mode;
+	bo_gem->swizzle_mode = set_tiling.swizzle_mode;
+	bo_gem->stride = stride;
+	return 0;
+}
+
+static int
+drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
+			    uint32_t stride)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	int ret;
+
+	if (bo_gem->global_name == 0)
+		return 0;
+
+	ret = drm_intel_gem_bo_set_tiling_internal(bo, *tiling_mode, stride);
+	if (ret == 0)
 		drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
-	} else
-		ret = -errno;
 
 	*tiling_mode = bo_gem->tiling_mode;
 	return ret;
