@@ -21,10 +21,11 @@ class FaxField : public FormField {
 
  private:
   FaxField();
-  explicit FaxField(const FaxField& fax_field);
 
   // The fax number field.
   AutoFillField* number_;
+
+  DISALLOW_COPY_AND_ASSIGN(FaxField);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FAX_FIELD_H_

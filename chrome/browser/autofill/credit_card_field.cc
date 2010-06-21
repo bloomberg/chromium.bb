@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/credit_card_field.h"
 
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_field.h"
 
@@ -39,7 +40,7 @@ bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
 CreditCardField* CreditCardField::Parse(
     std::vector<AutoFillField*>::const_iterator* iter,
     bool is_ecml) {
-  CreditCardField credit_card_field;
+  scoped_ptr<CreditCardField> credit_card_field(new CreditCardField);
   std::vector<AutoFillField*>::const_iterator q = *iter;
   string16 pattern;
 
@@ -47,19 +48,18 @@ CreditCardField* CreditCardField::Parse(
   // We loop until no more credit card related fields are found, see |break| at
   // bottom of the loop.
   for (int fields = 0; true; ++fields) {
-    // Sometimes the cardholder field is just labeled "name" (e.g. on test page
-    // Starbucks - Credit card.html).  Unfortunately this is a dangerously
-    // generic word to search for, since it will often match a name (not
-    // cardholder name) field before or after credit card fields.  So we search
-    // for "name" only when we've already parsed at least one other credit card
-    // field and haven't yet parsed the expiration date (which usually appears
-    // at the end).
-    if (credit_card_field.cardholder_ == NULL) {
+    // Sometimes the cardholder field is just labeled "name". Unfortunately this
+    // is a dangerously generic word to search for, since it will often match a
+    // name (not cardholder name) field before or after credit card fields. So
+    // we search for "name" only when we've already parsed at least one other
+    // credit card field and haven't yet parsed the expiration date (which
+    // usually appears at the end).
+    if (credit_card_field->cardholder_ == NULL) {
       string16 name_pattern;
       if (is_ecml) {
         name_pattern = GetEcmlPattern(kEcmlCardHolder);
       } else {
-        if (fields == 0 || credit_card_field.expiration_month_) {
+        if (fields == 0 || credit_card_field->expiration_month_) {
           // at beginning or end
           name_pattern = ASCIIToUTF16("card holder|name on card|nameoncard");
         } else {
@@ -67,7 +67,7 @@ CreditCardField* CreditCardField::Parse(
         }
       }
 
-      if (ParseText(&q, name_pattern, &credit_card_field.cardholder_)) {
+      if (ParseText(&q, name_pattern, &credit_card_field->cardholder_)) {
         continue;
       }
 
@@ -79,8 +79,8 @@ CreditCardField* CreditCardField::Parse(
       AutoFillField* first;
       if (!is_ecml && ParseText(&p, ASCIIToUTF16("^cfnm"), &first) &&
           ParseText(&p, ASCIIToUTF16("^clnm"),
-                    &credit_card_field.cardholder_last_)) {
-        credit_card_field.cardholder_ = first;
+                    &credit_card_field->cardholder_last_)) {
+        credit_card_field->cardholder_ = first;
         q = p;
         continue;
       }
@@ -100,8 +100,8 @@ CreditCardField* CreditCardField::Parse(
           "verification|card identification|cvn|security code|cvv code|cvc");
     }
 
-    if (credit_card_field.verification_ == NULL &&
-        ParseText(&q, pattern, &credit_card_field.verification_)) {
+    if (credit_card_field->verification_ == NULL &&
+        ParseText(&q, pattern, &credit_card_field->verification_)) {
       continue;
     }
 
@@ -110,8 +110,8 @@ CreditCardField* CreditCardField::Parse(
     else
       pattern = ASCIIToUTF16("number|card #|card no.|card_number|card number");
 
-    if (credit_card_field.number_ == NULL && ParseText(&q, pattern,
-        &credit_card_field.number_))
+    if (credit_card_field->number_ == NULL && ParseText(&q, pattern,
+        &credit_card_field->number_))
       continue;
 
     // "Expiration date" is the most common label here, but some pages have
@@ -131,15 +131,15 @@ CreditCardField* CreditCardField::Parse(
     else
       pattern = ASCIIToUTF16("expir|exp.*month|exp date|ccmonth");
 
-    if ((!credit_card_field.expiration_month_ ||
-        credit_card_field.expiration_month_->IsEmpty()) &&
-        ParseText(&q, pattern, &credit_card_field.expiration_month_)) {
+    if ((!credit_card_field->expiration_month_ ||
+        credit_card_field->expiration_month_->IsEmpty()) &&
+        ParseText(&q, pattern, &credit_card_field->expiration_month_)) {
       if (is_ecml)
         pattern = GetEcmlPattern(kEcmlCardExpireYear);
       else
         pattern = ASCIIToUTF16("|exp|^/|ccyear|year");
 
-      if (!ParseText(&q, pattern, &credit_card_field.expiration_year_))
+      if (!ParseText(&q, pattern, &credit_card_field->expiration_year_))
         return NULL;
 
       continue;
@@ -162,11 +162,11 @@ CreditCardField* CreditCardField::Parse(
   // On some pages, the user selects a card type using radio buttons
   // (e.g. test page Apple Store Billing.html).  We can't handle that yet,
   // so we treat the card type as optional for now.
-  if (credit_card_field.number_ &&
-      credit_card_field.expiration_month_ &&
-      credit_card_field.expiration_year_) {
+  if (credit_card_field->number_ &&
+      credit_card_field->expiration_month_ &&
+      credit_card_field->expiration_year_) {
       *iter = q;
-      return new CreditCardField(credit_card_field);
+      return credit_card_field.release();
   }
 
   return NULL;
@@ -180,15 +180,4 @@ CreditCardField::CreditCardField()
       verification_(NULL),
       expiration_month_(NULL),
       expiration_year_(NULL) {
-}
-
-CreditCardField::CreditCardField(const CreditCardField& field)
-    : FormField(),
-      cardholder_(field.cardholder_),
-      cardholder_last_(field.cardholder_last_),
-      type_(field.type_),
-      number_(field.number_),
-      verification_(field.verification_),
-      expiration_month_(field.expiration_month_),
-      expiration_year_(field.expiration_year_) {
 }

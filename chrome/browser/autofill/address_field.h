@@ -31,8 +31,6 @@ class AddressField : public FormField {
 
  private:
   AddressField();
-  explicit AddressField(const AddressField& field);
-  void operator=(const AddressField&);
 
   static bool ParseCompany(std::vector<AutoFillField*>::const_iterator* iter,
                            bool is_ecml, AddressField* address_field);
@@ -63,6 +61,8 @@ class AddressField : public FormField {
 
   AddressType type_;
   bool is_ecml_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddressField);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_ADDRESS_FIELD_H_

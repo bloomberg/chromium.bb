@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/address_field.h"
 
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_field.h"
@@ -75,25 +76,25 @@ AddressField* AddressField::Parse(
   if (!iter)
     return NULL;
 
-  AddressField address_field;
+  scoped_ptr<AddressField> address_field(new AddressField);
   std::vector<AutoFillField*>::const_iterator q = *iter;
   string16 pattern;
 
   // The ECML standard uses 2 letter country codes.  So we will
   // have to remember that this is an ECML form, for when we fill
   // it out.
-  address_field.is_ecml_ = is_ecml;
+  address_field->is_ecml_ = is_ecml;
 
   // Allow address fields to appear in any order.
   while (true) {
-    if (ParseCompany(&q, is_ecml, &address_field) ||
-        ParseAddressLines(&q, is_ecml, &address_field) ||
-        ParseCity(&q, is_ecml, &address_field) ||
-        ParseZipCode(&q, is_ecml, &address_field) ||
-        ParseCountry(&q, is_ecml, &address_field)) {
+    if (ParseCompany(&q, is_ecml, address_field.get()) ||
+        ParseAddressLines(&q, is_ecml, address_field.get()) ||
+        ParseCity(&q, is_ecml, address_field.get()) ||
+        ParseZipCode(&q, is_ecml, address_field.get()) ||
+        ParseCountry(&q, is_ecml, address_field.get())) {
       continue;
-    } else if ((!address_field.state_ || address_field.state_->IsEmpty()) &&
-               address_field.ParseState(&q, is_ecml, &address_field)) {
+    } else if ((!address_field->state_ || address_field->state_->IsEmpty()) &&
+               address_field->ParseState(&q, is_ecml, address_field.get())) {
       continue;
     } else if (ParseText(&q, ASCIIToUTF16("attention|attn.")) ||
                ParseText(&q, ASCIIToUTF16("province|region|other"))) {
@@ -118,13 +119,13 @@ AddressField* AddressField::Parse(
 
   // If we have identified any address fields in this field then it should be
   // added to the list of fields.
-  if (address_field.company_ != NULL ||
-      address_field.address1_ != NULL || address_field.address2_ != NULL ||
-      address_field.city_ != NULL || address_field.state_ != NULL ||
-      address_field.zip_ != NULL || address_field.zip4_ ||
-      address_field.country_ != NULL) {
+  if (address_field->company_ != NULL ||
+      address_field->address1_ != NULL || address_field->address2_ != NULL ||
+      address_field->city_ != NULL || address_field->state_ != NULL ||
+      address_field->zip_ != NULL || address_field->zip4_ ||
+      address_field->country_ != NULL) {
     *iter = q;
-    return new AddressField(address_field);
+    return address_field.release();
   }
 
   return NULL;
@@ -155,20 +156,6 @@ AddressField::AddressField()
       country_(NULL),
       type_(kGenericAddress),
       is_ecml_(false) {
-}
-
-AddressField::AddressField(const AddressField& field)
-    : FormField(),
-      company_(field.company_),
-      address1_(field.address1_),
-      address2_(field.address2_),
-      city_(field.city_),
-      state_(field.state_),
-      zip_(field.zip_),
-      zip4_(field.zip4_),
-      country_(field.country_),
-      type_(field.type_),
-      is_ecml_(field.is_ecml_) {
 }
 
 // static

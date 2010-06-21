@@ -59,13 +59,13 @@ class FirstLastNameField : public NameField {
 
  private:
   FirstLastNameField();
-  explicit FirstLastNameField(const FirstLastNameField& field);
-  void operator=(const FirstLastNameField& field);
 
   AutoFillField* first_name_;
   AutoFillField* middle_name_;  // Optional.
   AutoFillField* last_name_;
   bool middle_initial_;  // True if middle_name_ is a middle initial.
+
+  DISALLOW_COPY_AND_ASSIGN(FirstLastNameField);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_NAME_FIELD_H_

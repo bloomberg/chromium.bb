@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/phone_field.h"
 
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_field.h"
@@ -55,26 +56,26 @@ PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
   // Now we have one, two, or three phone number text fields.  Package them
   // up into a PhoneField object.
 
-  PhoneField phone_field;
+  scoped_ptr<PhoneField> phone_field(new PhoneField);
   if (phone2 == NULL) {  // only one field
     if (area_code)  // it's an area code
       return NULL;  // doesn't make sense
-    phone_field.phone_ = phone;
+    phone_field->phone_ = phone;
   } else {
-    phone_field.area_code_ = phone;
+    phone_field->area_code_ = phone;
     if (phone3 == NULL) {  // two fields
-      phone_field.phone_ = phone2;
+      phone_field->phone_ = phone2;
     } else {  // three boxes: area code, prefix and suffix
-      phone_field.prefix_ = phone2;
-      phone_field.phone_ = phone3;
+      phone_field->prefix_ = phone2;
+      phone_field->phone_ = phone3;
     }
   }
 
   // Now look for an extension.
-  ParseText(&q, ASCIIToUTF16("ext"), &phone_field.extension_);
+  ParseText(&q, ASCIIToUTF16("ext"), &phone_field->extension_);
 
   *iter = q;
-  return new PhoneField(phone_field);
+  return phone_field.release();
 }
 
 // static
@@ -129,12 +130,4 @@ PhoneField::PhoneField()
       area_code_(NULL),
       prefix_(NULL),
       extension_(NULL) {
-}
-
-PhoneField::PhoneField(const PhoneField& phone_field)
-    : FormField(),
-      phone_(phone_field.phone_),
-      area_code_(phone_field.area_code_),
-      prefix_(phone_field.prefix_),
-      extension_(phone_field.extension_) {
 }

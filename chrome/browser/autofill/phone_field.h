@@ -25,17 +25,17 @@ class PhoneField : public FormField {
 
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
 
- protected:
-  PhoneField();
-  explicit PhoneField(const PhoneField& phone_field);
-
  private:
+  PhoneField();
+
   // Always present; holds suffix if prefix is present.
   AutoFillField* phone_;
 
   AutoFillField* area_code_;  // optional
   AutoFillField* prefix_;     // optional
   AutoFillField* extension_;  // optional
+
+  DISALLOW_COPY_AND_ASSIGN(PhoneField);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_PHONE_FIELD_H_

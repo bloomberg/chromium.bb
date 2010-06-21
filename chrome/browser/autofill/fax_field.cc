@@ -5,15 +5,16 @@
 #include "chrome/browser/autofill/fax_field.h"
 
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_field.h"
 
 // static
 FaxField* FaxField::Parse(std::vector<AutoFillField*>::const_iterator* iter) {
   DCHECK(iter);
 
-  FaxField fax_field;
-  if (ParseText(iter, ASCIIToUTF16("fax"), &fax_field.number_))
-    return new FaxField(fax_field);
+  scoped_ptr<FaxField> fax_field(new FaxField);
+  if (ParseText(iter, ASCIIToUTF16("fax"), &fax_field->number_))
+    return fax_field.release();
 
   return NULL;
 }
@@ -23,8 +24,3 @@ bool FaxField::GetFieldInfo(FieldTypeMap* field_type_map) const {
 }
 
 FaxField::FaxField() : number_(NULL) {}
-
-FaxField::FaxField(const FaxField& fax_field)
-    : FormField(),
-      number_(fax_field.number_) {
-}
