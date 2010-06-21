@@ -48,8 +48,7 @@ const int kWizardScreenHeight = 416;
 // WizardController.
 class ContentView : public views::View {
  public:
-  ContentView(bool paint_background, int window_x, int window_y, int screen_w,
-              int screen_h)
+  ContentView(int window_x, int window_y, int screen_w, int screen_h)
       : window_x_(window_x),
         window_y_(window_y),
         screen_w_(screen_w),
@@ -64,11 +63,6 @@ class ContentView : public views::View {
                                                 false, true, true)),
         accel_image_screen_(views::Accelerator(base::VKEY_I,
                                                 false, true, true)) {
-    if (paint_background) {
-      painter_.reset(chromeos::CreateWizardPainter(
-                         &chromeos::BorderDefinition::kWizardBorder));
-    }
-
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
@@ -212,8 +206,7 @@ WizardController::~WizardController() {
 }
 
 void WizardController::Init(const std::string& first_screen_name,
-                            const gfx::Rect& screen_bounds,
-                            bool paint_background) {
+                            const gfx::Rect& screen_bounds) {
   DCHECK(!contents_);
 
   int offset_x = (screen_bounds.width() - kWizardScreenWidth) / 2;
@@ -221,20 +214,17 @@ void WizardController::Init(const std::string& first_screen_name,
   int window_x = screen_bounds.x() + offset_x;
   int window_y = screen_bounds.y() + offset_y;
 
-  contents_ = new ContentView(paint_background,
-                              offset_x, offset_y,
+  contents_ = new ContentView(offset_x, offset_y,
                               screen_bounds.width(), screen_bounds.height());
 
   views::WidgetGtk* window =
       new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   widget_ = window;
-  if (!paint_background) {
-    window->MakeTransparent();
-    // Window transparency makes background flicker through controls that
-    // are constantly updating its contents (like image view with video
-    // stream). Hence enabling double buffer.
-    window->EnableDoubleBuffer(true);
-  }
+  window->MakeTransparent();
+  // Window transparency makes background flicker through controls that
+  // are constantly updating its contents (like image view with video
+  // stream). Hence enabling double buffer.
+  window->EnableDoubleBuffer(true);
   window->Init(NULL, gfx::Rect(window_x, window_y, kWizardScreenWidth,
                                kWizardScreenHeight));
   chromeos::WmIpc::instance()->SetWindowType(
@@ -594,7 +584,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   WizardController* controller = new WizardController();
   controller->SetCustomization(customization.release());
   controller->ShowBackground(screen_bounds);
-  controller->Init(first_screen_name, screen_bounds, true);
+  controller->Init(first_screen_name, screen_bounds);
   controller->Show();
   if (chromeos::CrosLibrary::Get()->EnsureLoaded())
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();

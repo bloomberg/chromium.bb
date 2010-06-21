@@ -183,7 +183,7 @@ void ExistingUserController::OnUserSelected(UserController* source) {
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   // WizardController takes care of deleting itself when done.
   WizardController* controller = new WizardController();
-  controller->Init(screen_name, background_bounds_, false);
+  controller->Init(screen_name, background_bounds_);
   controller->Show();
 
   // Give the background window to the controller.

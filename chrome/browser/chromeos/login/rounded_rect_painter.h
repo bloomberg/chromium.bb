@@ -23,7 +23,6 @@ struct BorderDefinition {
   SkColor top_color;
   SkColor bottom_color;
 
-  static const BorderDefinition kWizardBorder;
   static const BorderDefinition kScreenBorder;
 };
 

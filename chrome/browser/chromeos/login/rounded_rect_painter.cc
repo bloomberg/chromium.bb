@@ -20,7 +20,7 @@ const int kCornerRadius = 5;
 const SkColor kScreenTopColor = SkColorSetRGB(250, 251, 251);
 const SkColor kScreenBottomColor = SkColorSetRGB(204, 209, 212);
 const SkColor kScreenShadowColor = SkColorSetARGB(64, 34, 54, 115);
-const SkColor kShadowStrokeColor = SkColorSetRGB(40, 90, 177);
+const SkColor kShadowStrokeColor = 0;
 const int kScreenShadow = 10;
 
 static void DrawRoundedRect(
@@ -185,15 +185,6 @@ void RoundedRectBorder::GetInsets(gfx::Insets* insets) const {
 }  //  namespace
 
 // static
-const BorderDefinition BorderDefinition::kWizardBorder = {
-  0,
-  SK_ColorBLACK,
-  0,
-  SK_ColorBLACK,
-  0,
-  SK_ColorBLACK,
-  SK_ColorBLACK
-};
 const BorderDefinition BorderDefinition::kScreenBorder = {
   0,
   SK_ColorBLACK,
