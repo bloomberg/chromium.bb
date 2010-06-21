@@ -52,6 +52,9 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
       DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
       Extension* extension = Details<Extension>(details).ptr();
       CHECK(extension);
+      if (!IsExtensionSyncable(*extension)) {
+        return;
+      }
       const std::string& id = extension->id();
       LOG(INFO) << "Got change notification of type " << type.value
                 << " for extension " << id;
@@ -67,8 +70,6 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
                   << type.value;
       break;
   }
-
-  return;
 }
 
 void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
