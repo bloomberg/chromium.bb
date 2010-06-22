@@ -528,6 +528,7 @@ var MostVisited = (function() {
         if (newClassName == 'thumbnail-container filler') {
           // Make sure the user cannot tab to the filler.
           t.tabIndex = -1;
+          t.querySelector('.thumbnail-wrapper').style.backgroundImage = '';
           continue;
         }
         // Allow focus.
