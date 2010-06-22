@@ -53,31 +53,9 @@
       'dependencies': [
         '../../third_party/protobuf2/protobuf.gyp:protoc#host',
       ],
-    },
-    # The library created from the generated c++ cacheinvalidation proto
-    # files.
-    {
-      'target_name': 'cacheinvalidation_proto_cc',
-      'type': '<(library)',
-      'sources': [
-        '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.h',
-        '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.cc',
-      ],
-      'include_dirs': [
-        '<(protoc_out_dir)',
-      ],
-      'dependencies': [
-        '../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-        'cacheinvalidation_proto',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ],
-      },
-      'export_dependent_settings': [
-        '../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-      ],
+      # This target exports a hard dependency because it generates header
+      # files.
+      'hard_dependency': 1,
     },
     # The main cache invalidation library.  External clients should depend
     # only on this.
@@ -85,6 +63,8 @@
       'target_name': 'cacheinvalidation',
       'type': '<(library)',
       'sources': [
+        '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.h',
+        '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.cc',
         'overrides/google/cacheinvalidation/callback.h',
         'overrides/google/cacheinvalidation/compiler-specific.h',
         'overrides/google/cacheinvalidation/googletest.h',
@@ -108,23 +88,28 @@
         'files/src/google/cacheinvalidation/throttle.h',
       ],
       'include_dirs': [
+        '<(protoc_out_dir)',
         './overrides',
         './files/src',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
         'cacheinvalidation_proto',
-        'cacheinvalidation_proto_cc',
       ],
+      # This target exports a hard dependency because depedents require
+      # cacheinvalidation_proto to compile.
+      'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
+          '<(protoc_out_dir)',
           './overrides',
           './files/src',
         ],
       },
       'export_dependent_settings': [
+        '../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
         'cacheinvalidation_proto',
-        'cacheinvalidation_proto_cc',
       ],
     },
     # Unittests for the cache invalidation library.
