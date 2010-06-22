@@ -20,10 +20,15 @@ static HCURSOR g_resize_cursor = NULL;
 // ResizeGripper
 
 ResizeGripper::ResizeGripper(ResizeGripperDelegate* delegate)
-    : delegate_(delegate), initial_position_(0) {
+    : delegate_(delegate),
+      initial_position_(0),
+      gripper_visible_(false) {
   ResourceBundle &rb = ResourceBundle::GetSharedInstance();
   SkBitmap* gripper_image = rb.GetBitmapNamed(IDR_RESIZE_GRIPPER);
-  SetImage(gripper_image);
+  // Explicitly set the image size so that the preferred size is fixed to that
+  // of the image. If we didn't do this the preferred size would change
+  // depending upon whether the gripper was visible.
+  SetImageSize(gfx::Size(gripper_image->width(), gripper_image->height()));
 }
 
 ResizeGripper::~ResizeGripper() {
@@ -44,6 +49,14 @@ gfx::NativeCursor ResizeGripper::GetCursorForPoint(Event::EventType event_type,
 #elif defined(OS_LINUX)
   return gdk_cursor_new(GDK_SB_H_DOUBLE_ARROW);
 #endif
+}
+
+void ResizeGripper::OnMouseEntered(const views::MouseEvent& event) {
+  SetGripperVisible(true);
+}
+
+void ResizeGripper::OnMouseExited(const views::MouseEvent& event) {
+  SetGripperVisible(false);
 }
 
 bool ResizeGripper::OnMousePressed(const views::MouseEvent& event) {
@@ -74,6 +87,7 @@ void ResizeGripper::OnMouseReleased(const views::MouseEvent& event,
     ReportResizeAmount(initial_position_, true);
   else
     ReportResizeAmount(event.x(), true);
+  SetGripperVisible(HitTest(event.location()));
 }
 
 bool ResizeGripper::GetAccessibleRole(AccessibilityTypes::Role* role) {
@@ -90,6 +104,20 @@ void ResizeGripper::ReportResizeAmount(int resize_amount, bool last_update) {
   if (base::i18n::IsRTL())
     resize_amount = -1 * resize_amount;
   delegate_->OnResize(resize_amount, last_update);
+}
+
+void ResizeGripper::SetGripperVisible(bool visible) {
+  if (visible == gripper_visible_)
+    return;
+
+  gripper_visible_ = visible;
+  if (gripper_visible_) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    SkBitmap* gripper_image = rb.GetBitmapNamed(IDR_RESIZE_GRIPPER);
+    SetImage(gripper_image);
+  } else {
+    SetImage(NULL);
+  }
 }
 
 }  // namespace views

@@ -103,6 +103,9 @@ gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
 void ImageView::Paint(gfx::Canvas* canvas) {
   View::Paint(canvas);
 
+  if (image_.empty())
+    return;
+
   gfx::Rect image_bounds(GetImageBounds());
   if (image_bounds.IsEmpty())
     return;

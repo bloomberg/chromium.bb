@@ -24,7 +24,7 @@ class ResizeGripper : public ImageView {
   //
   //////////////////////////////////////////////////////////////////////////////
   class ResizeGripperDelegate {
-  public:
+   public:
     // OnResize is sent when resizing is detected. |resize_amount| specifies the
     // number of pixels that the user wants to resize by, and can be negative or
     // positive (depending on direction of dragging and flips according to
@@ -34,6 +34,8 @@ class ResizeGripper : public ImageView {
     virtual void OnResize(int resize_amount, bool done_resizing) = 0;
   };
 
+  static const char kViewClassName[];
+
   explicit ResizeGripper(ResizeGripperDelegate* delegate);
   virtual ~ResizeGripper();
 
@@ -41,23 +43,30 @@ class ResizeGripper : public ImageView {
   virtual std::string GetClassName() const;
   virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
                                               const gfx::Point& p);
+  virtual void OnMouseEntered(const views::MouseEvent& event);
+  virtual void OnMouseExited(const views::MouseEvent& event);
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-
-  static const char kViewClassName[];
 
  private:
   // Report the amount the user resized by to the delegate, accounting for
   // directionality.
   void ReportResizeAmount(int resize_amount, bool last_update);
 
+  // Changes the visibility of the gripper.
+  void SetGripperVisible(bool visible);
+
   // The delegate to notify when we have updates.
   ResizeGripperDelegate* delegate_;
 
   // The mouse position at start (in screen coordinates).
   int initial_position_;
+
+  // Are we showing the resize gripper? We only show the resize gripper when
+  // the mouse is over us.
+  bool gripper_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeGripper);
 };
