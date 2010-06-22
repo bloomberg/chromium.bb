@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -259,7 +260,9 @@ class PageCyclerTest : public UITest {
     }
 
     std::string trace_name = "t" + std::string(suffix);
-    wprintf(L"\nPages: [%ls]\n", pages.c_str());
+
+    printf("Pages: [%s]\n", base::SysWideToNativeMB(pages).c_str());
+
     PrintResultList(graph, "", trace_name, timings, "ms",
                     true /* important */);
   }
@@ -463,6 +466,11 @@ PAGE_CYCLER_FILE_TESTS("dom", DomFile);
 PAGE_CYCLER_FILE_TESTS("dhtml", DhtmlFile);
 PAGE_CYCLER_FILE_TESTS("morejs", MorejsFile);
 PAGE_CYCLER_EXTENSIONS_FILE_TESTS("morejs", MorejsFile);
+// added more tests here:
+PAGE_CYCLER_FILE_TESTS("alexa_us", Alexa_usFile);
+PAGE_CYCLER_FILE_TESTS("moz2", Moz2File);
+PAGE_CYCLER_FILE_TESTS("morejsnp", MorejsnpFile);
+PAGE_CYCLER_FILE_TESTS("bloat", BloatFile);
 
 // http (localhost) tests
 PAGE_CYCLER_HTTP_TESTS("moz", MozHttp);
