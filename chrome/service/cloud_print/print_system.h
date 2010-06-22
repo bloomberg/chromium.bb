@@ -12,7 +12,6 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 
 // This is the interface for platform-specific code for cloud print
 namespace cloud_print {
@@ -169,4 +168,3 @@ typedef PrintSystem::PrinterWatcher::Delegate PrinterWatcherDelegate;
 }  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_PRINT_SYSTEM_H_
-

@@ -5,24 +5,77 @@
 #include "chrome/service/cloud_print/print_system.h"
 
 #include <cups/cups.h>
+#include <dlfcn.h>
+#include <errno.h>
+#include <gcrypt.h>
+#include <pthread.h>
+
 #include <list>
 #include <map>
 
-#include <gnutls/gnutls.h>
-#include <gcrypt.h>
-#include <errno.h>
-#include <pthread.h>
-
-#include "base/json/json_reader.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/logging.h"
+#include "base/json/json_reader.h"
 #include "base/lock.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "googleurl/src/gurl.h"
+
+namespace {
+
+// Init GCrypt library (needed for CUPS) using pthreads.
+// I've hit a bug in CUPS library, when it crashed with: "ath.c:184:
+// _gcry_ath_mutex_lock: Assertion `*lock == ((ath_mutex_t) 0)' failed."
+// It happened whe multiple threads tried printing simultaneously.
+// Google search for 'gnutls thread safety' provided with following solution
+// where we initialize gcrypt by initializing gnutls.
+//
+// Initially, we linked with -lgnutls and simply called gnutls_global_init(),
+// but this did not work well since we build one binary on Ubuntu Hardy and
+// expect it to run on many Linux distros. (See http://crbug.com/46954)
+// So instead we use dlopen() and dlsym() to dynamically load and call
+// gnutls_global_init().
+
+GCRY_THREAD_OPTION_PTHREAD_IMPL;
+
+bool init_gnutls() {
+  const char* kGnuTlsFile = "libgnutls.so";
+  void* gnutls_lib = dlopen(kGnuTlsFile, RTLD_NOW);
+  if (!gnutls_lib) {
+    LOG(ERROR) << "Cannot load " << kGnuTlsFile;
+    return false;
+  }
+  const char* kGnuTlsInitFuncName = "gnutls_global_init";
+  int (*pgnutls_global_init)(void) = reinterpret_cast<int(*)()>(
+      dlsym(gnutls_lib, kGnuTlsInitFuncName));
+  if (!pgnutls_global_init) {
+    LOG(ERROR) << "Could not find " << kGnuTlsInitFuncName
+               << " in " << kGnuTlsFile;
+    return false;
+  }
+  return ((*pgnutls_global_init)() == 0);
+}
+
+void init_gcrypt() {
+  // The gnutls_global_init() man page warns it's not thread safe. Locking this
+  // entire function just to be on the safe side.
+  static Lock init_gcrypt_lock;
+  AutoLock init_gcrypt_autolock(init_gcrypt_lock);
+  static bool gcrypt_initialized = false;
+  if (!gcrypt_initialized) {
+    gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+    gcrypt_initialized = init_gnutls();
+    if (!gcrypt_initialized) {
+      LOG(ERROR) << "Gcrypt initialization failed";
+    }
+  }
+}
+
+}  // namespace
 
 namespace cloud_print {
 
@@ -33,28 +86,11 @@ static const wchar_t kCUPSPrintServerURL[] = L"print_server_url";
 // Default port for IPP print servers.
 static const int kDefaultIPPServerPort = 631;
 
-// Init GCrypt library (needed for CUPS) using pthreads.
-// I've hit a bug in CUPS library, when it crashed with: "ath.c:184:
-// _gcry_ath_mutex_lock: Assertion `*lock == ((ath_mutex_t) 0)' failed."
-// It happened whe multiple threads tried printing simultaneously.
-// Google search for 'gnutls thread safety' provided with following solution.
-
-GCRY_THREAD_OPTION_PTHREAD_IMPL;
-
-void init_gcrypt() {
-  static bool gcrypt_initialized = false;
-  if (!gcrypt_initialized) {
-    gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
-    gnutls_global_init();
-    gcrypt_initialized = true;
-  }
-}
-
 // Helper wrapper around http_t structure, with connection and cleanup
 // functionality.
 class HttpConnectionCUPS {
  public:
-   explicit HttpConnectionCUPS(const GURL& print_server_url) : http_(NULL) {
+  explicit HttpConnectionCUPS(const GURL& print_server_url) : http_(NULL) {
     // If we have an empty url, use default print server.
     if (print_server_url.is_empty())
       return;
@@ -67,7 +103,7 @@ class HttpConnectionCUPS {
                                HTTP_ENCRYPT_NEVER);
     if (http_ == NULL) {
       LOG(ERROR) << "CP_CUPS: Failed connecting to print server: " <<
-          print_server_url;
+                 print_server_url;
     }
   }
 
@@ -462,7 +498,7 @@ FilePath PrintSystemCUPS::GetPPD(const char* name) {
   // cupsGetPPD returns a filename stored in a static buffer in CUPS.
   // Protect this code with lock.
   static Lock ppd_lock;
-  ppd_lock.Acquire();
+  AutoLock ppd_autolock(ppd_lock);
   FilePath ppd_path;
   const char* ppd_file_path = NULL;
   if (print_server_url_.is_empty()) {  // Use default (local) print server.
@@ -473,7 +509,6 @@ FilePath PrintSystemCUPS::GetPPD(const char* name) {
   }
   if (ppd_file_path)
     ppd_path = FilePath(ppd_file_path);
-  ppd_lock.Release();
   return ppd_path;
 }
 
@@ -500,4 +535,3 @@ int PrintSystemCUPS::GetJobs(cups_job_t** jobs, const char* name,
 }
 
 }  // namespace cloud_print
-

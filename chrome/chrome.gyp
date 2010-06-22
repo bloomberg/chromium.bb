@@ -1131,7 +1131,6 @@
             'libraries': [
               '-lcups',
               '-lgcrypt',
-              '-lgnutls',
             ],
           },
           'defines': [
