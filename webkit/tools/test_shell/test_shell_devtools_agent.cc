@@ -162,9 +162,3 @@ bool TestShellDevToolsAgent::evaluateInWebInspector(
   agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
   return true;
 }
-
-// static
-void WebKit::WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(
-    WebKit::WebDevToolsMessageData const &) {
-  NOTIMPLEMENTED();
-}
