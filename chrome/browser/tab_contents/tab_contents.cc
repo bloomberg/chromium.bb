@@ -2130,8 +2130,6 @@ void TabContents::DidFailProvisionalLoadWithError(
 
 void TabContents::DocumentLoadedInFrame() {
   controller_.DocumentLoadedInFrame();
-
-  render_view_host()->SetDocumentLoaded(true);
 }
 
 void TabContents::OnContentBlocked(ContentSettingsType type) {
@@ -2305,8 +2303,6 @@ void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
 void TabContents::DidNavigate(RenderViewHost* rvh,
                               const ViewHostMsg_FrameNavigate_Params& params) {
   int extra_invalidate_flags = 0;
-
-  render_view_host()->SetDocumentLoaded(false);
 
   if (PageTransition::IsMainFrame(params.transition)) {
     bool was_bookmark_bar_visible = ShouldShowBookmarkBar();

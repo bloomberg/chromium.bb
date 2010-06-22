@@ -986,6 +986,7 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   FilterURL(policy, renderer_id, &validated_params.password_form.origin);
   FilterURL(policy, renderer_id, &validated_params.password_form.action);
 
+  SetDocumentLoaded(false);
   delegate_->DidNavigate(this, validated_params);
 }
 
@@ -1281,6 +1282,7 @@ void RenderViewHost::OnMsgDocumentLoadedInFrame() {
       delegate_->GetResourceDelegate();
   if (resource_delegate)
     resource_delegate->DocumentLoadedInFrame();
+  SetDocumentLoaded(true);
 }
 
 void RenderViewHost::DisassociateFromPopupCount() {
@@ -1861,7 +1863,8 @@ void RenderViewHost::OnAccessibilityObjectStateChange(int acc_obj_id) {
 
 void RenderViewHost::OnAccessibilityTree(
     const webkit_glue::WebAccessibility& tree) {
-  view()->UpdateAccessibilityTree(tree);
+  if (view())
+    view()->UpdateAccessibilityTree(tree);
 
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,

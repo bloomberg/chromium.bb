@@ -369,13 +369,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Makes an IPC call to tell webkit to advance to the next misspelling.
   void AdvanceToNextMisspelling();
 
-  // Requests a snapshot of an accessible DOM tree from the renderer.
-  void RequestAccessibilityTree();
-
-  // Aid for determining when an accessibility tree request can be made. Set by
-  // TabContents to true on document load and to false on page nativigation.
-  void SetDocumentLoaded(bool document_loaded);
-
   // Enable renderer accessibility. This should only be called when a
   // screenreader is detected.
   void EnableRendererAccessibility();
@@ -399,6 +392,13 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   }
 
  protected:
+  // Aid for determining when an accessibility tree request can be made. Set by
+  // TabContents to true on document load and to false on page nativigation.
+  void SetDocumentLoaded(bool document_loaded);
+
+  // Requests a snapshot of an accessible DOM tree from the renderer.
+  void RequestAccessibilityTree();
+
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
                          int event_size, bool is_keyboard_shortcut);
