@@ -80,6 +80,9 @@ const char GoogleAuthenticator::kLocalaccountFile[] = "localaccount";
 // static
 const char GoogleAuthenticator::kTmpfsTrigger[] = "incognito";
 
+// static
+const int GoogleAuthenticator::kClientLoginTimeoutMs = 5000;
+
 const int kPassHashLen = 32;
 
 GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
@@ -88,7 +91,8 @@ GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
       getter_(NULL),
       checked_for_localaccount_(false),
       unlock_(false),
-      try_again_(true) {
+      try_again_(true),
+      fetch_completed_(false) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
 }
 
@@ -182,6 +186,7 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
                                              int response_code,
                                              const ResponseCookies& cookies,
                                              const std::string& data) {
+  fetch_completed_ = true;
   if (status.is_success() && response_code == kHttpSuccess) {
     LOG(INFO) << "Online login successful!";
     ChromeThread::PostTask(
@@ -193,6 +198,7 @@ void GoogleAuthenticator::OnURLFetchComplete(const URLFetcher* source,
         try_again_ = false;
         LOG(ERROR) << "Login attempt canceled!?!?  Trying again.";
         TryClientLogin();
+        fetch_completed_ = false;
         return;
       }
       LOG(ERROR) << "Login attempt canceled again?  Already retried...";
@@ -348,11 +354,23 @@ std::string GoogleAuthenticator::SaltAsAscii() {
   }
 }
 
+void GoogleAuthenticator::Cancel() {
+  if (!fetch_completed_ && fetcher_) {
+    delete fetcher_;
+    fetcher_ = NULL;
+  }
+  OnLoginFailure("Login has timed out; please try again!");
+}
+
 void GoogleAuthenticator::TryClientLogin() {
   if (fetcher_)
     delete fetcher_;
   fetcher_ = CreateClientLoginFetcher(getter_, request_body_, this);
   fetcher_->Start();
+  ChromeThread::PostDelayedTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &GoogleAuthenticator::Cancel), kClientLoginTimeoutMs);
 }
 
 // static

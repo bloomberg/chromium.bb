@@ -93,6 +93,8 @@ class GoogleAuthenticator : public Authenticator,
   void CheckLocalaccount(const std::string& error);
   void OnLoginFailure(const std::string& data);
 
+  void Cancel();
+
   // Perform basic canonicalization of |email_address|, taking into account
   // that gmail does not consider '.' or caps inside a username to matter.
   // For example, c.masone@gmail.com == cMaSone@gmail.com, per
@@ -168,6 +170,9 @@ class GoogleAuthenticator : public Authenticator,
   // Name of a file, next to chrome, that contains a local account username.
   static const char kLocalaccountFile[];
 
+  // Milliseconds until we timeout our attempt to hit ClientLogin.
+  static const int kClientLoginTimeoutMs;
+
   URLFetcher* fetcher_;
   URLRequestContextGetter* getter_;
   std::string username_;
@@ -178,6 +183,7 @@ class GoogleAuthenticator : public Authenticator,
   bool checked_for_localaccount_;  // needed becasuse empty localaccount_ is ok.
   bool unlock_;  // True if authenticating to unlock the computer.
   bool try_again_;  // True if we're willing to retry the login attempt.
+  bool fetch_completed_;
 
   friend class GoogleAuthenticatorTest;
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, SaltToAsciiTest);
