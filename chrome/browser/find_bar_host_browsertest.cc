@@ -995,6 +995,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 // linux views.  Investigate and fix.  http://crbug.com/40948
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_NoIncognitoPrepopulate DISABLED_NoIncognitoPrepopulate
+#elif defined (OS_WIN)
+// On windows, this test is flaky. http://crbug.com/40948
+#define MAYBE_NoIncognitoPrepopulate FLAKY_NoIncognitoPrepopulate
 #else
 #define MAYBE_NoIncognitoPrepopulate NoIncognitoPrepopulate
 #endif
