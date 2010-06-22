@@ -77,14 +77,11 @@ PNACL_BITCODE_ROOT = BASE + '/../pnacl-untrusted/bitcode'
 ######################################################################
 # FLAGS (can be overwritten by
 ######################################################################
+arm_flags = ['-mfpu=vfp3',
+             '-march=armv7-a']
+
 global_config_flags = {
-  'AS_ARM': [
-    '-march=armv6',
-    '-mfpu=vfp',
-    # Possible other settings:
-    #'-march=armv7',
-    #'-mcpu=cortex-a8',
-  ],
+  'AS_ARM': arm_flags,
 
 
   'AS_X8632': [
@@ -113,9 +110,8 @@ global_config_flags = {
     # TODO: get rid of the next two lines
     '-DNACL_TARGET_SUBARCH=32',
     '-DNACL_LINUX=1',
-    '-ffixed-r9',
-    '-march=armv6',
-  ],
+    '-ffixed-r9'
+  ] + arm_flags,
 
 
   'LLVM_GCC_COMPILE_HEADERS': [
@@ -147,10 +143,10 @@ global_config_flags = {
   'LLC_SHARED_ARM': [
     '-march=arm',
     # c.f. lib/Target/ARM/ARMGenSubtarget.inc
-    '-mcpu=arm1156t2f-s',
-    #'-mcpu=cortex-a8',
-    '-mtriple=armv6-*-*eabi*',
-    #'-mtriple=armv7a-*-*eabi*',
+    '-mcpu=cortex-a8',
+    '-mattr=-neon',
+    '-mattr=+vfp3',
+    '-mtriple=armv7a-*-*eabi*',
     '-arm-reserve-r9',
   ],
 
@@ -318,7 +314,8 @@ def SfiCompile(argv, out_pos, mode):
   Run(llc)
 
   # we use llvm-gcc since it knows the correct mfpu and march to use
-  Run([LLVM_GCC] + [filename + '.s', '-c', '-o', filename])
+  Run([LLVM_GCC] + global_config_flags['LLVM_GCC_COMPILE']
+      + [filename + '.s', '-c', '-o', filename])
 
 
 # See http://docs.python.org/library/struct.html for encoding
