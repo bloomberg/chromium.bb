@@ -448,6 +448,8 @@
           'outputs': [
             '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
             '<(grit_out_dir)/<(RULE_INPUT_ROOT).pak',
+            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT)_map.cc',
+            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT)_map.h',
             # TODO(bradnelson): move to something like this instead
             #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_resources_grds))',
             # This currently cannot work because gyp only evaluates the

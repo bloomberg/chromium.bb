@@ -168,11 +168,6 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("inspector"));
       break;
-    case chrome::DIR_NET_INTERNALS:
-      if (!PathService::Get(chrome::DIR_RESOURCES, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("net_internals"));
-      break;
     case chrome::DIR_APP_DICTIONARIES:
 #if defined(OS_LINUX) || defined(OS_MACOSX)
       // We can't write into the EXE dir on Linux, so keep dictionaries
@@ -250,6 +245,16 @@ bool PathProvider(int key, FilePath* result) {
 #endif
       break;
     case chrome::FILE_RESOURCES_PACK:
+#if defined(OS_MACOSX)
+      if (mac_util::AmIBundled()) {
+        cur = mac_util::MainAppBundlePath();
+        cur = cur.Append(FILE_PATH_LITERAL("Resources"))
+                 .Append(FILE_PATH_LITERAL("resources.pak"));
+        break;
+      }
+      // If we're not bundled on mac, resources.pak should be next to the
+      // binary (e.g., for unit tests).
+#endif
       if (!PathService::Get(base::DIR_EXE, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("resources.pak"));
