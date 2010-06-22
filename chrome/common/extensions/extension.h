@@ -335,8 +335,6 @@ class Extension {
   const std::string& launch_web_url() const { return launch_web_url_; }
   LaunchContainer launch_container() const { return launch_container_; }
   bool launch_fullscreen() const { return launch_fullscreen_; }
-  int launch_width() const { return launch_width_; }
-  int launch_height() const { return launch_height_; }
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
@@ -521,11 +519,6 @@ class Extension {
 
   // Launch full screen by default.
   bool launch_fullscreen_;
-
-  // The default size of the container when launching. Only respected for
-  // containers like panels and windows.
-  int launch_width_;
-  int launch_height_;
 
   // Cached images for this extension. This maps from the relative_path of the
   // resource to the cached image.

@@ -136,12 +136,6 @@ TEST_F(ManifestTest, AppLaunchContainer) {
   extension.reset(LoadAndExpectSuccess("launch_fullscreen.json"));
   EXPECT_EQ(true, extension->launch_fullscreen());
 
-  extension.reset(LoadAndExpectSuccess("launch_width.json"));
-  EXPECT_EQ(640, extension->launch_width());
-
-  extension.reset(LoadAndExpectSuccess("launch_height.json"));
-  EXPECT_EQ(480, extension->launch_height());
-
   LoadAndExpectError("launch_container_invalid_type.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_invalid_value.json",
@@ -150,14 +144,6 @@ TEST_F(ManifestTest, AppLaunchContainer) {
                      errors::kLaunchURLRequired);
   LoadAndExpectError("launch_fullscreen_invalid.json",
                      errors::kInvalidLaunchFullscreen);
-  LoadAndExpectError("launch_width_invalid.json",
-                     errors::kInvalidLaunchWidthContainer);
-  LoadAndExpectError("launch_width_negative.json",
-                     errors::kInvalidLaunchWidth);
-  LoadAndExpectError("launch_height_invalid.json",
-                     errors::kInvalidLaunchHeightContainer);
-  LoadAndExpectError("launch_height_negative.json",
-                     errors::kInvalidLaunchHeight);
 }
 
 TEST_F(ManifestTest, AppLaunchURL) {
