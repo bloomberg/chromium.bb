@@ -24,12 +24,12 @@ void RootView::OnPaint(HWND hwnd) {
     RECT win_version = original_dirty_region.ToRECT();
     InvalidateRect(hwnd, &win_version, FALSE);
   }
-  gfx::CanvasPaint canvas(hwnd);
-  if (!canvas.isEmpty()) {
-    const PAINTSTRUCT& ps = canvas.paintStruct();
-    SchedulePaint(gfx::Rect(ps.rcPaint), false);
+  scoped_ptr<gfx::CanvasPaint2> canvas(
+      gfx::CanvasPaint2::CreateCanvasPaint(hwnd));
+  if (!canvas->IsValid()) {
+    SchedulePaint(canvas->GetInvalidRect(), false);
     if (NeedsPainting(false))
-      ProcessPaint(&canvas);
+      ProcessPaint(canvas->AsCanvas2()->AsCanvas());
   }
 }
 

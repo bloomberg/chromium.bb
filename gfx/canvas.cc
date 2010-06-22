@@ -12,6 +12,10 @@
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
 
+#if defined(OS_WIN)
+#include "gfx/canvas_paint.h"
+#endif
+
 namespace gfx {
 
 bool Canvas::GetClipRect(gfx::Rect* r) {
@@ -267,11 +271,55 @@ SkBitmap Canvas::ExtractBitmap() const {
   return result;
 }
 
+Canvas* Canvas::AsCanvas() {
+  return this;
+}
+
 // static
 int Canvas::DefaultCanvasTextAlignment() {
   if (!base::i18n::IsRTL())
     return gfx::Canvas::TEXT_ALIGN_LEFT;
   return gfx::Canvas::TEXT_ALIGN_RIGHT;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Canvas2, public:
+
+Canvas2* Canvas2::CreateCanvas() {
+  return new Canvas;
+}
+
+Canvas2* Canvas2::CreateCanvas(int width, int height, bool is_opaque) {
+  return new Canvas(width, height, is_opaque);
+}
+
+#if defined(OS_WIN)
+// TODO(beng): move to canvas_win.cc, etc.
+class CanvasPaintWin : public CanvasPaint, public CanvasPaint2 {
+ public:
+  CanvasPaintWin(gfx::NativeView view) : CanvasPaint(view) {}
+
+  // Overridden from CanvasPaint2:
+  virtual bool IsValid() const {
+    return isEmpty();
+  }
+
+  virtual gfx::Rect GetInvalidRect() const {
+    return gfx::Rect(paintStruct().rcPaint);
+  }
+
+  virtual Canvas2* AsCanvas2() {
+    return this;
+  }
+};
+#endif
+
+CanvasPaint2* CanvasPaint2::CreateCanvasPaint(gfx::NativeView view) {
+#if defined(OS_WIN)
+  return new CanvasPaintWin(view);
+#else
+  return NULL;
+#endif
 }
 
 }  // namespace gfx
