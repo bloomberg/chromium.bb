@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -36,8 +37,11 @@ KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Keyword"),
       model_(NULL),
       current_input_id_(0) {
+  // Extension suggestions always come from the original profile, since that's
+  // where extensions run. We use the input ID to distinguish whether the
+  // suggestions are meant for us.
   registrar_.Add(this, NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-                 Source<Profile>(profile));
+                 Source<Profile>(profile->GetOriginalProfile()));
 }
 
 KeywordProvider::KeywordProvider(ACProviderListener* listener,
@@ -65,6 +69,10 @@ class CompareQuality {
     return keyword1.length() < keyword2.length();
   }
 };
+
+// We need our input IDs to be unique across all profiles, so we keep a global
+// UID that each provider uses.
+static int global_input_uid_;
 
 }  // namespace
 
@@ -96,7 +104,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // Input has changed. Increment the input ID so that we can discard any
     // stale extension suggestions that may be incoming.
-    ++current_input_id_;
+    current_input_id_ = ++global_input_uid_;
   }
 
   // Split user input into a keyword and some query input.
@@ -144,13 +152,19 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // Any exact match is going to be the highest quality match, and thus at the
   // front of our vector.
   if (keyword_matches.front() == keyword) {
-    matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
-                                               keyword.length(),
-                                               remaining_input, -1));
-
     const TemplateURL* template_url(model->GetTemplateURLForKeyword(keyword));
     if (profile_ &&
         !input.synchronous_only() && template_url->IsExtensionKeyword()) {
+      // If this extension keyword is disabled, make sure we don't add any
+      // matches (including the synchronous one below).
+      ExtensionsService* service = profile_->GetExtensionsService();
+      Extension* extension = service->GetExtensionById(
+          template_url->GetExtensionId(), false);
+      bool enabled = extension && (!profile_->IsOffTheRecord() ||
+                                   service->IsIncognitoEnabled(extension));
+      if (!enabled)
+        return;
+
       if (minimal_changes) {
         // If the input hasn't significantly changed, we can just use the
         // suggestions from last time. We need to readjust the relevance to
@@ -173,6 +187,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
           done_ = false;
       }
     }
+
+    matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
+                                               keyword.length(),
+                                               remaining_input, -1));
   } else {
     if (keyword_matches.size() > kMaxMatches) {
       keyword_matches.erase(keyword_matches.begin() + kMaxMatches,
