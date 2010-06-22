@@ -1311,7 +1311,6 @@ TEST(IEPrivacy, NavigationToRestrictedSite) {
 
   ProtocolPatchMethod patch_method = GetPatchMethod();
 
-  //testing::InSequence s;
   const wchar_t* url = L"http://localhost:1337/files/meta_tag.html";
   const wchar_t* kDialogClass = L"#32770";
 
@@ -1580,5 +1579,65 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowCloseInChrome) {
   ASSERT_TRUE(mock.web_browser2() != NULL);
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+}
+
+const wchar_t kWindowOpenTargetBlankUrl[] =
+    L"http://localhost:1337/files/chrome_frame_target_blank.html";
+
+// This test checks if window.open calls with target blank issued for a
+// different domain make it back to IE instead of completing the navigation
+// within Chrome. We validate this by initiating a navigation to a non existent
+// url which ensures we would get an error during navigation.
+// Marking this test as FLAKY initially as it relies on getting focus and user
+// input which don't work correctly at times.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer,
+       FLAKY_FullTabModeIE_WindowOpenTargetBlankInChrome) {
+  CloseIeAtEndOfScope last_resort_close_ie;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
+  ComStackObjectWithUninitialize<MockWebBrowserEventSink> new_window_mock;
+  chrome_frame_test::TimedMsgLoop loop;
+
+  mock.ExpectNavigationAndSwitch(kWindowOpenTargetBlankUrl);
+
+  EXPECT_CALL(mock, OnLoad(testing::StrCaseEq(kWindowOpenTargetBlankUrl)))
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClick(&mock, &loop, 0, 10, 10, simulate_input::LEFT),
+          DelaySendChar(&loop, 500, 'O', simulate_input::NONE)));
+  // Watch for new window
+  mock.ExpectNewWindow(&new_window_mock);
+
+  EXPECT_CALL(new_window_mock, OnBeforeNavigate2(_,
+      testing::Field(&VARIANT::bstrVal,
+      testing::HasSubstr(L"attach_external_tab")), _, _, _, _, _))
+      .Times(testing::AtMost(1));
+
+  EXPECT_CALL(new_window_mock, OnBeforeNavigate2(_,
+      testing::Field(&VARIANT::bstrVal,
+      testing::StrCaseEq(kHostBrowserUrl)), _, _, _, _, _))
+      .Times(testing::AtMost(1));
+
+  EXPECT_CALL(new_window_mock, OnNavigateError(_, _, _, _, _))
+      .Times(1)
+      .WillOnce(CloseBrowserMock(&new_window_mock));
+
+  EXPECT_CALL(new_window_mock, OnQuit())
+      .Times(1)
+      .WillOnce(CloseBrowserMock(&mock));
+
+  EXPECT_CALL(mock, OnQuit())
+      .Times(1)
+      .WillOnce(QUIT_LOOP(loop));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kWindowOpenTargetBlankUrl);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
+
+  ASSERT_TRUE(new_window_mock.web_browser2() != NULL);
 }
 

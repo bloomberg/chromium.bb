@@ -37,7 +37,10 @@
 
 static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
 
-ExternalTabContainer::PendingTabs ExternalTabContainer::pending_tabs_;
+base::LazyInstance<ExternalTabContainer::PendingTabs>
+    ExternalTabContainer::pending_tabs_(base::LINKER_INITIALIZED);
+
+// ExternalTabContainer::PendingTabs ExternalTabContainer::pending_tabs_;
 ExternalTabContainer* ExternalTabContainer::innermost_tab_for_unload_event_
     = NULL;
 
@@ -347,7 +350,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
 
   if (result) {
     uintptr_t cookie = reinterpret_cast<uintptr_t>(new_container.get());
-    pending_tabs_[cookie] = new_container;
+    pending_tabs_.Get()[cookie] = new_container;
     new_container->set_pending(true);
     IPC::AttachExternalTabParams attach_params_;
     attach_params_.cookie = static_cast<uint64>(cookie);
@@ -764,10 +767,11 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
 
 scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
     uintptr_t cookie) {
-  PendingTabs::iterator index = pending_tabs_.find(cookie);
-  if (index != pending_tabs_.end()) {
+  ExternalTabContainer::PendingTabs& pending_tabs = pending_tabs_.Get();
+  PendingTabs::iterator index = pending_tabs.find(cookie);
+  if (index != pending_tabs.end()) {
     scoped_refptr<ExternalTabContainer> container = (*index).second;
-    pending_tabs_.erase(index);
+    pending_tabs.erase(index);
     return container;
   }
 

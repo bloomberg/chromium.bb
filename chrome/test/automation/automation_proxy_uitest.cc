@@ -1281,10 +1281,6 @@ TEST_F(ExternalTabUITestPopupEnabled, UserGestureTargetBlank) {
       "<a href='http://foo.com/' target='_blank'>Link</a>";
   mock_->ServeHTMLData(1, main_url, main_html);
 
-  GURL foo_url("http://foo.com/");
-  std::string foo_html = "<!DOCTYPE html>Foo lives here";
-  mock_->ServeHTMLData(2, foo_url, foo_html);
-
   HWND foo_host = CreateWindowW(L"Button", L"foo_host",
       WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, CW_USEDEFAULT, CW_USEDEFAULT,
       CW_USEDEFAULT,  CW_USEDEFAULT, NULL, NULL, NULL, NULL);
@@ -1296,15 +1292,11 @@ TEST_F(ExternalTabUITestPopupEnabled, UserGestureTargetBlank) {
 
   EXPECT_CALL(*mock_, OnAttachExternalTab(1, _))
       .Times(1)
-      .WillOnce(testing::WithArgs<1>(testing::Invoke(CreateFunctor(mock_,
-          &ExternalTabUITestMockClient::ConnectToExternalTab, foo_host))));
-
-  EXPECT_CALL(*mock_, OnLoad(2, _)).WillOnce(QUIT_LOOP_SOON(&loop, 500));
+      .WillOnce(QUIT_LOOP_SOON(&loop, 500));
 
   mock_->CreateTabWithUrl(main_url);
   loop.RunFor(action_max_timeout_ms());
 
-  EXPECT_CALL(*mock_, HandleClosed(2));
   EXPECT_CALL(*mock_, HandleClosed(1));
   ::DestroyWindow(foo_host);
   mock_->DestroyHostWindow();

@@ -5172,6 +5172,19 @@ bool RenderView::IsNonLocalTopLevelNavigation(
       return true;
     }
   }
+  // Not interested in reloads.
+  if (type != WebKit::WebNavigationTypeReload &&
+      type != WebKit::WebNavigationTypeFormSubmitted) {
+    // The opener relationship between the new window and the parent allows the
+    // new window to script the parent and vice versa. This is not allowed if
+    // the origins of the two domains are different. This can be treated as a
+    // top level navigation and routed back to the host.
+    WebKit::WebFrame* opener = frame->opener();
+    if (opener) {
+      if (url.GetOrigin() != GURL(opener->url()).GetOrigin())
+        return true;
+    }
+  }
   return false;
 }
 

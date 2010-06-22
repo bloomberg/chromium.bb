@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <map>
-
+#include "base/lazy_instance.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/automation/automation_profile_impl.h"
 #include "chrome/browser/browser.h"
@@ -292,7 +292,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   scoped_ptr<Browser> browser_;
 
   // Contains ExternalTabContainers that have not been connected to as yet.
-  static PendingTabs pending_tabs_;
+  static base::LazyInstance<PendingTabs> pending_tabs_;
 
   // True if this tab is currently the conduit for extension API automation.
   bool enabled_extension_automation_;
