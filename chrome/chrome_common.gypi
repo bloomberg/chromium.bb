@@ -178,7 +178,6 @@
         'common/extensions/url_pattern.h',
         'common/extensions/user_script.cc',
         'common/extensions/user_script.h',
-        'common/gfx/utils.h',
         'common/web_resource/web_resource_unpacker.cc',
         'common/web_resource/web_resource_unpacker.h',
         'common/appcache/appcache_backend_proxy.cc',

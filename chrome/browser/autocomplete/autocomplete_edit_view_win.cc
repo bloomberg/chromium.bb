@@ -41,7 +41,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
-#include "chrome/common/gfx/utils.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/url_util.h"
 #include "gfx/canvas.h"
@@ -377,6 +376,10 @@ class PaintPatcher {
 };
 
 base::LazyInstance<PaintPatcher> g_paint_patcher(base::LINKER_INITIALIZED);
+
+// twips are a unit of type measurement, and RichEdit controls use them
+// to set offsets.
+const int kTwipsPerInch = 1440;
 
 }  // namespace
 
