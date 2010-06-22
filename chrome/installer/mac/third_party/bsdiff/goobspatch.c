@@ -194,9 +194,6 @@ static size_t xzread(xzfile *xzf, u_char *buf, size_t len, lzma_ret *err)
 					return 0;
 				} else if (feof(xzf->f)) {
 					xzf->eof = 1;
-					/* LZMA_FINISH is not critical because
-					 * LZMA_CONCATENATED is not in use. */
-					action = LZMA_FINISH;
 				}
 			}
 
@@ -210,6 +207,11 @@ static size_t xzread(xzfile *xzf, u_char *buf, size_t len, lzma_ret *err)
 				if (err) *err = xzf->err;
 				return 0;
 			}
+
+			/* LZMA_FINISH is not critical because
+			 * LZMA_CONCATENATED is not in use. */
+			if (xzf->eof)
+				action = LZMA_FINISH;
 
 			/* Run the decoder. */
 			xzf->err = lzma_code(&xzf->ls, action);
