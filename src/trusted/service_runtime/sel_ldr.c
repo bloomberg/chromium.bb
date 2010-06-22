@@ -93,6 +93,23 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->ignore_validator_result = 0;
   nap->validator_stub_out_mode = 0;
 
+  /*
+   * Allow debugging via environment variables.  Using environment
+   * variables allows this to work inside the browser while avoiding a
+   * Chromium-side change, since sel_main.c's functionality is
+   * duplicated in chrome/nacl/sel_main.cc.  We might remove this;
+   * non-browser debugging could be served by command line options.
+   */
+  NaClLog(4, "Checking for DANGEROUS modes\n");
+  if (IsEnvironmentVariableSet("NACL_DANGEROUS_IGNORE_VALIDATOR")) {
+    nap->ignore_validator_result = 1;
+    NaClLog(LOG_INFO, "DANGER: IGNORING VALIDATOR\n");
+  }
+  if (IsEnvironmentVariableSet("NACL_DANGEROUS_ENABLE_FILE_ACCESS")) {
+    NaClInsecurelyBypassAllAclChecks();
+    NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
+  }
+
   if (!NaClSyncQueueCtor(&nap->work_queue)) {
     goto cleanup_cv;
   }
@@ -816,24 +833,6 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   UNREFERENCED_PARAMETER(out_args);
 
   NaClLog(4, "NaClLoadModuleRpc: entered, finding shm size\n");
-
-  /*
-   * Temporary hack to enable debugging when an environment variable
-   * is set.  This is done here to avoid a Chromium-side change, since
-   * the current DLL-based startup duplicates much of the
-   * functionality of sel_main.c in chrome/nacl/sel_main.cc because
-   * NaCl is not an independent process.
-   */
-
-  NaClLog(4, "Checking for DANGEROUS modes\n");
-  if (IsEnvironmentVariableSet("NACL_DANGEROUS_IGNORE_VALIDATOR")) {
-    nap->ignore_validator_result = 1;
-    NaClLog(LOG_INFO, "DANGER: IGNORING VALIDATOR\n");
-  }
-  if (IsEnvironmentVariableSet("NACL_DANGEROUS_ENABLE_FILE_ACCESS")) {
-    NaClInsecurelyBypassAllAclChecks();
-    NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
-  }
 
   errcode = NACL_SRPC_RESULT_INTERNAL;
 
