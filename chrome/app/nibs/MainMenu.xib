@@ -118,7 +118,7 @@
 								</object>
 								<object class="NSMenuItem" id="198763083">
 									<reference key="NSMenu" ref="110575045"/>
-									<string key="NSTitle">^IDS_IMPORT_SETTINGS</string>
+									<string key="NSTitle">^IDS_IMPORT_SETTINGS_MENU_MAC</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="353210768"/>
