@@ -203,11 +203,6 @@ ACTION_P6(DelaySendMouseClick, mock, loop, delay, x, y, button) {
       &MockWebBrowserEventSink::SendMouseClick, x, y, button), delay);
 }
 
-ACTION_P4(DelaySendChar, loop, delay, c, mod) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-      simulate_input::SendCharA, c, mod), delay);
-}
-
 ACTION_P3(DelaySendString, loop, delay, str) {
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
       simulate_input::SendStringW, str), delay);

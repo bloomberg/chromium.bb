@@ -1,12 +1,13 @@
 <html>
   <head>
     <script type="text/javascript">
-      window.onload = function() {
+      function popup() {
         window.open("empty.html", "test");
       }
     </script>
   </head>
-  <body>
+
+  <body ondblclick="popup();">
     Calling window.open...
   </body>
 </html>

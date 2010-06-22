@@ -136,7 +136,12 @@ TEST_F(NoInterferenceTest, FLAKY_JavascriptWindowOpen) {
       testing::StrictMock<MockWebBrowserEventSink> > new_window_mock;
 
   mock_.ExpectNavigationInIE(kWindowOpenUrl);
-  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(kWindowOpenUrl)));
+  EXPECT_CALL(mock_, OnIELoad(testing::StrCaseEq(kWindowOpenUrl)))
+      .WillOnce(testing::DoAll(
+          DelaySendMouseClickToIE(&mock_, &loop_, 0, 100, 100,
+                                  simulate_input::LEFT),
+          DelaySendMouseClickToIE(&mock_, &loop_, 0, 100, 100,
+                                  simulate_input::LEFT)));
 
   mock_.ExpectNewWindowWithIE(empty_page_url(), &new_window_mock);
   EXPECT_CALL(new_window_mock, OnIELoad(testing::StrCaseEq(empty_page_url())))

@@ -123,6 +123,11 @@ ACTION_P5(ValidateWindowSize, mock, left, top, width, height) {
   EXPECT_EQ(actual_height, height);
 }
 
+ACTION_P4(DelaySendChar, loop, delay, c, mod) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+      simulate_input::SendCharA, c, mod), delay);
+}
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_MOCK_WITH_WEB_SERVER_H_
