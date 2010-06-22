@@ -14,11 +14,16 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/linux/nacl_signal_arch.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 
 static const int kSignalStackSize = 8192; /* This is what Breakpad uses. */
 static const int kStackGuardSize = NACL_PAGESIZE;
+
+static struct NaClApp *g_nap;
+
 
 int NaClSignalStackAllocate(void **result) {
   /*
@@ -88,6 +93,10 @@ void NaClSignalStackUnregister(void) {
 }
 
 static void DebugMsg(const char *msg) {
+  /*
+   * We cannot use NaClLog() in the context of a signal handler: it is
+   * too complex.  However, write() is signal-safe.
+   */
   int len = strlen(msg);
   int rc = write(2, msg, len);
   if (rc != len) {
@@ -99,32 +108,8 @@ static void DebugMsg(const char *msg) {
   }
 }
 
-/* TODO(mseaborn): This is x86-32-only.  Support x86-64 and ARM. */
-static void NaClSignalHandler(int sig, siginfo_t *info, void *uc) {
-  ucontext_t *context = (ucontext_t *) uc;
-  /*
-   * We need to drop the top 16 bits with this implicit cast.  In some
-   * situations, Linux does not assign to the top 2 bytes of the
-   * REG_CS array entry when writing %cs to the stack.  Therefore we
-   * need to drop the undefined top 2 bytes.  This happens in 32-bit
-   * processes running on 64-bit kernels, but not on 32-bit kernels.
-   */
-  uint16_t cs = context->uc_mcontext.gregs[REG_CS];
-  UNREFERENCED_PARAMETER(sig);
-  UNREFERENCED_PARAMETER(info);
-
-  if (cs != NaClGetGlobalCs()) {
-    /*
-     * We need to restore %gs before we can make any libc calls,
-     * because some builds of glibc fetch a syscall function pointer
-     * from glibc's static TLS area.
-     *
-     * Note that, in comparison, Breakpad tries to avoid using libc
-     * calls at all when a crash occurs.
-     */
-    uint16_t guest_gs = context->uc_mcontext.gregs[REG_GS];
-    struct NaClThreadContext *nacl_thread = nacl_sys[guest_gs >> 3];
-    NaClSetGs(nacl_thread->gs);
+static void NaClHandleFault(int in_untrusted_code) {
+  if (in_untrusted_code) {
     DebugMsg("** Fault in NaCl untrusted code\n");
   }
   else {
@@ -133,13 +118,30 @@ static void NaClSignalHandler(int sig, siginfo_t *info, void *uc) {
     /* TODO(mseaborn): Call Breakpad's crash reporter. */
     /* BreakpadSignalHandler(sig, info, uc); */
   }
+}
+
+void NaClSignalHandler(int sig, siginfo_t *info, void *uc) {
+  ucontext_t *context = (ucontext_t *) uc;
+  int in_untrusted_code;
+  UNREFERENCED_PARAMETER(sig);
+  UNREFERENCED_PARAMETER(info);
 
   /*
-   * This is a sure fire, simple way of ensuring the process dies.
-   * This assumes we're handling a SIGSEGV, in which case SIGSEGV is
-   * blocked and the signal handler won't be re-entered.
+   * Sanity check: Make sure the signal stack frame was not allocated
+   * in untrusted memory.  This checks that the alternate signal stack
+   * is correctly set up, because otherwise, if it is not set up, the
+   * test case would not detect that.
+   *
+   * There is little point in doing a CHECK instead of a DCHECK,
+   * because if we are running off an untrusted stack, we have already
+   * lost.
    */
-  __asm__("hlt");
+  DCHECK(g_nap == NULL || !NaClIsUserAddr(g_nap, (uintptr_t) context));
+
+  NaClRecoverFromSignal(g_nap, context, &in_untrusted_code);
+  NaClHandleFault(in_untrusted_code);
+
+  NaClSignalExit();
 }
 
 
@@ -159,9 +161,16 @@ void NaClSignalHandlerInit() {
   }
 }
 
+
 void NaClSignalHandlerFini() {
   /* TODO(mseaborn): Handle other signals too, such as SIGILL. */
   if (signal(SIGSEGV, SIG_DFL) == SIG_ERR) {
     NaClLog(LOG_FATAL, "Failed to unregister signal handler with signal()\n");
   }
+}
+
+
+void NaClSignalRegisterApp(struct NaClApp *nap) {
+  CHECK(g_nap == NULL);
+  g_nap = nap;
 }

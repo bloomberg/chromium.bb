@@ -29,3 +29,7 @@ void NaClSignalHandlerInit() {
 
 void NaClSignalHandlerFini() {
 }
+
+void NaClSignalRegisterApp(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+}

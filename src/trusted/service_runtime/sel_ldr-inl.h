@@ -68,13 +68,10 @@ static INLINE uintptr_t NaClUserToSysAddr(struct NaClApp  *nap,
   return uaddr + nap->mem_start;
 }
 
-static INLINE uintptr_t NaClSysToUserAddr(struct NaClApp  *nap,
-                                          uintptr_t       sysaddr) {
-  if (sysaddr < nap->mem_start ||
-      nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) <= sysaddr) {
-    return kNaClBadAddress;
-  }
-  return sysaddr - nap->mem_start;
+static INLINE int NaClIsUserAddr(struct NaClApp  *nap,
+                                 uintptr_t       sysaddr) {
+  return nap->mem_start <= sysaddr &&
+         sysaddr < nap->mem_start + ((uintptr_t) 1U << nap->addr_bits);
 }
 
 static INLINE uintptr_t NaClUserToSysAddrRange(struct NaClApp  *nap,
@@ -118,20 +115,6 @@ static INLINE uintptr_t NaClSysToUser(struct NaClApp  *nap,
             sysaddr, nap->mem_start, nap->addr_bits);
   }
   return sysaddr - nap->mem_start;
-}
-
-static INLINE uint32_t NaClSysToUser32(struct NaClApp  *nap,
-                                       uintptr_t       sysaddr) {
-  if (sysaddr < nap->mem_start ||
-      nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) <= sysaddr ||
-      (sysaddr - nap->mem_start) > UINT32_MAX) {
-    NaClLog(LOG_FATAL,
-            ("NaclSysToUser: sysaddr 0x%08"NACL_PRIxPTR","
-            " mem_start 0x%08"NACL_PRIxPTR","
-            " addr space %"NACL_PRId8" bits\n"),
-            sysaddr, nap->mem_start, nap->addr_bits);
-  }
-  return (uint32_t)(sysaddr - nap->mem_start);
 }
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64

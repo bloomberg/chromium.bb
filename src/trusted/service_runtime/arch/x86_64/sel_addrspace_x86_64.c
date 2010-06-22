@@ -23,7 +23,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   size_t        log_align = ALIGN_BITS;
   void          *mem_ptr;
 
-  NaClLog(LOG_INFO, "NaClAllocateSpace(*, 0x%016"NACL_PRIxS" bytes).\n",
+  NaClLog(4, "NaClAllocateSpace(*, 0x%016"NACL_PRIxS" bytes).\n",
           addrsp_size);
 
   CHECK(addrsp_size == FOURGIG);
@@ -43,7 +43,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * we skip over an initial 40G guard.
    */
   *mem = (void *) (((char *) mem_ptr) + GUARDSIZE);
-  NaClLog(LOG_INFO,
+  NaClLog(4,
           "NaClAllocateSpace: addr space at 0x%016"NACL_PRIxPTR"\n",
           (uintptr_t) *mem);
 

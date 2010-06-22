@@ -476,6 +476,9 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     goto cleanup;
   }
 
+  /* We are ready to distinguish crashes in trusted and untrusted code. */
+  NaClSignalRegisterApp(nap);
+
   nap->running = 1;
 
   NaClLog(2, "system stack ptr : %016"NACL_PRIxPTR"\n", stack_ptr);

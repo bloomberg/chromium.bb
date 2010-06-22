@@ -9,6 +9,7 @@
 
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
 /*
@@ -44,6 +45,11 @@ void NaClSignalHandlerInit(void);
  * Undoes the effect of NaClSignalHandlerInit().
  */
 void NaClSignalHandlerFini(void);
+
+/*
+ * Register NaClApp for use in the signal handler.
+ */
+void NaClSignalRegisterApp(struct NaClApp *nap);
 
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SIGNAL_H__ */

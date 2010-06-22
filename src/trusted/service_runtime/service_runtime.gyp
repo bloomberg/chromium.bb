@@ -167,9 +167,9 @@
                 }],
               ],
             }],
-            ['OS=="linux" and target_arch=="ia32"', {
+            ['OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
               'sources': [
-                'linux/x86_32/nacl_signal.c',
+                'linux/nacl_signal.c',
               ],
              }, {
               'sources': [

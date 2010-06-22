@@ -163,7 +163,7 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
   extra = rounded_addr - orig_addr;
 
   if (0 != extra) {
-    NaClLog(LOG_INFO,
+    NaClLog(4,
             "%"MSGWIDTH"s %016"NACL_PRIxPTR", %016"NACL_PRIxS"\n",
             "Freeing front:",
             orig_addr,
