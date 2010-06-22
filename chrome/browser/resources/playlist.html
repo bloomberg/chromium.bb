@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <title>Media Playlist</title>
 <style type="text/css">
+body {
+  background: #080809;
+}
 
 .playlist {
   width: 100%;
@@ -36,6 +39,16 @@
 
 .title {
 
+}
+
+.innertitle {
+  text-decoration: line-through;
+}
+
+.error {
+  color: red;
+  float: left;
+  padding-right: 5px;
 }
 
 </style>
@@ -95,8 +108,21 @@ function updateUI() {
       rowdiv.appendChild(numberdiv);
 
       var titlediv = document.createElement('div');
-      titlediv.classname = 'title';
-      titlediv.textContent = getDisplayNameFromPath(currentPlaylist[x].path);
+      if (currentPlaylist[x].error) {
+        var errormark = document.createElement('div');
+        errormark.className = 'error';
+        errormark.textContent = 'X';
+        var innertitle = document.createElement('div');
+        innertitle.className = 'innertitle';
+        innertitle.textContent = 
+          decodeURI(getDisplayNameFromPath(currentPlaylist[x].path));
+        titlediv.appendChild(errormark);
+        titlediv.appendChild(innertitle);
+      } else {
+        titlediv.className = 'title';
+        titlediv.textContent = 
+          decodeURI(getDisplayNameFromPath(currentPlaylist[x].path));
+      }
       rowdiv.appendChild(titlediv);
       rowdiv.onclick = new Function('setPlaylistOffset(' + x + ')');
       if (currentOffset == x) {

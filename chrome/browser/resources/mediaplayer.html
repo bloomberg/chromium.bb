@@ -10,6 +10,14 @@ body {
   background: black;
 }
 
+.error {
+  left: 0;
+  right: 0;
+  color: white;
+  bottom: 38px;
+  position: absolute;
+}
+
 .glow {
   left: 0;
   right: 0;
@@ -22,6 +30,15 @@ body {
                                left top,
                                from(white),
                                to(transparent));
+}
+
+.audiotitle {
+  left: 0;
+  right: 0;
+  text-align: center;
+  position: absolute;
+  color: white;
+  top: 100px;
 }
 
 .progress {
@@ -291,21 +308,23 @@ function $(o) {
   return document.getElementById(o);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Document Functions:
-/**
- * Window onload handler, sets up the page.
- */
-function load() {
-  chrome.send('getCurrentPlaylist', []);
-}
-
 var videoPlaybackElement = null;
 var audioPlaybackElement = null;
 var currentPlaylist = null;
 var currentItem = -1;
 var savedVolumeValue = 0;
 var hideVolumeTimerId = 0;
+var localStrings;
+
+///////////////////////////////////////////////////////////////////////////////
+// Document Functions:
+/**
+ * Window onload handler, sets up the page.
+ */
+function load() {
+  localStrings = new LocalStrings();
+  chrome.send('getCurrentPlaylist', []);
+}
 
 function onMediaProgress() {
   var element = getMediaElement();
@@ -332,7 +351,14 @@ function onLoadedProgress(e) {
 }
 
 function onMediaError(e) {
-  chrome.send('playbackError', ['Error playing back']);
+  console.log('Got new error' + e);
+  chrome.send('playbackError', ['Error playing back', 
+      currentPlaylist[currentItem].path]);
+  if (currentPlaylist.length == 1) {
+    $('error').textContent = localStrings.getString('errorstring');
+  } else {
+    chrome.send("showPlaylist", []);
+  }
   onMediaComplete();
 }
 
@@ -341,10 +367,12 @@ function onMediaComplete() {
   if (currentItem >= currentPlaylist.length) {
     currentItem -= 1;
     var element = getMediaElement();
-    element.currentTime = 0;
-    element.pause();
+    if (!getMediaElement().error) {
+      element.currentTime = 0;
+      element.pause();
+      onMediaProgress();
+    }
     onMediaPause();
-    onMediaProgress();
     return;
   }
   var mediaElement = getMediaElement();
@@ -354,7 +382,7 @@ function onMediaComplete() {
   // MediaElement.removeEventListener("ended", onMediaComplete, true);
   mediaElement.removeEventListener("play", onMediaPlay, true);
   mediaElement.removeEventListener("pause", onMediaPause, true);
-
+  mediaElement.onerror = undefined;
   chrome.send('currentOffsetChanged', ['' + currentItem]);
   playMediaFile(currentPlaylist[currentItem].path);
 }
@@ -486,6 +514,10 @@ function toggleVolumeMute() {
   muteVolume($('volumeslider').value != 0);
 }
 
+function getPathAndFilenameForPath(path) {
+  return path.match(/(.*)[\/\\]([^\/\\]+)\.\w+$/);
+}
+
 function setupPlaybackControls() {
   var element = $('playercontrols');
   playercontrols.innerHTML = ''; // clear out other
@@ -609,6 +641,7 @@ function setupPlaybackControls() {
 
 function playAudioFile(uri) {
   if (videoPlaybackElement != null) {
+    videoPlaybackElement.onerror = undefined;
     document.body.removeChild(videoPlaybackElement);
     videoPlaybackElement = null;
   }
@@ -621,12 +654,15 @@ function playAudioFile(uri) {
     audioPlaybackElement.src = uri;
     setupPlaybackControls();
     document.body.appendChild(audioPlaybackElement);
+    var paths = getPathAndFilenameForPath(uri);
+    $('title').textContent = decodeURI(paths[2]);
   } else {
     setupMediaEvents(audioPlaybackElement);
     audioPlaybackElement.src = uri;
-    audioPlaybackElement.currentTime = 0;
     audioPlaybackElement.load();
     audioPlaybackElement.play();
+    var paths = getPathAndFilenameForPath(uri);
+    $('title').textContent = decodeURI(paths[2]);
   }
 }
 
@@ -667,8 +703,8 @@ function playVideoFile(uri) {
   } else {
     setupMediaEvents(videoPlaybackElement);
     videoPlaybackElement.src = uri;
-    videoPlaybackElement.currentTime = 0;
     videoPlaybackElement.load();
+    videoPlaybackElement.currentTime = 0;
     videoPlaybackElement.play();
   }
 }
@@ -699,7 +735,7 @@ function playlistChanged(info, playlist) {
     // Only need to handle the case where we are not playing
     // since if it is currently playing, it will just move
     // to the next file when the current is complete.
-    if (media == null || media.ended == true) {
+    if (media == null) {
       for (var x = 0; x < playlist.length; x++) {
         if (playlist[x].path == info.path) {
           // found the newly added item.
@@ -723,6 +759,9 @@ function togglePlaylist() {
 }
 
 function playMediaFile(url) {
+  $('error').textContent = '';
+  console.log('playfile '+url);
+  $('title').textContent = '';
   if (pathIsVideoFile(url) ) {
     playVideoFile(url);
   } else if(pathIsAudioFile(url)) {
@@ -734,6 +773,8 @@ function playMediaFile(url) {
 
 </script>
 <body onload='load();' onselectstart='return false'>
+<div id='error' class='error'></div>
+<div id='title' class='audiotitle'></div>
 <div id='glow' class='glow'></div>
 <div id='playercontrols' class='playercontrols'>
 </div>
