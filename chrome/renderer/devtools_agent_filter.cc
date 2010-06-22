@@ -12,6 +12,7 @@
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageTransport.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/devtools_message_data.h"
 
