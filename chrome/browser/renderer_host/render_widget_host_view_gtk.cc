@@ -366,10 +366,10 @@ class RenderWidgetHostViewGtkWidget {
             }
           }
         } else {
-          if (scroll.direction == GDK_SCROLL_RIGHT ||
-              scroll.direction == GDK_SCROLL_LEFT) {
+          if (scroll.direction == GDK_SCROLL_LEFT ||
+              scroll.direction == GDK_SCROLL_RIGHT) {
             if (scroll.state == current_event_state) {
-              num_clicks += (scroll.direction == GDK_SCROLL_RIGHT ? 1 : -1);
+              num_clicks += (scroll.direction == GDK_SCROLL_LEFT ? 1 : -1);
               gdk_event_free(event);
               event_coalesced = true;
             }
@@ -408,7 +408,7 @@ class RenderWidgetHostViewGtkWidget {
         web_event.deltaY = -GetScrollPixelsPerTick();
       web_event.deltaY += GetPendingScrollDelta(true, event->state);
     } else {
-      if (event->direction == GDK_SCROLL_RIGHT)
+      if (event->direction == GDK_SCROLL_LEFT)
         web_event.deltaX = GetScrollPixelsPerTick();
       else
         web_event.deltaX = -GetScrollPixelsPerTick();
