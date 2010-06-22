@@ -776,6 +776,7 @@
           'type': 'none',
           'dependencies': [
             'installer/mac/third_party/bsdiff/goobsdiff.gyp:*',
+            'installer/mac/third_party/xz/xz.gyp:*',
           ],
           'conditions': [
             ['buildtype=="Official"', {
@@ -818,6 +819,9 @@
               'files': [
                 '<(PRODUCT_DIR)/goobsdiff',
                 '<(PRODUCT_DIR)/goobspatch',
+                '<(PRODUCT_DIR)/liblzma_decompress.dylib',
+                '<(PRODUCT_DIR)/xz',
+                '<(PRODUCT_DIR)/xzdec',
                 'installer/mac/dirdiffer.sh',
                 'installer/mac/dirpatcher.sh',
                 'installer/mac/dmgdiffer.sh',

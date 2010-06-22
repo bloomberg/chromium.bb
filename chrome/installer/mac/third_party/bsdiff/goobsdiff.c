@@ -33,6 +33,7 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bsdiff/bsdiff.c,v 1.1 2005/08/06 01:59:05
 #include <bzlib.h>
 #include <err.h>
 #include <fcntl.h>
+#include <lzma.h>
 #include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -235,26 +236,29 @@ static int compress2gzip(Bytef *dest, uLongf *destLen,
 
 /* Recompress buf of size buf_len using bzip2 or gzip. The smallest version is
  * used. The original uncompressed variant may be the smallest. Returns a
- * number identifying the encoding, 1 for uncompressed, 2 for bzip2, and 3 for
- * gzip. If the original uncompressed variant is not smallest, it is freed.
- * The caller must free any buf after this function returns. */
+ * number identifying the encoding, 1 for uncompressed, 2 for bzip2, 3 for
+ * gzip, and 4 for xz/lzma2. If the original uncompressed variant is not
+ * smallest, it is freed. The caller must free any buf after this function
+ * returns. */
 static char make_small(u_char **buf, off_t *buf_len)
 {
 	u_char *source = *buf;
 	off_t source_len = *buf_len;
-	u_char *bz2, *gz;
+	u_char *bz2, *gz, *lzma;
 	unsigned int bz2_len;
-	unsigned long gz_len;
-	int zerr;
+	size_t gz_len, lzma_len, lzma_pos;
+	int bz2_err, gz_err;
+	lzma_ret lzma_err;
+	lzma_check lzma_ck;
 	char smallest;
 
 	smallest = 1;
 
 	bz2_len = source_len + 1;
 	bz2 = malloc(bz2_len);
-	zerr = BZ2_bzBuffToBuffCompress((char*)bz2, &bz2_len, (char*)source,
-	                                source_len, 9, 0, 0);
-	if (zerr == BZ_OK) {
+	bz2_err = BZ2_bzBuffToBuffCompress((char*)bz2, &bz2_len, (char*)source,
+	                                   source_len, 9, 0, 0);
+	if (bz2_err == BZ_OK) {
 		if (bz2_len < *buf_len) {
 			smallest = 2;
 			*buf = bz2;
@@ -263,17 +267,17 @@ static char make_small(u_char **buf, off_t *buf_len)
 			free(bz2);
 			bz2 = NULL;
 		}
-	} else if (zerr == BZ_OUTBUFF_FULL) {
+	} else if (bz2_err == BZ_OUTBUFF_FULL) {
 		free(bz2);
 		bz2 = NULL;
 	} else {
-		errx(1, "BZ2_bzBuffToBuffCompress: %d", zerr);
+		errx(1, "BZ2_bzBuffToBuffCompress: %d", bz2_err);
 	}
 
 	gz_len = source_len + 1;
 	gz = malloc(gz_len);
-	zerr = compress2gzip(gz, &gz_len, source, source_len, 9);
-	if (zerr == Z_OK) {
+	gz_err = compress2gzip(gz, &gz_len, source, source_len, 9);
+	if (gz_err == Z_OK) {
 		if (gz_len < *buf_len) {
 			smallest = 3;
 			*buf = gz;
@@ -282,11 +286,39 @@ static char make_small(u_char **buf, off_t *buf_len)
 			free(gz);
 			gz = NULL;
 		}
-	} else if (zerr == Z_BUF_ERROR) {
+	} else if (gz_err == Z_BUF_ERROR) {
 		free(gz);
 		gz = NULL;
 	} else {
-		errx(1, "compress2gzip: %d", zerr);
+		errx(1, "compress2gzip: %d", gz_err);
+	}
+
+	lzma_len = source_len + 1;
+	lzma = malloc(lzma_len);
+	lzma_pos = 0;
+
+	/* Equivalent to the options used by xz -9 -e. */
+	lzma_ck = LZMA_CHECK_CRC64;
+	if (!lzma_check_is_supported(lzma_ck))
+		lzma_ck = LZMA_CHECK_CRC32;
+	lzma_err = lzma_easy_buffer_encode(9 | LZMA_PRESET_EXTREME,
+	                                   lzma_ck, NULL,
+	                                   source, source_len,
+	                                   lzma, &lzma_pos, lzma_len);
+	if (lzma_err == LZMA_OK) {
+		if (lzma_pos < *buf_len) {
+			smallest = 4;
+			*buf = lzma;
+			*buf_len = lzma_pos;
+		} else {
+			free(lzma);
+			lzma = NULL;
+		}
+	} else if (lzma_err == LZMA_BUF_ERROR) {
+		free(lzma);
+		lzma = NULL;
+	} else {
+		errx(1, "lzma_easy_buffer_encode: %d", lzma_err);
 	}
 
 	if (smallest != 1) {
@@ -367,7 +399,9 @@ int main(int argc,char *argv[])
 		96	x	compressed control block
 		96+x	y	compressed diff block
 		96+x+y	z	compressed extra block
-	Encodings are 1 (uncompressed), 2 (bzip2), and 3 (gzip). */
+	Encodings are 1 (uncompressed), 2 (bzip2), 3 (gzip), and 4 (xz/lzma2).
+	*/
+
 	memset(header, 0, sizeof(header));
 	if (fwrite(header, sizeof(header), 1, pf) != 1)
 		err(1, "fwrite(%s)", argv[3]);

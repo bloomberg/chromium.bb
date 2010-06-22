@@ -41,9 +41,10 @@ Local Modifications:
    blocks in the patch file, and added patch file length validation to the
    patcher.
  - Replaced custom off_t encoding with signed 64-bit little-endian integers.
- - The control, diff, and extra blocks can be compressed with bzip2 or gzip,
-   or left uncompressed, independently of one another, depending on which is
-   smallest. This often results in a net reduction in patch size of about 3%.
+ - The control, diff, and extra blocks can be compressed with bzip2, gzip, or
+   xz/lzma2, or left uncompressed, independently of one another, depending on
+   which is smallest. This often results in a net reduction in patch size of
+   about 3%-5%.
  - Error messages in the patcher are slightly more descriptive.
  - The patcher treats a few more unexpected read cases as errors than it did
    previously. This will theoretically cause it to exit with an error instead

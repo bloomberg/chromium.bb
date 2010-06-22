@@ -16,12 +16,18 @@
   'targets': [
     {
       'target_name': 'goobsdiff',
+      'dependencies': [
+        '../xz/xz.gyp:lzma',
+      ],
       'sources': [
         'goobsdiff.c',
       ],
     },
     {
       'target_name': 'goobspatch',
+      'dependencies': [
+        '../xz/xz.gyp:lzma_decompress',
+      ],
       'sources': [
         'goobspatch.c',
       ],
