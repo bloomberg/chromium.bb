@@ -10,8 +10,9 @@
 #include "base/at_exit.h"
 #include "base/scoped_ptr.h"
 #include "remoting/client/host_connection.h"
-#include "remoting/client/pepper/pepper_plugin.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "third_party/ppapi/cpp/device_context_2d.h"
+#include "third_party/ppapi/cpp/instance.h"
 
 namespace base {
 class Thread;
@@ -26,7 +27,7 @@ class PepperView;
 
 class ChromotingClient;
 
-class ChromotingPlugin : public pepper::PepperPlugin {
+class ChromotingPlugin : public pp::Instance {
  public:
   // The mimetype for which this plugin is registered.
   //
@@ -34,23 +35,16 @@ class ChromotingPlugin : public pepper::PepperPlugin {
   // point.  I think we should handle a special protocol (eg., chromotocol://)
   static const char *kMimeType;
 
-  ChromotingPlugin(NPNetscapeFuncs* browser_funcs, NPP instance);
+  ChromotingPlugin(PP_Instance instance);
   virtual ~ChromotingPlugin();
 
-  // PepperPlugin implementation.
-  virtual NPError New(NPMIMEType pluginType, int16 argc, char* argn[],
-                      char* argv[]);
-  virtual NPError Destroy(NPSavedData** save);
-  virtual NPError SetWindow(NPWindow* window);
-  virtual int16 HandleEvent(void* event);
-  virtual NPError GetValue(NPPVariable variable, void* value);
-  virtual NPError SetValue(NPNVariable variable, void* value);
+  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
+  virtual bool HandleEvent(const PP_Event& event);
+  virtual void ViewChanged(const PP_Rect& position, const PP_Rect& clip);
 
  private:
   FRIEND_TEST(ChromotingPluginTest, ParseUrl);
   FRIEND_TEST(ChromotingPluginTest, TestCaseSetup);
-
-  NPDevice* device() { return device_; }
 
   static bool ParseUrl(const std::string& url,
                        std::string* user_id,
@@ -58,22 +52,10 @@ class ChromotingPlugin : public pepper::PepperPlugin {
                        std::string* host_jid);
 
   // Size of the plugin window.
-  int width_, height_;
+  int width_;
+  int height_;
 
-  // Rendering device provided by browser.
-  NPDevice* device_;
-
-  // Since the ChromotingPlugin's lifetime is conceptually the lifetime of the
-  // object, use it to control running of atexit() calls.
-  //
-  // TODO(ajwong): Should this be moved into PepperPlugin?  Or maybe even
-  // higher?
-  //
-  // TODO(ajwong): This causes unittests to fail so commenting out for now. We
-  // need to understand process instantiation better.  This may also be a
-  // non-issue when we are no longer being loaded as a DSO.
-  //
-  // base::AtExitManager at_exit_manager_;
+  pp::DeviceContext2D device_context_;
 
   scoped_ptr<base::Thread> main_thread_;
   scoped_ptr<JingleThread> network_thread_;

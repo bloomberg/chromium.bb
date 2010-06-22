@@ -20,7 +20,7 @@
     ['OS=="linux" or OS=="mac"', {
       'targets': [
         {
-          'target_name': 'chromoting_client_plugin_lib',
+          'target_name': 'chromoting_client_plugin',
           'type': 'static_library',
           'defines': [
             'HAVE_STDINT_H',  # Required by on2_integer.h
@@ -29,16 +29,14 @@
             'chromoting_base',
             'chromoting_client',
             'chromoting_jingle_glue',
+            '../third_party/ppapi/ppapi.gyp:ppapi_cpp',
             '../third_party/zlib/zlib.gyp:zlib',
           ],
           'sources': [
-            'client/plugin/chromoting_main.cc',
             'client/plugin/chromoting_plugin.cc',
             'client/plugin/chromoting_plugin.h',
             'client/plugin/pepper_view.cc',
             'client/plugin/pepper_view.h',
-            'client/pepper/pepper_plugin.cc',
-            'client/pepper/pepper_plugin.h',
             '../media/base/yuv_convert.cc',
             '../media/base/yuv_convert.h',
             '../media/base/yuv_row.h',
@@ -56,31 +54,7 @@
               'cflags': ['-fPIC'],
             }],
           ],  # end of 'conditions'
-        },  # end of target 'chromoting_client_plugin_lib'
-
-# TODO(ajwong): reenable once we figure out the -fPIC issues.
-        # Client plugin: libchromoting_plugin.so.
-#        {
-#          'target_name': 'chromoting_client_plugin',
-#          'type': 'shared_library',
-#          'product_name': 'chromoting_plugin',
-#          'dependencies': [
-#            'chromoting_client_plugin_lib',
-#          ],
-#          'sources': [
-#            # Required here (rather than in lib) so that functions are
-#            # exported properly.
-#            'client/pepper/pepper_main.cc',
-#          ],
-#          'conditions': [
-#            ['OS=="linux" and target_arch=="x64" and linux_fpic!=1', {
-#              # Shared libraries need -fPIC on x86-64
-#              'cflags': [
-#                '-fPIC'
-#              ],
-#            }],
-#          ],  # end of 'conditions'
-#        },  # end of target 'chromoting_client_plugin'
+        },  # end of target 'chromoting_client_plugin'
 
         # Simple webserver for testing chromoting client plugin.
         {
@@ -377,17 +351,6 @@
         ['OS=="mac"', {
           'sources': [
             'host/capturer_mac_unittest.cc',
-          ],
-        }],
-        ['OS=="linux" or OS=="mac"', {
-          'dependencies': [
-            'chromoting_client_plugin_lib',
-          ],
-          'sources': [
-            'client/plugin/chromoting_plugin_unittest.cc',
-            'client/pepper/pepper_main.cc',
-            'client/pepper/fake_browser.cc',
-            'client/pepper/fake_browser.h',
           ],
         }],
       ],  # end of 'conditions'

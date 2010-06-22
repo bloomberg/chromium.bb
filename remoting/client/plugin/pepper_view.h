@@ -8,7 +8,8 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "remoting/client/chromoting_view.h"
-#include "remoting/client/pepper/pepper_plugin.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 
 class MessageLoop;
 

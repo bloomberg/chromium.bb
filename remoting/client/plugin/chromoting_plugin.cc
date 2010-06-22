@@ -14,6 +14,9 @@
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "third_party/ppapi/c/pp_event.h"
+#include "third_party/ppapi/c/pp_rect.h"
+#include "third_party/ppapi/cpp/image_data.h"
 
 using std::string;
 using std::vector;
@@ -23,30 +26,33 @@ namespace remoting {
 const char* ChromotingPlugin::kMimeType =
     "pepper-application/x-chromoting-plugin::Chromoting";
 
-ChromotingPlugin::ChromotingPlugin(NPNetscapeFuncs* browser_funcs,
-                                   NPP instance)
-    : PepperPlugin(browser_funcs, instance), width_(0), height_(0),
-      device_(NULL) {
+ChromotingPlugin::ChromotingPlugin(PP_Instance instance)
+    : pp::Instance(instance),
+      width_(0),
+      height_(0) {
 }
 
 ChromotingPlugin::~ChromotingPlugin() {
+  if (host_connection_.get())
+    host_connection_->Disconnect();
+
+  // TODO(ajwong): We need to ensure all objects have actually stopped posting
+  // to the message loop before this point.  Right now, we don't have a well
+  // defined stop for the plugin process, and the thread shutdown is likely a
+  // race condition.
+  if (network_thread_.get())
+    network_thread_->Stop();
+
+  if (main_thread_.get())
+    main_thread_->Stop();
 }
 
-NPError ChromotingPlugin::New(NPMIMEType pluginType,
-                              int16 argc, char* argn[], char* argv[]) {
-  LOG(INFO) << "Started ChromotingPlugin::New";
-
-  // Verify the mime type and subtype
-  std::string mime(kMimeType);
-  std::string::size_type type_end = mime.find("/");
-  std::string::size_type subtype_end = mime.find(":", type_end);
-  if (strncmp(pluginType, kMimeType, subtype_end)) {
-    return NPERR_GENERIC_ERROR;
-  }
+bool ChromotingPlugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
+  LOG(INFO) << "Started ChromotingPlugin::Init";
 
   // Extract the URL from the arguments.
-  char* url = NULL;
-  for (int i = 0; i < argc; ++i) {
+  const char* url = NULL;
+  for (uint32_t i = 0; i < argc; ++i) {
     if (strcmp(argn[i], "src") == 0) {
       url = argv[i];
       break;
@@ -54,7 +60,7 @@ NPError ChromotingPlugin::New(NPMIMEType pluginType,
   }
 
   if (!url) {
-    return NPERR_GENERIC_ERROR;
+    return false;
   }
 
   string user_id;
@@ -62,98 +68,92 @@ NPError ChromotingPlugin::New(NPMIMEType pluginType,
   string host_jid;
   if (!ParseUrl(url, &user_id, &auth_token, &host_jid)) {
     LOG(WARNING) << "Could not parse URL: " << url;
-    return NPERR_GENERIC_ERROR;
+    return false;
   }
-
-  // Setup pepper context.
-  device_ = extensions()->acquireDevice(instance(), NPPepper2DDevice);
 
   // Start the threads.
   main_thread_.reset(new base::Thread("ChromoClientMain"));
   if (!main_thread_->Start()) {
     LOG(ERROR) << "Main thread failed to start.";
-    return NPERR_GENERIC_ERROR;
+    return false;
   }
   network_thread_.reset(new JingleThread());
   network_thread_->Start();
 
   // Create the chromting objects.
   host_connection_.reset(new JingleHostConnection(network_thread_.get()));
+  /*
   view_.reset(new PepperView(main_thread_->message_loop(), device_,
                              instance()));
-  client_.reset(new ChromotingClient(main_thread_->message_loop(),
-                                     host_connection_.get(), view_.get()));
+                             */
+  //client_.reset(new ChromotingClient(main_thread_->message_loop(),
+  //                                   host_connection_.get(), view_.get()));
 
   // Kick off the connection.
-  host_connection_->Connect(user_id, auth_token, host_jid, client_.get());
+  //host_connection_->Connect(user_id, auth_token, host_jid, client_.get());
 
-  return NPERR_NO_ERROR;
+  return true;
 }
 
-NPError ChromotingPlugin::Destroy(NPSavedData** save) {
-  host_connection_->Disconnect();
+void ChromotingPlugin::ViewChanged(const PP_Rect& position,
+                                   const PP_Rect& clip) {
+  // TODO(ajwong): This is going to be a race condition when the view changes
+  // and we're in the middle of a Paint().
+  LOG(INFO) << "ViewChanged "
+            << position.point.x << ","
+            << position.point.y << ","
+            << position.size.width << ","
+            << position.size.height;
 
-  // TODO(ajwong): We need to ensure all objects have actually stopped posting
-  // to the message loop before this point.  Right now, we don't have a well
-  // defined stop for the plugin process, and the thread shutdown is likely a
-  // race condition.
-  network_thread_->Stop();
-  main_thread_->Stop();
+  // TODO(ajwong): Do we care about the position?  Probably not...
+  if (position.size.width == width_ || position.size.height == height_)
+    return;
 
-  main_thread_.reset();
-  network_thread_.reset();
-  return NPERR_NO_ERROR;
+  width_ = position.size.width;
+  height_ = position.size.height;
+
+  device_context_ = pp::DeviceContext2D(width_, height_, false);
+  if (!BindGraphicsDeviceContext(device_context_)) {
+    LOG(ERROR) << "Couldn't bind the device context.";
+    return;
+  }
+
+  pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL, width_, height_, false);
+  if (!image.is_null()) {
+    for (int y = 0; y < image.height(); y++) {
+      for (int x = 0; x < image.width(); x++) {
+        *image.GetAddr32(x, y) = 0xccff00cc;
+      }
+    }
+    device_context_.ReplaceContents(&image);
+    device_context_.Flush(NULL, this);
+  } else {
+    LOG(ERROR) << "Unable to allocate image.";
+  }
+
+  //client_->SetViewport(0, 0, width_, height_);
+  //client_->Repaint();
 }
 
-NPError ChromotingPlugin::SetWindow(NPWindow* window) {
-  width_ = window->width;
-  height_ = window->height;
-
-  client_->SetViewport(0, 0, window->width, window->height);
-  client_->Repaint();
-
-  return NPERR_NO_ERROR;
-}
-
-int16 ChromotingPlugin::HandleEvent(void* event) {
-  NPPepperEvent* npevent = static_cast<NPPepperEvent*>(event);
-
-  switch (npevent->type) {
-    case NPEventType_MouseDown:
-      // Fall through
-    case NPEventType_MouseUp:
-      // Fall through
-    case NPEventType_MouseMove:
-      // Fall through
-    case NPEventType_MouseEnter:
-      // Fall through
-    case NPEventType_MouseLeave:
+bool ChromotingPlugin::HandleEvent(const PP_Event& event) {
+  switch (event.type) {
+    case PP_Event_Type_MouseDown:
+    case PP_Event_Type_MouseUp:
+    case PP_Event_Type_MouseMove:
+    case PP_Event_Type_MouseEnter:
+    case PP_Event_Type_MouseLeave:
       //client_->handle_mouse_event(npevent);
       break;
-    case NPEventType_MouseWheel:
-    case NPEventType_RawKeyDown:
-      break;
-    case NPEventType_KeyDown:
-    case NPEventType_KeyUp:
-      break;
-    case NPEventType_Char:
+
+    case PP_Event_Type_Char:
       //client_->handle_char_event(npevent);
       break;
-    case NPEventType_Minimize:
-    case NPEventType_Focus:
-    case NPEventType_Device:
+
+    default:
       break;
   }
 
   return false;
-}
-
-NPError ChromotingPlugin::GetValue(NPPVariable variable, void* value) {
-  return NPERR_NO_ERROR;
-}
-
-NPError ChromotingPlugin::SetValue(NPNVariable variable, void* value) {
-  return NPERR_NO_ERROR;
 }
 
 bool ChromotingPlugin::ParseUrl(const std::string& url,
