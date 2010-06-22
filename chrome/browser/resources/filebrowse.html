@@ -1244,7 +1244,7 @@ function showImage(path) {
       photoPreviewElement.src = 'file://' + path;
     }
   } else {
-    chrome.send('openNewFullWindow', ['file://' + path]);
+    chrome.send('openNewFullWindow', ['chrome://slideshow#' + path]);
   }
 }
 
