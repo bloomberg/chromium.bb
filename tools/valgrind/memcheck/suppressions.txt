@@ -2148,6 +2148,32 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
+   bug_32273_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC12ChannelProxy4SendEPNS_7MessageE
+   fun:_ZN3IPC11SyncChannel15SendWithTimeoutEPNS_7MessageEi
+   fun:_ZN3IPC11SyncChannel4SendEPNS_7MessageE
+   fun:_ZN24BrowserRenderProcessHost4SendEPN3IPC7MessageE
+   fun:_ZN16RenderWidgetHost4SendEPN3IPC7MessageE
+   fun:_ZN14RenderViewHost27ExecuteJavascriptInWebFrameERKSbIwSt11char_traitsIwESaIwEES5_
+   fun:_ZN5DOMUI17ExecuteJavascriptERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN5DOMUI22CallJavascriptFunctionERKSbIwSt11char_traitsIwESaIwEERK5Value
+   fun:_ZN20ShownSectionsHandler7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN11PrefService13FireObserversEPKw
+   fun:_ZN11PrefService22FireObserversIfChangedEPKwPK5Value
+   fun:_ZN11PrefService10SetIntegerEPKwi
+   fun:_ZN20ShownSectionsHandler26SetFirstAppLauncherRunPrefEP11PrefService
+   fun:_ZN16NTPResourceCache16CreateNewTabHTMLEv
+   fun:_ZN16NTPResourceCache13GetNewTabHTMLEb
+   fun:_ZN8NewTabUI16NewTabHTMLSource16StartDataRequestERKSsbi
+   fun:_Z16DispatchToMethodIN20ChromeURLDataManager10DataSourceEMS1_FvRKSsbiESsbiEvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN14RunnableMethodIN20ChromeURLDataManager10DataSourceEMS1_FvRKSsbiE6Tuple3ISsbiEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+}
+{
    bug_32299
    Memcheck:Leak
    fun:malloc
