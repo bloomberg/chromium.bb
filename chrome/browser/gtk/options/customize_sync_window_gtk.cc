@@ -53,8 +53,20 @@ class CustomizeSyncWindowGtk {
 
   CHROMEGTK_CALLBACK_0(CustomizeSyncWindowGtk, void, OnCheckboxClicked);
 
+  // Utility methods to safely determine the state of optional checkboxes.
+  static bool BoxChecked(GtkWidget* check_box) {
+    return check_box &&
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_box));
+  }
+  bool BookmarksChecked() const { return BoxChecked(bookmarks_check_box_); }
+  bool PreferencesChecked() const { return BoxChecked(preferences_check_box_); }
+  bool ThemesChecked() const { return BoxChecked(themes_check_box_); }
+  bool ExtensionsChecked() const { return BoxChecked(extensions_check_box_); }
+  bool AutofillChecked() const { return BoxChecked(autofill_check_box_); }
+  bool TypedUrlsChecked() const { return BoxChecked(typed_urls_check_box_); }
+
   // The customize sync dialog.
-  GtkWidget *dialog_;
+  GtkWidget* dialog_;
 
   Profile* profile_;
 
@@ -64,6 +76,7 @@ class CustomizeSyncWindowGtk {
   GtkWidget* themes_check_box_;
   GtkWidget* extensions_check_box_;
   GtkWidget* autofill_check_box_;
+  GtkWidget* typed_urls_check_box_;
 
   // Helper object to manage accessibility metadata.
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
@@ -84,7 +97,8 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
       preferences_check_box_(NULL),
       themes_check_box_(NULL),
       extensions_check_box_(NULL),
-      autofill_check_box_(NULL) {
+      autofill_check_box_(NULL),
+      typed_urls_check_box_(NULL) {
   syncable::ModelTypeSet registered_types;
   profile_->GetProfileSyncService()->GetRegisteredDataTypes(&registered_types);
   syncable::ModelTypeSet preferred_types;
@@ -150,6 +164,12 @@ CustomizeSyncWindowGtk::CustomizeSyncWindowGtk(Profile* profile)
                                       autofill_checked);
   }
 
+  if (registered_types.count(syncable::TYPED_URLS)) {
+    bool typed_urls_checked = preferred_types.count(syncable::TYPED_URLS) != 0;
+    typed_urls_check_box_ = AddCheckbox(vbox, IDS_SYNC_DATATYPE_TYPED_URLS,
+                                        typed_urls_checked);
+  }
+
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), vbox, FALSE, FALSE, 0);
 
   gtk_widget_realize(dialog_);
@@ -175,17 +195,8 @@ void CustomizeSyncWindowGtk::Show() {
 
 bool CustomizeSyncWindowGtk::ClickOk() {
 
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bookmarks_check_box_)) ||
-      (preferences_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-           preferences_check_box_))) ||
-      (themes_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_))) ||
-      (extensions_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-           extensions_check_box_))) ||
-      (autofill_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_)))) {
+  if (BookmarksChecked() || PreferencesChecked() || ThemesChecked() ||
+      ExtensionsChecked() || AutofillChecked() || TypedUrlsChecked()) {
     Accept();
     gtk_widget_destroy(GTK_WIDGET(dialog_));
     return true;
@@ -223,39 +234,18 @@ GtkWidget* CustomizeSyncWindowGtk::AddCheckbox(GtkWidget* parent, int label_id,
 bool CustomizeSyncWindowGtk::Accept() {
   syncable::ModelTypeSet preferred_types;
 
-  bool bookmarks_enabled = gtk_toggle_button_get_active(
-      GTK_TOGGLE_BUTTON(bookmarks_check_box_));
-  if (bookmarks_enabled) {
+  if (BookmarksChecked())
     preferred_types.insert(syncable::BOOKMARKS);
-  }
-  if (preferences_check_box_) {
-    bool preferences_enabled = gtk_toggle_button_get_active(
-        GTK_TOGGLE_BUTTON(preferences_check_box_));
-    if (preferences_enabled) {
-      preferred_types.insert(syncable::PREFERENCES);
-    }
-  }
-  if (themes_check_box_) {
-    bool themes_enabled = gtk_toggle_button_get_active(
-        GTK_TOGGLE_BUTTON(themes_check_box_));
-    if (themes_enabled) {
-      preferred_types.insert(syncable::THEMES);
-    }
-  }
-  if (extensions_check_box_) {
-    bool extensions_enabled = gtk_toggle_button_get_active(
-        GTK_TOGGLE_BUTTON(extensions_check_box_));
-    if (extensions_enabled) {
-      preferred_types.insert(syncable::EXTENSIONS);
-    }
-  }
-  if (autofill_check_box_) {
-    bool autofill_enabled = gtk_toggle_button_get_active(
-      GTK_TOGGLE_BUTTON(autofill_check_box_));
-    if (autofill_enabled) {
-      preferred_types.insert(syncable::AUTOFILL);
-    }
-  }
+  if (PreferencesChecked())
+    preferred_types.insert(syncable::PREFERENCES);
+  if (ThemesChecked())
+    preferred_types.insert(syncable::THEMES);
+  if (ExtensionsChecked())
+    preferred_types.insert(syncable::EXTENSIONS);
+  if (AutofillChecked())
+    preferred_types.insert(syncable::AUTOFILL);
+  if (TypedUrlsChecked())
+    preferred_types.insert(syncable::TYPED_URLS);
 
   profile_->GetProfileSyncService()->ChangePreferredDataTypes(preferred_types);
   return true;
@@ -272,28 +262,16 @@ void CustomizeSyncWindowGtk::OnWindowDestroy(GtkWidget* widget,
 void CustomizeSyncWindowGtk::OnResponse(
     GtkDialog* dialog, gint response_id,
     CustomizeSyncWindowGtk* customize_sync_window) {
-  if (response_id == GTK_RESPONSE_OK) {
+  if (response_id == GTK_RESPONSE_OK)
     customize_sync_window->ClickOk();
-  } else if (response_id == GTK_RESPONSE_CANCEL) {
+  else if (response_id == GTK_RESPONSE_CANCEL)
     customize_sync_window->ClickCancel();
-  }
 }
 
 // Deactivate the "OK" button if you uncheck all the data types.
 void CustomizeSyncWindowGtk::OnCheckboxClicked(GtkWidget* widget) {
-  bool any_datatypes_selected =
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bookmarks_check_box_)) ||
-      (preferences_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-           preferences_check_box_))) ||
-      (themes_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(themes_check_box_))) ||
-      (extensions_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-           extensions_check_box_))) ||
-      (autofill_check_box_ &&
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(autofill_check_box_)));
-  if (any_datatypes_selected) {
+  if (BookmarksChecked() || PreferencesChecked() || ThemesChecked() ||
+      ExtensionsChecked() || AutofillChecked() || TypedUrlsChecked()) {
     gtk_dialog_set_response_sensitive(
         GTK_DIALOG(customize_sync_window->dialog_), GTK_RESPONSE_OK, TRUE);
   } else {
@@ -308,22 +286,20 @@ void CustomizeSyncWindowGtk::OnCheckboxClicked(GtkWidget* widget) {
 void ShowCustomizeSyncWindow(Profile* profile) {
   DCHECK(profile);
   // If there's already an existing window, use it.
-  if (!customize_sync_window) {
+  if (!customize_sync_window)
     customize_sync_window = new CustomizeSyncWindowGtk(profile);
-  }
+
   customize_sync_window->Show();
 }
 
 bool CustomizeSyncWindowOk() {
-  if (customize_sync_window) {
+  if (customize_sync_window)
     return customize_sync_window->ClickOk();
-  } else {
-    return true;
-  }
+
+  return true;
 }
 
 void CustomizeSyncWindowCancel() {
-  if (customize_sync_window) {
+  if (customize_sync_window)
     customize_sync_window->ClickCancel();
-  }
 }
