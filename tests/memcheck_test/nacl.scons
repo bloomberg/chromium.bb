@@ -9,9 +9,6 @@ Import('env')
 if ARGUMENTS.get('bitcode'):
   Return()
 
-# This is to make ARM compile which does not automatically link in pthread.
-env.Append(LIBS=['c', 'nacl'])
-
 env.ComponentProgram('memcheck_test.nexe', 'memcheck_test.c')
 node = env.CommandSelLdrTestNacl(
     'memcheck_test.out',

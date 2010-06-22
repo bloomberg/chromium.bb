@@ -30,10 +30,5 @@
 
 Import('env')
 
-# NOTE: make sure we can compile these benchmarks without libsrpc
-#       sadly this does not do anything on x86 since libsrpc
-#       is added by the driver
-env.Replace(LIBS=['c', 'nacl'])
-
 env.ComponentProgram('loop.nexe', 'loop.cc')
 

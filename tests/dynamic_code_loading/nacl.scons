@@ -18,8 +18,6 @@ def GetLinkFlag(env):
   else:
     return '-Wl,--section-start,.rodata=0x1000000'
 
-# Using the default set of libraries fails to link in the ARM build.
-env.Replace(LIBS=['c', 'nacl'])
 # for building the tests
 env.Append(LINKFLAGS=GetLinkFlag(env))
 

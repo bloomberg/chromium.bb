@@ -9,10 +9,7 @@ Import('env')
 if ARGUMENTS.get('bitcode'):
   Return()
 
-# NOTE: make sure we can compile these benchmarks without libsrpc
-#       sadly this does not do anything on x86 since libsrpc
-#       is added by the driver
-env.Replace(LIBS=['c', 'nacl', 'google_nacl_platform', 'gio', 'pthread'])
+env.Replace(EXTRA_LIBS=['google_nacl_platform', 'gio', 'pthread'])
 
 env.ComponentProgram('nacl_log.nexe', 'nacl_log.c')
 

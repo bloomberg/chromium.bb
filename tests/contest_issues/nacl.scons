@@ -31,11 +31,11 @@
 Import('env')
 
 env.ComponentProgram('issue52.nexe', ['issue52.c'],
-                     LIBS=['srpc', 'm', 'pthread'])
+                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.ComponentProgram('issue55.nexe', ['issue55.c'],
-                     LIBS=['srpc', 'm', 'pthread'])
+                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.ComponentProgram('issue63.nexe', ['issue63.c'],
-                     LIBS=['srpc', 'm', 'pthread'])
+                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Alias('contest_issue_regression_tests',
           env.Replicate('$STAGING_DIR', ['issue42.html',
                                          'issue44.html',

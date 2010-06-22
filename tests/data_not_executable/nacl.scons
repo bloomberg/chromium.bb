@@ -6,9 +6,6 @@
 
 Import('env')
 
-# Using the default set of libraries fails to link in the ARM build.
-env.Replace(LIBS=['c', 'nacl'])
-
 env.ComponentProgram('execute_data.nexe', ['execute_data.c'])
 
 # We check the output to ensure that the process doesn't die for an

@@ -7,10 +7,7 @@ import os
 
 Import('env')
 
-# NOTE: make sure we can compile these benchmarks without libsrpc
-#       sadly this does not do anything on x86 since libsrpc
-#       is added by the driver
-env.Replace(LIBS=['pthread', 'c', 'nacl'])
+env.Replace(EXTRA_LIBS=['pthread'])
 
 env.ComponentProgram('egyptian_cotton.nexe', 'egyptian_cotton.c')
 
