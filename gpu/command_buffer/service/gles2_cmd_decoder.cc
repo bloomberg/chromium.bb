@@ -1759,34 +1759,6 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   if (offscreen_target_color_texture_->size() == pending_offscreen_size_)
     return true;
 
-  if (parent_) {
-    // Create the saved offscreen color texture (only accessible to parent).
-    offscreen_saved_color_texture_->AllocateStorage(pending_offscreen_size_);
-
-    // Attach the saved offscreen color texture to a frame buffer so we can
-    // clear it with glClear.
-    offscreen_target_frame_buffer_->AttachRenderTexture(
-        offscreen_saved_color_texture_.get());
-    if (offscreen_target_frame_buffer_->CheckStatus() !=
-        GL_FRAMEBUFFER_COMPLETE) {
-      return false;
-    }
-
-    // TODO(apatrick): Fix this once ANGLE supports shared contexts.
-    // Clear the saved offscreen color texture. Use default GL context
-    // to ensure clear is not affected by client set state.
-    if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-      ScopedDefaultGLContext scoped_context(this);
-      glBindFramebufferEXT(GL_FRAMEBUFFER,
-                           offscreen_target_frame_buffer_->id());
-      glClear(GL_COLOR_BUFFER_BIT);
-      glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-
-      if (glGetError() != GL_NO_ERROR)
-        return false;
-    }
-  }
-
   // Reallocate the offscreen target buffers.
   if (!offscreen_target_color_texture_->AllocateStorage(
       pending_offscreen_size_)) {
@@ -1849,7 +1821,7 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   }
 
   if (parent_) {
-    // Create the saved offscreen color texture (only accessible to parent).
+    // Adjust the saved offscreen color texture (only accessible to parent).
     offscreen_saved_color_texture_->AllocateStorage(pending_offscreen_size_);
 
     // Update the info about the offscreen saved color texture in the parent.
@@ -1873,6 +1845,33 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
         GL_RGBA,
         GL_UNSIGNED_BYTE);
   }
+
+  // Attach the saved offscreen color texture to a frame buffer so we can
+  // clear it with glClear.
+  offscreen_target_frame_buffer_->AttachRenderTexture(
+      offscreen_saved_color_texture_.get());
+  if (offscreen_target_frame_buffer_->CheckStatus() !=
+      GL_FRAMEBUFFER_COMPLETE) {
+    return false;
+  }
+
+  // TODO(apatrick): Fix this once ANGLE supports shared contexts.
+  // Clear the saved offscreen color texture. Use default GL context
+  // to ensure clear is not affected by client set state.
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    ScopedDefaultGLContext scoped_context(this);
+    glBindFramebufferEXT(GL_FRAMEBUFFER,
+                         offscreen_target_frame_buffer_->id());
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+    if (glGetError() != GL_NO_ERROR)
+      return false;
+  }
+
+  // Re-attach the offscreen render texture to the target frame buffer.
+  offscreen_target_frame_buffer_->AttachRenderTexture(
+      offscreen_target_color_texture_.get());
 
   return true;
 }
