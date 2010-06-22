@@ -286,6 +286,21 @@ extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
 
 }  // namespace
 
+bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
+                           UINT flags, bool* exit_now) {
+  // We wrap the call to MessageBoxW with a SEH handler because it some
+  // machines with CursorXP, PeaDict or with FontExplorer installed it crashes
+  // uncontrollably here. Being this a best effort deal we better go away.
+  __try {
+    *exit_now = (IDOK != ::MessageBoxW(NULL, text, caption, flags));
+  } __except(EXCEPTION_EXECUTE_HANDLER) {
+    // Its not safe to continue executing, exit silently here.
+    ::ExitProcess(ResultCodes::RESPAWN_FAILED);
+  }
+
+  return true;
+}
+
 // This function is executed by the child process that DumpDoneCallback()
 // spawned and basically just shows the 'chrome has crashed' dialog if
 // the CHROME_CRASHED environment variable is present.
@@ -300,40 +315,26 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   if (!len)
     return true;
 
-  // We wrap the call to MessageBoxW with a SEH handler because it some
-  // machines with CursorXP, PeaDict or with FontExplorer installed it crashes
-  // uncontrollably here. Being this a best effort deal we better go away.
-#pragma warning(push)
-#pragma warning(disable:4509)  // warning: SEH used but dlg_strings has a dtor.
-  __try {
-    wchar_t* restart_data = new wchar_t[len + 1];
-    ::GetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
-                              restart_data, len);
-    restart_data[len] = 0;
-    // The CHROME_RESTART var contains the dialog strings separated by '|'.
-    // See PrepareRestartOnCrashEnviroment() function for details.
-    std::vector<std::wstring> dlg_strings;
-    SplitString(restart_data, L'|', &dlg_strings);
-    delete[] restart_data;
-    if (dlg_strings.size() < 3)
-      return true;
+  wchar_t* restart_data = new wchar_t[len + 1];
+  ::GetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
+                            restart_data, len);
+  restart_data[len] = 0;
+  // The CHROME_RESTART var contains the dialog strings separated by '|'.
+  // See PrepareRestartOnCrashEnviroment() function for details.
+  std::vector<std::wstring> dlg_strings;
+  SplitString(restart_data, L'|', &dlg_strings);
+  delete[] restart_data;
+  if (dlg_strings.size() < 3)
+    return true;
 
-    // If the UI layout is right-to-left, we need to pass the appropriate MB_XXX
-    // flags so that an RTL message box is displayed.
-    UINT flags = MB_OKCANCEL | MB_ICONWARNING;
-    if (dlg_strings[2] == ASCIIToWide(env_vars::kRtlLocale))
-      flags |= MB_RIGHT | MB_RTLREADING;
+  // If the UI layout is right-to-left, we need to pass the appropriate MB_XXX
+  // flags so that an RTL message box is displayed.
+  UINT flags = MB_OKCANCEL | MB_ICONWARNING;
+  if (dlg_strings[2] == ASCIIToWide(env_vars::kRtlLocale))
+    flags |= MB_RIGHT | MB_RTLREADING;
 
-    // Show the dialog now. It is ok if another chrome is started by the
-    // user since we have not initialized the databases.
-    *exit_now = (IDOK != ::MessageBoxW(NULL, dlg_strings[1].c_str(),
-                                       dlg_strings[0].c_str(), flags));
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
-    // Its not safe to continue executing, exit silently here.
-    ::ExitProcess(ResultCodes::RESPAWN_FAILED);
-  }
-#pragma warning(pop)
-  return true;
+  return WrapMessageBoxWithSEH(dlg_strings[1].c_str(), dlg_strings[0].c_str(),
+                               flags, exit_now);
 }
 
 static DWORD __stdcall InitCrashReporterThread(void* param) {
