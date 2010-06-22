@@ -124,6 +124,10 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
 
   // Allocate a frame buffer ID with respect to the parent.
   if (parent_) {
+    // Flush any remaining commands in the parent context to make sure the
+    // texture id accounting stays consistent.
+    int32 token = parent_->gles2_helper_->InsertToken();
+    parent_->gles2_helper_->WaitForToken(token);
     parent_texture_id_ = parent_->gles2_implementation_->MakeTextureId();
   }
 
