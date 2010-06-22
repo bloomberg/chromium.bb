@@ -34,6 +34,10 @@
 // See http://crbug.com/40039 for details.
 #define MAYBE_KeyEvents DISABLED_KeyEvents
 
+// See http://crbug.com/47089 for details.
+#define MAYBE_CloseWithModalDialog DISABLED_CloseWithModalDialog
+#define MAYBE_CloseMenuAfterClosingContextMenu \
+        DISABLED_CloseMenuAfterClosingContextMenu
 #else
 
 #define MAYBE_DND DND
@@ -41,6 +45,8 @@
 #define MAYBE_DNDBackToOriginatingMenu DNDBackToOriginatingMenu
 #define MAYBE_DNDBackToOriginatingMenu DNDBackToOriginatingMenu
 #define MAYBE_KeyEvents KeyEvents
+#define MAYBE_CloseWithModalDialog CloseWithModalDialog
+#define MAYBE_CloseMenuAfterClosingContextMenu CloseMenuAfterClosingContextMenu
 
 #endif
 
@@ -1019,7 +1025,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest11, CloseMenuAfterClosingContextMenu)
+VIEW_TEST(BookmarkBarViewTest11, MAYBE_CloseMenuAfterClosingContextMenu)
 
 // Tests showing a modal dialog from a context menu.
 class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
@@ -1099,7 +1105,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest12, CloseWithModalDialog)
+VIEW_TEST(BookmarkBarViewTest12, MAYBE_CloseWithModalDialog)
 
 // Tests clicking on the separator of a context menu (this is for coverage of
 // bug 17862).

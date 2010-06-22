@@ -991,6 +991,12 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
     return false;
   }
 
+  if (has_capture_ && event->mode == GDK_CROSSING_GRAB) {
+    // Doing a grab results an async enter event, regardless of where the mouse
+    // is. We don't want to generate a mouse move in this case.
+    return false;
+  }
+
   if (!last_mouse_event_was_move_ && !is_mouse_down_) {
     // When a mouse button is pressed gtk generates a leave, enter, press.
     // RootView expects to get a mouse move before a press, otherwise enter is

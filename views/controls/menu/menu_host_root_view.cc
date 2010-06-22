@@ -28,7 +28,7 @@ bool MenuHostRootView::OnMousePressed(const MouseEvent& event) {
       ((event.x() < 0 || event.y() < 0 || event.x() >= width() ||
         event.y() >= height()) ||
        !RootView::OnMousePressed(event));
-  if (forward_drag_to_menu_controller_)
+  if (forward_drag_to_menu_controller_ && GetMenuController())
     GetMenuController()->OnMousePressed(submenu_, event);
   return true;
 }
@@ -37,7 +37,7 @@ bool MenuHostRootView::OnMouseDragged(const MouseEvent& event) {
   if (suspend_events_)
     return true;
 
-  if (forward_drag_to_menu_controller_) {
+  if (forward_drag_to_menu_controller_ && GetMenuController()) {
 #ifdef DEBUG_MENU
     DLOG(INFO) << " MenuHostRootView::OnMouseDragged source=" << submenu_;
 #endif
@@ -53,7 +53,7 @@ void MenuHostRootView::OnMouseReleased(const MouseEvent& event,
     return;
 
   RootView::OnMouseReleased(event, canceled);
-  if (forward_drag_to_menu_controller_) {
+  if (forward_drag_to_menu_controller_ && GetMenuController()) {
     forward_drag_to_menu_controller_ = false;
     if (canceled) {
       GetMenuController()->Cancel(MenuController::EXIT_ALL);
@@ -68,7 +68,8 @@ void MenuHostRootView::OnMouseMoved(const MouseEvent& event) {
     return;
 
   RootView::OnMouseMoved(event);
-  GetMenuController()->OnMouseMoved(submenu_, event);
+  if (GetMenuController())
+    GetMenuController()->OnMouseMoved(submenu_, event);
 }
 
 void MenuHostRootView::ProcessOnMouseExited() {

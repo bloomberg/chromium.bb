@@ -70,7 +70,12 @@ void MenuHostGtk::HideMenuHost() {
 void MenuHostGtk::DestroyMenuHost() {
   HideMenuHost();
   destroying_ = true;
-  CloseNow();
+  // We use Close instead of CloseNow to delay the deletion. If this invoked
+  // during a key press event, gtk still generates the release event and the
+  // AcceleratorHandler will use the window in the event. If we destroy the
+  // window now, it means AcceleratorHandler attempts to use a window that has
+  // been destroyed.
+  Close();
 }
 
 void MenuHostGtk::SetMenuHostBounds(const gfx::Rect& bounds) {
