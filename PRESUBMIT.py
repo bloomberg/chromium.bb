@@ -23,6 +23,7 @@ def CheckChangeOnUpload(input_api, output_api):
   output.extend(input_api.canned_checks.RunPythonUnitTests(input_api,
                                                            output_api,
                                                            UNIT_TESTS))
+  output.extend(WasGitClUploadHookModified(input_api, output_api))
   return output
 
 
@@ -33,4 +34,14 @@ def CheckChangeOnCommit(input_api, output_api):
                                                            UNIT_TESTS))
   output.extend(input_api.canned_checks.CheckDoNotSubmit(input_api,
                                                          output_api))
+  output.extend(WasGitClUploadHookModified(input_api, output_api))
   return output
+
+def WasGitClUploadHookModified(input_api, output_api):
+  for affected_file in input_api.AffectedSourceFiles(None):
+    if (input_api.os_path.basename(affected_file.LocalPath()) ==
+        'git-cl-upload-hook'):
+      return [output_api.PresubmitPromptWarning(
+          'Don\'t forget to fix git-cl to download the newest version of '
+          'git-cl-upload-hook')]
+  return []
