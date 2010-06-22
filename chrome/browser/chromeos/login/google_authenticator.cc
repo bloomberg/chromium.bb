@@ -355,7 +355,10 @@ std::string GoogleAuthenticator::SaltAsAscii() {
 }
 
 void GoogleAuthenticator::Cancel() {
-  if (!fetch_completed_ && fetcher_) {
+  if (fetch_completed_)
+   return;
+
+  if (fetcher_) {
     delete fetcher_;
     fetcher_ = NULL;
   }
