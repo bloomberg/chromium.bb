@@ -402,7 +402,7 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
       command_updater_(command_updater),
       popup_window_mode_(popup_window_mode),
       force_hidden_(false),
-      tracking_click_(false),
+      tracking_click_(),
       tracking_double_click_(false),
       double_click_time_(0),
       can_discard_mousemove_(false),
@@ -1394,13 +1394,8 @@ void AutocompleteEditViewWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
 }
 
 void AutocompleteEditViewWin::OnLButtonDown(UINT keys, const CPoint& point) {
+  TrackMousePosition(kLeft, point);
   if (gaining_focus_.get()) {
-    // This click is giving us focus, so we need to track how much the mouse
-    // moves to see if it's a drag or just a click. Clicks should select all
-    // the text.
-    tracking_click_ = true;
-    mouse_down_point_ = point;
-
     // When Chrome was already the activated app, we haven't reached
     // OnSetFocus() yet.  When we get there, don't restore the saved selection,
     // since it will just screw up the user's interaction with the edit.
@@ -1450,17 +1445,38 @@ void AutocompleteEditViewWin::OnLButtonUp(UINT keys, const CPoint& point) {
   DefWindowProc(WM_LBUTTONUP, keys,
                 MAKELPARAM(ClipXCoordToVisibleText(point.x, false), point.y));
 
-  // When the user has clicked and released to give us focus, select all.
-  if (tracking_click_ && !win_util::IsDrag(mouse_down_point_, point)) {
-    // Select all in the reverse direction so as not to scroll the caret
-    // into view and shift the contents jarringly.
-    SelectAll(true);
-    possible_drag_ = false;
-  }
+  SelectAllIfNecessary(kLeft, point);
 
-  tracking_click_ = false;
+  tracking_click_[kLeft] = false;
 
-  UpdateDragDone(keys);
+  possible_drag_ = false;
+}
+
+void AutocompleteEditViewWin::OnMButtonDblClk(UINT /*keys*/,
+                                              const CPoint& /*point*/) {
+  gaining_focus_.reset();  // See NOTE in OnMouseActivate().
+
+  // By default, the edit responds to middle-clicks by capturing the mouse and
+  // ignoring all subsequent events until it receives another click (of any of
+  // the left, middle, or right buttons).  This bizarre behavior is not only
+  // useless but can cause the UI to appear unresponsive if a user accidentally
+  // middle-clicks the edit (instead of a tab above it), so we purposefully eat
+  // this message (instead of calling SetMsgHandled(false)) to avoid triggering
+  // this.
+}
+
+void AutocompleteEditViewWin::OnMButtonDown(UINT /*keys*/,
+                                            const CPoint& /*point*/) {
+  tracking_double_click_ = false;
+
+  // See note in OnMButtonDblClk above.
+}
+
+void AutocompleteEditViewWin::OnMButtonUp(UINT /*keys*/,
+                                          const CPoint& /*point*/) {
+  possible_drag_ = false;
+
+  // See note in OnMButtonDblClk above.
 }
 
 LRESULT AutocompleteEditViewWin::OnMouseActivate(HWND window,
@@ -1471,20 +1487,21 @@ LRESULT AutocompleteEditViewWin::OnMouseActivate(HWND window,
   LRESULT result = DefWindowProc(WM_MOUSEACTIVATE,
                                  reinterpret_cast<WPARAM>(window),
                                  MAKELPARAM(hit_test, mouse_message));
-  // Check if we're getting focus from a left click.  We have to do this here
-  // rather than in OnLButtonDown() since in many scenarios OnSetFocus() will be
-  // reached before OnLButtonDown(), preventing us from detecting this properly
+  // Check if we're getting focus from a click.  We have to do this here rather
+  // than in OnXButtonDown() since in many scenarios OnSetFocus() will be
+  // reached before OnXButtonDown(), preventing us from detecting this properly
   // there.  Also in those cases, we need to already know in OnSetFocus() that
   // we should not restore the saved selection.
-  if (!model_->has_focus() && (mouse_message == WM_LBUTTONDOWN) &&
+  if (!model_->has_focus() &&
+      ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN)) &&
       (result == MA_ACTIVATE)) {
     DCHECK(!gaining_focus_.get());
     gaining_focus_.reset(new ScopedFreeze(this, GetTextObjectModel()));
-    // NOTE: Despite |mouse_message| being WM_LBUTTONDOWN here, we're not
-    // guaranteed to call OnLButtonDown() later!  Specifically, if this is the
+    // NOTE: Despite |mouse_message| being WM_XBUTTONDOWN here, we're not
+    // guaranteed to call OnXButtonDown() later!  Specifically, if this is the
     // second click of a double click, we'll reach here but later call
-    // OnLButtonDblClk().  Make sure |gaining_focus_| gets reset both places, or
-    // we'll have visual glitchiness and then DCHECK failures.
+    // OnXButtonDblClk().  Make sure |gaining_focus_| gets reset both places,
+    // or we'll have visual glitchiness and then DCHECK failures.
 
     // Don't restore saved selection, it will just screw up our interaction
     // with this edit.
@@ -1501,10 +1518,10 @@ void AutocompleteEditViewWin::OnMouseMove(UINT keys, const CPoint& point) {
     return;
   }
 
-  if (tracking_click_ && !win_util::IsDrag(mouse_down_point_, point))
+  if (tracking_click_[kLeft] && !win_util::IsDrag(click_point_[kLeft], point))
     return;
 
-  tracking_click_ = false;
+  tracking_click_[kLeft] = false;
 
   // Return quickly if this can't change the selection/cursor, so we don't
   // create a ScopedFreeze (and thus do an UpdateWindow()) on every
@@ -1630,25 +1647,6 @@ void AutocompleteEditViewWin::OnPaint(HDC bogus_hdc) {
   edit_hwnd = old_edit_hwnd;
 }
 
-void AutocompleteEditViewWin::OnNonLButtonDown(UINT keys,
-                                               const CPoint& point) {
-  // Interestingly, the edit doesn't seem to cancel triple clicking when the
-  // x-buttons (which usually means "thumb buttons") are pressed, so we only
-  // call this for M and R down.
-  tracking_double_click_ = false;
-
-  OnPossibleDrag(point);
-
-  SetMsgHandled(false);
-}
-
-void AutocompleteEditViewWin::OnNonLButtonUp(UINT keys, const CPoint& point) {
-  UpdateDragDone(keys);
-
-  // Let default handler have a crack at this.
-  SetMsgHandled(false);
-}
-
 void AutocompleteEditViewWin::OnPaste() {
   // Replace the selection if we have something to paste.
   const std::wstring text(GetClipboardText());
@@ -1663,6 +1661,27 @@ void AutocompleteEditViewWin::OnPaste() {
     text_before_change_.clear();
     ReplaceSel(text.c_str(), true);
   }
+}
+
+void AutocompleteEditViewWin::OnRButtonDblClk(UINT /*keys*/,
+                                              const CPoint& /*point*/) {
+  gaining_focus_.reset();  // See NOTE in OnMouseActivate().
+  SetMsgHandled(false);
+}
+
+void AutocompleteEditViewWin::OnRButtonDown(UINT /*keys*/,
+                                            const CPoint& point) {
+  TrackMousePosition(kRight, point);
+  tracking_double_click_ = false;
+  possible_drag_ = false;
+  gaining_focus_.reset();
+  SetMsgHandled(false);
+}
+
+void AutocompleteEditViewWin::OnRButtonUp(UINT /*keys*/, const CPoint& point) {
+  SelectAllIfNecessary(kRight, point);
+  tracking_click_[kRight] = false;
+  SetMsgHandled(false);
 }
 
 void AutocompleteEditViewWin::OnSetFocus(HWND focus_wnd) {
@@ -2293,7 +2312,7 @@ ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
 }
 
 void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
-  if (initiated_drag_ || !win_util::IsDrag(mouse_down_point_, point))
+  if (initiated_drag_ || !win_util::IsDrag(click_point_[kLeft], point))
     return;
 
   OSExchangeData data;
@@ -2313,7 +2332,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   {
     ScopedFreeze freeze(this, GetTextObjectModel());
     DefWindowProc(WM_LBUTTONUP, 0,
-                  MAKELPARAM(mouse_down_point_.x, mouse_down_point_.y));
+                  MAKELPARAM(click_point_[kLeft].x, click_point_[kLeft].y));
     SetSelectionRange(sel);
   }
 
@@ -2378,14 +2397,14 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   }
 
   initiated_drag_ = true;
-  tracking_click_ = false;
+  tracking_click_[kLeft] = false;
 }
 
 void AutocompleteEditViewWin::OnPossibleDrag(const CPoint& point) {
   if (possible_drag_)
     return;
 
-  mouse_down_point_ = point;
+  click_point_[kLeft] = point;
   initiated_drag_ = false;
 
   CHARRANGE selection;
@@ -2399,11 +2418,6 @@ void AutocompleteEditViewWin::OnPossibleDrag(const CPoint& point) {
     possible_drag_ = (point.x >= min_sel_location.x) &&
                      (point.x < max_sel_location.x);
   }
-}
-
-void AutocompleteEditViewWin::UpdateDragDone(UINT keys) {
-  possible_drag_ = (possible_drag_ &&
-                    ((keys & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) != 0));
 }
 
 void AutocompleteEditViewWin::RepaintDropHighlight(int position) {
@@ -2440,4 +2454,27 @@ void AutocompleteEditViewWin::BuildContextMenu() {
                                                 IDS_EDIT_SEARCH_ENGINES);
   }
   context_menu_.reset(new views::Menu2(context_menu_contents_.get()));
+}
+
+void AutocompleteEditViewWin::SelectAllIfNecessary(MouseButton button,
+                                                   const CPoint& point) {
+  // When the user has clicked and released to give us focus, select all.
+  if (tracking_click_[button] &&
+      !win_util::IsDrag(click_point_[button], point)) {
+    // Select all in the reverse direction so as not to scroll the caret
+    // into view and shift the contents jarringly.
+    SelectAll(true);
+    possible_drag_ = false;
+  }
+}
+
+void AutocompleteEditViewWin::TrackMousePosition(MouseButton button,
+                                                 const CPoint& point) {
+  if (gaining_focus_.get()) {
+    // This click is giving us focus, so we need to track how much the mouse
+    // moves to see if it's a drag or just a click. Clicks should select all
+    // the text.
+    tracking_click_[button] = true;
+    click_point_[button] = point;
+  }
 }
