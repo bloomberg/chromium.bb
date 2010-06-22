@@ -30,6 +30,10 @@
  */
 
 /*
+ * NOTE: this file is almost obsolete as llc can now emit inline
+ *       code for the primitives
+ *
+ *
  * Implementations of miscellaneous intrinsics.
  * See http://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Atomic-Builtins.html
  */
@@ -110,3 +114,23 @@ __sync_fetch_and_add_4:
 
     bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
+
+
+/************************************************************************
+ * __sync_synchronize()
+ *
+ *  call to emulated a memory barrier.
+ *  TODO: This is a dummy to satisfy a link dependency of llvm's
+ *       new atomic ops pattern
+ *       It should be obsoleted with the rest of the file ASAP.
+ *
+ */
+
+.align NACL_ARM_BUNDLE_SIZE_LOG
+.global __sync_synchronize
+
+__sync_synchronize:
+    bic lr, lr, #NACL_CONTROL_FLOW_MASK
+    bx lr
+    nop
+    nop
