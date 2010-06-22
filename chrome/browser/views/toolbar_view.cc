@@ -149,7 +149,6 @@ void ToolbarView::Init(Profile* profile) {
   location_bar_ = new LocationBarView(profile, browser_->command_updater(),
       model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
           LocationBarView::POPUP : LocationBarView::NORMAL);
-  location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
 
   reload_ = new ReloadButton(location_bar_, browser_);
   reload_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
@@ -273,6 +272,18 @@ void ToolbarView::SetCollapsed(bool val) {
     location_bar_->PushForceHidden();
   else
     location_bar_->PopForceHidden();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ToolbarView, AccessibleToolbarView overrides:
+
+bool ToolbarView::SetToolbarFocus(
+    int view_storage_id, views::View* initial_focus) {
+  if (!AccessibleToolbarView::SetToolbarFocus(view_storage_id, initial_focus))
+    return false;
+
+  location_bar_->SetShowFocusRect(true);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -566,8 +577,15 @@ void ToolbarView::ThemeChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, protected:
 
+// Override this so that when the user presses F6 to rotate toolbar panes,
+// the location bar gets focus, not the first control in the toolbar.
 views::View* ToolbarView::GetDefaultFocusableChild() {
   return location_bar_;
+}
+
+void ToolbarView::RemoveToolbarFocus() {
+  AccessibleToolbarView::RemoveToolbarFocus();
+  location_bar_->SetShowFocusRect(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

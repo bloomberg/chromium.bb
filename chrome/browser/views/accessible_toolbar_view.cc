@@ -5,6 +5,7 @@
 #include "base/logging.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/native/native_view_host.h"
@@ -81,12 +82,6 @@ bool AccessibleToolbarView::SetToolbarFocusAndFocusDefault(
   return SetToolbarFocus(view_storage_id, GetDefaultFocusableChild());
 }
 
-void AccessibleToolbarView::RemoveToolbarFocusIfNoChildHasFocus() {
-  views::View* focused_view = focus_manager_->GetFocusedView();
-  if (toolbar_has_focus_ && (!focused_view || !IsParentOf(focused_view)))
-    RemoveToolbarFocus();
-}
-
 void AccessibleToolbarView::RemoveToolbarFocus() {
   focus_manager_->RemoveFocusChangeListener(this);
   toolbar_has_focus_ = false;
@@ -96,6 +91,12 @@ void AccessibleToolbarView::RemoveToolbarFocus() {
   focus_manager_->UnregisterAccelerator(escape_key_, this);
   focus_manager_->UnregisterAccelerator(left_key_, this);
   focus_manager_->UnregisterAccelerator(right_key_, this);
+}
+
+void AccessibleToolbarView::RemoveToolbarFocusIfNoChildHasFocus() {
+  views::View* focused_view = focus_manager_->GetFocusedView();
+  if (toolbar_has_focus_ && (!focused_view || !IsParentOf(focused_view)))
+    RemoveToolbarFocus();
 }
 
 void AccessibleToolbarView::RestoreLastFocusedView() {
@@ -142,10 +143,11 @@ views::FocusTraversable* AccessibleToolbarView::GetPaneFocusTraversable() {
 
 bool AccessibleToolbarView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  // Special case: don't handle arrows for native views, like the
-  // location bar's edit text view, which needs them for text editing.
+  // Special case: don't handle arrows for certain views, like the
+  // location bar's edit text view, which need them for text editing.
   views::View* focused_view = focus_manager_->GetFocusedView();
-  if (focused_view->GetClassName() == views::NativeViewHost::kViewClassName &&
+  if ((focused_view->GetClassName() == LocationBarView::kViewClassName ||
+       focused_view->GetClassName() == views::NativeViewHost::kViewClassName) &&
       (accelerator.GetKeyCode() == base::VKEY_LEFT ||
        accelerator.GetKeyCode() == base::VKEY_RIGHT)) {
     return false;

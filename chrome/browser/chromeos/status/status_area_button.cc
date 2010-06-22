@@ -27,6 +27,7 @@ void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     DrawPressed(canvas);
   }
   DrawIcon(canvas);
+  PaintFocusBorder(canvas);
 }
 
 gfx::Size StatusAreaButton::GetPreferredSize() {

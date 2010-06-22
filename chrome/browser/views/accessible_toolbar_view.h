@@ -31,13 +31,13 @@ class AccessibleToolbarView : public views::View,
   // if the user escapes. If |initial_focus| is not NULL, that control will get
   // the initial focus, if it's enabled and focusable. Returns true if
   // the toolbar was able to receive focus.
-  bool SetToolbarFocus(int view_storage_id, View* initial_focus);
+  virtual bool SetToolbarFocus(int view_storage_id, View* initial_focus);
 
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the default child. Focus will be restored
   // to the ViewStorage with id |view_storage_id| if the user escapes.
   // Returns true if the toolbar was able to receive focus.
-  bool SetToolbarFocusAndFocusDefault(int view_storage_id);
+  virtual bool SetToolbarFocusAndFocusDefault(int view_storage_id);
 
   // Overridden from views::View:
   virtual FocusTraversable* GetPaneFocusTraversable();
@@ -59,11 +59,12 @@ class AccessibleToolbarView : public views::View,
   // other than the first focusable child.
   virtual views::View* GetDefaultFocusableChild() { return NULL; }
 
+  // Remove toolbar focus.
+  virtual void RemoveToolbarFocus();
+
   // Remove toolbar focus unless a child (including indirect children)
   // still has the focus.
   void RemoveToolbarFocusIfNoChildHasFocus();
-
-  void RemoveToolbarFocus();
 
   void RestoreLastFocusedView();
 

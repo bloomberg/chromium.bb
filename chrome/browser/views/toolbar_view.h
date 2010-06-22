@@ -87,6 +87,9 @@ class ToolbarView : public AccessibleToolbarView,
   bool collapsed() const { return collapsed_; }
   void SetCollapsed(bool val);
 
+  // Overridden from AccessibleToolbarView
+  virtual bool SetToolbarFocus(int view_storage_id, View* initial_focus);
+
   // Overridden from Menu::BaseControllerDelegate:
   virtual bool GetAcceleratorInfo(int id, menus::Accelerator* accel);
 
@@ -125,9 +128,10 @@ class ToolbarView : public AccessibleToolbarView,
   virtual void ThemeChanged();
 
  protected:
-  // Override this so that when the user presses F6 to rotate toolbar panes,
-  // the location bar gets focus, not the first control in the toolbar.
+
+  // Overridden from AccessibleToolbarView
   virtual views::View* GetDefaultFocusableChild();
+  virtual void RemoveToolbarFocus();
 
  private:
   // Returns the number of pixels above the location bar in non-normal display.

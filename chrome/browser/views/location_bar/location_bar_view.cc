@@ -9,6 +9,7 @@
 #endif
 
 #include "app/drag_drop_types.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -29,6 +30,7 @@
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/skia_util.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/drag_utils.h"
 
@@ -42,6 +44,8 @@ using views::View;
 const int LocationBarView::kVertMargin = 2;
 const int LocationBarView::kEdgeThickness = 2;
 const int LocationBarView::kItemPadding = 3;
+const char LocationBarView::kViewClassName[] =
+    "browser/views/location_bar/LocationBarView";
 
 // Convenience: Total space at the edges of the bar.
 const int kEdgePadding =
@@ -94,6 +98,7 @@ LocationBarView::LocationBarView(Profile* profile,
       star_view_(NULL),
       mode_(mode),
       force_hidden_count_(0),
+      show_focus_rect_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(first_run_bubble_(this)) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
@@ -155,6 +160,8 @@ void LocationBarView::Init() {
   AddChildView(location_entry_view_);
   location_entry_view_->set_focus_view(this);
   location_entry_view_->Attach(location_entry_->GetNativeView());
+  location_entry_view_->SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_LOCATION));
 
   selected_keyword_view_ =
       new SelectedKeywordView(kSelectedKeywordBackgroundImages,
@@ -554,10 +561,24 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
     canvas->FillRectInt(color, bounds.x(), bounds.y(), bounds.width(),
                         bounds.height());
   }
+
+  if (show_focus_rect_ && HasFocus()) {
+    gfx::Rect r = location_entry_view_->bounds();
+#if defined(OS_WIN)
+    canvas->DrawFocusRect(r.x() - 1, r.y() - 1, r.width() + 2, r.height() + 2);
+#else
+    canvas->DrawFocusRect(r.x() - 1, r.y(), r.width() + 2, r.height());
+#endif
+  }
 }
 
 void LocationBarView::VisibleBoundsInRootChanged() {
   location_entry_->ClosePopup();
+}
+
+void LocationBarView::SetShowFocusRect(bool show) {
+  show_focus_rect_ = show;
+  SchedulePaint();
 }
 
 #if defined(OS_WIN)
@@ -837,6 +858,10 @@ void LocationBarView::ShowFirstRunBubbleInternal(
   FirstRunBubble::Show(profile_, GetWidget(), gfx::Rect(origin, gfx::Size()),
                        BubbleBorder::TOP_LEFT, bubble_type);
 #endif
+}
+
+std::string LocationBarView::GetClassName() const {
+  return kViewClassName;
 }
 
 bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {

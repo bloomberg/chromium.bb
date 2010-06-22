@@ -59,6 +59,9 @@ class LocationBarView : public LocationBar,
                         public views::DragController,
                         public AutocompleteEditController {
  public:
+  // The location bar view's class name.
+  static const char kViewClassName[];
+
   class Delegate {
    public:
     // Should return the current tab contents.
@@ -150,6 +153,11 @@ class LocationBarView : public LocationBar,
   // to close its popup.
   virtual void VisibleBoundsInRootChanged();
 
+  // Set if we should show a focus rect while the location entry field is
+  // focused. Used when the toolbar is in full keyboard accessibility mode.
+  // Repaints if necessary.
+  virtual void SetShowFocusRect(bool show);
+
 #if defined(OS_WIN)
   // Event Handlers
   virtual bool OnMousePressed(const views::MouseEvent& event);
@@ -170,6 +178,7 @@ class LocationBarView : public LocationBar,
   virtual std::wstring GetTitle() const;
 
   // Overridden from views::View:
+  virtual std::string GetClassName() const;
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
 
@@ -342,6 +351,10 @@ class LocationBarView : public LocationBar,
   // Counts the number of times consumers have asked us to be hidden.
   // We should actually be hidden iff this is greater than zero.
   int force_hidden_count_;
+
+  // True if we should show a focus rect while the location entry field is
+  // focused. Used when the toolbar is in full keyboard accessibility mode.
+  bool show_focus_rect_;
 
   // Used schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;

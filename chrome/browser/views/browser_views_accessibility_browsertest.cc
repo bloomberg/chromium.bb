@@ -57,16 +57,6 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
                browser()->window()->GetNativeHandle());
   }
 
-  // Retrieves and initializes an instance of LocationBarView.
-  LocationBarView* GetLocationBarView() {
-    BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
-
-    if (!browser_window_testing)
-      return NULL;
-
-    return GetBrowserWindowTesting()->GetLocationBarView();
-  }
-
   // Retrieves and initializes an instance of ToolbarView.
   ToolbarView* GetToolbarView() {
     BrowserWindowTesting* browser_window_testing = GetBrowserWindowTesting();
@@ -231,16 +221,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
       l10n_util::GetString(IDS_ACCNAME_STAR), ROLE_SYSTEM_PUSHBUTTON);
 }
 
-// Retrieve accessibility object for location bar view and verify accessibility
-// info.
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       TestLocationBarViewAccObj) {
-  // Verify location bar MSAA name and role.
-  TestViewAccessibilityObject(GetLocationBarView(),
-                              l10n_util::GetString(IDS_ACCNAME_LOCATION),
-                              ROLE_SYSTEM_GROUPING);
-}
-
 // Retrieve accessibility object for Page menu button and verify accessibility
 // info.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestPageMenuAccObj) {
@@ -291,4 +271,3 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   acc_obj->Release();
 }
 }  // Namespace.
-

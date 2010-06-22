@@ -710,10 +710,8 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
   // Check both for actual View focus, as well as accessibility focus.
   views::View* parent = view->GetParent();
 
-  if (view->HasFocus() ||
-      (parent && parent->GetAccFocusedChildView() == view)) {
+  if (view->HasFocus())
     msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
-  }
 
   // Add on any view-specific states.
   AccessibilityTypes::State state;

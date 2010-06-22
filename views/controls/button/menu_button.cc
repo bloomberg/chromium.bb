@@ -226,6 +226,13 @@ bool MenuButton::OnKeyPressed(const KeyEvent& e) {
   return false;
 }
 
+bool MenuButton::OnKeyReleased(const KeyEvent& e) {
+  // Override CustomButton's implementation, which presses the button when
+  // you press space and clicks it when you release space.  For a MenuButton
+  // we always activate the menu on key press.
+  return false;
+}
+
 // The reason we override View::OnMouseExited is because we get this event when
 // we display the menu. If we don't override this method then
 // BaseButton::OnMouseExited will get the event and will set the button's state

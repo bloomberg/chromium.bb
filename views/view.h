@@ -608,17 +608,6 @@ class View : public AcceleratorTarget {
   // re-used, otherwise a new instance will be created.
   ViewAccessibilityWrapper* GetViewAccessibilityWrapper();
 
-  // Accessor used to determine if a child view (leaf) has accessibility focus.
-  // Returns NULL if there are no children, or if none of the children has
-  // accessibility focus.
-  virtual View* GetAccFocusedChildView() { return NULL; }
-
-  // Try to give accessibility focus to a given child view. Returns true on
-  // success. Returns false if this view isn't already focused, if it doesn't
-  // support accessibility focus for children, or if the given view isn't a
-  // valid child view that can receive accessibility focus.
-  virtual bool SetAccFocusedChildView(View* child_view) { return false; }
-
   // Utility functions
 
   // Note that the utility coordinate conversions functions always operate on
