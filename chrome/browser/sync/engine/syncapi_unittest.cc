@@ -9,14 +9,11 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-
-using browser_sync::KeyParams;
 
 namespace sync_api {
 
@@ -232,35 +229,6 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
         "testtag"));
     EXPECT_EQ(node.GetTitle(), test_title);
     EXPECT_EQ(node.GetModelType(), syncable::BOOKMARKS);
-  }
-}
-
-TEST_F(SyncApiTest, WriteAndReadPassword) {
-  KeyParams params = {"localhost", "username", "passphrase"};
-  share_.dir_manager->cryptographer()->AddKey(params);
-  {
-    WriteTransaction trans(&share_);
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
-    WriteNode password_node(&trans);
-    EXPECT_TRUE(password_node.InitUniqueByCreation(syncable::PASSWORDS,
-                                                   root_node, "foo"));
-    sync_pb::PasswordSpecificsData data;
-    data.set_password_value("secret");
-    password_node.SetPasswordSpecifics(data);
-  }
-  {
-    ReadTransaction trans(&share_);
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
-    ReadNode password_node(&trans);
-    EXPECT_TRUE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
-                                                    "foo"));
-    const sync_pb::PasswordSpecificsData& data =
-        password_node.GetPasswordSpecifics();
-    EXPECT_EQ("secret", data.password_value());
   }
 }
 

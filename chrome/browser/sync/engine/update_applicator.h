@@ -27,7 +27,6 @@ class UpdateProgress;
 }
 
 class ConflictResolver;
-class Cryptographer;
 
 class UpdateApplicator {
  public:
@@ -35,7 +34,6 @@ class UpdateApplicator {
       UpdateIterator;
 
   UpdateApplicator(ConflictResolver* resolver,
-                   Cryptographer* cryptographer,
                    const UpdateIterator& begin,
                    const UpdateIterator& end,
                    const ModelSafeRoutingInfo& routes,
@@ -63,9 +61,6 @@ class UpdateApplicator {
 
   // Used to resolve conflicts when trying to apply updates.
   ConflictResolver* const resolver_;
-
-  // Used to decrypt sensitive sync nodes.
-  Cryptographer* cryptographer_;
 
   UpdateIterator const begin_;
   UpdateIterator end_;

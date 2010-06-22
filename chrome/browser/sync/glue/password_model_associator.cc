@@ -73,8 +73,12 @@ bool PasswordModelAssociator::AssociateModels() {
 
     sync_api::ReadNode node(&trans);
     if (node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
-      const sync_pb::PasswordSpecificsData& password =
-          node.GetPasswordSpecifics();
+      sync_pb::PasswordSpecificsData password;
+      if (!node.GetPasswordSpecifics(&password)) {
+        STLDeleteElements(&passwords);
+        LOG(ERROR) << "Failed to get password specifics from sync node.";
+        return false;
+      }
       DCHECK_EQ(tag, MakeTag(password));
 
       webkit_glue::PasswordForm new_password;
@@ -117,8 +121,11 @@ bool PasswordModelAssociator::AssociateModels() {
       LOG(ERROR) << "Failed to fetch child node.";
       return false;
     }
-    const sync_pb::PasswordSpecificsData& password =
-        sync_child_node.GetPasswordSpecifics();
+    sync_pb::PasswordSpecificsData password;
+    if (!sync_child_node.GetPasswordSpecifics(&password)) {
+      LOG(ERROR) << "Failed to get specifics from password node.";
+      return false;
+    }
     std::string tag = MakeTag(password);
 
     // The password only exists on the server.  Add it to the local

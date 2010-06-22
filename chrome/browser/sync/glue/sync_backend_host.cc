@@ -101,7 +101,6 @@ void SyncBackendHost::Initialize(
       it != types.end(); ++it) {
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
   }
-  registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
@@ -128,12 +127,6 @@ void SyncBackendHost::Authenticate(const std::string& username,
 void SyncBackendHost::StartSyncing() {
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
-}
-
-void SyncBackendHost::SetPassphrase(const std::string& passphrase) {
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoSetPassphrase,
-                        passphrase));
 }
 
 void SyncBackendHost::Shutdown(bool sync_disabled) {
@@ -282,20 +275,6 @@ void SyncBackendHost::Core::NotifyResumed() {
                                          NotificationService::NoDetails());
 }
 
-void SyncBackendHost::Core::NotifyPassphraseRequired() {
-  NotificationService::current()->Notify(
-      NotificationType::SYNC_PASSPHRASE_REQUIRED,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
-}
-
-void SyncBackendHost::Core::NotifyPassphraseAccepted() {
-  NotificationService::current()->Notify(
-      NotificationType::SYNC_PASSPHRASE_ACCEPTED,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
-}
-
 SyncBackendHost::UserShareHandle SyncBackendHost::GetUserShareHandle() const {
   return core_->syncapi()->GetUserShare();
 }
@@ -419,11 +398,6 @@ void SyncBackendHost::Core::DoAuthenticate(const std::string& username,
 void SyncBackendHost::Core::DoStartSyncing() {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
   syncapi_->StartSyncing();
-}
-
-void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase) {
-  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
-  syncapi_->SetPassphrase(passphrase);
 }
 
 UIModelWorker* SyncBackendHost::ui_worker() {
@@ -567,16 +541,6 @@ void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::HandleAuthErrorEventOnFrontendLoop,
       auth_error));
-}
-
-void SyncBackendHost::Core::OnPassphraseRequired() {
-  host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseRequired));
-}
-
-void SyncBackendHost::Core::OnPassphraseAccepted() {
-  host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseAccepted));
 }
 
 void SyncBackendHost::Core::OnPaused() {

@@ -49,7 +49,6 @@
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/cryptographer.h"
 #include "googleurl/src/gurl.h"
 
 namespace browser_sync {
@@ -188,7 +187,7 @@ class BaseNode {
 
   // Getter specific to the PASSWORD datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == PASSWORD.
-  const sync_pb::PasswordSpecificsData& GetPasswordSpecifics() const;
+  bool GetPasswordSpecifics(sync_pb::PasswordSpecificsData*) const;
 
   // Getter specific to the PREFERENCE datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == PREFERENCE.
@@ -233,18 +232,9 @@ class BaseNode {
   static std::string GenerateSyncableHash(syncable::ModelType model_type,
       const std::string& client_tag);
 
-  // Determines whether part of the entry is encrypted, and if so attempts to
-  // decrypt it. Unless decryption is necessary and fails, this will always
-  // return |true|.
-  bool DecryptIfNecessary(syncable::Entry* entry);
-
  private:
   // Node is meant for stack use only.
   void* operator new(size_t size);
-
-  // If this node represents a password, this field will hold the actual
-  // decrypted password data.
-  scoped_ptr<sync_pb::PasswordSpecificsData> password_data_;
 
   friend class SyncApiTest;
   FRIEND_TEST_ALL_PREFIXES(SyncApiTest, GenerateSyncableHash);
@@ -452,9 +442,6 @@ class BaseTransaction {
   // Provide access to the underlying syncable.h objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
   const syncable::ScopedDirLookup& GetLookup() const { return *lookup_; }
-  browser_sync::Cryptographer* GetCryptographer() const {
-    return cryptographer_;
-  }
 
  protected:
   // The ScopedDirLookup is created in the constructor and destroyed
@@ -466,8 +453,6 @@ class BaseTransaction {
  private:
   // A syncable ScopedDirLookup, which is the parent of syncable transactions.
   syncable::ScopedDirLookup* lookup_;
-
-  browser_sync::Cryptographer* cryptographer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
@@ -671,13 +656,6 @@ class SyncManager {
     // Called when user interaction may be required due to an auth problem.
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error) = 0;
 
-    // Called when user interaction is required to obtain a valid passphrase.
-    virtual void OnPassphraseRequired() = 0;
-
-    // Called when the passphrase provided by the user has been accepted and is
-    // now used to encrypt sync data.
-    virtual void OnPassphraseAccepted() = 0;
-
     // Called when initialization is complete to the point that SyncManager can
     // process changes. This does not necessarily mean authentication succeeded
     // or that the SyncManager is online.
@@ -773,15 +751,6 @@ class SyncManager {
 
   // Start the SyncerThread.
   void StartSyncing();
-
-  // Attempt to set the passphrase. If the passphrase is valid,
-  // OnPassphraseAccepted will be fired to notify the ProfileSyncService and the
-  // syncer will be nudged so that any update that was waiting for this
-  // passphrase gets applied as soon as possible.
-  // If the passphrase in invalid, OnPassphraseRequired will be fired.
-  // Calling this metdod again is the appropriate course of action to "retry"
-  // with a new passphrase.
-  void SetPassphrase(const std::string& passphrase);
 
   // Requests the syncer thread to pause.  The observer's OnPause
   // method will be called when the syncer thread is paused.  Returns

@@ -27,7 +27,6 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -78,12 +77,6 @@ ProfileSyncService::ProfileSyncService(
                  NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::SYNC_CONFIGURE_DONE,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::SYNC_PASSPHRASE_REQUIRED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::SYNC_PASSPHRASE_ACCEPTED,
                  NotificationService::AllSources());
 
   // By default, dev & chromium users will go to the development servers.
@@ -657,12 +650,8 @@ void ProfileSyncService::GetRegisteredDataTypes(
 }
 
 bool ProfileSyncService::IsCryptographerReady() const {
-  return backend_->GetUserShareHandle()->
-      dir_manager->cryptographer()->is_ready();
-}
-
-void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
-  backend_->SetPassphrase(passphrase);
+  // TODO(albertb): Replace this once the crypto patch lands.
+  return true;
 }
 
 void ProfileSyncService::StartProcessingChangesIfReady() {
@@ -718,21 +707,6 @@ void ProfileSyncService::Observe(NotificationType type,
 
       // TODO(sync): Less wizard, more toast.
       wizard_.Step(SyncSetupWizard::DONE);
-      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
-      break;
-    }
-    case NotificationType::SYNC_PASSPHRASE_REQUIRED: {
-      // TODO(sync): Show the passphrase UI here.
-      SetPassphrase("dummy passphrase");
-      break;
-    }
-    case NotificationType::SYNC_PASSPHRASE_ACCEPTED: {
-      // Make sure the data types that depend on the passphrase are started at
-      // this time.
-      syncable::ModelTypeSet types;
-      GetPreferredDataTypes(&types);
-      data_type_manager_->Configure(types);
-
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
       break;
     }

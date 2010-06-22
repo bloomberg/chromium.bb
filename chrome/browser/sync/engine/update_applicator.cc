@@ -17,13 +17,11 @@ using std::vector;
 namespace browser_sync {
 
 UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
-                                   Cryptographer* cryptographer,
                                    const UpdateIterator& begin,
                                    const UpdateIterator& end,
                                    const ModelSafeRoutingInfo& routes,
                                    ModelSafeGroup group_filter)
     : resolver_(resolver),
-      cryptographer_(cryptographer),
       begin_(begin),
       end_(end),
       pointer_(begin),
@@ -60,8 +58,8 @@ bool UpdateApplicator::AttemptOneApplication(
   }
 
   syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
-  UpdateAttemptResponse updateResponse = SyncerUtil::AttemptToUpdateEntry(
-      trans, &entry, resolver_, cryptographer_);
+  UpdateAttemptResponse updateResponse =
+      SyncerUtil::AttemptToUpdateEntry(trans, &entry, resolver_);
   switch (updateResponse) {
     case SUCCESS:
       Advance();

@@ -28,10 +28,8 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   syncable::Directory::UnappliedUpdateMetaHandles handles;
   dir->GetUnappliedUpdateMetaHandles(&trans, &handles);
 
-  UpdateApplicator applicator(
-      session->context()->resolver(),
-      session->context()->directory_manager()->cryptographer(),
-      handles.begin(), handles.end(), session->routing_info(),
+  UpdateApplicator applicator(session->context()->resolver(), handles.begin(),
+      handles.end(), session->routing_info(),
       session->status_controller()->group_restriction());
   while (applicator.AttemptOneApplication(&trans)) {}
   applicator.SaveProgressIntoSessionState(

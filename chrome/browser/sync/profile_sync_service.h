@@ -303,11 +303,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // for sensitive data types.
   virtual bool IsCryptographerReady() const;
 
-  // Sets the Cryptographer's passphrase. This will check asynchronously whether
-  // the passphrase is valid and notify ProfileSyncServiceObservers via the
-  // NotificationService when the outcome is known.
-  virtual void SetPassphrase(const std::string& passphrase);
-
  protected:
   // Used by ProfileSyncServiceMock only.
   //

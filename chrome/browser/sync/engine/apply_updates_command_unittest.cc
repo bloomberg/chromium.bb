@@ -35,8 +35,6 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     mutable_routing_info()->clear();
     workers()->push_back(new ModelSafeWorker());  // GROUP_PASSIVE worker.
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_PASSIVE;
-    (*mutable_routing_info())[syncable::PASSWORDS] = GROUP_PASSIVE;
-    (*mutable_routing_info())[syncable::NIGORI] = GROUP_PASSIVE;
     SyncerCommandTest::SetUp();
   }
 
@@ -58,23 +56,6 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     sync_pb::EntitySpecifics default_bookmark_specifics;
     default_bookmark_specifics.MutableExtension(sync_pb::bookmark);
     entry.Put(syncable::SERVER_SPECIFICS, default_bookmark_specifics);
-  }
-
-  void CreateUnappliedNewItem(const string& item_id,
-                              const sync_pb::EntitySpecifics& specifics) {
-    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
-        Id::CreateFromServerId(item_id));
-    ASSERT_TRUE(entry.good());
-    entry.Put(syncable::SERVER_VERSION, next_revision_++);
-    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
-
-    entry.Put(syncable::SERVER_NON_UNIQUE_NAME, item_id);
-    entry.Put(syncable::SERVER_PARENT_ID, syncable::kNullId);
-    entry.Put(syncable::SERVER_IS_DIR, false);
-    entry.Put(syncable::SERVER_SPECIFICS, specifics);
   }
 
   ApplyUpdatesCommand apply_updates_command_;
@@ -161,127 +142,6 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
       << "The updates with unknown ancestors should be in conflict";
   EXPECT_EQ(4, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "The updates with known ancestors should be successfully applied";
-}
-
-TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
-  // Decryptable password updates should be applied.
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
-
-  browser_sync::KeyParams params = {"localhost", "dummy", "foobar"};
-  cryptographer->AddKey(params);
-
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::PasswordSpecificsData data;
-  data.set_origin("http://example.com");
-
-  cryptographer->Encrypt(data,
-      specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
-  CreateUnappliedNewItem("item", specifics);
-
-  apply_updates_command_.ExecuteImpl(session());
-
-  sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
-      << "No update should be in conflict because they're all decryptable";
-  EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "The updates that can be decrypted should be applied";
-}
-
-TEST_F(ApplyUpdatesCommandTest, UndecryptablePassword) {
-  // Undecryptable password updates should not be applied.
-  sync_pb::EntitySpecifics specifics;
-  specifics.MutableExtension(sync_pb::password);
-  CreateUnappliedNewItem("item", specifics);
-
-  apply_updates_command_.ExecuteImpl(session());
-
-  sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(1, status->conflict_progress().ConflictingItemsSize())
-      << "The updates that can't be decrypted should be in conflict";
-  EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "No update that can't be decrypted should be applied";
-}
-
-TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
-  // Only decryptable password updates should be applied.
-  {
-    Cryptographer* cryptographer =
-        session()->context()->directory_manager()->cryptographer();
-
-    KeyParams params = {"localhost", "dummy", "foobar"};
-    cryptographer->AddKey(params);
-
-    sync_pb::EntitySpecifics specifics;
-    sync_pb::PasswordSpecificsData data;
-    data.set_origin("http://example.com/1");
-
-    cryptographer->Encrypt(data,
-        specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
-    CreateUnappliedNewItem("item1", specifics);
-  }
-  {
-    // Create a new cryptographer, independent of the one in the session.
-    Cryptographer cryptographer;
-    KeyParams params = {"localhost", "dummy", "bazqux"};
-    cryptographer.AddKey(params);
-
-    sync_pb::EntitySpecifics specifics;
-    sync_pb::PasswordSpecificsData data;
-    data.set_origin("http://example.com/2");
-
-    cryptographer.Encrypt(data,
-        specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
-    CreateUnappliedNewItem("item2", specifics);
-  }
-
-  apply_updates_command_.ExecuteImpl(session());
-
-  sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(1, status->conflict_progress().ConflictingItemsSize())
-      << "The decryptable password update should be applied";
-  EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "The undecryptable password update shouldn't be applied";
-}
-
-TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
-  // Nigori node updates should update the Cryptographer.
-  Cryptographer other_cryptographer;
-  KeyParams params = {"localhost", "dummy", "foobar"};
-  other_cryptographer.AddKey(params);
-
-  sync_pb::EntitySpecifics specifics;
-  other_cryptographer.GetKeys(
-      specifics.MutableExtension(sync_pb::nigori)->mutable_encrypted());
-
-  CreateUnappliedNewItem("item", specifics);
-
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
-  EXPECT_FALSE(cryptographer->has_pending_keys());
-
-  apply_updates_command_.ExecuteImpl(session());
-
-  sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
-      << "The nigori update shouldn't be in conflict";
-  EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "The nigori update should be applied";
-
-  EXPECT_FALSE(cryptographer->is_ready());
-  EXPECT_TRUE(cryptographer->has_pending_keys());
 }
 
 }  // namespace browser_sync

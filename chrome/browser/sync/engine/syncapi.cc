@@ -39,7 +39,6 @@
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
@@ -64,8 +63,6 @@ using browser_sync::AllStatus;
 using browser_sync::AllStatusEvent;
 using browser_sync::AuthWatcher;
 using browser_sync::AuthWatcherEvent;
-using browser_sync::Cryptographer;
-using browser_sync::KeyParams;
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
@@ -73,7 +70,6 @@ using browser_sync::Syncer;
 using browser_sync::SyncerEvent;
 using browser_sync::SyncerThread;
 using browser_sync::UserSettings;
-using browser_sync::kNigoriTag;
 using browser_sync::sessions::SyncSessionContext;
 using notifier::TalkMediator;
 using notifier::TalkMediatorImpl;
@@ -83,7 +79,6 @@ using std::string;
 using std::vector;
 using syncable::Directory;
 using syncable::DirectoryManager;
-using syncable::Entry;
 using syncable::SPECIFICS;
 
 typedef GoogleServiceAuthError AuthError;
@@ -178,23 +173,6 @@ std::string BaseNode::GenerateSyncableHash(
   return encode_output;
 }
 
-bool BaseNode::DecryptIfNecessary(Entry* entry) {
-  if (GetIsFolder()) return true;  // Ignore the top-level password folder.
-  const sync_pb::EntitySpecifics& specifics =
-      entry->Get(syncable::SPECIFICS);
-  if (specifics.HasExtension(sync_pb::password)) {
-    const sync_pb::EncryptedData& encrypted =
-        specifics.GetExtension(sync_pb::password).encrypted();
-    scoped_ptr<sync_pb::PasswordSpecificsData> data(
-        new sync_pb::PasswordSpecificsData);
-    if (!GetTransaction()->GetCryptographer()->Decrypt(encrypted,
-                                                       data.get()))
-      return false;
-    password_data_.swap(data);
-  }
-  return true;
-}
-
 int64 BaseNode::GetParentId() const {
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(),
                         GetEntry()->Get(syncable::PARENT_ID));
@@ -270,10 +248,13 @@ const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::nigori);
 }
 
-const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
+bool BaseNode::GetPasswordSpecifics(sync_pb::PasswordSpecificsData* data)
+    const {
   DCHECK(GetModelType() == syncable::PASSWORDS);
-  DCHECK(password_data_.get());
-  return *password_data_;
+  DCHECK(data);
+  const sync_pb::PasswordSpecifics& specifics =
+      GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::password);
+  return data->ParseFromString(specifics.blob());
 }
 
 const sync_pb::PreferenceSpecifics& BaseNode::GetPreferenceSpecifics() const {
@@ -374,11 +355,7 @@ void WriteNode::SetPasswordSpecifics(
   std::string serialized_data;
   data.SerializeToString(&serialized_data);
   sync_pb::PasswordSpecifics new_value;
-  if (!GetTransaction()->GetCryptographer()->Encrypt(
-      data,
-      new_value.mutable_encrypted()))
-    NOTREACHED();
-
+  new_value.set_blob(serialized_data);
   PutPasswordSpecificsAndMarkForSyncing(new_value);
 }
 
@@ -473,8 +450,7 @@ bool WriteNode::InitByIdLookup(int64 id) {
   DCHECK_NE(id, kInvalidId);
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_HANDLE, id);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary(entry_));
+  return (entry_->good() && !entry_->Get(syncable::IS_DEL));
 }
 
 // Find a node by client tag, and bind this WriteNode to it.
@@ -490,8 +466,7 @@ bool WriteNode::InitByClientTagLookup(syncable::ModelType model_type,
 
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_CLIENT_TAG, hash);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary(entry_));
+  return (entry_->good() && !entry_->Get(syncable::IS_DEL));
 }
 
 bool WriteNode::InitByTagLookup(const std::string& tag) {
@@ -727,7 +702,7 @@ bool ReadNode::InitByIdLookup(int64 id) {
   LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
                   model_type == syncable::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByIdLookup referencing unusual object.";
-  return DecryptIfNecessary(entry_);
+  return true;
 }
 
 bool ReadNode::InitByClientTagLookup(syncable::ModelType model_type,
@@ -740,8 +715,7 @@ bool ReadNode::InitByClientTagLookup(syncable::ModelType model_type,
 
   entry_ = new syncable::Entry(transaction_->GetWrappedTrans(),
                                syncable::GET_BY_CLIENT_TAG, hash);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary(entry_));
+  return (entry_->good() && !entry_->Get(syncable::IS_DEL));
 }
 
 const syncable::Entry* ReadNode::GetEntry() const {
@@ -766,7 +740,7 @@ bool ReadNode::InitByTagLookup(const std::string& tag) {
   LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
                   model_type == syncable::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByTagLookup referencing unusually typed object.";
-  return DecryptIfNecessary(entry_);
+  return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -915,8 +889,6 @@ class SyncManager::SyncInternal
 
   // Tell the sync engine to start the syncing process.
   void StartSyncing();
-
-  void SetPassphrase(const std::string& passphrase);
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
@@ -1242,10 +1214,6 @@ void SyncManager::StartSyncing() {
   data_->StartSyncing();
 }
 
-void SyncManager::SetPassphrase(const std::string& passphrase) {
-  data_->SetPassphrase(passphrase);
-}
-
 bool SyncManager::RequestPause() {
   return data_->syncer_thread()->RequestPause();
 }
@@ -1499,25 +1467,6 @@ void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
   auth_problem_ = AuthError::INVALID_GAIA_CREDENTIALS;
   if (observer_)
     observer_->OnAuthError(AuthError(auth_problem_));
-}
-
-void SyncManager::SyncInternal::SetPassphrase(
-    const std::string& passphrase) {
-  Cryptographer* cryptographer = dir_manager()->cryptographer();
-  KeyParams params = {"localhost", "dummy", passphrase};
-  if (cryptographer->has_pending_keys()) {
-    if (!cryptographer->DecryptPendingKeys(params)) {
-      observer_->OnPassphraseRequired();
-      return;
-    }
-    // Nudge the syncer so that passwords updates that were waiting for this
-    // passphrase get applied as soon as possible.
-    sync_manager_->RequestNudge();
-  } else {
-    cryptographer->AddKey(params);
-    // TODO(albertb): Update the Nigori node on the server with the new keys.
-  }
-  observer_->OnPassphraseAccepted();
 }
 
 SyncManager::~SyncManager() {
@@ -1805,6 +1754,7 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
     // download; if so, we should signal that initialization is complete.
     if (event.snapshot->is_share_usable)
       MarkAndNotifyInitializationComplete();
+    return;
   }
 
   if (!observer_)
@@ -1818,38 +1768,6 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
   // Notifications are sent at the end of every sync cycle, regardless of
   // whether we should sync again.
   if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED) {
-
-    ModelSafeRoutingInfo enabled_types;
-    registrar_->GetModelSafeRoutingInfo(&enabled_types);
-    if (enabled_types.count(syncable::PASSWORDS) > 0) {
-      Cryptographer* cryptographer =
-          GetUserShare()->dir_manager->cryptographer();
-      if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
-        sync_api::ReadTransaction trans(GetUserShare());
-        sync_api::ReadNode node(&trans);
-        if (!node.InitByTagLookup(kNigoriTag)) {
-          NOTREACHED();
-          return;
-        }
-        const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
-        if (!nigori.encrypted().blob().empty()) {
-          if (cryptographer->CanDecrypt(nigori.encrypted())) {
-            cryptographer->SetKeys(nigori.encrypted());
-          } else {
-            cryptographer->SetPendingKeys(nigori.encrypted());
-          }
-        }
-      }
-      // If we've completed a sync cycle and the cryptographer isn't ready yet,
-      // prompt the user for a passphrase.
-      if (!cryptographer->is_ready()) {
-        observer_->OnPassphraseRequired();
-      }
-    }
-
-    if (!initialized())
-      return;
-
     if (!event.snapshot->has_more_to_sync) {
       observer_->OnSyncCycleCompleted(event.snapshot);
     }
@@ -2092,8 +2010,7 @@ BaseTransaction::BaseTransaction(UserShare* share)
     : lookup_(NULL) {
   DCHECK(share && share->dir_manager.get());
   lookup_ = new syncable::ScopedDirLookup(share->dir_manager.get(),
-                                          share->authenticated_name);
-  cryptographer_ = share->dir_manager->cryptographer();
+                                        share->authenticated_name);
   if (!(lookup_->good()))
     DCHECK(false) << "ScopedDirLookup failed on valid DirManager.";
 }

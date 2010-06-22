@@ -153,8 +153,12 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     DCHECK(password_root.GetId() == sync_node.GetParentId());
     DCHECK(syncable::PASSWORDS == sync_node.GetModelType());
 
-    const sync_pb::PasswordSpecificsData& password_data =
-        sync_node.GetPasswordSpecifics();
+    sync_pb::PasswordSpecificsData password_data;
+    if (!sync_node.GetPasswordSpecifics(&password_data)) {
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "Could not read password specifics");
+      return;
+    }
     webkit_glue::PasswordForm password;
     PasswordModelAssociator::CopyPassword(password_data,
                                           &password);

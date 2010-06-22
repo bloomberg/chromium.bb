@@ -13,8 +13,6 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -249,8 +247,7 @@ void SyncerUtil::AttemptReuniteLostCommitResponses(
 UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
-    ConflictResolver* resolver,
-    Cryptographer* cryptographer) {
+    ConflictResolver* resolver) {
 
   CHECK(entry->good());
   if (!entry->Get(IS_UNAPPLIED_UPDATE))
@@ -288,33 +285,6 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
       // If we have still-existing children, then we need to deal with
       // them before we can process this change.
       LOG(INFO) << "Not deleting directory; it's not empty " << *entry;
-      return CONFLICT;
-    }
-  }
-
-  // We intercept updates to the Nigori node and update the Cryptographer here
-  // because there is no Nigori ChangeProcessor.
-  const sync_pb::EntitySpecifics& specifics = entry->Get(SERVER_SPECIFICS);
-  if (specifics.HasExtension(sync_pb::nigori)) {
-    const sync_pb::NigoriSpecifics& nigori =
-        specifics.GetExtension(sync_pb::nigori);
-    if (!nigori.encrypted().blob().empty()) {
-      if (cryptographer->CanDecrypt(nigori.encrypted())) {
-        cryptographer->SetKeys(nigori.encrypted());
-      } else {
-        cryptographer->SetPendingKeys(nigori.encrypted());
-      }
-    }
-  }
-
-  // Only apply updates that we can decrypt. Updates that can't be decrypted yet
-  // will stay in conflict until the user provides a passphrase that lets the
-  // Cryptographer decrypt them.
-  if (!entry->Get(SERVER_IS_DIR) && specifics.HasExtension(sync_pb::password)) {
-    const sync_pb::PasswordSpecifics& password =
-        specifics.GetExtension(sync_pb::password);
-    if (!cryptographer->CanDecrypt(password.encrypted())) {
-      // We can't decrypt this node yet.
       return CONFLICT;
     }
   }
@@ -735,8 +705,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
       } else {
         LOG(ERROR) << "Server update doesn't agree with previous updates. ";
         LOG(ERROR) << " Entry: " << *same_id;
-        LOG(ERROR) << " Update: "
-                   << SyncerProtoUtil::SyncEntityDebugString(entry);
+        LOG(ERROR) << " Update: " << SyncerProtoUtil::SyncEntityDebugString(entry);
         return VERIFY_FAIL;
       }
     }
@@ -762,8 +731,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
         model_type != same_id->GetModelType()) {
       LOG(ERROR) << "Server update doesn't agree with committed item. ";
       LOG(ERROR) << " Entry: " << *same_id;
-      LOG(ERROR) << " Update: "
-                 << SyncerProtoUtil::SyncEntityDebugString(entry);
+      LOG(ERROR) << " Update: " << SyncerProtoUtil::SyncEntityDebugString(entry);
       return VERIFY_FAIL;
     }
     if (same_id->Get(BASE_VERSION) == entry.version() &&
@@ -779,8 +747,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
     if (same_id->Get(SERVER_VERSION) > entry.version()) {
       LOG(WARNING) << "We've already seen a more recent update from the server";
       LOG(WARNING) << " Entry: " << *same_id;
-      LOG(WARNING) << " Update: "
-                   << SyncerProtoUtil::SyncEntityDebugString(entry);
+      LOG(WARNING) << " Update: " << SyncerProtoUtil::SyncEntityDebugString(entry);
       return VERIFY_SKIP;
     }
   }
