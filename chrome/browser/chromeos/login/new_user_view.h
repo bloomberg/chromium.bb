@@ -131,6 +131,9 @@ class NewUserView : public views::View,
   // after string update.
   void RecreateNativeControls();
 
+  // Screen controls.
+  // NOTE: When adding new controls check RecreateNativeControls()
+  // that |sign_in_button_| is added with correct index.
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* title_label_;

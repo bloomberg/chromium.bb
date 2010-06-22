@@ -37,6 +37,9 @@ using views::WidgetGtk;
 
 namespace {
 
+// NOTE: When adding new controls check RecreateNativeControls()
+// that |sign_in_button_| is added with correct index.
+const int kSignInButtonFocusOrderIndex = 3;
 const int kTextfieldWidth = 286;
 const int kRowPad = 7;
 const int kColumnPad = 7;
@@ -168,7 +171,9 @@ void NewUserView::RecreateNativeControls() {
   // sized so delete and recreate the button on text update.
   delete sign_in_button_;
   sign_in_button_ = new views::NativeButton(this, std::wstring());
-  AddChildView(sign_in_button_);
+  // Add button after label, user & password fields.
+  DCHECK(GetChildViewCount() >= kSignInButtonFocusOrderIndex);
+  AddChildView(kSignInButtonFocusOrderIndex, sign_in_button_);
   if (!CrosLibrary::Get()->EnsureLoaded())
     sign_in_button_->SetEnabled(false);
 }

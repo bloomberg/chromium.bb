@@ -277,6 +277,7 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   languages_menubutton_->SetVisible(!connecting);
   select_network_label_->SetVisible(!connecting);
   network_combobox_->SetVisible(!connecting);
+  continue_button_->SetVisible(!connecting);
   connecting_network_label_->SetVisible(connecting);
   Layout();
   if (connecting) {
