@@ -109,20 +109,45 @@ ACCEPTABLE_ARGUMENTS = {
     'sysinfo': None,
     # set target platform
     'targetplatform': None,
+    # changes tests behaviour in a way suitable for valgrind
+    'running_on_valgrind': False,
+    # activates buildbot-specific presets
+    'buildbot': None,
+    # link with valgrind untrusted bits
+    'with_valgrind': False,
     # use_libcrypto=0 allows use of -lcrypt to be disabled, which
     # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
     # where there is no -dev package for the 32-bit libcrypto.
     'use_libcrypto': None,
   }
 
-
 def CheckArguments():
   for key in ARGUMENTS:
     if key not in ACCEPTABLE_ARGUMENTS:
       print 'ERROR'
-      print 'ERROR bad argument: ', key
+      print 'ERROR bad argument: %s' % key
       print 'ERROR'
       sys.exit(-1)
+
+
+def SetArgument(key, value, why):
+  if ARGUMENTS.has_key(key):
+    print 'ERROR: %s redefines %s' % (why, key)
+    sys.exit(-1)
+  else:
+    ARGUMENTS[key] = value
+    print '    %s=%s' % (key, str(value))
+
+def ExpandArguments():
+  if ARGUMENTS.get('buildbot') == 'memcheck':
+    print 'builbot=memcheck expands to the following arguments:'
+    SetArgument('run_under',
+                'src/third_party/valgrind/bin/memcheck.sh,--log-file=mc.log',
+                'memcheck')
+    SetArgument('scale_timeout', 20, 'memcheck')
+    SetArgument('running_on_valgrind', True, 'memcheck')
+    SetArgument('with_valgrind', True, 'memcheck')
+
 
 # ----------------------------------------------------------
 environment_list = []
@@ -250,6 +275,8 @@ Alias('browser_tests', [])
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
 
+Alias('memcheck_bot_tests', 'small_tests')
+
 # ----------------------------------------------------------
 def Banner(text):
   print '=' * 70
@@ -352,6 +379,10 @@ if (pre_base_env['TARGET_ARCHITECTURE'] == 'arm' and
     not ARGUMENTS.get('built_elsewhere') and
     ARGUMENTS.get('naclsdk_mode') != 'manual'):
   FixupArmEnvironment()
+
+# Valgrind
+pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
+                       'IsRunningUnderValgrind')
 
 # ----------------------------------------------------------
 # PLUGIN PREREQUISITES
@@ -1326,6 +1357,11 @@ nacl_env = pre_base_env.Clone(
     LINKFLAGS = ['${EXTRA_LINKFLAGS}']
 )
 
+if ARGUMENTS.get('with_valgrind'):
+  nacl_env.Append(EXTRA_CCFLAGS = ['-g'],
+                  EXTRA_LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
+                  EXTRA_LIBS = ['valgrind'])
+
 if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
   if nacl_env['BUILD_SUBARCH'] == '32':
     nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
@@ -1809,6 +1845,7 @@ if VerboseConfigInfo(pre_base_env):
   os.system(pre_base_env.subst('${PYTHON} tools/sysinfo.py'))
 
 CheckArguments()
+ExpandArguments()
 
 selected_envs = FilterEnvironments(environment_list)
 family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)

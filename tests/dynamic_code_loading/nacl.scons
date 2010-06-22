@@ -68,6 +68,8 @@ tests = [
         ),
   ]
 
-env.AddNodeToTestSuite(tests,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_dynamic_load_test')
+# TODO(kcc): non-standard linking options confuse Valgrind debug info reader.
+if not env.IsRunningUnderValgrind():
+  env.AddNodeToTestSuite(tests,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_dynamic_load_test')

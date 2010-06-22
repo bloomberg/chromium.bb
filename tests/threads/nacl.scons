@@ -14,6 +14,9 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   TEST_SUITES = ['small_tests_arm_hw_only']
   EXTRA_ARGS = ['5000']
 
+if env.IsRunningUnderValgrind():
+  EXTRA_ARGS = ['200']
+
 env.ComponentProgram('thread_test.nexe',
                      'thread_test.c',
                      EXTRA_LIBS=['pthread'],

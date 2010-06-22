@@ -31,8 +31,12 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   test_suites = []
 else:
   test_suites = ['small_tests']
+
 # 64-bit Ubuntu Hardy (Linux) on VMWare also seems to have problems
 # with NX page protection, but later versions of Ubuntu are OK on
 # VMWare, and 64-bit Hardy is OK on real hardware.
-if not env.Bit('disable_hardy64_vmware_failures'):
+# This test fails on Valgrind because Valgrind traps SIGSEGV and attempts to
+# die peacefully, but gets killed with SIGKILL instead.
+if (not env.Bit('disable_hardy64_vmware_failures') and
+    not env.IsRunningUnderValgrind()):
   env.AddNodeToTestSuite(node, test_suites, 'run_execute_data_test')

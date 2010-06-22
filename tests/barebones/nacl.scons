@@ -65,6 +65,9 @@ for basename in ['hello_world',
   # TODO(robertm): fix this ASAP
   if env['BUILD_ARCHITECTURE'] == 'arm' and basename == 'vaarg': continue
 
+  # TODO(kcc): the barebones tests confuse the current nacl-ified valgrind.
+  if env.IsRunningUnderValgrind(): continue
+
   src = 'barebones_' + basename + '.c'
   nexe = 'barebones_' + basename + '.nexe'
   out = 'barebones_' + basename + '.out'

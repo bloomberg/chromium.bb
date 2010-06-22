@@ -46,7 +46,6 @@ test_suites = ['small_tests', 'sel_ldr_tests']
 
 large_stack_args = ['--', '-s', '0x400000', '-n', '4095', '-f' ]
 
-
 #
 # WARNING: Magic numbers ahead!
 #
@@ -78,18 +77,18 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   # so far, only linux.  and the limit that we hit is one that is
   # imposed by our threading implementation, not by the OS.
   test_suites = ['small_tests_arm_hw_only']
-  high_thread_count_args = ['--', '-n', '4095']
+  high_thread_count_nthreads = 4095
   platform_limits_known = True
 elif env['TARGET_ARCHITECTURE'] == 'x86':
   trusted = env.get('TRUSTED_ENV', None)
   if trusted:
     platform_limits_known = True
     if trusted.Bit('linux'):
-      high_thread_count_args = ['--', '-n', '8180']
+      high_thread_count_nthreads = 8180
     elif trusted.Bit('mac'):
-      high_thread_count_args = ['--', '-n', '2558']
+      high_thread_count_nthreads = 2558
     elif trusted.Bit('windows'):
-      high_thread_count_args = ['--', '-n', '900']
+      high_thread_count_nthreads = 900
     else:
       print 'Unknown host OS: threading limit unknown'
       assert 0
@@ -97,6 +96,11 @@ else:
   print 'Unknown target architecture -- architecture/host OS thread'
   print 'limits are unknown'
   assert 0
+
+if env.IsRunningUnderValgrind():
+  high_thread_count_nthreads = min(high_thread_count_nthreads, 1500)
+
+high_thread_count_args = ['--', '-n', str(high_thread_count_nthreads)]
 
 if not platform_limits_known:
   Return()
@@ -107,6 +111,10 @@ tests = [ ('egyptian_cotton_test', high_thread_count_args),
 # TODO(bsy): figure out why this fails on atom64 with 1GB RAM.
 # Disable thread_stack_alloc_test on one specific atom64 box.
 if os.environ.get('COMPUTERNAME') == 'NACL-ATOM1':
+  tests = [t for t in tests if t[0] != 'thread_stack_alloc_test']
+
+# This test does not make much sense on Valgrind, and is too slow.
+if env.IsRunningUnderValgrind():
   tests = [t for t in tests if t[0] != 'thread_stack_alloc_test']
 
 def ThreadTestNode(name, args):
