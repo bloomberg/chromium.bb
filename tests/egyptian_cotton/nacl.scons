@@ -97,13 +97,13 @@ else:
   print 'limits are unknown'
   assert 0
 
+if not platform_limits_known:
+  Return()
+
 if env.IsRunningUnderValgrind():
   high_thread_count_nthreads = min(high_thread_count_nthreads, 1500)
 
 high_thread_count_args = ['--', '-n', str(high_thread_count_nthreads)]
-
-if not platform_limits_known:
-  Return()
 
 tests = [ ('egyptian_cotton_test', high_thread_count_args),
           ('thread_stack_alloc_test', large_stack_args) ]
