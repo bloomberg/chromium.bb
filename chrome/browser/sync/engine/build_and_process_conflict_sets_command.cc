@@ -47,8 +47,9 @@ bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
     BuildConflictSets(&trans,
         session->status_controller()->mutable_conflict_progress());
     had_single_direction_sets = ProcessSingleDirectionConflictSets(&trans,
-        session->context()->resolver(), session->status_controller(),
-        session->routing_info());
+        session->context()->resolver(),
+        session->context()->directory_manager()->cryptographer(),
+        session->status_controller(), session->routing_info());
     // We applied some updates transactionally, lets try syncing again.
     if (had_single_direction_sets)
       return true;
@@ -58,7 +59,8 @@ bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
 
 bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
     syncable::WriteTransaction* trans, ConflictResolver* resolver,
-    StatusController* status, const ModelSafeRoutingInfo& routes) {
+    Cryptographer* cryptographer, StatusController* status,
+    const ModelSafeRoutingInfo& routes) {
   bool rv = false;
   set<ConflictSet*>::const_iterator all_sets_iterator;
   for (all_sets_iterator = status->conflict_progress().ConflictSetsBegin();
@@ -79,8 +81,8 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
     if (conflict_set->size() == unsynced_count && 0 == unapplied_count) {
       LOG(INFO) << "Skipped transactional commit attempt.";
     } else if (conflict_set->size() == unapplied_count && 0 == unsynced_count &&
-          ApplyUpdatesTransactionally(trans, conflict_set, resolver, routes,
-                                      status)) {
+          ApplyUpdatesTransactionally(trans, conflict_set, resolver,
+                                      cryptographer, routes, status)) {
       rv = true;
     }
     ++all_sets_iterator;
@@ -146,6 +148,7 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
     syncable::WriteTransaction* trans,
     const vector<syncable::Id>* const update_set,
     ConflictResolver* resolver,
+    Cryptographer* cryptographer,
     const ModelSafeRoutingInfo& routes,
     StatusController* status) {
   // The handles in the |update_set| order.
@@ -192,8 +195,9 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
 
   // 5. Use the usual apply updates from the special start state we've just
   // prepared.
-  UpdateApplicator applicator(resolver, handles.begin(), handles.end(),
-      routes, status->group_restriction());
+  UpdateApplicator applicator(resolver, cryptographer,
+                              handles.begin(), handles.end(),
+                              routes, status->group_restriction());
   while (applicator.AttemptOneApplication(trans)) {
     // Keep going till all updates are applied.
   }

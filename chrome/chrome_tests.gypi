@@ -1298,6 +1298,7 @@
       'msvs_guid': 'D7589D0D-304E-4589-85A4-153B7D84B07F',
       'dependencies': [
         'browser',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'chrome',
         'chrome_resources',
         'chrome_strings',
@@ -2056,6 +2057,7 @@
         ['OS=="linux"', {
            'dependencies': [
              '../build/linux/system.gyp:gtk',
+             '../build/linux/system.gyp:nss',
            ],
         }],
         ['OS=="win"', {

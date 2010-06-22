@@ -122,6 +122,10 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Typed URLs";
     case EXTENSIONS:
       return "Extensions";
+    case PASSWORDS:
+      return "Passwords";
+    case NIGORI:
+      return "Encryption keys";
     default:
       NOTREACHED() << "No known extension for model type.";
       return "INVALID";

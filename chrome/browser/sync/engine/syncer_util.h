@@ -21,6 +21,7 @@
 
 namespace browser_sync {
 
+class Cryptographer;
 class SyncEntity;
 
 class SyncerUtil {
@@ -53,8 +54,8 @@ class SyncerUtil {
   static UpdateAttemptResponse AttemptToUpdateEntry(
       syncable::WriteTransaction* const trans,
       syncable::MutableEntry* const entry,
-      ConflictResolver* resolver);
-
+      ConflictResolver* resolver,
+      Cryptographer* cryptographer);
 
   // Pass in name to avoid redundant UTF8 conversion.
   static void UpdateServerFieldsFromUpdate(
