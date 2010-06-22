@@ -3464,25 +3464,6 @@
    fun:sqlite3MemMalloc
    fun:mallocWithAlarm
    fun:sqlite3Malloc
-   fun:sqlite3HashInsert
-   fun:createModule
-   fun:sqlite3_create_module_v2
-   fun:sqlite3Fts2Init
-   fun:openDatabase
-   fun:sqlite3_open
-   fun:_ZN3sql10Connection12OpenInternalERKSs
-   fun:_ZN3sql10Connection12OpenInMemoryEv
-   fun:_ZN7history16InMemoryDatabase6InitDBEv
-   fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
-}
-{
-   bug_19775_c
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
    fun:sqlite3_malloc
    fun:pcache1Create
    fun:sqlite3PcacheFetch
@@ -3502,17 +3483,9 @@
    fun:sqlite3LockAndPrepare
 }
 {
-   bug_19775_d
+   bug_19775_c
    Memcheck:Leak
    ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:sqlite3MallocZero
-   fun:sqlite3PagerOpen
-   fun:sqlite3BtreeOpen
-   fun:sqlite3BtreeFactory
    fun:openDatabase
    fun:sqlite3_open
    fun:_ZN3sql10Connection12OpenInternalERKSs
