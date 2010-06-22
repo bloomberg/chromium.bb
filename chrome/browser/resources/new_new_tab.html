@@ -126,7 +126,6 @@ if ('mode' in hashParams) {
 <body class="loading"
       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
-<div id="container">
 <div id="main">
 
   <div id=top-bar>
@@ -159,12 +158,7 @@ if ('mode' in hashParams) {
 
     <div id="recently-closed" class="section" section="RECENT">
       <h2 i18n-content="recentlyclosed"></h2>
-      <span>
-        <span class="nav">
-          <a href="chrome://history/" class="item"
-              i18n-content="viewfullhistory"></a>
-        </span>
-      </span>
+      <span class="nav"></span>
     </div>
 
     <div id="debug" class="section disabled" section="DEBUG">
@@ -200,9 +194,18 @@ if ('mode' in hashParams) {
     <img id="attribution-img">
   </div>
 
-</div> <!-- main -->
+  <div id="footer">
+    <a href="chrome://history"><span class="link-color"
+                                     i18n-content="history"></span></a>
+    <hr>
+    <a href="chrome://downloads"><span class="link-color"
+                                       i18n-content="downloads"></span></a>
+    <hr>
+    <a i18n-values="href:helpurl"><span class="link-color"
+                                        i18n-content="help"></span></a>
+  </div>
 
-</div>  <!-- container -->
+</div>  <!-- main -->
 
 <div class="window-menu" id="window-tooltip"></div>
 

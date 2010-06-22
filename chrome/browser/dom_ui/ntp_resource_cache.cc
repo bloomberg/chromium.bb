@@ -56,6 +56,10 @@ const char* const kLearnMoreIncognitoUrl =
 const char* const kSyncServiceHelpUrl =
     "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
 
+// The URL to be loaded to display Help.
+const char* const kHelpContentUrl =
+    "http://www.google.com/support/chrome/";
+
 std::wstring GetUrlWithLang(const char* const url) {
   return ASCIIToWide(google_util::AppendGoogleLocaleParam(GURL(url)).spec());
 }
@@ -261,8 +265,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
   localized_strings.SetString(L"attributionintro",
       l10n_util::GetString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
-  localized_strings.SetString(L"viewfullhistory",
-      l10n_util::GetString(IDS_NEW_TAB_VIEW_FULL_HISTORY));
   localized_strings.SetString(L"thumbnailremovednotification",
       l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
   localized_strings.SetString(L"undothumbnailremove",
@@ -286,6 +288,13 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString(L"tips",
       l10n_util::GetString(IDS_NEW_TAB_TIPS));
   localized_strings.SetString(L"close", l10n_util::GetString(IDS_CLOSE));
+  localized_strings.SetString(L"history",
+                              l10n_util::GetString(IDS_NEW_TAB_HISTORY));
+  localized_strings.SetString(L"downloads",
+                              l10n_util::GetString(IDS_NEW_TAB_DOWNLOADS));
+  localized_strings.SetString(L"help",
+                              l10n_util::GetString(IDS_NEW_TAB_HELP));
+  localized_strings.SetString(L"helpurl", GetUrlWithLang(kHelpContentUrl));
   localized_strings.SetString(L"appsettings",
       l10n_util::GetString(IDS_NEW_TAB_APP_SETTINGS));
   localized_strings.SetString(L"appuninstall",

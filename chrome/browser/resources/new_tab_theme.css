@@ -137,3 +137,7 @@ body {
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
   background-color: $$1; /* COLOR_NTP_SECTION */;
 }
+
+#footer hr {
+  color: $$2; /* COLOR_NTP_SECTION_BORDER */
+}

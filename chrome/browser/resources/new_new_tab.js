@@ -63,21 +63,13 @@ function recentlyClosedTabs(data) {
 var recentItems = [];
 
 function renderRecentlyClosed() {
-  // We remove all items but the header and the nav
-  var recentlyClosedElement = $('recently-closed');
-  var headerEl = recentlyClosedElement.firstElementChild;
-  var navEl = recentlyClosedElement.lastElementChild.lastElementChild;
-  var parentEl = navEl.parentNode;
+  // Remove all existing items and create new items.
+  var recentElement = $('recently-closed');
+  var parentEl = recentElement.lastElementChild;
+  parentEl.textContent = '';
 
-  for (var el = navEl.previousElementSibling; el;
-       el = navEl.previousElementSibling) {
-    parentEl.removeChild(el);
-  }
-
-  // Create new items
   recentItems.forEach(function(item) {
-    var el = createRecentItem(item);
-    parentEl.insertBefore(el, navEl);
+    parentEl.appendChild(createRecentItem(item));
   });
 
   layoutRecentlyClosed();
@@ -208,26 +200,21 @@ function layoutRecentlyClosed() {
 
   if (recentShown) {
     var recentElement = $('recently-closed');
-    var style = recentElement.style;
     // We cannot use clientWidth here since the width has a transition.
-    var spacing = 20;
-    var headerEl = recentElement.firstElementChild;
-    var navEl = recentElement.lastElementChild.lastElementChild;
-    var navWidth = navEl.offsetWidth;
-    // Subtract 10 for the padding
-    var availWidth = (useSmallGrid() ? 690 : 918) - navWidth - 10;
+    var availWidth = useSmallGrid() ? 692 : 920;
+    var parentEl = recentElement.lastElementChild;
 
     // Now go backwards and hide as many elements as needed.
     var elementsToHide = [];
-    for (var el = navEl.previousElementSibling; el;
+    for (var el = parentEl.lastElementChild; el;
          el = el.previousElementSibling) {
-      if (el.offsetLeft + el.offsetWidth + spacing > availWidth) {
+      if (el.offsetLeft + el.offsetWidth > availWidth) {
         elementsToHide.push(el);
       }
     }
 
     elementsToHide.forEach(function(el) {
-      el.parentNode.removeChild(el);
+      parentEl.removeChild(el);
     });
   }
 }

@@ -6132,10 +6132,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Menu item text for showing and hiding the tips section.">
         Tips
       </message>
-      <message name="IDS_NEW_TAB_VIEW_FULL_HISTORY"
-               desc="The text of the link that takes the user to the history page. This is shown under recent activities.">
-        View full history
-      </message>
       <message name="IDS_NEW_TAB_SHOW_RECENT"
                desc="Menu item text used to show recent activities.">
         Show recent activities
@@ -6204,6 +6200,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_MAKE_THIS_HOMEPAGE"
                desc="Text for link that sets new tab page as home page">
         Make this my home page
+      </message>
+      <message name="IDS_NEW_TAB_HISTORY"
+               desc="The text of the link that takes the user to the history page. This is shown in the footer.">
+        History
+      </message>
+      <message name="IDS_NEW_TAB_DOWNLOADS"
+               desc="The text of the link that takes the user to the downloads page. This is shown in the footer.">
+        Downloads
+      </message>
+      <message name="IDS_NEW_TAB_HELP"
+               desc="The text of the link that takes the user to the help page. This is shown in the footer.">
+        Help
       </message>
       <message name="IDS_NEW_TAB_APP_SETTINGS"
                desc="Text for the tooltip that is used for the button that shows the settings for an app icon.">

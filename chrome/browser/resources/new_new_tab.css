@@ -11,26 +11,27 @@ body {
   cursor: default;
 }
 
-#container {
-  position: relative;
-  min-height: 100%;
-}
-
 html[mode=app-launcher] {
   height: auto;
 }
 
 #main {
-  background: url(chrome://theme/product_logo) no-repeat 0 6px;
-  position: relative;
-  margin: 0 auto;
-  width: 920px;
-  min-height: 50px;
+  -webkit-box-sizing: border-box;
   -webkit-transition: width .15s;
+  background: url(chrome://theme/product_logo) no-repeat 0 6px;
+  margin: 0 auto;
+  min-height: 100%;
+  padding-bottom: 25px; /* Make room for the bottom positioned footer. */
+  position: relative;
+  width: 920px;
 }
 
 html[dir=rtl] #main {
   background-position-x: 100%;
+}
+
+html[mode=app-launcher] #main {
+  min-height: 50px;
 }
 
 html[anim=false] *,
@@ -475,4 +476,23 @@ html[dir=rtl] #option-menu > [command=hide]:before {
     margin-left: 10px;
     margin-right: 10px;
   }
+}
+
+#footer {
+  bottom: 0;
+  padding-bottom: 5px;
+  position: absolute;
+  text-align: end;
+  width: 100%;
+}
+
+#footer hr {
+  border: 0;
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+#footer hr:after {
+  content: "|";
 }
