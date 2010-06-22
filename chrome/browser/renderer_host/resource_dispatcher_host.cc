@@ -993,9 +993,9 @@ void ResourceDispatcherHost::OnSetCookieBlocked(URLRequest* request) {
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
     return;
 
-  CallRenderViewHostResourceDelegate(
+  CallRenderViewHostContentSettingsDelegate(
       render_process_id, render_view_id,
-      &RenderViewHostDelegate::Resource::OnContentBlocked,
+      &RenderViewHostDelegate::ContentSettings::OnContentBlocked,
       CONTENT_SETTINGS_TYPE_COOKIES);
 }
 

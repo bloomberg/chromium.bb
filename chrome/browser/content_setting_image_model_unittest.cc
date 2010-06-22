@@ -14,7 +14,8 @@ typedef RenderViewHostTestHarness ContentSettingImageModelTest;
 
 TEST_F(ContentSettingImageModelTest, UpdateFromTabContents) {
   TestTabContents tab_contents(profile_.get(), NULL);
-  RenderViewHostDelegate::Resource* render_view_host_delegate = &tab_contents;
+  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
+      &tab_contents;
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_IMAGES));

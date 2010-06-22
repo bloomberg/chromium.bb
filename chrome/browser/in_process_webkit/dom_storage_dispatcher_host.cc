@@ -265,9 +265,9 @@ void DOMStorageDispatcherHost::OnSetItem(
   if (reply_msg->routing_id() == MSG_ROUTING_CONTROL) {
     DLOG(WARNING) << "setItem was not given a proper routing id";
   } else if (result == WebKit::WebStorageArea::ResultBlockedByPolicy) {
-    CallRenderViewHostResourceDelegate(
+    CallRenderViewHostContentSettingsDelegate(
         process_id_, reply_msg->routing_id(),
-        &RenderViewHostDelegate::Resource::OnContentBlocked,
+        &RenderViewHostDelegate::ContentSettings::OnContentBlocked,
         CONTENT_SETTINGS_TYPE_COOKIES);
   }
 

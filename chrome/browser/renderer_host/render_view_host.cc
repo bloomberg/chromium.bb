@@ -1898,8 +1898,8 @@ void RenderViewHost::OnPageTranslated(int32 page_id,
 }
 
 void RenderViewHost::OnContentBlocked(ContentSettingsType type) {
-  RenderViewHostDelegate::Resource* resource_delegate =
-      delegate_->GetResourceDelegate();
-  if (resource_delegate)
-    resource_delegate->OnContentBlocked(type);
+  RenderViewHostDelegate::ContentSettings* content_settings_delegate =
+      delegate_->GetContentSettingsDelegate();
+  if (content_settings_delegate)
+    content_settings_delegate->OnContentBlocked(type);
 }

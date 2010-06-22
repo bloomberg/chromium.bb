@@ -2168,6 +2168,11 @@ RenderViewHostDelegate::Resource* TabContents::GetResourceDelegate() {
   return this;
 }
 
+RenderViewHostDelegate::ContentSettings*
+TabContents::GetContentSettingsDelegate() {
+  return this;
+}
+
 RenderViewHostDelegate::Save* TabContents::GetSaveDelegate() {
   return save_package_.get();  // May be NULL, but we can return NULL.
 }

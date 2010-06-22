@@ -33,6 +33,11 @@ RenderViewHostDelegate::GetResourceDelegate() {
   return NULL;
 }
 
+RenderViewHostDelegate::ContentSettings*
+RenderViewHostDelegate::GetContentSettingsDelegate() {
+  return NULL;
+}
+
 RenderViewHostDelegate::Save* RenderViewHostDelegate::GetSaveDelegate() {
   return NULL;
 }

@@ -43,7 +43,8 @@ class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
 };
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
-  RenderViewHostDelegate::Resource* render_view_host_delegate = contents();
+  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
+      contents();
   render_view_host_delegate->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -58,7 +59,8 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, Cookies) {
-  RenderViewHostDelegate::Resource* render_view_host_delegate = contents();
+  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
+      contents();
   render_view_host_delegate->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -77,7 +79,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   const GURL frame2_url("http://host2.example:999/");
 
   NavigateAndCommit(page_url);
-  RenderViewHostDelegate::Resource* render_view_host_delegate = contents();
+  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
+      contents();
 
   // One permitted frame, but not in the content map: requires reload.
   render_view_host_delegate->OnGeolocationPermissionSet(frame1_url, true);

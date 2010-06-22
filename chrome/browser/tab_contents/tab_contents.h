@@ -101,6 +101,7 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate,
                     public RenderViewHostDelegate::BrowserIntegration,
                     public RenderViewHostDelegate::Resource,
+                    public RenderViewHostDelegate::ContentSettings,
                     public RenderViewHostManager::Delegate,
                     public SelectFileDialog::Listener,
                     public JavaScriptMessageBoxClient,
@@ -884,6 +885,8 @@ class TabContents : public PageNavigator,
       const GURL& url,
       bool showing_repost_interstitial);
   virtual void DocumentLoadedInFrame();
+
+  // RenderViewHostDelegate::ContentSettings implementation.
   virtual void OnContentBlocked(ContentSettingsType type);
   virtual void OnGeolocationPermissionSet(const GURL& requesting_origin,
                                           bool allowed);
@@ -895,6 +898,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::BrowserIntegration*
       GetBrowserIntegrationDelegate();
   virtual RenderViewHostDelegate::Resource* GetResourceDelegate();
+  virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
   virtual RenderViewHostDelegate::Save* GetSaveDelegate();
   virtual RenderViewHostDelegate::Printing* GetPrintingDelegate();
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();

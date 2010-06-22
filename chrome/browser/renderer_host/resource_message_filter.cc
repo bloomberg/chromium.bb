@@ -189,9 +189,9 @@ class SetCookieCompletion : public net::CompletionCallback {
                                                      options);
     } else {
       if (!context_->IsExternal()) {
-        CallRenderViewHostResourceDelegate(
+        CallRenderViewHostContentSettingsDelegate(
             render_process_id_, render_view_id_,
-            &RenderViewHostDelegate::Resource::OnContentBlocked,
+            &RenderViewHostDelegate::ContentSettings::OnContentBlocked,
             CONTENT_SETTINGS_TYPE_COOKIES);
       }
     }

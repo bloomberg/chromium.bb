@@ -306,7 +306,13 @@ class RenderViewHostDelegate {
 
     // Notification that a document has been loaded in a frame.
     virtual void DocumentLoadedInFrame() = 0;
+  };
 
+  // ContentSettings------------------------------------------------------------
+  // Interface for content settings related events.
+
+  class ContentSettings {
+   public:
     // Called when content in the current page was blocked due to the user's
     // content settings.
     virtual void OnContentBlocked(ContentSettingsType type) = 0;
@@ -457,6 +463,7 @@ class RenderViewHostDelegate {
   virtual RendererManagement* GetRendererManagementDelegate();
   virtual BrowserIntegration* GetBrowserIntegrationDelegate();
   virtual Resource* GetResourceDelegate();
+  virtual ContentSettings* GetContentSettingsDelegate();
   virtual Save* GetSaveDelegate();
   virtual Printing* GetPrintingDelegate();
   virtual FavIcon* GetFavIconDelegate();
