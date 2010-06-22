@@ -284,11 +284,11 @@ URLRequestContextGetter* Profile::GetDefaultRequestContext() {
 #elif defined(OS_MACOSX)
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
-#elif defined(OS_POSIX)
-// Temporarily disabled while we figure some stuff out.
-// http://code.google.com/p/chromium/issues/detail?id=12351
-// #include "chrome/browser/password_manager/password_store_gnome.h"
-// #include "chrome/browser/password_manager/password_store_kwallet.h"
+#elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#include "base/xdg_util.h"
+#include "chrome/browser/password_manager/native_backend_gnome_x.h"
+#include "chrome/browser/password_manager/native_backend_kwallet_x.h"
+#include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1360,12 +1360,59 @@ void ProfileImpl::CreatePasswordStore() {
                             GetWebDataService(Profile::IMPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   ps = new PasswordStoreMac(new MacKeychain(), login_db);
-#elif defined(OS_POSIX)
-  // TODO(evanm): implement "native" password management.
-  // This bug describes the issues.
-  // http://code.google.com/p/chromium/issues/detail?id=12351
+#elif defined(OS_CHROMEOS)
+  // For now, we use PasswordStoreDefault. We might want to make a native
+  // backend for PasswordStoreX (see below) in the future though.
   ps = new PasswordStoreDefault(login_db, this,
                                 GetWebDataService(Profile::IMPLICIT_ACCESS));
+#elif defined(OS_POSIX)
+  // On POSIX systems, we try to use the "native" password management system of
+  // the desktop environment currently running, allowing GNOME Keyring in XFCE.
+  // (In all cases we fall back on the default store in case of failure.)
+  base::DesktopEnvironment desktop_env;
+  std::wstring store_type = CommandLine::ForCurrentProcess()->GetSwitchValue(
+      switches::kPasswordStore);
+  if (store_type == L"kwallet") {
+    desktop_env = base::DESKTOP_ENVIRONMENT_KDE4;
+  } else if (store_type == L"gnome") {
+    desktop_env = base::DESKTOP_ENVIRONMENT_GNOME;
+  } else if (store_type == L"detect") {
+    scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
+    desktop_env = base::GetDesktopEnvironment(env_getter.get());
+    LOG(INFO) << "Password storage detected desktop environment: " <<
+              base::GetDesktopEnvironmentName(desktop_env);
+  } else {
+    // TODO(mdm): If the flag is not given, or has an unknown value, use the
+    // default store for now. Once we're confident in the other stores, we can
+    // default to detecting the desktop environment instead.
+    desktop_env = base::DESKTOP_ENVIRONMENT_OTHER;
+  }
+
+  scoped_ptr<PasswordStoreX::NativeBackend> backend;
+  if (desktop_env == base::DESKTOP_ENVIRONMENT_KDE4) {
+    // KDE3 didn't use DBus, which our KWallet store uses.
+    LOG(INFO) << "Trying KWallet for password storage.";
+    backend.reset(new NativeBackendKWallet());
+    if (backend->Init())
+      LOG(INFO) << "Using KWallet for password storage.";
+    else
+      backend.reset();
+  } else if (desktop_env == base::DESKTOP_ENVIRONMENT_GNOME ||
+             desktop_env == base::DESKTOP_ENVIRONMENT_XFCE) {
+    LOG(INFO) << "Trying GNOME keyring for password storage.";
+    backend.reset(new NativeBackendGnome());
+    if (backend->Init())
+      LOG(INFO) << "Using GNOME keyring for password storage.";
+    else
+      backend.reset();
+  }
+  // TODO(mdm): this can change to a WARNING when we detect by default.
+  if (!backend.get())
+    LOG(INFO) << "Using default (unencrypted) store for password storage.";
+
+  ps = new PasswordStoreX(login_db, this,
+                          GetWebDataService(Profile::IMPLICIT_ACCESS),
+                          backend.release());
 #else
   NOTIMPLEMENTED();
 #endif
@@ -1373,7 +1420,7 @@ void ProfileImpl::CreatePasswordStore() {
     delete login_db;
 
   if (!ps || !ps->Init()) {
-    NOTREACHED() << "Could not initialise password manager";
+    NOTREACHED() << "Could not initialize password manager.";
     return;
   }
   password_store_.swap(ps);

@@ -946,6 +946,11 @@ const char kEnableCrashReporter[]           = "enable-crash-reporter";
 
 // This switch is used during automated testing.
 const char kNoProcessSingletonDialog[]      = "no-process-singleton-dialog";
+
+#if !defined(OS_MACOSX)
+// Specifies which password store to use (detect, default, gnome, kwallet).
+const char kPasswordStore[]                 = "password-store";
+#endif
 #endif
 
 #if defined(OS_MACOSX)

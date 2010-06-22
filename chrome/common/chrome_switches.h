@@ -279,6 +279,9 @@ extern const char kUseSystemSSL[];
 #if defined(OS_POSIX)
 extern const char kEnableCrashReporter[];
 extern const char kNoProcessSingletonDialog[];
+#if !defined(OS_MACOSX)
+extern const char kPasswordStore[];
+#endif
 #endif
 
 #if defined(OS_MACOSX)
