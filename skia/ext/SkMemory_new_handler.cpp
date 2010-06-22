@@ -7,11 +7,14 @@
 #include <new>
 
 #include "third_party/skia/include/core/SkTypes.h"
+#include "third_party/skia/include/core/SkThread.h"
 
 // This implementation of sk_malloc_flags() and friends is identical
 // to SkMemory_malloc.c, except that it disables the CRT's new_handler
 // during malloc(), when SK_MALLOC_THROW is not set (ie., when
 // sk_malloc_flags() would not abort on NULL).
+
+static SkMutex gSkNewHandlerMutex;
 
 void sk_throw() {
     SkASSERT(!"sk_throw");
@@ -45,13 +48,14 @@ void sk_free(void* p) {
 }
 
 void* sk_malloc_flags(size_t size, unsigned flags) {
-    std::new_handler old_handler;
+    void* p;
     if (!(flags & SK_MALLOC_THROW)) {
-      old_handler = std::set_new_handler(NULL);
-    }
-    void* p = malloc(size);
-    if (!(flags & SK_MALLOC_THROW)) {
+      SkAutoMutexAcquire lock(gSkNewHandlerMutex);
+      std::new_handler old_handler = std::set_new_handler(NULL);
+      p = malloc(size);
       std::set_new_handler(old_handler);
+    } else {
+      p = malloc(size);
     }
     if (p == NULL) {
         if (flags & SK_MALLOC_THROW) {
