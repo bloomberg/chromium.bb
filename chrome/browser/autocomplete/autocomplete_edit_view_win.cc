@@ -2337,14 +2337,20 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   }
 
   const std::wstring start_text(GetText());
-  if (IsSelectAllForRange(sel)) {
-    // All the text is selected, export as URL.
-    GURL url;
+  std::wstring text_to_write(GetSelectedText());
+  GURL url;
+  bool write_url;
+  const bool is_all_selected = IsSelectAllForRange(sel);
+
+  model()->AdjustTextForCopy(std::min(sel.cpMin, sel.cpMax), is_all_selected,
+                             &text_to_write, &url, &write_url);
+
+  if (write_url) {
     std::wstring title;
     SkBitmap favicon;
-    model_->GetDataForURLExport(&url, &title, &favicon);
+    if (is_all_selected)
+      model_->GetDataForURLExport(&url, &title, &favicon);
     drag_utils::SetURLAndDragImage(url, title, favicon, &data);
-    data.SetURL(url, title);
     supported_modes |= DROPEFFECT_LINK;
     UserMetrics::RecordAction(UserMetricsAction("Omnibox_DragURL"),
                               model_->profile());
@@ -2354,7 +2360,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
                               model_->profile());
   }
 
-  data.SetString(GetSelectedText());
+  data.SetString(text_to_write);
 
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
   DWORD dropped_mode;
