@@ -1,0 +1,45 @@
+Name: XZ Utils
+URL: http://tukaani.org/xz/
+Source URL: git://ctrl.tukaani.org/xz.git
+Version: git commit c15c42abb3c8c6e77c778ef06c97a4a10b8b5d00
+         (2010-06-15 14:06:29 +0300), newer than 4.999.9beta
+License: Public domain/license grant, LGPL 2.1, GPL 2, GPL 3
+License File: COPYING
+
+Description:
+XZ Utils is general-purpose data compression software implementing the
+modified Lempel-Ziv-Markov chain algorithm (LZMA2).
+
+Local Modifications:
+ - None.
+
+The upstream source is present in the xz directory. Other entries in this
+directory are present for build integration:
+  - README.chromium.
+  - xz.gyp.
+  - config/mac/config.h, the ouptut of a "configure" run. Various macros are
+    undefined, because feature selection is handled by xz.gyp. These macros
+    are affected:
+     - HAVE_CHECK_CRC32
+     - HAVE_CHECK_CRC64
+     - HAVE_CHECK_SHA256
+     - HAVE_DECODER
+     - HAVE_DECODER_ARM
+     - HAVE_DECODER_ARMTHUMB
+     - HAVE_DECODER_DELTA
+     - HAVE_DECODER_IA64
+     - HAVE_DECODER_LZMA1
+     - HAVE_DECODER_LZMA2
+     - HAVE_DECODER_POWERPC
+     - HAVE_DECODER_SPARC
+     - HAVE_DECODER_X86
+     - HAVE_ENCODER
+     - HAVE_ENCODER_ARM
+     - HAVE_ENCODER_ARMTHUMB
+     - HAVE_ENCODER_DELTA
+     - HAVE_ENCODER_IA64
+     - HAVE_ENCODER_LZMA1
+     - HAVE_ENCODER_LZMA2
+     - HAVE_ENCODER_POWERPC
+     - HAVE_ENCODER_SPARC
+     - HAVE_ENCODER_X86
