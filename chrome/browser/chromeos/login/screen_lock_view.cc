@@ -64,7 +64,7 @@ void ScreenLockView::Init() {
                  NotificationType::LOGIN_USER_IMAGE_CHANGED,
                  NotificationService::AllSources());
 
-  user_view_ = new UserView(this);
+  user_view_ = new UserView(this, false);
   views::View* main = new views::View();
   main->set_background(
       views::Background::CreateSolidBackground(login::kBackgroundColor));
@@ -170,16 +170,14 @@ void ScreenLockView::SetEnabled(bool enabled) {
 
 void ScreenLockView::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
-  switch (sender->tag()) {
-    case login::UNLOCK:
-      screen_locker_->Authenticate(password_field_->text());
-      break;
-    case login::SIGN_OUT:
-      screen_locker_->Signout();
-      break;
-    default:
-      NOTREACHED();
-  }
+  if (sender->tag() == login::UNLOCK)
+    screen_locker_->Authenticate(password_field_->text());
+  else
+    NOTREACHED();
+}
+
+void ScreenLockView::OnSignout() {
+  screen_locker_->Signout();
 }
 
 bool ScreenLockView::HandleKeystroke(

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_LOCK_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_LOCK_VIEW_H_
 
+#include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/button.h"
@@ -29,7 +30,8 @@ class ScreenLockerTester;
 class ScreenLockView : public views::View,
                        public views::ButtonListener,
                        public views::Textfield::Controller,
-                       public NotificationObserver {
+                       public NotificationObserver,
+                       public UserView::Delegate {
  public:
   explicit ScreenLockView(ScreenLocker* screen_locker);
   virtual ~ScreenLockView() {}
@@ -61,6 +63,9 @@ class ScreenLockView : public views::View,
                                const string16& new_contents) {}
   virtual bool HandleKeystroke(views::Textfield* sender,
                                const views::Textfield::Keystroke& keystroke);
+
+  // UserView::Delegate implementation:
+  virtual void OnSignout();
 
  private:
   friend class test::ScreenLockerTester;

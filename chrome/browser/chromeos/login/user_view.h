@@ -7,13 +7,17 @@
 
 #include <string>
 
+#include "app/menus/simple_menu_model.h"
 #include "views/controls/button/button.h"
+#include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class SkBitmap;
 
 namespace views {
 class ImageView;
+class Menu2;
+class MenuButton;
 class Throbber;
 }  // namespace views
 
@@ -21,17 +25,30 @@ namespace chromeos {
 
 class SignoutView;
 
-class UserView : public views::View {
+class UserView : public views::View,
+                 public views::ButtonListener,
+                 public views::ViewMenuDelegate,
+                 public menus::SimpleMenuModel::Delegate {
  public:
-  // Creates UserView for login screen.
-  UserView();
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
 
-  // Creates UserView for screen locker. This will have
-  // a signout button in addition to the UserView used in the login screen.
-  // |listener| is used to listen to button press event on this button.
-  explicit UserView(views::ButtonListener* listener);
+    // Notifies that user pressed signout button on screen locker.
+    virtual void OnSignout() {}
 
-  virtual ~UserView() {}
+    // Notifies that user would like to remove this user from login screen.
+    virtual void OnRemoveUser() {}
+
+    // Notifies that user would like to take new picture for this user on
+    // login screen.
+    virtual void OnChangePhoto() {}
+  };
+
+  // Creates UserView for login screen (|is_login| == true) or screen locker.
+  // On login screen this will have addition menu with user specific actions.
+  // On screen locker it will have sign out button.
+  UserView(Delegate* delegate, bool is_login);
 
   // view::View overrides.
   virtual gfx::Size GetPreferredSize();
@@ -46,11 +63,30 @@ class UserView : public views::View {
   void StartThrobber();
   void StopThrobber();
 
+  // Show/Hide menu for user specific actions.
+  void SetMenuVisible(bool flag);
+
   // Enable/Disable sign-out button.
   void SetSignoutEnabled(bool enabled);
 
+  // ButtonListener:
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // ViewMenuDelegate:
+  virtual void RunMenu(View* source, const gfx::Point& pt);
+
+  // menus::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
+
  private:
   void Init();
+  void BuildMenu();
+
+  Delegate* delegate_;
 
   SignoutView* signout_view_;
 
@@ -58,6 +94,11 @@ class UserView : public views::View {
   views::ImageView* image_view_;
 
   views::Throbber* throbber_;
+
+  // Menu for user specific actions.
+  scoped_ptr<menus::SimpleMenuModel> menu_model_;
+  scoped_ptr<views::Menu2> menu_;
+  views::MenuButton* menu_button_;
 
   DISALLOW_COPY_AND_ASSIGN(UserView);
 };

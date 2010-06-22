@@ -173,6 +173,26 @@ void UserManager::UserLoggedIn(const std::string& email) {
   NotifyOnLogin();
 }
 
+void UserManager::RemoveUser(const std::string& email) {
+  // Get a copy of the current users.
+  std::vector<User> users = GetUsers();
+
+  // Clear the prefs view of the users.
+  PrefService* prefs = g_browser_process->local_state();
+  ListValue* prefs_users = prefs->GetMutableList(kLoggedInUsers);
+  prefs_users->Clear();
+
+  for (std::vector<User>::iterator it = users.begin();
+       it < users.end();
+       ++it) {
+    std::string user_email = it->email();
+    // Skip user that we would like to delete.
+    if (email != user_email)
+      prefs_users->Append(Value::CreateStringValue(user_email));
+  }
+  prefs->ScheduleSavePersistentPrefs();
+}
+
 void UserManager::SaveUserImage(const std::string& username,
                                 const SkBitmap& image) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));

@@ -62,6 +62,9 @@ class UserManager : public UserImageLoader::Delegate {
   // The persistent list will be updated accordingly.
   void UserLoggedIn(const std::string& email);
 
+  // Remove user from persistent list. NOTE: user's data won't be removed.
+  void RemoveUser(const std::string& email);
+
   // Returns the logged-in user.
   const User& logged_in_user() {
     return logged_in_user_;

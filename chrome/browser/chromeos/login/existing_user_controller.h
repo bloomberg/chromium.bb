@@ -71,6 +71,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void ClearErrors();
   virtual void OnUserSelected(UserController* source);
   virtual void ActivateWizard(const std::string& screen_name);
+  virtual void RemoveUser(UserController* source);
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const std::string& error);

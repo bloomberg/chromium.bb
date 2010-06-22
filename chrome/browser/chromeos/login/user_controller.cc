@@ -106,8 +106,7 @@ void UserController::Init(int index, int total_user_count) {
   int controls_height = 0;
   controls_window_ = CreateControlsWindow(index, &controls_height);
   image_window_ = CreateImageWindow(index);
-  border_window_ = CreateBorderWindow(index, total_user_count,
-                                      controls_height);
+  CreateBorderWindow(index, total_user_count, controls_height);
   label_window_ = CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_LABEL);
   unselected_label_window_ =
       CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
@@ -169,10 +168,13 @@ void UserController::Login() {
 }
 
 void UserController::IsActiveChanged(bool active) {
-  if (active)
+  if (active) {
     delegate_->OnUserSelected(this);
-  else
+    user_view_->SetMenuVisible(!is_guest_);
+  } else {
+    user_view_->SetMenuVisible(false);
     delegate_->ClearErrors();
+  }
 }
 
 WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
@@ -222,7 +224,7 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
 }
 
 WidgetGtk* UserController::CreateImageWindow(int index) {
-  user_view_ = new UserView();
+  user_view_ = new UserView(this, true);
 
   if (!is_guest_) {
     user_view_->SetImage(user_.image());
@@ -246,30 +248,34 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
   return window;
 }
 
-WidgetGtk* UserController::CreateBorderWindow(int index,
-                                              int total_user_count,
-                                              int controls_height) {
-  WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
-  window->Init(NULL, gfx::Rect());
-  window->GetRootView()->set_background(
+void UserController::CreateBorderWindow(int index,
+                                        int total_user_count,
+                                        int controls_height) {
+  border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+  border_window_->Init(NULL, gfx::Rect());
+  border_window_->GetRootView()->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
+  UpdateUserCount(index, total_user_count);
+
+  // Guest login controls window is much higher than exsisting user's controls
+  // window so window manager will place the control instead of image window.
+  int height = kBorderSize * 2 + controls_height;
+  height += is_guest_ ? 0 : kBorderSize + kUserImageSize;
+  border_window_->SetBounds(gfx::Rect(0, 0, kUserImageSize + kBorderSize * 2,
+                            height));
+  border_window_->Show();
+}
+
+void UserController::UpdateUserCount(int index, int total_user_count) {
   std::vector<int> params;
   params.push_back(index);
   params.push_back(total_user_count);
   params.push_back(kUnselectedSize);
   params.push_back(kPadding);
   WmIpc::instance()->SetWindowType(
-      window->GetNativeView(),
+      border_window_->GetNativeView(),
       WM_IPC_WINDOW_LOGIN_BORDER,
       &params);
-
-  // Guest login controls window is much higher than exsisting user's controls
-  // window so window manager will place the control instead of image window.
-  int height = kBorderSize * 2 + controls_height;
-  height += is_guest_ ? 0 : kBorderSize + kUserImageSize;
-  window->SetBounds(gfx::Rect(0, 0, kUserImageSize + kBorderSize * 2, height));
-  window->Show();
-  return window;
 }
 
 WidgetGtk* UserController::CreateLabelWindow(int index,
@@ -326,6 +332,14 @@ void UserController::OnLoginOffTheRecord() {
 
 void UserController::ClearErrors() {
   delegate_->ClearErrors();
+}
+
+void UserController::OnRemoveUser() {
+  delegate_->RemoveUser(this);
+}
+
+void UserController::OnChangePhoto() {
+  // TODO(dpolukhin): implement change user photo, see http://crosbug.com/2348
 }
 
 }  // namespace chromeos

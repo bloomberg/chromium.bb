@@ -8,9 +8,11 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "grit/generated_resources.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/throbber.h"
 
 namespace {
@@ -20,6 +22,12 @@ const SkColor kSignoutBackgroundColor = 0xFF007700;
 
 // Left margin to the "Active User" text.
 const int kSignoutLeftOffset = 10;
+
+// Padding between menu button and left right image corner.
+const int kMenuButtonPadding = 4;
+
+const int kIdRemove = 1;
+const int kIdChangePhoto = 2;
 
 }  // namespace
 
@@ -76,6 +84,8 @@ class SignoutView : public views::View {
                      std::max(label.height(), button.height()));
   }
 
+  views::Button* signout_button() { return signout_button_; }
+
  private:
   friend class UserView;
 
@@ -85,40 +95,50 @@ class SignoutView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SignoutView);
 };
 
-UserView::UserView(views::ButtonListener* listener)
-    : signout_view_(new SignoutView(listener)),
+UserView::UserView(Delegate* delegate, bool is_login)
+    : delegate_(delegate),
+      signout_view_(NULL),
       image_view_(new views::ImageView()),
-      throbber_(CreateDefaultSmoothedThrobber()) {
-  DCHECK(listener);
-  Init();
-}
+      throbber_(CreateDefaultSmoothedThrobber()),
+      menu_button_(NULL) {
+  DCHECK(delegate);
+  if (!is_login)
+    signout_view_ = new SignoutView(this);
+  if (is_login)
+    menu_button_ = new views::MenuButton(NULL, std::wstring(), this, true);
 
-UserView::UserView()
-    : signout_view_(NULL),
-      image_view_(new views::ImageView()),
-      throbber_(CreateDefaultSmoothedThrobber()) {
   Init();
 }
 
 void UserView::Init() {
   image_view_->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
-  int w = throbber_->GetPreferredSize().width();
-  int h = throbber_->GetPreferredSize().height();
-  throbber_->SetBounds(kUserImageSize / 2 - w / 2, kUserImageSize / 2 - h / 2 ,
-                       w, h);
-  // Throbber should be actually hidden while stopped so tooltip manager
-  // doesn't find it.
-  throbber_->SetVisible(false);
-  image_view_->AddChildView(throbber_);
+  if (throbber_) {
+    int w = throbber_->GetPreferredSize().width();
+    int h = throbber_->GetPreferredSize().height();
+    throbber_->SetBounds(kUserImageSize / 2 - w / 2,
+        kUserImageSize / 2 - h / 2 , w, h);
+    // Throbber should be actually hidden while stopped so tooltip manager
+    // doesn't find it.
+    throbber_->SetVisible(false);
+    image_view_->AddChildView(throbber_);
+  }
 
   // UserView's layout never changes, so let's layout once here.
-  AddChildView(image_view_);
   image_view_->SetBounds(0, 0, kUserImageSize, kUserImageSize);
+  AddChildView(image_view_);
   if (signout_view_) {
-    AddChildView(signout_view_);
     signout_view_->SetBounds(0, kUserImageSize, kUserImageSize,
                              signout_view_->GetPreferredSize().height());
+    AddChildView(signout_view_);
+  }
+  if (menu_button_) {
+    int w = menu_button_->GetPreferredSize().width();
+    int h = menu_button_->GetPreferredSize().height();
+    menu_button_->SetBounds(kUserImageSize - w - kMenuButtonPadding,
+                            kMenuButtonPadding, w, h);
+    menu_button_->SetVisible(false);
+    AddChildView(menu_button_);
   }
 }
 
@@ -156,6 +176,57 @@ gfx::Size UserView::GetPreferredSize() {
 void UserView::SetSignoutEnabled(bool enabled) {
   DCHECK(signout_view_);
   signout_view_->signout_button_->SetEnabled(enabled);
+}
+
+void UserView::ButtonPressed(views::Button* sender, const views::Event& event) {
+  DCHECK(delegate_);
+  if (sender->tag() == login::SIGN_OUT)
+    delegate_->OnSignout();
+}
+
+void UserView::SetMenuVisible(bool flag) {
+  DCHECK(menu_button_);
+  menu_button_->SetVisible(flag);
+}
+
+void UserView::BuildMenu() {
+  menu_model_.reset(new menus::SimpleMenuModel(this));
+  menu_model_->AddItemWithStringId(kIdRemove, IDS_LOGIN_REMOVE);
+  menu_model_->AddItemWithStringId(kIdChangePhoto, IDS_LOGIN_CHANGE_PHOTO);
+  menu_.reset(new views::Menu2(menu_model_.get()));
+}
+
+void UserView::RunMenu(View* source, const gfx::Point& pt) {
+  if (!menu_.get())
+    BuildMenu();
+
+  menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+}
+
+bool UserView::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool UserView::IsCommandIdEnabled(int command_id) const {
+  // TODO(dpolukhin): implement and enable change photo.
+  return command_id != kIdChangePhoto;
+}
+
+bool UserView::GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator) {
+  return false;
+}
+
+void UserView::ExecuteCommand(int command_id) {
+  switch (command_id) {
+    case kIdRemove:
+      delegate_->OnRemoveUser();
+      break;
+
+    case kIdChangePhoto:
+      delegate_->OnChangePhoto();
+      break;
+  }
 }
 
 }  // namespace chromeos

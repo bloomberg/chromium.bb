@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/new_user_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -33,7 +34,8 @@ class UserController : public views::ButtonListener,
                        public views::Textfield::Controller,
                        public views::WidgetDelegate,
                        public NewUserView::Delegate,
-                       public NotificationObserver {
+                       public NotificationObserver,
+                       public UserView::Delegate {
  public:
   class Delegate {
    public:
@@ -43,6 +45,7 @@ class UserController : public views::ButtonListener,
     virtual void ClearErrors() = 0;
     virtual void OnUserSelected(UserController* source) = 0;
     virtual void ActivateWizard(const std::string& screen_name) = 0;
+    virtual void RemoveUser(UserController* source) = 0;
    protected:
     virtual ~Delegate() {}
   };
@@ -59,6 +62,10 @@ class UserController : public views::ButtonListener,
   // |index| is the index of this user, and |total_user_count| the total
   // number of users.
   void Init(int index, int total_user_count);
+
+  // Update border window parameters to notify window manager about new numbers.
+  // |index| of this user and |total_user_count| of users.
+  void UpdateUserCount(int index, int total_user_count);
 
   const UserManager::User& user() const { return user_; }
 
@@ -97,6 +104,10 @@ class UserController : public views::ButtonListener,
   virtual void OnLoginOffTheRecord();
   virtual void ClearErrors();
 
+  // UserView::Delegate implementation:
+  virtual void OnRemoveUser();
+  virtual void OnChangePhoto();
+
   // Padding between the user windows.
   static const int kPadding;
 
@@ -109,10 +120,8 @@ class UserController : public views::ButtonListener,
 
   views::WidgetGtk* CreateControlsWindow(int index, int* height);
   views::WidgetGtk* CreateImageWindow(int index);
-  views::WidgetGtk* CreateBorderWindow(int index,
-                                       int total_user_count,
-                                       int controls_height);
   views::WidgetGtk* CreateLabelWindow(int index, WmIpcWindowType type);
+  void CreateBorderWindow(int index, int total_user_count, int controls_height);
 
   // Sets specified image on the image window. If image's size is less than
   // 75% of window size, image size is preserved to avoid blur. Otherwise,

@@ -196,6 +196,24 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
                       &ExistingUserController::Delete);
 }
 
+void ExistingUserController::RemoveUser(UserController* source) {
+  ClearErrors();
+
+  UserManager::Get()->RemoveUser(source->user().email());
+
+  // We need to unmap entry windows, the windows will be unmapped in destructor.
+  delete source;
+  int new_size = static_cast<int>(controllers_.size()) - 1;
+  for (int i = 0; i < static_cast<int>(controllers_.size()); ++i) {
+    if (controllers_[i] == source) {
+      controllers_.erase(controllers_.begin() + i);
+      --i;
+    } else {
+      controllers_[i]->UpdateUserCount(i, new_size);
+    }
+  }
+}
+
 void ExistingUserController::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "OnLoginFailure";
   ClearCaptchaState();
