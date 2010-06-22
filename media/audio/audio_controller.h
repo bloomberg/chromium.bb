@@ -107,7 +107,7 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
       int channels,                   // Number of channels.
       int sample_rate,                // Sampling frequency/rate.
       int bits_per_sample,            // Number of bits per sample.
-      int hardware_buffer_size,       // Size of the hardware buffer.
+      uint32 hardware_buffer_size,    // Size of the hardware buffer.
 
       // Soft limit for buffer capacity in this controller. This parameter
       // is used only in regular latency mode.
@@ -120,7 +120,7 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
       int channels,                   // Number of channels.
       int sample_rate,                // Sampling frequency/rate.
       int bits_per_sample,            // Number of bits per sample.
-      int hardware_buffer_size,       // Size of the hardware buffer.
+      uint32 hardware_buffer_size,    // Size of the hardware buffer.
 
       // External synchronous reader for audio controller.
       SyncReader* sync_reader);
@@ -140,6 +140,9 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
   // Closes the audio output stream and shutdown the audio controller thread.
   // This method returns only after all operations are completed. This
   // controller cannot be used after this method is called.
+  //
+  // It is safe to call this method more than once. Calls after the first one
+  // will have no effect.
   void Close();
 
   // Sets the volume of the audio output stream.
@@ -149,6 +152,8 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
   // the regular latency mode and it is illegal to call this method when
   // SyncReader is present.
   void EnqueueData(const uint8* data, uint32 size);
+
+  bool LowLatencyMode() const { return sync_reader_ != NULL; }
 
   ///////////////////////////////////////////////////////////////////////////
   // AudioSourceCallback methods.
@@ -164,7 +169,7 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
   // The following methods are executed on the audio controller thread.
   void DoCreate(AudioManager::Format format, int channels,
                 int sample_rate, int bits_per_sample,
-                int hardware_buffer_size);
+                uint32 hardware_buffer_size);
   void DoPlay();
   void DoPause();
   void DoFlush();

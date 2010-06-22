@@ -71,6 +71,24 @@ ACTION_P3(SignalEvent, event, count, limit) {
   }
 }
 
+TEST(AudioControllerTest, CreateAndClose) {
+  if (!HasAudioDevices() || IsRunningHeadless())
+    return;
+
+  MockAudioControllerEventHandler event_handler;
+  scoped_refptr<AudioController> controller = AudioController::Create(
+      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
+      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
+  ASSERT_TRUE(controller.get());
+
+  // Close the controller immediately.
+  controller->Close();
+
+  // TODO(hclam): Make sure releasing the reference to this
+  // object actually destruct it.
+  controller = NULL;
+}
+
 TEST(AudioControllerTest, PlayAndClose) {
   if (!HasAudioDevices() || IsRunningHeadless())
     return;
@@ -182,6 +200,25 @@ TEST(AudioControllerTest, HardwareBufferTooLarge) {
   // Use assert because we don't stop the device and assume we can't
   // create one.
   ASSERT_FALSE(controller);
+}
+
+TEST(AudioControllerTest, CloseTwice) {
+  if (!HasAudioDevices() || IsRunningHeadless())
+    return;
+
+  MockAudioControllerEventHandler event_handler;
+  scoped_refptr<AudioController> controller = AudioController::Create(
+      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
+      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
+  ASSERT_TRUE(controller.get());
+
+  // Close the controller immediately.
+  controller->Close();
+  controller->Close();
+
+  // TODO(hclam): Make sure releasing the reference to this
+  // object actually destruct it.
+  controller = NULL;
 }
 
 }  // namespace media

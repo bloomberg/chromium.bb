@@ -6,8 +6,8 @@
 
 // The following parameters limit the request buffer and packet size from the
 // renderer to avoid renderer from requesting too much memory.
-static const int kMegabytes = 1024 * 1024;
-static const int kMaxHardwareBufferSize = 2 * kMegabytes;
+static const uint32 kMegabytes = 1024 * 1024;
+static const uint32 kMaxHardwareBufferSize = 2 * kMegabytes;
 static const int kMaxChannels = 32;
 static const int kMaxBitsPerSample = 64;
 static const int kMaxSampleRate = 192000;
@@ -15,7 +15,7 @@ static const int kMaxSampleRate = 192000;
 // Return true if the parameters for creating an audio stream is valid.
 // Return false otherwise.
 static bool CheckParameters(int channels, int sample_rate,
-                            int bits_per_sample, int hardware_buffer_size) {
+                            int bits_per_sample, uint32 hardware_buffer_size) {
   if (channels <= 0 || channels > kMaxChannels)
     return false;
   if (sample_rate <= 0 || sample_rate > kMaxSampleRate)
@@ -52,7 +52,7 @@ scoped_refptr<AudioController> AudioController::Create(
     int channels,
     int sample_rate,
     int bits_per_sample,
-    int hardware_buffer_size,
+    uint32 hardware_buffer_size,
     uint32 buffer_capacity) {
 
   if (!CheckParameters(channels, sample_rate, bits_per_sample,
@@ -60,18 +60,18 @@ scoped_refptr<AudioController> AudioController::Create(
     return NULL;
 
   // Starts the audio controller thread.
-  scoped_refptr<AudioController> source = new AudioController(
+  scoped_refptr<AudioController> controller = new AudioController(
       event_handler, buffer_capacity, NULL);
 
   // Start the audio controller thread and post a task to create the
   // audio stream.
-  source->thread_.Start();
-  source->thread_.message_loop()->PostTask(
+  controller->thread_.Start();
+  controller->thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(source.get(), &AudioController::DoCreate,
+      NewRunnableMethod(controller.get(), &AudioController::DoCreate,
                         format, channels, sample_rate, bits_per_sample,
                         hardware_buffer_size));
-  return source;
+  return controller;
 }
 
 // static
@@ -81,7 +81,7 @@ scoped_refptr<AudioController> AudioController::CreateLowLatency(
     int channels,
     int sample_rate,
     int bits_per_sample,
-    int hardware_buffer_size,
+    uint32 hardware_buffer_size,
     SyncReader* sync_reader) {
 
   DCHECK(sync_reader);
@@ -91,18 +91,18 @@ scoped_refptr<AudioController> AudioController::CreateLowLatency(
     return NULL;
 
   // Starts the audio controller thread.
-  scoped_refptr<AudioController> source = new AudioController(
+  scoped_refptr<AudioController> controller = new AudioController(
       event_handler, 0, sync_reader);
 
   // Start the audio controller thread and post a task to create the
   // audio stream.
-  source->thread_.Start();
-  source->thread_.message_loop()->PostTask(
+  controller->thread_.Start();
+  controller->thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(source.get(), &AudioController::DoCreate,
+      NewRunnableMethod(controller.get(), &AudioController::DoCreate,
                         format, channels, sample_rate, bits_per_sample,
                         hardware_buffer_size));
-  return source;
+  return controller;
 }
 
 void AudioController::Play() {
@@ -127,7 +127,13 @@ void AudioController::Flush() {
 }
 
 void AudioController::Close() {
-  DCHECK(thread_.IsRunning());
+  if (!thread_.IsRunning()) {
+    // If the thread is not running make sure we are stopped.
+    DCHECK_EQ(kClosed, state_);
+    return;
+  }
+
+  // Wait for all tasks to complete on the audio thread.
   thread_.message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &AudioController::DoClose));
@@ -149,8 +155,8 @@ void AudioController::EnqueueData(const uint8* data, uint32 size) {
 }
 
 void AudioController::DoCreate(AudioManager::Format format, int channels,
-                               int sample_rate, int bits_per_sample,
-                               int hardware_buffer_size) {
+                              int sample_rate, int bits_per_sample,
+                              uint32 hardware_buffer_size) {
   // Create the stream in the first place.
   stream_ = AudioManager::GetAudioManager()->MakeAudioStream(
       format, channels, sample_rate, bits_per_sample);
@@ -170,6 +176,12 @@ void AudioController::DoCreate(AudioManager::Format format, int channels,
     return;
   }
   handler_->OnCreated(this);
+
+  // If in normal latency mode then start buffering.
+  if (!LowLatencyMode()) {
+    AutoLock auto_lock(lock_);
+    SubmitOnMoreData_Locked();
+  }
 }
 
 void AudioController::DoPlay() {
