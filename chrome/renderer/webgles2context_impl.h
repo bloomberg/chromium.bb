@@ -15,10 +15,14 @@ class WebGLES2ContextImpl : public WebKit::WebGLES2Context {
   WebGLES2ContextImpl();
   virtual ~WebGLES2ContextImpl();
 
+  // TODO(vangelis): Remove once method is removed from WebGLES2Context.
   virtual bool initialize(WebKit::WebView*);
+  virtual bool initialize(WebKit::WebView*, WebGLES2Context* parent);
   virtual bool makeCurrent();
   virtual bool destroy();
   virtual bool swapBuffers();
+
+  ggl::Context* context() { return context_; }
 
  private:
   // The GGL context we use for OpenGL rendering.

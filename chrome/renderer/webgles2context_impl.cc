@@ -19,7 +19,17 @@ WebGLES2ContextImpl::~WebGLES2ContextImpl() {
   destroy();
 }
 
+// TODO(vangelis): Remove once the method is removed from the WebGLES2Context.
 bool WebGLES2ContextImpl::initialize(WebKit::WebView* web_view) {
+    return initialize(web_view, NULL);
+}
+
+bool WebGLES2ContextImpl::initialize(
+    WebKit::WebView* web_view,
+    WebGLES2Context* parent) {
+  // Windowed contexts don't have a parent context.
+  DCHECK(!(web_view && parent));
+
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
     return false;
@@ -38,7 +48,16 @@ bool WebGLES2ContextImpl::initialize(WebKit::WebView* web_view) {
     gfx::NativeViewId view_id = renderview->host_window();
     context_ = ggl::CreateViewContext(host, view_id);
   } else {
-    context_ = ggl::CreateOffscreenContext(host, NULL, gfx::Size(1, 1));
+    ggl::Context* parent_context = NULL;
+
+    if (parent) {
+      WebGLES2ContextImpl* parent_context_impl =
+          static_cast<WebGLES2ContextImpl*>(parent);
+      parent_context = parent_context_impl->context();
+      DCHECK(parent_context);
+    }
+    context_ = ggl::CreateOffscreenContext(host, parent_context,
+                                           gfx::Size(1, 1));
   }
 
   return (context_ != NULL);
