@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<policyDefinitions revision="1.0" schemaVersion="1.0">
+  <policyNamespaces>
+    <target prefix="fullarmor" namespace="FullArmor.a11efb4b-1ae1-445a-a00f-3a5a41df8794" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <supersededAdm fileName="C:\Development\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
+  <resources minRequiredRevision="1.0" />
+  <supportedOn>
+    <definitions>
+      <definition name="SUPPORTED_WINXPSP2" displayName="$(string.SUPPORTED_WINXPSP2)" />
+      <definition name="SUPPORTED_NotSpecified" displayName="$(string.ADMXMigrator_NoSupportedOn)" />
+    </definitions>
+  </supportedOn>
+  <categories>
+    <category name="google" displayName="$(string.google)" />
+    <category name="googlechrome" displayName="$(string.googlechrome)">
+      <parentCategory ref="google" />
+    </category>
+  </categories>
+  <policies>
+    <policy name="HomePage" class="Machine" displayName="$(string.HomePage)" explainText="$(string.HomePage_Explain)" presentation="$(presentation.HomePage)" key="Software\Policies\Google\Google Chrome" valueName="Homepage">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <elements>
+        <text id="HomePageLocation" valueName="HomepageLocation" />
+        <boolean id="HomePageIsNewTab" valueName="HomepageIsNewTabPage" />
+      </elements>
+    </policy>
+    <policy name="AlternateErrorPagesEnabled" class="Machine" displayName="$(string.AlternateErrorPagesEnabled)" explainText="$(string.AlternateErrorPagesEnabled_Explain)" presentation="$(presentation.AlternateErrorPagesEnabled)" key="Software\Policies\Google\Google Chrome" valueName="AlternateErrorPagesEnabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="SearchSuggestEnabled" class="Machine" displayName="$(string.SearchSuggestEnabled)" explainText="$(string.SearchSuggestEnabled_Explain)" presentation="$(presentation.SearchSuggestEnabled)" key="Software\Policies\Google\Google Chrome" valueName="SearchSuggestEnabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="DnsPrefetchingEnabled" class="Machine" displayName="$(string.DnsPrefetchingEnabled)" explainText="$(string.DnsPrefetchingEnabled_Explain)" presentation="$(presentation.DnsPrefetchingEnabled)" key="Software\Policies\Google\Google Chrome" valueName="DnsPrefetchingEnabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="SafeBrowsingEnabled" class="Machine" displayName="$(string.SafeBrowsingEnabled)" explainText="$(string.SafeBrowsingEnabled_Explain)" presentation="$(presentation.SafeBrowsingEnabled)" key="Software\Policies\Google\Google Chrome" valueName="SafeBrowsingEnabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MetricsReportingEnabled" class="Machine" displayName="$(string.MetricsReportingEnabled)" explainText="$(string.MetricsReportingEnabled_Explain)" presentation="$(presentation.MetricsReportingEnabled)" key="Software\Policies\Google\Google Chrome" valueName="MetricsReportingEnabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="Sync" class="Machine" displayName="$(string.Sync)" explainText="$(string.Sync_Explain)" presentation="$(presentation.Sync)" key="Software\Policies\Google\Google Chrome" valueName="SyncDisabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+    </policy>
+    <policy name="Proxy" class="Machine" displayName="$(string.Proxy)" explainText="$(string.Proxy_Explain)" presentation="$(presentation.Proxy)" key="Software\Policies\Google\Google Chrome" valueName="Proxy">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <elements>
+        <enum id="ProxyServerMode" valueName="ProxyServerMode">
+          <item displayName="$(string.ProxyServerDisabled)">
+            <value>
+              <decimal value="0" />
+            </value>
+          </item>
+          <item displayName="$(string.ProxyServerAutoDetect)">
+            <value>
+              <decimal value="1" />
+            </value>
+          </item>
+          <item displayName="$(string.ProxyServerManual)">
+            <value>
+              <decimal value="2" />
+            </value>
+          </item>
+          <item displayName="$(string.ProxyServerUseSystem)">
+            <value>
+              <decimal value="3" />
+            </value>
+          </item>
+        </enum>
+        <text id="ProxyServer" valueName="ProxyServer" />
+        <text id="ProxyPacUrl" valueName="ProxyPacUrl" />
+        <text id="ProxyBypassList" valueName="ProxyBypassList" />
+      </elements>
+    </policy>
+  </policies>
+</policyDefinitions>

@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<policyDefinitionResources revision="1.0" schemaVersion="1.0">
+  <displayName></displayName>
+  <description></description>
+  <resources>
+    <stringTable>
+      <string id="SUPPORTED_WINXPSP2">At least Microsoft Windows XP SP2</string>
+      <string id="google">Google</string>
+      <string id="googlechrome">Google Chrome</string>
+      <string id="HomePage">Set the default home page.</string>
+      <string id="HomePage_Explain">This policy setting specifies the location of the default home page for the user.
+The homepage can either be set to a URL you specify, or set to the New Tab Page.
+
+ If the New Tab Page option is choosen, this will override the URL location.</string>
+      <string id="HomePageLocation">The homepage URL.</string>
+      <string id="HomePageIsNewTab">Use the New Tab Page as the home page.</string>
+      <string id="Proxy">Override the proxy server settings.</string>
+      <string id="Proxy_Explain">This policy allows you to specify the proxy server used by Google Chrome.
+
+If you choose to disable the proxy server settings by choosing always to use a direct connection, all other options will be ignored.
+
+If you specify a proxy server, the autodetect option will be ignored.
+
+For detailed examples, visit: http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</string>
+      <string id="ProxyServer">The address of the proxy server.
+</string>
+      <string id="ProxyServerMode">Choose how to specify proxy server settings</string>
+      <string id="ProxyServerDisabled">Always use direct connections.</string>
+      <string id="ProxyServerAutoDetect">Auto detect the proxy settings.</string>
+      <string id="ProxyServerManual">Manually specify the proxy settings.</string>
+      <string id="ProxyServerUseSystem">Manually specify the proxy settings.</string>
+      <string id="ProxyBypassList">Comma separated list of bypass rules.
+</string>
+      <string id="ProxyPacUrl">The url to a proxy pac file.
+</string>
+      <string id="AlternateErrorPagesEnabled">Enable alternative error pages.</string>
+      <string id="AlternateErrorPagesEnabled_Explain">This policy disables the use of alternative error pages built into Google Chrome (such as 'page not found'.)</string>
+      <string id="SearchSuggestEnabled">Enable search suggestions.</string>
+      <string id="SearchSuggestEnabled_Explain">This policy enables search suggestions in the Omnibox.</string>
+      <string id="DnsPrefetchingEnabled">Enable search suggestions.</string>
+      <string id="DnsPrefetchingEnabled_Explain">This policy enables search suggestions in the Omnibox.</string>
+      <string id="SafeBrowsingEnabled">Enable safe browsing.</string>
+      <string id="SafeBrowsingEnabled_Explain">This policy enables Safe Browsing.</string>
+      <string id="MetricsReportingEnabled">Enable reporting of usage and crash related data.</string>
+      <string id="MetricsReportingEnabled_Explain">This policy enables the anonymous reporting of usage and crash related data to Google.</string>
+      <string id="Sync">Disable syncronization of data with Google.</string>
+      <string id="Sync_Explain">This policy disables data synchronization using Google-hosted sync services.</string>
+      <string id="ADMXMigrator_UnresolvedString">ADMX Migrator encountered a string that is not present in the source ADM string table.</string>
+      <string id="ADMXMigrator_NoSupportedOn">ADMX Migrator encountered a policy that does not have a supportedOn value.</string>
+    </stringTable>
+    <presentationTable>
+      <presentation id="HomePage">
+        <textBox refId="HomePageLocation">
+          <label>The homepage URL.</label>
+        </textBox>
+        <checkBox refId="HomePageIsNewTab">Use the New Tab Page as the home page.</checkBox>
+      </presentation>
+      <presentation id="AlternateErrorPagesEnabled" />
+      <presentation id="SearchSuggestEnabled" />
+      <presentation id="DnsPrefetchingEnabled" />
+      <presentation id="SafeBrowsingEnabled" />
+      <presentation id="MetricsReportingEnabled" />
+      <presentation id="Sync" />
+      <presentation id="Proxy">
+        <dropdownList refId="ProxyServerMode">Choose how to specify proxy server settings</dropdownList>
+        <textBox refId="ProxyServer">
+          <label>The address of the proxy server.
+</label>
+        </textBox>
+        <textBox refId="ProxyPacUrl">
+          <label>The url to a proxy pac file.
+</label>
+        </textBox>
+        <textBox refId="ProxyBypassList">
+          <label>Comma separated list of bypass rules.
+</label>
+        </textBox>
+      </presentation>
+    </presentationTable>
+  </resources>
+</policyDefinitionResources>

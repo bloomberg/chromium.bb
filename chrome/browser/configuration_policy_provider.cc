@@ -19,11 +19,11 @@ struct InternalPolicyValueMapEntry {
 
 const InternalPolicyValueMapEntry kPolicyValueMap[] = {
   { ConfigurationPolicyStore::kPolicyHomePage,
-      Value::TYPE_STRING, "Homepage" },
+      Value::TYPE_STRING, "HomepageLocation" },
   { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
       Value::TYPE_BOOLEAN, "HomepageIsNewTabPage" },
   { ConfigurationPolicyStore::kPolicyProxyServerMode,
-      Value::TYPE_BOOLEAN, "ProxyServerMode" },
+      Value::TYPE_INTEGER, "ProxyServerMode" },
   { ConfigurationPolicyStore::kPolicyProxyServer,
       Value::TYPE_STRING, "ProxyServer" },
   { ConfigurationPolicyStore::kPolicyProxyPacUrl,
