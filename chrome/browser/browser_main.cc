@@ -56,10 +56,10 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/shell_integration.h"
-#if !defined(OS_WIN)
-#include "chrome/browser/translate/translate_manager.h"
-#else
+#if defined(OS_WIN) || defined(OS_LINUX)
 #include "chrome/browser/translate/translate_manager2.h"
+#else
+#include "chrome/browser/translate/translate_manager.h"
 #endif
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -1210,7 +1210,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return ResultCodes::MACHINE_LEVEL_INSTALL_EXISTS;
 
   // Create the TranslateManager singleton.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   Singleton<TranslateManager2>::get();
 #else
   Singleton<TranslateManager>::get();
