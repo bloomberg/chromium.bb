@@ -109,6 +109,10 @@ ACCEPTABLE_ARGUMENTS = {
     'sysinfo': None,
     # set target platform
     'targetplatform': None,
+    # use_libcrypto=0 allows use of -lcrypt to be disabled, which
+    # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
+    # where there is no -dev package for the 32-bit libcrypto.
+    'use_libcrypto': None,
   }
 
 
@@ -1163,11 +1167,16 @@ unix_like_env.Prepend(
   ],
   CXXFLAGS=['-std=c++98'],
   LIBPATH=['/usr/lib'],
-  LIBS = ['pthread', 'crypto'],
+  LIBS = ['pthread'],
   CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
                 ['__STDC_FORMAT_MACROS', '1'],
                 ],
 )
+
+if int(ARGUMENTS.get('use_libcrypto', 1)):
+  unix_like_env.Append(LIBS=['crypto'])
+else:
+  unix_like_env.Append(CFLAGS=['-DUSE_CRYPTO=0'])
 
 # ----------------------------------------------------------
 
