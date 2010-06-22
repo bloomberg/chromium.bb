@@ -195,9 +195,3 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
     return NULL;
   return web_view->devToolsAgent();
 }
-
-// static
-void WebKit::WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(
-    const WebDevToolsMessageData& data) {
-  DevToolsAgentFilter::SendRpcMessage(DevToolsMessageData(data));
-}
