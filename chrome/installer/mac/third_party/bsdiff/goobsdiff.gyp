@@ -31,6 +31,14 @@
       'sources': [
         'goobspatch.c',
       ],
+      'configurations': {
+        'Release': {
+          'xcode_settings': {
+            # Use -Os to minimize the size of the installer tools.
+            'GCC_OPTIMIZATION_LEVEL': 's',
+          },
+        },
+      },
     },
   ],
 }

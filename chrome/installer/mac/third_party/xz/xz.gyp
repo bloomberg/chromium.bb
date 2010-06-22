@@ -308,6 +308,14 @@
           'xz/src/liblzma/api',
         ],
       },
+      'configurations': {
+        'Release': {
+          'xcode_settings': {
+            # Use -Os to minimize the size of the installer tools.
+            'GCC_OPTIMIZATION_LEVEL': 's',
+          },
+        },
+      },
     },
 
     {
@@ -363,6 +371,14 @@
         'xz/src/common/tuklib_progname.c',
         'xz/src/xzdec/xzdec.c',
       ],
+      'configurations': {
+        'Release': {
+          'xcode_settings': {
+            # Use -Os to minimize the size of the installer tools.
+            'GCC_OPTIMIZATION_LEVEL': 's',
+          },
+        },
+      },
     },
   ],
 }
