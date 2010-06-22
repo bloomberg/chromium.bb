@@ -87,15 +87,17 @@ bool PreferenceModelAssociator::AssociateModels() {
         }
 
         // Merge the server value of this preference with the local value.
-        bool node_needs_update = MergePreference(*pref, value.get());
+        scoped_ptr<Value> new_value(MergePreference(*pref, *value));
 
         // Update the local preference based on what we got from the
         // sync server.
-        pref_service->Set(pref_name.c_str(), *value);
+        if (!pref->GetValue()->Equals(new_value.get()))
+          pref_service->Set(pref_name.c_str(), *new_value);
 
         // If the merge resulted in an updated value, write it back to
         // the sync node.
-        if (node_needs_update && !WritePreferenceToNode(*pref, &node))
+        if (!value->Equals(new_value.get()) &&
+            !WritePreferenceToNode(pref->name(), *new_value, &node))
           return false;
       }
       Associate(pref, node.GetId());
@@ -112,7 +114,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       }
 
       // Update the sync node with the local value for this preference.
-      if (!WritePreferenceToNode(*pref, &write_node))
+      if (!WritePreferenceToNode(pref->name(), *pref->GetValue(), &write_node))
         return false;
 
       Associate(pref, write_node.GetId());
@@ -197,10 +199,9 @@ bool PreferenceModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
   return true;
 }
 
-bool PreferenceModelAssociator::MergePreference(
+Value* PreferenceModelAssociator::MergePreference(
     const PrefService::Preference& local_pref,
-    Value* server_value) {
-
+    const Value& server_value) {
   if (local_pref.name() == prefs::kURLsToRestoreOnStartup ||
       local_pref.name() == prefs::kDesktopNotificationAllowedOrigins ||
       local_pref.name() == prefs::kDesktopNotificationDeniedOrigins) {
@@ -211,61 +212,68 @@ bool PreferenceModelAssociator::MergePreference(
       local_pref.name() == prefs::kGeolocationContentSettings) {
     return MergeDictionaryValues(*local_pref.GetValue(), server_value);
   }
-  return false;
+
+  // If this is not a specially handled preference, server wins.
+  return server_value.DeepCopy();
 }
 
 bool PreferenceModelAssociator::WritePreferenceToNode(
-    const PrefService::Preference& pref,
+    const std::wstring& name,
+    const Value& value,
     sync_api::WriteNode* node) {
   std::string serialized;
   JSONStringValueSerializer json(&serialized);
-  if (!json.Serialize(*pref.GetValue())) {
+  if (!json.Serialize(value)) {
     LOG(ERROR) << "Failed to serialize preference value.";
     return false;
   }
 
   sync_pb::PreferenceSpecifics preference;
-  preference.set_name(WideToUTF8(pref.name()));
+  preference.set_name(WideToUTF8(name));
   preference.set_value(serialized);
   node->SetPreferenceSpecifics(preference);
-  node->SetTitle(pref.name());
+  node->SetTitle(name);
   return true;
 }
 
-bool PreferenceModelAssociator::MergeListValues(const Value& from_value,
-                                                Value* to_value) {
+Value* PreferenceModelAssociator::MergeListValues(const Value& from_value,
+                                                  const Value& to_value) {
   if (from_value.GetType() == Value::TYPE_NULL)
-    return false;
-  bool to_changed = false;
+    return to_value.DeepCopy();
+  if (to_value.GetType() == Value::TYPE_NULL)
+    return from_value.DeepCopy();
 
   DCHECK(from_value.GetType() == Value::TYPE_LIST);
-  DCHECK(to_value->GetType() == Value::TYPE_LIST);
+  DCHECK(to_value.GetType() == Value::TYPE_LIST);
   const ListValue& from_list_value = static_cast<const ListValue&>(from_value);
-  ListValue* to_list_value = static_cast<ListValue*>(to_value);
+  const ListValue& to_list_value = static_cast<const ListValue&>(to_value);
+  ListValue* result = static_cast<ListValue*>(to_list_value.DeepCopy());
 
   for (ListValue::const_iterator i = from_list_value.begin();
        i != from_list_value.end(); ++i) {
     Value* value = (*i)->DeepCopy();
-    if (to_list_value->AppendIfNotPresent(value)) {
-      to_changed = true;
-    } else {
+    if (!result->AppendIfNotPresent(value))
       delete value;
-    }
   }
-  return to_changed;
+  return result;
 }
 
-bool PreferenceModelAssociator::MergeDictionaryValues(const Value& from_value,
-                                                      Value* to_value) {
+Value* PreferenceModelAssociator::MergeDictionaryValues(
+    const Value& from_value,
+    const Value& to_value) {
   if (from_value.GetType() == Value::TYPE_NULL)
-    return false;
-  bool to_changed = false;
+    return to_value.DeepCopy();
+  if (to_value.GetType() == Value::TYPE_NULL)
+    return from_value.DeepCopy();
 
   DCHECK(from_value.GetType() == Value::TYPE_DICTIONARY);
-  DCHECK(to_value->GetType() == Value::TYPE_DICTIONARY);
+  DCHECK(to_value.GetType() == Value::TYPE_DICTIONARY);
   const DictionaryValue& from_dict_value =
       static_cast<const DictionaryValue&>(from_value);
-  DictionaryValue* to_dict_value = static_cast<DictionaryValue*>(to_value);
+  const DictionaryValue& to_dict_value =
+      static_cast<const DictionaryValue&>(to_value);
+  DictionaryValue* result =
+      static_cast<DictionaryValue*>(to_dict_value.DeepCopy());
 
   for (DictionaryValue::key_iterator key = from_dict_value.begin_keys();
        key != from_dict_value.end_keys(); ++key) {
@@ -273,19 +281,19 @@ bool PreferenceModelAssociator::MergeDictionaryValues(const Value& from_value,
     bool success = from_dict_value.GetWithoutPathExpansion(*key, &from_value);
     DCHECK(success);
 
-    Value* to_value;
-    if (to_dict_value->GetWithoutPathExpansion(*key, &to_value)) {
-      if (to_value->GetType() == Value::TYPE_DICTIONARY) {
-        to_changed = MergeDictionaryValues(*from_value, to_value);
+    Value* to_key_value;
+    if (result->GetWithoutPathExpansion(*key, &to_key_value)) {
+      if (to_key_value->GetType() == Value::TYPE_DICTIONARY) {
+        Value* merged_value = MergeDictionaryValues(*from_value, *to_key_value);
+        result->SetWithoutPathExpansion(*key, merged_value);
       }
       // Note that for all other types we want to preserve the "to"
       // values so we do nothing here.
     } else {
-      to_dict_value->SetWithoutPathExpansion(*key, from_value->DeepCopy());
-      to_changed = true;
+      result->SetWithoutPathExpansion(*key, from_value->DeepCopy());
     }
   }
-  return to_changed;
+  return result;
 }
 
 }  // namespace browser_sync

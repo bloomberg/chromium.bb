@@ -235,7 +235,8 @@ TEST_F(ProfileSyncServicePreferenceTest, WritePreferenceToNode) {
   EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES,
                                          WideToUTF8(prefs::kHomePage)));
 
-  EXPECT_TRUE(PreferenceModelAssociator::WritePreferenceToNode(*pref, &node));
+  EXPECT_TRUE(PreferenceModelAssociator::WritePreferenceToNode(
+      pref->name(), *pref->GetValue(), &node));
   EXPECT_EQ(std::wstring(prefs::kHomePage), node.GetTitle());
   const sync_pb::PreferenceSpecifics& specifics(node.GetPreferenceSpecifics());
   EXPECT_EQ(WideToUTF8(prefs::kHomePage), specifics.name());

@@ -87,7 +87,10 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
     }
   }
 
-  if (!PreferenceModelAssociator::WritePreferenceToNode(*preference, &node)) {
+  if (!PreferenceModelAssociator::WritePreferenceToNode(
+          preference->name(),
+          *preference->GetValue(),
+          &node)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
                                           "Failed to update preference node.");
     return;

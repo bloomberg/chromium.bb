@@ -35,7 +35,7 @@ class PreferenceModelAssociator
                                             std::wstring> {
  public:
   static syncable::ModelType model_type() { return syncable::PREFERENCES; }
-  PreferenceModelAssociator(ProfileSyncService* sync_service);
+  explicit PreferenceModelAssociator(ProfileSyncService* sync_service);
   virtual ~PreferenceModelAssociator();
 
   // Returns the list of preference names that should be monitored for
@@ -91,17 +91,19 @@ class PreferenceModelAssociator
   // |sync_id| with that node's id.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
-  // Merges the value of local_pref into the supplies server_value.
-  // If there is a conflict, the server value always takes precedence.
-  // The method returns true if server_value was modified.  Note that
-  // only certain preferences are allowed to be merged, see the
-  // method's implementation for details.
-  static bool MergePreference(const PrefService::Preference& local_pref,
-                              Value* server_value);
+  // Merges the value of local_pref into the supplied server_value and
+  // returns the result (caller takes ownership).  If there is a
+  // conflict, the server value always takes precedence.  Note that
+  // only certain preferences will actually be merged, all others will
+  // return a copy of the server value.  See the method's
+  // implementation for details.
+  static Value* MergePreference(const PrefService::Preference& local_pref,
+                                const Value& server_value);
 
   // Writes the value of pref into the specified node.  Returns true
   // upon success.
-  static bool WritePreferenceToNode(const PrefService::Preference& pref,
+  static bool WritePreferenceToNode(const std::wstring& name,
+                                    const Value& value,
                                     sync_api::WriteNode* node);
 
  protected:
@@ -112,8 +114,9 @@ class PreferenceModelAssociator
   typedef std::map<std::wstring, int64> PreferenceNameToSyncIdMap;
   typedef std::map<int64, std::wstring> SyncIdToPreferenceNameMap;
 
-  static bool MergeListValues(const Value& from_value, Value* to_value);
-  static bool MergeDictionaryValues(const Value& from_value, Value* to_value);
+  static Value* MergeListValues(const Value& from_value, const Value& to_value);
+  static Value* MergeDictionaryValues(const Value& from_value,
+                                      const Value& to_value);
 
   ProfileSyncService* sync_service_;
   std::set<std::wstring> synced_preferences_;
