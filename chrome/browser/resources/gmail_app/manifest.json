@@ -12,7 +12,7 @@
   "app": {
     "web_content": {
       "origin": "https://mail.google.com/",
-      "paths": [ "mail" ],
+      "paths": [ "mail" ]
     },
     "launch": {
       "web_url": "https://mail.google.com/"
