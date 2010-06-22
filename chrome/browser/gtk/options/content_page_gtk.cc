@@ -102,9 +102,11 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME),
       InitFormAutoFillGroup(), false);
+#if !defined(OS_CHROMEOS)
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),
       InitBrowsingDataGroup(), false);
+#endif
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_APPEARANCE_GROUP_NAME),
       InitThemesGroup(), false);
