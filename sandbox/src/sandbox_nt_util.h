@@ -13,6 +13,12 @@
 void* __cdecl operator new(size_t size, sandbox::AllocationType type,
                            void* near_to = NULL);
 void __cdecl operator delete(void* memory, sandbox::AllocationType type);
+// Add operator delete that matches the placement form of the operator new
+// above. This is required by compiler to generate code to call operator delete
+// in case the object's constructor throws an exception.
+// See http://msdn.microsoft.com/en-us/library/cxdxz3x6.aspx
+void __cdecl operator delete(void* memory, sandbox::AllocationType type,
+                             void* near_to);
 
 // Regular placement new and delete
 void* __cdecl operator new(size_t size, void* buffer,

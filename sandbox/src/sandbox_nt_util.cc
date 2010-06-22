@@ -560,6 +560,12 @@ void operator delete(void* memory, sandbox::AllocationType type) {
   }
 }
 
+void operator delete(void* memory, sandbox::AllocationType type,
+                     void* near_to) {
+  UNREFERENCED_PARAMETER(near_to);
+  operator delete(memory, type);
+}
+
 void* __cdecl operator new(size_t size, void* buffer,
                            sandbox::AllocationType type) {
   UNREFERENCED_PARAMETER(size);
