@@ -1486,6 +1486,8 @@ void RenderWidgetHostViewWin::UpdateAccessibilityTree(
       new BrowserAccessibilityManager(m_hWnd, tree, this));
 
   ::NotifyWinEvent(
+      EVENT_OBJECT_FOCUS, m_hWnd, OBJID_CLIENT, CHILDID_SELF);
+  ::NotifyWinEvent(
       IA2_EVENT_DOCUMENT_LOAD_COMPLETE, m_hWnd, OBJID_CLIENT, CHILDID_SELF);
 }
 
