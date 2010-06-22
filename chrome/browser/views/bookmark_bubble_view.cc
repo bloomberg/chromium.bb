@@ -89,7 +89,7 @@ void BookmarkBubbleView::Show(views::Window* parent,
   bubble_ = new BookmarkBubbleView(delegate, profile, url, newly_bookmarked);
   InfoBubble* info_bubble =
       InfoBubble::Show(parent->GetClientView()->GetWidget(), bounds,
-                   BubbleBorder::TOP_LEFT, bubble_, bubble_);
+                   BubbleBorder::TOP_RIGHT, bubble_, bubble_);
   bubble_->set_info_bubble(info_bubble);
   GURL url_ptr(url);
   NotificationService::current()->Notify(
