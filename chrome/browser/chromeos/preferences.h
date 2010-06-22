@@ -99,6 +99,7 @@ class Preferences : public NotificationObserver {
   BooleanPrefMember language_mozc_boolean_prefs_[kNumMozcBooleanPrefs];
   StringPrefMember language_mozc_multiple_choice_prefs_[
       kNumMozcMultipleChoicePrefs];
+  IntegerPrefMember language_mozc_integer_prefs_[kNumMozcIntegerPrefs];
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

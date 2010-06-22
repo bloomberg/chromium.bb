@@ -321,6 +321,8 @@ const wchar_t kLanguageMozcUseHistorySuggest[] =
     L"settings.language.mozc_use_history_suggest";
 const wchar_t kLanguageMozcUseDictionarySuggest[] =
     L"settings.language.mozc_use_dictionary_suggest";
+const wchar_t kLanguageMozcSuggestionsSize[] =
+    L"settings.language.mozc_suggestions_size";
 
 // A boolean pref which determines whether accessibility is enabled.
 const wchar_t kAccessibilityEnabled[] = L"settings.accessibility";

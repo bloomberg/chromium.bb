@@ -38,6 +38,12 @@ LanguageMozcConfigView::LanguageMozcConfigView(Profile* profile)
         new LanguageComboboxModel<const char*>(&kMozcMultipleChoicePrefs[i]);
     current.combobox = NULL;
   }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
+    current.integer_pref.Init(
+        kMozcIntegerPrefs[i].pref_name, profile->GetPrefs(), this);
+    current.slider = NULL;
+  }
 }
 
 LanguageMozcConfigView::~LanguageMozcConfigView() {
@@ -56,6 +62,10 @@ void LanguageMozcConfigView::ButtonPressed(
 
 void LanguageMozcConfigView::ItemChanged(
     views::Combobox* sender, int prev_index, int new_index) {
+  if (new_index < 0 || sender->model()->GetItemCount() <= new_index) {
+    LOG(ERROR) << "Invalid new_index: " << new_index;
+    return;
+  }
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     if (current.combobox == sender) {
@@ -67,6 +77,16 @@ void LanguageMozcConfigView::ItemChanged(
       break;
     }
   }
+}
+
+void LanguageMozcConfigView::SliderValueChanged(views::Slider* sender) {
+  size_t pref_id;
+  for (pref_id = 0; pref_id < kNumMozcIntegerPrefs; ++pref_id) {
+    if (prefs_and_sliders_[pref_id].slider == sender)
+      break;
+  }
+  DCHECK(pref_id < kNumMozcIntegerPrefs);
+  prefs_and_sliders_[pref_id].integer_pref.SetValue(sender->value());
 }
 
 void LanguageMozcConfigView::Layout() {
@@ -86,7 +106,7 @@ gfx::Size LanguageMozcConfigView::GetPreferredSize() {
       IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES);
   // TODO(mazda): Remove the manual adjustment.
   // The padding is needed for accommodating all the controls in the dialog.
-  const int kHeightPadding = 20;
+  const int kHeightPadding = 60;
   preferred_size.Enlarge(0, kHeightPadding);
   return preferred_size;
 }
@@ -108,7 +128,7 @@ void LanguageMozcConfigView::InitControlLayout() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
   for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
@@ -122,6 +142,17 @@ void LanguageMozcConfigView::InitControlLayout() {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     current.combobox = new LanguageCombobox(current.combobox_model);
     current.combobox->set_listener(this);
+  }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
+    current.slider = new views::Slider(
+        kMozcIntegerPrefs[i].min_pref_value,
+        kMozcIntegerPrefs[i].max_pref_value,
+        1,
+        static_cast<views::Slider::StyleFlags>(
+            views::Slider::STYLE_DRAW_VALUE |
+            views::Slider::STYLE_UPDATE_ON_RELEASE),
+        this);
   }
   NotifyPrefChanged();  // Sync the comboboxes with current Chrome prefs.
 
@@ -138,6 +169,14 @@ void LanguageMozcConfigView::InitControlLayout() {
     layout->AddView(new views::Label(current.combobox_model->GetLabel()));
     layout->AddView(current.combobox);
   }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    const MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
+    layout->StartRow(0, kColumnSetId);
+    layout->AddView(new views::Label(
+        l10n_util::GetString(kMozcIntegerPrefs[i].message_id)));
+    layout->AddView(current.slider);
+  }
+  NotifyPrefChanged();  // Sync the slider with current Chrome prefs.
 }
 
 void LanguageMozcConfigView::Observe(NotificationType type,
@@ -165,6 +204,11 @@ void LanguageMozcConfigView::NotifyPrefChanged() {
         break;
       }
     }
+  }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
+    const int value = current.integer_pref.GetValue();
+    current.slider->SetValue(value);
   }
 }
 

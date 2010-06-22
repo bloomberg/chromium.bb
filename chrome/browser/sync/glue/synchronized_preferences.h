@@ -132,6 +132,7 @@ static const wchar_t* kSynchronizedPreferences[] = {
   //   prefs::kLanguageMozcUseNumberConversion,
   //   prefs::kLanguageMozcUseHistorySuggest,
   //   prefs::kLanguageMozcUseDictionarySuggest,
+  //   prefs::kLanguageMozcSuggestionsSize
   //
   // We don't sync the following IME prefs since they are not user-configurable
   // (yet):

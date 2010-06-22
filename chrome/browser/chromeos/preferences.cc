@@ -72,6 +72,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
         kMozcMultipleChoicePrefs[i].pref_name,
         kMozcMultipleChoicePrefs[i].default_pref_value);
   }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    prefs->RegisterIntegerPref(kMozcIntegerPrefs[i].pref_name,
+                               kMozcIntegerPrefs[i].default_pref_value);
+  }
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -118,6 +122,10 @@ void Preferences::Init(PrefService* prefs) {
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     language_mozc_multiple_choice_prefs_[i].Init(
         kMozcMultipleChoicePrefs[i].pref_name, prefs, this);
+  }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    language_mozc_integer_prefs_[i].Init(
+        kMozcIntegerPrefs[i].pref_name, prefs, this);
   }
 
   // Initialize touchpad settings to what's saved in user preferences.
@@ -238,6 +246,13 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
           kMozcSectionName,
           kMozcMultipleChoicePrefs[i].ibus_config_name,
           language_mozc_multiple_choice_prefs_[i].GetValue());
+    }
+  }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    if (!pref_name || *pref_name == kMozcIntegerPrefs[i].pref_name) {
+      SetLanguageConfigInteger(kMozcSectionName,
+                               kMozcIntegerPrefs[i].ibus_config_name,
+                               language_mozc_integer_prefs_[i].GetValue());
     }
   }
 }

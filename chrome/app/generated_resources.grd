@@ -8154,6 +8154,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The checkbox label for a Mozc input method preference">
         Use system dictionary
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SUGGESTIONS_SIZE"
+               desc="The slider label for a Mozc input method preference">
+        Maximum number of suggestions
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
                desc="The label for the configure button for input methods">
         Configure...

@@ -14,6 +14,7 @@
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
+#include "views/controls/slider/slider.h"
 #include "views/window/dialog_delegate.h"
 
 namespace views {
@@ -30,6 +31,7 @@ class LanguageComboboxModel;
 class LanguageMozcConfigView : public views::ButtonListener,
                                public views::Combobox::Listener,
                                public views::DialogDelegate,
+                               public views::SliderListener,
                                public OptionsPageView {
  public:
   explicit LanguageMozcConfigView(Profile* profile);
@@ -42,6 +44,9 @@ class LanguageMozcConfigView : public views::ButtonListener,
   virtual void ItemChanged(views::Combobox* sender,
                            int prev_index,
                            int new_index);
+
+  // views::SliderListener overrides.
+  virtual void SliderValueChanged(views::Slider* sender);
 
   // views::DialogDelegate overrides.
   virtual bool IsModal() const { return true; }
@@ -76,6 +81,11 @@ class LanguageMozcConfigView : public views::ButtonListener,
     LanguageComboboxModel<const char*>* combobox_model;
     LanguageCombobox* combobox;
   } prefs_and_comboboxes_[kNumMozcMultipleChoicePrefs];
+
+  struct MozcPrefAndAssociatedSlider {
+    IntegerPrefMember integer_pref;
+    views::Slider* slider;
+  } prefs_and_sliders_[kNumMozcIntegerPrefs];
 
   DISALLOW_COPY_AND_ASSIGN(LanguageMozcConfigView);
 };

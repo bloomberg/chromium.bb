@@ -123,6 +123,7 @@ extern const wchar_t kLanguageMozcUseSymbolConversion[];
 extern const wchar_t kLanguageMozcUseNumberConversion[];
 extern const wchar_t kLanguageMozcUseHistorySuggest[];
 extern const wchar_t kLanguageMozcUseDictionarySuggest[];
+extern const wchar_t kLanguageMozcSuggestionsSize[];
 extern const wchar_t kAccessibilityEnabled[];
 #endif
 extern const wchar_t kIpcDisabledMessages[];

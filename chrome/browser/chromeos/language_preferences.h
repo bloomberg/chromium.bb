@@ -33,6 +33,15 @@ struct LanguageBooleanPrefs {
   int message_id;
 };
 
+struct LanguageIntegerRangePreference {
+  const wchar_t* pref_name;  // Chrome preference name.
+  int default_pref_value;
+  int min_pref_value;
+  int max_pref_value;
+  const char* ibus_config_name;
+  int message_id;
+};
+
 // For ibus-daemon
 const char kGeneralSectionName[] = "general";
 const char kHotKeySectionName[] = "general/hotkey";
@@ -81,14 +90,7 @@ const LanguageBooleanPrefs kChewingBooleanPrefs[] = {
 };
 const size_t kNumChewingBooleanPrefs = ARRAYSIZE_UNSAFE(kChewingBooleanPrefs);
 
-const struct {
-  const wchar_t* pref_name;  // Chrome preference name.
-  int default_pref_value;
-  int min_pref_value;
-  int max_pref_value;
-  const char* ibus_config_name;
-  int message_id;
-} kChewingIntegerPrefs[] = {
+const LanguageIntegerRangePreference kChewingIntegerPrefs[] = {
   { prefs::kLanguageChewingMaxChiSymbolLen, 20, 8, 40, "maxChiSymbolLen",
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_MAX_CHI_SYMBOL_LEN},
   { prefs::kLanguageChewingCandPerPage, 10, 8, 10, "candPerPage",
@@ -383,10 +385,15 @@ const LanguageMultipleChoicePreference<const char*>
     IDS_MOZC(NUMPAD_CHARACTER_FORM),
   },
 };
+const size_t kNumMozcMultipleChoicePrefs = arraysize(kMozcMultipleChoicePrefs);
+
+const LanguageIntegerRangePreference kMozcIntegerPrefs[] = {
+  { prefs::kLanguageMozcSuggestionsSize, 3, 1, 9, "suggestions_size",
+    IDS_MOZC(SUGGESTIONS_SIZE)},
+};
+const size_t kNumMozcIntegerPrefs = ARRAYSIZE_UNSAFE(kMozcIntegerPrefs);
 
 #undef IDS_MOZC
-
-const size_t kNumMozcMultipleChoicePrefs = arraysize(kMozcMultipleChoicePrefs);
 
 // For Traditional Chinese input methods (ibus-pinyin-bopomofo and ibus-chewing)
 // TODO(yusukes): Add constants for Traditional Chinese input methods.
