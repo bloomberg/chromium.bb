@@ -48,7 +48,6 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
@@ -67,6 +66,8 @@
 
 using base::Time;
 using base::TimeDelta;
+
+static const int kMinutesInTenYears = 10 * 365 * 24 * 60;
 
 namespace net {
 
@@ -110,7 +111,8 @@ CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
       store_(store),
       last_access_threshold_(
           TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
-      delegate_(delegate) {
+      delegate_(delegate),
+      last_statistic_record_time_(Time::Now()) {
   SetDefaultCookieableSchemes();
 }
 
@@ -241,7 +243,8 @@ int CookieMonster::TrimDuplicateCookiesForHost(
     for (CookieList::iterator dupes_it = dupes.begin();
          dupes_it != dupes.end();
          ++dupes_it) {
-      InternalDeleteCookie(*dupes_it, true /*sync_to_store*/);
+      InternalDeleteCookie(*dupes_it, true /*sync_to_store*/,
+                           kDeleteCookieDuplicateInBackingStore);
     }
   }
 
@@ -665,8 +668,13 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
 
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
-  if (!(*cc)->IsExpired(creation_time))
+  if (!(*cc)->IsExpired(creation_time)) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "net.CookieExpirationDurationMinutes",
+        ((*cc)->ExpiryDate() - creation_time).InMinutes(),
+        1, kMinutesInTenYears, 50);
     InternalInsertCookie(cookie_domain, cc->release(), true);
+  }
 
   // We assume that hopefully setting a cookie will be less common than
   // querying a cookie.  Since setting a cookie can put us over our limits,
@@ -701,14 +709,23 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc) {
   if ((current - cc->LastAccessDate()) < last_access_threshold_)
     return;
 
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "net.CookieBetweenAccessIntervalMinutes",
+      (current - cc->LastAccessDate()).InMinutes(),
+      1, kMinutesInTenYears, 50);
+
   cc->SetLastAccessDate(current);
   if (cc->IsPersistent() && store_)
     store_->UpdateCookieAccessTime(*cc);
 }
 
 void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
-                                         bool sync_to_store) {
+                                         bool sync_to_store,
+                                         DeletionCause deletion_cause) {
   lock_.AssertAcquired();
+
+  UMA_HISTOGRAM_ENUMERATION("net.CookieDeletionCause", deletion_cause,
+                            kDeleteCookieLastEntry);
 
   CanonicalCookie* cc = it->second;
   COOKIE_DLOG(INFO) << "InternalDeleteCookie() cc: " << cc->DebugString();
@@ -741,7 +758,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
       if (skip_httponly && cc->IsHttpOnly()) {
         skipped_httponly = true;
       } else {
-        InternalDeleteCookie(curit, true);
+        InternalDeleteCookie(curit, true, kDeleteCookieOverwrite);
       }
       found_equivalent_cookie = true;
     }
@@ -804,8 +821,13 @@ int CookieMonster::GarbageCollectRange(const Time& current,
 
     std::partial_sort(cookie_its.begin(), cookie_its.begin() + num_purge,
                       cookie_its.end(), LRUCookieSorter);
-    for (size_t i = 0; i < num_purge; ++i)
-      InternalDeleteCookie(cookie_its[i], true);
+    for (size_t i = 0; i < num_purge; ++i) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "net.CookieEvictedLastAccessMinutes",
+          (current - cookie_its[i]->second->LastAccessDate()).InMinutes(),
+          1, kMinutesInTenYears, 50);
+      InternalDeleteCookie(cookie_its[i], true, kDeleteCookieEvicted);
+    }
 
     num_deleted += num_purge;
   }
@@ -825,7 +847,7 @@ int CookieMonster::GarbageCollectExpired(
     ++it;
 
     if (curit->second->IsExpired(current)) {
-      InternalDeleteCookie(curit, true);
+      InternalDeleteCookie(curit, true, kDeleteCookieExpired);
       ++num_deleted;
     } else if (cookie_its) {
       cookie_its->push_back(curit);
@@ -843,7 +865,9 @@ int CookieMonster::DeleteAll(bool sync_to_store) {
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
     CookieMap::iterator curit = it;
     ++it;
-    InternalDeleteCookie(curit, sync_to_store);
+    InternalDeleteCookie(curit, sync_to_store,
+                         sync_to_store ? kDeleteCookieExplicit :
+                             kDeleteCookieDontRecord /* Destruction. */);
     ++num_deleted;
   }
 
@@ -864,7 +888,7 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
 
     if (cc->CreationDate() >= delete_begin &&
         (delete_end.is_null() || cc->CreationDate() < delete_end)) {
-      InternalDeleteCookie(curit, sync_to_store);
+      InternalDeleteCookie(curit, sync_to_store, kDeleteCookieExplicit);
       ++num_deleted;
     }
   }
@@ -887,7 +911,7 @@ int CookieMonster::DeleteAllForURL(const GURL& url,
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
     CookieMap::iterator curit = it;
     ++it;
-    InternalDeleteCookie(curit, sync_to_store);
+    InternalDeleteCookie(curit, sync_to_store, kDeleteCookieExplicit);
   }
   return num_deleted;
 }
@@ -902,7 +926,7 @@ bool CookieMonster::DeleteCookie(const std::string& domain,
        its.first != its.second; ++its.first) {
     // The creation date acts as our unique index...
     if (its.first->second->CreationDate() == cookie.CreationDate()) {
-      InternalDeleteCookie(its.first, sync_to_store);
+      InternalDeleteCookie(its.first, sync_to_store, kDeleteCookieExplicit);
       return true;
     }
   }
@@ -996,8 +1020,9 @@ void CookieMonster::DeleteCookie(const GURL& url,
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
     CookieMap::iterator curit = it;
     ++it;
-    if (matching_cookies.find(curit->second) != matching_cookies.end())
-      InternalDeleteCookie(curit, true);
+    if (matching_cookies.find(curit->second) != matching_cookies.end()) {
+      InternalDeleteCookie(curit, true, kDeleteCookieExplicit);
+    }
   }
 }
 
@@ -1038,6 +1063,11 @@ void CookieMonster::FindCookiesForHostAndDomain(
   lock_.AssertAcquired();
 
   const Time current_time(CurrentTime());
+
+  // Probe to save statistics relatively frequently.  We do it here rather
+  // than in the set path as many websites won't set cookies, and we
+  // want to collect statistics whenever the browser's being used.
+  RecordPeriodicStats(current_time);
 
   // Query for the full host, For example: 'a.c.blah.com'.
   std::string key(url.host());
@@ -1081,7 +1111,7 @@ void CookieMonster::FindCookiesForKey(
 
     // If the cookie is expired, delete it.
     if (cc->IsExpired(current)) {
-      InternalDeleteCookie(curit, true);
+      InternalDeleteCookie(curit, true, kDeleteCookieExpired);
       continue;
     }
 
@@ -1154,6 +1184,26 @@ CookieMonster::CookieList CookieMonster::InternalGetAllCookiesForURL(
     key.erase(0, next_dot);
   }
   return cookie_list;
+}
+
+// Test to see if stats should be recorded, and record them if so.
+// The goal here is to get sampling for the average browser-hour of
+// activity.  We won't take samples when the web isn't being surfed,
+// and when the web is being surfed, we'll take samples about every
+// kRecordStatisticsIntervalSeconds.
+// last_statistic_record_time_ is initialized to Now() rather than null
+// in the constructor so that we won't take statistics right after
+// startup, to avoid bias from browsers that are started but not used.
+void CookieMonster::RecordPeriodicStats(const base::Time& current_time) {
+  const base::TimeDelta kRecordStatisticsIntervalTime(
+      base::TimeDelta::FromSeconds(kRecordStatisticsIntervalSeconds));
+
+  if (current_time - last_statistic_record_time_ >
+      kRecordStatisticsIntervalTime) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("net.CookieCount", cookies_.size(),
+                                1, 4000, 50);
+    last_statistic_record_time_ = current_time;
+  }
 }
 
 CookieMonster::ParsedCookie::ParsedCookie(const std::string& cookie_line)

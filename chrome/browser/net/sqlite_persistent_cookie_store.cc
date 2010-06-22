@@ -231,7 +231,9 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         break;
     }
   }
-  transaction.Commit();
+  bool succeeded = transaction.Commit();
+  UMA_HISTOGRAM_ENUMERATION("net.CookieBackingStoreUpdateResults",
+                            succeeded ? 0 : 1, 2);
 }
 
 // Fire off a close message to the background thread.  We could still have a

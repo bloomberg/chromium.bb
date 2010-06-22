@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/histogram.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -69,7 +70,8 @@ class CookieMonster : public CookieStore {
         store_(store),
         last_access_threshold_(base::TimeDelta::FromMilliseconds(
             last_access_threshold_milliseconds)),
-        delegate_(delegate) {
+        delegate_(delegate),
+        last_statistic_record_time_(base::Time::Now()) {
     SetDefaultCookieableSchemes();
   }
 #endif
@@ -230,7 +232,17 @@ class CookieMonster : public CookieStore {
 
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc);
 
-  void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store);
+  enum DeletionCause { kDeleteCookieExplicit,
+                       kDeleteCookieOverwrite,
+                       kDeleteCookieExpired,
+                       kDeleteCookieEvicted,
+                       kDeleteCookieDuplicateInBackingStore,
+                       kDeleteCookieDontRecord,
+                       kDeleteCookieLastEntry = kDeleteCookieDontRecord };
+
+  // |deletion_cause| argument is for collecting statistics.
+  void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store,
+                            DeletionCause deletion_cause);
 
   // If the number of cookies for host |key|, or globally, are over preset
   // maximums, garbage collects, first for the host and then globally, as
@@ -262,6 +274,14 @@ class CookieMonster : public CookieStore {
 
   bool HasCookieableScheme(const GURL& url);
 
+  // Statistics support
+  // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
+  static const int kRecordStatisticsIntervalSeconds = 10 * 60;
+
+  // This function should be called repeatedly, and will record
+  // statistics if a sufficient time period has passed.
+  void RecordPeriodicStats(const base::Time& current_time);
+
   CookieMap cookies_;
 
   // Indicates whether the cookie store has been initialized. This happens
@@ -285,6 +305,8 @@ class CookieMonster : public CookieStore {
 
   // Lock for thread-safety
   Lock lock_;
+
+  base::Time last_statistic_record_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };
