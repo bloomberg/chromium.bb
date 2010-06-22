@@ -144,6 +144,24 @@ void MediatorThreadImpl::SendNotification(
                         data));
 }
 
+MessageLoop* MediatorThreadImpl::worker_message_loop() {
+  MessageLoop* current_message_loop = MessageLoop::current();
+  DCHECK(current_message_loop);
+  MessageLoop* worker_message_loop = worker_thread_.message_loop();
+  DCHECK(worker_message_loop);
+  DCHECK(current_message_loop == parent_message_loop_ ||
+         current_message_loop == worker_message_loop);
+  return worker_message_loop;
+}
+
+buzz::XmppClient* MediatorThreadImpl::xmpp_client() {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  DCHECK(login_.get());
+  buzz::XmppClient* xmpp_client = login_->xmpp_client();
+  DCHECK(xmpp_client);
+  return xmpp_client;
+}
+
 void MediatorThreadImpl::DoLogin(
     const buzz::XmppClientSettings& settings) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
@@ -357,24 +375,6 @@ void MediatorThreadImpl::OnSubscriptionStateChangeOnParentThread(
   if (delegate_) {
     delegate_->OnSubscriptionStateChange(success);
   }
-}
-
-MessageLoop* MediatorThreadImpl::worker_message_loop() {
-  MessageLoop* current_message_loop = MessageLoop::current();
-  DCHECK(current_message_loop);
-  MessageLoop* worker_message_loop = worker_thread_.message_loop();
-  DCHECK(worker_message_loop);
-  DCHECK(current_message_loop == parent_message_loop_ ||
-         current_message_loop == worker_message_loop);
-  return worker_message_loop;
-}
-
-buzz::XmppClient* MediatorThreadImpl::xmpp_client() {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  DCHECK(login_.get());
-  buzz::XmppClient* xmpp_client = login_->xmpp_client();
-  DCHECK(xmpp_client);
-  return xmpp_client;
 }
 
 }  // namespace notifier

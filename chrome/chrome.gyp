@@ -788,6 +788,7 @@
         'common_net',
         'notifier',
         'sync',
+        'sync_notifier',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
@@ -797,6 +798,10 @@
         }],
       ],
     },
+    # A library for sending and receiving peer-issued notifications.
+    #
+    # TODO(akalin): Separate out the XMPP stuff from this library into
+    # its own library.
     {
       'target_name': 'notifier',
       'type': '<(library)',
@@ -868,6 +873,9 @@
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'common_net',
+      ],
+      'export_dependent_settings': [
+        '../third_party/libjingle/libjingle.gyp:libjingle',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
@@ -1061,6 +1069,34 @@
             ],
           },
         }],
+      ],
+    },
+    # A library for sending and receiving server-issued notifications.
+    {
+      'target_name': 'sync_notifier',
+      'type': '<(library)',
+      'sources': [
+        'browser/sync/notifier/cache_invalidation_packet_handler.cc',
+        'browser/sync/notifier/cache_invalidation_packet_handler.h',
+        'browser/sync/notifier/chrome_invalidation_client.cc',
+        'browser/sync/notifier/chrome_invalidation_client.h',
+        'browser/sync/notifier/chrome_system_resources.cc',
+        'browser/sync/notifier/chrome_system_resources.h',
+        'browser/sync/notifier/invalidation_util.cc',
+        'browser/sync/notifier/invalidation_util.h',
+        'browser/sync/notifier/server_notifier_thread.cc',
+        'browser/sync/notifier/server_notifier_thread.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'notifier',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+      ],
+      'export_dependent_settings': [
+        'notifier',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
     },
     {
