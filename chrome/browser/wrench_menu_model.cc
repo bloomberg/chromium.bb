@@ -130,6 +130,12 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
 
+  if (browser_defaults::kShowAboutMenuItem) {
+    AddItem(IDC_ABOUT,
+            l10n_util::GetStringFUTF16(
+                IDS_ABOUT,
+                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  }
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator();
