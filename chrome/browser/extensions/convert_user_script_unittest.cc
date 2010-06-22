@@ -29,7 +29,7 @@ TEST(ExtensionFromUserScript, Basic) {
 
   // Validate generated extension metadata.
   EXPECT_EQ("My user script", extension->name());
-  EXPECT_EQ("1.0", extension->VersionString());
+  EXPECT_EQ("2.2.2", extension->VersionString());
   EXPECT_EQ("Does totally awesome stuff.", extension->description());
   EXPECT_EQ("IhCFCg9PMQTAcJdc9ytUP99WME+4yh6aMnM1uupkovo=",
             extension->public_key());

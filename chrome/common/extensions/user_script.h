@@ -113,6 +113,11 @@ class UserScript {
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
+  const std::string& version() const { return version_; }
+  void set_version(const std::string& version) {
+    version_ = version;
+  }
+
   const std::string& description() const { return description_; }
   void set_description(const std::string& description) {
     description_ = description;
@@ -193,6 +198,10 @@ class UserScript {
 
   // A longer description. Only used when parsing Greasemonkey-style scripts.
   std::string description_;
+
+  // A version number of the script. Only used when parsing Greasemonkey-style
+  // scripts.
+  std::string version_;
 
   // Greasemonkey-style globs that determine pages to inject the script into.
   // These are only used with standalone scripts.

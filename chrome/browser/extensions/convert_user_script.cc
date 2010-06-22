@@ -71,8 +71,14 @@ Extension* ConvertUserScriptToExtension(const FilePath& user_script_path,
   else
     root->SetString(keys::kName, original_url.ExtractFileName());
 
+  // Not all scripts have a version, but we need one. Default to 1.0 if it is
+  // missing.
+  if (!script.version().empty())
+    root->SetString(keys::kVersion, script.version());
+  else
+    root->SetString(keys::kVersion, "1.0");
+
   root->SetString(keys::kDescription, script.description());
-  root->SetString(keys::kVersion, "1.0");
   root->SetString(keys::kPublicKey, key);
   root->SetBoolean(keys::kConvertedFromUserScript, true);
 

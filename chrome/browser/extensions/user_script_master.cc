@@ -14,6 +14,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -60,6 +61,7 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
   static const base::StringPiece kUserScriptEng("// ==/UserScript==");
   static const base::StringPiece kNamespaceDeclaration("// @namespace");
   static const base::StringPiece kNameDeclaration("// @name");
+  static const base::StringPiece kVersionDeclaration("// @version");
   static const base::StringPiece kDescriptionDeclaration("// @description");
   static const base::StringPiece kIncludeDeclaration("// @include");
   static const base::StringPiece kExcludeDeclaration("// @exclude");
@@ -98,6 +100,10 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
         script->set_name_space(value);
       } else if (GetDeclarationValue(line, kNameDeclaration, &value)) {
         script->set_name(value);
+      } else if (GetDeclarationValue(line, kVersionDeclaration, &value)) {
+        scoped_ptr<Version> version(Version::GetVersionFromString(value));
+        if (version.get())
+          script->set_version(version->GetString());
       } else if (GetDeclarationValue(line, kDescriptionDeclaration, &value)) {
         script->set_description(value);
       } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {
