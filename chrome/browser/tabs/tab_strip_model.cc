@@ -1001,8 +1001,8 @@ int TabStripModel::IndexOfNextNonPhantomTab(int index,
 }
 
 bool TabStripModel::ShouldMakePhantomOnClose(int index) {
-  if (IsTabPinned(index) && !IsPhantomTab(index) && !closing_all_ &&
-      profile()) {
+  if (browser_defaults::kPhantomTabsEnabled && IsTabPinned(index) &&
+      !IsPhantomTab(index) && !closing_all_ && profile()) {
     if (!IsAppTab(index))
       return true;  // Always make non-app tabs go phantom.
 

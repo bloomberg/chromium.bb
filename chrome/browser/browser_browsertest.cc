@@ -428,10 +428,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconChange) {
 // TODO(sky): get these to run on a Mac.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, PhantomTab) {
+  if (!browser_defaults::kPhantomTabsEnabled)
+    return;
+
   PhantomTabTest();
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
+  if (!browser_defaults::kPhantomTabsEnabled)
+    return;
+
   PhantomTabTest();
 
   if (HasFatalFailure())
@@ -486,6 +492,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
+  if (!browser_defaults::kPhantomTabsEnabled)
+    return;
+
   PhantomTabTest();
 
   Extension* extension = GetExtension();

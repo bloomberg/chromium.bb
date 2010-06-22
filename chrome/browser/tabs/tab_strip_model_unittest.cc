@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -1770,6 +1771,9 @@ TEST_F(TabStripModelTest, Pinning) {
 
 // Tests various permutations of making a tab phantom.
 TEST_F(TabStripModelTest, Phantom) {
+  if (!browser_defaults::kPhantomTabsEnabled)
+    return;
+
   TabStripDummyDelegate delegate(NULL);
   TabStripModel tabstrip(&delegate, profile());
   MockTabStripModelObserver observer;

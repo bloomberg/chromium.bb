@@ -75,4 +75,6 @@ const bool kBrowserAliveWithNoWindows = true;
 const bool kBrowserAliveWithNoWindows = false;
 #endif
 
+const bool kPhantomTabsEnabled = false;
+
 }  // namespace browser_defaults
