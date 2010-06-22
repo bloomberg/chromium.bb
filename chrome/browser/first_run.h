@@ -115,6 +115,8 @@ class FirstRun {
   static bool SetShowWelcomePagePref();
 
  private:
+  friend class FirstRunTest;
+
 #if defined(OS_WIN)
   // Imports settings in a separate process. It is the implementation of the
   // public version.
@@ -128,9 +130,14 @@ class FirstRun {
 #elif defined(OS_LINUX)
   static bool ImportBookmarks(const std::wstring& import_bookmarks_path);
 #endif
+
   // Import bookmarks from an html file. The path to the file is provided in
   // the command line.
   static int ImportFromFile(Profile* profile, const CommandLine& cmdline);
+
+  // Gives the full path to the sentinel file. The file might not exist.
+  static bool GetFirstRunSentinelFilePath(FilePath* path);
+
   // This class is for scoping purposes.
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
 };

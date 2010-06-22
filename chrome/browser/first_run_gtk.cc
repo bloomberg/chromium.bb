@@ -160,19 +160,6 @@ bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
 }
 
 // static
-void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
-  if (new_command_line_) {
-    if (!base::LaunchApp(*new_command_line_, false, false, NULL)) {
-      DLOG(ERROR) << "Launching a new instance of the browser failed.";
-    } else {
-      DLOG(WARNING) << "Launched a new instance of the browser.";
-    }
-    delete new_command_line_;
-    new_command_line_ = NULL;
-  }
-}
-
-// static
 double Upgrade::GetLastModifiedTimeOfExe() {
   FilePath exe_file_path;
   if (!PathService::Get(base::FILE_EXE, &exe_file_path)) {

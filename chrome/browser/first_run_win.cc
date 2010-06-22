@@ -416,18 +416,6 @@ bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
                          false, false, NULL);
 }
 
-void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
-  if (new_command_line_) {
-    if (RelaunchChromeBrowser(*new_command_line_)) {
-      DLOG(ERROR) << "Launching a new instance of the browser failed.";
-    } else {
-      DLOG(WARNING) << "Launched a new instance of the browser.";
-    }
-    delete new_command_line_;
-    new_command_line_ = NULL;
-  }
-}
-
 bool Upgrade::SwapNewChromeExeIfPresent() {
   FilePath new_chrome_exe;
   if (!GetNewerChromeFile(&new_chrome_exe))

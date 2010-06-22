@@ -25,31 +25,29 @@ namespace {
 // The kSentinelFile file absence will tell us it is a first run.
 const char kSentinelFile[] = "First Run";
 
-// Gives the full path to the sentinel file. The file might not exist.
-bool GetFirstRunSentinelFilePath(FilePath* path) {
-  FilePath first_run_sentinel;
-
-#if defined(OS_WIN)
-  FilePath exe_path;
-  if (!PathService::Get(base::DIR_EXE, &exe_path))
-    return false;
-  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
-    first_run_sentinel = exe_path;
-  } else {
-    if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
-      return false;
-  }
-#else
-  if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
-    return false;
-#endif
-
-  *path = first_run_sentinel.AppendASCII(kSentinelFile);
-  return true;
-}
-
 }  // namespace
 
+// TODO(port): Import switches need to be ported to both Mac and Linux. Not all
+// import switches here are implemented for Linux. None are implemented for Mac
+// (as this function will not be called on Mac).
+int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
+  int return_code = true;
+  if (cmdline.HasSwitch(switches::kImportFromFile)) {
+    // Silently import preset bookmarks from file.
+    // This is an OEM scenario.
+    return_code = ImportFromFile(profile, cmdline);
+  }
+  if (cmdline.HasSwitch(switches::kImport)) {
+#if defined(OS_WIN)
+    return_code = ImportFromBrowser(profile, cmdline);
+#else
+    NOTIMPLEMENTED();
+#endif
+  }
+  return return_code;
+}
+
+// static
 bool FirstRun::IsChromeFirstRun() {
   // A troolean, 0 means not yet set, 1 means set to true, 2 set to false.
   static int first_run = 0;
@@ -66,6 +64,7 @@ bool FirstRun::IsChromeFirstRun() {
   return true;
 }
 
+// static
 bool FirstRun::RemoveSentinel() {
   FilePath first_run_sentinel;
   if (!GetFirstRunSentinelFilePath(&first_run_sentinel))
@@ -73,6 +72,7 @@ bool FirstRun::RemoveSentinel() {
   return file_util::Delete(first_run_sentinel, false);
 }
 
+// static
 bool FirstRun::CreateSentinel() {
   FilePath first_run_sentinel;
   if (!GetFirstRunSentinelFilePath(&first_run_sentinel))
@@ -80,6 +80,7 @@ bool FirstRun::CreateSentinel() {
   return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
 }
 
+// static
 bool FirstRun::SetShowFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
@@ -91,6 +92,7 @@ bool FirstRun::SetShowFirstRunBubblePref() {
   return true;
 }
 
+// static
 bool FirstRun::SetShowWelcomePagePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
@@ -102,6 +104,7 @@ bool FirstRun::SetShowWelcomePagePref() {
   return true;
 }
 
+// static
 bool FirstRun::SetOEMFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
@@ -114,6 +117,7 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
   return true;
 }
 
+// static
 bool FirstRun::SetMinimalFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
@@ -126,6 +130,7 @@ bool FirstRun::SetMinimalFirstRunBubblePref() {
   return true;
 }
 
+// static
 int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   FilePath file_path = cmdline.GetSwitchValuePath(switches::kImportFromFile);
   if (file_path.empty()) {
@@ -154,25 +159,43 @@ int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   return observer.import_result();
 }
 
-// TODO(port):  Import switches need ported to both Mac and Linux.  Not all
-// import switches here are implemented for Linux.  None are implemented for
-// Mac (as this function will not be called on Mac).
-int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
-  int return_code = true;
-  if (cmdline.HasSwitch(switches::kImportFromFile)) {
-    // Silently import preset bookmarks from file.
-    // This is an OEM scenario.
-    return_code = ImportFromFile(profile, cmdline);
-  }
-  if (cmdline.HasSwitch(switches::kImport)) {
+// static
+bool FirstRun::GetFirstRunSentinelFilePath(FilePath* path) {
+  FilePath first_run_sentinel;
+
 #if defined(OS_WIN)
-    return_code = ImportFromBrowser(profile, cmdline);
-#else
-    NOTIMPLEMENTED();
-#endif
+  FilePath exe_path;
+  if (!PathService::Get(base::DIR_EXE, &exe_path))
+    return false;
+  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
+    first_run_sentinel = exe_path;
+  } else {
+    if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
+      return false;
   }
-  return return_code;
+#else
+  if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
+    return false;
+#endif
+
+  *path = first_run_sentinel.AppendASCII(kSentinelFile);
+  return true;
 }
+
+#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+// static
+void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
+  if (new_command_line_) {
+    if (!RelaunchChromeBrowser(*new_command_line_)) {
+      DLOG(ERROR) << "Launching a new instance of the browser failed.";
+    } else {
+      DLOG(WARNING) << "Launched a new instance of the browser.";
+    }
+    delete new_command_line_;
+    new_command_line_ = NULL;
+  }
+}
+#endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 
 int FirstRunImportObserver::import_result() const {
   return import_result_;
