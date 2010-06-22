@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/sha1.h"
 #include "base/string_util.h"
 
 namespace {
@@ -48,20 +49,6 @@ struct PasswordEntry {
                          // is the username, the second one if the password.
 };
 
-// Cleans up a crypt prov and a crypt hash.
-void CleanupHashContext(HCRYPTPROV prov, HCRYPTHASH hash) {
-  BOOL ok;
-  if (hash) {
-    ok = CryptDestroyHash(hash);
-    DCHECK(ok);
-  }
-
-  if (prov) {
-    ok = CryptReleaseContext(prov, 0);
-    DCHECK(ok);
-  }
-}
-
 }  // namespace
 
 namespace ie7_password {
@@ -98,72 +85,26 @@ bool GetUserPassFromData(const std::vector<unsigned char>& data,
 }
 
 std::wstring GetUrlHash(const std::wstring& url) {
-  HCRYPTPROV prov = NULL;
-  HCRYPTHASH hash = NULL;
-
   std::wstring lower_case_url = StringToLowerASCII(url);
-  BOOL result = CryptAcquireContext(&prov, 0, 0, PROV_RSA_FULL, 0);
-  if (!result) {
-    if (GetLastError() == NTE_BAD_KEYSET) {
-      // The keyset does not exist. Create one.
-      result = CryptAcquireContext(&prov, 0, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET);
-    }
-  }
-
-  if (!result) {
-    DCHECK(false);
-    return std::wstring();
-  }
-
-  // Initialize the hash.
-  if (!CryptCreateHash(prov, CALG_SHA1, 0, 0, &hash)) {
-    CleanupHashContext(prov, hash);
-    DCHECK(false);
-    return std::wstring();
-  }
-
-  // Add the data to the hash.
-  const unsigned char* buffer =
-      reinterpret_cast<const unsigned char*>(lower_case_url.c_str());
-  DWORD data_len = static_cast<DWORD>((lower_case_url.size() + 1) *
-                                      sizeof(wchar_t));
-  if (!CryptHashData(hash, buffer, data_len, 0)) {
-    CleanupHashContext(prov, hash);
-    DCHECK(false);
-    return std::wstring();
-  }
-
-  // Get the size of the resulting hash.
-  DWORD hash_len = 0;
-  DWORD buffer_size = sizeof(hash_len);
-  if (!CryptGetHashParam(hash, HP_HASHSIZE,
-                         reinterpret_cast<unsigned char*>(&hash_len),
-                         &buffer_size, 0)) {
-    CleanupHashContext(prov, hash);
-    DCHECK(false);
-    return std::wstring();
-  }
-
-  // Get the hash data.
-  scoped_array<unsigned char> new_buffer(new unsigned char[hash_len]);
-  if (!CryptGetHashParam(hash, HP_HASHVAL, new_buffer.get(), &hash_len, 0)) {
-    CleanupHashContext(prov, hash);
-    DCHECK(false);
-    return std::wstring();
-  }
+  // Get a data buffer out of our std::wstring to pass to SHA1HashString.
+  std::string url_buffer(
+      reinterpret_cast<const char*>(lower_case_url.c_str()),
+      (lower_case_url.size() + 1) * sizeof(wchar_t));
+  std::string hash_bin = base::SHA1HashString(url_buffer);
 
   std::wstring url_hash;
 
   // Transform the buffer to an hexadecimal string.
   unsigned char checksum = 0;
-  for (DWORD i = 0; i < hash_len; ++i) {
-    checksum += new_buffer.get()[i];
-    url_hash += StringPrintf(L"%2.2X", new_buffer.get()[i]);
+  for (size_t i = 0; i < hash_bin.size(); ++i) {
+    // std::string gives signed chars, which mess with StringPrintf and
+    // check_sum.
+    unsigned char hash_byte = static_cast<unsigned char>(hash_bin[i]);
+    checksum += hash_byte;
+    url_hash += StringPrintf(L"%2.2X", static_cast<unsigned>(hash_byte));
   }
-
   url_hash += StringPrintf(L"%2.2X", checksum);
 
-  CleanupHashContext(prov, hash);
   return url_hash;
 }
 

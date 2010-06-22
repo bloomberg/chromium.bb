@@ -157,6 +157,9 @@ TEST_F(PasswordStoreWinTest, ConvertIE7Login) {
   ASSERT_TRUE(CreateIE7PasswordInfo(L"http://example.com/origin",
                                     base::Time::FromDoubleT(1),
                                     &password_info));
+  // Verify the URL hash
+  ASSERT_EQ(L"39471418FF5453FEEB3731E382DEB5D53E14FAF9B5",
+            password_info.url_hash);
 
   // This IE7 password will be retrieved by the GetLogins call.
   wds_->AddIE7Login(password_info);
