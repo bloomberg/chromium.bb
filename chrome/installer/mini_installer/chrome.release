@@ -37,7 +37,6 @@ nacl64.dll: %(VersionDir)s\
 icudt42.dll: %(VersionDir)s\
 gears.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
-Themes\default.dll: %(VersionDir)s\Themes
 locales\*.dll: %(VersionDir)s\Locales
 Resources\bookmark_manager\*.*: %(VersionDir)s\Resources\bookmark_manager
 Resources\bookmark_manager\css\*.*: %(VersionDir)s\Resources\bookmark_manager\css

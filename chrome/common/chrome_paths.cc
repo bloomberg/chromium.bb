@@ -255,7 +255,7 @@ bool PathProvider(int key, FilePath* result) {
       // If we're not bundled on mac, resources.pak should be next to the
       // binary (e.g., for unit tests).
 #endif
-      if (!PathService::Get(base::DIR_EXE, &cur))
+      if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("resources.pak"));
       break;
