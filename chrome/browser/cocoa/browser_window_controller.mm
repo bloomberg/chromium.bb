@@ -256,7 +256,15 @@
     // and the toolbar view from the nib. The controller will handle
     // registering for the appropriate command state changes from the back-end.
     // Adds the toolbar to the content area.
-    [self initializeToolbarWithBrowser:browser];
+    toolbarController_.reset([[ToolbarController alloc]
+                               initWithModel:browser->toolbar_model()
+                                    commands:browser->command_updater()
+                                     profile:browser->profile()
+                                     browser:browser
+                              resizeDelegate:self]);
+    [toolbarController_ setHasToolbar:[self hasToolbar]
+                       hasLocationBar:[self hasLocationBar]];
+    [[[self window] contentView] addSubview:[toolbarController_ view]];
 
     // Create a sub-controller for the bookmark bar.
     bookmarkBarController_.reset(
@@ -1635,7 +1643,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // Right now, it only switches one direction, which clearly isn't cool.
   // [self initTabStrip:browser_->tabstrip_model()];
   [[self tabStripView] removeFromSuperview];
-  [self initializeToolbarWithBrowser:browser_.get()];
+
 
   [self layoutSubviews];
 }

@@ -15,7 +15,6 @@
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/cocoa/fullscreen_controller.h"
-#import "chrome/browser/cocoa/side_tabs_toolbar_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
@@ -171,12 +170,7 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK_GE(maxY, minY);
   DCHECK_LE(maxY, NSMaxY(contentBounds) + yOffset);
 
-  // Place the toolbar at the top of the reserved area. Even with vertical
-  // tabs enabled, the toolbar takes up the entire top width.
-  maxY = [self layoutToolbarAtMaxY:maxY width:width];
-
-  // Position the vertical tab strip on the left, taking up the entire remaining
-  // height.
+  // Position the vertical tab strip on the left, taking up the entire height.
   // TODO(pinkerton): Make width not fixed.
   const CGFloat kSidebarWidth = 200.0;
   if ([self useVerticalTabs]) {
@@ -188,7 +182,10 @@ willPositionSheet:(NSWindow*)sheet
     width -= kSidebarWidth;
   }
 
-  // If we're not displaying the bookmark bar below the infobar, then it goes
+  // Place the toolbar at the top of the reserved area.
+  maxY = [self layoutToolbarAtMinX:minX maxY:maxY width:width];
+
+ // If we're not displaying the bookmark bar below the infobar, then it goes
   // immediately below the toolbar.
   BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
   if (!placeBookmarkBarBelowInfoBar)
@@ -288,13 +285,15 @@ willPositionSheet:(NSWindow*)sheet
   return maxY;
 }
 
-- (CGFloat)layoutToolbarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
+- (CGFloat)layoutToolbarAtMinX:(CGFloat)minX
+                          maxY:(CGFloat)maxY
+                         width:(CGFloat)width {
   NSView* toolbarView = [toolbarController_ view];
   NSRect toolbarFrame = [toolbarView frame];
   if ([self hasToolbar]) {
     // The toolbar is present in the window, so we make room for it.
     DCHECK(![toolbarView isHidden]);
-    toolbarFrame.origin.x = 0;
+    toolbarFrame.origin.x = minX;
     toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame);
     toolbarFrame.size.width = width;
     maxY -= NSHeight(toolbarFrame);
@@ -493,34 +492,6 @@ willPositionSheet:(NSWindow*)sheet
 
   barVisibilityUpdatesEnabled_ = NO;
   [fullscreenController_ cancelAnimationAndTimers];
-}
-
-// Removes existing toolbar and re-creates the appropriate toolbar controller
-// based on if vertical tabs are enabled.
-- (void)initializeToolbarWithBrowser:(Browser*)browser {
-  // Remove existing view.
-  [[toolbarController_ view] removeFromSuperview];
-  toolbarController_.reset(nil);
-
-  // Create appropriate toolbar controller.
-  if ([self useVerticalTabs]) {
-    toolbarController_.reset([[SideTabsToolbarController alloc]
-                               initWithModel:browser->toolbar_model()
-                                    commands:browser->command_updater()
-                                     profile:browser->profile()
-                                     browser:browser
-                              resizeDelegate:self]);
-  } else {
-    toolbarController_.reset([[ToolbarController alloc]
-                               initWithModel:browser->toolbar_model()
-                                    commands:browser->command_updater()
-                                     profile:browser->profile()
-                                     browser:browser
-                              resizeDelegate:self]);
-  }
-  [toolbarController_ setHasToolbar:[self hasToolbar]
-                     hasLocationBar:[self hasLocationBar]];
-  [[[self window] contentView] addSubview:[toolbarController_ view]];
 }
 
 @end  // @implementation BrowserWindowController(Private)

@@ -50,7 +50,9 @@
 // Lays out the toolbar (or just location bar for popups) at the given maximum
 // y-coordinate, with the given width; returns the new maximum y (below the
 // toolbar).
-- (CGFloat)layoutToolbarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
+- (CGFloat)layoutToolbarAtMinX:(CGFloat)minX
+                          maxY:(CGFloat)maxY
+                         width:(CGFloat)width;
 
 // Returns YES if the bookmark bar should be placed below the infobar, NO
 // otherwise.
@@ -108,10 +110,6 @@
 // timers/animation.
 - (void)enableBarVisibilityUpdates;
 - (void)disableBarVisibilityUpdates;
-
-// Removes existing toolbar and re-creates the appropriate toolbar controller
-// based on if vertical tabs are enabled.
-- (void)initializeToolbarWithBrowser:(Browser*)browser;
 
 @end  // @interface BrowserWindowController(Private)
 

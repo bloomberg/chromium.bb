@@ -236,7 +236,6 @@
                 'app/nibs/Preferences.xib',
                 'app/nibs/ReportBug.xib',
                 'app/nibs/SaveAccessoryView.xib',
-                'app/nibs/SideToolbar.xib',
                 'app/nibs/SadTab.xib',
                 'app/nibs/SyncCustomize.xib',
                 'app/nibs/TabContents.xib',
