@@ -61,7 +61,7 @@
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->Add(sample); \
+    if (counter.get()) counter->Add(sample); \
   } while (0)
 
 #define HISTOGRAM_PERCENTAGE(name, under_one_hundred) \
@@ -73,7 +73,7 @@
     static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->AddTime(sample); \
+    if (counter.get()) counter->AddTime(sample); \
   } while (0)
 
 // DO NOT USE THIS.  It is being phased out, in favor of HISTOGRAM_CUSTOM_TIMES.
@@ -81,7 +81,7 @@
     static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kNoFlags); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    if ((sample) < (max)) counter->AddTime(sample); \
+    if ((sample) < (max) && counter.get()) counter->AddTime(sample); \
   } while (0)
 
 // Support histograming of an enumerated value.  The samples should always be
@@ -91,14 +91,14 @@
     static scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet( \
         name, 1, boundary_value, boundary_value + 1, Histogram::kNoFlags); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->Add(sample); \
+    if (counter.get()) counter->Add(sample); \
   } while (0)
 
 #define HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) do { \
     static scoped_refptr<Histogram> counter = CustomHistogram::FactoryGet( \
         name, custom_ranges, Histogram::kNoFlags); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->Add(sample); \
+    if (counter.get()) counter->Add(sample); \
   } while (0)
 
 
@@ -161,7 +161,7 @@
     static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->AddTime(sample); \
+    if (counter.get()) counter->AddTime(sample); \
   } while (0)
 
 // DO NOT USE THIS.  It is being phased out, in favor of HISTOGRAM_CUSTOM_TIMES.
@@ -169,7 +169,7 @@
     static scoped_refptr<Histogram> counter = Histogram::FactoryTimeGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    if ((sample) < (max)) counter->AddTime(sample); \
+    if ((sample) < (max) && counter.get()) counter->AddTime(sample); \
   } while (0)
 
 #define UMA_HISTOGRAM_COUNTS(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
@@ -185,7 +185,7 @@
     static scoped_refptr<Histogram> counter = Histogram::FactoryGet( \
         name, min, max, bucket_count, Histogram::kUmaTargetedHistogramFlag); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->Add(sample); \
+    if (counter.get()) counter->Add(sample); \
   } while (0)
 
 #define UMA_HISTOGRAM_MEMORY_KB(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
@@ -202,14 +202,14 @@
         name, 1, boundary_value, boundary_value + 1, \
         Histogram::kUmaTargetedHistogramFlag); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->Add(sample); \
+    if (counter.get()) counter->Add(sample); \
   } while (0)
 
 #define UMA_HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) do { \
     static scoped_refptr<Histogram> counter = CustomHistogram::FactoryGet( \
         name, custom_ranges, Histogram::kUmaTargetedHistogramFlag); \
     DCHECK_EQ(name, counter->histogram_name()); \
-    counter->Add(sample); \
+    if (counter.get()) counter->Add(sample); \
   } while (0)
 
 //------------------------------------------------------------------------------
