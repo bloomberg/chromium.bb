@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/base/net_util.h"
 
 static const char* kRootFiles[] = {
   "clear.html",
@@ -126,4 +128,64 @@ TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage").
                                       AppendASCII("resources"));
   RunTests(kStorageFiles);
+}
+
+class DomStorageEmptyDatabaseTest : public UITest {
+ protected:
+  FilePath storageDir() const {
+    FilePath storage_dir = user_data_dir();
+    storage_dir = storage_dir.AppendASCII("Default");
+    storage_dir = storage_dir.AppendASCII("Local Storage");
+    return storage_dir;
+  }
+
+  GURL testUrl() const {
+    FilePath test_dir = test_data_directory_;
+    FilePath test_file = test_dir.AppendASCII("dom_storage_empty_db.html");
+    return net::FilePathToFileURL(test_file);
+  }
+};
+
+namespace {
+
+bool dirIsEmpty(const FilePath& path) {
+  if (!file_util::DirectoryExists(path))
+    return true;
+  return file_util::CountFilesCreatedAfter(path, base::Time()) == 0;
+}
+
+}  // namespace
+
+TEST_F(DomStorageEmptyDatabaseTest, EmptyDirAfterClear) {
+  NavigateToURL(testUrl());
+  ASSERT_TRUE(dirIsEmpty(storageDir()));
+
+  NavigateToURL(GURL("javascript:set()"));
+  NavigateToURL(GURL("javascript:clear()"));
+  QuitBrowser();
+  EXPECT_TRUE(dirIsEmpty(storageDir()));
+}
+
+TEST_F(DomStorageEmptyDatabaseTest, EmptyDirAfterGet) {
+  NavigateToURL(testUrl());
+  ASSERT_TRUE(dirIsEmpty(storageDir()));
+
+  NavigateToURL(GURL("javascript:get()"));
+  QuitBrowser();
+  EXPECT_TRUE(dirIsEmpty(storageDir()));
+}
+
+TEST_F(DomStorageEmptyDatabaseTest, NonEmptyDirAfterSet) {
+  NavigateToURL(testUrl());
+  ASSERT_TRUE(dirIsEmpty(storageDir()));
+
+  NavigateToURL(GURL("javascript:set()"));
+  QuitBrowser();
+  EXPECT_FALSE(dirIsEmpty(storageDir()));
+
+  LaunchBrowserAndServer();
+  NavigateToURL(testUrl());
+  NavigateToURL(GURL("javascript:clear()"));
+  QuitBrowser();
+  EXPECT_TRUE(dirIsEmpty(storageDir()));
 }
