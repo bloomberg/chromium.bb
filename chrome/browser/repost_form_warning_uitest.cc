@@ -21,7 +21,14 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 
 typedef UITest RepostFormWarningTest;
 
-TEST_F(RepostFormWarningTest, TestDoubleReload) {
+#if defined(OS_WIN)
+// http://crbug.com/47228
+#define MAYBE_TestDoubleReload FLAKY_TestDoubleReload
+#else
+#define MAYBE_TestDoubleReload TestDoubleReload
+#endif
+
+TEST_F(RepostFormWarningTest, MAYBE_TestDoubleReload) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -45,7 +52,14 @@ TEST_F(RepostFormWarningTest, TestDoubleReload) {
   ASSERT_TRUE(tab->NavigateToURL(server->TestServerPage("bar")));
 }
 
-TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
+#if defined(OS_WIN)
+// http://crbug.com/47228
+#define MAYBE_TestLoginAfterRepost FLAKY_TestLoginAfterRepost
+#else
+#define MAYBE_TestLoginAfterRepost TestLoginAfterRepost
+#endif
+
+TEST_F(RepostFormWarningTest, MAYBE_TestLoginAfterRepost) {
   scoped_refptr<HTTPTestServer> server =
   HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
