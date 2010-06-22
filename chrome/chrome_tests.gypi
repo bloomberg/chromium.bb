@@ -2462,7 +2462,7 @@
                 # Reason for disabling UI tests on non-Linux above.
                 'ui_tests',
                 # Win bot needs to be turned into an interactive bot.
-                'test/interactive_ui/interactive_ui_tests.gypi:interactive_ui_tests',
+                'interactive_ui_tests',
               ]}],
             ['OS=="mac"', {
               'dependencies': [
