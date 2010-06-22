@@ -22,8 +22,10 @@ const wchar_t* kJs = L"js";
 const wchar_t* kLaunch = L"app.launch";
 const wchar_t* kLaunchContainer = L"app.launch.container";
 const wchar_t* kLaunchFullscreen = L"app.launch.fullscreen";
+const wchar_t* kLaunchHeight = L"app.launch.height";
 const wchar_t* kLaunchLocalPath = L"app.launch.local_path";
 const wchar_t* kLaunchWebURL = L"app.launch.web_url";
+const wchar_t* kLaunchWidth = L"app.launch.width";
 const wchar_t* kMatches = L"matches";
 const wchar_t* kMinimumChromeVersion = L"minimum_chrome_version";
 const wchar_t* kIncludeGlobs = L"include_globs";
@@ -116,10 +118,18 @@ const char* kInvalidLaunchContainer =
     "Invalid value for 'app.launch.container'.";
 const char* kInvalidLaunchFullscreen =
     "Invalid value for 'app.launch.fullscreen'.";
+const char* kInvalidLaunchHeight =
+    "Invalid value for 'app.launch.height'.";
+const char* kInvalidLaunchHeightContainer =
+    "Invalid container type for 'app.launch.height'.";
 const char* kInvalidLaunchLocalPath =
     "Invalid value for 'app.launch.local_path'.";
 const char* kInvalidLaunchWebURL =
     "Invalid value for 'app.launch.web_url'.";
+const char* kInvalidLaunchWidth =
+    "Invalid value for 'app.launch.width'.";
+const char* kInvalidLaunchWidthContainer =
+    "Invalid container type for 'app.launch.width'.";
 const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidManifest =

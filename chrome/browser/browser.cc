@@ -312,7 +312,13 @@ Browser* Browser::CreateForApp(const std::wstring& app_name,
   Browser* browser = new Browser(type, profile);
   browser->app_name_ = app_name;
   browser->extension_app_ = extension;
+
+  gfx::Rect initial_pos(extension->launch_width(), extension->launch_height());
+  if (!initial_pos.IsEmpty())
+    browser->set_override_bounds(initial_pos);
+
   browser->CreateBrowserWindow();
+
   return browser;
 }
 

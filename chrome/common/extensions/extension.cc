@@ -679,6 +679,34 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
     return false;
   }
 
+  // Validate the container width if present.
+  if (manifest->Get(keys::kLaunchWidth, &temp)) {
+    if (launch_container_ != LAUNCH_PANEL &&
+        launch_container_ != LAUNCH_WINDOW) {
+      *error = errors::kInvalidLaunchWidthContainer;
+      return false;
+    }
+    if (!temp->GetAsInteger(&launch_width_) || launch_width_ < 0) {
+      launch_width_ = 0;
+      *error = errors::kInvalidLaunchWidth;
+      return false;
+    }
+  }
+
+  // Validate container height if present.
+  if (manifest->Get(keys::kLaunchHeight, &temp)) {
+    if (launch_container_ != LAUNCH_PANEL &&
+        launch_container_ != LAUNCH_WINDOW) {
+      *error = errors::kInvalidLaunchHeightContainer;
+      return false;
+    }
+    if (!temp->GetAsInteger(&launch_height_) || launch_height_ < 0) {
+      launch_height_ = 0;
+      *error = errors::kInvalidLaunchHeight;
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -702,6 +730,8 @@ Extension::Extension(const FilePath& path)
       is_app_(false),
       launch_container_(LAUNCH_TAB),
       launch_fullscreen_(false),
+      launch_width_(0),
+      launch_height_(0),
       background_page_ready_(false),
       being_upgraded_(false) {
   DCHECK(path.IsAbsolute());
