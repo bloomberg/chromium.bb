@@ -753,6 +753,7 @@
         'browser/cocoa/toolbar_controller_unittest.mm',
         'browser/cocoa/toolbar_view_unittest.mm',
         'browser/cocoa/translate_infobar_unittest.mm',
+        'browser/cocoa/vertical_gradient_view_unittest.mm',
         'browser/cocoa/view_resizer_pong.h',
         'browser/cocoa/view_resizer_pong.mm',
         'browser/cocoa/web_drop_target_unittest.mm',

@@ -4,13 +4,17 @@
 
 #include "chrome/browser/cocoa/infobar_gradient_view.h"
 
+#include "base/scoped_nsobject.h"
 #import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/themed_window.h"
+
+namespace {
 
 const double kBackgroundColorTop[3] =
     {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};
 const double kBackgroundColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
+}
 
 @implementation InfoBarGradientView
 
@@ -26,22 +30,12 @@ const double kBackgroundColorBottom[3] =
                                   green:kBackgroundColorBottom[1]
                                    blue:kBackgroundColorBottom[2]
                                   alpha:1.0];
-    gradient_ =
+    scoped_nsobject<NSGradient> gradient(
         [[NSGradient alloc] initWithStartingColor:startingColor
-                                       endingColor:endingColor];
+                                       endingColor:endingColor]);
+    [self setGradient:gradient];
   }
   return self;
-}
-
-- (void)dealloc {
-  [gradient_ release];
-  [super dealloc];
-}
-
-- (void)setGradient:(NSGradient*)gradient {
-  [gradient retain];
-  [gradient_ release];
-  gradient_ = gradient;
 }
 
 - (NSColor*)strokeColor {
@@ -54,16 +48,6 @@ const double kBackgroundColorBottom[3] =
       active ? BrowserThemeProvider::COLOR_TOOLBAR_STROKE :
                BrowserThemeProvider::COLOR_TOOLBAR_STROKE_INACTIVE,
       true);
-}
-
-- (void)drawRect:(NSRect)rect {
-  [gradient_ drawInRect:[self bounds] angle:270];
-
-  // Draw bottom stroke
-  [[self strokeColor] set];
-  NSRect borderRect, contentRect;
-  NSDivideRect([self bounds], &borderRect, &contentRect, 1, NSMinYEdge);
-  NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 }
 
 - (BOOL)mouseDownCanMoveWindow {

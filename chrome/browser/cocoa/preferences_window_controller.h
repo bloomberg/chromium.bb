@@ -11,6 +11,7 @@
 
 namespace PreferencesWindowControllerInternal {
 class PrefObserverBridge;
+class ManagedPrefsBannerState;
 }
 
 @class CustomHomePagesModel;
@@ -19,6 +20,7 @@ class PrefService;
 class Profile;
 class ProfileSyncService;
 @class SearchEngineListModel;
+@class VerticalGradientView;
 @class WindowSizeAutosaver;
 
 // A window controller that handles the preferences window. The bulk of the
@@ -43,8 +45,14 @@ class ProfileSyncService;
   scoped_ptr<PreferencesWindowControllerInternal::PrefObserverBridge>
       observer_;  // Watches for pref changes.
   scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
+  NSView* currentPrefsView_;  // weak ref - current prefs page view.
+  scoped_ptr<PreferencesWindowControllerInternal::ManagedPrefsBannerState>
+      bannerState_;
+  BOOL managedPrefsBannerVisible_;
 
   IBOutlet NSToolbar* toolbar_;
+  IBOutlet VerticalGradientView* managedPrefsBannerView_;
+  IBOutlet NSImageView* managedPrefsBannerWarningImage_;
 
   // The views we'll rotate through
   IBOutlet NSView* basicsView_;

@@ -5,18 +5,13 @@
 #ifndef CHROME_BROWSER_COCOA_INFOBAR_GRADIENT_VIEW_H_
 #define CHROME_BROWSER_COCOA_INFOBAR_GRADIENT_VIEW_H_
 
+#import "chrome/browser/cocoa/vertical_gradient_view.h"
+
 #import <Cocoa/Cocoa.h>
 
 // A custom view that draws the background gradient for an infobar.
-// The default is a yellow gradient, but a custom gradient can also be set.
-@interface InfoBarGradientView : NSView {
- @private
-  // The gradient to draw.
-  NSGradient* gradient_;
+@interface InfoBarGradientView : VerticalGradientView {
 }
-
-// Set a custom gradient for the view.
-- (void)setGradient:(NSGradient*)gradient;
 
 @end
 

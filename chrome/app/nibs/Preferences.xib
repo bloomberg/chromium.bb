@@ -3,11 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="692"/>
 			<integer value="481"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -2386,6 +2387,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								</object>
 								<string key="NSFrame">{{1, 1}, {525, 402}}</string>
 								<reference key="NSSuperview" ref="14278481"/>
+								<reference key="NSNextKeyView" ref="772886817"/>
 								<reference key="NSDocView" ref="772886817"/>
 								<object class="NSColor" key="NSBGColor">
 									<int key="NSColorSpace">3</int>
@@ -2416,6 +2418,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 						<string key="NSFrame">{{-1, 60}, {542, 404}}</string>
 						<reference key="NSSuperview" ref="933437956"/>
+						<reference key="NSNextKeyView" ref="277407604"/>
 						<int key="NSsFlags">18</int>
 						<reference key="NSVScroller" ref="331420378"/>
 						<reference key="NSHScroller" ref="470087648"/>
@@ -2455,10 +2458,67 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				<string key="NSFrameSize">{540, 463}</string>
 				<string key="NSClassName">NSView</string>
 			</object>
+			<object class="NSCustomView" id="380531918">
+				<reference key="NSNextResponder"/>
+				<int key="NSvFlags">268</int>
+				<object class="NSMutableArray" key="NSSubviews">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSImageView" id="846805293">
+						<reference key="NSNextResponder" ref="380531918"/>
+						<int key="NSvFlags">256</int>
+						<object class="NSMutableSet" key="NSDragTypes">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="NSMutableArray" key="set.sortedObjects">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<string>Apple PDF pasteboard type</string>
+								<string>Apple PICT pasteboard type</string>
+								<string>Apple PNG pasteboard type</string>
+								<string>NSFilenamesPboardType</string>
+								<string>NeXT Encapsulated PostScript v1.2 pasteboard type</string>
+								<string>NeXT TIFF v4.0 pasteboard type</string>
+							</object>
+						</object>
+						<string key="NSFrameSize">{27, 27}</string>
+						<reference key="NSSuperview" ref="380531918"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSImageCell" key="NSCell" id="252500928">
+							<int key="NSCellFlags">130560</int>
+							<int key="NSCellFlags2">33554432</int>
+							<int key="NSAlign">0</int>
+							<int key="NSScale">0</int>
+							<int key="NSStyle">0</int>
+							<bool key="NSAnimates">NO</bool>
+						</object>
+						<bool key="NSEditable">YES</bool>
+					</object>
+					<object class="NSTextField" id="555840669">
+						<reference key="NSNextResponder" ref="380531918"/>
+						<int key="NSvFlags">258</int>
+						<string key="NSFrame">{{32, 5}, {511, 17}}</string>
+						<reference key="NSSuperview" ref="380531918"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="839405772">
+							<int key="NSCellFlags">68288064</int>
+							<int key="NSCellFlags2">272630784</int>
+							<string key="NSContents">^IDS_OPTIONS_MANAGED_PREFS</string>
+							<reference key="NSSupport" ref="445696277"/>
+							<reference key="NSControlView" ref="555840669"/>
+							<reference key="NSBackgroundColor" ref="592613688"/>
+							<reference key="NSTextColor" ref="748094473"/>
+						</object>
+					</object>
+				</object>
+				<string key="NSFrameSize">{540, 27}</string>
+				<reference key="NSSuperview"/>
+				<string key="NSClassName">VerticalGradientView</string>
+			</object>
 			<object class="NSCustomObject" id="385419425">
 				<string key="NSClassName">ChromeUILocalizer</string>
 			</object>
 			<object class="NSCustomObject" id="305848829">
+				<string key="NSClassName">ChromeUILocalizer</string>
+			</object>
+			<object class="NSCustomObject" id="78746495">
 				<string key="NSClassName">ChromeUILocalizer</string>
 			</object>
 			<object class="NSCustomObject" id="145618054">
@@ -3878,6 +3938,30 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 					<int key="connectionID">691</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">managedPrefsBannerView_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="380531918"/>
+					</object>
+					<int key="connectionID">697</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">managedPrefsBannerWarningImage_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="846805293"/>
+					</object>
+					<int key="connectionID">698</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">owner_</string>
+						<reference key="source" ref="78746495"/>
+						<reference key="destination" ref="380531918"/>
+					</object>
+					<int key="connectionID">701</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5133,6 +5217,50 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="object" ref="201482610"/>
 						<reference key="parent" ref="596669929"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">692</int>
+						<reference key="object" ref="380531918"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="846805293"/>
+							<reference ref="555840669"/>
+						</object>
+						<reference key="parent" ref="476301154"/>
+						<string key="objectName">Managed Prefs Banner</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">693</int>
+						<reference key="object" ref="846805293"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="252500928"/>
+						</object>
+						<reference key="parent" ref="380531918"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">694</int>
+						<reference key="object" ref="252500928"/>
+						<reference key="parent" ref="846805293"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">695</int>
+						<reference key="object" ref="555840669"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="839405772"/>
+						</object>
+						<reference key="parent" ref="380531918"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">696</int>
+						<reference key="object" ref="839405772"/>
+						<reference key="parent" ref="555840669"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">699</int>
+						<reference key="object" ref="78746495"/>
+						<reference key="parent" ref="476301154"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -5311,6 +5439,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>662.IBPluginDependency</string>
 					<string>67.IBPluginDependency</string>
 					<string>69.IBPluginDependency</string>
+					<string>692.IBEditorWindowLastContentRect</string>
+					<string>692.IBPluginDependency</string>
+					<string>693.IBPluginDependency</string>
+					<string>694.IBPluginDependency</string>
+					<string>695.IBPluginDependency</string>
+					<string>696.IBPluginDependency</string>
+					<string>699.IBPluginDependency</string>
 					<string>70.IBPluginDependency</string>
 					<string>71.IBPluginDependency</string>
 					<string>74.IBEditorWindowLastContentRect</string>
@@ -5508,6 +5643,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{277, 847}, {540, 27}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{375, 102}, {443, 754}}</string>
@@ -5550,7 +5692,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">691</int>
+			<int key="maxID">701</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5790,6 +5932,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>downloadLocationButton_</string>
 							<string>downloadLocationControl_</string>
 							<string>enableLoggingCheckbox_</string>
+							<string>managedPrefsBannerView_</string>
+							<string>managedPrefsBannerWarningImage_</string>
 							<string>personalStuffGroupAutofill_</string>
 							<string>personalStuffGroupBrowserData_</string>
 							<string>personalStuffGroupPasswords_</string>
@@ -5821,6 +5965,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>NSButton</string>
 							<string>NSPathControl</string>
 							<string>NSButton</string>
+							<string>VerticalGradientView</string>
+							<string>NSImageView</string>
 							<string>NSArray</string>
 							<string>NSArray</string>
 							<string>NSArray</string>
@@ -5841,6 +5987,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/preferences_window_controller.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">VerticalGradientView</string>
+					<string key="superclassName">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/vertical_gradient_view.h</string>
 					</object>
 				</object>
 			</object>

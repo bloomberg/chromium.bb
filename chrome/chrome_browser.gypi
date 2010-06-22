@@ -902,6 +902,8 @@
         'browser/cocoa/ui_localizer.mm',
         'browser/cocoa/url_drop_target.h',
         'browser/cocoa/url_drop_target.mm',
+        'browser/cocoa/vertical_gradient_view.h',
+        'browser/cocoa/vertical_gradient_view.mm',
         'browser/cocoa/view_resizer.h',
         'browser/cocoa/web_contents_drag_source.h',
         'browser/cocoa/web_contents_drag_source.mm',

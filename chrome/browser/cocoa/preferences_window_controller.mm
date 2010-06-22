@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
+#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/string16.h"
@@ -28,9 +29,11 @@
 #import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
 #import "chrome/browser/cocoa/sync_customize_controller_cppsafe.h"
+#import "chrome/browser/cocoa/vertical_gradient_view.h"
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/managed_prefs_banner_base.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/dns_global.h"
@@ -54,22 +57,28 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
 
+// Colors for the managed preferences warning banner.
+static const double kBannerGradientColorTop[3] =
+    {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};
+static const double kBannerGradientColorBottom[3] =
+    {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
+static const double kBannerStrokeColor = 135.0 / 255.0;
+
+// Preferences relevant to the general page potentially constrained by policy.
+static const wchar_t* kGeneralPolicyConstrainedPrefs[] = {
+  prefs::kHomePage,
+  prefs::kHomePageIsNewTabPage
+};
+
 std::string GetNewTabUIURLString() {
   return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL,
       std::string()).possibly_invalid_spec();
-}
-
-// Helper to remove all but the last view from the view hierarchy.
-void RemoveAllButLastView(NSArray* views) {
-  NSArray* toRemove = [views subarrayWithRange:NSMakeRange(0, [views count]-1)];
-  for (NSView* view in toRemove) {
-    [view removeFromSuperviewWithoutNeedingDisplay];
-  }
 }
 
 // Helper that sizes two buttons to fit in a row keeping their spacing, returns
@@ -349,6 +358,8 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setTabsToLinks:(BOOL)value;
 - (void)displayPreferenceViewForPage:(OptionsPage)page
                              animate:(BOOL)animate;
+- (void)resetSubViews;
+- (void)initBannerStateForPage:(OptionsPage)page;
 
 // KVC getter methods.
 - (BOOL)fileHandlerUIEnabled;
@@ -381,6 +392,58 @@ class PrefObserverBridge : public NotificationObserver,
 
  private:
   PreferencesWindowController* controller_;  // weak, owns us
+};
+
+// Tracks state for a managed prefs banner and triggers UI updates through the
+// PreferencesWindowController as appropriate.
+class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
+ public:
+  virtual ~ManagedPrefsBannerState() { }
+
+  BOOL IsVisible() {
+    return DetermineVisibility() ? YES : NO;
+  }
+
+  // Create a banner state tracker object suitable for use with a given |page|.
+  static ManagedPrefsBannerState* CreateForPage(
+      PreferencesWindowController* controller,
+      OptionsPage page,
+      PrefService* prefs) {
+    switch (page) {
+      case OPTIONS_PAGE_GENERAL:
+        return new ManagedPrefsBannerState(controller, page, prefs,
+            kGeneralPolicyConstrainedPrefs,
+            arraysize(kGeneralPolicyConstrainedPrefs));
+      case OPTIONS_PAGE_CONTENT:
+        break;
+      case OPTIONS_PAGE_ADVANCED:
+        break;
+      case OPTIONS_PAGE_DEFAULT:
+      case OPTIONS_PAGE_COUNT:
+        LOG(DFATAL) << "Invalid page value " << page;
+        break;
+    }
+    return new ManagedPrefsBannerState(controller, page, prefs, NULL, 0);
+  }
+
+ protected:
+  // Overridden from ManagedPrefsBannerBase.
+  virtual void OnUpdateVisibility() {
+    [controller_ switchToPage:page_ animate:YES];
+  }
+
+ private:
+  explicit ManagedPrefsBannerState(PreferencesWindowController* controller,
+                                   OptionsPage page,
+                                   PrefService* prefs,
+                                   const wchar_t** relevant_prefs,
+                                   size_t count)
+      : ManagedPrefsBannerBase(prefs, relevant_prefs, count),
+        controller_(controller),
+        page_(page) { }
+
+  PreferencesWindowController* controller_;  // weak, owns us
+  OptionsPage page_;  // current options page
 };
 
 }  // namespace PreferencesWindowControllerInternal
@@ -651,6 +714,12 @@ class PrefObserverBridge : public NotificationObserver,
   [underTheHoodContentView_ scrollPoint:
       NSMakePoint(0, underTheHoodContentSize.height)];
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* alertIcon = rb.GetNSImageNamed(IDR_WARNING);
+  DCHECK(alertIcon);
+  [managedPrefsBannerWarningImage_ setImage:alertIcon];
+
+  [self initBannerStateForPage:initialPage_];
   [self switchToPage:initialPage_ animate:NO];
 
   // Save/restore position based on prefs.
@@ -661,6 +730,27 @@ class PrefObserverBridge : public NotificationObserver,
                  path:prefs::kPreferencesWindowPlacement
                 state:kSaveWindowRect]);
   }
+
+  // Initialize the banner gradient and stroke color.
+  NSColor* bannerStartingColor =
+      [NSColor colorWithCalibratedRed:kBannerGradientColorTop[0]
+                                green:kBannerGradientColorTop[1]
+                                 blue:kBannerGradientColorTop[2]
+                                alpha:1.0];
+  NSColor* bannerEndingColor =
+      [NSColor colorWithCalibratedRed:kBannerGradientColorBottom[0]
+                                green:kBannerGradientColorBottom[1]
+                                 blue:kBannerGradientColorBottom[2]
+                                alpha:1.0];
+  scoped_nsobject<NSGradient> bannerGradient(
+      [[NSGradient alloc] initWithStartingColor:bannerStartingColor
+                                    endingColor:bannerEndingColor]);
+  [managedPrefsBannerView_ setGradient:bannerGradient];
+
+  NSColor* bannerStrokeColor =
+      [NSColor colorWithCalibratedWhite:kBannerStrokeColor
+                                  alpha:1.0];
+  [managedPrefsBannerView_ setStrokeColor:bannerStrokeColor];
 }
 
 - (void)dealloc {
@@ -1752,17 +1842,9 @@ const int kDisabledIndex = 1;
   NSView* prefsView = [self getPrefsViewForPage:page];
   NSView* contentView = [prefsWindow contentView];
 
-  // Normally there is only one view, but if the user clicks really quickly, the
-  // animation could still been running, and the last view is the one that was
-  // animating in.
-  NSArray* subviews = [contentView subviews];
-  NSView* currentPrefsView = nil;
-  if ([subviews count]) {
-    currentPrefsView = [subviews lastObject];
-  }
-
   // Make sure we aren't being told to display the same thing again.
-  if (currentPrefsView == prefsView) {
+  if (currentPrefsView_ == prefsView &&
+      managedPrefsBannerVisible_ == bannerState_->IsVisible()) {
     return;
   }
 
@@ -1770,15 +1852,29 @@ const int kDisabledIndex = 1;
   if (page != OPTIONS_PAGE_DEFAULT)
     lastSelectedPage_.SetValue(page);
 
-  // Stop any running animation, and remove any past views that were on the way
-  // out.
+  // Stop any running animation, and reset the subviews to the new state. We
+  // re-add any views we need for animation later.
   [animation_ stopAnimation];
-  if ([subviews count]) {
-    RemoveAllButLastView(subviews);
-  }
+  NSView* oldPrefsView = currentPrefsView_;
+  currentPrefsView_ = prefsView;
+  [self resetSubViews];
 
+  // Update the banner state.
+  [self initBannerStateForPage:page];
+  BOOL showBanner = bannerState_->IsVisible();
+
+  // Update the window title.
+  NSToolbarItem* toolbarItem = [self getToolbarItemForPage:page];
+  [prefsWindow setTitle:[toolbarItem label]];
+
+  // Calculate new frames for the subviews.
   NSRect prefsViewFrame = [prefsView frame];
   NSRect contentViewFrame = [contentView frame];
+  NSRect bannerViewFrame = [managedPrefsBannerView_ frame];
+
+  // Determine what height the managed prefs banner will use.
+  CGFloat bannerViewHeight = showBanner ? NSHeight(bannerViewFrame) : 0.0;
+
   if (animate) {
     // NSViewAnimation doesn't seem to honor subview resizing as it animates the
     // Window's frame.  So instead of trying to get the top in the right place,
@@ -1789,18 +1885,12 @@ const int kDisabledIndex = 1;
     // The prefView is anchored to the top of its parent, so set its origin so
     // that the top is where it should be.  When the window's frame is set, the
     // origin will be adjusted to keep it in the right spot.
-    prefsViewFrame.origin.y =
-        NSHeight(contentViewFrame) - NSHeight(prefsViewFrame);
+    prefsViewFrame.origin.y = NSHeight(contentViewFrame) -
+        NSHeight(prefsViewFrame) - bannerViewHeight;
   }
+  bannerViewFrame.origin.y = NSHeight(prefsViewFrame);
+  bannerViewFrame.size.width = NSWidth(contentViewFrame);
   [prefsView setFrame:prefsViewFrame];
-
-  // Add the view.
-  [contentView addSubview:prefsView];
-  [prefsWindow setInitialFirstResponder:prefsView];
-
-  // Update the window title.
-  NSToolbarItem* toolbarItem = [self getToolbarItemForPage:page];
-  [prefsWindow setTitle:[toolbarItem label]];
 
   // Figure out the size of the window.
   NSRect windowFrame = [contentView convertRect:[prefsWindow frame]
@@ -1808,7 +1898,7 @@ const int kDisabledIndex = 1;
   CGFloat titleToolbarHeight =
       NSHeight(windowFrame) - NSHeight(contentViewFrame);
   windowFrame.size.height =
-      NSHeight(prefsViewFrame) + titleToolbarHeight;
+      NSHeight(prefsViewFrame) + titleToolbarHeight + bannerViewHeight;
   DCHECK_GE(NSWidth(windowFrame), NSWidth(prefsViewFrame))
       << "Initial width set wasn't wide enough.";
   windowFrame = [contentView convertRect:windowFrame toView:nil];
@@ -1816,42 +1906,85 @@ const int kDisabledIndex = 1;
 
   // Now change the size.
   if (animate) {
-    NSDictionary* oldViewOut =
+    NSMutableArray* animations = [NSMutableArray arrayWithCapacity:4];
+    if (oldPrefsView != prefsView) {
+      // Fade between prefs views if they change.
+      [contentView addSubview:oldPrefsView
+                   positioned:NSWindowBelow
+                   relativeTo:nil];
+      [animations addObject:
+          [NSDictionary dictionaryWithObjectsAndKeys:
+              oldPrefsView, NSViewAnimationTargetKey,
+              NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
+              nil]];
+      [animations addObject:
+          [NSDictionary dictionaryWithObjectsAndKeys:
+              prefsView, NSViewAnimationTargetKey,
+              NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
+              nil]];
+    } else {
+      // Make sure the prefs pane ends up in the right position in case we
+      // manipulate the banner.
+      [animations addObject:
+          [NSDictionary dictionaryWithObjectsAndKeys:
+              prefsView, NSViewAnimationTargetKey,
+              [NSValue valueWithRect:prefsViewFrame],
+                  NSViewAnimationEndFrameKey,
+              nil]];
+    }
+    if (showBanner != managedPrefsBannerVisible_) {
+      // Slide the warning banner in or out of view.
+      [animations addObject:
+          [NSDictionary dictionaryWithObjectsAndKeys:
+              managedPrefsBannerView_, NSViewAnimationTargetKey,
+              [NSValue valueWithRect:bannerViewFrame],
+                  NSViewAnimationEndFrameKey,
+              nil]];
+    }
+    // Window resize animation.
+    [animations addObject:
         [NSDictionary dictionaryWithObjectsAndKeys:
-         currentPrefsView, NSViewAnimationTargetKey,
-         NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
-         nil];
-    NSDictionary* newViewIn =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         prefsView, NSViewAnimationTargetKey,
-         NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
-         nil];
-    NSDictionary* windowResize =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         prefsWindow, NSViewAnimationTargetKey,
-         [NSValue valueWithRect:windowFrame], NSViewAnimationEndFrameKey,
-         nil];
-    [animation_ setViewAnimations:
-        [NSArray arrayWithObjects:oldViewOut, newViewIn, windowResize, nil]];
+            prefsWindow, NSViewAnimationTargetKey,
+            [NSValue valueWithRect:windowFrame], NSViewAnimationEndFrameKey,
+            nil]];
+    [animation_ setViewAnimations:animations];
     // The default duration is 0.5s, which actually feels slow in here, so speed
     // it up a bit.
     [animation_ gtm_setDuration:0.2
                       eventMask:NSLeftMouseUpMask];
     [animation_ startAnimation];
   } else {
-    [currentPrefsView removeFromSuperviewWithoutNeedingDisplay];
     // If not animating, odds are we don't want to display either (because it
     // is initial window setup).
     [prefsWindow setFrame:windowFrame display:NO];
+    [managedPrefsBannerView_ setFrame:bannerViewFrame];
   }
+
+  managedPrefsBannerVisible_ = showBanner;
+}
+
+- (void)resetSubViews {
+  // Reset subviews to current prefs view and banner, remove any views that
+  // might have been left over from previous state or animation.
+  NSArray* subviews = [NSArray arrayWithObjects:
+                          currentPrefsView_, managedPrefsBannerView_, nil];
+  [[[self window] contentView] setSubviews:subviews];
+  [[self window] setInitialFirstResponder:currentPrefsView_];
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
   DCHECK_EQ(animation_.get(), animation);
-  // Animation finished, remove everything but the view we just added (it will
-  // be last in the list).
-  NSArray* subviews = [[[self window] contentView] subviews];
-  RemoveAllButLastView(subviews);
+  // Animation finished, reset subviews to current prefs view and the banner.
+  [self resetSubViews];
+}
+
+// Reinitializes the banner state tracker object to watch for managed bits of
+// preferences relevant to the given options |page|.
+- (void)initBannerStateForPage:(OptionsPage)page {
+  page = [self normalizePage:page];
+  bannerState_.reset(
+      PreferencesWindowControllerInternal::ManagedPrefsBannerState::
+          CreateForPage(self, page, prefs_));
 }
 
 - (void)switchToPage:(OptionsPage)page animate:(BOOL)animate {
