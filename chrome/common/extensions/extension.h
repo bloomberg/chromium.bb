@@ -24,7 +24,7 @@
 class ExtensionAction;
 class ExtensionResource;
 
-// Represents a Chrome sextension.
+// Represents a Chrome extension.
 class Extension {
  public:
   typedef std::vector<URLPattern> URLPatternList;
