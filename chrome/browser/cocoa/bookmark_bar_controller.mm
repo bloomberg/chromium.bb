@@ -469,6 +469,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node)
     [self openURL:node->GetURL() disposition:NEW_FOREGROUND_TAB];
+  [self closeAllBookmarkFolders];
 }
 
 - (IBAction)openBookmarkInNewWindow:(id)sender {
