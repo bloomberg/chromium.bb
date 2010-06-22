@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/menu_controller.h"
 
 #include "app/l10n_util_mac.h"
+#include "app/menus/accelerator_cocoa.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
@@ -102,6 +103,11 @@
     [item setTarget:self];
     NSValue* modelObject = [NSValue valueWithPointer:model];
     [item setRepresentedObject:modelObject];  // Retains |modelObject|.
+    menus::AcceleratorCocoa accelerator;
+    if (model->GetAcceleratorAt(modelIndex, &accelerator)) {
+      [item setKeyEquivalent:accelerator.characters()];
+      [item setKeyEquivalentModifierMask:accelerator.modifiers()];
+    }
   }
   [menu insertItem:item atIndex:index];
 }

@@ -575,6 +575,8 @@
         'browser/cocoa/about_ipc_dialog.mm',
         'browser/cocoa/about_window_controller.h',
         'browser/cocoa/about_window_controller.mm',
+        'browser/cocoa/accelerators_cocoa.h',
+        'browser/cocoa/accelerators_cocoa.mm',
         'browser/cocoa/animatable_view.h',
         'browser/cocoa/animatable_view.mm',
         'browser/cocoa/authorization_util.h',

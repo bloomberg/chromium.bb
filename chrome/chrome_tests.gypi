@@ -629,6 +629,7 @@
         # exclude them from non-Mac builds.
         'browser/cocoa/about_ipc_controller_unittest.mm',
         'browser/cocoa/about_window_controller_unittest.mm',
+        'browser/cocoa/accelerators_cocoa_unittest.mm',
         'browser/cocoa/animatable_view_unittest.mm',
         'browser/cocoa/autocomplete_text_field_cell_unittest.mm',
         'browser/cocoa/autocomplete_text_field_editor_unittest.mm',

@@ -158,6 +158,7 @@
         'linear_animation.h',
         'menus/accelerator.h',
         'menus/accelerator_gtk.h',
+        'menus/accelerator_cocoa.h',
         'menus/menu_model.cc',
         'menus/menu_model.h',
         'menus/simple_menu_model.cc',

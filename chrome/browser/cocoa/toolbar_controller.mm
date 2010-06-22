@@ -7,13 +7,17 @@
 #include <algorithm>
 
 #include "app/l10n_util_mac.h"
+#include "app/menus/accelerator_cocoa.h"
+#include "base/keyboard_codes.h"
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
+#include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#import "chrome/browser/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
@@ -98,9 +102,21 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   virtual bool IsCommandIdEnabled(int command_id) const {
     return browser_->command_updater()->IsCommandEnabled(command_id);
   }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      menus::Accelerator* accelerator) { return false; }
+  virtual bool GetAcceleratorForCommandId(int command_id,
+      menus::Accelerator* accelerator_generic) {
+    // Downcast so that when the copy constructor is invoked below, the key
+    // string gets copied, too.
+    menus::AcceleratorCocoa* out_accelerator =
+        static_cast<menus::AcceleratorCocoa*>(accelerator_generic);
+    AcceleratorsCocoa* keymap = Singleton<AcceleratorsCocoa>::get();
+    const menus::AcceleratorCocoa* accelerator =
+        keymap->GetAcceleratorForCommand(command_id);
+    if (accelerator) {
+      *out_accelerator = *accelerator;
+      return true;
+    }
+    return false;
+  }
   virtual void ExecuteCommand(int command_id) {
     browser_->ExecuteCommand(command_id);
   }
