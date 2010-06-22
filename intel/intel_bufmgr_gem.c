@@ -710,7 +710,6 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 			     unsigned long *pitch, unsigned long flags)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
-	drm_intel_bo *bo;
 	unsigned long size, stride;
 	uint32_t tiling;
 
@@ -743,17 +742,13 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 		size = stride * aligned_y;
 		size = drm_intel_gem_bo_tile_size(bufmgr_gem, size, tiling_mode);
 	} while (*tiling_mode != tiling);
+	*pitch = stride;
 
-	if (*tiling_mode == I915_TILING_NONE)
+	if (tiling == I915_TILING_NONE)
 		stride = 0;
 
-	bo = drm_intel_gem_bo_alloc_internal(bufmgr, name, size, flags,
-					     *tiling_mode, stride);
-	if (!bo)
-		return NULL;
-
-	*pitch = stride;
-	return bo;
+	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, flags,
+					       tiling, stride);
 }
 
 /**
