@@ -40,5 +40,11 @@
   "launch": {
     "local_path": "central_roster_viewer.html",
     "container": "panel"
+  },
+  "app": {
+    "launch": {
+      "local_path": "central_roster_viewer.html",
+      "container": "panel"
+    }
   }
 }
