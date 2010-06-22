@@ -1738,7 +1738,7 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	/* Linear buffers have no stride. By ensuring that we only ever use
 	 * stride 0 with linear buffers, we simplify our code.
 	 */
-	if (*tiling_mode === I915_TILING_NONE)
+	if (*tiling_mode == I915_TILING_NONE)
 		stride = 0;
 
 	ret = drm_intel_gem_bo_set_tiling_internal(bo, *tiling_mode, stride);
