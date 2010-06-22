@@ -40,8 +40,9 @@ const CGFloat kAnimationDuration = 0.2;
 const CGFloat kButtonOpacityLeadPadding = 5.0;
 const CGFloat kChevronHeight = 28.0;
 const CGFloat kChevronLowerPadding = 5.0;
+const CGFloat kChevronRightPadding = 5.0;
 const CGFloat kChevronWidth = 14.0;
-const CGFloat kGrippyXOffset = 7.0;
+const CGFloat kGrippyXOffset = 5.0;
 }  // namespace
 
 @interface BrowserActionsController(Private)
@@ -550,12 +551,16 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (CGFloat)containerWidthWithButtonCount:(NSUInteger)buttonCount {
   CGFloat width = 0.0;
   if (buttonCount > 0) {
-    width = kGrippyXOffset +
+    width = kGrippyXOffset + (2 * kBrowserActionButtonPadding) +
         (buttonCount * (kBrowserActionWidth + kBrowserActionButtonPadding));
   }
   // Make room for the chevron if any buttons are hidden.
-  if ([self buttonCount] != [self visibleButtonCount])
+  if ([self buttonCount] != [self visibleButtonCount]) {
     width += kChevronWidth + kBrowserActionButtonPadding;
+    // Add more space if all buttons are hidden.
+    if ([self visibleButtonCount] == 0)
+      width += 3 * kBrowserActionButtonPadding;
+  }
 
   return width;
 }
@@ -728,7 +733,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 }
 
 - (void)updateChevronPositionInFrame:(NSRect)frame {
-  CGFloat xPos = NSWidth(frame) - kChevronWidth;
+  CGFloat xPos = NSWidth(frame) - kChevronWidth - kChevronRightPadding;
   NSRect buttonFrame = NSMakeRect(xPos,
                                   kChevronLowerPadding,
                                   kChevronWidth,

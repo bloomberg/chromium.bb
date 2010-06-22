@@ -42,14 +42,14 @@
 					<object class="NSCustomView" id="421615633">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">-2147483383</int>
-						<string key="NSFrame">{{570, 0}, {1, 36}}</string>
+						<string key="NSFrame">{{573, 0}, {1, 36}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<string key="NSClassName">BrowserActionsContainerView</string>
 					</object>
 					<object class="NSTextField" id="535508469">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">266</int>
-						<string key="NSFrame">{{136, 5}, {435, 27}}</string>
+						<string key="NSFrame">{{136, 5}, {438, 27}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33004</int>
 						<bool key="NSEnabled">YES</bool>
@@ -193,7 +193,7 @@
 					<object class="NSButton" id="602421009">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{574, 5}, {35, 27}}</string>
+						<string key="NSFrame">{{577, 5}, {35, 27}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="204555298">
@@ -215,7 +215,7 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{618, 36}</string>
+				<string key="NSFrameSize">{616, 36}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">ToolbarView</string>
 			</object>
@@ -347,7 +347,7 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<object class="IBObjectRecord">
 						<int key="objectID">0</int>
-						<object class="NSArray" key="object" id="810617569">
+						<object class="NSArray" key="object" id="185296244">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 						</object>
 						<reference key="children" ref="1000"/>
@@ -356,19 +356,19 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">-2</int>
 						<reference key="object" ref="1001"/>
-						<reference key="parent" ref="810617569"/>
+						<reference key="parent" ref="185296244"/>
 						<string type="base64-UTF8" key="objectName">RmlsZSdzIE93bmVyA</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">-1</int>
 						<reference key="object" ref="1003"/>
-						<reference key="parent" ref="810617569"/>
+						<reference key="parent" ref="185296244"/>
 						<string key="objectName">First Responder</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">-3</int>
 						<reference key="object" ref="1004"/>
-						<reference key="parent" ref="810617569"/>
+						<reference key="parent" ref="185296244"/>
 						<string key="objectName">Application</string>
 					</object>
 					<object class="IBObjectRecord">
@@ -384,7 +384,7 @@
 							<reference ref="602421009"/>
 							<reference ref="421615633"/>
 						</object>
-						<reference key="parent" ref="810617569"/>
+						<reference key="parent" ref="185296244"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">2</int>
@@ -473,12 +473,12 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">122</int>
 						<reference key="object" ref="1044322163"/>
-						<reference key="parent" ref="810617569"/>
+						<reference key="parent" ref="185296244"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">130</int>
 						<reference key="object" ref="306232897"/>
-						<reference key="parent" ref="810617569"/>
+						<reference key="parent" ref="185296244"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">144</int>
@@ -534,7 +534,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{370, 714}, {618, 36}}</string>
+					<string>{{370, 714}, {616, 36}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>ClickHoldButtonCell</string>
