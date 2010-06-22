@@ -567,7 +567,6 @@ def MassageFinalLinkCommandArm(args):
   # add fini code
   if '-nostdlib' not in args:
     # NOTE: there is a circular dependency between libgcc and libc: raise()
-    out.append(LIBDIR_ARM_2 + '/libcrt_platform.a')
     out.append(LIBDIR_ARM_2 + '/crtn.o')
     out.append('-L' + LIBDIR_ARM_3)
     out.append('-lstdc++')
@@ -578,6 +577,7 @@ def MassageFinalLinkCommandArm(args):
     out.append('-lnacl')
     out.append('-lgcc')
     out.append('-lnosys')
+    out.append('-lcrt_platform')
     out.append('--end-group')
   return out
 
