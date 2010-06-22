@@ -54,7 +54,7 @@ NSString* keyForImportItem(importer::ImportItem item) {
 - (id)initWithImporterHost:(ImporterHost*)host
                browserName:(string16)browserName
                   observer:(ImportObserver*)observer
-              itemsEnabled:(int16)items; {
+              itemsEnabled:(int16)items {
   NSString* nib_path =
       [mac_util::MainAppBundle() pathForResource:@"ImportProgressDialog"
                                           ofType:@"nib"];
