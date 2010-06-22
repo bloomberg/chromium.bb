@@ -1701,7 +1701,8 @@ drm_intel_gem_bo_set_tiling_internal(drm_intel_bo *bo,
 	struct drm_i915_gem_set_tiling set_tiling;
 	int ret;
 
-	if (tiling_mode == bo_gem->tiling_mode &&
+	if (bo_gem->global_name == 0 &&
+	    tiling_mode == bo_gem->tiling_mode &&
 	    stride == bo_gem->stride)
 		return 0;
 
@@ -1720,7 +1721,7 @@ drm_intel_gem_bo_set_tiling_internal(drm_intel_bo *bo,
 
 	bo_gem->tiling_mode = set_tiling.tiling_mode;
 	bo_gem->swizzle_mode = set_tiling.swizzle_mode;
-	bo_gem->stride = stride;
+	bo_gem->stride = set_tiling.stride;
 	return 0;
 }
 
@@ -1731,9 +1732,6 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int ret;
-
-	if (bo_gem->global_name == 0)
-		return 0;
 
 	/* Linear buffers have no stride. By ensuring that we only ever use
 	 * stride 0 with linear buffers, we simplify our code.
