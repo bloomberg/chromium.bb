@@ -36,6 +36,12 @@ def CopyOnto(source_dir, dest_dir):
                            "-t", dest_dir])
 
 
+def CopyOntoHardlink(source_dir, dest_dir):
+  for leafname in os.listdir(source_dir):
+    subprocess.check_call(["cp", "-a", "-l", os.path.join(source_dir, leafname),
+                           "-t", dest_dir])
+
+
 def RemoveTree(dir_path):
   if os.path.exists(dir_path):
     shutil.rmtree(dir_path)

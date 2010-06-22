@@ -265,7 +265,7 @@ def UnionDir(name, dest_dir, input_trees):
   def DoBuild():
     ResetDir(dest_dir)
     for tree in input_trees:
-      dirtree.CopyOnto(tree.dest_path, dest_dir)
+      dirtree.CopyOntoHardlink(tree.dest_path, dest_dir)
   return BuildTarget(name, dest_dir, DoBuild,
                      args=["union_dir"], deps=input_trees)
 
@@ -277,7 +277,7 @@ def UnionDir2(name, dest_dir, input_trees):
     for subdir, tree in input_trees:
       dest_subdir = os.path.join(dest_dir, subdir)
       dirtree.MkdirP(dest_subdir)
-      dirtree.CopyOnto(tree.dest_path, dest_subdir)
+      dirtree.CopyOntoHardlink(tree.dest_path, dest_subdir)
   return BuildTarget(name, dest_dir, DoBuild,
                      args=["union_dir2"] +
                           [subdir for subdir, tree in input_trees],

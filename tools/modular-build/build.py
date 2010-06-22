@@ -158,14 +158,17 @@ def GetTargets(src):
       "libnacl_headers",
       deps=["binutils", "pre-gcc"],
       scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update_header"])
+  # Before full-gcc is built, we cannot build any C++ code, and
+  # tools/Makefile builds the following with nocpp=yes.  However,
+  # full-gcc does not actually depend on it, so we do not use it.
   AddSconsModule(
-      "libnacl",
+      "libnacl_nocpp",
       deps=["binutils", "pre-gcc", "newlib", "libnacl_headers", "nc_threads"],
       scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update", "nocpp=yes"])
 
   AddAutoconfModule(
       "full-gcc", "gcc",
-      deps=["binutils", "newlib", "libnacl", "libnacl_headers", "nc_threads"],
+      deps=["binutils", "newlib", "libnacl_headers", "nc_threads"],
       configure_opts=common_gcc_options + [
           "--with-newlib",
           "--enable-threads=nacl",
@@ -177,6 +180,21 @@ def GetTargets(src):
           "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
       make_cmd=["make", "all"])
 
+  for arch in ("32", "64"):
+    AddSconsModule(
+        "libnacl_x86_%s" % arch,
+        deps=["binutils", "full-gcc", "newlib",
+              "libnacl_headers", "nc_threads"],
+        scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update",
+                    "platform=x86-%s" % arch])
+
+  # Note that ordering is significant in the dependencies: nc_threads
+  # must come after newlib in order to override newlib's pthread.h.
+  newlib_toolchain = MakeInstallPrefix(
+      "newlib_toolchain",
+      deps=["binutils", "full-gcc", "newlib", "nc_threads",
+            "libnacl_x86_32", "libnacl_x86_64"])
+
   hello_c = """
 #include <stdio.h>
 int main() {
@@ -187,7 +205,7 @@ int main() {
   modules["hello"] = btarget.TestModule(
       "hello",
       os.path.join(top_dir, "build", "hello"),
-      MakeInstallPrefix("hello", ["newlib", "full-gcc", "libnacl", "binutils"]),
+      newlib_toolchain,
       hello_c)
   module_list.append(modules["hello"])
   return module_list
