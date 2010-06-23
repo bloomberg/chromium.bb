@@ -664,6 +664,9 @@ class Main(object):
         '-v', '--verbose', action='store_true', default=False,
         help='Make PyAuto verbose.')
     parser.add_option(
+        '', '--log-file', type='string', default=None,
+        help='Provide a path to a file to which the logger will log')
+    parser.add_option(
         '-D', '--wait-for-debugger', action='store_true', default=False,
         help='Block PyAuto on startup for attaching debugger.')
     parser.add_option(
@@ -682,10 +685,17 @@ class Main(object):
 
     self._options, self._args = parser.parse_args()
 
-    # Setup logging
+    # Setup logging - start with defaults
+    level = logging.WARNING
+    format = None
+
     if self._options.verbose:
-      logging.basicConfig(level=logging.DEBUG,
-                          format='%(asctime)s %(levelname)-8s %(message)s')
+      level=logging.DEBUG
+      format='%(asctime)s %(levelname)-8s %(message)s'
+
+    logging.basicConfig(level=level, format=format,
+                        filename=self._options.log_file)
+
     if self._options.list_missing_tests:
       self._ListMissingTests()
       sys.exit(0)
