@@ -32,6 +32,7 @@
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
+#include "chrome/browser/sync/notifier/server_notifier_thread.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
@@ -1285,12 +1286,23 @@ bool SyncManager::SyncInternal::Init(
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
 
+  // NOTIFICATION_SERVER uses a substantially different notification
+  // method, so it has its own MediatorThread implementation.
+  // Everything else just uses MediatorThreadImpl.
+  notifier::MediatorThread* mediator_thread =
+      (notification_method == browser_sync::NOTIFICATION_SERVER) ?
+      static_cast<notifier::MediatorThread*>(
+          new sync_notifier::ServerNotifierThread(
+              network_change_notifier_thread)) :
+      static_cast<notifier::MediatorThread*>(
+          new notifier::MediatorThreadImpl(network_change_notifier_thread));
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
   talk_mediator_.reset(new TalkMediatorImpl(
-      new notifier::MediatorThreadImpl(network_change_notifier_thread),
+      mediator_thread,
       kInitializeSsl, kConnectImmediately, invalidate_xmpp_auth_token));
-  if (notification_method != browser_sync::NOTIFICATION_LEGACY) {
+  if (notification_method != browser_sync::NOTIFICATION_LEGACY &&
+      notification_method != browser_sync::NOTIFICATION_SERVER) {
     if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
       talk_mediator_->AddSubscribedServiceUrl(
           browser_sync::kSyncLegacyServiceUrl);
@@ -1379,6 +1391,7 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
 void SyncManager::SyncInternal::SendPendingXMPPNotification(
     bool new_pending_notification) {
   DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+  DCHECK_NE(notification_method_, browser_sync::NOTIFICATION_SERVER);
   notification_pending_ = notification_pending_ || new_pending_notification;
   if (!notification_pending_) {
     LOG(INFO) << "Not sending notification: no pending notification";
@@ -1772,16 +1785,18 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
       observer_->OnSyncCycleCompleted(event.snapshot);
     }
 
-    // TODO(chron): Consider changing this back to track has_more_to_sync
-    // only notify peers if a successful commit has occurred.
-    bool new_pending_notification =
-        (event.snapshot->syncer_status.num_successful_commits > 0);
-    core_message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &SyncManager::SyncInternal::SendPendingXMPPNotification,
-            new_pending_notification));
+    if (notification_method_ != browser_sync::NOTIFICATION_SERVER) {
+      // TODO(chron): Consider changing this back to track has_more_to_sync
+      // only notify peers if a successful commit has occurred.
+      bool new_pending_notification =
+          (event.snapshot->syncer_status.num_successful_commits > 0);
+      core_message_loop_->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &SyncManager::SyncInternal::SendPendingXMPPNotification,
+              new_pending_notification));
+    }
   }
 
   if (event.what_happened == SyncerEvent::PAUSED) {
@@ -1904,7 +1919,8 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   if (syncer_thread()) {
     syncer_thread()->SetNotificationsEnabled(notifications_enabled);
   }
-  if (notifications_enabled) {
+  if ((notification_method_ != browser_sync::NOTIFICATION_SERVER) &&
+      notifications_enabled) {
     // Send a notification as soon as subscriptions are on
     // (see http://code.google.com/p/chromium/issues/detail?id=38563 ).
     core_message_loop_->PostTask(
