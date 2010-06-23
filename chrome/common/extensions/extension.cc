@@ -274,7 +274,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     result->add_url_pattern(pattern);
   }
 
-  // include/exclude globs (mostly for Greasemonkey compat)
+  // include/exclude globs (mostly for Greasemonkey compatibility)
   if (!LoadGlobsHelper(content_script, definition_index, keys::kIncludeGlobs,
                        error, &UserScript::add_glob, result)) {
       return false;
