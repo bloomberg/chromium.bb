@@ -3376,6 +3376,9 @@ each locale. -->
       <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">
         Input directory must exist.
       </message>
+      <message name="IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS" desc="Error displayed when an extension that has an update URL used by the gallery is installed when not directly downloaded from the gallery.">
+        This package can only be installed from the <ph name="CHROME_WEB_STORE">$1<ex>Chrome Web Store</ex></ph>.
+      </message>
       <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID_PATH" desc="Warning displayed in pack dialog when the private key must be a valid path.">
         Input value for private key must be a valid path.
       </message>
@@ -3629,6 +3632,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_PROMPT_ENABLE_INCOGNITO_BUTTON" desc="Text for the allow button on the extension run-in-incognito prompt">
         Allow
+      </message>
+      <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
+        Chrome Web Store
       </message>
 
       <!-- chrome://plugins page -->

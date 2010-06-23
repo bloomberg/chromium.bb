@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 
 #include "app/animation.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/base64.h"
 #include "base/utf_string_conversions.h"
@@ -16,12 +17,14 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/rect.h"
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
 
 namespace {
 

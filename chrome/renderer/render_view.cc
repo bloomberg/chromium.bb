@@ -29,7 +29,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/pepper_plugin_registry.h"
@@ -4964,7 +4964,7 @@ void RenderView::ExecuteCodeImpl(WebFrame* frame,
                                  const ViewMsg_ExecuteCode_Params& params) {
   // Don't execute scripts in gallery pages.
   GURL frame_url = GURL(frame->url());
-  if (frame_url.host() == GURL(extension_urls::kGalleryBrowsePrefix).host()) {
+  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host()) {
     Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id, true));
     return;
   }
