@@ -174,7 +174,7 @@ global_config_flags = {
     '-sfi-cp-fudge',
     # NOTE: we need a fairly high fudge factor because of
     # some vfp instructions which only have a 9bit offset
-    '-sfi-cp-fudge-percent=80',
+    '-sfi-cp-fudge-percent=75',
     '-sfi-store',
     '-sfi-stack',
     '-sfi-branch',
@@ -598,6 +598,7 @@ def MassageFinalLinkCommandPnacl(args, native_dir, flags):
     out.append(native_dir + '/crtn.o')
     out.append('-L' + native_dir)
     out.append('-lgcc')
+    out.append('-lc')
   return out
 
 
@@ -652,9 +653,7 @@ def GenerateCombinedBitcodeFile(argv):
     elif a.startswith('-l'):
       args_bit_ld.append(a)
     elif a.startswith('-L'):
-      # we replicate library search paths to both arg lists
       args_bit_ld.append(a)
-      args_native_ld.append(a)
     elif a.startswith('-o$'):
       tokens = a.split('$')
       output = tokens[1]

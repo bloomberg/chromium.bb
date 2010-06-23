@@ -148,16 +148,29 @@ organize-native-code() {
   readonly arm_llvm_gcc=${arm_src}/arm-none-linux-gnueabi/llvm-gcc-4.2
   Banner "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
+  # TODO(espindola): There is a transitive dependency from libgcc to
+  # libc, libnosys and libnacl. We should try to factor this better.
   cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/4.2.1/libgcc.a \
+    ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libc.a \
+    ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libnosys.a \
+    ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libnacl.a \
     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/crt*.o \
     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libcrt*.a \
     ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/intrinsics.o \
     ${PNACL_ARM_ROOT}
   ls -l ${PNACL_ARM_ROOT}
 
+  # TODO(espindola): These files have been built with the convectional
+  # nacl-gcc. The ABI might not be exactly the same as the one used by
+  # PNaCl. We should build these files with PNaCl.
+  # TODO(espindola): As for ARM, try to refactor things so that we
+  # don't need as many libraries.
   Banner "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
   cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/32/libgcc.a \
+    ${x86_src}/nacl64/lib/32/libc.a \
+    ${x86_src}/nacl64/lib/32/libnosys.a \
+    ${x86_src}/nacl64/lib/32/libnacl.a \
     ${x86_src}/nacl64/lib/32/crt*.o \
     ${x86_src}/nacl64/lib/32/libcrt*.a \
     ${x86_src}/nacl64/lib/32/intrinsics.o \
@@ -167,6 +180,9 @@ organize-native-code() {
   Banner "x86-64 native code: ${PNACL_X8664_ROOT}"
   mkdir -p ${PNACL_X8664_ROOT}
   cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/libgcc.a \
+    ${x86_src}/nacl64/lib/libc.a \
+    ${x86_src}/nacl64/lib/libnosys.a \
+    ${x86_src}/nacl64/lib/libnacl.a \
     ${x86_src}/nacl64/lib/crt*.o \
     ${x86_src}/nacl64/lib/libcrt*.a \
     ${PNACL_X8664_ROOT}
