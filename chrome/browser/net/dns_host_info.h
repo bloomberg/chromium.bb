@@ -44,7 +44,7 @@ class DnsHostInfo {
     NO_PREFETCH_MOTIVATION,  // Browser navigation info (not prefetch related).
 
     // The following involve predictive prefetching, triggered by a navigation.
-    // The referring_hostport_ is also set when these are used.
+    // The referrinrg_url_ is also set when these are used.
     // TODO(jar): Support STATIC_REFERAL_MOTIVATED API and integration.
     STATIC_REFERAL_MOTIVATED,  // External database suggested this resolution.
     LEARNED_REFERAL_MOTIVATED,  // Prior navigation taught us this resolution.
@@ -106,13 +106,13 @@ class DnsHostInfo {
   void SetFinishedState(bool was_resolved);
 
   // Finish initialization. Must only be called once.
-  void SetHostname(const net::HostPortPair& hostport);
+  void SetUrl(const GURL& url);
 
   bool was_linked() const { return was_linked_; }
 
-  net::HostPortPair referring_hostname() const { return referring_hostport_; }
-  void SetReferringHostname(const net::HostPortPair& hostport) {
-    referring_hostport_ = hostport;
+  GURL referring_url() const { return referring_url_; }
+  void SetReferringHostname(const GURL& url) {
+    referring_url_ = url;
   }
 
   bool was_found() const { return FOUND == state_; }
@@ -121,10 +121,10 @@ class DnsHostInfo {
     return ASSIGNED == state_ || ASSIGNED_BUT_MARKED == state_;
   }
   bool is_marked_to_delete() const { return ASSIGNED_BUT_MARKED == state_; }
-  const net::HostPortPair hostport() const { return hostport_; }
+  const GURL url() const { return url_; }
 
-  bool HasHostname(const net::HostPortPair& hostport) const {
-    return (hostport.Equals(hostport_));
+  bool HasUrl(const GURL& url) const {
+    return url_ == url;
   }
 
   base::TimeDelta resolve_duration() const { return resolve_duration_;}
@@ -167,7 +167,7 @@ class DnsHostInfo {
   // out of the queue.
   DnsProcessingState old_prequeue_state_;
 
-  net::HostPortPair hostport_;  // Hostname for this info.
+  GURL url_;  // Host, port and scheme for this info.
 
   // When was last state changed (usually lookup completed).
   base::TimeTicks time_;
@@ -190,7 +190,7 @@ class DnsHostInfo {
   // If this instance holds data about a navigation, we store the referrer.
   // If this instance hold data about a prefetch, and the prefetch was
   // instigated by a referrer, we store it here (for use in about:dns).
-  net::HostPortPair referring_hostport_;
+  GURL referring_url_;
 
   // We put these objects into a std::map, and hence we
   // need some "evil" constructors.

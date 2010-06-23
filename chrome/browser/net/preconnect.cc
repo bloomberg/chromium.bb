@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace chrome_browser_net {
 Preconnect* Preconnect::callback_instance_;
 
 // static
-bool Preconnect::PreconnectOnUIThread(const net::HostPortPair& hostport) {
+bool Preconnect::PreconnectOnUIThread(const GURL& url) {
   // Try to do connection warming for this search provider.
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
@@ -29,12 +29,12 @@ bool Preconnect::PreconnectOnUIThread(const net::HostPortPair& hostport) {
   ChromeThread::PostTask(
       ChromeThread::IO,
       FROM_HERE,
-      NewRunnableFunction(Preconnect::PreconnectOnIOThread, hostport));
+      NewRunnableFunction(Preconnect::PreconnectOnIOThread, url));
   return true;
 }
 
 // static
-void Preconnect::PreconnectOnIOThread(const net::HostPortPair& hostport) {
+void Preconnect::PreconnectOnIOThread(const GURL& url) {
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
     return;
@@ -47,7 +47,7 @@ void Preconnect::PreconnectOnIOThread(const net::HostPortPair& hostport) {
   net::HttpNetworkSession* session = factory->GetSession();
   scoped_refptr<net::TCPClientSocketPool> pool = session->tcp_socket_pool();
 
-  net::TCPSocketParams params(hostport.host, hostport.port, net::LOW,
+  net::TCPSocketParams params(url.host(), url.EffectiveIntPort(), net::LOW,
                               GURL(), false);
 
   net::ClientSocketHandle handle;
@@ -55,7 +55,7 @@ void Preconnect::PreconnectOnIOThread(const net::HostPortPair& hostport) {
     callback_instance_ = new Preconnect;
 
   // TODO(jar): This does not handle proxies currently.
-  handle.Init(hostport.ToString() , params, net::LOWEST,
+  handle.Init(url.spec(), params, net::LOWEST,
               callback_instance_, pool, net::BoundNetLog());
   handle.Reset();
 }

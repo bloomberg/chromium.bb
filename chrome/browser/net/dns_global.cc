@@ -35,13 +35,13 @@ using base::TimeDelta;
 
 namespace chrome_browser_net {
 
-static void DnsMotivatedPrefetch(const net::HostPortPair& hostport,
+static void DnsMotivatedPrefetch(const GURL& url,
     DnsHostInfo::ResolutionMotivation motivation);
 
-static void DnsPrefetchMotivatedList(const NameList& hostnames,
+static void DnsPrefetchMotivatedList(const UrlList& urls,
     DnsHostInfo::ResolutionMotivation motivation);
 
-static NameList GetDnsPrefetchHostNamesAtStartup(
+static UrlList GetPrefetchUrlListAtStartup(
     PrefService* user_prefs, PrefService* local_state);
 
 // static
@@ -52,7 +52,37 @@ const int DnsGlobalInit::kMaxPrefetchQueueingDelayMs = 500;
 
 // A version number for prefs that are saved. This should be incremented when
 // we change the format so that we discard old data.
-static const int kDnsStartupFormatVersion = 0;
+static const int kDnsStartupFormatVersion = 1;
+
+//------------------------------------------------------------------------------
+// Static helper functions
+//------------------------------------------------------------------------------
+
+// Put URL in canonical form, including a scheme, host, and port.
+// Returns GURL::EmptyGURL() if the scheme is not http/https or if the url
+// cannot be otherwise canonicalized.
+static GURL CanonicalizeUrl(const GURL& url) {
+  if (!url.has_host())
+     return GURL::EmptyGURL();
+
+  std::string scheme;
+  if (url.has_scheme()) {
+    scheme = url.scheme();
+    if (scheme != "http" && scheme != "https")
+      return GURL::EmptyGURL();
+    if (url.has_port())
+      return url.GetWithEmptyPath();
+  } else {
+    scheme = "http";
+  }
+
+  // If we omit a port, it will default to 80 or 443 as appropriate.
+  std::string colon_plus_port;
+  if (url.has_port())
+    colon_plus_port = ":" + url.port();
+
+  return GURL(scheme + "://" + url.host() + colon_plus_port);
+}
 
 //------------------------------------------------------------------------------
 // This section contains all the globally accessable API entry points for the
@@ -99,12 +129,20 @@ static DnsMaster* dns_master = NULL;
 // includes both Page-Scan, and Link-Hover prefetching.
 // TODO(jar): Separate out link-hover prefetching, and page-scan results.
 void DnsPrefetchList(const NameList& hostnames) {
+  // TODO(jar): Push GURL transport further back into renderer.
+  UrlList urls;
+  for (NameList::const_iterator it = hostnames.begin();
+       it < hostnames.end();
+       ++it) {
+    urls.push_back(GURL("http://" + *it + ":80"));
+  }
+
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DnsPrefetchMotivatedList(hostnames, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+  DnsPrefetchMotivatedList(urls, DnsHostInfo::PAGE_SCAN_MOTIVATED);
 }
 
 static void DnsPrefetchMotivatedList(
-    const NameList& hostnames,
+    const UrlList& urls,
     DnsHostInfo::ResolutionMotivation motivation) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI) ||
          ChromeThread::CurrentlyOn(ChromeThread::IO));
@@ -112,13 +150,13 @@ static void DnsPrefetchMotivatedList(
     return;
 
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    dns_master->ResolveList(hostnames, motivation);
+    dns_master->ResolveList(urls, motivation);
   } else {
     ChromeThread::PostTask(
         ChromeThread::IO,
         FROM_HERE,
         NewRunnableMethod(dns_master,
-                          &DnsMaster::ResolveList, hostnames, motivation));
+                          &DnsMaster::ResolveList, urls, motivation));
   }
 }
 
@@ -147,7 +185,7 @@ void DnsPrefetchUrl(const GURL& url, bool preconnectable) {
   }
   last_prefetch_for_host = now;
 
-  net::HostPortPair hostport(url.HostNoBrackets(), url.EffectiveIntPort());
+  GURL canonical_url(CanonicalizeUrl(url));
 
   if (dns_master->preconnect_enabled() && preconnectable) {
     static base::TimeTicks last_keepalive;
@@ -159,26 +197,25 @@ void DnsPrefetchUrl(const GURL& url, bool preconnectable) {
       return;
     last_keepalive = now;
 
-    if (Preconnect::PreconnectOnUIThread(hostport))
+    if (Preconnect::PreconnectOnUIThread(canonical_url))
       return;  // Skip pre-resolution, since we'll open a connection.
   }
 
   // Perform at least DNS pre-resolution.
-  // TODO(jar): We could propogate a hostport here instead of a host.
-  DnsMotivatedPrefetch(hostport, DnsHostInfo::OMNIBOX_MOTIVATED);
+  DnsMotivatedPrefetch(canonical_url, DnsHostInfo::OMNIBOX_MOTIVATED);
 }
 
-static void DnsMotivatedPrefetch(const net::HostPortPair& hostport,
+static void DnsMotivatedPrefetch(const GURL& url,
                                  DnsHostInfo::ResolutionMotivation motivation) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (!dns_prefetch_enabled || NULL == dns_master || hostport.host.empty())
+  if (!dns_prefetch_enabled || NULL == dns_master || !url.has_host())
     return;
 
   ChromeThread::PostTask(
       ChromeThread::IO,
       FROM_HERE,
       NewRunnableMethod(dns_master,
-                        &DnsMaster::Resolve, hostport, motivation));
+                        &DnsMaster::Resolve, url, motivation));
 }
 
 //------------------------------------------------------------------------------
@@ -190,23 +227,34 @@ static void DnsMotivatedPrefetch(const net::HostPortPair& hostport,
 
 // This function determines if there was a saving by prefetching the hostname
 // for which the navigation_info is supplied.
-static bool AccruePrefetchBenefits(const GURL& referrer,
+static bool AccruePrefetchBenefits(const GURL& referrer_url,
                                    DnsHostInfo* navigation_info) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!dns_prefetch_enabled || NULL == dns_master)
     return false;
-  return dns_master->AccruePrefetchBenefits(
-      net::HostPortPair(referrer.host(), referrer.EffectiveIntPort()),
-      navigation_info);
+  DCHECK(referrer_url == referrer_url.GetWithEmptyPath());
+  return dns_master->AccruePrefetchBenefits(referrer_url, navigation_info);
 }
 
-// When we navigate, we may know in advance some other domains that will need to
-// be resolved.  This function initiates those side effects.
-static void NavigatingTo(const net::HostPortPair& hostport) {
+void NavigatingTo(const GURL& url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!dns_prefetch_enabled || NULL == dns_master)
     return;
-  dns_master->NavigatingTo(hostport);
+  dns_master->NavigatingTo(url);
+}
+
+void NavigatingToFrame(const GURL& url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (!dns_prefetch_enabled || NULL == dns_master)
+    return;
+  dns_master->NavigatingToFrame(url);
+}
+
+void NonlinkNavigation(const GURL& referring_url, const GURL& target_url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (!dns_prefetch_enabled || NULL == dns_master)
+    return;
+  dns_master->NonlinkNavigation(referring_url, target_url);
 }
 
 // The observer class needs to connect starts and finishes of HTTP network
@@ -218,7 +266,7 @@ typedef std::map<int, DnsHostInfo> ObservedResolutionMap;
 // resolutions made by the network stack.
 class PrefetchObserver : public net::HostResolver::Observer {
  public:
-  typedef std::map<net::HostPortPair, DnsHostInfo> FirstResolutionMap;
+  typedef std::map<GURL, DnsHostInfo> FirstResolutionMap;
 
   // net::HostResolver::Observer implementation:
   virtual void OnStartResolution(
@@ -261,8 +309,14 @@ void PrefetchObserver::OnStartResolution(
   DCHECK_NE(0U, request_info.hostname().length());
 
   DnsHostInfo navigation_info;
-  navigation_info.SetHostname(net::HostPortPair(request_info.hostname(),
-                                                request_info.port()));
+  // TODO(jar): Remove hack which guestimates ssl via port number, and perhaps
+  // have actual URL passed down in request_info instead.
+  bool is_ssl(443 == request_info.port());
+  std::string url_spec = is_ssl ? "https://" : "http://";
+  url_spec += request_info.hostname();
+  url_spec += ":";
+  url_spec += IntToString(request_info.port());
+  navigation_info.SetUrl(GURL(url_spec));
   navigation_info.SetStartedState();
 
   // This entry will be deleted either by OnFinishResolutionWithStatus(), or
@@ -291,12 +345,16 @@ void PrefetchObserver::OnFinishResolutionWithStatus(
   }
 
   navigation_info.SetFinishedState(was_resolved);  // Get timing info
-  AccruePrefetchBenefits(request_info.referrer(), &navigation_info);
+  AccruePrefetchBenefits(CanonicalizeUrl(request_info.referrer()),
+                         &navigation_info);
 
   // Handle sub-resource resolutions now that the critical navigational
   // resolution has completed.  This prevents us from in any way delaying that
   // navigational resolution.
-  NavigatingTo(net::HostPortPair(request_info.hostname(), request_info.port()));
+  std::string url_spec;
+  StringAppendF(&url_spec, "http%s://%s:%d", "",
+                request_info.hostname().c_str(), request_info.port());
+  NavigatingTo(GURL(url_spec));
 
   if (kStartupResolutionCount <= startup_count || !was_resolved)
     return;
@@ -329,9 +387,9 @@ void PrefetchObserver::StartupListAppend(const DnsHostInfo& navigation_info) {
     return;
   if (kStartupResolutionCount <= first_resolutions_.size())
     return;  // Someone just added the last item.
-  if (ContainsKey(first_resolutions_, navigation_info.hostport()))
+  if (ContainsKey(first_resolutions_, navigation_info.url()))
     return;  // We already have this hostname listed.
-  first_resolutions_[navigation_info.hostport()] = navigation_info;
+  first_resolutions_[navigation_info.url()] = navigation_info;
 }
 
 void PrefetchObserver::GetInitialDnsResolutionList(ListValue* startup_list) {
@@ -343,8 +401,8 @@ void PrefetchObserver::GetInitialDnsResolutionList(ListValue* startup_list) {
   for (FirstResolutionMap::iterator it = first_resolutions_.begin();
        it != first_resolutions_.end();
        ++it) {
-    startup_list->Append(new StringValue(it->first.host));
-    startup_list->Append(new FundamentalValue(it->first.port));
+    DCHECK(it->first == CanonicalizeUrl(it->first));
+    startup_list->Append(new StringValue(it->first.spec()));
   }
 }
 
@@ -435,7 +493,8 @@ void DnsPrefetchGetHtmlInfo(std::string* output) {
       output->append("Incognito mode is active in a window.");
     } else {
       dns_master->GetHtmlInfo(output);
-      g_prefetch_observer->DnsGetFirstResolutionsHtml(output);
+      if (g_prefetch_observer)
+        g_prefetch_observer->DnsGetFirstResolutionsHtml(output);
       dns_master->GetHtmlReferrerLists(output);
     }
   }
@@ -455,22 +514,22 @@ static void InitDnsPrefetch(TimeDelta max_queue_delay, size_t max_concurrent,
       user_prefs->GetBoolean(prefs::kDnsPrefetchingEnabled);
 
   // Gather the list of hostnames to prefetch on startup.
-  NameList hostnames =
-      GetDnsPrefetchHostNamesAtStartup(user_prefs, local_state);
+  UrlList urls =
+      GetPrefetchUrlListAtStartup(user_prefs, local_state);
 
   ListValue* referral_list =
       static_cast<ListValue*>(
           local_state->GetMutableList(prefs::kDnsHostReferralList)->DeepCopy());
 
   g_browser_process->io_thread()->InitDnsMaster(
-      prefetching_enabled, max_queue_delay, max_concurrent, hostnames,
+      prefetching_enabled, max_queue_delay, max_concurrent, urls,
       referral_list, preconnect_enabled);
 }
 
 void FinalizeDnsPrefetchInitialization(
     DnsMaster* global_dns_master,
     net::HostResolver::Observer* global_prefetch_observer,
-    const NameList& hostnames_to_prefetch,
+    const UrlList& startup_urls,
     ListValue* referral_list) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   dns_master = global_dns_master;
@@ -480,7 +539,7 @@ void FinalizeDnsPrefetchInitialization(
   DLOG(INFO) << "DNS Prefetch service started";
 
   // Prefetch these hostnames on startup.
-  DnsPrefetchMotivatedList(hostnames_to_prefetch,
+  DnsPrefetchMotivatedList(startup_urls,
                            DnsHostInfo::STARTUP_LIST_MOTIVATED);
   dns_master->DeserializeReferrersThenDelete(referral_list);
 }
@@ -511,7 +570,8 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
     return;
   }
 
-  g_prefetch_observer->GetInitialDnsResolutionList(startup_list);
+  if (g_prefetch_observer)
+    g_prefetch_observer->GetInitialDnsResolutionList(startup_list);
 
   // TODO(jar): Trimming should be done more regularly, such as every 48 hours
   // of physical time, or perhaps after 48 hours of running (excluding time
@@ -544,11 +604,11 @@ void SaveDnsPrefetchStateForNextStartupAndTrim(PrefService* prefs) {
     completion.Wait();
 }
 
-static NameList GetDnsPrefetchHostNamesAtStartup(PrefService* user_prefs,
-                                                 PrefService* local_state) {
+static UrlList GetPrefetchUrlListAtStartup(PrefService* user_prefs,
+                                           PrefService* local_state) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  NameList hostnames;
-  // Prefetch DNS for hostnames we learned about during last session.
+  UrlList urls;
+  // Recall list of URLs we learned about during last session.
   // This may catch secondary hostnames, pulled in by the homepages.  It will
   // also catch more of the "primary" home pages, since that was (presumably)
   // rendered first (and will be rendered first this time too).
@@ -562,15 +622,18 @@ static NameList GetDnsPrefetchHostNamesAtStartup(PrefService* user_prefs,
         format_version == kDnsStartupFormatVersion) {
       ++it;
       for (; it != startup_list->end(); ++it) {
-        std::string hostname;
-        if (!(*it)->GetAsString(&hostname))
+        std::string url_spec;
+        if (!(*it)->GetAsString(&url_spec)) {
+          LOG(DFATAL);
           break;  // Format incompatibility.
-        int port;
-        if (!(*++it)->GetAsInteger(&port))
+        }
+        GURL url(url_spec);
+        if (!url.has_host() || !url.has_scheme()) {
+          LOG(DFATAL);
           break;  // Format incompatibility.
+        }
 
-        // TODO(jar): We sohould accept hostport pairs.
-        hostnames.push_back(hostname);
+        urls.push_back(url);
       }
     }
   }
@@ -582,15 +645,17 @@ static NameList GetDnsPrefetchHostNamesAtStartup(PrefService* user_prefs,
   if (SessionStartupPref::URLS == tab_start_pref.type) {
     for (size_t i = 0; i < tab_start_pref.urls.size(); i++) {
       GURL gurl = tab_start_pref.urls[i];
-      if (gurl.is_valid() && !gurl.host().empty())
-        hostnames.push_back(gurl.HostNoBrackets());
+      if (!gurl.is_valid() || gurl.SchemeIsFile() || gurl.host().empty())
+        continue;
+      if (gurl.SchemeIs("http") || gurl.SchemeIs("https"))
+        urls.push_back(gurl.GetWithEmptyPath());
     }
   }
 
-  if (hostnames.empty())
-    hostnames.push_back("www.google.com");
+  if (urls.empty())
+    urls.push_back(GURL("http://www.google.com:80"));
 
-  return hostnames;
+  return urls;
 }
 
 //------------------------------------------------------------------------------

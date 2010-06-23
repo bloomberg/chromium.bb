@@ -19,9 +19,9 @@ namespace chrome_browser_net {
 
 class Preconnect : public net::CompletionCallback {
  public:
-  static bool PreconnectOnUIThread(const net::HostPortPair& hostport);
+  static bool PreconnectOnUIThread(const GURL& url);
 
-  static void PreconnectOnIOThread(const net::HostPortPair& hostport);
+  static void PreconnectOnIOThread(const GURL& url);
 
  private:
   Preconnect() {}

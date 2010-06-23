@@ -13,6 +13,7 @@
 
 
 #include <string>
+#include <vector>
 
 #include "base/field_trial.h"
 #include "base/scoped_ptr.h"
@@ -28,7 +29,7 @@ namespace chrome_browser_net {
 void FinalizeDnsPrefetchInitialization(
     DnsMaster* global_dns_master,
     net::HostResolver::Observer* global_prefetch_observer,
-    const NameList& hostnames_to_prefetch,
+    const std::vector<GURL>& urls_to_prefetch,
     ListValue* referral_list);
 
 // Free all resources allocated by FinalizeDnsPrefetchInitialization. After that
@@ -45,6 +46,7 @@ void RegisterPrefs(PrefService* local_state);
 void RegisterUserPrefs(PrefService* user_prefs);
 
 // Renderer bundles up list and sends to this browser API via IPC.
+// TODO(jar): Use UrlList instead to include port and scheme.
 void DnsPrefetchList(const NameList& hostnames);
 
 // This API is used by the autocomplete popup box (as user types).
@@ -54,6 +56,21 @@ void DnsPrefetchUrl(const GURL& url, bool preconnectable);
 
 // When displaying info in about:dns, the following API is called.
 void DnsPrefetchGetHtmlInfo(std::string* output);
+
+//------------------------------------------------------------------------------
+// When we navigate, we may know in advance some other domains that will need to
+// be resolved.  This function initiates those side effects.
+void NavigatingTo(const GURL& url);
+
+// When we navigate to a frame that may contain embedded resources, we may know
+// in advance some other URLs that will need to be connected to (via TCP and
+// sometimes SSL).  This function initiates those connections
+void NavigatingToFrame(const GURL& url);
+
+// Call when we should learn from a navigation about a relationship to a
+// subresource target, and its containing frame, which was loaded as a referring
+// URL.
+void NonlinkNavigation(const GURL& referring_url, const GURL& target_url);
 
 //------------------------------------------------------------------------------
 void SaveDnsPrefetchStateForNextStartupAndTrim(PrefService* prefs);

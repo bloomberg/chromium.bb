@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "googleurl/src/gurl.h"
+
 namespace chrome_common_net {
 
 // IPC messages are passed from the renderer to the browser in the form of
@@ -18,6 +20,10 @@ namespace chrome_common_net {
 // Each element of this vector is a hostname that needs to be looked up.
 // The hostnames should never be empty strings.
 typedef std::vector<std::string> NameList;
+// TODO(jar): We still need to switch to passing scheme/host/port in UrlList,
+// instead of NameList, from renderer (where content of pages are scanned for
+// links) to browser (where we perform predictive actions).
+typedef std::vector<GURL> UrlList;
 }
 
 #endif  // CHROME_COMMON_NET_DNS_H_

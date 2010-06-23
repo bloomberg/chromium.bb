@@ -18,6 +18,7 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
@@ -32,8 +33,9 @@ class HostResolver;
 
 namespace chrome_browser_net {
 
+typedef chrome_common_net::UrlList UrlList;
 typedef chrome_common_net::NameList NameList;
-typedef std::map<net::HostPortPair, DnsHostInfo> Results;
+typedef std::map<GURL, DnsHostInfo> Results;
 
 // Note that DNS master is not thread safe, and must only be called from
 // the IO thread. Failure to do so will result in a DCHECK at runtime.
@@ -41,7 +43,7 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
  public:
   // A version number for prefs that are saved. This should be incremented when
   // we change the format so that we discard old data.
-  enum {DNS_REFERRER_VERSION = 0 };
+  enum { DNS_REFERRER_VERSION = 1 };
 
 // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.
@@ -60,24 +62,26 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   void DiscardAllResults();
 
   // Add hostname(s) to the queue for processing.
-  void ResolveList(const NameList& hostnames,
+  void ResolveList(const UrlList& urls,
                    DnsHostInfo::ResolutionMotivation motivation);
-  void Resolve(const net::HostPortPair& hostport,
+  void Resolve(const GURL& url,
                DnsHostInfo::ResolutionMotivation motivation);
 
   // Get latency benefit of the prefetch that we are navigating to.
-  bool AccruePrefetchBenefits(const net::HostPortPair& referrer,
+  bool AccruePrefetchBenefits(const GURL& referrer,
                               DnsHostInfo* navigation_info);
 
-  // Instigate prefetch of any domains we predict will be needed after this
+  // Instigate preresolution of any domains we predict will be needed after this
   // navigation.
-  void NavigatingTo(const net::HostPortPair& hostport);
+  void NavigatingTo(const GURL& url);
+
+  // Instigate pre-connection to any URLs we predict will be needed after this
+  // navigation (typically more-embedded resources on a page).
+  void NavigatingToFrame(const GURL& url);
 
   // Record details of a navigation so that we can preresolve the host name
   // ahead of time the next time the users navigates to the indicated host.
-  // TODO(eroman): can this be a const& instead?
-  void NonlinkNavigation(const net::HostPortPair& referrer,
-                         const DnsHostInfo* navigation_info);
+  void NonlinkNavigation(const GURL& referring_url, const GURL& target_url);
 
   // Dump HTML table containing list of referrers for about:dns.
   void GetHtmlReferrerLists(std::string* output);
@@ -140,17 +144,17 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
    public:
     HostNameQueue();
     ~HostNameQueue();
-    void Push(const net::HostPortPair& hostport,
+    void Push(const GURL& url,
               DnsHostInfo::ResolutionMotivation motivation);
     bool IsEmpty() const;
-    net::HostPortPair Pop();
+    GURL Pop();
 
   private:
     // The names in the queue that should be serviced (popped) ASAP.
-    std::queue<net::HostPortPair> rush_queue_;
+    std::queue<GURL> rush_queue_;
     // The names in the queue that should only be serviced when rush_queue is
     // empty.
-    std::queue<net::HostPortPair> background_queue_;
+    std::queue<GURL> background_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(HostNameQueue);
   };
@@ -158,39 +162,38 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // A map that is keyed with the host/port that we've learned were the cause
   // of loading additional URLs.  The list of additional targets is held
   // in a Referrer instance, which is a value in this map.
-  typedef std::map<net::HostPortPair, Referrer> Referrers;
+  typedef std::map<GURL, Referrer> Referrers;
 
   // Only for testing. Returns true if hostname has been successfully resolved
   // (name found).
-  bool WasFound(const net::HostPortPair& hostport) const {
-    Results::const_iterator it(results_.find(hostport));
+  bool WasFound(const GURL& url) const {
+    Results::const_iterator it(results_.find(url));
     return (it != results_.end()) &&
             it->second.was_found();
   }
 
   // Only for testing. Return how long was the resolution
   // or DnsHostInfo::kNullDuration if it hasn't been resolved yet.
-  base::TimeDelta GetResolutionDuration(const net::HostPortPair& hostport) {
+  base::TimeDelta GetResolutionDuration(const GURL& url) {
 
-    if (results_.find(hostport) == results_.end())
+    if (results_.find(url) == results_.end())
       return DnsHostInfo::kNullDuration;
-    return results_[hostport].resolve_duration();
+    return results_[url].resolve_duration();
   }
 
   // Only for testing;
   size_t peak_pending_lookups() const { return peak_pending_lookups_; }
 
   // Access method for use by async lookup request to pass resolution result.
-  void OnLookupFinished(LookupRequest* request,
-                        const net::HostPortPair& hostport, bool found);
+  void OnLookupFinished(LookupRequest* request, const GURL& url, bool found);
 
   // Underlying method for both async and synchronous lookup to update state.
   void LookupFinished(LookupRequest* request,
-                      const net::HostPortPair& hostport, bool found);
+                      const GURL& url, bool found);
 
   // Queue hostname for resolution.  If queueing was done, return the pointer
   // to the queued instance, otherwise return NULL.
-  DnsHostInfo* AppendToResolutionQueue(const net::HostPortPair& hostport,
+  DnsHostInfo* AppendToResolutionQueue(const GURL& url,
       DnsHostInfo::ResolutionMotivation motivation);
 
   // Check to see if too much queuing delay has been noted for the given info,

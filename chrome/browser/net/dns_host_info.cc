@@ -170,11 +170,11 @@ void DnsHostInfo::SetFinishedState(bool was_resolved) {
   DLogResultsStats("DNS HTTP Finished");
 }
 
-void DnsHostInfo::SetHostname(const net::HostPortPair& hostport) {
-  if (hostport_.host.empty())  // Not yet initialized.
-    hostport_ = hostport;
+void DnsHostInfo::SetUrl(const GURL& url) {
+  if (url_.is_empty())  // Not yet initialized.
+    url_ = url;
   else
-    DCHECK(hostport_.Equals(hostport));
+    DCHECK_EQ(url_, url);
 }
 
 // IsStillCached() guesses if the DNS cache still has IP data,
@@ -200,7 +200,7 @@ bool DnsHostInfo::IsStillCached() const {
 DnsBenefit DnsHostInfo::AccruePrefetchBenefits(DnsHostInfo* navigation_info) {
   DCHECK(FINISHED == navigation_info->state_ ||
          FINISHED_UNRESOLVED == navigation_info->state_);
-  DCHECK(navigation_info->hostport().Equals(hostport_));
+  DCHECK(navigation_info->url() == url_);
 
   if ((0 == benefits_remaining_.InMilliseconds()) ||
       (FOUND != state_ && NO_SUCH_NAME != state_)) {
@@ -220,7 +220,7 @@ DnsBenefit DnsHostInfo::AccruePrefetchBenefits(DnsHostInfo* navigation_info) {
   navigation_info->motivation_ = motivation_;
   if (LEARNED_REFERAL_MOTIVATED == motivation_ ||
       STATIC_REFERAL_MOTIVATED == motivation_)
-    navigation_info->referring_hostport_ = referring_hostport_;
+    navigation_info->referring_url_ = referring_url_;
 
   if (navigation_info->resolve_duration_ > kMaxNonNetworkDnsLookupDuration) {
     // Our precache effort didn't help since HTTP stack hit the network.
@@ -255,7 +255,7 @@ void DnsHostInfo::DLogResultsStats(const char* message) const {
       << resolve_duration().InMilliseconds() << "ms\tp="
       << benefits_remaining_.InMilliseconds() << "ms\tseq="
       << sequence_number_
-      << "\t" << hostport_.ToString();
+      << "\t" << url_.spec();
 }
 
 //------------------------------------------------------------------------------
@@ -361,7 +361,7 @@ void DnsHostInfo::GetHtmlTable(const DnsInfoTable host_infos,
        it != host_infos.end(); it++) {
     queue.sample((it->queue_duration_.InMilliseconds()));
     StringAppendF(output, row_format,
-                  RemoveJs(it->hostport_.ToString()).c_str(),
+                  RemoveJs(it->url_.spec()).c_str(),
                   preresolve.sample((it->benefits_remaining_.InMilliseconds())),
                   resolve.sample((it->resolve_duration_.InMilliseconds())),
                   HoursMinutesSeconds(when.sample(
@@ -426,10 +426,10 @@ std::string DnsHostInfo::GetAsciiMotivation() const {
       return "n/a";
 
     case STATIC_REFERAL_MOTIVATED:
-      return RemoveJs(referring_hostport_.ToString()) + "*";
+      return RemoveJs(referring_url_.spec()) + "*";
 
     case LEARNED_REFERAL_MOTIVATED:
-      return RemoveJs(referring_hostport_.ToString());
+      return RemoveJs(referring_url_.spec());
 
     default:
       return "";

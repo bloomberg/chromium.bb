@@ -30,11 +30,11 @@ class DnsMaster::LookupRequest {
  public:
   LookupRequest(DnsMaster* master,
                 net::HostResolver* host_resolver,
-                const net::HostPortPair& hostport)
+                const GURL& url)
       : ALLOW_THIS_IN_INITIALIZER_LIST(
           net_callback_(this, &LookupRequest::OnLookupFinished)),
         master_(master),
-        hostport_(hostport),
+        url_(url),
         resolver_(host_resolver) {
   }
 
@@ -43,7 +43,8 @@ class DnsMaster::LookupRequest {
   // net:ERR_IO_PENDING ==> Network will callback later with result.
   // anything else ==> Host was not found synchronously.
   int Start() {
-    net::HostResolver::RequestInfo resolve_info(hostport_.host, hostport_.port);
+    net::HostResolver::RequestInfo resolve_info(url_.host(),
+                                                url_.EffectiveIntPort());
 
     // Make a note that this is a speculative resolve request. This allows us
     // to separate it from real navigations in the observer's callback, and
@@ -55,7 +56,7 @@ class DnsMaster::LookupRequest {
 
  private:
   void OnLookupFinished(int result) {
-    master_->OnLookupFinished(this, hostport_, result == net::OK);
+    master_->OnLookupFinished(this, url_, result == net::OK);
   }
 
   // HostResolver will call us using this callback when resolution is complete.
@@ -63,7 +64,7 @@ class DnsMaster::LookupRequest {
 
   DnsMaster* master_;  // Master which started us.
 
-  const net::HostPortPair hostport_;  // Hostname to resolve.
+  const GURL url_;  // Hostname to resolve.
   net::SingleRequestHostResolver resolver_;
   net::AddressList addresses_;
 
@@ -98,38 +99,37 @@ void DnsMaster::Shutdown() {
 }
 
 // Overloaded Resolve() to take a vector of names.
-void DnsMaster::ResolveList(const NameList& hostnames,
+void DnsMaster::ResolveList(const UrlList& urls,
                             DnsHostInfo::ResolutionMotivation motivation) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  NameList::const_iterator it;
-  for (it = hostnames.begin(); it < hostnames.end(); ++it)
-    // TODO(jar): I should pass port all the way in from renderer.
-    AppendToResolutionQueue(net::HostPortPair(*it, 80), motivation);
+  for (UrlList::const_iterator it = urls.begin(); it < urls.end(); ++it) {
+    AppendToResolutionQueue(*it, motivation);
+  }
 }
 
 // Basic Resolve() takes an invidual name, and adds it
 // to the queue.
-void DnsMaster::Resolve(const net::HostPortPair& hostport,
+void DnsMaster::Resolve(const GURL& url,
                         DnsHostInfo::ResolutionMotivation motivation) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (hostport.host.empty())
+  if (!url.has_host())
     return;
-  AppendToResolutionQueue(hostport, motivation);
+  AppendToResolutionQueue(url, motivation);
 }
 
-bool DnsMaster::AccruePrefetchBenefits(const net::HostPortPair& referrer,
+bool DnsMaster::AccruePrefetchBenefits(const GURL& referrer,
                                        DnsHostInfo* navigation_info) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  net::HostPortPair hostport = navigation_info->hostport();
-  Results::iterator it = results_.find(hostport);
+  GURL url = navigation_info->url();
+  Results::iterator it = results_.find(url);
   if (it == results_.end()) {
     // Use UMA histogram to quantify potential future gains here.
     UMA_HISTOGRAM_LONG_TIMES("DNS.UnexpectedResolutionL",
                              navigation_info->resolve_duration());
     navigation_info->DLogResultsStats("DNS UnexpectedResolution");
 
-    NonlinkNavigation(referrer, navigation_info);
+    NonlinkNavigation(referrer, navigation_info->url());
     return false;
   }
   DnsHostInfo& prefetched_host_info(it->second);
@@ -141,7 +141,7 @@ bool DnsMaster::AccruePrefetchBenefits(const net::HostPortPair& referrer,
   bool referrer_based_prefetch = !prefetched_host_info.was_linked();
   if (referrer_based_prefetch) {
     // This wasn't the first time this host refered to *some* referrer.
-    NonlinkNavigation(referrer, navigation_info);
+    NonlinkNavigation(referrer, navigation_info->url());
   }
 
   DnsBenefit benefit = prefetched_host_info.AccruePrefetchBenefits(
@@ -151,15 +151,15 @@ bool DnsMaster::AccruePrefetchBenefits(const net::HostPortPair& referrer,
     case PREFETCH_NAME_NONEXISTANT:
       cache_hits_.push_back(*navigation_info);
       if (referrer_based_prefetch) {
-        if (!referrer.host.empty()) {
+        if (referrer.has_host()) {
           referrers_[referrer].AccrueValue(
-              navigation_info->benefits_remaining(), hostport);
+              navigation_info->benefits_remaining(), url);
         }
       }
       return true;
 
     case PREFETCH_CACHE_EVICTION:
-      cache_eviction_map_[hostport] = *navigation_info;
+      cache_eviction_map_[url] = *navigation_info;
       return false;
 
     case PREFETCH_NO_BENEFIT:
@@ -172,36 +172,45 @@ bool DnsMaster::AccruePrefetchBenefits(const net::HostPortPair& referrer,
   }
 }
 
-void DnsMaster::NonlinkNavigation(const net::HostPortPair& referring_hostport,
-                                  const DnsHostInfo* navigation_info) {
+void DnsMaster::NonlinkNavigation(const GURL& referring_url,
+                                  const GURL& target_url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (referring_hostport.host.empty() ||
-      referring_hostport.Equals(navigation_info->hostport()))
-    return;
-  referrers_[referring_hostport].SuggestHost(navigation_info->hostport());
+  if (referring_url.has_host() &&
+      referring_url != target_url) {
+    DCHECK(referring_url == referring_url.GetWithEmptyPath());
+    referrers_[referring_url].SuggestHost(target_url);
+  }
 }
 
-void DnsMaster::NavigatingTo(const net::HostPortPair& hostport) {
+void DnsMaster::NavigatingTo(const GURL& url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  Referrers::iterator it = referrers_.find(hostport);
+  Referrers::iterator it = referrers_.find(url);
   if (referrers_.end() == it)
     return;
   Referrer* referrer = &(it->second);
   referrer->IncrementUseCount();
-  for (Referrer::iterator future_hostport = referrer->begin();
-       future_hostport != referrer->end(); ++future_hostport) {
-    if (preconnect_enabled_) {
-      if (future_hostport->second.IsPreconnectWorthDoing()) {
-        Preconnect::PreconnectOnIOThread(future_hostport->first);
-        continue;  // No need he pre-resolve DNS.
-      }
-      // Fall through and do DNS pre-resolution.
-    }
+  for (Referrer::iterator future_url = referrer->begin();
+       future_url != referrer->end(); ++future_url) {
     DnsHostInfo* queued_info = AppendToResolutionQueue(
-        future_hostport->first,
+        future_url->first,
         DnsHostInfo::LEARNED_REFERAL_MOTIVATED);
     if (queued_info)
-      queued_info->SetReferringHostname(hostport);
+      queued_info->SetReferringHostname(url);
+  }
+}
+
+void DnsMaster::NavigatingToFrame(const GURL& url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(url.GetWithEmptyPath() == url);
+  Referrers::iterator it = referrers_.find(url);
+  if (referrers_.end() == it)
+    return;
+  Referrer* referrer = &(it->second);
+  referrer->IncrementUseCount();
+  for (Referrer::iterator future_url = referrer->begin();
+       future_url != referrer->end(); ++future_url) {
+    if (future_url->second.IsPreconnectWorthDoing())
+      Preconnect::PreconnectOnIOThread(future_url->first);
   }
 }
 
@@ -278,7 +287,7 @@ void DnsMaster::GetHtmlReferrerLists(std::string* output) {
 
   // TODO(jar): Remove any plausible JavaScript from names before displaying.
 
-  typedef std::set<net::HostPortPair, struct RightToLeftStringSorter>
+  typedef std::set<GURL, struct RightToLeftStringSorter>
       SortedNames;
   SortedNames sorted_names;
 
@@ -300,23 +309,23 @@ void DnsMaster::GetHtmlReferrerLists(std::string* output) {
        sorted_names.end() != it; ++it) {
     Referrer* referrer = &(referrers_[*it]);
     bool first_set_of_futures = true;
-    for (Referrer::iterator future_hostport = referrer->begin();
-         future_hostport != referrer->end(); ++future_hostport) {
+    for (Referrer::iterator future_url = referrer->begin();
+         future_url != referrer->end(); ++future_url) {
       output->append("<tr align=right>");
       if (first_set_of_futures)
         StringAppendF(output, "<td rowspan=%d>%s</td><td rowspan=%d>%d</td>",
                       static_cast<int>(referrer->size()),
-                      it->ToString().c_str(),
+                      it->spec().c_str(),
                       static_cast<int>(referrer->size()),
                       static_cast<int>(referrer->use_count()));
       first_set_of_futures = false;
       StringAppendF(output,
           "<td>%d</td><td>%d</td><td>%2.3f</td><td>%dms</td><td>%s</td></tr>",
-          static_cast<int>(future_hostport->second.navigation_count()),
-          static_cast<int>(future_hostport->second.preconnection_count()),
-          static_cast<double>(future_hostport->second.subresource_use_rate()),
-          static_cast<int>(future_hostport->second.latency().InMilliseconds()),
-          future_hostport->first.ToString().c_str());
+          static_cast<int>(future_url->second.navigation_count()),
+          static_cast<int>(future_url->second.preconnection_count()),
+          static_cast<double>(future_url->second.subresource_use_rate()),
+          static_cast<int>(future_url->second.latency().InMilliseconds()),
+          future_url->first.spec().c_str());
     }
   }
   output->append("</table>");
@@ -332,7 +341,7 @@ void DnsMaster::GetHtmlInfo(std::string* output) {
   DnsHostInfo::DnsInfoTable already_cached;
 
   // Get copies of all useful data.
-  typedef std::map<net::HostPortPair, DnsHostInfo, RightToLeftStringSorter>
+  typedef std::map<GURL, DnsHostInfo, RightToLeftStringSorter>
       Snapshot;
   Snapshot snapshot;
   {
@@ -393,20 +402,20 @@ void DnsMaster::GetHtmlInfo(std::string* output) {
 }
 
 DnsHostInfo* DnsMaster::AppendToResolutionQueue(
-    const net::HostPortPair& hostport,
+    const GURL& url,
     DnsHostInfo::ResolutionMotivation motivation) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(!hostport.host.empty());
+  DCHECK(url.has_host());
 
   if (shutdown_)
     return NULL;
 
-  DnsHostInfo* info = &results_[hostport];
-  info->SetHostname(hostport);  // Initialize or DCHECK.
+  DnsHostInfo* info = &results_[url];
+  info->SetUrl(url);  // Initialize or DCHECK.
   // TODO(jar):  I need to discard names that have long since expired.
   // Currently we only add to the domain map :-/
 
-  DCHECK(info->HasHostname(hostport));
+  DCHECK(info->HasUrl(url));
 
   if (!info->NeedsDnsUpdate()) {
     info->DLogResultsStats("DNS PrefetchNotUpdated");
@@ -414,7 +423,7 @@ DnsHostInfo* DnsMaster::AppendToResolutionQueue(
   }
 
   info->SetQueuedState(motivation);
-  work_queue_.Push(hostport, motivation);
+  work_queue_.Push(url, motivation);
   StartSomeQueuedResolutions();
   return info;
 }
@@ -424,9 +433,9 @@ void DnsMaster::StartSomeQueuedResolutions() {
 
   while (!work_queue_.IsEmpty() &&
          pending_lookups_.size() < max_concurrent_lookups_) {
-    const net::HostPortPair hostport(work_queue_.Pop());
-    DnsHostInfo* info = &results_[hostport];
-    DCHECK(info->HasHostname(hostport));
+    const GURL url(work_queue_.Pop());
+    DnsHostInfo* info = &results_[url];
+    DCHECK(info->HasUrl(url));
     info->SetAssignedState();
 
     if (CongestionControlPerformed(info)) {
@@ -434,7 +443,7 @@ void DnsMaster::StartSomeQueuedResolutions() {
       return;
     }
 
-    LookupRequest* request = new LookupRequest(this, host_resolver_, hostport);
+    LookupRequest* request = new LookupRequest(this, host_resolver_, url);
     int status = request->Start();
     if (status == net::ERR_IO_PENDING) {
       // Will complete asynchronously.
@@ -445,7 +454,7 @@ void DnsMaster::StartSomeQueuedResolutions() {
       // Completed synchronously (was already cached by HostResolver), or else
       // there was (equivalently) some network error that prevents us from
       // finding the name.  Status net::OK means it was "found."
-      LookupFinished(request, hostport, status == net::OK);
+      LookupFinished(request, url, status == net::OK);
       delete request;
     }
   }
@@ -469,26 +478,24 @@ bool DnsMaster::CongestionControlPerformed(DnsHostInfo* info) {
   return true;
 }
 
-void DnsMaster::OnLookupFinished(LookupRequest* request,
-                                 const net::HostPortPair& hostport,
+void DnsMaster::OnLookupFinished(LookupRequest* request, const GURL& url,
                                  bool found) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  LookupFinished(request, hostport, found);
+  LookupFinished(request, url, found);
   pending_lookups_.erase(request);
   delete request;
 
   StartSomeQueuedResolutions();
 }
 
-void DnsMaster::LookupFinished(LookupRequest* request,
-                               const net::HostPortPair& hostport,
+void DnsMaster::LookupFinished(LookupRequest* request, const GURL& url,
                                bool found) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DnsHostInfo* info = &results_[hostport];
-  DCHECK(info->HasHostname(hostport));
+  DnsHostInfo* info = &results_[url];
+  DCHECK(info->HasUrl(url));
   if (info->is_marked_to_delete()) {
-    results_.erase(hostport);
+    results_.erase(url);
   } else {
     if (found)
       info->SetFoundState();
@@ -508,9 +515,9 @@ void DnsMaster::DiscardAllResults() {
   // Try to delete anything in our work queue.
   while (!work_queue_.IsEmpty()) {
     // Emulate processing cycle as though host was not found.
-    net::HostPortPair hostport = work_queue_.Pop();
-    DnsHostInfo* info = &results_[hostport];
-    DCHECK(info->HasHostname(hostport));
+    GURL url = work_queue_.Pop();
+    DnsHostInfo* info = &results_[url];
+    DCHECK(info->HasUrl(url));
     info->SetAssignedState();
     info->SetNoSuchNameState();
   }
@@ -521,12 +528,12 @@ void DnsMaster::DiscardAllResults() {
   // We can't erase anything being worked on.
   Results assignees;
   for (Results::iterator it = results_.begin(); results_.end() != it; ++it) {
-    net::HostPortPair hostport(it->first);
+    GURL url(it->first);
     DnsHostInfo* info = &it->second;
-    DCHECK(info->HasHostname(hostport));
+    DCHECK(info->HasUrl(url));
     if (info->is_assigned()) {
       info->SetPendingDeleteState();
-      assignees[hostport] = *info;
+      assignees[url] = *info;
     }
   }
   DCHECK(assignees.size() <= max_concurrent_lookups_);
@@ -540,13 +547,13 @@ void DnsMaster::DiscardAllResults() {
 
 void DnsMaster::TrimReferrers() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  std::vector<net::HostPortPair> hosts;
+  std::vector<GURL> urls;
   for (Referrers::const_iterator it = referrers_.begin();
        it != referrers_.end(); ++it)
-    hosts.push_back(it->first);
-  for (size_t i = 0; i < hosts.size(); ++i)
-    if (!referrers_[hosts[i]].Trim())
-      referrers_.erase(hosts[i]);
+    urls.push_back(it->first);
+  for (size_t i = 0; i < urls.size(); ++i)
+    if (!referrers_[urls[i]].Trim())
+      referrers_.erase(urls[i]);
 }
 
 void DnsMaster::SerializeReferrers(ListValue* referral_list) {
@@ -560,8 +567,7 @@ void DnsMaster::SerializeReferrers(ListValue* referral_list) {
 
     // Create a list for each referer.
     ListValue* motivator(new ListValue);
-    motivator->Append(new FundamentalValue(it->first.port));
-    motivator->Append(new StringValue(it->first.host));
+    motivator->Append(new StringValue(it->first.spec()));
     motivator->Append(subresource_list);
 
     referral_list->Append(motivator);
@@ -578,30 +584,21 @@ void DnsMaster::DeserializeReferrers(const ListValue& referral_list) {
       ListValue* motivator;
       if (!referral_list.GetList(i, &motivator)) {
         NOTREACHED();
-        continue;
+        return;
       }
-      int motivating_port;
-      if (!motivator->GetInteger(0, &motivating_port)) {
+      std::string motivating_url_spec;
+      if (!motivator->GetString(0, &motivating_url_spec)) {
         NOTREACHED();
-        continue;
-      }
-      std::string motivating_host;
-      if (!motivator->GetString(1, &motivating_host)) {
-        NOTREACHED();
-        continue;
-      }
-      if (motivating_host.empty()) {
-        NOTREACHED();
-        continue;
+        return;
       }
 
       Value* subresource_list;
-      if (!motivator->Get(2, &subresource_list)) {
+      if (!motivator->Get(1, &subresource_list)) {
         NOTREACHED();
-        continue;
+        return;
       }
-      net::HostPortPair motivating_hostport(motivating_host, motivating_port);
-      referrers_[motivating_hostport].Deserialize(*subresource_list);
+
+      referrers_[GURL(motivating_url_spec)].Deserialize(*subresource_list);
     }
   }
 }
@@ -615,17 +612,17 @@ DnsMaster::HostNameQueue::HostNameQueue() {
 DnsMaster::HostNameQueue::~HostNameQueue() {
 }
 
-void DnsMaster::HostNameQueue::Push(const net::HostPortPair& hostport,
+void DnsMaster::HostNameQueue::Push(const GURL& url,
     DnsHostInfo::ResolutionMotivation motivation) {
   switch (motivation) {
     case DnsHostInfo::STATIC_REFERAL_MOTIVATED:
     case DnsHostInfo::LEARNED_REFERAL_MOTIVATED:
     case DnsHostInfo::MOUSE_OVER_MOTIVATED:
-      rush_queue_.push(hostport);
+      rush_queue_.push(url);
       break;
 
     default:
-      background_queue_.push(hostport);
+      background_queue_.push(url);
       break;
   }
 }
@@ -634,16 +631,13 @@ bool DnsMaster::HostNameQueue::IsEmpty() const {
   return rush_queue_.empty() && background_queue_.empty();
 }
 
-net::HostPortPair DnsMaster::HostNameQueue::Pop() {
+GURL DnsMaster::HostNameQueue::Pop() {
   DCHECK(!IsEmpty());
-  if (!rush_queue_.empty()) {
-    net::HostPortPair hostport(rush_queue_.front());
-    rush_queue_.pop();
-    return hostport;
-  }
-  net::HostPortPair hostport(background_queue_.front());
-  background_queue_.pop();
-  return hostport;
+  std::queue<GURL> *queue(rush_queue_.empty() ? &background_queue_
+                                              : &rush_queue_);
+  GURL url(queue->front());
+  queue->pop();
+  return url;
 }
 
 }  // namespace chrome_browser_net

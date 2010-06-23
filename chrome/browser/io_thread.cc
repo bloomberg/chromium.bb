@@ -86,6 +86,7 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(IOThread);
 IOThread::IOThread()
     : BrowserProcessSubThread(ChromeThread::IO),
       globals_(NULL),
+      speculative_interceptor_(NULL),
       prefetch_observer_(NULL),
       dns_master_(NULL) {}
 
@@ -105,7 +106,7 @@ void IOThread::InitDnsMaster(
     bool prefetching_enabled,
     base::TimeDelta max_queue_delay,
     size_t max_concurrent,
-    const chrome_common_net::NameList& hostnames_to_prefetch,
+    const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
     bool preconnect_enabled) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
@@ -115,7 +116,7 @@ void IOThread::InitDnsMaster(
           this,
           &IOThread::InitDnsMasterOnIOThread,
           prefetching_enabled, max_queue_delay, max_concurrent,
-          hostnames_to_prefetch, referral_list, preconnect_enabled));
+          startup_urls, referral_list, preconnect_enabled));
 }
 
 void IOThread::ChangedToOnTheRecord() {
@@ -149,8 +150,6 @@ void IOThread::CleanUp() {
 
   // Not initialized in Init().  May not be initialized.
   if (dns_master_) {
-    DCHECK(prefetch_observer_);
-
     dns_master_->Shutdown();
 
     // TODO(willchan): Stop reference counting DnsMaster.  It's owned by
@@ -159,6 +158,10 @@ void IOThread::CleanUp() {
     dns_master_ = NULL;
     chrome_browser_net::FreeDnsPrefetchResources();
   }
+
+  // Deletion will unregister this interceptor.
+  delete speculative_interceptor_;
+  speculative_interceptor_ = NULL;
 
   // Not initialized in Init().  May not be initialized.
   if (prefetch_observer_) {
@@ -241,7 +244,7 @@ void IOThread::InitDnsMasterOnIOThread(
     bool prefetching_enabled,
     base::TimeDelta max_queue_delay,
     size_t max_concurrent,
-    chrome_common_net::NameList hostnames_to_prefetch,
+    const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
     bool preconnect_enabled) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
@@ -256,12 +259,20 @@ void IOThread::InitDnsMasterOnIOThread(
       preconnect_enabled);
   dns_master_->AddRef();
 
-  DCHECK(!prefetch_observer_);
-  prefetch_observer_ = chrome_browser_net::CreatePrefetchObserver();
-  globals_->host_resolver->AddObserver(prefetch_observer_);
+  // TODO(jar): Until connection notification and DNS observation handling are
+  // properly combined into a learning model, we'll only use one observation
+  // mechanism or the other.
+  if (preconnect_enabled) {
+    DCHECK(!speculative_interceptor_);
+    speculative_interceptor_ = new chrome_browser_net::ConnectInterceptor;
+  } else {
+    DCHECK(!prefetch_observer_);
+    prefetch_observer_ = chrome_browser_net::CreatePrefetchObserver();
+    globals_->host_resolver->AddObserver(prefetch_observer_);
+  }
 
   FinalizeDnsPrefetchInitialization(
-      dns_master_, prefetch_observer_, hostnames_to_prefetch, referral_list);
+      dns_master_, prefetch_observer_, startup_urls, referral_list);
 }
 
 void IOThread::ChangedToOnTheRecordOnIOThread() {

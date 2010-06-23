@@ -22,19 +22,19 @@ typedef chrome_browser_net::DnsHostInfo DnsHostInfo;
 
 TEST(DnsHostInfoTest, StateChangeTest) {
   DnsHostInfo info_practice, info;
-  net::HostPortPair hostname1("domain1.com", 80), hostname2("domain2.com", 443);
+  GURL url1("http://domain1.com:80"), url2("https://domain2.com:443");
 
   // First load DLL, so that their load time won't interfere with tests.
   // Some tests involve timing function performance, and DLL time can overwhelm
   // test durations (which are considering network vs cache response times).
-  info_practice.SetHostname(hostname2);
+  info_practice.SetUrl(url2);
   info_practice.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
   info_practice.SetAssignedState();
   info_practice.SetFoundState();
   PlatformThread::Sleep(500);  // Allow time for DLLs to fully load.
 
   // Complete the construction of real test object.
-  info.SetHostname(hostname1);
+  info.SetUrl(url1);
 
   EXPECT_TRUE(info.NeedsDnsUpdate()) << "error in construction state";
   info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
@@ -93,9 +93,9 @@ TEST(DnsHostInfoTest, StateChangeTest) {
 // the state transitions used in such congestion handling.
 TEST(DnsHostInfoTest, CongestionResetStateTest) {
   DnsHostInfo info;
-  net::HostPortPair hostname1("domain1.com", 80);
+  GURL url("http://domain1.com:80");
 
-  info.SetHostname(hostname1);
+  info.SetUrl(url);
   info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
   info.SetAssignedState();
   EXPECT_TRUE(info.is_assigned());

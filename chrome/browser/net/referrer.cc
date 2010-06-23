@@ -44,7 +44,7 @@ static const double kInitialExpectedValue = 0.0;
 // static
 bool Referrer::use_preconnect_valuations_ = false;
 
-void Referrer::SuggestHost(const net::HostPortPair& hostport) {
+void Referrer::SuggestHost(const GURL& url) {
   // Limit how large our list can get, in case we make mistakes about what
   // hostnames are in sub-resources (example: Some advertisments have a link to
   // the ad agency, and then provide a "surprising" redirect to the advertised
@@ -53,9 +53,10 @@ void Referrer::SuggestHost(const net::HostPortPair& hostport) {
   // TODO(jar): Do experiments to optimize the max count of suggestions.
   static const size_t kMaxSuggestions = 10;
 
-  if (hostport.host.empty())  // Is this really needed????
+  if (!url.has_host())  // TODO(jar): Is this really needed????
     return;
-  SubresourceMap::iterator it = find(hostport);
+  DCHECK(url == url.GetWithEmptyPath());
+  SubresourceMap::iterator it = find(url);
   if (it != end()) {
     it->second.SubresourceIsNeeded();
     return;
@@ -65,13 +66,13 @@ void Referrer::SuggestHost(const net::HostPortPair& hostport) {
     DeleteLeastUseful();
     DCHECK(kMaxSuggestions > size());
   }
-  (*this)[hostport].SubresourceIsNeeded();
+  (*this)[url].SubresourceIsNeeded();
 }
 
 void Referrer::DeleteLeastUseful() {
   // Find the item with the lowest value.  Most important is preconnection_rate,
   // next is latency savings, and last is lifetime (age).
-  net::HostPortPair least_useful_hostport;
+  GURL least_useful_url;
   double lowest_rate_seen = 0.0;
   // We use longs for durations because we will use multiplication on them.
   int64 lowest_latency_seen = 0;  // Duration in milliseconds.
@@ -82,7 +83,7 @@ void Referrer::DeleteLeastUseful() {
     int64 lifetime = (kNow - it->second.birth_time()).InMilliseconds();
     int64 latency = it->second.latency().InMilliseconds();
     double rate = it->second.subresource_use_rate();
-    if (!least_useful_hostport.host.empty()) {
+    if (least_useful_url.has_host()) {
       if (rate > lowest_rate_seen)
         continue;
       if (!latency && !lowest_latency_seen) {
@@ -102,21 +103,21 @@ void Referrer::DeleteLeastUseful() {
         }
       }
     }
-    least_useful_hostport = it->first;
+    least_useful_url = it->first;
     lowest_rate_seen = rate;
     lowest_latency_seen = latency;
     least_useful_lifetime = lifetime;
   }
-  erase(least_useful_hostport);
-  // Note: there is a small chance that we will discard a least_useful_hostport
+  erase(least_useful_url);
+  // Note: there is a small chance that we will discard a least_useful_url
   // that is currently being prefetched because it *was* in this referer list.
   // In that case, when a benefit appears in AccrueValue() below, we are careful
   // to check before accessing the member.
 }
 
 void Referrer::AccrueValue(const base::TimeDelta& delta,
-                           const net::HostPortPair& hostport) {
-  SubresourceMap::iterator it = find(hostport);
+                           const GURL& url) {
+  SubresourceMap::iterator it = find(url);
   // Be careful that we weren't evicted from this referrer in DeleteLeastUseful.
   if (it != end())
     it->second.AccrueValue(delta);
@@ -144,11 +145,8 @@ void Referrer::Deserialize(const Value& value) {
   const ListValue* subresource_list(static_cast<const ListValue*>(&value));
   size_t index = 0;  // Bounds checking is done by subresource_list->Get*().
   while (true) {
-    int port;
-    if (!subresource_list->GetInteger(index++, &port))
-      return;
-    std::string host;
-    if (!subresource_list->GetString(index++, &host))
+    std::string url_spec;
+    if (!subresource_list->GetString(index++, &url_spec))
       return;
     int latency_ms;
     if (!subresource_list->GetInteger(index++, &latency_ms))
@@ -157,24 +155,23 @@ void Referrer::Deserialize(const Value& value) {
     if (!subresource_list->GetReal(index++, &rate))
       return;
 
-    net::HostPortPair hostport(host, port);
+    GURL url(url_spec);
     base::TimeDelta latency = base::TimeDelta::FromMilliseconds(latency_ms);
     // TODO(jar): We could be more direct, and change birth date or similar to
     // show that this is a resurrected value we're adding in.  I'm not yet sure
     // of how best to optimize the learning and pruning (Trim) algorithm at this
     // level, so for now, we just suggest subresources, which leaves them all
     // with the same birth date (typically start of process).
-    SuggestHost(hostport);
-    AccrueValue(latency, hostport);
-    (*this)[hostport].SetSubresourceUseRate(rate);
+    SuggestHost(url);
+    AccrueValue(latency, url);
+    (*this)[url].SetSubresourceUseRate(rate);
   }
 }
 
 Value* Referrer::Serialize() const {
   ListValue* subresource_list(new ListValue);
   for (const_iterator it = begin(); it != end(); ++it) {
-    FundamentalValue* port(new FundamentalValue(it->first.port));
-    StringValue* host(new StringValue(it->first.host));
+    StringValue* url_spec(new StringValue(it->first.spec()));
     int latency_integer = static_cast<int>(it->second.latency().
                                            InMilliseconds());
     // Watch out for overflow in the above static_cast!  Check to see if we went
@@ -188,8 +185,7 @@ Value* Referrer::Serialize() const {
     FundamentalValue* rate(new FundamentalValue(
         it->second.subresource_use_rate()));
 
-    subresource_list->Append(port);
-    subresource_list->Append(host);
+    subresource_list->Append(url_spec);
     subresource_list->Append(latency);
     subresource_list->Append(rate);
   }

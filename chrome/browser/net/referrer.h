@@ -20,6 +20,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 
 namespace chrome_browser_net {
@@ -74,7 +75,7 @@ class ReferrerValue {
 // A list of domain names to pre-resolve. The names are the keys to this map,
 // and the values indicate the amount of benefit derived from having each name
 // around.
-typedef std::map<net::HostPortPair, ReferrerValue> SubresourceMap;
+typedef std::map<GURL, ReferrerValue> SubresourceMap;
 
 //------------------------------------------------------------------------------
 // There is one Referrer instance for each hostname that has acted as an HTTP
@@ -91,15 +92,15 @@ class Referrer : public SubresourceMap {
   void IncrementUseCount() { ++use_count_; }
   int64 use_count() const { return use_count_; }
 
-  // Add the indicated host/port to the list of hosts that are resolved via DNS
-  // when the user navigates to this referrer.  Note that if the list is long,
-  // an entry may be discarded to make room for this insertion.
-  void SuggestHost(const net::HostPortPair& hostport);
+  // Add the indicated url to the list that are resolved via DNS when the user
+  // navigates to this referrer.  Note that if the list is long, an entry may be
+  // discarded to make room for this insertion.
+  void SuggestHost(const GURL& url);
 
-  // Record additional usefulness of having this host/port name in the list.
+  // Record additional usefulness of having this url in the list.
   // Value is expressed as positive latency of amount delta.
   void AccrueValue(const base::TimeDelta& delta,
-                   const net::HostPortPair& hostport);
+                   const GURL& url);
 
   // Trim the Referrer, by first diminishing (scaling down) the latency for each
   // ReferredValue.
