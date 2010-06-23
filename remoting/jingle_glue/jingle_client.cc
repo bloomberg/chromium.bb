@@ -84,7 +84,11 @@ void JingleClient::Close() {
 
 void JingleClient::DoClose() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(callback_ != NULL);  // Close() should only be called after Init().
+
+  // If we have not yet initialized and the client is already closed then
+  // don't close again.
+  if (!callback_ || state_ == CLOSED)
+    return;
 
   client_->Disconnect();
   // Client is deleted by TaskRunner.
