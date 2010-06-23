@@ -7,11 +7,12 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
 struct PepperPluginInfo {
-  FilePath path;
+  FilePath path;  // Internal plugins are of the form "internal-[name]".
   std::vector<std::string> mime_types;
 };
 
@@ -28,6 +29,14 @@ class PepperPluginRegistry {
   pepper::PluginModule* GetModule(const FilePath& path) const;
 
  private:
+  static void GetPluginInfoFromSwitch(std::vector<PepperPluginInfo>* plugins);
+
+  struct InternalPluginInfo : public PepperPluginInfo {
+    pepper::PluginModule::EntryPoints entry_points;
+  };
+  typedef std::vector<InternalPluginInfo> InternalPluginInfoList;
+  static void GetInternalPluginInfo(InternalPluginInfoList* plugin_info);
+
   PepperPluginRegistry();
 
   typedef scoped_refptr<pepper::PluginModule> ModuleHandle;
