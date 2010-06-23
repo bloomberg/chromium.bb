@@ -283,6 +283,8 @@ class GClientSmokeSVN(GClientSmokeBase):
     # matching.
     results = self.gclient(['revert', '--deps', 'mac'])
     out = self.splitBlock(results[0])
+    # src, src/other is missing, src/other, src/third_party/foo is missing,
+    # src/third_party/foo, 2 svn hooks.
     self.assertEquals(7, len(out))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
@@ -375,7 +377,6 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.assertEquals([], out)
 
   def testRevInfo(self):
-    # TODO(maruel): Test multiple solutions.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
@@ -586,6 +587,7 @@ class GClientSmokeBoth(GClientSmokeBase):
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
     results = self.gclient(['sync', '--deps', 'mac'])
+    # 3x svn checkout, 3x run hooks
     self.checkBlock(results[0],
                     ['running', 'running', 'running', 'running', 'running',
                      'running', 'running'])
@@ -632,6 +634,31 @@ class GClientSmokeBoth(GClientSmokeBase):
         ('trunk/other@1', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout')))
     self.assertTree(tree)
+
+  def testRevInfo(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', '--spec',
+        'solutions=['
+        '{"name": "src",'
+        ' "url": "' + self.svn_base + 'trunk/src/"},'
+        '{"name": "src-git",'
+        '"url": "' + self.git_base + 'repo_1"}]'])
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['revinfo', '--deps', 'mac'])
+    out = ('src: %(svn_base)s/src/@2;\n'
+           'src-git: %(git_base)srepo_1@%(hash1)s;\n'
+           'src/other: %(svn_base)s/other@2;\n'
+           'src/repo2: %(git_base)srepo_2@%(hash2)s;\n'
+           'src/repo2/repo_renamed: %(git_base)srepo_3@%(hash3)s;\n'
+           'src/third_party/foo: %(svn_base)s/third_party/foo@1\n') % {
+               'svn_base': self.svn_base + 'trunk',
+               'git_base': self.git_base,
+               'hash1': self.githash('repo_1', 2),
+               'hash2': self.githash('repo_2', 1),
+               'hash3': self.githash('repo_3', 2),
+          }
+    self.check((out, '', 0), results)
 
 
 if __name__ == '__main__':
