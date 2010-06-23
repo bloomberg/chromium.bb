@@ -54,7 +54,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
     file_deleter_.reset(new FileAutoDeleter(temp_dir));
 
     FilePath filename(temp_dir);
-    filename.AppendASCII("SafeBrowsingTestDatabase");
+    filename = filename.AppendASCII("SafeBrowsingTestDatabase");
 
     // In case it existed from a previous run.
     file_util::Delete(FilePath(filename.value() + kBloomSuffix), false);

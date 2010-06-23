@@ -27,7 +27,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     file_deleter_.reset(new FileAutoDeleter(temp_dir));
 
     filename_ = temp_dir;
-    filename_.AppendASCII("SafeBrowsingTestStore");
+    filename_ = filename_.AppendASCII("SafeBrowsingTestStore");
     file_util::Delete(filename_, false);
 
     // Make sure an old temporary file isn't hanging around.
