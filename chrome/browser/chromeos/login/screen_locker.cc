@@ -234,7 +234,7 @@ class GrabWidget : public views::WidgetGtk {
     // let chrome crash to get a crash report and dump, and
     // SessionManager will terminate the session to logout.
     CHECK(kbd_grab_status_ != GDK_GRAB_SUCCESS ||
-          kbd_grab_status_ != GDK_GRAB_SUCCESS)
+          mouse_grab_status_ != GDK_GRAB_SUCCESS)
         << "Grab Broke. quitting";
   }
 
