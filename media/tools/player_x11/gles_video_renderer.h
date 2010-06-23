@@ -65,10 +65,6 @@ class GlesVideoRenderer : public media::VideoRendererBase {
   PFNEGLCREATEIMAGEKHRPROC egl_create_image_khr_;
   PFNEGLDESTROYIMAGEKHRPROC egl_destroy_image_khr_;
 
-  int width_;
-  int height_;
-  bool uses_egl_image_;
-
   Display* display_;
   Window window_;
 

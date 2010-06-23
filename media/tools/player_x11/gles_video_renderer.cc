@@ -35,10 +35,7 @@ GlesVideoRenderer::~GlesVideoRenderer() {
 // static
 bool GlesVideoRenderer::IsMediaFormatSupported(
     const media::MediaFormat& media_format) {
-  int width = 0;
-  int height = 0;
-  bool uses_egl_image_ = false;
-  return ParseMediaFormat(media_format, &width, &height, &uses_egl_image_);
+  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
 void GlesVideoRenderer::OnStop() {
@@ -136,10 +133,6 @@ static const char kFragmentShaderEgl[] =
 static const unsigned int kErrorSize = 4096;
 
 bool GlesVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
-  if (!ParseMediaFormat(decoder->media_format(), &width_, &height_,
-                        &uses_egl_image_))
-    return false;
-
   LOG(INFO) << "Initializing GLES Renderer...";
 
   // Save this instance.
@@ -173,7 +166,7 @@ void GlesVideoRenderer::Paint() {
     return;
   }
 
-  if (uses_egl_image_) {
+  if (uses_egl_image()) {
     if (media::VideoFrame::TYPE_EGL_IMAGE == video_frame->type()) {
 
       GLuint texture = FindTexture(video_frame);
@@ -248,7 +241,7 @@ GLuint GlesVideoRenderer::FindTexture(
 
 bool GlesVideoRenderer::InitializeGles() {
   // Resize the window to fit that of the video.
-  XResizeWindow(display_, window_, width_, height_);
+  XResizeWindow(display_, window_, width(), height());
 
   egl_display_ = eglGetDisplay(display_);
   if (eglGetError() != EGL_SUCCESS) {
@@ -328,13 +321,13 @@ bool GlesVideoRenderer::InitializeGles() {
     return false;
   }
 
-  EGLint width;
-  EGLint height;
-  eglQuerySurface(egl_display_, egl_surface_, EGL_WIDTH, &width);
-  eglQuerySurface(egl_display_, egl_surface_, EGL_HEIGHT, &height);
-  glViewport(0, 0, width_, height_);
+  EGLint surface_width;
+  EGLint surface_height;
+  eglQuerySurface(egl_display_, egl_surface_, EGL_WIDTH, &surface_width);
+  eglQuerySurface(egl_display_, egl_surface_, EGL_HEIGHT, &surface_height);
+  glViewport(0, 0, width(), height());
 
-  if (uses_egl_image_) {
+  if (uses_egl_image()) {
     CreateTextureAndProgramEgl();
     return true;
   }
@@ -404,8 +397,8 @@ void GlesVideoRenderer::CreateTextureAndProgramEgl() {
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        width_,
-        height_,
+        width(),
+        height(),
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -425,7 +418,7 @@ void GlesVideoRenderer::CreateTextureAndProgramEgl() {
     media::VideoFrame:: CreatePrivateFrame(
         media::VideoFrame::TYPE_EGL_IMAGE,
         media::VideoFrame::RGB565,
-        width_, height_, kZero, kZero,
+        width(), height(), kZero, kZero,
         egl_image,
         &video_frame);
     egl_frames_.push_back(std::make_pair(video_frame, texture));

@@ -68,10 +68,7 @@ X11VideoRenderer::~X11VideoRenderer() {
 // static
 bool X11VideoRenderer::IsMediaFormatSupported(
     const media::MediaFormat& media_format) {
-  int width = 0;
-  int height = 0;
-  bool uses_egl_image = false;
-  return ParseMediaFormat(media_format, &width, &height, &uses_egl_image);
+  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
 void X11VideoRenderer::OnStop() {
@@ -82,14 +79,10 @@ void X11VideoRenderer::OnStop() {
 }
 
 bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
-  if (!ParseMediaFormat(decoder->media_format(), &width_, &height_,
-                        &uses_egl_image_))
-    return false;
-
   LOG(INFO) << "Initializing X11 Renderer...";
 
   // Resize the window to fit that of the video.
-  XResizeWindow(display_, window_, width_, height_);
+  XResizeWindow(display_, window_, width(), height());
 
   // Testing XRender support. We'll use the very basic of XRender
   // so if it presents it is already good enough. We don't need
@@ -118,11 +111,11 @@ bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
                         DefaultDepth(display_, DefaultScreen(display_)),
                         ZPixmap,
                         0,
-                        static_cast<char*>(malloc(width_ * height_ * 4)),
-                        width_,
-                        height_,
+                        static_cast<char*>(malloc(width() * height() * 4)),
+                        width(),
+                        height(),
                         32,
-                        width_ * 4);
+                        width() * 4);
   DCHECK(image_);
 
   // Save this instance.
@@ -175,8 +168,8 @@ void X11VideoRenderer::Paint() {
     // Creates a XImage.
     XImage image;
     memset(&image, 0, sizeof(image));
-    image.width = width_;
-    image.height = height_;
+    image.width = width();
+    image.height = height();
     image.depth = 32;
     image.bits_per_pixel = 32;
     image.format = ZPixmap;
@@ -192,13 +185,13 @@ void X11VideoRenderer::Paint() {
     // Creates a pixmap and uploads from the XImage.
     unsigned long pixmap = XCreatePixmap(display_,
                                          window_,
-                                         width_,
-                                         height_,
+                                         width(),
+                                         height(),
                                          32);
     GC gc = XCreateGC(display_, pixmap, 0, NULL);
     XPutImage(display_, pixmap, gc, &image,
               0, 0, 0, 0,
-              width_, height_);
+              width(), height());
     XFreeGC(display_, gc);
 
     // Creates the picture representing the pixmap.
@@ -208,7 +201,7 @@ void X11VideoRenderer::Paint() {
     // Composite the picture over the picture representing the window.
     XRenderComposite(display_, PictOpSrc, picture, 0,
                      picture_, 0, 0, 0, 0, 0, 0,
-                     width_, height_);
+                     width(), height());
 
     XRenderFreePicture(display_, picture);
     XFreePixmap(display_, pixmap);
@@ -221,7 +214,7 @@ void X11VideoRenderer::Paint() {
   // to the window.
   GC gc = XCreateGC(display_, window_, 0, NULL);
   XPutImage(display_, window_, gc, image_,
-            0, 0, 0, 0, width_, height_);
+            0, 0, 0, 0, width(), height());
   XFlush(display_);
   XFreeGC(display_, gc);
 }

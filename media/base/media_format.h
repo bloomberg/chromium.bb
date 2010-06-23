@@ -47,6 +47,7 @@ class MediaFormat {
   // Common keys.
   static const char kMimeType[];
   static const char kURL[];
+  static const char kSurfaceType[];
   static const char kSurfaceFormat[];
   static const char kSampleRate[];
   static const char kSampleBits[];

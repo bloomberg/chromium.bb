@@ -50,10 +50,6 @@ class X11VideoRenderer : public media::VideoRendererBase {
   friend class scoped_refptr<X11VideoRenderer>;
   virtual ~X11VideoRenderer();
 
-  int width_;
-  int height_;
-  bool uses_egl_image_;
-
   Display* display_;
   Window window_;
 

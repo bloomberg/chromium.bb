@@ -95,19 +95,6 @@ void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,
     return;
   }
 
-  // Sets the output format.
-  if (supports_egl_image_) {
-    media_format_.SetAsString(MediaFormat::kMimeType,
-                              mime_type::kUncompressedVideoEglImage);
-  }
-  else {
-    media_format_.SetAsString(MediaFormat::kMimeType,
-                              mime_type::kUncompressedVideo);
-  }
-
-  media_format_.SetAsInteger(MediaFormat::kWidth, width_);
-  media_format_.SetAsInteger(MediaFormat::kHeight, height_);
-
   // Savs the demuxer stream.
   demuxer_stream_ = demuxer_stream;
 
@@ -139,8 +126,21 @@ void OmxVideoDecoder::InitCompleteTask(FilterCallback* callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Check the status of the decode engine.
-  if (omx_engine_->state() == VideoDecodeEngine::kError)
+  if (omx_engine_->state() == VideoDecodeEngine::kError) {
     host()->SetError(PIPELINE_ERROR_DECODE);
+  } else {
+    media_format_.SetAsString(MediaFormat::kMimeType,
+                              mime_type::kUncompressedVideo);
+    // TODO(jiesun): recycle OmxHeadType instead of copy back.
+    media_format_.SetAsInteger(MediaFormat::kSurfaceType,
+        supports_egl_image_ ? VideoFrame::TYPE_EGL_IMAGE
+                            : VideoFrame::TYPE_SYSTEM_MEMORY);
+    media_format_.SetAsInteger(MediaFormat::kWidth, width_);
+    media_format_.SetAsInteger(MediaFormat::kHeight, height_);
+    VideoFrame::Format format = omx_engine_->GetSurfaceFormat();
+    media_format_.SetAsInteger(MediaFormat::kSurfaceFormat,
+                               static_cast<int>(format));
+  }
 
   callback->Run();
   delete callback;

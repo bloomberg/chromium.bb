@@ -152,7 +152,9 @@ void OmxVideoDecodeEngine::Flush(Task* done_cb) {
 }
 
 VideoFrame::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
-  return VideoFrame::YV12;
+  // TODO(jiesun): Both OmxHeaderType and EGLImage surface type could have
+  // different surface formats.
+  return uses_egl_image_ ? VideoFrame::RGBA : VideoFrame::YV12;
 }
 
 VideoDecodeEngine::State OmxVideoDecodeEngine::state() const {

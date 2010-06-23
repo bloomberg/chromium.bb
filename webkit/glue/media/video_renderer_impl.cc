@@ -32,22 +32,12 @@ media::FilterFactory* VideoRendererImpl::CreateFactory(
 // static
 bool VideoRendererImpl::IsMediaFormatSupported(
     const media::MediaFormat& media_format) {
-  int width = 0;
-  int height = 0;
-  bool uses_egl_image = false;
-  return ParseMediaFormat(media_format, &width, &height, &uses_egl_image);
+  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
 bool VideoRendererImpl::OnInitialize(media::VideoDecoder* decoder) {
-  int width = 0;
-  int height = 0;
-  bool uses_egl_image = false;
-  if (!ParseMediaFormat(decoder->media_format(), &width, &height,
-                        &uses_egl_image))
-    return false;
-
-  video_size_.SetSize(width, height);
-  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  video_size_.SetSize(width(), height());
+  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width(), height());
   if (bitmap_.allocPixels(NULL, NULL)) {
     bitmap_.eraseRGB(0x00, 0x00, 0x00);
     return true;

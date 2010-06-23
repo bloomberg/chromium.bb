@@ -37,24 +37,14 @@ media::FilterFactory* IPCVideoRenderer::CreateFactory(
 // static
 bool IPCVideoRenderer::IsMediaFormatSupported(
     const media::MediaFormat& media_format) {
-  int width = 0;
-  int height = 0;
-  bool uses_egl_image = false;
-  return ParseMediaFormat(media_format, &width, &height, &uses_egl_image);
+  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
 bool IPCVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
-  int width = 0;
-  int height = 0;
-  bool uses_egl_image = false;
-  if (!ParseMediaFormat(decoder->media_format(), &width, &height,
-                        &uses_egl_image))
-    return false;
-
-  video_size_.SetSize(width, height);
+  video_size_.SetSize(width(), height());
 
   // TODO(scherkus): we're assuming YV12 here.
-  size_t size = (width * height) + ((width * height) >> 1);
+  size_t size = (width() * height()) + ((width() * height()) >> 1);
   uint32 epoch = static_cast<uint32>(reinterpret_cast<size_t>(this));
   transport_dib_.reset(TransportDIB::Create(size, epoch));
   CHECK(transport_dib_.get());

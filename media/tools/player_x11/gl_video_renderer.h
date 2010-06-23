@@ -49,10 +49,6 @@ class GlVideoRenderer : public media::VideoRendererBase {
   friend class scoped_refptr<GlVideoRenderer>;
   virtual ~GlVideoRenderer();
 
-  int width_;
-  int height_;
-  bool uses_egl_image_;
-
   Display* display_;
   Window window_;
 

@@ -44,15 +44,6 @@ const char kUncompressedAudio[]             = "audio/x-uncompressed";
 //   kHeight          Integer         Display height of the surface
 const char kUncompressedVideo[]             = "video/x-uncompressed";
 
-// Represents decoded video data in EGLImage, typically from OpenMAX video
-// decoder.
-// Other information, such as surface format (i.e., YV12), stride and planes are
-// included with the buffer itself and is not part of the MediaFormat.
-// Expected keys:
-//   kWidth           Integer         Display width of the surface
-//   kHeight          Integer         Display height of the surface
-const char kUncompressedVideoEglImage[]     = "video/x-uncompressed-eglimage";
-
 // Major types of media types begin with the prefix "audio/" or "video/".
 const char kMajorTypeVideo[]                = "video/";
 const char kMajorTypeAudio[]                = "audio/";
@@ -63,6 +54,7 @@ const char kMajorTypeAudio[]                = "audio/";
 const char MediaFormat::kMimeType[]         = "MimeType";
 const char MediaFormat::kURL[]              = "URL";
 const char MediaFormat::kSurfaceFormat[]    = "SurfaceFormat";
+const char MediaFormat::kSurfaceType[]      = "SurfaceType";
 const char MediaFormat::kSampleRate[]       = "SampleRate";
 const char MediaFormat::kSampleBits[]       = "SampleBits";
 const char MediaFormat::kChannels[]         = "Channels";
