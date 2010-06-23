@@ -342,8 +342,8 @@ PluginProcessHost::~PluginProcessHost() {
 bool PluginProcessHost::Init(const WebPluginInfo& info,
                              const std::wstring& locale) {
   info_ = info;
-  set_name(info_.name);
-  set_version(info_.version);
+  set_name(UTF16ToWideHack(info_.name));
+  set_version(UTF16ToWideHack(info_.version));
 
   if (!CreateChannel())
     return false;

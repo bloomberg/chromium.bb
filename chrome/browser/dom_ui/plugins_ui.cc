@@ -220,9 +220,9 @@ DictionaryValue* PluginsDOMHandler::CreatePluginDetailValue(
     const WebPluginInfo& plugin) {
   DictionaryValue* plugin_data = new DictionaryValue();
   plugin_data->SetString(L"path", plugin.path.value());
-  plugin_data->SetString(L"name", plugin.name);
-  plugin_data->SetString(L"version", plugin.version);
-  plugin_data->SetString(L"description", plugin.desc);
+  plugin_data->SetStringFromUTF16(L"name", plugin.name);
+  plugin_data->SetStringFromUTF16(L"version", plugin.version);
+  plugin_data->SetStringFromUTF16(L"description", plugin.desc);
   plugin_data->SetBoolean(L"enabled", plugin.enabled);
 
   ListValue* mime_types = new ListValue();
@@ -232,7 +232,7 @@ DictionaryValue* PluginsDOMHandler::CreatePluginDetailValue(
        ++type_it) {
     DictionaryValue* mime_type = new DictionaryValue();
     mime_type->SetString(L"mimeType", type_it->mime_type);
-    mime_type->SetString(L"description", type_it->description);
+    mime_type->SetStringFromUTF16(L"description", type_it->description);
 
     ListValue* file_extensions = new ListValue();
     for (std::vector<std::string>::const_iterator ext_it =
@@ -254,8 +254,8 @@ DictionaryValue* PluginsDOMHandler::CreatePluginSummaryValue(
     const WebPluginInfo& plugin) {
   DictionaryValue* plugin_data = new DictionaryValue();
   plugin_data->SetString(L"path", plugin.path.value());
-  plugin_data->SetString(L"name", plugin.name);
-  plugin_data->SetString(L"version", plugin.version);
+  plugin_data->SetStringFromUTF16(L"name", plugin.name);
+  plugin_data->SetStringFromUTF16(L"version", plugin.version);
   plugin_data->SetBoolean(L"enabled", plugin.enabled);
   return plugin_data;
 }

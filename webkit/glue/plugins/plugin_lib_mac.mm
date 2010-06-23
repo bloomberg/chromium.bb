@@ -97,7 +97,7 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
     }
 
     if (mime_desc)
-      mime.description = base::SysNSStringToWide(mime_desc);
+      mime.description = base::SysNSStringToUTF16(mime_desc);
     for (NSString* ext in mime_exts)
       mime.file_extensions.push_back(
           base::SysNSStringToUTF8([ext lowercaseString]));
@@ -116,16 +116,16 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
       CFSTR("WebPluginDescription"));
 
   if (plugin_name)
-    info->name = base::SysNSStringToWide(plugin_name);
+    info->name = base::SysNSStringToUTF16(plugin_name);
   else
-    info->name = UTF8ToWide(filename.BaseName().value());
+    info->name = UTF8ToUTF16(filename.BaseName().value());
   info->path = filename;
   if (plugin_vers)
-    info->version = base::SysNSStringToWide(plugin_vers);
+    info->version = base::SysNSStringToUTF16(plugin_vers);
   if (plugin_desc)
-    info->desc = base::SysNSStringToWide(plugin_desc);
+    info->desc = base::SysNSStringToUTF16(plugin_desc);
   else
-    info->desc = UTF8ToWide(filename.BaseName().value());
+    info->desc = UTF8ToUTF16(filename.BaseName().value());
   info->enabled = true;
 
   return true;
@@ -198,7 +198,7 @@ bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
     WebPluginMimeType mime;
     mime.mime_type = StringToLowerASCII(type_strings[2*i]);
     if (have_type_descs && i < type_descs.size())
-      mime.description = UTF8ToWide(type_descs[i]);
+      mime.description = UTF8ToUTF16(type_descs[i]);
     SplitString(StringToLowerASCII(type_strings[2*i+1]), ',',
                 &mime.file_extensions);
 
@@ -210,16 +210,16 @@ bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
       CFSTR("CFBundleShortVersionString"));
 
   if (have_plugin_descs && plugin_descs.size() > 1)
-    info->name = UTF8ToWide(plugin_descs[1]);
+    info->name = UTF8ToUTF16(plugin_descs[1]);
   else
-    info->name = UTF8ToWide(filename.BaseName().value());
+    info->name = UTF8ToUTF16(filename.BaseName().value());
   info->path = filename;
   if (plugin_vers)
-    info->version = base::SysNSStringToWide(plugin_vers);
+    info->version = base::SysNSStringToUTF16(plugin_vers);
   if (have_plugin_descs && plugin_descs.size() > 0)
-    info->desc = UTF8ToWide(plugin_descs[0]);
+    info->desc = UTF8ToUTF16(plugin_descs[0]);
   else
-    info->desc = UTF8ToWide(filename.BaseName().value());
+    info->desc = UTF8ToUTF16(filename.BaseName().value());
   info->enabled = true;
 
   return true;

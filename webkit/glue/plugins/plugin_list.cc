@@ -93,19 +93,19 @@ bool PluginList::ReadPluginInfo(const FilePath& filename,
 bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
                                      WebPluginInfo* info) {
   std::vector<std::string> mime_types, file_extensions;
-  std::vector<std::wstring> descriptions;
+  std::vector<string16> descriptions;
   SplitString(WideToUTF8(pvi.mime_types), '|', &mime_types);
   SplitString(WideToUTF8(pvi.file_extensions), '|', &file_extensions);
-  SplitString(pvi.type_descriptions, '|', &descriptions);
+  SplitString(WideToUTF16(pvi.type_descriptions), '|', &descriptions);
 
   info->mime_types.clear();
 
   if (mime_types.empty())
     return false;
 
-  info->name = pvi.product_name;
-  info->desc = pvi.file_description;
-  info->version = pvi.file_version;
+  info->name = WideToUTF16(pvi.product_name);
+  info->desc = WideToUTF16(pvi.file_description);
+  info->version = WideToUTF16(pvi.file_version);
   info->path = pvi.path;
   info->enabled = true;
 
@@ -121,8 +121,8 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
       // On Windows, the description likely has a list of file extensions
       // embedded in it (e.g. "SurfWriter file (*.swr)"). Remove an extension
       // list from the description if it is present.
-      size_t ext = mime_type.description.find(L"(*");
-      if (ext != std::wstring::npos) {
+      size_t ext = mime_type.description.find(ASCIIToUTF16("(*"));
+      if (ext != string16::npos) {
         if (ext > 1 && mime_type.description[ext -1] == ' ')
           ext--;
 

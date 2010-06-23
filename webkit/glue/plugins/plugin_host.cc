@@ -577,8 +577,8 @@ const char* NPN_UserAgent(NPP id) {
     plugin = FindInstance(id);
   if (plugin.get()) {
     WebPluginInfo plugin_info = plugin->plugin_lib()->plugin_info();
-    if (plugin_info.name == L"Silverlight Plug-In" &&
-        StartsWith(plugin_info.version, L"4.", false)) {
+    if (plugin_info.name == ASCIIToUTF16("Silverlight Plug-In") &&
+        StartsWith(plugin_info.version, ASCIIToUTF16("4."), false)) {
       return "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-us) "
           "AppleWebKit/534.1+ (KHTML, like Gecko) Version/5.0 Safari/533.16";
     }

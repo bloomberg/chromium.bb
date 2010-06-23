@@ -170,12 +170,12 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     const char* name = NULL;
     NP_GetValue(NULL, nsPluginVariable_NameString, &name);
     if (name)
-      info->name = UTF8ToWide(name);
+      info->name = UTF8ToUTF16(name);
 
     const char* description = NULL;
     NP_GetValue(NULL, nsPluginVariable_DescriptionString, &description);
     if (description)
-      info->desc = UTF8ToWide(description);
+      info->desc = UTF8ToUTF16(description);
   }
 
   // Intentionally not unloading the plugin here, it can lead to crashes.
@@ -216,9 +216,9 @@ void PluginLib::ParseMIMEDescription(
     // It's ok for end to run off the string here.  If there's no
     // trailing semicolon we consume the remainder of the string.
     if (end != std::string::npos) {
-      mime_type.description = UTF8ToWide(description.substr(ofs, end - ofs));
+      mime_type.description = UTF8ToUTF16(description.substr(ofs, end - ofs));
     } else {
-      mime_type.description = UTF8ToWide(description.substr(ofs));
+      mime_type.description = UTF8ToUTF16(description.substr(ofs));
     }
     mime_types->push_back(mime_type);
     if (end == std::string::npos)

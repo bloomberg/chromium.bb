@@ -342,8 +342,8 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   // expensive extra copy for us).
   if (!transparent_ && mime_type_ == "application/x-shockwave-flash") {
     bool force_opaque_mode = false;
-    if (StartsWith(info_.version, L"10.0", false) ||
-        StartsWith(info_.version, L"9.", false)) {
+    if (StartsWith(info_.version, ASCIIToUTF16("10.0"), false) ||
+        StartsWith(info_.version, ASCIIToUTF16("9."), false)) {
       // Older versions of Flash don't support CA (and they assume QuickDraw
       // support, so we can't rely on negotiation to do the right thing).
       force_opaque_mode = true;
@@ -1542,7 +1542,7 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
   // Need to update geometry synchronously with WMP, otherwise if a site
   // scripts the plugin to start playing while it's in the middle of handling
   // an update geometry message, videos don't play.  See urls in bug 20260.
-  if (info_.name.find(L"Windows Media Player") != std::wstring::npos)
+  if (info_.name.find(ASCIIToUTF16("Windows Media Player")) != string16::npos)
     return true;
 
   // The move networks plugin needs to be informed of geometry updates

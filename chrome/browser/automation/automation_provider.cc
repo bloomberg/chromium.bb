@@ -2105,10 +2105,10 @@ void AutomationProvider::GetPluginsInfo(Browser* browser,
        it != plugins.end();
        ++it) {
     DictionaryValue* item = new DictionaryValue;
-    item->SetString(L"name", it->name);
+    item->SetStringFromUTF16(L"name", it->name);
     item->SetString(L"path", it->path.value());
-    item->SetString(L"version", it->version);
-    item->SetString(L"desc", it->desc);
+    item->SetStringFromUTF16(L"version", it->version);
+    item->SetStringFromUTF16(L"desc", it->desc);
     item->SetBoolean(L"enabled", it->enabled);
     // Add info about mime types.
     ListValue* mime_types = new ListValue();
@@ -2118,7 +2118,7 @@ void AutomationProvider::GetPluginsInfo(Browser* browser,
          ++type_it) {
       DictionaryValue* mime_type = new DictionaryValue();
       mime_type->SetString(L"mimeType", type_it->mime_type);
-      mime_type->SetString(L"description", type_it->description);
+      mime_type->SetStringFromUTF16(L"description", type_it->description);
 
       ListValue* file_extensions = new ListValue();
       for (std::vector<std::string>::const_iterator ext_it =

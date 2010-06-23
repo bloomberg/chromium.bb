@@ -20,22 +20,22 @@ struct WebPluginMimeType {
   std::vector<std::string> file_extensions;
 
   // Description of the mime type.
-  std::wstring description;
+  string16 description;
 };
 
 // Describes an available NPAPI plugin.
 struct WebPluginInfo {
   // The name of the plugin (i.e. Flash).
-  std::wstring name;
+  string16 name;
 
   // The path to the plugin file (DLL/bundle/library).
   FilePath path;
 
   // The version number of the plugin file (may be OS-specific)
-  std::wstring version;
+  string16 version;
 
   // A description of the plugin that we get from its version info.
-  std::wstring desc;
+  string16 desc;
 
   // A list of all the mime types that this plugin supports.
   std::vector<WebPluginMimeType> mime_types;

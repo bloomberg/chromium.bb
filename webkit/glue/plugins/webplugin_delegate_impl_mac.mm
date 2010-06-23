@@ -317,7 +317,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
     // TODO(stuartmorgan): Test other QuickDraw plugins that we support and
     // see if any others can use the fast path.
     const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-    if (plugin_info.name.find(L"QuickTime") != std::wstring::npos)
+    if (plugin_info.name.find(ASCIIToUTF16("QuickTime")) != string16::npos)
       quirks_ |= PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH;
   }
 #endif
@@ -410,7 +410,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
 #ifndef NP_NO_QUICKDRAW
   if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
     const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-    if (plugin_info.name.find(L"QuickTime") != std::wstring::npos)
+    if (plugin_info.name.find(ASCIIToUTF16("QuickTime")) != string16::npos)
       WindowlessSetWindow();
   }
 #endif

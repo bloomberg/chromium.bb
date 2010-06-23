@@ -102,7 +102,7 @@ PluginThread::PluginThread()
     plugin->NP_Initialize();
 
 #if defined(OS_MACOSX)
-    scoped_cftyperef<CFStringRef> plugin_name(base::SysWideToCFStringRef(
+    scoped_cftyperef<CFStringRef> plugin_name(base::SysUTF16ToCFStringRef(
         plugin->plugin_info().name));
     scoped_cftyperef<CFStringRef> app_name(base::SysUTF16ToCFStringRef(
         l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));

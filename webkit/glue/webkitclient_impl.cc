@@ -194,16 +194,14 @@ void WebKitClientImpl::getPluginList(bool refresh,
     const WebPluginInfo& plugin = plugins[i];
 
     builder->addPlugin(
-        WideToUTF16Hack(plugin.name),
-        WideToUTF16Hack(plugin.desc),
+        plugin.name, plugin.desc,
         FilePathStringToWebString(plugin.path.BaseName().value()));
 
     for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
       const WebPluginMimeType& mime_type = plugin.mime_types[j];
 
       builder->addMediaTypeToLastPlugin(
-          WebString::fromUTF8(mime_type.mime_type),
-          WideToUTF16Hack(mime_type.description));
+          WebString::fromUTF8(mime_type.mime_type), mime_type.description);
 
       for (size_t k = 0; k < mime_type.file_extensions.size(); ++k) {
         builder->addFileExtensionToLastMediaType(
