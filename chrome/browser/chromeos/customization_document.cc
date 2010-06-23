@@ -20,6 +20,7 @@ namespace {
 const wchar_t kVersionAttr[] = L"version";
 const wchar_t kProductSkuAttr[] = L"product_sku";
 const wchar_t kInitialLocaleAttr[] = L"initial_locale";
+const wchar_t kInitialTimezoneAttr[] = L"initial_timezone";
 const wchar_t kBackgroundColorAttr[] = L"background_color";
 const wchar_t kRegistrationUrlAttr[] = L"registration_url";
 const wchar_t kSetupContentAttr[] = L"setup_content";
@@ -84,6 +85,9 @@ bool StartupCustomizationDocument::ParseFromJsonValue(
   // Optional fields.
   initial_locale_.clear();
   root->GetString(kInitialLocaleAttr, &initial_locale_);
+
+  initial_timezone_.clear();
+  root->GetString(kInitialTimezoneAttr, &initial_timezone_);
 
   std::string background_color_string;
   root->GetString(kBackgroundColorAttr, &background_color_string);

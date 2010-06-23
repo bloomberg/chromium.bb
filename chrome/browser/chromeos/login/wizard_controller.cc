@@ -29,15 +29,18 @@
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/accelerator.h"
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
+#include "unicode/timezone.h"
 
 namespace {
 
@@ -236,14 +239,6 @@ void WizardController::Init(const std::string& first_screen_name,
   if (chromeos::UserManager::Get()->GetUsers().empty() ||
       first_screen_name == kOutOfBoxScreenName) {
     is_out_of_box_ = true;
-  }
-
-  // Switch to initial locale if specified by customization.
-  if (customization_ != NULL) {
-    const std::string locale = customization_->initial_locale();
-    if (!locale.empty()) {
-      chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
-    }
   }
 
   ShowFirstScreen(first_screen_name);
@@ -578,6 +573,27 @@ void ShowLoginWizard(const std::string& first_screen_name,
             switches::kStartupManifest);
     bool manifest_loaded = customization->LoadManifestFromFile(manifest_path);
     DCHECK(manifest_loaded) << manifest_path.value();
+  }
+
+  // Do UX customizations if needed.
+  if (customization != NULL) {
+    // Switch to initial locale if specified by customization.
+    const std::string locale = customization->initial_locale();
+    if (!locale.empty()) {
+      chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
+    }
+
+    // Set initial timezone if specified by customization.
+    const std::string timezone_name = customization->initial_timezone();
+    if (!timezone_name.empty()) {
+      icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
+          icu::UnicodeString::fromUTF8(timezone_name));
+      icu::TimeZone::adoptDefault(timezone);
+      // Save timezone to default profile preferences.
+      PrefService* prefs = ProfileManager::GetDefaultProfile()->GetPrefs();
+      prefs->SetString(prefs::kTimeZone, UTF8ToWide(timezone_name));
+      prefs->SavePersistentPrefs();
+    }
   }
 
   // Create and show the wizard.

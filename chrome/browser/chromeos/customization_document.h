@@ -64,6 +64,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
 
   const std::string& product_sku() const { return product_sku_; }
   const std::string& initial_locale() const { return initial_locale_; }
+  const std::string& initial_timezone() const { return initial_timezone_; }
   SkColor background_color() const { return background_color_; }
   const std::string& registration_url() const { return registration_url_; }
 
@@ -77,6 +78,9 @@ class StartupCustomizationDocument : public CustomizationDocument {
 
   // Initial locale for the OOBE wizard.
   std::string initial_locale_;
+
+  // Initial timezone for clock setting.
+  std::string initial_timezone_;
 
   // OOBE wizard and login screen background color.
   SkColor background_color_;

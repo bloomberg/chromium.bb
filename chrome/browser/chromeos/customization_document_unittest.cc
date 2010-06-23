@@ -13,6 +13,7 @@ const char kGoodStartupManifest[] =
     "  \"version\": \"1.0\","
     "  \"product_sku\" : \"SKU\","
     "  \"initial_locale\" : \"en_US\","
+    "  \"initial_timezone\" : \"US/Pacific\","
     "  \"background_color\" : \"#880088\","
     "  \"registration_url\" : \"http://www.google.com\","
     "  \"setup_content\" : ["
@@ -99,6 +100,7 @@ TEST_F(StartupCustomizationDocumentTest, LoadGoodManifestFromString) {
   EXPECT_EQ(customization_.version(), "1.0");
   EXPECT_EQ(customization_.product_sku(), "SKU");
   EXPECT_EQ(customization_.initial_locale(), "en_US");
+  EXPECT_EQ(customization_.initial_timezone(), "US/Pacific");
   EXPECT_EQ(customization_.background_color(),
             SkColorSetRGB(0x88, 0x00, 0x88));
   EXPECT_EQ(customization_.registration_url(), "http://www.google.com");
