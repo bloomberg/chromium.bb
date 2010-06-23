@@ -1212,3 +1212,29 @@
    ...
    fun:_ZN12_GLOBAL__N_*ContentSettingsDialogControllerTest_*
 }
+{
+   bug_47330
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base17LoadNativeLibraryERK8FilePath
+   fun:_ZN5NPAPI9PluginLib4LoadEv
+   fun:_ZN5NPAPI9PluginLib13NP_InitializeEv
+   fun:_ZN21WebPluginDelegateImpl6CreateERK8FilePathRKSsy
+   fun:_ZN19TestWebViewDelegate20CreatePluginDelegateERK8FilePathRKSs
+   fun:_ZN11webkit_glue13WebPluginImpl10initializeEPN6WebKit18WebPluginContainerE
+   fun:_ZN6WebKit21FrameLoaderClientImpl12createPluginERKN7WebCore7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINS1_6StringELm0EEESF_RKSC_b
+   fun:_ZN7WebCore14SubframeLoader10loadPluginEPNS_20RenderEmbeddedObjectERKNS_4KURLERKNS_6StringERKN3WTF6VectorIS6_Lm0EEESD_b
+   fun:_ZN7WebCore14SubframeLoader13requestObjectEPNS_20RenderEmbeddedObjectERKNS_6StringERKNS_12AtomicStringES5_RKN3WTF6VectorIS3_Lm0EEESD_
+   fun:_ZN7WebCore20RenderEmbeddedObject12updateWidgetEb
+   fun:_ZN7WebCore9FrameView13updateWidgetsEv
+   fun:_ZN7WebCore9FrameView22performPostLayoutTasksEv
+   fun:_ZN7WebCore9FrameView6layoutEb
+   fun:_ZN7WebCore8Document13implicitCloseEv
+   fun:_ZN7WebCore11FrameLoader22checkCallImplicitCloseEv
+   fun:_ZN7WebCore11FrameLoader14checkCompletedEv
+   fun:_ZN7WebCore11FrameLoader15finishedParsingEv
+   fun:_ZN7WebCore8Document15finishedParsingEv
+   fun:_ZN7WebCore25LegacyHTMLTreeConstructor8finishedEv
+   fun:_ZN7WebCore16HTML5TreeBuilder8finishedEv
+   fun:_ZN7WebCore19HTML5DocumentParser3endEv
+}
