@@ -177,11 +177,6 @@ ExpectationSet MockWebBrowserEventSink::ExpectNewWindowWithIE(
 
 }  // namespace chrome_frame_test
 
-ACTION_P3(DelayCloseBrowserMock, loop, delay, mock) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock,
-      &MockWebBrowserEventSink::CloseWebBrowser), delay);
-}
-
 ACTION_P(SetFocusToChrome, mock) {
   mock->SetFocusToChrome();
 }

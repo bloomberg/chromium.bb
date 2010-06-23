@@ -143,13 +143,48 @@ TEST_F(NoInterferenceTest, FLAKY_JavascriptWindowOpen) {
           DelaySendMouseClickToIE(&mock_, &loop_, 0, 100, 100,
                                   simulate_input::LEFT)));
 
-  mock_.ExpectNewWindowWithIE(empty_page_url(), &new_window_mock);
-  EXPECT_CALL(new_window_mock, OnIELoad(testing::StrCaseEq(empty_page_url())))
+  EXPECT_CALL(mock_, OnNewWindow3(_, _, _, _, _));
+
+  EXPECT_CALL(mock_, OnNewBrowserWindow(_, _))
+      .WillOnce(testing::WithArgs<0>(testing::Invoke(CreateFunctor(
+          &new_window_mock, &MockWebBrowserEventSink::Attach))));
+
+  EXPECT_CALL(new_window_mock, OnBeforeNavigate2(_,
+                  testing::Field(&VARIANT::bstrVal,
+                  testing::StrCaseEq(empty_page_url())),
+                  _, _, _, _, _));
+
+  EXPECT_CALL(new_window_mock, OnFileDownload(VARIANT_TRUE, _))
+      .Times(testing::AnyNumber());
+
+  EXPECT_CALL(new_window_mock, OnNavigateComplete2(_,
+                            testing::Field(&VARIANT::bstrVal,
+                            testing::StrCaseEq(empty_page_url()))))
       .WillOnce(testing::DoAll(
-          VerifyAddressBarUrl(&new_window_mock),
-          CloseBrowserMock(&new_window_mock)));
+          testing::InvokeWithoutArgs(CreateFunctor(&new_window_mock,
+              &chrome_frame_test::MockWebBrowserEventSink::ExpectAddressBarUrl,
+              empty_page_url())),
+          DelayCloseBrowserMock(&loop_, 2000, &new_window_mock)));
+
+  if (chrome_frame_test::GetInstalledIEVersion() == IE_7) {
+    // On IE7 the DocumentComplete fires twice for new windows. Hack to account
+    // for that.
+    testing::InSequence seq;
+    EXPECT_CALL(new_window_mock,
+                OnIELoad(testing::StrCaseEq(empty_page_url())))
+        .Times(1);
+
+    EXPECT_CALL(new_window_mock,
+                OnIELoad(testing::StrCaseEq(empty_page_url())))
+        .Times(1);
+  } else {
+    EXPECT_CALL(new_window_mock,
+                OnIELoad(testing::StrCaseEq(empty_page_url())))
+        .Times(1);
+  }
+
   EXPECT_CALL(new_window_mock, OnQuit())
-      .WillOnce(CloseBrowserMock(&mock_));
+      .WillOnce(DelayCloseBrowserMock(&loop_, 2000, &mock_));
 
   LaunchIEAndNavigate(kWindowOpenUrl);
 }
@@ -228,10 +263,27 @@ TEST_F(NoInterferenceTest, FLAKY_SelectContextMenuOpenInNewWindow) {
           SelectItem(&loop_, 1500, open_new_window_index)));
 
   mock_.ExpectNewWindowWithIE(empty_page_url(), &new_window_mock);
-  // TODO(kkania): Verifying the address bar is flaky with this, at least
-  // on XP ie6. Fix.
-  EXPECT_CALL(new_window_mock, OnIELoad(testing::StrCaseEq(empty_page_url())))
-      .WillOnce(CloseBrowserMock(&new_window_mock));
+  if (chrome_frame_test::GetInstalledIEVersion() == IE_7) {
+    // On IE7 the DocumentComplete fires twice for new windows. Hack to account
+    // for that.
+    testing::InSequence seq;
+    EXPECT_CALL(new_window_mock,
+                OnIELoad(testing::StrCaseEq(empty_page_url())))
+        .Times(1);
+
+    // TODO(kkania): Verifying the address bar is flaky with this, at least
+    // on XP ie6. Fix.
+    EXPECT_CALL(new_window_mock,
+                OnIELoad(testing::StrCaseEq(empty_page_url())))
+        .WillOnce(DelayCloseBrowserMock(&loop_, 2000, &new_window_mock));
+  } else {
+    // TODO(kkania): Verifying the address bar is flaky with this, at least
+    // on XP ie6. Fix.
+    EXPECT_CALL(new_window_mock,
+                OnIELoad(testing::StrCaseEq(empty_page_url())))
+        .WillOnce(DelayCloseBrowserMock(&loop_, 2000, &new_window_mock));
+  }
+
   EXPECT_CALL(new_window_mock, OnQuit()).WillOnce(CloseBrowserMock(&mock_));
 
   LaunchIEAndNavigate(link_page_url());

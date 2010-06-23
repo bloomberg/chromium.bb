@@ -128,6 +128,11 @@ ACTION_P4(DelaySendChar, loop, delay, c, mod) {
       simulate_input::SendCharA, c, mod), delay);
 }
 
+ACTION_P3(DelayCloseBrowserMock, loop, delay, mock) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock,
+      &MockWebBrowserEventSink::CloseWebBrowser), delay);
+}
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_MOCK_WITH_WEB_SERVER_H_
