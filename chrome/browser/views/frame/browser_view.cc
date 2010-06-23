@@ -67,7 +67,7 @@
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #include "chrome/browser/aeropeek_manager.h"
-#include "chrome/browser/jumplist.h"
+#include "chrome/browser/jumplist_win.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/views/accelerator_table_gtk.h"
