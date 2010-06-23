@@ -166,17 +166,11 @@ TEST_F(NoInterferenceTest, FLAKY_JavascriptWindowOpen) {
               empty_page_url())),
           DelayCloseBrowserMock(&loop_, 2000, &new_window_mock)));
 
-  if (chrome_frame_test::GetInstalledIEVersion() != IE_6) {
-    // On IE7/8 the DocumentComplete at times fires twice for new windows. Hack
-    // to account for that.
-    EXPECT_CALL(new_window_mock,
-                OnIELoad(testing::StrCaseEq(empty_page_url())))
-        .Times(testing::AtMost(2));
-  } else {
-    EXPECT_CALL(new_window_mock,
-                OnIELoad(testing::StrCaseEq(empty_page_url())))
-        .Times(1);
-  }
+  // The DocumentComplete at times fires twice for new windows. Hack to account
+  // for that.
+  EXPECT_CALL(new_window_mock,
+              OnIELoad(testing::StrCaseEq(empty_page_url())))
+      .Times(testing::AtMost(2));
 
   EXPECT_CALL(new_window_mock, OnQuit())
       .WillOnce(DelayCloseBrowserMock(&loop_, 2000, &mock_));
@@ -258,22 +252,14 @@ TEST_F(NoInterferenceTest, FLAKY_SelectContextMenuOpenInNewWindow) {
           SelectItem(&loop_, 1500, open_new_window_index)));
 
   mock_.ExpectNewWindowWithIE(empty_page_url(), &new_window_mock);
-  if (chrome_frame_test::GetInstalledIEVersion() != IE_6) {
-    // On IE6/7 the DocumentComplete at times fires twice for new windows. Hack
-    // to account for that.
-    // TODO(kkania): Verifying the address bar is flaky with this, at least
-    // on XP ie6. Fix.
-    EXPECT_CALL(new_window_mock,
-                OnIELoad(testing::StrCaseEq(empty_page_url())))
-        .Times(testing::AtMost(2))
-        .WillOnce(DelayCloseBrowserMock(&loop_, 2000, &new_window_mock));
-  } else {
-    // TODO(kkania): Verifying the address bar is flaky with this, at least
-    // on XP ie6. Fix.
-    EXPECT_CALL(new_window_mock,
-                OnIELoad(testing::StrCaseEq(empty_page_url())))
-        .WillOnce(DelayCloseBrowserMock(&loop_, 2000, &new_window_mock));
-  }
+  // The DocumentComplete at times fires twice for new windows. Hack to account
+  // for that.
+  // TODO(kkania): Verifying the address bar is flaky with this, at least
+  // on XP ie6. Fix.
+  EXPECT_CALL(new_window_mock,
+              OnIELoad(testing::StrCaseEq(empty_page_url())))
+      .Times(testing::AtMost(2))
+      .WillOnce(DelayCloseBrowserMock(&loop_, 2000, &new_window_mock));
 
   EXPECT_CALL(new_window_mock, OnQuit()).WillOnce(CloseBrowserMock(&mock_));
 
