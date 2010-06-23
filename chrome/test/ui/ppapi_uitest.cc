@@ -75,8 +75,12 @@ class PPAPITest : public UITest {
   }
 };
 
-// TODO(brettw) fails on Mac, Linux 64 & Windows for unknown reasons.
+#if defined(OS_MACOSX)
+// TODO(brettw) this fails on Mac for unknown reasons.
+TEST_F(PPAPITest, DISABLED_DeviceContext2D) {
+#else
 TEST_F(PPAPITest, DeviceContext2D) {
+#endif
   RunTest(FILE_PATH_LITERAL("test_device_context_2d.html"));
 }
 
