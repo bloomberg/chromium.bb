@@ -85,6 +85,7 @@ extern const char kChromeUINewTabHost[];
 extern const char kChromeUIOptionsHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
+extern const char kChromeUIRemotingHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUIThumbnailPath[];
@@ -94,9 +95,9 @@ extern const char kChromeUIThemePath[];
 extern const char kSyncResourcesHost[];
 extern const char kSyncGaiaLoginPath[];
 extern const char kSyncMergeAndSyncPath[];
-extern const char kSyncThrobberPath[];
-extern const char kSyncSetupFlowPath[];
 extern const char kSyncSetupDonePath[];
+extern const char kSyncSetupFlowPath[];
+extern const char kSyncThrobberPath[];
 
 // AppCache related URL.
 extern const char kAppCacheViewInternalsURL[];

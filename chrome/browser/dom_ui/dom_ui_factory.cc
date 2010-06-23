@@ -14,8 +14,9 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/dom_ui/plugins_ui.h"
 #include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/browser/dom_ui/remoting_ui.h"
+#include "chrome/browser/dom_ui/plugins_ui.h"
 #include "chrome/browser/dom_ui/slideshow_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -112,6 +113,10 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
     return &NewDOMUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewDOMUI<PluginsUI>;
+#if defined(ENABLE_REMOTING)
+  if (url.host() == chrome::kChromeUIRemotingHost)
+    return &NewDOMUI<RemotingUI>;
+#endif
 
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIFileBrowseHost)
@@ -185,11 +190,16 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
   if (page_url.host() == chrome::kChromeUIHistory2Host)
     return HistoryUI2::GetFaviconResourceBytes();
 
+  if (page_url.host() == chrome::kChromeUIOptionsHost)
+    return OptionsUI::GetFaviconResourceBytes();
+
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes();
 
-  if (page_url.host() == chrome::kChromeUIOptionsHost)
-    return OptionsUI::GetFaviconResourceBytes();
+#if defined(ENABLE_REMOTING)
+  if (page_url.host() == chrome::kChromeUIRemotingHost)
+    return RemotingUI::GetFaviconResourceBytes();
+#endif
 
   return NULL;
 }
