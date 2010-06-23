@@ -934,6 +934,10 @@ GtkWindow* GetDialogTransientParent(GtkWindow* dialog) {
 }
 
 void ShowDialog(GtkWidget* dialog) {
+  // Make sure all controls are visible so that we get correct size.
+  gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
+
+  // Get dialog window size.
   gint width = 0;
   gint height = 0;
   gtk_window_get_size(GTK_WINDOW(dialog), &width, &height);

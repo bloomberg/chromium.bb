@@ -168,7 +168,7 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
         g_object_unref(pixbuf);
     }
   }
-  gtk_widget_show_all(GTK_WIDGET(dialog_));
+  gtk_util::ShowDialog(GTK_WIDGET(dialog_));
 }
 
 void HungRendererDialogGtk::EndForTabContents(TabContents* contents) {
