@@ -49,6 +49,7 @@ const char kConsoleTestPage[] = "files/devtools/console_test_page.html";
 const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
 const char kEvalTestPage[] = "files/devtools/eval_test_page.html";
 const char kJsPage[] = "files/devtools/js_page.html";
+const char kHeapProfilerPage[] = "files/devtools/heap_profiler.html";
 const char kPauseOnExceptionTestPage[] =
     "files/devtools/pause_on_exception.html";
 const char kPauseWhenLoadingDevTools[] =
@@ -306,6 +307,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCachedResourceMimeType) {
 // Tests profiler panel.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
+}
+
+// Tests heap profiler.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHeapProfiler) {
+  RunTest("testHeapProfiler", kHeapProfilerPage);
 }
 
 // Tests scripts panel showing.
