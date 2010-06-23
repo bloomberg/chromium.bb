@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 #include "base/eintr_wrapper.h"
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "skia/ext/platform_canvas.h"
@@ -47,7 +48,8 @@ TransportDIB* TransportDIB::Map(TransportDIB::Handle handle) {
   if ((fstat(handle.fd, &st) != 0) ||
       (!dib->shared_memory_.Map(st.st_size))) {
     delete dib;
-    HANDLE_EINTR(close(handle.fd));
+    if (HANDLE_EINTR(close(handle.fd)) < 0)
+      PLOG(ERROR) << "close";
     return NULL;
   }
 

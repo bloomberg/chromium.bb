@@ -296,7 +296,8 @@ void RenderWidgetHelper::FreeTransportDIB(TransportDIB::Id dib_id) {
     i = allocated_dibs_.find(dib_id);
 
   if (i != allocated_dibs_.end()) {
-    HANDLE_EINTR(close(i->second));
+    if (HANDLE_EINTR(close(i->second)) < 0)
+      PLOG(ERROR) << "close";
     allocated_dibs_.erase(i);
   } else {
     DLOG(WARNING) << "Renderer asked us to free unknown transport DIB";
@@ -306,7 +307,8 @@ void RenderWidgetHelper::FreeTransportDIB(TransportDIB::Id dib_id) {
 void RenderWidgetHelper::ClearAllocatedDIBs() {
   for (std::map<TransportDIB::Id, int>::iterator
        i = allocated_dibs_.begin(); i != allocated_dibs_.end(); ++i) {
-    HANDLE_EINTR(close(i->second));
+    if (HANDLE_EINTR(close(i->second)) < 0)
+      PLOG(ERROR) << "close: " << i->first;
   }
 
   allocated_dibs_.clear();

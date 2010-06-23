@@ -93,7 +93,8 @@ class PipeMap {
 
     ChannelToFDMap::iterator i = map_.find(channel_id);
     if (i != map_.end()) {
-      HANDLE_EINTR(close(i->second));
+      if (HANDLE_EINTR(close(i->second)) < 0)
+        PLOG(ERROR) << "close";
       map_.erase(i);
     }
   }
@@ -155,7 +156,8 @@ bool CreateServerFifo(const std::string& pipe_name, int* server_listen_fd) {
 
   // Make socket non-blocking
   if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
-    HANDLE_EINTR(close(fd));
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
@@ -173,14 +175,16 @@ bool CreateServerFifo(const std::string& pipe_name, int* server_listen_fd) {
   // Bind the socket.
   if (bind(fd, reinterpret_cast<const sockaddr*>(&unix_addr),
            unix_addr_len) != 0) {
-    HANDLE_EINTR(close(fd));
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
   // Start listening on the socket.
   const int listen_queue_length = 1;
   if (listen(fd, listen_queue_length) != 0) {
-    HANDLE_EINTR(close(fd));
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
@@ -196,7 +200,8 @@ bool ServerAcceptFifoConnection(int server_listen_fd, int* server_socket) {
   if (accept_fd < 0)
     return false;
   if (fcntl(accept_fd, F_SETFL, O_NONBLOCK) == -1) {
-    HANDLE_EINTR(close(accept_fd));
+    if (HANDLE_EINTR(close(accept_fd)) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
@@ -218,7 +223,8 @@ bool ClientConnectToFifo(const std::string &pipe_name, int* client_socket) {
   // Make socket non-blocking
   if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
     LOG(ERROR) << "fcntl failed";
-    HANDLE_EINTR(close(fd));
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
@@ -233,7 +239,8 @@ bool ClientConnectToFifo(const std::string &pipe_name, int* client_socket) {
 
   if (HANDLE_EINTR(connect(fd, reinterpret_cast<sockaddr*>(&server_unix_addr),
                            server_unix_addr_len)) != 0) {
-    HANDLE_EINTR(close(fd));
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
@@ -315,8 +322,10 @@ bool SocketPair(int* fd1, int* fd2) {
   if (fcntl(pipe_fds[0], F_SETFL, O_NONBLOCK) == -1 ||
       fcntl(pipe_fds[1], F_SETFL, O_NONBLOCK) == -1) {
     PLOG(ERROR) << "fcntl(O_NONBLOCK)";
-    HANDLE_EINTR(close(pipe_fds[0]));
-    HANDLE_EINTR(close(pipe_fds[1]));
+    if (HANDLE_EINTR(close(pipe_fds[0])) < 0)
+      PLOG(ERROR) << "close";
+    if (HANDLE_EINTR(close(pipe_fds[1])) < 0)
+      PLOG(ERROR) << "close";
     return false;
   }
 
@@ -534,7 +543,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
                        << " cmsg_len:" << cmsg->cmsg_len
                        << " fd:" << pipe_;
             for (unsigned i = 0; i < num_wire_fds; ++i)
-              HANDLE_EINTR(close(wire_fds[i]));
+              if (HANDLE_EINTR(close(wire_fds[i])) < 0)
+                PLOG(ERROR) << "close" << i;
             return false;
           }
           break;
@@ -614,7 +624,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
                                  << " cmsg_len:" << cmsg->cmsg_len
                                  << " fd:" << pipe_;
                       for (unsigned i = 0; i < num_wire_fds; ++i)
-                        HANDLE_EINTR(close(wire_fds[i]));
+                        if (HANDLE_EINTR(close(wire_fds[i])) < 0)
+                          PLOG(ERROR) << "close" << i;
                       return false;
                     }
                     break;
@@ -660,7 +671,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
 #endif
             // close the existing file descriptors so that we don't leak them
             for (unsigned i = fds_i; i < num_fds; ++i)
-              HANDLE_EINTR(close(fds[i]));
+              if (HANDLE_EINTR(close(fds[i])) < 0)
+                PLOG(ERROR) << "close" << i;
             input_overflow_fds_.clear();
             // abort the connection
             return false;
@@ -993,7 +1005,8 @@ void Channel::ChannelImpl::Close() {
   server_listen_connection_watcher_.StopWatchingFileDescriptor();
 
   if (server_listen_pipe_ != -1) {
-    HANDLE_EINTR(close(server_listen_pipe_));
+    if (HANDLE_EINTR(close(server_listen_pipe_)) < 0)
+      PLOG(ERROR) << "close";
     server_listen_pipe_ = -1;
   }
 
@@ -1001,7 +1014,8 @@ void Channel::ChannelImpl::Close() {
   read_watcher_.StopWatchingFileDescriptor();
   write_watcher_.StopWatchingFileDescriptor();
   if (pipe_ != -1) {
-    HANDLE_EINTR(close(pipe_));
+    if (HANDLE_EINTR(close(pipe_)) < 0)
+      PLOG(ERROR) << "close";
     pipe_ = -1;
   }
   if (client_pipe_ != -1) {
@@ -1010,11 +1024,13 @@ void Channel::ChannelImpl::Close() {
   }
 #if !defined(OS_MACOSX)
   if (fd_pipe_ != -1) {
-    HANDLE_EINTR(close(fd_pipe_));
+    if (HANDLE_EINTR(close(fd_pipe_)) < 0)
+      PLOG(ERROR) << "close";
     fd_pipe_ = -1;
   }
   if (remote_fd_pipe_ != -1) {
-    HANDLE_EINTR(close(remote_fd_pipe_));
+    if (HANDLE_EINTR(close(remote_fd_pipe_)) < 0)
+      PLOG(ERROR) << "close";
     remote_fd_pipe_ = -1;
   }
 #endif
@@ -1033,7 +1049,8 @@ void Channel::ChannelImpl::Close() {
   // Close any outstanding, received file descriptors
   for (std::vector<int>::iterator
        i = input_overflow_fds_.begin(); i != input_overflow_fds_.end(); ++i) {
-    HANDLE_EINTR(close(*i));
+    if (HANDLE_EINTR(close(*i)) < 0)
+      PLOG(ERROR) << "close";
   }
   input_overflow_fds_.clear();
 }
