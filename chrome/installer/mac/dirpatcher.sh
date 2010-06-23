@@ -91,9 +91,12 @@ GOOBSPATCH="$(find_tool goobspatch)"
 readonly GOOBSPATCH
 readonly BUNZIP2="bunzip2"
 readonly GUNZIP="gunzip"
+XZDEC="$(dirname "${0}")/xzdec"
+readonly XZDEC
 readonly GBS_SUFFIX='$gbs'
 readonly BZ2_SUFFIX='$bz2'
 readonly GZ_SUFFIX='$gz'
+readonly XZ_SUFFIX='$xz'
 readonly PLAIN_SUFFIX='$raw'
 
 err() {
@@ -200,6 +203,10 @@ patch_file() {
     operation="decompress_file"
     extra="${GUNZIP}"
     strip_length=${#GZ_SUFFIX}
+  elif [[ "${patch_file: -${#XZ_SUFFIX}}" = "${XZ_SUFFIX}" ]]; then
+    operation="decompress_file"
+    extra="${XZDEC}"
+    strip_length=${#XZ_SUFFIX}
   elif [[ "${patch_file: -${#PLAIN_SUFFIX}}" = "${PLAIN_SUFFIX}" ]]; then
     operation="copy_file"
     extra="patch"

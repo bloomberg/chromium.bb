@@ -24,6 +24,8 @@
 #    new file will have a "$bz2" suffix.
 #  - a gzip-compressed copy of the new file from new_dir; in patch_dir, the
 #    new file will have a "$gz" suffix.
+#  - an xz/lzma2-compressed copy of the new file from new_dir; in patch_dir,
+#    the new file will have an "$xz" suffix.
 #  - an uncompressed copy of the new file from new_dir; in patch_dir, the
 #    new file will have a "$raw" suffix.
 #
@@ -32,11 +34,12 @@
 #
 # Of these options, the smallest possible representation is chosen. Note that
 # goobsdiff itself will also compress various sections of a binary diff with
-# bzip2 or gzip, or leave them uncompressed, according to which is smallest.
-# The approach of choosing the smallest possible representation is
+# bzip2, gzip, or xz/lzma2, or leave them uncompressed, according to which is
+# smallest. The approach of choosing the smallest possible representation is
 # time-consuming but given the choices of compressors results in an overall
-# size reduction of about 3% relative to using bzip2 as the only compressor;
-# bzip2 is generally more effective for these data sets than gzip.
+# size reduction of about 3%-5% relative to using bzip2 as the only
+# compressor; bzip2 is generally more effective for these data sets than gzip,
+# and xz/lzma2 more effective than bzip2.
 #
 # For large input files, goobsdiff is also very time-consuming and
 # memory-intensive. The overall "wall clock time" spent preparing a patch_dir
@@ -79,11 +82,12 @@
 # 11  File copy failed
 # 12  bzip2 compression failed
 # 13  gzip compression failed
-# 14  Patch creation failed
-# 15  Verification failed
-# 16  Could not set mode (permissions)
-# 17  Could not set modification time
-# 18  Invalid regular expression (irregular expression?)
+# 14  xz/lzma2 compression failed
+# 15  Patch creation failed
+# 16  Verification failed
+# 17  Could not set mode (permissions)
+# 18  Could not set modification time
+# 19  Invalid regular expression (irregular expression?)
 
 set -eu
 
@@ -146,9 +150,12 @@ GOOBSDIFF="$(find_tool goobsdiff)"
 readonly GOOBSDIFF
 readonly BZIP2="bzip2"
 readonly GZIP="gzip"
+XZ="$(dirname "${0}")/xz"
+readonly XZ
 readonly GBS_SUFFIX='$gbs'
 readonly BZ2_SUFFIX='$bz2'
 readonly GZ_SUFFIX='$gz'
+readonly XZ_SUFFIX='$xz'
 readonly PLAIN_SUFFIX='$raw'
 
 declare DIRDIFFER_EXCLUDE
@@ -185,7 +192,7 @@ copy_mode_and_time() {
   local mode
   mode="$(stat "-f%OMp%OLp" "${new_file}")"
   if ! chmod -h "${mode}" "${patch_file}"; then
-    exit 16
+    exit 17
   fi
 
   if ! [[ -L "${patch_file}" ]]; then
@@ -194,7 +201,7 @@ copy_mode_and_time() {
     # link was created with rsync, which already copied the timestamp with
     # lutimes.
     if ! touch -r "${new_file}" "${patch_file}"; then
-      exit 17
+      exit 18
     fi
   fi
 }
@@ -260,6 +267,42 @@ make_patch_file() {
     keep_size="${gz_size}"
   fi
 
+  local xz_flags=("-c")
+
+  # If the file looks like a Mach-O file, including a universal/fat file, add
+  # the x86 BCJ filter, which results in slightly better compression of x86
+  # and x86_64 executables. Mach-O files might contain other architectures,
+  # but they aren't currently expected in Chrome.
+  local file_output
+  file_output="$(file "${new_file}" 2> /dev/null || true)"
+  if [[ "${file_output}" =~ Mach-O ]]; then
+    xz_flags+=("--x86")
+  fi
+
+  # Use an lzma2 encoder. This is equivalent to xz -9 -e, but allows filters
+  # to precede the compressor.
+  xz_flags+=("--lzma2=preset=9e")
+
+  local xz_file="${patch_file}${XZ_SUFFIX}"
+  if [[ -e "${xz_file}" ]]; then
+    err "${xz_file} already exists"
+    exit 8
+  fi
+  if ! "${XZ}" "${xz_flags[@]}" < "${new_file}" > "${xz_file}"; then
+    err "couldn't compress ${new_file} to ${xz_file} with ${XZ}"
+    exit 14
+  fi
+  local xz_size
+  xz_size="$(file_size "${xz_file}")"
+
+  if [[ "${xz_size}" -ge "${keep_size}" ]]; then
+    rm -f "${xz_file}"
+  else
+    rm -f "${keep_file}"
+    keep_file="${xz_file}"
+    keep_size="${xz_size}"
+  fi
+
   if [[ -f "${old_file}" ]] && ! [[ -L "${old_file}" ]] &&
      ! [[ "${new_file}" =~ ${DIRDIFFER_NO_DIFF} ]]; then
     local gbs_file="${patch_file}${GBS_SUFFIX}"
@@ -269,7 +312,7 @@ make_patch_file() {
     fi
     if ! "${GOOBSDIFF}" "${old_file}" "${new_file}" "${gbs_file}"; then
       err "couldn't create ${gbs_file} by comparing ${old_file} to ${new_file}"
-      exit 14
+      exit 15
     fi
     local gbs_size
     gbs_size="$(file_size "${gbs_file}")"
@@ -355,7 +398,7 @@ verify_patch_dir() {
 
   if ! "${DIRPATCHER}" "${old_dir}" "${patch_dir}" "${verify_dir}"; then
     err "patch application for verification failed"
-    exit 15
+    exit 16
   fi
 
   # rsync will print a line for any file, directory, or symbolic link that
@@ -376,7 +419,7 @@ verify_patch_dir() {
   local rsync_output
   if ! rsync_output="$("${rsync_command[@]}")"; then
     err "rsync for verification failed"
-    exit 15
+    exit 16
   fi
 
   rm -rf "${verify_temp_dir}"
@@ -384,7 +427,7 @@ verify_patch_dir() {
 
   if [[ -n "${rsync_output}" ]]; then
     err "verification failed"
-    exit 15
+    exit 16
   fi
 }
 
@@ -454,7 +497,7 @@ main() {
       true
     elif [[ ${?} -eq 2 ]]; then
       err "DIRDIFFER_EXCLUDE contains an invalid regular expression"
-      exit 18
+      exit 19
     fi
   fi
 
@@ -463,7 +506,7 @@ main() {
       true
     elif [[ ${?} -eq 2 ]]; then
       err "DIRDIFFER_NO_DIFF contains an invalid regular expression"
-      exit 18
+      exit 19
     fi
   fi
 
