@@ -90,7 +90,7 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
 
   // Force a SwapBuffers to get the framebuffer to resize, even though
   // we aren't directly rendering from the back buffer yet.
-  ggl::SwapBuffers();
+  ggl::SwapBuffers(context_);
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);

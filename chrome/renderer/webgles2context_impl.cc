@@ -72,7 +72,7 @@ bool WebGLES2ContextImpl::destroy() {
 }
 
 bool WebGLES2ContextImpl::swapBuffers() {
-  return ggl::SwapBuffers();
+  return ggl::SwapBuffers(context_);
 }
 
 #endif  // defined(ENABLE_GPU)

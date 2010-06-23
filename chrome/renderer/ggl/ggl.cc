@@ -319,9 +319,8 @@ Context* GetCurrentContext() {
 #endif
 }
 
-bool SwapBuffers() {
+bool SwapBuffers(Context* context) {
 #if defined(ENABLE_GPU)
-  Context* context = GetCurrentContext();
   if (!context)
     return false;
 
