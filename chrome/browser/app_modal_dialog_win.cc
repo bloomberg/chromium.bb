@@ -19,9 +19,11 @@ void AppModalDialog::CreateAndShowDialog() {
 }
 
 void AppModalDialog::ActivateModalDialog() {
+  DCHECK(dialog_);
   dialog_->ActivateModalDialog();
 }
 
 void AppModalDialog::CloseModalDialog() {
+  DCHECK(dialog_);
   dialog_->CloseModalDialog();
 }

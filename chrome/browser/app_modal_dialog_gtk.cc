@@ -31,17 +31,21 @@ void AppModalDialog::OnDialogResponse(GtkDialog* dialog, gint response_id,
 }
 
 void AppModalDialog::ActivateModalDialog() {
+  DCHECK(dialog_);
   gtk_window_present(GTK_WINDOW(dialog_));
 }
 
 void AppModalDialog::CloseModalDialog() {
+  DCHECK(dialog_);
   HandleDialogResponse(GTK_DIALOG(dialog_), GTK_RESPONSE_DELETE_EVENT);
 }
 
 void AppModalDialog::AcceptWindow() {
+  DCHECK(dialog_);
   HandleDialogResponse(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
 }
 
 void AppModalDialog::CancelWindow() {
+  DCHECK(dialog_);
   HandleDialogResponse(GTK_DIALOG(dialog_), GTK_RESPONSE_CANCEL);
 }

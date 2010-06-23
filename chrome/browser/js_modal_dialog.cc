@@ -29,6 +29,9 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     bool is_before_unload_dialog,
     IPC::Message* reply_msg)
     : AppModalDialog(client->AsTabContents(), title),
+#if defined(OS_MACOSX)
+      dialog_(NULL),
+#endif
       client_(client),
       extension_host_(client->AsExtensionHost()),
       dialog_flags_(dialog_flags),
@@ -64,7 +67,8 @@ void JavaScriptAppModalDialog::Observe(NotificationType type,
   // Also clear the client, since it's now invalid.
   skip_this_dialog_ = true;
   client_ = NULL;
-  CloseModalDialog();
+  if (dialog_)
+    CloseModalDialog();
 }
 
 void JavaScriptAppModalDialog::InitNotifications() {
@@ -136,4 +140,3 @@ void JavaScriptAppModalDialog::Cleanup() {
   }
   AppModalDialog::Cleanup();
 }
-
