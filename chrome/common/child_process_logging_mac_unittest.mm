@@ -78,6 +78,9 @@ class MockBreakpadKeyValueStore {
   DISALLOW_COPY_AND_ASSIGN(MockBreakpadKeyValueStore);
 };
 
+// static
+NSMutableDictionary* MockBreakpadKeyValueStore::dict;
+
 }  // namespace
 
 // Call through to SetActiveURLImpl using the functions from

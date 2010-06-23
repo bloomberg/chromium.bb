@@ -68,6 +68,9 @@ class SadTabControllerTest : public RenderViewHostTestHarness {
   CocoaTestHelperWindow* test_window_;
 };
 
+// static
+bool SadTabControllerTest::link_clicked_;
+
 TEST_F(SadTabControllerTest, WithTabContents) {
   scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);

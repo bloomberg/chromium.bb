@@ -60,6 +60,9 @@ class BookmarkBubbleControllerTest : public CocoaTest {
   }
 };
 
+// static
+int BookmarkBubbleControllerTest::edits_;
+
 // Confirm basics about the bubble window (e.g. that it is inside the
 // parent window)
 TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
