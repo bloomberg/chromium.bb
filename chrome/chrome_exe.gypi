@@ -183,7 +183,8 @@
             # On Linux, link the dependencies (libraries) that make up actual
             # Chromium functionality directly into the executable.
             '<@(chromium_dependencies)',
-            # Needed for chrome_dll_main.cc #include of gtk/gtk.h
+            # Needed for chrome_dll_main.cc initialization of libraries.
+            '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gtk',
             'packed_resources',
             # Needed to use the master_preferences functions
