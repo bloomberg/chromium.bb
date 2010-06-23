@@ -322,6 +322,20 @@ chrome.extension.onConnect.addListener(function(port) {
 });
 
 function run() {
+  if (window.clearCache) {
+    // Show a warning if we will try to clear the cache between runs
+    // but will also be reusing the same WebKit instance (i.e. Chrome
+    // is in single-process mode, or 'Use New Tabs' is turned off)
+    // because the WebKit cache might not get completely cleared between runs.
+    if (chrome.benchmarking.isSingleProcess()) {
+      alert("Warning: the WebKit cache may not be cleared correctly " +
+            "between runs because Chrome is running in single-process mode.");
+    } else if (!window.useNewTabs) {
+      alert("Warning: the WebKit cache may not be cleared correctly " +
+            "between runs because 'Use New Tabs Per Page' is turned off.");
+    }
+  }
+
   var urls = testUrl.split(",");
   for (var i = 0; i < urls.length; i++) {
     var benchmark = new Benchmark();
