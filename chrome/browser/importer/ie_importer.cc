@@ -461,7 +461,7 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo *info) {
     DWORD buffer_length = sizeof(buffer);
     RegKey reg_key(HKEY_CURRENT_USER,
                    L"Software\\Microsoft\\Internet Explorer\\Toolbar");
-    if (reg_key.ReadValue(L"LinksFolderName", buffer, &buffer_length, NULL))
+    if (!reg_key.ReadValue(L"LinksFolderName", buffer, &buffer_length, NULL))
       return false;
     info->links_folder = buffer;
   } else {
