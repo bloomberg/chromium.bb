@@ -622,7 +622,7 @@ typedef enum {
   NPCursorTypeNone = 37,
   NPCursorTypeNotAllowed = 38,
   NPCursorTypeZoomIn = 39,
-  NPCursorTypeZoomOut = 40,
+  NPCursorTypeZoomOut = 40
 } NPCursorType;
 
 // Temporary SetCursor API.
