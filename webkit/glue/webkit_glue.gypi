@@ -162,6 +162,8 @@
         'plugins/gtk_plugin_container_manager.cc',
         'plugins/npapi_extension_thunk.cc',
         'plugins/npapi_extension_thunk.h',
+        'plugins/pepper_buffer.cc',
+        'plugins/pepper_buffer.h',
         'plugins/pepper_device_context_2d.cc',
         'plugins/pepper_device_context_2d.h',
         'plugins/pepper_image_data.cc',

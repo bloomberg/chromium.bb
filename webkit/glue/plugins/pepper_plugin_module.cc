@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "third_party/ppapi/c/ppb_buffer.h"
 #include "third_party/ppapi/c/ppb_core.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
@@ -23,6 +24,7 @@
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/pp_var.h"
+#include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
@@ -141,6 +143,8 @@ const void* GetInterface(const char* name) {
     return ImageData::GetInterface();
   if (strcmp(name, PPB_DEVICECONTEXT2D_INTERFACE) == 0)
     return DeviceContext2D::GetInterface();
+  if (strcmp(name, PPB_BUFFER_INTERFACE) == 0)
+    return Buffer::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

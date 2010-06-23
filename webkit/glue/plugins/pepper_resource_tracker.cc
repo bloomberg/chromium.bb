@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "third_party/ppapi/c/pp_resource.h"
+#include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_resource.h"
@@ -63,6 +64,14 @@ scoped_refptr<ImageData> ResourceTracker::GetAsImageData(
   if (!resource.get())
     return scoped_refptr<ImageData>();
   return scoped_refptr<ImageData>(resource->AsImageData());
+}
+
+scoped_refptr<Buffer> ResourceTracker::GetAsBuffer(
+    PP_Resource res) const {
+  scoped_refptr<Resource> resource = GetResource(res);
+  if (!resource.get())
+    return scoped_refptr<Buffer>();
+  return scoped_refptr<Buffer>(resource->AsBuffer());
 }
 
 }  // namespace pepper

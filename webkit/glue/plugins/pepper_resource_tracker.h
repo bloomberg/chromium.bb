@@ -16,6 +16,7 @@
 
 namespace pepper {
 
+class Buffer;
 class DeviceContext2D;
 class ImageData;
 class Resource;
@@ -46,6 +47,7 @@ class ResourceTracker {
   // resource is invalid or is a different type.
   scoped_refptr<DeviceContext2D> GetAsDeviceContext2D(PP_Resource res) const;
   scoped_refptr<ImageData> GetAsImageData(PP_Resource res) const;
+  scoped_refptr<Buffer> GetAsBuffer(PP_Resource res) const;
 
  private:
   friend struct DefaultSingletonTraits<ResourceTracker>;

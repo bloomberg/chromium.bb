@@ -11,6 +11,7 @@
 
 namespace pepper {
 
+class Buffer;
 class DeviceContext2D;
 class ImageData;
 class PluginModule;
@@ -28,6 +29,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   // NULL if the resource does not match the specified type.
   virtual DeviceContext2D* AsDeviceContext2D() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
+  virtual Buffer* AsBuffer() { return NULL; }
 
  private:
   PluginModule* module_;  // Non-owning pointer to our module.
