@@ -24,9 +24,6 @@ std::string NotificationMethodToString(
     case NOTIFICATION_NEW:
       return "NOTIFICATION_NEW";
       break;
-    case NOTIFICATION_SERVER:
-      return "NOTIFICATION_SERVER";
-      break;
     default:
       LOG(WARNING) << "Unknown value for notification method: "
                    << notification_method;
@@ -42,8 +39,6 @@ NotificationMethod StringToNotificationMethod(const std::string& str) {
     return NOTIFICATION_TRANSITIONAL;
   } else if (str == "new") {
     return NOTIFICATION_NEW;
-  } else if (str == "server") {
-    return NOTIFICATION_SERVER;
   }
   LOG(WARNING) << "Unknown notification method \"" << str
                << "\"; using method "

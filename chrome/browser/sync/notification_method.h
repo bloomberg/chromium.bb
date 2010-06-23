@@ -10,7 +10,7 @@
 namespace browser_sync {
 
 // This is the matrix for the interaction between clients with
-// different notification methods (except for NOTIFICATION_SERVER):
+// different notification methods:
 //
 //          Listen
 //          L T N
@@ -24,12 +24,6 @@ namespace browser_sync {
 // will receive notifications from a client sending with the row
 // notification method. 'E' means means that the notification will be
 // an empty one, which may be dropped by the server in the future.
-//
-// As for NOTIFICATION_SERVER, server-issued notifications will also
-// simulate a peer-issued notification, so that any client with
-// NOTIFICATION_TRANSITIONAL or NOTIFICATION_NEW will be able to
-// receive those, too.  This support will be removed once everyone is
-// on NOTIFICATION_SERVER.
 
 enum NotificationMethod {
   // Old, broken notification method.  Works only if notification
@@ -39,17 +33,9 @@ enum NotificationMethod {
   // notifications if the notification servers don't drop empty
   // notifications.
   NOTIFICATION_TRANSITIONAL,
-  // New notification method.  Compatible only with transitional
-  // notifications.
-  //
-  // NOTE: "New" is kind of a misnomer, as it refers only to
-  // peer-issued notifications; the plan is to migrate everyone to
-  // using NOTIFICATION_SERVER.
+  // New, ideal notification method.  Compatible only with
+  // transitional notifications.
   NOTIFICATION_NEW,
-
-  // Server-issued notifications.  Compatible only with transitional
-  // notifications.
-  NOTIFICATION_SERVER,
 };
 
 extern const NotificationMethod kDefaultNotificationMethod;
@@ -57,8 +43,8 @@ extern const NotificationMethod kDefaultNotificationMethod;
 std::string NotificationMethodToString(
     NotificationMethod notification_method);
 
-// If the given string is not one of "legacy", "transitional", "new",
-// or "server", returns kDefaultNotificationMethod.
+// If the given string is not one of "legacy", "transitional", or
+// "new", returns kDefaultNotificationMethod.
 NotificationMethod StringToNotificationMethod(const std::string& str);
 
 }  // namespace browser_sync
