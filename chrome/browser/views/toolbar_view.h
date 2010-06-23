@@ -27,6 +27,7 @@
 class BrowserActionsContainer;
 class Browser;
 class Profile;
+class WrenchMenu;
 
 namespace views {
 class Menu2;
@@ -208,6 +209,9 @@ class ToolbarView : public AccessibleToolbarView,
   // TODO(beng): build these into MenuButton.
   scoped_ptr<views::Menu2> page_menu_menu_;
   scoped_ptr<views::Menu2> app_menu_menu_;
+
+  // Wrench menu. Only used if kNewWrenchMenu is set.
+  scoped_ptr<WrenchMenu> wrench_menu_;
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
