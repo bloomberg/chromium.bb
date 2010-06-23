@@ -12,7 +12,6 @@
 #include "base/native_library.h"
 #include "base/ref_counted.h"
 #include "third_party/ppapi/c/pp_module.h"
-#include "third_party/ppapi/c/ppb.h"
 
 namespace pepper {
 
@@ -21,27 +20,9 @@ class PluginInstance;
 
 class PluginModule : public base::RefCounted<PluginModule> {
  public:
-  typedef const void* (*PPP_GetInterfaceFunc)(const char*);
-  typedef int (*PPP_InitializeModuleFunc)(PP_Module, PPB_GetInterface);
-  typedef void (*PPP_ShutdownModuleFunc)();
-
-  struct EntryPoints {
-    EntryPoints()
-        : get_interface(NULL),
-          initialize_module(NULL),
-          shutdown_module(NULL) {
-    }
-
-    PPP_GetInterfaceFunc get_interface;
-    PPP_InitializeModuleFunc initialize_module;
-    PPP_ShutdownModuleFunc shutdown_module;
-  };
-
   ~PluginModule();
 
-  static scoped_refptr<PluginModule> CreateModule(const FilePath& path);
-  static scoped_refptr<PluginModule> CreateInternalModule(
-      EntryPoints entry_points);
+  static scoped_refptr<PluginModule> CreateModule(const FilePath& filename);
 
   // Converts the given module ID to an actual module object. Will return NULL
   // if the module is invalid.
@@ -66,24 +47,18 @@ class PluginModule : public base::RefCounted<PluginModule> {
   void InstanceDeleted(PluginInstance* instance);
 
  private:
-  PluginModule();
+  typedef const void* (*PPP_GetInterfaceFunc)(const char*);
 
-  bool InitFromEntryPoints(const EntryPoints& entry_points);
-  bool InitFromFile(const FilePath& path);
-  static bool LoadEntryPoints(const base::NativeLibrary& library,
-                              EntryPoints* entry_points);
+  explicit PluginModule(const FilePath& filename);
+
+  bool Load();
+
+  FilePath filename_;
 
   bool initialized_;
-
-  // Holds a reference to the base::NativeLibrary handle if this PluginModule
-  // instance wraps functions loaded from a library.  Can be NULL.  If
-  // |library_| is non-NULL, PluginModule will attempt to unload the library
-  // during destruction.
   base::NativeLibrary library_;
 
-  // Contains pointers to the entry points of the actual plugin
-  // implementation.
-  EntryPoints entry_points_;
+  PPP_GetInterfaceFunc ppp_get_interface_;
 
   // Non-owning pointers to all instances associated with this module. When
   // there are no more instances, this object should be deleted.

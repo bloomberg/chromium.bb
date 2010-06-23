@@ -311,11 +311,6 @@
             'common/sandbox_policy.cc',
           ],
         }],
-        ['remoting==1', {
-          'dependencies': [
-            '../remoting/remoting.gyp:chromoting_plugin',
-          ],
-        }],
       ],
       'export_dependent_settings': [
         '../app/app.gyp:app_base',

@@ -11,11 +11,8 @@
 #include "base/scoped_ptr.h"
 #include "remoting/client/host_connection.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "third_party/ppapi/c/pp_event.h"
-#include "third_party/ppapi/c/pp_instance.h"
-#include "third_party/ppapi/c/pp_rect.h"
-#include "third_party/ppapi/c/pp_resource.h"
-#include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/cpp/device_context_2d.h"
+#include "third_party/ppapi/cpp/instance.h"
 
 namespace base {
 class Thread;
@@ -30,7 +27,7 @@ class PepperView;
 
 class ChromotingClient;
 
-class ChromotingPlugin {
+class ChromotingPlugin : public pp::Instance {
  public:
   // The mimetype for which this plugin is registered.
   //
@@ -38,7 +35,7 @@ class ChromotingPlugin {
   // point.  I think we should handle a special protocol (eg., chromotocol://)
   static const char *kMimeType;
 
-  ChromotingPlugin(PP_Instance instance, const PPB_Instance* instance_funcs);
+  ChromotingPlugin(PP_Instance instance);
   virtual ~ChromotingPlugin();
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
@@ -58,10 +55,7 @@ class ChromotingPlugin {
   int width_;
   int height_;
 
-  PP_Resource drawing_context_;
-
-  PP_Instance pp_instance_;
-  const PPB_Instance* ppb_instance_funcs_;
+  pp::DeviceContext2D device_context_;
 
   scoped_ptr<base::Thread> main_thread_;
   scoped_ptr<JingleThread> network_thread_;

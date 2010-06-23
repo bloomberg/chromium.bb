@@ -23,15 +23,13 @@ using std::vector;
 
 namespace remoting {
 
-const char* ChromotingPlugin::kMimeType = "pepper-application/x-chromoting";
+const char* ChromotingPlugin::kMimeType =
+    "pepper-application/x-chromoting-plugin::Chromoting";
 
-ChromotingPlugin::ChromotingPlugin(PP_Instance pp_instance,
-                                   const PPB_Instance* ppb_instance_funcs)
-    : width_(0),
-      height_(0),
-      drawing_context_(NULL),
-      pp_instance_(pp_instance),
-      ppb_instance_funcs_(ppb_instance_funcs) {
+ChromotingPlugin::ChromotingPlugin(PP_Instance instance)
+    : pp::Instance(instance),
+      width_(0),
+      height_(0) {
 }
 
 ChromotingPlugin::~ChromotingPlugin() {
@@ -49,8 +47,7 @@ ChromotingPlugin::~ChromotingPlugin() {
     main_thread_->Stop();
 }
 
-bool ChromotingPlugin::Init(uint32_t argc, const char* argn[],
-                            const char* argv[]) {
+bool ChromotingPlugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   LOG(INFO) << "Started ChromotingPlugin::Init";
 
   // Extract the URL from the arguments.
@@ -115,13 +112,8 @@ void ChromotingPlugin::ViewChanged(const PP_Rect& position,
   width_ = position.size.width;
   height_ = position.size.height;
 
-  /*
-   * TODO(ajwong): Reenable this code once we fingure out how we want to
-   * abstract away the C-api for DeviceContext2D.
   device_context_ = pp::DeviceContext2D(width_, height_, false);
-  if (!ppb_instance_funcs_->BindGraphicsDeviceContext(
-      pp_instance_,
-      device_context_.pp_resource())) {
+  if (!BindGraphicsDeviceContext(device_context_)) {
     LOG(ERROR) << "Couldn't bind the device context.";
     return;
   }
@@ -138,7 +130,6 @@ void ChromotingPlugin::ViewChanged(const PP_Rect& position,
   } else {
     LOG(ERROR) << "Unable to allocate image.";
   }
-  */
 
   //client_->SetViewport(0, 0, width_, height_);
   //client_->Repaint();
