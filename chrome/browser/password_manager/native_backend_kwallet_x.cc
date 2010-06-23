@@ -40,12 +40,6 @@ NativeBackendKWallet::~NativeBackendKWallet() {
 }
 
 bool NativeBackendKWallet::Init() {
-  // Initialize threading in dbus-glib - it should be fine for
-  // dbus_g_thread_init to be called multiple times.
-  if (!g_thread_supported())
-    g_thread_init(NULL);
-  dbus_g_thread_init();
-
   // Get a connection to the session bus.
   connection_ = dbus_g_bus_get(DBUS_BUS_SESSION, &error_);
   if (CheckError())

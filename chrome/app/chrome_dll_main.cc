@@ -24,6 +24,7 @@
 #endif
 
 #if defined(USE_X11)
+#include <dbus/dbus-glib.h>
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -851,6 +852,10 @@ int ChromeMain(int argc, char** argv) {
     // definitely harmless, so retained as a reminder of this
     // requirement for gconf.
     g_type_init();
+    // We use glib-dbus for geolocation and it's possible other libraries
+    // (e.g. gnome-keyring) will use it, so initialize its threading here
+    // as well.
+    dbus_g_thread_init();
     // gtk_init() can change |argc| and |argv|.
     gtk_init(&argc, &argv);
     SetUpGLibLogHandler();

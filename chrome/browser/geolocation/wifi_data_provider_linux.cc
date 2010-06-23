@@ -149,10 +149,6 @@ bool NetworkManagerWlanApi::Init() {
   // get caught up with that nonsense here, lets just assert our requirement.
   CHECK(g_thread_supported());
 
-  // We should likely do this higher up too, the docs say it must only be done
-  // once but there's no way to know if it already was or not.
-  dbus_g_thread_init();
-
   // Get a connection to the session bus.
   connection_ = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error_);
   if (CheckError())
