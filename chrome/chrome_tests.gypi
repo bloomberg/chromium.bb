@@ -734,6 +734,7 @@
         'browser/cocoa/sad_tab_controller_unittest.mm',
         'browser/cocoa/sad_tab_view_unittest.mm',
         'browser/cocoa/search_engine_list_model_unittest.mm',
+        'browser/cocoa/side_tab_strip_view_unittest.mm',
         'browser/cocoa/status_bubble_mac_unittest.mm',
         'browser/cocoa/status_icons/status_icon_mac_unittest.mm',
         'browser/cocoa/styled_text_field_cell_unittest.mm',

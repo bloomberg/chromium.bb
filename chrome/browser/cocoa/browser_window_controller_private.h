@@ -16,8 +16,9 @@
 // "dependencies").
 @interface BrowserWindowController(Private)
 
-// Returns YES if vertical tabs are enabled for this browser.
-- (BOOL)useVerticalTabs;
+// Create the appropriate tab strip controller based on whether or not side
+// tabs are enabled. Replaces the current controller.
+- (void)createTabStripController;
 
 // Saves the window's position in the local state preferences.
 - (void)saveWindowPositionIfNeeded;

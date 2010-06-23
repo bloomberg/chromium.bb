@@ -360,6 +360,35 @@ private:
     [[newTabButton_ cell]
         accessibilitySetOverrideValue:description
                          forAttribute:NSAccessibilityDescriptionAttribute];
+
+    // Controller may have been (re-)created by switching layout modes, which
+    // means the tab model is already fully formed with tabs. Need to walk the
+    // list and create the UI for each.
+    const int existingTabCount = tabStripModel_->count();
+    const TabContents* selection = tabStripModel_->GetSelectedTabContents();
+    for (int i = 0; i < existingTabCount; ++i) {
+      TabContents* currentContents = tabStripModel_->GetTabContentsAt(i);
+      [self insertTabWithContents:currentContents
+                          atIndex:i
+                     inForeground:NO];
+      if (selection == currentContents) {
+        // Must manually force a selection since the model won't send
+        // selection messages in this scenario.
+        [self selectTabWithContents:currentContents
+                   previousContents:NULL
+                            atIndex:i
+                        userGesture:NO];
+      }
+    }
+    // Don't lay out the tabs until after the controller has been fully
+    // constructed. The |verticalLayout_| flag has not been initialized by
+    // subclasses at this point, which would cause layout to potentially use
+    // the wrong mode.
+    if (existingTabCount) {
+      [self performSelectorOnMainThread:@selector(layoutTabs)
+                             withObject:nil
+                          waitUntilDone:NO];
+    }
   }
   return self;
 }
@@ -671,39 +700,47 @@ private:
   // mini-tabs have a fixed width. We may not be able to use the entire width
   // if the user is quickly closing tabs. This may be negative, but that's okay
   // (taken care of by |MAX()| when calculating tab sizes).
-  CGFloat availableWidth = 0;
-  if ([self inRapidClosureMode]) {
-    availableWidth = availableResizeWidth_;
+  CGFloat availableSpace = 0;
+  if (verticalLayout_) {
+    availableSpace = NSHeight([tabStripView_ bounds]);
   } else {
-    availableWidth = NSWidth([tabStripView_ frame]);
-    // Account for the new tab button and the incognito badge.
-    availableWidth -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
-    if (browser_->profile()->IsOffTheRecord())
-      availableWidth -= kIncognitoBadgeTabStripShrink;
+    if ([self inRapidClosureMode]) {
+      availableSpace = availableResizeWidth_;
+    } else {
+      availableSpace = NSWidth([tabStripView_ frame]);
+      // Account for the new tab button and the incognito badge.
+      availableSpace -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
+      if (browser_->profile()->IsOffTheRecord())
+        availableSpace -= kIncognitoBadgeTabStripShrink;
+    }
+    availableSpace -= [self indentForControls];
   }
-  availableWidth -= [self indentForControls];
 
   // This may be negative, but that's okay (taken care of by |MAX()| when
-  // calculating tab sizes).
-  CGFloat availableWidthForNonMini = availableWidth -
-      [self numberOfOpenMiniTabs] * (kMiniTabWidth - kTabOverlap);
+  // calculating tab sizes). "mini" tabs in horizontal mode just get a special
+  // section, they don't change size.
+  CGFloat availableSpaceForNonMini = availableSpace;
+  if (!verticalLayout_) {
+      availableSpaceForNonMini -=
+          [self numberOfOpenMiniTabs] * (kMiniTabWidth - kTabOverlap);
+  }
 
   // Initialize |nonMiniTabWidth| in case there aren't any non-mini-tabs; this
   // value shouldn't actually be used.
   CGFloat nonMiniTabWidth = kMaxTabWidth;
   const NSInteger numberOfOpenNonMiniTabs = [self numberOfOpenNonMiniTabs];
-  if (numberOfOpenNonMiniTabs) {  // Find the width of a non-mini-tab.
-    // Add in the amount we "get back" from the tabs overlapping.
-    availableWidthForNonMini += (numberOfOpenNonMiniTabs - 1) * kTabOverlap;
+  if (!verticalLayout_ && numberOfOpenNonMiniTabs) {
+    // Find the width of a non-mini-tab. This only applies to horizontal
+    // mode. Add in the amount we "get back" from the tabs overlapping.
+    availableSpaceForNonMini += (numberOfOpenNonMiniTabs - 1) * kTabOverlap;
 
     // Divide up the space between the non-mini-tabs.
-    nonMiniTabWidth = availableWidthForNonMini / numberOfOpenNonMiniTabs;
+    nonMiniTabWidth = availableSpaceForNonMini / numberOfOpenNonMiniTabs;
 
     // Clamp the width between the max and min.
     nonMiniTabWidth = MAX(MIN(nonMiniTabWidth, kMaxTabWidth), kMinTabWidth);
   }
 
-  const CGFloat minX = NSMinX(placeholderFrame_);
   BOOL visible = [[tabStripView_ window] isVisible];
 
   CGFloat offset = [self indentForControls];
@@ -717,9 +754,13 @@ private:
     BOOL isPlaceholder = [[tab view] isEqual:placeholderTab_];
     NSRect tabFrame = [[tab view] frame];
     tabFrame.size.height = [[self class] defaultTabHeight] + 1;
-    tabFrame.origin.y = 0;
-    tabFrame.origin.x = offset;
-
+    if (verticalLayout_) {
+      tabFrame.origin.y = availableSpace - tabFrame.size.height - offset;
+      tabFrame.origin.x = 0;
+    } else {
+      tabFrame.origin.y = 0;
+      tabFrame.origin.x = offset;
+    }
     // If the tab is hidden, we consider it a new tab. We make it visible
     // and animate it in.
     BOOL newTab = [[tab view] isHidden];
@@ -732,7 +773,10 @@ private:
       // We need a duration or else it doesn't cancel an inflight animation.
       ScopedNSAnimationContextGroup localAnimationGroup(animate);
       localAnimationGroup.SetCurrentContextShortestDuration();
-      tabFrame.origin.x = placeholderFrame_.origin.x;
+      if (verticalLayout_)
+        tabFrame.origin.y = availableSpace - tabFrame.size.height - offset;
+      else
+        tabFrame.origin.x = placeholderFrame_.origin.x;
       // TODO(alcor): reenable this
       //tabFrame.size.height += 10.0 * placeholderStretchiness_;
       id target = animate ? [[tab view] animator] : [tab view];
@@ -745,13 +789,26 @@ private:
       continue;
     }
 
-    // If our left edge is to the left of the placeholder's left, but our mid is
-    // to the right of it we should slide over to make space for it.
-    if (placeholderTab_ && !hasPlaceholderGap && NSMidX(tabFrame) > minX) {
-      hasPlaceholderGap = true;
-      offset += NSWidth(placeholderFrame_);
-      offset -= kTabOverlap;
-      tabFrame.origin.x = offset;
+    if (placeholderTab_ && !hasPlaceholderGap) {
+      const CGFloat placeholderMin =
+          verticalLayout_ ? NSMinY(placeholderFrame_) :
+                            NSMinX(placeholderFrame_);
+      if (verticalLayout_) {
+        if (NSMidY(tabFrame) > placeholderMin) {
+          hasPlaceholderGap = true;
+          offset += NSHeight(placeholderFrame_);
+          tabFrame.origin.y = availableSpace - tabFrame.size.height - offset;
+        }
+      } else {
+        // If the left edge is to the left of the placeholder's left, but the
+        // mid is to the right of it slide over to make space for it.
+        if (NSMidX(tabFrame) > placeholderMin) {
+          hasPlaceholderGap = true;
+          offset += NSWidth(placeholderFrame_);
+          offset -= kTabOverlap;
+          tabFrame.origin.x = offset;
+        }
+      }
     }
 
     // Set the width. Selected tabs are slightly wider when things get really
@@ -762,6 +819,7 @@ private:
 
     // Animate a new tab in by putting it below the horizon unless told to put
     // it in a specific location (i.e., from a drop).
+    // TODO(pinkerton): figure out vertical tab animations.
     if (newTab && visible && animate) {
       if (NSEqualRects(droppedTabFrame_, NSZeroRect)) {
         [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
@@ -784,8 +842,12 @@ private:
 
     enclosingRect = NSUnionRect(tabFrame, enclosingRect);
 
-    offset += NSWidth(tabFrame);
-    offset -= kTabOverlap;
+    if (verticalLayout_) {
+      offset += NSHeight(tabFrame);
+    } else {
+      offset += NSWidth(tabFrame);
+      offset -= kTabOverlap;
+    }
     i++;
   }
 
@@ -797,7 +859,7 @@ private:
   } else {
     NSRect newTabNewFrame = [newTabButton_ frame];
     // We've already ensured there's enough space for the new tab button
-    // so we don't have to check it against the available width. We do need
+    // so we don't have to check it against the available space. We do need
     // to make sure we put it after any placeholder.
     newTabNewFrame.origin = NSMakePoint(offset, 0);
     newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
@@ -1457,7 +1519,8 @@ private:
 // transitory subviews (tabs). |-regenerateSubviewList| must be called to
 // effectuate the addition.
 - (void)addSubviewToPermanentList:(NSView*)aView {
-  [permanentSubviews_ addObject:aView];
+  if (aView)
+    [permanentSubviews_ addObject:aView];
 }
 
 // Update the subviews, keeping the permanent ones (or, more correctly, putting

@@ -233,16 +233,7 @@
     // this window's Browser and the tab strip view. The controller will handle
     // registering for the appropriate tab notifications from the back-end and
     // managing the creation of new tabs.
-    if (![self useVerticalTabs]) {
-      tabStripController_.reset([[TabStripController alloc]
-                                  initWithView:[self tabStripView]
-                                    switchView:[self tabContentArea]
-                                       browser:browser_.get()]);
-    } else {
-      // TODO(pinkerton): Load SideTabController when written and add it to the
-      // contentView. This should be abstracted into a separate method like
-      // the toolbar controller initialization below.
-    }
+    [self createTabStripController];
 
     // Create the infobar container view, so we can pass it to the
     // ToolbarController.
@@ -1299,8 +1290,6 @@
 
 // (Override of |TabWindowController| method.)
 - (BOOL)hasTabStrip {
-  if ([self useVerticalTabs])
-    return NO;
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
 }
 
@@ -1638,14 +1627,15 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   isShrinkingFromZoomed_ = NO;
 }
 
+// Override to swap in the correct tab strip controller based on the new
+// tab strip mode.
 - (void)toggleTabStripDisplayMode {
-  // TODO(pinkerton) re-initialize tab strip. Finish writing this method.
-  // Right now, it only switches one direction, which clearly isn't cool.
-  // [self initTabStrip:browser_->tabstrip_model()];
-  [[self tabStripView] removeFromSuperview];
+  [super toggleTabStripDisplayMode];
+  [self createTabStripController];
+}
 
-
-  [self layoutSubviews];
+- (BOOL)useVerticalTabs {
+  return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
 }
 
 @end  // @implementation BrowserWindowController
@@ -1699,7 +1689,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   // Retain the tab strip view while we remove it from its superview.
   scoped_nsobject<NSView> tabStripView;
-  if ([self hasTabStrip]) {
+  if ([self hasTabStrip] && ![self useVerticalTabs]) {
     tabStripView.reset([[self tabStripView] retain]);
     [tabStripView removeFromSuperview];
   }
@@ -1745,7 +1735,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   // Add the tab strip after setting the content view and moving the incognito
   // badge (if any), so that the tab strip will be on top (in the z-order).
-  if ([self hasTabStrip])
+  if ([self hasTabStrip] && ![self useVerticalTabs])
     [[[destWindow contentView] superview] addSubview:tabStripView];
 
   [window setWindowController:nil];

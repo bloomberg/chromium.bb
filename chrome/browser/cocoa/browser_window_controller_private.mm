@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/cocoa/fullscreen_controller.h"
+#import "chrome/browser/cocoa/side_tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
@@ -43,8 +44,17 @@ const CGFloat kLocBarBottomInset = 1;
 
 @implementation BrowserWindowController(Private)
 
-- (BOOL)useVerticalTabs {
-  return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
+// Create the appropriate tab strip controller based on whether or not side
+// tabs are enabled.
+- (void)createTabStripController {
+  Class factory = [TabStripController class];
+  if ([self useVerticalTabs])
+    factory = [SideTabStripController class];
+
+  tabStripController_.reset([[factory alloc]
+                              initWithView:[self tabStripView]
+                                switchView:[self tabContentArea]
+                                   browser:browser_.get()]);
 }
 
 - (void)saveWindowPositionIfNeeded {
@@ -133,7 +143,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)layoutSubviews {
-  // With the exception of the tab strip, the subviews which we lay out are
+  // With the exception of the top tab strip, the subviews which we lay out are
   // subviews of the content view, so we mainly work in the content view's
   // coordinate system. Note, however, that the content view's coordinate system
   // and the window's base coordinate system should coincide.
@@ -158,9 +168,9 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat maxY = NSMaxY(contentBounds) + yOffset;
   CGFloat startMaxY = maxY;
 
-  if ([self hasTabStrip]) {
-    // If we need to lay out the tab strip, replace |maxY| and |startMaxY| with
-    // higher values, and then lay out the tab strip.
+  if ([self hasTabStrip] && ![self useVerticalTabs]) {
+    // If we need to lay out the top tab strip, replace |maxY| and |startMaxY|
+    // with higher values, and then lay out the tab strip.
     NSRect windowFrame = [contentView convertRect:[window frame] fromView:nil];
     startMaxY = maxY = NSHeight(windowFrame) + yOffset;
     maxY = [self layoutTabStripAtMaxY:maxY width:width fullscreen:isFullscreen];
@@ -170,22 +180,20 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK_GE(maxY, minY);
   DCHECK_LE(maxY, NSMaxY(contentBounds) + yOffset);
 
-  // Position the vertical tab strip on the left, taking up the entire height.
-  // TODO(pinkerton): Make width not fixed.
-  const CGFloat kSidebarWidth = 200.0;
+  // The base class already positions the side tab strip on the left side
+  // of the window's content area and sizes it to take the entire vertical
+  // height. All that's needed here is to push everything over to the right,
+  // if necessary.
   if ([self useVerticalTabs]) {
-    // TODO(pinkerton): Position the side bar at |minX| when the controller
-    // is implemented.
-
-    // Push everything else over to the right.
-    minX += kSidebarWidth;
-    width -= kSidebarWidth;
+    const CGFloat sideTabWidth = [[self tabStripView] bounds].size.width;
+    minX += sideTabWidth;
+    width -= sideTabWidth;
   }
 
   // Place the toolbar at the top of the reserved area.
   maxY = [self layoutToolbarAtMinX:minX maxY:maxY width:width];
 
- // If we're not displaying the bookmark bar below the infobar, then it goes
+  // If we're not displaying the bookmark bar below the infobar, then it goes
   // immediately below the toolbar.
   BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
   if (!placeBookmarkBarBelowInfoBar)
@@ -417,7 +425,9 @@ willPositionSheet:(NSWindow*)sheet
   NSView* tabContentView = [self tabContentArea];
   NSRect tabContentFrame = [tabContentView frame];
 
-  bool contentShifted = NSMaxY(tabContentFrame) != NSMaxY(newFrame);
+  bool contentShifted =
+      NSMaxY(tabContentFrame) != NSMaxY(newFrame) ||
+      NSMinX(tabContentFrame) != NSMinX(newFrame);
 
   tabContentFrame = newFrame;
   [tabContentView setFrame:tabContentFrame];

@@ -10,7 +10,8 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
 
-// A view class that handles rendering the tab strip
+// A view class that handles rendering the tab strip and drops of URLS with
+// a positioning locator for drop feedback.
 
 @interface TabStripView : NSView<URLDropTarget> {
  @private
@@ -32,6 +33,13 @@
 @property(assign, nonatomic) BOOL dropArrowShown;
 @property(assign, nonatomic) NSPoint dropArrowPosition;
 
+@end
+
+// Protected methods subclasses can override to alter behavior. Clients should
+// not call these directly.
+@interface TabStripView(Protected)
+- (void)drawBottomBorder:(NSRect)bounds;
+- (BOOL)doubleClickMinimizesWindow;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_STRIP_VIEW_H_

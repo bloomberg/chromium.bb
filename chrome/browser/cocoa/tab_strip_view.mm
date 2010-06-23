@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,21 +28,26 @@
   return self;
 }
 
-- (void)drawRect:(NSRect)rect {
-  NSRect boundsRect = [self bounds];
+// Draw bottom border (a dark border and light highlight). Each tab is
+// responsible for mimicing this bottom border, unless it's the selected
+// tab.
+- (void)drawBorder:(NSRect)bounds {
   NSRect borderRect, contentRect;
 
-  // Draw bottom border (a dark border and light highlight). Each tab is
-  // responsible for mimicing this bottom border, unless it's the selected
-  // tab.
-  borderRect = boundsRect;
+  borderRect = bounds;
   borderRect.origin.y = 1;
   borderRect.size.height = 1;
   [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-  NSDivideRect(boundsRect, &borderRect, &contentRect, 1, NSMinYEdge);
+  NSDivideRect(bounds, &borderRect, &contentRect, 1, NSMinYEdge);
   [[NSColor colorWithCalibratedWhite:0.96 alpha:1.0] set];
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+}
+
+- (void)drawRect:(NSRect)rect {
+  NSRect boundsRect = [self bounds];
+
+  [self drawBorder:boundsRect];
 
   // Draw drop-indicator arrow (if appropriate).
   // TODO(viettrungluu): this is all a stop-gap measure.
@@ -70,7 +75,7 @@
 
     // Height we have to work with (insetting on the top).
     CGFloat availableHeight =
-        NSMaxY([self bounds]) - arrowTipPos.y - kArrowTopInset;
+        NSMaxY(boundsRect) - arrowTipPos.y - kArrowTopInset;
     DCHECK(availableHeight >= 5);
 
     // Based on the knobs above, calculate actual dimensions which we'll need
@@ -104,6 +109,12 @@
   }
 }
 
+// YES if a double-click in the background of the tab strip minimizes the
+// window.
+- (BOOL)doubleClickMinimizesWindow {
+  return YES;
+}
+
 // We accept first mouse so clicks onto close/zoom/miniaturize buttons and
 // title bar double-clicks are properly detected even when the window is in the
 // background.
@@ -113,6 +124,12 @@
 
 // Trap double-clicks and make them miniaturize the browser window.
 - (void)mouseUp:(NSEvent*)event {
+  // Bail early if double-clicks are disabled.
+  if (![self doubleClickMinimizesWindow]) {
+    [super mouseUp:event];
+    return;
+  }
+
   NSInteger clickCount = [event clickCount];
   NSTimeInterval timestamp = [event timestamp];
 

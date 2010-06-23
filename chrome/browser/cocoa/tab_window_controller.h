@@ -17,6 +17,13 @@
 // between tabs. It needs to be a regular NSView, not something like an NSBox
 // because the TabStripController makes certain assumptions about how it can
 // swap out subviews.
+//
+// The tab strip can exist in different orientations and window locations,
+// depending on the return value of -usesVerticalTabs. If NO (the default),
+// the tab strip is placed outside the window's content area, overlapping the
+// title area and window controls and will be stretched to fill the width
+// of the window. If YES, the tab strip is vertical and lives within the
+// window's content area. It will be stretched to fill the window's height.
 
 #import <Cocoa/Cocoa.h>
 
@@ -30,13 +37,20 @@
 @interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
   IBOutlet FastResizeView* tabContentArea_;
-  IBOutlet TabStripView* tabStripView_;
+  // TODO(pinkerton): Figure out a better way to initialize one or the other
+  // w/out needing both to be in the nib.
+  IBOutlet TabStripView* topTabStripView_;
+  IBOutlet TabStripView* sideTabStripView_;
   NSWindow* overlayWindow_;  // Used during dragging for window opacity tricks
   NSView* cachedContentView_;  // Used during dragging for identifying which
                                // view is the proper content area in the overlay
                                // (weak)
   scoped_nsobject<NSMutableSet> lockedTabs_;
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
+  // Difference between height of window content area and height of the
+  // |tabContentArea_|. Calculated when the window is loaded from the nib and
+  // cached in order to restore the delta when switching tab modes.
+  CGFloat contentAreaHeightDelta_;
 }
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
@@ -127,6 +141,11 @@
 // if it does, NO otherwise). The default implementation returns YES.
 - (BOOL)hasTabStrip;
 
+// Returns YES if the tab strip lives in the window content area alongside the
+// tab contents. Returns NO if the tab strip is outside the window content
+// area, along the top of the window.
+- (BOOL)useVerticalTabs;
+
 // Get/set whether a particular tab is draggable between windows.
 - (BOOL)isTabDraggable:(NSView*)tabView;
 - (void)setTab:(NSView*)tabView isDraggable:(BOOL)draggable;
@@ -142,6 +161,14 @@
 // Tells the tab strip to forget about this tab in preparation for it being
 // put into a different tab strip, such as during a drop on another window.
 - (void)detachTabView:(NSView*)view;
+
+// Toggles from one display mode of the tab strip to another. Will automatically
+// call -layoutSubviews to reposition other content.
+- (void)toggleTabStripDisplayMode;
+
+// Called when the size of the window content area has changed. Override to
+// position specific views. Base class implementation does nothing.
+- (void)layoutSubviews;
 @end
 
 #endif  // CHROME_BROWSER_TAB_WINDOW_CONTROLLER_H_
