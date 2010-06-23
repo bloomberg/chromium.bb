@@ -610,6 +610,41 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   }
 }
 
+void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
+  DCHECK_EQ(0U, types.count(UNSPECIFIED));
+  DCHECK_EQ(0U, types.count(TOP_LEVEL_FOLDER));
+
+  if (types.empty())
+    return;
+
+  ScopedKernelLock lock(this);
+  MetahandleSet to_delete;
+  MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
+  while (it != kernel_->metahandles_index->end()) {
+    const sync_pb::EntitySpecifics& local_specifics = (*it)->ref(SPECIFICS);
+    const sync_pb::EntitySpecifics& server_specifics =
+        (*it)->ref(SERVER_SPECIFICS);
+    ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
+    ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
+
+    // Note the dance around incrementing |it|, since we sometimes use erase().
+    if (types.count(local_type) > 0 || types.count(server_type) > 0) {
+      to_delete.insert((*it)->ref(META_HANDLE));
+      size_t num_erased = 0;
+      num_erased = kernel_->ids_index->erase(*it);
+      DCHECK_EQ(1u, num_erased);
+      num_erased = kernel_->client_tag_index->erase(*it);
+      DCHECK_EQ((*it)->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
+      kernel_->metahandles_index->erase(it++);
+    } else {
+      ++it;
+    }
+  }
+
+  // Synchronously wipe these entries from disk.
+  store_->DeleteEntries(to_delete);
+}
+
 void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
   ScopedKernelLock lock(this);
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;

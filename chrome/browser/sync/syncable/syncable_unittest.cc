@@ -286,11 +286,15 @@ class SyncableDirectoryTest : public testing::Test {
     file_util::Delete(file_path_, true);
   }
 
-  void SaveAndReloadDir() {
-    dir_->SaveChanges();
+  void ReloadDir() {
     dir_.reset(new Directory());
     ASSERT_TRUE(dir_.get());
     ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName));
+  }
+
+  void SaveAndReloadDir() {
+    dir_->SaveChanges();
+    ReloadDir();
   }
 
   bool IsInDirtyMetahandles(int64 metahandle) {
@@ -384,9 +388,102 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
   }
 }
 
+TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
+  sync_pb::EntitySpecifics bookmark_specs;
+  sync_pb::EntitySpecifics autofill_specs;
+  sync_pb::EntitySpecifics preference_specs;
+  AddDefaultExtensionValue(BOOKMARKS, &bookmark_specs);
+  AddDefaultExtensionValue(PREFERENCES, &preference_specs);
+  AddDefaultExtensionValue(AUTOFILL, &autofill_specs);
+
+  std::set<ModelType> types_to_purge;
+  types_to_purge.insert(PREFERENCES);
+  types_to_purge.insert(AUTOFILL);
+
+  TestIdFactory id_factory;
+  // Create some items for each type.
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    MutableEntry item1(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item1.good());
+    item1.Put(SPECIFICS, bookmark_specs);
+    item1.Put(SERVER_SPECIFICS, bookmark_specs);
+    item1.Put(IS_UNSYNCED, true);
+
+    MutableEntry item2(&trans, CREATE_NEW_UPDATE_ITEM,
+                       id_factory.NewServerId());
+    ASSERT_TRUE(item2.good());
+    item2.Put(SERVER_SPECIFICS, bookmark_specs);
+    item2.Put(IS_UNAPPLIED_UPDATE, true);
+
+    MutableEntry item3(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item3.good());
+    item3.Put(SPECIFICS, preference_specs);
+    item3.Put(SERVER_SPECIFICS, preference_specs);
+    item3.Put(IS_UNSYNCED, true);
+
+    MutableEntry item4(&trans, CREATE_NEW_UPDATE_ITEM,
+                       id_factory.NewServerId());
+    ASSERT_TRUE(item4.good());
+    item4.Put(SERVER_SPECIFICS, preference_specs);
+    item4.Put(IS_UNAPPLIED_UPDATE, true);
+
+    MutableEntry item5(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item5.good());
+    item5.Put(SPECIFICS, autofill_specs);
+    item5.Put(SERVER_SPECIFICS, autofill_specs);
+    item5.Put(IS_UNSYNCED, true);
+
+    MutableEntry item6(&trans, CREATE_NEW_UPDATE_ITEM,
+      id_factory.NewServerId());
+    ASSERT_TRUE(item6.good());
+    item6.Put(SERVER_SPECIFICS, autofill_specs);
+    item6.Put(IS_UNAPPLIED_UPDATE, true);
+  }
+
+  dir_->SaveChanges();
+  {
+    ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
+    MetahandleSet all_set;
+    dir_->GetAllMetaHandles(&trans, &all_set);
+    ASSERT_EQ(7U, all_set.size());
+  }
+
+  dir_->PurgeEntriesWithTypeIn(types_to_purge);
+
+  // We first query the in-memory data, and then reload the directory (without
+  // saving) to verify that disk does not still have the data.
+  int test_scan_run = 0;
+  do {
+    string message = "Testing ";
+    message += test_scan_run == 0 ? "before " : "after ";
+    message += "directory reload.";
+    SCOPED_TRACE(testing::Message(message.c_str()));
+    {
+      ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
+      MetahandleSet all_set;
+      dir_->GetAllMetaHandles(&trans, &all_set);
+      EXPECT_EQ(3U, all_set.size());
+      for (MetahandleSet::iterator iter = all_set.begin();
+           iter != all_set.end(); ++iter) {
+        Entry e(&trans, GET_BY_HANDLE, *iter);
+        if (types_to_purge.count(e.GetModelType()) ||
+            types_to_purge.count(e.GetServerModelType())) {
+          FAIL() << "Illegal type should have been deleted.";
+        }
+      }
+    }
+    if (test_scan_run == 0)
+      ReloadDir();
+    test_scan_run++;
+  } while (test_scan_run < 2);
+}
+
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
   const int metahandles_to_create = 100;
-  const unsigned int number_changed = 100u;  // half of 2 * metahandles_to_create
+
+  // half of 2 * metahandles_to_create
+  const unsigned int number_changed = 100u;
   std::vector<int64> expected_dirty_metahandles;
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);

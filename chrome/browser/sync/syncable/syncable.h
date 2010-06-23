@@ -674,6 +674,7 @@ class Directory {
                            TakeSnapshotGetsAllDirtyHandlesTest);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsOnlyDirtyHandlesTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn);
 
  public:
   class EventListenerHookup;
@@ -894,6 +895,15 @@ class Directory {
                            const MetahandleSet& handles,
                            const IdFilter& idfilter);
 
+  // Purges all data associated with any entries whose ModelType or
+  // ServerModelType is found in |types|, from _both_ memory and disk.
+  // Only  valid, "real" model types are allowed in |types| (see model_type.h
+  // for definitions).  "Purge" is just meant to distinguish from "deleting"
+  // entries, which means something different in the syncable namespace.
+  // WARNING! This can be real slow, as it iterates over all entries.
+  // WARNING! Performs synchronous I/O.
+  void PurgeEntriesWithTypeIn(const std::set<ModelType>& types);
+
  private:
   // Helper to prime ids_index, parent_id_and_names_index, unsynced_metahandles
   // and unapplied_metahandles from metahandles_index.
@@ -919,7 +929,6 @@ class Directory {
 
   // Used by CheckTreeInvariants
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
-
   bool SafeToPurgeFromMemory(const EntryKernel* const entry) const;
 
   // Helper method used to implement GetFirstChildId/GetLastChildId.
@@ -950,7 +959,6 @@ class Directory {
   // violation. ID reassociation would fail after an attempted commit.
   typedef std::set<EntryKernel*,
                    LessField<StringField, UNIQUE_CLIENT_TAG> > ClientTagIndex;
-  typedef std::vector<int64> MetahandlesToPurge;
 
  private:
 
