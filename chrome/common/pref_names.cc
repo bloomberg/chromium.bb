@@ -779,6 +779,10 @@ const wchar_t kNumFoldersInOtherBookmarkFolder[] =
 // Number of keywords.
 const wchar_t kNumKeywords[] = L"user_experience_metrics.num_keywords";
 
+// Placeholder preference for disabling voice / video chat if it is ever added.
+// Currently, this does not change any behavior.
+const wchar_t kDisableVideoAndChat[] = L"disable_video_chat";
+
 // Whether Extensions are enabled.
 const wchar_t kDisableExtensions[] = L"extensions.disabled";
 

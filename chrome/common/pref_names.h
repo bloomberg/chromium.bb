@@ -283,6 +283,8 @@ extern const wchar_t kNumFoldersInOtherBookmarkFolder[];
 
 extern const wchar_t kNumKeywords[];
 
+extern const wchar_t kDisableVideoAndChat[];
+
 extern const wchar_t kDisableExtensions[];
 extern const wchar_t kShowExtensionShelf[];
 extern const wchar_t kBrowserActionContainerWidth[];
