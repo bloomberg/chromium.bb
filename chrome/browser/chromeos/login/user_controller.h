@@ -67,6 +67,9 @@ class UserController : public views::ButtonListener,
   // |index| of this user and |total_user_count| of users.
   void UpdateUserCount(int index, int total_user_count);
 
+  int user_index() const { return user_index_; }
+  bool is_user_selected() const { return is_user_selected_; }
+
   const UserManager::User& user() const { return user_; }
 
   // Resets password text and sets the enabled state of the password.
@@ -131,6 +134,12 @@ class UserController : public views::ButtonListener,
 
   // Sets the enabled state of the password field to |enable|.
   void SetPasswordEnabled(bool enable);
+
+  // User index within all the users.
+  int user_index_;
+
+  // Is this user selected now?
+  bool is_user_selected_;
 
   // Is this the guest user?
   const bool is_guest_;

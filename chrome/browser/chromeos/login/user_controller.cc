@@ -41,6 +41,31 @@ const int kUserNameGap = 4;
 // case to make border window size close to exsisting users.
 const int kControlsHeight = 30;
 
+// Widget that notifies window manager about clicking on itself.
+// Doesn't send anything if user is selected.
+class ClickNotifyingWidget : public views::WidgetGtk {
+ public:
+  ClickNotifyingWidget(views::WidgetGtk::Type type,
+                       UserController* controller)
+      : WidgetGtk(type),
+        controller_(controller) {
+  }
+
+ private:
+  gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
+    if (!controller_->is_user_selected()) {
+      WmIpc::Message message(WM_IPC_MESSAGE_WM_SELECT_LOGIN_USER);
+      message.set_param(0, controller_->user_index());
+      WmIpc::instance()->SendMessage(message);
+    }
+    return views::WidgetGtk::OnButtonPress(widget, event);
+  }
+
+  UserController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
+};
+
 }  // namespace
 
 using login::kBackgroundColor;
@@ -55,7 +80,9 @@ const int UserController::kPadding = 20;
 const int UserController::kUnselectedSize = 100;
 
 UserController::UserController(Delegate* delegate)
-    : is_guest_(true),
+    : user_index_(-1),
+      is_user_selected_(false),
+      is_guest_(true),
       delegate_(delegate),
       password_field_(NULL),
       submit_button_(NULL),
@@ -74,7 +101,9 @@ UserController::UserController(Delegate* delegate)
 
 UserController::UserController(Delegate* delegate,
                                const UserManager::User& user)
-    : is_guest_(false),
+    : user_index_(-1),
+      is_user_selected_(false),
+      is_guest_(false),
       user_(user),
       delegate_(delegate),
       password_field_(NULL),
@@ -168,6 +197,7 @@ void UserController::Login() {
 }
 
 void UserController::IsActiveChanged(bool active) {
+  is_user_selected_ = active;
   if (active) {
     delegate_->OnUserSelected(this);
     user_view_->SetMenuVisible(!is_guest_);
@@ -234,7 +264,7 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
         IDR_LOGIN_OTHER_USER));
   }
 
-  WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+  WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
   window->Init(NULL, gfx::Rect(user_view_->GetPreferredSize()));
   window->SetContentsView(user_view_);
 
@@ -267,6 +297,7 @@ void UserController::CreateBorderWindow(int index,
 }
 
 void UserController::UpdateUserCount(int index, int total_user_count) {
+  user_index_ = index;
   std::vector<int> params;
   params.push_back(index);
   params.push_back(total_user_count);
@@ -286,7 +317,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   int width = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       kUserImageSize : kUnselectedSize;
-  WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+  WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
   window->MakeTransparent();
   window->Init(NULL, gfx::Rect());
   std::wstring text = is_guest_ ? l10n_util::GetString(IDS_GUEST) :
@@ -294,7 +325,11 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   views::Label* label = new views::Label(text);
   label->SetColor(kTextColor);
   label->SetFont(font);
+  if (!is_guest_)
+    label->SetTooltipText(UTF8ToWide(user_.email()));
+
   window->SetContentsView(label);
+
   int height = label->GetPreferredSize().height();
   std::vector<int> params;
   params.push_back(index);
