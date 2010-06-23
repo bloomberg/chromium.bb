@@ -157,7 +157,9 @@ static void PrintUsage() {
           " -s safely stub out non-validating instructions\n"
           " -D dump bound socket address (if any) to this POSIX\n"
           "    descriptor\n"
-          " -Q disable platform qualification (dangerous!)\n");
+          " -Q disable platform qualification (dangerous!)\n"
+          " -I disable ELF ABI version number check (safe)\n"
+          " -l <file>  write log output to the given file\n");
 }
 
 /*
