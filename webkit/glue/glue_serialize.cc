@@ -61,11 +61,7 @@ struct SerializeObject {
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See CreateHistoryStateForURL.
 //
-#if defined(WEBKIT_BUG_40451_IS_FIXED)
 int kVersion = 9;
-#else
-int kVersion = 8;
-#endif
 
 // A bunch of convenience functions to read/write to SerializeObjects.
 // The serializers assume the input data is in the correct format and so does
@@ -311,10 +307,8 @@ static void WriteHistoryItem(
 
   WriteStringVector(item.documentState(), obj);
 
-#if defined(WEBKIT_BUG_40451_IS_FIXED)
   if (kVersion >= 9)
     WriteInteger64(item.itemSequenceNumber(), obj);
-#endif
   if (kVersion >= 6)
     WriteInteger64(item.documentSequenceNumber(), obj);
   if (kVersion >= 7) {
@@ -374,10 +368,8 @@ static WebHistoryItem ReadHistoryItem(
 
   item.setDocumentState(ReadStringVector(obj));
 
-#if defined(WEBKIT_BUG_40451_IS_FIXED)
   if (obj->version >= 9)
     item.setItemSequenceNumber(ReadInteger64(obj));
-#endif
   if (obj->version >= 6)
     item.setDocumentSequenceNumber(ReadInteger64(obj));
   if (obj->version >= 7) {
