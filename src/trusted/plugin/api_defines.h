@@ -18,7 +18,9 @@
 
 namespace plugin {
 
+// Each time a plugin instance is created, it is given a unique identifier.
 typedef NPP InstanceIdentifier;
+// Any scriptable in NPAPI is an instance of this type.
 typedef NPObject BrowserScriptableObject;
 
 }  // plugin

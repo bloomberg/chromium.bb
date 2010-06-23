@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
+#include "native_client/src/trusted/plugin/srpc/service_runtime.h"
 
 #include <map>
 #include <vector>
@@ -19,10 +19,10 @@
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
+#include "native_client/src/trusted/plugin/npapi/multimedia_socket.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/multimedia_socket.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 #include "native_client/src/trusted/plugin/srpc/socket_address.h"
 #include "native_client/src/trusted/plugin/srpc/srt_socket.h"
@@ -36,7 +36,7 @@ using std::vector;
 
 namespace plugin {
 
-ServiceRuntimeInterface::ServiceRuntimeInterface(
+ServiceRuntime::ServiceRuntime(
     BrowserInterface* browser_interface,
     Plugin* plugin) :
     browser_interface_(browser_interface),
@@ -44,29 +44,28 @@ ServiceRuntimeInterface::ServiceRuntimeInterface(
     default_socket_(NULL),
     plugin_(plugin),
     runtime_channel_(NULL),
-    multimedia_channel_(NULL),
     subprocess_(NULL) {
 }
 
 // shm is consumed (Delete invoked).
-bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
+bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
   // TODO(sehr): this should use the new
   // SelLdrLauncher::OpenSrpcChannels interface, which should be free
   // of resource leaks.
   // Channel5 was opened to communicate with the sel_ldr instance.
   // Get the first IMC message and create a socket address from it.
   nacl::Handle channel5 = subprocess_->channel();
-  PLUGIN_PRINTF(("ServiceRuntimeInterface(%p): opened %p 0x%p\n",
-                 static_cast<void *>(this), static_cast<void *>(subprocess_),
-                 reinterpret_cast<void *>(channel5)));
+  PLUGIN_PRINTF(("ServiceRuntime(%p): opened %p 0x%p\n",
+                 static_cast<void*>(this), static_cast<void*>(subprocess_),
+                 reinterpret_cast<void*>(channel5)));
   // GetSocketAddress implicitly invokes Close(channel5).
   default_socket_address_ = GetSocketAddress(plugin_, channel5);
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
+  PLUGIN_PRINTF(("ServiceRuntime::Start: "
                  "Got service channel descriptor %p\n",
-                 static_cast<void *>(default_socket_address_)));
+                 static_cast<void*>(default_socket_address_)));
 
   if (NULL == default_socket_address_) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::InitCommunication "
+    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication "
                    "no valid socket address\n"));
     browser_interface_->Alert(plugin()->instance_id(),
                               "service runtime: no valid socket address");
@@ -81,11 +80,11 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
 
   // that can be used to forcibly shut down the sel_ldr.
   PLUGIN_PRINTF((" connecting for SrtSocket\n"));
-  SocketAddress *real_socket_address =
+  SocketAddress* real_socket_address =
       static_cast<SocketAddress*>(default_socket_address_->handle());
   raw_channel = real_socket_address->Connect(NULL);
   if (NULL == raw_channel) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
+    PLUGIN_PRINTF(("ServiceRuntime::Start: "
                   "service runtime Connect failed.\n"));
     browser_interface_->Alert(plugin()->instance_id(),
                               "service runtime Connect failed");
@@ -95,7 +94,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   runtime_channel_ = new(std::nothrow) SrtSocket(raw_channel,
                                                  browser_interface_);
   if (NULL == runtime_channel_) {
-    // BUG: leaking raw_channel.
+    // TODO(sehr): leaking raw_channel.
     return false;
   }
 
@@ -141,10 +140,10 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
 
   PLUGIN_PRINTF(("invoking set_origin\n"));
   if (!runtime_channel_->SetOrigin(plugin_->nacl_module_origin())) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
+    PLUGIN_PRINTF(("ServiceRuntime::Start: "
                    "set_origin RPC failed.\n"));
     browser_interface_->Alert(plugin()->instance_id(), "Could not set origin");
-    // BUG: leaking raw_channel and runtime_channel_.
+    // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
 
@@ -154,7 +153,7 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
     // We now have an open communication channel to the sel_ldr process,
     // so we can send the nexe bits over
     if (!runtime_channel_->LoadModule(shm->desc())) {
-      PLUGIN_PRINTF(("ServiceRuntimeInterface::Start failed to send nexe\n"));
+      PLUGIN_PRINTF(("ServiceRuntime::Start failed to send nexe\n"));
       browser_interface_->Alert(plugin()->instance_id(), "failed to send nexe");
       shm->Delete();
       // TODO(gregoryd): close communication channels
@@ -182,23 +181,23 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
 
   PLUGIN_PRINTF((" invoking start_module RPC\n"));
   if (!runtime_channel_->StartModule(&load_status)) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
+    PLUGIN_PRINTF(("ServiceRuntime::Start: "
                    "module_start RPC failed.\n"));
     browser_interface_->Alert(plugin()->instance_id(),
                               "Could not start nacl module");
 
-    // BUG: leaking raw_channel and runtime_channel_.
+    // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
   PLUGIN_PRINTF((" start_module returned %d\n", load_status));
   if (LOAD_OK != load_status) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
+    PLUGIN_PRINTF(("ServiceRuntime::Start: "
                    "module load status %d",
                    load_status));
     nacl::stringstream ss;
     ss << "Loading of module failed with status " << load_status;
     browser_interface_->Alert(plugin()->instance_id(), ss.str());
-    // BUG: leaking raw_channel and runtime_channel_.
+    // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
 
@@ -212,46 +211,30 @@ bool ServiceRuntimeInterface::InitCommunication(nacl::DescWrapper* shm) {
   PLUGIN_PRINTF((" connecting for MultiMediaSocket\n"));
   raw_channel = real_socket_address->Connect(NULL);
   if (NULL == raw_channel) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
+    PLUGIN_PRINTF(("ServiceRuntime::Start: "
                    "command channel Connect failed.\n"));
-    // BUG: leaking runtime_channel_.
+    // TODO(sehr): leaking runtime_channel_.
     return false;
   }
-  PLUGIN_PRINTF((" constructing MultiMediaSocket\n"));
-  multimedia_channel_ = new(std::nothrow) MultimediaSocket(raw_channel,
-                                                           browser_interface_,
-                                                           this);
-  if (NULL == multimedia_channel_) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
-                   "MultimediaSocket channel construction failed.\n"));
-    // BUG: leaking raw_channel and runtime_channel_.
-    return false;
-  }
-
   PLUGIN_PRINTF((" connecting for javascript SRPC use\n"));
   // The third connect on the socket address returns the channel used to
   // perform SRPC calls.
   default_socket_ = real_socket_address->Connect(this);
   if (NULL == default_socket_) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
+    PLUGIN_PRINTF(("ServiceRuntime::Start: "
                    "SRPC channel Connect failed.\n"));
-    // BUG: leaking raw_channel, runtime_channel_, and multimedia_channel_.
+    // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
-
-  // Initialize the multimedia system, if necessary.
-  PLUGIN_PRINTF((" initializing multimedia subsystem\n"));
-  if (!multimedia_channel_->InitializeModuleMultimedia(plugin_)) {
-    // BUG: leaking raw_channel, runtime_channel_, multimedia_channel_,
-    // and default_socket_.
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Start: "
-                   "InitializeModuleMultimedia failed.\n"));
+  // Create the listener thread and initialize the nacl module.
+  if (!plugin_->InitializeModuleMultimedia(raw_channel, this)) {
+    // TODO(sehr): leaking raw_channel, runtime_channel_, and default_socket_.
     return false;
   }
   return true;
 }
 
-bool ServiceRuntimeInterface::Start(const char* nacl_file) {
+bool ServiceRuntime::Start(const char* nacl_file) {
   // The arguments we want to pass to the service runtime are
   // "-P 5" sets the default SRPC channel to be over descriptor 5.  The 5 needs
   //      to match the 5 in the Launcher invocation below.
@@ -267,7 +250,7 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
   vector<nacl::string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);
   vector<nacl::string> kEmpty;
 
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::ServiceRuntimeInterface"
+  PLUGIN_PRINTF(("ServiceRuntime::ServiceRuntime"
                  "(%p, %p, %s)\n",
                  static_cast<void*>(this),
                  static_cast<void*>(plugin()),
@@ -275,13 +258,13 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
 
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface: Could not create SelLdrLauncher"));
+    PLUGIN_PRINTF(("ServiceRuntime: Could not create SelLdrLauncher"));
     browser_interface_->Alert(plugin()->instance_id(),
                               "Could not create SelLdrLauncher");
     return false;
   }
   if (!subprocess_->Start(nacl_file, 5, kArgv, kEmpty)) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface: Could not start SelLdrLauncher"));
+    PLUGIN_PRINTF(("ServiceRuntime: Could not start SelLdrLauncher"));
     browser_interface_->Alert(plugin()->instance_id(),
                               "Could not start SelLdrLauncher");
     delete subprocess_;
@@ -295,12 +278,11 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
     return false;
   }
 
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::Start was successful\n"));
+  PLUGIN_PRINTF(("ServiceRuntime::Start was successful\n"));
   return true;
 }
 
-bool ServiceRuntimeInterface::Start(const char* url,
-                                    nacl::DescWrapper* shm) {
+bool ServiceRuntime::Start(const char* url, nacl::DescWrapper* shm) {
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     return false;
@@ -315,56 +297,53 @@ bool ServiceRuntimeInterface::Start(const char* url,
     return false;
   }
 
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::Start was successful\n"));
+  PLUGIN_PRINTF(("ServiceRuntime::Start was successful\n"));
   return true;
 }
 
-bool ServiceRuntimeInterface::Kill() {
+bool ServiceRuntime::Kill() {
   return subprocess_->KillChild();
 }
 
-bool ServiceRuntimeInterface::Log(int severity, nacl::string msg) {
+bool ServiceRuntime::Log(int severity, nacl::string msg) {
   return runtime_channel_->Log(severity, msg);
 }
 
-ServiceRuntimeInterface::~ServiceRuntimeInterface() {
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::~ServiceRuntimeInterface(%p)\n",
-                 static_cast<void *>(this)));
+ServiceRuntime::~ServiceRuntime() {
+  PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime(%p)\n",
+                 static_cast<void*>(this)));
 
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::~ServiceRuntimeInterface:"
-                 " deleting multimedia_channel_\n"));
-  delete multimedia_channel_;
+  plugin_->ShutdownMultimedia();
+
   delete runtime_channel_;
 
-  // ServiceRuntimeInterfaces are always shut down from the default
+  // ServiceRuntimes are always shut down from the default
   // Connected socket, so we don't delete that memory.
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::~ServiceRuntimeInterface:"
+  PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime:"
                  " deleting subprocess_\n"));
   delete subprocess_;
-  PLUGIN_PRINTF(("ServiceRuntimeInterface: shut down sel_ldr.\n"));
+  PLUGIN_PRINTF(("ServiceRuntime: shut down sel_ldr.\n"));
 }
 
-ScriptableHandle* ServiceRuntimeInterface::default_socket_address() const {
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::default_socket_address(%p) = %p\n",
-                 static_cast<void *>(
-                     const_cast<ServiceRuntimeInterface *>(this)),
-                 static_cast<void *>(const_cast<ScriptableHandle*>(
+ScriptableHandle* ServiceRuntime::default_socket_address() const {
+  PLUGIN_PRINTF(("ServiceRuntime::default_socket_address(%p) = %p\n",
+                 static_cast<void*>(const_cast<ServiceRuntime*>(this)),
+                 static_cast<void*>(const_cast<ScriptableHandle*>(
                      default_socket_address_))));
 
   return default_socket_address_;
 }
 
-ScriptableHandle* ServiceRuntimeInterface::default_socket() const {
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::default_socket(%p) = %p\n",
-                 static_cast<void *>(
-                     const_cast<ServiceRuntimeInterface *>(this)),
-           static_cast<void *>(const_cast<ScriptableHandle*>(
-               default_socket_))));
+ScriptableHandle* ServiceRuntime::default_socket() const {
+  PLUGIN_PRINTF(("ServiceRuntime::default_socket(%p) = %p\n",
+                 static_cast<void*>(const_cast<ServiceRuntime*>(this)),
+                 static_cast<void*>(const_cast<ScriptableHandle*>(
+                     default_socket_))));
 
   return default_socket_;
 }
 
-ScriptableHandle* ServiceRuntimeInterface::GetSocketAddress(
+ScriptableHandle* ServiceRuntime::GetSocketAddress(
     Plugin* plugin,
     nacl::Handle channel) {
   nacl::DescWrapper::MsgHeader header;
@@ -372,9 +351,9 @@ ScriptableHandle* ServiceRuntimeInterface::GetSocketAddress(
   unsigned char bytes[NACL_ABI_IMC_USER_BYTES_MAX];
   nacl::DescWrapper* descs[NACL_ABI_IMC_USER_DESC_MAX];
 
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::GetSocketAddress(%p, %p)\n",
-                 static_cast<void *>(plugin),
-                 reinterpret_cast<void *>(channel)));
+  PLUGIN_PRINTF(("ServiceRuntime::GetSocketAddress(%p, %p)\n",
+                 static_cast<void*>(plugin),
+                 reinterpret_cast<void*>(channel)));
 
   ScriptableHandle* retval = NULL;
   nacl::DescWrapper* imc_desc = plugin->wrapper_factory()->MakeImcSock(channel);
@@ -390,29 +369,27 @@ ScriptableHandle* ServiceRuntimeInterface::GetSocketAddress(
   ssize_t ret = imc_desc->RecvMsg(&header, 0);
   // Check that there was exactly one descriptor passed.
   if (0 > ret || 1 != header.ndescv_length) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::GetSocketAddress: "
+    PLUGIN_PRINTF(("ServiceRuntime::GetSocketAddress: "
                    "message receive failed %" NACL_PRIdS " %" NACL_PRIdNACL_SIZE
                    " %" NACL_PRIdNACL_SIZE "\n", ret,
                    header.ndescv_length,
                    header.iov_length));
     goto cleanup;
   }
-  PLUGIN_PRINTF(("ServiceRuntimeInterface::GetSocketAddress: "
+  PLUGIN_PRINTF(("ServiceRuntime::GetSocketAddress: "
                  "-X result descriptor (DescWrapper*) = %p\n",
-                 static_cast<void *>(descs[0])));
-  /* SCOPE */ {
-    retval = browser_interface_->NewScriptableHandle(
-        SocketAddress::New(plugin, descs[0]));
-  }
+                 static_cast<void*>(descs[0])));
+  retval = browser_interface_->NewScriptableHandle(
+      SocketAddress::New(plugin, descs[0]));
  cleanup:
   imc_desc->Delete();
-  PLUGIN_PRINTF((" returning %p\n", static_cast<void *>(retval)));
+  PLUGIN_PRINTF((" returning %p\n", static_cast<void*>(retval)));
   return retval;
 }
 
-bool ServiceRuntimeInterface::Shutdown() {
+bool ServiceRuntime::Shutdown() {
   if (NULL == getenv("NACLTEST_DISABLE_SHUTDOWN")) {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Shutdown: shutting down\n"));
+    PLUGIN_PRINTF(("ServiceRuntime::Shutdown: shutting down\n"));
     if (NULL != runtime_channel_) {
       return runtime_channel_->HardShutdown();
     } else {
@@ -420,7 +397,7 @@ bool ServiceRuntimeInterface::Shutdown() {
       return true;
     }
   } else {
-    PLUGIN_PRINTF(("ServiceRuntimeInterface::Shutdown: shutdown disabled\n"));
+    PLUGIN_PRINTF(("ServiceRuntime::Shutdown: shutdown disabled\n"));
     return true;  // lie.  this is for testing.
   }
 }

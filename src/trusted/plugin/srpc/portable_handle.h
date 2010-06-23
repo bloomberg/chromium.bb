@@ -62,15 +62,15 @@ class PortableHandle {
   // Derived classes can set the properties and methods they export by
   // the following three methods.
   void AddPropertyGet(RpcFunction function_ptr,
-                      const char *name,
-                      const char *outs);
+                      const char* name,
+                      const char* outs);
   void AddPropertySet(RpcFunction function_ptr,
-                      const char *name,
-                      const char *ins);
+                      const char* name,
+                      const char* ins);
   void AddMethodCall(RpcFunction function_ptr,
-                     const char *name,
-                     const char *ins,
-                     const char *outs);
+                     const char* name,
+                     const char* ins,
+                     const char* outs);
 
   // Every derived class should provide an implementation for these functions
   // to allow handling of method calls that cannot be registered at build time.

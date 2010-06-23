@@ -23,7 +23,9 @@
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
+#include "native_client/src/trusted/plugin/npapi/multimedia_socket.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
+#include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/closure.h"
@@ -31,7 +33,6 @@
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
-#include "native_client/src/trusted/plugin/srpc/video.h"
 
 namespace {
 
@@ -80,6 +81,12 @@ PluginNpapi* PluginNpapi::New(InstanceIdentifier instance_id,
     PLUGIN_PRINTF(("PluginNpapi::New: Init failed\n"));
     return NULL;
   }
+  // Set up the multimedia video support.
+  plugin->video_ = new(std::nothrow) VideoMap(plugin);
+  if (NULL == plugin->video_) {
+    return false;
+  }
+  // Create the browser scriptable handle for plugin.
   ScriptableHandle* handle = browser_interface->NewScriptableHandle(plugin);
   // handle will be NULL if plugin was NULL.
   if (NULL == handle) {
@@ -100,6 +107,14 @@ PluginNpapi::~PluginNpapi() {
   // Delete the NPModule for this plugin.
   if (NULL != module_) {
     delete module_;
+  }
+  /* SCOPE */ {
+    VideoScopedGlobalLock video_lock;
+    PLUGIN_PRINTF(("Plugin::~Plugin deleting video_\n"));
+    if (NULL != video_) {
+      delete video_;
+      video_ = NULL;
+    }
   }
   // Destroying PluginNpapi releases ownership of the plugin.
   scriptable_handle()->Unref();
@@ -406,6 +421,39 @@ void PluginNpapi::set_module(nacl::NPModule* module) {
     window.width = width();
     module->SetWindow(instance_id(), &window);
   }
+}
+
+void PluginNpapi::EnableVideo() {
+  video_->Enable();
+}
+
+bool PluginNpapi::InitializeModuleMultimedia(ScriptableHandle* raw_channel,
+                                             ServiceRuntime* service_runtime) {
+  PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia\n"));
+  multimedia_channel_ = new(std::nothrow) MultimediaSocket(raw_channel,
+                                                           browser_interface(),
+                                                           service_runtime);
+  if (NULL == multimedia_channel_) {
+    PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia: "
+                   "MultimediaSocket channel construction failed.\n"));
+    return false;
+  }
+
+  // Initialize the multimedia system.
+  if (!multimedia_channel_->InitializeModuleMultimedia(this)) {
+    PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia: "
+                   "InitializeModuleMultimedia failed.\n"));
+    delete multimedia_channel_;
+    multimedia_channel_ = NULL;
+    return false;
+  }
+  return true;
+}
+
+void PluginNpapi::ShutdownMultimedia() {
+  PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime:"
+                 " deleting multimedia_channel_\n"));
+  delete multimedia_channel_;
 }
 
 }  // namespace plugin

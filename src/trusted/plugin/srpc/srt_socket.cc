@@ -12,7 +12,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
+#include "native_client/src/trusted/plugin/srpc/service_runtime.h"
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
@@ -51,8 +51,7 @@ void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
 
 namespace plugin {
 
-SrtSocket::SrtSocket(ScriptableHandle* s,
-                     BrowserInterface* browser_interface)
+SrtSocket::SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface)
     : connected_socket_(s),
       browser_interface_(browser_interface),
       is_shut_down_(false) {
@@ -193,8 +192,8 @@ bool SrtSocket::StartModule(int *load_status) {
     return false;
   }
   bool rpc_result = connected_socket()->Invoke(kStartModuleIdent,
-                                                METHOD_CALL,
-                                                &params);
+                                               METHOD_CALL,
+                                               &params);
   if (rpc_result) {
     if (NACL_SRPC_ARG_TYPE_INT == params.outs()[0]->tag) {
       int status = params.outs()[0]->u.ival;

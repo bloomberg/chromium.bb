@@ -18,7 +18,6 @@
 #include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
-// #include "native_client/src/trusted/plugin/srpc/video.h"
 
 namespace nacl {
 class DescWrapperFactory;
@@ -27,9 +26,8 @@ class DescWrapperFactory;
 namespace plugin {
 
 class StreamShmBuffer;
-class ServiceRuntimeInterface;
+class ServiceRuntime;
 class ScriptableHandle;
-class VideoMap;
 
 class Plugin : public PortableHandle {
  public:
@@ -109,14 +107,24 @@ class Plugin : public PortableHandle {
     nacl_module_origin_ = origin;
   }
 
-  // The multimedia interface's video support.
-  virtual VideoMap* video() const { return video_; }
-
   // Each nexe has a canonical socket address that it will respond to
   // Connect requests on.
   ScriptableHandle* socket_address() const { return socket_address_; }
   // TODO(sehr): document this.
   ScriptableHandle* socket() const { return socket_; }
+
+  // The Firefox plugin multimedia interface.
+  // Enable video there.
+  virtual void EnableVideo() { }
+  // Create a listener thread and initialize the nacl module.
+  virtual bool InitializeModuleMultimedia(ScriptableHandle* raw_channel,
+                                          ServiceRuntime* service_runtime) {
+    UNREFERENCED_PARAMETER(raw_channel);
+    UNREFERENCED_PARAMETER(service_runtime);
+    return true;
+  }
+  // Shut down the multimedia system, destroying the listener thread.
+  void ShutdownMultimedia() { }
 
   // Width is the width in pixels of the region this instance occupies.
   int32_t width() const { return width_; }
@@ -141,11 +149,11 @@ class Plugin : public PortableHandle {
  protected:
   Plugin();
   virtual ~Plugin();
-  bool Init(BrowserInterface* browser_interface,
-            InstanceIdentifier instance_id,
-            int argc,
-            char* argn[],
-            char* argv[]);
+  virtual bool Init(BrowserInterface* browser_interface,
+                    InstanceIdentifier instance_id,
+                    int argc,
+                    char* argn[],
+                    char* argv[]);
   void LoadMethods();
 
  private:
@@ -158,10 +166,9 @@ class Plugin : public PortableHandle {
   char** argn_;
   char** argv_;
 
-  VideoMap* video_;
   ScriptableHandle* socket_address_;
   ScriptableHandle* socket_;
-  ServiceRuntimeInterface* service_runtime_interface_;
+  ServiceRuntime* service_runtime_;
   char* local_url_;  // (from malloc)
   char* logical_url_;  // (from malloc)
 

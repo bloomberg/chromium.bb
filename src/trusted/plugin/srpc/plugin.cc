@@ -22,18 +22,18 @@
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/nexe_arch.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
+#include "native_client/src/trusted/plugin/srpc/service_runtime.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 #include "native_client/src/trusted/plugin/srpc/socket_address.h"
 #include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
-#include "native_client/src/trusted/plugin/srpc/video.h"
 
 namespace {
 
@@ -312,7 +312,7 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
 }
 
 bool Plugin::SetSrcPropertyImpl(const nacl::string &url) {
-  if (NULL != service_runtime_interface_) {
+  if (NULL != service_runtime_) {
     PLUGIN_PRINTF(("Plugin::SetProperty: unloading previous\n"));
     // Plugin owns socket_address_ and socket_, so when we change to a new
     // socket we need to give up ownership of the old one.
@@ -320,7 +320,7 @@ bool Plugin::SetSrcPropertyImpl(const nacl::string &url) {
     socket_address_ = NULL;
     socket_->Unref();
     socket_ = NULL;
-    service_runtime_interface_ = NULL;
+    service_runtime_ = NULL;
   }
   // Load the new module if the origin of the page is valid.
   PLUGIN_PRINTF(("Plugin::SetProperty src = '%s'\n", url.c_str()));
@@ -417,12 +417,6 @@ bool Plugin::Init(BrowserInterface* browser_interface,
     }
   }
 
-  // Set up the multimedia video support.
-  video_ = new(std::nothrow) VideoMap(this);
-  if (NULL == video_) {
-    return false;
-  }
-
   // Return success.
   return true;
 }
@@ -433,7 +427,7 @@ Plugin::Plugin()
     argv_(NULL),
     socket_address_(NULL),
     socket_(NULL),
-    service_runtime_interface_(NULL),
+    service_runtime_(NULL),
     local_url_(NULL),
     logical_url_(NULL),
     origin_valid_(false),
@@ -451,17 +445,9 @@ Plugin::~Plugin() {
   // so we shut down here what we can and prevent attempts to shut down
   // other linked structures in Deallocate.
 
-  /* SCOPE */ {
-    VideoScopedGlobalLock video_lock;
-    PLUGIN_PRINTF(("Plugin::~Plugin deleting video_\n"));
-    if (NULL != video_) {
-      delete video_;
-      video_ = NULL;
-    }
-  }
   // hard shutdown
-  if (NULL != service_runtime_interface_) {
-    service_runtime_interface_->Shutdown();
+  if (NULL != service_runtime_) {
+    service_runtime_->Shutdown();
     // TODO(sehr): this needs to free the interface and set it to NULL.
   }
   // Free the socket address for this plugin, if any.
@@ -479,7 +465,7 @@ Plugin::~Plugin() {
   // Clear the pointers to the connected socket and service runtime interface.
   socket_address_ = NULL;
   socket_ = NULL;
-  service_runtime_interface_ = NULL;
+  service_runtime_ = NULL;
   PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void *>(this)));
   free(local_url_);
   free(logical_url_);
@@ -562,17 +548,16 @@ bool Plugin::Load(nacl::string logical_url,
     return false;
   }
   // Load a file via a forked sel_ldr process.
-  service_runtime_interface_ =
-      new(std::nothrow) ServiceRuntimeInterface(browser_interface, this);
-  if (NULL == service_runtime_interface_) {
-    PLUGIN_PRINTF((" ServiceRuntimeInterface Ctor failed\n"));
+  service_runtime_ = new(std::nothrow) ServiceRuntime(browser_interface, this);
+  if (NULL == service_runtime_) {
+    PLUGIN_PRINTF((" ServiceRuntime Ctor failed\n"));
     browser_interface->Alert(instance_id(),
-                             "ServiceRuntimeInterface Ctor failed");
+                             "ServiceRuntime Ctor failed");
     return false;
   }
   bool service_runtime_started = false;
   if (NULL == shmbufp) {
-    service_runtime_started = service_runtime_interface_->Start(local_url_);
+    service_runtime_started = service_runtime_->Start(local_url_);
   } else {
     int32_t size;
     NaClDesc *raw_desc = shmbufp->shm(&size);
@@ -582,8 +567,7 @@ bool Plugin::Load(nacl::string logical_url,
     }
     nacl::DescWrapper *wrapped_shm =
         wrapper_factory_->MakeGeneric(NaClDescRef(raw_desc));
-    service_runtime_started = service_runtime_interface_->Start(local_url_,
-                                                                wrapped_shm);
+    service_runtime_started = service_runtime_->Start(local_url_, wrapped_shm);
     // Start consumes the wrapped_shm.
   }
   if (!service_runtime_started) {
@@ -594,13 +578,13 @@ bool Plugin::Load(nacl::string logical_url,
   }
 
   PLUGIN_PRINTF(("  Load: started sel_ldr\n"));
-  socket_address_ = service_runtime_interface_->default_socket_address();
+  socket_address_ = service_runtime_->default_socket_address();
   PLUGIN_PRINTF(("  Load: established socket address %p\n",
            static_cast<void *>(socket_address_)));
-  socket_ = service_runtime_interface_->default_socket();
+  socket_ = service_runtime_->default_socket();
   PLUGIN_PRINTF(("  Load: established socket %p\n",
                  static_cast<void *>(socket_)));
-  // Plugin takes ownership of socket_ from service_runtime_interface_,
+  // Plugin takes ownership of socket_ from service_runtime_,
   // so we do not need to call NPN_RetainObject.
   // Invoke the onload handler, if any.
   RunOnloadHandler();
@@ -608,7 +592,7 @@ bool Plugin::Load(nacl::string logical_url,
 }
 
 bool Plugin::LogAtServiceRuntime(int severity, nacl::string msg) {
-  return service_runtime_interface_->Log(severity, msg);
+  return service_runtime_->Log(severity, msg);
 }
 
 char* Plugin::LookupArgument(const char *key) {

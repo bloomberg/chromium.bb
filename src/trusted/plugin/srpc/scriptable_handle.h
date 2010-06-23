@@ -46,7 +46,6 @@ class ScriptableHandle {
 
  protected:
   explicit ScriptableHandle(PortableHandle* handle);
-  // Protect destructor to require use of Unref.
   virtual ~ScriptableHandle();
 
  private:

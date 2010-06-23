@@ -20,6 +20,9 @@ class NPModule;
 
 namespace plugin {
 
+class MultimediaSocket;
+class VideoMap;
+
 class PluginNpapi : public nacl::NPInstance, public Plugin {
  public:
   static PluginNpapi* New(InstanceIdentifier instance_id,
@@ -53,6 +56,13 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
   static NPIdentifier kLengthIdent;
   static NPIdentifier kLocationIdent;
 
+  // The multimedia API's video interface.
+  VideoMap* video() const { return video_; }
+  virtual void EnableVideo();
+  virtual bool InitializeModuleMultimedia(ScriptableHandle* raw_channel,
+                                          ServiceRuntime* service_runtime);
+  void ShutdownMultimedia();
+
   // Support for the NaCl NPAPI proxy.
   nacl::NPModule* module() const { return module_; }
   void set_module(nacl::NPModule* module);
@@ -60,10 +70,16 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginNpapi);
-  PluginNpapi() : module_(NULL), nacl_instance_(NULL) { }
+  PluginNpapi() :
+    module_(NULL),
+    nacl_instance_(NULL),
+    video_(NULL),
+    multimedia_channel_(NULL) { }
   ~PluginNpapi();
   nacl::NPModule* module_;
   NPObject* nacl_instance_;
+  VideoMap* video_;
+  MultimediaSocket* multimedia_channel_;
 };
 
 }  // namespace plugin

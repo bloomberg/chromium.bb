@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/plugin/srpc/multimedia_socket.h"
+#include "native_client/src/trusted/plugin/npapi/multimedia_socket.h"
 
 #include <string.h>
 
@@ -16,13 +16,13 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 
+#include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
+#include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
+#include "native_client/src/trusted/plugin/srpc/service_runtime.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
-#include "native_client/src/trusted/plugin/srpc/video.h"
 
 namespace {
 
@@ -48,7 +48,7 @@ namespace plugin {
 
 MultimediaSocket::MultimediaSocket(ScriptableHandle* s,
                                    BrowserInterface* browser_interface,
-                                   ServiceRuntimeInterface* sri)
+                                   ServiceRuntime* sri)
     : connected_socket_(s),
       browser_interface_(browser_interface),
       service_runtime_(sri),
@@ -141,7 +141,7 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
         (channel->server_instance_data);
     portable_plugin = video_cb_data->portable_plugin;
     if (NULL != portable_plugin) {
-      VideoMap* video = portable_plugin->video();
+      VideoMap* video = static_cast<PluginNpapi*>(portable_plugin)->video();
       if (video) {
         video->RequestRedraw();
       }
@@ -217,7 +217,7 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin* plugin) {
   PLUGIN_PRINTF(("MultimediaSocket::InitializeModuleMultimedia(%p)\n",
                  static_cast<void*>(this)));
 
-  VideoMap* video = plugin->video();
+  VideoMap* video = static_cast<PluginNpapi*>(plugin)->video();
   ScriptableHandle* video_shared_memory = video->VideoSharedMemorySetup();
 
   // If there is no display shared memory region, don't initialize.

@@ -6,8 +6,8 @@
 
 //  The representation of 2D graphics used by the av interface.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_VIDEO_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_VIDEO_H_
 
 #ifdef NACL_STANDALONE
 
@@ -170,4 +170,4 @@ class VideoScopedGlobalLock {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_VIDEO_H_

@@ -39,7 +39,7 @@
       ['target_base=="npNaClPlugin"', {
         'sources': [
           '<@(common_sources)',
-          'srpc/video.cc',
+          'npapi/video.cc',
         ],
         'xcode_settings': {
           'WARNING_CFLAGS!': [

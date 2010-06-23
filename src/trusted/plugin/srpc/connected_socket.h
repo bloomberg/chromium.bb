@@ -18,7 +18,7 @@
 namespace plugin {
 
 class Plugin;
-class ServiceRuntimeInterface;
+class ServiceRuntime;
 class SrpcClient;
 
 // ConnectedSocket represents a connected socket that results from loading
@@ -29,7 +29,7 @@ class ConnectedSocket : public DescBasedHandle {
   static ConnectedSocket* New(Plugin* plugin,
                               nacl::DescWrapper* desc,
                               bool is_srpc_client,
-                              ServiceRuntimeInterface* serv_rtm_info);
+                              ServiceRuntime* service_runtime);
 
   virtual bool InvokeEx(uintptr_t method_id,
                         CallType call_type,
@@ -46,8 +46,8 @@ class ConnectedSocket : public DescBasedHandle {
   bool Init(Plugin* plugin,
             nacl::DescWrapper* desc,
             bool is_srpc_client,
-            ServiceRuntimeInterface* serv_rtm_info);
-  ServiceRuntimeInterface* service_runtime_info_;
+            ServiceRuntime* service_runtime);
+  ServiceRuntime* service_runtime_;
   SrpcClient* srpc_client_;
 };
 

@@ -16,7 +16,7 @@
 namespace plugin {
 
 class Plugin;
-class ServiceRuntimeInterface;
+class ServiceRuntime;
 class ScriptableHandle;
 
 
@@ -27,7 +27,7 @@ class SocketAddress : public DescBasedHandle {
   static SocketAddress* New(Plugin* plugin, nacl::DescWrapper* wrapper);
 
   // Connect to a socket address.
-  ScriptableHandle* Connect(ServiceRuntimeInterface* sri);
+  ScriptableHandle* Connect(ServiceRuntime* sri);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(SocketAddress);

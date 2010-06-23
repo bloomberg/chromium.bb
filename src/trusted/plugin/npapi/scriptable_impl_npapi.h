@@ -42,9 +42,15 @@ class ScriptableImplNpapi: public NPObject, public plugin::ScriptableHandle {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableImplNpapi);
   explicit ScriptableImplNpapi(PortableHandle* handle);
+  virtual ~ScriptableImplNpapi() { }
   // We need an allocator "helper" to allow construction from the NPAPI
   // class table while making the constructor private.
-  static NPObject* Allocate(NPP npp, NPClass* theClass);
+  static NPObject* Allocate(NPP npp, NPClass* npapi_class);
+  // And we need to be able to delete objects when the ref count drops to
+  // zero.  To retain that Unref is the only interface that might cause
+  // deletion, we need to have a method that can see the private destructor,
+  // but can be invoked by NPAPI through the class table.
+  static void Deallocate(NPObject* obj);
 };
 
 }  // namespace plugin

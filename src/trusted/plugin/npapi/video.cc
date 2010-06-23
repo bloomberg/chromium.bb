@@ -5,8 +5,7 @@
  */
 
 
-#include "native_client/src/include/nacl_base.h"
-#include "native_client/src/trusted/plugin/srpc/video.h"
+#include "native_client/src/trusted/plugin/npapi/video.h"
 
 #if NACL_OSX
 #include <Carbon/Carbon.h>
@@ -22,6 +21,7 @@
 #include <X11/keysym.h>
 #endif  // NACL_LINUX && defined(MOZ_X11)
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"

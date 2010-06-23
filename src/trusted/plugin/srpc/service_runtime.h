@@ -7,8 +7,8 @@
 // A class containing information regarding a socket connection to a
 // service runtime instance.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_INTERFACE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_INTERFACE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_H_
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
@@ -25,28 +25,26 @@ namespace plugin {
 
 class BrowserInterface;
 class ConnectedSocket;
-class MultimediaSocket;
 class Plugin;
 class SocketAddress;
 class SrtSocket;
 class ScriptableHandle;
 
-//  ServiceRuntimeInterface abstracts a NativeClient sel_ldr instance.
-//  TODO(sehr): this name does not conform to the standard.  Change to remove
-//  Interface from the name and move the files.
-class ServiceRuntimeInterface {
+//  ServiceRuntime abstracts a NativeClient sel_ldr instance.
+class ServiceRuntime {
  public:
+  // TODO(sehr): This class should also implement factory methods, using the
+  // current contents of the Start methods below.
+  ServiceRuntime(BrowserInterface* browser_interface, Plugin* plugin);
+  // The destructor terminates the sel_ldr process.
+  ~ServiceRuntime();
+
   //  The constructor is passed the name of the nacl_file (from the
   //  browser cache, typically).  It spawns a sel_ldr instance and establishes
   //  a ConnectedSocket to it.
-  ServiceRuntimeInterface(BrowserInterface* browser_interface,
-                          Plugin* plugin);
-
-  //  The destructor terminates the sel_ldr.
-  ~ServiceRuntimeInterface();
-
   bool Start(const char* nacl_file);
   bool Start(const char* url, nacl::DescWrapper *);
+
   bool Kill();
   bool Log(int severity, nacl::string msg);
   ScriptableHandle* default_socket_address() const;
@@ -56,17 +54,16 @@ class ServiceRuntimeInterface {
   bool Shutdown();
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntimeInterface);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
   bool InitCommunication(nacl::DescWrapper*);
   BrowserInterface* browser_interface_;
   ScriptableHandle* default_socket_address_;
   ScriptableHandle* default_socket_;
   Plugin* plugin_;
   SrtSocket* runtime_channel_;
-  MultimediaSocket* multimedia_channel_;
   nacl::SelLdrLauncher* subprocess_;
 };
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_INTERFACE_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SERVICE_RUNTIME_H_

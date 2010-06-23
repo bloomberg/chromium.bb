@@ -90,7 +90,7 @@ SocketAddress::~SocketAddress() {
 }
 
 // Returns a connected socket for the address.
-ScriptableHandle* SocketAddress::Connect(ServiceRuntimeInterface* sri) {
+ScriptableHandle* SocketAddress::Connect(ServiceRuntime* sri) {
   PLUGIN_PRINTF(("SocketAddress::Connect(%p)\n", static_cast<void *>(sri)));
   nacl::DescWrapper* con_desc = wrapper()->Connect();
   if (NULL == con_desc) {

@@ -52,7 +52,7 @@ class NPBridge {
   static const uint32_t kMaxArgc = 64;
   static const uint32_t kMaxArgLength = 256;
 
-  explicit NPBridge();
+  NPBridge();
   virtual ~NPBridge();
 
   // Find the bridge corresponding to a given NPP.
@@ -72,7 +72,7 @@ class NPBridge {
   }
 
   // Find the bridge corresponding to a given NaClSrpcChannel.
-  static inline NPBridge* LookupBridge(NaClSrpcChannel* channel) {
+  static NPBridge* LookupBridge(NaClSrpcChannel* channel) {
     return reinterpret_cast<NPBridge*>(channel->server_instance_data);
   }
 
@@ -106,6 +106,7 @@ class NPBridge {
   NaClSrpcChannel* channel_;
 
  private:
+  // TODO(sehr): add DISALLOW_COPY_AND_ASSIGN.
   // Adds the specified proxy to the map of NPCapability to NPObjectProxy
   void AddProxy(NPObjectProxy* proxy);
 

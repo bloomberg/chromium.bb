@@ -409,7 +409,7 @@ bool GenericInvoke(plugin::ScriptableImplNpapi* scriptable_handle,
     }
   }
 
-  // if there are any inputs - marshal them
+  // if there are any inputs - marshall them
   if (NULL != args) {
     // Marshall the arguments from NPVariants into NaClSrpcArgs
     if (!MarshallInputs(scriptable_handle,
@@ -417,7 +417,7 @@ bool GenericInvoke(plugin::ScriptableImplNpapi* scriptable_handle,
                         arg_count,
                         params.ins(),
                         params.outs())) {
-      PLUGIN_PRINTF(("Invoke: MarshalInputs failed\n"));
+      PLUGIN_PRINTF(("Invoke: MarshallInputs failed\n"));
       return false;
     }
   }
@@ -579,19 +579,6 @@ bool SetProperty(NPObject* obj,
   }
 }
 
-void Deallocate(NPObject* obj) {
-  plugin::ScriptableImplNpapi* scriptable_handle =
-      static_cast<plugin::ScriptableImplNpapi*>(obj);
-
-  PLUGIN_PRINTF(("Deallocate(%p)\n", static_cast<void*>(obj)));
-
-  // Release the contained descriptor.
-  scriptable_handle->handle()->Delete();
-  scriptable_handle->set_handle(NULL);
-  // And free the memory.
-  delete scriptable_handle;
-}
-
 void Invalidate(NPObject* obj) {
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
@@ -688,14 +675,24 @@ bool Construct(NPObject* obj,
 
 namespace plugin {
 
-// Allocation must be done through a static member of ScriptableImplNpapi,
-// because new is private and Allocate is invoked through the NPAPI
-// class table.
-NPObject* ScriptableImplNpapi::Allocate(NPP npp, NPClass* theClass) {
+NPObject* ScriptableImplNpapi::Allocate(NPP npp, NPClass* npapi_class) {
   UNREFERENCED_PARAMETER(npp);
-  UNREFERENCED_PARAMETER(theClass);
+  UNREFERENCED_PARAMETER(npapi_class);
   PLUGIN_PRINTF(("Allocate()\n"));
   return new(std::nothrow) plugin::ScriptableImplNpapi(NULL);
+}
+
+void ScriptableImplNpapi::Deallocate(NPObject* obj) {
+  plugin::ScriptableImplNpapi* scriptable_handle =
+      static_cast<plugin::ScriptableImplNpapi*>(obj);
+
+  PLUGIN_PRINTF(("Deallocate(%p)\n", static_cast<void*>(obj)));
+
+  // Release the contained descriptor.
+  scriptable_handle->handle()->Delete();
+  scriptable_handle->set_handle(NULL);
+  // And free the memory.
+  delete scriptable_handle;
 }
 
 ScriptableImplNpapi* ScriptableImplNpapi::New(PortableHandle* handle) {

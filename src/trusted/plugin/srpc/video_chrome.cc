@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/trusted/plugin/srpc/video.h"
+#include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 
 // This file provides empty implementation for video functions used in NaCl code
