@@ -33,18 +33,13 @@ class ClockMenuButtonTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ClockMenuButtonTest, TimezoneTest) {
   ClockMenuButton* clock = GetClockMenuButton();
   ASSERT_TRUE(clock != NULL);
-  // Make sure clock has a calendar.
-  ASSERT_TRUE(clock->calendar() != NULL);
-  // Update timezone and make sure clock timezone changes.
-  icu::UnicodeString id;
-  clock->calendar()->getTimeZone().getID(id);
-  UErrorCode error = U_ZERO_ERROR;
-  int zone_offset = clock->calendar()->get(UCAL_ZONE_OFFSET, error);
+  // Update timezone and make sure clock text changes.
+  std::wstring text_before = clock->text();
   StringPrefMember timezone;
   timezone.Init(prefs::kTimeZone, browser()->profile()->GetPrefs(), NULL);
   timezone.SetValue(ASCIIToWide("Asia/Hong_Kong"));
-  int zone_offset_after = clock->calendar()->get(UCAL_ZONE_OFFSET, error);
-  EXPECT_NE(zone_offset, zone_offset_after);
+  std::wstring text_after = clock->text();
+  EXPECT_NE(text_before, text_after);
 }
 
 }  // namespace chromeos

@@ -31,21 +31,6 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF); // White with 70% Alpha
   SetShowHighlighted(false);
-  // Fill text with 0s to figure out max width of text size.
-  ClearMaxTextSize();
-  std::wstring zero = ASCIIToWide("0");
-  std::wstring zerozero = ASCIIToWide("00");
-  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_AM,
-                                zero, zerozero));
-  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM,
-                                zero, zerozero));
-  max_width_one_digit = GetPreferredSize().width();
-  ClearMaxTextSize();
-  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_AM,
-                                zerozero, zerozero));
-  SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM,
-                                zerozero, zerozero));
-  max_width_two_digit = GetPreferredSize().width();
   set_alignment(TextButton::ALIGN_RIGHT);
   UpdateTextAndSetNextTimer();
   // Init member prefs so we can update the clock if prefs change.
@@ -79,34 +64,13 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 }
 
 void ClockMenuButton::UpdateText() {
-  // Use icu::Calendar because the correct timezone is set on icu::TimeZone's
-  // default timezone.
-  UErrorCode error = U_ZERO_ERROR;
-  cal_.reset(icu::Calendar::createInstance(error));
-  if (!cal_.get())
-    return;
-
-  int hour = cal_->get(UCAL_HOUR, error);
-  int minute = cal_->get(UCAL_MINUTE, error);
-  int ampm = cal_->get(UCAL_AM_PM, error);
-
-  if (hour == 0)
-    hour = 12;
-  std::wstring hour_str = IntToWString(hour);
-  std::wstring min_str = IntToWString(minute);
-  // Append a "0" before the minute if it's only a single digit.
-  if (minute < 10)
-    min_str = IntToWString(0) + min_str;
-  int msg = (ampm == UCAL_AM) ? IDS_STATUSBAR_CLOCK_SHORT_TIME_AM :
-                                IDS_STATUSBAR_CLOCK_SHORT_TIME_PM;
-
-  std::wstring time_string = l10n_util::GetStringF(msg, hour_str, min_str);
-
-  // See if the preferred size changed. If so, relayout the StatusAreaView.
   int cur_width = GetPreferredSize().width();
-  int new_width = hour < 10 ? max_width_one_digit : max_width_two_digit;
-  SetText(time_string);
-  set_max_width(new_width);
+  SetText(base::TimeFormatTimeOfDay(base::Time::Now()));
+  // TextButtons normally remember the max text size, so the button's preferred
+  // size will always be as large as the largest text ever put in it.
+  // We clear that max text size, so we can adjust the size to fit the text.
+  ClearMaxTextSize();
+  int new_width = GetPreferredSize().width();
 
   // If width has changed, we want to relayout the StatusAreaView.
   if (new_width != cur_width)

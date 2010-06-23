@@ -52,8 +52,6 @@ class ClockMenuButton : public views::MenuButton,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  const icu::Calendar* calendar() const { return cal_.get(); }
-
   // Updates the time on the menu button. Can be called by host if timezone
   // changes.
   void UpdateText();
@@ -66,7 +64,6 @@ class ClockMenuButton : public views::MenuButton,
   void UpdateTextAndSetNextTimer();
 
   base::OneShotTimer<ClockMenuButton> timer_;
-  scoped_ptr<icu::Calendar> cal_;
 
   // The clock menu.
   // NOTE: we use a scoped_ptr here as menu calls into 'this' from the
@@ -74,11 +71,6 @@ class ClockMenuButton : public views::MenuButton,
   scoped_ptr<views::Menu2> clock_menu_;
 
   StatusAreaHost* host_;
-
-  // Variables to keep track of the max width of this view when there is 1 or 2
-  // digits in the hour time.
-  int max_width_one_digit;
-  int max_width_two_digit;
 
   // Preferences for this section:
   StringPrefMember timezone_;
