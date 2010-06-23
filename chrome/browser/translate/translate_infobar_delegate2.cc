@@ -57,11 +57,6 @@ TranslateInfoBarDelegate2::TranslateInfoBarDelegate2(
        iter != language_codes.end(); ++iter) {
     std::string language_code = *iter;
 
-    if (language_code == original_language)
-      original_language_index_ = iter - language_codes.begin();
-    else if (language_code == target_language)
-      target_language_index_ = iter - language_codes.begin();
-
     string16 language_name = GetLanguageDisplayableName(language_code);
     // Insert the language in languages_ in alphabetical order.
     std::vector<LanguageNamePair>::iterator iter2;
@@ -71,6 +66,15 @@ TranslateInfoBarDelegate2::TranslateInfoBarDelegate2(
     }
     languages_.insert(iter2, LanguageNamePair(language_code, language_name));
   }
+  for (std::vector<LanguageNamePair>::const_iterator iter = languages_.begin();
+       iter != languages_.end(); ++iter) {
+    std::string language_code = iter->first;
+    if (language_code == original_language)
+      original_language_index_ = iter - languages_.begin();
+    else if (language_code == target_language)
+      target_language_index_ = iter - languages_.begin();
+  }
+
   DCHECK(original_language_index_ != -1);
   DCHECK(target_language_index_ != -1);
 }
@@ -300,7 +304,7 @@ void TranslateInfoBarDelegate2::GetAfterTranslateStrings(
   strings->push_back(text.substr(offsets[1]));
 }
 
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
+#if !defined(OS_WIN) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
 // Necessary so we link OK on Mac and Linux while the new translate infobars
 // are being ported to these platforms.
 InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H
+#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H_
+#define CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H_
 
 #include <string>
 #include <vector>
@@ -129,20 +129,21 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   static void GetAfterTranslateStrings(std::vector<string16>* strings,
                                        bool* swap_languages);
 
+ protected:
+  // For testing.
+  TranslateInfoBarDelegate2(Type infobar_type,
+                            TranslateErrors::Type error,
+                            TabContents* tab_contents,
+                            const std::string& original_language,
+                            const std::string& target_language);
+  Type type_;
+
  private:
   typedef std::pair<std::string, string16> LanguageNamePair;
 
   // Gets the host of the page being translated, or an empty string if no URL is
   // associated with the current page.
   std::string GetPageHost();
-
-  TranslateInfoBarDelegate2(Type infobar_type,
-                            TranslateErrors::Type error,
-                            TabContents* tab_contents,
-                            const std::string& original_language,
-                            const std::string& target_language);
-
-  Type type_;
 
   // The type of fading animation if any that should be used when showing this
   // infobar.
@@ -174,5 +175,5 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate2);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H
+#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H_
 
