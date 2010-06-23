@@ -792,7 +792,7 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls) {
 }
 
 void HistoryBackend::SetPageTitle(const GURL& url,
-                                  const std::wstring& title) {
+                                  const string16& title) {
   if (!db_.get())
     return;
 
@@ -1005,7 +1005,7 @@ void HistoryBackend::QuerySegmentUsage(
 
 void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
                                                  TemplateURL::IDType keyword_id,
-                                                 const std::wstring& term) {
+                                                 const string16& term) {
   if (!db_.get())
     return;
 
@@ -1034,7 +1034,7 @@ void HistoryBackend::DeleteAllSearchTermsForKeyword(
 void HistoryBackend::GetMostRecentKeywordSearchTerms(
     scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
     TemplateURL::IDType keyword_id,
-    const std::wstring& prefix,
+    const string16& prefix,
     int max_count) {
   if (request->canceled())
     return;
@@ -1078,7 +1078,7 @@ void HistoryBackend::UpdateDownload(int64 received_bytes,
 }
 
 // Update the path of a particular download entry.
-void HistoryBackend::UpdateDownloadPath(const std::wstring& path,
+void HistoryBackend::UpdateDownloadPath(const FilePath& path,
                                         int64 db_handle) {
   if (db_.get())
     db_->UpdateDownloadPath(path, db_handle);
@@ -1110,7 +1110,7 @@ void HistoryBackend::RemoveDownloadsBetween(const Time remove_begin,
 
 void HistoryBackend::SearchDownloads(
     scoped_refptr<DownloadSearchRequest> request,
-    const std::wstring& search_text) {
+    const string16& search_text) {
   if (request->canceled())
     return;
   if (db_.get())
@@ -1120,7 +1120,7 @@ void HistoryBackend::SearchDownloads(
 }
 
 void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
-                                  const std::wstring& text_query,
+                                  const string16& text_query,
                                   const QueryOptions& options) {
   if (request->canceled())
     return;
@@ -1196,7 +1196,7 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
     result->set_reached_beginning(true);
 }
 
-void HistoryBackend::QueryHistoryFTS(const std::wstring& text_query,
+void HistoryBackend::QueryHistoryFTS(const string16& text_query,
                                      const QueryOptions& options,
                                      QueryResults* result) {
   if (!text_database_.get())

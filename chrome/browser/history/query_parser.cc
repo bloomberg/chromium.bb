@@ -1,16 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-
 #include "chrome/browser/history/query_parser.h"
+
+#include <algorithm>
 
 #include "app/l10n_util.h"
 #include "base/i18n/word_iterator.h"
 #include "base/logging.h"
 #include "base/scoped_vector.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "unicode/uscript.h"
 
 namespace {
@@ -56,7 +57,7 @@ void CoalseAndSortMatchPositions(Snippet::MatchPositions* matches) {
     CoalesceMatchesFrom(i, matches);
 }
 
-} // namespace
+}  // namespace
 
 // Inheritance structure:
 // Queries are represented as trees of QueryNodes.
@@ -66,23 +67,23 @@ void CoalseAndSortMatchPositions(Snippet::MatchPositions* matches) {
 // A QueryNodeWord is a single word in the query.
 class QueryNodeWord : public QueryNode {
  public:
-  explicit QueryNodeWord(const std::wstring& word)
+  explicit QueryNodeWord(const string16& word)
       : word_(word), literal_(false) {}
   virtual ~QueryNodeWord() {}
-  virtual int AppendToSQLiteQuery(std::wstring* query) const;
+  virtual int AppendToSQLiteQuery(string16* query) const;
   virtual bool IsWord() const { return true; }
 
-  const std::wstring& word() const { return word_; }
+  const string16& word() const { return word_; }
   void set_literal(bool literal) { literal_ = literal; }
 
   virtual bool HasMatchIn(const std::vector<QueryWord>& words,
                           Snippet::MatchPositions* match_positions) const;
 
-  virtual bool Matches(const std::wstring& word, bool exact) const;
-  virtual void AppendWords(std::vector<std::wstring>* words) const;
+  virtual bool Matches(const string16& word, bool exact) const;
+  virtual void AppendWords(std::vector<string16>* words) const;
 
  private:
-  std::wstring word_;
+  string16 word_;
   bool literal_;
 };
 
@@ -100,18 +101,18 @@ bool QueryNodeWord::HasMatchIn(const std::vector<QueryWord>& words,
   return false;
 }
 
-bool QueryNodeWord::Matches(const std::wstring& word, bool exact) const {
+bool QueryNodeWord::Matches(const string16& word, bool exact) const {
   if (exact || !QueryParser::IsWordLongEnoughForPrefixSearch(word_))
     return word == word_;
   return word.size() >= word_.size() &&
          (word_.compare(0, word_.size(), word, 0, word_.size()) == 0);
 }
 
-void QueryNodeWord::AppendWords(std::vector<std::wstring>* words) const {
+void QueryNodeWord::AppendWords(std::vector<string16>* words) const {
   words->push_back(word_);
 }
 
-int QueryNodeWord::AppendToSQLiteQuery(std::wstring* query) const {
+int QueryNodeWord::AppendToSQLiteQuery(string16* query) const {
   query->append(word_);
 
   // Use prefix search if we're not literal and long enough.
@@ -126,7 +127,7 @@ class QueryNodeList : public QueryNode {
  public:
   virtual ~QueryNodeList();
 
-  virtual int AppendToSQLiteQuery(std::wstring* query) const {
+  virtual int AppendToSQLiteQuery(string16* query) const {
     return AppendChildrenToString(query);
   }
   virtual bool IsWord() const { return false; }
@@ -140,7 +141,7 @@ class QueryNodeList : public QueryNode {
   void RemoveEmptySubnodes();
 
   // QueryNodeList is never used with Matches or HasMatchIn.
-  virtual bool Matches(const std::wstring& word, bool exact) const {
+  virtual bool Matches(const string16& word, bool exact) const {
     NOTREACHED();
     return false;
   }
@@ -149,10 +150,10 @@ class QueryNodeList : public QueryNode {
     NOTREACHED();
     return false;
   }
-  virtual void AppendWords(std::vector<std::wstring>* words) const;
+  virtual void AppendWords(std::vector<string16>* words) const;
 
  protected:
-  int AppendChildrenToString(std::wstring* query) const;
+  int AppendChildrenToString(string16* query) const;
 
   QueryNodeVector children_;
 };
@@ -178,12 +179,12 @@ void QueryNodeList::RemoveEmptySubnodes() {
   }
 }
 
-void QueryNodeList::AppendWords(std::vector<std::wstring>* words) const {
+void QueryNodeList::AppendWords(std::vector<string16>* words) const {
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->AppendWords(words);
 }
 
-int QueryNodeList::AppendChildrenToString(std::wstring* query) const {
+int QueryNodeList::AppendChildrenToString(string16* query) const {
   int num_words = 0;
   for (QueryNodeVector::const_iterator node = children_.begin();
        node != children_.end(); ++node) {
@@ -197,19 +198,19 @@ int QueryNodeList::AppendChildrenToString(std::wstring* query) const {
 // A QueryNodePhrase is a phrase query ("quoted").
 class QueryNodePhrase : public QueryNodeList {
  public:
-  virtual int AppendToSQLiteQuery(std::wstring* query) const {
+  virtual int AppendToSQLiteQuery(string16* query) const {
     query->push_back(L'"');
     int num_words = AppendChildrenToString(query);
     query->push_back(L'"');
     return num_words;
   }
 
-  virtual bool Matches(const std::wstring& word, bool exact) const;
+  virtual bool Matches(const string16& word, bool exact) const;
   virtual bool HasMatchIn(const std::vector<QueryWord>& words,
                           Snippet::MatchPositions* match_positions) const;
 };
 
-bool QueryNodePhrase::Matches(const std::wstring& word, bool exact) const {
+bool QueryNodePhrase::Matches(const string16& word, bool exact) const {
   NOTREACHED();
   return false;
 }
@@ -243,7 +244,7 @@ QueryParser::QueryParser() {
 }
 
 // static
-bool QueryParser::IsWordLongEnoughForPrefixSearch(const std::wstring& word) {
+bool QueryParser::IsWordLongEnoughForPrefixSearch(const string16& word) {
   DCHECK(word.size() > 0);
   size_t minimum_length = 3;
   // We intentionally exclude Hangul Jamos (both Conjoining and compatibility)
@@ -264,15 +265,15 @@ static bool IsQueryQuote(wchar_t ch) {
          ch == 0x201e;    // double low-9 quotation mark
 }
 
-int QueryParser::ParseQuery(const std::wstring& query,
-                            std::wstring* sqlite_query) {
+int QueryParser::ParseQuery(const string16& query,
+                            string16* sqlite_query) {
   QueryNodeList root;
   if (!ParseQueryImpl(query, &root))
     return 0;
   return root.AppendToSQLiteQuery(sqlite_query);
 }
 
-void QueryParser::ParseQuery(const std::wstring& query,
+void QueryParser::ParseQuery(const string16& query,
                              std::vector<QueryNode*>* nodes) {
   QueryNodeList root;
   if (ParseQueryImpl(l10n_util::ToLower(query), &root))
@@ -280,22 +281,22 @@ void QueryParser::ParseQuery(const std::wstring& query,
 }
 
 
-void QueryParser::ExtractQueryWords(const std::wstring& query,
-                                    std::vector<std::wstring>* words) {
+void QueryParser::ExtractQueryWords(const string16& query,
+                                    std::vector<string16>* words) {
   QueryNodeList root;
   if (!ParseQueryImpl(query, &root))
     return;
   root.AppendWords(words);
 }
 
-bool QueryParser::DoesQueryMatch(const std::wstring& text,
+bool QueryParser::DoesQueryMatch(const string16& text,
                                  const std::vector<QueryNode*>& query_nodes,
                                  Snippet::MatchPositions* match_positions) {
   if (query_nodes.empty())
     return false;
 
   std::vector<QueryWord> query_words;
-  std::wstring lower_text = l10n_util::ToLower(text);
+  string16 lower_text = l10n_util::ToLower(text);
   ExtractQueryWords(lower_text, &query_words);
 
   if (query_words.empty())
@@ -319,9 +320,9 @@ bool QueryParser::DoesQueryMatch(const std::wstring& text,
   return true;
 }
 
-bool QueryParser::ParseQueryImpl(const std::wstring& query,
+bool QueryParser::ParseQueryImpl(const string16& query,
                                 QueryNodeList* root) {
-  WordIterator iter(query, WordIterator::BREAK_WORD);
+  WordIterator iter(&query, WordIterator::BREAK_WORD);
   // TODO(evanm): support a locale here
   if (!iter.Init())
     return false;
@@ -337,7 +338,7 @@ bool QueryParser::ParseQueryImpl(const std::wstring& query,
     // is not necessarily a word, but could also be a sequence of punctuation
     // or whitespace.
     if (iter.IsWord()) {
-      std::wstring word = iter.GetWord();
+      string16 word = iter.GetWord();
 
       QueryNodeWord* word_node = new QueryNodeWord(word);
       if (in_quotes)
@@ -351,7 +352,7 @@ bool QueryParser::ParseQueryImpl(const std::wstring& query,
           query_stack.push_back(quotes_node);
           in_quotes = true;
         } else {
-          query_stack.pop_back();  // stop adding to the quoted phrase
+          query_stack.pop_back();  // Stop adding to the quoted phrase.
           in_quotes = false;
         }
       }
@@ -362,9 +363,9 @@ bool QueryParser::ParseQueryImpl(const std::wstring& query,
   return true;
 }
 
-void QueryParser::ExtractQueryWords(const std::wstring& text,
+void QueryParser::ExtractQueryWords(const string16& text,
                                     std::vector<QueryWord>* words) {
-  WordIterator iter(text, WordIterator::BREAK_WORD);
+  WordIterator iter(&text, WordIterator::BREAK_WORD);
   // TODO(evanm): support a locale here
   if (!iter.Init())
     return;
@@ -374,7 +375,7 @@ void QueryParser::ExtractQueryWords(const std::wstring& text,
     // is not necessarily a word, but could also be a sequence of punctuation
     // or whitespace.
     if (iter.IsWord()) {
-      std::wstring word = iter.GetWord();
+      string16 word = iter.GetWord();
       if (!word.empty()) {
         words->push_back(QueryWord());
         words->back().word = word;

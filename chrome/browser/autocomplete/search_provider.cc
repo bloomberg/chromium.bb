@@ -328,7 +328,7 @@ void SearchProvider::ScheduleHistoryQuery(TemplateURL::IDType search_id,
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   HistoryService::Handle request_handle =
       history_service->GetMostRecentKeywordSearchTerms(
-          search_id, text, static_cast<int>(kMaxMatches),
+          search_id, WideToUTF16(text), static_cast<int>(kMaxMatches),
           &history_request_consumer_,
           NewCallback(this,
                       &SearchProvider::OnGotMostRecentKeywordSearchTerms));
@@ -537,7 +537,8 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                                             MatchMap* map) {
   for (HistoryResults::const_iterator i(results.begin()); i != results.end();
        ++i) {
-    AddMatchToMap(i->term, CalculateRelevanceForHistory(i->time, is_keyword),
+    AddMatchToMap(UTF16ToWide(i->term),
+                  CalculateRelevanceForHistory(i->time, is_keyword),
                   AutocompleteMatch::SEARCH_HISTORY, did_not_accept_suggestion,
                   is_keyword, map);
   }

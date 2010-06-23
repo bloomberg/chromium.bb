@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/history/history_types.h"
 
 struct DownloadCreateInfo;
+class FilePath;
 
 namespace sql {
 class Connection;
@@ -29,7 +30,7 @@ class DownloadDatabase {
   bool UpdateDownload(int64 received_bytes, int32 state, DownloadID db_handle);
 
   // Update the path of one download. Returns true if successful.
-  bool UpdateDownloadPath(const std::wstring& path, DownloadID db_handle);
+  bool UpdateDownloadPath(const FilePath& path, DownloadID db_handle);
 
   // Fixes state of the download entries. Sometimes entries with IN_PROGRESS
   // state are not updated during browser shutdown (particularly when crashing).
@@ -51,7 +52,7 @@ class DownloadDatabase {
 
   // Search for downloads matching the search text.
   void SearchDownloads(std::vector<int64>* results,
-                       const std::wstring& search_text);
+                       const string16& search_text);
 
  protected:
   // Returns the database for the functions in this interface.

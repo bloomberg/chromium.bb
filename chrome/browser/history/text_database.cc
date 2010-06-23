@@ -337,7 +337,7 @@ void TextDatabase::GetTextMatches(const std::string& query,
     Match& match = results->at(results->size() - 1);
     match.url.Swap(&url);
 
-    match.title = UTF8ToWide(statement.ColumnString(1));
+    match.title = statement.ColumnString16(1);
     match.time = base::Time::FromInternalValue(statement.ColumnInt64(2));
 
     // Extract any matches in the title.

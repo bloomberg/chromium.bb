@@ -1728,20 +1728,20 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   // For file URLs without a title, use the pathname instead. In the case of a
   // synthesized title, we don't want the update to count toward the "one set
   // per page of the title to history."
-  std::wstring final_title;
+  string16 final_title;
   bool explicit_set;
   if (entry->url().SchemeIsFile() && title.empty()) {
-    final_title = UTF8ToWide(entry->url().ExtractFileName());
+    final_title = UTF8ToUTF16(entry->url().ExtractFileName());
     explicit_set = false;  // Don't count synthetic titles toward the set limit.
   } else {
-    TrimWhitespace(title, TRIM_ALL, &final_title);
+    TrimWhitespace(WideToUTF16Hack(title), TRIM_ALL, &final_title);
     explicit_set = true;
   }
 
-  if (final_title == UTF16ToWideHack(entry->title()))
+  if (final_title == entry->title())
     return false;  // Nothing changed, don't bother.
 
-  entry->set_title(WideToUTF16Hack(final_title));
+  entry->set_title(final_title);
 
   // Update the history system for this page.
   if (!profile()->IsOffTheRecord() && !received_page_title_) {
@@ -1755,7 +1755,7 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
   }
 
   // Lastly, set the title for the view.
-  view_->SetPageTitle(final_title);
+  view_->SetPageTitle(UTF16ToWideHack(final_title));
 
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_TITLE_UPDATED,

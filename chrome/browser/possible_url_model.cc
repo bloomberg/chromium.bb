@@ -53,7 +53,7 @@ void PossibleURLModel::Reload(Profile *profile) {
         options.end_time - TimeDelta::FromDays(kPossibleURLTimeScope);
     options.max_count = 50;
 
-    hs->QueryHistory(std::wstring(), options, &consumer_,
+    hs->QueryHistory(string16(), options, &consumer_,
         NewCallback(this, &PossibleURLModel::OnHistoryQueryComplete));
   }
 }
@@ -69,7 +69,7 @@ void PossibleURLModel::OnHistoryQueryComplete(HistoryService::Handle h,
     results_[i].index = i;
     results_[i].display_url =
         gfx::SortedDisplayURL((*result)[i].url(), languages);
-    results_[i].title = (*result)[i].title();
+    results_[i].title = UTF16ToWide((*result)[i].title());
   }
 
   // The old version of this code would filter out all but the most recent

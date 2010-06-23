@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
@@ -195,14 +196,14 @@ TEST_F(RedirectTest, ServerReference) {
 // B) does not take place.
 TEST_F(RedirectTest, NoHttpToFile) {
   scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(kDocRoot, NULL);
+      HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("http_to_file.html");
   GURL file_url = net::FilePathToFileURL(test_file);
 
   GURL initial_url = server->TestServerPage(
-    "client-redirect?" + file_url.spec());
+      "client-redirect?" + file_url.spec());
 
   NavigateToURL(initial_url);
   // UITest will check for crashes. We make sure the title doesn't match the
@@ -211,7 +212,7 @@ TEST_F(RedirectTest, NoHttpToFile) {
   ASSERT_TRUE(tab_proxy.get());
   std::wstring actual_title;
   ASSERT_TRUE(tab_proxy->GetTabTitle(&actual_title));
-  EXPECT_NE(L"File!", actual_title);
+  EXPECT_NE("File!", WideToUTF8(actual_title));
 }
 
 // Ensures that non-user initiated location changes (within page) are
@@ -269,7 +270,7 @@ TEST_F(RedirectTest,
   NavigateToURL(final_url);
 
   std::wstring tab_title;
-  std::wstring final_url_title = L"Title Of Awesomeness";
+  std::wstring final_url_title = UTF8ToWide("Title Of Awesomeness");
   // Wait till the final page has been loaded.
   for (int i = 0; i < 10; ++i) {
     PlatformThread::Sleep(sleep_timeout_ms());

@@ -242,7 +242,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
           child_node.GetTypedUrlSpecifics());
       history::URLRow new_url(GURL(typed_url.url()));
 
-      new_url.set_title(UTF8ToWide(typed_url.title()));
+      new_url.set_title(UTF8ToUTF16(typed_url.title()));
       new_url.set_typed_count(typed_url.typed_count());
       DCHECK(typed_url.visit_size());
       new_url.set_visit_count(typed_url.visit_size());
@@ -279,7 +279,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
                                            history::VisitVector* visits) {
     GURL gurl(url);
     URLRow history_url(gurl);
-    history_url.set_title(UTF8ToWide(title));
+    history_url.set_title(UTF8ToUTF16(title));
     history_url.set_typed_count(typed_count);
     history_url.set_last_visit(
         base::Time::FromInternalValue(last_visit));

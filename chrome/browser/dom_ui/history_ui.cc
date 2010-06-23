@@ -160,7 +160,7 @@ void BrowsingHistoryHandler::HandleGetHistory(const Value* value) {
   options.end_time -= base::TimeDelta::FromDays(day - 1);
 
   // Need to remember the query string for our results.
-  search_text_ = std::wstring();
+  search_text_ = string16();
 
   HistoryService* hs =
       dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -176,7 +176,7 @@ void BrowsingHistoryHandler::HandleSearchHistory(const Value* value) {
 
   // Get arguments (if any).
   int month = 0;
-  std::wstring query;
+  string16 query;
   ExtractSearchHistoryArguments(value, &month, &query);
 
   // Set the query ranges for the given month.
@@ -278,7 +278,7 @@ void BrowsingHistoryHandler::QueryComplete(
     } else {
       page_value->SetString(L"dateShort",
           base::TimeFormatShortDate(page.visit_time()));
-      page_value->SetString(L"snippet", page.snippet().text());
+      page_value->SetStringFromUTF16(L"snippet", page.snippet().text());
     }
     page_value->SetBoolean(L"starred",
         dom_ui_->GetProfile()->GetBookmarkModel()->IsBookmarked(page.url()));
@@ -286,7 +286,7 @@ void BrowsingHistoryHandler::QueryComplete(
   }
 
   DictionaryValue info_value;
-  info_value.SetString(L"term", search_text_);
+  info_value.SetStringFromUTF16(L"term", search_text_);
   info_value.SetBoolean(L"finished", results->reached_beginning());
 
   dom_ui_->CallJavascriptFunction(L"historyResult", info_value, results_value);
@@ -298,7 +298,8 @@ void BrowsingHistoryHandler::RemoveComplete() {
 }
 
 void BrowsingHistoryHandler::ExtractSearchHistoryArguments(const Value* value,
-    int* month, std::wstring* query) {
+                                                           int* month,
+                                                           string16* query) {
   *month = 0;
 
   if (value && value->GetType() == Value::TYPE_LIST) {
@@ -310,7 +311,7 @@ void BrowsingHistoryHandler::ExtractSearchHistoryArguments(const Value* value,
         list_member->GetType() == Value::TYPE_STRING) {
       const StringValue* string_value =
         static_cast<const StringValue*>(list_member);
-      string_value->GetAsString(query);
+      string_value->GetAsUTF16(query);
     }
 
     // Get search month.
@@ -401,9 +402,9 @@ HistoryUI::HistoryUI(TabContents* contents) : DOMUI(contents) {
 }
 
 // static
-const GURL HistoryUI::GetHistoryURLWithSearchText(const std::wstring& text) {
+const GURL HistoryUI::GetHistoryURLWithSearchText(const string16& text) {
   return GURL(std::string(chrome::kChromeUIHistoryURL) + "#q=" +
-              EscapeQueryParamValue(WideToUTF8(text), true));
+              EscapeQueryParamValue(UTF16ToUTF8(text), true));
 }
 
 // static

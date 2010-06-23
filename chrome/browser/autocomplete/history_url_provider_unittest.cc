@@ -20,73 +20,73 @@ using base::TimeDelta;
 
 struct TestURLInfo {
   std::string url;
-  std::wstring title;
+  std::string title;
   int visit_count;
   int typed_count;
 };
 
 // Contents of the test database.
 static TestURLInfo test_db[] = {
-  {"http://www.google.com/", L"Google", 3, 3},
+  {"http://www.google.com/", "Google", 3, 3},
 
   // High-quality pages should get a host synthesized as a lower-quality match.
-  {"http://slashdot.org/favorite_page.html", L"Favorite page", 200, 100},
+  {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100},
 
   // Less popular pages should have hosts synthesized as higher-quality
   // matches.
-  {"http://kerneltrap.org/not_very_popular.html", L"Less popular", 4, 0},
+  {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0},
 
   // Unpopular pages should not appear in the results at all.
-  {"http://freshmeat.net/unpopular.html", L"Unpopular", 1, 1},
+  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 1},
 
   // If a host has a match, we should pick it up during host synthesis.
-  {"http://news.google.com/?ned=us&topic=n", L"Google News - U.S.", 2, 2},
-  {"http://news.google.com/", L"Google News", 1, 1},
+  {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2},
+  {"http://news.google.com/", "Google News", 1, 1},
 
   // Suggested short URLs must be "good enough" and must match user input.
-  {"http://foo.com/", L"Dir", 5, 5},
-  {"http://foo.com/dir/", L"Dir", 2, 2},
-  {"http://foo.com/dir/another/", L"Dir", 5, 1},
-  {"http://foo.com/dir/another/again/", L"Dir", 10, 0},
-  {"http://foo.com/dir/another/again/myfile.html", L"File", 10, 2},
+  {"http://foo.com/", "Dir", 5, 5},
+  {"http://foo.com/dir/", "Dir", 2, 2},
+  {"http://foo.com/dir/another/", "Dir", 5, 1},
+  {"http://foo.com/dir/another/again/", "Dir", 10, 0},
+  {"http://foo.com/dir/another/again/myfile.html", "File", 10, 2},
 
   // We throw in a lot of extra URLs here to make sure we're testing the
   // history database's query, not just the autocomplete provider.
-  {"http://startest.com/y/a", L"A", 2, 2},
-  {"http://startest.com/y/b", L"B", 5, 2},
-  {"http://startest.com/x/c", L"C", 5, 2},
-  {"http://startest.com/x/d", L"D", 5, 5},
-  {"http://startest.com/y/e", L"E", 4, 2},
-  {"http://startest.com/y/f", L"F", 3, 2},
-  {"http://startest.com/y/g", L"G", 3, 2},
-  {"http://startest.com/y/h", L"H", 3, 2},
-  {"http://startest.com/y/i", L"I", 3, 2},
-  {"http://startest.com/y/j", L"J", 3, 2},
-  {"http://startest.com/y/k", L"K", 3, 2},
-  {"http://startest.com/y/l", L"L", 3, 2},
-  {"http://startest.com/y/m", L"M", 3, 2},
+  {"http://startest.com/y/a", "A", 2, 2},
+  {"http://startest.com/y/b", "B", 5, 2},
+  {"http://startest.com/x/c", "C", 5, 2},
+  {"http://startest.com/x/d", "D", 5, 5},
+  {"http://startest.com/y/e", "E", 4, 2},
+  {"http://startest.com/y/f", "F", 3, 2},
+  {"http://startest.com/y/g", "G", 3, 2},
+  {"http://startest.com/y/h", "H", 3, 2},
+  {"http://startest.com/y/i", "I", 3, 2},
+  {"http://startest.com/y/j", "J", 3, 2},
+  {"http://startest.com/y/k", "K", 3, 2},
+  {"http://startest.com/y/l", "L", 3, 2},
+  {"http://startest.com/y/m", "M", 3, 2},
 
   // A file: URL is useful for testing that fixup does the right thing w.r.t.
   // the number of trailing slashes on the user's input.
-  {"file:///C:/foo.txt", L"", 2, 2},
+  {"file:///C:/foo.txt", "", 2, 2},
 
   // Results with absurdly high typed_counts so that very generic queries like
   // "http" will give consistent results even if more data is added above.
-  {"http://bogussite.com/a", L"Bogus A", 10002, 10000},
-  {"http://bogussite.com/b", L"Bogus B", 10001, 10000},
-  {"http://bogussite.com/c", L"Bogus C", 10000, 10000},
+  {"http://bogussite.com/a", "Bogus A", 10002, 10000},
+  {"http://bogussite.com/b", "Bogus B", 10001, 10000},
+  {"http://bogussite.com/c", "Bogus C", 10000, 10000},
 
   // Domain name with number.
-  {"http://www.17173.com/", L"Domain with number", 3, 3},
+  {"http://www.17173.com/", "Domain with number", 3, 3},
 
   // URLs to test exact-matching behavior.
-  {"http://go/", L"Intranet URL", 1, 1},
-  {"http://gooey/", L"Intranet URL 2", 5, 5},
+  {"http://go/", "Intranet URL", 1, 1},
+  {"http://gooey/", "Intranet URL 2", 5, 5},
 
   // URLs for testing offset adjustment.
-  {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", L"Korean", 2, 2},
-  {"http://spaces.com/path%20with%20spaces/foo.html", L"Spaces", 2, 2},
-  {"http://ms/c++%20style%20guide", L"Style guide", 2, 2},
+  {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", "Korean", 2, 2},
+  {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2},
+  {"http://ms/c++%20style%20guide", "Style guide", 2, 2},
 };
 
 class HistoryURLProviderTest : public testing::Test,
@@ -172,7 +172,7 @@ void HistoryURLProviderTest::FillData() {
   for (size_t i = 0; i < arraysize(test_db); ++i) {
     const TestURLInfo& cur = test_db[i];
     const GURL current_url(cur.url);
-    history_service_->AddPageWithDetails(current_url, cur.title,
+    history_service_->AddPageWithDetails(current_url, UTF8ToUTF16(cur.title),
                                          cur.visit_count, cur.typed_count,
                                          visit_time, false);
   }
@@ -311,7 +311,8 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
     {"http://redirects/C", 10}
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(redirect); i++) {
-    history_service_->AddPageWithDetails(GURL(redirect[i].url), L"Title",
+    history_service_->AddPageWithDetails(GURL(redirect[i].url),
+                                         UTF8ToUTF16("Title"),
                                          redirect[i].count, redirect[i].count,
                                          Time::Now(), false);
   }

@@ -30,7 +30,7 @@ void GetHistoryItemDictionary(const history::URLRow& row,
                               DictionaryValue* value) {
   value->SetString(keys::kIdKey, Int64ToString(row.id()));
   value->SetString(keys::kUrlKey, row.url().spec());
-  value->SetString(keys::kTitleKey, row.title());
+  value->SetStringFromUTF16(keys::kTitleKey, row.title());
   value->SetReal(keys::kLastVisitdKey, MilliSecondsFromTime(row.last_visit()));
   value->SetInteger(keys::kTypedCountKey, row.typed_count());
   value->SetInteger(keys::kVisitCountKey, row.visit_count());
@@ -247,8 +247,9 @@ bool SearchHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &json));
 
   // Initialize the HistoryQuery
-  std::wstring search_text;
-  EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kTextKey, &search_text));
+  string16 search_text;
+  EXTENSION_FUNCTION_VALIDATE(json->GetStringAsUTF16(keys::kTextKey,
+                                                     &search_text));
 
   history::QueryOptions options;
   options.SetRecentDayRange(1);

@@ -71,7 +71,7 @@ void FillInStarredEntry(const sql::Statement& s, StarredEntry* entry) {
       NOTREACHED();
       break;
   }
-  entry->title = UTF8ToWide(s.ColumnString(2));
+  entry->title = s.ColumnString16(2);
   entry->date_added = base::Time::FromInternalValue(s.ColumnInt64(3));
   entry->visual_order = s.ColumnInt(4);
   entry->parent_group_id = s.ColumnInt64(5);
@@ -150,7 +150,7 @@ bool StarredURLDatabase::EnsureStarredIntegrity() {
 }
 
 bool StarredURLDatabase::UpdateStarredEntryRow(StarID star_id,
-                                               const std::wstring& title,
+                                               const string16& title,
                                                UIStarID parent_group_id,
                                                int visual_order,
                                                base::Time date_modified) {
@@ -161,7 +161,7 @@ bool StarredURLDatabase::UpdateStarredEntryRow(StarID star_id,
   if (!statement)
     return 0;
 
-  statement.BindString(0, WideToUTF8(title));
+  statement.BindString16(0, title);
   statement.BindInt64(1, parent_group_id);
   statement.BindInt(2, visual_order);
   statement.BindInt64(3, date_modified.ToInternalValue());
@@ -188,7 +188,7 @@ bool StarredURLDatabase::AdjustStarredVisualOrder(UIStarID parent_group_id,
 StarID StarredURLDatabase::CreateStarredEntryRow(URLID url_id,
                                                  UIStarID group_id,
                                                  UIStarID parent_group_id,
-                                                 const std::wstring& title,
+                                                 const string16& title,
                                                  const base::Time& date_added,
                                                  int visual_order,
                                                  StarredEntry::Type type) {
@@ -219,7 +219,7 @@ StarID StarredURLDatabase::CreateStarredEntryRow(URLID url_id,
   }
   statement.BindInt64(1, url_id);
   statement.BindInt64(2, group_id);
-  statement.BindString(3, WideToUTF8(title));
+  statement.BindString16(3, title);
   statement.BindInt64(4, date_added.ToInternalValue());
   statement.BindInt(5, visual_order);
   statement.BindInt64(6, parent_group_id);
@@ -447,7 +447,7 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
       return false;
     }
     entry.id = CreateStarredEntryRow(
-        0, entry.group_id, 0, L"other", base::Time::Now(), 0,
+        0, entry.group_id, 0, UTF8ToUTF16("other"), base::Time::Now(), 0,
         history::StarredEntry::OTHER);
     if (!entry.id) {
       NOTREACHED() << "Unable to create other bookmarks folder";

@@ -23,7 +23,7 @@ class TypedUrlModelAssociatorTest : public testing::Test {
                                          history::VisitVector* visits) {
     GURL gurl(url);
     history::URLRow history_url(gurl);
-    history_url.set_title(UTF8ToWide(title));
+    history_url.set_title(UTF8ToUTF16(title));
     history_url.set_typed_count(typed_count);
     history_url.set_last_visit(
         base::Time::FromInternalValue(last_visit));

@@ -10,7 +10,7 @@
 
 const size_t npos = -1;
 
-WordIterator::WordIterator(const std::wstring& str, BreakType break_type)
+WordIterator::WordIterator(const string16* str, BreakType break_type)
     : iter_(NULL),
       string_(str),
       break_type_(break_type),
@@ -37,26 +37,9 @@ bool WordIterator::Init() {
       NOTREACHED();
       break_type = UBRK_LINE;
   }
-#if defined(WCHAR_T_IS_UTF16)
   iter_ = ubrk_open(break_type, NULL,
-                    string_.data(), static_cast<int32_t>(string_.size()),
+                    string_->data(), static_cast<int32_t>(string_->size()),
                     &status);
-#else  // WCHAR_T_IS_UTF16
-  // When wchar_t is wider than UChar (16 bits), transform |string_| into a
-  // UChar* string.  Size the UChar* buffer to be large enough to hold twice
-  // as many UTF-16 code points as there are UCS-4 characters, in case each
-  // character translates to a UTF-16 surrogate pair, and leave room for a NUL
-  // terminator.
-  // TODO(avi): avoid this alloc
-  chars_.resize(string_.length() * sizeof(UChar) + 1);
-
-  UErrorCode error = U_ZERO_ERROR;
-  int32_t destLength;
-  u_strFromWCS(&chars_[0], chars_.size(), &destLength, string_.data(),
-               string_.length(), &error);
-
-  iter_ = ubrk_open(break_type, NULL, &chars_[0], destLength, &status);
-#endif
   if (U_FAILURE(status)) {
     NOTREACHED() << "ubrk_open failed";
     return false;
@@ -81,21 +64,7 @@ bool WordIterator::IsWord() const {
   return (ubrk_getRuleStatus(iter_) != UBRK_WORD_NONE);
 }
 
-std::wstring WordIterator::GetWord() const {
+string16 WordIterator::GetWord() const {
   DCHECK(prev_ != npos && pos_ != npos);
-#if defined(WCHAR_T_IS_UTF16)
-  return string_.substr(prev_, pos_ - prev_);
-#else  // WCHAR_T_IS_UTF16
-  // See comment in Init().  If there are no surrogate pairs,
-  // |out_length| will be exactly |in_length|, if there are surrogate
-  // pairs it will be less than |in_length|.
-  int32_t out_length;
-  UErrorCode error = U_ZERO_ERROR;
-  const int32_t in_length = pos_ - prev_;
-  std::vector<std::wstring::value_type> out_buffer(in_length);
-  u_strToWCS(&out_buffer[0], in_length, &out_length,
-             &chars_[prev_], in_length, &error);
-  DCHECK_LE(out_length, in_length);
-  return std::wstring(&out_buffer[0], out_length);
-#endif
+  return string_->substr(prev_, pos_ - prev_);
 }

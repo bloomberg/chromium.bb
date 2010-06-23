@@ -1737,8 +1737,8 @@ void AutomationProvider::GetHistoryInfo(Browser* browser,
                                         IPC::Message* reply_message) {
   consumer_.CancelAllRequests();
 
-  std::wstring search_text;
-  args->GetString(L"search_text", &search_text);
+  string16 search_text;
+  args->GetString("search_text", &search_text);
 
   // Fetch history.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -1769,12 +1769,12 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
   DictionaryValue* item = NULL;
   args->GetDictionary(L"item", &item);
   string16 url_text;
-  std::wstring title;
+  string16 title;
   base::Time time = base::Time::Now();
 
   if (item->GetString("url", &url_text)) {
     GURL gurl(url_text);
-    item->GetString(L"title", &title);  // Don't care if it fails.
+    item->GetString("title", &title);  // Don't care if it fails.
     int it;
     double dt;
     if (item->GetInteger(L"time", &it))
@@ -1793,11 +1793,8 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
                 PageTransition::LINK,
                 history::RedirectList(),
                 false);
-    if (title.length()) {
-      // TODO(jrg): add a string16 interface for
-      // HistoryService::SetPageTitle(), then use it.
+    if (title.length())
       hs->SetPageTitle(gurl, title);
-    }
   } else {
     json_return = "{\"error\": \"bad args (no URL in dict?).\"}";
     reply_return = false;

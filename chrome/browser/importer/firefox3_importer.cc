@@ -109,7 +109,7 @@ void Firefox3Importer::ImportHistory() {
       continue;
 
     history::URLRow row(url);
-    row.set_title(s.column_wstring(1));
+    row.set_title(UTF8ToUTF16(s.column_string(1)));
     row.set_visit_count(s.column_int(2));
     row.set_hidden(s.column_int(3) == 1);
     row.set_typed_count(s.column_int(4));

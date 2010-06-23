@@ -243,17 +243,20 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
 
   // Full text index for each visit.
   text_db_->AddPageData(url_row1.url(), visit_row1.url_id, visit_row1.visit_id,
-                        visit_row1.visit_time, L"title", UTF8ToUTF16("body"));
+                        visit_row1.visit_time, UTF8ToUTF16("title"),
+                        UTF8ToUTF16("body"));
 
   text_db_->AddPageData(url_row2.url(), visit_row2.url_id, visit_row2.visit_id,
-                        visit_row2.visit_time, L"title", UTF8ToUTF16("body"));
+                        visit_row2.visit_time, UTF8ToUTF16("title"),
+                        UTF8ToUTF16("body"));
   text_db_->AddPageData(url_row2.url(), visit_row3.url_id, visit_row3.visit_id,
-                        visit_row3.visit_time, L"title", UTF8ToUTF16("body"));
+                        visit_row3.visit_time, UTF8ToUTF16("title"),
+                        UTF8ToUTF16("body"));
 
   // Note the special text in this URL. We'll search the file for this string
   // to make sure it doesn't hang around after the delete.
   text_db_->AddPageData(url_row3.url(), visit_row4.url_id, visit_row4.visit_id,
-                        visit_row4.visit_time, L"title",
+                        visit_row4.visit_time, UTF8ToUTF16("title"),
                         UTF8ToUTF16("goats body"));
 }
 
@@ -280,7 +283,8 @@ int ExpireHistoryTest::CountTextMatchesForURL(const GURL& url) {
   std::vector<TextDatabase::Match> results;
   QueryOptions options;
   Time first_time;
-  text_db_->GetTextMatches(L"body", options, &results, &first_time);
+  text_db_->GetTextMatches(UTF8ToUTF16("body"), options,
+                           &results, &first_time);
 
   int count = 0;
   for (size_t i = 0; i < results.size(); i++) {

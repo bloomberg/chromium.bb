@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
@@ -47,7 +48,7 @@ extern const char kTypedUrlTag[];
 class TypedUrlModelAssociator
   : public PerDataTypeAssociatorInterface<std::string, std::string> {
  public:
-  typedef std::vector<std::pair<GURL, std::wstring> > TypedUrlTitleVector;
+  typedef std::vector<std::pair<GURL, string16> > TypedUrlTitleVector;
   typedef std::vector<history::URLRow> TypedUrlVector;
   typedef std::vector<std::pair<history::URLID, history::URLRow> >
       TypedUrlUpdateVector;

@@ -112,7 +112,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Navigation ----------------------------------------------------------------
 
   void AddPage(scoped_refptr<HistoryAddPageArgs> request);
-  virtual void SetPageTitle(const GURL& url, const std::wstring& title);
+  virtual void SetPageTitle(const GURL& url, const string16& title);
 
   // Indexing ------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                 const GURL& url,
                 bool want_visits);
   void QueryHistory(scoped_refptr<QueryHistoryRequest> request,
-                    const std::wstring& text_query,
+                    const string16& text_query,
                     const QueryOptions& options);
   void QueryRedirectsFrom(scoped_refptr<QueryRedirectsRequest> request,
                           const GURL& url);
@@ -212,7 +212,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void QueryDownloads(scoped_refptr<DownloadQueryRequest> request);
   void CleanUpInProgressEntries();
   void UpdateDownload(int64 received_bytes, int32 state, int64 db_handle);
-  void UpdateDownloadPath(const std::wstring& path, int64 db_handle);
+  void UpdateDownloadPath(const FilePath& path, int64 db_handle);
   void CreateDownload(scoped_refptr<DownloadCreateRequest> request,
                       const DownloadCreateInfo& info);
   void RemoveDownload(int64 db_handle);
@@ -220,7 +220,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                               const base::Time remove_end);
   void RemoveDownloads(const base::Time remove_end);
   void SearchDownloads(scoped_refptr<DownloadSearchRequest>,
-                       const std::wstring& search_text);
+                       const string16& search_text);
 
   // Segment usage -------------------------------------------------------------
 
@@ -234,14 +234,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    TemplateURL::IDType keyword_id,
-                                   const std::wstring& term);
+                                   const string16& term);
 
   void DeleteAllSearchTermsForKeyword(TemplateURL::IDType keyword_id);
 
   void GetMostRecentKeywordSearchTerms(
       scoped_refptr<GetMostRecentKeywordSearchTermsRequest> request,
       TemplateURL::IDType keyword_id,
-      const std::wstring& prefix,
+      const string16& prefix,
       int max_count);
 
   // Generic operations --------------------------------------------------------
@@ -360,7 +360,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Both functions assume QueryHistory already checked the DB for validity.
   void QueryHistoryBasic(URLDatabase* url_db, VisitDatabase* visit_db,
                          const QueryOptions& options, QueryResults* result);
-  void QueryHistoryFTS(const std::wstring& text_query,
+  void QueryHistoryFTS(const string16& text_query,
                        const QueryOptions& options,
                        QueryResults* result);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ class URLDatabase {
   // Fills the given array with URLs matching the given prefix. They will be
   // sorted by typed count, then by visit count, then by visit date (most
   // recent first) up to the given maximum number. Called by HistoryURLProvider.
-  void AutocompleteForPrefix(const std::wstring& prefix,
+  void AutocompleteForPrefix(const string16& prefix,
                              size_t max_results,
                              std::vector<URLRow>* results);
 
@@ -160,7 +160,7 @@ class URLDatabase {
   // Sets the search terms for the specified url/keyword pair.
   bool SetKeywordSearchTermsForURL(URLID url_id,
                                    TemplateURL::IDType keyword_id,
-                                   const std::wstring& term);
+                                   const string16& term);
 
   // Deletes all search terms for the specified keyword that have been added by
   // way of SetKeywordSearchTermsForURL.
@@ -170,7 +170,7 @@ class URLDatabase {
   // keyword.
   void GetMostRecentKeywordSearchTerms(
       TemplateURL::IDType keyword_id,
-      const std::wstring& prefix,
+      const string16& prefix,
       int max_count,
       std::vector<KeywordSearchTermVisit>* matches);
 

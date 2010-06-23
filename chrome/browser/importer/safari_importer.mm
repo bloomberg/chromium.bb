@@ -352,7 +352,7 @@ void SafariImporter::ParseHistoryItems(
 
   for (NSDictionary* history_item in safari_history_items) {
     using base::SysNSStringToUTF8;
-    using base::SysNSStringToWide;
+    using base::SysNSStringToUTF16;
     NSString* url_ns = [history_item objectForKey:@""];
     if (!url_ns)
       continue;
@@ -370,7 +370,7 @@ void SafariImporter::ParseHistoryItems(
     if (!title_ns)
       title_ns = url_ns;
 
-    row.set_title(SysNSStringToWide(title_ns));
+    row.set_title(SysNSStringToUTF16(title_ns));
     int visit_count = [[history_item objectForKey:@"visitCount"]
                           intValue];
     row.set_visit_count(visit_count);

@@ -62,7 +62,7 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
   // matches and so this shouldn't be performance critical.
   QueryParser parser;
   ScopedVector<QueryNode> query_nodes;
-  parser.ParseQuery(query, &query_nodes.get());
+  parser.ParseQuery(WideToUTF16(query), &query_nodes.get());
 
   // The highest typed counts should be at the beginning of the results vector
   // so that the best matches will always be included in the results. The loop
@@ -115,7 +115,7 @@ void BookmarkIndex::AddMatchToResults(
   // of QueryParser may filter it out.  For example, the query
   // ["thi"] will match the bookmark titled [Thinking], but since
   // ["thi"] is quoted we don't want to do a prefix match.
-  if (parser->DoesQueryMatch(node->GetTitle(), query_nodes,
+  if (parser->DoesQueryMatch(WideToUTF16(node->GetTitle()), query_nodes,
                              &(title_match.match_positions))) {
     title_match.node = node;
     results->push_back(title_match);
@@ -129,7 +129,7 @@ bool BookmarkIndex::GetBookmarksWithTitleMatchingTerm(const std::wstring& term,
   if (i == index_.end())
     return false;
 
-  if (!QueryParser::IsWordLongEnoughForPrefixSearch(term)) {
+  if (!QueryParser::IsWordLongEnoughForPrefixSearch(WideToUTF16(term))) {
     // Term is too short for prefix match, compare using exact match.
     if (i->first != term)
       return false;  // No bookmarks with this term.
@@ -206,13 +206,23 @@ void BookmarkIndex::CombineMatches(const Index::const_iterator& index_i,
 
 std::vector<std::wstring> BookmarkIndex::ExtractQueryWords(
     const std::wstring& query) {
-  std::vector<std::wstring> terms;
+  std::vector<string16> terms;
   if (query.empty())
-    return terms;
+    return std::vector<std::wstring>();
   QueryParser parser;
   // TODO: use ICU normalization.
-  parser.ExtractQueryWords(l10n_util::ToLower(query), &terms);
+  parser.ExtractQueryWords(l10n_util::ToLower(WideToUTF16(query)), &terms);
+
+  // TODO(brettw) just remove this and return |terms| when this is converted
+  // to string16.
+#if defined(WCHAR_T_IS_UTF32)
+  std::vector<std::wstring> wterms;
+  for (size_t i = 0; i < terms.size(); i++)
+    wterms.push_back(UTF16ToWide(terms[i]));
+  return wterms;
+#else
   return terms;
+#endif
 }
 
 void BookmarkIndex::RegisterNode(const std::wstring& term,

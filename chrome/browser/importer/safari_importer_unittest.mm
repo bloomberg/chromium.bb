@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/file_test_utils.h"
@@ -58,7 +59,7 @@ TEST_F(SafariImporterTest, HistoryImport) {
 
   history::URLRow& it1 = history_items[0];
   EXPECT_EQ(it1.url(), GURL("http://www.firsthistoryitem.com/"));
-  EXPECT_EQ(it1.title(), L"First History Item Title");
+  EXPECT_EQ(it1.title(), UTF8ToUTF16("First History Item Title"));
   EXPECT_EQ(it1.visit_count(), 1);
   EXPECT_EQ(it1.hidden(), 0);
   EXPECT_EQ(it1.typed_count(), 0);
@@ -69,7 +70,7 @@ TEST_F(SafariImporterTest, HistoryImport) {
   std::string second_item_title("http://www.secondhistoryitem.com/");
   EXPECT_EQ(it2.url(), GURL(second_item_title));
   // The second item lacks a title so we expect the URL to be substituted.
-  EXPECT_EQ(base::SysWideToUTF8(it2.title()), second_item_title.c_str());
+  EXPECT_EQ(UTF16ToUTF8(it2.title()), second_item_title.c_str());
   EXPECT_EQ(it2.visit_count(), 55);
   EXPECT_EQ(it2.hidden(), 0);
   EXPECT_EQ(it2.typed_count(), 0);

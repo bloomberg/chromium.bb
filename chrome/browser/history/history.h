@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_H__
-#define CHROME_BROWSER_HISTORY_HISTORY_H__
+#ifndef CHROME_BROWSER_HISTORY_HISTORY_H_
+#define CHROME_BROWSER_HISTORY_HISTORY_H_
 
 #include <string>
 #include <vector>
@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
@@ -204,7 +205,7 @@ class HistoryService : public CancelableRequestProvider,
   // is not, this operation is ignored. This call will not update the full
   // text index. The last title set when the page is indexed will be the
   // title in the full text index.
-  void SetPageTitle(const GURL& url, const std::wstring& title);
+  void SetPageTitle(const GURL& url, const string16& title);
 
   // Indexing ------------------------------------------------------------------
 
@@ -274,7 +275,7 @@ class HistoryService : public CancelableRequestProvider,
   //
   // This isn't totally hooked up yet, this will query the "new" full text
   // database (see SetPageContents) which won't generally be set yet.
-  Handle QueryHistory(const std::wstring& text_query,
+  Handle QueryHistory(const string16& text_query,
                       const history::QueryOptions& options,
                       CancelableRequestConsumerBase* consumer,
                       QueryHistoryCallback* callback);
@@ -428,7 +429,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Called to update the history service about the path of a download.
   // This is a 'fire and forget' query.
-  void UpdateDownloadPath(const std::wstring& path, int64 db_handle);
+  void UpdateDownloadPath(const FilePath& path, int64 db_handle);
 
   // Permanently remove a download from the history system. This is a 'fire and
   // forget' operation.
@@ -446,7 +447,7 @@ class HistoryService : public CancelableRequestProvider,
   typedef Callback2<Handle, std::vector<int64>*>::Type DownloadSearchCallback;
 
   // Search for downloads that match the search text.
-  Handle SearchDownloads(const std::wstring& search_text,
+  Handle SearchDownloads(const string16& search_text,
                          CancelableRequestConsumerBase* consumer,
                          DownloadSearchCallback* callback);
 
@@ -482,7 +483,7 @@ class HistoryService : public CancelableRequestProvider,
   // id of the url, keyword_id the id of the keyword and term the search term.
   void SetKeywordSearchTermsForURL(const GURL& url,
                                    TemplateURL::IDType keyword_id,
-                                   const std::wstring& term);
+                                   const string16& term);
 
   // Deletes all search terms for the specified keyword.
   void DeleteAllSearchTermsForKeyword(TemplateURL::IDType keyword_id);
@@ -496,7 +497,7 @@ class HistoryService : public CancelableRequestProvider,
   // first.
   Handle GetMostRecentKeywordSearchTerms(
       TemplateURL::IDType keyword_id,
-      const std::wstring& prefix,
+      const string16& prefix,
       int max_count,
       CancelableRequestConsumerBase* consumer,
       GetMostRecentKeywordSearchTermsCallback* callback);
@@ -536,7 +537,7 @@ class HistoryService : public CancelableRequestProvider,
   // transaction. If this functionality is needed for importing many URLs, a
   // version that takes an array should probably be added.
   void AddPageWithDetails(const GURL& url,
-                          const std::wstring& title,
+                          const string16& title,
                           int visit_count,
                           int typed_count,
                           base::Time last_visit,
@@ -840,4 +841,4 @@ class HistoryService : public CancelableRequestProvider,
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_H__
+#endif  // CHROME_BROWSER_HISTORY_HISTORY_H_

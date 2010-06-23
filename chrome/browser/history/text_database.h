@@ -12,6 +12,7 @@
 #include "app/sql/meta_table.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -32,7 +33,7 @@ class TextDatabase {
     // The title is returned because the title in the text database and the URL
     // database may differ. This happens because we capture the title when the
     // body is captured, and don't update it later.
-    std::wstring title;
+    string16 title;
 
     // Time the page that was returned was visited.
     base::Time time;

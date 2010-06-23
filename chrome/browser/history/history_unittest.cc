@@ -594,7 +594,7 @@ TEST_F(HistoryTest, SetTitle) {
   history->AddPage(existing_url);
 
   // Set some title.
-  const std::wstring existing_title(L"Google");
+  const string16 existing_title = UTF8ToUTF16("Google");
   history->SetPageTitle(existing_url, existing_title);
 
   // Make sure the title got set.
@@ -603,12 +603,12 @@ TEST_F(HistoryTest, SetTitle) {
 
   // set a title on a nonexistent page
   const GURL nonexistent_url("http://news.google.com/");
-  const std::wstring nonexistent_title(L"Google News");
+  const string16 nonexistent_title = UTF8ToUTF16("Google News");
   history->SetPageTitle(nonexistent_url, nonexistent_title);
 
   // Make sure nothing got written.
   EXPECT_FALSE(QueryURL(history, nonexistent_url));
-  EXPECT_EQ(std::wstring(), query_url_row_.title());
+  EXPECT_EQ(string16(), query_url_row_.title());
 
   // TODO(brettw) this should also test redirects, which get the title of the
   // destination page.

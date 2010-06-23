@@ -223,9 +223,9 @@ TEST_F(TextDatabaseTest, Query) {
   EXPECT_TRUE(Time::FromInternalValue(kTime2) == results[1].time);
   EXPECT_TRUE(Time::FromInternalValue(kTime3) == results[0].time);
 
-  EXPECT_EQ(UTF8ToWide(std::string(kTitle1)), results[2].title);
-  EXPECT_EQ(UTF8ToWide(std::string(kTitle2)), results[1].title);
-  EXPECT_EQ(UTF8ToWide(std::string(kTitle3)), results[0].title);
+  EXPECT_EQ(std::string(kTitle1), UTF16ToUTF8(results[2].title));
+  EXPECT_EQ(std::string(kTitle2), UTF16ToUTF8(results[1].title));
+  EXPECT_EQ(std::string(kTitle3), UTF16ToUTF8(results[0].title));
 
   // Should have no matches in the title.
   EXPECT_EQ(0U, results[0].title_match_positions.size());
@@ -235,11 +235,11 @@ TEST_F(TextDatabaseTest, Query) {
   // We don't want to be dependent on the exact snippet algorithm, but we know
   // since we searched for "COUNTTAG" which occurs at the beginning of each
   // document, that each snippet should start with that.
-  EXPECT_TRUE(StartsWithASCII(WideToUTF8(results[0].snippet.text()),
+  EXPECT_TRUE(StartsWithASCII(UTF16ToUTF8(results[0].snippet.text()),
                               "COUNTTAG", false));
-  EXPECT_TRUE(StartsWithASCII(WideToUTF8(results[1].snippet.text()),
+  EXPECT_TRUE(StartsWithASCII(UTF16ToUTF8(results[1].snippet.text()),
                               "COUNTTAG", false));
-  EXPECT_TRUE(StartsWithASCII(WideToUTF8(results[2].snippet.text()),
+  EXPECT_TRUE(StartsWithASCII(UTF16ToUTF8(results[2].snippet.text()),
                               "COUNTTAG", false));
 }
 

@@ -10,6 +10,7 @@
 #include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
@@ -158,7 +159,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     // for more results than we need, of every prefix type, in hopes this will
     // give us far more than enough to work with.  CullRedirects() will then
     // reduce the list to the best kMaxMatches results.
-    db->AutocompleteForPrefix(i->prefix + params->input.text(),
+    db->AutocompleteForPrefix(WideToUTF16(i->prefix + params->input.text()),
                               kMaxMatches * 2, &url_matches);
     for (URLRowVector::const_iterator j(url_matches.begin());
          j != url_matches.end(); ++j) {
@@ -327,8 +328,9 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
   } else {
     // We have data for this match, use it.
     match->deletable = true;
-    match->description = info.title();
-    AutocompleteMatch::ClassifyMatchInString(input.text(), info.title(),
+    match->description = UTF16ToWide(info.title());
+    AutocompleteMatch::ClassifyMatchInString(input.text(),
+        UTF16ToWide(info.title()),
         ACMatchClassification::NONE, &match->description_class);
   }
 
@@ -882,8 +884,9 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
         match.contents.length(), ACMatchClassification::URL,
         &match.contents_class);
   }
-  match.description = info.title();
-  AutocompleteMatch::ClassifyMatchInString(params->input.text(), info.title(),
+  match.description = UTF16ToWide(info.title());
+  AutocompleteMatch::ClassifyMatchInString(params->input.text(),
+                                           UTF16ToWide(info.title()),
                                            ACMatchClassification::NONE,
                                            &match.description_class);
 

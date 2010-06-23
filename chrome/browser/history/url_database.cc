@@ -53,7 +53,7 @@ void URLDatabase::FillURLRow(sql::Statement& s, history::URLRow* i) {
   DCHECK(i);
   i->id_ = s.ColumnInt64(0);
   i->url_ = GURL(s.ColumnString(1));
-  i->title_ = UTF8ToWide(s.ColumnString(2));
+  i->title_ = s.ColumnString16(2);
   i->visit_count_ = s.ColumnInt(3);
   i->typed_count_ = s.ColumnInt(4);
   i->last_visit_ = base::Time::FromInternalValue(s.ColumnInt64(5));
@@ -118,7 +118,7 @@ bool URLDatabase::UpdateURLRow(URLID url_id,
   if (!statement)
     return false;
 
-  statement.BindString(0, WideToUTF8(info.title()));
+  statement.BindString16(0, info.title());
   statement.BindInt(1, info.visit_count());
   statement.BindInt(2, info.typed_count());
   statement.BindInt64(3, info.last_visit().ToInternalValue());
@@ -157,7 +157,7 @@ URLID URLDatabase::AddURLInternal(const history::URLRow& info,
   }
 
   statement.BindString(0, GURLToDatabaseURL(info.url()));
-  statement.BindString(1, WideToUTF8(info.title()));
+  statement.BindString16(1, info.title());
   statement.BindInt(2, info.visit_count());
   statement.BindInt(3, info.typed_count());
   statement.BindInt64(4, info.last_visit().ToInternalValue());
@@ -246,7 +246,7 @@ bool URLDatabase::IsFavIconUsed(FavIconID favicon_id) {
   return statement.Step();
 }
 
-void URLDatabase::AutocompleteForPrefix(const std::wstring& prefix,
+void URLDatabase::AutocompleteForPrefix(const string16& prefix,
                                         size_t max_results,
                                         std::vector<history::URLRow>* results) {
   // NOTE: this query originally sorted by starred as the second parameter. But
@@ -265,7 +265,7 @@ void URLDatabase::AutocompleteForPrefix(const std::wstring& prefix,
   // followed by the maximum character size. Use 8-bit strings for everything
   // so we can be sure sqlite is comparing everything in 8-bit mode. Otherwise,
   // it will have to convert strings either to UTF-8 or UTF-16 for comparison.
-  std::string prefix_utf8(WideToUTF8(prefix));
+  std::string prefix_utf8(UTF16ToUTF8(prefix));
   std::string end_query(prefix_utf8);
   end_query.push_back(std::numeric_limits<unsigned char>::max());
 
@@ -347,7 +347,7 @@ bool URLDatabase::DropKeywordSearchTermsTable() {
 
 bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
                                               TemplateURL::IDType keyword_id,
-                                              const std::wstring& term) {
+                                              const string16& term) {
   DCHECK(url_id && keyword_id && !term.empty());
 
   sql::Statement exist_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -368,8 +368,8 @@ bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
 
   statement.BindInt64(0, keyword_id);
   statement.BindInt64(1, url_id);
-  statement.BindString(2, UTF16ToUTF8(l10n_util::ToLower(WideToUTF16(term))));
-  statement.BindString(3, WideToUTF8(term));
+  statement.BindString16(2, l10n_util::ToLower(term));
+  statement.BindString16(3, term);
   return statement.Run();
 }
 
@@ -387,7 +387,7 @@ void URLDatabase::DeleteAllSearchTermsForKeyword(
 
 void URLDatabase::GetMostRecentKeywordSearchTerms(
     TemplateURL::IDType keyword_id,
-    const std::wstring& prefix,
+    const string16& prefix,
     int max_count,
     std::vector<KeywordSearchTermVisit>* matches) {
   // NOTE: the keyword_id can be zero if on first run the user does a query
@@ -407,19 +407,19 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
     return;
 
   // NOTE: Keep this ToLower() call in sync with search_provider.cc.
-  string16 lower_prefix = l10n_util::ToLower(WideToUTF16(prefix));
+  string16 lower_prefix = l10n_util::ToLower(prefix);
   // This magic gives us a prefix search.
   string16 next_prefix = lower_prefix;
   next_prefix[next_prefix.size() - 1] =
       next_prefix[next_prefix.size() - 1] + 1;
   statement.BindInt64(0, keyword_id);
-  statement.BindString(1, UTF16ToUTF8(lower_prefix));
-  statement.BindString(2, UTF16ToUTF8(next_prefix));
+  statement.BindString16(1, lower_prefix);
+  statement.BindString16(2, next_prefix);
   statement.BindInt(3, max_count);
 
   KeywordSearchTermVisit visit;
   while (statement.Step()) {
-    visit.term = UTF8ToWide(statement.ColumnString(0));
+    visit.term = statement.ColumnString16(0);
     visit.time = base::Time::FromInternalValue(statement.ColumnInt64(1));
     matches->push_back(visit);
   }

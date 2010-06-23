@@ -482,7 +482,7 @@ void DownloadManager::DoGetDownloads(
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs) {
     HistoryService::Handle h =
-        hs->SearchDownloads(search_text,
+        hs->SearchDownloads(WideToUTF16(search_text),
                             &cancelable_consumer_,
                             NewCallback(this,
                                         &DownloadManager::OnSearchComplete));
@@ -1182,7 +1182,7 @@ void DownloadManager::RenameDownload(DownloadItem* download,
   // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
-    hs->UpdateDownloadPath(new_path.ToWStringHack(), download->db_handle());
+    hs->UpdateDownloadPath(new_path, download->db_handle());
 }
 
 void DownloadManager::RemoveDownload(int64 download_handle) {

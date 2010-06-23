@@ -386,7 +386,8 @@ void TemplateURLModel::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
   if (!history)
     return;
-  history->SetKeywordSearchTermsForURL(url, t_url->id(), term);
+  history->SetKeywordSearchTermsForURL(url, t_url->id(),
+                                       WideToUTF16Hack(term));
 }
 
 void TemplateURLModel::RemoveFromMaps(const TemplateURL* template_url) {

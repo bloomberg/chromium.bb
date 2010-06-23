@@ -161,7 +161,7 @@ void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
   }
   entry->title_handle = 0;
   if (found_url && !row->title().empty()) {
-    entry->title = row->title();
+    entry->title = UTF16ToWide(row->title());
     if (observer_)
       observer_->OnItemsChanged(static_cast<int>(entry_index), 1);
   }

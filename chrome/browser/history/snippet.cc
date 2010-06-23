@@ -90,8 +90,8 @@ void AddMatch(size_t start,
   }
 }
 
-// Converts an index in a utf8 string into the index in the corresponding wide
-// string and returns the wide index. This is intended to be called in a loop
+// Converts an index in a utf8 string into the index in the corresponding utf16
+// string and returns the utf16 index. This is intended to be called in a loop
 // iterating through a utf8 string.
 //
 // utf8_string: the utf8 string.
@@ -101,19 +101,19 @@ void AddMatch(size_t start,
 //           matches offset.
 // wide_pos: current index in the wide string. This is the same as the return
 //           value.
-size_t AdvanceAndReturnWidePos(const char* utf8_string,
-                               int32_t utf8_length,
-                               int32_t offset,
-                               int32_t* utf8_pos,
-                               size_t* wide_pos) {
+size_t AdvanceAndReturnUTF16Pos(const char* utf8_string,
+                                int32_t utf8_length,
+                                int32_t offset,
+                                int32_t* utf8_pos,
+                                size_t* utf16_pos) {
   DCHECK(offset >= *utf8_pos && offset <= utf8_length);
 
   UChar32 wide_char;
   while (*utf8_pos < offset) {
     U8_NEXT(utf8_string, *utf8_pos, utf8_length, wide_char);
-    *wide_pos += (wide_char <= 0xFFFF) ? 1 : 2;
+    *utf16_pos += (wide_char <= 0xFFFF) ? 1 : 2;
   }
-  return *wide_pos;
+  return *utf16_pos;
 }
 
 // Given a character break iterator over a UTF-8 string, set the iterator
@@ -187,15 +187,15 @@ void Snippet::ConvertMatchPositionsToWide(
     Snippet::MatchPositions* match_positions) {
   DCHECK(match_positions);
   int32_t utf8_pos = 0;
-  size_t wide_pos = 0;
+  size_t utf16_pos = 0;
   const char* utf8_cstring = utf8_string.c_str();
   const int32_t utf8_length = static_cast<int32_t>(utf8_string.size());
   for (Snippet::MatchPositions::iterator i = match_positions->begin();
        i != match_positions->end(); ++i) {
-    i->first = AdvanceAndReturnWidePos(utf8_cstring, utf8_length,
-                                       i->first, &utf8_pos, &wide_pos);
-    i->second = AdvanceAndReturnWidePos(utf8_cstring, utf8_length,
-                                        i->second, &utf8_pos, &wide_pos);
+    i->first = AdvanceAndReturnUTF16Pos(utf8_cstring, utf8_length,
+                                        i->first, &utf8_pos, &utf16_pos);
+    i->second = AdvanceAndReturnUTF16Pos(utf8_cstring, utf8_length,
+                                         i->second, &utf8_pos, &utf16_pos);
   }
 }
 
@@ -204,7 +204,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
   // The length of snippets we try to produce.
   // We can generate longer snippets but stop once we cross kSnippetMaxLength.
   const size_t kSnippetMaxLength = 200;
-  const std::wstring kEllipsis = L" ... ";
+  const string16 kEllipsis = ASCIIToUTF16(" ... ");
 
   UText* document_utext = NULL;
   UErrorCode status = U_ZERO_ERROR;
@@ -220,7 +220,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
   // We build the snippet by iterating through the matches and then grabbing
   // context around each match.  If matches are near enough each other (within
   // kSnippetContext), we skip the "..." between them.
-  std::wstring snippet;
+  string16 snippet;
   size_t start = 0;
   for (size_t i = 0; i < match_positions.size(); ++i) {
     // Some shorter names for the current match.
@@ -240,12 +240,12 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
         snippet += kEllipsis;
       // Switch to DCHECK after debugging http://crbug.com/15261.
       CHECK(start < document.size());
-      snippet += UTF8ToWide(document.substr(start, match_start - start));
+      snippet += UTF8ToUTF16(document.substr(start, match_start - start));
     }
 
     // Add the match.
     const size_t first = snippet.size();
-    snippet += UTF8ToWide(document.substr(match_start,
+    snippet += UTF8ToUTF16(document.substr(match_start,
                                           match_end - match_start));
     matches_.push_back(std::make_pair(first, snippet.size()));
 
@@ -261,7 +261,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
       // Switch to DCHECK after debugging http://crbug.com/15261.
       CHECK(end >= match_end);
       CHECK(end <= document.size());
-      snippet += UTF8ToWide(document.substr(match_end, end - match_end));
+      snippet += UTF8ToUTF16(document.substr(match_end, end - match_end));
     } else {
       // No, there's either no next match or the next match is too far away.
       end = match_end;
@@ -269,7 +269,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
       // Switch to DCHECK after debugging http://crbug.com/15261.
       CHECK(end >= match_end);
       CHECK(end <= document.size());
-      snippet += UTF8ToWide(document.substr(match_end, end - match_end));
+      snippet += UTF8ToUTF16(document.substr(match_end, end - match_end));
       if (end < document.size())
         snippet += kEllipsis;
     }

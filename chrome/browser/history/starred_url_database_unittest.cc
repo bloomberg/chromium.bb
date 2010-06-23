@@ -267,7 +267,7 @@ TEST_F(StarredURLDatabaseTest, RemoveStarredEntriesWithEmptyURL) {
 
   StarredEntry entry;
   entry.url = GURL("http://google.com");
-  entry.title = L"FOO";
+  entry.title = UTF8ToUTF16("FOO");
   entry.parent_group_id = HistoryService::kBookmarkBarID;
 
   ASSERT_NE(0, CreateStarredEntry(&entry));

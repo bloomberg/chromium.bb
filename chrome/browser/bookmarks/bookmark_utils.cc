@@ -204,8 +204,8 @@ bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
 
 // Returns true if |text| contains each string in |words|. This is used when
 // searching for bookmarks.
-bool DoesBookmarkTextContainWords(const std::wstring& text,
-                                  const std::vector<std::wstring>& words) {
+bool DoesBookmarkTextContainWords(const string16& text,
+                                  const std::vector<string16>& words) {
   for (size_t i = 0; i < words.size(); ++i) {
     if (text.find(words[i]) == std::wstring::npos)
       return false;
@@ -216,16 +216,17 @@ bool DoesBookmarkTextContainWords(const std::wstring& text,
 // Returns true if |node|s title or url contains the strings in |words|.
 // |languages| argument is user's accept-language setting to decode IDN.
 bool DoesBookmarkContainWords(const BookmarkNode* node,
-                              const std::vector<std::wstring>& words,
+                              const std::vector<string16>& words,
                               const std::wstring& languages) {
   return
       DoesBookmarkTextContainWords(
-          l10n_util::ToLower(node->GetTitle()), words) ||
+          l10n_util::ToLower(WideToUTF16(node->GetTitle())), words) ||
       DoesBookmarkTextContainWords(
-          l10n_util::ToLower(UTF8ToWide(node->GetURL().spec())), words) ||
-      DoesBookmarkTextContainWords(l10n_util::ToLower(net::FormatUrl(
-          node->GetURL(), languages, net::kFormatUrlOmitNothing,
-          UnescapeRule::NORMAL, NULL, NULL, NULL)), words);
+          l10n_util::ToLower(UTF8ToUTF16(node->GetURL().spec())), words) ||
+      DoesBookmarkTextContainWords(l10n_util::ToLower(WideToUTF16(
+          net::FormatUrl(
+              node->GetURL(), languages, net::kFormatUrlOmitNothing,
+              UnescapeRule::NORMAL, NULL, NULL, NULL))), words);
 }
 
 }  // namespace
@@ -530,9 +531,9 @@ void GetBookmarksContainingText(BookmarkModel* model,
                                 size_t max_count,
                                 const std::wstring& languages,
                                 std::vector<const BookmarkNode*>* nodes) {
-  std::vector<std::wstring> words;
+  std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(l10n_util::ToLower(text), &words);
+  parser.ExtractQueryWords(l10n_util::ToLower(WideToUTF16(text)), &words);
   if (words.empty())
     return;
 
@@ -550,9 +551,9 @@ void GetBookmarksContainingText(BookmarkModel* model,
 bool DoesBookmarkContainText(const BookmarkNode* node,
                              const std::wstring& text,
                              const std::wstring& languages) {
-  std::vector<std::wstring> words;
+  std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(l10n_util::ToLower(text), &words);
+  parser.ExtractQueryWords(l10n_util::ToLower(WideToUTF16(text)), &words);
   if (words.empty())
     return false;
 

@@ -250,10 +250,12 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // Set full text index for each one.
   backend_->text_database_->AddPageData(row1.url(), row1_id, visit1_id,
                                         row1.last_visit(),
-                                        L"Title 1", UTF8ToUTF16("Body 1"));
+                                        UTF8ToUTF16("Title 1"),
+                                        UTF8ToUTF16("Body 1"));
   backend_->text_database_->AddPageData(row2.url(), row2_id, visit2_id,
                                         row2.last_visit(),
-                                        L"Title 2", UTF8ToUTF16("Body 2"));
+                                        UTF8ToUTF16("Title 2"),
+                                        UTF8ToUTF16("Body 2"));
 
   // Now finally clear all history.
   backend_->DeleteAllHistory();
@@ -298,7 +300,8 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // The full text database should have no data.
   std::vector<TextDatabase::Match> text_matches;
   Time first_time_searched;
-  backend_->text_database_->GetTextMatches(L"Body", QueryOptions(),
+  backend_->text_database_->GetTextMatches(UTF8ToUTF16("Body"),
+                                           QueryOptions(),
                                            &text_matches,
                                            &first_time_searched);
   EXPECT_EQ(0U, text_matches.size());

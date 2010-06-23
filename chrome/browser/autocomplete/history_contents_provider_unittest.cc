@@ -19,12 +19,12 @@ namespace {
 
 struct TestEntry {
   const char* url;
-  const wchar_t* title;
+  const char* title;
   const char* body;
 } test_entries[] = {
-  {"http://www.google.com/1", L"PAGEONE 1",   "FOO some body text"},
-  {"http://www.google.com/2", L"PAGEONE 2",   "FOO some more blah blah"},
-  {"http://www.google.com/3", L"PAGETHREE 3", "BAR some hello world for you"},
+  {"http://www.google.com/1", "PAGEONE 1",   "FOO some body text"},
+  {"http://www.google.com/2", "PAGEONE 2",   "FOO some more blah blah"},
+  {"http://www.google.com/3", "PAGETHREE 3", "BAR some hello world for you"},
 };
 
 class HistoryContentsProviderTest : public testing::Test,
@@ -72,7 +72,7 @@ class HistoryContentsProviderTest : public testing::Test,
 
       history_service->AddPage(url, t, id_scope, i, GURL(),
           PageTransition::LINK, history::RedirectList(), false);
-      history_service->SetPageTitle(url, test_entries[i].title);
+      history_service->SetPageTitle(url, UTF8ToUTF16(test_entries[i].title));
       history_service->SetPageContents(url, UTF8ToUTF16(test_entries[i].body));
     }
 
@@ -108,9 +108,9 @@ TEST_F(HistoryContentsProviderTest, Body) {
   const ACMatches& m = matches();
   ASSERT_EQ(2U, m.size());
   EXPECT_EQ(test_entries[0].url, m[0].destination_url.spec());
-  EXPECT_STREQ(test_entries[0].title, m[0].description.c_str());
+  EXPECT_STREQ(test_entries[0].title, WideToUTF8(m[0].description).c_str());
   EXPECT_EQ(test_entries[1].url, m[1].destination_url.spec());
-  EXPECT_STREQ(test_entries[1].title, m[1].description.c_str());
+  EXPECT_STREQ(test_entries[1].title, WideToUTF8(m[1].description).c_str());
 }
 
 TEST_F(HistoryContentsProviderTest, Title) {
@@ -121,9 +121,9 @@ TEST_F(HistoryContentsProviderTest, Title) {
   const ACMatches& m = matches();
   ASSERT_EQ(2U, m.size());
   EXPECT_EQ(test_entries[0].url, m[0].destination_url.spec());
-  EXPECT_STREQ(test_entries[0].title, m[0].description.c_str());
+  EXPECT_STREQ(test_entries[0].title, WideToUTF8(m[0].description).c_str());
   EXPECT_EQ(test_entries[1].url, m[1].destination_url.spec());
-  EXPECT_STREQ(test_entries[1].title, m[1].description.c_str());
+  EXPECT_STREQ(test_entries[1].title, WideToUTF8(m[1].description).c_str());
 }
 
 // The "minimal changes" flag should mean that we don't re-query the DB.

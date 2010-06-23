@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -990,11 +990,11 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
   for (size_t i = 0; i < results->size(); ++i) {
     DictionaryValue* page_value = new DictionaryValue;
     history::URLResult const &page = (*results)[i];
-    page_value->SetString(L"title", page.title());
+    page_value->SetStringFromUTF16(L"title", page.title());
     page_value->SetString(L"url", page.url().spec());
     page_value->SetReal(L"time",
                         static_cast<double>(page.visit_time().ToDoubleT()));
-    page_value->SetString(L"snippet", page.snippet().text());
+    page_value->SetStringFromUTF16(L"snippet", page.snippet().text());
     page_value->SetBoolean(
         L"starred",
         provider_->profile()->GetBookmarkModel()->IsBookmarked(page.url()));

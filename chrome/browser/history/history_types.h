@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/stack_container.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/history/snippet.h"
 #include "chrome/common/page_transition_types.h"
@@ -78,10 +79,10 @@ class URLRow {
   URLID id() const { return id_; }
   const GURL& url() const { return url_; }
 
-  const std::wstring& title() const {
+  const string16& title() const {
     return title_;
   }
-  void set_title(const std::wstring& title) {
+  void set_title(const string16& title) {
     // The title is frequently set to the same thing, so we don't bother
     // updating unless the string has changed.
     if (title != title_) {
@@ -149,7 +150,7 @@ class URLRow {
   // the constructor to make a new one.
   GURL url_;
 
-  std::wstring title_;
+  string16 title_;
 
   // Total number of times this URL has been visited.
   int visit_count_;
@@ -283,7 +284,7 @@ struct StarredEntry {
   StarID id;
 
   // Title.
-  std::wstring title;
+  string16 title;
 
   // When this was added.
   base::Time date_added;
@@ -506,7 +507,7 @@ struct KeywordSearchTermVisit {
   base::Time time;
 
   // The search term that was used.
-  std::wstring term;
+  string16 term;
 };
 
 // MostVisitedURL --------------------------------------------------------------

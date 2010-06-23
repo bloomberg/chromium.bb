@@ -225,7 +225,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       }
 
       history::URLRow new_url(url);
-      new_url.set_title(UTF8ToWide(typed_url.title()));
+      new_url.set_title(UTF8ToUTF16(typed_url.title()));
 
       // When we add a new url, the last visit is always added, thus we set
       // the initial visit count to one.  This value will be automatically
@@ -268,7 +268,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       }
 
       history::URLRow new_url(url);
-      new_url.set_title(UTF8ToWide(typed_url.title()));
+      new_url.set_title(UTF8ToUTF16(typed_url.title()));
       new_url.set_visit_count(old_url.visit_count());
       new_url.set_typed_count(typed_url.typed_count());
       new_url.set_last_visit(old_url.last_visit());
@@ -278,8 +278,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
         std::pair<history::URLID, history::URLRow>(old_url.id(), new_url));
 
       if (old_url.title().compare(new_url.title()) != 0) {
-        titles.push_back(std::pair<GURL, std::wstring>(new_url.url(),
-                                                       new_url.title()));
+        titles.push_back(std::pair<GURL, string16>(new_url.url(),
+                                                   new_url.title()));
       }
 
       std::vector<base::Time> added_visits;

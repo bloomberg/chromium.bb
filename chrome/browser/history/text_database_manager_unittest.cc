@@ -20,23 +20,23 @@ namespace history {
 namespace {
 
 const char* kURL1 = "http://www.google.com/asdf";
-const wchar_t* kTitle1 = L"Google A";
+const char* kTitle1 = "Google A";
 const char* kBody1 = "FOO page one.";
 
 const char* kURL2 = "http://www.google.com/qwer";
-const wchar_t* kTitle2 = L"Google B";
+const char* kTitle2 = "Google B";
 const char* kBody2 = "FOO two.";
 
 const char* kURL3 = "http://www.google.com/zxcv";
-const wchar_t* kTitle3 = L"Google C";
+const char* kTitle3 = "Google C";
 const char* kBody3 = "FOO drei";
 
 const char* kURL4 = "http://www.google.com/hjkl";
-const wchar_t* kTitle4 = L"Google D";
+const char* kTitle4 = "Google D";
 const char* kBody4 = "FOO lalala four.";
 
 const char* kURL5 = "http://www.google.com/uiop";
-const wchar_t* kTitle5 = L"Google cinq";
+const char* kTitle5 = "Google cinq";
 const char* kBody5 = "FOO page one.";
 
 // This provides a simple implementation of a URL+VisitDatabase using an
@@ -83,7 +83,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
 
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle1, UTF8ToUTF16(kBody1));
+                      visit_row.visit_time, UTF8ToUTF16(kTitle1),
+                      UTF8ToUTF16(kBody1));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -91,7 +92,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL2), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle2, UTF8ToUTF16(kBody2));
+                      visit_row.visit_time, UTF8ToUTF16(kTitle2),
+                      UTF8ToUTF16(kBody2));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -99,7 +101,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL3), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle3, UTF8ToUTF16(kBody3));
+                      visit_row.visit_time, UTF8ToUTF16(kTitle3),
+                      UTF8ToUTF16(kBody3));
 
   // Put the next ones in the next month.
   exploded.month++;
@@ -108,7 +111,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL4), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle4, UTF8ToUTF16(kBody4));
+                      visit_row.visit_time, UTF8ToUTF16(kTitle4),
+                      UTF8ToUTF16(kBody4));
 
   exploded.day_of_month++;
   visit_row.url_id = 2;
@@ -116,7 +120,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL5), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle5, UTF8ToUTF16(kBody5));
+                      visit_row.visit_time, UTF8ToUTF16(kTitle5),
+                      UTF8ToUTF16(kBody5));
 
   // Put the first one in again in the second month.
   exploded.day_of_month++;
@@ -125,7 +130,8 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_id = visit_db->AddVisit(&visit_row);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
-                      visit_row.visit_time, kTitle1, UTF8ToUTF16(kBody1));
+                      visit_row.visit_time, UTF8ToUTF16(kTitle1),
+                      UTF8ToUTF16(kBody1));
 }
 
 bool ResultsHaveURL(const std::vector<TextDatabase::Match>& results,
@@ -177,7 +183,8 @@ TEST_F(TextDatabaseManagerTest, InsertQuery) {
   options.end_time = times[times.size() - 1] + TimeDelta::FromDays(100);
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+                         &results, &first_time_searched);
 
   // We should have matched every page.
   EXPECT_EQ(6U, results.size());
@@ -204,7 +211,7 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteNoVisit) {
   // First add one without a visit.
   const GURL url(kURL1);
   manager.AddPageURL(url, 0, 0, Time::Now());
-  manager.AddPageTitle(url, kTitle1);
+  manager.AddPageTitle(url, UTF8ToUTF16(kTitle1));
   manager.AddPageContents(url, UTF8ToUTF16(kBody1));
 
   // Check that the page got added.
@@ -212,9 +219,10 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteNoVisit) {
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
 
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+                         &results, &first_time_searched);
   ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(kTitle1, results[0].title);
+  EXPECT_EQ(kTitle1, UTF16ToUTF8(results[0].title));
 }
 
 // Like InsertCompleteNoVisit but specifies a visit to update. We check that the
@@ -240,16 +248,17 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteVisit) {
   const GURL url(kURL2);
   manager.AddPageURL(url, visit.url_id, visit.visit_id, visit.visit_time);
   manager.AddPageContents(url, UTF8ToUTF16(kBody2));
-  manager.AddPageTitle(url, kTitle2);
+  manager.AddPageTitle(url, UTF8ToUTF16(kTitle2));
 
   // Check that the page got added.
   QueryOptions options;
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
 
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+                         &results, &first_time_searched);
   ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(kTitle2, results[0].title);
+  EXPECT_EQ(kTitle2, UTF16ToUTF8(results[0].title));
 
   // Check that the visit got updated for its new indexed state.
   VisitRow out_visit;
@@ -271,7 +280,7 @@ TEST_F(TextDatabaseManagerTest, InsertPartial) {
   // Now add a second one with a URL and title.
   GURL url2(kURL2);
   manager.AddPageURL(url2, 0, 0, Time::Now());
-  manager.AddPageTitle(url2, kTitle2);
+  manager.AddPageTitle(url2, UTF8ToUTF16(kTitle2));
 
   // The third one has a URL and body.
   GURL url3(kURL3);
@@ -288,7 +297,8 @@ TEST_F(TextDatabaseManagerTest, InsertPartial) {
   QueryOptions options;
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
-  manager.GetTextMatches(L"google", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("google"), options,
+                         &results, &first_time_searched);
   ASSERT_EQ(0U, results.size());
 
   // Compute a time threshold that will cause everything to be flushed, and
@@ -297,7 +307,8 @@ TEST_F(TextDatabaseManagerTest, InsertPartial) {
   manager.FlushOldChangesForTime(expire_time);
 
   // Now we should have all 3 URLs added.
-  manager.GetTextMatches(L"google", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("google"), options,
+                         &results, &first_time_searched);
   ASSERT_EQ(3U, results.size());
   EXPECT_TRUE(ResultsHaveURL(results, kURL1));
   EXPECT_TRUE(ResultsHaveURL(results, kURL2));
@@ -318,7 +329,7 @@ TEST_F(TextDatabaseManagerTest, PartialComplete) {
   // We have to have the URL in the URL and visit databases for this test to
   // work.
   URLRow url_row(url);
-  url_row.set_title(L"chocolate");
+  url_row.set_title(UTF8ToUTF16("chocolate"));
   URLID url_id = visit_db.AddURL(url_row);
   ASSERT_TRUE(url_id);
   VisitRow visit_row;
@@ -333,25 +344,27 @@ TEST_F(TextDatabaseManagerTest, PartialComplete) {
 
   // Add the title. We should be able to query based on that. The title in the
   // URL row we set above should not come into the picture.
-  manager.AddPageTitle(url, L"Some unique title");
+  manager.AddPageTitle(url, UTF8ToUTF16("Some unique title"));
   Time first_time_searched;
   QueryOptions options;
   std::vector<TextDatabase::Match> results;
-  manager.GetTextMatches(L"unique", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("unique"), options,
+                         &results, &first_time_searched);
   EXPECT_EQ(1U, results.size());
-  manager.GetTextMatches(L"chocolate", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("chocolate"), options,
+                         &results, &first_time_searched);
   EXPECT_EQ(0U, results.size());
 
   // Now add the body, which should be queryable.
   manager.AddPageContents(url, UTF8ToUTF16("Very awesome body"));
-  manager.GetTextMatches(L"awesome", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("awesome"), options, &results, &first_time_searched);
   EXPECT_EQ(1U, results.size());
 
   // Adding the body will actually copy the title from the URL table rather
   // than the previously indexed row (we made them not match above). This isn't
   // necessarily what we want, but it's how it's implemented, and we don't want
   // to regress it.
-  manager.GetTextMatches(L"chocolate", options, &results, &first_time_searched);
+  manager.GetTextMatches(UTF8ToUTF16("chocolate"), options, &results, &first_time_searched);
   EXPECT_EQ(1U, results.size());
 }
 
@@ -374,7 +387,7 @@ TEST_F(TextDatabaseManagerTest, Writing) {
     AddAllPages(manager, &visit_db, &times);
 
     // We should have matched every page.
-    manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+    manager.GetTextMatches(UTF8ToUTF16("FOO"), options, &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
   results.clear();
@@ -385,7 +398,8 @@ TEST_F(TextDatabaseManagerTest, Writing) {
     ASSERT_TRUE(manager.Init(NULL));
 
     // We should have matched every page again.
-    manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+    manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+                           &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
 }
@@ -412,7 +426,8 @@ TEST_F(TextDatabaseManagerTest, WritingTransaction) {
     // "Forget" to commit, it should be autocommittedd for us.
 
     // We should have matched every page.
-    manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+    manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+                           &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
   results.clear();
@@ -423,7 +438,8 @@ TEST_F(TextDatabaseManagerTest, WritingTransaction) {
     ASSERT_TRUE(manager.Init(NULL));
 
     // We should have matched every page again.
-    manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+    manager.GetTextMatches(UTF8ToUTF16("FOO"), options,
+                           &results, &first_time_searched);
     EXPECT_EQ(6U, results.size());
   }
 }
@@ -438,13 +454,15 @@ TEST_F(TextDatabaseManagerTest, QueryMax) {
   std::vector<Time> times;
   AddAllPages(manager, &visit_db, &times);
 
+  string16 foo = UTF8ToUTF16("FOO");
+
   QueryOptions options;
   options.begin_time = times[0] - TimeDelta::FromDays(100);
   options.end_time = times[times.size() - 1] + TimeDelta::FromDays(100);
   options.max_count = 2;
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(foo, options, &results, &first_time_searched);
 
   // We should have gotten the last two pages as results (the first page is
   // also the last).
@@ -455,7 +473,7 @@ TEST_F(TextDatabaseManagerTest, QueryMax) {
 
   // Asking for 4 pages, the first one should be in another DB.
   options.max_count = 4;
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(foo, options, &results, &first_time_searched);
 
   EXPECT_EQ(4U, results.size());
   EXPECT_TRUE(first_time_searched <= times[4]);
@@ -475,6 +493,8 @@ TEST_F(TextDatabaseManagerTest, QueryBackwards) {
   std::vector<Time> times;
   AddAllPages(manager, &visit_db, &times);
 
+  string16 foo = UTF8ToUTF16("FOO");
+
   // First do a query for all time, but with a max of 2. This will give us the
   // last two results and will tell us where to start searching when we want
   // to go back in time.
@@ -484,7 +504,7 @@ TEST_F(TextDatabaseManagerTest, QueryBackwards) {
   options.max_count = 2;
   std::vector<TextDatabase::Match> results;
   Time first_time_searched;
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(foo, options, &results, &first_time_searched);
 
   // Check that we got the last two results.
   EXPECT_EQ(2U, results.size());
@@ -494,7 +514,7 @@ TEST_F(TextDatabaseManagerTest, QueryBackwards) {
 
   // Query the previous two URLs and make sure we got the correct ones.
   options.end_time = first_time_searched;
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(foo, options, &results, &first_time_searched);
   EXPECT_EQ(2U, results.size());
   EXPECT_TRUE(first_time_searched <= times[2]);
   EXPECT_TRUE(ResultsHaveURL(results, kURL3));
@@ -502,7 +522,7 @@ TEST_F(TextDatabaseManagerTest, QueryBackwards) {
 
   // Query the previous two URLs...
   options.end_time = first_time_searched;
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(foo, options, &results, &first_time_searched);
   EXPECT_EQ(2U, results.size());
   EXPECT_TRUE(first_time_searched <= times[0]);
   EXPECT_TRUE(ResultsHaveURL(results, kURL2));
@@ -510,7 +530,7 @@ TEST_F(TextDatabaseManagerTest, QueryBackwards) {
 
   // Try to query some more, there should be no results.
   options.end_time = first_time_searched;
-  manager.GetTextMatches(L"FOO", options, &results, &first_time_searched);
+  manager.GetTextMatches(foo, options, &results, &first_time_searched);
   EXPECT_EQ(0U, results.size());
 }
 

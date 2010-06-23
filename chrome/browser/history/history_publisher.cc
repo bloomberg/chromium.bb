@@ -27,14 +27,15 @@ void HistoryPublisher::PublishPageThumbnail(
 
 void HistoryPublisher::PublishPageContent(const base::Time& time,
                                           const GURL& url,
-                                          const std::wstring& title,
+                                          const string16& title,
                                           const string16& contents) const {
+  std::wstring wide_title = UTF16ToWide(title);
   std::wstring wide_contents = UTF16ToWide(contents);
   PageData page_data = {
     time,
     url,
     wide_contents.c_str(),
-    title.c_str(),
+    wide_title.c_str(),
     NULL,
     NULL,
   };

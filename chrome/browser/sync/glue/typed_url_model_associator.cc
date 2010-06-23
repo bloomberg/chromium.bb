@@ -98,8 +98,8 @@ bool TypedUrlModelAssociator::AssociateModels() {
           WriteToSyncNode(new_url, visits, &write_node);
         }
         if (difference & DIFF_TITLE_CHANGED) {
-          titles.push_back(std::pair<GURL, std::wstring>(new_url.url(),
-                                                         new_url.title()));
+          titles.push_back(std::pair<GURL, string16>(new_url.url(),
+                                                     new_url.title()));
         }
         if (difference & DIFF_ROW_CHANGED) {
           updated_urls.push_back(
@@ -147,7 +147,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
         std::vector<base::Time>& visits = new_visits.back().second;
         history::URLRow new_url(GURL(typed_url.url()));
 
-        new_url.set_title(UTF8ToWide(typed_url.title()));
+        new_url.set_title(UTF8ToUTF16(typed_url.title()));
 
         // When we add a new url, the last visit is always added, thus we set
         // the initial visit count to one.  This value will be automatically
@@ -331,7 +331,7 @@ int TypedUrlModelAssociator::MergeUrls(
   new_url->set_visit_count(visits->size());
 
   // Convert these values only once.
-  std::wstring typed_title(UTF8ToWide(typed_url.title()));
+  string16 typed_title(UTF8ToUTF16(typed_url.title()));
   base::Time typed_visit =
       base::Time::FromInternalValue(
           typed_url.visit(typed_url.visit_size() - 1));
@@ -426,16 +426,16 @@ int TypedUrlModelAssociator::MergeUrls(
 
 // static
 void TypedUrlModelAssociator::WriteToSyncNode(
-         const history::URLRow& url,
-         const history::VisitVector& visits,
-         sync_api::WriteNode* node) {
+    const history::URLRow& url,
+    const history::VisitVector& visits,
+    sync_api::WriteNode* node) {
   DCHECK(!url.last_visit().is_null());
   DCHECK(!visits.empty());
   DCHECK(url.last_visit() == visits.back().visit_time);
 
   sync_pb::TypedUrlSpecifics typed_url;
   typed_url.set_url(url.url().spec());
-  typed_url.set_title(WideToUTF8(url.title()));
+  typed_url.set_title(UTF16ToUTF8(url.title()));
   typed_url.set_typed_count(url.typed_count());
   typed_url.set_hidden(url.hidden());
 

@@ -37,7 +37,7 @@ class HistoryPublisher {
   void PublishPageThumbnail(const std::vector<unsigned char>& thumbnail,
                             const GURL& url, const base::Time& time) const;
   void PublishPageContent(const base::Time& time, const GURL& url,
-                          const std::wstring& title,
+                          const string16& title,
                           const string16& contents) const;
   void DeleteUserHistoryBetween(const base::Time& begin_time,
                                 const base::Time& end_time) const;

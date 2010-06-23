@@ -81,7 +81,7 @@ struct ParamTraits<history::URLRow> {
   static bool Read(const Message* m, void** iter, param_type* p) {
     history::URLID id;
     GURL url;
-    std::wstring title;
+    string16 title;
     int visit_count, typed_count;
     base::Time last_visit;
     bool hidden;

@@ -1010,7 +1010,7 @@ void AutocompleteController::AddHistoryContentsShortcut() {
                               ACMatchClassification::NONE));
   }
   match.destination_url =
-      HistoryUI::GetHistoryURLWithSearchText(input_.text());
+      HistoryUI::GetHistoryURLWithSearchText(WideToUTF16(input_.text()));
   match.transition = PageTransition::AUTO_BOOKMARK;
   match.provider = history_contents_provider_;
   latest_result_.AddMatch(match);

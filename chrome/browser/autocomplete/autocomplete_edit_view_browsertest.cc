@@ -41,18 +41,18 @@ using base::TimeDelta;
 
 namespace {
 
-const wchar_t kSearchKeyword[] = L"foo";
+const char kSearchKeyword[] = "foo";
 const wchar_t kSearchKeywordKeys[] = {
   base::VKEY_F, base::VKEY_O, base::VKEY_O, 0
 };
-const wchar_t kSearchURL[] = L"http://www.foo.com/search?q={searchTerms}";
-const wchar_t kSearchShortName[] = L"foo";
-const wchar_t kSearchText[] = L"abc";
+const char kSearchURL[] = "http://www.foo.com/search?q={searchTerms}";
+const char kSearchShortName[] = "foo";
+const char kSearchText[] = "abc";
 const wchar_t kSearchTextKeys[] = {
   base::VKEY_A, base::VKEY_B, base::VKEY_C, 0
 };
 const char kSearchTextURL[] = "http://www.foo.com/search?q=abc";
-const wchar_t kSearchSingleChar[] = L"z";
+const char kSearchSingleChar[] = "z";
 const wchar_t kSearchSingleCharKeys[] = { base::VKEY_Z, 0 };
 const char kSearchSingleCharURL[] = "http://www.foo.com/search?q=z";
 
@@ -77,24 +77,24 @@ const char *kBlockedHostnames[] = {
 
 const struct TestHistoryEntry {
   const char* url;
-  const wchar_t* title;
-  const wchar_t* body;
+  const char* title;
+  const char* body;
   int visit_count;
   int typed_count;
   bool starred;
 } kHistoryEntries[] = {
-  {"http://www.bar.com/1", L"Page 1", kSearchText, 1, 1, false },
-  {"http://www.bar.com/2", L"Page 2", kSearchText, 1, 1, false },
-  {"http://www.bar.com/3", L"Page 3", kSearchText, 1, 1, false },
-  {"http://www.bar.com/4", L"Page 4", kSearchText, 1, 1, false },
-  {"http://www.bar.com/5", L"Page 5", kSearchText, 1, 1, false },
-  {"http://www.bar.com/6", L"Page 6", kSearchText, 1, 1, false },
-  {"http://www.bar.com/7", L"Page 7", kSearchText, 1, 1, false },
-  {"http://www.bar.com/8", L"Page 8", kSearchText, 1, 1, false },
-  {"http://www.bar.com/9", L"Page 9", kSearchText, 1, 1, false },
+  {"http://www.bar.com/1", "Page 1", kSearchText, 1, 1, false },
+  {"http://www.bar.com/2", "Page 2", kSearchText, 1, 1, false },
+  {"http://www.bar.com/3", "Page 3", kSearchText, 1, 1, false },
+  {"http://www.bar.com/4", "Page 4", kSearchText, 1, 1, false },
+  {"http://www.bar.com/5", "Page 5", kSearchText, 1, 1, false },
+  {"http://www.bar.com/6", "Page 6", kSearchText, 1, 1, false },
+  {"http://www.bar.com/7", "Page 7", kSearchText, 1, 1, false },
+  {"http://www.bar.com/8", "Page 8", kSearchText, 1, 1, false },
+  {"http://www.bar.com/9", "Page 9", kSearchText, 1, 1, false },
 
   // To trigger inline autocomplete.
-  {"http://www.abc.com", L"Page abc", kSearchText, 10000, 10000, true },
+  {"http://www.abc.com", "Page abc", kSearchText, 10000, 10000, true },
 };
 
 }  // namespace
@@ -192,9 +192,9 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(model->loaded());
 
     TemplateURL* template_url = new TemplateURL();
-    template_url->SetURL(kSearchURL, 0, 0);
-    template_url->set_keyword(kSearchKeyword);
-    template_url->set_short_name(kSearchShortName);
+    template_url->SetURL(UTF8ToWide(kSearchURL), 0, 0);
+    template_url->set_keyword(UTF8ToWide(kSearchKeyword));
+    template_url->set_short_name(UTF8ToWide(kSearchShortName));
 
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
@@ -231,9 +231,10 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
       // Add everything in order of time. We don't want to have a time that
       // is "right now" or it will nondeterministically appear in the results.
       Time t = Time::Now() - TimeDelta::FromHours(i + 1);
-      history_service->AddPageWithDetails(url, cur.title, cur.visit_count,
+      history_service->AddPageWithDetails(url, UTF8ToUTF16(cur.title),
+                                          cur.visit_count,
                                           cur.typed_count, t, false);
-      history_service->SetPageContents(url, WideToUTF16(cur.body));
+      history_service->SetPageContents(url, UTF8ToUTF16(cur.body));
       if (cur.starred) {
         bookmark_model->SetURLStarred(url, std::wstring(), true);
       }
@@ -330,22 +331,22 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
   // Trigger keyword hint mode.
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
   ASSERT_TRUE(edit_view->model()->is_keyword_hint());
-  ASSERT_EQ(std::wstring(kSearchKeyword), edit_view->model()->keyword());
+  ASSERT_EQ(kSearchKeyword, WideToUTF8(edit_view->model()->keyword()));
 
   // Trigger keyword mode.
   ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_TAB, false, false, false));
   ASSERT_FALSE(edit_view->model()->is_keyword_hint());
-  ASSERT_EQ(std::wstring(kSearchKeyword), edit_view->model()->keyword());
+  ASSERT_EQ(kSearchKeyword, WideToUTF8(edit_view->model()->keyword()));
 
   // Backspace without search text should bring back keyword hint mode.
   ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_BACK, false, false, false));
   ASSERT_TRUE(edit_view->model()->is_keyword_hint());
-  ASSERT_EQ(std::wstring(kSearchKeyword), edit_view->model()->keyword());
+  ASSERT_EQ(kSearchKeyword, WideToUTF8(edit_view->model()->keyword()));
 
   // Trigger keyword mode again.
   ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_TAB, false, false, false));
   ASSERT_FALSE(edit_view->model()->is_keyword_hint());
-  ASSERT_EQ(std::wstring(kSearchKeyword), edit_view->model()->keyword());
+  ASSERT_EQ(kSearchKeyword, WideToUTF8(edit_view->model()->keyword()));
 
   // Input something as search text.
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
@@ -355,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
   for (size_t i = 0; i < arraysize(kSearchText) - 1; ++i) {
     ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_BACK, false, false, false));
     ASSERT_FALSE(edit_view->model()->is_keyword_hint());
-    ASSERT_EQ(std::wstring(kSearchKeyword), edit_view->model()->keyword());
+    ASSERT_EQ(kSearchKeyword, WideToUTF8(edit_view->model()->keyword()));
   }
 
   // Input something as search text.
@@ -367,9 +368,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
   // the keyword mode.
   ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_BACK, false, false, false));
   ASSERT_FALSE(edit_view->model()->is_keyword_hint());
-  ASSERT_EQ(std::wstring(), edit_view->model()->keyword());
-  ASSERT_EQ(std::wstring(kSearchKeyword) + std::wstring(kSearchText),
-            edit_view->GetText());
+  ASSERT_EQ(std::string(), WideToUTF8(edit_view->model()->keyword()));
+  ASSERT_EQ(std::string(kSearchKeyword) + kSearchText,
+            WideToUTF8(edit_view->GetText()));
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
@@ -459,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchSingleCharKeys));
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
   ASSERT_TRUE(popup_model->IsOpen());
-  EXPECT_EQ(std::wstring(kSearchSingleChar), edit_view->GetText());
+  EXPECT_EQ(kSearchSingleChar, WideToUTF8(edit_view->GetText()));
 
   // Check if the default match result is Search Primary Provider.
   ASSERT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,

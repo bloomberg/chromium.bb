@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/cancelable_request.h"
@@ -74,7 +75,7 @@ class BrowsingHistoryHandler : public DOMMessageHandler,
   // Extract the arguments from the call to HandleSearchHistory.
   void ExtractSearchHistoryArguments(const Value* value,
                                      int* month,
-                                     std::wstring* query);
+                                     string16* query);
 
   // Figure out the query options for a month-wide query.
   history::QueryOptions CreateMonthQueryOptions(int month);
@@ -82,7 +83,7 @@ class BrowsingHistoryHandler : public DOMMessageHandler,
   NotificationRegistrar registrar_;
 
   // Current search text.
-  std::wstring search_text_;
+  string16 search_text_;
 
   // Our consumer for search requests to the history service.
   CancelableRequestConsumerT<int, 0> cancelable_search_consumer_;
@@ -98,7 +99,7 @@ class HistoryUI : public DOMUI {
   explicit HistoryUI(TabContents* contents);
 
   // Return the URL for a given search term.
-  static const GURL GetHistoryURLWithSearchText(const std::wstring& text);
+  static const GURL GetHistoryURLWithSearchText(const string16& text);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

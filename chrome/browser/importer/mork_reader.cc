@@ -515,14 +515,13 @@ void AddToHistory(MorkReader::ColumnDataList* column_values,
   if (CanImportURL(url)) {
     history::URLRow row(url);
 
-    // title is really a UTF-16 string at this point
-    std::wstring title;
+    string16 title;
     if (data.swap_bytes) {
-      base::CodepageToWide(values[kNameColumn], base::kCodepageUTF16BE,
-                           base::OnStringConversionError::SKIP, &title);
+      base::CodepageToUTF16(values[kNameColumn], base::kCodepageUTF16BE,
+                            base::OnStringConversionError::SKIP, &title);
     } else {
-      base::CodepageToWide(values[kNameColumn], base::kCodepageUTF16LE,
-                           base::OnStringConversionError::SKIP, &title);
+      base::CodepageToUTF16(values[kNameColumn], base::kCodepageUTF16LE,
+                            base::OnStringConversionError::SKIP, &title);
     }
     row.set_title(title);
 

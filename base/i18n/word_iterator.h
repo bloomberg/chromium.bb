@@ -11,6 +11,7 @@
 #include "unicode/uchar.h"
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 // The WordIterator class iterates through the words and word breaks
 // in a string.  (In the string " foo bar! ", the word breaks are at the
@@ -18,7 +19,7 @@
 //
 // To extract the words from a string, move a WordIterator through the
 // string and test whether IsWord() is true.  E.g.,
-//   WordIterator iter(str, WordIterator::BREAK_WORD);
+//   WordIterator iter(&str, WordIterator::BREAK_WORD);
 //   if (!iter.Init()) return false;
 //   while (iter.Advance()) {
 //     if (iter.IsWord()) {
@@ -36,7 +37,7 @@ class WordIterator {
   };
 
   // Requires |str| to live as long as the WordIterator does.
-  WordIterator(const std::wstring& str, BreakType break_type);
+  WordIterator(const string16* str, BreakType break_type);
   ~WordIterator();
 
   // Init() must be called before any of the iterators are valid.
@@ -63,7 +64,7 @@ class WordIterator {
   // Return the word between prev() and pos().
   // Advance() must have been called successfully at least once
   // for pos() to have advanced to somewhere useful.
-  std::wstring GetWord() const;
+  string16 GetWord() const;
 
  private:
   // ICU iterator.
@@ -73,7 +74,7 @@ class WordIterator {
 #endif
 
   // The string we're iterating over.
-  const std::wstring& string_;
+  const string16* string_;
 
   // The breaking style (word/line).
   BreakType break_type_;

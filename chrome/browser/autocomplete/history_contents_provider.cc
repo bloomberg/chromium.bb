@@ -120,7 +120,8 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       history::QueryOptions options;
       options.SetRecentDayRange(kDaysToSearch);
       options.max_count = kMaxMatchCount;
-      history->QueryHistory(input.text(), options, &request_consumer_,
+      history->QueryHistory(WideToUTF16(input.text()), options,
+          &request_consumer_,
           NewCallback(this, &HistoryContentsProvider::QueryComplete));
     }
   }
@@ -213,7 +214,7 @@ AutocompleteMatch HistoryContentsProvider::ResultToMatch(
   match.destination_url = result.url();
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
-  match.description = result.title();
+  match.description = UTF16ToWide(result.title());
   match.starred =
       (profile_->GetBookmarkModel() &&
        profile_->GetBookmarkModel()->IsBookmarked(result.url()));
@@ -277,6 +278,6 @@ void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {
 void HistoryContentsProvider::AddBookmarkTitleMatchToResults(
     const bookmark_utils::TitleMatch& match) {
   history::URLResult url_result(match.node->GetURL(), match.match_positions);
-  url_result.set_title(match.node->GetTitle());
+  url_result.set_title(WideToUTF16(match.node->GetTitle()));
   results_.AppendURLBySwapping(&url_result);
 }

@@ -232,41 +232,42 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
 
   struct TestData {
     const GURL url;
-    const std::wstring title;
+    const char* title;
     const int typed_count;
   } data[] = {
-    { GURL("http://www.google.com/"),      L"Google",           100 },
-    { GURL("http://maps.google.com/"),     L"Google Maps",       40 },
-    { GURL("http://docs.google.com/"),     L"Google Docs",       50 },
-    { GURL("http://reader.google.com/"),   L"Google Reader",     80 },
+    { GURL("http://www.google.com/"),      "Google",           100 },
+    { GURL("http://maps.google.com/"),     "Google Maps",       40 },
+    { GURL("http://docs.google.com/"),     "Google Docs",       50 },
+    { GURL("http://reader.google.com/"),   "Google Reader",     80 },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     history::URLRow info(data[i].url);
-    info.set_title(data[i].title);
+    info.set_title(UTF8ToUTF16(data[i].title));
     info.set_typed_count(data[i].typed_count);
     // Populate the InMemoryDatabase....
     url_db->AddURL(info);
     // Populate the BookmarkIndex.
-    model->AddURL(model->other_node(), i, data[i].title, data[i].url);
+    model->AddURL(model->other_node(), i, UTF8ToWide(data[i].title),
+                  data[i].url);
   }
 
   // Check that the InMemoryDatabase stored the URLs properly.
   history::URLRow result1;
   url_db->GetRowForURL(data[0].url, &result1);
-  EXPECT_EQ(data[0].title, result1.title());
+  EXPECT_EQ(data[0].title, UTF16ToUTF8(result1.title()));
 
   history::URLRow result2;
   url_db->GetRowForURL(data[1].url, &result2);
-  EXPECT_EQ(data[1].title, result2.title());
+  EXPECT_EQ(data[1].title, UTF16ToUTF8(result2.title()));
 
   history::URLRow result3;
   url_db->GetRowForURL(data[2].url, &result3);
-  EXPECT_EQ(data[2].title, result3.title());
+  EXPECT_EQ(data[2].title, UTF16ToUTF8(result3.title()));
 
   history::URLRow result4;
   url_db->GetRowForURL(data[3].url, &result4);
-  EXPECT_EQ(data[3].title, result4.title());
+  EXPECT_EQ(data[3].title, UTF16ToUTF8(result4.title()));
 
   // Populate match nodes.
   std::vector<bookmark_utils::TitleMatch> matches;

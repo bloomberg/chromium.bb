@@ -224,7 +224,7 @@ void HistoryService::SetSegmentPresentationIndex(int64 segment_id, int index) {
 
 void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
                                                  TemplateURL::IDType keyword_id,
-                                                 const std::wstring& term) {
+                                                 const string16& term) {
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::SetKeywordSearchTermsForURL,
                     url, keyword_id, term);
@@ -239,7 +239,7 @@ void HistoryService::DeleteAllSearchTermsForKeyword(
 
 HistoryService::Handle HistoryService::GetMostRecentKeywordSearchTerms(
     TemplateURL::IDType keyword_id,
-    const std::wstring& prefix,
+    const string16& prefix,
     int max_count,
     CancelableRequestConsumerBase* consumer,
     GetMostRecentKeywordSearchTermsCallback* callback) {
@@ -331,12 +331,12 @@ void HistoryService::AddPage(const GURL& url,
 }
 
 void HistoryService::SetPageTitle(const GURL& url,
-                                  const std::wstring& title) {
+                                  const string16& title) {
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetPageTitle, url, title);
 }
 
 void HistoryService::AddPageWithDetails(const GURL& url,
-                                        const std::wstring& title,
+                                        const string16& title,
                                         int visit_count,
                                         int typed_count,
                                         Time last_visit,
@@ -504,7 +504,7 @@ void HistoryService::UpdateDownload(int64 received_bytes,
                     received_bytes, state, db_handle);
 }
 
-void HistoryService::UpdateDownloadPath(const std::wstring& path,
+void HistoryService::UpdateDownloadPath(const FilePath& path,
                                         int64 db_handle) {
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownloadPath,
                     path, db_handle);
@@ -524,7 +524,7 @@ void HistoryService::RemoveDownloadsBetween(Time remove_begin,
 }
 
 HistoryService::Handle HistoryService::SearchDownloads(
-    const std::wstring& search_text,
+    const string16& search_text,
     CancelableRequestConsumerBase* consumer,
     DownloadSearchCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::SearchDownloads, consumer,
@@ -532,7 +532,7 @@ HistoryService::Handle HistoryService::SearchDownloads(
 }
 
 HistoryService::Handle HistoryService::QueryHistory(
-    const std::wstring& text_query,
+    const string16& text_query,
     const history::QueryOptions& options,
     CancelableRequestConsumerBase* consumer,
     QueryHistoryCallback* callback) {
