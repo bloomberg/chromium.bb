@@ -118,8 +118,7 @@ TEST_F(ManifestTest, AppWebPaths) {
                          errors::kInvalidWebPath, "0"));
 }
 
-// This test crashes. http://crbug.com/47230
-TEST_F(ManifestTest, DISABLED_AppLaunchContainer) {
+TEST_F(ManifestTest, AppLaunchContainer) {
   scoped_ptr<Extension> extension;
 
   extension.reset(LoadAndExpectSuccess("launch_tab.json"));
