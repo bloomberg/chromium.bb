@@ -3554,3 +3554,29 @@
    fun:__NSFireDelayedPerform
    fun:CFRunLoopRunSpecific
 }
+
+{
+   bug_47331_part_1
+   Memcheck:Leak
+   fun:malloc
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3DbMallocRaw
+   fun:sqlite3DbMallocZero
+   fun:sqlite3StartTable
+}
+
+{
+   bug_47331_part_2
+   Memcheck:Leak
+   fun:malloc
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3HashInsert
+   fun:sqlite3EndTable
+}
+
