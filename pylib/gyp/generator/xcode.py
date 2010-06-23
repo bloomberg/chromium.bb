@@ -1122,6 +1122,10 @@ exit 1
       if 'xcode_settings' in configuration:
         for xck, xcv in configuration['xcode_settings'].iteritems():
           xcbc.SetBuildSetting(xck, xcv)
+      if 'xcode_config_file' in configuration:
+        config_ref = pbxp.AddOrGetFileInRootGroup(
+            configuration['xcode_config_file'])
+        xcbc.SetBaseConfiguration(config_ref)
 
   build_files = []
   for build_file, build_file_dict in data.iteritems():

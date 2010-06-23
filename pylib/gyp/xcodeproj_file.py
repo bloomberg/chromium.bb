@@ -1524,6 +1524,8 @@ class XCBuildConfiguration(XCObject):
     if key in self._properties['buildSettings']:
       del self._properties['buildSettings'][key]
 
+  def SetBaseConfiguration(self, value):
+    self._properties['baseConfigurationReference'] = value
 
 class XCConfigurationList(XCObject):
   # _configs is the default list of configurations.
