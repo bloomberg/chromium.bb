@@ -108,7 +108,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
                                  bridge_id_);
     delete this;
   }
-  virtual Type GetInfoBarType() { return INFO_TYPE; }
+  virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
   virtual bool Accept() { return OnPermissionSet(true); }
   virtual bool Cancel() { return OnPermissionSet(false); }
   virtual int GetButtons() const { return BUTTON_OK | BUTTON_CANCEL; }
