@@ -44,6 +44,12 @@ class GPUInfo {
   // Returns true on success.
   bool CollectGraphicsInfo();
 
+  // Populate variables with passed in values
+  void SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
+                       const std::wstring& driver_version,
+                       uint32 pixel_shader_version,
+                       uint32 vertex_shader_version);
+
 #if defined(OS_WIN)
   // Windows provides two ways of doing graphics so we need two ways of
   // collecting info based on what's on a user's machine.
