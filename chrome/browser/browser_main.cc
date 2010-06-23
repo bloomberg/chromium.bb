@@ -61,6 +61,7 @@
 #else
 #include "chrome/browser/translate/translate_manager2.h"
 #endif
+#include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1372,6 +1373,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // it won't still be accessible after browser is destroyed.
   bool record_search_engine = is_first_run && !profile->IsOffTheRecord();
 #endif
+
+    // ChildProcess:: is a misnomer unless you consider context.  Use
+    // of --wait-for-debugger only makes sense when Chrome itself is a
+    // child process (e.g. when launched by PyAuto).
+  if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {
+    ChildProcess::WaitForDebugger(L"Browser");
+  }
 
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {
