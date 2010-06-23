@@ -2660,6 +2660,8 @@
         'browser/views/update_recommended_message_box.h',
         'browser/views/user_data_dir_dialog.cc',
         'browser/views/user_data_dir_dialog.h',
+        'browser/views/wrench_menu.cc',
+        'browser/views/wrench_menu.h',
         'browser/visitedlink_master.cc',
         'browser/visitedlink_master.h',
         'browser/visitedlink_event_listener.cc',
@@ -3223,6 +3225,8 @@
                 ['include', '^browser/views/unhandled_keyboard_event_handler.h'],
                 ['include', '^browser/views/view_text_utils.cc'],
                 ['include', '^browser/views/view_text_utils.h'],
+                ['include', '^browser/views/wrench_menu.cc'],
+                ['include', '^browser/views/wrench_menu.h'],
                 ['include', '^browser/window_sizer.cc'],
                 ['include', '^browser/window_sizer.h'],
                 # Exclude all of browser/gtk, then include the things we want.
