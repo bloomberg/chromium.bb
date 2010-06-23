@@ -12,6 +12,7 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -24,10 +25,12 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/configuration_policy_provider_mac.h"
 #elif defined(OS_POSIX)
-#include "chrome/browser/dummy_configuration_policy_provider.h"
+#include "chrome/browser/config_dir_policy_provider.h"
 #endif
+#include "chrome/browser/dummy_configuration_policy_provider.h"
 
 #include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -94,20 +97,35 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
   PrefStore* recommended_prefs = NULL;
 
   ConfigurationPolicyProvider* managed_prefs_provider = NULL;
+  ConfigurationPolicyProvider* recommended_prefs_provider = NULL;
+
 #if defined(OS_WIN)
   managed_prefs_provider = new ConfigurationPolicyProviderWin();
+  recommended_prefs_provider = new DummyConfigurationPolicyProvider();
 #elif defined(OS_MACOSX)
   managed_prefs_provider = new ConfigurationPolicyProviderMac();
+  recommended_prefs_provider = new DummyConfigurationPolicyProvider();
 #elif defined(OS_POSIX)
-  // TODO(markusheintz): Will be replaced by the Linux implementation.
-  managed_prefs_provider = new DummyConfigurationPolicyProvider();
+  FilePath config_dir_path;
+  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+    managed_prefs_provider = new ConfigDirPolicyProvider(
+        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
+    recommended_prefs_provider = new ConfigDirPolicyProvider(
+        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
+  } else {
+    managed_prefs_provider = new DummyConfigurationPolicyProvider();
+    recommended_prefs_provider = new DummyConfigurationPolicyProvider();
+  }
 #endif
 
-  // The ConfigurationPolicyPrefStore take the ownership of the passed
+  // The ConfigurationPolicyPrefStore takes ownership of the passed
   // |provider|.
   managed_prefs = new ConfigurationPolicyPrefStore(
       CommandLine::ForCurrentProcess(),
       managed_prefs_provider);
+  recommended_prefs = new ConfigurationPolicyPrefStore(
+      CommandLine::ForCurrentProcess(),
+      recommended_prefs_provider);
 
   // The PrefValueStore takes to ownership of the parameters.
   PrefValueStore* value_store = new PrefValueStore(

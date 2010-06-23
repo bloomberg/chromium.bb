@@ -36,6 +36,12 @@ enum {
                                 // be moved into the profile, to avoid issues
                                 // moving across volumes.  See crbug.com/13044 .
   DIR_INTERNAL_PLUGINS,         // Directory where internal plugins reside.
+#if !defined(OS_MACOSX) && defined(OS_POSIX)
+  DIR_POLICY_FILES,             // Directory for system-wide read-only
+                                // policy files that allow sys-admins
+                                // to set policies for chrome. This directory
+                                // contains subdirectories.
+#endif
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).

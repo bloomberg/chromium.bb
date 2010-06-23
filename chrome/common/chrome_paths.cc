@@ -288,6 +288,18 @@ bool PathProvider(int key, FilePath* result) {
       if (!file_util::PathExists(cur))  // we don't want to create this
         return false;
       break;
+#if !defined(OS_MACOSX) && defined(OS_POSIX)
+    case chrome::DIR_POLICY_FILES: {
+#if defined(GOOGLE_CHROME_BUILD)
+      cur = FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
+#else
+      cur = FilePath(FILE_PATH_LITERAL("/etc/chromium/policies"));
+#endif
+      if (!file_util::PathExists(cur))  // we don't want to create this
+        return false;
+      break;
+    }
+#endif
     default:
       return false;
   }
