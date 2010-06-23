@@ -8,9 +8,11 @@
 #include <windows.h>
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "gfx/rect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 
 // This header file defines a struct and a class used for encapsulating IMM32
 // APIs, controls IMEs attached to a window, and enables the 'on-the-spot'
@@ -53,14 +55,14 @@
 
 // This struct represents the status of an ongoing composition.
 struct ImeComposition {
-  // Represents the cursor position in the IME composition.
-  int cursor_position;
+  // Represents the start position of the selection range in the IME
+  // composition.
+  int selection_start;
 
-  // Represents the position of the beginning of the selection
-  int target_start;
-
-  // Represents the position of the end of the selection
-  int target_end;
+  // Represents the end position of the selection range in the IME composition.
+  // If |selection_start| and |selection_end| are equal, then it represents the
+  // cursor position.
+  int selection_end;
 
   // Represents the type of the string in the 'ime_string' parameter.
   // Its possible values and description are listed bwlow:
@@ -72,6 +74,9 @@ struct ImeComposition {
 
   // Represents the string retrieved from IME (Input Method Editor)
   std::wstring ime_string;
+
+  // Contains the underline information of the composition string.
+  std::vector<WebKit::WebCompositionUnderline> underlines;
 };
 
 // This class controls the IMM (Input Method Manager) through IMM32 APIs and
@@ -104,13 +109,13 @@ class ImeInput {
   //     The given input language does not have IMEs.
   bool SetInputLanguage();
 
-  // Create the IME windows, and allocate required resources for them.
+  // Creates the IME windows, and allocate required resources for them.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
   void CreateImeWindow(HWND window_handle);
 
-  // Update the style of the IME windows.
+  // Updates the style of the IME windows.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
@@ -131,26 +136,26 @@ class ImeInput {
   void SetImeWindowStyle(HWND window_handle, UINT message,
                          WPARAM wparam, LPARAM lparam, BOOL* handled);
 
-  // Destroy the IME windows and all the resources attached to them.
+  // Destroys the IME windows and all the resources attached to them.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
   void DestroyImeWindow(HWND window_handle);
 
-  // Update the position of the IME windows.
+  // Updates the position of the IME windows.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
   void UpdateImeWindow(HWND window_handle);
 
-  // Clean up the all resources attached to the given ImeInput object, and
+  // Cleans up the all resources attached to the given ImeInput object, and
   // reset its composition status.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
   void CleanupComposition(HWND window_handle);
 
-  // Reset the composition status.
+  // Resets the composition status.
   // Cancel the ongoing composition if it exists.
   // NOTE(hbono): This method does not release the allocated resources.
   // Parameters
@@ -158,7 +163,7 @@ class ImeInput {
   //     Represents the window handle of the caller.
   void ResetComposition(HWND window_handle);
 
-  // Retrieve a composition result of the ongoing composition if it exists.
+  // Retrieves a composition result of the ongoing composition if it exists.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
@@ -180,7 +185,7 @@ class ImeInput {
   bool GetResult(HWND window_handle, LPARAM lparam,
                  ImeComposition* composition);
 
-  // Retrieve the current composition status of the ongoing composition.
+  // Retrieves the current composition status of the ongoing composition.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
@@ -202,17 +207,11 @@ class ImeInput {
   bool GetComposition(HWND window_handle, LPARAM lparam,
                       ImeComposition* composition);
 
-  // Enable the IME attached to the given window, i.e. allows user-input
+  // Enables the IME attached to the given window, i.e. allows user-input
   // events to be dispatched to the IME.
-  // In Chrome, this function is used when:
-  //   * a renderer process moves its input focus to another edit control, or;
-  //   * a renrerer process moves the position of the focused edit control.
   // Parameters
   //   * window_handle [in] (HWND)
   //     Represents the window handle of the caller.
-  //   * caret_rect [in] (const gfx::Rect&)
-  //     Represent the rectangle of the input caret.
-  //     This rectangle is used for controlling the positions of IME windows.
   //   * complete [in] (bool)
   //     Represents whether or not to complete the ongoing composition.
   //     + true
@@ -222,11 +221,9 @@ class ImeInput {
   //     + false
   //       Just move the IME windows of the ongoing composition to the given
   //       position without finishing it.
-  void EnableIME(HWND window_handle,
-                 const gfx::Rect& caret_rect,
-                 bool complete);
+  void EnableIME(HWND window_handle);
 
-  // Disable the IME attached to the given window, i.e. prohibits any user-input
+  // Disables the IME attached to the given window, i.e. prohibits any user-input
   // events from being dispatched to the IME.
   // In Chrome, this function is used when:
   //   * a renreder process sets its input focus to a password input.
@@ -241,25 +238,27 @@ class ImeInput {
   //     Represents the window handle of the caller.
   void CancelIME(HWND window_handle);
 
+  // Updates the caret position of the given window.
+  // Parameters
+  //   * window_handle [in] (HWND)
+  //     Represents the window handle of the caller.
+  //   * caret_rect [in] (const gfx::Rect&)
+  //     Represent the rectangle of the input caret.
+  //     This rectangle is used for controlling the positions of IME windows.
+  void UpdateCaretRect(HWND window_handle, const gfx::Rect& caret_rect);
+
  protected:
-  // Determines whether or not the given attribute represents a target
-  // (a.k.a. a selection).
-  bool IsTargetAttribute(char attribute) const {
-    return (attribute == ATTR_TARGET_CONVERTED ||
-            attribute == ATTR_TARGET_NOTCONVERTED);
-  }
+  // Retrieves the composition information.
+  void GetCompositionInfo(HIMC imm_context, LPARAM lparam,
+                          ImeComposition* composition);
 
-  // Retrieve the target area.
-  void GetCaret(HIMC imm_context, LPARAM lparam,
-                ImeComposition* composition);
-
-  // Update the position of the IME windows.
+  // Updates the position of the IME windows.
   void MoveImeWindow(HWND window_handle, HIMC imm_context);
 
-  // Complete the ongoing composition if it exists.
+  // Completes the ongoing composition if it exists.
   void CompleteComposition(HWND window_handle, HIMC imm_context);
 
-  // Retrieve a string from the IMM.
+  // Retrieves a string from the IMM.
   bool GetString(HIMC imm_context, WPARAM lparam, int type,
                  ImeComposition* composition);
 

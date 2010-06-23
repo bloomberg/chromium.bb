@@ -7,10 +7,12 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <algorithm>
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/third_party/icu/icu_utf.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
@@ -20,6 +22,7 @@
 #include "chrome/common/render_messages.h"
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
     : host_view_(host_view),
@@ -29,7 +32,8 @@ GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
       is_composing_text_(false),
       is_enabled_(false),
       is_in_key_event_handler_(false),
-      preedit_cursor_position_(0),
+      preedit_selection_start_(0),
+      preedit_selection_end_(0),
       is_preedit_changed_(false) {
   DCHECK(context_);
   DCHECK(context_simple_);
@@ -122,6 +126,9 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
     filtered = gtk_im_context_filter_keypress(context_simple_, event);
   }
 
+  // Reset this flag here, as it's only used in input method callbacks.
+  is_in_key_event_handler_ = false;
+
   NativeWebKeyboardEvent wke(event);
 
   // Send filtered keydown event before sending IME result.
@@ -152,13 +159,10 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
     ProcessUnfilteredKeyPressEvent(&wke);
   else if (event->type == GDK_KEY_RELEASE)
     host_view_->ForwardKeyboardEvent(wke);
-
-  // End of key event processing.
-  is_in_key_event_handler_ = false;
 }
 
-void GtkIMContextWrapper::UpdateStatus(int control,
-                                       const gfx::Rect& caret_rect) {
+void GtkIMContextWrapper::UpdateInputMethodState(WebKit::WebTextInputType type,
+                                                 const gfx::Rect& caret_rect) {
   // The renderer has updated its IME status.
   // Control the GtkIMContext object according to this status.
   if (!context_ || !is_focused_)
@@ -166,37 +170,16 @@ void GtkIMContextWrapper::UpdateStatus(int control,
 
   DCHECK(!is_in_key_event_handler_);
 
-  // TODO(james.su@gmail.com): Following code causes a side effect:
-  // When trying to move cursor from one text input box to another while
-  // composition text is still not confirmed, following CompleteComposition()
-  // calls will prevent the cursor from moving outside the first input box.
-  if (control == IME_DISABLE) {
-    if (is_enabled_) {
-      CompleteComposition();
-      gtk_im_context_reset(context_simple_);
-      gtk_im_context_focus_out(context_);
-      is_enabled_ = false;
-    }
-  } else if (control == IME_CANCEL_COMPOSITION) {
-    preedit_text_.clear();
-    preedit_cursor_position_ = 0;
-    gtk_im_context_reset(context_simple_);
-    gtk_im_context_reset(context_);
-  } else {
-    // Enable the GtkIMContext object if it's not enabled yet.
-    if (!is_enabled_) {
-      // Reset context_simple_ to its initial state, in case it's currently
-      // in middle of a composition session inside a password box.
-      gtk_im_context_reset(context_simple_);
+  bool is_enabled = (type == WebKit::WebTextInputTypeText);
+  if (is_enabled_ != is_enabled) {
+    is_enabled_ = is_enabled;
+    if (is_enabled)
       gtk_im_context_focus_in(context_);
-      // It might be true when switching from a password box in middle of a
-      // composition session.
-      is_composing_text_ = false;
-      is_enabled_ = true;
-    } else if (control == IME_COMPLETE_COMPOSITION) {
-      CompleteComposition();
-    }
+    else
+      gtk_im_context_focus_out(context_);
+  }
 
+  if (is_enabled) {
     // Updates the position of the IME candidate window.
     // The position sent from the renderer is a relative one, so we need to
     // attach the GtkIMContext object to this window before changing the
@@ -225,7 +208,7 @@ void GtkIMContextWrapper::OnFocusIn() {
 
   // Enables RenderWidget's IME related events, so that we can be notified
   // when WebKit wants to enable or disable IME.
-  host_view_->GetRenderWidgetHost()->ImeSetInputMode(true);
+  host_view_->GetRenderWidgetHost()->SetInputMethodActive(true);
 }
 
 void GtkIMContextWrapper::OnFocusOut() {
@@ -240,7 +223,7 @@ void GtkIMContextWrapper::OnFocusOut() {
   // enabled by WebKit.
   if (is_enabled_) {
     // To reset the GtkIMContext object and prevent data loss.
-    CompleteComposition();
+    ConfirmComposition();
     gtk_im_context_focus_out(context_);
   }
 
@@ -248,13 +231,10 @@ void GtkIMContextWrapper::OnFocusOut() {
   gtk_im_context_reset(context_simple_);
   gtk_im_context_focus_out(context_simple_);
 
-  // Reset stored IME status.
   is_composing_text_ = false;
-  preedit_text_.clear();
-  preedit_cursor_position_ = 0;
 
   // Disable RenderWidget's IME related events to save bandwidth.
-  host_view_->GetRenderWidgetHost()->ImeSetInputMode(false);
+  host_view_->GetRenderWidgetHost()->SetInputMethodActive(false);
 }
 
 void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
@@ -267,6 +247,31 @@ void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
                                        GTK_MENU_SHELL(submenu));
   menu->AppendSeparator();
   menu->AppendMenuItem(IDC_INPUT_METHODS_MENU, menuitem);
+}
+
+void GtkIMContextWrapper::CancelComposition() {
+  if (!is_enabled_)
+    return;
+
+  DCHECK(!is_in_key_event_handler_);
+
+  // To prevent any text from being committed when resetting the |context_|;
+  is_in_key_event_handler_ = true;
+
+  gtk_im_context_reset(context_);
+  gtk_im_context_reset(context_simple_);
+
+  // Some input methods may not honour the reset call. Focusing out/in the
+  // |context_| to make sure it gets reset correctly.
+  gtk_im_context_focus_out(context_);
+  gtk_im_context_focus_in(context_);
+
+  is_composing_text_ = false;
+  preedit_text_.clear();
+  preedit_underlines_.clear();
+  commit_text_.clear();
+
+  is_in_key_event_handler_ = false;
 }
 
 bool GtkIMContextWrapper::NeedCommitByForwardingCharEvent() {
@@ -374,43 +379,28 @@ void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
   // preedit text again.
   if (is_preedit_changed_) {
     if (preedit_text_.length()) {
-      host->ImeSetComposition(preedit_text_, preedit_cursor_position_,
-                              -1, -1);
+      // Another composition session has been started.
+      is_composing_text_ = true;
+      host->ImeSetComposition(preedit_text_, preedit_underlines_,
+                              preedit_selection_start_, preedit_selection_end_);
     } else if (!committed) {
       host->ImeCancelComposition();
     }
   }
 }
 
-void GtkIMContextWrapper::CompleteComposition() {
+void GtkIMContextWrapper::ConfirmComposition() {
   if (!is_enabled_)
     return;
 
-  // If WebKit requires to complete current composition, then we need commit
-  // existing preedit text and reset the GtkIMContext object.
+  DCHECK(!is_in_key_event_handler_);
 
-  // Backup existing preedit text to avoid it's being cleared when resetting
-  // the GtkIMContext object.
-  string16 old_preedit_text = preedit_text_;
+  if (is_composing_text_) {
+    host_view_->GetRenderWidgetHost()->ImeConfirmComposition();
 
-  // Clear it so that we can know if anything is committed by following
-  // line.
-  commit_text_.clear();
-
-  // Resetting the GtkIMContext. Input method may commit something at this
-  // point. In this case, we shall not commit the preedit text again.
-  gtk_im_context_reset(context_);
-
-  // If nothing was committed by above line, then commit stored preedit text
-  // to prevent data loss.
-  if (old_preedit_text.length() && commit_text_.length() == 0) {
-    host_view_->GetRenderWidgetHost()->ImeConfirmComposition(
-        old_preedit_text);
+    // Reset the input method.
+    CancelComposition();
   }
-
-  is_composing_text_ = false;
-  preedit_text_.clear();
-  preedit_cursor_position_ = 0;
 }
 
 void GtkIMContextWrapper::HandleCommit(const string16& text) {
@@ -423,46 +413,41 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
   // It's possible that commit signal is fired without a key event, for
   // example when user input via a voice or handwriting recognition software.
   // In this case, the text must be committed directly.
-  if (!is_in_key_event_handler_) {
+  if (!is_in_key_event_handler_)
     host_view_->GetRenderWidgetHost()->ImeConfirmComposition(text);
-  }
 }
 
 void GtkIMContextWrapper::HandlePreeditStart() {
   is_composing_text_ = true;
 }
 
-void GtkIMContextWrapper::HandlePreeditChanged(const string16& text,
+void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
+                                               PangoAttrList* attrs,
                                                int cursor_position) {
-  bool changed = false;
-  // If preedit text or cursor position is not changed since last time,
-  // then it's not necessary to update it again.
-  // Preedit text is always stored, so that we can commit it when webkit
-  // requires.
   // Don't set is_preedit_changed_ to false if there is no change, because
   // this handler might be called multiple times with the same data.
-  if (cursor_position != preedit_cursor_position_ || text != preedit_text_) {
-    preedit_text_ = text;
-    preedit_cursor_position_ = cursor_position;
-    is_preedit_changed_ = true;
-    changed = true;
-  }
+  is_preedit_changed_ = true;
+  preedit_text_.clear();
+  preedit_underlines_.clear();
+  preedit_selection_start_ = 0;
+  preedit_selection_end_ = 0;
+
+  ExtractCompositionInfo(text, attrs, cursor_position, &preedit_text_,
+                         &preedit_underlines_, &preedit_selection_start_,
+                         &preedit_selection_end_);
 
   // In case we are using a buggy input method which doesn't fire
   // "preedit_start" signal.
-  if (text.length())
+  if (preedit_text_.length())
     is_composing_text_ = true;
 
   // Nothing needs to do, if it's currently in ProcessKeyEvent()
   // handler, which will send preedit text to webkit later.
   // Otherwise, we need send it here if it's been changed.
-  if (!is_in_key_event_handler_ && changed) {
-    if (text.length()) {
-      host_view_->GetRenderWidgetHost()->ImeSetComposition(
-          text, cursor_position, -1, -1);
-    } else {
-      host_view_->GetRenderWidgetHost()->ImeCancelComposition();
-    }
+  if (!is_in_key_event_handler_) {
+    host_view_->GetRenderWidgetHost()->ImeSetComposition(
+        preedit_text_, preedit_underlines_, preedit_selection_start_,
+        preedit_selection_end_);
   }
 }
 
@@ -471,7 +456,7 @@ void GtkIMContextWrapper::HandlePreeditEnd() {
   if (preedit_text_.length()) {
     // The composition session has been finished.
     preedit_text_.clear();
-    preedit_cursor_position_ = 0;
+    preedit_underlines_.clear();
     is_preedit_changed_ = true;
     changed = true;
   }
@@ -479,9 +464,8 @@ void GtkIMContextWrapper::HandlePreeditEnd() {
   // If there is still a preedit text when firing "preedit-end" signal,
   // we need inform webkit to clear it.
   // It's only necessary when it's not in ProcessKeyEvent ().
-  if (!is_in_key_event_handler_ && changed) {
+  if (!is_in_key_event_handler_ && changed)
     host_view_->GetRenderWidgetHost()->ImeCancelComposition();
-  }
 
   // Don't set is_composing_text_ to false here, because "preedit_end"
   // signal may be fired before "commit" signal.
@@ -515,10 +499,12 @@ void GtkIMContextWrapper::HandlePreeditStartThunk(
 void GtkIMContextWrapper::HandlePreeditChangedThunk(
     GtkIMContext* context, GtkIMContextWrapper* self) {
   gchar* text = NULL;
+  PangoAttrList* attrs = NULL;
   gint cursor_position = 0;
-  gtk_im_context_get_preedit_string(context, &text, NULL, &cursor_position);
-  self->HandlePreeditChanged(UTF8ToUTF16(text), cursor_position);
+  gtk_im_context_get_preedit_string(context, &text, &attrs, &cursor_position);
+  self->HandlePreeditChanged(text, attrs, cursor_position);
   g_free(text);
+  pango_attr_list_unref(attrs);
 }
 
 void GtkIMContextWrapper::HandlePreeditEndThunk(
@@ -534,4 +520,98 @@ void GtkIMContextWrapper::HandleHostViewRealizeThunk(
 void GtkIMContextWrapper::HandleHostViewUnrealizeThunk(
     GtkWidget* widget, GtkIMContextWrapper* self) {
   self->HandleHostViewUnrealize();
+}
+
+void GtkIMContextWrapper::ExtractCompositionInfo(
+      const gchar* utf8_text,
+      PangoAttrList* attrs,
+      int cursor_position,
+      string16* utf16_text,
+      std::vector<WebKit::WebCompositionUnderline>* underlines,
+      int* selection_start,
+      int* selection_end) {
+  *utf16_text = UTF8ToUTF16(utf8_text);
+
+  if (utf16_text->empty())
+    return;
+
+  // Gtk/Pango uses character index for cursor position and byte index for
+  // attribute range, but we use char16 offset for them. So we need to do
+  // conversion here.
+  std::vector<int> char16_offsets;
+  int length = static_cast<int>(utf16_text->length());
+  for (int offset = 0; offset < length; ++offset) {
+    char16_offsets.push_back(offset);
+    if (CBU16_IS_SURROGATE((*utf16_text)[offset]))
+      ++offset;
+  }
+
+  // The text length in Unicode characters.
+  int char_length = static_cast<int>(char16_offsets.size());
+  // Make sure we can convert the value of |char_length| as well.
+  char16_offsets.push_back(length);
+
+  int cursor_offset =
+      char16_offsets[std::max(0, std::min(char_length, cursor_position))];
+
+  // TODO(suzhe): due to a bug of webkit, we currently can't use selection range
+  // with composition string. See: https://bugs.webkit.org/show_bug.cgi?id=40805
+  *selection_start = *selection_end = cursor_offset;
+
+  if (attrs) {
+    int utf8_length = strlen(utf8_text);
+    PangoAttrIterator* iter = pango_attr_list_get_iterator(attrs);
+
+    // We only care about underline and background attributes and convert
+    // background attribute into selection if possible.
+    do {
+      gint start, end;
+      pango_attr_iterator_range(iter, &start, &end);
+
+      start = std::min(start, utf8_length);
+      end = std::min(end, utf8_length);
+      if (start >= end)
+        continue;
+
+      start = g_utf8_pointer_to_offset(utf8_text, utf8_text + start);
+      end = g_utf8_pointer_to_offset(utf8_text, utf8_text + end);
+
+      // Double check, in case |utf8_text| is not a valid utf-8 string.
+      start = std::min(start, char_length);
+      end = std::min(end, char_length);
+      if (start >= end)
+        continue;
+
+      PangoAttribute* background_attr =
+          pango_attr_iterator_get(iter, PANGO_ATTR_BACKGROUND);
+      PangoAttribute* underline_attr =
+          pango_attr_iterator_get(iter, PANGO_ATTR_UNDERLINE);
+
+      if (background_attr || underline_attr) {
+        // Use a black thin underline by default.
+        WebKit::WebCompositionUnderline underline(
+            char16_offsets[start], char16_offsets[end], SK_ColorBLACK, false);
+
+        // Always use thick underline for a range with background color, which
+        // is usually the selection range.
+        if (background_attr)
+          underline.thick = true;
+        if (underline_attr) {
+          int type = reinterpret_cast<PangoAttrInt*>(underline_attr)->value;
+          if (type == PANGO_UNDERLINE_DOUBLE)
+            underline.thick = true;
+          else if (type == PANGO_UNDERLINE_ERROR)
+            underline.color = SK_ColorRED;
+        }
+        underlines->push_back(underline);
+      }
+    } while (pango_attr_iterator_next(iter));
+    pango_attr_iterator_destroy(iter);
+  }
+
+  // Use a black thin underline by default.
+  if (underlines->empty()) {
+    underlines->push_back(
+        WebKit::WebCompositionUnderline(0, length, SK_ColorBLACK, false));
+  }
 }

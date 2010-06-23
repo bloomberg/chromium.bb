@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ime_input.h"
 
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 // "imm32.lib" is required by IMM32 APIs used in this file.
 // NOTE(hbono): To comply with a comment from Darin, I have added
@@ -14,6 +16,84 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // ImeInput
+
+namespace {
+
+// Determines whether or not the given attribute represents a target
+// (a.k.a. a selection).
+bool IsTargetAttribute(char attribute) {
+  return (attribute == ATTR_TARGET_CONVERTED ||
+          attribute == ATTR_TARGET_NOTCONVERTED);
+}
+
+// Helper function for ImeInput::GetCompositionInfo() method, to get the target
+// range that's selected by the user in the current composition string.
+void GetCompositionTargetRange(HIMC imm_context, int* target_start,
+                               int* target_end) {
+  int attribute_size = ::ImmGetCompositionString(imm_context, GCS_COMPATTR,
+                                                 NULL, 0);
+  if (attribute_size > 0) {
+    int start = 0;
+    int end = 0;
+    scoped_array<char> attribute_data(new char[attribute_size]);
+    if (attribute_data.get()) {
+      ::ImmGetCompositionString(imm_context, GCS_COMPATTR,
+                                attribute_data.get(), attribute_size);
+      for (start = 0; start < attribute_size; ++start) {
+        if (IsTargetAttribute(attribute_data[start]))
+          break;
+      }
+      for (end = start; end < attribute_size; ++end) {
+        if (!IsTargetAttribute(attribute_data[end]))
+          break;
+      }
+      if (start == attribute_size) {
+        // This composition clause does not contain any target clauses,
+        // i.e. this clauses is an input clause.
+        // We treat the whole composition as a target clause.
+        start = 0;
+        end = attribute_size;
+      }
+    }
+    *target_start = start;
+    *target_end = end;
+  }
+}
+
+// Helper function for ImeInput::GetCompositionInfo() method, to get underlines
+// information of the current composition string.
+void GetCompositionUnderlines(
+    HIMC imm_context,
+    int target_start,
+    int target_end,
+    std::vector<WebKit::WebCompositionUnderline>* underlines) {
+  int clause_size = ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
+                                              NULL, 0);
+  int clause_length = clause_size / sizeof(uint32);
+  if (clause_length) {
+    scoped_array<uint32> clause_data(new uint32[clause_length]);
+    if (clause_data.get()) {
+      ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
+                                clause_data.get(), clause_size);
+      for (int i = 0; i < clause_length - 1; ++i) {
+        WebKit::WebCompositionUnderline underline;
+        underline.startOffset = clause_data[i];
+        underline.endOffset = clause_data[i+1];
+        underline.color = SK_ColorBLACK;
+        underline.thick = false;
+
+        // Use thick underline for the target clause.
+        if (underline.startOffset >= static_cast<unsigned>(target_start) &&
+            underline.endOffset <= static_cast<unsigned>(target_end)) {
+          underline.thick = true;
+        }
+        underlines->push_back(underline);
+      }
+    }
+  }
+}
+
+}  // namespace
 
 ImeInput::ImeInput()
     : ime_status_(false),
@@ -168,65 +248,64 @@ void ImeInput::CompleteComposition(HWND window_handle, HIMC imm_context) {
   }
 }
 
-void ImeInput::GetCaret(HIMC imm_context, LPARAM lparam,
-                        ImeComposition* composition) {
-  // This operation is optional and language-dependent because the caret
-  // style is depended on the language, e.g.:
-  //   * Korean IMEs: the caret is a blinking block,
-  //     (It contains only one hangul character);
-  //   * Chinese IMEs: the caret is a blinking line,
-  //     (i.e. they do not need to retrieve the target selection);
-  //   * Japanese IMEs: the caret is a selection (or underlined) block,
-  //     (which can contain one or more Japanese characters).
-  int target_start = -1;
-  int target_end = -1;
-  switch (PRIMARYLANGID(input_language_id_)) {
-  case LANG_KOREAN:
-    if (lparam & CS_NOMOVECARET) {
-      target_start = 0;
-      target_end = 1;
-    }
-    break;
-  case LANG_CHINESE:
-    break;
-  case LANG_JAPANESE:
-    // For Japanese IMEs, the robustest way to retrieve the caret
-    // is scanning the attribute of the latest composition string and
-    // retrieving the begining and the end of the target clause, i.e.
-    // a clause being converted.
-    if (lparam & GCS_COMPATTR) {
-      int attribute_size = ::ImmGetCompositionString(imm_context,
-                                                     GCS_COMPATTR,
-                                                     NULL, 0);
-      if (attribute_size > 0) {
-        scoped_array<char> attribute_data(new char[attribute_size]);
-        if (attribute_data.get()) {
-          ::ImmGetCompositionString(imm_context, GCS_COMPATTR,
-                                    attribute_data.get(), attribute_size);
-          for (target_start = 0; target_start < attribute_size;
-               ++target_start) {
-            if (IsTargetAttribute(attribute_data[target_start]))
-              break;
-          }
-          for (target_end = target_start; target_end < attribute_size;
-               ++target_end) {
-            if (!IsTargetAttribute(attribute_data[target_end]))
-              break;
-          }
-          if (target_start == attribute_size) {
-            // This composition clause does not contain any target clauses,
-            // i.e. this clauses is an input clause.
-            // We treat whole this clause as a target clause.
-            target_end = target_start;
-            target_start = 0;
-          }
-        }
-      }
-    }
-    break;
+void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
+                                  ImeComposition* composition) {
+  // We only care about GCS_COMPATTR, GCS_COMPCLAUSE and GCS_CURSORPOS, and
+  // convert them into underlines and selection range respectively.
+  composition->underlines.clear();
+
+  int length = static_cast<int>(composition->ime_string.length());
+
+  // Retrieve the selection range information. If CS_NOMOVECARET is specified,
+  // that means the cursor should not be moved, then we just place the caret at
+  // the beginning of the composition string. Otherwise we should honour the
+  // GCS_CURSORPOS value if it's available.
+  // TODO(suzhe): due to a bug of webkit, we currently can't use selection range
+  // with composition string. See: https://bugs.webkit.org/show_bug.cgi?id=40805
+  if (lparam & CS_NOMOVECARET) {
+    composition->selection_start = composition->selection_end = 0;
+  } else if (lparam & GCS_CURSORPOS) {
+    composition->selection_start = composition->selection_end =
+        ::ImmGetCompositionString(imm_context, GCS_CURSORPOS, NULL, 0);
+  } else {
+    composition->selection_start = composition->selection_end = length;
   }
-  composition->target_start = target_start;
-  composition->target_end = target_end;
+
+  // Find out the range selected by the user.
+  int target_start = 0;
+  int target_end = 0;
+  if (lparam & GCS_COMPATTR)
+    GetCompositionTargetRange(imm_context, &target_start, &target_end);
+
+  // Retrieve the clause segmentations and convert them to underlines.
+  if (lparam & GCS_COMPCLAUSE) {
+    GetCompositionUnderlines(imm_context, target_start, target_end,
+                             &composition->underlines);
+  }
+
+  // Set default underlines in case there is no clause information.
+  if (!composition->underlines.size()) {
+    WebKit::WebCompositionUnderline underline;
+    underline.color = SK_ColorBLACK;
+    if (target_start > 0) {
+      underline.startOffset = 0;
+      underline.endOffset = target_start;
+      underline.thick = false;
+      composition->underlines.push_back(underline);
+    }
+    if (target_end > target_start) {
+      underline.startOffset = target_start;
+      underline.endOffset = target_end;
+      underline.thick = true;
+      composition->underlines.push_back(underline);
+    }
+    if (target_end < length) {
+      underline.startOffset = target_end;
+      underline.endOffset = length;
+      underline.thick = false;
+      composition->underlines.push_back(underline);
+    }
+  }
 }
 
 bool ImeInput::GetString(HIMC imm_context, WPARAM lparam, int type,
@@ -259,9 +338,8 @@ bool ImeInput::GetResult(HWND window_handle, LPARAM lparam,
     result = GetString(imm_context, lparam, GCS_RESULTSTR, composition);
     // Reset all the other parameters because a result string does not
     // have composition attributes.
-    composition->cursor_position = -1;
-    composition->target_start = -1;
-    composition->target_end = -1;
+    composition->selection_start = 0;
+    composition->selection_end = 0;
     ::ImmReleaseContext(window_handle, imm_context);
   }
   return result;
@@ -288,16 +366,8 @@ bool ImeInput::GetComposition(HWND window_handle, LPARAM lparam,
       composition->ime_string[0] = 0xFF3F;
     }
 
-    // Retrieve the cursor position in the IME composition.
-    int cursor_position = ::ImmGetCompositionString(imm_context,
-                                                    GCS_CURSORPOS, NULL, 0);
-    composition->cursor_position = cursor_position;
-    composition->target_start = -1;
-    composition->target_end = -1;
-
-    // Retrieve the target selection and Update the ImeComposition
-    // object.
-    GetCaret(imm_context, lparam, composition);
+    // Retrieve the composition underlines and selection range information.
+    GetCompositionInfo(imm_context, lparam, composition);
 
     // Mark that there is an ongoing composition.
     is_composing_ = true;
@@ -328,34 +398,26 @@ void ImeInput::CancelIME(HWND window_handle) {
   }
 }
 
-void ImeInput::EnableIME(HWND window_handle,
-                         const gfx::Rect& caret_rect,
-                         bool complete) {
+void ImeInput::EnableIME(HWND window_handle) {
   // Load the default IME context.
   // NOTE(hbono)
   //   IMM ignores this call if the IME context is loaded. Therefore, we do
   //   not have to check whether or not the IME context is loaded.
   ::ImmAssociateContextEx(window_handle, NULL, IACE_DEFAULT);
-  // Complete the ongoing composition and move the IME windows.
-  HIMC imm_context = ::ImmGetContext(window_handle);
-  if (imm_context) {
-    if (complete) {
-      // A renderer process have moved its input focus to another edit
-      // control when there is an ongoing composition, e.g. a user has
-      // clicked a mouse button and selected another edit control while
-      // composing a text.
-      // For this case, we have to complete the ongoing composition and
-      // hide the IME windows BEFORE MOVING THEM.
-      CompleteComposition(window_handle, imm_context);
-    }
-    // Save the caret position, and Update the position of the IME window.
-    // This update is used for moving an IME window when a renderer process
-    // resize/moves the input caret.
-    if (caret_rect.x() >= 0 && caret_rect.y() >= 0) {
-      caret_rect_.SetRect(caret_rect.x(), caret_rect.y(), caret_rect.width(),
-                          caret_rect.height());
+}
+
+void ImeInput::UpdateCaretRect(HWND window_handle,
+                               const gfx::Rect& caret_rect) {
+  // Save the caret position, and Update the position of the IME window.
+  // This update is used for moving an IME window when a renderer process
+  // resize/moves the input caret.
+  if (caret_rect_ != caret_rect) {
+    caret_rect_ = caret_rect;
+    // Move the IME windows.
+    HIMC imm_context = ::ImmGetContext(window_handle);
+    if (imm_context) {
       MoveImeWindow(window_handle, imm_context);
+      ::ImmReleaseContext(window_handle, imm_context);
     }
-    ::ImmReleaseContext(window_handle, imm_context);
   }
 }

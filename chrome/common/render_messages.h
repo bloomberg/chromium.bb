@@ -443,14 +443,6 @@ struct ViewHostMsg_DidPrintPage_Params {
   double actual_shrink;
 };
 
-// The first parameter for the ViewHostMsg_ImeUpdateStatus message.
-enum ViewHostMsg_ImeControl {
-  IME_DISABLE = 0,
-  IME_MOVE_WINDOWS,
-  IME_COMPLETE_COMPOSITION,
-  IME_CANCEL_COMPOSITION,
-};
-
 // Parameters for creating an audio output stream.
 struct ViewHostMsg_Audio_CreateStream_Params {
   // Format request for the stream.
@@ -758,40 +750,6 @@ struct ParamTraits<ResourceType::Type> {
     }
 
     LogParam(type, l);
-  }
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_ImeControl> {
-  typedef ViewHostMsg_ImeControl param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<ViewHostMsg_ImeControl>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring control;
-    switch (p) {
-      case IME_DISABLE:
-        control = L"IME_DISABLE";
-        break;
-      case IME_MOVE_WINDOWS:
-        control = L"IME_MOVE_WINDOWS";
-        break;
-      case IME_COMPLETE_COMPOSITION:
-        control = L"IME_COMPLETE_COMPOSITION";
-        break;
-      default:
-        control = L"UNKNOWN";
-        break;
-    }
-
-    LogParam(control, l);
   }
 };
 

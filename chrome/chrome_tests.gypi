@@ -892,6 +892,7 @@
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/profile_manager_unittest.cc',
         'browser/renderer_host/audio_renderer_host_unittest.cc',
+        'browser/renderer_host/gtk_im_context_wrapper_unittest.cc',
         'browser/renderer_host/render_widget_host_unittest.cc',
         'browser/renderer_host/resource_dispatcher_host_unittest.cc',
         'browser/renderer_host/resource_queue_unittest.cc',

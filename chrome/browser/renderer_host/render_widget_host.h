@@ -22,7 +22,9 @@
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
 
 namespace gfx {
 class Rect;
@@ -316,19 +318,19 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void CancelUpdateTextDirection();
   void NotifyTextDirection();
 
-  // Notifies the renderer whether or not the IME attached to this process is
-  // activated.
-  // When the IME is activated, a renderer process sends IPC messages to notify
-  // the status of its composition node. (This message is mainly used for
-  // notifying the position of the input cursor so that the browser can
-  // display IME windows under the cursor.)
-  void ImeSetInputMode(bool activate);
+  // Notifies the renderer whether or not the input method attached to this
+  // process is activated.
+  // When the input method is activated, a renderer process sends IPC messages
+  // to notify the status of its composition node. (This message is mainly used
+  // for notifying the position of the input cursor so that the browser can
+  // display input method windows under the cursor.)
+  void SetInputMethodActive(bool activate);
 
   // Update the composition node of the renderer (or WebKit).
-  // WebKit has a special node (a composition node) for IMEs to change its text
-  // without affecting any other DOM nodes. When the IME (attached to the
-  // browser) updates its text, the browser sends IPC messages to update the
-  // composition node of the renderer.
+  // WebKit has a special node (a composition node) for input method to change
+  // its text without affecting any other DOM nodes. When the input method
+  // (attached to the browser) updates its text, the browser sends IPC messages
+  // to update the composition node of the renderer.
   // (Read the comments of each function for its detail.)
 
   // Sets the text of the composition node.
@@ -339,10 +341,11 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   //   (on Windows);
   // * when it receives a "preedit_changed" signal of GtkIMContext (on Linux);
   // * when markedText of NSTextInput is called (on Mac).
-  void ImeSetComposition(const string16& ime_string,
-                         int cursor_position,
-                         int target_start,
-                         int target_end);
+  void ImeSetComposition(
+      const string16& text,
+      const std::vector<WebKit::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end);
 
   // Finishes an ongoing composition with the specified text.
   // A browser should call this function:
@@ -350,7 +353,11 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   //   (on Windows);
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
-  void ImeConfirmComposition(const string16& ime_string);
+  void ImeConfirmComposition(const string16& text);
+
+  // Finishes an ongoing composition with the composition text set by last
+  // SetComposition() call.
+  void ImeConfirmComposition();
 
   // Cancels an ongoing composition.
   void ImeCancelComposition();
@@ -480,9 +487,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgBlur();
 
   void OnMsgSetCursor(const WebCursor& cursor);
-  // Using int instead of ViewHostMsg_ImeControl for control's type to avoid
-  // having to bring in render_messages.h in a header file.
-  void OnMsgImeUpdateStatus(int control, const gfx::Rect& caret_rect);
+  void OnMsgImeUpdateTextInputState(WebKit::WebTextInputType type,
+                                    const gfx::Rect& caret_rect);
+  void OnMsgImeCancelComposition();
 
   void OnMsgGpuRenderingActivated(bool activated);
 

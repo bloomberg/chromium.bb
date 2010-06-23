@@ -6,9 +6,14 @@
 #define CHROME_BROWSER_RENDERER_HOST_GTK_IM_CONTEXT_WRAPPER_H_
 
 #include <gdk/gdk.h>
+#include <pango/pango-attributes.h>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
 
 namespace gfx {
 class Rect;
@@ -39,14 +44,22 @@ class GtkIMContextWrapper {
   // Processes a gdk key event received by |host_view|.
   void ProcessKeyEvent(GdkEventKey* event);
 
-  // Updates IME status and caret position.
-  void UpdateStatus(int control, const gfx::Rect& caret_rect);
+  void UpdateInputMethodState(WebKit::WebTextInputType type,
+                              const gfx::Rect& caret_rect);
   void OnFocusIn();
   void OnFocusOut();
 
   void AppendInputMethodsContextMenu(MenuGtk* menu);
 
+  void CancelComposition();
+
+  void ConfirmComposition();
+
  private:
+  // For unit tests.
+  class GtkIMContextWrapperTest;
+  FRIEND_TEST(GtkIMContextWrapperTest, ExtractCompositionInfo);
+
   // Check if a text needs commit by forwarding a char event instead of
   // by confirming as a composition text.
   bool NeedCommitByForwardingCharEvent();
@@ -58,8 +71,6 @@ class GtkIMContextWrapper {
   // |filtered| indicates if the key event was filtered by the input method.
   void ProcessInputMethodResult(const GdkEventKey* event, bool filtered);
 
-  void CompleteComposition();
-
   // Real code of "commit" signal handler.
   void HandleCommit(const string16& text);
 
@@ -67,7 +78,9 @@ class GtkIMContextWrapper {
   void HandlePreeditStart();
 
   // Real code of "preedit-changed" signal handler.
-  void HandlePreeditChanged(const string16& text, int cursor_position);
+  void HandlePreeditChanged(const gchar* text,
+                            PangoAttrList* attrs,
+                            int cursor_position);
 
   // Real code of "preedit-end" signal handler.
   void HandlePreeditEnd();
@@ -95,6 +108,17 @@ class GtkIMContextWrapper {
                                          GtkIMContextWrapper* self);
   static void HandleHostViewUnrealizeThunk(GtkWidget* widget,
                                            GtkIMContextWrapper* self);
+
+  // Extracts composition underlines, selection range and utf-16 text from given
+  // utf-8 text, pango attributes and cursor position.
+  static void ExtractCompositionInfo(
+      const gchar* utf8_text,
+      PangoAttrList* attrs,
+      int cursor_position,
+      string16* utf16_text,
+      std::vector<WebKit::WebCompositionUnderline>* underlines,
+      int* selection_start,
+      int* selection_end);
 
   // The parent object.
   RenderWidgetHostViewGtk* host_view_;
@@ -139,12 +163,6 @@ class GtkIMContextWrapper {
   bool is_composing_text_;
 
   // Whether or not the IME is enabled.
-  // This flag is actually controlled by RenderWidget.
-  // It shall be set to false when an ImeUpdateStatus message with control ==
-  // IME_DISABLE is received, and shall be set to true if control ==
-  // IME_COMPLETE_COMPOSITION or IME_MOVE_WINDOWS.
-  // When this flag is false, keyboard events shall be dispatched directly
-  // instead of sending to context_.
   bool is_enabled_;
 
   // Whether or not it's currently running inside key event handler.
@@ -154,13 +172,15 @@ class GtkIMContextWrapper {
   bool is_in_key_event_handler_;
 
   // Stores a copy of the most recent preedit text retrieved from context_.
-  // When an ImeUpdateStatus message with control == IME_COMPLETE_COMPOSITION
-  // is received, this stored preedit text (if not empty) shall be committed,
-  // and context_ shall be reset.
   string16 preedit_text_;
 
-  // Stores the cursor position in the stored preedit text.
-  int preedit_cursor_position_;
+  // Stores the selection range in the stored preedit text.
+  int preedit_selection_start_;
+  int preedit_selection_end_;
+
+  // Stores composition underlines computed from the pango attributes of the
+  // most recent preedit text.
+  std::vector<WebKit::WebCompositionUnderline> preedit_underlines_;
 
   // Whether or not the preedit has been changed since last key event.
   bool is_preedit_changed_;

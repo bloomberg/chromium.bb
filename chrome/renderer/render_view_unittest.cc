@@ -24,7 +24,6 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
-using WebKit::WebCompositionCommand;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
@@ -33,19 +32,6 @@ using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
-
-static WebCompositionCommand ToCompositionCommand(int string_type) {
-  switch (string_type) {
-    default:
-      NOTREACHED();
-    case -1:
-      return WebKit::WebCompositionCommandDiscard;
-    case 0:
-      return WebKit::WebCompositionCommandSet;
-    case 1:
-      return WebKit::WebCompositionCommandConfirm;
-  }
-}
 
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewTest, OnNavStateChanged) {
@@ -73,7 +59,7 @@ TEST_F(RenderViewTest, OnNavStateChanged) {
 // changes.
 TEST_F(RenderViewTest, OnImeStateChanged) {
   // Enable our IME backend code.
-  view_->OnImeSetInputMode(true);
+  view_->OnSetInputMethodActive(true);
 
   // Load an HTML page consisting of two input fields.
   view_->set_send_content_state_immediately(true);
@@ -97,13 +83,13 @@ TEST_F(RenderViewTest, OnImeStateChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    view_->UpdateIME();
+    view_->UpdateInputMethod();
     const IPC::Message* msg = render_thread_.sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_ImeUpdateStatus::ID, msg->type());
-    ViewHostMsg_ImeUpdateStatus::Param params;
-    ViewHostMsg_ImeUpdateStatus::Read(msg, &params);
-    EXPECT_EQ(params.a, IME_COMPLETE_COMPOSITION);
+    EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
+    ViewHostMsg_ImeUpdateTextInputState::Param params;
+    ViewHostMsg_ImeUpdateTextInputState::Read(msg, &params);
+    EXPECT_EQ(params.a, WebKit::WebTextInputTypeText);
     EXPECT_TRUE(params.b.x() > 0 && params.b.y() > 0);
 
     // Move the input focus to the second <input> element, where we should
@@ -114,12 +100,12 @@ TEST_F(RenderViewTest, OnImeStateChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    view_->UpdateIME();
+    view_->UpdateInputMethod();
     msg = render_thread_.sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_ImeUpdateStatus::ID, msg->type());
-    ViewHostMsg_ImeUpdateStatus::Read(msg, &params);
-    EXPECT_EQ(params.a, IME_DISABLE);
+    EXPECT_EQ(ViewHostMsg_ImeUpdateTextInputState::ID, msg->type());
+    ViewHostMsg_ImeUpdateTextInputState::Read(msg, &params);
+    EXPECT_EQ(params.a, WebKit::WebTextInputTypePassword);
   }
 }
 
@@ -140,60 +126,59 @@ TEST_F(RenderViewTest, ImeComposition) {
     IME_SETINPUTMODE,
     IME_SETFOCUS,
     IME_SETCOMPOSITION,
+    IME_CONFIRMCOMPOSITION,
+    IME_CANCELCOMPOSITION
   };
   struct ImeMessage {
     ImeCommand command;
     bool enable;
-    int string_type;
-    int cursor_position;
-    int target_start;
-    int target_end;
+    int selection_start;
+    int selection_end;
     const wchar_t* ime_string;
     const wchar_t* result;
   };
   static const ImeMessage kImeMessages[] = {
     // Scenario 1: input a Chinese word with Microsoft IME (on Vista).
-    {IME_INITIALIZE, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETINPUTMODE, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETFOCUS, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETCOMPOSITION, false, 0, 1, -1, -1, L"n", L"n"},
-    {IME_SETCOMPOSITION, false, 0, 2, -1, -1, L"ni", L"ni"},
-    {IME_SETCOMPOSITION, false, 0, 3, -1, -1, L"nih", L"nih"},
-    {IME_SETCOMPOSITION, false, 0, 4, -1, -1, L"niha", L"niha"},
-    {IME_SETCOMPOSITION, false, 0, 5, -1, -1, L"nihao", L"nihao"},
-    {IME_SETCOMPOSITION, false, 0, 2, -1, -1, L"\x4F60\x597D", L"\x4F60\x597D"},
-    {IME_SETCOMPOSITION, false, 1, -1, -1, -1, L"\x4F60\x597D",
-     L"\x4F60\x597D"},
-    {IME_SETCOMPOSITION, false, -1, -1, -1, -1, L"", L"\x4F60\x597D"},
+    {IME_INITIALIZE, true, 0, 0, NULL, NULL},
+    {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
+    {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+    {IME_SETCOMPOSITION, false, 1, 1, L"n", L"n"},
+    {IME_SETCOMPOSITION, false, 2, 2, L"ni", L"ni"},
+    {IME_SETCOMPOSITION, false, 3, 3, L"nih", L"nih"},
+    {IME_SETCOMPOSITION, false, 4, 4, L"niha", L"niha"},
+    {IME_SETCOMPOSITION, false, 5, 5, L"nihao", L"nihao"},
+    {IME_SETCOMPOSITION, false, 2, 2, L"\x4F60\x597D", L"\x4F60\x597D"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\x4F60\x597D"},
+    {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x4F60\x597D"},
     // Scenario 2: input a Japanese word with Microsoft IME (on Vista).
-    {IME_INITIALIZE, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETINPUTMODE, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETFOCUS, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETCOMPOSITION, false, 0, 1, 0, 1, L"\xFF4B", L"\xFF4B"},
-    {IME_SETCOMPOSITION, false, 0, 1, 0, 1, L"\x304B", L"\x304B"},
-    {IME_SETCOMPOSITION, false, 0, 2, 0, 2, L"\x304B\xFF4E", L"\x304B\xFF4E"},
-    {IME_SETCOMPOSITION, false, 0, 3, 0, 3, L"\x304B\x3093\xFF4A",
+    {IME_INITIALIZE, true, 0, 0, NULL, NULL},
+    {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
+    {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\xFF4B", L"\xFF4B"},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\x304B", L"\x304B"},
+    {IME_SETCOMPOSITION, false, 0, 2, L"\x304B\xFF4E", L"\x304B\xFF4E"},
+    {IME_SETCOMPOSITION, false, 0, 3, L"\x304B\x3093\xFF4A",
      L"\x304B\x3093\xFF4A"},
-    {IME_SETCOMPOSITION, false, 0, 3, 0, 3, L"\x304B\x3093\x3058",
+    {IME_SETCOMPOSITION, false, 0, 3, L"\x304B\x3093\x3058",
      L"\x304B\x3093\x3058"},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 2, L"\x611F\x3058", L"\x611F\x3058"},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 2, L"\x6F22\x5B57", L"\x6F22\x5B57"},
-    {IME_SETCOMPOSITION, false, 1, -1, -1, -1, L"\x6F22\x5B57",
-     L"\x6F22\x5B57"},
-    {IME_SETCOMPOSITION, false, -1, -1, -1, -1, L"", L"\x6F22\x5B57"},
+    {IME_SETCOMPOSITION, false, 0, 2, L"\x611F\x3058", L"\x611F\x3058"},
+    {IME_SETCOMPOSITION, false, 0, 2, L"\x6F22\x5B57", L"\x6F22\x5B57"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\x6F22\x5B57"},
+    {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
     // Scenario 3: input a Korean word with Microsot IME (on Vista).
-    {IME_INITIALIZE, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETINPUTMODE, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETFOCUS, true, 0, 0, 0, 0, NULL, NULL},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 1, L"\x3147", L"\x3147"},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 1, L"\xC544", L"\xC544"},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 1, L"\xC548", L"\xC548"},
-    {IME_SETCOMPOSITION, false, 1, -1, -1, -1, L"\xC548", L"\xC548"},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 1, L"\x3134", L"\xC548\x3134"},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 1, L"\xB140", L"\xC548\xB140"},
-    {IME_SETCOMPOSITION, false, 0, 0, 0, 1, L"\xB155", L"\xC548\xB155"},
-    {IME_SETCOMPOSITION, false, -1, -1, -1, -1, L"", L"\xC548"},
-    {IME_SETCOMPOSITION, false, 1, -1, -1, -1, L"\xB155", L"\xC548\xB155"},
+    {IME_INITIALIZE, true, 0, 0, NULL, NULL},
+    {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
+    {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\x3147", L"\x3147"},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\xC544", L"\xC544"},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\xC548", L"\xC548"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\xC548"},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\x3134", L"\xC548\x3134"},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\xB140", L"\xC548\xB140"},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
+    {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\xC548"},
+    {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\xC548\xB155"},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kImeMessages); i++) {
@@ -203,7 +188,7 @@ TEST_F(RenderViewTest, ImeComposition) {
         // Load an HTML page consisting of a content-editable <div> element,
         // and move the input focus to the <div> element, where we can use
         // IMEs.
-        view_->OnImeSetInputMode(ime_message->enable);
+        view_->OnSetInputMethodActive(ime_message->enable);
         view_->set_send_content_state_immediately(true);
         LoadHTML("<html>"
                 "<head>"
@@ -217,7 +202,7 @@ TEST_F(RenderViewTest, ImeComposition) {
 
       case IME_SETINPUTMODE:
         // Activate (or deactivate) our IME back-end.
-        view_->OnImeSetInputMode(ime_message->enable);
+        view_->OnSetInputMethodActive(ime_message->enable);
         break;
 
       case IME_SETFOCUS:
@@ -227,17 +212,26 @@ TEST_F(RenderViewTest, ImeComposition) {
 
       case IME_SETCOMPOSITION:
         view_->OnImeSetComposition(
-            ToCompositionCommand(ime_message->string_type),
-            ime_message->cursor_position,
-            ime_message->target_start,
-            ime_message->target_end,
-            WideToUTF16Hack(ime_message->ime_string));
+            WideToUTF16Hack(ime_message->ime_string),
+            std::vector<WebKit::WebCompositionUnderline>(),
+            ime_message->selection_start,
+            ime_message->selection_end);
+        break;
+
+      case IME_CONFIRMCOMPOSITION:
+        view_->OnImeConfirmComposition();
+        break;
+
+      case IME_CANCELCOMPOSITION:
+        view_->OnImeSetComposition(string16(),
+                                std::vector<WebKit::WebCompositionUnderline>(),
+                                0, 0);
         break;
     }
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    view_->UpdateIME();
+    view_->UpdateInputMethod();
     ProcessPendingMessages();
     render_thread_.sink().ClearMessages();
 

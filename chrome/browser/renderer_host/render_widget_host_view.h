@@ -14,6 +14,7 @@
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webaccessibility.h"
 
@@ -109,8 +110,12 @@ class RenderWidgetHostView {
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;
 
-  // Enable or disable IME for the view.
-  virtual void IMEUpdateStatus(int control, const gfx::Rect& caret_rect) = 0;
+  // Updates the state of the input method attached to the view.
+  virtual void ImeUpdateTextInputState(WebKit::WebTextInputType type,
+                                       const gfx::Rect& caret_rect) = 0;
+
+  // Cancel the ongoing composition of the input method attached to the view.
+  virtual void ImeCancelComposition() = 0;
 
   // Informs the view that a portion of the widget's backing store was scrolled
   // and/or painted.  The view should ensure this gets copied to the screen.

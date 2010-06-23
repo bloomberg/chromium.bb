@@ -281,7 +281,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       shutdown_factory_(this),
       parent_hwnd_(NULL),
       is_loading_(false),
-      visually_deemphasized_(false) {
+      visually_deemphasized_(false),
+      text_input_type_(WebKit::WebTextInputTypeNone) {
   render_widget_host_->set_view(this);
   registrar_.Add(this,
                  NotificationType::RENDERER_PROCESS_TERMINATED,
@@ -612,16 +613,24 @@ void RenderWidgetHostViewWin::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewWin::IMEUpdateStatus(int control,
-                                              const gfx::Rect& caret_rect) {
-  if (control == IME_DISABLE) {
-    ime_input_.DisableIME(m_hWnd);
-  } else if (control == IME_CANCEL_COMPOSITION) {
-    ime_input_.CancelIME(m_hWnd);
-  } else {
-    ime_input_.EnableIME(m_hWnd, caret_rect,
-                         control == IME_COMPLETE_COMPOSITION);
+void RenderWidgetHostViewWin::ImeUpdateTextInputState(
+    WebKit::WebTextInputType type,
+    const gfx::Rect& caret_rect) {
+  if (text_input_type_ != type) {
+    text_input_type_ = type;
+    if (type == WebKit::WebTextInputTypeText)
+      ime_input_.EnableIME(m_hWnd);
+    else
+      ime_input_.DisableIME(m_hWnd);
   }
+
+  // Only update caret position if the input method is enabled.
+  if (type == WebKit::WebTextInputTypeText)
+    ime_input_.UpdateCaretRect(m_hWnd, caret_rect);
+}
+
+void RenderWidgetHostViewWin::ImeCancelComposition() {
+  ime_input_.CancelIME(m_hWnd);
 }
 
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
@@ -1095,8 +1104,8 @@ void RenderWidgetHostViewWin::OnInputLangChange(DWORD character_set,
   //   successfully (because Action 1 shows ime_status = !ime_notification_.)
   bool ime_status = ime_input_.SetInputLanguage();
   if (ime_status != ime_notification_) {
-    if (Send(new ViewMsg_ImeSetInputMode(render_widget_host_->routing_id(),
-                                         ime_status))) {
+    if (render_widget_host_) {
+      render_widget_host_->SetInputMethodActive(ime_status);
       ime_notification_ = ime_status;
     }
   }
@@ -1148,8 +1157,8 @@ LRESULT RenderWidgetHostViewWin::OnImeSetContext(
   // Therefore, we just start/stop status messages according to the activation
   // status of this application without checks.
   bool activated = (wparam == TRUE);
-  if (Send(new ViewMsg_ImeSetInputMode(
-      render_widget_host_->routing_id(), activated))) {
+  if (render_widget_host_) {
+    render_widget_host_->SetInputMethodActive(activated);
     ime_notification_ = activated;
   }
 
@@ -1188,12 +1197,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // and send it to a renderer process.
   ImeComposition composition;
   if (ime_input_.GetResult(m_hWnd, lparam, &composition)) {
-    Send(new ViewMsg_ImeSetComposition(render_widget_host_->routing_id(),
-                                       WebKit::WebCompositionCommandConfirm,
-                                       composition.cursor_position,
-                                       composition.target_start,
-                                       composition.target_end,
-                                       composition.ime_string));
+    render_widget_host_->ImeConfirmComposition(composition.ime_string);
     ime_input_.ResetComposition(m_hWnd);
     // Fall though and try reading the composition string.
     // Japanese IMEs send a message containing both GCS_RESULTSTR and
@@ -1203,12 +1207,9 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // Retrieve the composition string and its attributes of the ongoing
   // composition and send it to a renderer process.
   if (ime_input_.GetComposition(m_hWnd, lparam, &composition)) {
-    Send(new ViewMsg_ImeSetComposition(render_widget_host_->routing_id(),
-                                       WebKit::WebCompositionCommandSet,
-                                       composition.cursor_position,
-                                       composition.target_start,
-                                       composition.target_end,
-                                       composition.ime_string));
+    render_widget_host_->ImeSetComposition(
+        composition.ime_string, composition.underlines,
+        composition.selection_start, composition.selection_end);
   }
   // We have to prevent WTL from calling ::DefWindowProc() because we do not
   // want for the IMM (Input Method Manager) to send WM_IME_CHAR messages.
@@ -1226,10 +1227,7 @@ LRESULT RenderWidgetHostViewWin::OnImeEndComposition(
     // i.e. the ongoing composition has been canceled.
     // We need to reset the composition status both of the ImeInput object and
     // of the renderer process.
-    std::wstring empty_string;
-    Send(new ViewMsg_ImeSetComposition(render_widget_host_->routing_id(),
-                                       WebKit::WebCompositionCommandDiscard,
-                                       -1, -1, -1, empty_string));
+    render_widget_host_->ImeCancelComposition();
     ime_input_.ResetComposition(m_hWnd);
   }
   ime_input_.DestroyImeWindow(m_hWnd);
@@ -1282,9 +1280,13 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
     switch (message) {
       case WM_LBUTTONDOWN:
       case WM_MBUTTONDOWN:
+      case WM_RBUTTONDOWN:
+        // Finish the ongoing composition whenever a mouse click happens.
+        // It matches IE's behavior.
+        ime_input_.CleanupComposition(m_hWnd);
+        // Fall through.
       case WM_MOUSEMOVE:
-      case WM_MOUSELEAVE:
-      case WM_RBUTTONDOWN: {
+      case WM_MOUSELEAVE: {
         // Give the TabContents first crack at the message. It may want to
         // prevent forwarding to the renderer if some higher level browser
         // functionality is invoked.
@@ -1303,12 +1305,6 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
           return 1;
       }
     }
-
-    // WebKit does not update its IME status when a user clicks a mouse button
-    // to change the input focus onto a popup menu. As a workaround, we finish
-    // an ongoing composition every time when we click a left button.
-    if (message == WM_LBUTTONDOWN)
-      ime_input_.CleanupComposition(m_hWnd);
   }
 
   ForwardMouseEventToRenderer(message, wparam, lparam);

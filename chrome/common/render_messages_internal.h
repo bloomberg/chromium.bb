@@ -456,43 +456,30 @@ IPC_BEGIN_MESSAGES(View)
                       std::string /* property_name */,
                       std::string /* property_value_json */)
 
-  // This message starts/stop monitoring the status of the focused edit
-  // control of a renderer process.
+  // This message starts/stop monitoring the input method status of the focused
+  // edit control of a renderer process.
   // Parameters
   // * is_active (bool)
-  //   Represents whether or not the IME is active in a browser process.
+  //   Indicates if an input method is active in the browser process.
   //   The possible actions when a renderer process receives this message are
   //   listed below:
   //     Value Action
-  //     true  Start sending IPC messages, ViewHostMsg_ImeUpdateStatus
-  //           to notify the status of the focused edit control.
-  //     false Stop sending IPC messages, ViewHostMsg_ImeUpdateStatus.
-  IPC_MESSAGE_ROUTED1(ViewMsg_ImeSetInputMode,
+  //     true  Start sending IPC message ViewHostMsg_ImeUpdateTextInputState
+  //           to notify the input method status of the focused edit control.
+  //     false Stop sending IPC message ViewHostMsg_ImeUpdateTextInputState.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SetInputMethodActive,
                       bool /* is_active */)
 
-  // This message sends a string being composed with IME.
-  // Parameters
-  // * string_type (int)
-  //   Represents the type of the 'ime_string' parameter.
-  //   Its possible values and description are listed below:
-  //     Value         Description
-  //     -1            The parameter is not used.
-  //     1             The parameter represents a result string.
-  //     0             The parameter represents a composition string.
-  // * cursor_position (int)
-  //   Represents the position of the cursor
-  // * target_start (int)
-  //   Represents the position of the beginning of the selection
-  // * target_end (int)
-  //   Represents the position of the end of the selection
-  // * ime_string (std::wstring)
-  //   Represents the string retrieved from IME (Input Method Editor)
-  IPC_MESSAGE_ROUTED5(ViewMsg_ImeSetComposition,
-                      WebKit::WebCompositionCommand, /* command */
-                      int, /* cursor_position */
-                      int, /* target_start */
-                      int, /* target_end */
-                      string16 /* ime_string */ )
+  // This message sends a string being composed with an input method.
+  IPC_MESSAGE_ROUTED4(
+      ViewMsg_ImeSetComposition,
+      string16, /* text */
+      std::vector<WebKit::WebCompositionUnderline>, /* underlines */
+      int, /* selectiont_start */
+      int /* selection_end */)
+
+  // This message confirms an ongoing composition.
+  IPC_MESSAGE_ROUTED0(ViewMsg_ImeConfirmComposition)
 
   // This passes a set of webkit preferences down to the renderer.
   IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences, WebPreferences)
@@ -1524,44 +1511,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       GURL /* url of OS description document */,
                       bool /* autodetected */)
 
-  // required for synchronizing IME windows.
-  // Parameters
-  // * control (ViewHostMsg_ImeControl)
-  //   It specifies the code for controlling the IME attached to
-  //   the browser process. This parameter should be one of the values
-  //   listed below.
-  //     + IME_DISABLE
-  //       Deactivate the IME attached to a browser process.
-  //       This code is typically used for notifying a renderer process
-  //       moves its input focus to a password input. A browser process
-  //       finishes the current composition and deactivate IME.
-  //       If a renderer process sets its input focus to another edit
-  //       control which is not a password input, it needs to re-activate
-  //       IME, it has to send another message with this code IME_MOVE_WINDOWS
-  //       and set the new caret position.
-  //     + IME_MOVE_WINDOWS
-  //       Activate the IME attached to a browser process and set the position
-  //       of its IME windows.
-  //       This code is typically used for the following cases:
-  //         - Notifying a renderer process moves the caret position of the
-  //           focused edit control, or;
-  //         - Notifying a renderer process moves its input focus from a
-  //           password input to an editable control which is NOT a password
-  //           input.
-  //           A renderer process also has to set caret_rect and
-  //           specify the new caret rectangle.
-  //     + IME_COMPLETE_COMPOSITION
-  //       Finish the current composition.
-  //       This code is used for notifying a renderer process moves its
-  //       input focus from an editable control being composed to another one
-  //       which is NOT a password input. A browser process closes its IME
-  //       windows without changing the activation status of its IME, i.e. it
-  //       keeps activating its IME.
-  // * caret_rect (gfx::Rect)
-  //   They specify the rectangle of the input caret.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeUpdateStatus,
-                      ViewHostMsg_ImeControl, /* control */
+  // requires for updating text input state.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeUpdateTextInputState,
+                      WebKit::WebTextInputType, /* text_input_type */
                       gfx::Rect /* caret_rect */)
+
+  // requires for cancelling an ongoing input method composition.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
 
   // Tells the browser that the renderer is done calculating the number of
   // rendered pages according to the specified settings.

@@ -230,6 +230,10 @@ class RenderWidgetHostViewGtkWidget {
     if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS)
       return FALSE;
 
+    // Confirm existing composition text on mouse click events, to make sure
+    // the input caret won't be moved with an ongoing composition session.
+    host_view->im_context_->ConfirmComposition();
+
     // We want to translate the coordinates of events that do not originate
     // from this widget to be relative to the top left of the widget.
     GtkWidget* event_widget = gtk_get_event_widget(
@@ -650,9 +654,14 @@ void RenderWidgetHostViewGtk::SetIsLoading(bool is_loading) {
     ShowCurrentCursor();
 }
 
-void RenderWidgetHostViewGtk::IMEUpdateStatus(int control,
-                                              const gfx::Rect& caret_rect) {
-  im_context_->UpdateStatus(control, caret_rect);
+void RenderWidgetHostViewGtk::ImeUpdateTextInputState(
+    WebKit::WebTextInputType type,
+    const gfx::Rect& caret_rect) {
+  im_context_->UpdateInputMethodState(type, caret_rect);
+}
+
+void RenderWidgetHostViewGtk::ImeCancelComposition() {
+  im_context_->CancelComposition();
 }
 
 void RenderWidgetHostViewGtk::DidUpdateBackingStore(

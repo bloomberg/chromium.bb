@@ -34,7 +34,7 @@
 
 #include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
 
-using WebKit::WebCompositionCommand;
+using WebKit::WebCompositionUnderline;
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 using WebKit::WebNavigationPolicy;
@@ -44,6 +44,8 @@ using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
 using WebKit::WebTextDirection;
+using WebKit::WebTextInputType;
+using WebKit::WebVector;
 
 RenderWidget::RenderWidget(RenderThreadBase* render_thread,
                            WebKit::WebPopupType popup_type)
@@ -61,13 +63,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       has_focus_(false),
       handling_input_event_(false),
       closing_(false),
-      ime_is_active_(false),
-      ime_control_enable_ime_(true),
-      ime_control_x_(-1),
-      ime_control_y_(-1),
-      ime_control_new_state_(false),
-      ime_control_updated_(false),
-      ime_control_busy_(false),
+      input_method_is_active_(false),
+      text_input_type_(WebKit::WebTextInputTypeNone),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
@@ -149,8 +146,9 @@ IPC_DEFINE_MESSAGE_MAP(RenderWidget)
   IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
   IPC_MESSAGE_HANDLER(ViewMsg_MouseCaptureLost, OnMouseCaptureLost)
   IPC_MESSAGE_HANDLER(ViewMsg_SetFocus, OnSetFocus)
-  IPC_MESSAGE_HANDLER(ViewMsg_ImeSetInputMode, OnImeSetInputMode)
+  IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
   IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
+  IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
   IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnMsgPaintAtSize)
   IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
   IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
@@ -359,13 +357,6 @@ void RenderWidget::OnSetFocus(bool enable) {
   has_focus_ = enable;
   if (webwidget_)
     webwidget_->setFocus(enable);
-  if (enable) {
-    // Force to retrieve the state of the focused widget to determine if we
-    // should activate IMEs next time when this process calls the UpdateIME()
-    // function.
-    ime_control_updated_ = true;
-    ime_control_new_state_ = true;
-  }
 }
 
 void RenderWidget::ClearFocus() {
@@ -531,7 +522,7 @@ void RenderWidget::DoDeferredUpdate() {
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
   next_paint_flags_ = 0;
 
-  UpdateIME();
+  UpdateInputMethod();
 
   // Let derived classes know we've painted.
   DidInitiatePaint();
@@ -721,30 +712,32 @@ WebRect RenderWidget::windowResizerRect() {
   return resizer_rect_;
 }
 
-void RenderWidget::OnImeSetInputMode(bool is_active) {
+void RenderWidget::OnSetInputMethodActive(bool is_active) {
   // To prevent this renderer process from sending unnecessary IPC messages to
   // a browser process, we permit the renderer process to send IPC messages
-  // only during the IME attached to the browser process is active.
-  ime_is_active_ = is_active;
+  // only during the input method attached to the browser process is active.
+  input_method_is_active_ = is_active;
 }
 
-void RenderWidget::OnImeSetComposition(WebCompositionCommand command,
-                                       int cursor_position,
-                                       int target_start, int target_end,
-                                       const string16& ime_string) {
+void RenderWidget::OnImeSetComposition(
+    const string16& text,
+    const std::vector<WebCompositionUnderline>& underlines,
+    int selection_start, int selection_end) {
   if (!webwidget_)
     return;
-  ime_control_busy_ = true;
-  if (!webwidget_->handleCompositionEvent(command, cursor_position,
-      target_start, target_end, ime_string) &&
-      command == WebKit::WebCompositionCommandSet) {
-    // If the composition event can't be handled while we were trying to update
-    // the composition, let the browser process know so it can update it's
-    // state.
-    Send(new ViewHostMsg_ImeUpdateStatus(routing_id(), IME_CANCEL_COMPOSITION,
-                                         WebRect()));
+  if (!webwidget_->setComposition(
+      text, WebVector<WebCompositionUnderline>(underlines),
+      selection_start, selection_end)) {
+    // If we failed to set the composition text, then we need to let the browser
+    // process to cancel the input method's ongoing composition session, to make
+    // sure we are in a consistent state.
+    Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   }
-  ime_control_busy_ = false;
+}
+
+void RenderWidget::OnImeConfirmComposition() {
+  if (webwidget_)
+    webwidget_->confirmComposition();
 }
 
 // This message causes the renderer to render an image of the
@@ -872,81 +865,46 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK;
 }
 
-void RenderWidget::UpdateIME() {
-  // If a browser process does not have IMEs, its IMEs are not active, or there
-  // are not any attached widgets.
-  // a renderer process does not have to retrieve information of the focused
-  // control or send notification messages to a browser process.
-  if (!ime_is_active_) {
+void RenderWidget::UpdateInputMethod() {
+  if (!input_method_is_active_)
     return;
+
+  WebTextInputType new_type = WebKit::WebTextInputTypeNone;
+  WebRect new_caret_bounds;
+
+  if (webwidget_) {
+    new_type = webwidget_->textInputType();
+    new_caret_bounds = webwidget_->caretOrSelectionBounds();
   }
-  // Retrieve the caret position from the focused widget and verify we should
-  // enabled IMEs attached to the browser process.
-  bool enable_ime = false;
-  WebRect caret_rect;
-  if (!webwidget_ ||
-      !webwidget_->queryCompositionStatus(&enable_ime, &caret_rect)) {
-    // There are not any editable widgets attached to this process.
-    // We should disable the IME to prevent it from sending CJK strings to
-    // non-editable widgets.
-    ime_control_updated_ = true;
-    ime_control_new_state_ = false;
+
+  // Only sends text input type and caret bounds to the browser process if they
+  // are changed.
+  if (text_input_type_ != new_type || caret_bounds_ != new_caret_bounds) {
+    text_input_type_ = new_type;
+    caret_bounds_ = new_caret_bounds;
+    Send(new ViewHostMsg_ImeUpdateTextInputState(
+        routing_id(), new_type, new_caret_bounds));
   }
-  if (ime_control_new_state_ != enable_ime) {
-    ime_control_updated_ = true;
-    ime_control_new_state_ = enable_ime;
-  }
-  if (ime_control_updated_) {
-    // The input focus has been changed.
-    // Compare the current state with the updated state and choose actions.
-    if (ime_control_enable_ime_) {
-      if (ime_control_new_state_) {
-        // Case 1: a text input -> another text input
-        // Complete the current composition and notify the caret position.
-        Send(new ViewHostMsg_ImeUpdateStatus(routing_id(),
-                                             IME_COMPLETE_COMPOSITION,
-                                             caret_rect));
-      } else {
-        // Case 2: a text input -> a password input (or a static control)
-        // Complete the current composition and disable the IME.
-        Send(new ViewHostMsg_ImeUpdateStatus(routing_id(), IME_DISABLE,
-                                             caret_rect));
-      }
-    } else {
-      if (ime_control_new_state_) {
-        // Case 3: a password input (or a static control) -> a text input
-        // Enable the IME and notify the caret position.
-        Send(new ViewHostMsg_ImeUpdateStatus(routing_id(),
-                                             IME_COMPLETE_COMPOSITION,
-                                             caret_rect));
-      } else {
-        // Case 4: a password input (or a static contol) -> another password
-        //         input (or another static control).
-        // The IME has been already disabled and we don't have to do anything.
-      }
-    }
-  } else {
-    // The input focus is not changed.
-    // Notify the caret position to a browser process only if it is changed.
-    if (ime_control_enable_ime_) {
-      if (caret_rect.x != ime_control_x_ ||
-          caret_rect.y != ime_control_y_) {
-        Send(new ViewHostMsg_ImeUpdateStatus(routing_id(), IME_MOVE_WINDOWS,
-                                             caret_rect));
-      }
-    }
-  }
-  // Save the updated IME status to prevent from sending the same IPC messages.
-  ime_control_updated_ = false;
-  ime_control_enable_ime_ = ime_control_new_state_;
-  ime_control_x_ = caret_rect.x;
-  ime_control_y_ = caret_rect.y;
 }
 
 WebScreenInfo RenderWidget::screenInfo() {
   WebScreenInfo results;
   Send(new ViewHostMsg_GetScreenInfo(routing_id_, host_window_, &results));
   return results;
+}
+
+void RenderWidget::resetInputMethod() {
+  if (!input_method_is_active_)
+    return;
+
+  // If the last text input type is not None, then we should finish any
+  // ongoing composition regardless of the new text input type.
+  if (text_input_type_ != WebKit::WebTextInputTypeNone) {
+    // If a composition text exists, then we need to let the browser process
+    // to cancel the input method's ongoing composition session.
+    if (webwidget_->confirmComposition())
+      Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
+  }
 }
 
 void RenderWidget::SchedulePluginMove(

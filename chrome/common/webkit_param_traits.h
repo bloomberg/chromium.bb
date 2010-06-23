@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 //
@@ -25,7 +25,7 @@
 
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCompositionCommand.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
@@ -35,6 +35,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
 
 namespace IPC {
 
@@ -97,24 +98,6 @@ struct ParamTraits<WebKit::WebScreenInfo> {
     l->append(L", ");
     LogParam(p.availableRect, l);
     l->append(L")");
-  }
-};
-
-template <>
-struct ParamTraits<WebKit::WebCompositionCommand> {
-  typedef WebKit::WebCompositionCommand param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    LogParam(static_cast<int>(p), l);
   }
 };
 
@@ -388,6 +371,69 @@ template <>
     bool res = m->ReadInt(iter, &temp);
     *r = static_cast<param_type>(temp);
     return res;
+  }
+};
+
+template <>
+struct ParamTraits<WebKit::WebCompositionUnderline> {
+  typedef WebKit::WebCompositionUnderline param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.startOffset);
+    WriteParam(m, p.endOffset);
+    WriteParam(m, p.color);
+    WriteParam(m, p.thick);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->startOffset) &&
+        ReadParam(m, iter, &p->endOffset) &&
+        ReadParam(m, iter, &p->color) &&
+        ReadParam(m, iter, &p->thick);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.startOffset, l);
+    l->append(L",");
+    LogParam(p.endOffset, l);
+    l->append(L":");
+    LogParam(p.color, l);
+    l->append(L":");
+    LogParam(p.thick, l);
+    l->append(L")");
+  }
+};
+
+template <>
+struct ParamTraits<WebKit::WebTextInputType> {
+  typedef WebKit::WebTextInputType param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<param_type>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring control;
+    switch (p) {
+      case WebKit::WebTextInputTypeNone:
+        control = L"WebKit::WebTextInputTypeNone";
+        break;
+      case WebKit::WebTextInputTypeText:
+        control = L"WebKit::WebTextInputTypeText";
+        break;
+      case WebKit::WebTextInputTypePassword:
+        control = L"WebKit::WebTextInputTypePassword";
+        break;
+      default:
+        NOTIMPLEMENTED();
+        control = L"UNKNOWN";
+        break;
+    }
+    LogParam(control, l);
   }
 };
 

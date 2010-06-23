@@ -1760,16 +1760,6 @@ bool RenderView::isSelectTrailingWhitespaceEnabled() {
 #endif
 }
 
-void RenderView::setInputMethodEnabled(bool enabled) {
-  // Save the updated IME status and mark the input focus has been updated.
-  // The IME status is to be sent to a browser process next time when
-  // the input caret is rendered.
-  if (!ime_control_busy_) {
-    ime_control_updated_ = true;
-    ime_control_new_state_ = enabled;
-  }
-}
-
 void RenderView::didChangeSelection(bool is_empty_selection) {
 #if defined(USE_X11)
   if (!handling_input_event_)

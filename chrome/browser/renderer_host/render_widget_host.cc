@@ -148,7 +148,10 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateStatus, OnMsgImeUpdateStatus)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateTextInputState,
+                        OnMsgImeUpdateTextInputState)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
+                        OnMsgImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GpuRenderingActivated,
                         OnMsgGpuRenderingActivated)
 #if defined(OS_LINUX)
@@ -601,30 +604,32 @@ void RenderWidgetHost::NotifyTextDirection() {
   }
 }
 
-void RenderWidgetHost::ImeSetInputMode(bool activate) {
-  Send(new ViewMsg_ImeSetInputMode(routing_id(), activate));
+void RenderWidgetHost::SetInputMethodActive(bool activate) {
+  Send(new ViewMsg_SetInputMethodActive(routing_id(), activate));
 }
 
-void RenderWidgetHost::ImeSetComposition(const string16& ime_string,
-                                         int cursor_position,
-                                         int target_start,
-                                         int target_end) {
-  Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     WebKit::WebCompositionCommandSet,
-                                     cursor_position, target_start, target_end,
-                                     ime_string));
+void RenderWidgetHost::ImeSetComposition(
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  Send(new ViewMsg_ImeSetComposition(
+            routing_id(), text, underlines, selection_start, selection_end));
 }
 
-void RenderWidgetHost::ImeConfirmComposition(const string16& ime_string) {
+void RenderWidgetHost::ImeConfirmComposition(const string16& text) {
   Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     WebKit::WebCompositionCommandConfirm,
-                                     -1, -1, -1, ime_string));
+            text, std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
+  Send(new ViewMsg_ImeConfirmComposition(routing_id()));
+}
+
+void RenderWidgetHost::ImeConfirmComposition() {
+  Send(new ViewMsg_ImeConfirmComposition(routing_id()));
 }
 
 void RenderWidgetHost::ImeCancelComposition() {
-  Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     WebKit::WebCompositionCommandDiscard,
-                                     -1, -1, -1, string16()));
+  Send(new ViewMsg_ImeSetComposition(routing_id(), string16(),
+            std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
 }
 
 gfx::Rect RenderWidgetHost::GetRootWindowResizerRect() const {
@@ -888,11 +893,16 @@ void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {
   view_->UpdateCursor(cursor);
 }
 
-void RenderWidgetHost::OnMsgImeUpdateStatus(int control,
-                                            const gfx::Rect& caret_rect) {
-  if (view_) {
-    view_->IMEUpdateStatus(control, caret_rect);
-  }
+void RenderWidgetHost::OnMsgImeUpdateTextInputState(
+    WebKit::WebTextInputType type,
+    const gfx::Rect& caret_rect) {
+  if (view_)
+    view_->ImeUpdateTextInputState(type, caret_rect);
+}
+
+void RenderWidgetHost::OnMsgImeCancelComposition() {
+  if (view_)
+    view_->ImeCancelComposition();
 }
 
 void RenderWidgetHost::OnMsgGpuRenderingActivated(bool activated) {
