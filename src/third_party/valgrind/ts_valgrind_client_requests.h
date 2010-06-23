@@ -36,6 +36,13 @@
 #ifndef TS_VALGRIND_CLIENT_REQUESTS_H_
 #define TS_VALGRIND_CLIENT_REQUESTS_H_
 
+#include "valgrind.h"
+
+/*
+ * WARNING: The following enum defines the ThreadSanitizer ABI.
+ * Existing elements should never be changed, new elements should be added to
+ * the end.
+ */
 enum {
   TSREQ_NOOP = VG_USERREQ_TOOL_BASE('T', 'S'),
   TSREQ_CLEAN_MEMORY,
@@ -91,7 +98,8 @@ enum {
   TSREQ_GET_VG_THREAD_ID,
   TSREQ_GET_SEGMENT_ID,
   TSREQ_THREAD_SANITIZER_QUERY,
-  TSREQ_FLUSH_STATE
+  TSREQ_FLUSH_STATE,
+  TSREQ_MUTEX_IS_NOT_PHB  // The opposite of TSREQ_MUTEX_IS_USED_AS_CONDVAR.
 };
 #endif  // TS_VALGRIND_CLIENT_REQUESTS_H_
 // end. {{{1

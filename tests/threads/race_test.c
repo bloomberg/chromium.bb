@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
+
 /*
  This small test is mainly for checking sanity of ThreadSanitizer on NaCl
  and is not a substitute for the ThreadSanitizer's full test suite.
@@ -56,7 +58,6 @@ int simple_race_obj;
 NOINLINE void simple_race_write_frame_2() {
   break_optimization();
   simple_race_obj++;  /* Race here. */
-  sleep(1);
 }
 NOINLINE void simple_race_write_frame_1() {
   break_optimization();
@@ -74,7 +75,7 @@ void positive_race_on_global_test() {
   ThreadCallback t[] = {simple_race_write, simple_race_write,
     simple_race_write};
   SHOW_ME;
-  fprintf(stderr, "expecting race on %p\n", (void*)&simple_race_obj);
+  ANNOTATE_EXPECT_RACE(&simple_race_obj, "positive_race_on_global_test");
   create_and_join_threads(t, 3);
 }
 
@@ -85,7 +86,6 @@ int *race_on_heap_obj;
 NOINLINE void race_on_heap_frame_2() {
   break_optimization();
   *race_on_heap_obj = 1;  /* Race here. */
-  sleep(1);
 }
 NOINLINE void race_on_heap_frame_1() {
   break_optimization();
@@ -103,7 +103,7 @@ void positive_race_on_heap_test() {
   ThreadCallback t[2] = {race_on_heap_write, race_on_heap_write};
   SHOW_ME;
   race_on_heap_obj = (int*)malloc(sizeof(int));
-  fprintf(stderr, "expecting race on %p\n", (void*)race_on_heap_obj);
+  ANNOTATE_EXPECT_RACE(race_on_heap_obj, "positive_race_on_heap_test");
   create_and_join_threads(t, 2);
   free(race_on_heap_obj);
 }
@@ -119,7 +119,6 @@ void *wrong_lock_test_access1(void *unused) {
   pthread_mutex_lock(&wrong_lock_test_mu_1);
   wrong_lock_test_obj++;  /* Race here. */
   pthread_mutex_unlock(&wrong_lock_test_mu_1);
-  sleep(1);
   return NULL;
 }
 
@@ -127,7 +126,6 @@ void *wrong_lock_test_access2(void *unused) {
   pthread_mutex_lock(&wrong_lock_test_mu_2);
   wrong_lock_test_obj++;  /* Race here. */
   pthread_mutex_unlock(&wrong_lock_test_mu_2);
-  sleep(1);
   return NULL;
 }
 
@@ -136,7 +134,7 @@ void positive_wrong_lock_test() {
   pthread_mutex_init(&wrong_lock_test_mu_1, NULL);
   pthread_mutex_init(&wrong_lock_test_mu_2, NULL);
   SHOW_ME;
-  fprintf(stderr, "expecting race on %p\n", (void*)&wrong_lock_test_obj);
+  ANNOTATE_EXPECT_RACE(&wrong_lock_test_obj, "positive_wrong_lock_test");
   create_and_join_threads(t, 2);
 }
 
@@ -151,7 +149,6 @@ void locked_access_test_frame_2() {
   pthread_mutex_lock(&locked_access_test_mu);
   locked_access_test_obj++;  /* No race here. */
   pthread_mutex_unlock(&locked_access_test_mu);
-  sleep(1);
 }
 void locked_access_test_frame_1() {
   locked_access_test_frame_2();

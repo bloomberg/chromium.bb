@@ -16,3 +16,4 @@ sources = ['valgrind_interceptors.c']
 
 env.ComponentLibrary('libvalgrind', sources)
 env.AddLibraryToSdk(['libvalgrind'])
+env.AddHeaderToSdk(['dynamic_annotations.h'])

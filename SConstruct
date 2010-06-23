@@ -1358,9 +1358,11 @@ nacl_env = pre_base_env.Clone(
 )
 
 if ARGUMENTS.get('with_valgrind'):
-  nacl_env.Append(EXTRA_CCFLAGS = ['-g'],
-                  EXTRA_LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
-                  EXTRA_LIBS = ['valgrind'])
+  nacl_env.Append(CCFLAGS = ['-g'],
+                  CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
+                                ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ]],
+                  LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
+                  LIBS = ['valgrind'])
 
 if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
   if nacl_env['BUILD_SUBARCH'] == '32':
@@ -1526,6 +1528,8 @@ nacl_extra_sdk_env = pre_base_env.Clone(
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
       ['NACL_BLOCK_SHIFT', '5' ],
+      ['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
+      ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ],
       ],
     # NOTE: simplify pathnames in archive
     ARFLAGS = 'rcf'

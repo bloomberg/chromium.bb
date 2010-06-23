@@ -26,6 +26,8 @@
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
+#include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
+
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
 
 static const uint32_t kStackAlignment = 32;
@@ -331,6 +333,12 @@ int __pthread_initialize() {
 
     return retval;
   }
+
+  /* Tell ThreadSanitizer to not generate happens-before arcs between uses of
+     this mutex. Otherwise we miss to many real races.
+     When not running under ThreadSanitizer, this is just a call to an empty
+     function. */
+  ANNOTATE_NOT_HAPPENS_BEFORE_MUTEX(&__nc_thread_management_lock);
 
   retval = pthread_cond_init(&__nc_last_thread_cond, NULL);
   if (retval) {

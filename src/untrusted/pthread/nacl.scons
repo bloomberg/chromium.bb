@@ -35,6 +35,7 @@ env.ComponentLibrary('libpthread', ['nc_thread.c',
                                     'nc_condvar.c',
                                     'nc_semaphore.c',
                                     'nc_hash.c',
+                                    '../valgrind/dynamic_annotations.c'
                                     ])
 
 env.AddLibraryToSdk(['libpthread'])

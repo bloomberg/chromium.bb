@@ -33,6 +33,9 @@
 #include "native_client/src/third_party/valgrind/nacl_valgrind.h"
 #include "native_client/src/third_party/valgrind/nacl_memcheck.h"
 
+/* For DYNAMIC_ANNOTATIONS_NAME() */
+#include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
+
 #define INLINE __attribute__((always_inline))
 
 #include "native_client/src/third_party/valgrind/ts_valgrind_client_requests.h"
@@ -49,6 +52,8 @@ int have_nacl_valgrind_interceptors;
 /* TSan interceptors. */
 
 #define VG_NACL_FUNC(f) I_WRAP_SONAME_FNNAME_ZZ(NaCl, f)
+#define VG_NACL_ANN(f) \
+  I_WRAP_SONAME_FNNAME_ZZ(NaCl, DYNAMIC_ANNOTATIONS_NAME(f))
 
 #define VG_CREQ_v_W(_req, _arg1)                                        \
   do {                                                                  \
@@ -227,7 +232,8 @@ int VG_NACL_FUNC(pthreadZumutexZuinit)(pthread_mutex_t *mutex,
   CALL_FN_W_WW(ret, fn, (size_t)mutex, (size_t)attr);
 
   if (ret == 0 /*success*/) {
-    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_CREATE_POST, (size_t)mutex, 0);
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_CREATE_POST,
+        VALGRIND_SANDBOX_PTR((size_t)mutex), 0);
   }
 
   return ret;
@@ -239,7 +245,8 @@ int VG_NACL_FUNC(pthreadZumutexZudestroy)(pthread_mutex_t *mutex) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
 
-  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_DESTROY_PRE, (size_t)mutex);
+  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_DESTROY_PRE,
+      VALGRIND_SANDBOX_PTR((size_t)mutex));
 
   CALL_FN_W_W(ret, fn, (size_t)mutex);
 
@@ -257,7 +264,8 @@ int VG_NACL_FUNC(pthreadZumutexZulock)(pthread_mutex_t *mutex) {
   stop_ignore_all_accesses();
 
   if (ret == 0 /*success*/) {
-    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, (size_t)mutex, 1);
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST,
+        VALGRIND_SANDBOX_PTR((size_t)mutex), 1);
   }
 
   return ret;
@@ -274,7 +282,8 @@ int VG_NACL_FUNC(pthreadZumutexZutrylock)(pthread_mutex_t *mutex) {
   stop_ignore_all_accesses();
 
   if (ret == 0 /*success*/) {
-    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, (size_t)mutex, 1);
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST,
+        VALGRIND_SANDBOX_PTR((size_t)mutex), 1);
   }
 
   return ret;
@@ -292,7 +301,8 @@ int VG_NACL_FUNC(pthreadZumutexZutimedlock)(pthread_mutex_t *mutex,
   stop_ignore_all_accesses();
 
   if (ret == 0 /*success*/) {
-    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, (size_t)mutex, 1);
+    VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST,
+        VALGRIND_SANDBOX_PTR((size_t)mutex), 1);
   }
 
   return ret;
@@ -304,11 +314,29 @@ int VG_NACL_FUNC(pthreadZumutexZuunlock)(pthread_mutex_t *mutex) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
 
-  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_UNLOCK_PRE, (size_t)mutex);
+  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_UNLOCK_PRE,
+      VALGRIND_SANDBOX_PTR((size_t)mutex));
 
   start_ignore_all_accesses();
   CALL_FN_W_W(ret, fn, (size_t)mutex);
   stop_ignore_all_accesses();
 
   return ret;
+}
+
+/* ------------------------------------------------------------------*/
+/*             Limited support for dynamic annotations.              */
+
+void VG_NACL_ANN(AnnotateTraceMemory)(char *file, int line, void *mem) {
+  VG_CREQ_v_W(TSREQ_TRACE_MEM, VALGRIND_SANDBOX_PTR((size_t)mem));
+}
+
+void VG_NACL_ANN(AnnotateMutexIsNotPHB)(char *file, int line, void *mu) {
+  VG_CREQ_v_W(TSREQ_MUTEX_IS_NOT_PHB, VALGRIND_SANDBOX_PTR((size_t)mu));
+}
+
+void VG_NACL_ANN(AnnotateExpectRace)(char *file, int line, void *addr,
+    void* desc) {
+  VG_CREQ_v_WWW(TSREQ_EXPECT_RACE, VALGRIND_SANDBOX_PTR((size_t)addr), 1,
+      VALGRIND_SANDBOX_PTR((size_t)desc));
 }
