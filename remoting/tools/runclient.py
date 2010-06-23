@@ -9,11 +9,24 @@
 # so that the host authentication arguments can be automatically set.
 
 import os
+import platform
 
-auth_filename = '.chromotingAuthToken'
+auth_filepath = os.path.join(os.getenv('HOME'), '.chromotingAuthToken')
+script_path = os.path.dirname(__file__)
+
+if platform.system() == "Windows":
+  # TODO(garykac): Make this work on Windows.
+  print 'Not yet supported on Windows.'
+  exit(1)
+elif platform.system() == "Darwin": # Darwin == MacOSX
+  client_path = '../../xcodebuild/Debug/chromoting_simple_client'
+else:
+  client_path = '../../out/Debug/chromoting_x11_client'
+
+client_path = os.path.join(script_path, client_path)
 
 # Read username and auth token from token file.
-auth = open(auth_filename)
+auth = open(auth_filepath)
 authinfo = auth.readlines()
 
 username = authinfo[0].rstrip()
@@ -26,9 +39,8 @@ print 'Host JID:', username + '/chromoting',
 hostjid_suffix = raw_input()
 hostjid = username + '/chromoting' + hostjid_suffix
 
-# TODO(garykac): Make this work on Windows.
 command = []
-command.append('../../out/Debug/chromoting_x11_client')
+command.append(client_path)
 command.append('--host_jid ' + hostjid)
 command.append('--jid ' + username)
 command.append('--token ' + authtoken)

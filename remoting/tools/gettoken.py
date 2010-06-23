@@ -13,7 +13,7 @@ import urllib
 
 import gaia_auth
 
-auth_filename = '.chromotingAuthToken'
+auth_filepath = os.path.join(os.getenv('HOME'), '.chromotingAuthToken')
 
 print "Email:",
 email = raw_input()
@@ -25,7 +25,7 @@ auth_token = authenticator.authenticate(email, passwd)
 
 # Set permission mask for created file.
 os.umask(0066)
-auth_file = open(auth_filename, 'w')
+auth_file = open(auth_filepath, 'w')
 auth_file.write(email)
 auth_file.write('\n')
 auth_file.write(auth_token)
@@ -35,4 +35,4 @@ print
 print 'Auth token:'
 print
 print auth_token
-print '...saved in', auth_filename
+print '...saved in', auth_filepath

@@ -19,7 +19,7 @@ import gaia_auth
 server = 'www-googleapis-test.sandbox.google.com'
 url = 'http://' + server + '/chromoting/v1/@me/hosts'
 
-settings_filename = 'ChromotingConfig.json'
+settings_filepath = os.path.join(os.getenv('HOME'), '.ChromotingConfig.json')
 
 print "Email:",
 email = raw_input()
@@ -70,7 +70,7 @@ auth_token = authenticator.authenticate(email, password)
 
 # Write settings file.
 os.umask(0066) # Set permission mask for created file.
-settings_file = open(settings_filename, 'w')
+settings_file = open(settings_filepath, 'w')
 settings_file.write('{\n');
 settings_file.write('  "xmpp_login" : "' + email + '",\n')
 settings_file.write('  "xmpp_auth_token" : "' + auth_token + '",\n')
@@ -80,4 +80,4 @@ settings_file.write('  "public_key" : "' + public_key + '"\n')
 settings_file.write('}\n')
 settings_file.close()
 
-print 'Configuration saved in', settings_filename
+print 'Configuration saved in', settings_filepath

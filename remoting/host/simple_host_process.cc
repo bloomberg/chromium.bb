@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <string>
+#include <stdlib.h>
 
 #include "build/build_config.h"
 
@@ -21,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "remoting/host/capturer_fake.h"
@@ -40,15 +42,22 @@
 #endif
 
 #if defined(OS_WIN)
-const std::wstring kDefaultConfigPath = L"ChromotingConfig.json";
+const std::wstring kDefaultConfigPath = L".ChromotingConfig.json";
+const wchar_t kHomePath[] = L"HOMEPATH";
+const wchar_t* GetEnvironmentVar(const wchar_t* x) { return _wgetenv(x); }
 #else
-const std::string kDefaultConfigPath = "ChromotingConfig.json";
+static char* GetEnvironmentVar(const char* x) { return getenv(x); }
+const char kHomePath[] = "HOME";
+const std::string kDefaultConfigPath = ".ChromotingConfig.json";
 #endif
 
 const std::string kFakeSwitchName = "fake";
 const std::string kConfigSwitchName = "config";
 
 int main(int argc, char** argv) {
+  // Needed for the Mac, so we don't leak objects when threads are created.
+  base::ScopedNSAutoreleasePool pool;
+
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
@@ -72,7 +81,8 @@ int main(int argc, char** argv) {
   // Check the argument to see if we should use a fake capturer and encoder.
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
 
-  FilePath config_path(kDefaultConfigPath);
+  FilePath config_path(GetEnvironmentVar(kHomePath));
+  config_path = config_path.Append(kDefaultConfigPath);
   if (cmd_line->HasSwitch(kConfigSwitchName)) {
     config_path = cmd_line->GetSwitchValuePath(kConfigSwitchName);
   }
