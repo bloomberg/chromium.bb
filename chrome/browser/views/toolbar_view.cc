@@ -19,7 +19,6 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/wrench_menu.h"
 #include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -182,10 +181,6 @@ void ToolbarView::Init(Profile* profile) {
     bookmark_menu_ = NULL;
   }
 
-  // Catch the case where the window is created after we detect a new version.
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
-    ShowUpgradeReminder();
-
   LoadImages();
 
   // Always add children in order from left to right, for accessibility.
@@ -203,6 +198,10 @@ void ToolbarView::Init(Profile* profile) {
 
   location_bar_->Init();
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
+
+  // Catch the case where the window is created after we detect a new version.
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
+    ShowUpgradeReminder();
 
   SetProfile(profile);
   if (!app_menu_model_.get()) {
@@ -743,26 +742,6 @@ void ToolbarView::RunPageMenu(const gfx::Point& pt) {
 }
 
 void ToolbarView::RunAppMenu(const gfx::Point& pt) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewWrenchMenu)) {
-    bool destroyed_flag = false;
-    destroyed_flag_ = &destroyed_flag;
-    wrench_menu_.reset(new WrenchMenu(browser_));
-    wrench_menu_->Init(app_menu_model_.get());
-
-    for (size_t i = 0; i < menu_listeners_.size(); ++i)
-      menu_listeners_[i]->OnMenuOpened();
-
-    wrench_menu_->RunMenu(app_menu_);
-
-    if (destroyed_flag)
-      return;
-    destroyed_flag_ = NULL;
-
-    // Stop pulsating the upgrade reminder on the app menu, if active.
-    upgrade_reminder_pulse_timer_.Stop();
-    return;
-  }
-
   bool destroyed_flag = false;
   destroyed_flag_ = &destroyed_flag;
 
