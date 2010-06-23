@@ -38,12 +38,18 @@ var tests = [
     assertEq(0, chrome.extension.getViews({"type": "tab"}).length);
     assertEq(0, chrome.extension.getViews({"type": "infobar"}).length);
     assertEq(0, chrome.extension.getViews({"type": "notification"}).length);
+    
+    chrome.windows.getAll({populate: true}, function(windows) {
+      assertEq(1, windows.length);
 
-    // Show an infobar.
-    chrome.experimental.infobars.show({"path": "infobar.html"},
-                                      function(window) {
-      assertTrue(window.id > 0);
-      // The infobar will call back to us through infobarCallback (above).
+      // Show an infobar.
+      chrome.experimental.infobars.show({tabId: windows[0].tabs[0].id,
+                                         "path": "infobar.html"},
+                                        function(window) {
+        assertTrue(window.id > 0);
+        // The infobar will call back to us through infobarCallback (above).
+      });
+
     });
   }
 ];

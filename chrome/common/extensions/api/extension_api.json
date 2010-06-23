@@ -1516,8 +1516,7 @@
             "properties": {
               "tabId": {
                 "type": "integer",
-                "description": "The tab id for the tab to display the infobar in. If not specified, the current selected tab in the last active browser window will be used.",
-                "optional": true
+                "description": "The tab id for the tab to display the infobar in."
               },
               "path": {
                 "type": "string",

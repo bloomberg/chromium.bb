@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
@@ -23,6 +24,9 @@ bool ShowInfoBarFunction::RunImpl() {
   DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
+  int tab_id;
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabId, &tab_id));
+
   std::string html_path;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kHtmlPath, &html_path));
 
@@ -31,25 +35,17 @@ bool ShowInfoBarFunction::RunImpl() {
 
   Browser* browser = NULL;
   TabContents* tab_contents = NULL;
-  if (args->HasKey(keys::kTabId)) {
-    int tab_id = -1;
-    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabId, &tab_id));
-
-    EXTENSION_FUNCTION_VALIDATE(ExtensionTabUtil::GetTabById(
-        tab_id, profile(), true,  // Allow infobar in incognito.
-        &browser, NULL, &tab_contents, NULL));
-  } else {
-    browser = dispatcher()->GetCurrentBrowser(true);
-    tab_contents = browser->GetSelectedTabContents();
-  }
-
-  if (!browser) {
-    error_ = keys::kNoCurrentWindowError;
-    return false;
-  }
-
-  if (!tab_contents) {
-    error_ = keys::kTabNotFoundError;
+  if (!ExtensionTabUtil::GetTabById(
+      tab_id,
+      profile(),
+      include_incognito(),
+      &browser,
+      NULL,
+      &tab_contents,
+      NULL)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        extension_tabs_module_constants::kTabNotFoundError,
+        IntToString(tab_id));
     return false;
   }
 
