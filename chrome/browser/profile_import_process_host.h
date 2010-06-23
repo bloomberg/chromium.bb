@@ -18,7 +18,10 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "ipc/ipc_channel.h"
-#include "webkit/glue/password_form.h"
+
+namespace webkit_glue {
+struct PasswordForm;
+}
 
 // Browser-side host to a profile import process.  This class lives only on
 // the IO thread.  It passes messages back to the |thread_id_| thread through

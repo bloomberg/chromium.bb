@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/sandbox_policy.h"
+
+#include <string>
 
 #include "app/win_util.h"
 #include "base/command_line.h"
@@ -20,7 +22,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
 #include "sandbox/src/sandbox.h"
-#include "webkit/glue/plugins/plugin_list.h"
 
 static sandbox::BrokerServices* g_broker_services = NULL;
 
@@ -494,4 +495,4 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   return process;
 }
 
-} // namespace sandbox
+}  // namespace sandbox

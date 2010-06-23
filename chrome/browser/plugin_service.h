@@ -8,9 +8,11 @@
 #ifndef CHROME_BROWSER_PLUGIN_SERVICE_H_
 #define CHROME_BROWSER_PLUGIN_SERVICE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
@@ -19,7 +21,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "base/registry.h"

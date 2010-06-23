@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/resource_type.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;

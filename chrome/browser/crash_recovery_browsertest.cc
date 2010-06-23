@@ -12,7 +12,6 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/window_open_disposition.h"
 
 namespace {
 

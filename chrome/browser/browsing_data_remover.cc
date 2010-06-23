@@ -4,6 +4,9 @@
 
 #include "chrome/browser/browsing_data_remover.h"
 
+#include <map>
+#include <set>
+
 #include "base/callback.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
@@ -27,7 +30,6 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
-#include "webkit/glue/password_form.h"
 
 // Done so that we can use PostTask on BrowsingDataRemovers and not have
 // BrowsingDataRemover implement RefCounted.

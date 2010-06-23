@@ -14,7 +14,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/glue/webkit_glue.h"
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
     : tracker_(profile->GetDatabaseTracker()),

@@ -40,11 +40,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#include "webkit/glue/plugins/plugin_constants_win.h"
-#endif
-
 #if defined(USE_X11)
 #include "gfx/gtk_native_view_id_manager.h"
 #endif
