@@ -383,6 +383,10 @@ class ComStackObjectWithUninitialize : public CComObjectStackEx<Base> {
   }
 };
 
+// Starts the Chrome crash service which enables us to gather crash dumps
+// during test runs.
+base::ProcessHandle StartCrashService();
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_

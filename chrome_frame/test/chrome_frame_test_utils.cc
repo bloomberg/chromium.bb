@@ -13,6 +13,8 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/platform_thread.h"
+#include "base/process_util.h"
 #include "base/registry.h"   // to find IE and firefox
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_handle.h"
@@ -903,6 +905,29 @@ void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,
 
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
     simulate_input::SendCharA, VK_RETURN, simulate_input::NONE), next_delay);
+}
+
+base::ProcessHandle StartCrashService() {
+  FilePath exe_dir;
+  if (!PathService::Get(base::DIR_EXE, &exe_dir)) {
+    DCHECK(false);
+    return NULL;
+  }
+
+  base::ProcessHandle crash_service = NULL;
+
+  FilePath crash_service_path = exe_dir.AppendASCII("crash_service.exe");
+  if (!base::LaunchApp(crash_service_path.value(), false, false,
+                       &crash_service)) {
+    DLOG(ERROR) << "Couldn't start crash_service.exe";
+    return NULL;
+  }
+
+  DLOG(INFO) << "Started crash_service.exe so you know if a test crashes!";
+  // This sleep is to ensure that the crash service is done initializing, i.e
+  // the pipe creation, etc.
+  Sleep(500);
+  return crash_service;
 }
 
 }  // namespace chrome_frame_test
