@@ -1639,23 +1639,41 @@ def AddHeaderToSdk(env, nodes, subdir = 'nacl/'):
 
 nacl_extra_sdk_env.AddMethod(AddHeaderToSdk)
 
-def AddLibraryToSdk(env, nodes):
+
+def AddLibraryToSdkHelper(env, nodes, is_lib, is_platform):
+  """"Helper function to install libs/objs into the toolchain
+  and associate the action with the extra_sdk_update.
+
+  Args:
+    env: Environment in which we were called.
+    nodes: list of libc/objs
+    is_lib: treat nodes as libs
+    is_platform: nodes are truly platform specific
+  """
   # NOTE: hack see comment
   nacl_extra_sdk_env.Requires(nodes, sdk_headers)
 
-  n = env.ReplicatePublished('${NACL_SDK_LIB}/', nodes, 'link')
+  dir = '${NACL_SDK_LIB}/'
+  if is_platform:
+    dir =  '${NACL_SDK_LIB_PLATFORM}/'
+
+  if is_lib:
+    n = env.ReplicatePublished(dir, nodes, 'link')
+  else:
+    n = env.Replicate(dir, nodes)
   env.Alias('extra_sdk_update', n)
   return n
+
+
+def AddLibraryToSdk(env, nodes, is_platform=False):
+  return AddLibraryToSdkHelper(env, nodes, True, is_platform)
 
 nacl_extra_sdk_env.AddMethod(AddLibraryToSdk)
 
-def AddObjectToSdk(env, nodes):
-  # NOTE: hack see comment
-  nacl_extra_sdk_env.Requires(nodes, sdk_headers)
 
-  n = env.Replicate('${NACL_SDK_LIB}/', nodes)
-  env.Alias('extra_sdk_update', n)
-  return n
+def AddObjectToSdk(env, nodes, is_platform=False):
+    return AddLibraryToSdkHelper(env, nodes, False, is_platform)
+
 
 nacl_extra_sdk_env.AddMethod(AddObjectToSdk)
 
@@ -1665,7 +1683,7 @@ nacl_extra_sdk_env.AddMethod(AddObjectToSdk)
 nacl_extra_sdk_env.Command('extra_sdk_clean', [],
                            ['rm -rf ${NACL_SDK_INCLUDE}/nacl*',
                             'rm -rf ${NACL_SDK_LIB}/libgoogle*',
-                            'rm -rf ${NACL_SDK_LIB}/crt[1in].*'])
+                            'rm -rf ${NACL_SDK_LIB_PLATFORM}/crt[1in].*'])
 
 # ----------------------------------------------------------
 # CODE COVERAGE

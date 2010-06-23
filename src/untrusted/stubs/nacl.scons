@@ -55,4 +55,4 @@ else:
 crt_platform = env.StaticLibrary('crt_platform',
                                  [env.StaticObject('tls.o', ['tls.c'])])
 
-env.AddObjectToSdk(objects + [crt_platform])
+env.AddObjectToSdk(objects + [crt_platform], is_platform=True)
