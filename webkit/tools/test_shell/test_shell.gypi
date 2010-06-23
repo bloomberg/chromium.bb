@@ -251,7 +251,7 @@
       'mac_bundle_resources': [
         '../../data/test_shell/',
         'mac/English.lproj/InfoPlist.strings',
-        'mac/English.lproj/MainMenu.nib',
+        'mac/English.lproj/MainMenu.xib',
         'mac/Info.plist',
         'mac/test_shell.icns',
         'resources/AHEM____.TTF',
