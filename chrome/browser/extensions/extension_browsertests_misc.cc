@@ -525,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
   NavigateToFeedAndValidate(server, kValidFeed4, browser(), true,
                             "Feed for Title chars <script> %23 stop",
                             "Title chars  %23 stop",
-                            "My dear content",
+                            "My dear content %23 stop",
                             "No error");
 }
 
