@@ -13,7 +13,6 @@ namespace app {
 enum {
   PATH_START = 2000,
 
-  DIR_THEMES,               // Directory where theme dll files are stored.
   DIR_LOCALES,              // Directory where locale resources are stored.
   DIR_EXTERNAL_EXTENSIONS,  // Directory where installer places .crx files.
 
