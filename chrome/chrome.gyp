@@ -1094,6 +1094,9 @@
         'notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
+      # This target exports a hard dependency because it depends on
+      # cacheinvalidation (which itself has hard_dependency set).
+      'hard_dependency': 1,
       'export_dependent_settings': [
         'notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
