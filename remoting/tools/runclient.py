@@ -37,7 +37,7 @@ authtoken = authinfo[1].rstrip()
 # client attempting to connect.
 print 'Host JID:', username + '/chromoting',
 hostjid_suffix = raw_input()
-hostjid = username + '/chromoting' + hostjid_suffix
+hostjid = username + '/chromoting' + hostjid_suffix.upper()
 
 command = []
 command.append(client_path)
