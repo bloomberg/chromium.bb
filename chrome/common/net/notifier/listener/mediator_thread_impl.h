@@ -83,6 +83,17 @@ class MediatorThreadImpl
       const std::vector<std::string>& subscribed_services_list);
   virtual void SendNotification(const OutgoingNotificationData& data);
 
+ protected:
+  // Should only be called after Start().
+  MessageLoop* worker_message_loop();
+
+  // Should only be called after OnConnectionStateChange() is called
+  // on the delegate with true.
+  buzz::XmppClient* xmpp_client();
+
+  Delegate* delegate_;
+  MessageLoop* parent_message_loop_;
+
  private:
   void StartLibjingleThread();
   void PumpLibjingleLoop();
@@ -117,11 +128,6 @@ class MediatorThreadImpl
   void OnSubscriptionStateChangeOnParentThread(
       bool success);
 
-  MessageLoop* worker_message_loop();
-  buzz::XmppClient* xmpp_client();
-
-  Delegate* delegate_;
-  MessageLoop* parent_message_loop_;
   chrome_common_net::NetworkChangeNotifierThread*
       network_change_notifier_thread_;
   base::Thread worker_thread_;
