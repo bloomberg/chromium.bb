@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
 #include "gfx/path.h"
@@ -398,7 +399,7 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   SkBitmap background_image = background_canvas.ExtractBitmap();
 
   // Draw a radial gradient to hover_canvas.
-  gfx::Canvas hover_canvas(width(), height(), false);
+  gfx::CanvasSkia hover_canvas(width(), height(), false);
   int radius = kMiniTitleChangeGradientRadius;
   int x0 = width() + radius - kMiniTitleChangeInitialXOffset;
   int x1 = radius;

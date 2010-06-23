@@ -16,7 +16,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profile.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 
@@ -135,7 +135,7 @@ gboolean OnDragIconExpose(GtkWidget* sender,
   cairo_destroy(cr);
 
   // Paint the title text.
-  gfx::CanvasPaint canvas(event, false);
+  gfx::CanvasSkiaPaint canvas(event, false);
   int text_x = gdk_pixbuf_get_width(data->favicon) + kBarButtonPadding;
   int text_width = sender->allocation.width - text_x;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();

@@ -8,17 +8,18 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
 
 #if defined(OS_WIN)
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #endif
 
 namespace gfx {
 
-bool Canvas::GetClipRect(gfx::Rect* r) {
+bool CanvasSkia::GetClipRect(gfx::Rect* r) {
   SkRect clip;
   if (!getClipBounds(&clip)) {
     if (r)
@@ -31,29 +32,29 @@ bool Canvas::GetClipRect(gfx::Rect* r) {
   return true;
 }
 
-bool Canvas::ClipRectInt(int x, int y, int w, int h) {
+bool CanvasSkia::ClipRectInt(int x, int y, int w, int h) {
   SkRect new_clip;
   new_clip.set(SkIntToScalar(x), SkIntToScalar(y),
                SkIntToScalar(x + w), SkIntToScalar(y + h));
   return clipRect(new_clip);
 }
 
-bool Canvas::IntersectsClipRectInt(int x, int y, int w, int h) {
+bool CanvasSkia::IntersectsClipRectInt(int x, int y, int w, int h) {
   SkRect clip;
   return getClipBounds(&clip) &&
       clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
                      SkIntToScalar(y + h));
 }
 
-void Canvas::TranslateInt(int x, int y) {
+void CanvasSkia::TranslateInt(int x, int y) {
   translate(SkIntToScalar(x), SkIntToScalar(y));
 }
 
-void Canvas::ScaleInt(int x, int y) {
+void CanvasSkia::ScaleInt(int x, int y) {
   scale(SkIntToScalar(x), SkIntToScalar(y));
 }
 
-void Canvas::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
+void CanvasSkia::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
@@ -61,17 +62,17 @@ void Canvas::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
   FillRectInt(x, y, w, h, paint);
 }
 
-void Canvas::FillRectInt(int x, int y, int w, int h, const SkPaint& paint) {
+void CanvasSkia::FillRectInt(int x, int y, int w, int h, const SkPaint& paint) {
   SkIRect rc = {x, y, x + w, y + h};
   drawIRect(rc, paint);
 }
 
-void Canvas::DrawRectInt(const SkColor& color, int x, int y, int w, int h) {
+void CanvasSkia::DrawRectInt(const SkColor& color, int x, int y, int w, int h) {
   DrawRectInt(color, x, y, w, h, SkXfermode::kSrcOver_Mode);
 }
 
-void Canvas::DrawRectInt(const SkColor& color, int x, int y, int w, int h,
-                         SkXfermode::Mode mode) {
+void CanvasSkia::DrawRectInt(const SkColor& color, int x, int y, int w, int h,
+                             SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kStroke_Style);
@@ -85,7 +86,8 @@ void Canvas::DrawRectInt(const SkColor& color, int x, int y, int w, int h,
   drawIRect(rc, paint);
 }
 
-void Canvas::DrawLineInt(const SkColor& color, int x1, int y1, int x2, int y2) {
+void CanvasSkia::DrawLineInt(const SkColor& color, int x1, int y1, int x2,
+                             int y2) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStrokeWidth(SkIntToScalar(1));
@@ -93,7 +95,7 @@ void Canvas::DrawLineInt(const SkColor& color, int x1, int y1, int x2, int y2) {
            SkIntToScalar(y2), paint);
 }
 
-void Canvas::DrawFocusRect(int x, int y, int width, int height) {
+void CanvasSkia::DrawFocusRect(int x, int y, int width, int height) {
   // Create a 2D bitmap containing alternating on/off pixels - we do this
   // so that you never get two pixels of the same color around the edges
   // of the focus rect (this may mean that opposing edges of the rect may
@@ -147,28 +149,28 @@ void Canvas::DrawFocusRect(int x, int y, int width, int height) {
   drawRect(rect, paint);
 }
 
-void Canvas::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {
+void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {
   drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y));
 }
 
-void Canvas::DrawBitmapInt(const SkBitmap& bitmap, int x, int y,
-                           const SkPaint& paint) {
+void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y,
+                               const SkPaint& paint) {
   drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y), &paint);
 }
 
-void Canvas::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                           int src_w, int src_h, int dest_x, int dest_y,
-                           int dest_w, int dest_h,
-                           bool filter) {
+void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
+                               int src_w, int src_h, int dest_x, int dest_y,
+                               int dest_w, int dest_h,
+                               bool filter) {
   SkPaint p;
   DrawBitmapInt(bitmap, src_x, src_y, src_w, src_h, dest_x, dest_y,
                 dest_w, dest_h, filter, p);
 }
 
-void Canvas::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                           int src_w, int src_h, int dest_x, int dest_y,
-                           int dest_w, int dest_h,
-                           bool filter, const SkPaint& paint) {
+void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
+                               int src_w, int src_h, int dest_x, int dest_y,
+                               int dest_w, int dest_h,
+                               bool filter, const SkPaint& paint) {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
   if (src_w <= 0 || src_h <= 0 || dest_w <= 0 || dest_h <= 0) {
@@ -217,28 +219,29 @@ void Canvas::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
   drawRect(dest_rect, p);
 }
 
-void Canvas::DrawStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           const SkColor& color,
-                           int x, int y, int w, int h) {
+void CanvasSkia::DrawStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               const SkColor& color,
+                               int x, int y, int w, int h) {
   DrawStringInt(text, font, color, x, y, w, h,
-                gfx::Canvas::DefaultCanvasTextAlignment());
+                gfx::CanvasSkia::DefaultCanvasTextAlignment());
 }
 
-void Canvas::DrawStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           const SkColor& color,
-                           const gfx::Rect& display_rect) {
+void CanvasSkia::DrawStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               const SkColor& color,
+                               const gfx::Rect& display_rect) {
   DrawStringInt(text, font, color, display_rect.x(), display_rect.y(),
                 display_rect.width(), display_rect.height());
 }
 
-void Canvas::TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h) {
+void CanvasSkia::TileImageInt(const SkBitmap& bitmap, int x, int y, int w,
+                              int h) {
   TileImageInt(bitmap, 0, 0, x, y, w, h);
 }
 
-void Canvas::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
-                          int dest_x, int dest_y, int w, int h) {
+void CanvasSkia::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
+                              int dest_x, int dest_y, int w, int h) {
   if (!IntersectsClipRectInt(dest_x, dest_y, w, h))
     return;
 
@@ -260,7 +263,7 @@ void Canvas::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
   restore();
 }
 
-SkBitmap Canvas::ExtractBitmap() const {
+SkBitmap CanvasSkia::ExtractBitmap() const {
   const SkBitmap& device_bitmap = getDevice()->accessBitmap(false);
 
   // Make a bitmap to return, and a canvas to draw into it. We don't just want
@@ -271,12 +274,8 @@ SkBitmap Canvas::ExtractBitmap() const {
   return result;
 }
 
-Canvas* Canvas::AsCanvas() {
-  return this;
-}
-
 // static
-int Canvas::DefaultCanvasTextAlignment() {
+int CanvasSkia::DefaultCanvasTextAlignment() {
   if (!base::i18n::IsRTL())
     return gfx::Canvas::TEXT_ALIGN_LEFT;
   return gfx::Canvas::TEXT_ALIGN_RIGHT;
@@ -295,9 +294,9 @@ Canvas2* Canvas2::CreateCanvas(int width, int height, bool is_opaque) {
 
 #if defined(OS_WIN)
 // TODO(beng): move to canvas_win.cc, etc.
-class CanvasPaintWin : public CanvasPaint, public CanvasPaint2 {
+class CanvasPaintWin : public CanvasSkiaPaint, public CanvasPaint2 {
  public:
-  CanvasPaintWin(gfx::NativeView view) : CanvasPaint(view) {}
+  CanvasPaintWin(gfx::NativeView view) : CanvasSkiaPaint(view) {}
 
   // Overridden from CanvasPaint2:
   virtual bool IsValid() const {

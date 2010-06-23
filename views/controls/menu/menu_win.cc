@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "views/accelerator.h"
@@ -184,7 +184,7 @@ class MenuHostWindow : public app::WindowImpl {
       // Draw the icon after the label, otherwise it would be covered
       // by the label.
       if (data->icon.width() != 0 && data->icon.height() != 0) {
-        gfx::Canvas canvas(data->icon.width(), data->icon.height(), false);
+        gfx::CanvasSkia canvas(data->icon.width(), data->icon.height(), false);
         canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
         canvas.DrawBitmapInt(data->icon, 0, 0);
         canvas.getTopPlatformDevice().drawToHDC(hDC, lpdis->rcItem.left +

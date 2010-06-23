@@ -469,6 +469,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       gfx::Point press_loc(press_pt_);
       View::ConvertPointToScreen(source->GetScrollViewContainer(), &press_loc);
       View::ConvertPointToView(NULL, item, &press_loc);
+      // TODO(beng): Convert to CanvasSkia
       gfx::Canvas canvas(item->width(), item->height(), false);
       item->Paint(&canvas, true);
 

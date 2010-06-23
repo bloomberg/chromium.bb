@@ -34,6 +34,10 @@ class ExtensionPopup;
 class PrefService;
 class Profile;
 
+namespace gfx {
+class CanvasSkia;
+}
+
 namespace views {
 class Menu2;
 }

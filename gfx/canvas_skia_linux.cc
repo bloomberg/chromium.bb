@@ -91,14 +91,14 @@ static void UpdateCairoFontOptions() {
 
 namespace gfx {
 
-Canvas::Canvas(int width, int height, bool is_opaque)
+CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
     : skia::PlatformCanvas(width, height, is_opaque) {
 }
 
-Canvas::Canvas() : skia::PlatformCanvas() {
+CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
 }
 
-Canvas::~Canvas() {
+CanvasSkia::~CanvasSkia() {
 }
 
 // Pass a width > 0 to force wrapping and elliding.
@@ -168,9 +168,9 @@ static void SetupPangoLayout(PangoLayout* layout,
 }
 
 // static
-void Canvas::SizeStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           int* width, int* height, int flags) {
+void CanvasSkia::SizeStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               int* width, int* height, int flags) {
   int org_width = *width;
   cairo_surface_t* surface =
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
@@ -202,11 +202,11 @@ void Canvas::SizeStringInt(const std::wstring& text,
   cairo_surface_destroy(surface);
 }
 
-void Canvas::DrawStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           const SkColor& color,
-                           int x, int y, int w, int h,
-                           int flags) {
+void CanvasSkia::DrawStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               const SkColor& color,
+                               int x, int y, int w, int h,
+                               int flags) {
   if (w <= 0 || h <= 0)
     return;
 
@@ -255,7 +255,7 @@ void Canvas::DrawStringInt(const std::wstring& text,
   // NOTE: beginPlatformPaint returned its surface, we shouldn't destroy it.
 }
 
-void Canvas::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
+void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
   if (!pixbuf) {
     NOTREACHED();
     return;

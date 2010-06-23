@@ -16,6 +16,7 @@
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "gfx/insets.h"
 #include "gfx/path.h"
@@ -764,6 +765,7 @@ void AutocompletePopupContentsView::Paint(gfx::Canvas* canvas) {
   // Instead, we paint all our children into a second canvas and use that as a
   // shader to fill a path representing the round-rect clipping region. This
   // yields a nice anti-aliased edge.
+  // TODO(beng): Convert to CanvasSkia
   gfx::Canvas contents_canvas(width(), height(), true);
   contents_canvas.drawColor(GetColor(NORMAL, BACKGROUND));
   View::PaintChildren(&contents_canvas);

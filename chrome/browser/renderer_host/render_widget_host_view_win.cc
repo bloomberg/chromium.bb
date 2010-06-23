@@ -31,6 +31,7 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/gdi_util.h"
 #include "gfx/rect.h"
 #include "grit/webkit_resources.h"
@@ -235,7 +236,7 @@ BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
 void DrawDeemphasized(const gfx::Rect& paint_rect,
                       HDC backing_store_dc,
                       HDC paint_dc) {
-  gfx::Canvas canvas(paint_rect.width(), paint_rect.height(), true);
+  gfx::CanvasSkia canvas(paint_rect.width(), paint_rect.height(), true);
   HDC dc = canvas.beginPlatformPaint();
   BitBlt(dc,
          0,
@@ -685,7 +686,7 @@ void RenderWidgetHostViewWin::DrawResizeCorner(const gfx::Rect& paint_rect,
   if (!paint_rect.Intersect(resize_corner_rect).IsEmpty()) {
     SkBitmap* bitmap = ResourceBundle::GetSharedInstance().
         GetBitmapNamed(IDR_TEXTAREA_RESIZER);
-    gfx::Canvas canvas(bitmap->width(), bitmap->height(), false);
+    gfx::CanvasSkia canvas(bitmap->width(), bitmap->height(), false);
     canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
     int x = resize_corner_rect.x() + resize_corner_rect.width() -
         bitmap->width();
@@ -999,9 +1000,9 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
 void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
                                              CPaintDC* dc) {
   if (!background_.empty()) {
-    gfx::Canvas canvas(dirty_rect.right - dirty_rect.left,
-                       dirty_rect.bottom - dirty_rect.top,
-                       true);  // opaque
+    gfx::CanvasSkia canvas(dirty_rect.right - dirty_rect.left,
+                           dirty_rect.bottom - dirty_rect.top,
+                           true);  // opaque
     canvas.TranslateInt(-dirty_rect.left, -dirty_rect.top);
 
     const RECT& dc_rect = dc->m_ps.rcPaint;

@@ -18,7 +18,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "gfx/canvas_paint.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkShader.h"
 

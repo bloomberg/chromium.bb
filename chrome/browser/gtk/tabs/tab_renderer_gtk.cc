@@ -19,7 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/favicon_size.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
@@ -361,7 +361,7 @@ void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
   event->area.y = y() + favicon_bounds_.y();
   event->area.width = favicon_bounds_.width();
   event->area.height = favicon_bounds_.height();
-  gfx::CanvasPaint canvas(event, false);
+  gfx::CanvasSkiaPaint canvas(event, false);
 
   // The actual paint methods expect 0, 0 to be the tab top left (see
   // PaintTab).
@@ -767,7 +767,7 @@ SkBitmap* TabRendererGtk::GetMaskedBitmap(const SkBitmap* mask,
 }
 
 void TabRendererGtk::PaintTab(GdkEventExpose* event) {
-  gfx::CanvasPaint canvas(event, false);
+  gfx::CanvasSkiaPaint canvas(event, false);
   if (canvas.is_empty())
     return;
 

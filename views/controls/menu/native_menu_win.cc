@@ -9,7 +9,7 @@
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/accelerator.h"
@@ -223,7 +223,7 @@ class NativeMenuWin::MenuHostWindow {
       // by the label.
       SkBitmap icon;
       if (data->native_menu_win->model_->GetIconAt(data->model_index, &icon)) {
-        gfx::Canvas canvas(icon.width(), icon.height(), false);
+        gfx::CanvasSkia canvas(icon.width(), icon.height(), false);
         canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
         canvas.DrawBitmapInt(icon, 0, 0);
         canvas.getTopPlatformDevice().drawToHDC(dc,

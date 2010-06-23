@@ -25,7 +25,7 @@
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_drag_win.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
@@ -392,7 +392,7 @@ void TabContentsViewWin::OnPaint(HDC junk_dc) {
     CRect cr;
     GetClientRect(&cr);
     sad_tab_->SetBounds(gfx::Rect(cr));
-    gfx::CanvasPaint canvas(GetNativeView(), true);
+    gfx::CanvasSkiaPaint canvas(GetNativeView(), true);
     sad_tab_->ProcessPaint(&canvas);
     return;
   }

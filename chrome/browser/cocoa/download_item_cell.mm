@@ -15,7 +15,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
@@ -562,7 +562,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
 
   // Draw progress disk
   {
-    // CanvasPaint draws its content to the current NSGraphicsContext in its
+    // CanvasSkiaPaint draws its content to the current NSGraphicsContext in its
     // destructor, which needs to be invoked before the icon is drawn below -
     // hence this nested block.
 
@@ -575,7 +575,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
         download_util::kSmallProgressIconSize,
         download_util::kSmallProgressIconSize);
 
-    gfx::CanvasPaint canvas(dirtyRect, false);
+    gfx::CanvasSkiaPaint canvas(dirtyRect, false);
     canvas.set_composite_alpha(true);
     if (completionAnimation_.get()) {
       if ([completionAnimation_ isAnimating]) {

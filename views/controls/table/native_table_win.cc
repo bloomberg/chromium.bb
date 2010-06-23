@@ -12,7 +12,7 @@
 #include "app/table_model.h"
 #include "base/logging.h"
 #include "base/win_util.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/icon_util.h"
 #include "skia/ext/skia_utils_win.h"
@@ -389,7 +389,7 @@ void NativeTableWin::CreateNativeControl() {
     // We create 2 phony images because we are going to switch images at every
     // refresh in order to force a refresh of the icon area (somehow the clip
     // rect does not include the icon).
-    gfx::Canvas canvas(kImageSize, kImageSize, false);
+    gfx::CanvasSkia canvas(kImageSize, kImageSize, false);
     // Make the background completely transparent.
     canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
     HICON empty_icon =
@@ -508,8 +508,8 @@ LRESULT NativeTableWin::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
             client_rect.top += content_offset_;
             // Make sure the region need to paint is visible.
             if (IntersectRect(&intersection, &icon_rect, &client_rect)) {
-              gfx::Canvas canvas(icon_rect.right - icon_rect.left,
-                                 icon_rect.bottom - icon_rect.top, false);
+              gfx::CanvasSkia canvas(icon_rect.right - icon_rect.left,
+                                     icon_rect.bottom - icon_rect.top, false);
 
               // It seems the state in nmcd.uItemState is not correct.
               // We'll retrieve it explicitly.

@@ -30,7 +30,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 
@@ -278,7 +278,7 @@ class BrowserActionButton : public NotificationObserver,
     if (action->GetBadgeText(tab_id).empty())
       return FALSE;
 
-    gfx::CanvasPaint canvas(event, false);
+    gfx::CanvasSkiaPaint canvas(event, false);
     gfx::Rect bounding_rect(widget->allocation);
     action->PaintBadge(&canvas, bounding_rect, tab_id);
     return FALSE;

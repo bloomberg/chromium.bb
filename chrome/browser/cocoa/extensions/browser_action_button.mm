@@ -19,7 +19,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -326,7 +326,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 }
 
 - (void)drawBadgeWithinFrame:(NSRect)frame {
-  gfx::CanvasPaint canvas(frame, false);
+  gfx::CanvasSkiaPaint canvas(frame, false);
   canvas.set_composite_alpha(true);
   gfx::Rect boundingRect(NSRectToCGRect(frame));
   extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);

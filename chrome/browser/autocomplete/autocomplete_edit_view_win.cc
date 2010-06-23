@@ -44,6 +44,7 @@
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/url_util.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "skia/ext/skia_utils_win.h"
@@ -2176,7 +2177,7 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
   // Create a canvas as large as |scheme_rect| to do our drawing, and initialize
   // it to fully transparent so any antialiasing will look nice when painted
   // atop the edit.
-  gfx::Canvas canvas(scheme_rect.Width(), scheme_rect.Height(), false);
+  gfx::CanvasSkia canvas(scheme_rect.Width(), scheme_rect.Height(), false);
   canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
 
   // Calculate the start and end of the stroke, which are just the lower left

@@ -42,7 +42,7 @@ int ComputeFormatFlags(int flags, const std::wstring& text) {
   if (!(flags & (gfx::Canvas::TEXT_ALIGN_CENTER |
                  gfx::Canvas::TEXT_ALIGN_RIGHT |
                  gfx::Canvas::TEXT_ALIGN_LEFT))) {
-    flags |= gfx::Canvas::DefaultCanvasTextAlignment();
+    flags |= gfx::CanvasSkia::DefaultCanvasTextAlignment();
   }
 
   // horizontal alignment
@@ -125,20 +125,20 @@ int ComputeFormatFlags(int flags, const std::wstring& text) {
 
 namespace gfx {
 
-Canvas::Canvas(int width, int height, bool is_opaque)
+CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
     : skia::PlatformCanvas(width, height, is_opaque) {
 }
 
-Canvas::Canvas() : skia::PlatformCanvas() {
+CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
 }
 
-Canvas::~Canvas() {
+CanvasSkia::~CanvasSkia() {
 }
 
 // static
-void Canvas::SizeStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           int* width, int* height, int flags) {
+void CanvasSkia::SizeStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               int* width, int* height, int flags) {
   // Clamp the max amount of text we'll measure to 2K.  When the string is
   // actually drawn, it will be clipped to whatever size box is provided, and
   // the time to do that doesn't depend on the length being clipped off.
@@ -173,9 +173,9 @@ void Canvas::SizeStringInt(const std::wstring& text,
   *height = r.bottom;
 }
 
-void Canvas::DrawStringInt(const std::wstring& text, HFONT font,
-                           const SkColor& color, int x, int y, int w, int h,
-                           int flags) {
+void CanvasSkia::DrawStringInt(const std::wstring& text, HFONT font,
+                               const SkColor& color, int x, int y, int w, int h,
+                               int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
@@ -208,10 +208,10 @@ void Canvas::DrawStringInt(const std::wstring& text, HFONT font,
   getTopPlatformDevice().makeOpaque(x, y, w, h);
 }
 
-void Canvas::DrawStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           const SkColor& color,
-                           int x, int y, int w, int h, int flags) {
+void CanvasSkia::DrawStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               const SkColor& color,
+                               int x, int y, int w, int h, int flags) {
   DrawStringInt(text, font.hfont(), color, x, y, w, h, flags);
 }
 
@@ -242,19 +242,19 @@ static bool pixelShouldGetHalo(const SkBitmap& bitmap, int x, int y,
   return false;
 }
 
-void Canvas::DrawStringWithHalo(const std::wstring& text,
-                                const gfx::Font& font,
-                                const SkColor& text_color,
-                                const SkColor& halo_color_in,
-                                int x, int y, int w, int h,
-                                int flags) {
+void CanvasSkia::DrawStringWithHalo(const std::wstring& text,
+                                    const gfx::Font& font,
+                                    const SkColor& text_color,
+                                    const SkColor& halo_color_in,
+                                    int x, int y, int w, int h,
+                                    int flags) {
   // Some callers will have semitransparent halo colors, which we don't handle
   // (since the resulting image can have 1-bit transparency only).
   SkColor halo_color = halo_color_in | 0xFF000000;
 
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
-  Canvas text_canvas(w + 2, h + 2, true);
+  CanvasSkia text_canvas(w + 2, h + 2, true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
   text_canvas.FillRectInt(0, 0, w + 2, h + 2, bkgnd_paint);

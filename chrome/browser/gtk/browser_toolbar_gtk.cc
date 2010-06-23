@@ -48,7 +48,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/gtk_util.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/chromium_strings.h"
@@ -799,7 +799,7 @@ gboolean BrowserToolbarGtk::OnAppMenuImageExpose(GtkWidget* sender,
   }
 
   // Draw the chrome app menu icon onto the canvas.
-  gfx::CanvasPaint canvas(expose, false);
+  gfx::CanvasSkiaPaint canvas(expose, false);
   int x_offset = base::i18n::IsRTL() ?
       sender->allocation.width - kUpgradeDotOffset - badge.width() :
       kUpgradeDotOffset;

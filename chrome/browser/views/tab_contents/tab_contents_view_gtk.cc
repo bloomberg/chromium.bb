@@ -21,7 +21,7 @@
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -388,7 +388,7 @@ gboolean TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
     gfx::Rect bounds;
     GetBounds(&bounds, true);
     sad_tab_->SetBounds(gfx::Rect(0, 0, bounds.width(), bounds.height()));
-    gfx::CanvasPaint canvas(event);
+    gfx::CanvasSkiaPaint canvas(event);
     sad_tab_->ProcessPaint(&canvas);
   }
   return false;  // False indicates other widgets should get the event as well.

@@ -30,7 +30,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "gfx/blit.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
@@ -1282,7 +1282,7 @@ void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
   // Make a temporary canvas for the background image.
   const int width = plugin_rect_.width();
   const int height = plugin_rect_.height();
-  gfx::Canvas canvas(width, height, false);
+  gfx::CanvasSkia canvas(width, height, false);
 #if defined(OS_MACOSX)
   // Flip the canvas, since the context expects flipped data.
   canvas.translate(0, height);

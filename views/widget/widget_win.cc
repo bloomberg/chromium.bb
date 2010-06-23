@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
 #include "views/accessibility/view_accessibility.h"

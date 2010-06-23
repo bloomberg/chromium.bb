@@ -13,7 +13,7 @@
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/win_util.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
@@ -938,12 +938,13 @@ void WindowWin::OnNCPaint(HRGN rgn) {
 
   root_view->SchedulePaint(gfx::Rect(dirty_region), false);
 
-  // gfx::CanvasPaints destructor does the actual painting. As such, wrap the
-  // following in a block to force paint to occur so that we can release the dc.
+  // gfx::CanvasSkiaPaint's destructor does the actual painting. As such, wrap
+  // the following in a block to force paint to occur so that we can release
+  // the dc.
   {
-    gfx::CanvasPaint canvas(dc, opaque(), dirty_region.left, dirty_region.top,
-                            dirty_region.Width(), dirty_region.Height());
-
+    gfx::CanvasSkiaPaint canvas(dc, opaque(), dirty_region.left,
+                                dirty_region.top, dirty_region.Width(),
+                                dirty_region.Height());
     root_view->ProcessPaint(&canvas);
   }
 

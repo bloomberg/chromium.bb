@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "views/widget/widget_gtk.h"
 
 namespace views {
@@ -20,7 +20,7 @@ void RootView::OnPaint(GdkEventExpose* event) {
   }
   gfx::Rect scheduled_dirty_rect = GetScheduledPaintRectConstrainedToSize();
   gfx::Rect expose_rect = gfx::Rect(event->area);
-  gfx::CanvasPaint canvas(event);
+  gfx::CanvasSkiaPaint canvas(event);
   bool invoked_process_paint = false;
   if (!canvas.is_empty()) {
     canvas.set_composite_alpha(widget->is_transparent());

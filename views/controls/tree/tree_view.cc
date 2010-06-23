@@ -13,8 +13,8 @@
 #include "base/keyboard_codes.h"
 #include "base/stl_util-inl.h"
 #include "base/win_util.h"
-#include "gfx/canvas.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/favicon_size.h"
 #include "gfx/icon_util.h"
 #include "gfx/point.h"
@@ -688,7 +688,7 @@ HIMAGELIST TreeView::CreateImageList() {
       // IDR_FOLDER_CLOSED if they aren't already.
       if (model_images[i].width() != width ||
           model_images[i].height() != height) {
-        gfx::Canvas canvas(width, height, false);
+        gfx::CanvasSkia canvas(width, height, false);
         // Make the background completely transparent.
         canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 
@@ -739,16 +739,16 @@ LRESULT CALLBACK TreeView::TreeWndProc(HWND window,
       return 1;
 
     case WM_PAINT: {
-      gfx::CanvasPaint canvas(window);
+      gfx::CanvasSkiaPaint canvas(window);
       if (canvas.isEmpty())
         return 0;
 
       HDC dc = canvas.beginPlatformPaint();
       if (base::i18n::IsRTL()) {
-        // gfx::Canvas ends up configuring the DC with a mode of GM_ADVANCED.
-        // For some reason a graphics mode of ADVANCED triggers all the text
-        // to be mirrored when RTL. Set the mode back to COMPATIBLE and
-        // explicitly set the layout. Additionally SetWorldTransform and
+        // gfx::CanvasSkia ends up configuring the DC with a mode of
+        // GM_ADVANCED. For some reason a graphics mode of ADVANCED triggers
+        // all the text to be mirrored when RTL. Set the mode back to COMPATIBLE
+        // and explicitly set the layout. Additionally SetWorldTransform and
         // COMPATIBLE don't play nicely together. We need to use
         // SetViewportOrgEx when using a mode of COMPATIBLE.
         //

@@ -27,7 +27,7 @@
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/color_utils.h"
 #include "gfx/font.h"
 #include "gfx/skia_utils_gtk.h"
@@ -789,7 +789,7 @@ void DownloadItemGtk::OnClick(GtkWidget* widget) {
 gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
                                                GdkEventExpose* event) {
   // Create a transparent canvas.
-  gfx::CanvasPaint canvas(event, false);
+  gfx::CanvasSkiaPaint canvas(event, false);
   if (complete_animation_.get()) {
     if (complete_animation_->is_animating()) {
       download_util::PaintDownloadComplete(&canvas,

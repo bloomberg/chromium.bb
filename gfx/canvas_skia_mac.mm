@@ -14,20 +14,20 @@
 
 namespace gfx {
 
-Canvas::Canvas(int width, int height, bool is_opaque)
+CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
     : skia::PlatformCanvas(width, height, is_opaque) {
 }
 
-Canvas::Canvas() : skia::PlatformCanvas() {
+CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
 }
 
-Canvas::~Canvas() {
+CanvasSkia::~CanvasSkia() {
 }
 
 // static
-void Canvas::SizeStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           int *width, int *height, int flags) {
+void CanvasSkia::SizeStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               int *width, int *height, int flags) {
   NSFont* native_font = font.nativeFont();
   NSString* ns_string = base::SysWideToNSString(text);
   NSDictionary* attributes =
@@ -38,9 +38,9 @@ void Canvas::SizeStringInt(const std::wstring& text,
   *height = font.height();
 }
 
-void Canvas::DrawStringInt(const std::wstring& text, const gfx::Font& font,
-                           const SkColor& color, int x, int y, int w, int h,
-                           int flags) {
+void CanvasSkia::DrawStringInt(const std::wstring& text, const gfx::Font& font,
+                               const SkColor& color, int x, int y, int w, int h,
+                               int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 

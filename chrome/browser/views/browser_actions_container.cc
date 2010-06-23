@@ -31,6 +31,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -322,13 +323,15 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   if (icon.isNull())
     icon = button_->default_icon();
 
+  // TODO(beng): Convert to CanvasSkia
   gfx::Canvas* canvas = new gfx::Canvas(icon.width(), icon.height(), false);
   canvas->DrawBitmapInt(icon, 0, 0);
 
   if (tab_id >= 0) {
     gfx::Rect bounds =
         gfx::Rect(icon.width(), icon.height() + kControlVertOffset);
-    button_->extension()->browser_action()->PaintBadge(canvas, bounds, tab_id);
+    button_->extension()->browser_action()->PaintBadge(canvas,
+                                                       bounds, tab_id);
   }
 
   return canvas;

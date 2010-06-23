@@ -38,6 +38,7 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -1110,10 +1111,11 @@ void BookmarkBarView::WriteDragData(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       views::TextButton* button = GetBookmarkButton(i);
+      // TODO(beng): convert to CanvasSkia
       gfx::Canvas canvas(button->width(), button->height(), false);
       button->Paint(&canvas, true);
-      drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
-                                           data);
+      drag_utils::SetDragImageOnDataObject(canvas, button->size(),
+                                           press_pt, data);
       WriteDragData(model_->GetBookmarkBarNode()->GetChild(i), data);
       return;
     }

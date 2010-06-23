@@ -5,7 +5,7 @@
 #include "views/controls/textfield/gtk_views_textview.h"
 
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/insets.h"
 #include "gfx/skia_utils_gtk.h"
 #include "views/controls/textfield/native_textfield_gtk.h"
@@ -43,7 +43,7 @@ static gint gtk_views_textview_expose_event(GtkWidget *widget,
   if (host && event->window == text_window &&
       !host->textfield()->text_to_display_when_empty().empty() &&
       gtk_text_iter_equal(&start, &end)) {
-    gfx::CanvasPaint canvas(event);
+    gfx::CanvasSkiaPaint canvas(event);
     if (!canvas.is_empty()) {
       gfx::Insets insets =
           views::NativeTextfieldGtk::GetTextViewInnerBorder(text_view);

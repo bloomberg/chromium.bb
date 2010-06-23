@@ -13,7 +13,7 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -115,9 +115,10 @@ void ExtensionInfoBar::OnImageLoaded(
   SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
   int image_size = Extension::EXTENSION_ICON_BITTY;
-  scoped_ptr<gfx::Canvas> canvas(
-      new gfx::Canvas(image_size + kDropArrowLeftMargin + drop_image->width(),
-      image_size, false));
+  scoped_ptr<gfx::CanvasSkia> canvas(
+      new gfx::CanvasSkia(
+          image_size + kDropArrowLeftMargin + drop_image->width(),
+          image_size, false));
   canvas->DrawBitmapInt(*icon,
                         0, 0, icon->width(), icon->height(),
                         0, 0, image_size, image_size,

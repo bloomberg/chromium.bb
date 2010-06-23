@@ -6,6 +6,7 @@
 
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/widget/widget.h"
 
@@ -185,6 +186,7 @@ void DraggedTabView::PaintAttachedTab(gfx::Canvas* canvas) {
 
 void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   gfx::Size ps = GetPreferredSize();
+  // TODO(beng): Convert to CanvasSkia
   gfx::Canvas scale_canvas(ps.width(), ps.height(), false);
   SkBitmap& bitmap_device = const_cast<SkBitmap&>(
       scale_canvas.getTopPlatformDevice().accessBitmap(true));

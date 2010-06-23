@@ -25,6 +25,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "gfx/skbitmap_operations.h"
@@ -682,8 +683,8 @@ SkBitmap ToolbarView::GetAppMenuIcon() {
     return icon;
 
   // Draw the chrome app menu icon onto the canvas.
-  scoped_ptr<gfx::Canvas> canvas(
-      new gfx::Canvas(icon.width(), icon.height(), false));
+  scoped_ptr<gfx::CanvasSkia> canvas(
+      new gfx::CanvasSkia(icon.width(), icon.height(), false));
   canvas->DrawBitmapInt(icon, 0, 0);
 
   SkBitmap badge;

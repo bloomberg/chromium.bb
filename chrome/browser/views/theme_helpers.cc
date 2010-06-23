@@ -9,7 +9,7 @@
 #include <atltheme.h>
 
 #include "base/logging.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "skia/ext/bitmap_platform_device_win.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
@@ -23,7 +23,7 @@ void GetRebarGradientColors(int width, int x1, int x2,
   // those so calling code can use them to create gradient brushes for use in
   // rendering in other directions.
 
-  gfx::Canvas canvas(width, 1, true);
+  gfx::CanvasSkia canvas(width, 1, true);
 
   // Render the Rebar gradient into the DIB
   CTheme theme;

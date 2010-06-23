@@ -41,7 +41,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -1267,7 +1267,7 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
     gfx::Size tab_contents_size;
     if (!GetTabContentsSize(&tab_contents_size))
       return FALSE;
-    gfx::CanvasPaint canvas(event, true);
+    gfx::CanvasSkiaPaint canvas(event, true);
 
     gfx::Rect area = GTK_WIDGET_NO_WINDOW(widget) ?
         gfx::Rect(widget->allocation) :

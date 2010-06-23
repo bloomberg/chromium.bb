@@ -49,7 +49,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
@@ -1395,7 +1395,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
   if (badge_text.empty())
     return FALSE;
 
-  gfx::CanvasPaint canvas(event, false);
+  gfx::CanvasSkiaPaint canvas(event, false);
   gfx::Rect bounding_rect(widget->allocation);
   page_action_->PaintBadge(&canvas, bounding_rect, tab_id);
   return FALSE;

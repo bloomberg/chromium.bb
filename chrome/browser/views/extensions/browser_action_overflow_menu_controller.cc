@@ -34,7 +34,7 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
   size_t command_id = 1;  // Menu id 0 is reserved, start with 1.
   for (size_t i = start_index; i < views_->size(); ++i) {
     BrowserActionView* view = (*views_)[i];
-    scoped_ptr<gfx::Canvas> canvas(view->GetIconWithBadge());
+    scoped_ptr<gfx::CanvasSkia> canvas(view->GetIconWithBadge());
     menu_->AppendMenuItemWithIcon(
         command_id,
         UTF8ToWide(view->button()->extension()->name()),

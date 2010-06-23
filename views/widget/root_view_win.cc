@@ -9,7 +9,8 @@
 #include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
 #include "base/logging.h"
-#include "gfx/canvas_paint.h"
+#include "gfx/canvas_2.h"
+#include "gfx/canvas_skia.h"
 
 namespace views {
 
