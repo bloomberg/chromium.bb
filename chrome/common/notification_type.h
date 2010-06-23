@@ -997,6 +997,17 @@ class NotificationType {
     // operations.
     SESSION_SERVICE_SAVED,
 
+    // The syncer requires a passphrase to decrypt sensitive updates. This
+    // notification is sent when the first sensitive data type is setup by the
+    // user as well as anytime any the passphrase is changed in another synced
+    // client.
+    SYNC_PASSPHRASE_REQUIRED,
+
+    // Sent when the passphrase provided by the user is accepted. After this
+    // notification is sent, updates to sensitive nodes are encrypted using the
+    // accepted passphrase.
+    SYNC_PASSPHRASE_ACCEPTED,
+
     // Cookies -----------------------------------------------------------------
 
     // Sent when a cookie changes. The source is a Profile object, the details

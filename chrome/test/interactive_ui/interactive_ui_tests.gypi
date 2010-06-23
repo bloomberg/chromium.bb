@@ -10,6 +10,7 @@
     '<(DEPTH)/chrome/chrome.gyp:test_support_common',
     '<(DEPTH)/chrome/chrome.gyp:test_support_ui',
     '<(DEPTH)/chrome/chrome.gyp:syncapi',
+    '<(DEPTH)/chrome/browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
     '<(DEPTH)/third_party/hunspell/hunspell.gyp:hunspell',
     '<(DEPTH)/net/net.gyp:net_resources',
     '<(DEPTH)/net/net.gyp:net_test_support',
@@ -55,6 +56,7 @@
     ['OS=="linux"', {
       'dependencies': [
         '<(DEPTH)/build/linux/system.gyp:gtk',
+        '<(DEPTH)/build/linux/system.gyp:nss',
         '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
       ],
     }],

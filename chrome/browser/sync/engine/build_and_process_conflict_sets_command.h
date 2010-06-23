@@ -22,6 +22,7 @@ class WriteTransaction;
 namespace browser_sync {
 
 class ConflictResolver;
+class Cryptographer;
 
 namespace sessions {
 class ConflictProgress;
@@ -41,11 +42,13 @@ class BuildAndProcessConflictSetsCommand : public ModelChangingSyncerCommand {
 
   bool ProcessSingleDirectionConflictSets(
       syncable::WriteTransaction* trans, ConflictResolver* resolver,
-      sessions::StatusController* status, const ModelSafeRoutingInfo& routes);
+      Cryptographer* cryptographer, sessions::StatusController* status,
+      const ModelSafeRoutingInfo& routes);
   bool ApplyUpdatesTransactionally(
       syncable::WriteTransaction* trans,
       const std::vector<syncable::Id>* const update_set,
       ConflictResolver* resolver,
+      Cryptographer* cryptographer,
       const ModelSafeRoutingInfo& routes,
       sessions::StatusController* status);
   void BuildConflictSets(syncable::BaseTransaction* trans,

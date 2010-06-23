@@ -116,6 +116,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Called on |frontend_loop_| to start syncing.
   void StartSyncing();
 
+  // Called on |frontend_loop_| to asynchronously set the passphrase.
+  void SetPassphrase(const std::string& passphrase);
+
   // Called on |frontend_loop_| to kick off shutdown.
   // |sync_disabled| indicates if syncing is being disabled or not.
   // See the implementation and Core::DoShutdown for details.
@@ -191,6 +194,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     registrar_.routing_info[syncable::AUTOFILL] = GROUP_PASSIVE;
     registrar_.routing_info[syncable::THEMES] = GROUP_PASSIVE;
     registrar_.routing_info[syncable::TYPED_URLS] = GROUP_PASSIVE;
+    registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
     registrar_.routing_info[syncable::PASSWORDS] = GROUP_PASSIVE;
 
     core_thread_.message_loop()->PostTask(FROM_HERE,
@@ -224,6 +228,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const sessions::SyncSessionSnapshot* snapshot);
     virtual void OnInitializationComplete();
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
+    virtual void OnPassphraseRequired();
+    virtual void OnPassphraseAccepted();
     virtual void OnPaused();
     virtual void OnResumed();
 
@@ -283,6 +289,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Called on the SyncBackendHost core_thread_ to tell the syncapi to start
     // syncing (generally after initialization and authentication).
     void DoStartSyncing();
+
+    // Called on our SyncBackendHost's |core_thread_| to set the passphrase
+    // on behalf of SyncBackendHost::SupplyPassphrase.
+    void DoSetPassphrase(const std::string& passphrase);
 
     // The shutdown order is a bit complicated:
     // 1) From |core_thread_|, invoke the syncapi Shutdown call to do a final
@@ -359,6 +369,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // frontend UI components.
     void HandleAuthErrorEventOnFrontendLoop(
         const GoogleServiceAuthError& new_auth_error);
+
+    // Invoked when a passphrase is required to decrypt a set of Nigori keys.
+    void NotifyPassphraseRequired();
+
+    // Invoked when the passphrase provided by the user has been accepted.
+    void NotifyPassphraseAccepted();
 
     // Called from Core::OnSyncCycleCompleted to handle updating frontend
     // thread components.

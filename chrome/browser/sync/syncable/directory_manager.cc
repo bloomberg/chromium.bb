@@ -14,6 +14,8 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 
+using browser_sync::Cryptographer;
+
 namespace syncable {
 
 static const FilePath::CharType kSyncDataDatabaseFilename[] =
@@ -37,7 +39,8 @@ const FilePath DirectoryManager::GetSyncDataDatabasePath() const {
 DirectoryManager::DirectoryManager(const FilePath& path)
     : root_path_(path),
       managed_directory_(NULL),
-      channel_(new Channel(DirectoryManagerShutdownEvent())) {
+      channel_(new Channel(DirectoryManagerShutdownEvent())),
+      cryptographer_(new Cryptographer) {
 }
 
 DirectoryManager::~DirectoryManager() {

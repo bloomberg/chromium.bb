@@ -6,7 +6,7 @@
 
 namespace browser_sync {
 
-const char kNigoriTag[] = "nigori";
+const char kNigoriTag[] = "google_chrome_nigori";
 
 // We name a particular Nigori instance (ie. a triplet consisting of a hostname,
 // a username, and a password) by calling Permute on this string. Since the
@@ -14,7 +14,7 @@ const char kNigoriTag[] = "nigori";
 // assign the same name to a particular triplet.
 const char kNigoriKeyName[] = "nigori-key";
 
-Cryptographer::Cryptographer() {
+Cryptographer::Cryptographer() : default_nigori_(NULL) {
 }
 
 bool Cryptographer::CanDecrypt(const sync_pb::EncryptedData& data) const {

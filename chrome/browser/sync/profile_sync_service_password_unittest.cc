@@ -144,11 +144,20 @@ class ProfileSyncServicePasswordTest : public testing::Test {
 
       // State changes once for the backend init and once for startup done.
       EXPECT_CALL(observer_, OnStateChanged()).
+          WillOnce(Return()).
+          WillOnce(Return()).
+          WillOnce(QuitUIMessageLoop());
+
+      service_->RegisterDataTypeController(data_type_controller);
+      service_->Initialize();
+      MessageLoop::current()->Run();
+
+      EXPECT_CALL(observer_, OnStateChanged()).
           WillOnce(InvokeTask(task)).
           WillOnce(Return()).
           WillOnce(QuitUIMessageLoop());
-      service_->RegisterDataTypeController(data_type_controller);
-      service_->Initialize();
+
+      service_->SetPassphrase("foo");
       MessageLoop::current()->Run();
     }
   }
@@ -203,8 +212,8 @@ class ProfileSyncServicePasswordTest : public testing::Test {
       sync_api::ReadNode child_node(&trans);
       ASSERT_TRUE(child_node.InitByIdLookup(child_id));
 
-      sync_pb::PasswordSpecificsData password;
-      ASSERT_TRUE(child_node.GetPasswordSpecifics(&password));
+      const sync_pb::PasswordSpecificsData& password =
+          child_node.GetPasswordSpecifics();
 
       PasswordForm form;
       PasswordModelAssociator::CopyPassword(password, &form);
@@ -290,8 +299,8 @@ class AddPasswordEntriesTask : public Task {
 TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
   // Backend will be paused but not resumed.
   EXPECT_CALL(backend_, RequestPause()).
-      WillOnce(testing::DoAll(Notify(NotificationType::SYNC_PAUSED),
-                              testing::Return(true)));
+      WillRepeatedly(testing::DoAll(Notify(NotificationType::SYNC_PAUSED),
+                                    testing::Return(true)));
   // Don't create the root password node so startup fails.
   StartSyncService(NULL);
   EXPECT_TRUE(service_->unrecoverable_error_detected());

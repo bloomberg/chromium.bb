@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
 
@@ -76,6 +77,10 @@ class DirectoryManager {
 
   Channel* channel() const { return channel_; }
 
+  browser_sync::Cryptographer* cryptographer() const {
+    return cryptographer_.get();
+  }
+
  protected:
   DirOpenResult OpenImpl(const std::string& name, const FilePath& path,
                          bool* was_open);
@@ -91,8 +96,9 @@ class DirectoryManager {
 
   Channel* const channel_;
 
- private:
+  scoped_ptr<browser_sync::Cryptographer> cryptographer_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DirectoryManager);
 };
 

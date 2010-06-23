@@ -15,6 +15,8 @@
 
 namespace browser_sync {
 
+extern const char kNigoriTag[];
+
 // The parameters used to initialize a Nigori instance.
 struct KeyParams {
   std::string hostname;
