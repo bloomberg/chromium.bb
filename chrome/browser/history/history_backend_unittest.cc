@@ -42,6 +42,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   virtual void BroadcastNotifications(NotificationType type,
                                       HistoryDetails* details);
   virtual void DBLoaded();
+  virtual void StartTopSitesMigration();
 
  private:
   // Not owned by us.
@@ -164,6 +165,10 @@ void HistoryBackendTestDelegate::BroadcastNotifications(
 
 void HistoryBackendTestDelegate::DBLoaded() {
   test_->loaded_ = true;
+}
+
+void HistoryBackendTestDelegate::StartTopSitesMigration() {
+  test_->backend_->DeleteThumbnailsDatabase();
 }
 
 TEST_F(HistoryBackendTest, Loaded) {
@@ -590,6 +595,12 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 
   // Check if stripped url is stored in database.
   ASSERT_EQ(1U, visits.size());
+}
+
+TEST_F(HistoryBackendTest, DeleteThumbnailsDatabaseTest) {
+  EXPECT_TRUE(backend_->thumbnail_db_->NeedsMigrationToTopSites());
+  backend_->delegate_->StartTopSitesMigration();
+  EXPECT_FALSE(backend_->thumbnail_db_->NeedsMigrationToTopSites());
 }
 
 }  // namespace history

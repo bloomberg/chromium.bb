@@ -99,7 +99,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
   virtual void BroadcastNotifications(NotificationType type,
                                       HistoryDetails* details);
   virtual void DBLoaded() {}
-
+  virtual void StartTopSitesMigration() {}
  private:
   HistoryTest* history_test_;
 };

@@ -41,6 +41,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
@@ -101,6 +102,11 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   virtual void DBLoaded() {
     message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
         &HistoryService::OnDBLoaded));
+  }
+
+  virtual void StartTopSitesMigration() {
+    message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
+        &HistoryService::StartTopSitesMigration));
   }
 
  private:
@@ -742,4 +748,13 @@ void HistoryService::OnDBLoaded() {
   NotificationService::current()->Notify(NotificationType::HISTORY_LOADED,
                                          Source<Profile>(profile_),
                                          Details<HistoryService>(this));
+}
+
+void HistoryService::StartTopSitesMigration() {
+  history::TopSites* ts = profile_->GetTopSites();
+  ts->StartMigration();
+}
+
+void HistoryService::OnTopSitesReady() {
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::DeleteThumbnailsDatabase);
 }

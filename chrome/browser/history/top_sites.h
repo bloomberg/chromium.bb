@@ -57,6 +57,11 @@ class TopSites : public NotificationObserver,
         CancelableRequestConsumerBase* consumer,
         HistoryService::QueryMostVisitedURLsCallback* callback) = 0;
     virtual ~MockHistoryService() {}
+    virtual void GetPageThumbnail(
+        const GURL& page_url,
+        CancelableRequestConsumerTSimple<size_t>* consumer,
+        HistoryService::ThumbnailDataCallback* callback,
+        size_t index) = 0;
   };
 
   struct Images {
@@ -84,6 +89,12 @@ class TopSites : public NotificationObserver,
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   bool GetPageThumbnail(const GURL& url, RefCountedBytes** data) const;
 
+  // For testing with a HistoryService mock.
+  void SetMockHistoryService(MockHistoryService* mhs);
+
+  // Start reading thumbnails from the ThumbnailDatabase.
+  void StartMigration();
+
  private:
   friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
@@ -92,6 +103,7 @@ class TopSites : public NotificationObserver,
   friend class TopSitesTest_MockDatabase_Test;
   friend class TopSitesTest_DeleteNotifications_Test;
   friend class TopSitesTest_GetUpdateDelay_Test;
+  friend class TopSitesTest_Migration_Test;
 
   ~TopSites();
 
@@ -108,10 +120,10 @@ class TopSites : public NotificationObserver,
                         const RefCountedBytes* thumbnail,
                         const ThumbnailScore& score);
 
-  // Query history service for the list of available thumnbails.
+  // Query history service for the list of available thumbnails.
   void StartQueryForMostVisited();
 
-  // Query history service for the thumnbail for a given url. |index|
+  // Query history service for the thumbnail for a given url. |index|
   // is the index into top_sites_.
   void StartQueryForThumbnail(size_t index);
 
@@ -121,7 +133,7 @@ class TopSites : public NotificationObserver,
 
   // Called when history service returns a thumbnail.
   void OnThumbnailAvailable(CancelableRequestProvider::Handle handle,
-                            scoped_refptr<RefCountedBytes> thumnbail);
+                            scoped_refptr<RefCountedBytes> thumbnail);
 
   // Saves the set of the top URLs visited by this user. The 0th item is the
   // most popular.
@@ -160,9 +172,6 @@ class TopSites : public NotificationObserver,
                               std::vector<size_t>* deleted_urls,
                               std::vector<size_t>* moved_urls);
 
-  // For testing with a HistoryService mock.
-  void SetMockHistoryService(MockHistoryService* mhs);
-
   // Implementation of NotificationObserver.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -189,6 +198,9 @@ class TopSites : public NotificationObserver,
 
   // Deletes the database file, then reinitializes the database.
   void ResetDatabase();
+
+  // Called after TopSites completes migration.
+  void OnMigrationDone();
 
   Profile* profile_;
   // A mockup to use for testing. If NULL, use the real HistoryService
@@ -220,6 +232,13 @@ class TopSites : public NotificationObserver,
 
   // The number of URLs changed on the last update.
   size_t last_num_urls_changed_;
+
+  // Are we in the middle of migration from ThumbnailsDatabase to
+  // TopSites?
+  bool migration_in_progress_;
+
+  // URLs for which we are expecting thumbnails.
+  std::set<GURL> migration_pending_urls_;
 
   // TODO(brettw): use the blacklist.
   // std::set<GURL> blacklist_;

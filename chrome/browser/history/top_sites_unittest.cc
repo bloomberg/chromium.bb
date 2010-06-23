@@ -6,6 +6,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/test/testing_profile.h"
@@ -98,6 +99,8 @@ class TopSitesTest : public testing::Test {
 // A mockup of a HistoryService used for testing TopSites.
 class MockHistoryServiceImpl : public TopSites::MockHistoryService {
  public:
+  MockHistoryServiceImpl() : num_thumbnail_requests_(0) {}
+
   // Calls the callback directly with the results.
   HistoryService::Handle QueryMostVisitedURLs(
       int result_count, int days_back,
@@ -125,8 +128,34 @@ class MockHistoryServiceImpl : public TopSites::MockHistoryService {
     most_visited_urls_.pop_back();
   }
 
+  virtual void GetPageThumbnail(
+      const GURL& url,
+      CancelableRequestConsumerTSimple<size_t>* consumer,
+      HistoryService::ThumbnailDataCallback* callback,
+      size_t index) {
+    num_thumbnail_requests_++;
+    MostVisitedURL mvu;
+    mvu.url = url;
+    MostVisitedURLList::iterator pos = std::find(most_visited_urls_.begin(),
+                                                 most_visited_urls_.end(),
+                                                 mvu);
+    EXPECT_TRUE(pos != most_visited_urls_.end());
+    scoped_refptr<RefCountedBytes> thumbnail;
+    callback->Run(index, thumbnail);
+    delete callback;
+  }
+
+  void ResetNumberOfThumbnailRequests() {
+    num_thumbnail_requests_ = 0;
+  }
+
+  int GetNumberOfThumbnailRequests() {
+    return num_thumbnail_requests_;
+  }
+
  private:
   MostVisitedURLList most_visited_urls_;
+  int num_thumbnail_requests_;  // Number of calls to GetPageThumbnail.
 };
 
 
@@ -706,6 +735,30 @@ TEST_F(TopSitesTest, GetUpdateDelay) {
 
   top_sites().last_num_urls_changed_ = 20;
   EXPECT_EQ(1, top_sites().GetUpdateDelay().InMinutes());
+}
+
+TEST_F(TopSitesTest, Migration) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  GURL google1_url("http://google.com");
+  GURL google2_url("http://google.com/redirect");
+  GURL google3_url("http://www.google.com");
+  string16 google_title(ASCIIToUTF16("Google"));
+  GURL news_url("http://news.google.com");
+  string16 news_title(ASCIIToUTF16("Google News"));
+
+  MockHistoryServiceImpl hs;
+
+  top_sites().Init(file_name());
+
+  hs.AppendMockPage(google1_url, google_title);
+  hs.AppendMockPage(news_url, news_title);
+  top_sites().SetMockHistoryService(&hs);
+
+  top_sites().StartMigration();
+  EXPECT_TRUE(top_sites().migration_in_progress_);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(2, hs.GetNumberOfThumbnailRequests());
+  EXPECT_FALSE(top_sites().migration_in_progress_);
 }
 
 }  // namespace history

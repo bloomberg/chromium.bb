@@ -6,6 +6,7 @@
 
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/url_database.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/thumbnail_score.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -118,6 +120,8 @@ sql::InitStatus ThumbnailDatabase::Init(
 
 bool ThumbnailDatabase::InitThumbnailTable() {
   if (!db_.DoesTableExist("thumbnails")) {
+    if (CommandLine::ForCurrentProcess()-> HasSwitch(switches::kTopSites))
+      return true;
     if (!db_.Execute("CREATE TABLE thumbnails ("
         "url_id INTEGER PRIMARY KEY,"
         "boring_score DOUBLE DEFAULT 1.0,"
@@ -431,6 +435,20 @@ bool ThumbnailDatabase::CommitTemporaryFavIconTable() {
   // The renamed table needs the index (the temporary table doesn't have one).
   InitFavIconsIndex();
   return true;
+}
+
+bool ThumbnailDatabase::DropThumbnailsTable() {
+  DCHECK(NeedsMigrationToTopSites());
+  if (!db_.Execute("DROP TABLE thumbnails"))
+    return false;
+  CommitTransaction();
+  Vacuum();
+  BeginTransaction();
+  return true;
+}
+
+bool ThumbnailDatabase::NeedsMigrationToTopSites() {
+  return db_.DoesTableExist("thumbnails");
 }
 
 }  // namespace history

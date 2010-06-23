@@ -329,4 +329,13 @@ TEST_F(ThumbnailDatabaseTest, NeverAcceptTotallyBoringThumbnail) {
   ASSERT_TRUE(base_boring.Equals(score_out));
 }
 
+TEST_F(ThumbnailDatabaseTest, NeedsMigrationToTopSites) {
+  ThumbnailDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
+  db.BeginTransaction();
+  EXPECT_TRUE(db.NeedsMigrationToTopSites());
+  EXPECT_TRUE(db.DropThumbnailsTable());
+  EXPECT_FALSE(db.NeedsMigrationToTopSites());
+}
+
 }  // namespace history

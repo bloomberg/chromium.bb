@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"
@@ -585,6 +587,13 @@ void HistoryBackend::InitImpl() {
     // other error.
     LOG(WARNING) << "Could not initialize the thumbnail database.";
     thumbnail_db_.reset();
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
+    if (thumbnail_db_->NeedsMigrationToTopSites()) {
+      LOG(INFO) << "Starting TopSites migration";
+      delegate_->StartTopSitesMigration();
+    }
   }
 
   // Archived database.
@@ -2135,6 +2144,10 @@ BookmarkService* HistoryBackend::GetBookmarkService() {
   if (bookmark_service_)
     bookmark_service_->BlockTillLoaded();
   return bookmark_service_;
+}
+
+void HistoryBackend::DeleteThumbnailsDatabase() {
+  thumbnail_db_->DropThumbnailsTable();
 }
 
 }  // namespace history

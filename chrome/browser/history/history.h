@@ -546,6 +546,14 @@ class HistoryService : public CancelableRequestProvider,
   // The same as AddPageWithDetails() but takes a vector.
   void AddPagesWithDetails(const std::vector<history::URLRow>& info);
 
+  // Starts the TopSites migration in the HistoryThread. Called by the
+  // BackendDelegate.
+  void StartTopSitesMigration();
+
+  // Called by TopSites after the thumbnails were read and it is safe
+  // to delete the thumbnails DB.
+  void OnTopSitesReady();
+
  protected:
   ~HistoryService();
 

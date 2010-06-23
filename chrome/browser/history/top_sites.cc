@@ -30,7 +30,8 @@ static const int64 kMaxUpdateIntervalMinutes = 60;
 
 TopSites::TopSites(Profile* profile) : profile_(profile),
                                        mock_history_service_(NULL),
-                                       last_num_urls_changed_(0) {
+                                       last_num_urls_changed_(0),
+                                       migration_in_progress_(false) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
@@ -73,7 +74,7 @@ void TopSites::ReadDatabase() {
     GURL url = top_sites_[i].url;
     Images thumbnail = thumbnails[url];
     if (!thumbnail.thumbnail.get() || !thumbnail.thumbnail->size()) {
-      LOG(INFO) << "No thumnbail for " << url.spec();
+      LOG(INFO) << "No thumbnail for " << url.spec();
     } else {
       SetPageThumbnailNoDB(url, thumbnail.thumbnail,
                            thumbnail.thumbnail_score);
@@ -216,20 +217,51 @@ void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
   }
 
   StoreMostVisited(&most_visited);
-  for (size_t i = 0; i < top_sites_.size(); i++) {
-    GURL& url = top_sites_[i].url;
-    Images& img = top_images_[url];
-    if (!img.thumbnail.get() || !img.thumbnail->size()) {
-      StartQueryForThumbnail(i);
+  if (migration_in_progress_) {
+    // Copy all thumnbails from the history service.
+    for (size_t i = 0; i < top_sites_.size(); i++) {
+      GURL& url = top_sites_[i].url;
+      Images& img = top_images_[url];
+      if (!img.thumbnail.get() || !img.thumbnail->size()) {
+        StartQueryForThumbnail(i);
+      }
     }
   }
+
+  // If we are not expecting any thumbnails, migration is done.
+  if (migration_in_progress_ && migration_pending_urls_.empty())
+    OnMigrationDone();
 
   timer_.Stop();
   timer_.Start(GetUpdateDelay(), this,
                &TopSites::StartQueryForMostVisited);
 }
 
+void TopSites::OnMigrationDone() {
+  migration_in_progress_ = false;
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  // |hs| may be null during unit tests.
+  if (!hs)
+    return;
+  hs->OnTopSitesReady();
+}
+
 void TopSites::StartQueryForThumbnail(size_t index) {
+  DCHECK(migration_in_progress_);
+  migration_pending_urls_.insert(top_sites_[index].url);
+
+  if (mock_history_service_) {
+    // Testing with a mockup.
+    // QueryMostVisitedURLs is not virtual, so we have to duplicate the code.
+    // This calls SetClientData.
+    mock_history_service_->GetPageThumbnail(
+        top_sites_[index].url,
+        &cancelable_consumer_,
+        NewCallback(this, &TopSites::OnThumbnailAvailable),
+        index);
+    return;
+  }
+
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   // |hs| may be null during unit tests.
   if (!hs)
@@ -355,6 +387,11 @@ void TopSites::StartQueryForMostVisited() {
   }
 }
 
+void TopSites::StartMigration() {
+  migration_in_progress_ = true;
+  StartQueryForMostVisited();
+}
+
 base::TimeDelta TopSites::GetUpdateDelay() {
   if (top_sites_.size() == 0)
     return base::TimeDelta::FromSeconds(30);
@@ -374,13 +411,26 @@ void TopSites::OnTopSitesAvailable(
 
 void TopSites::OnThumbnailAvailable(CancelableRequestProvider::Handle handle,
                                     scoped_refptr<RefCountedBytes> thumbnail) {
-  HistoryService* hs = profile_ ->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  size_t index = cancelable_consumer_.GetClientData(hs, handle);
+  size_t index;
+  if (mock_history_service_) {
+    index = handle;
+  } else {
+    HistoryService* hs = profile_ ->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    index = cancelable_consumer_.GetClientData(hs, handle);
+  }
   DCHECK(static_cast<size_t>(index) < top_sites_.size());
-  if (!thumbnail.get() || !thumbnail->size())
-    return;
-  const MostVisitedURL& url = top_sites_[index];
-  SetPageThumbnail(url.url, thumbnail, ThumbnailScore());
+
+  if (migration_in_progress_)
+    migration_pending_urls_.erase(top_sites_[index].url);
+
+  if (thumbnail.get() && thumbnail->size()) {
+    const MostVisitedURL& url = top_sites_[index];
+    SetPageThumbnail(url.url, thumbnail, ThumbnailScore());
+  }
+
+  if (migration_in_progress_ && migration_pending_urls_.empty() &&
+      !mock_history_service_)
+    OnMigrationDone();
 }
 
 void TopSites::SetMockHistoryService(MockHistoryService* mhs) {

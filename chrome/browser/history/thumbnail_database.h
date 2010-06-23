@@ -135,6 +135,15 @@ class ThumbnailDatabase {
   // will be deleted. Returns true on success.
   bool CommitTemporaryFavIconTable();
 
+  // Returns true iff the thumbnails table exists.
+  // Migrating to TopSites is dropping the thumbnails table.
+  // (TODO(nshkrob): renaming to favicons??)
+  bool NeedsMigrationToTopSites();
+
+  // Drops thumbnails table. Returns true iff the table was dropped
+  // successfully. False may mean that the table was already dropped.
+  bool DropThumbnailsTable();
+
  private:
   friend class ExpireHistoryBackend;
 

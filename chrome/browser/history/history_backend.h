@@ -76,6 +76,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
     // Invoked when the backend has finished loading the db.
     virtual void DBLoaded() = 0;
+
+    // Tell TopSites to start reading thumbnails from the ThumbnailsDB.
+    virtual void StartTopSitesMigration() = 0;
   };
 
   // Init must be called to complete object creation. This object can be
@@ -190,6 +193,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void GetPageThumbnailDirectly(
       const GURL& page_url,
       scoped_refptr<RefCountedBytes>* data);
+
+  void DeleteThumbnailsDatabase();
 
   // Favicon -------------------------------------------------------------------
 
@@ -307,6 +312,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ImportedFaviconsTest);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, URLsNoLongerBookmarked);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, StripUsernamePasswordTest);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteThumbnailsDatabaseTest);
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.
