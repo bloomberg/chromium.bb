@@ -62,7 +62,7 @@ readonly BINUTILS_DEV=${BINUTILS_DEV:-}   # binutils
 
 # Current milestones within each Hg repo:
 readonly LLVM_REV=8f933e976274 # (on the arm-sfi branch)
-readonly LLVM_GCC_REV=719724cdabb1
+readonly LLVM_GCC_REV=1e60ad236357
 readonly NEWLIB_REV=5d64fed35b93
 readonly BINUTILS_REV=617edf5fdae0
 
