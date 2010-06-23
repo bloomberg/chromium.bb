@@ -122,9 +122,6 @@ TEST_F(FindBarTextFieldCellTest, DrawingRectForBounds) {
   NSRect textFrame = [cell_ textFrameForFrame:bounds];
   NSRect drawingRect = [cell_ drawingRectForBounds:bounds];
 
-  // Save the starting frame for after clear.
-  const NSRect originalDrawingRect(drawingRect);
-
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(textFrame, NSInsetRect(drawingRect, 1, 1)));
 

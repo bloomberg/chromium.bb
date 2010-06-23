@@ -100,7 +100,7 @@ class AutocompletePopupViewMacTest : public PlatformTest {
 // text matches the input string, with the passed-in color, and
 // nothing bolded.
 TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringNoMatch) {
-  const NSString* string = @"This is a test";
+  NSString* const string = @"This is a test";
   AutocompleteMatch::ACMatchClassifications classifications;
 
   NSAttributedString* decorated =
@@ -127,7 +127,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringNoMatch) {
 // Identical to DecorateMatchedStringNoMatch, except test that URL
 // style gets a different color than we passed in.
 TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLNoMatch) {
-  const NSString* string = @"This is a test";
+  NSString* const string = @"This is a test";
   AutocompleteMatch::ACMatchClassifications classifications;
 
   classifications.push_back(
@@ -156,7 +156,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLNoMatch) {
 
 // Test that DIM doesn't have any impact - true at this time.
 TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringDimNoMatch) {
-  const NSString* string = @"This is a test";
+  NSString* const string = @"This is a test";
 
   // Switch to DIM halfway through.
   AutocompleteMatch::ACMatchClassifications classifications;
@@ -189,7 +189,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringDimNoMatch) {
 // Test that the matched run gets bold-faced, but keeps the same
 // color.
 TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringMatch) {
-  const NSString* string = @"This is a test";
+  NSString* const string = @"This is a test";
   // Match "is".
   const NSUInteger runLength1 = 5, runLength2 = 2, runLength3 = 7;
   // Make sure nobody messed up the inputs.
@@ -237,7 +237,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringMatch) {
 
 // Just like DecorateMatchedStringURLMatch, this time with URL style.
 TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLMatch) {
-  const NSString* string = @"http://hello.world/";
+  NSString* const string = @"http://hello.world/";
   // Match "hello".
   const NSUInteger runLength1 = 7, runLength2 = 5, runLength3 = 7;
   // Make sure nobody messed up the inputs.
@@ -288,8 +288,8 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLMatch) {
 // something separating them.  Not being specific about the separator
 // on purpose, in case it changes.
 TEST_F(AutocompletePopupViewMacTest, MatchText) {
-  const NSString* contents = @"contents";
-  const NSString* description = @"description";
+  NSString* const contents = @"contents";
+  NSString* const description = @"description";
   AutocompleteMatch m = MakeMatch(base::SysNSStringToWide(contents),
                                   base::SysNSStringToWide(description));
 
@@ -320,7 +320,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchText) {
 
 // Check that MatchText() styles content matches as expected.
 TEST_F(AutocompletePopupViewMacTest, MatchTextContentsMatch) {
-  const NSString* contents = @"This is a test";
+  NSString* const contents = @"This is a test";
   // Match "is".
   const NSUInteger runLength1 = 5, runLength2 = 2, runLength3 = 7;
   // Make sure nobody messed up the inputs.
@@ -367,8 +367,8 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextContentsMatch) {
 
 // Check that MatchText() styles description matches as expected.
 TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
-  const NSString* contents = @"This is a test";
-  const NSString* description = @"That was a test";
+  NSString* const contents = @"This is a test";
+  NSString* const description = @"That was a test";
   // Match "That was".
   const NSUInteger runLength1 = 8, runLength2 = 7;
   // Make sure nobody messed up the inputs.
@@ -420,7 +420,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
 }
 
 TEST_F(AutocompletePopupViewMacTest, ElideString) {
-  const NSString* contents = @"This is a test with long contents";
+  NSString* const contents = @"This is a test with long contents";
   const std::wstring wideContents(base::SysNSStringToWide(contents));
 
   const float kWide = 1000.0;
@@ -455,8 +455,8 @@ TEST_F(AutocompletePopupViewMacTest, ElideString) {
 }
 
 TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
-  const NSString* contents = @"This is a test with long contents";
-  const NSString* description = @"That was a test";
+  NSString* const contents = @"This is a test with long contents";
+  NSString* const description = @"That was a test";
   // Match "long".
   const NSUInteger runLength1 = 20, runLength2 = 4, runLength3 = 9;
   // Make sure nobody messed up the inputs.

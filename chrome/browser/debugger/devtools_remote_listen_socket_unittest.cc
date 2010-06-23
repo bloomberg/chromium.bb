@@ -99,7 +99,8 @@ void DevToolsRemoteListenSocketTester::TearDown() {
 #if defined(OS_WIN)
   closesocket(test_socket_);
 #elif defined(OS_POSIX)
-  HANDLE_EINTR(close(test_socket_));
+  int ret = HANDLE_EINTR(close(test_socket_));
+  ASSERT_EQ(ret, 0);
 #endif
   ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());

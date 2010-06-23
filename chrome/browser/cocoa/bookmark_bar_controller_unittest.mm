@@ -252,19 +252,12 @@ class BookmarkBarControllerTestBase : public CocoaTest {
   BrowserTestHelper helper_;
   scoped_nsobject<NSView> parent_view_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  scoped_nsobject<BookmarkBarController> bar_;
 
   BookmarkBarControllerTestBase() {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
-    bar_.reset([[BookmarkBarController alloc]
-                initWithBrowser:helper_.browser()
-                   initialWidth:NSWidth(parent_frame)
-                       delegate:nil
-                 resizeDelegate:resizeDelegate_.get()]);
-    InstallAndToggleBar(bar_.get());
   }
 
   void InstallAndToggleBar(BookmarkBarController* bar) {
@@ -295,6 +288,7 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
   scoped_nsobject<BookmarkMenu> menu_;
   scoped_nsobject<NSMenuItem> menu_item_;
   scoped_nsobject<NSButtonCell> cell_;
+  scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
 
   BookmarkBarControllerTest() {
     bar_.reset(
@@ -754,9 +748,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
   WindowOpenDisposition dispositions[] = { NEW_FOREGROUND_TAB,
                                            NEW_WINDOW,
                                            OFF_THE_RECORD };
-  for (unsigned int i = 0;
-       i < sizeof(dispositions)/sizeof(dispositions[0]);
-       i++) {
+  for (unsigned int i = 0; i < arraysize(dispositions); i++) {
     GURL gurl(urls[i]);
     [bar_ performSelector:selectors[i]
                withObject:ItemForBookmarkBarMenu(gurl)];
@@ -1829,6 +1821,8 @@ TEST_F(BookmarkBarControllerNotificationTest, DeregistersForNotifications) {
 
 class BookmarkBarControllerDragDropTest : public BookmarkBarControllerTestBase {
  public:
+  scoped_nsobject<BookmarkBarControllerDragData> bar_;
+
   BookmarkBarControllerDragDropTest() {
     bar_.reset(
                [[BookmarkBarControllerDragData alloc]

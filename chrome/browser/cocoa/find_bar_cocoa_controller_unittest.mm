@@ -29,7 +29,7 @@
   return [findText_ stringValue];
 }
 
-- (NSTextField*)findTextField {
+- (FindBarTextField*)findTextField {
   return findText_;
 }
 @end
@@ -73,7 +73,7 @@ TEST_F(FindBarCocoaControllerTest, SetFindText) {
   EXPECT_TRUE([controller_ isFindBarVisible]);
 
   // Set the find text.
-  const NSString* kFindText = @"Google";
+  NSString* const kFindText = @"Google";
   [controller_ setFindText:kFindText];
   EXPECT_EQ(
       NSOrderedSame,
@@ -103,7 +103,7 @@ TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
 
   // Setting the text in one controller should update the other controller's
   // text as well.
-  const NSString* kFindText = @"Respect to the man in the ice cream van";
+  NSString* const kFindText = @"Respect to the man in the ice cream van";
   [controller_ setFindText:kFindText];
   EXPECT_EQ(
       NSOrderedSame,
@@ -114,7 +114,7 @@ TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
 }
 
 TEST_F(FindBarCocoaControllerTest, SettingFindTextUpdatesFindPboard) {
-  const NSString* kFindText =
+  NSString* const kFindText =
       @"It's not a bird, it's not a plane, it must be Dave who's on the train";
   [controller_ setFindText:kFindText];
   EXPECT_EQ(

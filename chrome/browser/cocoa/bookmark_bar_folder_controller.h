@@ -171,5 +171,6 @@
 // Return YES if the scrollable_ flag has been set.
 - (BOOL)scrollable;
 
+- (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 @end
 

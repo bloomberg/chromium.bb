@@ -71,9 +71,6 @@ TEST_F(StyledTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(textFrame, NSInsetRect(drawingRect, 1, 1)));
 
-  // Save the starting frame for after clear.
-  const NSRect originalDrawingRect = drawingRect;
-
   [cell_ setLeftMargin:10];
   textFrame = [cell_ textFrameForFrame:bounds];
   drawingRect = [cell_ drawingRectForBounds:bounds];

@@ -128,7 +128,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
                      BookmarkBarToolbarViewController,
                      BookmarkButtonDelegate,
                      BookmarkButtonControllerProtocol,
-                     CrApplicationEventHookProtocol> {
+                     CrApplicationEventHookProtocol,
+                     NSUserInterfaceValidations> {
  @private
   // The visual state of the bookmark bar. If an animation is running, this is
   // set to the "destination" and |lastVisualState_| is set to the "original"

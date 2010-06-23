@@ -24,7 +24,7 @@ class DownloadUtilTest : public CocoaTest {
     [pasteboard_ releaseGlobally];
   }
 
-  const NSPasteboard* const pasteboard() { return pasteboard_; }
+  NSPasteboard* const pasteboard() { return pasteboard_; }
 
  private:
   NSPasteboard* pasteboard_;

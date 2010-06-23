@@ -178,8 +178,8 @@ class ThreadTester : public EventListener<TestEvent>,
     ConditionVariable thread_running_cond(&thread_running_mutex);
     ThreadArgs args;
     ThreadInfo info;
-    info.completed = false;
-    args.completed = info.completed;
+    info.completed = NULL;
+    args.completed = false;
     args.thread_running_cond = &(thread_running_cond);
     args.thread_running_mutex = &(thread_running_mutex);
     args.thread_running = false;

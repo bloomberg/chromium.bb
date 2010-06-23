@@ -81,11 +81,11 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
 
   const std::wstring kKeyword(L"Google");
-  const NSString* kKeywordPrefix = @"Press ";
-  const NSString* kKeywordSuffix = @" to search Google";
-  const NSString* kKeywordString = @"Search Google:";
+  NSString* const kKeywordPrefix = @"Press ";
+  NSString* const kKeywordSuffix = @" to search Google";
+  NSString* const kKeywordString = @"Search Google:";
   // 0x2026 is Unicode ellipses.
-  const NSString* kPartialString =
+  NSString* const kPartialString =
       [NSString stringWithFormat:@"Search Go%C:", 0x2026];
 
   // With no special hints requested, none set.

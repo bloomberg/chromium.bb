@@ -435,8 +435,8 @@ TEST_F(AutocompleteTextFieldCellTest, UsesPartialKeywordIfNarrow) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
 
-  const NSString* kFullString = @"Search Engine:";
-  const NSString* kPartialString = @"Search Eng:";
+  NSString* const kFullString = @"Search Engine:";
+  NSString* const kPartialString = @"Search Eng:";
 
   // Wide width chooses the full string, including an image on the
   // left.
@@ -477,7 +477,7 @@ TEST_F(AutocompleteTextFieldCellTest, OmitsSearchHintIfNarrow) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
 
-  const NSString* kSearchHint = @"Type to search";
+  NSString* const kSearchHint = @"Type to search";
 
   // Wide width chooses the full string.
   [cell setSearchHintString:kSearchHint availableWidth:kWidth];
@@ -497,8 +497,8 @@ TEST_F(AutocompleteTextFieldCellTest, TrimsKeywordHintIfNarrow) {
   scoped_nsobject<NSImage> image(
       [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
 
-  const NSString* kHintPrefix = @"Press ";
-  const NSString* kHintSuffix = @" to search Engine";
+  NSString* const kHintPrefix = @"Press ";
+  NSString* const kHintSuffix = @" to search Engine";
 
   // Wide width chooses the full string.
   [cell setKeywordHintPrefix:kHintPrefix image:image suffix:kHintSuffix

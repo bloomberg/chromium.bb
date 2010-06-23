@@ -146,10 +146,10 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
 
 
   // Return a simple BookmarkBarFolderController.
-  BookmarkBarFolderController* SimpleBookmarkBarFolderController() {
+  BookmarkBarFolderControllerPong* SimpleBookmarkBarFolderController() {
     BookmarkButton* parentButton = [[parentBarController_ buttons]
                                      objectAtIndex:0];
-    BookmarkBarFolderController* c =
+    BookmarkBarFolderControllerPong* c =
       [[BookmarkBarFolderControllerPong alloc]
                initWithParentButton:parentButton
                    parentController:nil
@@ -638,7 +638,6 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
   BookmarkButton* toSubfolder =
       [folderController buttonWithTitleEqualTo:@"4f2f"];
   ASSERT_TRUE(toSubfolder);
-  NSRect oldToSubfolderFrame = [toSubfolder frame];
   [[toSubfolder target] performSelector:@selector(openBookmarkFolderFromButton:)
                              withObject:toSubfolder];
   BookmarkBarFolderController* subfolderController =

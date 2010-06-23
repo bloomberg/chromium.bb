@@ -356,7 +356,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  const NSString* kHintString(@"Type to search");
+  NSString* const kHintString = @"Type to search";
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
@@ -388,8 +388,8 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  const NSString* kFullString(@"Search Engine:");
-  const NSString* kPartialString(@"Search Eng:");
+  NSString* const kFullString = @"Search Engine:";
+  NSString* const kPartialString = @"Search Eng:";
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
@@ -749,7 +749,7 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringBaseline) {
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:font
                                   forKey:NSFontAttributeName];
-  static const NSString* kString = @"This is a test";
+  NSString* const kString = @"This is a test";
   scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc] initWithString:kString
                                       attributes:attributes]);
@@ -782,7 +782,7 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringUndo) {
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:redColor
                                   forKey:NSForegroundColorAttributeName];
-  static const NSString* kString = @"This is a test";
+  NSString* const kString = @"This is a test";
   scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc] initWithString:kString
                                       attributes:attributes]);
