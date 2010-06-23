@@ -4,11 +4,9 @@
 
 #include "media/tools/player_x11/gl_video_renderer.h"
 
-#include <dlfcn.h>
 #include <X11/Xutil.h>
-#include <X11/extensions/Xrender.h>
-#include <X11/extensions/Xcomposite.h>
 
+#include "app/gfx/gl/gl_implementation.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
@@ -44,13 +42,8 @@ static GLXContext InitGLContext(Display* display, Window window) {
   // dlopen/dlsym, and so linking it into chrome breaks it. So we dynamically
   // load it, and use glew to dynamically resolve symbols.
   // See http://code.google.com/p/chromium/issues/detail?id=16800
-  void* handle = dlopen("libGL.so.1", RTLD_LAZY | RTLD_GLOBAL);
-  if (!handle) {
-    LOG(ERROR) << "Could not find libGL.so.1";
-    return NULL;
-  }
-  if (glxewInit() != GLEW_OK) {
-    LOG(ERROR) << "GLXEW failed initialization";
+  if (!InitializeGLBindings(gfx::kGLImplementationDesktopGL)) {
+    LOG(ERROR) << "InitializeGLBindings failed";
     return NULL;
   }
 
@@ -74,18 +67,6 @@ static GLXContext InitGLContext(Display* display, Window window) {
   }
 
   if (!glXMakeCurrent(display, window, context)) {
-    glXDestroyContext(display, context);
-    return NULL;
-  }
-
-  if (glewInit() != GLEW_OK) {
-    LOG(ERROR) << "GLEW failed initialization";
-    glXDestroyContext(display, context);
-    return NULL;
-  }
-
-  if (!glewIsSupported("GL_VERSION_2_0")) {
-    LOG(ERROR) << "GL implementation doesn't support GL version 2.0";
     glXDestroyContext(display, context);
     return NULL;
   }
@@ -162,8 +143,6 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   gl_context_ = InitGLContext(display_, window_);
   if (!gl_context_)
     return false;
-
-  glMatrixMode(GL_MODELVIEW);
 
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.

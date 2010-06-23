@@ -5,9 +5,7 @@
 #ifndef MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 #define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 
-#include <GL/glew.h>
-#include <GL/glxew.h>
-
+#include "app/gfx/gl/gl_bindings.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "media/base/factory.h"
