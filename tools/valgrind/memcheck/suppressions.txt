@@ -3554,30 +3554,3 @@
    fun:__NSFireDelayedPerform
    fun:CFRunLoopRunSpecific
 }
-
-{
-   bug_47323
-   Memcheck:Cond
-   fun:_ZN7WebCore9PageCache31canCachePageContainingThisFrameEPNS_5FrameE
-   fun:_ZN7WebCore9PageCache8canCacheEPNS_4PageE
-   fun:_ZN7WebCore11FrameLoader21commitProvisionalLoadEv
-   fun:_ZN7WebCore14DocumentLoader13commitIfReadyEv
-   fun:_ZN7WebCore14DocumentLoader10commitLoadEPKci
-   fun:_ZN7WebCore14DocumentLoader12receivedDataEPKci
-   fun:_ZN7WebCore11FrameLoader12receivedDataEPKci
-   fun:_ZN7WebCore18MainResourceLoader7addDataEPKcib
-   fun:_ZN7WebCore14ResourceLoader14didReceiveDataEPKcixb
-   fun:_ZN7WebCore18MainResourceLoader14didReceiveDataEPKcixb
-   fun:_ZN7WebCore14ResourceLoader14didReceiveDataEPNS_14ResourceHandleEPKcii
-   fun:_ZN7WebCore22ResourceHandleInternal14didReceiveDataEPN6WebKit12WebURLLoaderEPKci
-   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context14OnReceivedDataEPKci
-   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context13HandleDataURLEv
-   fun:_Z16DispatchToMethodIN11webkit_glue16WebURLLoaderImpl7ContextEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN11webkit_glue16WebURLLoaderImpl7ContextEMS2_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
