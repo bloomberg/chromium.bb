@@ -141,7 +141,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   if (extension->update_url() == GURL(extension_urls::kGalleryUpdateURL) &&
       !StartsWithASCII(original_url_.spec(),
           extension_urls::kGalleryDownloadPrefix, false)) {
-    ReportFailureFromUIThread(l10n_util::GetStringFUTF8(
+    ReportFailureFromFileThread(l10n_util::GetStringFUTF8(
         IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
         l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
     return;
