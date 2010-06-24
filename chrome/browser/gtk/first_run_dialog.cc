@@ -190,7 +190,7 @@ void FirstRunDialog::OnLearnMoreLinkClicked(GtkButton* button) {
 
 void FirstRunDialog::FirstRunDone() {
   // Set preference to show first run bubble and welcome page.
-  FirstRun::SetShowFirstRunBubblePref();
+  FirstRun::SetShowFirstRunBubblePref(true);
   FirstRun::SetShowWelcomePagePref();
 
   gtk_widget_destroy(dialog_);

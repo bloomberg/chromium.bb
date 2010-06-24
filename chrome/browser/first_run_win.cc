@@ -318,6 +318,15 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     }
   }
 
+  // If we're suppressing the first-run bubble, set that preference now.
+  // Otherwise, wait until the user has completed first run to set it, so the
+  // user is guaranteed to see the bubble iff he or she has completed the first
+  // run process.
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroSuppressFirstRunBubble,
+      &value) && value)
+    FirstRun::SetShowFirstRunBubblePref(false);
+
   if (InSearchExperimentLocale() &&
       installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kSearchEngineExperimentPref,
@@ -342,9 +351,9 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       !value)
     return true;
 
-  // From here on we won't show first run so we need to do the work to set the
-  // required state given that FirstRunView is not going to be called.
-  FirstRun::SetShowFirstRunBubblePref();
+  // From here on we won't show first run so we need to do the work to show the
+  // bubble anyway, unless it's already been explicitly suppressed.
+  FirstRun::SetShowFirstRunBubblePref(true);
 
   // We need to be able to create the first run sentinel or else we cannot
   // proceed because ImportSettings will launch the importer process which

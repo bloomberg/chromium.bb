@@ -54,7 +54,7 @@ FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined,
 }
 
 FirstRunViewBase::~FirstRunViewBase() {
-  FirstRun::SetShowFirstRunBubblePref();
+  FirstRun::SetShowFirstRunBubblePref(true);
   FirstRun::SetShowWelcomePagePref();
 }
 

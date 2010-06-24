@@ -81,13 +81,13 @@ bool FirstRun::CreateSentinel() {
 }
 
 // static
-bool FirstRun::SetShowFirstRunBubblePref() {
+bool FirstRun::SetShowFirstRunBubblePref(bool show_bubble) {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
   if (!local_state->FindPreference(prefs::kShouldShowFirstRunBubble)) {
     local_state->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
-    local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, true);
+    local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, show_bubble);
   }
   return true;
 }

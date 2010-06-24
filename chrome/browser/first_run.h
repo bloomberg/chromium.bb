@@ -95,9 +95,11 @@ class FirstRun {
                              gfx::NativeView parent_window);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
-  // shows the bubble once the main message loop gets going. Returns false if
-  // the pref could not be set.
-  static bool SetShowFirstRunBubblePref();
+  // shows the bubble once the main message loop gets going (or refrains from
+  // showing the bubble, if |show_bubble| is false). Returns false if the pref
+  // could not be set. This function can be called multiple times, but only the
+  // initial call will actually set the preference.
+  static bool SetShowFirstRunBubblePref(bool show_bubble);
 
   // Sets the kShouldUseOEMFirstRunBubble local state pref so that the
   // browser shows the OEM first run bubble once the main message loop

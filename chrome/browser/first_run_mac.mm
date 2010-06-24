@@ -71,7 +71,7 @@ FirstRunController::FirstRunController()
 void FirstRunController::FirstRunDone() {
   // Set preference to show first run bubble and welcome page.
   // TODO(jeremy): Implement
-  // FirstRun::SetShowFirstRunBubblePref();
+  // FirstRun::SetShowFirstRunBubblePref(true);
   // FirstRun::SetShowWelcomePagePref();
   delete this;
 }

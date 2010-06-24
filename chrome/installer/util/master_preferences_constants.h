@@ -42,6 +42,8 @@ extern const wchar_t kDistroPingDelay[];
 extern const wchar_t kDistroShowWelcomePage[];
 // Boolean pref that triggers skipping the first run dialogs.
 extern const wchar_t kDistroSkipFirstRunPref[];
+// Boolean. Do not show first run bubble, even if it would otherwise be shown.
+extern const wchar_t kDistroSuppressFirstRunBubble[];
 // Boolean. Do not create Chrome desktop shortcuts. Cmd line override present.
 extern const wchar_t kDoNotCreateShortcuts[];
 // Boolean. Do not launch Chrome after first install. Cmd line override present.
@@ -57,16 +59,16 @@ extern const wchar_t kMakeChromeDefaultForUser[];
 extern const wchar_t kMsi[];
 // Boolean. Show EULA dialog before install.
 extern const wchar_t kRequireEula[];
+// Boolean. Use experimental search engine selection dialog.
+extern const wchar_t kSearchEngineExperimentPref[];
+// Boolean. Randomize logos in experimental search engine selection dialog.
+extern const wchar_t kSearchEngineExperimentRandomizePref[];
 // Boolean. Install Chrome to system wise location. Cmd line override present.
 extern const wchar_t kSystemLevel[];
 // Boolean. Run installer in verbose mode. Cmd line override present.
 extern const wchar_t kVerboseLogging[];
 // Name of the block that contains the extensions on the master preferences.
 extern const wchar_t kExtensionsBlock[];
-// Boolean. Use experimental search engine selection dialog.
-extern const wchar_t kSearchEngineExperimentPref[];
-// Boolean. Randomize logos in experimental search engine selection dialog.
-extern const wchar_t kSearchEngineExperimentRandomizePref[];
 }
 }
 

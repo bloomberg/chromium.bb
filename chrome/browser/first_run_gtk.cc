@@ -86,7 +86,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 
   // From here on we won't show first run so we need to do the work to set the
   // required state given that FirstRunView is not going to be called.
-  FirstRun::SetShowFirstRunBubblePref();
+  FirstRun::SetShowFirstRunBubblePref(true);
 
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroShowWelcomePage, &value) &&
