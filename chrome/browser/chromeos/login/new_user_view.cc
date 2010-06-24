@@ -355,12 +355,9 @@ void NewUserView::LinkActivated(views::Link* source, int event_flags) {
   } else if (source == cant_access_account_link_) {
     // TODO(nkostylev): Display offline help when network is not connected.
     // http://crosbug.com/3874
-    dialog_.reset(new LoginHtmlDialog(
-        this,
-        GetNativeWindow(),
-        l10n_util::GetString(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
-        google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl))));
-    dialog_->Show();
+    delegate_->AddStartUrl(
+        google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl)));
+    delegate_->OnLoginOffTheRecord();
   }
 }
 

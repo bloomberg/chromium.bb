@@ -7,8 +7,10 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/browser_notification_observers.h"
@@ -92,12 +94,21 @@ void LoginScreen::OnLoginFailure(const std::string& error) {
 void LoginScreen::OnLoginSuccess(const std::string& username,
                                  const std::string& credentials) {
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
+  AppendStartUrlToCmdline();
   LoginUtils::Get()->CompleteLogin(username, credentials);
 }
 
 void LoginScreen::OnOffTheRecordLoginSuccess() {
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_GUEST_SELECTED);
+  AppendStartUrlToCmdline();
   LoginUtils::Get()->CompleteOffTheRecordLogin();
+}
+
+void LoginScreen::AppendStartUrlToCmdline() {
+  if (start_url_.is_valid()) {
+    CommandLine::ForCurrentProcess()->AppendLooseValue(
+        UTF8ToWide(start_url_.spec()));
+  }
 }
 
 void LoginScreen::ShowError(int error_id, const std::string& details) {

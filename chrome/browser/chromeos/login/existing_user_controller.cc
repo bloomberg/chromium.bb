@@ -260,6 +260,13 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   SendSetLoginState(true);
 }
 
+void ExistingUserController::AppendStartUrlToCmdline() {
+  if (start_url_.is_valid()) {
+    CommandLine::ForCurrentProcess()->AppendLooseValue(
+        UTF8ToWide(start_url_.spec()));
+  }
+}
+
 void ExistingUserController::ClearCaptchaState() {
   login_token_.clear();
   login_captcha_.clear();
@@ -282,6 +289,7 @@ void ExistingUserController::ShowError(int error_id,
 
 void ExistingUserController::OnLoginSuccess(const std::string& username,
                                             const std::string& credentials) {
+  AppendStartUrlToCmdline();
   if (selected_view_index_ + 1 == controllers_.size()) {
     // For new user login don't launch browser until we pass image screen.
     chromeos::LoginUtils::Get()->EnableBrowserLaunch(false);
@@ -300,6 +308,7 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
 }
 
 void ExistingUserController::OnOffTheRecordLoginSuccess() {
+  AppendStartUrlToCmdline();
   LoginUtils::Get()->CompleteOffTheRecordLogin();
 }
 

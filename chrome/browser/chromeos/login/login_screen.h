@@ -35,6 +35,7 @@ class LoginScreen : public ViewScreen<NewUserView>,
                        const std::string& password);
   virtual void OnLoginOffTheRecord();
   virtual void OnCreateAccount();
+  virtual void AddStartUrl(const GURL& start_url) { start_url_ = start_url; }
   virtual void ClearErrors();
 
   // Overridden from LoginStatusConsumer.
@@ -55,6 +56,9 @@ class LoginScreen : public ViewScreen<NewUserView>,
   // ViewScreen<NewUserView>:
   virtual NewUserView* AllocateView();
 
+  // Adds start url to command line.
+  void AppendStartUrlToCmdline();
+
   // Shows error message with the specified message id.
   // If |details| string is not empty, it specify additional error text
   // provided by authenticator, it is not localized.
@@ -65,6 +69,9 @@ class LoginScreen : public ViewScreen<NewUserView>,
   MessageBubble* bubble_;
 
   scoped_refptr<Authenticator> authenticator_;
+
+  // URL that will be opened on browser startup.
+  GURL start_url_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginScreen);
 };

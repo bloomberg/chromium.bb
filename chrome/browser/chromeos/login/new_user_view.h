@@ -12,7 +12,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
-#include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -33,8 +32,7 @@ namespace chromeos {
 class NewUserView : public views::View,
                     public views::Textfield::Controller,
                     public views::LinkController,
-                    public views::ButtonListener,
-                    public LoginHtmlDialog::Delegate {
+                    public views::ButtonListener {
  public:
   // Delegate class to get notifications from the view.
   class Delegate {
@@ -50,6 +48,9 @@ class NewUserView : public views::View,
 
     // User initiated new account creation.
     virtual void OnCreateAccount() = 0;
+
+    // Adds start URL that will be opened after login.
+    virtual void AddStartUrl(const GURL& start_url) = 0;
 
     // User started typing so clear all error messages.
     virtual void ClearErrors() = 0;
@@ -104,9 +105,6 @@ class NewUserView : public views::View,
 
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
-  // LoginHtmlDialog::Delegate implementation.
-  virtual void OnDialogClosed() {}
-
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add, views::View *parent,
@@ -153,9 +151,6 @@ class NewUserView : public views::View,
   ScopedRunnableMethodFactory<NewUserView> focus_grabber_factory_;
 
   LanguageSwitchMenu language_switch_menu_;
-
-  // Dialog used to display help like "Can't access your account".
-  scoped_ptr<LoginHtmlDialog> dialog_;
 
   // Indicates that this view was created when focus manager was unavailable
   // (on the hidden tab, for example).

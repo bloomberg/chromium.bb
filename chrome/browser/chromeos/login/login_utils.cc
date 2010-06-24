@@ -272,6 +272,10 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
   if (!LoginUtils::Get()->IsBrowserLaunchEnabled())
     return;
 
+  // Update command line in case loose values were added.
+  CommandLine::ForCurrentProcess()->InitFromArgv(
+      CommandLine::ForCurrentProcess()->argv());
+
   LOG(INFO) << "Launching browser...";
   BrowserInit browser_init;
   int return_code;

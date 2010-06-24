@@ -46,6 +46,7 @@ class UserController : public views::ButtonListener,
     virtual void OnUserSelected(UserController* source) = 0;
     virtual void ActivateWizard(const std::string& screen_name) = 0;
     virtual void RemoveUser(UserController* source) = 0;
+    virtual void AddStartUrl(const GURL& start_url) = 0;
    protected:
     virtual ~Delegate() {}
   };
@@ -105,6 +106,9 @@ class UserController : public views::ButtonListener,
                        const std::string& password);
   virtual void OnCreateAccount();
   virtual void OnLoginOffTheRecord();
+  virtual void AddStartUrl(const GURL& start_url) {
+    delegate_->AddStartUrl(start_url);
+  }
   virtual void ClearErrors();
 
   // UserView::Delegate implementation:

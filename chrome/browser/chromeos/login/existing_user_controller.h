@@ -72,6 +72,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void OnUserSelected(UserController* source);
   virtual void ActivateWizard(const std::string& screen_name);
   virtual void RemoveUser(UserController* source);
+  virtual void AddStartUrl(const GURL& start_url) { start_url_ = start_url; }
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const std::string& error);
@@ -89,6 +90,9 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // CaptchaView::Delegate:
   virtual void OnCaptchaEntered(const std::string& captcha);
+
+  // Adds start url to command line.
+  void AppendStartUrlToCmdline();
 
   // Clears existing captcha state;
   void ClearCaptchaState();
@@ -129,6 +133,9 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // String entered by the user as an answer to a CAPTCHA challenge.
   std::string login_captcha_;
+
+  // URL that will be opened on browser startup.
+  GURL start_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };
