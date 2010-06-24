@@ -597,11 +597,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # supplied.
     xccl = CreateXCConfigurationList(configuration_names)
 
-    # Create an XCTarget subclass object for the target.  We use the type
-    # with "+bundle" appended if the target has "mac_bundle" set.
+    # Create an XCTarget subclass object for the target. The type with
+    # "+bundle" appended will be used if the target has "mac_bundle" set.
+    # loadable_modules not in a mac_bundle are mapped to
+    # com.googlecode.gyp.xcode.bundle, a pseudo-type that xcode.py interprets
+    # to create a single-file mh_bundle.
     _types = {
       'executable':             'com.apple.product-type.tool',
-      'loadable_module':        'com.apple.product-type.library.dynamic',
+      'loadable_module':        'com.googlecode.gyp.xcode.bundle',
       'shared_library':         'com.apple.product-type.library.dynamic',
       'static_library':         'com.apple.product-type.library.static',
       'executable+bundle':      'com.apple.product-type.application',
@@ -641,14 +644,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
     pbxp.AppendProperty('targets', xct)
     xcode_targets[qualified_target] = xct
     xcode_target_to_target_dict[xct] = spec
-
-    # Xcode does not have a distinct type for loadable_modules that are pure
-    # BSD targets (ie-unbundled). It uses the same setup as a shared_library
-    # but the mach-o type is explictly set in the settings.  So before we do
-    # anything else, for this one case, we stuff in that one setting.  This
-    # would allow the other data in the spec to change it if need be.
-    if type == 'loadable_module' and not is_bundle:
-      xccl.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
 
     spec_actions = spec.get('actions', [])
     spec_rules = spec.get('rules', [])

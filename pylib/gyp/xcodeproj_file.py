@@ -2163,21 +2163,21 @@ class PBXNativeTarget(XCTarget):
   #  filetype : used for explicitFileType in the project file
   #  prefix : the prefix for the file name
   #  suffix : the suffix for the filen ame
-  #  set_xc_exe_prefix : bool to say if EXECUTABLE_PREFIX should be set to the
-  #                      prefix value.
   _product_filetypes = {
     'com.apple.product-type.application':     ['wrapper.application',
-                                               '', '.app', False],
+                                               '', '.app'],
     'com.apple.product-type.bundle':          ['wrapper.cfbundle',
-                                               '', '.bundle', False],
+                                               '', '.bundle'],
     'com.apple.product-type.framework':       ['wrapper.framework',
-                                               '', '.framework', False],
+                                               '', '.framework'],
     'com.apple.product-type.library.dynamic': ['compiled.mach-o.dylib',
-                                               'lib', '.dylib', True],
+                                               'lib', '.dylib'],
     'com.apple.product-type.library.static':  ['archive.ar',
-                                               'lib', '.a', False],
+                                               'lib', '.a'],
     'com.apple.product-type.tool':            ['compiled.mach-o.executable',
-                                               '', '', False],
+                                               '', ''],
+    'com.googlecode.gyp.xcode.bundle':        ['compiled.mach-o.dylib',
+                                               '', '.so'],
   }
 
   def __init__(self, properties=None, id=None, parent=None,
@@ -2195,8 +2195,39 @@ class PBXNativeTarget(XCTarget):
         products_group = pbxproject.ProductsGroup()
 
       if products_group != None:
-        (filetype, prefix, suffix, set_xc_exe_prefix) = \
+        (filetype, prefix, suffix) = \
             self._product_filetypes[self._properties['productType']]
+        # Xcode does not have a distinct type for loadable modules that are
+        # pure BSD targets (not in a bundle wrapper). GYP allows such modules
+        # to be specified by setting a target type to loadable_module without
+        # having mac_bundle set. These are mapped to the pseudo-product type
+        # com.googlecode.gyp.xcode.bundle.
+        #
+        # By picking up this special type and converting it to a dynamic
+        # library (com.apple.product-type.library.dynamic) with fix-ups,
+        # single-file loadable modules can be produced.
+        #
+        # MACH_O_TYPE is changed to mh_bundle to produce the proper file type
+        # (as opposed to mh_dylib). In order for linking to succeed,
+        # DYLIB_CURRENT_VERSION and DYLIB_COMPATIBILITY_VERSION must be
+        # cleared. They are meaningless for type mh_bundle.
+        #
+        # Finally, the .so extension is forcibly applied over the default
+        # (.dylib), unless another forced extension is already selected.
+        # .dylib is plainly wrong, and .bundle is used by loadable_modules in
+        # bundle wrappers (com.apple.product-type.bundle). .so seems an odd
+        # choice because it's used as the extension on many other systems that
+        # don't distinguish between linkable shared libraries and non-linkable
+        # loadable modules, but there's precedent: Python loadable modules on
+        # Mac OS X use an .so extension.
+        if self._properties['productType'] == 'com.googlecode.gyp.xcode.bundle':
+          self._properties['productType'] = \
+              'com.apple.product-type.library.dynamic'
+          self.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
+          self.SetBuildSetting('DYLIB_CURRENT_VERSION', '')
+          self.SetBuildSetting('DYLIB_COMPATIBILITY_VERSION', '')
+          if force_extension == None:
+            force_extension = suffix[1:]
 
         if force_extension is not None:
           # If it's a wrapper (bundle), set WRAPPER_EXTENSION.
