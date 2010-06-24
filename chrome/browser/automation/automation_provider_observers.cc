@@ -682,6 +682,7 @@ const struct CommandNotification command_notifications[] = {
   // For the following commands, we need to wait for a new tab to be created,
   // load to finish, and title to change.
   {IDC_MANAGE_EXTENSIONS, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
+  {IDC_OPTIONS, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
   {IDC_SHOW_DOWNLOADS, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
   {IDC_SHOW_HISTORY, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
 };

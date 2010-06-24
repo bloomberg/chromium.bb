@@ -303,6 +303,7 @@
         'browser/cookie_modal_dialog_uitest.cc',
         'browser/dom_ui/bookmarks_ui_uitest.cc',
         'browser/dom_ui/new_tab_ui_uitest.cc',
+        'browser/dom_ui/options_ui_uitest.cc',
         'browser/download/download_uitest.cc',
         'browser/download/save_page_uitest.cc',
         'browser/errorpage_uitest.cc',
