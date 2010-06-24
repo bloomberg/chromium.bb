@@ -1482,10 +1482,14 @@ void RenderWidgetHostViewWin::UpdateAccessibilityTree(
   browser_accessibility_manager_.reset(
       new BrowserAccessibilityManager(m_hWnd, tree, this));
 
-  ::NotifyWinEvent(
-      EVENT_OBJECT_FOCUS, m_hWnd, OBJID_CLIENT, CHILDID_SELF);
-  ::NotifyWinEvent(
-      IA2_EVENT_DOCUMENT_LOAD_COMPLETE, m_hWnd, OBJID_CLIENT, CHILDID_SELF);
+  BrowserAccessibility* root = browser_accessibility_manager_.get()->GetRoot();
+  LONG root_id;
+  if (root && SUCCEEDED(root->get_uniqueID(&root_id))) {
+    ::NotifyWinEvent(
+        EVENT_OBJECT_FOCUS, m_hWnd, OBJID_CLIENT, root_id);
+    ::NotifyWinEvent(
+        IA2_EVENT_DOCUMENT_LOAD_COMPLETE, m_hWnd, OBJID_CLIENT, root_id);
+  }
 }
 
 void RenderWidgetHostViewWin::OnAccessibilityFocusChange(int acc_obj_id) {
