@@ -421,9 +421,6 @@ void LanguageMenuButton::LocaleChanged() {
 
 void LanguageMenuButton::UpdateIndicator(
     const std::wstring& name, const std::wstring& tooltip) {
-  if (!tooltip.empty()) {
-    SetTooltipText(tooltip);
-  }
   // Hide the button only if there is only one input method, and the input
   // method is a XKB keyboard layout. We don't hide the button for other
   // types of input methods as these might have intra input method modes,
@@ -435,8 +432,10 @@ void LanguageMenuButton::UpdateIndicator(
     // As the disabled color is set to invisible, disabling makes the
     // button disappear.
     SetEnabled(false);
+    SetTooltipText(L"");  // remove tooltip
   } else {
     SetEnabled(true);
+    SetTooltipText(tooltip);
   }
   SetText(name);
   set_alignment(TextButton::ALIGN_RIGHT);
