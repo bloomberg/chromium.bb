@@ -212,7 +212,8 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
   browser_ = Browser::CreateForDevTools(profile_);
   browser_->tabstrip_model()->AddTabContents(
-      tab_contents_, -1, false, PageTransition::START_PAGE, true);
+      tab_contents_, -1, PageTransition::START_PAGE,
+      TabStripModel::ADD_SELECTED);
 }
 
 BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {

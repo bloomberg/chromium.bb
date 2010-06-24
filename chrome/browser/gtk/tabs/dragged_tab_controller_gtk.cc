@@ -394,8 +394,10 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
     // changing due to animation).
     gfx::Rect bounds = GetDraggedTabTabStripBounds(screen_point);
     int index = GetInsertionIndexForDraggedBounds(bounds, false);
-    attached_tabstrip_->model()->InsertTabContentsAt(index, dragged_contents_,
-                                                     true, false, pinned_);
+    attached_tabstrip_->model()->InsertTabContentsAt(
+        index, dragged_contents_,
+        TabStripModel::ADD_SELECTED |
+            (pinned_ ? TabStripModel::ADD_PINNED : 0));
 
     tab = GetTabMatchingDraggedContents(attached_tabstrip_);
   }
@@ -616,8 +618,10 @@ void DraggedTabControllerGtk::RevertDrag() {
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
       attached_tabstrip_ = source_tabstrip_;
-      source_tabstrip_->model()->InsertTabContentsAt(source_model_index_,
-          dragged_contents_, true, false, pinned_);
+      source_tabstrip_->model()->InsertTabContentsAt(
+          source_model_index_, dragged_contents_,
+          TabStripModel::ADD_SELECTED |
+              (pinned_ ? TabStripModel::ADD_PINNED : 0));
     } else {
       // The tab was moved within the tabstrip where the drag was initiated.
       // Move it back to the starting location.
@@ -631,8 +635,10 @@ void DraggedTabControllerGtk::RevertDrag() {
     // The tab was detached from the tabstrip where the drag began, and has not
     // been attached to any other tabstrip. We need to put it back into the
     // source tabstrip.
-    source_tabstrip_->model()->InsertTabContentsAt(source_model_index_,
-        dragged_contents_, true, false, pinned_);
+    source_tabstrip_->model()->InsertTabContentsAt(
+        source_model_index_, dragged_contents_,
+        TabStripModel::ADD_SELECTED |
+            (pinned_ ? TabStripModel::ADD_PINNED : 0));
   }
 
   // If we're not attached to any tab strip, or attached to some other tab

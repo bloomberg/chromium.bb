@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 
   // Open another tab (tab B).
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           Browser::ADD_SELECTED, NULL, std::string());
+                           TabStripModel::ADD_SELECTED, NULL, std::string());
 
   browser()->Find();
   EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());

@@ -24,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(TabStripTest, Close) {
 
   browser()->AddTabWithURL(
       GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
-      Browser::ADD_SELECTED, NULL, std::string());
+      TabStripModel::ADD_SELECTED, NULL, std::string());
   views::RootView* root =
       views::Widget::FindRootView(browser()->window()->GetNativeHandle());
   ASSERT_TRUE(root);
