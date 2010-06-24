@@ -121,6 +121,7 @@ void AutoFillManager::FormsSeen(const std::vector<FormData>& forms) {
 }
 
 bool AutoFillManager::GetAutoFillSuggestions(int query_id,
+                                             bool form_autofilled,
                                              const FormField& field) {
   if (!IsAutoFillEnabled())
     return false;
@@ -179,6 +180,14 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   // No suggestions.
   if (values.empty())
     return false;
+
+  // If the form is auto-filled and the renderer is querying for suggestions,
+  // then the user is editing the value of a field.  In this case, we don't
+  // want to display the labels, as that information is redundant.
+  if (form_autofilled) {
+    for (size_t i = 0; i < labels.size(); ++i)
+      labels[i] = string16();
+  }
 
   host->AutoFillSuggestionsReturned(query_id, values, labels);
   return true;

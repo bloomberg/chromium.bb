@@ -1825,8 +1825,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              gfx::Rect /* Out: Window location */)
 
   // Queries the browser for AutoFill suggestions for a form input field.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_QueryFormFieldAutoFill,
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_QueryFormFieldAutoFill,
                       int /* id of this message */,
+                      bool /* form_autofilled */,
                       webkit_glue::FormField /* the form field */)
 
   // Instructs the browser to fill in the values for a form using AutoFill

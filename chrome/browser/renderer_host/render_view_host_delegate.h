@@ -426,10 +426,13 @@ class RenderViewHostDelegate {
 
     // Called to retrieve a list of AutoFill suggestions from the web database
     // given the name of the field and what the user has already typed in the
-    // field.  Returns true to indicate that
+    // field. |form_autofilled| is true if the form containing |field| has any
+    // auto-filled fields. Returns true to indicate that
     // RenderViewHost::AutoFillSuggestionsReturned has been called.
     virtual bool GetAutoFillSuggestions(
-        int query_id, const webkit_glue::FormField& field) = 0;
+        int query_id,
+        bool form_autofilled,
+        const webkit_glue::FormField& field) = 0;
 
     // Called to fill the FormData object with AutoFill profile information that
     // matches the |value|, |label| key.  Returns true to indicate that

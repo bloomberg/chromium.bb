@@ -215,7 +215,7 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
 
   Profile* profile() { return contents()->profile(); }
 
-  bool GetAutoFillSuggestionsMessage(int *page_id,
+  bool GetAutoFillSuggestionsMessage(int* page_id,
                                      std::vector<string16>* values,
                                      std::vector<string16>* labels) {
     const uint32 kMsgID = ViewMsg_AutoFillSuggestionsReturned::ID;
@@ -275,7 +275,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
 
   webkit_glue::FormField field;
   CreateTestFormField("First Name", "firstname", "", "text", &field);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -306,7 +306,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
 
   webkit_glue::FormField field;
   CreateTestFormField("First Name", "firstname", "E", "text", &field);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -335,7 +335,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
 
   webkit_glue::FormField field;
   CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -374,7 +374,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
 
   webkit_glue::FormField field;
   CreateTestFormField("Card Number", "cardnumber", "1", "text", &field);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -407,7 +407,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
 
   webkit_glue::FormField field;
   CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -448,7 +448,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
 
   webkit_glue::FormField field;
   CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -474,6 +474,37 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
   EXPECT_EQ(ASCIIToUTF16("Work; 8765"), labels[5]);
   EXPECT_EQ(ASCIIToUTF16("Empty; 8765"), labels[6]);
   EXPECT_EQ(ASCIIToUTF16("Home; 8765; 8765"), labels[7]);
+}
+
+TEST_F(AutoFillManagerTest, GetFieldSuggestionsFormIsAutoFilled) {
+  FormData form;
+  CreateTestFormData(&form);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+
+  webkit_glue::FormField field;
+  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, true, field));
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  EXPECT_EQ(kPageID, page_id);
+  ASSERT_EQ(2U, values.size());
+  EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("Charles"), values[1]);
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
 }
 
 TEST_F(AutoFillManagerTest, FillCreditCardForm) {

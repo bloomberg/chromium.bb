@@ -2082,8 +2082,9 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
   // data in FormManager.
   field.set_label(FormManager::LabelForElement(element));
 
+  bool form_autofilled = form_manager_.FormWithNodeIsAutoFilled(node);
   Send(new ViewHostMsg_QueryFormFieldAutoFill(
-      routing_id_, autofill_query_id_, field));
+      routing_id_, autofill_query_id_, form_autofilled, field));
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,

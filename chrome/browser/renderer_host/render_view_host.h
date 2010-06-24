@@ -604,6 +604,7 @@ class RenderViewHost : public RenderWidgetHost {
                                const webkit_glue::WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
   void OnQueryFormFieldAutoFill(int request_id,
+                                bool form_autofilled,
                                 const webkit_glue::FormField& field);
   void OnRemoveAutocompleteEntry(const string16& field_name,
                                  const string16& value);

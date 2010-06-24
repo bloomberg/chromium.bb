@@ -1587,13 +1587,14 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
 }
 
 void RenderViewHost::OnQueryFormFieldAutoFill(
-    int query_id, const webkit_glue::FormField& field) {
+    int query_id, bool form_autofilled, const webkit_glue::FormField& field) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
   // If the AutoFill delegate has results to return, we don't need any results
   // from the Autocomplete delegate.
   if (autofill_delegate &&
-      autofill_delegate->GetAutoFillSuggestions(query_id, field)) {
+      autofill_delegate->GetAutoFillSuggestions(
+          query_id, form_autofilled, field)) {
       return;
   }
 

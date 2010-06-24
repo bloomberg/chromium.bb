@@ -55,7 +55,7 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents,
   }
 
   virtual bool GetAutoFillSuggestions(
-      int query_id, const webkit_glue::FormField& field) {
+      int query_id, bool form_autofilled, const webkit_glue::FormField& field) {
     return false;
   }
 
