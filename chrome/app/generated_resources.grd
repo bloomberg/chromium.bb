@@ -5327,7 +5327,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Search engine dialog messages -->
       <message name="IDS_FR_SEARCH_MAIN_LABEL" desc="Tells the user to choose a search engine">
-        Please choose a search engine
+        Choose a search engine
       </message>
       <message name="IDS_FR_SEARCH_TEXT" desc="Explains the omnibox and asks the user to choose a search engine for this feature">
         <ph name="PRODUCT_NAME">
@@ -5335,9 +5335,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FR_SEARCH_CHOOSE" desc="Command on button to choose a search engine">
         Choose
-      </message>
-      <message name="IDS_FR_SEARCH_SUBTEXT" desc="Explains choosing a search engine from options dialog in Chrome">
-        You may choose a different search engine in <ph name="BEGIN_LINK_SE">BEGIN_LINK_SE</ph>search engine options<ph name="END_LINK_SE">END_LINK_SE</ph>, which is also accessible in the options dialog in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
       </message>
 
       <!-- First run bubble popup -->

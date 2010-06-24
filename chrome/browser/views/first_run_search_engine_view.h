@@ -10,12 +10,12 @@
 #include "chrome/browser/views/keyword_editor_view.h"
 #include "gfx/size.h"
 #include "views/controls/button/native_button.h"
-#include "views/controls/link.h"
 #include "views/view.h"
 #include "views/window/window_delegate.h"
 
 namespace views {
 class ButtonListener;
+class ImageView;
 class Label;
 class Separator;
 class Window;
@@ -79,7 +79,6 @@ class SearchEngineSelectionObserver {
 class FirstRunSearchEngineView
     : public views::View,
       public views::ButtonListener,
-      public views::LinkController,
       public views::WindowDelegate,
       public TemplateURLModelObserver {
  public:
@@ -95,10 +94,6 @@ class FirstRunSearchEngineView
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
-
-  // Overridden from views::LinkActivated:
-  virtual void LinkActivated(views::Link* source, int event_flags);
 
   // Overridden from views::WindowDelegate:
   virtual std::wstring GetWindowTitle() const;
@@ -137,24 +132,12 @@ class FirstRunSearchEngineView
   // If logos are to be displayed in random order.  Used for UX testing.
   bool randomize_;
 
+  // Image of browser search box with grey background and bubble arrow.
+  views::ImageView* background_image_;
+
   // UI elements:
-  // Text above the first horizontal separator
   views::Label* title_label_;
   views::Label* text_label_;
-
-  // Horizontal separators
-  views::Separator* separator_1_;
-  views::Separator* separator_2_;
-
-  // Text below the second horizontal divider. The order of appearance of
-  // these three elements is language-dependent.
-  views::Label* subtext_label_1_;
-  views::Label* subtext_label_2_;
-  views::Link* options_link_;
-
-  // Used to figure out positioning of embedded links in RTL languages
-  // (see view_text_utils::DrawTextAndPositionUrl).
-  views::Label* dummy_subtext_label_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunSearchEngineView);
 };

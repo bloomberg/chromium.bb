@@ -36,18 +36,14 @@ using TemplateURLPrepopulateData::SearchEngineType;
 
 namespace {
 
-// These strings mark the embedded link in IDS_FIRSTRUN_SEARCH_SUBTEXT.
-const wchar_t* kBeginLink = L"BEGIN_LINK_SE";
-const wchar_t* kEndLink = L"END_LINK_SE";
-
 // Represents an id for which we have no logo.
 const int kNoLogo = -1;
 
 // Size to scale logos down to if showing 4 instead of 3 choices. Logo images
 // are all originally sized at 180 x 120 pixels, with the logo text baseline
 // located 74 pixels beneath the top of the image.
-const int kSmallLogoWidth = 120;
-const int kSmallLogoHeight = 80;
+const int kSmallLogoWidth = 132;
+const int kSmallLogoHeight = 88;
 
 // Used to pad text label height so it fits nicely in view.
 const int kLabelPadding = 25;
@@ -160,7 +156,8 @@ void SearchEngineChoice::SetChoiceViewBounds(int x, int y, int width,
 
 FirstRunSearchEngineView::FirstRunSearchEngineView(
     SearchEngineSelectionObserver* observer, Profile* profile, bool randomize)
-    : profile_(profile),
+    : background_image_(NULL),
+      profile_(profile),
       observer_(observer),
       text_direction_is_rtl_(base::i18n::IsRTL()),
       randomize_(randomize) {
@@ -274,24 +271,17 @@ gfx::Size FirstRunSearchEngineView::GetPreferredSize() {
       IDS_FIRSTRUN_SEARCH_ENGINE_SELECTION_HEIGHT_LINES);
 }
 
-void FirstRunSearchEngineView::LinkActivated(views::Link* source,
-                                             int event_flags) {
-  // The KeywordEditor is going to modify search_engines_model_, so
-  // relinquish our observership so we don't try to redraw.
-  search_engines_model_->RemoveObserver(this);
-  // Launch search engine editing window from browser options dialog. We pass
-  // the observer to the KeywordEditor, who will tell the observer when a
-  // search engine has been chosen.
-  KeywordEditorView::ShowAndObserve(profile_, observer_);
-  GetWindow()->Close();
-}
-
 void FirstRunSearchEngineView::SetupControls() {
   using views::Background;
   using views::ImageView;
   using views::Label;
-  using views::Link;
   using views::NativeButton;
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  background_image_ = new views::ImageView();
+  background_image_->SetImage(rb.GetBitmapNamed(IDR_SEARCH_ENGINE_DIALOG_TOP));
+  background_image_->SetHorizontalAlignment(ImageView::TRAILING);
+  AddChildView(background_image_);
 
   int label_width = GetPreferredSize().width() - 2 * kPanelHorizMargin;
 
@@ -301,7 +291,7 @@ void FirstRunSearchEngineView::SetupControls() {
   title_label_ = new Label(l10n_util::GetString(
       IDS_FR_SEARCH_MAIN_LABEL));
   title_label_->SetColor(SK_ColorBLACK);
-  title_label_->SetFont(title_label_->font().DeriveFont(1, gfx::Font::BOLD));
+  title_label_->SetFont(title_label_->font().DeriveFont(3, gfx::Font::BOLD));
   title_label_->SetMultiLine(true);
   title_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
   title_label_->SizeToFit(label_width);
@@ -310,97 +300,65 @@ void FirstRunSearchEngineView::SetupControls() {
   text_label_ = new Label(l10n_util::GetStringF(IDS_FR_SEARCH_TEXT,
       l10n_util::GetString(IDS_PRODUCT_NAME)));
   text_label_->SetColor(SK_ColorBLACK);
+  text_label_->SetFont(text_label_->font().DeriveFont(1, gfx::Font::NORMAL));
   text_label_->SetMultiLine(true);
   text_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
   text_label_->SizeToFit(label_width);
   AddChildView(text_label_);
-
-  // The first separator marks the start of the search engine choice panel.
-  separator_1_ = new views::Separator;
-  AddChildView(separator_1_);
-
-  // The second separator marks the end of the search engine choice panel.
-  separator_2_ = new views::Separator;
-  AddChildView(separator_2_);
-
-  // Parse out the link to the internal search engine options dialog.
-  std::wstring subtext = l10n_util::GetStringF(IDS_FR_SEARCH_SUBTEXT,
-      l10n_util::GetString(IDS_PRODUCT_NAME));
-
-  size_t link_begin = subtext.find(kBeginLink);
-  DCHECK(link_begin != std::wstring::npos);
-  size_t link_end = subtext.find(kEndLink);
-  DCHECK(link_end != std::wstring::npos);
-
-  subtext_label_1_ = new Label(subtext.substr(0, link_begin));
-  options_link_ = new views::Link(subtext.substr(link_begin +
-      wcslen(kBeginLink), link_end - link_begin - wcslen(kBeginLink)));
-  AddChildView(options_link_);
-  options_link_->SetController(this);
-  subtext_label_2_ = new Label(subtext.substr(link_end + wcslen(kEndLink)));
-
-  // This label is never actually shown -- it's just used to place the subtext
-  // strings correctly in the view.
-  std::wstring dummy_label = subtext.substr(wcslen(kBeginLink) +
-                                            wcslen(kEndLink) + 4);
-  dummy_subtext_label_ = new Label(dummy_label);
-  dummy_subtext_label_->SetMultiLine(true);
-  dummy_subtext_label_->SizeToFit(label_width);
 }
 
 void FirstRunSearchEngineView::Layout() {
   // Disable the close button.
   GetWindow()->EnableClose(false);
 
+  gfx::Size pref_size = background_image_->GetPreferredSize();
+  background_image_->SetBounds(0, 0, GetPreferredSize().width(),
+                               pref_size.height());
+
   // General vertical spacing between elements:
   const int kVertSpacing = 8;
-  // Vertical spacing between the logo + button section and the separators:
-  const int kUpperLogoMargin = 40;
-  const int kLowerLogoMargin = 65;
   // Percentage of vertical space around logos to use for upper padding.
-  const double kUpperPaddingPercentLarge = 0.1;
-  const double kUpperPaddingPercentSmall = 0.3;
+  const double kUpperPaddingPercent = 0.4;
 
   int num_choices = search_engine_choices_.size();
-
-  // Title and text above top separator.
   int label_width = GetPreferredSize().width() - 2 * kPanelHorizMargin;
   int label_height = GetPreferredSize().height() - 2 * kPanelVertMargin;
 
-  title_label_->SetBounds(kPanelHorizMargin, kPanelVertMargin,
+  // Set title.
+  title_label_->SetBounds(kPanelHorizMargin,
+      pref_size.height() / 2 - title_label_->GetPreferredSize().height() / 2,
       label_width, title_label_->GetPreferredSize().height());
 
-  int next_v_space = title_label_->y() +
-                     title_label_->height() + kVertSpacing;
+  int next_v_space = background_image_->height() + kVertSpacing * 2;
 
+  // Set text describing search engine hooked into omnibox.
   text_label_->SetBounds(kPanelHorizMargin, next_v_space,
                          label_width,
                          text_label_->GetPreferredSize().height());
   next_v_space = text_label_->y() +
                  text_label_->height() + kVertSpacing;
 
-  separator_1_->SetBounds(kPanelHorizMargin, next_v_space, label_width,
-                          separator_1_->GetPreferredSize().height());
-
-  // Set the logos and buttons between the upper and lower separators:
+  // Logos and buttons
   if (num_choices > 0) {
+    // All search engine logos are sized the same, so the size of the first is
+    // generally valid as the size of all.
     int logo_width = search_engine_choices_[0]->GetChoiceViewWidth();
     int logo_height = search_engine_choices_[0]->GetChoiceViewHeight();
     int button_width = search_engine_choices_[0]->GetPreferredSize().width();
     int button_height = search_engine_choices_[0]->GetPreferredSize().height();
-    int lower_section_height = dummy_subtext_label_->height() + kVertSpacing +
-                               separator_2_->GetPreferredSize().height();
-    int logo_section_height = logo_height + kVertSpacing + button_height;
-    int lower_section_start = label_height + kPanelVertMargin -
-                              lower_section_height;
-    double upper_padding_percent = (num_choices > 3) ?
-        kUpperPaddingPercentSmall : kUpperPaddingPercentLarge;
-    int upper_logo_margin =
-        static_cast<int>((lower_section_start - separator_1_->y() -
-                          separator_1_->height() - logo_section_height) *
-                        upper_padding_percent);
 
-    next_v_space = separator_1_->y() + separator_1_->height() +
+    int logo_section_height = logo_height + kVertSpacing + button_height;
+    // Upper logo margin gives the amount of whitespace between the text label
+    // and the logo field.  The total amount of whitespace available is equal
+    // to the height of the whole label subtracting the heights of the logo
+    // section itself, the top image, the text label, and vertical spacing
+    // between those elements.
+    int upper_logo_margin =
+        static_cast<int>((label_height - logo_section_height -
+            background_image_->height() - text_label_->height()
+            - kVertSpacing + kPanelVertMargin) * kUpperPaddingPercent);
+
+    next_v_space = text_label_->y() + text_label_->height() +
                    upper_logo_margin;
 
     // The search engine logos (which all have equal size):
@@ -451,44 +409,9 @@ void FirstRunSearchEngineView::Layout() {
       search_engine_choices_[3]->SetBounds(next_h_space, next_v_space,
                                            button_width, button_height);
     }
-
-    // Lower separator and text beneath it.
-    next_v_space = lower_section_start;
   }  // if (search_engine_choices.size() > 0)
-
-  separator_2_->SetBounds(kPanelHorizMargin, next_v_space, label_width,
-                          separator_2_->GetPreferredSize().height());
-
-  next_v_space = separator_2_->y() + separator_2_->height() + kVertSpacing;
-
-  // This label is used by view_text_utils::DrawTextAndPositionUrl in order
-  // to figure out mirrored x positions for RTL languages.  It only needs to
-  // provide the correct origin and width; height is not used.
-  dummy_subtext_label_->SetBounds(kPanelHorizMargin, next_v_space,
-                                 label_width, dummy_subtext_label_->height());
-}
-
-void FirstRunSearchEngineView::Paint(gfx::Canvas* canvas) {
-  views::View::Paint(canvas);
-
-  gfx::Rect link_rect;
-  gfx::Size position;
-  gfx::Font font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-  const gfx::Rect label_bounds = dummy_subtext_label_->bounds();
-
-  view_text_utils::DrawTextAndPositionUrl(canvas, dummy_subtext_label_,
-      subtext_label_1_->GetText(), options_link_, &link_rect, &position,
-      text_direction_is_rtl_, label_bounds, font);
-  view_text_utils::DrawTextAndPositionUrl(canvas, dummy_subtext_label_,
-      subtext_label_2_->GetText(), NULL, NULL, &position,
-      text_direction_is_rtl_, label_bounds, font);
-
-  options_link_->SetBounds(link_rect.x(), link_rect.y(), link_rect.width(),
-                           link_rect.height());
 }
 
 std::wstring FirstRunSearchEngineView::GetWindowTitle() const {
   return l10n_util::GetString(IDS_FIRSTRUN_DLG_TITLE);
 }
-
