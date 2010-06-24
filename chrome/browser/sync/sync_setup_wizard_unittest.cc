@@ -49,6 +49,13 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     password_ = password;
     captcha_ = captcha;
   }
+
+  virtual void OnUserChoseDatatypes(bool sync_everything,
+      const syncable::ModelTypeSet& chosen_types) {
+    user_chose_data_types_ = true;
+    chosen_data_types_ = chosen_types;
+  }
+
   virtual void OnUserAcceptedMergeAndSync() {
     user_accepted_merge_and_sync_ = true;
   }
@@ -72,6 +79,9 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     captcha_.clear();
     user_accepted_merge_and_sync_ = false;
     user_cancelled_dialog_ = false;
+    user_chose_data_types_ = false;
+    keep_everything_synced_ = false;
+    chosen_data_types_.clear();
   }
 
   std::string username_;
@@ -79,6 +89,9 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   std::string captcha_;
   bool user_accepted_merge_and_sync_;
   bool user_cancelled_dialog_;
+  bool user_chose_data_types_;
+  bool keep_everything_synced_;
+  syncable::ModelTypeSet chosen_data_types_;
 
  private:
   chrome_common_net::FakeNetworkChangeNotifierThread
@@ -249,7 +262,10 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   dialog_args.Clear();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(4U, dialog_args.size());
+  EXPECT_EQ(5U, dialog_args.size());
+  std::string iframe_to_show;
+  dialog_args.GetString(L"iframeToShow", &iframe_to_show);
+  EXPECT_EQ("login", iframe_to_show);
   std::string actual_user;
   dialog_args.GetString(L"user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
@@ -264,7 +280,9 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   service_->set_auth_state(kTestUser, captcha_error);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(4U, dialog_args.size());
+  EXPECT_EQ(5U, dialog_args.size());
+  dialog_args.GetString(L"iframeToShow", &iframe_to_show);
+  EXPECT_EQ("login", iframe_to_show);
   std::string captcha_url;
   dialog_args.GetString(L"captchaUrl", &captcha_url);
   EXPECT_EQ(kTestCaptchaUrl, GURL(captcha_url).spec());
@@ -277,13 +295,46 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS,
+  // In a non-discrete run, GAIA_SUCCESS immediately transitions you to
+  // CHOOSE_DATA_TYPES.
+  EXPECT_EQ(SyncSetupWizard::CHOOSE_DATA_TYPES,
             test_window_->flow()->current_state_);
 
+  // That's all we're testing here, just move on to DONE.  We'll test the
+  // "choose data types" scenarios elsewhere.
   wizard_->Step(SyncSetupWizard::DONE);  // No merge and sync.
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->current_state_);
+}
+
+TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
+  SKIP_TEST_ON_MACOSX();
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_->Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
+
+  ListValue data_type_choices_value;
+  std::string data_type_choices = "{\"keepEverythingSynced\":false,";
+  data_type_choices += "\"syncBookmarks\":true,\"syncPreferences\":true,";
+  data_type_choices += "\"syncThemes\":false,\"syncPasswords\":false,";
+  data_type_choices += "\"syncAutofill\":false,\"syncExtensions\":false,";
+  data_type_choices += "\"syncTypedUrls\":true}";
+  data_type_choices_value.Append(new StringValue(data_type_choices));
+
+  // Simulate the user choosing data types; bookmarks and prefs are on, the rest
+  // are off.
+  test_window_->flow()->flow_handler_->HandleChooseDataTypes(
+      &data_type_choices_value);
+  EXPECT_TRUE(wizard_->IsVisible());
+  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+  EXPECT_FALSE(service_->keep_everything_synced_);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::BOOKMARKS), 1U);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::PREFERENCES), 1U);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::THEMES), 0U);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::PASSWORDS), 0U);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::AUTOFILL), 0U);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::EXTENSIONS), 0U);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::TYPED_URLS), 1U);
 }
 
 TEST_F(SyncSetupWizardTest, DialogCancelled) {
@@ -378,7 +429,10 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(4U, dialog_args.size());
+  EXPECT_EQ(5U, dialog_args.size());
+  std::string iframe_to_show;
+  dialog_args.GetString(L"iframeToShow", &iframe_to_show);
+  EXPECT_EQ("login", iframe_to_show);
   std::string actual_user;
   dialog_args.GetString(L"user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
