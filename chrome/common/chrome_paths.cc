@@ -158,11 +158,6 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("shared"));
       break;
-    case chrome::DIR_BOOKMARK_MANAGER:
-      if (!PathService::Get(chrome::DIR_RESOURCES, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("bookmark_manager"));
-      break;
     case chrome::DIR_INSPECTOR:
       if (!PathService::Get(chrome::DIR_RESOURCES, &cur))
         return false;

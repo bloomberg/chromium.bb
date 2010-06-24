@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -91,10 +92,16 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
   }
 
   FilePath resources_path;
-  if (PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_path) &&
-      directory_path.DirName() == resources_path.RemoveExtension()) {
+  if (PathService::Get(chrome::DIR_RESOURCES, &resources_path) &&
+      directory_path.DirName() == resources_path) {
     FilePath relative_path = directory_path.BaseName().Append(
         extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
+#if defined(OS_WIN)
+    // TODO(tc): This is a hack, we should normalize paths another way.
+    FilePath::StringType path = relative_path.value();
+    std::replace(path.begin(), path.end(), '\\', '/');
+    relative_path = FilePath(path);
+#endif
 
     // TODO(tc): Make a map of FilePath -> resource ids so we don't have to
     // covert to FilePaths all the time.  This will be more useful as we add
