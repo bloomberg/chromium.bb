@@ -139,11 +139,11 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // Grab the real estate.
   UpdateIndicator(kSpacer, L"" /* no tooltip */);
 
-  // Draw the default indicator "EN". The default indicator "EN" is used when
+  // Draw the default indicator "US". The default indicator "US" is used when
   // |pref_service| is not available (for example, unit tests) or |pref_service|
   // is available, but Chrome preferences are not available (for example,
   // initial OS boot).
-  UpdateIndicator(L"EN", L"");
+  UpdateIndicator(L"US", L"");
 
   // Use the same keyboard layout on all windows.
   CrosLibrary::Get()->GetKeyboardLibrary()->SetKeyboardLayoutPerWindow(false);
@@ -549,7 +549,7 @@ bool LanguageMenuButton::IndexPointsToConfigureImeMenuItem(int index) const {
 std::wstring LanguageMenuButton::GetTextForIndicator(
     const InputMethodDescriptor& input_method) {
   // For the status area, we use two-letter, upper-case language code like
-  // "EN" and "JA".
+  // "US" and "JP".
   std::wstring text;
 
   // Check special cases first.
@@ -559,6 +559,16 @@ std::wstring LanguageMenuButton::GetTextForIndicator(
       break;
     }
   }
+
+  // Display the keyboard layout name when using ibus-xkb.
+  if (text.empty()) {
+    const size_t kMaxKeyboardLayoutNameLen = 2;
+    const std::wstring keyboard_layout = UTF8ToWide(
+        input_method::GetKeyboardLayoutName(input_method.id));
+    text = StringToUpperASCII(keyboard_layout).substr(
+        0, kMaxKeyboardLayoutNameLen);
+  }
+
   // TODO(yusukes): Some languages have two or more input methods. For example,
   // Thai has 3, Traditional Chinese has many. If these input methods could be
   // activated at the same time, we should do either of the following:

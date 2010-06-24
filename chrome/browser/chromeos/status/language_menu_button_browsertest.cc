@@ -38,10 +38,10 @@ IN_PROC_BROWSER_TEST_F(LanguageMenuButtonTest, InitialIndicatorTest) {
   LanguageMenuButton* language = GetLanguageMenuButton();
   ASSERT_TRUE(language != NULL);
 
-  // Since the default input method is "xkb:us::eng", "EN" should be set for the
+  // Since the default input method is "xkb:us::eng", "US" should be set for the
   // indicator.
   std::wstring indicator = language->text();
-  EXPECT_EQ(L"EN", indicator);
+  EXPECT_EQ(L"US", indicator);
 }
 
 }  // namespace chromeos

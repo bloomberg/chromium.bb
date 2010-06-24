@@ -63,12 +63,15 @@ std::string GetLanguageCodeFromDescriptor(
     const InputMethodDescriptor& descriptor);
 
 // Gets the keyboard layout name from the given input method ID.
-// If the ID is invalid, the default layout name will be returned.
+// If the ID is invalid, an empty string will be returned.
+// This function only supports xkb layouts.
 //
 // Examples:
 //
 // "xkb:us::eng"       => "us"
-// "xkb:us:dvorak:eng" => "us(dvorak)"
+// "xkb:us:dvorak:eng" => "us"
+// "xkb:gb::eng"       => "gb"
+// "pinyin"            => ""
 std::string GetKeyboardLayoutName(const std::string& input_method_id);
 
 // Rewrites the language name and returns the modified version if

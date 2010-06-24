@@ -13,6 +13,7 @@
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -454,6 +455,16 @@ std::string GetLanguageCodeFromInputMethodId(
       // Returning |kDefaultLanguageCode| here is not for Chrome OS but for
       // Ubuntu where the ibus-xkb-layouts engine could be missing.
       kDefaultLanguageCode : iter->second;
+}
+
+std::string GetKeyboardLayoutName(const std::string& input_method_id) {
+  if (!StartsWithASCII(input_method_id, "xkb:", true)) {
+    return "";
+  }
+
+  std::vector<std::string> splitted_id;
+  SplitString(input_method_id, ':', &splitted_id);
+  return (splitted_id.size() > 1) ? splitted_id[1] : "";
 }
 
 std::string GetInputMethodDisplayNameFromId(
