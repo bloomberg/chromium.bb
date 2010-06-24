@@ -4,12 +4,11 @@
 
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 
-#if defined(DLOPEN_GNOME_KEYRING)
-#include <dlfcn.h>
-#endif
-
 #include <map>
 #include <string>
+
+#include <dbus/dbus-glib.h>
+#include <dlfcn.h>
 
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -18,6 +17,8 @@
 #include "chrome/browser/chrome_thread.h"
 
 using webkit_glue::PasswordForm;
+
+namespace {
 
 /* Many of the gnome_keyring_* functions use variable arguments, which makes
  * them difficult if not impossible to wrap in C. Therefore, we want the
@@ -33,53 +34,43 @@ using webkit_glue::PasswordForm;
 
 #if defined(DLOPEN_GNOME_KEYRING)
 
-namespace {
+// Call a given parameter with the name of each func we use from
+// gnome keyring.
+#define GNOME_KEYRING_FOR_EACH_FUNC(F)          \
+  F(is_available)                               \
+  F(store_password_sync)                        \
+  F(delete_password_sync)                       \
+  F(find_itemsv_sync)                           \
+  F(result_to_message)                          \
+  F(found_list_free)                            \
+  F(list_item_ids_sync)                         \
+  F(item_get_attributes_sync)                   \
+  F(attribute_list_free)                        \
+  F(item_get_info_sync)                         \
+  F(item_info_get_secret)                       \
+  F(item_info_free)
 
-gboolean (*wrap_gnome_keyring_is_available)();
-GnomeKeyringResult (*wrap_gnome_keyring_store_password_sync)(  // NOLINT
-    const GnomeKeyringPasswordSchema* schema, const gchar* keyring,
-    const gchar* display_name, const gchar* password, ...);
-GnomeKeyringResult (*wrap_gnome_keyring_delete_password_sync)(  // NOLINT
-    const GnomeKeyringPasswordSchema* schema, ...);
-GnomeKeyringResult (*wrap_gnome_keyring_find_itemsv_sync)(  // NOLINT
-    GnomeKeyringItemType type, GList** found, ...);
-const gchar* (*wrap_gnome_keyring_result_to_message)(GnomeKeyringResult res);
-void (*wrap_gnome_keyring_found_list_free)(GList* found_list);
+#define GNOME_KEYRING_DECLARE_TYPE(name) \
+  typeof(&gnome_keyring_##name) wrap_gnome_keyring_##name;
+GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DECLARE_TYPE)
+#undef GNOME_KEYRING_DECLARE_TYPE
 
-/* Cause the compiler to complain if the types of the above function pointers
- * do not correspond to the types of the actual gnome_keyring_* functions. */
-#define GNOME_KEYRING_VERIFY_TYPE(name) \
-    typeof(&gnome_keyring_##name) name = wrap_gnome_keyring_##name; name = name
-
-inline void VerifyGnomeKeyringTypes() {
-  GNOME_KEYRING_VERIFY_TYPE(is_available);
-  GNOME_KEYRING_VERIFY_TYPE(store_password_sync);
-  GNOME_KEYRING_VERIFY_TYPE(delete_password_sync);
-  GNOME_KEYRING_VERIFY_TYPE(find_itemsv_sync);
-  GNOME_KEYRING_VERIFY_TYPE(result_to_message);
-  GNOME_KEYRING_VERIFY_TYPE(found_list_free);
-}
-#undef GNOME_KEYRING_VERIFY_TYPE
-
-/* Make it easy to initialize the function pointers above with a loop below. */
+// Make it easy to initialize the function pointers above with a loop below.
 #define GNOME_KEYRING_FUNCTION(name) \
-    {#name, reinterpret_cast<void**>(&wrap_##name)}
+  {"gnome_keyring_"#name, reinterpret_cast<void**>(&wrap_gnome_keyring_##name)},
 const struct {
   const char* name;
   void** pointer;
 } gnome_keyring_functions[] = {
-    GNOME_KEYRING_FUNCTION(gnome_keyring_is_available),
-    GNOME_KEYRING_FUNCTION(gnome_keyring_store_password_sync),
-    GNOME_KEYRING_FUNCTION(gnome_keyring_delete_password_sync),
-    GNOME_KEYRING_FUNCTION(gnome_keyring_find_itemsv_sync),
-    GNOME_KEYRING_FUNCTION(gnome_keyring_result_to_message),
-    GNOME_KEYRING_FUNCTION(gnome_keyring_found_list_free),
-    {NULL, NULL}
+  GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_FUNCTION)
+  {NULL, NULL}
 };
 #undef GNOME_KEYRING_FUNCTION
 
-/* Allow application code below to use the normal function names, but actually
- * end up using the function pointers above instead. */
+#undef GNOME_KEYRING_FOR_EACH_FUNC
+
+// Allow application code below to use the normal function names, but actually
+// end up using the function pointers above instead.
 #define gnome_keyring_is_available \
     wrap_gnome_keyring_is_available
 #define gnome_keyring_store_password_sync \
@@ -92,20 +83,18 @@ const struct {
     wrap_gnome_keyring_result_to_message
 #define gnome_keyring_found_list_free \
     wrap_gnome_keyring_found_list_free
-
-// Older versions of GNOME Keyring have bugs that prevent them from working
-// correctly with this code. (In particular, the non-pageable memory allocator
-// is rather busted.) There is no official way to check the version, but newer
-// versions provide several symbols that older versions did not. It would be
-// best if we could check for a new official API, but the only new symbols are
-// "private" symbols. Still, it is probable that they will not change, and it's
-// the best we can do for now. (And eventually we won't care about the older
-// versions anyway so we can remove this version check some day.)
-bool GnomeKeyringVersionOK(void* handle) {
-  dlerror();
-  dlsym(handle, "gnome_keyring_socket_connect_daemon");
-  return !dlerror();
-}
+#define gnome_keyring_list_item_ids_sync \
+    wrap_gnome_keyring_list_item_ids_sync
+#define gnome_keyring_item_get_attributes_sync \
+  wrap_gnome_keyring_item_get_attributes_sync
+#define gnome_keyring_attribute_list_free \
+  wrap_gnome_keyring_attribute_list_free
+#define gnome_keyring_item_get_info_sync \
+  wrap_gnome_keyring_item_get_info_sync
+#define gnome_keyring_item_info_get_secret \
+  wrap_gnome_keyring_item_info_get_secret
+#define gnome_keyring_item_info_free \
+  wrap_gnome_keyring_item_info_free
 
 /* Load the library and initialize the function pointers. */
 bool LoadGnomeKeyring() {
@@ -115,13 +104,6 @@ bool LoadGnomeKeyring() {
     // either the user asked for this, or we autodetected it incorrectly. (Or
     // the system has broken libraries, which is also good to warn about.)
     LOG(WARNING) << "Could not load libgnome-keyring.so.0: " << dlerror();
-    return false;
-  }
-  if (!GnomeKeyringVersionOK(handle)) {
-    // GNOME Keyring is too old. Only info, not a warning, as this can happen
-    // on older systems without the user actually asking for it explicitly.
-    LOG(INFO) << "libgnome-keyring.so.0 is too old!";
-    dlclose(handle);
     return false;
   }
   for (size_t i = 0; gnome_keyring_functions[i].name; ++i) {
@@ -140,23 +122,72 @@ bool LoadGnomeKeyring() {
   return true;
 }
 
-}  // namespace
+// Older versions of GNOME Keyring have bugs that prevent them from
+// working correctly with the find_itemsv API. (In particular, the
+// non-pageable memory allocator is rather busted.) There is no
+// official way to check the version, nor could we figure out any
+// reasonable unofficial way to do it.  So we work around it by using
+// a much slower API.
+#define GNOME_KEYRING_WORKAROUND_MEMORY_CORRUPTION
 
 #else  // !defined(DLOPEN_GNOME_KEYRING)
 
-namespace {
-
 bool LoadGnomeKeyring() {
-  // We don't do the hacky version check here. When linking directly, we assume
-  // that whoever is compiling this code has checked that the version is OK.
+  // We don't need to do anything here. When linking directly, we
+  // assume that whoever is compiling this code has checked that the
+  // version is OK.
   return true;
 }
-
-}  // namespace
 
 #endif  // !defined(DLOPEN_GNOME_KEYRING)
 
 #define GNOME_KEYRING_APPLICATION_CHROME "chrome"
+
+// Convert the attributes of a given keyring entry into a new
+// PasswordForm.  Note: does *not* get the actual password, as that is
+// not a key attribute!  Returns NULL if the attributes are for the
+// wrong application.
+PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
+  // Read the string and int attributes into the appropriate map.
+  std::map<std::string, std::string> string_attr_map;
+  std::map<std::string, uint32_t> uint_attr_map;
+  for (guint i = 0; i < attrs->len; ++i) {
+    GnomeKeyringAttribute attr = gnome_keyring_attribute_list_index(attrs, i);
+    if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
+      if (std::string(attr.name) == "application" &&
+          std::string(attr.value.string) != GNOME_KEYRING_APPLICATION_CHROME) {
+        // This is not a password we care about.
+        return NULL;
+      }
+      string_attr_map[attr.name] = attr.value.string;
+    } else if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
+      uint_attr_map[attr.name] = attr.value.integer;
+    }
+  }
+
+  PasswordForm* form = new PasswordForm();
+  form->origin = GURL(string_attr_map["origin_url"]);
+  form->action = GURL(string_attr_map["action_url"]);
+  form->username_element = UTF8ToUTF16(string_attr_map["username_element"]);
+  form->username_value = UTF8ToUTF16(string_attr_map["username_value"]);
+  form->password_element = UTF8ToUTF16(string_attr_map["password_element"]);
+  form->submit_element = UTF8ToUTF16(string_attr_map["submit_element"]);
+  form->signon_realm = string_attr_map["signon_realm"];
+  form->ssl_valid = uint_attr_map["ssl_valid"];
+  form->preferred = uint_attr_map["preferred"];
+  int64 date_created = 0;
+  bool date_ok = StringToInt64(string_attr_map["date_created"],
+                               &date_created);
+  DCHECK(date_ok);
+  DCHECK_NE(date_created, 0);
+  form->date_created = base::Time::FromTimeT(date_created);
+  form->blacklisted_by_user = uint_attr_map["blacklisted_by_user"];
+  form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
+
+  return form;
+}
+
+}  // namespace
 
 // Schema is analagous to the fields in PasswordForm.
 const GnomeKeyringPasswordSchema NativeBackendGnome::kGnomeSchema = {
@@ -374,8 +405,11 @@ bool NativeBackendGnome::GetBlacklistLogins(PasswordFormList* forms) {
 bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
                                        bool autofillable) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  GList* found = NULL;
+
   uint32_t blacklisted_by_user = !autofillable;
+
+#if !defined(GNOME_KEYRING_WORKAROUND_MEMORY_CORRUPTION)
+  GList* found = NULL;
   // Search gnome keyring for matching passwords.
   GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
       GNOME_KEYRING_ITEM_GENERIC_SECRET,
@@ -394,12 +428,33 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
   }
   ConvertFormList(found, forms);
   return true;
+#else
+  PasswordFormList all_forms;
+  if (!GetAllLogins(&all_forms))
+    return false;
+  // Now manually filter the result for the values we care about.
+  for (size_t i = 0; i < all_forms.size(); ++i) {
+    if (all_forms[i]->blacklisted_by_user == blacklisted_by_user)
+      forms->push_back(all_forms[i]);
+    else
+      delete all_forms[i];
+  }
+  return true;
+#endif
 }
 
 bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
+  // Older versions of GNOME Keyring have bugs that prevent them from
+  // working correctly with the find_itemsv API. (In particular, the
+  // non-pageable memory allocator is rather busted.) There is no
+  // official way to check the version, nor could we figure out any
+  // reasonable unofficial way to do it.  So we work around it by
+  // using a much slower API.
+
+#if !defined(GNOME_KEYRING_WORKAROUND_MEMORY_CORRUPTION)
   GList* found = NULL;
-  // We need to search for something, otherwise we get no results - so we search
-  // for the fixed application string.
+  // We need to search for something, otherwise we get no results - so
+  // we search for the fixed application string.
   GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
       GNOME_KEYRING_ITEM_GENERIC_SECRET,
       &found,
@@ -415,6 +470,47 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
   }
   ConvertFormList(found, forms);
   return true;
+#else
+  GList* ids = NULL;
+  GnomeKeyringResult result = gnome_keyring_list_item_ids_sync(NULL, &ids);
+  if (result != GNOME_KEYRING_RESULT_OK) {
+    LOG(ERROR) << "Keyring itemid list failed: "
+               << gnome_keyring_result_to_message(result);
+    return false;
+  }
+
+  for (GList* i = ids; i; i = i->next) {
+    int id = GPOINTER_TO_INT(i->data);
+    GnomeKeyringAttributeList* attrs = NULL;
+    result = gnome_keyring_item_get_attributes_sync(NULL, id, &attrs);
+    if (result != GNOME_KEYRING_RESULT_OK) {
+      LOG(ERROR) << "Keyring get item attributes failed:"
+                 << gnome_keyring_result_to_message(result);
+      gnome_keyring_attribute_list_free(attrs);
+      break;
+    }
+
+    PasswordForm* form = FormFromAttributes(attrs);
+    gnome_keyring_attribute_list_free(attrs);
+
+    if (form) {
+      GnomeKeyringItemInfo* info = NULL;
+      result = gnome_keyring_item_get_info_sync(NULL, id, &info);
+      if (result != GNOME_KEYRING_RESULT_OK) {
+        delete form;
+        break;
+      }
+      form->password_value = UTF8ToUTF16(
+          gnome_keyring_item_info_get_secret(info));
+
+      gnome_keyring_item_info_free(info);
+      forms->push_back(form);
+    }
+  }
+  g_list_free(ids);
+
+  return result == GNOME_KEYRING_RESULT_OK;
+#endif
 }
 
 void NativeBackendGnome::ConvertFormList(GList* found,
@@ -422,40 +518,10 @@ void NativeBackendGnome::ConvertFormList(GList* found,
   GList* element = g_list_first(found);
   while (element != NULL) {
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
-
     GnomeKeyringAttributeList* attrs = data->attributes;
-    // Read the string and int attributes into the appropriate map.
-    std::map<std::string, std::string> string_attr_map;
-    std::map<std::string, uint32_t> uint_attr_map;
-    for (guint i = 0; i < attrs->len; ++i) {
-      GnomeKeyringAttribute attr = gnome_keyring_attribute_list_index(attrs, i);
-      if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
-        string_attr_map[attr.name] = attr.value.string;
-      } else if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
-        uint_attr_map[attr.name] = attr.value.integer;
-      }
-    }
 
-    PasswordForm* form = new PasswordForm();
-    form->origin = GURL(string_attr_map["origin_url"]);
-    form->action = GURL(string_attr_map["action_url"]);
-    form->username_element = UTF8ToUTF16(string_attr_map["username_element"]);
-    form->username_value = UTF8ToUTF16(string_attr_map["username_value"]);
-    form->password_element = UTF8ToUTF16(string_attr_map["password_element"]);
+    PasswordForm* form = FormFromAttributes(attrs);
     form->password_value = UTF8ToUTF16(data->secret);
-    form->submit_element = UTF8ToUTF16(string_attr_map["submit_element"]);
-    form->signon_realm = string_attr_map["signon_realm"];
-    form->ssl_valid = uint_attr_map["ssl_valid"];
-    form->preferred = uint_attr_map["preferred"];
-    int64 date_created = 0;
-    bool date_ok = StringToInt64(string_attr_map["date_created"],
-                                 &date_created);
-    DCHECK(date_ok);
-    DCHECK_NE(date_created, 0);
-    form->date_created = base::Time::FromTimeT(date_created);
-    form->blacklisted_by_user = uint_attr_map["blacklisted_by_user"];
-    form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
-
     forms->push_back(form);
 
     element = g_list_next(element);
