@@ -37,6 +37,7 @@ class ExtensionUtilTest : public testing::Test {
 
 void MakePossiblySyncableExtension(bool is_theme,
                                    const GURL& launch_url,
+                                   bool converted_from_user_script,
                                    Extension::Location location,
                                    Extension* extension) {
   DictionaryValue source;
@@ -50,6 +51,10 @@ void MakePossiblySyncableExtension(bool is_theme,
     source.SetString(extension_manifest_keys::kLaunchWebURL,
                      launch_url.spec());
   }
+  if (!is_theme) {
+    source.SetBoolean(extension_manifest_keys::kConvertedFromUserScript,
+                      converted_from_user_script);
+  }
   std::string error;
   EXPECT_TRUE(extension->InitFromValue(source, false, &error));
   EXPECT_EQ("", error);
@@ -60,15 +65,22 @@ TEST_F(ExtensionUtilTest, IsSyncableExtension) {
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), Extension::INTERNAL,
-                                  &extension);
+    MakePossiblySyncableExtension(false, GURL(), false,
+                                  Extension::INTERNAL, &extension);
     EXPECT_TRUE(IsExtensionSyncable(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(true, GURL(), Extension::INTERNAL,
-                                  &extension);
+    MakePossiblySyncableExtension(true, GURL(), false,
+                                  Extension::INTERNAL, &extension);
+    EXPECT_FALSE(IsExtensionSyncable(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakePossiblySyncableExtension(false, GURL(), true,
+                                  Extension::INTERNAL, &extension);
     EXPECT_FALSE(IsExtensionSyncable(extension));
   }
   // TODO(akalin): Test with a non-empty launch_url once apps are
@@ -76,8 +88,8 @@ TEST_F(ExtensionUtilTest, IsSyncableExtension) {
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), Extension::EXTERNAL_PREF,
-                                  &extension);
+    MakePossiblySyncableExtension(false, GURL(), false,
+                                  Extension::EXTERNAL_PREF, &extension);
     EXPECT_FALSE(IsExtensionSyncable(extension));
   }
 }

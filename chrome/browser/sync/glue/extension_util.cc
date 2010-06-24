@@ -22,10 +22,13 @@ bool IsExtensionSyncable(const Extension& extension) {
   }
 
   // TODO(akalin): Add Extensions::is_app().
-  // TODO(akalin): Figure out if we want to treat extensions and apps
-  // identically after all.
   if (!extension.GetFullLaunchURL().is_empty()) {
     // We have an app.
+    return false;
+  }
+
+  if (extension.converted_from_user_script()) {
+    // User scripts currently don't have auto-update URLs.
     return false;
   }
 
