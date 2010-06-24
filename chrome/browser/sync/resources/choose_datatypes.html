@@ -1,0 +1,225 @@
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<style type="text/css">
+body,td,div,p,a,font,span {
+   font-family: arial,sans-serif;
+ }
+body {
+   background-color:#ffffff;
+   margin:10px;
+ }
+.gaia.le.button {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: smaller;
+}
+.endaligned {
+  align: right;
+  text-align: right;
+}
+html[dir='rtl'] .endaligned {
+  align: left;
+  text-align: left;
+}
+table {
+  padding: 10px;
+}
+.sync-choose_data_types_header {
+  font-size: large;
+  font-weight: bold;
+  padding: 0 0 5px;
+}
+.sync-choose_data_types_instructions {
+  padding: 0 0 20px;
+}
+.sync-choice_radio {
+  padding: 5px;
+}
+.data_type_checkboxes_table {
+  font-size: small;
+  padding: 15px 0 15px 20px;
+}
+.data_type_checkboxes_table td {
+  padding: 5px;
+}
+input[type='button'] {
+  min-width: 87px;
+  min-height: 26px;
+}
+input[type='submit'] {
+  min-width: 87px;
+  min-height: 26px;
+}
+</style>
+<script>
+
+  // Called once, when this html/js is loaded.
+  function initializeChooseDataTypesDialog() {
+    setInterval(advanceThrobber, 30);
+    var args = JSON.parse(chrome.dialogArguments);
+    setChooseDataTypesCheckboxes(args);
+  }
+
+  // Can be called multiple times.
+  function setChooseDataTypesCheckboxes(args) {
+    setStateThrobbing(false);
+
+    document.getElementById("keepEverythingSyncedRadio").checked =
+        args.keepEverythingSynced;
+    document.getElementById("chooseDataTypesRadio").checked =
+        !args.keepEverythingSynced;
+    setDataTypeCheckboxesEnabled(!args.keepEverythingSynced);
+
+    document.getElementById("bookmarksCheckbox").checked = args.syncBookmarks;
+    document.getElementById("preferencesCheckbox").checked =
+        args.syncPreferences;
+    document.getElementById("themesCheckbox").checked = args.syncThemes;
+
+    if (args.passwordsRegistered) {
+      document.getElementById("passwordsCheckbox").checked = args.syncPasswords;
+      document.getElementById("passwordsCheckbox").style.display = "inline";
+      document.getElementById("passwordsCheckboxLabel").style.display =
+          "inline";
+    } else {
+      document.getElementById("passwordsCheckbox").style.display = "none";
+      document.getElementById("passwordsCheckboxLabel").style.display = "none";
+    }
+    if (args.autofillRegistered) {
+      document.getElementById("autofillCheckbox").checked = args.syncAutofill;
+      document.getElementById("autofillCheckbox").style.display = "inline";
+      document.getElementById("autofillCheckboxLabel").style.display = "inline";
+    } else {
+      document.getElementById("autofillCheckbox").style.display = "none";
+      document.getElementById("autofillCheckboxLabel").style.display = "none";
+    }
+    if (args.extensionsRegistered) {
+      document.getElementById("extensionsCheckbox").checked =
+          args.syncExtensions;
+      document.getElementById("extensionsCheckbox").style.display = "inline";
+      document.getElementById("extensionsCheckboxLabel").style.display =
+          "inline";
+    } else {
+      document.getElementById("extensionsCheckbox").style.display = "none";
+      document.getElementById("extensionsCheckboxLabel").style.display = "none";
+    }
+  }
+
+  function setDataTypeCheckboxesEnabled(enabled) {
+    document.getElementById("bookmarksCheckbox").disabled = !enabled;
+    document.getElementById("preferencesCheckbox").disabled = !enabled;
+    document.getElementById("themesCheckbox").disabled = !enabled;
+    document.getElementById("passwordsCheckbox").disabled = !enabled;
+    document.getElementById("autofillCheckbox").disabled = !enabled;
+    document.getElementById("extensionsCheckbox").disabled = !enabled;
+  }
+
+  function advanceThrobber() {
+    var throbber = document.getElementById('throb');
+    throbber.style.backgroundPositionX =
+      ((parseInt(throbber.style.backgroundPositionX) - 16) % 576) + 'px';
+  }
+
+  function setStateThrobbing(isThrobbing) {
+    var throbberContainer = document.getElementById('throbber_container');
+    throbberContainer.style.visibility = isThrobbing ? "visible" : "hidden";
+
+    var okButton = document.getElementById('okButton');
+    okButton.disabled = isThrobbing;
+    okButton.value = isThrobbing ? templateData['settingup'] :
+        templateData['ok'];
+  }
+
+  function sendChooseDataTypesAndClose() {
+    setStateThrobbing(true);
+
+    var f = document.getElementById("chooseDataTypesForm");
+    var syncAll = f.keepEverythingSyncedRadio.checked;
+    // These values need to be kept in sync with where they are read in
+    // SyncSetupFlow::GetDataTypeChoiceData().
+    var result = JSON.stringify({
+        "keepEverythingSynced": syncAll,
+        "syncBookmarks": syncAll || f.bookmarksCheckbox.checked,
+        "syncPreferences": syncAll || f.preferencesCheckbox.checked,
+        "syncThemes": syncAll || f.themesCheckbox.checked,
+        "syncPasswords": syncAll || f.passwordsCheckbox.checked,
+        "syncAutofill": syncAll || f.autofillCheckbox.checked,
+        "syncExtensions": syncAll || f.extensionsCheckbox.checked
+    });
+    chrome.send("ChooseDataTypes", [result]);
+  }
+</script>
+<body  vlink=#666666
+       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
+       onload="initializeChooseDataTypesDialog();">
+<form id="chooseDataTypesForm">
+<table height="100%" width="100%" margin="0" cellpadding="0">
+  <tr valign="top">
+    <td colspan="3">
+      <div class="sync-choose_data_types_header"
+           i18n-content="choosedatatypesheader"></div>
+      <div class="sync-choose_data_types_instructions"
+           i18n-content="choosedatatypesinstructions"></div>
+      <div class="sync-choice_radio">
+        <input id="keepEverythingSyncedRadio" type="radio"
+               name="syncChooseDataTypes"
+               onclick="setDataTypeCheckboxesEnabled(false)"/>
+        <label for="keepEverythingSyncedRadio" i18n-content="keepeverythingsynced"></label>
+      </div>
+      <div class="sync-choice_radio">
+        <input id="chooseDataTypesRadio" type="radio"
+               name="syncChooseDataTypes"
+               onclick="setDataTypeCheckboxesEnabled(true)"/>
+        <label for="chooseDataTypesRadio" i18n-content="choosedatatypes"></label>
+      </div>
+      <table class="data_type_checkboxes_table" border="0" cellspacing="0" cellpadding="0" width="80%">
+        <tr>
+          <td>
+            <input id="bookmarksCheckbox" type="checkbox"/>
+            <label id="bookmarksCheckboxLabel" for="bookmarksCheckbox" i18n-content="bookmarks"></label>
+          </td>
+          <td>
+            <input id="passwordsCheckbox" type="checkbox"/>
+            <label id="passwordsCheckboxLabel" for="passwordsCheckbox" i18n-content="passwords"></label>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input id="preferencesCheckbox" type="checkbox"/>
+            <label id="preferencesCheckboxLabel" for="preferencesCheckbox" i18n-content="preferences"></label>
+          </td>
+          <td>
+            <input id="autofillCheckbox" type="checkbox"/>
+            <label id="autofillCheckboxLabel" for="autofillCheckbox" i18n-content="autofill"></label>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input id="themesCheckbox" type="checkbox"/>
+            <label id="themesCheckboxLabel" for="themesCheckbox" i18n-content="themes"></label>
+          </td>
+          <td>
+            <input id="extensionsCheckbox" type="checkbox"/>
+            <label id="extensionsCheckboxLabel" for="extensionsCheckbox" i18n-content="extensions"></label>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr valign="bottom">
+    <td width="100%" class="endaligned">
+      <span id="throbber_container" style="visibility:hidden">
+        <span id="throb" style="background-image:url(throbber.png);
+             width:16px; height:16px; background-position:0px; margin:-3px 10px;
+             display:inline-block">
+        </span>
+      </span>
+      <input id="okButton" type="button" i18n-values="value:ok"
+             onclick='sendChooseDataTypesAndClose()'/>
+      <input id="cancelButton" type="button" i18n-values="value:cancel"
+             onclick='chrome.send("DialogClose", [""])' />
+    </td>
+  </tr>
+</table>
+</form>
+</body>
+</html>

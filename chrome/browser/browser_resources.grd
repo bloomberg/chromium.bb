@@ -64,6 +64,7 @@ without changes to the corresponding grd file. sew -->
       <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_ABOUT_SYNC_HTML" file="sync\resources\about_sync.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SYNC_CHOOSE_DATATYPES_HTML" file="sync\resources\choose_datatypes.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_BLACKLIST_HTML" file="resources\privacy_blacklist_block.html" flattenhtml="true" type="BINDATA" />
