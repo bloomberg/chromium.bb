@@ -17,6 +17,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -174,7 +175,7 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
   TabContents* removed_contents = GetContentsAt(index);
   int next_selected_index =
       order_controller_->DetermineNewSelectedIndex(index, true);
-  delete contents_data_.at(index);
+  delete contents_data_[index];
   contents_data_.erase(contents_data_.begin() + index);
   next_selected_index = IndexOfNextNonPhantomTab(next_selected_index, -1);
   if (!HasNonPhantomTabs())
@@ -286,7 +287,7 @@ bool TabStripModel::TabsAreLoading() const {
 
 NavigationController* TabStripModel::GetOpenerOfTabContentsAt(int index) {
   DCHECK(ContainsIndex(index));
-  return contents_data_.at(index)->opener;
+  return contents_data_[index]->opener;
 }
 
 int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
@@ -378,14 +379,14 @@ void TabStripModel::ForgetAllOpeners() {
 void TabStripModel::ForgetGroup(TabContents* contents) {
   int index = GetIndexOfTabContents(contents);
   DCHECK(ContainsIndex(index));
-  contents_data_.at(index)->SetGroup(NULL);
-  contents_data_.at(index)->ForgetOpener();
+  contents_data_[index]->SetGroup(NULL);
+  contents_data_[index]->ForgetOpener();
 }
 
 bool TabStripModel::ShouldResetGroupOnSelect(TabContents* contents) const {
   int index = GetIndexOfTabContents(contents);
   DCHECK(ContainsIndex(index));
-  return contents_data_.at(index)->reset_group_on_select;
+  return contents_data_[index]->reset_group_on_select;
 }
 
 void TabStripModel::SetTabBlocked(int index, bool blocked) {
@@ -402,6 +403,14 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
   DCHECK(ContainsIndex(index));
   if (contents_data_[index]->pinned == pinned)
     return;
+
+  // Reroute toplevel requests to the browser if the tab is pinned. This allows
+  // us to rewrite the WindowOpenDisposition in certain cases.
+  TabContents* contents = contents_data_[index]->contents;
+  contents->GetMutableRendererPrefs()->browser_handles_top_level_requests =
+      pinned;
+  if (contents->render_view_host())
+    contents->render_view_host()->SyncRendererPrefs();
 
   if (IsAppTab(index)) {
     // Changing the pinned state of an app tab doesn't effect it's mini-tab
@@ -421,15 +430,13 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
     }
 
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabMiniStateChanged(contents_data_[index]->contents,
-                                          index));
+                      TabMiniStateChanged(contents, index));
   }
 
   // else: the tab was at the boundary and it's position doesn't need to
   // change.
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabPinnedStateChanged(contents_data_[index]->contents,
-                                          index));
+                    TabPinnedStateChanged(contents, index));
 }
 
 bool TabStripModel::IsTabPinned(int index) const {
@@ -518,7 +525,7 @@ void TabStripModel::AddTabContents(TabContents* contents,
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfTabContents(contents);
   if (inherit_group && transition == PageTransition::TYPED)
-    contents_data_.at(index)->reset_group_on_select = true;
+    contents_data_[index]->reset_group_on_select = true;
 
   // Ensure that the new TabContentsView begins at the same size as the
   // previous TabContentsView if it existed.  Otherwise, the initial WebKit
@@ -937,7 +944,7 @@ void TabStripModel::InternalCloseTab(TabContents* contents,
 TabContents* TabStripModel::GetContentsAt(int index) const {
   CHECK(ContainsIndex(index)) <<
       "Failed to find: " << index << " in: " << count() << " entries.";
-  return contents_data_.at(index)->contents;
+  return contents_data_[index]->contents;
 }
 
 void TabStripModel::ChangeSelectedContentsFrom(
@@ -962,7 +969,7 @@ void TabStripModel::ChangeSelectedContentsFrom(
 void TabStripModel::SetOpenerForContents(TabContents* contents,
                                     TabContents* opener) {
   int index = GetIndexOfTabContents(contents);
-  contents_data_.at(index)->opener = &opener->controller();
+  contents_data_[index]->opener = &opener->controller();
 }
 
 void TabStripModel::SelectRelativeTab(bool next) {
@@ -1050,7 +1057,7 @@ void TabStripModel::MakePhantom(int index) {
 
 void TabStripModel::MoveTabContentsAtImpl(int index, int to_position,
                                           bool select_after_move) {
-  TabContentsData* moved_data = contents_data_.at(index);
+  TabContentsData* moved_data = contents_data_[index];
   contents_data_.erase(contents_data_.begin() + index);
   contents_data_.insert(contents_data_.begin() + to_position, moved_data);
 
