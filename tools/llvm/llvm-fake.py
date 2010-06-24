@@ -191,6 +191,7 @@ global_config_flags = {
 
     # Our linker scripts ensure that the section layout follows the nacl abi
   'LD_ARM': [
+    '--native-client',
     '-nostdlib',
     '-T', LD_SCRIPT_ARM,
     '-static',
@@ -198,6 +199,7 @@ global_config_flags = {
 
 
   'LD_X8632': [
+    '--native-client',
     '-nostdlib',
     '-T', LD_SCRIPT_X8632,
 #    '-melf_nacl',
@@ -207,6 +209,7 @@ global_config_flags = {
 
 
   'LD_X8664': [
+    '--native-client',
     '-nostdlib',
     '-T', LD_SCRIPT_X8664,
     '-static',
@@ -242,15 +245,8 @@ AS_ARM = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-as'
 # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
 AS_X86 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
 
-LD_ARM = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ld'
+ELF_LD = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ld'
 
-# NOTE: hack, assuming presence of x86/32 toolchain expected
-# TODO(robertm): clean this up - we may not need separate linkers
-# NOTE(robertm): the nacl linker sometimes creates empty sections like .plt
-#                so we use the system linker for now
-#LD_X8632 = BASE + '/../linux_x86-32/sdk/nacl-sdk/bin/nacl-ld'
-LD_X8632 = '/usr/bin/ld'
-LD_X8664 = '/usr/bin/ld'
 # NOTE(adonovan): this should _not_ be the Gold linker, e.g. 2.18.*.
 # Beware, one of the Chrome installation scripts may have changed
 # /usr/bin/ld (which is evil).
@@ -316,33 +312,6 @@ def SfiCompile(argv, out_pos, mode):
   # we use llvm-gcc since it knows the correct mfpu and march to use
   Run([LLVM_GCC] + global_config_flags['LLVM_GCC_COMPILE']
       + [filename + '.s', '-c', '-o', filename])
-
-
-# See http://docs.python.org/library/struct.html for encoding
-# and <elf.h> for structure definitions.
-ELF32_EHDR = '16BHHI3II6H'  # struct encoding of Elf32_Ehdr
-ELF64_EHDR = '16BHHI3QI6H'  # struct encoding of Elf64_Ehdr
-ELF_OSABI_INDEX = 7         # field number of OSABI in e_ident
-ELF_ABIVERSION_INDEX = 8    # field number of ABIVERSION in e_ident
-ELF_E_FLAGS_INDEX = 22      # field number of e_flags
-OS_ABI = 123
-ABIVERSION = 7              # NOTE: Update this when abi changes
-
-
-def PatchAbiVersionIntoElfHeader(filename, format, alignment):
-  if alignment not in (16, 32):
-    LogFatal('Error: unsupported alignment: ' + alignment)
-
-  fp = open(filename, 'rb+')
-  elf_hdr = list(struct.unpack(format, fp.read(struct.calcsize(format))))
-
-  elf_hdr[ELF_OSABI_INDEX] = OS_ABI
-  elf_hdr[ELF_ABIVERSION_INDEX] = ABIVERSION
-  elf_hdr[ELF_E_FLAGS_INDEX] |= 0x10000 * alignment
-
-  fp.seek(0, 0)  # rewind
-  fp.write(struct.pack(format, *elf_hdr))
-  fp.close()
 
 def FindObjectFilePos(argv):
   """Return argv index if there is and object file is being generated
@@ -755,10 +724,9 @@ def Incarnation_bcldarm(argv):
                            global_config_flags['LLC_SFI_SANDBOXING'],
                            AS_ARM,
                            global_config_flags['AS_ARM'],
-                           LD_ARM,
+                           ELF_LD,
                            global_config_flags['LD_ARM'],
                            PNACL_ARM_ROOT)
-  PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=16)
 
 
 def Incarnation_bcldx8632(argv):
@@ -767,10 +735,9 @@ def Incarnation_bcldx8632(argv):
                            global_config_flags['LLC_SHARED_X8632'],
                            AS_X86,
                            global_config_flags['AS_X8632'],
-                           LD_X8632,
+                           ELF_LD,
                            global_config_flags['LD_X8632'],
                            PNACL_X8632_ROOT)
-  PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=32)
 
 
 def Incarnation_bcldx8664(argv):
@@ -779,10 +746,9 @@ def Incarnation_bcldx8664(argv):
                            global_config_flags['LLC_SHARED_X8664'],
                            AS_X86,
                            global_config_flags['AS_X8664'],
-                           LD_X8664,
+                           ELF_LD,
                            global_config_flags['LD_X8664'],
                            PNACL_X8664_ROOT)
-  PatchAbiVersionIntoElfHeader(output, ELF64_EHDR, alignment=32)
 
 
 def Incarnation_sfild(argv):
@@ -791,9 +757,7 @@ def Incarnation_sfild(argv):
   assert pos
   output = argv[pos]
   extra = []
-  Run([LD_ARM] +  MassageFinalLinkCommandArm(extra + argv[1:]))
-
-  PatchAbiVersionIntoElfHeader(output, ELF32_EHDR, alignment=16)
+  Run([ELF_LD] +  MassageFinalLinkCommandArm(extra + argv[1:]))
 
 ######################################################################
 # Dispatch based on name the scripts is invoked with

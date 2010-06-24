@@ -64,7 +64,7 @@ readonly BINUTILS_DEV=${BINUTILS_DEV:-}   # binutils
 readonly LLVM_REV=8f933e976274 # (on the arm-sfi branch)
 readonly LLVM_GCC_REV=1e60ad236357
 readonly NEWLIB_REV=5d64fed35b93
-readonly BINUTILS_REV=617edf5fdae0
+readonly BINUTILS_REV=80d1927e7089
 
 # These are simple compiler wrappers to force 32bit builds
 # They are unused now. Instead we make sure that the toolchains that we
