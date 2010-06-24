@@ -182,4 +182,5 @@ webcore::html5documentparser::write___webcore::document::write___webcore::docume
 messageloop::runtask___messageloop::deferorrunpendingtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
 # 47367
-WebCore::BMPImageReader::decodeBMP__WebCore::ICOImageDecoder::decodeAtIndex__WebCore::ICOImageDecoder::frameBufferAtIndex__WebCore::ImageSource::createFrameAtIndex__WebKit::WebImage::fromData
+PREFIX:
+webcore::bmpimagereader::decodebmp___webcore::icoimagedecoder::decodeatindex___webcore::icoimagedecoder::framebufferatindex___webcore::imagesource::createframeatindex___webkit::webimage::fromdata
