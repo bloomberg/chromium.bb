@@ -35,15 +35,6 @@
       # Currently this results inlink time symbol clashes
       '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/np_entry.cc',
       '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/npn_gate.cc',
-      # NPAPI specific code
-      'npapi/browser_impl_npapi.cc',
-      'npapi/multimedia_socket.cc',
-      'npapi/npapi_native.cc',
-      'npapi/npp_gate.cc',
-      'npapi/npp_launcher.cc',
-      'npapi/plugin_npapi.cc',
-      'npapi/ret_array.cc',
-      'npapi/scriptable_impl_npapi.cc',
       # generic URL-origin / same-domain handling
       'origin.cc',
       # Portable plugin code
@@ -62,6 +53,23 @@
       'srpc/srt_socket.cc',
       'srpc/stream_shm_buffer.cc',
       'srpc/utility.cc',
+    ],
+    'npapi_sources': [
+      # NPAPI specific code
+      'npapi/browser_impl_npapi.cc',
+      'npapi/multimedia_socket.cc',
+      'npapi/npapi_native.cc',
+      'npapi/npp_gate.cc',
+      'npapi/npp_launcher.cc',
+      'npapi/plugin_npapi.cc',
+      'npapi/ret_array.cc',
+      'npapi/scriptable_impl_npapi.cc',
+    ],
+    'ppapi_sources': [
+      # PPAPI specific code
+      'ppapi/browser_impl_ppapi.cc',
+      'ppapi/plugin_ppapi.cc',
+      'ppapi/scriptable_impl_ppapi.cc',
     ],
   },
   'includes': [

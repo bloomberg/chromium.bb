@@ -39,6 +39,7 @@
       ['target_base=="npNaClPlugin"', {
         'sources': [
           '<@(common_sources)',
+          '<@(npapi_sources)',
           'npapi/video.cc',
         ],
         'xcode_settings': {

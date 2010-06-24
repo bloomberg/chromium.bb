@@ -107,27 +107,10 @@ if env.Bit('windows'):
     )
     env.Tool('atlmfc_vc80')
 
-
-nacl_npplugin_inputs = [
+common_inputs = [
     # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
     #       which exports a library which is then linked in.
     #       Currently this results inlink time symbol clashes
-    env.ComponentObject('np_entry',
-                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
-                        'np_entry.cc'),
-    env.ComponentObject('npn_gate',
-                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
-                        'npn_gate.cc'),
-    # NPAPI specific code
-    'npapi/browser_impl_npapi.cc',
-    'npapi/multimedia_socket.cc',
-    'npapi/npapi_native.cc',
-    'npapi/npp_gate.cc',
-    'npapi/npp_launcher.cc',
-    'npapi/plugin_npapi.cc',
-    'npapi/ret_array.cc',
-    'npapi/scriptable_impl_npapi.cc',
-    'npapi/video.cc',
     # generic URL-origin / same-domain handling
     'origin.cc',
     # Portable plugin code
@@ -148,14 +131,36 @@ nacl_npplugin_inputs = [
     'srpc/utility.cc',
 ]
 
+common_objs = env.ComponentObject(common_inputs)
+
+# NPAPI plugin, used for non-Chrome browsers.
+npapi_inputs = [
+    # NPAPI specific code
+    env.ComponentObject('np_entry',
+                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
+                        'np_entry.cc'),
+    env.ComponentObject('npn_gate',
+                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
+                        'npn_gate.cc'),
+    'npapi/browser_impl_npapi.cc',
+    'npapi/multimedia_socket.cc',
+    'npapi/npapi_native.cc',
+    'npapi/npp_gate.cc',
+    'npapi/npp_launcher.cc',
+    'npapi/plugin_npapi.cc',
+    'npapi/ret_array.cc',
+    'npapi/scriptable_impl_npapi.cc',
+    'npapi/video.cc',
+]
+
 if env.Bit('windows'):
   if not env.Bit('chrome'):
-    nacl_npplugin_inputs += [
+    npapi_inputs += [
         'win/nacl_plugin.def',
         env.RES('win/nacl_plugin.rc'),
     ]
 elif env.Bit('mac'):
-  nacl_npplugin_inputs += [
+  npapi_inputs += [
       'osx/open_mac_file.cc',
   ]
 
@@ -164,11 +169,11 @@ npGoogleNaClPlugin = 'npGoogleNaClPlugin'
 if not env.Bit('mac'):
   if env.Bit('chrome'):
     plugin = env.ComponentLibrary(npGoogleNaClPlugin,
-                                  nacl_npplugin_inputs,
+                                  common_objs + npapi_inputs,
                                   COMPONENT_STATIC=True)
   else:
     plugin = env.ComponentLibrary(npGoogleNaClPlugin,
-                                  nacl_npplugin_inputs,
+                                  common_objs + npapi_inputs,
                                   no_import_lib=True)
 
   # we need this to build the plugin, so register it here
@@ -179,7 +184,7 @@ else:
               source='osx/npGoogleNaClPlugin.r',
               action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
   exe = env.ComponentProgram(npGoogleNaClPlugin,
-                             nacl_npplugin_inputs,
+                             common_objs,
                              no_import_lib=True)
   # Bundle pattern can be found in
   # site_scons/site_tools/target_platform_mac.py
@@ -195,7 +200,7 @@ else:
 test_env = env.Clone()
 test_env.FilterOut(LINKFLAGS=['-bundle'])
 
-# Rather than link nacl_npplugin_code statically, this unittest uses dlopen.
+# Rather than link nacl_plugin_code statically, this unittest uses dlopen.
 if test_env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('linux'):
   unittest = test_env.ComponentProgram('plugin_unittest',
                                        'plugin_unittest.cc',
@@ -211,3 +216,21 @@ elif env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('mac'):
                      'plugin_unittest.out',
                      command=[unittest, exe])
   test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
+
+# PPAPI integration, used when built into Chrome.
+ppapi_inputs = [
+    # TODO(polina): uncomment these when ready.
+    #'ppapi/browser_impl_ppapi.cc',
+    #'ppapi/plugin_ppapi.cc',
+    #'ppapi/scriptable_impl_ppapi.cc',
+]
+
+ppNaClPlugin = 'ppNaClPlugin'
+
+if not env.Bit('chrome'):
+  ppapi_plugin = env.ComponentLibrary(ppNaClPlugin,
+                                      common_objs + ppapi_inputs,
+                                      no_import_lib=True)
+
+  # we need this to build the plugin, so register it here
+  env.AddPluginPrerequisite([ppapi_plugin[0]])
