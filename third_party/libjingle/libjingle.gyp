@@ -400,8 +400,6 @@
         'source/talk/p2p/client/socketmonitor.h',
         'source/talk/session/tunnel/pseudotcpchannel.cc',
         'source/talk/session/tunnel/pseudotcpchannel.h',
-        'source/talk/session/tunnel/securetunnelsessionclient.cc',
-        'source/talk/session/tunnel/securetunnelsessionclient.h',
         'source/talk/session/tunnel/tunnelsessionclient.cc',
         'source/talk/session/tunnel/tunnelsessionclient.h',
       ],

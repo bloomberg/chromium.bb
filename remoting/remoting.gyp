@@ -306,6 +306,18 @@
         '../gfx/gfx.gyp:*',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        # TODO(hclam): Remove all these extra dependencies notifier is moved
+        # outside of chrome.gyp.
+        '../chrome/chrome.gyp:browser',
+        '../chrome/chrome.gyp:chrome_version_info',
+        '../chrome/chrome.gyp:debugger',
+        '../chrome/chrome.gyp:plugin',
+        '../chrome/chrome.gyp:renderer',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '../webkit/support/webkit_support.gyp:appcache',
+        '../webkit/support/webkit_support.gyp:database',
+        '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:webkit_support',
       ],
       'include_dirs': [
         '../testing/gmock/include',
