@@ -28,7 +28,7 @@ For detailed examples, visit: http://www.chromium.org/developers/design-document
       <string id="ProxyServerDisabled">Always use direct connections.</string>
       <string id="ProxyServerAutoDetect">Auto detect the proxy settings.</string>
       <string id="ProxyServerManual">Manually specify the proxy settings.</string>
-      <string id="ProxyServerUseSystem">Manually specify the proxy settings.</string>
+      <string id="ProxyServerUseSystem">Use the system proxy settings.</string>
       <string id="ProxyBypassList">Comma separated list of bypass rules.
 </string>
       <string id="ProxyPacUrl">The url to a proxy pac file.
