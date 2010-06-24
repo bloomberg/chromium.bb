@@ -52,12 +52,6 @@ class SpdyNetworkTransaction : public HttpTransaction {
   virtual LoadState GetLoadState() const;
   virtual uint64 GetUploadProgress() const;
 
- protected:
-  friend class SpdyNetworkTransactionTest;
-
-  // Provide access to the session for testing.
-  SpdySession* GetSpdySession() { return spdy_.get(); }
-
  private:
   enum State {
     STATE_INIT_CONNECTION,
@@ -112,7 +106,7 @@ class SpdyNetworkTransaction : public HttpTransaction {
   // The next state in the state machine.
   State next_state_;
 
-  scoped_refptr<SpdyHttpStream> stream_;
+  scoped_ptr<SpdyHttpStream> stream_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyNetworkTransaction);
 };
