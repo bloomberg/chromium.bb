@@ -1233,6 +1233,17 @@ void Browser::OpenCurrentURL() {
       CloseTabContents(selected_contents);
       return;
     }
+
+    if (selected_contents) {
+      // For the purposes of changing the window open disposition, the referrer
+      // is the current tab's URL.
+      open_disposition = AdjustWindowOpenDispositionForTab(
+          IsPinned(selected_contents),
+          url,
+          selected_contents->GetURL(),
+          location_bar->GetPageTransition(),
+          open_disposition);
+    }
   }
 
   OpenURLAtIndex(NULL, url, GURL(),
@@ -3635,7 +3646,8 @@ WindowOpenDisposition Browser::AdjustWindowOpenDispositionForTab(
   if (!is_pinned ||
       original_disposition != CURRENT_TAB ||
       (transition != PageTransition::AUTO_BOOKMARK &&
-      transition != PageTransition::LINK)) {
+       transition != PageTransition::LINK &&
+       transition != PageTransition::TYPED)) {
     return original_disposition;
   }
 

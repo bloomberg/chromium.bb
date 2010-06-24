@@ -29,6 +29,13 @@ const struct NavigationScenario {
     PageTransition::AUTO_BOOKMARK,
     CURRENT_TAB,
     NEW_FOREGROUND_TAB },
+  // Also works with TYPED.
+  { true,
+    "http://www.example.com",
+    "http://www.google.com",
+    PageTransition::TYPED,
+    CURRENT_TAB,
+    NEW_FOREGROUND_TAB },
   // Also happens if the schemes differ.
   { true,
     "ftp://www.example.com",
@@ -61,7 +68,7 @@ const struct NavigationScenario {
   { true,
     "http://www.example.com",
     "http://www.google.com",
-    PageTransition::TYPED,
+    PageTransition::RELOAD,
     CURRENT_TAB,
     CURRENT_TAB },
   // Same domain and scheme - no change.
