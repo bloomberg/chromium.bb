@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/update_screen.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/update_view.h"
 
@@ -45,6 +46,7 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
   // Depending on the result decide what to do next.
   update_result_ = result;
   update_error_ = error_code;
+  LOG(INFO) << "Update result: " << update_error_;
   switch (update_result_) {
     case UPGRADE_IS_AVAILABLE:
       checking_for_update_ = false;
@@ -52,8 +54,8 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
       view()->AddProgress(kUpdateCheckProgressIncrement);
       // Create new Google Updater instance and install the update.
       google_updater_ = CreateGoogleUpdate();
-      google_updater_->set_status_listener(this);
       google_updater_->CheckForUpdate(true, NULL);
+      LOG(INFO) << "Installing an update";
       break;
     case UPGRADE_SUCCESSFUL:
       view()->AddProgress(kUpdateCompleteProgressIncrement);
@@ -86,8 +88,8 @@ void UpdateScreen::StartUpdate() {
   // Create Google Updater object and check if there is an update available.
   checking_for_update_ = true;
   google_updater_ = CreateGoogleUpdate();
-  google_updater_->set_status_listener(this);
   google_updater_->CheckForUpdate(false, NULL);
+  LOG(INFO) << "Checking for update";
 }
 
 void UpdateScreen::CancelUpdate() {
@@ -99,6 +101,8 @@ void UpdateScreen::CancelUpdate() {
 }
 
 void UpdateScreen::ExitUpdate() {
+  google_updater_->set_status_listener(NULL);
+  google_updater_ = NULL;
   minimal_update_time_timer_.Stop();
   ScreenObserver* observer = delegate()->GetObserver(this);
   if (observer) {
@@ -127,7 +131,9 @@ bool UpdateScreen::MinimalUpdateTimeElapsed() {
 }
 
 GoogleUpdate* UpdateScreen::CreateGoogleUpdate() {
-  return new GoogleUpdate();
+  GoogleUpdate* updater = new GoogleUpdate();
+  updater->set_status_listener(this);
+  return updater;
 }
 
 void UpdateScreen::OnMinimalUpdateTimeElapsed() {
