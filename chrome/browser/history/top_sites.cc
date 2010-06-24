@@ -294,9 +294,6 @@ void TopSites::StoreRedirectChain(const RedirectList& redirects,
     return;
   }
 
-  // We shouldn't get any duplicates.
-  DCHECK(canonical_urls_.find(redirects[0]) == canonical_urls_.end());
-
   // Map all the redirected URLs to the destination.
   for (size_t i = 0; i < redirects.size(); i++)
     canonical_urls_[redirects[i]] = destination;
