@@ -167,14 +167,14 @@ bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
   return true;
 }
 
-void AutocompleteEditModel::AdjustTextForCopy(int sel_start,
+void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
                                               bool is_all_selected,
                                               std::wstring* text,
                                               GURL* url,
                                               bool* write_url) {
   *write_url = false;
 
-  if (sel_start != 0)
+  if (sel_min != 0)
     return;
 
   // We can't use CurrentTextIsURL() or GetDataForURLExport() because right now

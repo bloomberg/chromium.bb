@@ -1187,6 +1187,8 @@ void AutocompleteEditViewWin::OnCopy() {
   GURL url;
   bool write_url = false;
   GetSel(sel);
+  // GetSel() doesn't preserve selection direction, so sel.cpMin will always be
+  // the smaller value.
   model_->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
   ScopedClipboardWriter scw(g_browser_process->clipboard());
   scw.WriteText(text);
@@ -2343,6 +2345,8 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   bool write_url;
   const bool is_all_selected = IsSelectAllForRange(sel);
 
+  // |sel| was set by GetSelection(), which preserves selection direction, so
+  // sel.cpMin may not be the smaller value.
   model()->AdjustTextForCopy(std::min(sel.cpMin, sel.cpMax), is_all_selected,
                              &text_to_write, &url, &write_url);
 

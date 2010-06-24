@@ -149,11 +149,12 @@ class AutocompleteEditModel : public NotificationObserver {
   bool GetURLForText(const std::wstring& text, GURL* url) const;
 
   // Invoked to adjust the text before writting to the clipboard for a copy
-  // (e.g. by adding 'http' to the front). |sel_start| gives the start of the
-  // selection. |text| is the currently selected text. If |is_all_selected| is
-  // true all the text in the edit is selected. If the url should be copied to
-  // the clipboard |write_url| is set to true and |url| set to the url to write.
-  void AdjustTextForCopy(int sel_start,
+  // (e.g. by adding 'http' to the front). |sel_min| gives the minimum position
+  // of the selection e.g. min(selection_start, selection_end). |text| is the
+  // currently selected text. If |is_all_selected| is true all the text in the
+  // edit is selected. If the url should be copied to the clipboard |write_url|
+  // is set to true and |url| set to the url to write.
+  void AdjustTextForCopy(int sel_min,
                          bool is_all_selected,
                          std::wstring* text,
                          GURL* url,
