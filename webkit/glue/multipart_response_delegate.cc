@@ -125,7 +125,7 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
 
   size_t boundary_pos;
   while ((boundary_pos = FindBoundary()) != std::string::npos) {
-    if (boundary_pos > 0) {
+    if (boundary_pos > 0 && client_) {
       // Send the last data chunk.
       client_->didReceiveData(loader_,
                               data_.data(),
@@ -158,7 +158,8 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
     int send_length = data_.length() - boundary_.length();
     if (data_[data_.length() - 1] == '\n')
       send_length = data_.length();
-    client_->didReceiveData(loader_, data_.data(), send_length);
+    if (client_)
+      client_->didReceiveData(loader_, data_.data(), send_length);
     data_ = data_.substr(send_length);
   }
 }
@@ -166,7 +167,7 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
 void MultipartResponseDelegate::OnCompletedRequest() {
   // If we have any pending data and we're not in a header, go ahead and send
   // it to WebCore.
-  if (!processing_headers_ && !data_.empty()) {
+  if (!processing_headers_ && !data_.empty() && !stop_sending_ && client_) {
     client_->didReceiveData(loader_,
                             data_.data(),
                             static_cast<int>(data_.length()));
@@ -247,7 +248,8 @@ bool MultipartResponseDelegate::ParseHeaders() {
   response.setIsMultipartPayload(has_sent_first_response_);
   has_sent_first_response_ = true;
   // Send the response!
-  client_->didReceiveResponse(loader_, response);
+  if (client_)
+    client_->didReceiveResponse(loader_, response);
 
   return true;
 }

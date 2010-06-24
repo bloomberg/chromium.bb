@@ -270,7 +270,8 @@ void WebURLLoaderImpl::Context::Cancel() {
 
   // Ensure that we do not notify the multipart delegate anymore as it has
   // its own pointer to the client.
-  multipart_delegate_.reset();
+  if (multipart_delegate_.get())
+    multipart_delegate_->Cancel();
 
   // Do not make any further calls to the client.
   client_ = NULL;

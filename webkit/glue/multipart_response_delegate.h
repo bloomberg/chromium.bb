@@ -75,6 +75,12 @@ class MultipartResponseDelegate {
   void OnReceivedData(const char* data, int data_len);
   void OnCompletedRequest();
 
+  // The request has been canceled, so stop making calls to the client.
+  void Cancel() {
+    client_ = NULL;
+    loader_ = NULL;
+  }
+
   // Returns the multi part boundary string from the Content-type header
   // in the response.
   // Returns true on success.
