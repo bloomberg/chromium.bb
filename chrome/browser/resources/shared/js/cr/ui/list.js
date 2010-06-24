@@ -225,6 +225,8 @@ cr.define('cr.ui', function() {
       // Add fillers.
       this.beforeFiller_ = this.ownerDocument.createElement('div');
       this.afterFiller_ = this.ownerDocument.createElement('div');
+      this.beforeFiller_.className = 'spacer';
+      this.afterFiller_.className = 'spacer';
       this.appendChild(this.beforeFiller_);
       this.appendChild(this.afterFiller_);
 

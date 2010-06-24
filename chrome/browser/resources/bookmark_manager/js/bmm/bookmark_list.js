@@ -476,7 +476,8 @@ cr.define('bmm', function() {
           e.stopPropagation();
         }
 
-        var eventsToStop = ['mousedown', 'mouseup', 'contextmenu', 'dblclick'];
+        var eventsToStop =
+            ['mousedown', 'mouseup', 'contextmenu', 'dblclick', 'paste'];
         eventsToStop.forEach(function(type) {
           labelInput.addEventListener(type, stopPropagation);
         });

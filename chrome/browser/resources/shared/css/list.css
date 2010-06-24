@@ -63,3 +63,11 @@ list > [selected]:hover {
   background-color: hsl(214, 91%, 87%);
   border-color: hsl(214, 91%, 65%);
 }
+
+list > .spacer {
+  border: 0;
+  -webkit-box-sizing: border-box;
+  overflow: hidden;
+  visibility: hidden;
+  margin: 0;
+}
