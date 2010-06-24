@@ -227,7 +227,7 @@ ppapi_inputs = [
 
 ppNaClPlugin = 'ppNaClPlugin'
 
-if not env.Bit('chrome'):
+if env.Bit('linux') and not env.Bit('chrome'):
   ppapi_plugin = env.ComponentLibrary(ppNaClPlugin,
                                       common_objs + ppapi_inputs,
                                       no_import_lib=True)
