@@ -10,6 +10,7 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/file_path.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -126,6 +127,27 @@ bool LoginDatabase::InitLoginsTable() {
   return true;
 }
 
+void LoginDatabase::ReportMetrics() {
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT signon_realm, COUNT(username_value) FROM logins "
+      "GROUP BY signon_realm"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return;
+  }
+
+  int total_accounts = 0;
+  while (s.Step()) {
+    int accounts_per_site = s.ColumnInt(1);
+    total_accounts += accounts_per_site;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.AccountsPerSite",
+                                accounts_per_site, 0, 32, 6);
+  }
+  UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.TotalAccounts",
+                              total_accounts, 0, 32, 6);
+
+  return;
+}
 
 bool LoginDatabase::AddLogin(const PasswordForm& form) {
   // You *must* change LoginTableColumns if this query changes.

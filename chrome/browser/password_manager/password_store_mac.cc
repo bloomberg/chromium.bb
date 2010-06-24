@@ -745,6 +745,7 @@ void PasswordStoreMac::ScheduleTask(Task* task) {
 }
 
 void PasswordStoreMac::ReportMetricsImpl() {
+  login_metadata_db_->ReportMetrics();
 }
 
 void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {

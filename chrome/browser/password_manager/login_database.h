@@ -28,6 +28,9 @@ class LoginDatabase {
   // If false is returned, no other method should be called.
   bool Init(const FilePath& db_path);
 
+  // Reports usage metrics to UMA.
+  void ReportMetrics();
+
   // Adds |form| to the list of remembered password forms.
   bool AddLogin(const webkit_glue::PasswordForm& form);
 

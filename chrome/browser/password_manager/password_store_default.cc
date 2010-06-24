@@ -35,6 +35,7 @@ PasswordStoreDefault::~PasswordStoreDefault() {
 
 void PasswordStoreDefault::ReportMetricsImpl() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  login_db_->ReportMetrics();
 }
 
 void PasswordStoreDefault::AddLoginImpl(const PasswordForm& form) {
