@@ -208,7 +208,8 @@ void GtkIMContextWrapper::OnFocusIn() {
 
   // Enables RenderWidget's IME related events, so that we can be notified
   // when WebKit wants to enable or disable IME.
-  host_view_->GetRenderWidgetHost()->SetInputMethodActive(true);
+  if (host_view_->GetRenderWidgetHost())
+    host_view_->GetRenderWidgetHost()->SetInputMethodActive(true);
 }
 
 void GtkIMContextWrapper::OnFocusOut() {
@@ -234,7 +235,8 @@ void GtkIMContextWrapper::OnFocusOut() {
   is_composing_text_ = false;
 
   // Disable RenderWidget's IME related events to save bandwidth.
-  host_view_->GetRenderWidgetHost()->SetInputMethodActive(false);
+  if (host_view_->GetRenderWidgetHost())
+    host_view_->GetRenderWidgetHost()->SetInputMethodActive(false);
 }
 
 void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
@@ -344,6 +346,9 @@ void GtkIMContextWrapper::ProcessUnfilteredKeyPressEvent(
 void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
                                                    bool filtered) {
   RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
+  if (!host)
+    return;
+
   bool committed = false;
   // We do commit before preedit change, so that we can optimize some
   // unnecessary preedit changes.
@@ -396,7 +401,8 @@ void GtkIMContextWrapper::ConfirmComposition() {
   DCHECK(!is_in_key_event_handler_);
 
   if (is_composing_text_) {
-    host_view_->GetRenderWidgetHost()->ImeConfirmComposition();
+    if (host_view_->GetRenderWidgetHost())
+      host_view_->GetRenderWidgetHost()->ImeConfirmComposition();
 
     // Reset the input method.
     CancelComposition();
@@ -413,7 +419,7 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
   // It's possible that commit signal is fired without a key event, for
   // example when user input via a voice or handwriting recognition software.
   // In this case, the text must be committed directly.
-  if (!is_in_key_event_handler_)
+  if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost())
     host_view_->GetRenderWidgetHost()->ImeConfirmComposition(text);
 }
 
@@ -444,7 +450,7 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
   // Nothing needs to do, if it's currently in ProcessKeyEvent()
   // handler, which will send preedit text to webkit later.
   // Otherwise, we need send it here if it's been changed.
-  if (!is_in_key_event_handler_) {
+  if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost()) {
     host_view_->GetRenderWidgetHost()->ImeSetComposition(
         preedit_text_, preedit_underlines_, preedit_selection_start_,
         preedit_selection_end_);
@@ -452,20 +458,18 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
 }
 
 void GtkIMContextWrapper::HandlePreeditEnd() {
-  bool changed = false;
   if (preedit_text_.length()) {
     // The composition session has been finished.
     preedit_text_.clear();
     preedit_underlines_.clear();
     is_preedit_changed_ = true;
-    changed = true;
-  }
 
-  // If there is still a preedit text when firing "preedit-end" signal,
-  // we need inform webkit to clear it.
-  // It's only necessary when it's not in ProcessKeyEvent ().
-  if (!is_in_key_event_handler_ && changed)
-    host_view_->GetRenderWidgetHost()->ImeCancelComposition();
+    // If there is still a preedit text when firing "preedit-end" signal,
+    // we need inform webkit to clear it.
+    // It's only necessary when it's not in ProcessKeyEvent ().
+    if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost())
+      host_view_->GetRenderWidgetHost()->ImeCancelComposition();
+  }
 
   // Don't set is_composing_text_ to false here, because "preedit_end"
   // signal may be fired before "commit" signal.
