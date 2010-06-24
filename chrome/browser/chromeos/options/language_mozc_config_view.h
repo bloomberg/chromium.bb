@@ -18,6 +18,7 @@
 #include "views/window/dialog_delegate.h"
 
 namespace views {
+class Button;
 class Checkbox;
 }
 
@@ -69,7 +70,12 @@ class LanguageMozcConfigView : public views::ButtonListener,
   // Updates the mozc keyboard combobox.
   void NotifyPrefChanged();
 
+  // Resets all the preferences to the default values.
+  void ResetToDefaults();
+
   views::View* contents_;
+
+  views::Button* reset_to_defaults_button_;
 
   struct MozcPrefAndAssociatedCheckbox {
     BooleanPrefMember boolean_pref;

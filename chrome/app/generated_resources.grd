@@ -7963,6 +7963,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The title for the Mozc Japanese input settings dialog">
         Japanese Input Settings
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_RESET_TO_DEFAULTS_BUTTON"
+               desc="The label for the reset to default button for resetting the Mozc preferences to the default values">
+        Reset to defaults
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD"
                desc="The combobox description for the Mozc input method preference">
         Input Method

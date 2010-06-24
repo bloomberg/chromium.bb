@@ -16,14 +16,26 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/button/native_button.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
+namespace {
+// The tags are used to identify buttons in ButtonPressed().
+enum ButtonTag {
+  // 0 to kNumMozcBooleanPrefs - 1 are reserved for the checkboxes for integer
+  // preferences.
+  kResetToDefaultsButton = chromeos::kNumMozcBooleanPrefs,
+};
+}  // namespace
+
 namespace chromeos {
 
 LanguageMozcConfigView::LanguageMozcConfigView(Profile* profile)
-    : OptionsPageView(profile), contents_(NULL) {
+    : OptionsPageView(profile),
+      contents_(NULL),
+      reset_to_defaults_button_(NULL) {
   for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
     MozcPrefAndAssociatedCheckbox& current = prefs_and_checkboxes_[i];
     current.boolean_pref.Init(
@@ -54,8 +66,12 @@ LanguageMozcConfigView::~LanguageMozcConfigView() {
 
 void LanguageMozcConfigView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
+  const int pref_id = sender->tag();
+  if (pref_id == kResetToDefaultsButton) {
+    ResetToDefaults();
+    return;
+  }
   views::Checkbox* checkbox = static_cast<views::Checkbox*>(sender);
-  const int pref_id = checkbox->tag();
   DCHECK(pref_id >= 0 && pref_id < static_cast<int>(kNumMozcBooleanPrefs));
   prefs_and_checkboxes_[pref_id].boolean_pref.SetValue(checkbox->checked());
 }
@@ -106,7 +122,7 @@ gfx::Size LanguageMozcConfigView::GetPreferredSize() {
       IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES);
   // TODO(mazda): Remove the manual adjustment.
   // The padding is needed for accommodating all the controls in the dialog.
-  const int kHeightPadding = 60;
+  const int kHeightPadding = 80;
   preferred_size.Enlarge(0, kHeightPadding);
   return preferred_size;
 }
@@ -155,6 +171,13 @@ void LanguageMozcConfigView::InitControlLayout() {
         this);
   }
   NotifyPrefChanged();  // Sync the comboboxes with current Chrome prefs.
+
+  reset_to_defaults_button_ = new views::NativeButton(
+      this, l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_RESET_TO_DEFAULTS_BUTTON));
+  reset_to_defaults_button_->set_tag(kResetToDefaultsButton);
+  layout->StartRow(0, kColumnSetId);
+  layout->AddView(reset_to_defaults_button_);
 
   // Show the checkboxes.
   for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
@@ -210,6 +233,23 @@ void LanguageMozcConfigView::NotifyPrefChanged() {
     const int value = current.integer_pref.GetValue();
     current.slider->SetValue(value);
   }
+}
+
+void LanguageMozcConfigView::ResetToDefaults() {
+  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+    prefs_and_checkboxes_[i].boolean_pref.SetValue(
+        kMozcBooleanPrefs[i].default_pref_value);
+  }
+  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+    prefs_and_comboboxes_[i].multiple_choice_pref.SetValue(
+        UTF8ToWide(kMozcMultipleChoicePrefs[i].default_pref_value));
+  }
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    prefs_and_sliders_[i].integer_pref.SetValue(
+        kMozcIntegerPrefs[i].default_pref_value);
+  }
+  // Reflect the preference changes to the controls.
+  NotifyPrefChanged();
 }
 
 }  // namespace chromeos
