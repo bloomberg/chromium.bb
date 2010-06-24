@@ -40,6 +40,8 @@ class UserSettingsTest : public testing::Test {
         destination_directory.Append(FilePath(kV10UserSettingsDB));
     ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v10_user_setting_db_path_,
                                                     &primer_handle));
+    sqlite_utils::scoped_sqlite_db_ptr db(primer_handle);
+
     old_style_sync_data_path_ =
         destination_directory.Append(FilePath(kOldStyleSyncDataDB));
 
@@ -82,7 +84,6 @@ class UserSettingsTest : public testing::Test {
         LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
       }
     }
-    sqlite3_close(primer_handle);
   }
 
    // Creates and populates the V11 database file within
@@ -93,6 +94,7 @@ class UserSettingsTest : public testing::Test {
         destination_directory.Append(FilePath(kV11UserSettingsDB));
     ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v11_user_setting_db_path_,
                                                     &primer_handle));
+    sqlite_utils::scoped_sqlite_db_ptr db(primer_handle);
 
     // Create settings table.
     ExecOrDie(primer_handle, "CREATE TABLE settings"
@@ -124,8 +126,6 @@ class UserSettingsTest : public testing::Test {
         LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
       }
     }
-
-    sqlite3_close(primer_handle);
   }
 
   const std::string& sync_data() const { return sync_data_; }
@@ -164,6 +164,7 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
   sqlite3* handle = NULL;
   ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v10_user_setting_db_path(),
                                                   &handle));
+  sqlite_utils::scoped_sqlite_db_ptr db(handle);
 
   // Note that we don't use ScopedStatement to avoid closing the sqlite handle
   // before finalizing the statement.
@@ -183,7 +184,6 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
   std::string contents;
   ASSERT_TRUE(file_util::ReadFileToString(new_style_path, &contents));
   EXPECT_TRUE(sync_data() == contents);
-  sqlite3_close(handle);
 }
 
 TEST_F(UserSettingsTest, MigrateFromV11ToV12) {
@@ -197,6 +197,7 @@ TEST_F(UserSettingsTest, MigrateFromV11ToV12) {
   sqlite3* handle = NULL;
   ASSERT_EQ(SQLITE_OK, sqlite_utils::OpenSqliteDb(v11_user_setting_db_path(),
                                                   &handle));
+  sqlite_utils::scoped_sqlite_db_ptr db(handle);
 
   {
     SQLStatement version_query;
@@ -221,4 +222,32 @@ TEST_F(UserSettingsTest, APEncode) {
   const string encoded = APEncode(test);
   const string decoded = APDecode(encoded);
   ASSERT_EQ(test, decoded);
+}
+
+TEST_F(UserSettingsTest, PersistEmptyToken) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  UserSettings settings;
+  settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
+  settings.SetAuthTokenForService("username", "service", "");
+  std::string username;
+  std::string token;
+  ASSERT_TRUE(settings.GetLastUserAndServiceToken("service", &username,
+      &token));
+  EXPECT_EQ("", token);
+  EXPECT_EQ("username", username);
+}
+
+TEST_F(UserSettingsTest, PersistNonEmptyToken) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  UserSettings settings;
+  settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
+  settings.SetAuthTokenForService("username", "service", "012345beefbeef");
+  std::string username;
+  std::string token;
+  ASSERT_TRUE(settings.GetLastUserAndServiceToken("service", &username,
+      &token));
+  EXPECT_EQ("012345beefbeef", token);
+  EXPECT_EQ("username", username);
 }

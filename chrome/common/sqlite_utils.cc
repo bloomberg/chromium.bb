@@ -323,7 +323,7 @@ int SQLStatement::bind_parameter_count() {
 
 int SQLStatement::bind_blob(int index, std::vector<unsigned char>* blob) {
   if (blob) {
-    const void* value = &(*blob)[0];
+    const void* value = blob->empty() ? NULL : &(*blob)[0];
     int len = static_cast<int>(blob->size());
     return bind_blob(index, value, len);
   } else {

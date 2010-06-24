@@ -17,9 +17,10 @@ using std::string;
 using std::vector;
 
 vector<uint8> EncryptData(const string& data) {
-  DATA_BLOB unencrypted_data, encrypted_data;
+  DATA_BLOB unencrypted_data = { 0 };
   unencrypted_data.pbData = (BYTE*)(data.data());
   unencrypted_data.cbData = data.size();
+  DATA_BLOB encrypted_data = { 0 };
 
   if (!CryptProtectData(&unencrypted_data, L"", NULL, NULL, NULL, 0,
                         &encrypted_data))
