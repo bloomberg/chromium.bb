@@ -9,6 +9,7 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/cocoa_protocols_mac.h"
+#import "chrome/browser/cocoa/hover_close_button.h"
 #import "chrome/browser/cocoa/notifications/balloon_view.h"
 #import "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -23,20 +24,21 @@
   // owned by the browser's NotificationUIManager.
   Balloon* balloon_;
 
-  // The window that contains the frame of the notification.
-  scoped_nsobject<NSWindow> frameContainer_;
-
   // The view that contains the contents of the notification
-  scoped_nsobject<NSView> htmlContainer_;
+  IBOutlet BalloonContentViewCocoa* htmlContainer_;
 
-  // The view that contains the frame around the contents.
-  scoped_nsobject<NSView> frameView_;
+  // The view that contains the controls of the notification
+  IBOutlet BalloonShelfViewCocoa* shelf_;
+
+  // The close button.
+  IBOutlet HoverCloseButton* closeButton_;
+
+  // The origin label.
+  IBOutlet NSTextField* originLabel_;
 
   // The options menu that appears when "options" is pressed.
+  IBOutlet NSButton* optionsButton_;
   scoped_nsobject<NSMenu> optionsMenu_;
-
-  // An animation for moving the balloon smoothly.
-  scoped_nsobject<NSViewAnimation> animation_;
 
   // The host for the renderer of the HTML contents.
   scoped_ptr<BalloonViewHost> htmlContents_;

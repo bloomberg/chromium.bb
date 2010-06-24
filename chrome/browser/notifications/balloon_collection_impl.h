@@ -51,6 +51,9 @@ class BalloonCollectionImpl : public BalloonCollection {
     static int min_balloon_height() { return kBalloonMinHeight; }
     static int max_balloon_height() { return kBalloonMaxHeight; }
 
+    // Utility function constrains the input rectangle to the min and max sizes.
+    static gfx::Size ConstrainToSizeLimits(const gfx::Size& rect);
+
     // Returns both the total space available and the maximum
     // allowed per balloon.
     //
@@ -74,6 +77,10 @@ class BalloonCollectionImpl : public BalloonCollection {
     // for each next balloon.
     gfx::Point NextPosition(const gfx::Size& balloon_size,
                             gfx::Point* position_iterator) const;
+
+    // Return a offscreen location which is offscreen for this layout,
+    // to be used as the initial position for an animation into view.
+    gfx::Point OffScreenLocation() const;
 
    private:
     enum Placement {

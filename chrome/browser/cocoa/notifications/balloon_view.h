@@ -7,9 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_nsobject.h"
+
+@interface BalloonWindow : NSWindow {
+}
+@end
+
 // This view class draws a frame around the HTML contents of a
 // notification balloon.
-@interface BalloonViewCocoa : NSView {
+@interface BalloonContentViewCocoa : NSView {
 }
 @end
 
@@ -19,10 +25,5 @@
 }
 @end
 
-// This view draws a button with the shelf of the balloon.
-@interface BalloonButtonCell : NSButtonCell {
-}
-- (void)setTextColor:(NSColor*)color;
-@end
 
 #endif  // CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_H_

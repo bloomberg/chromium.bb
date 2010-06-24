@@ -41,9 +41,11 @@ BalloonCollectionImpl::~BalloonCollectionImpl() {
 void BalloonCollectionImpl::Add(const Notification& notification,
                                 Profile* profile) {
   Balloon* new_balloon = MakeBalloon(notification, profile);
+
+  new_balloon->SetPosition(layout_.OffScreenLocation(), true);
+  new_balloon->Show();
   balloons_.push_back(new_balloon);
   PositionBalloons(false);
-  new_balloon->Show();
 
   // There may be no listener in a unit test.
   if (space_change_listener_)
@@ -79,24 +81,8 @@ bool BalloonCollectionImpl::HasSpace() const {
 
 void BalloonCollectionImpl::ResizeBalloon(Balloon* balloon,
                                           const gfx::Size& size) {
-  // restrict to the min & max sizes
-  gfx::Size real_size(
-      std::max(Layout::min_balloon_width(),
-          std::min(Layout::max_balloon_width(), size.width())),
-      std::max(Layout::min_balloon_height(),
-          std::min(Layout::max_balloon_height(), size.height())));
-
-  // Don't allow balloons to shrink.  This avoids flickering
-  // on Mac OS which sometimes rapidly reports alternating sizes.  Special
-  // case for setting the minimum value.
-  gfx::Size old_size = balloon->content_size();
-  if (real_size.width() > old_size.width() ||
-      real_size.height() > old_size.height() ||
-      real_size == gfx::Size(Layout::min_balloon_width(),
-                             Layout::min_balloon_height())) {
-    balloon->set_content_size(real_size);
-    PositionBalloons(true);
-  }
+  balloon->set_content_size(Layout::ConstrainToSizeLimits(size));
+  PositionBalloons(true);
 }
 
 void BalloonCollectionImpl::DisplayChanged() {
@@ -123,7 +109,8 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
 void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   gfx::Point origin = layout_.GetLayoutOrigin();
   for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it) {
-    gfx::Point upper_left = layout_.NextPosition((*it)->GetViewSize(), &origin);
+    gfx::Point upper_left = layout_.NextPosition(
+        Layout::ConstrainToSizeLimits((*it)->GetViewSize()), &origin);
     (*it)->SetPosition(upper_left, reposition);
   }
 }
@@ -217,6 +204,44 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
       break;
   }
   return gfx::Point(x, y);
+}
+
+gfx::Point BalloonCollectionImpl::Layout::OffScreenLocation() const {
+  int x = 0;
+  int y = 0;
+  switch (placement_) {
+      case HORIZONTALLY_FROM_BOTTOM_LEFT:
+        x = work_area_.x() - kBalloonMaxWidth - HorizontalEdgeMargin();
+        y = work_area_.bottom() - kBalloonMaxHeight - VerticalEdgeMargin();
+        break;
+      case HORIZONTALLY_FROM_BOTTOM_RIGHT:
+        x = work_area_.right() + HorizontalEdgeMargin();
+        y = work_area_.bottom() - kBalloonMaxHeight - VerticalEdgeMargin();
+        break;
+      case VERTICALLY_FROM_TOP_RIGHT:
+        x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();
+        y = work_area_.y() + kBalloonMaxHeight + VerticalEdgeMargin();
+        break;
+      case VERTICALLY_FROM_BOTTOM_RIGHT:
+        x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();
+        y = work_area_.bottom() + kBalloonMaxHeight + VerticalEdgeMargin();
+        break;
+      default:
+        NOTREACHED();
+        break;
+  }
+  return gfx::Point(x, y);
+}
+
+// static
+gfx::Size BalloonCollectionImpl::Layout::ConstrainToSizeLimits(
+    const gfx::Size& size) {
+  // restrict to the min & max sizes
+  return gfx::Size(
+      std::max(min_balloon_width(),
+               std::min(max_balloon_width(), size.width())),
+      std::max(min_balloon_height(),
+               std::min(max_balloon_height(), size.height())));
 }
 
 bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
