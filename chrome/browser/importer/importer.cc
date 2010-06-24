@@ -340,11 +340,12 @@ void ExternalProcessImporterHost::StartImportSettings(
   profile_info_ = &profile_info;
   items_ = items;
 
+  ImporterHost::AddRef();  // Balanced in ImporterHost::ImportEnded.
+
   import_to_bookmark_bar_ = ShouldImportToBookmarkBar(first_run);
   CheckForFirefoxLock(profile_info, items, first_run);
   CheckForLoadedModels(items);
 
-  ImporterHost::AddRef();  // Balanced in ImporterHost::ImportEnded.
   InvokeTaskIfDone();
 }
 

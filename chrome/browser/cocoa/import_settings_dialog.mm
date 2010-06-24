@@ -179,7 +179,7 @@ bool importSettingsDialogVisible = false;
   int16 servicesToImport = static_cast<int16>(items & [self servicesToImport]);
   if (servicesToImport) {
     if (profile_) {
-      ImporterHost* importerHost = new ImporterHost;
+      ImporterHost* importerHost = new ExternalProcessImporterHost;
       // Note that a side effect of the following call is to cause the
       // importerHost to be disposed once the import has completed.
       StartImportingWithUI(nil, servicesToImport, importerHost,
