@@ -149,6 +149,9 @@ class ExtensionsDOMHandler
   // Callback for "enableIncognito" message.
   void HandleEnableIncognitoMessage(const Value* value);
 
+  // Callback for "allowFileAcces" message.
+  void HandleAllowFileAccessMessage(const Value* value);
+
   // Callback for "uninstall" message.
   void HandleUninstallMessage(const Value* value);
 

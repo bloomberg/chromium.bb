@@ -1654,27 +1654,6 @@ bool Extension::HasHostPermission(const GURL& url) const {
   return false;
 }
 
-bool Extension::CanExecuteScriptOnHost(const GURL& url,
-                                       std::string* error) const {
-  // No extensions are allowed to execute script on the gallery because that
-  // would allow extensions to manipulate their own install pages.
-  if (url.host() == GURL(ChromeStoreURL()).host()) {
-    if (error)
-      *error = errors::kCannotScriptGallery;
-    return false;
-  }
-
-  if (HasHostPermission(url))
-      return true;
-
-  if (error) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                                     url.spec());
-  }
-
-  return false;
-}
-
 const std::set<std::string> Extension::GetEffectiveHostPermissions() const {
   std::set<std::string> effective_hosts;
 

@@ -136,6 +136,11 @@ const char kDisableDevTools[]               = "disable-dev-tools";
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
+// Disable checking for user opt-in for extensions that want to inject script
+// into file URLs (ie, always allow it). This is used during automated testing.
+const char kDisableExtensionsFileAccessCheck[] =
+    "disable-extensions-file-access-check";
+
 // Suppresses support for the Geolocation javascript API.
 const char kDisableGeolocation[]            = "disable-geolocation";
 

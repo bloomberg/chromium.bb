@@ -102,7 +102,8 @@ class UserScript {
   // Greasemonkey and probably more useful for typical scripts.
   UserScript()
     : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false),
-      match_all_frames_(false), incognito_enabled_(false) {
+      match_all_frames_(false), incognito_enabled_(false),
+      allow_file_access_(false) {
   }
 
   const std::string& name_space() const { return name_space_; }
@@ -170,6 +171,9 @@ class UserScript {
   bool is_incognito_enabled() const { return incognito_enabled_; }
   void set_incognito_enabled(bool enabled) { incognito_enabled_ = enabled; }
 
+  bool allow_file_access() const { return allow_file_access_; }
+  void set_allow_file_access(bool allowed) { allow_file_access_ = allowed; }
+
   bool is_standalone() const { return extension_id_.empty(); }
 
   // Returns true if the script should be applied to the specified URL, false
@@ -232,6 +236,9 @@ class UserScript {
 
   // True if the script should be injected into an incognito tab.
   bool incognito_enabled_;
+
+  // True if the user agreed to allow this script access to file URLs.
+  bool allow_file_access_;
 };
 
 typedef std::vector<UserScript> UserScriptList;

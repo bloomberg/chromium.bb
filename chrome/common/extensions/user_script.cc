@@ -81,6 +81,7 @@ void UserScript::Pickle(::Pickle* pickle) const {
   pickle->WriteBool(emulate_greasemonkey());
   pickle->WriteBool(match_all_frames());
   pickle->WriteBool(is_incognito_enabled());
+  pickle->WriteBool(allow_file_access());
 
   // Write globs.
   std::vector<std::string>::const_iterator glob;
@@ -126,6 +127,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
   CHECK(pickle.ReadBool(iter, &emulate_greasemonkey_));
   CHECK(pickle.ReadBool(iter, &match_all_frames_));
   CHECK(pickle.ReadBool(iter, &incognito_enabled_));
+  CHECK(pickle.ReadBool(iter, &allow_file_access_));
 
   // Read globs.
   size_t num_globs = 0;

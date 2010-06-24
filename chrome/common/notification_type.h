@@ -787,6 +787,10 @@ class NotificationType {
     // Same as above, but for a disabled extension.
     EXTENSION_UNLOADED_DISABLED,
 
+    // Sent when an extension has updated its user scripts. The details are an
+    // Extension, and the source is a Profile.
+    EXTENSION_USER_SCRIPTS_UPDATED,
+
     // Sent after a new ExtensionFunctionDispatcher is created. The details are
     // an ExtensionFunctionDispatcher* and the source is a Profile*. This is
     // similar in timing to EXTENSION_HOST_CREATED, but also fires when an

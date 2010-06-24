@@ -105,6 +105,11 @@ class ExtensionPrefs {
   bool IsIncognitoEnabled(const std::string& extension_id);
   void SetIsIncognitoEnabled(const std::string& extension_id, bool enabled);
 
+  // Returns true if the user has chosen to allow this extension to inject
+  // scripts into pages with file URLs.
+  bool AllowFileAccess(const std::string& extension_id);
+  void SetAllowFileAccess(const std::string& extension_id, bool allow);
+
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved
   // and neither will external extensions the user has explicitly uninstalled.

@@ -67,6 +67,10 @@ const wchar_t kIdleInstallInfoFetchTime[] = L"fetch_time";
 // A preference that, if true, will allow this extension to run in incognito
 // mode.
 const wchar_t kPrefIncognitoEnabled[] = L"incognito";
+
+// A preference to control whether an extension is allowed to inject script in
+// pages with file URLs.
+const wchar_t kPrefAllowFileAccess[] = L"allowFileAccess";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,6 +353,17 @@ void ExtensionPrefs::SetIsIncognitoEnabled(const std::string& extension_id,
                                            bool enabled) {
   UpdateExtensionPref(extension_id, kPrefIncognitoEnabled,
                       Value::CreateBooleanValue(enabled));
+  prefs_->SavePersistentPrefs();
+}
+
+bool ExtensionPrefs::AllowFileAccess(const std::string& extension_id) {
+  return ReadExtensionPrefBoolean(extension_id, kPrefAllowFileAccess);
+}
+
+void ExtensionPrefs::SetAllowFileAccess(const std::string& extension_id,
+                                        bool allow) {
+  UpdateExtensionPref(extension_id, kPrefAllowFileAccess,
+                      Value::CreateBooleanValue(allow));
   prefs_->SavePersistentPrefs();
 }
 

@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/notification_service.h"
@@ -673,6 +674,42 @@ void ExtensionsService::SetIsIncognitoEnabled(Extension* extension,
   // Broadcast unloaded and loaded events to update browser state.
   NotifyExtensionUnloaded(extension);
   NotifyExtensionLoaded(extension);
+}
+
+bool ExtensionsService::AllowFileAccess(const Extension* extension) {
+  return (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableExtensionsFileAccessCheck) || 
+          extension_prefs_->AllowFileAccess(extension->id()));
+}
+
+void ExtensionsService::SetAllowFileAccess(Extension* extension, bool allow) {
+  extension_prefs_->SetAllowFileAccess(extension->id(), allow);
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_USER_SCRIPTS_UPDATED,
+      Source<Profile>(profile_),
+      Details<Extension>(extension));
+}
+
+bool ExtensionsService::CanExecuteScriptOnHost(Extension* extension,
+                                               const GURL& url,
+                                               std::string* error) const {
+  // No extensions are allowed to execute script on the gallery because that
+  // would allow extensions to manipulate their own install pages.
+  if (url.host() == GURL(Extension::ChromeStoreURL()).host()) {
+    if (error)
+      *error = errors::kCannotScriptGallery;
+    return false;
+  }
+
+  if (extension->HasHostPermission(url))
+      return true;
+
+  if (error) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
+                                                     url.spec());
+  }
+
+  return false;
 }
 
 void ExtensionsService::CheckForExternalUpdates() {

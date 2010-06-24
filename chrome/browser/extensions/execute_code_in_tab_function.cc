@@ -9,6 +9,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -66,7 +67,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  if (!GetExtension()->CanExecuteScriptOnHost(contents->GetURL(), &error_))
+  if (!profile()->GetExtensionsService()->CanExecuteScriptOnHost(
+          GetExtension(), contents->GetURL(), &error_))
     return false;
 
   if (script_info->HasKey(keys::kAllFramesKey)) {

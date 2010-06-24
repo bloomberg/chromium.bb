@@ -167,6 +167,9 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
     if (!script->MatchesUrl(frame->url()))
       continue;  // This frame doesn't match the script url pattern, skip it.
 
+    if (frame_url.SchemeIsFile() && !script->allow_file_access())
+      continue;  // This script isn't allowed to run on file URLs.
+
     // CSS files are always injected on document start before js scripts.
     if (location == UserScript::DOCUMENT_START) {
       num_css += script->css_scripts().size();

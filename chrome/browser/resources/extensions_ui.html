@@ -352,6 +352,8 @@ var extensionDataFormat = {
       'version': '1.0.231',
       'enabled': 'true',
       'enabledIncognito': 'false',
+      'wantsFileAccess': 'false',
+      'allowFileAccess': 'false',
       'allow_reload': true,
       'order': 1,
       'options_url': 'options.html',
@@ -392,6 +394,8 @@ var extensionDataFormat = {
       'version': '1.0.231',
       'enabled': 'true',
       'enabledIncognito': 'false',
+      'wantsFileAccess': 'false',
+      'allowFileAccess': 'false',
       'allow_reload': false,
       'order': 2,
       'icon': '',
@@ -580,10 +584,16 @@ function handleToggleExtensionIncognito(node) {
 }
 
 /**
+ * Handles the 'allowFileAccess' checkbox getting changed.
+ */
+function handleToggleAllowFileAccess(node) {
+  chrome.send('allowFileAccess', [node.extensionId, String(node.checked)]);
+}
+
+/**
  * Handles an 'uninstall' button getting clicked.
  */
 function handleUninstallExtension(node) {
-  // Tell the C++ ExtensionDOMHandler to uninstall an extension.
   chrome.send('uninstall', [node.extensionId]);
 }
 
@@ -882,14 +892,21 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   i18n-content="options"
                   >OPTIONS</a>
                 <label
-                  jsdisplay="enabled"
-                  onclick="handleToggleExtensionIncognito(this.getElementsByTagName('input')[0])">
+                  jsdisplay="enabled">
                 <input type="checkbox"
                   jsvalues=".extensionId:id;.enabled:enabled"
                   jsdisplay="enabled"
                   jseval="this.checked = enabledIncognito"
                   onchange="handleToggleExtensionIncognito(this)">
                 <span i18n-content="enableIncognito">ALLOW THIS EXTENSION TO RUN IN INCOGNITO</span></label>
+                <label
+                  jsdisplay="enabled && wantsFileAccess">
+                <input type="checkbox"
+                  jsvalues=".extensionId:id;.enabled:enabled;.wantsFileAccess:wantsFileAccess"
+                  jsdisplay="enabled && wantsFileAccess"
+                  jseval="this.checked = allowFileAccess"
+                  onchange="handleToggleAllowFileAccess(this)">
+                <span i18n-content="allowFileAccess">ALLOW THIS EXTENSION ACCESS TO FILE URLS</span></label>
               </span>
             </div>
             <div class="incognitoWarning">

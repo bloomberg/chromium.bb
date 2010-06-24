@@ -306,6 +306,8 @@ UserScriptMaster::UserScriptMaster(const FilePath& script_dir, Profile* profile)
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
+  registrar_.Add(this, NotificationType::EXTENSION_USER_SCRIPTS_UPDATED,
+                 Source<Profile>(profile_));
 }
 
 UserScriptMaster::~UserScriptMaster() {
@@ -348,11 +350,14 @@ void UserScriptMaster::Observe(NotificationType type,
       Extension* extension = Details<Extension>(details).ptr();
       bool incognito_enabled = profile_->GetExtensionsService()->
           IsIncognitoEnabled(extension);
+      bool allow_file_access = profile_->GetExtensionsService()->
+          AllowFileAccess(extension);
       const UserScriptList& scripts = extension->content_scripts();
       for (UserScriptList::const_iterator iter = scripts.begin();
            iter != scripts.end(); ++iter) {
         lone_scripts_.push_back(*iter);
         lone_scripts_.back().set_incognito_enabled(incognito_enabled);
+        lone_scripts_.back().set_allow_file_access(allow_file_access);
       }
       if (extensions_service_ready_)
         StartScan();
@@ -373,6 +378,23 @@ void UserScriptMaster::Observe(NotificationType type,
       // TODO(aa): Do we want to do something smarter for the scripts that have
       // already been injected?
 
+      break;
+    }
+    case NotificationType::EXTENSION_USER_SCRIPTS_UPDATED: {
+      Extension* extension = Details<Extension>(details).ptr();
+      UserScriptList new_lone_scripts;
+      bool incognito_enabled = profile_->GetExtensionsService()->
+          IsIncognitoEnabled(extension);
+      bool allow_file_access = profile_->GetExtensionsService()->
+          AllowFileAccess(extension);
+      for (UserScriptList::iterator iter = lone_scripts_.begin();
+           iter != lone_scripts_.end(); ++iter) {
+        if (iter->extension_id() == extension->id()) {
+          iter->set_incognito_enabled(incognito_enabled);
+          iter->set_allow_file_access(allow_file_access);
+        }
+      }
+      StartScan();
       break;
     }
 

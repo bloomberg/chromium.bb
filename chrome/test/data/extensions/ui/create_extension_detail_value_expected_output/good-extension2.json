@@ -8,6 +8,8 @@
   "allow_reload": false,
   "order": 2,
   "enabledIncognito": false,
+  "wantsFileAccess": false,
+  "allowFileAccess": false,
   "content_scripts": [],
   "views": [
     {

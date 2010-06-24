@@ -125,6 +125,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE));
   localized_strings.SetString(L"enableIncognito",
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO));
+  localized_strings.SetString(L"allowFileAccess",
+      l10n_util::GetString(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
   localized_strings.SetString(L"incognitoWarning",
       l10n_util::GetString(IDS_EXTENSIONS_INCOGNITO_WARNING));
   localized_strings.SetString(L"reload",
@@ -282,6 +284,8 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleEnableMessage));
   dom_ui_->RegisterMessageCallback("enableIncognito",
       NewCallback(this, &ExtensionsDOMHandler::HandleEnableIncognitoMessage));
+  dom_ui_->RegisterMessageCallback("allowFileAccess",
+      NewCallback(this, &ExtensionsDOMHandler::HandleAllowFileAccessMessage));
   dom_ui_->RegisterMessageCallback("uninstall",
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
   dom_ui_->RegisterMessageCallback("options",
@@ -491,6 +495,20 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
   ignore_notifications_ = true;
   extensions_service_->SetIsIncognitoEnabled(extension, enable_str == "true");
   ignore_notifications_ = false;
+}
+
+void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const Value* value) {
+  CHECK(value->IsType(Value::TYPE_LIST));
+  const ListValue* list = static_cast<const ListValue*>(value);
+  CHECK(list->GetSize() == 2);
+  std::string extension_id, allow_str;
+  CHECK(list->GetString(0, &extension_id));
+  CHECK(list->GetString(1, &allow_str));
+  Extension* extension = extensions_service_->GetExtensionById(extension_id,
+                                                               true);
+  DCHECK(extension);
+
+  extensions_service_->SetAllowFileAccess(extension, allow_str == "true");
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
@@ -767,9 +785,23 @@ DictionaryValue* ExtensionsDOMHandler::CreateContentScriptDetailValue(
   return script_data;
 }
 
+static bool ExtensionWantsFileAccess(const Extension* extension) {
+  for (UserScriptList::const_iterator it = extension->content_scripts().begin();
+       it != extension->content_scripts().end(); ++it) {
+    for (UserScript::PatternList::const_iterator pattern =
+             it->url_patterns().begin();
+         pattern != it->url_patterns().end(); ++pattern) {
+      if (pattern->scheme() == chrome::kFileScheme)
+        return true;
+    }
+  }
+
+  return false;
+}
+
 // Static
 DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
-    ExtensionsService* service, const Extension *extension,
+    ExtensionsService* service, const Extension* extension,
     const std::vector<ExtensionPage>& pages, bool enabled) {
   DictionaryValue* extension_data = new DictionaryValue();
 
@@ -780,6 +812,10 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean(L"enabled", enabled);
   extension_data->SetBoolean(L"enabledIncognito",
       service ? service->IsIncognitoEnabled(extension) : false);
+  extension_data->SetBoolean(L"wantsFileAccess",
+      ExtensionWantsFileAccess(extension));
+  extension_data->SetBoolean(L"allowFileAccess",
+      service ? service->AllowFileAccess(extension) : false);
   extension_data->SetBoolean(L"allow_reload",
                              extension->location() == Extension::LOAD);
 

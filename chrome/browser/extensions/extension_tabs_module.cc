@@ -646,7 +646,8 @@ bool UpdateTabFunction::RunImpl() {
     // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
     // we need to check host permissions before allowing them.
     if (url.SchemeIs(chrome::kJavaScriptScheme)) {
-      if (!GetExtension()->CanExecuteScriptOnHost(contents->GetURL(), &error_))
+      if (!profile()->GetExtensionsService()->CanExecuteScriptOnHost(
+          GetExtension(), contents->GetURL(), &error_))
         return false;
 
       // TODO(aa): How does controller queue URLs? Is there any chance that this

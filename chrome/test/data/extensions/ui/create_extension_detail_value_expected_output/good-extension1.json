@@ -8,6 +8,8 @@
   "allow_reload": false,
   "order": 2,
   "enabledIncognito": false,
+  "wantsFileAccess": true,
+  "allowFileAccess": false,
   "content_scripts": [
     {
       "matches": ["file://*", "http://*.google.com/*", "https://*.google.com/*"],

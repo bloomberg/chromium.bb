@@ -63,6 +63,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     if (!load_extension_.value().empty()) {
       command_line->AppendSwitchWithValue(switches::kLoadExtension,
                                           load_extension_.ToWStringHack());
+      command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
     }
   }
 
@@ -141,6 +142,23 @@ class ExtensionsStartupTest : public ExtensionStartupTestBase {
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
   WaitForServicesToStart(4, true);  // 1 component extension and 3 others.
   TestInjection(true, true);
+}
+
+// Tests that disallowing file access on an extension prevents it from injecting
+// script into a page with a file URL.
+IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, NoFileAccess) {
+  WaitForServicesToStart(4, true);  // 1 component extension and 3 others.
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  for (size_t i = 0; i < service->extensions()->size(); ++i) {
+    if (service->AllowFileAccess(service->extensions()->at(i))) {
+      service->SetAllowFileAccess(service->extensions()->at(i), false);
+      ui_test_utils::WaitForNotification(
+           NotificationType::USER_SCRIPTS_UPDATED);
+    }
+  }
+
+  TestInjection(false, false);
 }
 
 // ExtensionsLoadTest

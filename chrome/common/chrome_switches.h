@@ -53,6 +53,7 @@ extern const char kDisableDatabases[];
 extern const char kDisableDesktopNotifications[];
 extern const char kDisableDevTools[];
 extern const char kDisableExtensions[];
+extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableGeolocation[];
 extern const char kDisableHangMonitor[];
 extern const char kDisableInternalFlash[];
