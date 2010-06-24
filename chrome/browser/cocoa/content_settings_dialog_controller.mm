@@ -74,7 +74,7 @@ namespace ContentSettingsDialogControllerInternal {
 class PrefObserverBridge : public NotificationObserver {
  public:
   PrefObserverBridge(ContentSettingsDialogController* controller)
-      : controller_(controller) {}
+      : controller_(controller), disabled_(false) {}
 
   virtual ~PrefObserverBridge() {}
 

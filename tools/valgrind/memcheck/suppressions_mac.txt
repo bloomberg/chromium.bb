@@ -1204,15 +1204,6 @@
    fun:thread_start
 }
 {
-   bug_46797
-   Memcheck:Cond
-   fun:_ZN39ContentSettingsDialogControllerInternal18PrefObserverBridge7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   ...
-   fun:_ZN11PrefService13FireObserversEPKw
-   ...
-   fun:_ZN12_GLOBAL__N_*ContentSettingsDialogControllerTest_*
-}
-{
    bug_47330
    Memcheck:Leak
    fun:_Znw*
