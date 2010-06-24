@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/platform_thread.h"
 
@@ -16,7 +18,8 @@ class ExtensionResource {
  public:
   ExtensionResource();
 
-  ExtensionResource(const FilePath& extension_root,
+  ExtensionResource(const std::string& extension_id,
+                    const FilePath& extension_root,
                     const FilePath& relative_path);
 
   // Returns actual path to the resource (default or locale specific). In the
@@ -51,14 +54,20 @@ class ExtensionResource {
   static void CheckFileAccessFromFileThread();
 
   // Getters
+  const std::string& extension_id() const { return extension_id_; }
   const FilePath& extension_root() const { return extension_root_; }
   const FilePath& relative_path() const { return relative_path_; }
+
+  bool empty() { return extension_root().empty(); }
 
   // Unit test helpers.
   FilePath::StringType NormalizeSeperators(FilePath::StringType path) const;
   bool ComparePathWithDefault(const FilePath& path) const;
 
  private:
+  // The id of the extension that this resource is associated with.
+  std::string extension_id_;
+
   // Extension root.
   FilePath extension_root_;
 

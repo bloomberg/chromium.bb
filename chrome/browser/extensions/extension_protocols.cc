@@ -85,9 +85,10 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
     return new URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
 
   // chrome-extension://extension-id/resource/path.js
-  FilePath directory_path = context->GetPathForExtension(request->url().host());
+  const std::string& extension_id = request->url().host();
+  FilePath directory_path = context->GetPathForExtension(extension_id);
   if (directory_path.value().empty()) {
-    LOG(WARNING) << "Failed to GetPathForExtension: " << request->url().host();
+    LOG(WARNING) << "Failed to GetPathForExtension: " << extension_id;
     return NULL;
   }
 
@@ -117,7 +118,7 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
   }
   // TODO(tc): Move all of these files into resources.pak so we don't break
   // when updating on Linux.
-  ExtensionResource resource(directory_path,
+  ExtensionResource resource(extension_id, directory_path,
       extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
   return new URLRequestFileJob(request,
@@ -134,7 +135,7 @@ static URLRequestJob* CreateUserScriptURLRequestJob(URLRequest* request,
   // chrome-user-script:/user-script-name.user.js
   FilePath directory_path = context->user_script_dir_path();
 
-  ExtensionResource resource(directory_path,
+  ExtensionResource resource(request->url().host(), directory_path,
       extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
   return new URLRequestFileJob(request, resource.GetFilePath());

@@ -188,7 +188,7 @@ bool CreateContextMenuFunction::RunImpl() {
     }
     id = menu_manager->AddChildItem(parent_id, item.release());
   } else {
-    id = menu_manager->AddContextItem(item.release());
+    id = menu_manager->AddContextItem(GetExtension(), item.release());
   }
 
   if (id <= 0)
