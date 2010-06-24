@@ -63,30 +63,9 @@ const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
 
 namespace {
 
-// We also show the severe warning if the extension has access to any file://
-// URLs. They aren't *quite* as dangerous as full access to the system via
-// NPAPI, but pretty dang close. Content scripts are currently the only way
-// that extension can get access to file:// URLs.
-static bool ExtensionHasFileAccess(Extension* extension) {
-  for (UserScriptList::const_iterator script =
-           extension->content_scripts().begin();
-       script != extension->content_scripts().end();
-       ++script) {
-    for (UserScript::PatternList::const_iterator pattern =
-             script->url_patterns().begin();
-         pattern != script->url_patterns().end();
-         ++pattern) {
-      if (pattern->scheme() == chrome::kFileScheme)
-        return true;
-    }
-  }
-
-  return false;
-}
-
 static void GetV2Warnings(Extension* extension,
                           std::vector<string16>* warnings) {
-  if (!extension->plugins().empty() || ExtensionHasFileAccess(extension)) {
+  if (!extension->plugins().empty()) {
     // TODO(aa): This one is a bit awkward. Should we have a separate
     // presentation for this case?
     warnings->push_back(
