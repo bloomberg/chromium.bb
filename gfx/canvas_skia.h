@@ -76,9 +76,6 @@ class CanvasSkia : public skia::PlatformCanvas,
                           int x, int y, int w, int h, int flags);
 #endif
 
-  // Extracts a bitmap from the contents of this canvas.
-  SkBitmap ExtractBitmap() const;
-
   // Overridden from Canvas2:
   virtual bool GetClipRect(gfx::Rect* clip_rect);
   virtual bool ClipRectInt(int x, int y, int w, int h);
@@ -118,6 +115,7 @@ class CanvasSkia : public skia::PlatformCanvas,
   virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h);
   virtual void TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h);
+  virtual SkBitmap ExtractBitmap() const;
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
 

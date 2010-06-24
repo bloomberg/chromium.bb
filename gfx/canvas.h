@@ -169,6 +169,10 @@ class Canvas {
   virtual void TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h) = 0;
 
+  // Extracts a bitmap from the contents of this canvas.
+  // TODO(beng): remove
+  virtual SkBitmap ExtractBitmap() const = 0;
+
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.
   // A quick and dirty way to obtain the underlying SkCanvas.
