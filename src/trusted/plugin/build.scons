@@ -184,7 +184,7 @@ else:
               source='osx/npGoogleNaClPlugin.r',
               action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
   exe = env.ComponentProgram(npGoogleNaClPlugin,
-                             common_objs,
+                             common_objs + npapi_inputs,
                              no_import_lib=True)
   # Bundle pattern can be found in
   # site_scons/site_tools/target_platform_mac.py
