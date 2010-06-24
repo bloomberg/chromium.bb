@@ -982,6 +982,13 @@ typedef NPError (*NPPPrintPageRasterPtr) (
     NPDeviceContext2D* printSurface);
 /* Ends the print operation */
 typedef NPError (*NPPPrintEndPtr) (NPP instance);
+/* Prints the specified page as PDF. The plugin allocates the output buffer
+ * pointed to by pdf_output using the browser-supplied NPN_MemAlloc function.
+ * The caller is expected to free the output buffer upon success.*/
+typedef NPError (*NPPrintPageAsPDFPtr)(NPP instance, int32_t page_number,
+                                       unsigned char** pdf_output,
+                                       int32_t* output_size);
+
 
 /* TODO(sanjeevr) : Provide a vector interface for printing. We need to decide
  * on a vector format that can support embedded fonts. A vector format will
@@ -992,6 +999,7 @@ typedef struct _NPPPrintExtensions {
   NPPGetRasterDimensionsPtr getRasterDimensions;
   NPPPrintPageRasterPtr printPageRaster;
   NPPPrintEndPtr printEnd;
+  NPPrintPageAsPDFPtr printPageAsPDF;
 } NPPPrintExtensions;
 
 /* Returns NULL if the plugin does not support print extensions */

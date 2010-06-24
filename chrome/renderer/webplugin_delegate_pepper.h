@@ -224,6 +224,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   bool CalculatePrintedPageDimensions(int page_number,
                                       NPPPrintExtensions* print_extensions,
                                       gfx::Size* page_dimensions);
+  bool VectorPrintPage(int page_number, WebKit::WebCanvas* canvas);
+
   NPPPrintExtensions* GetPrintExtensions();
 
   NPPFindExtensions* GetFindExtensions();
@@ -292,6 +294,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   // we need to stretch the printed raster bitmap to these dimensions. It is
   // cleared in PrintEnd.
   gfx::Rect current_printable_area_;
+  int current_printer_dpi_;
 #if defined(OS_MACOSX)
   // On the Mac, when we draw the bitmap to the PDFContext, it seems necessary
   // to keep the pixels valis until CGContextEndPage is called. We use this

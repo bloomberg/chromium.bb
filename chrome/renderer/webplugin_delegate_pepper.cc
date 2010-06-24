@@ -20,6 +20,7 @@
 #endif
 #include "base/md5.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #if defined(OS_MACOSX)
 #include "base/scoped_cftyperef.h"
@@ -28,6 +29,7 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/pepper_widget.h"
 #include "chrome/renderer/render_thread.h"
@@ -39,6 +41,7 @@
 #if defined(OS_WIN)
 #include "gfx/codec/jpeg_codec.h"
 #include "gfx/gdi_util.h"
+#include "printing/units.h"
 #include "skia/ext/vector_platform_device.h"
 #endif
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -49,6 +52,7 @@
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -81,6 +85,17 @@ struct Device3DImpl {
 const int32 kDefaultCommandBufferSize = 1024 * 1024;
 
 }  // namespace
+
+static const float kPointsPerInch = 72.0;
+
+#if defined(OS_WIN)
+// Exported by pdf.dll
+typedef bool (__stdcall *RenderPDFPageToDCProc)(
+    const unsigned char* pdf_buffer, int buffer_size, int page_number, HDC dc,
+    int dpi_x, int dpi_y, int bounds_origin_x, int bounds_origin_y,
+    int bounds_width, int bounds_height, bool fit_to_bounds,
+    bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds);
+#endif  // defined(OS_WIN)
 
 WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
     const FilePath& filename,
@@ -1113,9 +1128,73 @@ int WebPluginDelegatePepper::PrintBegin(const gfx::Rect& printable_area,
                                                        printer_dpi,
                                                        &num_pages)) {
       current_printable_area_ = printable_area;
+      current_printer_dpi_ = printer_dpi;
     }
   }
   return num_pages;
+}
+
+bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
+                                              WebKit::WebCanvas* canvas) {
+#if !defined(OS_WIN)
+  // TODO(sanjeevr): Add vector print support for Mac and Linux.
+  return false;
+#endif  // !defined(OS_WIN)
+  NPPPrintExtensions* print_extensions = GetPrintExtensions();
+  if (!print_extensions)
+    return false;
+#if defined(OS_WIN)
+  // For Windows, we need the PDF DLL to render the output PDF to a DC.
+  FilePath pdf_path;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+  HMODULE pdf_module = GetModuleHandle(pdf_path.value().c_str());
+  if (!pdf_module)
+    return false;
+  RenderPDFPageToDCProc render_proc =
+      reinterpret_cast<RenderPDFPageToDCProc>(
+          GetProcAddress(pdf_module, "RenderPDFPageToDC"));
+  if (!render_proc)
+    return false;
+#endif  // defined(OS_WIN)
+
+  unsigned char* pdf_output = NULL;
+  int32 output_size = 0;
+  NPError err = print_extensions->printPageAsPDF(instance()->npp(), page_number,
+                                                 &pdf_output, &output_size);
+  if (err != NPERR_NO_ERROR)
+    return false;
+
+  bool ret = false;
+#if defined(OS_WIN)
+  // On Windows, we now need to render the PDF to the DC that backs the
+  // supplied canvas.
+  skia::VectorPlatformDevice& device =
+      static_cast<skia::VectorPlatformDevice&>(
+          canvas->getTopPlatformDevice());
+  HDC dc = device.getBitmapDC();
+  gfx::Size size_in_pixels;
+  size_in_pixels.set_width(
+      printing::ConvertUnit(current_printable_area_.width(),
+                            static_cast<int>(kPointsPerInch),
+                            current_printer_dpi_));
+  size_in_pixels.set_height(
+      printing::ConvertUnit(current_printable_area_.height(),
+                            static_cast<int>(kPointsPerInch),
+                            current_printer_dpi_));
+  // We need to render using the actual printer DPI (rendering to a smaller
+  // set of pixels leads to a blurry output). However, we need to counter the
+  // scaling up that will happen in the browser.
+  XFORM xform = {0};
+  xform.eM11 = xform.eM22 = kPointsPerInch / current_printer_dpi_;
+  ModifyWorldTransform(dc, &xform, MWT_LEFTMULTIPLY);
+
+  ret = render_proc(pdf_output, output_size, 0, dc, current_printer_dpi_,
+                    current_printer_dpi_, 0, 0, size_in_pixels.width(),
+                    size_in_pixels.height(), true, false, true, true);
+#endif  // defined(OS_WIN)
+
+  NPAPI::PluginHost::Singleton()->host_functions()->memfree(pdf_output);
+  return ret;
 }
 
 bool WebPluginDelegatePepper::PrintPage(int page_number,
@@ -1123,6 +1202,10 @@ bool WebPluginDelegatePepper::PrintPage(int page_number,
   NPPPrintExtensions* print_extensions = GetPrintExtensions();
   if (!print_extensions)
     return false;
+
+  // First try and use vector print.
+  if (VectorPrintPage(page_number, canvas))
+    return true;
 
   DCHECK(!current_printable_area_.IsEmpty());
 
@@ -1207,6 +1290,7 @@ void WebPluginDelegatePepper::PrintEnd() {
   if (print_extensions)
     print_extensions->printEnd(instance()->npp());
   current_printable_area_ = gfx::Rect();
+  current_printer_dpi_ = -1;
 #if defined(OS_MACOSX)
   last_printed_page_ = SkBitmap();
 #endif  // defined(OS_MACOSX)
@@ -1224,6 +1308,7 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
       plugin_(NULL),
       instance_(instance),
       nested_delegate_(NULL),
+      current_printer_dpi_(-1),
 #if defined(ENABLE_GPU)
       command_buffer_(NULL),
 #endif
