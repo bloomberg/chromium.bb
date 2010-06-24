@@ -232,12 +232,12 @@ void GeneralPageView::ButtonPressed(
   } else if (sender == homepage_use_newtab_radio_) {
     UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseNewTab"),
                             profile()->GetPrefs());
-    SetHomepage(GURL());
+    UpdateHomepagePrefs();
     EnableHomepageURLField(false);
   } else if (sender == homepage_use_url_radio_) {
     UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseURL"),
                             profile()->GetPrefs());
-    SetHomepage(GURL(homepage_use_url_textfield_->text()));
+    UpdateHomepagePrefs();
     EnableHomepageURLField(true);
   } else if (sender == homepage_show_home_button_checkbox_) {
     bool show_button = homepage_show_home_button_checkbox_->checked();
@@ -283,12 +283,7 @@ void GeneralPageView::ItemChanged(views::Combobox* combobox,
 void GeneralPageView::ContentsChanged(views::Textfield* sender,
                                       const std::wstring& new_contents) {
   if (sender == homepage_use_url_textfield_) {
-    // If the text field contains a valid URL, sync it to prefs. We run it
-    // through the fixer upper to allow input like "google.com" to be converted
-    // to something valid ("http://google.com"). If the field contains an
-    // empty or null-host URL, a blank homepage is synced to prefs.
-    SetHomepage(URLFixerUpper::FixupURL(
-        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string()));
+    UpdateHomepagePrefs();
   }
 }
 
@@ -746,16 +741,24 @@ void GeneralPageView::AddBookmark(UrlPicker* dialog,
   SaveStartupPref();
 }
 
-void GeneralPageView::SetHomepage(const GURL& homepage) {
+void GeneralPageView::UpdateHomepagePrefs() {
+  // If the text field contains a valid URL, sync it to prefs. We run it
+  // through the fixer upper to allow input like "google.com" to be converted
+  // to something valid ("http://google.com"). If the field contains an
+  // empty or null-host URL, a blank homepage is synced to prefs.
+  const GURL& homepage =
+    URLFixerUpper::FixupURL(
+       UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string());
+  bool new_tab_page_is_home_page = homepage_use_newtab_radio_->checked();
   if (!homepage.is_valid() ||
       UTF8ToWide(homepage.spec()) == GetNewTabUIURLString()) {
-    new_tab_page_is_home_page_.SetValue(true);
+    new_tab_page_is_home_page = true;
     if (!homepage.has_host())
       homepage_.SetValue(std::wstring());
   } else {
-    new_tab_page_is_home_page_.SetValue(false);
     homepage_.SetValue(UTF8ToWide(homepage.spec()));
   }
+  new_tab_page_is_home_page_.SetValue(new_tab_page_is_home_page);
 }
 
 void GeneralPageView::OnSelectionChanged() {

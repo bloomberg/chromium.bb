@@ -104,10 +104,10 @@ class GeneralPageView : public OptionsPageView,
                            const std::wstring& title,
                            const GURL& url);
 
-  // Sets the home page preferences for kNewTabPageIsHomePage and kHomePage.
-  // If an empty or null-host GURL is passed in we revert to using NewTab
-  // page as the Homepage.
-  void SetHomepage(const GURL& homepage);
+  // Copies the home page preferences from the gui controls to
+  // kNewTabPageIsHomePage and kHomePage. If an empty or null-host
+  // URL is specified, then we revert to using NewTab page as the Homepage.
+  void UpdateHomepagePrefs();
 
   // Invoked when the selection of the table view changes. Updates the enabled
   // property of the remove button.
