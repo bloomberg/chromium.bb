@@ -246,7 +246,7 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
 
-  print_web_view_ = WebView::create(this);
+  print_web_view_ = WebView::create(this, 0);
   prefs.Apply(print_web_view_);
   print_web_view_->initializeMainFrame(this);
 

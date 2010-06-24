@@ -583,11 +583,6 @@ WebView* TestShell::CreateWebView() {
   return new_win->webView();
 }
 
-void TestShell::InitializeDevToolsAgent(WebView* webView) {
-  DCHECK(!dev_tools_agent_.get());
-  dev_tools_agent_.reset(new TestShellDevToolsAgent(webView));
-}
-
 void TestShell::ShowDevTools() {
   if (!devtools_shell_) {
     FilePath dir_exe;
