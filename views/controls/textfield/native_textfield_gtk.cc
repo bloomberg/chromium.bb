@@ -358,6 +358,9 @@ void NativeTextfieldGtk::CreateNativeControl() {
     if (textfield_->draw_border())
       gtk_container_set_border_width(GTK_CONTAINER(native_view()),
                                      kTextViewBorderWidth);
+
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(native_view()),
+                                GTK_WRAP_WORD_CHAR);
   } else {
     NativeControlCreated(gtk_views_entry_new(this));
     gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
