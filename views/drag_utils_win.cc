@@ -10,7 +10,7 @@
 
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/gdi_util.h"
 
 namespace drag_utils {
@@ -47,7 +47,7 @@ static HBITMAP CreateBitmapFromCanvas(const gfx::Canvas& canvas,
   HDC compatible_dc = CreateCompatibleDC(screen_dc);
   HGDIOBJ old_object = SelectObject(compatible_dc, bitmap);
   BitBlt(compatible_dc, 0, 0, width, height,
-         canvas.AsCanvasSkia()->getTopPlatformDevice().getBitmapDC(),
+         canvas.getTopPlatformDevice().getBitmapDC(),
          0, 0, SRCCOPY);
   SelectObject(compatible_dc, old_object);
   ReleaseDC(NULL, compatible_dc);

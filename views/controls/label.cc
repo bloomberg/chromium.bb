@@ -13,7 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/font.h"
 #include "gfx/insets.h"
@@ -67,7 +67,7 @@ int Label::GetHeightForWidth(int w) {
 
   w = std::max(0, w - GetInsets().width());
   int h = font_.height();
-  gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, ComputeMultiLineFlags());
+  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, ComputeMultiLineFlags());
   return h + GetInsets().height();
 }
 
@@ -388,7 +388,7 @@ gfx::Size Label::GetTextSize() const {
     int flags = ComputeMultiLineFlags();
     if (!is_multi_line_)
       flags |= gfx::Canvas::NO_ELLIPSIS;
-    gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, flags);
+    gfx::Canvas::SizeStringInt(text_, font_, &w, &h, flags);
     text_size_.SetSize(w, h);
     text_size_valid_ = true;
   }

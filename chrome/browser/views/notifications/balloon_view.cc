@@ -22,7 +22,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/insets.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
@@ -466,7 +466,7 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setColor(kControlBarBackgroundColor);
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->drawPath(path, paint);
 
   // Draw a 1-pixel gray line between the content and the menu bar.
   int line_width = GetTotalWidth() - kLeftMargin - kRightMargin;

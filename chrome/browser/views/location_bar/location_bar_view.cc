@@ -27,7 +27,7 @@
 #include "chrome/browser/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/views/location_bar/star_view.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/skia_util.h"
 #include "grit/generated_resources.h"
@@ -556,8 +556,7 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
     // below, and all our other bubbles.
     const SkScalar radius(SkIntToScalar(BubbleBorder::GetCornerRadius()));
     bounds.Inset(kEdgeThickness, 0);
-    canvas->AsCanvasSkia()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
-                                          radius, paint);
+    canvas->drawRoundRect(gfx::RectToSkRect(bounds), radius, radius, paint);
   } else {
     canvas->FillRectInt(color, bounds.x(), bounds.y(), bounds.width(),
                         bounds.height());

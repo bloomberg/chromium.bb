@@ -10,7 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/native_theme_win.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
@@ -36,10 +36,10 @@ class TabBackground : public Background {
   virtual ~TabBackground() {}
 
   virtual void Paint(gfx::Canvas* canvas, View* view) const {
-    HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+    HDC dc = canvas->beginPlatformPaint();
     RECT r = {0, 0, view->width(), view->height()};
     gfx::NativeTheme::instance()->PaintTabPanelBackground(dc, &r);
-    canvas->AsCanvasSkia()->endPlatformPaint();
+    canvas->endPlatformPaint();
   }
 
  private:

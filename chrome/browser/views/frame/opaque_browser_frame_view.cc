@@ -15,7 +15,7 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/path.h"
 #include "grit/app_resources.h"
@@ -382,10 +382,10 @@ void OpaqueBrowserFrameView::PaintChildren(gfx::Canvas* canvas) {
       continue;
     }
     if (child == otr_avatar_icon_) {
-      canvas->AsCanvasSkia()->save();
+      canvas->save();
       canvas->ClipRectInt(0, 2, width(), otr_avatar_icon_->height() - 10);
       child->ProcessPaint(canvas);
-      canvas->AsCanvasSkia()->restore();
+      canvas->restore();
     } else {
       child->ProcessPaint(canvas);
     }
@@ -785,8 +785,8 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   bounds.set(SkIntToScalar(x - kClientEdgeThickness), SkIntToScalar(y),
              SkIntToScalar(x + w + kClientEdgeThickness * 2),
              SkIntToScalar(y + h));
-  canvas->AsCanvasSkia()->saveLayerAlpha(&bounds, 255);
-  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->saveLayerAlpha(&bounds, 255);
+  canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
   SkColor theme_toolbar_color =
       tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
@@ -836,7 +836,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       toolbar_right_mask->height() - bottom_edge_height,
       toolbar_right_mask->width(), bottom_edge_height, right_x, bottom_y,
       toolbar_right_mask->width(), bottom_edge_height, false, paint);
-  canvas->AsCanvasSkia()->restore();
+  canvas->restore();
 
   canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
       left_x, y,

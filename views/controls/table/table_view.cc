@@ -16,7 +16,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
 #include "gfx/icon_util.h"
@@ -1157,7 +1157,7 @@ void TableView::PaintAltText() {
   // Pad by 1 for halo.
   canvas.DrawStringWithHalo(alt_text_, font, SK_ColorDKGRAY, SK_ColorWHITE, 1,
                             1, bounds.width() - 2, bounds.height() - 2,
-                            gfx::CanvasSkia::DefaultCanvasTextAlignment());
+                            gfx::Canvas::DefaultCanvasTextAlignment());
   canvas.getTopPlatformDevice().drawToHDC(dc, bounds.x(), bounds.y(), NULL);
   ReleaseDC(GetNativeControlHWND(), dc);
 }

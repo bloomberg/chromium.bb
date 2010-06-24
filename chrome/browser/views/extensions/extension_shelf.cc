@@ -24,7 +24,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas_skia.h"
 #include "views/controls/label.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
@@ -943,15 +942,13 @@ void ExtensionShelf::InitBackground(gfx::Canvas* canvas) {
   for (int i = 0; i < count; ++i) {
     ExtensionView* view = ToolstripAtIndex(i)->view();
 
-    const SkBitmap& background =
-        canvas->AsCanvasSkia()->getDevice()->accessBitmap(false);
+    const SkBitmap& background = canvas->getDevice()->accessBitmap(false);
 
     SkRect mapped_subset = background_rect;
     gfx::Rect view_bounds = view->bounds();
     mapped_subset.offset(SkIntToScalar(view_bounds.x()),
                          SkIntToScalar(view_bounds.y()));
-    bool result =
-        canvas->AsCanvasSkia()->getTotalMatrix().mapRect(&mapped_subset);
+    bool result = canvas->getTotalMatrix().mapRect(&mapped_subset);
     DCHECK(result);
 
     SkIRect isubset;

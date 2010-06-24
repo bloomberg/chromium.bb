@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "googleurl/src/gurl.h"
@@ -48,7 +49,8 @@ void SetURLAndDragImage(const GURL& url,
   button.SetBounds(0, 0, prefsize.width(), prefsize.height());
 
   // Render the image.
-  gfx::CanvasSkia canvas(prefsize.width(), prefsize.height(), false);
+  // TODO(beng): Convert to CanvasSkia
+  gfx::Canvas canvas(prefsize.width(), prefsize.height(), false);
   button.Paint(&canvas, true);
   SetDragImageOnDataObject(canvas, prefsize,
       gfx::Point(prefsize.width() / 2, prefsize.height() / 2), data);
@@ -68,7 +70,8 @@ void CreateDragImageForFile(const FilePath::StringType& file_name,
   // Add +2 here to allow room for the halo.
   const int height = font.height() + icon->height() +
                      kLinkDragImageVPadding + 2;
-  gfx::CanvasSkia canvas(width, height, false /* translucent */);
+  // TODO(beng): Convert to CanvasSkia
+  gfx::Canvas canvas(width, height, false /* translucent */);
 
   // Paint the icon.
   canvas.DrawBitmapInt(*icon, (width - icon->width()) / 2, 0);

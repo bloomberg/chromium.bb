@@ -63,6 +63,7 @@
         'blit.cc',
         'blit.h',
         'canvas.h',
+        'canvas_2.h',
         'canvas_skia.h',
         'canvas_skia.cc',
         'canvas_skia_linux.cc',

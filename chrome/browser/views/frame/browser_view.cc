@@ -49,7 +49,7 @@
 #include "chrome/common/native_window_notification_source.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -221,12 +221,12 @@ class ResizeCorner : public views::View {
     if (rtl_dir) {
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
-      canvas->AsCanvasSkia()->save();
+      canvas->save();
     }
     canvas->DrawBitmapInt(*bitmap, width() - bitmap->width(),
                           height() - bitmap->height());
     if (rtl_dir)
-      canvas->AsCanvasSkia()->restore();
+      canvas->restore();
   }
 
   static gfx::Size GetSize() {

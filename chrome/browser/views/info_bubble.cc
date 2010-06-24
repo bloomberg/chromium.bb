@@ -7,7 +7,7 @@
 #include "base/keyboard_codes.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/path.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -114,7 +114,7 @@ void BorderContents::Paint(gfx::Canvas* canvas) {
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
   path.addRoundRect(rect, radius, radius);
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->drawPath(path, paint);
 
   // Now we paint the border, so it will be alpha-blended atop the contents.
   // This looks slightly better in the corners than drawing the contents atop

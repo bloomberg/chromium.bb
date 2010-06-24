@@ -5,7 +5,7 @@
 #ifndef GFX_CANVAS_SKIA_PAINT_H_
 #define GFX_CANVAS_SKIA_PAINT_H_
 
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "skia/ext/canvas_paint.h"
 
 // Define a gfx::CanvasSkiaPaint type that wraps our gfx::Canvas like the
@@ -13,7 +13,7 @@
 
 namespace gfx {
 
-typedef skia::CanvasPaintT<CanvasSkia> CanvasSkiaPaint;
+typedef skia::CanvasPaintT<Canvas> CanvasSkiaPaint;
 
 }  // namespace gfx
 

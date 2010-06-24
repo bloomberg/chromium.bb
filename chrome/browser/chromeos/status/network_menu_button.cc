@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -387,7 +387,7 @@ SkBitmap NetworkMenuButton::IconForDisplay(SkBitmap icon, SkBitmap badge) {
   static const int kBadgeX = 14;
   static const int kBadgeY = 14;
 
-  gfx::CanvasSkia canvas(kIconWidth, kIconHeight, false);
+  gfx::Canvas canvas(kIconWidth, kIconHeight, false);
   canvas.DrawBitmapInt(icon, kIconX, kIconY);
   if (!badge.empty())
     canvas.DrawBitmapInt(badge, kBadgeX, kBadgeY);

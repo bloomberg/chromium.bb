@@ -9,6 +9,7 @@
 #include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
 #include "base/logging.h"
+#include "gfx/canvas_2.h"
 #include "gfx/canvas_skia.h"
 
 namespace views {
@@ -24,12 +25,12 @@ void RootView::OnPaint(HWND hwnd) {
     RECT win_version = original_dirty_region.ToRECT();
     InvalidateRect(hwnd, &win_version, FALSE);
   }
-  scoped_ptr<gfx::CanvasPaint> canvas(
-      gfx::CanvasPaint::CreateCanvasPaint(hwnd));
+  scoped_ptr<gfx::CanvasPaint2> canvas(
+      gfx::CanvasPaint2::CreateCanvasPaint(hwnd));
   if (!canvas->IsValid()) {
     SchedulePaint(canvas->GetInvalidRect(), false);
     if (NeedsPainting(false))
-      ProcessPaint(canvas->AsCanvas());
+      ProcessPaint(canvas->AsCanvas2()->AsCanvas());
   }
 }
 

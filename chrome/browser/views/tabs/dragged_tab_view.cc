@@ -5,6 +5,7 @@
 #include "chrome/browser/views/tabs/dragged_tab_view.h"
 
 #include "chrome/browser/views/tabs/native_view_photobooth.h"
+#include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/widget/widget.h"
@@ -185,7 +186,8 @@ void DraggedTabView::PaintAttachedTab(gfx::Canvas* canvas) {
 
 void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   gfx::Size ps = GetPreferredSize();
-  gfx::CanvasSkia scale_canvas(ps.width(), ps.height(), false);
+  // TODO(beng): Convert to CanvasSkia
+  gfx::Canvas scale_canvas(ps.width(), ps.height(), false);
   SkBitmap& bitmap_device = const_cast<SkBitmap&>(
       scale_canvas.getTopPlatformDevice().accessBitmap(true));
   bitmap_device.eraseARGB(0, 0, 0, 0);
@@ -227,7 +229,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   rc.fTop = 0;
   rc.fRight = SkIntToScalar(ps.width());
   rc.fBottom = SkIntToScalar(ps.height());
-  canvas->AsCanvasSkia()->drawRect(rc, paint);
+  canvas->drawRect(rc, paint);
 }
 
 void DraggedTabView::PaintFocusRect(gfx::Canvas* canvas) {

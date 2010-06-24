@@ -6,7 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser_theme_provider.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/skia_util.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -70,7 +70,7 @@ void DetachableToolbarView::PaintContentAreaBackground(
   paint.setAntiAlias(true);
   paint.setColor(theme_provider->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
 
-  canvas->AsCanvasSkia()->drawRoundRect(
+  canvas->drawRoundRect(
       rect, SkDoubleToScalar(roundness), SkDoubleToScalar(roundness), paint);
 }
 
@@ -85,9 +85,9 @@ void DetachableToolbarView::PaintContentAreaBorder(
   border_paint.setAlpha(96);
   border_paint.setAntiAlias(true);
 
-  canvas->AsCanvasSkia()->drawRoundRect(
-      rect, SkDoubleToScalar(roundness), SkDoubleToScalar(roundness),
-      border_paint);
+  canvas->drawRoundRect(rect,
+                        SkDoubleToScalar(roundness),
+                        SkDoubleToScalar(roundness), border_paint);
 }
 
 // static
@@ -106,7 +106,7 @@ void DetachableToolbarView::PaintVerticalDivider(
                 SkIntToScalar(vertical_padding + 1),
                 SkIntToScalar(x + 1),
                 SkIntToScalar(height / 2) };
-  canvas->AsCanvasSkia()->drawRect(rc, paint);
+  canvas->drawRect(rc, paint);
 
   // Draw the lower half of the divider.
   SkPaint paint_down;
@@ -118,5 +118,5 @@ void DetachableToolbarView::PaintVerticalDivider(
                      SkIntToScalar(height / 2),
                      SkIntToScalar(x + 1),
                      SkIntToScalar(height - vertical_padding) };
-  canvas->AsCanvasSkia()->drawRect(rc_down, paint_down);
+  canvas->drawRect(rc_down, paint_down);
 }

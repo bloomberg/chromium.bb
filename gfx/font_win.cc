@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 
 namespace gfx {
 
@@ -171,8 +171,7 @@ Font Font::DeriveFont(int size_delta, int style) const {
 
 int Font::GetStringWidth(const std::wstring& text) const {
   int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(text, *this, &width, &height,
-                            gfx::Canvas::NO_ELLIPSIS);
+  Canvas::SizeStringInt(text, *this, &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }
 

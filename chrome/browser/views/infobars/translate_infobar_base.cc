@@ -12,7 +12,7 @@
 #include "chrome/browser/views/infobars/before_translate_infobar.h"
 #include "chrome/browser/views/infobars/translate_message_infobar.h"
 #include "chrome/browser/views/infobars/infobar_button_border.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "grit/app_resources.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/image_view.h"
@@ -148,12 +148,11 @@ void TranslateInfoBarBase::FadeBackground(gfx::Canvas* canvas,
                                           const InfoBarBackground& background) {
   // Draw the background into an offscreen buffer with alpha value per animation
   // value, then blend it back into the current canvas.
-  canvas->AsCanvasSkia()->saveLayerAlpha(
-      NULL, static_cast<int>(animation_value * 255),
-      SkCanvas::kARGB_NoClipLayer_SaveFlag);
-  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->saveLayerAlpha(NULL, static_cast<int>(animation_value * 255),
+                         SkCanvas::kARGB_NoClipLayer_SaveFlag);
+  canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   background.Paint(canvas, this);
-  canvas->AsCanvasSkia()->restore();
+  canvas->restore();
 }
 
 // TranslateInfoBarDelegate views specific method:

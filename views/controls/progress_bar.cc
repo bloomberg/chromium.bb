@@ -10,7 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/font.h"
 #include "gfx/insets.h"
@@ -75,7 +75,7 @@ static void FillRoundRect(gfx::Canvas* canvas,
   } else {
     paint.setColor(gradient_start_color);
   }
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->drawPath(path, paint);
 }
 
 static void StrokeRoundRect(gfx::Canvas* canvas,
@@ -92,7 +92,7 @@ static void StrokeRoundRect(gfx::Canvas* canvas,
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStrokeWidth(SkIntToScalar(stroke_width));
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->drawPath(path, paint);
 }
 
 }  // anonymous namespace

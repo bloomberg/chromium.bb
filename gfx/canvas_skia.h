@@ -6,7 +6,7 @@
 #define GFX_CANVAS_SKIA_H_
 
 #include "base/basictypes.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_2.h"
 #include "skia/ext/platform_canvas.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -33,7 +33,7 @@ class Canvas;
 // the variant that does not take a SkXfermode::Mode uses a transfer mode
 // of kSrcOver_Mode.
 class CanvasSkia : public skia::PlatformCanvas,
-                   public Canvas {
+                   public Canvas2 {
  public:
   // Creates an empty Canvas. Callers must use initialize before using the
   // canvas.
@@ -76,9 +76,6 @@ class CanvasSkia : public skia::PlatformCanvas,
                           int x, int y, int w, int h, int flags);
 #endif
 
-  // Extracts a bitmap from the contents of this canvas.
-  SkBitmap ExtractBitmap() const;
-
   // Overridden from Canvas2:
   virtual bool GetClipRect(gfx::Rect* clip_rect);
   virtual bool ClipRectInt(int x, int y, int w, int h);
@@ -118,8 +115,7 @@ class CanvasSkia : public skia::PlatformCanvas,
   virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h);
   virtual void TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h);
-  virtual CanvasSkia* AsCanvasSkia();
-  virtual const CanvasSkia* AsCanvasSkia() const;
+  virtual SkBitmap ExtractBitmap() const;
 
  private:
 #if defined(OS_WIN)

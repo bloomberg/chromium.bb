@@ -9,7 +9,7 @@
 #include "base/i18n/word_iterator.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "gfx/size.h"
 #include "views/controls/label.h"
@@ -118,7 +118,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
       word = text;  // Draw the whole text at once.
 
     int w = font.GetStringWidth(word), h = font.height();
-    gfx::CanvasSkia::SizeStringInt(word, font, &w, &h, flags);
+    canvas->SizeStringInt(word, font, &w, &h, flags);
 
     // If we exceed the boundaries, we need to wrap.
     WrapIfWordDoesntFit(w, font.height(), position, bounds);
@@ -132,7 +132,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
       // left of the LTR string.
       if (ltr_within_rtl && word[word.size() - 1] == L' ') {
         int space_w = font.GetStringWidth(L" "), space_h = font.height();
-        gfx::CanvasSkia::SizeStringInt(L" ", font, &space_w, &space_h, flags);
+        canvas->SizeStringInt(L" ", font, &space_w, &space_h, flags);
         x += space_w;
       }
     }

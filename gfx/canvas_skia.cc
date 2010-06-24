@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 
 #include <limits>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -17,17 +18,6 @@
 #endif
 
 namespace gfx {
-
-SkBitmap CanvasSkia::ExtractBitmap() const {
-  const SkBitmap& device_bitmap = getDevice()->accessBitmap(false);
-
-  // Make a bitmap to return, and a canvas to draw into it. We don't just want
-  // to call extractSubset or the copy constructor, since we want an actual copy
-  // of the bitmap.
-  SkBitmap result;
-  device_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
-  return result;
-}
 
 bool CanvasSkia::GetClipRect(gfx::Rect* r) {
   SkRect clip;
@@ -273,12 +263,15 @@ void CanvasSkia::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
   restore();
 }
 
-CanvasSkia* CanvasSkia::AsCanvasSkia() {
-  return this;
-}
+SkBitmap CanvasSkia::ExtractBitmap() const {
+  const SkBitmap& device_bitmap = getDevice()->accessBitmap(false);
 
-const CanvasSkia* CanvasSkia::AsCanvasSkia() const {
-  return this;
+  // Make a bitmap to return, and a canvas to draw into it. We don't just want
+  // to call extractSubset or the copy constuctor, since we want an actual copy
+  // of the bitmap.
+  SkBitmap result;
+  device_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
+  return result;
 }
 
 // static
@@ -289,19 +282,19 @@ int CanvasSkia::DefaultCanvasTextAlignment() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Canvas, public:
+// Canvas2, public:
 
-Canvas* Canvas::CreateCanvas() {
-  return new CanvasSkia;
+Canvas2* Canvas2::CreateCanvas() {
+  return new Canvas;
 }
 
-Canvas* Canvas::CreateCanvas(int width, int height, bool is_opaque) {
-  return new CanvasSkia(width, height, is_opaque);
+Canvas2* Canvas2::CreateCanvas(int width, int height, bool is_opaque) {
+  return new Canvas(width, height, is_opaque);
 }
 
 #if defined(OS_WIN)
 // TODO(beng): move to canvas_win.cc, etc.
-class CanvasPaintWin : public CanvasSkiaPaint, public CanvasPaint {
+class CanvasPaintWin : public CanvasSkiaPaint, public CanvasPaint2 {
  public:
   CanvasPaintWin(gfx::NativeView view) : CanvasSkiaPaint(view) {}
 
@@ -314,13 +307,13 @@ class CanvasPaintWin : public CanvasSkiaPaint, public CanvasPaint {
     return gfx::Rect(paintStruct().rcPaint);
   }
 
-  virtual Canvas* AsCanvas() {
+  virtual Canvas2* AsCanvas2() {
     return this;
   }
 };
 #endif
 
-CanvasPaint* CanvasPaint::CreateCanvasPaint(gfx::NativeView view) {
+CanvasPaint2* CanvasPaint2::CreateCanvasPaint(gfx::NativeView view) {
 #if defined(OS_WIN)
   return new CanvasPaintWin(view);
 #else

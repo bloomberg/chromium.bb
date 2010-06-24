@@ -10,7 +10,7 @@
 #include <Vssym32.h>
 #endif
 
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "views/border.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -83,14 +83,14 @@ class MenuScrollButton : public View {
     const MenuConfig& config = MenuConfig::instance();
 
 #if defined(OS_WIN)
-    HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+    HDC dc = canvas->beginPlatformPaint();
 
     // The background.
     RECT item_bounds = { 0, 0, width(), height() };
     NativeTheme::instance()->PaintMenuItemBackground(
         NativeTheme::MENU, dc, MENU_POPUPITEM, MPI_NORMAL, false,
         &item_bounds);
-    canvas->AsCanvasSkia()->endPlatformPaint();
+    canvas->endPlatformPaint();
 
     SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 #else
@@ -185,11 +185,11 @@ void MenuScrollViewContainer::PaintBackground(gfx::Canvas* canvas) {
   }
 
 #if defined(OS_WIN)
-  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC dc = canvas->beginPlatformPaint();
   RECT bounds = {0, 0, width(), height()};
   NativeTheme::instance()->PaintMenuBackground(
       NativeTheme::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->endPlatformPaint();
 #elif defined(OS_CHROMEOS)
   static const SkColor kGradientColors[2] = {
       SK_ColorWHITE,
@@ -220,8 +220,7 @@ void MenuScrollViewContainer::PaintBackground(gfx::Canvas* canvas) {
   canvas->FillRectInt(0, 0, width(), height(), paint);
 #else
   // This is the same as COLOR_TOOLBAR.
-  canvas->AsCanvasSkia()->drawColor(SkColorSetRGB(210, 225, 246),
-                                    SkXfermode::kSrc_Mode);
+  canvas->drawColor(SkColorSetRGB(210, 225, 246), SkXfermode::kSrc_Mode);
 #endif
 }
 

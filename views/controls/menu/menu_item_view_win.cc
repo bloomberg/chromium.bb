@@ -8,7 +8,7 @@
 #include <Vssym32.h>
 
 #include "app/l10n_util.h"
-#include "gfx/canvas_skia.h"
+#include "gfx/canvas.h"
 #include "gfx/native_theme_win.h"
 #include "grit/app_strings.h"
 #include "views/controls/menu/menu_config.h"
@@ -34,7 +34,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
        GetChildViewCount() == 0);
   int state = render_selection ? MPI_HOT :
                                  (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
-  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC dc = canvas->beginPlatformPaint();
 
   // The gutter is rendered before the background.
   if (config.render_gutter && !for_drag) {
@@ -87,10 +87,10 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
     // foreground and background colors are for the text to draw the correct
     // halo. Instead, just draw black on white, which will look good in most
     // cases.
-    canvas->AsCanvasSkia()->DrawStringWithHalo(
-        GetTitle(), font, 0x00000000, 0xFFFFFFFF, text_bounds.x(),
-        text_bounds.y(), text_bounds.width(), text_bounds.height(),
-        GetRootMenuItem()->GetDrawStringFlags());
+    canvas->DrawStringWithHalo(GetTitle(), font, 0x00000000, 0xFFFFFFFF,
+                               text_bounds.x(), text_bounds.y(),
+                               text_bounds.width(), text_bounds.height(),
+                               GetRootMenuItem()->GetDrawStringFlags());
   } else {
     canvas->DrawStringInt(GetTitle(), font, fg_color,
                           text_bounds.x(), text_bounds.y(), text_bounds.width(),
@@ -131,7 +131,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
         NativeTheme::MENU, dc, MENU_POPUPSUBMENU, state_id, &arrow_rect,
         arrow_direction, render_selection);
   }
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->endPlatformPaint();
 }
 void MenuItemView::PaintCheck(HDC dc,
                               int state_id,
