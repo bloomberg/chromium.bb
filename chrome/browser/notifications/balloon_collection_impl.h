@@ -84,8 +84,6 @@ class BalloonCollectionImpl : public BalloonCollection {
 
    private:
     enum Placement {
-      HORIZONTALLY_FROM_BOTTOM_LEFT,
-      HORIZONTALLY_FROM_BOTTOM_RIGHT,
       VERTICALLY_FROM_TOP_RIGHT,
       VERTICALLY_FROM_BOTTOM_RIGHT
     };

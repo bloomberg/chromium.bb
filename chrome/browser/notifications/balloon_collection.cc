@@ -124,11 +124,6 @@ void BalloonCollectionImpl::Layout::GetMaxLinearSize(int* max_balloon_size,
   DCHECK(max_balloon_size && total_size);
 
   switch (placement_) {
-    case HORIZONTALLY_FROM_BOTTOM_LEFT:
-    case HORIZONTALLY_FROM_BOTTOM_RIGHT:
-      *total_size = work_area_.width();
-      *max_balloon_size = max_balloon_width();
-      break;
     case VERTICALLY_FROM_TOP_RIGHT:
     case VERTICALLY_FROM_BOTTOM_RIGHT:
       *total_size = work_area_.height();
@@ -144,14 +139,6 @@ gfx::Point BalloonCollectionImpl::Layout::GetLayoutOrigin() const {
   int x = 0;
   int y = 0;
   switch (placement_) {
-    case HORIZONTALLY_FROM_BOTTOM_LEFT:
-      x = work_area_.x() + HorizontalEdgeMargin();
-      y = work_area_.bottom() - VerticalEdgeMargin();
-      break;
-    case HORIZONTALLY_FROM_BOTTOM_RIGHT:
-      x = work_area_.right() - HorizontalEdgeMargin();
-      y = work_area_.bottom() - VerticalEdgeMargin();
-      break;
     case VERTICALLY_FROM_TOP_RIGHT:
       x = work_area_.right() - HorizontalEdgeMargin();
       y = work_area_.y() + VerticalEdgeMargin();
@@ -175,18 +162,6 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
   int x = 0;
   int y = 0;
   switch (placement_) {
-    case HORIZONTALLY_FROM_BOTTOM_LEFT:
-      x = position_iterator->x();
-      y = position_iterator->y() - balloon_size.height();
-      position_iterator->set_x(position_iterator->x() + balloon_size.width() +
-                               InterBalloonMargin());
-      break;
-    case HORIZONTALLY_FROM_BOTTOM_RIGHT:
-      position_iterator->set_x(position_iterator->x() - balloon_size.width() -
-                               InterBalloonMargin());
-      x = position_iterator->x();
-      y = position_iterator->y() - balloon_size.height();
-      break;
     case VERTICALLY_FROM_TOP_RIGHT:
       x = position_iterator->x() - balloon_size.width();
       y = position_iterator->y();
@@ -210,25 +185,17 @@ gfx::Point BalloonCollectionImpl::Layout::OffScreenLocation() const {
   int x = 0;
   int y = 0;
   switch (placement_) {
-      case HORIZONTALLY_FROM_BOTTOM_LEFT:
-        x = work_area_.x() - kBalloonMaxWidth - HorizontalEdgeMargin();
-        y = work_area_.bottom() - kBalloonMaxHeight - VerticalEdgeMargin();
-        break;
-      case HORIZONTALLY_FROM_BOTTOM_RIGHT:
-        x = work_area_.right() + HorizontalEdgeMargin();
-        y = work_area_.bottom() - kBalloonMaxHeight - VerticalEdgeMargin();
-        break;
-      case VERTICALLY_FROM_TOP_RIGHT:
-        x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();
-        y = work_area_.y() + kBalloonMaxHeight + VerticalEdgeMargin();
-        break;
-      case VERTICALLY_FROM_BOTTOM_RIGHT:
-        x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();
-        y = work_area_.bottom() + kBalloonMaxHeight + VerticalEdgeMargin();
-        break;
-      default:
-        NOTREACHED();
-        break;
+    case VERTICALLY_FROM_TOP_RIGHT:
+      x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();
+      y = work_area_.y() + kBalloonMaxHeight + VerticalEdgeMargin();
+      break;
+    case VERTICALLY_FROM_BOTTOM_RIGHT:
+      x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();
+      y = work_area_.bottom() + kBalloonMaxHeight + VerticalEdgeMargin();
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
   return gfx::Point(x, y);
 }
