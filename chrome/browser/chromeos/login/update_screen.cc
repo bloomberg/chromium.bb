@@ -42,7 +42,10 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
                                    GoogleUpdateErrorCode error_code,
                                    const std::wstring& version) {
   // Drop the last reference to the object so that it gets cleaned up here.
-  google_updater_ = NULL;
+  if (google_updater_.get()) {
+    google_updater_->set_status_listener(NULL);
+    google_updater_ = NULL;
+  }
   // Depending on the result decide what to do next.
   update_result_ = result;
   update_error_ = error_code;
@@ -101,8 +104,10 @@ void UpdateScreen::CancelUpdate() {
 }
 
 void UpdateScreen::ExitUpdate() {
-  google_updater_->set_status_listener(NULL);
-  google_updater_ = NULL;
+  if (google_updater_.get()) {
+    google_updater_->set_status_listener(NULL);
+    google_updater_ = NULL;
+  }
   minimal_update_time_timer_.Stop();
   ScreenObserver* observer = delegate()->GetObserver(this);
   if (observer) {
