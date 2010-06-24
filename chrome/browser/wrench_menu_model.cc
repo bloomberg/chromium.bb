@@ -68,6 +68,27 @@ WrenchMenuModel::WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
 WrenchMenuModel::~WrenchMenuModel() {
 }
 
+static bool CalculateEnabled() {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kNewWrenchMenu)) {
+    // Honor the switch if present.
+    std::string value = cl->GetSwitchValueASCII(switches::kNewWrenchMenu);
+    return value.empty() || value == "true";
+  }
+  return false;
+}
+
+// static
+bool WrenchMenuModel::IsEnabled() {
+  static bool checked = false;
+  static bool enabled = false;
+  if (!checked) {
+    checked = true;
+    enabled = CalculateEnabled();
+  }
+  return enabled;
+}
+
 bool WrenchMenuModel::IsLabelDynamicAt(int index) const {
   return IsDynamicItem(index) || SimpleMenuModel::IsLabelDynamicAt(index);
 }

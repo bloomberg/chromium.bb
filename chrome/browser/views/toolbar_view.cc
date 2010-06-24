@@ -162,9 +162,7 @@ void ToolbarView::Init(Profile* profile) {
 
   browser_actions_ = new BrowserActionsContainer(browser_, this, true);
 
-  bool use_wrench_menu =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewWrenchMenu);
-  if (!use_wrench_menu) {
+  if (!WrenchMenuModel::IsEnabled()) {
     page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
     page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
     page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
@@ -207,7 +205,7 @@ void ToolbarView::Init(Profile* profile) {
 
   SetProfile(profile);
   if (!app_menu_model_.get()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewWrenchMenu)) {
+    if (WrenchMenuModel::IsEnabled()) {
       SetAppMenuModel(new WrenchMenuModel(this, browser_));
     } else {
       SetAppMenuModel(new AppMenuModel(this, browser_));
@@ -744,7 +742,7 @@ void ToolbarView::RunPageMenu(const gfx::Point& pt) {
 }
 
 void ToolbarView::RunAppMenu(const gfx::Point& pt) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewWrenchMenu)) {
+  if (WrenchMenuModel::IsEnabled()) {
     bool destroyed_flag = false;
     destroyed_flag_ = &destroyed_flag;
     wrench_menu_.reset(new WrenchMenu(browser_));

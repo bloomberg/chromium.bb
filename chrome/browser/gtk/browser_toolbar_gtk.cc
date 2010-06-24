@@ -204,8 +204,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   // We need another hbox for the menu buttons so we can place them together,
   // but still have some padding to their collective left/right.
-  bool use_wrench_menu =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewWrenchMenu);
+  bool use_wrench_menu = WrenchMenuModel::IsEnabled();
   GtkWidget* menus_hbox = gtk_hbox_new(FALSE, 0);
   if (!use_wrench_menu) {
     GtkWidget* page_menu = BuildToolbarMenuButton(

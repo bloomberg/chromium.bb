@@ -210,7 +210,7 @@ class ToolbarView : public AccessibleToolbarView,
   scoped_ptr<views::Menu2> page_menu_menu_;
   scoped_ptr<views::Menu2> app_menu_menu_;
 
-  // Wrench menu. Only used if kNewWrenchMenu is set.
+  // Wrench menu. Only used if WrenchMenuModel::IsEnabled.
   scoped_ptr<WrenchMenu> wrench_menu_;
 
   // Vector of listeners to receive callbacks when the menu opens.

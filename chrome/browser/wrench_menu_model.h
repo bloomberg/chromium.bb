@@ -36,6 +36,9 @@ class WrenchMenuModel : public menus::SimpleMenuModel {
                            Browser* browser);
   virtual ~WrenchMenuModel();
 
+  // Returns true if the WrenchMenuModel is enabled.
+  static bool IsEnabled();
+
   // Overridden from menus::SimpleMenuModel:
   virtual bool IsLabelDynamicAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
