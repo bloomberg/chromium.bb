@@ -327,6 +327,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                       int64 id,
                       bool* success);
 
+  // Util for creating a JSON error return string (dict with key
+  // 'error' and error string value).  No need to quote input.
+  std::string JSONErrorString(std::string err);
+
   // Set window dimensions.
   // Uses the JSON interface for input/output.
   void SetWindowDimensions(Browser* browser,
@@ -431,6 +435,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void OmniboxAcceptInput(Browser* browser,
                           DictionaryValue* args,
                           IPC::Message* reply_message);
+
+  // Save the contents of a tab into a file.
+  // Uses the JSON interface for input/output.
+  void SaveTabContents(Browser* browser,
+                       DictionaryValue* args,
+                       IPC::Message* reply_message);
 
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.

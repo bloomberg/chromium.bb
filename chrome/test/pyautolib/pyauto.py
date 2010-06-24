@@ -29,7 +29,9 @@ import logging
 import optparse
 import os
 import re
+import shutil
 import sys
+import tempfile
 import time
 import types
 import unittest
@@ -616,6 +618,39 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
     if ret_dict.has_key('error'):
       raise JSONInterfaceError(ret_dict['error'])
+
+  def GetTabContents(self, tab_index=0, window_index=0):
+    """Get the html contents of a tab (a la "view source").
+
+    As an implementation detail, this saves the html in a file, reads
+    the file into a buffer, then deletes it.
+
+    Args:
+      tab_index: tab index, defaults to 0.
+      window_index: window index, defaults to 0.
+    Returns:
+      html content of a page as a string.
+    """
+    tempdir = tempfile.mkdtemp()
+    filename = os.path.join(tempdir, 'content.html')
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SaveTabContents',
+      'tab_index': tab_index,
+      'filename': filename
+    }
+    ret_dict = json.loads(self._SendJSONRequest(window_index,
+                                                json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    try:
+      f = open(filename)
+      all_data = f.read()
+      f.close()
+      return all_data
+    except IOError:
+      raise
+    finally:
+      shutil.rmtree(tempdir)
 
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):

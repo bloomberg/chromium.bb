@@ -21,6 +21,7 @@ class Browser;
 class Extension;
 class ExtensionProcessManager;
 class NavigationController;
+class SavePackage;
 class TabContents;
 
 namespace IPC {
@@ -630,6 +631,26 @@ class OmniboxAcceptNotificationObserver : public NotificationObserver {
   NavigationController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxAcceptNotificationObserver);
+};
+
+// Allows the automation provider to wait for a save package notification.
+class SavePackageNotificationObserver : public NotificationObserver {
+ public:
+  SavePackageNotificationObserver(SavePackage* save_package,
+                                  AutomationProvider* automation,
+                                  IPC::Message* reply_message);
+  virtual ~SavePackageNotificationObserver() {}
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

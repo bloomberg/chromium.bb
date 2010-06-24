@@ -11,6 +11,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -1043,3 +1044,26 @@ void OmniboxAcceptNotificationObserver::Observe(
   }
 }
 
+SavePackageNotificationObserver::SavePackageNotificationObserver(
+    SavePackage* save_package,
+    AutomationProvider* automation,
+    IPC::Message* reply_message) : automation_(automation),
+                                   reply_message_(reply_message) {
+  Source<SavePackage> source(save_package);
+  registrar_.Add(this, NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+                 source);
+}
+
+void SavePackageNotificationObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (type == NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED) {
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+        reply_message_, std::string("{}"), true);
+    automation_->Send(reply_message_);
+    delete this;
+  } else {
+    NOTREACHED();
+  }
+}

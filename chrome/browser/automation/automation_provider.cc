@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/callback.h"
+#include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -1608,6 +1609,19 @@ void AutomationProvider::SetWindowDimensions(Browser* browser,
   Send(reply_message);
 }
 
+std::string AutomationProvider::JSONErrorString(std::string err) {
+  std::string prefix = "{\"error\": \"";
+  std::string no_quote_err = err;
+  std::string suffix = "\"}";
+
+  // Don't allow input string to break JSON by embedding quotes.
+  // Try and make sure the input string won't break json quoting rules.
+  if (no_quote_err.find("\"") != std::string::npos)
+    no_quote_err = "unhappy about embedded quote in error string";
+
+  return prefix + no_quote_err + suffix;
+}
+
 // Sample json input: { "command": "GetBrowserInfo" }
 // Refer to GetBrowserInfo() in chrome/test/pyautolib/pyauto.py for
 // sample json output.
@@ -1796,7 +1810,7 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
     if (title.length())
       hs->SetPageTitle(gurl, title);
   } else {
-    json_return = "{\"error\": \"bad args (no URL in dict?).\"}";
+    json_return = JSONErrorString("bad args (no URL in dict?)");
     reply_return = false;
   }
 
@@ -1817,7 +1831,7 @@ void AutomationProvider::GetDownloadsInfo(Browser* browser,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   if (!profile_->HasCreatedDownloadManager()) {
-    json_return = "{\"error\": \"no download manager\"}";
+    json_return = JSONErrorString("no download manager");
     reply_return = false;
   } else {
     // Use DownloadManager's GetDownloads() method and not GetCurrentDownloads()
@@ -1883,7 +1897,7 @@ void AutomationProvider::WaitForDownloadsToComplete(
 
   // Look for a quick return.
   if (!profile_->HasCreatedDownloadManager()) {
-    json_return = "{\"error\": \"no download manager\"}";
+    json_return = JSONErrorString("no download manager");
     reply_return = false;
   } else {
     profile_->GetDownloadManager()->GetCurrentDownloads(&observer,
@@ -1948,16 +1962,16 @@ void AutomationProvider::SetPrefs(Browser* browser,
     const PrefService::Preference* pref =
         pref_service->FindPreference(path.c_str());
     if (!pref) {  // Not a registered pref.
-      json_return = "{\"error\": \"pref not registered.\"}";
+      json_return = JSONErrorString("pref not registered.");
       reply_return = false;
     } else if (pref->IsManaged()) {  // Do not attempt to change a managed pref.
-      json_return = "{\"error\": \"pref is managed. cannot be changed.\"}";
+      json_return = JSONErrorString("pref is managed. cannot be changed.");
       reply_return = false;
     } else {  // Set the pref.
       pref_service->Set(path.c_str(), *val);
     }
   } else {
-    json_return = "{\"error\": \"no pref path or value given.\"}";
+    json_return = JSONErrorString("no pref path or value given.");
     reply_return = false;
   }
 
@@ -2019,7 +2033,7 @@ void AutomationProvider::SetOmniboxText(Browser* browser,
   std::wstring text;
 
   if (!args->GetString(L"text", &text)) {
-    json_return = "{\"error\": \"text missing\"}";
+    json_return = JSONErrorString("text missing");
     reply_return = false;
   } else {
     browser->FocusLocationBar();
@@ -2047,7 +2061,7 @@ void AutomationProvider::OmniboxMovePopupSelection(
   int count;
 
   if (!args->GetInteger(L"count", &count)) {
-    json_return = "{\"error\": \"count missing\"}";
+    json_return = JSONErrorString("count missing");
     reply_return = false;
   } else {
     LocationBar* loc_bar = browser->window()->GetLocationBar();
@@ -2153,7 +2167,7 @@ void AutomationProvider::EnablePlugin(Browser* browser,
   bool reply_return = true;
   FilePath::StringType path;
   if (!args->GetString(L"path", &path)) {
-    json_return = "{\"error\": \"path not specified.\"}";
+    json_return = JSONErrorString("path not specified.");
     reply_return = false;
   } else if (!NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(path))) {
     json_return = StringPrintf("{\"error\": \"Could not enable plugin"
@@ -2176,7 +2190,7 @@ void AutomationProvider::DisablePlugin(Browser* browser,
   bool reply_return = true;
   FilePath::StringType path;
   if (!args->GetString(L"path", &path)) {
-    json_return = "{\"error\": \"path not specified.\"}";
+    json_return = JSONErrorString("path not specified.");
     reply_return = false;
   } else if (!NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(path))) {
     json_return = StringPrintf("{\"error\": \"Could not enable plugin"
@@ -2186,6 +2200,52 @@ void AutomationProvider::DisablePlugin(Browser* browser,
 
   AutomationMsg_SendJSONRequest::WriteReplyParams(
       reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+// Sample json input:
+//    { "command": "SaveTabContents",
+//      "tab_index": 0,
+//      "filename": <a full pathname> }
+// Sample json output:
+//    {}
+void AutomationProvider::SaveTabContents(Browser* browser,
+                                         DictionaryValue* args,
+                                         IPC::Message* reply_message) {
+  std::string json_return;
+  int tab_index = 0;
+  FilePath::StringType filename;
+  FilePath::StringType parent_directory;
+  TabContents* tab_contents = NULL;
+
+  if (!args->GetInteger(L"tab_index", &tab_index) ||
+      !args->GetString(L"filename", &filename)) {
+    json_return = JSONErrorString("tab_index or filename param missing");
+  } else {
+    tab_contents = browser->GetTabContentsAt(tab_index);
+    if (!tab_contents) {
+      json_return = JSONErrorString("no tab at tab_index");
+    }
+  }
+  if (tab_contents) {
+    // We're doing a SAVE_AS_ONLY_HTML so the the directory path isn't
+    // used.  Nevertheless, SavePackage requires it be valid.  Sigh.
+    parent_directory = FilePath(filename).DirName().value();
+    if (!tab_contents->SavePage(FilePath(filename), FilePath(parent_directory),
+                                SavePackage::SAVE_AS_ONLY_HTML)) {
+      json_return = JSONErrorString("Could not initiate SavePage");
+    } else {
+      // The observer will delete itself when done.
+      new SavePackageNotificationObserver(tab_contents->save_package(),
+                                          this, reply_message);
+      return;
+    }
+  }
+
+  // if we get here, error.
+  DCHECK(!json_return.empty());
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, false);
   Send(reply_message);
 }
 
@@ -2253,6 +2313,8 @@ void AutomationProvider::SendJSONRequest(int handle,
       &AutomationProvider::WaitForDownloadsToComplete;
 
   handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
+
+  handler_map["SaveTabContents"] = &AutomationProvider::SaveTabContents;
 
   if (error_string.empty()) {
     if (handler_map.find(std::string(command)) != handler_map.end()) {

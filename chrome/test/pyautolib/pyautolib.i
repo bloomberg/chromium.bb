@@ -93,6 +93,10 @@ class BrowserProxy {
       ActivateTab;
   bool ActivateTab(int tab_index);
 
+  %feature("docstring", "Activate the browser's window and bring it to front.")
+      BringToFront;
+  bool BringToFront();
+
   %feature("docstring", "Get proxy to the tab at the given zero-based index")
       GetTab;
   scoped_refptr<TabProxy> GetTab(int tab_index) const;
