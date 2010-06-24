@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -59,6 +59,11 @@ void RadioButton::SetChecked(bool checked) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RadioButton, View overrides:
+
+bool RadioButton::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  *role = AccessibilityTypes::ROLE_RADIOBUTTON;
+  return true;
+}
 
 View* RadioButton::GetSelectedViewForGroup(int group_id) {
   std::vector<View*> views;

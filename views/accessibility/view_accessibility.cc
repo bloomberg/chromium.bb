@@ -292,7 +292,8 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
     child_view = view_->GetChildViewAt(var_child.lVal - 1);
 
     // Parents handle leaf IAccessible's.
-    if (child_view && child_view->GetChildViewCount() == 0)
+    if (child_view && child_view->GetChildViewCount() == 0 &&
+        !child_view->child_widget())
       return S_FALSE;
   } else {
     // Child is located elsewhere in this view's subtree.
@@ -826,6 +827,8 @@ int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_PROGRESSBAR;
     case AccessibilityTypes::ROLE_PUSHBUTTON:
       return ROLE_SYSTEM_PUSHBUTTON;
+    case AccessibilityTypes::ROLE_RADIOBUTTON:
+      return ROLE_SYSTEM_RADIOBUTTON;
     case AccessibilityTypes::ROLE_SCROLLBAR:
       return ROLE_SYSTEM_SCROLLBAR;
     case AccessibilityTypes::ROLE_SEPARATOR:

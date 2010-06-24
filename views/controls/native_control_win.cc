@@ -92,6 +92,12 @@ void NativeControlWin::VisibilityChanged(View* starting_from, bool is_visible) {
 void NativeControlWin::Focus() {
   DCHECK(native_view());
   SetFocus(native_view());
+
+  // Since we are being wrapped by a view, accessibility should receive
+  // the super class as the focused view.
+  View* parent_view = GetParent();
+  if (parent_view->HasFocus())
+    parent_view->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
