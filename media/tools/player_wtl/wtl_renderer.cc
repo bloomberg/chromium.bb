@@ -19,7 +19,11 @@ bool WtlVideoRenderer::IsMediaFormatSupported(
   return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
-void WtlVideoRenderer::OnStop() {
+void WtlVideoRenderer::OnStop(media::FilterCallback* callback) {
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
 }
 
 bool WtlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {

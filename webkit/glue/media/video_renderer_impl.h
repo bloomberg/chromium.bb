@@ -60,7 +60,7 @@ class VideoRendererImpl : public WebVideoRenderer {
   virtual bool OnInitialize(media::VideoDecoder* decoder);
 
   // Method called by the VideoRendererBase when stopping.
-  virtual void OnStop();
+  virtual void OnStop(media::FilterCallback* callback);
 
   // Method called by the VideoRendererBase when a frame is available.
   virtual void OnFrameAvailable();

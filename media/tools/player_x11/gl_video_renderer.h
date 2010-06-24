@@ -9,17 +9,20 @@
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "media/base/factory.h"
+#include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 
 class GlVideoRenderer : public media::VideoRendererBase {
  public:
   static media::FilterFactory* CreateFactory(Display* display,
-                                             Window window) {
-    return new media::FilterFactoryImpl2<
-        GlVideoRenderer, Display*, Window>(display, window);
+                                             Window window,
+                                             MessageLoop* message_loop) {
+    return new media::FilterFactoryImpl3<
+        GlVideoRenderer, Display*, Window, MessageLoop*>(display, window,
+                                                         message_loop);
   }
 
-  GlVideoRenderer(Display* display, Window window);
+  GlVideoRenderer(Display* display, Window window, MessageLoop* message_loop);
 
   // This method is called to paint the current video frame to the assigned
   // window.
@@ -30,10 +33,6 @@ class GlVideoRenderer : public media::VideoRendererBase {
 
   static GlVideoRenderer* instance() { return instance_; }
 
-  void set_glx_thread_message_loop(MessageLoop* message_loop) {
-    glx_thread_message_loop_ = message_loop;
-  }
-
   MessageLoop* glx_thread_message_loop() {
     return glx_thread_message_loop_;
   }
@@ -41,7 +40,7 @@ class GlVideoRenderer : public media::VideoRendererBase {
  protected:
   // VideoRendererBase implementation.
   virtual bool OnInitialize(media::VideoDecoder* decoder);
-  virtual void OnStop();
+  virtual void OnStop(media::FilterCallback* callback);
   virtual void OnFrameAvailable();
 
  private:

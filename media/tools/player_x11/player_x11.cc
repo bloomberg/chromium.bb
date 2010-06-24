@@ -68,7 +68,8 @@ bool InitX11() {
 
 bool InitPipeline(MessageLoop* message_loop,
                   const char* filename, bool enable_audio,
-                  scoped_refptr<media::PipelineImpl>* pipeline) {
+                  scoped_refptr<media::PipelineImpl>* pipeline,
+                  MessageLoop* paint_message_loop) {
   // Initialize OpenMAX.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOpenMax) &&
@@ -94,7 +95,8 @@ bool InitPipeline(MessageLoop* message_loop,
     factories->AddFactory(media::OmxVideoDecoder::CreateFactory());
   }
   factories->AddFactory(media::FFmpegVideoDecoder::CreateFactory());
-  factories->AddFactory(Renderer::CreateFactory(g_display, g_window));
+  factories->AddFactory(Renderer::CreateFactory(g_display, g_window,
+                                                paint_message_loop));
 
   if (enable_audio) {
     factories->AddFactory(media::AudioRendererImpl::CreateFilterFactory());
@@ -129,6 +131,7 @@ void TerminateHandler(int signal) {
 void PeriodicalUpdate(
     media::PipelineImpl* pipeline,
     MessageLoop* message_loop,
+    base::WaitableEvent* stop_event,
     bool audio_only) {
   if (!g_running) {
     message_loop->Quit();
@@ -172,7 +175,9 @@ void PeriodicalUpdate(
             g_running = false;
             // QuitNow is more responsive than Quit since renderer_base is till
             // posting paint messages.
-            message_loop->QuitNow();
+            pipeline->Stop(NewCallback(stop_event,
+                                       &base::WaitableEvent::Signal));
+            message_loop->Quit();
             return;
           } else if (key == XK_space) {
             if (pipeline->GetPlaybackRate() < 0.01f) // paused
@@ -189,7 +194,7 @@ void PeriodicalUpdate(
 
   message_loop->PostDelayedTask(FROM_HERE,
       NewRunnableFunction(PeriodicalUpdate, pipeline,
-                          message_loop, audio_only), 10);
+                          message_loop, stop_event, audio_only), 10);
 }
 
 int main(int argc, char** argv) {
@@ -227,31 +232,24 @@ int main(int argc, char** argv) {
   scoped_ptr<base::Thread> thread;
   scoped_refptr<media::PipelineImpl> pipeline;
   MessageLoop message_loop;
+  base::WaitableEvent stop_event(false, false);
   thread.reset(new base::Thread("PipelineThread"));
   thread->Start();
   if (InitPipeline(thread->message_loop(), filename.c_str(),
-                   enable_audio, &pipeline)) {
+                   enable_audio, &pipeline, &message_loop)) {
     // Main loop of the application.
     g_running = true;
 
     // Check if video is present.
     audio_only = !pipeline->IsRendered(media::mime_type::kMajorTypeVideo);
 
-    if (!audio_only) {
-      // Tell the renderer to paint.
-      DCHECK(Renderer::instance());
-      Renderer::instance()->set_glx_thread_message_loop(&message_loop);
-    }
-
     message_loop.PostTask(FROM_HERE,
         NewRunnableFunction(PeriodicalUpdate, pipeline.get(),
-                            &message_loop, audio_only));
+                            &message_loop, &stop_event, audio_only));
     message_loop.Run();
 
     // Need to wait for pipeline to be fully stopped before stopping the thread.
-    base::WaitableEvent event(false, false);
-    pipeline->Stop(NewCallback(&event, &base::WaitableEvent::Signal));
-    event.Wait();
+    stop_event.Wait();
   } else{
     std::cout << "Pipeline initialization failed..." << std::endl;
   }

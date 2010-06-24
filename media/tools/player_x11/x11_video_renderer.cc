@@ -53,13 +53,14 @@ static XRenderPictFormat* GetRenderARGB32Format(Display* dpy) {
   return pictformat;
 }
 
-X11VideoRenderer::X11VideoRenderer(Display* display, Window window)
+X11VideoRenderer::X11VideoRenderer(Display* display, Window window,
+                                   MessageLoop* message_loop)
     : display_(display),
       window_(window),
       image_(NULL),
       picture_(0),
       use_render_(false),
-      glx_thread_message_loop_(NULL) {
+      glx_thread_message_loop_(message_loop) {
 }
 
 X11VideoRenderer::~X11VideoRenderer() {
@@ -71,11 +72,15 @@ bool X11VideoRenderer::IsMediaFormatSupported(
   return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
-void X11VideoRenderer::OnStop() {
+void X11VideoRenderer::OnStop(media::FilterCallback* callback) {
   if (image_) {
     XDestroyImage(image_);
   }
   XRenderFreePicture(display_, picture_);
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
 }
 
 bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {

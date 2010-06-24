@@ -187,6 +187,32 @@ class FilterFactoryImpl2 : public FilterFactory {
   DISALLOW_COPY_AND_ASSIGN(FilterFactoryImpl2);
 };
 
+template <class Filter, class A, class B, class C>
+class FilterFactoryImpl3 : public FilterFactory {
+ public:
+  FilterFactoryImpl3(A a, B b, C c) : a_(a), b_(b), c_(c) {}
+
+ protected:
+  virtual MediaFilter* Create(FilterType filter_type,
+                              const MediaFormat& media_format) {
+    Filter* filter = NULL;
+    if (Filter::filter_type() == filter_type &&
+        Filter::IsMediaFormatSupported(media_format)) {
+      filter = new Filter(a_, b_, c_);
+    }
+    return filter;
+  }
+
+ private:
+  ~FilterFactoryImpl3() {}
+
+  A const a_;
+  B const b_;
+  C const c_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilterFactoryImpl3);
+};
+
 //------------------------------------------------------------------------------
 
 // This specialized factory is typically used by test programs that create

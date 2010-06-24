@@ -52,11 +52,11 @@ bool IPCVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   return true;
 }
 
-void IPCVideoRenderer::OnStop() {
+void IPCVideoRenderer::OnStop(media::FilterCallback* callback) {
   stopped_.Signal();
 
   proxy_->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &IPCVideoRenderer::DoDestroyVideo));
+      NewRunnableMethod(this, &IPCVideoRenderer::DoDestroyVideo, callback));
 }
 
 void IPCVideoRenderer::OnFrameAvailable() {
@@ -160,7 +160,7 @@ void IPCVideoRenderer::DoUpdateVideo() {
                                    video_rect_));
 }
 
-void IPCVideoRenderer::DoDestroyVideo() {
+void IPCVideoRenderer::DoDestroyVideo(media::FilterCallback* callback) {
   DCHECK(MessageLoop::current() == proxy_->message_loop());
 
   // We shouldn't receive any more messages after the browser receives this.
@@ -169,4 +169,8 @@ void IPCVideoRenderer::DoDestroyVideo() {
   // Detach ourselves from the proxy.
   proxy_->SetVideoRenderer(NULL);
   proxy_ = NULL;
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
 }

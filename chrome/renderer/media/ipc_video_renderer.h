@@ -59,7 +59,7 @@ class IPCVideoRenderer : public webkit_glue::WebVideoRenderer {
  protected:
   // VideoRendererBase implementation.
   virtual bool OnInitialize(media::VideoDecoder* decoder);
-  virtual void OnStop();
+  virtual void OnStop(media::FilterCallback* callback);
   virtual void OnFrameAvailable();
 
  private:
@@ -80,7 +80,7 @@ class IPCVideoRenderer : public webkit_glue::WebVideoRenderer {
   void DoUpdateVideo();
 
   // Handles destroying the video on the render thread.
-  void DoDestroyVideo();
+  void DoDestroyVideo(media::FilterCallback* callback);
 
   // Pointer to our parent object that is called to request repaints.
   scoped_refptr<webkit_glue::WebMediaPlayerImpl::Proxy> proxy_;

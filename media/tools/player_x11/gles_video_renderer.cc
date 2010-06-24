@@ -11,14 +11,15 @@
 #include <X11/extensions/Xcomposite.h>
 
 #include "media/base/buffers.h"
-#include "media/base/pipeline.h"
 #include "media/base/filter_host.h"
+#include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 
 GlesVideoRenderer* GlesVideoRenderer::instance_ = NULL;
 
-GlesVideoRenderer::GlesVideoRenderer(Display* display, Window window)
+GlesVideoRenderer::GlesVideoRenderer(Display* display, Window window,
+                                     MessageLoop* message_loop)
     : egl_create_image_khr_(NULL),
       egl_destroy_image_khr_(NULL),
       display_(display),
@@ -26,7 +27,7 @@ GlesVideoRenderer::GlesVideoRenderer(Display* display, Window window)
       egl_display_(NULL),
       egl_surface_(NULL),
       egl_context_(NULL),
-      glx_thread_message_loop_(NULL) {
+      glx_thread_message_loop_(message_loop) {
 }
 
 GlesVideoRenderer::~GlesVideoRenderer() {
@@ -38,11 +39,17 @@ bool GlesVideoRenderer::IsMediaFormatSupported(
   return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
-void GlesVideoRenderer::OnStop() {
-  // TODO(hclam): Context switching seems to be broek so the following
-  // calls may fail. Need to fix them.
-  eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
-                 EGL_NO_SURFACE, EGL_NO_CONTEXT);
+void GlesVideoRenderer::OnStop(media::FilterCallback* callback) {
+  if (glx_thread_message_loop()) {
+    glx_thread_message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &GlesVideoRenderer::DeInitializeGlesTask,
+                          callback));
+  }
+}
+
+void GlesVideoRenderer::DeInitializeGlesTask(media::FilterCallback* callback) {
+  DCHECK_EQ(glx_thread_message_loop(), MessageLoop::current());
+
   for (size_t i = 0; i < egl_frames_.size(); ++i) {
     scoped_refptr<media::VideoFrame> frame = egl_frames_[i].first;
     if (frame->private_buffer())
@@ -51,8 +58,15 @@ void GlesVideoRenderer::OnStop() {
       glDeleteTextures(1, &egl_frames_[i].second);
   }
   egl_frames_.clear();
+  eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
+                 EGL_NO_SURFACE, EGL_NO_CONTEXT);
   eglDestroyContext(egl_display_, egl_context_);
   eglDestroySurface(egl_display_, egl_surface_);
+
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
 }
 
 // Matrix used for the YUV to RGB conversion.

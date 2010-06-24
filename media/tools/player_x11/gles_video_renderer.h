@@ -13,18 +13,21 @@
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "media/base/factory.h"
+#include "media/base/filters.h"
 #include "media/base/video_frame.h"
 #include "media/filters/video_renderer_base.h"
 
 class GlesVideoRenderer : public media::VideoRendererBase {
  public:
   static media::FilterFactory* CreateFactory(Display* display,
-                                             Window window) {
-    return new media::FilterFactoryImpl2<
-        GlesVideoRenderer, Display*, Window>(display, window);
+                                             Window window,
+                                             MessageLoop* message_loop) {
+    return new media::FilterFactoryImpl3<
+        GlesVideoRenderer, Display*, Window, MessageLoop*>(display, window,
+                                                           message_loop);
   }
 
-  GlesVideoRenderer(Display* display, Window window);
+  GlesVideoRenderer(Display* display, Window window, MessageLoop* message_loop);
 
   // This method is called to paint the current video frame to the assigned
   // window.
@@ -35,10 +38,6 @@ class GlesVideoRenderer : public media::VideoRendererBase {
 
   static GlesVideoRenderer* instance() { return instance_; }
 
-  void set_glx_thread_message_loop(MessageLoop* message_loop) {
-    glx_thread_message_loop_ = message_loop;
-  }
-
   MessageLoop* glx_thread_message_loop() {
     return glx_thread_message_loop_;
   }
@@ -46,7 +45,7 @@ class GlesVideoRenderer : public media::VideoRendererBase {
  protected:
   // VideoRendererBase implementation.
   virtual bool OnInitialize(media::VideoDecoder* decoder);
-  virtual void OnStop();
+  virtual void OnStop(media::FilterCallback* callback);
   virtual void OnFrameAvailable();
 
  private:
@@ -61,6 +60,8 @@ class GlesVideoRenderer : public media::VideoRendererBase {
   void LinkProgram(GLuint program);
   void CreateTextureAndProgramEgl();
   void CreateTextureAndProgramYuv2Rgb();
+
+  void DeInitializeGlesTask(media::FilterCallback* callback);
 
   PFNEGLCREATEIMAGEKHRPROC egl_create_image_khr_;
   PFNEGLDESTROYIMAGEKHRPROC egl_destroy_image_khr_;

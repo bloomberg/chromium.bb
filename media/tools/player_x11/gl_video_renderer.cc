@@ -13,11 +13,12 @@
 
 GlVideoRenderer* GlVideoRenderer::instance_ = NULL;
 
-GlVideoRenderer::GlVideoRenderer(Display* display, Window window)
+GlVideoRenderer::GlVideoRenderer(Display* display, Window window,
+                                 MessageLoop* message_loop)
     : display_(display),
       window_(window),
       gl_context_(NULL),
-      glx_thread_message_loop_(NULL) {
+      glx_thread_message_loop_(message_loop) {
 }
 
 GlVideoRenderer::~GlVideoRenderer() {
@@ -29,9 +30,13 @@ bool GlVideoRenderer::IsMediaFormatSupported(
   return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
-void GlVideoRenderer::OnStop() {
+void GlVideoRenderer::OnStop(media::FilterCallback* callback) {
   glXMakeCurrent(display_, 0, NULL);
   glXDestroyContext(display_, gl_context_);
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
 }
 
 static GLXContext InitGLContext(Display* display, Window window) {

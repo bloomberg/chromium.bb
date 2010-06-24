@@ -47,7 +47,11 @@ bool VideoRendererImpl::OnInitialize(media::VideoDecoder* decoder) {
   return false;
 }
 
-void VideoRendererImpl::OnStop() {
+void VideoRendererImpl::OnStop(media::FilterCallback* callback) {
+  if (callback) {
+    callback->Run();
+    delete callback;
+  }
 }
 
 void VideoRendererImpl::OnFrameAvailable() {
