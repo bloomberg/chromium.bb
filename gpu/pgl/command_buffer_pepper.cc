@@ -131,11 +131,11 @@ void CommandBufferPepper::SetGetOffset(int32 get_offset) {
 }
 
 int32 CommandBufferPepper::CreateTransferBuffer(size_t size) {
-  int32 id;
+  int32_t id;
   if (NPERR_NO_ERROR != device_->createBuffer(npp_, context_, size, &id))
     return -1;
 
-  return id;
+  return static_cast<int32>(id);
 }
 
 void CommandBufferPepper::DestroyTransferBuffer(int32 id) {
@@ -165,7 +165,7 @@ void CommandBufferPepper::SetParseError(
 }
 
 gpu::error::Error CommandBufferPepper::GetCachedError() {
-  int32 attrib_list[] = {
+  int32_t attrib_list[] = {
     NPAttrib_Error, 0,
     NPAttrib_End
   };
