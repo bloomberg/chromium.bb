@@ -381,7 +381,6 @@
                     'pak_inputs': [
                       '<(grit_out_dir)/bookmark_manager_resources.pak',
                       '<(grit_out_dir)/net_internals_resources.pak',
-                      '<(grit_out_dir)/shared_resources.pak',
                     ],
                   },
                   'inputs': [
