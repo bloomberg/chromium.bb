@@ -14,6 +14,9 @@ include_rules = [
   # For databases/
   "+app/sql",
 
+  # For extensions/v8/benchmarking_extension.cc
+  "+chrome/common",
+
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+net/base",
   "+net/ftp",
