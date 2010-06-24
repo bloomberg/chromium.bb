@@ -254,7 +254,7 @@ drm_intel_gem_bo_tile_size(drm_intel_bufmgr_gem *bufmgr_gem, unsigned long size,
  */
 static unsigned long
 drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
-			    unsigned long pitch, uint32_t tiling_mode)
+			    unsigned long pitch, uint32_t *tiling_mode)
 {
 	unsigned long tile_width;
 	unsigned long i;
@@ -262,10 +262,10 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 	/* If untiled, then just align it so that we can do rendering
 	 * to it with the 3D engine.
 	 */
-	if (tiling_mode == I915_TILING_NONE)
+	if (*tiling_mode == I915_TILING_NONE)
 		return ALIGN(pitch, 64);
 
-	if (tiling_mode == I915_TILING_X)
+	if (*tiling_mode == I915_TILING_X)
 		tile_width = 512;
 	else
 		tile_width = 128;
@@ -273,6 +273,14 @@ drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
 	/* 965 is flexible */
 	if (bufmgr_gem->gen >= 4)
 		return ROUND_UP_TO(pitch, tile_width);
+
+	/* The older hardware has a maximum pitch of 8192 with tiled
+	 * surfaces, so fallback to untiled if it's too large.
+	 */
+	if (pitch > 8192) {
+		*tiling_mode = I915_TILING_NONE;
+		return ALIGN(pitch, 64);
+	}
 
 	/* Pre-965 needs power of two tile width */
 	for (i = tile_width; i < pitch; i <<= 1)
@@ -738,7 +746,7 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 			aligned_y = ALIGN(y, 32);
 
 		stride = x * cpp;
-		stride = drm_intel_gem_bo_tile_pitch(bufmgr_gem, stride, tiling);
+		stride = drm_intel_gem_bo_tile_pitch(bufmgr_gem, stride, tiling_mode);
 		size = stride * aligned_y;
 		size = drm_intel_gem_bo_tile_size(bufmgr_gem, size, tiling_mode);
 	} while (*tiling_mode != tiling);
