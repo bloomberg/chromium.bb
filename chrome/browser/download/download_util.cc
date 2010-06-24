@@ -27,7 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/time_format.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -225,7 +225,7 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
     foreground_paint.setShader(shader);
     foreground_paint.setAntiAlias(true);
     shader->unref();
-    canvas->drawPath(path, foreground_paint);
+    canvas->AsCanvasSkia()->drawPath(path, foreground_paint);
     return;
   }
 
@@ -271,12 +271,13 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
              SkIntToScalar(complete_bounds.y()),
              SkIntToScalar(complete_bounds.x() + complete_bounds.width()),
              SkIntToScalar(complete_bounds.y() + complete_bounds.height()));
-  canvas->saveLayerAlpha(&bounds,
-                         static_cast<int>(255.0 * opacity),
-                         SkCanvas::kARGB_ClipLayer_SaveFlag);
-  canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->AsCanvasSkia()->saveLayerAlpha(
+      &bounds,
+      static_cast<int>(255.0 * opacity),
+      SkCanvas::kARGB_ClipLayer_SaveFlag);
+  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   canvas->DrawBitmapInt(*complete, complete_bounds.x(), complete_bounds.y());
-  canvas->restore();
+  canvas->AsCanvasSkia()->restore();
 }
 
 // Load a language dependent height so that the dangerous download confirmation

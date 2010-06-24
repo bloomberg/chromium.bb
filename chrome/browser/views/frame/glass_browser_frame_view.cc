@@ -12,7 +12,7 @@
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/icon_util.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
@@ -264,14 +264,14 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
     // Draw left edge. We explicitly set a clip as the image is bigger than just
     // the corner.
-    canvas->save();
+    canvas->AsCanvasSkia()->save();
     canvas->ClipRectInt(x - kNonClientBorderThickness,
                         y - kNonClientBorderThickness,
                         kNonClientBorderThickness,
                         kNonClientBorderThickness);
     canvas->DrawBitmapInt(*toolbar_left, x - kNonClientBorderThickness,
                           y - kNonClientBorderThickness);
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
 
     // Draw center edge. We need to draw a while line above the toolbar for the
     // image to overlay nicely.
@@ -279,14 +279,14 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
     canvas->TileImageInt(*toolbar_center, x, y - kNonClientBorderThickness, w,
                          toolbar_center->height());
     // Right edge. Again, we have to clip because of image size.
-    canvas->save();
+    canvas->AsCanvasSkia()->save();
     canvas->ClipRectInt(x + w - kNonClientBorderThickness,
                         y - kNonClientBorderThickness,
                         kNonClientBorderThickness,
                         kNonClientBorderThickness);
     canvas->DrawBitmapInt(*tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
                           x + w, y);
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
   } else {
     // Draw the toolbar background, setting src_y of the paint to the tab
     // strip height as the toolbar background begins at the top of the tabs.
@@ -356,11 +356,11 @@ void GlassBrowserFrameView::PaintOTRAvatar(gfx::Canvas* canvas) {
     gfx::Point tabstrip_origin(browser_view_->tabstrip()->bounds().origin());
     View::ConvertPointToView(frame_->GetWindow()->GetClientView(), this,
                              &tabstrip_origin);
-    canvas->save();
+    canvas->AsCanvasSkia()->save();
     canvas->ClipRectInt(dst_x, 2, w, tabstrip_origin.y() - 4);
     canvas->DrawBitmapInt(otr_avatar_icon, src_x, src_y, w, h, dst_x, dst_y,
                           w, h, false);
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
   } else {
     canvas->DrawBitmapInt(otr_avatar_icon, src_x, src_y, w, h, dst_x, dst_y,
                           w, h, false);

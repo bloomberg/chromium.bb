@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_LIST_BACKGROUND_H_
 #define CHROME_BROWSER_VIEWS_LIST_BACKGROUND_H_
 
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "views/background.h"
 
@@ -22,10 +22,10 @@ class ListBackground : public views::Background {
   virtual ~ListBackground() {}
 
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
-    HDC dc = canvas->beginPlatformPaint();
+    HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
     RECT native_lb = view->GetLocalBounds(true).ToRECT();
     gfx::NativeTheme::instance()->PaintListBackground(dc, true, &native_lb);
-    canvas->endPlatformPaint();
+    canvas->AsCanvasSkia()->endPlatformPaint();
   }
 
  private:

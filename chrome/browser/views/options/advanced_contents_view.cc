@@ -40,7 +40,7 @@
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
@@ -135,12 +135,12 @@ void FileDisplayArea::SetFile(const FilePath& file_path) {
 }
 
 void FileDisplayArea::Paint(gfx::Canvas* canvas) {
-  HDC dc = canvas->beginPlatformPaint();
+  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
   RECT rect = { 0, 0, width(), height() };
   gfx::NativeTheme::instance()->PaintTextField(
       dc, EP_EDITTEXT, ETS_READONLY, 0, &rect,
       skia::SkColorToCOLORREF(text_field_background_color_), true, true);
-  canvas->endPlatformPaint();
+  canvas->AsCanvasSkia()->endPlatformPaint();
   // Mirror left point for icon_bounds_ to draw icon in RTL locales correctly.
   canvas->DrawBitmapInt(default_folder_icon_,
                         MirroredLeftPointForRect(icon_bounds_),

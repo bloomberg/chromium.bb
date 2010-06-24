@@ -5,7 +5,7 @@
 #include "views/background.h"
 
 #include "base/logging.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -25,7 +25,7 @@ class SolidBackground : public Background {
   void Paint(gfx::Canvas* canvas, View* view) const {
     // Fill the background. Note that we don't constrain to the bounds as
     // canvas is already clipped for us.
-    canvas->drawColor(get_color());
+    canvas->AsCanvasSkia()->drawColor(get_color());
   }
 
  private:

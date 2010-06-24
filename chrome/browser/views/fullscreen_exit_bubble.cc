@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
@@ -92,7 +92,7 @@ void FullscreenExitBubble::FullscreenExitView::Paint(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setColor(SK_ColorBLACK);
-  canvas->drawPath(path, paint);
+  canvas->AsCanvasSkia()->drawPath(path, paint);
 }
 
 

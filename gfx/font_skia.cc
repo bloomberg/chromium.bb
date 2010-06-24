@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
@@ -177,7 +177,8 @@ void Font::PaintSetup(SkPaint* paint) const {
 
 int Font::GetStringWidth(const std::wstring& text) const {
   int width = 0, height = 0;
-  Canvas::SizeStringInt(text, *this, &width, &height, gfx::Canvas::NO_ELLIPSIS);
+  CanvasSkia::SizeStringInt(text, *this, &width, &height,
+                            gfx::Canvas::NO_ELLIPSIS);
   return width;
 }
 

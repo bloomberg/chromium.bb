@@ -8,7 +8,7 @@
 
 #include "app/throb_animation.h"
 #include "app/resource_bundle.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "views/controls/button/button.h"
 #include "views/event.h"
 #include "grit/app_resources.h"
@@ -256,12 +256,13 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     if (show_highlighted_ && hover_animation_->is_animating()) {
       // Draw the hover bitmap into an offscreen buffer, then blend it
       // back into the current canvas.
-      canvas->saveLayerAlpha(NULL,
+      canvas->AsCanvasSkia()->saveLayerAlpha(NULL,
           static_cast<int>(hover_animation_->GetCurrentValue() * 255),
           SkCanvas::kARGB_NoClipLayer_SaveFlag);
-      canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
+                                       SkXfermode::kClear_Mode);
       PaintBorder(canvas);
-      canvas->restore();
+      canvas->AsCanvasSkia()->restore();
     } else if ((show_highlighted_ &&
                 (state_ == BS_HOT || state_ == BS_PUSHED)) ||
                (state_ == BS_NORMAL && normal_has_border_)) {
@@ -330,19 +331,17 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     else
       text_color = color_;
 
-    int draw_string_flags = gfx::Canvas::DefaultCanvasTextAlignment() |
+    int draw_string_flags = gfx::CanvasSkia::DefaultCanvasTextAlignment() |
         PrefixTypeToCanvasType(prefix_type_);
 
     if (for_drag) {
 #if defined(OS_WIN)
       // TODO(erg): Either port DrawStringWithHalo to linux or find an
       // alternative here.
-      canvas->DrawStringWithHalo(text_, font_, text_color, color_highlight_,
-                                 text_bounds.x(),
-                                 text_bounds.y(),
-                                 text_bounds.width(),
-                                 text_bounds.height(),
-                                 draw_string_flags);
+      canvas->AsCanvasSkia()->DrawStringWithHalo(
+          text_, font_, text_color, color_highlight_, text_bounds.x(),
+          text_bounds.y(), text_bounds.width(), text_bounds.height(),
+          draw_string_flags);
 #else
       canvas->DrawStringInt(text_,
                             font_,
@@ -381,7 +380,7 @@ void TextButton::UpdateColor() {
 
 void TextButton::UpdateTextSize() {
   int width = 0, height = 0;
-  gfx::Canvas::SizeStringInt(
+  gfx::CanvasSkia::SizeStringInt(
       text_, font_, &width, &height,
       gfx::Canvas::NO_ELLIPSIS | PrefixTypeToCanvasType(prefix_type_));
   text_size_.SetSize(width, font_.height());

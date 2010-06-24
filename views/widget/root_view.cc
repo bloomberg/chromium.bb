@@ -10,7 +10,7 @@
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "views/fill_layout.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/widget.h"
@@ -173,10 +173,10 @@ void RootView::ProcessPaint(gfx::Canvas* canvas) {
     return;
 
   // Clear the background.
-  canvas->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+  canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 
   // Save the current transforms.
-  canvas->save();
+  canvas->AsCanvasSkia()->save();
 
   // Set the clip rect according to the invalid rect.
   int clip_x = invalid_rect_.x() + x();
@@ -188,7 +188,7 @@ void RootView::ProcessPaint(gfx::Canvas* canvas) {
   View::ProcessPaint(canvas);
 
   // Restore the previous transform
-  canvas->restore();
+  canvas->AsCanvasSkia()->restore();
 
   ClearPaintRect();
 }

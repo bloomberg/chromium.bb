@@ -20,7 +20,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/views/download_shelf_view.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -515,7 +515,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
     // (hot_)body_image_set->bottom_left, and drop_down_image_set,
     // for RTL UI, we flip the canvas to draw those images mirrored.
     // Consequently, we do not need to mirror the x-axis of those images.
-    canvas->save();
+    canvas->AsCanvasSkia()->save();
     canvas->TranslateInt(width(), 0);
     canvas->ScaleInt(-1, 1);
   }
@@ -536,10 +536,10 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
   // Overlay our body hot state.
   if (body_hover_animation_->GetCurrentValue() > 0) {
-    canvas->saveLayerAlpha(NULL,
+    canvas->AsCanvasSkia()->saveLayerAlpha(NULL,
         static_cast<int>(body_hover_animation_->GetCurrentValue() * 255),
         SkCanvas::kARGB_NoClipLayer_SaveFlag);
-    canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+    canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
     int x = kLeftPadding;
     PaintBitmaps(canvas,
@@ -557,10 +557,10 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                  hot_body_image_set_.bottom_right,
                  x, box_y_, box_height_,
                  hot_body_image_set_.top_right->width());
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
     if (rtl_ui) {
-      canvas->restore();
-      canvas->save();
+      canvas->AsCanvasSkia()->restore();
+      canvas->AsCanvasSkia()->save();
       // Flip it for drawing drop-down images for RTL locales.
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
@@ -578,17 +578,19 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
     // Overlay our drop-down hot state.
     if (drop_hover_animation_->GetCurrentValue() > 0) {
-      canvas->saveLayerAlpha(NULL,
+      canvas->AsCanvasSkia()->saveLayerAlpha(
+          NULL,
           static_cast<int>(drop_hover_animation_->GetCurrentValue() * 255),
           SkCanvas::kARGB_NoClipLayer_SaveFlag);
-      canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
+                                       SkXfermode::kClear_Mode);
 
       PaintBitmaps(canvas,
                    drop_down_image_set->top, drop_down_image_set->center,
                    drop_down_image_set->bottom,
                    x, box_y_, box_height_, drop_down_image_set->top->width());
 
-      canvas->restore();
+      canvas->AsCanvasSkia()->restore();
     }
   }
 
@@ -596,7 +598,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
     // Restore the canvas to avoid file name etc. text are drawn flipped.
     // Consequently, the x-axis of following canvas->DrawXXX() method should be
     // mirrored so the text and images are down in the right positions.
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
   }
 
   // Print the text, left aligned and always print the file extension.

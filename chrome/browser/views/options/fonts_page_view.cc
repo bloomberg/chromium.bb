@@ -21,7 +21,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "gfx/native_theme_win.h"
 #include "grit/generated_resources.h"
@@ -96,12 +96,12 @@ void FontDisplayView::SetFontType(const std::wstring& font_name,
 }
 
 void FontDisplayView::Paint(gfx::Canvas* canvas) {
-  HDC dc = canvas->beginPlatformPaint();
+  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
   RECT rect = { 0, 0, width(), height() };
   gfx::NativeTheme::instance()->PaintTextField(
       dc, EP_BACKGROUND, EBS_NORMAL, 0, &rect, ::GetSysColor(COLOR_3DFACE),
       true, true);
-  canvas->endPlatformPaint();
+  canvas->AsCanvasSkia()->endPlatformPaint();
 }
 
 void FontDisplayView::Layout() {

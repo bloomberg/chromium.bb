@@ -9,7 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "grit/app_resources.h"
@@ -118,7 +118,7 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   if (SkColorGetA(background_color) == 0x00)
     background_color = SkColorSetARGB(255, 218, 0, 24);  // Default badge color.
 
-  canvas->save();
+  canvas->AsCanvasSkia()->save();
 
   SkPaint* text_paint = GetTextPaint();
   text_paint->setColor(text_color);
@@ -158,7 +158,8 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   rect_paint.setStyle(SkPaint::kFill_Style);
   rect_paint.setAntiAlias(true);
   rect_paint.setColor(background_color);
-  canvas->drawRoundRect(rect, SkIntToScalar(2), SkIntToScalar(2), rect_paint);
+  canvas->AsCanvasSkia()->drawRoundRect(rect, SkIntToScalar(2), SkIntToScalar(2),
+                                        rect_paint);
 
   // Overlay the gradient. It is stretchy, so we do this in three parts.
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
@@ -169,24 +170,24 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   SkBitmap* gradient_center = resource_bundle.GetBitmapNamed(
       IDR_BROWSER_ACTION_BADGE_CENTER);
 
-  canvas->drawBitmap(*gradient_left, rect.fLeft, rect.fTop);
+  canvas->AsCanvasSkia()->drawBitmap(*gradient_left, rect.fLeft, rect.fTop);
   canvas->TileImageInt(*gradient_center,
       SkScalarFloor(rect.fLeft) + gradient_left->width(),
       SkScalarFloor(rect.fTop),
       SkScalarFloor(rect.width()) - gradient_left->width() -
                     gradient_right->width(),
       SkScalarFloor(rect.height()));
-  canvas->drawBitmap(*gradient_right,
+  canvas->AsCanvasSkia()->drawBitmap(*gradient_right,
       rect.fRight - SkIntToScalar(gradient_right->width()), rect.fTop);
 
   // Finally, draw the text centered within the badge. We set a clip in case the
   // text was too large.
   rect.fLeft += kPadding;
   rect.fRight -= kPadding;
-  canvas->clipRect(rect);
-  canvas->drawText(text.c_str(), text.size(),
-                   rect.fLeft + (rect.width() - text_width) / 2,
-                   rect.fTop + kTextSize + kTopTextPadding,
-                   *text_paint);
-  canvas->restore();
+  canvas->AsCanvasSkia()->clipRect(rect);
+  canvas->AsCanvasSkia()->drawText(text.c_str(), text.size(),
+                                   rect.fLeft + (rect.width() - text_width) / 2,
+                                   rect.fTop + kTextSize + kTopTextPadding,
+                                   *text_paint);
+  canvas->AsCanvasSkia()->restore();
 }

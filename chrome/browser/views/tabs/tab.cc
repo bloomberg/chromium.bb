@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
-#include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
@@ -382,18 +381,20 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
     if (throb_value > 0) {
       SkRect bounds;
       bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-      canvas->saveLayerAlpha(&bounds, static_cast<int>(throb_value * 0xff),
-                             SkCanvas::kARGB_ClipLayer_SaveFlag);
-      canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+      canvas->AsCanvasSkia()->saveLayerAlpha(
+          &bounds, static_cast<int>(throb_value * 0xff),
+          SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
+                                       SkXfermode::kClear_Mode);
       PaintActiveTabBackground(canvas);
-      canvas->restore();
+      canvas->AsCanvasSkia()->restore();
     }
   }
 }
 
 void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   // Render the inactive tab background. We'll use this for clipping.
-  gfx::Canvas background_canvas(width(), height(), false);
+  gfx::CanvasSkia background_canvas(width(), height(), false);
   PaintInactiveTabBackground(&background_canvas);
 
   SkBitmap background_image = background_canvas.ExtractBitmap();
@@ -437,10 +438,10 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 
   // And then the gradient on top of that.
   if (mini_title_animation_->current_part_index() == 2) {
-    canvas->saveLayerAlpha(NULL,
-                           mini_title_animation_->CurrentValueBetween(255, 0));
+    canvas->AsCanvasSkia()->saveLayerAlpha(
+        NULL, mini_title_animation_->CurrentValueBetween(255, 0));
     canvas->DrawBitmapInt(hover_image, 0, 0);
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
   } else {
     canvas->DrawBitmapInt(hover_image, 0, 0);
   }

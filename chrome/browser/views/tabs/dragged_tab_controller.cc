@@ -30,7 +30,7 @@
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/event.h"
@@ -85,8 +85,9 @@ class DockView : public views::View {
     SkPaint paint;
     paint.setColor(SkColorSetRGB(108, 108, 108));
     paint.setStyle(SkPaint::kFill_Style);
-    canvas->drawRoundRect(outer_rect, SkIntToScalar(kRoundedRectRadius),
-                          SkIntToScalar(kRoundedRectRadius), paint);
+    canvas->AsCanvasSkia()->drawRoundRect(
+        outer_rect, SkIntToScalar(kRoundedRectRadius),
+        SkIntToScalar(kRoundedRectRadius), paint);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
@@ -96,7 +97,7 @@ class DockView : public views::View {
     bool rtl_ui = base::i18n::IsRTL();
     if (rtl_ui) {
       // Flip canvas to draw the mirrored tab images for RTL UI.
-      canvas->save();
+      canvas->AsCanvasSkia()->save();
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
     }
@@ -170,7 +171,7 @@ class DockView : public views::View {
         break;
     }
     if (rtl_ui)
-      canvas->restore();
+      canvas->AsCanvasSkia()->restore();
   }
 
  private:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 
 #include <cairo/cairo.h>
 #include <gtk/gtk.h>
