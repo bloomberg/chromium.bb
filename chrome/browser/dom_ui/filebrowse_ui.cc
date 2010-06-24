@@ -732,8 +732,8 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
       browser = BrowserList::GetLastActive();
     }
     TabContents* contents = browser->AddTabWithURL(
-        GURL(path), GURL(), PageTransition::LINK, -1,
-        TabStripModel::ADD_SELECTED, NULL, std::string());
+        GURL(path), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
+        NULL, std::string());
     // AddTabWithURL could have picked another Browser instance to create this
     // new tab at. So we have to reset the ptr of the browser that we want to
     // talk to.
@@ -1100,8 +1100,8 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
     }
 
     browser->AddTabWithURL(
-        GURL(url), GURL(), PageTransition::LINK, -1,
-        TabStripModel::ADD_SELECTED, NULL, std::string());
+        GURL(url), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
+        NULL, std::string());
     browser->window()->SetBounds(gfx::Rect(kPopupLeft,
                                            kPopupTop,
                                            width,

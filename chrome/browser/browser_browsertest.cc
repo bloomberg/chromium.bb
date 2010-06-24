@@ -113,7 +113,7 @@ class BrowserTest : public ExtensionBrowserTest {
                                                 MSG_ROUTING_NONE, NULL);
     app_contents->SetExtensionApp(extension_app);
 
-    model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
+    model->AddTabContents(app_contents, 0, false, 0, false);
     model->SetTabPinned(0, true);
     ui_test_utils::NavigateToURL(browser(), url);
 
@@ -206,8 +206,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, 0,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
+                           0, Browser::ADD_SELECTED, NULL, std::string());
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, browser()->selected_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
@@ -238,8 +238,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
 
   // There is one initial tab.
   for (int ix = 0; ix != 33; ++ix) {
-    browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, 0,
-                             TabStripModel::ADD_SELECTED, NULL, std::string());
+    browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
+                             0, Browser::ADD_SELECTED, NULL, std::string());
   }
   EXPECT_EQ(34, browser()->tab_count());
 
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
                                               MSG_ROUTING_NONE, NULL);
   app_contents->SetExtensionApp(extension_app);
 
-  model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
+  model->AddTabContents(app_contents, 0, false, 0, false);
   model->SetTabPinned(0, true);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   TabContents* app_contents = new TabContents(browser()->profile(), NULL,
                                               MSG_ROUTING_NONE, NULL);
   app_contents->SetExtensionApp(extension_app);
-  model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
+  model->AddTabContents(app_contents, 0, false, 0, false);
   model->SetTabPinned(0, true);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -928,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   // Now try opening another tab in the popup browser.
   popup_browser->AddTabWithURL(
       GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
-      TabStripModel::ADD_SELECTED, NULL, std::string());
+      Browser::ADD_SELECTED, NULL, std::string());
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, popup_browser->tab_count());
@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   // Now try opening another tab in the app browser.
   app_browser->AddTabWithURL(
       GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
-      TabStripModel::ADD_SELECTED, NULL, std::string());
+      Browser::ADD_SELECTED, NULL, std::string());
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_browser->tab_count());
@@ -962,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   // Now try opening another tab in the app popup browser.
   app_popup_browser->AddTabWithURL(
       GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
-      TabStripModel::ADD_SELECTED, NULL, std::string());
+      Browser::ADD_SELECTED, NULL, std::string());
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_popup_browser->tab_count());

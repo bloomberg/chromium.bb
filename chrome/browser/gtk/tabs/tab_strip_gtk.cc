@@ -1611,8 +1611,8 @@ bool TabStripGtk::CompleteDrop(guchar* data) {
         model_->delegate()->CreateTabContentsForURL(
             url, GURL(), model_->profile(), PageTransition::TYPED, false,
             NULL);
-    model_->AddTabContents(contents, drop_index, PageTransition::GENERATED,
-                           TabStripModel::ADD_SELECTED);
+    model_->AddTabContents(contents, drop_index, false,
+                           PageTransition::GENERATED, true);
   } else {
     model_->GetTabContentsAt(drop_index)->controller().LoadURL(
         url, GURL(), PageTransition::GENERATED);
@@ -1982,8 +1982,9 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
       model_->AddTabContents(
           contents,
           -1,     // index
+          false,  // force_index
           PageTransition::TYPED,
-          TabStripModel::ADD_SELECTED);
+          true);  // foreground
       break;
     }
     default:

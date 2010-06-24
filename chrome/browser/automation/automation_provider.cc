@@ -580,8 +580,8 @@ void AutomationProvider::AppendTab(int handle, const GURL& url,
     Browser* browser = browser_tracker_->GetResource(handle);
     observer = AddTabStripObserver(browser, reply_message);
     TabContents* tab_contents = browser->AddTabWithURL(
-        url, GURL(), PageTransition::TYPED, -1, TabStripModel::ADD_SELECTED,
-        NULL, std::string());
+        url, GURL(), PageTransition::TYPED, -1, Browser::ADD_SELECTED, NULL,
+        std::string());
     if (tab_contents) {
       append_tab_response =
           GetIndexForNavigationController(&tab_contents->controller(), browser);

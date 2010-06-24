@@ -847,10 +847,8 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
     gfx::Rect bounds = GetDraggedViewTabStripBounds(screen_point);
     int index = GetInsertionIndexForDraggedBounds(bounds, false);
     attached_tabstrip_->set_attaching_dragged_tab(true);
-    GetModel(attached_tabstrip_)->InsertTabContentsAt(
-        index, dragged_contents_,
-        TabStripModel::ADD_SELECTED |
-            (pinned_ ? TabStripModel::ADD_PINNED : 0));
+    GetModel(attached_tabstrip_)->InsertTabContentsAt(index, dragged_contents_,
+                                                      true, false, pinned_);
     attached_tabstrip_->set_attaching_dragged_tab(false);
 
     tab = GetTabMatchingDraggedContents(attached_tabstrip_);
@@ -1102,10 +1100,8 @@ void DraggedTabController::RevertDrag() {
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
       attached_tabstrip_ = source_tabstrip_;
-      GetModel(source_tabstrip_)->InsertTabContentsAt(
-          source_model_index_, dragged_contents_,
-          TabStripModel::ADD_SELECTED |
-              (pinned_ ? TabStripModel::ADD_PINNED : 0));
+      GetModel(source_tabstrip_)->InsertTabContentsAt(source_model_index_,
+          dragged_contents_, true, false, pinned_);
     } else {
       // The Tab was moved within the TabStrip where the drag was initiated.
       // Move it back to the starting location.
@@ -1120,10 +1116,8 @@ void DraggedTabController::RevertDrag() {
     // The Tab was detached from the TabStrip where the drag began, and has not
     // been attached to any other TabStrip. We need to put it back into the
     // source TabStrip.
-    GetModel(source_tabstrip_)->InsertTabContentsAt(
-        source_model_index_, dragged_contents_,
-        TabStripModel::ADD_SELECTED |
-            (pinned_ ? TabStripModel::ADD_PINNED : 0));
+    GetModel(source_tabstrip_)->InsertTabContentsAt(source_model_index_,
+        dragged_contents_, true, false, pinned_);
   }
 
   // If we're not attached to any TabStrip, or attached to some other TabStrip,

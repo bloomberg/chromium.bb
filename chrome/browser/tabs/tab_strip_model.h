@@ -303,29 +303,6 @@ class TabStripModel : public NotificationObserver {
     CLOSE_CREATE_HISTORICAL_TAB    = 1 << 1,
   };
 
-  // Constants used when adding tabs.
-  enum AddTabTypes {
-    // Used to indicate nothing special should happen to the newly inserted
-    // tab.
-    ADD_NONE          = 0,
-
-    // The tab should be selected.
-    ADD_SELECTED      = 1 << 0,
-
-    // The tab should be pinned.
-    ADD_PINNED        = 1 << 1,
-
-    // If not set the insertion index of the TabContents is left up to the Order
-    // Controller associated, so the final insertion index may differ from the
-    // specified index. Otherwise the index supplied is used.
-    ADD_FORCE_INDEX   = 1 << 2,
-
-    // If set the newly inserted tab inherits the group of the currently
-    // selected tab. If not set the tab may still inherit the group under
-    // certain situations.
-    ADD_INHERIT_GROUP = 1 << 3,
-  };
-
   static const int kNoTab = -1;
 
   // Construct a TabStripModel with a delegate to help it do certain things
@@ -383,19 +360,24 @@ class TabStripModel : public NotificationObserver {
   // foreground inherit the group of the previously selected tab.
   void AppendTabContents(TabContents* contents, bool foreground);
 
-  // Adds the specified TabContents at the specified location. |add_types| is a
-  // bitmask of AddTypes; see it for details.
-  //
-  // All append/insert methods end up in this method.
-  //
-  // NOTE: adding a tab using this method does NOT query the order controller,
-  // as such the ADD_FORCE_INDEX AddType is meaningless here.  The only time the
-  // |index| is changed is if using the index would result in breaking the
-  // constraint that all mini-tabs occur before non-mini-tabs.
-  // See also AddTabContents.
+  // TODO(sky): convert callers over to new variant, and consider using a
+  // bitmask rather than bools.
   void InsertTabContentsAt(int index,
                            TabContents* contents,
-                           int add_types);
+                           bool foreground,
+                           bool inherit_group) {
+    InsertTabContentsAt(index, contents, foreground, inherit_group, false);
+  }
+
+  // Adds the specified TabContents in the specified location. If
+  // |inherit_group| is true, the new contents is linked to the current tab's
+  // group. This adjusts the index such that all app tabs occur before non-app
+  // tabs.
+  void InsertTabContentsAt(int index,
+                           TabContents* contents,
+                           bool foreground,
+                           bool inherit_group,
+                           bool pinned);
 
   // Closes the TabContents at the specified index. This causes the TabContents
   // to be destroyed, but it may not happen immediately (e.g. if it's a
@@ -564,13 +546,15 @@ class TabStripModel : public NotificationObserver {
   // Command level API /////////////////////////////////////////////////////////
 
   // Adds a TabContents at the best position in the TabStripModel given the
-  // specified insertion index, transition, etc. |add_types| is a bitmask of
-  // AddTypes; see it for details. This method ends up calling into
-  // InsertTabContentsAt to do the actual inertion.
+  // specified insertion index, transition, etc. If |force_index|
+  // is false, the insertion index of the TabContents is left up to the Order
+  // Controller associated with this TabStripModel, so the final insertion index
+  // may differ from |index|.
   void AddTabContents(TabContents* contents,
                       int index,
+                      bool force_index,
                       PageTransition::Type transition,
-                      int add_types);
+                      bool foreground);
 
   // Closes the selected TabContents.
   void CloseSelectedTab();

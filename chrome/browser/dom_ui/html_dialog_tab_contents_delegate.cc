@@ -42,8 +42,7 @@ void HtmlDialogTabContentsDelegate::OpenURLFromTab(
     Browser* browser = CreateBrowser();
     TabContents* new_contents =
         browser->AddTabWithURL(url, referrer, transition, -1,
-                               TabStripModel::ADD_SELECTED, NULL,
-                               std::string());
+                               Browser::ADD_SELECTED, NULL, std::string());
     DCHECK(new_contents);
     browser->window()->Show();
     new_contents->Focus();

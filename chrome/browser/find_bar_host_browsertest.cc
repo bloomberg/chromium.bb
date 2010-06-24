@@ -835,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
 
   // Create a second tab.
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           Browser::ADD_SELECTED, NULL, std::string());
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -912,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
 
   // Now create a second tab and load the same page.
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           Browser::ADD_SELECTED, NULL, std::string());
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -957,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Now create a second tab and load the same page.
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           Browser::ADD_SELECTED, NULL, std::string());
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -1034,8 +1034,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = Browser::Create(incognito_profile);
   incognito_browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, -1,
-                                   TabStripModel::ADD_SELECTED, NULL,
-                                   std::string());
+                                   Browser::ADD_SELECTED, NULL, std::string());
   ui_test_utils::WaitForNavigation(
       &incognito_browser->GetSelectedTabContents()->controller());
   incognito_browser->window()->Show();
@@ -1056,7 +1055,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
 
   // Now open a new tab in the original (non-incognito) browser.
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           Browser::ADD_SELECTED, NULL, std::string());
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);

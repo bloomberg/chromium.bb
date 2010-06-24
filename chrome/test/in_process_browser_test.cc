@@ -249,7 +249,7 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
 
   browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
                          PageTransition::START_PAGE, -1,
-                         TabStripModel::ADD_SELECTED, NULL, std::string());
+                         Browser::ADD_SELECTED, NULL, std::string());
 
   // Wait for the page to finish loading.
   ui_test_utils::WaitForNavigation(

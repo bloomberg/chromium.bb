@@ -465,9 +465,9 @@ class SessionRestoreImpl : public NotificationObserver {
   void AppendURLsToBrowser(Browser* browser,
                            const std::vector<GURL>& urls) {
     for (size_t i = 0; i < urls.size(); ++i) {
-      int add_types = TabStripModel::ADD_FORCE_INDEX;
+      int add_types = Browser::ADD_FORCE_INDEX;
       if (i == 0)
-        add_types |= TabStripModel::ADD_SELECTED;
+        add_types |= Browser::ADD_SELECTED;
       int index = browser->GetIndexForInsertionDuringRestore(i);
       browser->AddTabWithURL(urls[i], GURL(), PageTransition::START_PAGE, index,
                              add_types, NULL, std::string());
