@@ -23,10 +23,8 @@ class TestShellDevToolsClient;
 class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
  public:
-  TestShellDevToolsAgent();
+  TestShellDevToolsAgent(WebKit::WebView* web_view);
   virtual ~TestShellDevToolsAgent() {}
-
-  void SetWebView(WebKit::WebView* web_view);
 
   // WebDevToolsAgentClient implementation.
   virtual void sendMessageToFrontend(

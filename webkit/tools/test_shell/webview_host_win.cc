@@ -19,7 +19,6 @@ static const wchar_t kWindowClassName[] = L"WebViewHost";
 /*static*/
 WebViewHost* WebViewHost::Create(HWND parent_view,
                                  TestWebViewDelegate* delegate,
-                                 WebDevToolsAgentClient* devToolsClient,
                                  const WebPreferences& prefs) {
   WebViewHost* host = new WebViewHost();
 
@@ -42,7 +41,7 @@ WebViewHost* WebViewHost::Create(HWND parent_view,
                              GetModuleHandle(NULL), NULL);
   win_util::SetWindowUserData(host->view_, host);
 
-  host->webwidget_ = WebView::create(delegate, devToolsClient);
+  host->webwidget_ = WebView::create(delegate);
   prefs.Apply(host->webview());
   host->webview()->initializeMainFrame(delegate);
 

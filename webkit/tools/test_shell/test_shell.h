@@ -92,7 +92,7 @@ public:
     static void CleanupLogging();
 
     // Initialization and clean up of a static member variable.
-    static void InitializeTestShell(bool layout_test_mode,
+    static void InitializeTestShell(bool layout_test_mode, 
                                     bool allow_external_pages);
     static void ShutdownTestShell();
 
@@ -329,6 +329,7 @@ public:
 protected:
     void CreateDevToolsClient(TestShellDevToolsAgent* agent);
     bool Initialize(const GURL& starting_url);
+    void InitializeDevToolsAgent(WebKit::WebView* webView);
     bool IsSVGTestURL(const GURL& url);
     void SizeToSVG();
     void SizeToDefault();
@@ -385,9 +386,9 @@ private:
 
     // True when the app is being run using the --layout-tests switch.
     static bool layout_test_mode_;
-
+  
     // True when we wish to allow test shell to load external pages like
-    // www.google.com even when in --layout-test mode (used for QA to
+    // www.google.com even when in --layout-test mode (used for QA to 
     // produce images of the rendered page)
     static bool allow_external_pages_;
 

@@ -57,18 +57,17 @@ void TestShellDevToolsAgent::DispatchMessageLoop() {
 #pragma warning(disable : 4355)
 #endif // defined(OS_WIN)
 
-TestShellDevToolsAgent::TestShellDevToolsAgent()
+TestShellDevToolsAgent::TestShellDevToolsAgent(WebView* web_view)
     : call_method_factory_(this),
-      dev_tools_client_(NULL) {
+      dev_tools_client_(NULL),
+      web_view_(web_view) {
   static int dev_tools_agent_counter;
   routing_id_ = ++dev_tools_agent_counter;
   if (routing_id_ == 1)
     WebDevToolsAgent::setMessageLoopDispatchHandler(
         &TestShellDevToolsAgent::DispatchMessageLoop);
-}
-
-void TestShellDevToolsAgent::SetWebView(WebKit::WebView* web_view) {
-  web_view_ = web_view;
+  web_dev_tools_agent_ = WebDevToolsAgent::create(web_view_, this);
+  web_view_->setDevToolsAgent(web_dev_tools_agent_);
 }
 
 void TestShellDevToolsAgent::sendMessageToFrontend(

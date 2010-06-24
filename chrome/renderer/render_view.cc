@@ -561,12 +561,14 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
-  webwidget_ = WebView::create(this, devtools_agent_.get());
+  webwidget_ = WebView::create(this);
   Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
   if (!frame_name.empty())
     webview()->mainFrame()->setName(frame_name);
+  webview()->setDevToolsAgent(
+      WebDevToolsAgent::create(webview(), devtools_agent_.get()));
 
   OnSetRendererPrefs(renderer_prefs);
 
