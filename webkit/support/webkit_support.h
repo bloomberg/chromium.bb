@@ -14,6 +14,7 @@ class WebURLLoaderMockFactory;
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebCString;
 class WebFrame;
 class WebKitClient;
 class WebMediaPlayer;
@@ -129,6 +130,12 @@ void SetAcceptAllCookies(bool accept);
 void SetThemeEngine(WebKit::WebThemeEngine* engine);
 WebKit::WebThemeEngine* GetThemeEngine();
 #endif
+
+// - DevTools
+WebKit::WebCString GetDevToolsInjectedScriptSource();
+WebKit::WebCString GetDevToolsInjectedScriptDispatcherSource();
+WebKit::WebCString GetDevToolsDebuggerScriptSource();
+WebKit::WebURL GetDevToolsPathAsURL();
 
 }  // namespace webkit_support
 

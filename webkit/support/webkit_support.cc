@@ -13,9 +13,11 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/weak_ptr.h"
+#include "grit/webkit_chromium_resources.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
@@ -28,6 +30,7 @@
 #include "webkit/glue/plugins/webplugin_impl.h"
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
 #include "webkit/glue/plugins/webplugininfo.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/support/platform_support.h"
@@ -36,6 +39,7 @@
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
+using WebKit::WebCString;
 using WebKit::WebFrame;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebPlugin;
@@ -365,6 +369,35 @@ void SetThemeEngine(WebKit::WebThemeEngine* engine) {
 WebKit::WebThemeEngine* GetThemeEngine() {
   DCHECK(test_environment);
   return test_environment->theme_engine();
+}
+
+// DevTools
+WebCString GetDevToolsInjectedScriptSource() {
+  base::StringPiece injectJSWebkit = webkit_glue::GetDataResource(
+      IDR_DEVTOOLS_INJECT_WEBKIT_JS);
+  return WebCString(injectJSWebkit.as_string().c_str());
+}
+
+WebCString GetDevToolsInjectedScriptDispatcherSource() {
+  base::StringPiece injectDispatchJS = webkit_glue::GetDataResource(
+      IDR_DEVTOOLS_INJECT_DISPATCH_JS);
+  return WebCString(injectDispatchJS.as_string().c_str());
+}
+
+WebCString GetDevToolsDebuggerScriptSource() {
+  base::StringPiece debuggerScriptJS = webkit_glue::GetDataResource(
+      IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);
+  return WebCString(debuggerScriptJS.as_string().c_str());
+}
+
+WebURL GetDevToolsPathAsURL() {
+  FilePath dirExe;
+  if (!webkit_glue::GetExeDirectory(&dirExe)) {
+      DCHECK(false);
+      return WebURL();
+  }
+  FilePath devToolsPath = dirExe.AppendASCII("resources/inspector/devtools.html");
+  return GURL(devToolsPath.value());
 }
 
 #endif
