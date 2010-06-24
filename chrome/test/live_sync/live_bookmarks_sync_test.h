@@ -28,6 +28,10 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
   virtual bool SetupClients() {
     if (!LiveSyncTest::SetupClients())
       return false;
+    for (int i = 0; i < num_clients(); ++i) {
+      ui_test_utils::WaitForBookmarkModelToLoad(
+          GetProfile(i)->GetBookmarkModel());
+    }
     verifier_helper_.reset(BookmarkModelVerifier::Create(
         GetVerifierBookmarkModel()));
     return (verifier_helper_.get() != NULL);

@@ -12,6 +12,8 @@
 #include "net/base/mock_host_resolver.h"
 #include "net/socket/ssl_test_util.h"
 
+#include <string>
+
 class Profile;
 class CommandLine;
 
@@ -89,6 +91,9 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Helper to ProfileManager::CreateProfile that handles path creation.
   static Profile* MakeProfile(const FilePath::StringType name);
 
+  // Used to get the number of sync clients used by a test.
+  int num_clients() { return num_clients_; }
+
   // Used to access a particular sync profile.
   Profile* GetProfile(int index);
 
@@ -123,7 +128,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   // GAIA password used by the test case.
   std::string password_;
 
-private:
+ private:
   // Helper method used to create a local python test server.
   virtual void SetUpLocalTestServer();
 
