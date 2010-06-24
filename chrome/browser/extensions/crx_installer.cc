@@ -139,8 +139,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // Only allow extensions with a gallery update url to be installed after
   // having been directly downloaded from the gallery.
   if (extension->update_url() == GURL(extension_urls::kGalleryUpdateURL) &&
-      !StartsWithASCII(original_url_.spec(),
-          extension_urls::kGalleryDownloadPrefix, false)) {
+      !ExtensionsService::IsGalleryDownloadURL(original_url_)) {
     ReportFailureFromFileThread(l10n_util::GetStringFUTF8(
         IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
         l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));

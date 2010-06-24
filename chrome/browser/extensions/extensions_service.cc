@@ -92,22 +92,16 @@ PendingExtensionInfo::PendingExtensionInfo()
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
 
-// static
-bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
-                                              const GURL& referrer_url) {
+bool ExtensionsService::IsGalleryDownloadURL(const GURL& download_url) {
   if (StartsWithASCII(download_url.spec(),
-                      extension_urls::kMiniGalleryDownloadPrefix, false) &&
-      StartsWithASCII(referrer_url.spec(),
-                      extension_urls::kMiniGalleryBrowsePrefix, false)) {
-    return true;
-  }
+                      extension_urls::kMiniGalleryDownloadPrefix, false))
+     return true;
 
-  if (StartsWithASCII(download_url.spec(),
-                      extension_urls::kGalleryDownloadPrefix, false) &&
-      StartsWithASCII(referrer_url.spec(),
-                      Extension::ChromeStoreURL(), false)) {
+  GURL gallery_download_prefix(extension_urls::kGalleryDownloadPrefix);
+  if (download_url.host() == gallery_download_prefix.host() &&
+      StartsWithASCII(download_url.path(),
+                      gallery_download_prefix.path(), false))
     return true;
-  }
 
   // Allow command line gallery url to be referrer for the gallery downloads.
   std::string command_line_gallery_url =
@@ -115,11 +109,34 @@ bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
           switches::kAppsGalleryURL);
   if (!command_line_gallery_url.empty() &&
       StartsWithASCII(download_url.spec(),
-                      extension_urls::kGalleryDownloadPrefix, false) &&
-      StartsWithASCII(referrer_url.spec(),
-                      command_line_gallery_url, false)) {
+                      extension_urls::kGalleryDownloadPrefix, false))
     return true;
-  }
+
+  return false;
+}
+
+// static
+bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
+                                              const GURL& referrer_url) {
+  if (!IsGalleryDownloadURL(download_url))
+    return false;
+
+  if (StartsWithASCII(referrer_url.spec(),
+                      extension_urls::kMiniGalleryBrowsePrefix, false))
+    return true;
+
+  if (StartsWithASCII(referrer_url.spec(),
+                      Extension::ChromeStoreURL(), false))
+    return true;
+
+  // Allow command line gallery url to be referrer for the gallery downloads.
+  std::string command_line_gallery_url =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAppsGalleryURL);
+  if (!command_line_gallery_url.empty() &&
+      StartsWithASCII(referrer_url.spec(),
+                      command_line_gallery_url, false))
+    return true;
 
   return false;
 }
@@ -678,7 +695,7 @@ void ExtensionsService::SetIsIncognitoEnabled(Extension* extension,
 
 bool ExtensionsService::AllowFileAccess(const Extension* extension) {
   return (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableExtensionsFileAccessCheck) || 
+              switches::kDisableExtensionsFileAccessCheck) ||
           extension_prefs_->AllowFileAccess(extension->id()));
 }
 
