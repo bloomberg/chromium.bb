@@ -26,7 +26,7 @@ class StatusAreaView;
 // StatusAreaView.
 class BackgroundView : public views::View, public StatusAreaHost {
  public:
-  BackgroundView();
+  explicit BackgroundView(bool for_screen_locker);
 
   // Creates a window containing an instance of WizardContentsView as the root
   // view. The caller is responsible for showing (and closing) the returned
@@ -53,8 +53,9 @@ class BackgroundView : public views::View, public StatusAreaHost {
   virtual void OpenButtonOptions(const views::View* button_view) const;
   virtual bool IsButtonVisible(const views::View* button_view) const;
   virtual bool IsBrowserMode() const;
+  virtual bool IsScreenLockerMode() const;
 
- private:
+private:
   // Creates and adds the status_area.
   void InitStatusArea();
   // Creates and adds the labels for version and boot time.
@@ -88,6 +89,9 @@ class BackgroundView : public views::View, public StatusAreaHost {
   // manager.
   // TODO(sky): nuke this when the wm knows when chrome has painted.
   bool did_paint_;
+
+  // true if the background view is for the screen locker.
+  const bool for_screen_locker_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

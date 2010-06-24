@@ -395,7 +395,7 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
 
 void ScreenLocker::Init(const gfx::Rect& bounds) {
   // TODO(oshima): Figure out which UI to keep and remove in the background.
-  views::View* screen = new BackgroundView();
+  views::View* screen = new BackgroundView(true /* for_screen_locker */);
   LockWindow* lock_window = new LockWindow();
   lock_window_ = lock_window;
   lock_window_->Init(NULL, bounds);

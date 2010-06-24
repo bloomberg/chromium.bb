@@ -43,6 +43,9 @@ class StatusAreaHost {
   // True if status area hosted in browser. Otherwise it's OOBE/login state.
   virtual bool IsBrowserMode() const = 0;
 
+  // True if status area hosted in screen locker.
+  virtual bool IsScreenLockerMode() const = 0;
+
  protected:
   virtual ~StatusAreaHost() {}
 };

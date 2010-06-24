@@ -83,6 +83,7 @@ class BrowserView : public ::BrowserView,
   virtual void OpenButtonOptions(const views::View* button_view) const;
   virtual bool IsButtonVisible(const views::View* button_view) const;
   virtual bool IsBrowserMode() const;
+  virtual bool IsScreenLockerMode() const;
 
   // Shows the compact location bar under the selected tab.
   void ShowCompactLocationBarUnderSelectedTab(bool select_all);

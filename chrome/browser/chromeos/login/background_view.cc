@@ -31,10 +31,12 @@ using views::WidgetGtk;
 
 namespace chromeos {
 
-BackgroundView::BackgroundView() : status_area_(NULL),
-                                   os_version_label_(NULL),
-                                   boot_times_label_(NULL),
-                                   did_paint_(false) {
+BackgroundView::BackgroundView(bool for_screen_locker)
+    : status_area_(NULL),
+      os_version_label_(NULL),
+      boot_times_label_(NULL),
+      did_paint_(false),
+      for_screen_locker_(for_screen_locker) {
   views::Painter* painter = CreateBackgroundPainter();
   set_background(views::Background::CreateBackgroundPainter(true, painter));
   InitStatusArea();
@@ -60,7 +62,7 @@ views::Widget* BackgroundView::CreateWindowContainingView(
 
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   window->Init(NULL, bounds);
-  *view = new BackgroundView();
+  *view = new BackgroundView(false /* for_screen_locker */);
   window->SetContentsView(*view);
 
   (*view)->UpdateWindowType();
@@ -144,6 +146,10 @@ bool BackgroundView::IsButtonVisible(const views::View* button_view) const {
 
 bool BackgroundView::IsBrowserMode() const {
   return false;
+}
+
+bool BackgroundView::IsScreenLockerMode() const {
+  return for_screen_locker_;
 }
 
 void BackgroundView::LocaleChanged() {

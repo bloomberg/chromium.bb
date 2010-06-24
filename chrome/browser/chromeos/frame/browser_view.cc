@@ -589,6 +589,10 @@ bool BrowserView::IsBrowserMode() const {
   return true;
 }
 
+bool BrowserView::IsScreenLockerMode() const {
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserView public:
 
