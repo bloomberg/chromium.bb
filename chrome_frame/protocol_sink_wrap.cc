@@ -123,12 +123,7 @@ STDMETHODIMP ProtocolSinkWrap::ReportResult(HRESULT result, DWORD error,
     LPCWSTR result_text) {
   DLOG(INFO) << "ProtocolSinkWrap::ReportResult: result: " << result <<
       " error: " << error << " Text: " << (result_text ? result_text : L"");
-  DCHECK_NE(UNDETERMINED, prot_data_->renderer_type());
-
-  HRESULT hr = E_FAIL;
-  if (delegate_)
-    hr = delegate_->ReportResult(result, error, result_text);
-
+  HRESULT hr = prot_data_->ReportResult(delegate_, result, error, result_text);
   return hr;
 }
 
@@ -356,6 +351,23 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
 
   return delegate->ReportData(flags, progress, max_progress);
 }
+
+HRESULT ProtData::ReportResult(IInternetProtocolSink* delegate, HRESULT result,
+                               DWORD error, LPCWSTR result_text) {
+  // We may receive ReportResult without ReportData, if the connection fails
+  // for example.
+  if (renderer_type_ == UNDETERMINED) {
+    DLOG(INFO) << "ReportResult received but renderer type is yet unknown.";
+    renderer_type_ = OTHER;
+    FireSugestedMimeType(delegate);
+  }
+
+  HRESULT hr = S_OK;
+  if (delegate)
+    hr = delegate->ReportResult(result, error, result_text);
+  return hr;
+}
+
 
 void ProtData::UpdateUrl(const wchar_t* url) {
   url_ = url;

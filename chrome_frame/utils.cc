@@ -1075,7 +1075,7 @@ bool IsTextHtmlClipFormat(CLIPFORMAT cf) {
 ProtocolPatchMethod GetPatchMethod() {
   ProtocolPatchMethod patch_method =
       static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_MONIKER, kPatchProtocols));
+          GetConfigInt(PATCH_METHOD_INET_PROTOCOL, kPatchProtocols));
   return patch_method;
 }
 
