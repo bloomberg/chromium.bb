@@ -19,6 +19,7 @@
 #include "chrome/browser/appcache/view_appcache_internals_job_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/shared_resources_data_source.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/view_http_cache_job_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -98,13 +99,7 @@ void RegisterURLRequestChromeJob() {
         chrome::kChromeUIDevToolsHost, inspector_dir);
   }
 
-  // Set up the chrome://resources/ source.
-  FilePath resources_dir;
-  if (PathService::Get(chrome::DIR_SHARED_RESOURCES, &resources_dir)) {
-    Singleton<ChromeURLDataManager>()->AddFileSource(
-        chrome::kChromeUIResourcesHost, resources_dir);
-  }
-
+  SharedResourcesDataSource::Register();
   URLRequest::RegisterProtocolFactory(chrome::kChromeUIScheme,
                                       &ChromeURLDataManager::Factory);
 }
@@ -114,12 +109,6 @@ void UnregisterURLRequestChromeJob() {
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
     Singleton<ChromeURLDataManager>()->RemoveFileSource(
         chrome::kChromeUIDevToolsHost);
-  }
-
-  FilePath resources_dir;
-  if (PathService::Get(chrome::DIR_SHARED_RESOURCES, &resources_dir)) {
-    Singleton<ChromeURLDataManager>()->RemoveFileSource(
-        chrome::kChromeUIResourcesHost);
   }
 }
 
