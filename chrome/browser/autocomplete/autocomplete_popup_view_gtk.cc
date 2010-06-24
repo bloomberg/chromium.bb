@@ -120,12 +120,25 @@ void SetupLayoutForMatch(PangoLayout* layout,
     const GdkColor* base_color,
     const GdkColor* url_color,
     const std::string& prefix_text) {
+  // In RTL, mark text with left-to-right embedding mark if there is no strong
+  // RTL characters inside it, so the ending punctuation displays correctly
+  // and the eliding ellipsis displays correctly. We only mark the text with
+  // LRE. Wrapping it with LRE and PDF by calling AdjustStringForLocaleDirection
+  // will render the elllipsis at the left of the elided pure LTR text.
+  bool marked_with_lre = false;
+  std::wstring localized_text = text;
+  bool is_rtl = base::i18n::IsRTL();
+  if (is_rtl && !base::i18n::StringContainsStrongRTLChars(localized_text)) {
+    localized_text.insert(0, 1,
+        static_cast<wchar_t>(base::i18n::kLeftToRightEmbeddingMark));
+    marked_with_lre = true;
+  }
 
   // We can have a prefix, or insert additional characters while processing the
   // classifications.  We need to take this in to account when we translate the
   // wide offsets in the classification into text_utf8 byte offsets.
   size_t additional_offset = prefix_text.size();  // Length in utf-8 bytes.
-  std::string text_utf8 = prefix_text + WideToUTF8(text);
+  std::string text_utf8 = prefix_text + WideToUTF8(localized_text);
 
   PangoAttrList* attrs = pango_attr_list_new();
 
@@ -144,7 +157,8 @@ void SetupLayoutForMatch(PangoLayout* layout,
   // portion correctly, we just don't need to compute the end offset.
   for (ACMatchClassifications::const_iterator i = classifications.begin();
        i != classifications.end(); ++i) {
-    size_t offset = GetUTF8Offset(text, i->offset) + additional_offset;
+    size_t offset = GetUTF8Offset(localized_text, i->offset) +
+                    additional_offset;
 
     // TODO(deanm): All the colors should probably blend based on whether this
     // result is selected or not.  This would include the green URLs.  Right
@@ -157,9 +171,11 @@ void SetupLayoutForMatch(PangoLayout* layout,
     if (i->style & ACMatchClassification::URL) {
       color = url_color;
       // Insert a left to right embedding to make sure that URLs are shown LTR.
-      std::string lre(kLRE);
-      text_utf8.insert(offset, lre);
-      additional_offset += lre.size();
+      if (is_rtl && !marked_with_lre) {
+        std::string lre(kLRE);
+        text_utf8.insert(offset, lre);
+        additional_offset += lre.size();
+      }
     }
 
     PangoAttribute* fg_attr = pango_attr_foreground_new(
@@ -446,9 +462,9 @@ void AutocompletePopupViewGtk::Show(size_t num_results) {
   gtk_widget_set_size_request(window_,
       allocation.width + (kBorderThickness * 2) - (horizontal_offset * 2),
       (num_results * kHeightPerResult) + (kBorderThickness * 2));
-   gtk_widget_show(window_);
-   StackWindow();
-   opened_ = true;
+  gtk_widget_show(window_);
+  StackWindow();
+  opened_ = true;
 }
 
 void AutocompletePopupViewGtk::Hide() {
