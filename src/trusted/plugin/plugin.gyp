@@ -67,14 +67,6 @@
               },
             },
           }],
-          ['OS=="linux"', {
-            'link_settings': {
-              'libraries': [
-                '-lXt',
-                '-lX11',
-              ],
-            },
-          }],
         ],
       }],
     ],
