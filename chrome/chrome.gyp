@@ -61,6 +61,7 @@
       # it easier for us to reference them internally.
       'browser/resources/bookmark_manager_resources.grd',
       'browser/resources/net_internals_resources.grd',
+      'browser/resources/shared_resources.grd'
     ],
     'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
     'grit_cmd': ['python', '../tools/grit/grit.py'],
@@ -1510,6 +1511,7 @@
                 'pak_inputs': [
                   '<(grit_out_dir)/bookmark_manager_resources.pak',
                   '<(grit_out_dir)/net_internals_resources.pak',
+                  '<(grit_out_dir)/shared_resources.pak',
                 ],
               },
               'inputs': [
