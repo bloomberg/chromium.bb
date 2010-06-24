@@ -20,6 +20,9 @@ class Buffer;
 class DeviceContext2D;
 class ImageData;
 class Resource;
+class URLLoader;
+class URLRequestInfo;
+class URLResponseInfo;
 
 // This class maintains a global list of all live pepper resources. It allows
 // us to check resource ID validity and to map them to a specific module.
@@ -47,6 +50,9 @@ class ResourceTracker {
   // resource is invalid or is a different type.
   scoped_refptr<DeviceContext2D> GetAsDeviceContext2D(PP_Resource res) const;
   scoped_refptr<ImageData> GetAsImageData(PP_Resource res) const;
+  scoped_refptr<URLLoader> GetAsURLLoader(PP_Resource res) const;
+  scoped_refptr<URLRequestInfo> GetAsURLRequestInfo(PP_Resource res) const;
+  scoped_refptr<URLResponseInfo> GetAsURLResponseInfo(PP_Resource res) const;
   scoped_refptr<Buffer> GetAsBuffer(PP_Resource res) const;
 
  private:

@@ -73,12 +73,6 @@ String* GetStringUnchecked(PP_Var var) {
   return reinterpret_cast<String*>(var.value.as_id);
 }
 
-String* GetString(PP_Var var) {
-  if (var.type != PP_VarType_String)
-    return NULL;
-  return GetStringUnchecked(var);
-}
-
 NPObject* GetNPObjectUnchecked(PP_Var var) {
   return reinterpret_cast<NPObject*>(var.value.as_id);
 }
@@ -843,6 +837,12 @@ NPObject* GetNPObject(PP_Var var) {
   if (var.type != PP_VarType_Object)
     return NULL;
   return GetNPObjectUnchecked(var);
+}
+
+String* GetString(PP_Var var) {
+  if (var.type != PP_VarType_String)
+    return NULL;
+  return GetStringUnchecked(var);
 }
 
 }  // namespace pepper

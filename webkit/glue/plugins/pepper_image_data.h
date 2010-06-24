@@ -19,8 +19,6 @@ class SkBitmap;
 
 namespace pepper {
 
-class PluginInstance;
-
 class ImageData : public Resource {
  public:
   explicit ImageData(PluginModule* module);

@@ -15,6 +15,9 @@ class Buffer;
 class DeviceContext2D;
 class ImageData;
 class PluginModule;
+class URLLoader;
+class URLRequestInfo;
+class URLResponseInfo;
 
 class Resource : public base::RefCountedThreadSafe<Resource> {
  public:
@@ -29,6 +32,9 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   // NULL if the resource does not match the specified type.
   virtual DeviceContext2D* AsDeviceContext2D() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
+  virtual URLLoader* AsURLLoader() { return NULL; }
+  virtual URLRequestInfo* AsURLRequestInfo() { return NULL; }
+  virtual URLResponseInfo* AsURLResponseInfo() { return NULL; }
   virtual Buffer* AsBuffer() { return NULL; }
 
  private:

@@ -18,6 +18,9 @@
 #include "third_party/ppapi/c/ppb_image_data.h"
 #include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppb_testing.h"
+#include "third_party/ppapi/c/ppb_url_loader.h"
+#include "third_party/ppapi/c/ppb_url_request_info.h"
+#include "third_party/ppapi/c/ppb_url_response_info.h"
 #include "third_party/ppapi/c/ppb_var.h"
 #include "third_party/ppapi/c/ppp.h"
 #include "third_party/ppapi/c/ppp_instance.h"
@@ -29,6 +32,9 @@
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
+#include "webkit/glue/plugins/pepper_url_loader.h"
+#include "webkit/glue/plugins/pepper_url_request_info.h"
+#include "webkit/glue/plugins/pepper_url_response_info.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
 typedef bool (*PPP_InitializeModuleFunc)(PP_Module, PPB_GetInterface);
@@ -143,6 +149,12 @@ const void* GetInterface(const char* name) {
     return ImageData::GetInterface();
   if (strcmp(name, PPB_DEVICECONTEXT2D_INTERFACE) == 0)
     return DeviceContext2D::GetInterface();
+  if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)
+    return URLLoader::GetInterface();
+  if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE) == 0)
+    return URLRequestInfo::GetInterface();
+  if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE) == 0)
+    return URLResponseInfo::GetInterface();
   if (strcmp(name, PPB_BUFFER_INTERFACE) == 0)
     return Buffer::GetInterface();
 

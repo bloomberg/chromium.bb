@@ -12,6 +12,9 @@
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_resource.h"
+#include "webkit/glue/plugins/pepper_url_loader.h"
+#include "webkit/glue/plugins/pepper_url_request_info.h"
+#include "webkit/glue/plugins/pepper_url_response_info.h"
 
 namespace pepper {
 
@@ -64,6 +67,30 @@ scoped_refptr<ImageData> ResourceTracker::GetAsImageData(
   if (!resource.get())
     return scoped_refptr<ImageData>();
   return scoped_refptr<ImageData>(resource->AsImageData());
+}
+
+scoped_refptr<URLLoader> ResourceTracker::GetAsURLLoader(
+    PP_Resource res) const {
+  scoped_refptr<Resource> resource = GetResource(res);
+  if (!resource.get())
+    return scoped_refptr<URLLoader>();
+  return scoped_refptr<URLLoader>(resource->AsURLLoader());
+}
+
+scoped_refptr<URLRequestInfo> ResourceTracker::GetAsURLRequestInfo(
+    PP_Resource res) const {
+  scoped_refptr<Resource> resource = GetResource(res);
+  if (!resource.get())
+    return scoped_refptr<URLRequestInfo>();
+  return scoped_refptr<URLRequestInfo>(resource->AsURLRequestInfo());
+}
+
+scoped_refptr<URLResponseInfo> ResourceTracker::GetAsURLResponseInfo(
+    PP_Resource res) const {
+  scoped_refptr<Resource> resource = GetResource(res);
+  if (!resource.get())
+    return scoped_refptr<URLResponseInfo>();
+  return scoped_refptr<URLResponseInfo>(resource->AsURLResponseInfo());
 }
 
 scoped_refptr<Buffer> ResourceTracker::GetAsBuffer(

@@ -13,6 +13,8 @@ typedef void* NPIdentifier;
 
 namespace pepper {
 
+class String;
+
 // There's no class implementing Var since it could represent a number of
 // objects. Instead, we just expose a getter for the interface implemented in
 // the .cc file here.
@@ -24,8 +26,14 @@ PP_Var NPObjectToPPVar(NPObject* object);
 
 // Returns the NPObject corresponding to the PP_Var.  This pointer has not been
 // retained, so you should not call WebBindings::releaseObject unless you first
-// call WebBindings::retainObject.
+// call WebBindings::retainObject.  Returns NULL if the PP_Var is not an object
+// type.
 NPObject* GetNPObject(PP_Var var);
+
+// Returns the String corresponding to the PP_Var.  This pointer has not been
+// AddRef'd, so you should not call Release!  Returns NULL if the PP_Var is not
+// a string type.
+String* GetString(PP_Var var);
 
 }  // namespace pepper
 
