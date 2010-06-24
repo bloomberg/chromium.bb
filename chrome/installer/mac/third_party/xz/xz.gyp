@@ -12,7 +12,7 @@
     'check_crc32': 1,
     'check_crc64': 0,
     'check_sha256': 0,
-    'coder_lzma1': 1,
+    'coder_lzma1': 0,
     'coder_lzma2': 1,
     'coder_delta': 0,
     'coder_bcj_arm': 0,
@@ -288,8 +288,16 @@
       # is distributed in Google Chrome update disk images and is used by more
       # than one tool.
       'type': 'shared_library',
+
       'xcode_settings': {
+        # The library will reside in the same directory as executables linked
+        # against it.
         'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+
+        # Trim the list of exported symbols to just those needed by
+        # dependents. This limits the set of "roots" seen during dead-code
+        # stripping and reduces the size of the library.
+        'EXPORTED_SYMBOLS_FILE': 'lzma_decompress.export',
       },
 
       'defines': [
