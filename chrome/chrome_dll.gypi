@@ -378,6 +378,7 @@
                   'action_name': 'repack_resources',
                   'variables': {
                     'pak_inputs': [
+                      '<(grit_out_dir)/bookmark_manager_resources.pak',
                       '<(grit_out_dir)/net_internals_resources.pak',
                     ],
                   },
@@ -439,7 +440,6 @@
                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
                   'files': [
                     '<(PRODUCT_DIR)/resources/inspector/',
-                    '<(PRODUCT_DIR)/resources/bookmark_manager/',
                     '<(PRODUCT_DIR)/resources/shared/',
                     '<(PRODUCT_DIR)/resources/gmail_app/',
                     '<(PRODUCT_DIR)/resources/calendar_app/',

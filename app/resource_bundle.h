@@ -105,7 +105,7 @@ class ResourceBundle {
   RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
 
   // Return the contents of a resource in a StringPiece given the resource id.
-  base::StringPiece GetRawDataResource(int resource_id);
+  base::StringPiece GetRawDataResource(int resource_id) const;
 
   // Get a localized string given a message id.  Returns an empty
   // string if the message_id is not found.

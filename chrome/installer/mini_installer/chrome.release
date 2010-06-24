@@ -38,11 +38,6 @@ icudt42.dll: %(VersionDir)s\
 gears.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 locales\*.dll: %(VersionDir)s\Locales
-Resources\bookmark_manager\*.*: %(VersionDir)s\Resources\bookmark_manager
-Resources\bookmark_manager\css\*.*: %(VersionDir)s\Resources\bookmark_manager\css
-Resources\bookmark_manager\images\*.*: %(VersionDir)s\Resources\bookmark_manager\images
-Resources\bookmark_manager\js\*.*: %(VersionDir)s\Resources\bookmark_manager\js
-Resources\bookmark_manager\js\bmm\*.*: %(VersionDir)s\Resources\bookmark_manager\js\bmm
 Resources\shared\css\*.*: %(VersionDir)s\Resources\shared\css
 Resources\shared\images\*.*: %(VersionDir)s\Resources\shared\images
 Resources\shared\js\*.*: %(VersionDir)s\Resources\shared\js

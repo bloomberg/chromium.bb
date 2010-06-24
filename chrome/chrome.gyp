@@ -59,6 +59,7 @@
       # These resources end up in resources.pak because they are resources
       # used by internal pages.  Putting them in a spearate pak file makes
       # it easier for us to reference them internally.
+      'browser/resources/bookmark_manager_resources.grd',
       'browser/resources/net_internals_resources.grd',
     ],
     'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
@@ -1507,6 +1508,7 @@
               'action_name': 'repack_resources',
               'variables': {
                 'pak_inputs': [
+                  '<(grit_out_dir)/bookmark_manager_resources.pak',
                   '<(grit_out_dir)/net_internals_resources.pak',
                 ],
               },

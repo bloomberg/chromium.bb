@@ -36,7 +36,7 @@ nacl64.exe: %(VersionDir)s\
 nacl64.dll: %(VersionDir)s\
 icudt42.dll: %(VersionDir)s\
 gears.dll: %(VersionDir)s\
-Themes\default.dll: %(VersionDir)s\Themes
+resources.pak: %(VersionDir)s\
 locales\*.dll: %(VersionDir)s\Locales
 Resources\Inspector\*.*: %(VersionDir)s\Resources\Inspector
 Resources\Inspector\Images\*.*: %(VersionDir)s\Resources\Inspector\Images

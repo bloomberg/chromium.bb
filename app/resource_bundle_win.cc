@@ -102,7 +102,7 @@ HICON ResourceBundle::LoadThemeIcon(int icon_id) {
   return ::LoadIcon(resources_data_, MAKEINTRESOURCE(icon_id));
 }
 
-base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
+base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
   void* data_ptr;
   size_t data_size;
   if (base::GetDataResourceFromModule(_AtlBaseModule.GetModuleInstance(),

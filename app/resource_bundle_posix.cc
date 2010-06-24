@@ -50,7 +50,7 @@ RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
   return module->GetStaticMemory(resource_id);
 }
 
-base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
+base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
   DCHECK(resources_data_);
   base::StringPiece data;
   if (!resources_data_->GetStringPiece(resource_id, &data)) {
