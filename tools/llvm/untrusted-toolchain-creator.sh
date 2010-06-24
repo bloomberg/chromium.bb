@@ -31,6 +31,8 @@ set -o errexit
 
 readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-untrusted
 readonly CROSS_TARGET=arm-none-linux-gnueabi
+readonly ARM_ARCH=armv7-a
+readonly ARM_FPU=vfp3
 readonly LLVM_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}/llvm"
 readonly LLVMGCC_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}/llvm-gcc-4.2"
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
@@ -99,7 +101,7 @@ readonly NM_FOR_SFI_TARGET=${NM_FOR_TARGET}
 readonly RANLIB_FOR_SFI_TARGET=${RANLIB_FOR_TARGET}
 
 readonly CXXFLAGS_FOR_SFI_TARGET="-D__native_client__=1"
-readonly CFLAGS_FOR_SFI_TARGET="-march=armv6 \
+readonly CFLAGS_FOR_SFI_TARGET="-march=${ARM_ARCH} \
                            -DMISSING_SYSCALL_NAMES=1 \
                            -ffixed-r9 \
                            -D__native_client__=1"
@@ -401,8 +403,8 @@ ConfigureAndBuildGccStage1() {
                --disable-libstdcxx-pch \
                --disable-shared \
                --target=${CROSS_TARGET} \
-               --with-arch=armv6 \
-               --with-fpu=vfp
+               --with-arch=${ARM_ARCH} \
+               --with-fpu=${ARM_FPU}
 
  # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
  RunWithLog "Make" ${TMP}/llvm-pregcc.make.log \
@@ -518,7 +520,7 @@ BuildLibstdcpp() {
           --enable-languages=c,c++ \
           --target=${CROSS_TARGET} \
           --with-sysroot=${NEWLIB_INSTALL_DIR} \
-          --with-arch=armv6 \
+          --with-arch=${ARM_ARCH} \
           --srcdir=${src_dir}/libstdc++-v3
 
   RunWithLog "Make libstdc++" ${TMP}/llvm-gcc.make_libstdcpp.log \
@@ -571,8 +573,8 @@ gcc-stage2() {
                --disable-libstdcxx-pch \
                --disable-shared \
                --target=${CROSS_TARGET} \
-               --with-arch=armv6 \
-               --with-fpu=vfp \
+               --with-arch=${ARM_ARCH} \
+               --with-fpu=${ARM_FPU} \
                --with-sysroot=${NEWLIB_INSTALL_DIR}
 
  RunWithLog "Make" ${TMP}/llvm-gcc.make.log \
