@@ -10,8 +10,11 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -87,7 +90,7 @@ void BackgroundContentsService::Observe(NotificationType type,
                                        const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSIONS_READY:
-      LoadBackgroundContentsFromPrefs();
+      LoadBackgroundContentsFromPrefs(Source<Profile>(source).ptr());
       break;
     case NotificationType::BACKGROUND_CONTENTS_DELETED:
       BackgroundContentsShutdown(Details<BackgroundContents>(details).ptr());
@@ -115,15 +118,14 @@ void BackgroundContentsService::Observe(NotificationType type,
 }
 
 // Loads all background contents whose urls have been stored in prefs.
-void BackgroundContentsService::LoadBackgroundContentsFromPrefs() {
+void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
+    Profile* profile) {
   if (!prefs_)
     return;
-  DLOG(INFO) << "Starting to load background contents";
   const DictionaryValue* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
-  DLOG(INFO) << "Loading " << contents->size() << " background contents";
   for (DictionaryValue::key_iterator it = contents->begin_keys();
        it != contents->end_keys(); ++it) {
     DictionaryValue* dict;
@@ -132,13 +134,15 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs() {
     std::string url;
     dict->GetString(kUrlKey, &url);
     dict->GetStringAsUTF16(kFrameNameKey, &frame_name);
-    CreateBackgroundContents(GURL(url),
+    CreateBackgroundContents(profile,
+                             GURL(url),
                              frame_name,
                              WideToUTF16(*it));
   }
 }
 
 void BackgroundContentsService::CreateBackgroundContents(
+    Profile* profile,
     const GURL& url,
     const string16& frame_name,
     const string16& application_id) {
@@ -146,10 +150,36 @@ void BackgroundContentsService::CreateBackgroundContents(
   // actions or session restore can take place, so no BackgroundContents should
   // be running yet for the passed application_id.
   DCHECK(!GetAppBackgroundContents(application_id));
+  DCHECK(!application_id.empty());
   DCHECK(url.is_valid());
-  // TODO(atwilson): Fire up renderer and load BackgroundContents for this url,
-  // and set its initial url in the contents_map.
   DLOG(INFO) << "Loading background content url: " << url;
+
+  // Check to make sure that the parent extension is still enabled.
+  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  Extension* extension = extensions_service->GetExtensionById(
+      UTF16ToASCII(application_id), false);
+
+  if (!extension) {
+    // We should never reach here - it should not be possible for an application
+    // to become uninstalled without the associated BackgroundContents being
+    // unregistered via the EXTENSIONS_UNLOADED notification, unless there's a
+    // crash before we could save our prefs.
+    NOTREACHED() << "No extension found for BackgroundContents - id = " <<
+        application_id;
+    return;
+  }
+
+  BackgroundContents* contents = new BackgroundContents(
+      SiteInstance::CreateSiteInstanceForURL(profile, url), MSG_ROUTING_NONE);
+
+  contents_map_[application_id].contents = contents;
+  contents_map_[application_id].frame_name = frame_name;
+
+  RenderViewHost* render_view_host = contents->render_view_host();
+  // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
+  // startup latency (http://crbug.com/47236).
+  render_view_host->CreateRenderView(profile->GetRequestContext(), frame_name);
+  render_view_host->NavigateToURL(url);
 }
 
 void BackgroundContentsService::RegisterBackgroundContents(
@@ -160,6 +190,8 @@ void BackgroundContentsService::RegisterBackgroundContents(
 
   // We store the first URL we receive for a given application. If there's
   // already an entry for this application, no need to do anything.
+  // TODO(atwilson): Verify that this is the desired behavior based on developer
+  // feedback (http://crbug.com/47118).
   DictionaryValue* pref = prefs_->GetMutableDictionary(
       prefs::kRegisteredBackgroundContents);
   const string16& appid = GetParentApplicationId(background_contents);

@@ -51,12 +51,13 @@ class BackgroundContentsService : private NotificationObserver {
                        const NotificationDetails& details);
 
   // Loads all registered BackgroundContents at startup.
-  void LoadBackgroundContentsFromPrefs();
+  void LoadBackgroundContentsFromPrefs(Profile* profile);
 
   // Creates a single BackgroundContents associated with the specified |appid|.
   // The BackgroundContents frame will be given the name specified by
   // |frame_name| and navigated to the passed URL.
-  void CreateBackgroundContents(const GURL& url,
+  void CreateBackgroundContents(Profile* profile,
+                                const GURL& url,
                                 const string16& frame_name,
                                 const string16& appid);
 
