@@ -182,5 +182,9 @@ webcore::html5documentparser::write___webcore::document::write___webcore::docume
 messageloop::runtask___messageloop::deferorrunpendingtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
 # 47367
-PREFIX:
+SUBSTRING:
 webcore::bmpimagereader::decodebmp___webcore::icoimagedecoder::decodeatindex___webcore::icoimagedecoder::framebufferatindex___webcore::imagesource::createframeatindex___webkit::webimage::fromdata
+
+# 47439
+PREFIX:
+webcore::position::getinlineboxandoffset___webcore::position::getinlineboxandoffset___webcore::frame::firstrectforrange___webkit::webviewimpl::caretorselectionbounds
