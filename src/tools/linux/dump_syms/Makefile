@@ -255,10 +255,7 @@ clean::
 check: check-dwarf_cu_to_module_unittest
 check-dwarf_cu_to_module_unittest: dwarf_cu_to_module_unittest
 dwarf_cu_to_module_unittest:      		\
-	bytereader.o				\
-	dwarf2reader.o				\
 	dwarf_cu_to_module.o			\
-	dwarf_line_to_module.o			\
 	gmock-all.o				\
 	gtest-all.o				\
 	gtest_main.o				\
@@ -323,7 +320,6 @@ bytereader_unittest:				\
 	cfi_assembler.o				\
 	gtest-all.o				\
 	gtest_main.o				\
-	module.o				\
 	test_assembler.o			\
 	$(empty)
 CPP_EXECUTABLES += bytereader_unittest
