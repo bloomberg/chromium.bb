@@ -2976,7 +2976,6 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../views/views.gyp:views',
             '../rlz/rlz.gyp:rlz_lib',
-            '<(allocator_target)',
           ],
           'export_dependent_settings': [
             '../views/views.gyp:views',
@@ -2994,6 +2993,13 @@
             'browser/power_save_blocker_stub.cc',
             'browser/views/select_file_dialog.cc',
           ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
         }, {  # 'OS!="win"
           'sources/': [
             # Exclude all of hang_monitor.

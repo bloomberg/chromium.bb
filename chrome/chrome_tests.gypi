@@ -259,9 +259,13 @@
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
-          'dependencies': [
-            '<(allocator_target)',
-          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
         }],
       ],
     },
@@ -398,8 +402,14 @@
             'security_tests',  # run time dependency
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
-            '<(allocator_target)',
           ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
           'link_settings': {
             'libraries': [
               '-lOleAcc.lib',
@@ -473,8 +483,14 @@
             '../views/views.gyp:views',
             # run time dependency
             '../webkit/webkit.gyp:npapi_test_plugin',
-            '<(allocator_target)',
           ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
           'link_settings': {
             'libraries': [
               '-lOleAcc.lib',
@@ -1215,8 +1231,14 @@
             'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             'test_chrome_plugin',  # run time dependency
-            '<(allocator_target)',
           ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
@@ -1443,8 +1465,14 @@
             'chrome_dll_version',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
-            '<(allocator_target)',
           ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
@@ -1574,9 +1602,13 @@
           ],
         }],
         ['OS=="win"', {
-          'dependencies': [
-            '<(allocator_target)',
-          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
@@ -1627,7 +1659,7 @@
         'test/reliability/run_all_unittests.cc',
       ],
       'conditions': [
-        ['OS=="win"', {
+        ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '<(allocator_target)',
           ],
@@ -1701,7 +1733,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
-        ['OS=="win"', {
+        ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '<(allocator_target)',
           ],
@@ -1763,9 +1795,13 @@
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
-          'dependencies': [
-            '<(allocator_target)',
-          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],          
         }], # OS="win"
       ], # conditions
     },
@@ -1928,8 +1964,12 @@
           'sources' : [
             'browser/sync/util/data_encryption_unittest.cc',
           ],
-          'dependencies': [
-            '<(allocator_target)',
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
           'link_settings': {
             'libraries': [
@@ -2079,7 +2119,13 @@
             'installer_util_strings',
             '../views/views.gyp:views',
             '../sandbox/sandbox.gyp:sandbox',
-            '<(allocator_target)',
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
           'configurations': {
             'Debug': {
@@ -2118,8 +2164,14 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            '<(allocator_target)',
             'security_tests',  # run time dependency
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -2185,8 +2237,12 @@
                   },
                 },
               },
-              'dependencies': [
-                '<(allocator_target)',
+              'conditions': [
+                ['win_use_allocator_shim==1', {
+                  'dependencies': [
+                    '<(allocator_target)',
+                  ],
+                }],
               ],
             }],
           ],
@@ -2235,7 +2291,7 @@
             'test/selenium/selenium_test.cc',
           ],
           'conditions': [
-            ['OS=="win"', {
+            ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [
                 '<(allocator_target)',
               ],
