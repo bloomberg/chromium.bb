@@ -101,9 +101,13 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_HOME, false, false, true, IDC_HOME },
   { base::VKEY_ESCAPE, false, false, false, IDC_STOP },
   { base::VKEY_LEFT, false, false, true, IDC_BACK },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_BACK, false, false, false, IDC_BACK },
+#endif
   { base::VKEY_RIGHT, false, false, true, IDC_FORWARD },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_BACK, true, false, false, IDC_FORWARD },
+#endif
   { base::VKEY_R, false, true, false, IDC_RELOAD },
   { base::VKEY_F5, false, false, false, IDC_RELOAD },
   { base::VKEY_F5, false,  true, false, IDC_RELOAD },
