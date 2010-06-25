@@ -839,9 +839,3 @@
    fun:ThreadFunc
    fun:start_thread
 }
-{
-   bug_47545
-   Heapcheck:Leak
-   ...
-   fun:ExtensionExtentTest_One_Test::TestBody
-}

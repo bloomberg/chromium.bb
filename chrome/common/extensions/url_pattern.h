@@ -73,10 +73,12 @@ class URLPattern {
   // otherwise.
   static bool IsValidScheme(const std::string& scheme);
 
-  // Convenience to create a pattern from a string.
-  static URLPattern* CreateFromString(const std::string& pattern);
+  URLPattern();
 
-  URLPattern() : match_subdomains_(false) {}
+  // Convenience to construct a URLPattern from a string. The string is expected
+  // to be a valid pattern. If the string is not known ahead of time, use
+  // Parse() instead, which returns success or failure.
+  explicit URLPattern(const std::string& pattern);
 
   // Initializes this instance by parsing the provided string. On failure, the
   // instance will have some intermediate values and is in an invalid state.

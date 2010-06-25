@@ -16,7 +16,7 @@ TEST(ExtensionExtentTest, Empty) {
 
 TEST(ExtensionExtentTest, One) {
   ExtensionExtent extent;
-  extent.AddPattern(*URLPattern::CreateFromString("http://www.google.com/*"));
+  extent.AddPattern(URLPattern("http://www.google.com/*"));
 
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/")));
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
@@ -26,8 +26,8 @@ TEST(ExtensionExtentTest, One) {
 
 TEST(ExtensionExtentTest, Two) {
   ExtensionExtent extent;
-  extent.AddPattern(*URLPattern::CreateFromString("http://www.google.com/*"));
-  extent.AddPattern(*URLPattern::CreateFromString("http://www.yahoo.com/*"));
+  extent.AddPattern(URLPattern("http://www.google.com/*"));
+  extent.AddPattern(URLPattern("http://www.yahoo.com/*"));
 
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.yahoo.com/monkey")));
