@@ -212,10 +212,7 @@ int main() {
   CheckRetval(NPP_New(mime_type, plugin_instance, NP_EMBED,
                       argc, arg_names, arg_values, saved_data));
 
-  // TODO(mseaborn): This reproduces a plugin bug, probably the same
-  // one as reported in:
-  // http://code.google.com/p/nativeclient/issues/detail?id=641
-  // CheckRetval(NPP_Destroy(plugin_instance, NULL));
+  CheckRetval(NPP_Destroy(plugin_instance, NULL));
 
   NPP_Shutdown();
   return 0;

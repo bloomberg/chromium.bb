@@ -116,14 +116,13 @@ PluginNpapi::~PluginNpapi() {
       video_ = NULL;
     }
   }
-  // Destroying PluginNpapi releases ownership of the plugin.
-  scriptable_handle()->Unref();
 }
 
 NPError PluginNpapi::Destroy(NPSavedData** save) {
   PLUGIN_PRINTF(("PluginNpapi::Destroy(%p, %p)\n", static_cast<void*>(this),
                  static_cast<void*>(save)));
-  delete this;
+  // This has the indirect effect of doing "delete this".
+  scriptable_handle()->Unref();
   return NPERR_NO_ERROR;
 }
 
