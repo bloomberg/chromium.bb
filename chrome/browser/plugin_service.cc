@@ -53,7 +53,11 @@ static void NotifyPluginsOfActivation() {
 
 // static
 bool PluginService::enable_chrome_plugins_ = true;
+#if defined(OS_CHROMEOS)
+bool PluginService::enable_internal_pdf_ = true;
+#else
 bool PluginService::enable_internal_pdf_ = false;
+#endif
 
 // static
 void PluginService::InitGlobalInstance(Profile* profile) {
