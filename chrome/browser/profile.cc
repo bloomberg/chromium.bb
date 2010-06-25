@@ -861,15 +861,6 @@ void ProfileImpl::InitExtensions() {
   component_extensions.push_back(
       std::make_pair("bookmark_manager", IDR_BOOKMARKS_MANIFEST));
 
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
-  // Chat manager.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChatManager)) {
-    component_extensions.push_back(
-        std::make_pair("chat_manager", IDR_CHAT_MANAGER_MANIFEST));
-  }
-#endif
-
   // Some sample apps to make our lives easier while we are developing extension
   // apps. This way we don't have to constantly install these over and over.
   if (Extension::AppsAreEnabled() && IncludeDefaultApps()) {
