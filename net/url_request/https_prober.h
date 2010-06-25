@@ -23,6 +23,8 @@ namespace net {
 class HTTPSProberDelegate {
  public:
   virtual void ProbeComplete(bool result) = 0;
+ protected:
+  virtual ~HTTPSProberDelegate() {}
 };
 
 // HTTPSProber is a singleton object that manages HTTPS probes. A HTTPS probe
@@ -30,7 +32,7 @@ class HTTPSProberDelegate {
 // transparently upgrading from HTTP to HTTPS (for example, for SPDY).
 class HTTPSProber : public URLRequest::Delegate {
  public:
-  HTTPSProber() { }
+  HTTPSProber() {}
 
   // HaveProbed returns true if the given host is known to have been probed
   // since the browser was last started.
