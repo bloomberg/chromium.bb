@@ -134,7 +134,8 @@ std::string GetAppCacheManifestToRemove(const std::string& query) {
     return std::string();
   }
   std::string manifest_str = query.substr(strlen("remove="));
-  return UnescapeURLComponent(manifest_str, UnescapeRule::NORMAL);
+  return UnescapeURLComponent(
+      manifest_str, UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS);
 }
 
 struct ManifestURLComparator {
