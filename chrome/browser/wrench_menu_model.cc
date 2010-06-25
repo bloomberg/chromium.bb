@@ -163,7 +163,7 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 
   AddSeparator();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   edit_menu_item_model_.reset(new menus::ButtonMenuItemModel(IDS_EDIT, this));
   edit_menu_item_model_->AddItemWithStringId(IDC_CUT, IDS_CUT);
   edit_menu_item_model_->AddItemWithStringId(IDC_COPY, IDS_COPY);
@@ -175,7 +175,7 @@ void WrenchMenuModel::Build() {
 #endif
 
   AddSeparator();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   zoom_menu_item_model_.reset(
       new menus::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);

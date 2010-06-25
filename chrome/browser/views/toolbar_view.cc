@@ -230,7 +230,8 @@ void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
 
 void ToolbarView::SetAppMenuModel(menus::SimpleMenuModel* model) {
   app_menu_model_.reset(model);
-  app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
+  if (!WrenchMenuModel::IsEnabled())
+    app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
 }
 
 void ToolbarView::SetToolbarFocusAndFocusLocationBar(int view_storage_id) {

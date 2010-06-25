@@ -1182,7 +1182,10 @@ void BrowserView::ShowPageInfo(Profile* profile,
 }
 
 void BrowserView::ShowPageMenu() {
-  toolbar_->page_menu()->Activate();
+  // TODO(sky): get rid of this and bindings if we decide to keep the new merged
+  // menu.
+  if (toolbar_->page_menu())
+    toolbar_->page_menu()->Activate();
 }
 
 void BrowserView::ShowAppMenu() {
