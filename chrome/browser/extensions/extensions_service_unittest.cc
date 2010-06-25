@@ -257,7 +257,7 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
       new JsonPrefStore( /* user defined preference values */
           pref_file,
           ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-      NULL /* No suggested preference values */)));
+      NULL /* No suggested preference values */ )));
 
   Profile::RegisterUserPrefs(prefs_.get());
   browser::RegisterUserPrefs(prefs_.get());
@@ -663,14 +663,12 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ("https://*.google.com/*",
             scripts[0].url_patterns()[2].GetAsString());
   EXPECT_EQ(2u, scripts[0].js_scripts().size());
-  ExtensionResource resource00(extension->id(),
-                               scripts[0].js_scripts()[0].extension_root(),
+  ExtensionResource resource00(scripts[0].js_scripts()[0].extension_root(),
                                scripts[0].js_scripts()[0].relative_path());
   FilePath expected_path(extension->path().AppendASCII("script1.js"));
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
   EXPECT_TRUE(resource00.ComparePathWithDefault(expected_path));
-  ExtensionResource resource01(extension->id(),
-                               scripts[0].js_scripts()[1].extension_root(),
+  ExtensionResource resource01(scripts[0].js_scripts()[1].extension_root(),
                                scripts[0].js_scripts()[1].relative_path());
   expected_path = extension->path().AppendASCII("script2.js");
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
@@ -678,8 +676,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_TRUE(extension->plugins().empty());
   EXPECT_EQ(1u, scripts[1].url_patterns().size());
   EXPECT_EQ("http://*.news.com/*", scripts[1].url_patterns()[0].GetAsString());
-  ExtensionResource resource10(extension->id(),
-                               scripts[1].js_scripts()[0].extension_root(),
+  ExtensionResource resource10(scripts[1].js_scripts()[0].extension_root(),
                                scripts[1].js_scripts()[0].relative_path());
   expected_path =
       extension->path().AppendASCII("js_files").AppendASCII("script3.js");

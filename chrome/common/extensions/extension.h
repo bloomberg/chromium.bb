@@ -17,7 +17,6 @@
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -355,29 +354,14 @@ class Extension {
   void set_being_upgraded(bool value) { being_upgraded_ = value; }
 
   // Image cache related methods. These are only valid on the UI thread and
-  // not maintained by this class. See ImageLoadingTracker for usage. The
-  // |original_size| parameter should be the size of the image at |source|
-  // before any scaling may have been done to produce the pixels in |image|.
+  // not maintained by this class. See ImageLoadingTracker for usage.
   void SetCachedImage(const ExtensionResource& source,
-                      const SkBitmap& image,
-                      const gfx::Size& original_size);
-  bool HasCachedImage(const ExtensionResource& source,
-                      const gfx::Size& max_size);
-  SkBitmap GetCachedImage(const ExtensionResource& source,
-                          const gfx::Size& max_size);
+                      const SkBitmap& image);
+  bool HasCachedImage(const ExtensionResource& source);
+  SkBitmap GetCachedImage(const ExtensionResource& source);
 
  private:
-  // We keep a cache of images loaded from extension resources based on their
-  // path and a string representation of a size that may have been used to
-  // scale it (or the empty string if the image is at its original size).
-  typedef std::pair<FilePath, std::string> ImageCacheKey;
-  typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
-
-  // Helper function for implementing HasCachedImage/GetCachedImage. A return
-  // value of NULL means there is no matching image cached (we allow caching an
-  // empty SkBitmap).
-  SkBitmap* GetCachedImageImpl(const ExtensionResource& source,
-                               const gfx::Size& max_size);
+  typedef std::map<FilePath, SkBitmap> ImageCache;
 
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
@@ -541,7 +525,8 @@ class Extension {
   int launch_width_;
   int launch_height_;
 
-  // Cached images for this extension.
+  // Cached images for this extension. This maps from the relative_path of the
+  // resource to the cached image.
   ImageCache image_cache_;
 
   // The omnibox keyword for this extension, or empty if there is none.

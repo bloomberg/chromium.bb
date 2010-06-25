@@ -102,12 +102,11 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
 
   ExtensionResource image_resource =
       extension->GetIconPath(Extension::EXTENSION_ICON_SMALLISH);
-  gfx::Size max_size(Extension::EXTENSION_ICON_SMALLISH,
-                     Extension::EXTENSION_ICON_SMALLISH);
   ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
   loader.LoadImage(extension.get(),
                    image_resource,
-                   max_size,
+                   gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
+                             Extension::EXTENSION_ICON_SMALLISH),
                    ImageLoadingTracker::CACHE);
 
   // The image isn't cached, so we should not have received notification.
@@ -122,16 +121,17 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   EXPECT_EQ(Extension::EXTENSION_ICON_SMALLISH, image_.width());
 
   // The image should be cached in the Extension.
-  EXPECT_TRUE(extension->HasCachedImage(image_resource, max_size));
+  EXPECT_TRUE(extension->HasCachedImage(image_resource));
 
   // Make sure the image is in the extension.
   EXPECT_EQ(Extension::EXTENSION_ICON_SMALLISH,
-            extension->GetCachedImage(image_resource, max_size).width());
+            extension->GetCachedImage(image_resource).width());
 
   // Ask the tracker for the image again, this should call us back immediately.
   loader.LoadImage(extension.get(),
                    image_resource,
-                   max_size,
+                   gfx::Size(Extension::EXTENSION_ICON_SMALLISH,
+                             Extension::EXTENSION_ICON_SMALLISH),
                    ImageLoadingTracker::CACHE);
   // We should have gotten the image.
   EXPECT_EQ(1, image_loaded_count());

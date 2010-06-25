@@ -33,9 +33,7 @@ TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &root_path));
   FilePath relative_path;
   relative_path = relative_path.AppendASCII("cira.js");
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
-  ExtensionResource resource(extension_id, root_path, relative_path);
+  ExtensionResource resource(root_path, relative_path);
 
   // The path doesn't exist on disk, we will be returned an empty path.
   EXPECT_EQ(root_path.value(), resource.extension_root().value());
@@ -70,10 +68,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   }
 
   FilePath path;
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
-  ExtensionResource resource(extension_id, temp.path(),
-                             FilePath().AppendASCII(filename));
+  ExtensionResource resource(temp.path(), FilePath().AppendASCII(filename));
   FilePath resolved_path = resource.GetFilePath();
 
   FilePath expected_path;

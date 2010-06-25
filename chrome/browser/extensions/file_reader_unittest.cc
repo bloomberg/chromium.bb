@@ -10,7 +10,6 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/file_reader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,10 +51,7 @@ class Receiver {
 void RunBasicTest(const char* filename) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
-  ExtensionResource resource(extension_id, path,
-                             FilePath().AppendASCII(filename));
+  ExtensionResource resource(path, FilePath().AppendASCII(filename));
   path = path.AppendASCII(filename);
 
   std::string file_contents;
@@ -84,9 +80,7 @@ TEST_F(FileReaderTest, BiggerFile) {
 TEST_F(FileReaderTest, NonExistantFile) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
-  ExtensionResource resource(extension_id, path, FilePath(
+  ExtensionResource resource(path, FilePath(
       FILE_PATH_LITERAL("file_that_does_not_exist")));
   path = path.AppendASCII("file_that_does_not_exist");
 
