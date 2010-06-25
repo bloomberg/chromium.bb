@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -128,10 +128,6 @@ class AutocompleteTextFieldObserver {
 // Returns nil if no menu is present for the action, or if the event
 // is not over an action.
 - (NSMenu*)actionMenuForEvent:(NSEvent*)event;
-
-// Return the rectangle the star is being shown in, for purposes of
-// positioning the bookmark bubble.
-- (NSRect)starIconFrame;
 
 // If the location icon is draggable, return its drag pasteboard.
 - (NSPasteboard*)locationDragPasteboard;

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,7 +143,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   [bubble_ setArrowLocation:info_bubble::kTopRight];
   // Insure decent positioning even in the absence of a browser controller,
   // which will occur for some unit tests.
-  NSPoint arrowtip = bwc ? [bwc pointForBubbleArrowTip] :
+  NSPoint arrowtip = bwc ? [bwc bookmarkBubblePoint] :
       NSMakePoint([window frame].size.width, [window frame].size.height);
   NSPoint origin = [parentWindow_ convertBaseToScreen:arrowtip];
   NSPoint bubbleArrowtip = [bubble_ arrowTip];

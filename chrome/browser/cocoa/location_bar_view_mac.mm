@@ -429,6 +429,16 @@ void LocationBarViewMac::SetStarred(bool starred) {
   [field_ resetFieldEditorFrameIfNeeded];
 }
 
+NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  NSRect frame = [cell starIconFrameForFrame:[field_ bounds]];
+  frame = [field_ convertRect:frame toView:nil];
+
+  // Star is not exactly centered horizontally, and the tip should
+  // point to the visual bottom of the star, not the middle.
+  return NSMakePoint(NSMidX(frame), NSMinY(frame) + 4.0);
+}
+
 NSImage* LocationBarViewMac::GetTabButtonImage() {
   if (!tab_button_image_) {
     SkBitmap* skiaBitmap = ResourceBundle::GetSharedInstance().

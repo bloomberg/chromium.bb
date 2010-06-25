@@ -138,10 +138,9 @@ class WrenchMenuModel;
 // ignored. This changes the behavior of other methods, like |-view|.
 - (void)setHasToolbar:(BOOL)toolbar hasLocationBar:(BOOL)locBar;
 
-// The bookmark bubble (when you click the star or hit Command-d)
-// needs to know where to go.  Somewhere near the star icon seems like
-// a good start.
-- (NSRect)starIconInWindowCoordinates;
+// Point on the star icon for the bookmark bubble to be - in the
+// associated window's coordinate system.
+- (NSPoint)bookmarkBubblePoint;
 
 // Returns the desired toolbar height for the given compression factor.
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;

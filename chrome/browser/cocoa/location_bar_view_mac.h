@@ -85,6 +85,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
 
+  // Get the point on the star for the bookmark bubble to aim at.
+  NSPoint GetBookmarkBubblePoint() const;
+
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores
   // saved state from the tab (for tab switching).

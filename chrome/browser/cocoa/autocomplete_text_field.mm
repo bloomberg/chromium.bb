@@ -382,11 +382,6 @@
            actionMenuForEvent:event inRect:[self bounds] ofView:self];
 }
 
-- (NSRect)starIconFrame {
-  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
-  return [cell starIconFrameForFrame:[self bounds]];
-}
-
 - (NSPasteboard*)locationDragPasteboard {
   return [[self autocompleteTextFieldCell] locationDragPasteboard];
 }

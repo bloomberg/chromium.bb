@@ -18,7 +18,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/accelerators_cocoa.h"
-#import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
@@ -682,8 +681,8 @@ class PrefObserverBridge : public NotificationObserver {
   [NSAnimationContext endGrouping];
 }
 
-- (NSRect)starIconInWindowCoordinates {
-  return [locationBar_ convertRect:[locationBar_ starIconFrame] toView:nil];
+- (NSPoint)bookmarkBubblePoint {
+  return locationBarView_->GetBookmarkBubblePoint();
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {

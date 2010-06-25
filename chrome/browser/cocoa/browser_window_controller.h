@@ -245,7 +245,7 @@ class TabStripModelObserverBridge;
 - (NSPoint)themePatternPhase;
 
 // Return the point to which a bubble window's arrow should point.
-- (NSPoint)pointForBubbleArrowTip;
+- (NSPoint)bookmarkBubblePoint;
 
 // Call when the user changes the tab strip display mode, enabling or
 // disabling vertical tabs for this browser. Re-flows the contents of the
@@ -356,9 +356,6 @@ class TabStripModelObserverBridge;
 
 // Return an autoreleased NSWindow suitable for fullscreen use.
 - (NSWindow*)createFullscreenWindow;
-
-// Return a point suitable for the topRight for a bookmark bubble.
-- (NSPoint)pointForBubbleArrowTip;
 
 // Resets any saved state about window growth (due to showing the bookmark bar
 // or the download shelf), so that future shrinking will occur from the bottom.

@@ -1377,13 +1377,8 @@
   return phase;
 }
 
-- (NSPoint)pointForBubbleArrowTip {
-  NSRect rect = [toolbarController_ starIconInWindowCoordinates];
-  // Determine the point of the arrow of the bubble window.
-  NSPoint p = rect.origin;
-  p.x += (NSWidth(rect) / 2.0) + 1.0;  // Star is not exactly in center.
-  p.y += 4;
-  return p;
+- (NSPoint)bookmarkBubblePoint {
+  return [toolbarController_ bookmarkBubblePoint];
 }
 
 // Show the bookmark bubble (e.g. user just clicked on the STAR).

@@ -199,12 +199,13 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
 }
 
-TEST_F(ToolbarControllerTest, StarIconInWindowCoordinates) {
-  NSRect star = [bar_ starIconInWindowCoordinates];
-  NSRect all = [[[bar_ view] window] frame];
+TEST_F(ToolbarControllerTest, BookmarkBubblePoint) {
+  const NSPoint starPoint = [bar_ bookmarkBubblePoint];
+  const NSRect barFrame =
+      [[bar_ view] convertRect:[[bar_ view] bounds] toView:nil];
 
-  // Make sure the star is completely inside the window rect
-  EXPECT_TRUE(NSContainsRect(all, star));
+  // Make sure the star is completely inside the location bar.
+  EXPECT_TRUE(NSPointInRect(starPoint, barFrame));
 }
 
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
