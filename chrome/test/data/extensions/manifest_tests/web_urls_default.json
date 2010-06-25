@@ -2,10 +2,6 @@
   "name": "test",
   "version": "1",
   "app": {
-    "urls": [
-      "http://www.google.com/mail/",
-      "http://www.google.com/foobar/"
-    ],
     "launch": {
       "container": "window",
       "web_url": "http://www.google.com/mail/"

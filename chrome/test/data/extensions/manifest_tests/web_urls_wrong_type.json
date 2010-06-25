@@ -2,11 +2,9 @@
   "name": "test",
   "version": "1",
   "app": {
-    "web_content": {
-      "paths": 42
-    },
+    "urls": 42,
     "launch": {
-      "web_url": "foo.html"
+      "web_url": "http://www.google.com/foo.html"
     }
   }
 }

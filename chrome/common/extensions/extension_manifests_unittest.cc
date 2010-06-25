@@ -87,35 +87,34 @@ TEST_F(ManifestTest, AppsDisabledByDefault) {
 
 TEST_F(ManifestTest, ValidApp) {
   scoped_ptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));
-  EXPECT_EQ(GURL("http://www.google.com/"), extension->web_extent().origin());
-  EXPECT_EQ(2u, extension->web_extent().paths().size());
-  EXPECT_EQ("mail/", extension->web_extent().paths()[0]);
-  EXPECT_EQ("foobar/", extension->web_extent().paths()[1]);
+  ASSERT_EQ(2u, extension->web_extent().patterns().size());
+  EXPECT_EQ("http://www.google.com/mail/*",
+            extension->web_extent().patterns()[0].GetAsString());
+  EXPECT_EQ("http://www.google.com/foobar/*",
+            extension->web_extent().patterns()[1].GetAsString());
   EXPECT_EQ(Extension::LAUNCH_WINDOW, extension->launch_container());
   EXPECT_EQ(false, extension->launch_fullscreen());
-  EXPECT_EQ("mail/", extension->launch_web_url());
+  EXPECT_EQ("http://www.google.com/mail/", extension->launch_web_url());
 }
 
-TEST_F(ManifestTest, AppWebOrigin) {
-  LoadAndExpectError("web_origin_wrong_type.json",
-                     errors::kInvalidWebOrigin);
-  LoadAndExpectError("web_origin_invalid_1.json",
-                     errors::kInvalidWebOrigin);
-  LoadAndExpectError("web_origin_invalid_2.json",
-                     errors::kInvalidWebOrigin);
-  LoadAndExpectError("web_origin_invalid_3.json",
-                     errors::kInvalidWebOrigin);
-}
+TEST_F(ManifestTest, AppWebUrls) {
+  LoadAndExpectError("web_urls_wrong_type.json",
+                     errors::kInvalidWebURLs);
+  LoadAndExpectError("web_urls_invalid_1.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidWebURL, "0"));
+  LoadAndExpectError("web_urls_invalid_2.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidWebURL, "0"));
+  LoadAndExpectError("web_urls_invalid_3.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidWebURL, "0"));
 
-TEST_F(ManifestTest, AppWebPaths) {
-  LoadAndExpectError("web_paths_wrong_type.json",
-                     errors::kInvalidWebPaths);
-  LoadAndExpectError("web_paths_invalid_path_1.json",
-                     ExtensionErrorUtils::FormatErrorMessage(
-                         errors::kInvalidWebPath, "0"));
-  LoadAndExpectError("web_paths_invalid_path_2.json",
-                     ExtensionErrorUtils::FormatErrorMessage(
-                         errors::kInvalidWebPath, "0"));
+  scoped_ptr<Extension> extension(
+      LoadAndExpectSuccess("web_urls_default.json"));
+  ASSERT_EQ(1u, extension->web_extent().patterns().size());
+  EXPECT_EQ("http://www.google.com/*",
+            extension->web_extent().patterns()[0].GetAsString());
 }
 
 TEST_F(ManifestTest, AppLaunchContainer) {
@@ -175,9 +174,8 @@ TEST_F(ManifestTest, AppLaunchURL) {
   EXPECT_EQ(extension->url().spec() + "launch.html",
             extension->GetFullLaunchURL().spec());
 
-  extension.reset(LoadAndExpectSuccess("launch_web_url_relative.json"));
-  EXPECT_EQ(GURL("http://www.google.com/launch.html"),
-            extension->GetFullLaunchURL());
+  LoadAndExpectError("launch_web_url_relative.json",
+                     errors::kInvalidLaunchWebURL);
 
   extension.reset(LoadAndExpectSuccess("launch_web_url_absolute.json"));
   EXPECT_EQ(GURL("http://www.google.com/launch.html"),

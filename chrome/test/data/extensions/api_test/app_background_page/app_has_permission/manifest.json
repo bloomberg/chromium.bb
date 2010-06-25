@@ -2,11 +2,11 @@
   "name": "App",
   "version": "0.1",
   "app": {
-    "web_content": {
-      "origin": "http://a.com:1337"
-    },
+    "urls": [
+      "http://a.com/"
+    ],
     "launch": {
-      "web_url": "/"
+      "web_url": "http://a.com:1337/"
     }
   },
   "permissions": ["background"]

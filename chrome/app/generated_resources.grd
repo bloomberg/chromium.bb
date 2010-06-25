@@ -3425,7 +3425,7 @@ each locale. -->
         Manifest file is invalid.
       </message>
       <message name="IDS_EXTENSION_OVERLAPPING_WEB_EXTENT" desc="Error message when a user tries to install an app with a web extent that overlaps another installed app.">
-        This app claims to own '<ph name="APP_OVERLAPPING_URL">$2<ex>http://google.com/mail</ex></ph>' which already belongs to installed app '<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>'.
+        Could not install application because it conflicts with '<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>', which is already installed.
       </message>
       <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
         Localization used, but default_locale wasn't specified in the manifest.

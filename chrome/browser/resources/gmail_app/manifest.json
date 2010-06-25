@@ -10,12 +10,16 @@
   },
   "permissions": [ "notifications" ],
   "app": {
-    "web_content": {
-      "origin": "https://mail.google.com/",
-      "paths": [ "mail" ]
-    },
+    "urls": [
+      "http://mail.google.com/mail/",
+      "https://mail.google.com/mail/",
+      "http://gmail.com/",
+      "https://gmail.com/",
+      "http://www.gmail.com/",
+      "https://www.gmail.com/"
+    ],
     "launch": {
-      "web_url": "https://mail.google.com/"
+      "web_url": "https://mail.google.com/mail/"
     }
   }
 }

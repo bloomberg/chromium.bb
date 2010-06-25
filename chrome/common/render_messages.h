@@ -2683,25 +2683,21 @@ template <>
 struct ParamTraits<ExtensionExtent> {
   typedef ExtensionExtent param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.origin());
-    WriteParam(m, p.paths());
+    WriteParam(m, p.patterns());
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    GURL origin;
-    std::vector<std::string> paths;
+    std::vector<URLPattern> patterns;
     bool success =
-        ReadParam(m, iter, &origin) &&
-        ReadParam(m, iter, &paths);
+        ReadParam(m, iter, &patterns);
     if (!success)
       return false;
 
-    p->set_origin(origin);
-    for (size_t i = 0; i < paths.size(); ++i)
-      p->add_path(paths[i]);
+    for (size_t i = 0; i < patterns.size(); ++i)
+      p->AddPattern(patterns[i]);
     return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
-    LogParam(p.origin(), l);
+    LogParam(p.patterns(), l);
   }
 };
 

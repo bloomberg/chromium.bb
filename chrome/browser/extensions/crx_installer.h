@@ -83,11 +83,11 @@ class CrxInstaller
     allow_privilege_increase_ = val;
   }
 
-  bool force_web_origin_to_download_url() const {
-    return force_web_origin_to_download_url_;
+  bool limit_web_extent_to_download_host() const {
+    return limit_web_extent_to_download_host_;
   }
-  void set_force_web_origin_to_download_url(bool val) {
-    force_web_origin_to_download_url_ = val;
+  void set_limit_web_extent_to_download_host(bool val) {
+    limit_web_extent_to_download_host_ = val;
   }
 
  private:
@@ -151,11 +151,9 @@ class CrxInstaller
   // either. Defaults to false.
   bool allow_privilege_increase_;
 
-  // If true and the installed extension uses web content, the web origin will
-  // be forced to the origin of |original_url_|. Defaults to false. This is used
-  // for non-gallery installs, where we don't trust the origin given in the
-  // manifest.
-  bool force_web_origin_to_download_url_;
+  // Limits the web extent to the app being installed to the host of the
+  // download URL. If the crx being installed is not an app, this is a no-op.
+  bool limit_web_extent_to_download_host_;
 
   // Whether to create an app shortcut after successful installation. This is
   // set based on the user's selection in the UI and can only ever be true for
