@@ -39,7 +39,8 @@
 #ifndef COMMON_LINUX_DWARF_CFI_TO_MODULE_H
 #define COMMON_LINUX_DWARF_CFI_TO_MODULE_H
 
-#include <cassert>
+#include <assert.h>
+
 #include <string>
 #include <vector>
 

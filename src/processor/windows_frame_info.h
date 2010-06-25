@@ -38,7 +38,8 @@
 #ifndef PROCESSOR_WINDOWS_FRAME_INFO_H__
 #define PROCESSOR_WINDOWS_FRAME_INFO_H__
 
-#include <cstring>
+#include <string.h>
+
 #include <string>
 #include <vector>
 

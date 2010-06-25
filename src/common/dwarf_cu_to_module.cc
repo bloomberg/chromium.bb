@@ -31,10 +31,12 @@
 
 // Implement the DwarfCUToModule class; see dwarf_cu_to_module.h.
 
-#include <algorithm>
-#include <cassert>
-
 #include "common/dwarf_cu_to_module.h"
+
+#include <assert.h>
+
+#include <algorithm>
+
 #include "common/dwarf_line_to_module.h"
 
 namespace google_breakpad {

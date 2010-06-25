@@ -38,10 +38,11 @@
 #ifndef COMMON_LINUX_MODULE_H__
 #define COMMON_LINUX_MODULE_H__
 
+#include <stdio.h>
+
 #include <map>
 #include <string>
 #include <vector>
-#include <cstdio>
 
 #include "google_breakpad/common/breakpad_types.h"
 

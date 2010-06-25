@@ -32,10 +32,10 @@
 // cfi_assembler.cc: Implementation of google_breakpad::CFISection class.
 // See cfi_assembler.h for details.
 
-#include <cassert>
-#include <stdlib.h>
-
 #include "common/dwarf/cfi_assembler.h"
+
+#include <assert.h>
+#include <stdlib.h>
 
 namespace google_breakpad {
 

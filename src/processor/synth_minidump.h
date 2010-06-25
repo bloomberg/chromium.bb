@@ -108,7 +108,8 @@
 #ifndef PROCESSOR_SYNTH_MINIDUMP_H_
 #define PROCESSOR_SYNTH_MINIDUMP_H_
 
-#include <cassert>
+#include <assert.h>
+
 #include <iostream>
 #include <string>
 

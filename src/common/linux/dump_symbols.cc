@@ -32,18 +32,20 @@
 // dump_symbols.cc: implement google_breakpad::WriteSymbolFile:
 // Find all the debugging info in a file and dump it as a Breakpad symbol file.
 
+#include "common/linux/dump_symbols.h"
+
+#include <assert.h>
 #include <elf.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <link.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <cassert>
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <string>
 
 #include "common/dwarf/bytereader-inl.h"
@@ -51,7 +53,6 @@
 #include "common/dwarf_cfi_to_module.h"
 #include "common/dwarf_cu_to_module.h"
 #include "common/dwarf_line_to_module.h"
-#include "common/linux/dump_symbols.h"
 #include "common/linux/file_id.h"
 #include "common/module.h"
 #include "common/stabs_reader.h"

@@ -32,10 +32,12 @@
 // cfi_frame_info.cc: Implementation of CFIFrameInfo class.
 // See cfi_frame_info.h for details.
 
-#include <cstring>
+#include "processor/cfi_frame_info.h"
+
+#include <string.h>
+
 #include <sstream>
 
-#include "processor/cfi_frame_info.h"
 #include "processor/postfix_evaluator-inl.h"
 #include "processor/scoped_ptr.h"
 

@@ -27,21 +27,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "processor/udp_network.h"
+
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 
-#include <cstdio>
-#include <cstring>
 #include <string>
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "processor/logging.h"
-#include "processor/udp_network.h"
 
 namespace google_breakpad {
 using std::string;

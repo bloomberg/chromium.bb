@@ -39,11 +39,11 @@
 //  cpu: the CPU that the module was built for
 //  symbol_file: the contents of the breakpad-format symbol file
 
-#include <unistd.h>
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-#include <cstdio>
-#include <cassert>
 #include <functional>
 #include <iostream>
 #include <string>

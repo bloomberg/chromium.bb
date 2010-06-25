@@ -27,14 +27,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google_breakpad/processor/network_source_line_resolver.h"
+
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <cassert>
 #include <sstream>
 #include <vector>
 
-#include "google_breakpad/processor/network_source_line_resolver.h"
 #include "google_breakpad/processor/stack_frame.h"
 #include "processor/binarystream.h"
 #include "processor/cfi_frame_info.h"

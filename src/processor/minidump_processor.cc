@@ -27,10 +27,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <cassert>
-#include <cstdio>
-
 #include "google_breakpad/processor/minidump_processor.h"
+
+#include <assert.h>
+#include <stdio.h>
+
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/minidump.h"
 #include "google_breakpad/processor/process_state.h"

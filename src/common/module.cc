@@ -31,10 +31,10 @@
 
 // module.cc: Implement google_breakpad::Module.  See module.h.
 
-#include <cerrno>
-#include <cstring>
-
 #include "common/module.h"
+
+#include <errno.h>
+#include <string.h>
 
 namespace google_breakpad {
 

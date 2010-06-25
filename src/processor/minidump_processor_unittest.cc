@@ -30,11 +30,13 @@
 // Unit test for MinidumpProcessor.  Uses a pre-generated minidump and
 // corresponding symbol file, and checks the stack frames for correctness.
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <map>
+
 #include "breakpad_googletest_includes.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/call_stack.h"

@@ -33,10 +33,10 @@
 //
 // Author: Mark Mentovai
 
-
-#include <cassert>
-
 #include "google_breakpad/processor/stackwalker.h"
+
+#include <assert.h>
+
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/code_module.h"
 #include "google_breakpad/processor/code_modules.h"

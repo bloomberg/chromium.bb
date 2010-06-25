@@ -31,16 +31,18 @@
 // Implementation of dwarf2reader::LineInfo, dwarf2reader::CompilationUnit,
 // and dwarf2reader::CallFrameInfo. See dwarf2reader.h for details.
 
-#include <cassert>
-#include <cstdio>
-#include <cstring>
+#include "common/dwarf/dwarf2reader.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <map>
 #include <memory>
 #include <stack>
 #include <utility>
 
 #include "common/dwarf/bytereader-inl.h"
-#include "common/dwarf/dwarf2reader.h"
 #include "common/dwarf/bytereader.h"
 #include "common/dwarf/line_state_machine.h"
 

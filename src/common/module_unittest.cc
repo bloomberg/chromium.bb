@@ -31,10 +31,10 @@
 
 // module_unittest.cc: Unit tests for google_breakpad::Module.
 
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <algorithm>
 #include <string>

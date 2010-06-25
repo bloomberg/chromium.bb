@@ -31,7 +31,8 @@
 
 // dwarf2reader_cfi_unittest.cc: Unit tests for dwarf2reader::CallFrameInfo
 
-#include <cstdlib>
+#include <stdlib.h>
+
 #include <vector>
 
 // The '.eh_frame' format, used by the Linux C++ ABI for exception
@@ -45,9 +46,9 @@
 // interpretation against the test's intentions. Each ELF file is named
 // "cfitest-TEST", where TEST identifies the particular test.
 #ifdef WRITE_ELF
-#include <cstdio>
-#include <cerrno>
-#include <cstring>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 extern "C" {
 // To compile with WRITE_ELF, you should add the 'include' directory
 // of the binutils, gcc, or gdb source tree to your #include path;
