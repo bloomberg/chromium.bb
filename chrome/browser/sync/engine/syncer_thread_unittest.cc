@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/util/channel.h"
-#include "chrome/test/sync/engine/mock_server_connection.h"
+#include "chrome/test/sync/engine/mock_connection_manager.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

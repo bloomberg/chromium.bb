@@ -29,7 +29,7 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
-#include "chrome/test/sync/engine/mock_server_connection.h"
+#include "chrome/test/sync/engine/mock_connection_manager.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/sync/engine/test_syncable_utils.h"
@@ -251,7 +251,7 @@ class SyncerTest : public testing::Test,
   }
   sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
     sync_pb::EntitySpecifics result;
-    result.MutableExtension(sync_pb::bookmark);
+    AddDefaultExtensionValue(syncable::BOOKMARKS, &result);
     return result;
   }
   // Enumeration of alterations to entries for commit ordering tests.
@@ -3305,7 +3305,8 @@ TEST_F(SyncerTest, DuplicateIDReturn) {
   }
   mock_server_->set_next_new_id(10000);
   EXPECT_TRUE(1 == dir->unsynced_entity_count());
-  syncer_->SyncShare(this);  // we get back a bad id in here (should never happen).
+  // we get back a bad id in here (should never happen).
+  syncer_->SyncShare(this);
   EXPECT_TRUE(1 == dir->unsynced_entity_count());
   syncer_->SyncShare(this);  // another bad id in here.
   EXPECT_TRUE(0 == dir->unsynced_entity_count());
@@ -3962,7 +3963,7 @@ TEST_F(SyncerTest, TestUndeleteIgnoreCorrectlyUnappliedUpdate) {
   mock_server_->AddUpdateBookmark(id1, root, "foo", 1, 10);
   mock_server_->AddUpdateBookmark(id2, root, "foo", 1, 10);
   syncer_->SyncShare(this);
-  mock_server_->AddUpdateBookmark(id2, root, "foo2", 1, 10);
+  mock_server_->AddUpdateBookmark(id2, root, "foo2", 2, 20);
   syncer_->SyncShare(this);  // Now just don't explode.
 }
 
@@ -4054,6 +4055,7 @@ TEST_F(SyncerTest, ClientTagClientCreatedConflictUpdate) {
     MutableEntry perm_folder(&trans, CREATE, ids_.root(), "clientname");
     ASSERT_TRUE(perm_folder.good());
     perm_folder.Put(UNIQUE_CLIENT_TAG, "clientperm");
+    perm_folder.Put(SPECIFICS, DefaultBookmarkSpecifics());
     perm_folder.Put(IS_UNSYNCED, true);
     EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(perm_folder.Get(ID).ServerKnows());

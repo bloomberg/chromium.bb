@@ -12,7 +12,7 @@
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
-#include "chrome/test/sync/engine/mock_server_connection.h"
+#include "chrome/test/sync/engine/mock_connection_manager.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

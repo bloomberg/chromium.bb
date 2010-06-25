@@ -4,7 +4,7 @@
 //
 // Mock ServerConnectionManager class for use in client regression tests.
 
-#include "chrome/test/sync/engine/mock_server_connection.h"
+#include "chrome/test/sync/engine/mock_connection_manager.h"
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"

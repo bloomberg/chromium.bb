@@ -4,8 +4,8 @@
 //
 // Mock ServerConnectionManager class for use in client unit tests.
 
-#ifndef CHROME_TEST_SYNC_ENGINE_MOCK_SERVER_CONNECTION_H_
-#define CHROME_TEST_SYNC_ENGINE_MOCK_SERVER_CONNECTION_H_
+#ifndef CHROME_TEST_SYNC_ENGINE_MOCK_CONNECTION_MANAGER_H_
+#define CHROME_TEST_SYNC_ENGINE_MOCK_CONNECTION_MANAGER_H_
 
 #include <bitset>
 #include <string>
@@ -287,4 +287,4 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   DISALLOW_COPY_AND_ASSIGN(MockConnectionManager);
 };
 
-#endif  // CHROME_TEST_SYNC_ENGINE_MOCK_SERVER_CONNECTION_H_
+#endif  // CHROME_TEST_SYNC_ENGINE_MOCK_CONNECTION_MANAGER_H_
