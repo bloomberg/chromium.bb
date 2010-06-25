@@ -1844,34 +1844,34 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
         0,  // border
         GL_RGBA,
         GL_UNSIGNED_BYTE);
-  }
 
-  // Attach the saved offscreen color texture to a frame buffer so we can
-  // clear it with glClear.
-  offscreen_target_frame_buffer_->AttachRenderTexture(
-      offscreen_saved_color_texture_.get());
-  if (offscreen_target_frame_buffer_->CheckStatus() !=
-      GL_FRAMEBUFFER_COMPLETE) {
-    return false;
-  }
-
-  // TODO(apatrick): Fix this once ANGLE supports shared contexts.
-  // Clear the saved offscreen color texture. Use default GL context
-  // to ensure clear is not affected by client set state.
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    ScopedDefaultGLContext scoped_context(this);
-    glBindFramebufferEXT(GL_FRAMEBUFFER,
-                         offscreen_target_frame_buffer_->id());
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-
-    if (glGetError() != GL_NO_ERROR)
+    // Attach the saved offscreen color texture to a frame buffer so we can
+    // clear it with glClear.
+    offscreen_target_frame_buffer_->AttachRenderTexture(
+        offscreen_saved_color_texture_.get());
+    if (offscreen_target_frame_buffer_->CheckStatus() !=
+        GL_FRAMEBUFFER_COMPLETE) {
       return false;
-  }
+    }
 
-  // Re-attach the offscreen render texture to the target frame buffer.
-  offscreen_target_frame_buffer_->AttachRenderTexture(
-      offscreen_target_color_texture_.get());
+    // TODO(apatrick): Fix this once ANGLE supports shared contexts.
+    // Clear the saved offscreen color texture. Use default GL context
+    // to ensure clear is not affected by client set state.
+    if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+      ScopedDefaultGLContext scoped_context(this);
+      glBindFramebufferEXT(GL_FRAMEBUFFER,
+                           offscreen_target_frame_buffer_->id());
+      glClear(GL_COLOR_BUFFER_BIT);
+      glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+      if (glGetError() != GL_NO_ERROR)
+        return false;
+    }
+
+    // Re-attach the offscreen render texture to the target frame buffer.
+    offscreen_target_frame_buffer_->AttachRenderTexture(
+        offscreen_target_color_texture_.get());
+  }
 
   return true;
 }
@@ -4714,9 +4714,12 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     if (!UpdateOffscreenFrameBufferSize())
       return error::kLostContext;
 
-    ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
-    offscreen_saved_color_texture_->Copy(
-        offscreen_saved_color_texture_->size());
+    if (parent_) {
+      ScopedFrameBufferBinder binder(this,
+                                     offscreen_target_frame_buffer_->id());
+      offscreen_saved_color_texture_->Copy(
+          offscreen_saved_color_texture_->size());
+    }
   } else {
     context_->SwapBuffers();
   }
