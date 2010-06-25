@@ -133,6 +133,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_DELETE, false, true, true, IDC_TASK_MANAGER },
   { base::VKEY_OEM_COMMA, false, true, false, IDC_SYSTEM_OPTIONS },
   { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_BAR },
+  { base::VKEY_B, false, true, true, IDC_SHOW_BOOKMARK_MANAGER },
 #if !defined(OS_CHROMEOS)
   { base::VKEY_F1, false, false, false, IDC_HELP_PAGE },
 #endif
