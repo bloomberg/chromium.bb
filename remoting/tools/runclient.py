@@ -11,7 +11,7 @@
 import os
 import platform
 
-auth_filepath = os.path.join(os.getenv('HOME'), '.chromotingAuthToken')
+auth_filepath = os.path.join(os.path.expanduser('~'), '.chromotingAuthToken')
 script_path = os.path.dirname(__file__)
 
 if platform.system() == "Windows":

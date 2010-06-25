@@ -43,12 +43,13 @@
 
 #if defined(OS_WIN)
 const std::wstring kDefaultConfigPath = L".ChromotingConfig.json";
+const wchar_t kHomeDrive[] = L"HOMEDRIVE";
 const wchar_t kHomePath[] = L"HOMEPATH";
 const wchar_t* GetEnvironmentVar(const wchar_t* x) { return _wgetenv(x); }
 #else
-static char* GetEnvironmentVar(const char* x) { return getenv(x); }
-const char kHomePath[] = "HOME";
 const std::string kDefaultConfigPath = ".ChromotingConfig.json";
+const char kHomePath[] = "HOME";
+static char* GetEnvironmentVar(const char* x) { return getenv(x); }
 #endif
 
 const std::string kFakeSwitchName = "fake";
@@ -81,7 +82,13 @@ int main(int argc, char** argv) {
   // Check the argument to see if we should use a fake capturer and encoder.
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
 
-  FilePath config_path(GetEnvironmentVar(kHomePath));
+#if defined(OS_WIN)
+  std::wstring path = GetEnvironmentVar(kHomeDrive);
+  path += GetEnvironmentVar(kHomePath);
+#else
+  std::string path = GetEnvironmentVar(kHomePath);
+#endif
+  FilePath config_path(path);
   config_path = config_path.Append(kDefaultConfigPath);
   if (cmd_line->HasSwitch(kConfigSwitchName)) {
     config_path = cmd_line->GetSwitchValuePath(kConfigSwitchName);

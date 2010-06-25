@@ -12,6 +12,7 @@ import os
 import urllib
 import urllib2
 import uuid
+import socket
 import sys
 
 import gaia_auth
@@ -19,7 +20,8 @@ import gaia_auth
 server = 'www-googleapis-test.sandbox.google.com'
 url = 'http://' + server + '/chromoting/v1/@me/hosts'
 
-settings_filepath = os.path.join(os.getenv('HOME'), '.ChromotingConfig.json')
+settings_filepath = os.path.join(os.path.expanduser('~'),
+                                 '.ChromotingConfig.json')
 
 print "Email:",
 email = raw_input()
@@ -30,9 +32,9 @@ xapi_token = xapi_auth.authenticate(email, password)
 
 host_id = str(uuid.uuid1())
 print "HostId:", host_id
-host_name = os.uname()[1]
+host_name = socket.gethostname()
 print "HostName:", host_name
-# TODO(sergeyu): Implement keypair generaion.
+# TODO(sergeyu): Implement keypair generation.
 public_key = '123123'
 jingle_id = ''
 

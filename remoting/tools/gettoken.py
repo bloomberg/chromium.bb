@@ -13,7 +13,7 @@ import urllib
 
 import gaia_auth
 
-auth_filepath = os.path.join(os.getenv('HOME'), '.chromotingAuthToken')
+auth_filepath = os.path.join(os.path.expanduser('~'), '.chromotingAuthToken')
 
 print "Email:",
 email = raw_input()
