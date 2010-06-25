@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_CONSTANTS_H
-#define REMOTING_BASE_CONSTANTS_H
-
-#include <string>
+#ifndef REMOTING_BASE_CONSTANTS_H_
+#define REMOTING_BASE_CONSTANTS_H_
 
 namespace remoting {
 
-extern const std::string kChromotingBotJid;
+extern const char kChromotingBotJid[];
 
 // Service name used for authentication.
-extern const std::string kChromotingTokenServiceName;
+extern const char kChromotingTokenServiceName[];
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_CONSTANTS_H
+#endif  // REMOTING_BASE_CONSTANTS_H_
