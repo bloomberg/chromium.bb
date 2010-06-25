@@ -27,7 +27,6 @@ class NotificationOptionsMenuModel : public menus::MenuModel {
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
-  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
   virtual MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index);

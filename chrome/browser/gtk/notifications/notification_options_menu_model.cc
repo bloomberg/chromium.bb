@@ -64,11 +64,6 @@ bool NotificationOptionsMenuModel::GetIconAt(int index, SkBitmap* icon) const {
   return false;
 }
 
-menus::ButtonMenuItemModel* NotificationOptionsMenuModel::GetButtonMenuItemAt(
-    int index) const {
-  return NULL;
-}
-
 bool NotificationOptionsMenuModel::IsEnabledAt(int index) const {
   return true;
 }

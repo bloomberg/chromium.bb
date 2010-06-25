@@ -16,7 +16,6 @@
 class SkBitmap;
 
 namespace menus {
-class ButtonMenuItemModel;
 class MenuModel;
 }
 
@@ -61,8 +60,7 @@ class MenuGtk {
   GtkWidget* AppendMenuItem(int command_id, GtkWidget* menu_item);
   GtkWidget* AppendMenuItemToMenu(int command_id,
                                   GtkWidget* menu_item,
-                                  GtkWidget* menu,
-                                  bool connect_to_activate);
+                                  GtkWidget* menu);
 
   // Displays the menu. |timestamp| is the time of activation. The popup is
   // statically positioned at |widget|.
@@ -116,8 +114,6 @@ class MenuGtk {
   void BuildMenuFromModel();
   // Implementation of the above; called recursively.
   void BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu);
-  // Builds a menu item with buttons in it from the data in the model.
-  GtkWidget* BuildButtomMenuItem(menus::ButtonMenuItemModel* model);
 
   // Contains implementation for OnMenuShow.
   void UpdateMenu();
@@ -126,10 +122,6 @@ class MenuGtk {
 
   // Callback for when a menu item is clicked.
   static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);
-
-  // Called when one of the buttons are pressed.
-  static void OnMenuButtonPressed(GtkMenuItem* menuitem, int command_id,
-                                  MenuGtk* menu);
 
   // Sets the check mark and enabled/disabled state on our menu items.
   static void SetMenuItemInfo(GtkWidget* widget, void* raw_menu);
