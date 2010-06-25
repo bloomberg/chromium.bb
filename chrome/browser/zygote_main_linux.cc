@@ -539,7 +539,7 @@ static void PreSandboxInit() {
       file_util::PathExists(pdf)) {
     static scoped_refptr<NPAPI::PluginLib> pdf_lib =
         NPAPI::PluginLib::CreatePluginLib(pdf);
-    bool rv = pdf_lib->EnsureAlwaysLoaded();
+    bool rv = pdf_lib && pdf_lib->EnsureAlwaysLoaded();
     DCHECK(rv) << "Couldn't load PDF plugin";
   }
 }
