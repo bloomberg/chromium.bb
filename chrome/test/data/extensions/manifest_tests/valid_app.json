@@ -2,16 +2,13 @@
   "name": "test",
   "version": "1",
   "app": {
-    "web_content": {
-      "origin": "http://www.google.com/",
-      "paths": [
-        "mail/",
-        "foobar/"
-      ]
-    },
+    "urls": [
+      "http://www.google.com/mail/",
+      "http://www.google.com/foobar/"
+    ],
     "launch": {
       "container": "window",
-      "web_url": "mail/"
+      "web_url": "http://www.google.com/mail/"
     }
   },
   "permissions": [

@@ -1471,7 +1471,7 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
           ExtensionsService::IsDownloadFromGallery(download_url, referrer_url);
       installer->set_allow_privilege_increase(true);
       installer->set_original_url(download_url);
-      installer->set_force_web_origin_to_download_url(!is_gallery_download);
+      installer->set_limit_web_extent_to_download_host(!is_gallery_download);
       installer->InstallCrx(full_path);
     }
   } else {

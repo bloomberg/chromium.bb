@@ -10,10 +10,10 @@
     "48": "48.png"
   },
   "app": {
-    "web_content": {
-      "origin": "https://www.google.com/",
-      "paths": [ "calendar" ]
-    },
+    "urls": [
+      "http://www.google.com/calendar/",
+      "https://www.google.com/calendar/"
+    ],
     "launch": {
       "container": "tab",
       "web_url": "https://www.google.com/calendar/"

@@ -32,6 +32,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kJs;
   extern const wchar_t* kMatches;
   extern const wchar_t* kName;
+  extern const wchar_t* kOmniboxKeyword;
   extern const wchar_t* kPageActionId;
   extern const wchar_t* kPageAction;
   extern const wchar_t* kPageActions;
@@ -62,11 +63,8 @@ namespace extension_manifest_keys {
   extern const wchar_t* kVersion;
   extern const wchar_t* kUpdateURL;
   extern const wchar_t* kOptionsPage;
-  extern const wchar_t* kWebContent;
   extern const wchar_t* kWebLaunchUrl;
-  extern const wchar_t* kWebOrigin;
-  extern const wchar_t* kWebPaths;
-  extern const wchar_t* kOmniboxKeyword;
+  extern const wchar_t* kWebURLs;
 }  // namespace extension_manifest_keys
 
 // Some values expected in manifests.
@@ -144,10 +142,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidThemeImages;
   extern const char* kInvalidThemeColors;
   extern const char* kInvalidThemeTints;
-  extern const char* kInvalidWebContentEnabled;
-  extern const char* kInvalidWebOrigin;
-  extern const char* kInvalidWebPaths;
-  extern const char* kInvalidWebPath;
+  extern const char* kInvalidWebURLs;
+  extern const char* kInvalidWebURL;
   extern const char* kOneUISurfaceOnly;
   extern const char* kThemesCannotContainExtensions;
   extern const char* kManifestParseError;

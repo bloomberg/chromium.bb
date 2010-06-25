@@ -73,6 +73,9 @@ class URLPattern {
   // otherwise.
   static bool IsValidScheme(const std::string& scheme);
 
+  // Convenience to create a pattern from a string.
+  static URLPattern* CreateFromString(const std::string& pattern);
+
   URLPattern() : match_subdomains_(false) {}
 
   // Initializes this instance by parsing the provided string. On failure, the
@@ -81,6 +84,13 @@ class URLPattern {
 
   // Returns true if this instance matches the specified URL.
   bool MatchesUrl(const GURL& url) const;
+
+  // Returns true if |test| matches our host.
+  bool MatchesHost(const std::string& host) const;
+  bool MatchesHost(const GURL& test) const;
+
+  // Returns true if |test| matches our path.
+  bool MatchesPath(const GURL& test) const;
 
   std::string GetAsString() const;
 
@@ -107,12 +117,6 @@ class URLPattern {
   }
 
  private:
-  // Returns true if |test| matches our host.
-  bool MatchesHost(const GURL& test) const;
-
-  // Returns true if |test| matches our path.
-  bool MatchesPath(const GURL& test) const;
-
   // The scheme for the pattern.
   std::string scheme_;
 

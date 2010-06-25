@@ -532,77 +532,43 @@ bool Extension::LoadIsApp(const DictionaryValue* manifest,
   return true;
 }
 
-bool Extension::LoadWebOrigin(const DictionaryValue* manifest,
-                              std::string* error) {
+bool Extension::LoadWebURLs(const DictionaryValue* manifest,
+                            std::string* error) {
   Value* temp = NULL;
-  if (!manifest->Get(keys::kWebOrigin, &temp))
+  if (!manifest->Get(keys::kWebURLs, &temp))
     return true;
 
-  // Check datatype.
-  std::string origin_string;
-  if (!temp->GetAsString(&origin_string)) {
-    *error = errors::kInvalidWebOrigin;
+  if (temp->GetType() != Value::TYPE_LIST) {
+    *error = errors::kInvalidWebURLs;
     return false;
   }
 
-  // Origin must be a valid URL.
-  GURL origin_gurl(origin_string);
-  if (!origin_gurl.is_valid() || origin_gurl.is_empty()) {
-    *error = errors::kInvalidWebOrigin;
-    return false;
-  }
-
-  // Origins can only be http or https.
-  if (!origin_gurl.SchemeIs(chrome::kHttpScheme) &&
-      !origin_gurl.SchemeIs(chrome::kHttpsScheme)) {
-    *error = errors::kInvalidWebOrigin;
-    return false;
-  }
-
-  // Check that the origin doesn't include any extraneous information.
-  if (origin_gurl.GetOrigin() != origin_gurl) {
-    *error = errors::kInvalidWebOrigin;
-    return false;
-  }
-
-  web_extent_.set_origin(origin_gurl);
-  return true;
-}
-
-bool Extension::LoadWebPaths(const DictionaryValue* manifest,
-                             std::string* error) {
-  Value* temp = NULL;
-  if (!manifest->Get(keys::kWebPaths, &temp))
-    return true;
-
-  // Check datatype.
-  if (!temp->IsType(Value::TYPE_LIST)) {
-    *error = errors::kInvalidWebPaths;
-    return false;
-  }
-
-  ListValue* web_paths = static_cast<ListValue*>(temp);
-  for (size_t i = 0; i < web_paths->GetSize(); ++i) {
-    // Get item and check datatype.
-    std::string item;
-    if (!web_paths->GetString(i, &item) || item.empty()) {
+  ListValue* pattern_list = static_cast<ListValue*>(temp);
+  for (size_t i = 0; i < pattern_list->GetSize(); ++i) {
+    std::string pattern_string;
+    if (!pattern_list->GetString(i, &pattern_string)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebPath, IntToString(i));
+          errors::kInvalidWebURL, UintToString(i));
       return false;
     }
 
-    // Ensure the path is a valid relative URL by resolving it against the
-    // extension root.
-    // TODO(aa): This is hacky. Is there another way to know whether a string
-    // is a valid relative URL?
-    GURL resolved = extension_url_.Resolve(item);
-    if (!resolved.is_valid() || resolved.GetOrigin() != extension_url_) {
+    URLPattern pattern;
+    if (!pattern.Parse(pattern_string)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebPath, IntToString(i));
+          errors::kInvalidWebURL, UintToString(i));
       return false;
     }
 
-    web_extent_.add_path(item);
+    // We do not allow authors to put wildcards in their paths. Instead, we
+    // imply one at the end.
+    if (pattern.path().find('*') != std::string::npos) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidWebURL, UintToString(i));
+      return false;
+    }
+    pattern.set_path(pattern.path() + '*');
+
+    web_extent_.AddPattern(pattern);
   }
 
   return true;
@@ -612,8 +578,8 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
                               std::string* error) {
   Value* temp = NULL;
 
-  // launch URL can be either local (to chrome-extension:// root) or web (either
-  // relative to the origin, or an absolute URL).
+  // launch URL can be either local (to chrome-extension:// root) or an absolute
+  // web URL.
   if (manifest->Get(keys::kLaunchLocalPath, &temp)) {
     if (manifest->Get(keys::kLaunchWebURL, NULL)) {
       *error = errors::kLaunchPathAndURLAreExclusive;
@@ -641,8 +607,8 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
       return false;
     }
 
-    // Ensure the launch URL is a valid relative or absolute URL.
-    if (!extension_url_.Resolve(launch_url).is_valid()) {
+    // Ensure the launch URL is a valid absolute URL.
+    if (!GURL(launch_url).is_valid()) {
       *error = errors::kInvalidLaunchWebURL;
       return false;
     }
@@ -651,6 +617,16 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
   } else if (is_app_) {
     *error = errors::kLaunchURLRequired;
     return false;
+  }
+
+  // If there is no extent, we default the extent based on the launch URL.
+  if (web_extent_.is_empty() && !launch_web_url_.empty()) {
+    GURL launch_url(launch_web_url_);
+    URLPattern pattern;
+    pattern.set_scheme(launch_url.scheme());
+    pattern.set_host(launch_url.host());
+    pattern.set_path("/*");
+    web_extent_.AddPattern(pattern);
   }
 
   return true;
@@ -1479,8 +1455,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   if (!LoadIsApp(manifest_value_.get(), error) ||
-      !LoadWebOrigin(manifest_value_.get(), error) ||
-      !LoadWebPaths(manifest_value_.get(), error) ||
+      !LoadWebURLs(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
       !LoadLaunchContainer(manifest_value_.get(), error) ||
       !LoadLaunchFullscreen(manifest_value_.get(), error)) {
@@ -1557,18 +1532,10 @@ std::set<FilePath> Extension::GetBrowserImages() {
 }
 
 GURL Extension::GetFullLaunchURL() const {
-  if (!launch_local_path_.empty()) {
+  if (!launch_local_path_.empty())
     return extension_url_.Resolve(launch_local_path_);
-  } else if (!launch_web_url_.empty()) {
-    // If there is a web origin, we interpret the launch URL relatively to that.
-    // Otherwise, hopefully it was an absolute URL.
-    if (web_extent_.origin().is_valid())
-      return web_extent_.origin().Resolve(launch_web_url_);
-    else
-      return GURL(launch_web_url_);
-  } else {
-    return GURL();
-  }
+  else
+    return GURL(launch_web_url_);
 }
 
 bool Extension::GetBackgroundPageReady() {

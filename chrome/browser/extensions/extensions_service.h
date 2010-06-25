@@ -269,10 +269,8 @@ class ExtensionsService
   Extension* GetExtensionByWebExtent(const GURL& url);
 
   // Returns an extension that contains any URL that overlaps with the given
-  // extent, if one exists. Also fills |overlapping_url| with the first URL that
-  // overlaps.
-  Extension* GetExtensionByOverlappingWebExtent(const ExtensionExtent& extent,
-                                                GURL* overlapping_url);
+  // extent, if one exists.
+  Extension* GetExtensionByOverlappingWebExtent(const ExtensionExtent& extent);
 
   // Clear all ExternalExtensionProviders.
   void ClearProvidersForTesting();

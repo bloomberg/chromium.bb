@@ -264,7 +264,7 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                        client));
   installer->set_expected_id(id);
   installer->set_delete_source(true);
-  installer->set_force_web_origin_to_download_url(true);
+  installer->set_limit_web_extent_to_download_host(true);
   installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);
 }
@@ -984,16 +984,8 @@ Extension* ExtensionsService::GetExtensionByWebExtent(const GURL& url) {
 }
 
 Extension* ExtensionsService::GetExtensionByOverlappingWebExtent(
-    const ExtensionExtent& extent, GURL* overlapping_url) {
-  for (size_t i = 0; i < extensions_.size(); ++i) {
-    for (size_t j = 0; j < extent.paths().size(); ++j) {
-      GURL url(extent.origin().Resolve(extent.paths()[j]));
-      if (extensions_[i]->web_extent().ContainsURL(url)) {
-        *overlapping_url = url;
-        return extensions_[i];
-      }
-    }
-  }
+    const ExtensionExtent& extent) {
+  // TODO(aa): Make this work for the new extents. http://crbug.com/47445.
   return NULL;
 }
 

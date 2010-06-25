@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/url_pattern.h"
 
+#include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
@@ -19,6 +20,15 @@ static const char* kValidSchemes[] = {
 };
 
 static const char kPathSeparator[] = "/";
+
+// static
+URLPattern* URLPattern::CreateFromString(const std::string& pattern_string) {
+  scoped_ptr<URLPattern> pattern(new URLPattern);
+  if (pattern->Parse(pattern_string))
+    return pattern.release();
+  else
+    return NULL;
+}
 
 // static
 bool URLPattern::IsValidScheme(const std::string& scheme) {
@@ -78,6 +88,7 @@ bool URLPattern::Parse(const std::string& pattern) {
   }
 
   path_ = pattern.substr(path_start_pos);
+
   return true;
 }
 
@@ -92,6 +103,14 @@ bool URLPattern::MatchesUrl(const GURL &test) const {
     return false;
 
   return true;
+}
+
+bool URLPattern::MatchesHost(const std::string& host) const {
+  std::string test(chrome::kHttpScheme);
+  test += chrome::kStandardSchemeSeparator;
+  test += host;
+  test += "/";
+  return MatchesHost(GURL(test));
 }
 
 bool URLPattern::MatchesHost(const GURL& test) const {
