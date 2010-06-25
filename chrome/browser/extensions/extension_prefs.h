@@ -47,9 +47,7 @@ class ExtensionPrefs {
   void SetToolbarOrder(const std::vector<std::string>& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
-  void OnExtensionInstalled(Extension* extension,
-                            Extension::State initial_state,
-                            bool initial_incognito_enabled);
+  void OnExtensionInstalled(Extension* extension);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,

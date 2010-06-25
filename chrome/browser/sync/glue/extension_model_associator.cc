@@ -385,11 +385,23 @@ void ExtensionModelAssociator::TryUpdateClient(
     }
   } else {
     GURL update_url(specifics.update_url());
+    // TODO(akalin): The version number should be used only to
+    // determine auto-updating permissions, not to send to the
+    // auto-update server.
+    scoped_ptr<Version> version(
+        Version::GetVersionFromString("0.0.0.0"));
+    CHECK(version.get());
     // TODO(akalin): Replace silent update with a list of enabled
     // permissions.
+    //
+    // TODO(akalin): Pass through the enabled/incognito_enabled state.
+    // We can't do it on OnClientUpdate() because we'd run into
+    // problems with triggering notifications while we're in a
+    // notification handler.  The bug that this causes is that syncing
+    // a fresh client (i.e., no extensions) re-enables disabled
+    // extensions.
     extensions_service->AddPendingExtension(
-        id, update_url, false, true,
-        specifics.enabled(), specifics.incognito_enabled());
+        id, update_url, *version, false, true);
   }
   DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
 }

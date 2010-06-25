@@ -169,12 +169,7 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
 void ManifestFetchesBuilder::AddPendingExtension(
     const std::string& id,
     const PendingExtensionInfo& info) {
-  // Use a zero version to ensure that a pending extension will always
-  // be updated, and thus installed (assuming all extensions have
-  // non-zero versions).
-  scoped_ptr<Version> version(
-      Version::GetVersionFromString("0.0.0.0"));
-  AddExtensionData(Extension::INTERNAL, id, *version,
+  AddExtensionData(Extension::INTERNAL, id, info.version,
                    false, info.is_theme, info.update_url);
 }
 
@@ -721,6 +716,12 @@ bool ExtensionUpdater::GetExistingVersion(const std::string& id,
       WideToASCII(prefs_->GetString(kExtensionBlacklistUpdateVersion));
     return true;
   }
+  PendingExtensionMap::const_iterator it =
+      service_->pending_extensions().find(id);
+  if (it != service_->pending_extensions().end()) {
+    *version = it->second.version.GetString();
+    return true;
+  }
   Extension* extension = service_->GetExtensionById(id, false);
   if (!extension) {
     return false;
@@ -744,24 +745,20 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
     if (!fetch_data.Includes(update->extension_id))
       continue;
 
-    if (service_->pending_extensions().find(update->extension_id) ==
-        service_->pending_extensions().end()) {
-      // If we're not installing pending extension, and the update
-      // version is the same or older than what's already installed,
-      // we don't want it.
-      std::string version;
-      if (!GetExistingVersion(update->extension_id, &version))
-        continue;
+    std::string version;
+    if (!GetExistingVersion(update->extension_id, &version))
+      continue;
 
-      scoped_ptr<Version> existing_version(
-          Version::GetVersionFromString(version));
-      scoped_ptr<Version> update_version(
-          Version::GetVersionFromString(update->version));
+    // If the update version is the same or older than what's already installed,
+    // we don't want it.
+    scoped_ptr<Version> existing_version(
+        Version::GetVersionFromString(version));
+    scoped_ptr<Version> update_version(
+        Version::GetVersionFromString(update->version));
 
-      if (!update_version.get() ||
-          update_version->CompareTo(*(existing_version.get())) <= 0) {
-        continue;
-      }
+    if (!update_version.get() ||
+        update_version->CompareTo(*(existing_version.get())) <= 0) {
+      continue;
     }
 
     // If the update specifies a browser minimum version, do we qualify?

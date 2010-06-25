@@ -69,9 +69,7 @@ Extension* TestExtensionPrefs::AddExtensionWithManifest(
   EXPECT_TRUE(extension->InitFromValue(manifest, false, &errors));
   extension->set_location(Extension::INTERNAL);
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
-  const bool kInitialIncognitoEnabled = false;
-  prefs_->OnExtensionInstalled(extension, Extension::ENABLED,
-                               kInitialIncognitoEnabled);
+  prefs_->OnExtensionInstalled(extension);
   return extension;
 }
 

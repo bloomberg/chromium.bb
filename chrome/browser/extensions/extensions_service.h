@@ -48,18 +48,16 @@ class Version;
 // default one is assumed.
 struct PendingExtensionInfo {
   PendingExtensionInfo(const GURL& update_url,
+                       const Version& version,
                        bool is_theme,
-                       bool install_silently,
-                       bool enable_on_install,
-                       bool enable_incognito_on_install);
+                       bool install_silently);
 
   PendingExtensionInfo();
 
   GURL update_url;
+  Version version;
   bool is_theme;
   bool install_silently;
-  bool enable_on_install;
-  bool enable_incognito_on_install;
 };
 
 // A PendingExtensionMap is a map from IDs of pending extensions to
@@ -208,12 +206,11 @@ class ExtensionsService
   // It is an error to call this with an already-installed extension
   // (even a disabled one).
   //
-  // TODO(akalin): Replace |install_silently| with a list of
-  // pre-enabled permissions.
+  // TODO(akalin): Make sure that all the places that check for
+  // existing versions also consult the pending extension info.
   void AddPendingExtension(
       const std::string& id, const GURL& update_url,
-      bool is_theme, bool install_silently,
-      bool enable_on_install, bool enable_incognito_on_install);
+      const Version& version, bool is_theme, bool install_silently);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
@@ -368,8 +365,7 @@ class ExtensionsService
   // id is not already installed.
   void AddPendingExtensionInternal(
       const std::string& id, const GURL& update_url,
-      bool is_theme, bool install_silently,
-      bool enable_on_install, bool enable_incognito_on_install);
+      const Version& version, bool is_theme, bool install_silently);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(Extension* extension);

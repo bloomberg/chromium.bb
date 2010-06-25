@@ -444,14 +444,13 @@ void ExtensionPrefs::SetToolbarOrder(
   prefs_->ScheduleSavePersistentPrefs();
 }
 
-void ExtensionPrefs::OnExtensionInstalled(
-    Extension* extension, Extension::State initial_state,
-    bool initial_incognito_enabled) {
+void ExtensionPrefs::OnExtensionInstalled(Extension* extension) {
   const std::string& id = extension->id();
-  UpdateExtensionPref(id, kPrefState,
-                      Value::CreateIntegerValue(initial_state));
-  UpdateExtensionPref(id, kPrefIncognitoEnabled,
-                      Value::CreateBooleanValue(initial_incognito_enabled));
+  // Make sure we don't enable a disabled extension.
+  if (GetExtensionState(extension->id()) != Extension::DISABLED) {
+    UpdateExtensionPref(id, kPrefState,
+                        Value::CreateIntegerValue(Extension::ENABLED));
+  }
   UpdateExtensionPref(id, kPrefLocation,
                       Value::CreateIntegerValue(extension->location()));
   FilePath::StringType path = MakePathRelative(install_directory_,
