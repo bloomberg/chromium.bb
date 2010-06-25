@@ -45,6 +45,7 @@ enum EventID {
 };
 
 enum LogLevel {
+  LOG_TIP,
   LOG_INFO,
   LOG_WARNING,
   LOG_ERROR,

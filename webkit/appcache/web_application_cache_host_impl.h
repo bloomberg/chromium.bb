@@ -36,7 +36,7 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   void OnStatusChanged(appcache::Status);
   void OnEventRaised(appcache::EventID);
   void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
-  void OnLogMessage(LogLevel log_level, const std::string& message);
+  virtual void OnLogMessage(LogLevel log_level, const std::string& message) {}
   virtual void OnContentBlocked() {}
 
   // WebApplicationCacheHost methods
@@ -57,6 +57,8 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
     YES,
     NO
   };
+
+  void LogLoadedFromCacheMessage();
 
   WebKit::WebApplicationCacheHostClient* client_;
   AppCacheBackend* backend_;

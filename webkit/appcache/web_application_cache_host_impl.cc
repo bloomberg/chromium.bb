@@ -92,12 +92,6 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
     client_->notifyEventListener(WebApplicationCacheHost::ProgressEvent);
 }
 
-void WebApplicationCacheHostImpl::OnLogMessage(
-    LogLevel log_level, const std::string& message) {
-  // TODO(michaeln): Widen the webkit api with this addition.
-  // client_->notifyLogMessage(log_level, message);
-}
-
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(
     WebURLRequest& request) {
   request.setAppCacheHostID(host_id_);
@@ -112,6 +106,9 @@ void WebApplicationCacheHostImpl::willStartSubResourceRequest(
 }
 
 void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
+  if (document_response_.appCacheID() != kNoCacheId)
+    LogLoadedFromCacheMessage();
+
   // Reset any previous status values we've received from the backend
   // since we're now selecting a new cache.
   has_status_ = false;
@@ -124,6 +121,9 @@ void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
 
 bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     const WebURL& manifest_url) {
+  if (document_response_.appCacheID() != kNoCacheId)
+    LogLoadedFromCacheMessage();
+
   // Reset any previous status values we've received from the backend
   // since we're now selecting a new cache.
   has_status_ = false;
@@ -235,6 +235,16 @@ bool WebApplicationCacheHostImpl::swapCache() {
   has_status_ = false;
   has_cached_status_ = false;
   return backend_->SwapCache(host_id_);
+}
+
+void WebApplicationCacheHostImpl::LogLoadedFromCacheMessage() {
+  DCHECK(!document_response_.appCacheManifestURL().isEmpty());
+  GURL manifest_url = document_response_.appCacheManifestURL();
+  std::string message = StringPrintf(
+      "Document %s was loaded from appcache %s",
+      document_url_.spec().c_str(),
+      manifest_url.spec().c_str());
+  OnLogMessage(LOG_INFO, message);
 }
 
 }  // appcache namespace

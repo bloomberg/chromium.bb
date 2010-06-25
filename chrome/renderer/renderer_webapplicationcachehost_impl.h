@@ -17,14 +17,15 @@ class RendererWebApplicationCacheHostImpl
       WebKit::WebApplicationCacheHostClient* client,
       appcache::AppCacheBackend* backend);
 
-  virtual ~RendererWebApplicationCacheHostImpl();
-
   // appcache::WebApplicationCacheHostImpl methods.
+  virtual void OnLogMessage(appcache::LogLevel log_level,
+                            const std::string& message);
   virtual void OnContentBlocked();
 
  private:
-  bool content_blocked_;
+  RenderView* GetRenderView();
 
+  bool content_blocked_;
   int routing_id_;
 };
 
