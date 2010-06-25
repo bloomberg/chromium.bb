@@ -306,7 +306,8 @@ void PrefetchObserver::OnStartResolution(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_info.is_speculative())
     return;  // One of our own requests.
-  DCHECK_NE(0U, request_info.hostname().length());
+  if (!request_info.hostname().length())
+    return;  // PAC scripts may create queries without a hostname.
 
   UrlInfo navigation_info;
   // TODO(jar): Remove hack which guestimates ssl via port number, and perhaps
@@ -331,6 +332,8 @@ void PrefetchObserver::OnFinishResolutionWithStatus(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_info.is_speculative())
     return;  // One of our own requests.
+  if (!request_info.hostname().length())
+    return;  // PAC scripts may create queries without a hostname.
   UrlInfo navigation_info;
   size_t startup_count = 0;
   {
@@ -370,6 +373,8 @@ void PrefetchObserver::OnCancelResolution(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_info.is_speculative())
     return;  // One of our own requests.
+  if (!request_info.hostname().length())
+    return;  // PAC scripts may create queries without a hostname.
 
   // Remove the entry from |resolutions| that was added by OnStartResolution().
   ObservedResolutionMap::iterator it = resolutions_.find(request_id);
