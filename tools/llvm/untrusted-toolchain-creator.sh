@@ -41,6 +41,11 @@ readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
 # installing binutils and gcc in the same dir so that gcc
 # uses the correct as and ld even if we move the install dir.
 readonly BINUTILS_INSTALL_DIR="${LLVMGCC_INSTALL_DIR}"
+readonly SANDBOXED_BINUTILS_INSTALL_DIR="${LLVMGCC_INSTALL_DIR}/sandboxed"
+
+# This toolchain currenlty builds only on linux.
+# TODO(abetul): Remove the restriction on developer's OS choices.
+readonly NACL_TOOLCHAIN=$(pwd)/toolchain/linux_x86/sdk/nacl-sdk
 
 readonly PATCH_DIR=$(pwd)/tools/patches
 
@@ -727,7 +732,6 @@ STD_ENV_FOR_NEWLIB=(
 
 BuildAndInstallBinutils() {
   local tmpdir="${TMP}/binutils.nacl"
-  local tarball=$(readlink -f ../third_party/binutils/binutils-2.20.tar.bz2)
 
   Banner "Building binutils"
 
@@ -735,6 +739,7 @@ BuildAndInstallBinutils() {
                   binutils.nacl-llvm-branches \
                   ${BINUTILS_REV} \
                   ${BINUTILS_DEV}
+  rm -rf ${tmpdir}/build
   mkdir -p ${tmpdir}/build
   pushd ${tmpdir}/build
 
@@ -760,8 +765,62 @@ BuildAndInstallBinutils() {
 
   RunWithLog "Install binutils"  ${TMP}/binutils.install.log \
     env -i PATH="/usr/bin:/bin" \
-      make \
+    make \
       install ${MAKE_OPTS}
+
+  popd
+}
+
+BuildAndInstallSandboxedBinutils() {
+  local tmpdir="${TMP}/binutils.nacl.sandboxed"
+
+  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
+    echo "ERROR: install Native Client toolchain"
+    exit -1
+  fi
+
+  Banner "Building sandboxed binutils"
+
+  SetupSourceTree ${tmpdir}/src \
+                  binutils.nacl-llvm-branches \
+                  ${BINUTILS_REV} \
+                  ${BINUTILS_DEV}
+  rm -rf ${tmpdir}/build
+  mkdir -p ${tmpdir}/build
+  pushd ${tmpdir}/build
+
+  # --enable-checking is to avoid a build failure:
+  #   tc-arm.c:2489: warning: empty body in an if-statement
+  # The --enable-gold and --enable-plugins options are on so that we
+  # can use gold's support for plugin to link PNaCl modules.
+  RunWithLog "Configuring sandboxed binutils"  ${TMP}/binutils.configure.log \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
+    AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
+    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc" \
+    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++" \
+    EMULATOR_FOR_BUILD="$(pwd)/scons-out/dbg-linux-x86-32/staging/sel_ldr -d" \
+    LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
+    RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
+    CFLAGS="-O2 -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
+    LDFLAGS="-s" \
+    ../src/binutils-2.20/configure --prefix=${SANDBOXED_BINUTILS_INSTALL_DIR} \
+                                   --host=nacl \
+                                   --target=${CROSS_TARGET} \
+                                   --disable-nls \
+                                   --enable-checking \
+                                   --enable-static \
+                                   --enable-shared=no \
+                                   --with-sysroot=${NEWLIB_INSTALL_DIR}
+
+  RunWithLog "Make binutils" ${TMP}/binutils.make.log \
+    env -i PATH="/usr/bin:/bin" \
+    make ${MAKE_OPTS} all-gas all-ld
+
+  RunWithLog "Install binutils"  ${TMP}/binutils.install.log \
+    env -i PATH="/usr/bin:/bin" \
+    make install-gas install-ld
 
   popd
 }
@@ -936,6 +995,14 @@ untrusted_sdk() {
 #@ llvm
 #@
 #@   Configure, build and install LLVM.
+
+#@
+#@ sandboxed-binutils-only
+#@
+#@   install sandboxed-binutils
+sandboxed-binutils-only() {
+  BuildAndInstallSandboxedBinutils
+}
 
 #@
 #@ gcc-stage1
