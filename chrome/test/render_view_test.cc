@@ -81,7 +81,6 @@ void RenderViewTest::SetUp() {
   // Setting flags and really doing anything with WebKit is fairly fragile and
   // hacky, but this is the world we live in...
   webkit_glue::SetJavaScriptFlags(L" --expose-gc");
-  WebKit::initialize(&webkitclient_);
   WebScriptController::registerExtension(BaseJsV8Extension::Get());
   WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
   WebScriptController::registerExtension(EventBindings::Get());
@@ -139,8 +138,6 @@ void RenderViewTest::TearDown() {
   // which need to be processed before shutting down WebKit
   // (http://crbug.com/21508).
   msg_loop_.RunAllPending();
-
-  WebKit::shutdown();
 
   mock_keyboard_.reset();
 

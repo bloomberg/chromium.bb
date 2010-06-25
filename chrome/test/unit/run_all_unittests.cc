@@ -5,5 +5,7 @@
 #include "chrome/test/unit/chrome_test_suite.h"
 
 int main(int argc, char **argv) {
-  return ChromeTestSuite(argc, argv).Run();
+  ChromeTestSuite suite(argc, argv);
+  suite.SetWebKitEnabled(true);
+  return suite.Run();
 }

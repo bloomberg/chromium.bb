@@ -16,7 +16,6 @@
 #include "chrome/renderer/mock_render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
-#include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
@@ -62,20 +61,10 @@ class RenderViewTest : public testing::Test {
 
   virtual void TearDown();
 
-  // A special WebKitClientImpl class for getting rid off the dependency to the
-  // sandbox, which is not available in RenderViewTest.
-  class RendererWebKitClientImplNoSandbox : public RendererWebKitClientImpl {
-   public:
-    virtual WebKit::WebSandboxSupport* sandboxSupport() {
-      return NULL;
-    }
-  };
-
   MessageLoop msg_loop_;
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<RenderView> view_;
-  RendererWebKitClientImplNoSandbox webkitclient_;
   scoped_ptr<MockKeyboard> mock_keyboard_;
 
   // Used to setup the process so renderers can run.

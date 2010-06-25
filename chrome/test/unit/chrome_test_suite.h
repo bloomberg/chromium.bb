@@ -11,11 +11,12 @@
 
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
-#include "base/stats_table.h"
+#include "base/scoped_ptr.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "base/scoped_nsautorelease_pool.h"
+#include "base/stats_table.h"
 #include "base/test/test_suite.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/scoped_ole_initializer.h"
@@ -24,9 +25,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/test/testing_browser_process.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -88,8 +91,15 @@ class ChromeTestSuite : public TestSuite {
         created_user_data_dir_(false) {
   }
 
- protected:
+  // WebKit must be enabled before calling Run().
+  void SetWebKitEnabled(bool val) {
+    webkit_client_.reset(val ? new NoSandboxWebKitClient() : NULL);
+  }
+  bool IsWebKitEnabled() const {
+    return webkit_client_.get();
+  }
 
+ protected:
   virtual void Initialize() {
     base::ScopedNSAutoreleasePool autorelease_pool;
 
@@ -144,9 +154,15 @@ class ChromeTestSuite : public TestSuite {
     RemoveSharedMemoryFile(stats_filename_);
     stats_table_ = new StatsTable(stats_filename_, 20, 200);
     StatsTable::set_current(stats_table_);
+
+    if (webkit_client_.get())
+      WebKit::initialize(webkit_client_.get());
   }
 
   virtual void Shutdown() {
+    if (webkit_client_.get())
+      WebKit::shutdown();
+
     ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_MACOSX)
@@ -192,6 +208,22 @@ class ChromeTestSuite : public TestSuite {
 
   // Flag indicating whether user_data_dir was automatically created or not.
   bool created_user_data_dir_;
+
+ private:
+  // A special WebKitClientImpl class for getting rid of the dependency to the
+  // sandbox, which is not available in the unit test environment.
+  class NoSandboxWebKitClient : public RendererWebKitClientImpl {
+   public:
+    virtual WebKit::WebSandboxSupport* sandboxSupport() {
+      return NULL;
+    }
+  };
+
+  scoped_ptr<NoSandboxWebKitClient> webkit_client_;
+
+  // True if this test suite uses webkit. Used to initialize webkit before
+  // running tests.
+  bool uses_webkit_;
 };
 
 #endif  // CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_
