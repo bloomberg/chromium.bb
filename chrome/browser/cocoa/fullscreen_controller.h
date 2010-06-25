@@ -9,7 +9,7 @@
 
 #import "base/cocoa_protocols_mac.h"
 #include "base/mac_util.h"
-#include "chrome/browser/cocoa/location_bar_view_mac.h"
+#include "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 
 @class BrowserWindowController;
 @class DropdownAnimation;

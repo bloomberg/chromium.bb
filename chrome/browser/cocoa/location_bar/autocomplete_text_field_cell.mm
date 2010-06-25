@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 
 #include "app/resource_bundle.h"
 #include "base/logging.h"

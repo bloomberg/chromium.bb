@@ -9,7 +9,7 @@
 
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 @class AutocompleteTextFieldEditor;

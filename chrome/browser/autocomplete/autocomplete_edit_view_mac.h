@@ -9,7 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
-#include "chrome/browser/cocoa/autocomplete_text_field.h"
+#include "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 
 class AutocompleteEditController;
 class AutocompletePopupViewMac;

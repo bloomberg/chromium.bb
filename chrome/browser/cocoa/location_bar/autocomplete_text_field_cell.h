@@ -7,7 +7,7 @@
 #import "chrome/browser/cocoa/styled_text_field_cell.h"
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/cocoa/location_bar_view_mac.h"
+#include "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 
 class ExtensionAction;
 

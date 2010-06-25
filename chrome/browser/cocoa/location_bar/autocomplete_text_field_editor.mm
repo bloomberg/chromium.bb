@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_editor.h"
 
 #include "app/l10n_util_mac.h"
 #include "base/string_util.h"
@@ -10,9 +10,9 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
 #include "chrome/browser/browser_list.h"
-#import "chrome/browser/cocoa/autocomplete_text_field.h"
-#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/extensions/extension_action.h"

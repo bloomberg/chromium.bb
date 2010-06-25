@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_editor.h"
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
-#import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/test_event_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"

@@ -6,8 +6,8 @@
 
 #include "app/resource_bundle.h"
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

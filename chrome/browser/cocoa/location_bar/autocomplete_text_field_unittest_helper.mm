@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
 
-#import "chrome/browser/cocoa/autocomplete_text_field.h"
-#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_editor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @implementation AutocompleteTextFieldWindowTestDelegate

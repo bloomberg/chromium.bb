@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/location_bar_view_mac.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
@@ -16,12 +16,12 @@
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/browser_list.h"
-#import "chrome/browser/cocoa/autocomplete_text_field.h"
-#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/content_setting_bubble_model.h"
