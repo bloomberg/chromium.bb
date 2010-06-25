@@ -449,7 +449,12 @@ GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
   return centering_vbox;
 }
 
-std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
+namespace {
+
+// Common implementation of ConvertAcceleratorsFromWindowsStyle() and
+// RemoveWindowsStyleAccelerators().
+std::string ConvertAmperstandsTo(const std::string& label,
+                                 const std::string& target) {
   std::string ret;
   ret.reserve(label.length() * 2);
   for (size_t i = 0; i < label.length(); ++i) {
@@ -461,7 +466,7 @@ std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
         ret.push_back(label[i]);
         ++i;
       } else {
-        ret.push_back('_');
+        ret.append(target);
       }
     } else {
       ret.push_back(label[i]);
@@ -469,6 +474,16 @@ std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
   }
 
   return ret;
+}
+
+}  // namespace
+
+std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
+  return ConvertAmperstandsTo(label, "_");
+}
+
+std::string RemoveWindowsStyleAccelerators(const std::string& label) {
+  return ConvertAmperstandsTo(label, "");
 }
 
 bool IsScreenComposited() {

@@ -115,6 +115,11 @@ bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) const {
   return true;
 }
 
+menus::ButtonMenuItemModel* BackForwardMenuModel::GetButtonMenuItemAt(
+    int index) const {
+  return NULL;
+}
+
 bool BackForwardMenuModel::IsEnabledAt(int index) const {
   return index < GetItemCount() && !IsSeparator(index);
 }

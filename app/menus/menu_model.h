@@ -20,6 +20,7 @@ class Font;
 namespace menus {
 
 class Accelerator;
+class ButtonMenuItemModel;
 
 // An interface implemented by an object that provides the content of a menu.
 class MenuModel {
@@ -32,6 +33,7 @@ class MenuModel {
     TYPE_CHECK,
     TYPE_RADIO,
     TYPE_SEPARATOR,
+    TYPE_BUTTON_ITEM,
     TYPE_SUBMENU
   };
 
@@ -84,6 +86,9 @@ class MenuModel {
   // Gets the icon for the item at the specified index, returning true if there
   // is an icon, false otherwise.
   virtual bool GetIconAt(int index, SkBitmap* icon) const = 0;
+
+  // Returns the model for a menu item with a line of buttons at |index|.
+  virtual ButtonMenuItemModel* GetButtonMenuItemAt(int index) const = 0;
 
   // Returns the enabled state of the item at the specified index.
   virtual bool IsEnabledAt(int index) const = 0;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "app/menus/button_menu_item_model.h"
 #include "app/menus/menu_model.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -60,6 +61,10 @@ class SimpleMenuModel : public MenuModel {
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const string16& label, int group_id);
   void AddRadioItemWithStringId(int command_id, int string_id, int group_id);
+
+  // These three methods take pointers to various sub-models. These models
+  // should be owned by the same owner of this SimpleMenuModel.
+  void AddButtonItem(int command_id, ButtonMenuItemModel* model);
   void AddSubMenu(int command_id, const string16& label, MenuModel* model);
   void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model);
 
@@ -102,6 +107,7 @@ class SimpleMenuModel : public MenuModel {
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
+  virtual ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
@@ -125,6 +131,7 @@ class SimpleMenuModel : public MenuModel {
     ItemType type;
     int group_id;
     MenuModel* submenu;
+    ButtonMenuItemModel* button_model;
   };
   std::vector<Item> items_;
 

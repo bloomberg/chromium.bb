@@ -8,17 +8,22 @@
 
 #include "app/l10n_util.h"
 #include "app/menus/accelerator_gtk.h"
+#include "app/menus/button_menu_item_model.h"
 #include "app/menus/menu_model.h"
+#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/gtk/gtk_custom_menu.h"
+#include "chrome/browser/gtk/gtk_custom_menu_item.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using gtk_util::ConvertAcceleratorsFromWindowsStyle;
+using gtk_util::RemoveWindowsStyleAccelerators;
 
 bool MenuGtk::block_activation_ = false;
 
@@ -99,7 +104,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
     : delegate_(delegate),
       model_(model),
       dummy_accel_group_(gtk_accel_group_new()),
-      menu_(gtk_menu_new()),
+      menu_(gtk_custom_menu_new()),
       factory_(this) {
   DCHECK(model);
   g_object_ref_sink(menu_);
@@ -156,15 +161,20 @@ GtkWidget* MenuGtk::AppendSeparator() {
 }
 
 GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
-  return AppendMenuItemToMenu(command_id, menu_item, menu_);
+  return AppendMenuItemToMenu(command_id, menu_item, menu_, true);
 }
 
 GtkWidget* MenuGtk::AppendMenuItemToMenu(int command_id,
                                          GtkWidget* menu_item,
-                                         GtkWidget* menu) {
-  SetMenuItemID(menu_item, command_id);
-  g_signal_connect(menu_item, "activate",
-                   G_CALLBACK(OnMenuItemActivated), this);
+                                         GtkWidget* menu,
+                                         bool connect_to_activate) {
+  // Native menu items do their own thing, so only selectively listen for the
+  // activate signal.
+  if (connect_to_activate) {
+    SetMenuItemID(menu_item, command_id);
+    g_signal_connect(menu_item, "activate",
+                     G_CALLBACK(OnMenuItemActivated), this);
+  }
 
   gtk_widget_show(menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
@@ -231,6 +241,7 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
     SkBitmap icon;
     std::string label =
         ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(model->GetLabelAt(i)));
+    bool connect_to_activate = true;
 
     switch (model->GetTypeAt(i)) {
       case menus::MenuModel::TYPE_SEPARATOR:
@@ -253,6 +264,15 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
           menu_item = gtk_radio_menu_item_new_with_mnemonic_from_widget(
               GTK_RADIO_MENU_ITEM(iter->second), label.c_str());
         }
+        break;
+      }
+      case menus::MenuModel::TYPE_BUTTON_ITEM: {
+        menus::ButtonMenuItemModel* button_menu_item_model =
+            model->GetButtonMenuItemAt(i);
+
+        menu_item = BuildButtomMenuItem(button_menu_item_model);
+
+        connect_to_activate = false;
         break;
       }
       case menus::MenuModel::TYPE_SUBMENU:
@@ -285,7 +305,7 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
 
     g_object_set_data(G_OBJECT(menu_item), "model",
                       reinterpret_cast<void*>(model));
-    AppendMenuItemToMenu(i, menu_item, menu);
+    AppendMenuItemToMenu(i, menu_item, menu, connect_to_activate);
 
     if (model->IsLabelDynamicAt(i)) {
       g_signal_connect(menu, "show", G_CALLBACK(OnSubmenuShow),
@@ -294,6 +314,50 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
 
     menu_item = NULL;
   }
+}
+
+GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model) {
+  GtkWidget* menu_item = gtk_custom_menu_item_new(
+      RemoveWindowsStyleAccelerators(UTF16ToUTF8(model->label())).c_str());
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    switch (model->GetTypeAt(i)) {
+      case menus::ButtonMenuItemModel::TYPE_SPACE: {
+        gtk_custom_menu_item_add_space(GTK_CUSTOM_MENU_ITEM(menu_item));
+        break;
+      }
+      case menus::ButtonMenuItemModel::TYPE_BUTTON: {
+        GtkWidget* button = gtk_custom_menu_item_add_button(
+            GTK_CUSTOM_MENU_ITEM(menu_item),
+            model->GetCommandIdAt(i));
+
+        int icon_idr;
+        if (model->GetIconAt(i, &icon_idr)) {
+          // TODO(erg): This should go through the GtkThemeProvider so we can
+          // get a version tinted to label color.
+          gtk_button_set_image(
+              GTK_BUTTON(button),
+              gtk_image_new_from_pixbuf(
+                  ResourceBundle::GetSharedInstance().
+                  GetPixbufNamed(icon_idr)));
+        } else {
+          gtk_button_set_label(
+              GTK_BUTTON(button),
+              RemoveWindowsStyleAccelerators(
+                  UTF16ToUTF8(model->GetLabelAt(i))).c_str());
+        }
+
+        // TODO(erg): Set up dynamic labels here.
+        break;
+      }
+    }
+  }
+
+  // Set up the callback to the model for when it is clicked.
+  g_object_set_data(G_OBJECT(menu_item), "button-model",
+                    reinterpret_cast<void*>(model));
+  g_signal_connect(menu_item, "button-pushed",
+                   G_CALLBACK(OnMenuButtonPressed), this);
+  return menu_item;
 }
 
 // static
@@ -322,6 +386,19 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
   // The menu item can still be activated by hotkeys even if it is disabled.
   if (model->IsEnabledAt(id))
     menu->ExecuteCommand(model, id);
+}
+
+void MenuGtk::OnMenuButtonPressed(GtkMenuItem* menu_item, int command_id,
+                                  MenuGtk* menu) {
+  menus::ButtonMenuItemModel* model =
+      reinterpret_cast<menus::ButtonMenuItemModel*>(
+          g_object_get_data(G_OBJECT(menu_item), "button-model"));
+  if (model) {
+    if (menu->delegate_)
+      menu->delegate_->CommandWillBeExecuted();
+
+    model->ActivatedCommand(command_id);
+  }
 }
 
 // static

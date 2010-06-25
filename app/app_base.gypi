@@ -159,6 +159,8 @@
         'menus/accelerator.h',
         'menus/accelerator_gtk.h',
         'menus/accelerator_cocoa.h',
+        'menus/button_menu_item_model.cc',
+        'menus/button_menu_item_model.h',
         'menus/menu_model.cc',
         'menus/menu_model.h',
         'menus/simple_menu_model.cc',
