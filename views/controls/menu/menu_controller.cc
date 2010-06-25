@@ -1020,7 +1020,9 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source, const MouseEvent& e) {
   UpdateInitialLocation(gfx::Rect(screen_menu_loc.x(), screen_menu_loc.y(),
                                   button->width(), button->height() - 1),
                         anchor);
-  alt_menu->PrepareForRun(has_mnemonics);
+  alt_menu->PrepareForRun(
+      has_mnemonics,
+      source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
   alt_menu->controller_ = this;
   SetSelection(alt_menu, true, true);
   return true;
@@ -1522,6 +1524,11 @@ bool MenuController::SelectByChar(wchar_t character) {
       Accept(child, 0);
       return true;
     }
+  }
+
+  if (item->GetRootMenuItem()->has_mnemonics()) {
+    // Don't guess at mnemonics if the menu explicitly has them.
+    return false;
   }
 
   // No matching mnemonic, search through items that don't have mnemonic

@@ -254,6 +254,10 @@ class MenuItemView : public View {
   // space needed for the accelerator is NOT included in the preferred width.
   int GetAcceleratorTextWidth();
 
+  // Returns true if the menu has mnemonics. This only useful on the root menu
+  // item.
+  bool has_mnemonics() const { return has_mnemonics_; }
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -276,7 +280,7 @@ class MenuItemView : public View {
 
   // The RunXXX methods call into this to set up the necessary state before
   // running.
-  void PrepareForRun(bool has_mnemonics);
+  void PrepareForRun(bool has_mnemonics, bool show_mnemonics);
 
   // Returns the flags passed to DrawStringInt.
   int GetDrawStringFlags();
@@ -358,8 +362,12 @@ class MenuItemView : public View {
   // Icon.
   SkBitmap icon_;
 
-  // Does the title have a mnemonic?
+  // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;
+
+  // Should we show the mnemonic? Mnemonics are shown if this is true or
+  // MenuConfig says mnemonics should be shown. Only used on the root menu item.
+  bool show_mnemonics_;
 
   bool has_icons_;
 

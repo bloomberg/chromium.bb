@@ -8,6 +8,7 @@
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "views/controls/button/text_button.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_separator.h"
@@ -63,7 +64,18 @@ int MenuItemView::item_right_margin_;
 // static
 int MenuItemView::pref_menu_height_;
 
-MenuItemView::MenuItemView(MenuDelegate* delegate) {
+MenuItemView::MenuItemView(MenuDelegate* delegate)
+    : delegate_(delegate),
+      controller_(NULL),
+      canceled_(false),
+      parent_menu_item_(NULL),
+      type_(SUBMENU),
+      selected_(false),
+      command_(0),
+      submenu_(NULL),
+      has_mnemonics_(false),
+      show_mnemonics_(false),
+      has_icons_(false) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes supplies a
   // NULL delegate.
   Init(NULL, 0, SUBMENU, delegate);
@@ -93,8 +105,8 @@ void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
                              const gfx::Rect& bounds,
                              AnchorPosition anchor,
                              bool has_mnemonics) {
-  PrepareForRun(has_mnemonics);
-
+  // Show mnemonics if the button has focus. This mirrors what windows does.
+  PrepareForRun(has_mnemonics, button ? button->HasFocus() : false);
   int mouse_event_flags;
 
   MenuController* controller = MenuController::GetActiveInstance();
@@ -144,7 +156,7 @@ void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
 void MenuItemView::RunMenuForDropAt(gfx::NativeWindow parent,
                                     const gfx::Rect& bounds,
                                     AnchorPosition anchor) {
-  PrepareForRun(false);
+  PrepareForRun(false, false);
 
   // If there is a menu, hide it so that only one menu is shown during dnd.
   MenuController* current_controller = MenuController::GetActiveInstance();
@@ -243,7 +255,7 @@ MenuItemView* MenuItemView::GetRootMenuItem() {
 }
 
 wchar_t MenuItemView::GetMnemonic() {
-  if (!has_mnemonics_)
+  if (!GetRootMenuItem()->has_mnemonics_)
     return 0;
 
   const std::wstring& title = GetTitle();
@@ -251,8 +263,10 @@ wchar_t MenuItemView::GetMnemonic() {
   do {
     index = title.find('&', index);
     if (index != std::wstring::npos) {
-      if (index + 1 != title.size() && title[index + 1] != '&')
-        return title[index + 1];
+      if (index + 1 != title.size() && title[index + 1] != '&') {
+        wchar_t char_array[1] = { title[index + 1] };
+        return l10n_util::ToLower(char_array)[0];
+      }
       index++;
     }
   } while (index != std::wstring::npos);
@@ -320,7 +334,18 @@ int MenuItemView::GetAcceleratorTextWidth() {
 
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
-                           MenuItemView::Type type) {
+                           MenuItemView::Type type)
+    : delegate_(NULL),
+      controller_(NULL),
+      canceled_(false),
+      parent_menu_item_(parent),
+      type_(type),
+      selected_(false),
+      command_(command),
+      submenu_(NULL),
+      has_mnemonics_(false),
+      show_mnemonics_(false),
+      has_icons_(false) {
   Init(parent, command, type, NULL);
 }
 
@@ -362,6 +387,7 @@ void MenuItemView::Init(MenuItemView* parent,
   selected_ = false;
   command_ = command;
   submenu_ = NULL;
+  show_mnemonics_ = false;
   // Assign our ID, this allows SubmenuItemView to find MenuItemViews.
   SetID(kMenuItemViewID);
   has_icons_ = false;
@@ -388,7 +414,7 @@ void MenuItemView::DropMenuClosed(bool notify_delegate) {
   // WARNING: its possible the delegate deleted us at this point.
 }
 
-void MenuItemView::PrepareForRun(bool has_mnemonics) {
+void MenuItemView::PrepareForRun(bool has_mnemonics, bool show_mnemonics) {
   // Currently we only support showing the root.
   DCHECK(!parent_menu_item_);
 
@@ -398,6 +424,7 @@ void MenuItemView::PrepareForRun(bool has_mnemonics) {
   canceled_ = false;
 
   has_mnemonics_ = has_mnemonics;
+  show_mnemonics_ = has_mnemonics && show_mnemonics;
 
   AddEmptyMenus();
 
@@ -416,10 +443,12 @@ int MenuItemView::GetDrawStringFlags() {
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
 
   if (has_mnemonics_) {
-    if (MenuConfig::instance().show_mnemonics)
+    if (MenuConfig::instance().show_mnemonics ||
+        GetRootMenuItem()->show_mnemonics_) {
       flags |= gfx::Canvas::SHOW_PREFIX;
-    else
+    } else {
       flags |= gfx::Canvas::HIDE_PREFIX;
+    }
   }
   return flags;
 }

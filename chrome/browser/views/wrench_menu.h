@@ -15,6 +15,7 @@
 class Browser;
 
 namespace views {
+class MenuButton;
 class MenuItemView;
 class View;
 }  // namespace views
@@ -28,7 +29,7 @@ class WrenchMenu : public views::MenuDelegate {
   void Init(menus::MenuModel* model);
 
   // Shows the menu relative to the specified view.
-  void RunMenu(views::View* host);
+  void RunMenu(views::MenuButton* host);
 
   // MenuDelegate overrides:
   virtual bool IsItemChecked(int id) const;
