@@ -657,7 +657,7 @@ void AutoFillDialog::LoadAutoFillData() {
 
 void AutoFillDialog::InitializeWidgets() {
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_DIALOG_TITLE).c_str(),
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_OPTIONS).c_str(),
       // AutoFill dialog is shared between all browser windows.
       NULL,
       // Non-modal.

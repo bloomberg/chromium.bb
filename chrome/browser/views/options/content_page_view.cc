@@ -334,7 +334,7 @@ void ContentPageView::InitFormAutofillGroup() {
   form_autofill_disable_radio_->SetMultiLine(true);
 
   change_autofill_settings_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_AUTOFILL_SETTINGS));
+      this, l10n_util::GetString(IDS_AUTOFILL_OPTIONS));
   if (!profile()->GetPersonalDataManager())
     change_autofill_settings_button_->SetEnabled(false);
 

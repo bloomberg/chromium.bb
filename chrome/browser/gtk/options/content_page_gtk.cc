@@ -271,7 +271,7 @@ GtkWidget* ContentPageGtk::InitFormAutoFillGroup() {
 
   // AutoFill button.
   autofill_button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_SETTINGS).c_str());
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_OPTIONS).c_str());
   if (!profile()->GetPrefs()->GetBoolean(prefs::kAutoFillEnabled))
     gtk_widget_set_sensitive(autofill_button_, FALSE);
 

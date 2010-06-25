@@ -5610,9 +5610,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable AutoFill' radio button">
         Disable AutoFill
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Show AutoFill profiles' button">
-        Show AutoFill profiles
-      </message>
       <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the AutoFill request infobar accept button.">
         Configure...
       </message>
@@ -5622,15 +5619,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the AutoFill Learn more link.">
         Learn more
       </message>
-      <message name="IDS_AUTOFILL_OPTIONS_MENU_ITEM" desc="The entry in the suggestions dropdown that opens the AutoFill dialog.">
-        AutoFill options...
-      </message>
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
         Clear form
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="The title of the AutoFill dialog.">
-        AutoFill Profiles
-      </message>
+      <if expr="os == 'win32'">
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The title of the AutoFill dialog.">
+          AutoFill options
+        </message>
+      </if>
+      <if expr="os != 'win32'">
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The title of the AutoFill dialog.">
+          AutoFill preferences
+        </message>
+      </if>
       <message name="IDS_AUTOFILL_LOADING" desc="The indicator that AutoFill data is being loaded.">
         Loading...
       </message>
@@ -5833,9 +5834,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SAME_AS_BILLING" desc="The label of the same as billing entry.">
         same as billing
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_MAKE_DEFAULT" desc="The label of the Make this my default profile entry.">
-        Make this my default profile
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the AutoFill dialog.">
         Save

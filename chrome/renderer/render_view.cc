@@ -1526,7 +1526,7 @@ void RenderView::OnAutoFillSuggestionsReturned(
     }
 
     // Append the 'AutoFill Options...' menu item.
-    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_MENU_ITEM));
+    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
     l.push_back(string16());
     suggestions_count_ = v.size();
     webview()->applyAutoFillSuggestions(

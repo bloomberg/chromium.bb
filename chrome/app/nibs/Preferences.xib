@@ -2347,7 +2347,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSButtonCell" key="NSCell" id="656411812">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">^IDS_OPTIONS_AUTOFILL_SETTINGS</string>
+							<string key="NSContents">^IDS_AUTOFILL_OPTIONS</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="501995472"/>
 							<int key="NSButtonFlags">-2038284033</int>
