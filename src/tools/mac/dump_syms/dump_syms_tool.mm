@@ -35,8 +35,13 @@
 #include <mach-o/arch.h>
 #include <unistd.h>
 
+#include <vector>
+
 #include "common/mac/dump_syms.h"
 #include "common/mac/macho_utilities.h"
+
+using google_breakpad::DumpSymbols;
+using std::vector;
 
 struct Options {
   Options() : srcPath(), arch() { }
@@ -46,24 +51,38 @@ struct Options {
 
 //=============================================================================
 static bool Start(const Options &options) {
-  DumpSymbols *dump = [[DumpSymbols alloc]
-                        initWithContentsOfFile:options.srcPath];
-  
-  if (!dump) {
-    fprintf(stderr, "%s is not a valid Mach-o file\n",
-            [options.srcPath fileSystemRepresentation]);
-    return false;
-  }
+  DumpSymbols dump_symbols;
 
-  if (![dump setArchitecture:[NSString
-                              stringWithUTF8String:options.arch->name]]) {
-    fprintf(stderr, "Architecture: %s not available in %s\n", 
-            options.arch->name,
-            [options.srcPath fileSystemRepresentation]);
+  if (!dump_symbols.Read(options.srcPath))
     return false;
+
+  if (options.arch) {
+    if (!dump_symbols.SetArchitecture(options.arch->cputype,
+                                      options.arch->cpusubtype)) {
+      fprintf(stderr, "%s: no architecture '%s' is present in file.\n",
+              [options.srcPath fileSystemRepresentation], options.arch->name);
+      size_t available_size;
+      const struct fat_arch *available =
+        dump_symbols.AvailableArchitectures(&available_size);
+      if (available_size == 1)
+        fprintf(stderr, "the file's architecture is: ");
+      else
+        fprintf(stderr, "architectures present in the file are:\n");
+      for (size_t i = 0; i < available_size; i++) {
+        const struct fat_arch *arch = &available[i];
+        const NXArchInfo *arch_info =
+          NXGetArchInfoFromCpuType(arch->cputype, arch->cpusubtype);
+        if (arch_info)
+          fprintf(stderr, "%s (%s)\n", arch_info->name, arch_info->description);
+        else
+          fprintf(stderr, "unrecognized cpu type 0x%x, subtype 0x%x\n",
+                  arch->cputype, arch->cpusubtype);
+      }
+      return false;
+    }
   }
-  
-  return [dump writeSymbolFile:@"-"];
+      
+  return dump_symbols.WriteSymbolFile(stdout);
 }
 
 //=============================================================================
@@ -71,7 +90,8 @@ static void Usage(int argc, const char *argv[]) {
   fprintf(stderr, "Output a Breakpad symbol file from a Mach-o file.\n");
   fprintf(stderr, "Usage: %s [-a ARCHITECTURE] <Mach-o file>\n",
           argv[0]);
-  fprintf(stderr, "\t-a: Architecture type [default: native]\n");
+  fprintf(stderr, "\t-a: Architecture type [default: native, or whatever is\n");
+  fprintf(stderr, "\t    in the file, if it contains only one architecture]\n");
   fprintf(stderr, "\t-h: Usage\n");
   fprintf(stderr, "\t-?: Usage\n");
 }
@@ -80,8 +100,6 @@ static void Usage(int argc, const char *argv[]) {
 static void SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   signed char ch;
-
-  options->arch = NXGetLocalArchInfo();
 
   while ((ch = getopt(argc, (char * const *)argv, "a:h?")) != -1) {
     switch (ch) {
