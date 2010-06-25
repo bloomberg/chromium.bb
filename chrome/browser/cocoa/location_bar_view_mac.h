@@ -104,6 +104,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   void SetPreviewEnabledPageAction(ExtensionAction* page_action,
                                    bool preview_enabled);
 
+  // Return |page_action|'s frame in window coordinates.
+  NSRect GetPageActionFrame(ExtensionAction* page_action);
+
   // Return the index of a given page_action.
   size_t GetPageActionIndex(ExtensionAction* page_action);
 

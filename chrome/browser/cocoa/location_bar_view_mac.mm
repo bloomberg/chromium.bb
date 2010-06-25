@@ -350,6 +350,7 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   if (!contents)
     return;
   page_action_views_.RefreshViews();
+  [field_ setNeedsDisplay:YES];
 
   LocationBarViewMac::PageActionImageView* page_action_image_view =
       GetPageActionImageView(page_action);
@@ -360,6 +361,14 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   page_action_image_view->set_preview_enabled(preview_enabled);
   page_action_image_view->UpdateVisibility(contents,
       GURL(WideToUTF8(toolbar_model_->GetText())));
+}
+
+NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
+  const size_t index = GetPageActionIndex(page_action);
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  const NSRect iconRect =
+      [cell pageActionFrameForIndex:index inFrame:[field_ bounds]];
+  return [field_ convertRect:iconRect toView:nil];
 }
 
 size_t LocationBarViewMac::GetPageActionIndex(ExtensionAction* page_action) {

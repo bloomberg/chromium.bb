@@ -9,7 +9,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/extensions/browser_actions_controller.h"
@@ -151,7 +150,6 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 
   locationBarView->SetPreviewEnabledPageAction(extension_->page_action(),
                                                false);  // disables preview.
-  [locationBarView->GetAutocompleteTextField() setNeedsDisplay:YES];
 }
 
 // The extension installed bubble points at the browser action icon or the
@@ -185,18 +183,9 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
                                                    true);
 
       // Find the center of the bottom of the page action icon.
-      AutocompleteTextField* field =
-          locationBarView->GetAutocompleteTextField();
-      size_t index =
-          locationBarView->GetPageActionIndex(extension_->page_action());
-      NSRect iconRect = [[field autocompleteTextFieldCell]
-          pageActionFrameForIndex:index inFrame:[field bounds]];
-      NSRect boundsrect = [[field superview] convertRect:iconRect
-                                                  toView:nil];
-      NSRect fieldFrame = [field bounds];
-      fieldFrame = [field convertRect:fieldFrame toView:nil];
-      arrowPoint = NSMakePoint(fieldFrame.origin.x + NSMidX(boundsrect),
-                               NSMinY(boundsrect));
+      const NSRect frame =
+          locationBarView->GetPageActionFrame(extension_->page_action());
+      arrowPoint = NSMakePoint(NSMidX(frame), NSMinY(frame));
       break;
     }
     default: {
