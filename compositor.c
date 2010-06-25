@@ -804,81 +804,81 @@ static const char fragment_shader[] =
 static int
 init_shaders(struct wlsc_compositor *ec)
 {
-   GLuint v, f, program;
-   const char *p;
-   char msg[512];
-   GLfloat vertices[4 * 5];
-   GLint status;
+	GLuint v, f, program;
+	const char *p;
+	char msg[512];
+	GLfloat vertices[4 * 5];
+	GLint status;
 
-   p = vertex_shader;
-   v = glCreateShader(GL_VERTEX_SHADER);
-   glShaderSource(v, 1, &p, NULL);
-   glCompileShader(v);
-   glGetShaderiv(v, GL_COMPILE_STATUS, &status);
-   if (!status) {
-	   glGetShaderInfoLog(v, sizeof msg, NULL, msg);
-	   fprintf(stderr, "vertex shader info: %s\n", msg);
-	   return -1;
-   }
+	p = vertex_shader;
+	v = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(v, 1, &p, NULL);
+	glCompileShader(v);
+	glGetShaderiv(v, GL_COMPILE_STATUS, &status);
+	if (!status) {
+		glGetShaderInfoLog(v, sizeof msg, NULL, msg);
+		fprintf(stderr, "vertex shader info: %s\n", msg);
+		return -1;
+	}
 
-   p = fragment_shader;
-   f = glCreateShader(GL_FRAGMENT_SHADER);
-   glShaderSource(f, 1, &p, NULL);
-   glCompileShader(f);
-   glGetShaderiv(f, GL_COMPILE_STATUS, &status);
-   if (!status) {
-	   glGetShaderInfoLog(f, sizeof msg, NULL, msg);
-	   fprintf(stderr, "fragment shader info: %s\n", msg);
-	   return -1;
-   }
+	p = fragment_shader;
+	f = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(f, 1, &p, NULL);
+	glCompileShader(f);
+	glGetShaderiv(f, GL_COMPILE_STATUS, &status);
+	if (!status) {
+		glGetShaderInfoLog(f, sizeof msg, NULL, msg);
+		fprintf(stderr, "fragment shader info: %s\n", msg);
+		return -1;
+	}
 
-   program = glCreateProgram();
-   glAttachShader(program, v);
-   glAttachShader(program, f);
-   glBindAttribLocation(program, 0, "position");
-   glBindAttribLocation(program, 1, "texcoord");
+	program = glCreateProgram();
+	glAttachShader(program, v);
+	glAttachShader(program, f);
+	glBindAttribLocation(program, 0, "position");
+	glBindAttribLocation(program, 1, "texcoord");
 
-   glLinkProgram(program);
-   glGetProgramiv(program, GL_LINK_STATUS, &status);
-   if (!status) {
-	   glGetProgramInfoLog(program, sizeof msg, NULL, msg);
-	   fprintf(stderr, "link info: %s\n", msg);
-	   return -1;
-   }
+	glLinkProgram(program);
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	if (!status) {
+		glGetProgramInfoLog(program, sizeof msg, NULL, msg);
+		fprintf(stderr, "link info: %s\n", msg);
+		return -1;
+	}
 
-   glUseProgram(program);
-   ec->proj_uniform = glGetUniformLocation(program, "proj");
-   ec->tex_uniform = glGetUniformLocation(program, "tex");
+	glUseProgram(program);
+	ec->proj_uniform = glGetUniformLocation(program, "proj");
+	ec->tex_uniform = glGetUniformLocation(program, "tex");
 
-   vertices[ 0] = 0.0;
-   vertices[ 1] = 0.0;
-   vertices[ 2] = 0.0;
-   vertices[ 3] = 0.0;
-   vertices[ 4] = 0.0;
+	vertices[ 0] = 0.0;
+	vertices[ 1] = 0.0;
+	vertices[ 2] = 0.0;
+	vertices[ 3] = 0.0;
+	vertices[ 4] = 0.0;
 
-   vertices[ 5] = 0.0;
-   vertices[ 6] = 1.0;
-   vertices[ 7] = 0.0;
-   vertices[ 8] = 0.0;
-   vertices[ 9] = 1.0;
+	vertices[ 5] = 0.0;
+	vertices[ 6] = 1.0;
+	vertices[ 7] = 0.0;
+	vertices[ 8] = 0.0;
+	vertices[ 9] = 1.0;
 
-   vertices[10] = 1.0;
-   vertices[11] = 0.0;
-   vertices[12] = 0.0;
-   vertices[13] = 1.0;
-   vertices[14] = 0.0;
+	vertices[10] = 1.0;
+	vertices[11] = 0.0;
+	vertices[12] = 0.0;
+	vertices[13] = 1.0;
+	vertices[14] = 0.0;
 
-   vertices[15] = 1.0;
-   vertices[16] = 1.0;
-   vertices[17] = 0.0;
-   vertices[18] = 1.0;
-   vertices[19] = 1.0;
+	vertices[15] = 1.0;
+	vertices[16] = 1.0;
+	vertices[17] = 0.0;
+	vertices[18] = 1.0;
+	vertices[19] = 1.0;
 
-   glGenBuffers(1, &ec->vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
+	glGenBuffers(1, &ec->vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
 
-   return 0;
+	return 0;
 }
 
 static const struct wl_interface visual_interface = {
