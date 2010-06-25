@@ -126,42 +126,6 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
-  } else if (path_raw == chrome::kSyncChooseDataTypesPath) {
-    DictionaryValue localized_strings;
-    localized_strings.SetString(L"choosedatatypesheader",
-      l10n_util::GetString(IDS_SYNC_CHOOSE_DATATYPES_HEADER));
-    localized_strings.SetString(L"choosedatatypesinstructions",
-      l10n_util::GetStringF(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS,
-      l10n_util::GetString(IDS_PRODUCT_NAME)));
-    localized_strings.SetString(L"keepeverythingsynced",
-      l10n_util::GetString(IDS_SYNC_EVERYTHING));
-    localized_strings.SetString(L"choosedatatypes",
-      l10n_util::GetString(IDS_SYNC_CHOOSE_DATATYPES));
-    localized_strings.SetString(L"bookmarks",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_BOOKMARKS));
-    localized_strings.SetString(L"preferences",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_PREFERENCES));
-    localized_strings.SetString(L"autofill",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL));
-    localized_strings.SetString(L"themes",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES));
-    localized_strings.SetString(L"passwords",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_PASSWORDS));
-    localized_strings.SetString(L"extensions",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_EXTENSIONS));
-    localized_strings.SetString(L"typedurls",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_TYPED_URLS));
-    localized_strings.SetString(L"ok",
-      l10n_util::GetString(IDS_OK));
-    localized_strings.SetString(L"cancel",
-      l10n_util::GetString(IDS_CANCEL));
-    localized_strings.SetString(L"settingup",
-      l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
-    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_SYNC_CHOOSE_DATATYPES_HTML));
-    SetFontAndTextDirection(&localized_strings);
-    response = jstemplate_builder::GetI18nTemplateHtml(
-      html, &localized_strings);
   } else if (path_raw == chrome::kSyncSetupDonePath) {
     DictionaryValue localized_strings;
     localized_strings.SetString(L"success",
@@ -258,13 +222,8 @@ void SyncSetupWizard::Focus() {
 // static
 SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
     State start_state) {
-  State result = FATAL_ERROR;
-  if (start_state == GAIA_LOGIN) {
-    result = GAIA_SUCCESS;
-  } else if (start_state == CHOOSE_DATA_TYPES) {
-    result = DONE;
-  }
-  DCHECK_NE(FATAL_ERROR, result) <<
+  State result = start_state == GAIA_LOGIN ? GAIA_SUCCESS : DONE;
+  DCHECK_NE(DONE, result) <<
       "Invalid start state for discrete run: " << start_state;
   return result;
 }

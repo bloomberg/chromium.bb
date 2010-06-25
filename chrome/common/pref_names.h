@@ -308,7 +308,6 @@ extern const wchar_t kDevToolsSplitLocation[];
 
 extern const wchar_t kSyncLastSyncedTime[];
 extern const wchar_t kSyncHasSetupCompleted[];
-extern const wchar_t kKeepEverythingSynced[];
 extern const wchar_t kSyncBookmarks[];
 extern const wchar_t kSyncPasswords[];
 extern const wchar_t kSyncPreferences[];

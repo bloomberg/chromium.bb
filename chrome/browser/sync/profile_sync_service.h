@@ -112,8 +112,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,   // Cancelled before submitting
                                             // username and password.
     CANCEL_DURING_SIGNON = 11,              // Cancelled after auth.
-    CANCEL_FROM_CHOOSE_DATA_TYPES = 12,     // Cancelled before choosing data
-                                            // types and clicking OK.
+
     // Events resulting in the stoppage of sync service.
     STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
 
@@ -170,11 +169,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Called when a user chooses which data types to sync as part of the sync
   // setup wizard.  |sync_everything| represents whether they chose the
-  // "keep everything synced" option; if true, |chosen_types| will be ignored
-  // and all data types will be synced.  |sync_everything| means "sync all
-  // current and future data types."
+  // "keep everything synced" option; if true, data_types will be ignored and
+  // all data types will be synced.  |sync_everything| means "sync all current
+  // and future data types."
   virtual void OnUserChoseDatatypes(bool sync_everything,
-      const syncable::ModelTypeSet& chosen_types);
+      const syncable::ModelTypeSet& data_types);
 
   // Called when a user cancels any setup dialog (login, etc).
   virtual void OnUserCancelledDialog();
@@ -201,8 +200,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return wizard_.IsVisible();
   }
   void ShowLoginDialog();
-
-  void ShowChooseDataTypes();
 
   // Pretty-printed strings for a given StatusSummary.
   static std::wstring BuildSyncStatusSummaryText(

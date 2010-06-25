@@ -47,11 +47,6 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
       const ProfileSyncService* service,
       DictionaryValue* args);
 
-  // Fills |args| with "user" and "error" arguments by querying |service|.
-  static void GetArgsForChooseDataTypes(
-      ProfileSyncService* service,
-      DictionaryValue* args);
-
   // Triggers a state machine transition to advance_state.
   void Advance(SyncSetupWizard::State advance_state);
 
@@ -132,14 +127,8 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
     service_->OnUserSubmittedAuth(username, password, captcha);
   }
 
-  void OnUserChoseDataTypes(bool sync_everything,
-      syncable::ModelTypeSet& chosen_types) {
-    service_->OnUserChoseDatatypes(sync_everything, chosen_types);
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ChooseDataTypesSetsPrefs);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepMergeAndSync);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DialogCancelled);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InvalidTransitions);
@@ -215,14 +204,12 @@ class FlowHandler : public DOMMessageHandler {
   void ClickCustomizeOk(const Value* value);
   void ClickCustomizeCancel(const Value* value);
   void HandleSubmitAuth(const Value* value);
-  void HandleChooseDataTypes(const Value* value);
   void HandleSubmitMergeAndSync(const Value* value);
 
   // These functions control which part of the HTML is visible.
   void ShowGaiaLogin(const DictionaryValue& args);
   void ShowGaiaSuccessAndClose();
   void ShowGaiaSuccessAndSettingUp();
-  void ShowChooseDataTypes(const DictionaryValue& args);
   void ShowSetupDone(const std::wstring& user);
   void ShowFirstTimeDone(const std::wstring& user);
 

@@ -102,15 +102,6 @@ input[type='submit'] {
       document.getElementById("extensionsCheckbox").style.display = "none";
       document.getElementById("extensionsCheckboxLabel").style.display = "none";
     }
-    if (args.typedUrlsRegistered) {
-      document.getElementById("typedUrlsCheckbox").checked = args.syncTypedUrls;
-      document.getElementById("typedUrlsCheckbox").style.display = "inline";
-      document.getElementById("typedUrlsCheckboxLabel").style.display =
-          "inline";
-    } else {
-      document.getElementById("typedUrlsCheckbox").style.display = "none";
-      document.getElementById("typedUrlsCheckboxLabel").style.display = "none";
-    }
   }
 
   function setDataTypeCheckboxesEnabled(enabled) {
@@ -120,7 +111,6 @@ input[type='submit'] {
     document.getElementById("passwordsCheckbox").disabled = !enabled;
     document.getElementById("autofillCheckbox").disabled = !enabled;
     document.getElementById("extensionsCheckbox").disabled = !enabled;
-    document.getElementById("typedUrlsCheckbox").disabled = !enabled;
   }
 
   function advanceThrobber() {
@@ -153,8 +143,7 @@ input[type='submit'] {
         "syncThemes": syncAll || f.themesCheckbox.checked,
         "syncPasswords": syncAll || f.passwordsCheckbox.checked,
         "syncAutofill": syncAll || f.autofillCheckbox.checked,
-        "syncExtensions": syncAll || f.extensionsCheckbox.checked,
-        "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked
+        "syncExtensions": syncAll || f.extensionsCheckbox.checked
     });
     chrome.send("ChooseDataTypes", [result]);
   }
@@ -189,8 +178,8 @@ input[type='submit'] {
             <label id="bookmarksCheckboxLabel" for="bookmarksCheckbox" i18n-content="bookmarks"></label>
           </td>
           <td>
-            <input id="autofillCheckbox" type="checkbox"/>
-            <label id="autofillCheckboxLabel" for="autofillCheckbox" i18n-content="autofill"></label>
+            <input id="passwordsCheckbox" type="checkbox"/>
+            <label id="passwordsCheckboxLabel" for="passwordsCheckbox" i18n-content="passwords"></label>
           </td>
         </tr>
         <tr>
@@ -199,8 +188,8 @@ input[type='submit'] {
             <label id="preferencesCheckboxLabel" for="preferencesCheckbox" i18n-content="preferences"></label>
           </td>
           <td>
-            <input id="extensionsCheckbox" type="checkbox"/>
-            <label id="extensionsCheckboxLabel" for="extensionsCheckbox" i18n-content="extensions"></label>
+            <input id="autofillCheckbox" type="checkbox"/>
+            <label id="autofillCheckboxLabel" for="autofillCheckbox" i18n-content="autofill"></label>
           </td>
         </tr>
         <tr>
@@ -209,16 +198,8 @@ input[type='submit'] {
             <label id="themesCheckboxLabel" for="themesCheckbox" i18n-content="themes"></label>
           </td>
           <td>
-            <input id="typedUrlsCheckbox" type="checkbox"/>
-            <label id="typedUrlsCheckboxLabel" for="typedUrlsCheckbox" i18n-content="typedurls"></label>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <input id="passwordsCheckbox" type="checkbox"/>
-            <label id="passwordsCheckboxLabel" for="passwordsCheckbox" i18n-content="passwords"></label>
-          </td>
-          <td>
+            <input id="extensionsCheckbox" type="checkbox"/>
+            <label id="extensionsCheckboxLabel" for="extensionsCheckbox" i18n-content="extensions"></label>
           </td>
         </tr>
       </table>

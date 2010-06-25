@@ -1,89 +1,84 @@
 <html i18n-values="dir:textdirection;">
-<head>
-<style type="text/css">
+  <head>
+<style type="text/css"><!--
   body,td,div,p,a,font,span {font-family: arial,sans-serif;}
   body { background-color:#ffffff }
   A:link {color:#0000cc; }
   A:visited { color:#551a8b; }
   A:active { color:#ff0000; }
   .form-noindent {background-color: #ffffff; border: #C3D9FF 1px solid}
-  .body { margin-left: 3em;
-    margin-right: 5em;
-    font-family: arial,sans-serif; }
-  .endaligned {
-    text-align: right;
-  }
-  html[dir='rtl'] .endaligned {
-    text-align: left;
-  }
-  #gaia_account_text { font-weight: bold; }
-  div.errorbox-good {}
-  div.errorbox-bad {}
-  div.errormsg { color: red; font-size: smaller;
-    font-family: arial,sans-serif;
-    display: none;}
-  font.errormsg { color: red; font-size: smaller;
-    font-family: arial,sans-serif;}
-  div.errormsgspacer { min-height: 1em;}
-  font.errormsgspacer { font-size: smaller;
-    font-family: arial,sans-serif;}
+--></style>
+    <style type="text/css"><!--
+      .body { margin-left: 3em;
+              margin-right: 5em;
+              font-family: arial,sans-serif; }
+      .endaligned {
+        text-align: right;
+      }
+      html[dir='rtl'] .endaligned {
+        text-align: left;
+      }
+      #gaia_account_text { font-weight: bold; }
+      div.errorbox-good {}
+      div.errorbox-bad {}
+      div.errormsg { color: red; font-size: smaller;
+                     font-family: arial,sans-serif;
+                     display: none;}
+      font.errormsg { color: red; font-size: smaller;
+                      font-family: arial,sans-serif;}
+      div.errormsgspacer { min-height: 1em;}
+      font.errormsgspacer { font-size: smaller;
+                            font-family: arial,sans-serif;}
 
-  hr {
-    border: 0;
-    background-color:#DDDDDD;
-    height: 1px;
-    width: 100%;
-    text-align: left;
-    margin: 5px;
-  }
-  #gaia_loginform {
-    margin-bottom: 0;
-  }
+      hr {
+        border: 0;
+        background-color:#DDDDDD;
+        height: 1px;
+        width: 100%;
+        text-align: left;
+        margin: 5px;
+      }
+      #gaia_loginform {
+        margin-bottom: 0;
+      }
 
-  #captcha_wrapper {
-    background-size: 200px 70px;
-    background: no-repeat;
-    background-position: center;
-    background-color: #e8eefa;
-    display: block;
-  }
-  .captcha_image {
-    display: block;
-    width: 200px;
-    height: 70px;
-  }
-  .toppageverticalspace {
-    height: 15px;
-  }
-  .bottompaddedcell {
-    padding-bottom: 3px;
-  }
-  .noverticalpadding {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  .cancelspacenocaptcha {
-    height: 22px;
-  }
-  .cancelspaceforcaptcha {
-    height: 5px;
-  }
-  #top_blurb {
-    text-align: justify;
-  }
-  input[type='button'] {
-    min-width: 87px;
-    min-height: 26px;
-  }
-  input[type='submit'] {
-    min-width: 87px;
-    min-height: 26px;
-  }
-</style>
-</head>
-<body bgcolor="#ffffff" vlink="#666666"
-      i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
-      style="margin-bottom: 6px; margin-top: 6px;" onload="initGaiaLoginForm();">
+    #captcha_wrapper {
+      background-size: 200px 70px;
+      background: no-repeat;
+      background-position: center;
+      background-color: #e8eefa;
+      display: block;
+    }
+    .captcha_image {
+      display: block;
+      width: 200px;
+      height: 70px;
+    }
+    .toppageverticalspace {
+      height: 15px;
+    }
+    .bottompaddedcell {
+      padding-bottom: 3px;
+    }
+    .noverticalpadding {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .cancelspacenocaptcha {
+      height: 22px;
+    }
+    .cancelspaceforcaptcha {
+      height: 5px;
+    }
+    #top_blurb {
+      text-align: justify;
+    }
+    -->
+  </style>
+  </head>
+  <body bgcolor="#ffffff" vlink="#666666"
+        i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
+        style="margin-bottom: 6px; margin-top: 6px;" onload="initForm();">
   <table width="100%" height="100%" align="center" cellpadding="1" cellspacing="1">
   <tr>
   <td valign="top"> <!-- LOGIN BOX -->
@@ -154,6 +149,10 @@
       }
       document.getElementById("signIn").disabled = false;
       document.getElementById("signIn").value = templateData['signin'];
+      if (args.showCustomize) {
+        document.getElementById("customize").disabled = false;
+        document.getElementById("customize").style.visibility = "visible";
+      }
       gaia_setFocus();
     }
 
@@ -182,7 +181,12 @@
     }
 
     function CloseDialog() {
+      chrome.send("ClickCustomizeCancel", [""]);
       chrome.send("DialogClose", [""]);
+    }
+
+    function showCustomize() {
+      chrome.send("ShowCustomize", [""]);
     }
 
     function showGaiaSuccessAndClose() {
@@ -194,8 +198,7 @@
       document.getElementById("signIn").value = templateData['settingup'];
     }
 
-    // Called once, when this html/js is loaded.
-    function initGaiaLoginForm() {
+    function initForm() {
       var acct_text = document.getElementById("gaia_account_text");
       var translated_text = acct_text.textContent;
       var posGoogle = translated_text.indexOf('Google');
@@ -217,13 +220,16 @@
 
     function sendCredentialsAndClose() {
 
+      chrome.send("ClickCustomizeOk", [""]);
       if (!setErrorVisibility())
         return false;
 
       document.getElementById('Email').disabled = true;
       document.getElementById('Passwd').disabled = true;
       document.getElementById('CaptchaValue').disabled = true;
-
+      if (document.getElementById('customize')) {
+        document.getElementById('customize').disabled = true;
+      }
       var throbber = document.getElementById('throbber_container');
       throbber.style.display = "inline";
       var f = document.getElementById("gaia_loginform");
@@ -272,30 +278,30 @@
       return true;
     }
   </script>
-  <style type="text/css">
-    div.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif; }
-    font.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif;}
-  </style>
-  <style type="text/css">
-    .gaia.le.lbl { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
-    .gaia.le.fpwd { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
-    .gaia.le.chusr { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
-    .gaia.le.val { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
-    .gaia.le.button { font-family: Arial, Helvetica, sans-serif; }
-    .gaia.le.rem { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
-    .gaia.captchahtml.desc { font-family: arial, sans-serif; font-size: smaller; }
-    .gaia.captchahtml.cmt { font-family: arial, sans-serif; font-size: smaller;
-                            font-style: italic; }
-  </style>
-  <div id="top_blurb">
-    <p><font size="-1"><span i18n-content="introduction"></span></font></p>
-  </div>
-  <div id="top_blurb_error" style="display:none">
-    <p><font size="-1">
-      <span i18n-content="settingupsync"></span><br/><br/>
-      <b><span i18n-content="errorsigningin"></span></b>
-    </font></p>
-  </div>
+<style type="text/css"><!--
+  div.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif; }
+  font.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif;}
+--></style>
+<style type="text/css"><!--
+.gaia.le.lbl { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.gaia.le.fpwd { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
+.gaia.le.chusr { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
+.gaia.le.val { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.gaia.le.button { font-family: Arial, Helvetica, sans-serif; }
+.gaia.le.rem { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.gaia.captchahtml.desc { font-family: arial, sans-serif; font-size: smaller; }
+.gaia.captchahtml.cmt { font-family: arial, sans-serif; font-size: smaller;
+                        font-style: italic; }
+--></style>
+<div id="top_blurb">
+  <p><font size="-1"><span i18n-content="introduction"></span></font></p>
+</div>
+<div id="top_blurb_error" style="display:none">
+  <p><font size="-1">
+    <span i18n-content="settingupsync"></span><br/><br/>
+    <b><span i18n-content="errorsigningin"></span></b>
+  </font></p>
+</div>
 <form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;">
 <div id="gaia_loginbox">
 <table id="content_table" class="form-noindent" cellspacing="0" cellpadding="5"
@@ -325,7 +331,7 @@
               </table>
             </td>
           </tr>
-          <script type="text/javascript">
+          <script type="text/javascript"><!--
             function onPreCreateAccount() {
               return true;
             }
@@ -336,7 +342,7 @@
                 return true;
               }
             }
-          </script>
+          --></script>
           <tr>
             <td colspan="2" align="center"> </td>
           </tr>
@@ -485,6 +491,9 @@
 </tr>
 <tr>
   <td class="endaligned noverticalpadding" colspan="2" style="vertical-align: bottom">
+  <input id="customize" type="button" name="customize"
+         i18n-values="value:customize" onclick="showCustomize();" 
+         style="visibility:hidden" disabled="disabled">
   <input type="button" name="cancel" i18n-values="value:cancel"
          onclick="CloseDialog();" style="width:85">
   </td>

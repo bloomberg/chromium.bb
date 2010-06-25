@@ -32,8 +32,6 @@
 
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
-static const wchar_t* kChooseDataTypesIFrameXPath =
-    L"//iframe[@id='choose_data_types']";
 static const wchar_t* kDoneIframeXPath = L"//iframe[@id='done']";
 
 void FlowHandler::RegisterMessages() {
@@ -49,8 +47,6 @@ void FlowHandler::RegisterMessages() {
 #endif
   dom_ui_->RegisterMessageCallback("SubmitAuth",
       NewCallback(this, &FlowHandler::HandleSubmitAuth));
-  dom_ui_->RegisterMessageCallback("ChooseDataTypes",
-      NewCallback(this, &FlowHandler::HandleChooseDataTypes));
 }
 
 static bool GetAuthData(const std::string& json,
@@ -65,63 +61,6 @@ static bool GetAuthData(const std::string& json,
       !result->GetString(L"captcha", captcha)) {
       return false;
   }
-  return true;
-}
-
-static bool GetDataTypeChoiceData(const std::string& json,
-    bool* sync_everything, syncable::ModelTypeSet* data_types) {
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
-  if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
-    return false;
-
-  DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  if (!result->GetBoolean(L"keepEverythingSynced", sync_everything))
-    return false;
-
-  // These values need to be kept in sync with where they are written in
-  // choose_datatypes.html.
-  bool sync_bookmarks;
-  if (!result->GetBoolean(L"syncBookmarks", &sync_bookmarks))
-    return false;
-  if (sync_bookmarks)
-    data_types->insert(syncable::BOOKMARKS);
-
-  bool sync_preferences;
-  if (!result->GetBoolean(L"syncPreferences", &sync_preferences))
-    return false;
-  if (sync_preferences)
-    data_types->insert(syncable::PREFERENCES);
-
-  bool sync_themes;
-  if (!result->GetBoolean(L"syncThemes", &sync_themes))
-    return false;
-  if (sync_themes)
-    data_types->insert(syncable::THEMES);
-
-  bool sync_passwords;
-  if (!result->GetBoolean(L"syncPasswords", &sync_passwords))
-    return false;
-  if (sync_passwords)
-    data_types->insert(syncable::PASSWORDS);
-
-  bool sync_autofill;
-  if (!result->GetBoolean(L"syncAutofill", &sync_autofill))
-    return false;
-  if (sync_autofill)
-    data_types->insert(syncable::AUTOFILL);
-
-  bool sync_extensions;
-  if (!result->GetBoolean(L"syncExtensions", &sync_extensions))
-    return false;
-  if (sync_extensions)
-    data_types->insert(syncable::EXTENSIONS);
-
-  bool sync_typed_urls;
-  if (!result->GetBoolean(L"syncTypedUrls", &sync_typed_urls))
-    return false;
-  if (sync_typed_urls)
-    data_types->insert(syncable::TYPED_URLS);
-
   return true;
 }
 
@@ -172,39 +111,8 @@ void FlowHandler::HandleSubmitAuth(const Value* value) {
     flow_->OnUserSubmittedAuth(username, password, captcha);
 }
 
-
-void FlowHandler::HandleChooseDataTypes(const Value* value) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
-  bool sync_everything;
-  syncable::ModelTypeSet chosen_types;
-  if (json.empty())
-    return;
-
-  if (!GetDataTypeChoiceData(json, &sync_everything, &chosen_types)) {
-    // The page sent us something that we didn't understand.
-    // This probably indicates a programming error.
-    NOTREACHED();
-    return;
-  }
-
-  DCHECK(flow_);
-  flow_->OnUserChoseDataTypes(sync_everything, chosen_types);
-
-  return;
-}
-
 // Called by SyncSetupFlow::Advance.
 void FlowHandler::ShowGaiaLogin(const DictionaryValue& args) {
-  // Whenever you start a wizard, you pass in an arg so it starts on the right
-  // iframe (see setup_flow.html's showTheRightIframe() method).  But when you
-  // transition from one flow to another, you have to explicitly call the JS
-  // function to show the next iframe.
-  // So if you ever made a wizard that involved a gaia login as not the first
-  // frame, this call would be necessary to ensure that this method actually
-  // shows the gaia login.
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showGaiaLoginIframe");
-
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
   std::wstring javascript = std::wstring(L"showGaiaLogin") +
@@ -219,22 +127,6 @@ void FlowHandler::ShowGaiaSuccessAndClose() {
 void FlowHandler::ShowGaiaSuccessAndSettingUp() {
   ExecuteJavascriptInIFrame(kLoginIFrameXPath,
                             L"showGaiaSuccessAndSettingUp();");
-}
-
-// Called by SyncSetupFlow::Advance.
-void FlowHandler::ShowChooseDataTypes(const DictionaryValue& args) {
-
-  // If you're starting the wizard at the Choose Data Types screen (i.e. from
-  // "Customize Sync"), this will be redundant.  However, if you're coming from
-  // another wizard state, this will make sure Choose Data Types is on top.
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showChooseDataTypes");
-
-  std::string json;
-  base::JSONWriter::Write(&args, false, &json);
-  std::wstring javascript = std::wstring(L"setChooseDataTypesCheckboxes") +
-      L"(" + UTF8ToWide(json) + L");";
-  ExecuteJavascriptInIFrame(kChooseDataTypesIFrameXPath, javascript);
 }
 
 void FlowHandler::ShowSetupDone(const std::wstring& user) {
@@ -337,13 +229,8 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_DURING_SIGNON);
       break;
-    case SyncSetupWizard::CHOOSE_DATA_TYPES:
-      ProfileSyncService::SyncEvent(
-          ProfileSyncService::CANCEL_FROM_CHOOSE_DATA_TYPES);
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
-      // TODO(sync): rename this histogram; it's tracking authorization AND
-      // initial sync download time.
       UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedAuthorizationTime",
                                  base::TimeTicks::Now() - login_start_time_);
       break;
@@ -358,7 +245,6 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
 // static
 void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
                                         DictionaryValue* args) {
-  args->SetString(L"iframeToShow", "login");
   const GoogleServiceAuthError& error = service->GetAuthError();
   if (!service->last_attempted_user_email().empty()) {
     args->SetString(L"user", service->last_attempted_user_email());
@@ -374,42 +260,6 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
   args->SetBoolean(L"showCustomize", true);
 }
 
-// static
-void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
-                                              DictionaryValue* args) {
-  args->SetString(L"iframeToShow", "choose_data_types");
-  args->SetBoolean(L"keepEverythingSynced",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced));
-
-  // Bookmarks, Preferences, and Themes are launched for good, there's no
-  // going back now.  Check if the other data types are registered though.
-  syncable::ModelTypeSet registered_types;
-  service->GetRegisteredDataTypes(&registered_types);
-  args->SetBoolean(L"passwordsRegistered",
-      registered_types.count(syncable::PASSWORDS) > 0);
-  args->SetBoolean(L"autofillRegistered",
-      registered_types.count(syncable::AUTOFILL) > 0);
-  args->SetBoolean(L"extensionsRegistered",
-      registered_types.count(syncable::EXTENSIONS) > 0);
-  args->SetBoolean(L"typedUrlsRegistered",
-      registered_types.count(syncable::TYPED_URLS) > 0);
-
-  args->SetBoolean(L"syncBookmarks",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncBookmarks));
-  args->SetBoolean(L"syncPreferences",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncPreferences));
-  args->SetBoolean(L"syncThemes",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncThemes));
-  args->SetBoolean(L"syncPasswords",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncPasswords));
-  args->SetBoolean(L"syncAutofill",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncAutofill));
-  args->SetBoolean(L"syncExtensions",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncExtensions));
-  args->SetBoolean(L"syncTypedUrls",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
-}
-
 void SyncSetupFlow::GetDOMMessageHandlers(
     std::vector<DOMMessageHandler*>* handlers) const {
   handlers->push_back(flow_handler_);
@@ -421,17 +271,14 @@ void SyncSetupFlow::GetDOMMessageHandlers(
 bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
   switch (state) {
     case SyncSetupWizard::GAIA_LOGIN:
-      return current_state_ == SyncSetupWizard::FATAL_ERROR ||
-             current_state_ == SyncSetupWizard::GAIA_LOGIN;
+      return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::GAIA_SUCCESS:
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
-    case SyncSetupWizard::CHOOSE_DATA_TYPES:
-      return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
-      return current_state_ == SyncSetupWizard::CHOOSE_DATA_TYPES;
+      return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     default:
       NOTREACHED() << "Unhandled State: " << state;
       return false;
@@ -441,7 +288,6 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
 void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
   if (!ShouldAdvance(advance_state))
     return;
-
   switch (advance_state) {
     case SyncSetupWizard::GAIA_LOGIN: {
       DictionaryValue args;
@@ -450,18 +296,11 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       break;
     }
     case SyncSetupWizard::GAIA_SUCCESS:
-      if (end_state_ == SyncSetupWizard::GAIA_SUCCESS) {
+      if (end_state_ == SyncSetupWizard::GAIA_SUCCESS)
         flow_handler_->ShowGaiaSuccessAndClose();
-        break;
-      }
-      advance_state = SyncSetupWizard::CHOOSE_DATA_TYPES;
-      //  Fall through.
-    case SyncSetupWizard::CHOOSE_DATA_TYPES: {
-      DictionaryValue args;
-      SyncSetupFlow::GetArgsForChooseDataTypes(service_, &args);
-      flow_handler_->ShowChooseDataTypes(args);
+      else
+        flow_handler_->ShowGaiaSuccessAndSettingUp();
       break;
-    }
     case SyncSetupWizard::FATAL_ERROR: {
       // This shows the user the "Could not connect to server" error.
       // TODO(sync): Update this error messaging.
@@ -506,8 +345,6 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   DictionaryValue args;
   if (start == SyncSetupWizard::GAIA_LOGIN)
     SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
-  else if (start == SyncSetupWizard::CHOOSE_DATA_TYPES)
-    SyncSetupFlow::GetArgsForChooseDataTypes(service, &args);
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 

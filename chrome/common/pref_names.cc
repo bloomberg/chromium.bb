@@ -846,11 +846,6 @@ const wchar_t kSyncLastSyncedTime[] = L"sync.last_synced_time";
 // Boolean specifying whether the user finished setting up sync.
 const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
 
-// Boolean specifying whether to automatically sync all data types (including
-// future ones, as they're added).  If this is true, the following preferences
-// (kSyncBookmarks, kSyncPasswords, etc.) can all be ignored.
-const wchar_t kKeepEverythingSynced[] = L"sync.keep_everything_synced";
-
 // Booleans specifying whether the user has selected to sync the following
 // datatypes.
 const wchar_t kSyncBookmarks[] = L"sync.bookmarks";

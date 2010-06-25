@@ -98,7 +98,7 @@ const char kChromeUIThumbnailPath[] = "thumb";
 
 const char kSyncResourcesHost[] = "syncresources";
 const char kSyncGaiaLoginPath[] = "gaialogin";
-const char kSyncChooseDataTypesPath[] = "choosedatatypes";
+const char kSyncMergeAndSyncPath[] = "mergeandsync";
 const char kSyncThrobberPath[] = "throbber.png";
 const char kSyncSetupFlowPath[] = "setup";
 const char kSyncSetupDonePath[] = "setupdone";

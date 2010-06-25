@@ -114,8 +114,6 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Bookmarks";
     case PREFERENCES:
       return "Preferences";
-    case PASSWORDS:
-      return "Passwords";
     case AUTOFILL:
       return "Autofill";
     case THEMES:
@@ -124,6 +122,8 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Typed URLs";
     case EXTENSIONS:
       return "Extensions";
+    case PASSWORDS:
+      return "Passwords";
     case NIGORI:
       return "Encryption keys";
     default:

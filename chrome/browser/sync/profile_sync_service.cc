@@ -200,7 +200,6 @@ void ProfileSyncService::RegisterPreferences() {
     return;
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
-  pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced, false);
 
   // If you've never synced before, or if you're using Chrome OS, all datatypes
   // are on by default.
@@ -511,15 +510,6 @@ void ProfileSyncService::ShowLoginDialog() {
   }
 }
 
-void ProfileSyncService::ShowChooseDataTypes() {
-  if (WizardIsVisible()) {
-    wizard_.Focus();
-    return;
-  }
-
-  wizard_.Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
-}
-
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
   if (backend_.get())
     return backend_->GetStatusSummary();
@@ -593,21 +583,10 @@ void ProfileSyncService::OnUserSubmittedAuth(
 }
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
-    const syncable::ModelTypeSet& chosen_types) {
-  if (!backend_.get()) {
-    NOTREACHED();
-    return;
-  }
-  profile_->GetPrefs()->SetBoolean(prefs::kKeepEverythingSynced,
-      sync_everything);
-
-  ChangePreferredDataTypes(chosen_types);
-  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
-
-  // If the backend has already started syncing, that's okay;
-  // SyncerThread::Start() checks if it's already running before starting.
-  backend_->StartSyncing();
-  // TODO(dantasse): pass the chosen_types parameter through to the backend
+    const syncable::ModelTypeSet& data_types) {
+  // TODO(dantasse): save sync_everything to prefs
+  // call StartSyncing(data_types)
+  // call ChangePreferredDataTypes(data_types)
 }
 
 void ProfileSyncService::OnUserCancelledDialog() {
@@ -740,7 +719,6 @@ void ProfileSyncService::Observe(NotificationType type,
       // TODO(sync): Less wizard, more toast.
       wizard_.Step(SyncSetupWizard::DONE);
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
-
       break;
     }
     case NotificationType::SYNC_PASSPHRASE_REQUIRED: {

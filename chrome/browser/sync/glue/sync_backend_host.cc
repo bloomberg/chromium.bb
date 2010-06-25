@@ -403,6 +403,10 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.lsid.c_str(),
       options.notification_method);
   DCHECK(success) << "Syncapi initialization failed!";
+
+  // TODO(dantasse): this call is in a temporary position in order to enable
+  // the new sync setup/passphrase UI.  http://crbug.com/45869
+  DoStartSyncing();
 }
 
 void SyncBackendHost::Core::DoAuthenticate(const std::string& username,
