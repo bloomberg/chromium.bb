@@ -217,6 +217,17 @@ elif env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('mac'):
                      command=[unittest, exe])
   test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
 
+# We statically link the plugin with the fake browser for simplicity.
+# Unfortunately this fails on Linux-ARM, Mac and Windows for different
+# reasons.
+# TODO(mseaborn): Switch to dlopen() and the Windows equivalent.
+if test_env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('linux'):
+  test_prog = env.ComponentProgram(
+      'fake_browser_test',
+      ['npapi/fake_browser_test.cc'] + common_objs + npapi_inputs)
+  node = env.CommandTest('fake_browser_test.out', command=[test_prog])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_fake_browser_test')
+
 # PPAPI integration, used when built into Chrome.
 ppapi_inputs = [
     # TODO(polina): uncomment these when ready.
