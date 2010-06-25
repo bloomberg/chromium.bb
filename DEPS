@@ -100,6 +100,9 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/fast/workers":
     Var("webkit_trunk") + "/LayoutTests/fast/workers@" +
     Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/http/tests/appcache":
+    Var("webkit_trunk") + "/LayoutTests/http/tests/appcache@" +
+    Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/http/tests/resources":
     Var("webkit_trunk") + "/LayoutTests/http/tests/resources@" +
     Var("webkit_revision"),
