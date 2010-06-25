@@ -95,4 +95,12 @@ void CreateDragImageForFile(const FilePath::StringType& file_name,
                            data_object);
 }
 
+void SetDragImageOnDataObject(const gfx::Canvas& canvas,
+                              const gfx::Size& size,
+                              const gfx::Point& cursor_offset,
+                              OSExchangeData* data_object) {
+  SetDragImageOnDataObject(
+      canvas.ExtractBitmap(), size, cursor_offset, data_object);
+}
+
 } // namespace drag_utils

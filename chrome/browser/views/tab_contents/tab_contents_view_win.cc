@@ -129,8 +129,7 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
                                        const SkBitmap& image,
                                        const gfx::Point& image_offset) {
   drag_handler_ = new TabContentsDragWin(this);
-  // TODO(estade): make use of |image| and |image_offset|.
-  drag_handler_->StartDragging(drop_data, ops);
+  drag_handler_->StartDragging(drop_data, ops, image, image_offset);
 }
 
 void TabContentsViewWin::EndDragging() {

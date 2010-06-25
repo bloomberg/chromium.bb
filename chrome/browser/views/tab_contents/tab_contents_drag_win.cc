@@ -24,6 +24,7 @@
 #include "chrome/browser/views/tab_contents/tab_contents_view_win.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
+#include "views/drag_utils.h"
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperationsMask;
@@ -108,7 +109,9 @@ TabContentsDragWin::~TabContentsDragWin() {
 }
 
 void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
-                                       WebDragOperationsMask ops) {
+                                       WebDragOperationsMask ops,
+                                       const SkBitmap& image,
+                                       const gfx::Point& image_offset) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   drag_source_ = new WebDragSource(view_->GetNativeView(),
@@ -119,7 +122,7 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
 
   // If it is not drag-out, do the drag-and-drop in the current UI thread.
   if (drop_data.download_metadata.empty()) {
-    DoDragging(drop_data, ops, page_url, page_encoding);
+    DoDragging(drop_data, ops, page_url, page_encoding, image, image_offset);
     EndDragging(false);
     return;
   }
@@ -141,7 +144,9 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
                           drop_data,
                           ops,
                           page_url,
-                          page_encoding));
+                          page_encoding,
+                          image,
+                          image_offset));
   }
 
   // Install a hook procedure to monitor the messages so that we can forward
@@ -163,10 +168,12 @@ void TabContentsDragWin::StartBackgroundDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask ops,
     const GURL& page_url,
-    const std::string& page_encoding) {
+    const std::string& page_encoding,
+    const SkBitmap& image,
+    const gfx::Point& image_offset) {
   drag_drop_thread_id_ = PlatformThread::CurrentId();
 
-  DoDragging(drop_data, ops, page_url, page_encoding);
+  DoDragging(drop_data, ops, page_url, page_encoding, image, image_offset);
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &TabContentsDragWin::EndDragging, true));
@@ -260,10 +267,10 @@ void TabContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
 void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
                                     WebDragOperationsMask ops,
                                     const GURL& page_url,
-                                    const std::string& page_encoding) {
+                                    const std::string& page_encoding,
+                                    const SkBitmap& image,
+                                    const gfx::Point& image_offset) {
   OSExchangeData data;
-
-  // TODO(tc): Generate an appropriate drag image.
 
   if (!drop_data.download_metadata.empty()) {
     PrepareDragForDownload(drop_data, &data, page_url, page_encoding);
@@ -283,6 +290,10 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
     if (!drop_data.plain_text.empty())
       data.SetString(drop_data.plain_text);
   }
+
+  // Set drag image.
+  drag_utils::SetDragImageOnDataObject(
+      image, gfx::Size(image.width(), image.height()), image_offset, &data);
 
   // Keep a local reference to drag_source_ in case that EndDragging is called
   // before DoDragDrop returns.

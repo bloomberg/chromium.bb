@@ -10,8 +10,9 @@
 
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/gdi_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace drag_utils {
 
@@ -34,7 +35,7 @@ static void SetDragImageOnDataObject(HBITMAP hbitmap,
 
 // Blit the contents of the canvas to a new HBITMAP. It is the caller's
 // responsibility to release the |bits| buffer.
-static HBITMAP CreateBitmapFromCanvas(const gfx::Canvas& canvas,
+static HBITMAP CreateBitmapFromCanvas(const gfx::CanvasSkia& canvas,
                                       int width,
                                       int height) {
   HDC screen_dc = GetDC(NULL);
@@ -55,10 +56,14 @@ static HBITMAP CreateBitmapFromCanvas(const gfx::Canvas& canvas,
   return bitmap;
 }
 
-void SetDragImageOnDataObject(const gfx::Canvas& canvas,
+void SetDragImageOnDataObject(const SkBitmap& sk_bitmap,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               OSExchangeData* data_object) {
+  gfx::CanvasSkia canvas(sk_bitmap.width(), sk_bitmap.height(),
+                         /*is_opaque=*/false);
+  canvas.DrawBitmapInt(sk_bitmap, 0, 0);
+
   DCHECK(data_object && !size.IsEmpty());
   // SetDragImageOnDataObject(HBITMAP) takes ownership of the bitmap.
   HBITMAP bitmap = CreateBitmapFromCanvas(canvas, size.width(), size.height());

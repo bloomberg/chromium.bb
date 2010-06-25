@@ -13,18 +13,18 @@
 #include "gfx/gtk_util.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace drag_utils {
 
-void SetDragImageOnDataObject(const gfx::Canvas& canvas,
+void SetDragImageOnDataObject(const SkBitmap& bitmap,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               OSExchangeData* data_object) {
   OSExchangeDataProviderGtk& provider(
       static_cast<OSExchangeDataProviderGtk&>(data_object->provider()));
 
-  // Convert the canvas into a GdkPixbuf.
-  SkBitmap bitmap = canvas.ExtractBitmap();
+  // Convert the bitmap into a GdkPixbuf.
   GdkPixbuf* canvas_pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
 
   // Make a new pixbuf of the requested size and copy it over.
