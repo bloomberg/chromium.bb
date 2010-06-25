@@ -184,10 +184,11 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	 * allocation scheme here.  Or maybe just a real toolkit. */
 	view->key = key + 100;
 
-	window_set_redraw_handler(view->window, redraw_handler, view);
-	window_set_key_handler(view->window, key_handler, view);
+	window_set_user_data(view->window, view);
+	window_set_redraw_handler(view->window, redraw_handler);
+	window_set_key_handler(view->window, key_handler);
 	window_set_keyboard_focus_handler(view->window,
-					  keyboard_focus_handler, view);
+					  keyboard_focus_handler);
 
 	view->document = poppler_document_new_from_file(view->filename,
 							NULL, &error);

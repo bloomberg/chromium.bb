@@ -438,12 +438,12 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->margin = 5;
 
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
-	window_set_redraw_handler(terminal->window,
-				  redraw_handler, terminal);
+	window_set_user_data(terminal->window, terminal);
+	window_set_redraw_handler(terminal->window, redraw_handler);
 
-	window_set_key_handler(terminal->window, key_handler, terminal);
+	window_set_key_handler(terminal->window, key_handler);
 	window_set_keyboard_focus_handler(terminal->window,
-					  keyboard_focus_handler, terminal);
+					  keyboard_focus_handler);
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);

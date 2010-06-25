@@ -103,36 +103,39 @@ void
 window_set_fullscreen(struct window *window, int fullscreen);
 
 void
+window_set_user_data(struct window *window, void *data);
+
+void
 window_set_redraw_handler(struct window *window,
-			  window_redraw_handler_t handler, void *data);
+			  window_redraw_handler_t handler);
 
 void
 window_set_decoration(struct window *window, int decoration);
 
 void
 window_set_resize_handler(struct window *window,
-			  window_resize_handler_t handler, void *data);
+			  window_resize_handler_t handler);
 void
 window_set_frame_handler(struct window *window,
-			 window_frame_handler_t handler, void *data);
+			 window_frame_handler_t handler);
 void
 window_set_acknowledge_handler(struct window *window,
-			       window_acknowledge_handler_t handler, void *data);
+			       window_acknowledge_handler_t handler);
+
 void
 window_set_key_handler(struct window *window,
-		       window_key_handler_t handler, void *data);
+		       window_key_handler_t handler);
 
 void
 window_set_keyboard_focus_handler(struct window *window,
-				  window_keyboard_focus_handler_t handler,
-				  void *data);
+				  window_keyboard_focus_handler_t handler);
 
 void
 window_set_acknowledge_handler(struct window *window,
-			       window_acknowledge_handler_t handler, void *data);
+			       window_acknowledge_handler_t handler);
 
 void
 window_set_frame_handler(struct window *window,
-			 window_frame_handler_t handler, void *data);
+			 window_frame_handler_t handler);
 
 #endif

@@ -431,10 +431,11 @@ gears_create(struct display *display)
 	draw_gears(gears);
 	frame_handler(gears->window, 0, 0, gears);
 
-	window_set_resize_handler(gears->window, resize_handler, gears);
-	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler, gears);
-	window_set_acknowledge_handler(gears->window, acknowledge_handler, gears);
-	window_set_frame_handler(gears->window, frame_handler, gears);
+	window_set_user_data(gears->window, gears);
+	window_set_resize_handler(gears->window, resize_handler);
+	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler);
+	window_set_acknowledge_handler(gears->window, acknowledge_handler);
+	window_set_frame_handler(gears->window, frame_handler);
 
 	return gears;
 }

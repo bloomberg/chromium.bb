@@ -223,8 +223,9 @@ image_create(struct display *display, uint32_t key, const char *filename)
 	 * allocation scheme here.  Or maybe just a real toolkit. */
 	image->key = key + 100;
 
-	window_set_redraw_handler(image->window, redraw_handler, image);
-	window_set_keyboard_focus_handler(image->window, keyboard_focus_handler, image);
+	window_set_user_data(image->window, image);
+	window_set_redraw_handler(image->window, redraw_handler);
+	window_set_keyboard_focus_handler(image->window, keyboard_focus_handler);
 
 	image_draw(image);
 

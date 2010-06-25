@@ -141,7 +141,8 @@ int main(int argc, char *argv[])
 	draw_stuff(s, flower.width, flower.height);
 	cairo_surface_flush(s);
 
-	window_set_frame_handler(flower.window, handle_frame, &flower);
+	window_set_user_data(flower.window, &flower);
+	window_set_frame_handler(flower.window, handle_frame);
 	window_commit(flower.window, 0);
 
 	display_run(d);
