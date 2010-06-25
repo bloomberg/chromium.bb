@@ -371,6 +371,8 @@ WebKit::WebThemeEngine* GetThemeEngine() {
   return test_environment->theme_engine();
 }
 
+#endif
+
 // DevTools
 WebCString GetDevToolsInjectedScriptSource() {
   base::StringPiece injectJSWebkit = webkit_glue::GetDataResource(
@@ -397,9 +399,7 @@ WebURL GetDevToolsPathAsURL() {
       return WebURL();
   }
   FilePath devToolsPath = dirExe.AppendASCII("resources/inspector/devtools.html");
-  return GURL(devToolsPath.value());
+  return net::FilePathToFileURL(devToolsPath);
 }
-
-#endif
 
 }  // namespace webkit_support
