@@ -7,13 +7,13 @@
 
 #include <string>
 
+#include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/host/host_config.h"
 
-class FilePath;
-class JsonPrefStore;
+class DictionaryValue;
 class Task;
 
 namespace base {
@@ -46,9 +46,10 @@ class JsonHostConfig : public MutableHostConfig {
  private:
   void DoWrite();
 
-  // |lock_| must be locked whenever we access pref_store_;
+  // |lock_| must be locked whenever we access values_;
   Lock lock_;
-  scoped_ptr<JsonPrefStore> pref_store_;
+  FilePath filename_;
+  scoped_ptr<DictionaryValue> values_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonHostConfig);

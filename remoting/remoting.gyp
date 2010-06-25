@@ -136,7 +136,6 @@
       'target_name': 'chromoting_host',
       'type': '<(library)',
       'dependencies': [
-        '../chrome/chrome.gyp:common',
         'chromoting_base',
         'chromoting_jingle_glue',
       ],
