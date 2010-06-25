@@ -34,6 +34,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/tools/test_shell/resource.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
+#include "webkit/tools/test_shell/test_shell_devtools_agent.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
@@ -392,12 +393,16 @@ bool TestShell::Initialize(const GURL& starting_url) {
       win_util::SetWindowProc(m_editWnd, TestShell::EditWndProc);
   win_util::SetWindowUserData(m_editWnd, this);
 
+  dev_tools_agent_.reset(new TestShellDevToolsAgent());
+
   // create webview
   m_webViewHost.reset(
-      WebViewHost::Create(m_mainWnd, delegate_.get(), *TestShell::web_prefs_));
+      WebViewHost::Create(m_mainWnd,
+                          delegate_.get(),
+                          dev_tools_agent_.get(),
+                          *TestShell::web_prefs_));
+  dev_tools_agent_->SetWebView(m_webViewHost->webview());
   delegate_->RegisterDragDrop();
-
-  InitializeDevToolsAgent(webView());
 
   // Load our initial content.
   if (starting_url.is_valid())

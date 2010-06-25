@@ -287,6 +287,7 @@ bool TestShell::Initialize(const GURL& starting_url) {
   m_webViewHost.reset(
       WebViewHost::Create([m_mainWnd contentView],
                           delegate_.get(),
+                          0,
                           *TestShell::web_prefs_));
   delegate_->RegisterDragDrop();
   TestShellWebView* web_view =

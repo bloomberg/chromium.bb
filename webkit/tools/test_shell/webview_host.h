@@ -20,6 +20,7 @@ struct WebPreferences;
 class TestWebViewDelegate;
 
 namespace WebKit {
+class WebDevToolsAgentClient;
 class WebView;
 }
 
@@ -31,6 +32,7 @@ class WebViewHost : public WebWidgetHost {
   // MoveWindow (or equivalent) function.
   static WebViewHost* Create(gfx::NativeView parent_view,
                              TestWebViewDelegate* delegate,
+                             WebKit::WebDevToolsAgentClient* devtools_client,
                              const WebPreferences& prefs);
 
   WebKit::WebView* webview() const;

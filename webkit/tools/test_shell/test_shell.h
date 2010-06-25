@@ -329,7 +329,6 @@ public:
 protected:
     void CreateDevToolsClient(TestShellDevToolsAgent* agent);
     bool Initialize(const GURL& starting_url);
-    void InitializeDevToolsAgent(WebKit::WebView* webView);
     bool IsSVGTestURL(const GURL& url);
     void SizeToSVG();
     void SizeToDefault();

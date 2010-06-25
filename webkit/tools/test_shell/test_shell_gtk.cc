@@ -353,7 +353,7 @@ bool TestShell::Initialize(const GURL& starting_url) {
 
   gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
   m_webViewHost.reset(
-      WebViewHost::Create(vbox, delegate_.get(), *TestShell::web_prefs_));
+      WebViewHost::Create(vbox, delegate_.get(), 0, *TestShell::web_prefs_));
 
   gtk_container_add(GTK_CONTAINER(m_mainWnd), vbox);
   gtk_widget_show_all(GTK_WIDGET(m_mainWnd));
