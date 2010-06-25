@@ -619,6 +619,10 @@ void DwarfCUToModule::ReadSourceLines(uint64 offset) {
       = cu_context_->file_context->section_map;
   dwarf2reader::SectionMap::const_iterator map_entry
       = section_map.find(".debug_line");
+  // Mac OS X puts DWARF data in sections whose names begin with "__"
+  // instead of ".".
+  if (map_entry == section_map.end())
+    map_entry = section_map.find("__debug_line");
   if (map_entry == section_map.end()) {
     cu_context_->reporter->MissingSection(".debug_line");
     return;
