@@ -969,7 +969,7 @@ class CallFrameInfo::OffsetRule: public CallFrameInfo::Rule {
   // computes the address at which a register is saved, not a value.
  private:
   int base_register_;
-  int offset_;
+  long offset_;
 };
 
 // Rule: the value the register had in the caller is the value of
@@ -996,7 +996,7 @@ class CallFrameInfo::ValOffsetRule: public CallFrameInfo::Rule {
   void SetOffset(long long offset) { offset_ = offset; }
  private:
   int base_register_;
-  int offset_;
+  long offset_;
 };
 
 // Rule: the register has been saved in another register REGISTER_NUMBER_.
