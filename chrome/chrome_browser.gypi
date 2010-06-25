@@ -2307,8 +2307,6 @@
         'browser/thumbnail_store.h',
         'browser/toolbar_model.cc',
         'browser/toolbar_model.h',
-        'browser/translate/languages_menu_model.cc',
-        'browser/translate/languages_menu_model.h',
         'browser/translate/languages_menu_model2.cc',
         'browser/translate/languages_menu_model2.h',
         'browser/translate/options_menu_model.cc',
