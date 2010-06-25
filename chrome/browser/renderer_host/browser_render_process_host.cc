@@ -664,7 +664,7 @@ void BrowserRenderProcessHost::SendExtensionExtentsUpdate() {
   ViewMsg_ExtensionExtentsUpdated_Params params;
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     Extension* extension = service->extensions()->at(i);
-    if (!extension->web_extent().is_empty()) {
+    if (!extension->web_extent().origin().is_empty()) {
       params.extension_apps.push_back(
           make_pair(extension->id(), extension->web_extent()));
     }
@@ -941,7 +941,7 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_UNLOADED: {
       Extension* extension = Details<Extension>(details).ptr();
-      if (!extension->web_extent().is_empty())
+      if (!extension->web_extent().origin().is_empty())
         SendExtensionExtentsUpdate();
       break;
     }

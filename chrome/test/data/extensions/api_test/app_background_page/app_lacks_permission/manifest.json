@@ -2,9 +2,9 @@
   "name": "App",
   "version": "0.1",
   "app": {
-    "urls": [
-      "http://a.com:1337/"
-    ],
+    "web_content": {
+      "origin": "http://a.com:1337"
+    },
     "launch": {
       "web_url": "/"
     }

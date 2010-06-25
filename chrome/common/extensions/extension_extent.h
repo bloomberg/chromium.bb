@@ -8,25 +8,27 @@
 #include <string>
 #include <vector>
 
-#include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
 // Represents the set of URLs an extension uses for web content.
 class ExtensionExtent {
  public:
-  typedef std::vector<URLPattern> PatternList;
+  const std::vector<std::string>& paths() const { return paths_; }
+  void add_path(const std::string& val) { paths_.push_back(val); }
+  void clear_paths() { paths_.clear(); }
 
-  bool is_empty() const { return patterns_.empty(); }
-
-  const PatternList& patterns() const { return patterns_; }
-  void AddPattern(const URLPattern& pattern) { patterns_.push_back(pattern); }
-  void ClearPaths() { patterns_.clear(); }
+  const GURL& origin() const { return origin_; }
+  void set_origin(const GURL& val) { origin_ = val; }
 
   bool ContainsURL(const GURL& url) const;
 
  private:
-  // The list of URL patterns that comprise the extent.
-  PatternList patterns_;
+  // The security origin (scheme+host+port) of the extent.
+  GURL origin_;
+
+  // A set of path prefixes that further restrict the set of valid URLs below
+  // origin_. This may be empty.
+  std::vector<std::string> paths_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_EXTENT_H_

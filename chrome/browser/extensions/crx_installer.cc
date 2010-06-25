@@ -43,7 +43,7 @@ CrxInstaller::CrxInstaller(const FilePath& install_directory,
       install_source_(Extension::INTERNAL),
       delete_source_(false),
       allow_privilege_increase_(false),
-      limit_web_extent_to_download_host_(false),
+      force_web_origin_to_download_url_(false),
       create_app_shortcut_(false),
       frontend_(frontend),
       client_(client) {
@@ -83,6 +83,10 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
           user_data_temp_dir,
           g_browser_process->resource_dispatcher_host(),
           this));
+
+  if (force_web_origin_to_download_url_) {
+    unpacker->set_web_origin(original_url_.GetOrigin());
+  }
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
@@ -160,22 +164,6 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
     return;
   }
 
-  // Require that apps are served from the domain they claim in their extent,
-  // or some ancestor domain.
-  if (extension_->is_app() && limit_web_extent_to_download_host_) {
-    URLPattern pattern;
-    pattern.set_host(original_url_.host());
-    pattern.set_match_subdomains(true);
-
-    for (size_t i = 0; i < extension_->web_extent().patterns().size(); ++i) {
-      if (!pattern.MatchesHost(extension_->web_extent().patterns()[i].host())) {
-        ReportFailureFromFileThread(StringPrintf(
-            "Apps must be served from the host that they affect."));
-        return;
-      }
-    }
-  }
-
   if (client_ || extension_->GetFullLaunchURL().is_valid()) {
     Extension::DecodeIcon(extension_.get(), Extension::EXTENSION_ICON_LARGE,
                           &install_icon_);
@@ -197,11 +185,13 @@ void CrxInstaller::ConfirmInstall() {
 
   GURL overlapping_url;
   Extension* overlapping_extension =
-      frontend_->GetExtensionByOverlappingWebExtent(extension_->web_extent());
+      frontend_->GetExtensionByOverlappingWebExtent(
+          extension_->web_extent(), &overlapping_url);
   if (overlapping_extension) {
     ReportFailureFromUIThread(l10n_util::GetStringFUTF8(
         IDS_EXTENSION_OVERLAPPING_WEB_EXTENT,
-        UTF8ToUTF16(overlapping_extension->name())));
+        UTF8ToUTF16(overlapping_extension->name()),
+        UTF8ToUTF16(overlapping_url.spec())));
     return;
   }
 

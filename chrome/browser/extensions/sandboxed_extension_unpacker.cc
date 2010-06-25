@@ -34,7 +34,8 @@ SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     SandboxedExtensionUnpackerClient* client)
     : crx_path_(crx_path), temp_path_(temp_path),
       thread_identifier_(ChromeThread::ID_COUNT),
-      rdh_(rdh), client_(client), got_response_(false) {
+      rdh_(rdh), client_(client), got_response_(false),
+      force_web_origin_override_(false) {
 }
 
 void SandboxedExtensionUnpacker::Start() {
@@ -274,6 +275,29 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
   scoped_ptr<DictionaryValue> final_manifest(
       static_cast<DictionaryValue*>(manifest.DeepCopy()));
   final_manifest->SetString(extension_manifest_keys::kPublicKey, public_key_);
+
+  if (final_manifest->HasKey(extension_manifest_keys::kApp)) {
+    bool has_web_origin =
+        final_manifest->Get(extension_manifest_keys::kWebOrigin, NULL);
+    if (force_web_origin_override_) {
+      if (has_web_origin) {
+        ReportFailure("Error: untrusted extension should have no web_origin.");
+        return NULL;
+      }
+      if (!web_origin_override_.is_valid() ||
+          web_origin_override_.SchemeIsFile()) {
+        ReportFailure(
+            "Error: untrusted extension has an invalid download origin.");
+        return NULL;
+      }
+
+      final_manifest->SetString(extension_manifest_keys::kWebOrigin,
+                                web_origin_override_.spec());
+    } else if (!has_web_origin) {
+      ReportFailure("Error: trusted extension should have a web_origin.");
+      return NULL;
+    }
+  }
 
   std::string manifest_json;
   JSONStringValueSerializer serializer(&manifest_json);

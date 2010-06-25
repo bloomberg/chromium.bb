@@ -3,10 +3,10 @@
   "version": "1",
   "app": {
     "web_content": {
-      "origin": "http://www.google.com/"
+      "origin": "https://www.google.com/monkey"
     },
     "launch": {
-      "web_url": "launch.html"
+      "web_url": "foo.html"
     }
   }
 }

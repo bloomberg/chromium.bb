@@ -17,9 +17,7 @@ const wchar_t* kCss = L"css";
 const wchar_t* kCurrentLocale = L"current_locale";
 const wchar_t* kDefaultLocale = L"default_locale";
 const wchar_t* kDescription = L"description";
-const wchar_t* kExcludeGlobs = L"exclude_globs";
 const wchar_t* kIcons = L"icons";
-const wchar_t* kIncludeGlobs = L"include_globs";
 const wchar_t* kJs = L"js";
 const wchar_t* kLaunch = L"app.launch";
 const wchar_t* kLaunchContainer = L"app.launch.container";
@@ -30,8 +28,9 @@ const wchar_t* kLaunchWebURL = L"app.launch.web_url";
 const wchar_t* kLaunchWidth = L"app.launch.width";
 const wchar_t* kMatches = L"matches";
 const wchar_t* kMinimumChromeVersion = L"minimum_chrome_version";
+const wchar_t* kIncludeGlobs = L"include_globs";
+const wchar_t* kExcludeGlobs = L"exclude_globs";
 const wchar_t* kName = L"name";
-const wchar_t* kOmniboxKeyword = L"omnibox_keyword";
 const wchar_t* kPageActionId = L"id";
 const wchar_t* kPageAction = L"page_action";
 const wchar_t* kPageActions = L"page_actions";
@@ -62,7 +61,10 @@ const wchar_t* kType = L"type";
 const wchar_t* kVersion = L"version";
 const wchar_t* kUpdateURL = L"update_url";
 const wchar_t* kOptionsPage = L"options_page";
-const wchar_t* kWebURLs = L"app.urls";
+const wchar_t* kWebContent = L"app.web_content";
+const wchar_t* kWebOrigin = L"app.web_content.origin";
+const wchar_t* kWebPaths = L"app.web_content.paths";
+const wchar_t* kOmniboxKeyword = L"omnibox_keyword";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
@@ -216,10 +218,14 @@ const char* kInvalidThemeTints =
     "Invalid value for theme images - tints must be decimal numbers.";
 const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
-const char* kInvalidWebURLs =
-    "Invalid value for 'app.urls'.";
-const char* kInvalidWebURL =
-    "Invalid value for 'app.urls[*]'.";
+const char* kInvalidWebContentEnabled =
+    "Invalid value for 'app.web_content.enabled'.";
+const char* kInvalidWebOrigin =
+    "Invalid value for 'app.web_content.origin'.";
+const char* kInvalidWebPaths =
+    "Invalid value for 'app.web_content.paths'.";
+const char* kInvalidWebPath =
+    "Invalid value for 'app.web_contents.paths[*]'.";
 const char* kInvalidDefaultLocale =
     "Invalid value for default locale - locale name must be a string.";
 const char* kOneUISurfaceOnly =

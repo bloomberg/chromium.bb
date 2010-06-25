@@ -2,13 +2,12 @@
   "name": "Google Maps",
   "version": "3",
   "icons": { "24": "24.png", "128": "128.png" },
-  "app": {
-    "urls": [
-      "http://maps.google.com/"
-    ],
-    "launch": {
-      "web_url": "http://maps.google.com/"
-    }
+  "launch": {
+    "web_url": "http://maps.google.com/"
   },
   "permissions": ["geolocation"],
+  "web_content": {
+    "enabled": true,
+    "origin": "http://maps.google.com"
+  }
 }

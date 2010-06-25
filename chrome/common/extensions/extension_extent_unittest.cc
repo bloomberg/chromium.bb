@@ -14,22 +14,44 @@ TEST(ExtensionExtentTest, Empty) {
   EXPECT_FALSE(extent.ContainsURL(GURL("invalid")));
 }
 
-TEST(ExtensionExtentTest, One) {
+TEST(ExtensionExtentTest, OriginOnly) {
   ExtensionExtent extent;
-  extent.AddPattern(*URLPattern::CreateFromString("http://www.google.com/*"));
+  extent.set_origin(GURL("http://www.google.com/"));
 
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/")));
-  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foo")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foobar")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foo/bar")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/?stuff#here")));
+
   EXPECT_FALSE(extent.ContainsURL(GURL("https://www.google.com/")));
-  EXPECT_FALSE(extent.ContainsURL(GURL("https://www.microsoft.com/")));
+  EXPECT_FALSE(extent.ContainsURL(GURL("http://www.google.com:8080/")));
 }
 
-TEST(ExtensionExtentTest, Two) {
+TEST(ExtensionExtentTest, OriginAndOnePath) {
   ExtensionExtent extent;
-  extent.AddPattern(*URLPattern::CreateFromString("http://www.google.com/*"));
-  extent.AddPattern(*URLPattern::CreateFromString("http://www.yahoo.com/*"));
+  extent.set_origin(GURL("http://www.google.com/"));
+  extent.add_path("foo");
 
-  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
-  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.yahoo.com/monkey")));
-  EXPECT_FALSE(extent.ContainsURL(GURL("https://www.apple.com/monkey")));
+  EXPECT_FALSE(extent.ContainsURL(GURL("http://www.google.com/")));
+  EXPECT_FALSE(extent.ContainsURL(GURL("http://www.google.com/fo")));
+
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foo")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/FOO")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foobar")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foo/bar")));
+}
+
+TEST(ExtensionExtentTest, OriginAndTwoPaths) {
+  ExtensionExtent extent;
+  extent.set_origin(GURL("http://www.google.com/"));
+  extent.add_path("foo");
+  extent.add_path("hot");
+
+  EXPECT_FALSE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
+
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foo")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/hot")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/foobar")));
+  EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/hotdog")));
 }

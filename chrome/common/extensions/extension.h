@@ -397,7 +397,8 @@ class Extension {
 
   // Helpers to load various chunks of the manifest.
   bool LoadIsApp(const DictionaryValue* manifest, std::string* error);
-  bool LoadWebURLs(const DictionaryValue* manifest, std::string* error);
+  bool LoadWebOrigin(const DictionaryValue* manifest, std::string* error);
+  bool LoadWebPaths(const DictionaryValue* manifest, std::string* error);
   bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);
   bool LoadLaunchFullscreen(const DictionaryValue* manifest,
                             std::string* error);

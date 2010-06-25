@@ -5,9 +5,12 @@
   "background_page": "test.html",
   "permissions": ["tabs"],
   "app": {
-    "urls": [
-      "http://localhost:1337/files/extensions/api_test/app_process/path1",
-      "http://localhost:1337/files/extensions/api_test/app_process/path2"
+    "web_content": {
+      "origin": "http://localhost:1337/",
+      "paths": [
+        "files/extensions/api_test/app_process/path1",
+        "files/extensions/api_test/app_process/path2"
+      ]
     },
     "launch": {
       "web_url": "foo.html"

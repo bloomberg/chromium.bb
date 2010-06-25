@@ -2,12 +2,12 @@
   "name": "Test App 2",
   "version": "1",
   "app": {
-    "urls": [
-      "http://www.example.com/path3",
-      "http://www.example.com/path4"
-    ],
+    "web_content": {
+      "origin": "http://www.example.com/",
+      "paths": ["path3", "path4"]
+    },
     "launch": {
-      "web_url": "http://www.examle.com/path4/foo.html"
+      "web_url": "foo.html"
     }
   }
 }
