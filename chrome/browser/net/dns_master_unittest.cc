@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,17 +32,17 @@ typedef base::RepeatingTimer<WaitForResolutionHelper> HelperTimer;
 
 class WaitForResolutionHelper {
  public:
-  WaitForResolutionHelper(DnsMaster* master, const UrlList& hosts,
+  WaitForResolutionHelper(Predictor* predictor, const UrlList& hosts,
                           HelperTimer* timer)
-      : master_(master),
+      : predictor_(predictor),
         hosts_(hosts),
         timer_(timer) {
   }
 
   void Run() {
     for (UrlList::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
-      if (master_->GetResolutionDuration(*i) ==
-          DnsHostInfo::kNullDuration)
+      if (predictor_->GetResolutionDuration(*i) ==
+          UrlInfo::kNullDuration)
         return;  // We don't have resolution for that host.
 
     // When all hostnames have been resolved, exit the loop.
@@ -53,18 +53,18 @@ class WaitForResolutionHelper {
   }
 
  private:
-  DnsMaster* master_;
+  Predictor* predictor_;
   const UrlList hosts_;
   HelperTimer* timer_;
 };
 
-class DnsMasterTest : public testing::Test {
+class PredictorTest : public testing::Test {
  public:
-  DnsMasterTest()
+  PredictorTest()
       : io_thread_(ChromeThread::IO, &loop_),
         host_resolver_(new net::MockCachingHostResolver()),
         default_max_queueing_delay_(TimeDelta::FromMilliseconds(
-            DnsGlobalInit::kMaxPrefetchQueueingDelayMs)) {
+            PredictorInit::kMaxPrefetchQueueingDelayMs)) {
   }
 
  protected:
@@ -82,10 +82,10 @@ class DnsMasterTest : public testing::Test {
     rules->AddRuleWithLatency("gmail.com", "127.0.0.1", 63);
   }
 
-  void WaitForResolution(DnsMaster* master, const UrlList& hosts) {
+  void WaitForResolution(Predictor* predictor, const UrlList& hosts) {
     HelperTimer* timer = new HelperTimer();
     timer->Start(TimeDelta::FromMilliseconds(100),
-                 new WaitForResolutionHelper(master, hosts, timer),
+                 new WaitForResolutionHelper(predictor, hosts, timer),
                  &WaitForResolutionHelper::Run);
     MessageLoop::current()->Run();
   }
@@ -100,33 +100,33 @@ class DnsMasterTest : public testing::Test {
  protected:
   scoped_refptr<net::MockCachingHostResolver> host_resolver_;
 
-  // Shorthand to access TimeDelta of DnsGlobalInit::kMaxQueueingDelayMs.
+  // Shorthand to access TimeDelta of PredictorInit::kMaxQueueingDelayMs.
   // (It would be a static constant... except style rules preclude that :-/ ).
   const TimeDelta default_max_queueing_delay_;
 };
 
 //------------------------------------------------------------------------------
 
-TEST_F(DnsMasterTest, StartupShutdownTest) {
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
+TEST_F(PredictorTest, StartupShutdownTest) {
+  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
   testing_master->Shutdown();
 }
 
-TEST_F(DnsMasterTest, BenefitLookupTest) {
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(
+TEST_F(PredictorTest, BenefitLookupTest) {
+  scoped_refptr<Predictor> testing_master = new Predictor(
       host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
 
   GURL goog("http://www.google.com:80"),
       goog2("http://gmail.google.com.com:80"),
       goog3("http://mail.google.com:80"),
       goog4("http://gmail.com:80");
-  DnsHostInfo goog_info, goog2_info, goog3_info, goog4_info;
+  UrlInfo goog_info, goog2_info, goog3_info, goog4_info;
 
   // Simulate getting similar names from a network observer
   goog_info.SetUrl(goog);
@@ -150,7 +150,7 @@ TEST_F(DnsMasterTest, BenefitLookupTest) {
   names.push_back(goog3);
   names.push_back(goog4);
 
-  testing_master->ResolveList(names, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+  testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   WaitForResolution(testing_master, names);
 
@@ -180,21 +180,21 @@ TEST_F(DnsMasterTest, BenefitLookupTest) {
   testing_master->Shutdown();
 }
 
-TEST_F(DnsMasterTest, ShutdownWhenResolutionIsPendingTest) {
+TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
   scoped_refptr<net::WaitingHostResolverProc> resolver_proc =
       new net::WaitingHostResolverProc(NULL);
   host_resolver_->Reset(resolver_proc);
 
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
+  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
 
   GURL localhost("http://127.0.0.1:80");
   UrlList names;
   names.push_back(localhost);
 
-  testing_master->ResolveList(names, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+  testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           new MessageLoop::QuitTask(), 500);
@@ -209,10 +209,10 @@ TEST_F(DnsMasterTest, ShutdownWhenResolutionIsPendingTest) {
   MessageLoop::current()->RunAllPending();
 }
 
-TEST_F(DnsMasterTest, SingleLookupTest) {
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
+TEST_F(PredictorTest, SingleLookupTest) {
+  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
 
   GURL goog("http://www.google.com:80");
@@ -220,9 +220,9 @@ TEST_F(DnsMasterTest, SingleLookupTest) {
   UrlList names;
   names.push_back(goog);
 
-  // Try to flood the master with many concurrent requests.
+  // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)
-    testing_master->ResolveList(names, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+    testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   WaitForResolution(testing_master, names);
 
@@ -233,17 +233,17 @@ TEST_F(DnsMasterTest, SingleLookupTest) {
   EXPECT_GT(testing_master->peak_pending_lookups(), names.size() / 2);
   EXPECT_LE(testing_master->peak_pending_lookups(), names.size());
   EXPECT_LE(testing_master->peak_pending_lookups(),
-            testing_master->max_concurrent_lookups());
+            testing_master->max_concurrent_dns_lookups());
 
   testing_master->Shutdown();
 }
 
-TEST_F(DnsMasterTest, ConcurrentLookupTest) {
+TEST_F(PredictorTest, ConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
+  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
 
   GURL goog("http://www.google.com:80"),
@@ -262,9 +262,9 @@ TEST_F(DnsMasterTest, ConcurrentLookupTest) {
   names.push_back(goog4);
   names.push_back(goog);
 
-  // Try to flood the master with many concurrent requests.
+  // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)
-    testing_master->ResolveList(names, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+    testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   WaitForResolution(testing_master, names);
 
@@ -283,27 +283,27 @@ TEST_F(DnsMasterTest, ConcurrentLookupTest) {
   EXPECT_GT(testing_master->peak_pending_lookups(), names.size() / 2);
   EXPECT_LE(testing_master->peak_pending_lookups(), names.size());
   EXPECT_LE(testing_master->peak_pending_lookups(),
-            testing_master->max_concurrent_lookups());
+            testing_master->max_concurrent_dns_lookups());
 
   testing_master->Shutdown();
 }
 
-TEST_F(DnsMasterTest, MassiveConcurrentLookupTest) {
+TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  scoped_refptr<DnsMaster> testing_master = new DnsMaster(
+  scoped_refptr<Predictor> testing_master = new Predictor(
       host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
 
   UrlList names;
   for (int i = 0; i < 100; i++)
     names.push_back(GURL("http://host" + IntToString(i) + ".notfound:80"));
 
-  // Try to flood the master with many concurrent requests.
+  // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)
-    testing_master->ResolveList(names, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+    testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
   WaitForResolution(testing_master, names);
 
@@ -311,7 +311,7 @@ TEST_F(DnsMasterTest, MassiveConcurrentLookupTest) {
 
   EXPECT_LE(testing_master->peak_pending_lookups(), names.size());
   EXPECT_LE(testing_master->peak_pending_lookups(),
-            testing_master->max_concurrent_lookups());
+            testing_master->max_concurrent_dns_lookups());
 
   testing_master->Shutdown();
 }
@@ -327,7 +327,7 @@ static ListValue* FindSerializationMotivation(
   CHECK_LT(0u, referral_list.GetSize());  // Room for version.
   int format_version = -1;
   CHECK(referral_list.GetInteger(0, &format_version));
-  CHECK_EQ(DnsMaster::DNS_REFERRER_VERSION, format_version);
+  CHECK_EQ(Predictor::DNS_REFERRER_VERSION, format_version);
   ListValue* motivation_list(NULL);
   for (size_t i = 1; i < referral_list.GetSize(); ++i) {
     referral_list.GetList(i, &motivation_list);
@@ -342,7 +342,7 @@ static ListValue* FindSerializationMotivation(
 // Create a new empty serialization list.
 static ListValue* NewEmptySerializationList() {
   ListValue* list = new ListValue;
-  list->Append(new FundamentalValue(DnsMaster::DNS_REFERRER_VERSION));
+  list->Append(new FundamentalValue(Predictor::DNS_REFERRER_VERSION));
   return list;
 }
 
@@ -413,28 +413,28 @@ static bool GetDataFromSerialization(const GURL& motivation,
 //------------------------------------------------------------------------------
 
 // Make sure nil referral lists really have no entries, and no latency listed.
-TEST_F(DnsMasterTest, ReferrerSerializationNilTest) {
-  scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
+TEST_F(PredictorTest, ReferrerSerializationNilTest) {
+  scoped_refptr<Predictor> predictor = new Predictor(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
   scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
-  master->SerializeReferrers(referral_list.get());
+  predictor->SerializeReferrers(referral_list.get());
   EXPECT_EQ(1U, referral_list->GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
     GURL("http://a.com:79"), GURL("http://b.com:78"),
       *referral_list.get(), NULL, NULL));
 
-  master->Shutdown();
+  predictor->Shutdown();
 }
 
 // Make sure that when a serialization list includes a value, that it can be
 // deserialized into the database, and can be extracted back out via
 // serialization without being changed.
-TEST_F(DnsMasterTest, ReferrerSerializationSingleReferrerTest) {
-  scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
+TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
+  scoped_refptr<Predictor> predictor = new Predictor(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
@@ -445,10 +445,10 @@ TEST_F(DnsMasterTest, ReferrerSerializationSingleReferrerTest) {
   AddToSerializedList(motivation_url, subresource_url,
       kLatency, kRate, referral_list.get());
 
-  master->DeserializeReferrers(*referral_list.get());
+  predictor->DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
-  master->SerializeReferrers(&recovered_referral_list);
+  predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   int latency;
   double rate;
@@ -458,14 +458,14 @@ TEST_F(DnsMasterTest, ReferrerSerializationSingleReferrerTest) {
   EXPECT_EQ(rate, kRate);
   EXPECT_EQ(latency, kLatency);
 
-  master->Shutdown();
+  predictor->Shutdown();
 }
 
 // Make sure the Trim() functionality works as expected.
-TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
-  scoped_refptr<DnsMaster> master = new DnsMaster(host_resolver_,
+TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
+  scoped_refptr<Predictor> predictor = new Predictor(host_resolver_,
       default_max_queueing_delay_,
-      DnsGlobalInit::kMaxPrefetchConcurrentLookups,
+      PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
   GURL motivation_url("http://www.google.com:110");
 
@@ -484,10 +484,10 @@ TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
       motivation_url, img_subresource_url,
       kLatencyImg, kRateImg, referral_list.get());
 
-  master->DeserializeReferrers(*referral_list.get());
+  predictor->DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
-  master->SerializeReferrers(&recovered_referral_list);
+  predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   int latency;
   double rate;
@@ -505,8 +505,8 @@ TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
 
   // Each time we Trim, the latency figures should reduce by a factor of two,
   // until they both are 0, an then a trim will delete the whole entry.
-  master->TrimReferrers();
-  master->SerializeReferrers(&recovered_referral_list);
+  predictor->TrimReferrers();
+  predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list,
@@ -520,8 +520,8 @@ TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
   EXPECT_EQ(latency, kLatencyImg / 2);
   EXPECT_EQ(rate, kRateImg);
 
-  master->TrimReferrers();
-  master->SerializeReferrers(&recovered_referral_list);
+  predictor->TrimReferrers();
+  predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list,
@@ -536,8 +536,8 @@ TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
   EXPECT_EQ(latency, kLatencyImg / 4);
   EXPECT_EQ(rate, kRateImg);
 
-  master->TrimReferrers();
-  master->SerializeReferrers(&recovered_referral_list);
+  predictor->TrimReferrers();
+  predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list,
@@ -553,8 +553,8 @@ TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
   EXPECT_EQ(latency, kLatencyImg / 8);
   EXPECT_EQ(rate, kRateImg);
 
-  master->TrimReferrers();
-  master->SerializeReferrers(&recovered_referral_list);
+  predictor->TrimReferrers();
+  predictor->SerializeReferrers(&recovered_referral_list);
   // Icon is also trimmed away, so entire set gets discarded.
   EXPECT_EQ(1U, recovered_referral_list.GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
@@ -564,20 +564,20 @@ TEST_F(DnsMasterTest, ReferrerSerializationTrimTest) {
       motivation_url, img_subresource_url, recovered_referral_list,
       &rate, &latency));
 
-  master->Shutdown();
+  predictor->Shutdown();
 }
 
 
-TEST_F(DnsMasterTest, PriorityQueuePushPopTest) {
-  DnsMaster::HostNameQueue queue;
+TEST_F(PredictorTest, PriorityQueuePushPopTest) {
+  Predictor::HostNameQueue queue;
 
   GURL first("http://first:80"), second("http://second:90");
 
   // First check high priority queue FIFO functionality.
   EXPECT_TRUE(queue.IsEmpty());
-  queue.Push(first, DnsHostInfo::LEARNED_REFERAL_MOTIVATED);
+  queue.Push(first, UrlInfo::LEARNED_REFERAL_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
-  queue.Push(second, DnsHostInfo::MOUSE_OVER_MOTIVATED);
+  queue.Push(second, UrlInfo::MOUSE_OVER_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
   EXPECT_EQ(queue.Pop(), first);
   EXPECT_FALSE(queue.IsEmpty());
@@ -585,9 +585,9 @@ TEST_F(DnsMasterTest, PriorityQueuePushPopTest) {
   EXPECT_TRUE(queue.IsEmpty());
 
   // Then check low priority queue FIFO functionality.
-  queue.Push(first, DnsHostInfo::PAGE_SCAN_MOTIVATED);
+  queue.Push(first, UrlInfo::PAGE_SCAN_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
-  queue.Push(second, DnsHostInfo::OMNIBOX_MOTIVATED);
+  queue.Push(second, UrlInfo::OMNIBOX_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
   EXPECT_EQ(queue.Pop(), first);
   EXPECT_FALSE(queue.IsEmpty());
@@ -595,8 +595,8 @@ TEST_F(DnsMasterTest, PriorityQueuePushPopTest) {
   EXPECT_TRUE(queue.IsEmpty());
 }
 
-TEST_F(DnsMasterTest, PriorityQueueReorderTest) {
-  DnsMaster::HostNameQueue queue;
+TEST_F(PredictorTest, PriorityQueueReorderTest) {
+  Predictor::HostNameQueue queue;
 
   // Push all the low priority items.
   GURL low1("http://low1:80"),
@@ -609,17 +609,17 @@ TEST_F(DnsMasterTest, PriorityQueueReorderTest) {
       hi3("http://hi3:80");
 
   EXPECT_TRUE(queue.IsEmpty());
-  queue.Push(low1, DnsHostInfo::PAGE_SCAN_MOTIVATED);
-  queue.Push(low2, DnsHostInfo::UNIT_TEST_MOTIVATED);
-  queue.Push(low3, DnsHostInfo::LINKED_MAX_MOTIVATED);
-  queue.Push(low4, DnsHostInfo::OMNIBOX_MOTIVATED);
-  queue.Push(low5, DnsHostInfo::STARTUP_LIST_MOTIVATED);
-  queue.Push(low4, DnsHostInfo::OMNIBOX_MOTIVATED);
+  queue.Push(low1, UrlInfo::PAGE_SCAN_MOTIVATED);
+  queue.Push(low2, UrlInfo::UNIT_TEST_MOTIVATED);
+  queue.Push(low3, UrlInfo::LINKED_MAX_MOTIVATED);
+  queue.Push(low4, UrlInfo::OMNIBOX_MOTIVATED);
+  queue.Push(low5, UrlInfo::STARTUP_LIST_MOTIVATED);
+  queue.Push(low4, UrlInfo::OMNIBOX_MOTIVATED);
 
   // Push all the high prority items
-  queue.Push(hi1, DnsHostInfo::LEARNED_REFERAL_MOTIVATED);
-  queue.Push(hi2, DnsHostInfo::STATIC_REFERAL_MOTIVATED);
-  queue.Push(hi3, DnsHostInfo::MOUSE_OVER_MOTIVATED);
+  queue.Push(hi1, UrlInfo::LEARNED_REFERAL_MOTIVATED);
+  queue.Push(hi2, UrlInfo::STATIC_REFERAL_MOTIVATED);
+  queue.Push(hi3, UrlInfo::MOUSE_OVER_MOTIVATED);
 
   // Check that high priority stuff comes out first, and in FIFO order.
   EXPECT_EQ(queue.Pop(), hi1);

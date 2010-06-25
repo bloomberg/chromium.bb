@@ -488,9 +488,9 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
   profile_ = profile;
 
   if (command_line_.HasSwitch(switches::kDnsLogDetails))
-    chrome_browser_net::EnableDnsDetailedLog(true);
+    chrome_browser_net::EnablePredictorDetailedLog(true);
   if (command_line_.HasSwitch(switches::kDnsPrefetchDisable))
-    chrome_browser_net::EnableDnsPrefetch(false);
+    chrome_browser_net::EnablePredictor(false);
 
   if (command_line_.HasSwitch(switches::kDumpHistogramsOnExit))
     StatisticsRecorder::set_dump_on_exit(true);

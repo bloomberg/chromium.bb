@@ -637,9 +637,9 @@ void AutocompleteEditModel::Observe(NotificationType type,
     }
 
     if (!match->destination_url.SchemeIs(chrome::kExtensionScheme)) {
-      // Warm up DNS Prefetch Cache.
-      chrome_browser_net::DnsPrefetchUrl(match->destination_url,
-                                         IsPreconnectable(match->type));
+      // Warm up DNS Prefetch cache, or preconnect to a search service.
+      chrome_browser_net::AnticipateUrl(match->destination_url,
+                                        IsPreconnectable(match->type));
     }
 
     // We could prefetch the alternate nav URL, if any, but because there

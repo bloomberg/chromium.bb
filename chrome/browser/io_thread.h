@@ -21,7 +21,7 @@ class ChromeNetLog;
 class ListValue;
 
 namespace chrome_browser_net {
-class DnsMaster;
+class Predictor;
 }  // namespace chrome_browser_net
 
 namespace net {
@@ -55,12 +55,12 @@ class IOThread : public BrowserProcessSubThread {
   // prefetching should be enabled, and |preconnect_enabled| controls whether
   // TCP/IP preconnection is enabled.  This should be called by the UI thread.
   // It will post a task to the IO thread to perform the actual initialization.
-  void InitDnsMaster(bool prefetching_enabled,
-                     base::TimeDelta max_queue_delay,
-                     size_t max_concurrent,
-                     const chrome_common_net::UrlList& startup_urls,
-                     ListValue* referral_list,
-                     bool preconnect_enabled);
+  void InitNetworkPredictor(bool prefetching_enabled,
+                            base::TimeDelta max_dns_queue_delay,
+                            size_t max_concurrent,
+                            const chrome_common_net::UrlList& startup_urls,
+                            ListValue* referral_list,
+                            bool preconnect_enabled);
 
   // Handles changing to On The Record mode.  Posts a task for this onto the
   // IOThread's message loop.
@@ -74,9 +74,9 @@ class IOThread : public BrowserProcessSubThread {
  private:
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory();
 
-  void InitDnsMasterOnIOThread(
+  void InitNetworkPredictorOnIOThread(
       bool prefetching_enabled,
-      base::TimeDelta max_queue_delay,
+      base::TimeDelta max_dns_queue_delay,
       size_t max_concurrent,
         const chrome_common_net::UrlList& startup_urls,
 
@@ -110,7 +110,7 @@ class IOThread : public BrowserProcessSubThread {
   // down.
   chrome_browser_net::ConnectInterceptor* speculative_interceptor_;
   net::HostResolver::Observer* prefetch_observer_;
-  chrome_browser_net::DnsMaster* dns_master_;
+  chrome_browser_net::Predictor* predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThread);
 };

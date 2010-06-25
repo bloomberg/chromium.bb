@@ -235,7 +235,7 @@ void RenderThread::Init() {
 
   visited_link_slave_.reset(new VisitedLinkSlave());
   user_script_slave_.reset(new UserScriptSlave());
-  dns_master_.reset(new RenderDnsMaster());
+  renderer_net_predictor_.reset(new RendererNetPredictor());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
   indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
@@ -434,7 +434,7 @@ void RenderThread::DoNotNotifyWebKitOfModalLoop() {
 }
 
 void RenderThread::Resolve(const char* name, size_t length) {
-  return dns_master_->Resolve(name, length);
+  return renderer_net_predictor_->Resolve(name, length);
 }
 
 void RenderThread::SendHistograms(int sequence_number) {

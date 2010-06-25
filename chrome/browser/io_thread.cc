@@ -88,7 +88,7 @@ IOThread::IOThread()
       globals_(NULL),
       speculative_interceptor_(NULL),
       prefetch_observer_(NULL),
-      dns_master_(NULL) {}
+      predictor_(NULL) {}
 
 IOThread::~IOThread() {
   // We cannot rely on our base class to stop the thread since we want our
@@ -102,9 +102,9 @@ IOThread::Globals* IOThread::globals() {
   return globals_;
 }
 
-void IOThread::InitDnsMaster(
+void IOThread::InitNetworkPredictor(
     bool prefetching_enabled,
-    base::TimeDelta max_queue_delay,
+    base::TimeDelta max_dns_queue_delay,
     size_t max_concurrent,
     const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
@@ -114,8 +114,8 @@ void IOThread::InitDnsMaster(
       FROM_HERE,
       NewRunnableMethod(
           this,
-          &IOThread::InitDnsMasterOnIOThread,
-          prefetching_enabled, max_queue_delay, max_concurrent,
+          &IOThread::InitNetworkPredictorOnIOThread,
+          prefetching_enabled, max_dns_queue_delay, max_concurrent,
           startup_urls, referral_list, preconnect_enabled));
 }
 
@@ -149,14 +149,14 @@ void IOThread::CleanUp() {
   ChildProcessHost::TerminateAll();
 
   // Not initialized in Init().  May not be initialized.
-  if (dns_master_) {
-    dns_master_->Shutdown();
+  if (predictor_) {
+    predictor_->Shutdown();
 
-    // TODO(willchan): Stop reference counting DnsMaster.  It's owned by
+    // TODO(willchan): Stop reference counting Predictor.  It's owned by
     // IOThread now.
-    dns_master_->Release();
-    dns_master_ = NULL;
-    chrome_browser_net::FreeDnsPrefetchResources();
+    predictor_->Release();
+    predictor_ = NULL;
+    chrome_browser_net::FreePredictorResources();
   }
 
   // Deletion will unregister this interceptor.
@@ -240,24 +240,24 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
   return registry_factory;
 }
 
-void IOThread::InitDnsMasterOnIOThread(
+void IOThread::InitNetworkPredictorOnIOThread(
     bool prefetching_enabled,
-    base::TimeDelta max_queue_delay,
+    base::TimeDelta max_dns_queue_delay,
     size_t max_concurrent,
     const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
     bool preconnect_enabled) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  CHECK(!dns_master_);
+  CHECK(!predictor_);
 
-  chrome_browser_net::EnableDnsPrefetch(prefetching_enabled);
+  chrome_browser_net::EnablePredictor(prefetching_enabled);
 
-  dns_master_ = new chrome_browser_net::DnsMaster(
+  predictor_ = new chrome_browser_net::Predictor(
       globals_->host_resolver,
-      max_queue_delay,
+      max_dns_queue_delay,
       max_concurrent,
       preconnect_enabled);
-  dns_master_->AddRef();
+  predictor_->AddRef();
 
   // TODO(jar): Until connection notification and DNS observation handling are
   // properly combined into a learning model, we'll only use one observation
@@ -267,20 +267,20 @@ void IOThread::InitDnsMasterOnIOThread(
     speculative_interceptor_ = new chrome_browser_net::ConnectInterceptor;
   } else {
     DCHECK(!prefetch_observer_);
-    prefetch_observer_ = chrome_browser_net::CreatePrefetchObserver();
+    prefetch_observer_ = chrome_browser_net::CreateResolverObserver();
     globals_->host_resolver->AddObserver(prefetch_observer_);
   }
 
-  FinalizeDnsPrefetchInitialization(
-      dns_master_, prefetch_observer_, startup_urls, referral_list);
+  FinalizePredictorInitialization(
+      predictor_, prefetch_observer_, startup_urls, referral_list);
 }
 
 void IOThread::ChangedToOnTheRecordOnIOThread() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  if (dns_master_) {
+  if (predictor_) {
     // Destroy all evidence of our OTR session.
-    dns_master_->DnsMaster::DiscardAllResults();
+    predictor_->Predictor::DiscardAllResults();
   }
 
   // Clear the host cache to avoid showing entries from the OTR session

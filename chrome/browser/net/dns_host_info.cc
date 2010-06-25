@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,15 +24,15 @@ namespace chrome_browser_net {
 static bool detailed_logging_enabled = false;
 
 // Use command line switch to enable detailed logging.
-void EnableDnsDetailedLog(bool enable) {
+void EnablePredictorDetailedLog(bool enable) {
   detailed_logging_enabled = enable;
 }
 
 // static
-int DnsHostInfo::sequence_counter = 1;
+int UrlInfo::sequence_counter = 1;
 
 
-bool DnsHostInfo::NeedsDnsUpdate() {
+bool UrlInfo::NeedsDnsUpdate() {
   switch (state_) {
     case PENDING:  // Just now created info.
       return true;
@@ -52,7 +52,7 @@ bool DnsHostInfo::NeedsDnsUpdate() {
   }
 }
 
-const TimeDelta DnsHostInfo::kNullDuration(TimeDelta::FromMilliseconds(-1));
+const TimeDelta UrlInfo::kNullDuration(TimeDelta::FromMilliseconds(-1));
 
 // Common low end TTL for sites is 5 minutes.  However, DNS servers give us
 // the remaining time, not the original 5 minutes.  Hence it doesn't much matter
@@ -64,17 +64,17 @@ const TimeDelta DnsHostInfo::kNullDuration(TimeDelta::FromMilliseconds(-1));
 // has a TON of copies of the same domain name, so that we don't thrash the OS
 // to death.  Hopefully it is small enough that we're not hurting our cache hit
 // rate (i.e., we could always ask the OS).
-TimeDelta DnsHostInfo::kCacheExpirationDuration(TimeDelta::FromSeconds(5));
+TimeDelta UrlInfo::kCacheExpirationDuration(TimeDelta::FromSeconds(5));
 
-const TimeDelta DnsHostInfo::kMaxNonNetworkDnsLookupDuration(
+const TimeDelta UrlInfo::kMaxNonNetworkDnsLookupDuration(
     TimeDelta::FromMilliseconds(15));
 
 // Used by test ONLY.  The value is otherwise constant.
-void DnsHostInfo::set_cache_expiration(TimeDelta time) {
+void UrlInfo::set_cache_expiration(TimeDelta time) {
   kCacheExpirationDuration = time;
 }
 
-void DnsHostInfo::SetQueuedState(ResolutionMotivation motivation) {
+void UrlInfo::SetQueuedState(ResolutionMotivation motivation) {
   DCHECK(PENDING == state_ || FOUND == state_ || NO_SUCH_NAME == state_);
   old_prequeue_state_ = state_;
   state_ = QUEUED;
@@ -84,7 +84,7 @@ void DnsHostInfo::SetQueuedState(ResolutionMotivation motivation) {
   DLogResultsStats("DNS Prefetch in queue");
 }
 
-void DnsHostInfo::SetAssignedState() {
+void UrlInfo::SetAssignedState() {
   DCHECK(QUEUED == state_);
   state_ = ASSIGNED;
   queue_duration_ = GetDuration();
@@ -92,7 +92,7 @@ void DnsHostInfo::SetAssignedState() {
   UMA_HISTOGRAM_TIMES("DNS.PrefetchQueue", queue_duration_);
 }
 
-void DnsHostInfo::RemoveFromQueue() {
+void UrlInfo::RemoveFromQueue() {
   DCHECK(ASSIGNED == state_);
   state_ = old_prequeue_state_;
   DLogResultsStats("DNS Prefetch reset to prequeue");
@@ -110,12 +110,12 @@ void DnsHostInfo::RemoveFromQueue() {
   histogram->AddTime(queue_duration_);
 }
 
-void DnsHostInfo::SetPendingDeleteState() {
+void UrlInfo::SetPendingDeleteState() {
   DCHECK(ASSIGNED == state_  || ASSIGNED_BUT_MARKED == state_);
   state_ = ASSIGNED_BUT_MARKED;
 }
 
-void DnsHostInfo::SetFoundState() {
+void UrlInfo::SetFoundState() {
   DCHECK(ASSIGNED == state_);
   state_ = FOUND;
   resolve_duration_ = GetDuration();
@@ -141,7 +141,7 @@ void DnsHostInfo::SetFoundState() {
   DLogResultsStats("DNS PrefetchFound");
 }
 
-void DnsHostInfo::SetNoSuchNameState() {
+void UrlInfo::SetNoSuchNameState() {
   DCHECK(ASSIGNED == state_);
   state_ = NO_SUCH_NAME;
   resolve_duration_ = GetDuration();
@@ -154,7 +154,7 @@ void DnsHostInfo::SetNoSuchNameState() {
   DLogResultsStats("DNS PrefetchNotFound");
 }
 
-void DnsHostInfo::SetStartedState() {
+void UrlInfo::SetStartedState() {
   DCHECK(PENDING == state_);
   state_ = STARTED;
   queue_duration_ = resolve_duration_ = TimeDelta();  // 0ms.
@@ -162,7 +162,7 @@ void DnsHostInfo::SetStartedState() {
   GetDuration();  // Set time.
 }
 
-void DnsHostInfo::SetFinishedState(bool was_resolved) {
+void UrlInfo::SetFinishedState(bool was_resolved) {
   DCHECK(STARTED == state_);
   state_ = was_resolved ? FINISHED : FINISHED_UNRESOLVED;
   resolve_duration_ = GetDuration();
@@ -170,7 +170,7 @@ void DnsHostInfo::SetFinishedState(bool was_resolved) {
   DLogResultsStats("DNS HTTP Finished");
 }
 
-void DnsHostInfo::SetUrl(const GURL& url) {
+void UrlInfo::SetUrl(const GURL& url) {
   if (url_.is_empty())  // Not yet initialized.
     url_ = url;
   else
@@ -179,7 +179,7 @@ void DnsHostInfo::SetUrl(const GURL& url) {
 
 // IsStillCached() guesses if the DNS cache still has IP data,
 // or at least remembers results about "not finding host."
-bool DnsHostInfo::IsStillCached() const {
+bool UrlInfo::IsStillCached() const {
   DCHECK(FOUND == state_ || NO_SUCH_NAME == state_);
 
   // Default MS OS does not cache failures. Hence we could return false almost
@@ -187,7 +187,7 @@ bool DnsHostInfo::IsStillCached() const {
   // the value if we returned false that way.  Hence we'll just let the lookup
   // time out the same way as FOUND case.
 
-  if (sequence_counter - sequence_number_ > kMaxGuaranteedCacheSize)
+  if (sequence_counter - sequence_number_ > kMaxGuaranteedDnsCacheSize)
     return false;
 
   TimeDelta time_since_resolution = TimeTicks::Now() - time_;
@@ -197,7 +197,7 @@ bool DnsHostInfo::IsStillCached() const {
 
 // Compare the actual navigation DNS latency found in navigation_info, to the
 // previously prefetched info.
-DnsBenefit DnsHostInfo::AccruePrefetchBenefits(DnsHostInfo* navigation_info) {
+DnsBenefit UrlInfo::AccruePrefetchBenefits(UrlInfo* navigation_info) {
   DCHECK(FINISHED == navigation_info->state_ ||
          FINISHED_UNRESOLVED == navigation_info->state_);
   DCHECK(navigation_info->url() == url_);
@@ -247,7 +247,7 @@ DnsBenefit DnsHostInfo::AccruePrefetchBenefits(DnsHostInfo* navigation_info) {
   return PREFETCH_NAME_FOUND;
 }
 
-void DnsHostInfo::DLogResultsStats(const char* message) const {
+void UrlInfo::DLogResultsStats(const char* message) const {
   if (!detailed_logging_enabled)
     return;
   DLOG(INFO) << "\t" << message <<  "\tq="
@@ -329,7 +329,7 @@ static std::string HoursMinutesSeconds(int seconds) {
 }
 
 // static
-void DnsHostInfo::GetHtmlTable(const DnsInfoTable host_infos,
+void UrlInfo::GetHtmlTable(const DnsInfoTable host_infos,
                                const char* description,
                                const bool brief,
                                std::string* output) {
@@ -402,13 +402,13 @@ void DnsHostInfo::GetHtmlTable(const DnsInfoTable host_infos,
   output->append("<br>");
 }
 
-void DnsHostInfo::SetMotivation(ResolutionMotivation motivation) {
+void UrlInfo::SetMotivation(ResolutionMotivation motivation) {
   motivation_ = motivation;
   if (motivation < LINKED_MAX_MOTIVATED)
     was_linked_ = true;
 }
 
-std::string DnsHostInfo::GetAsciiMotivation() const {
+std::string UrlInfo::GetAsciiMotivation() const {
   switch (motivation_) {
     case MOUSE_OVER_MOTIVATED:
       return "[mouse-over]";

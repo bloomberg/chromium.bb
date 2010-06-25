@@ -1022,7 +1022,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   BrowserInit browser_init;
 
-  // On first run, we need to process the master preferences before the
+  // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
   FirstRun::MasterPrefs master_prefs = { 0 };
@@ -1265,9 +1265,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // testing against a bunch of special cases that are taken care early on.
   PrepareRestartOnCrashEnviroment(parsed_command_line);
 
-  // Initialize and maintain DNS prefetcher module. Also registers an observer
-  // to clear the host cache when closing incognito mode.
-  chrome_browser_net::DnsGlobalInit dns_prefetch(
+  // Initialize and maintain network predictor module, which handles DNS
+  // pre-resolution, as well as TCP/IP connection pre-warming.
+  // This also registers an observer to discard data when closing incognito
+  // mode.
+  chrome_browser_net::PredictorInit dns_prefetch(
       user_prefs,
       local_state,
       parsed_command_line.HasSwitch(switches::kEnablePreconnect));

@@ -243,7 +243,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
     std::string data;
-    chrome_browser_net::DnsPrefetchGetHtmlInfo(&data);
+    chrome_browser_net::PredictorGetHtmlInfo(&data);
 
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,

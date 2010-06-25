@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A RenderDnsMaster instance is maintained for each RenderThread.
-// Hostnames are typically added to the embedded queue during rendering.
+// A RendererNetPredictor instance is maintained for each RenderThread.
+// URL strings are typically added to the embedded queue during rendering.
 // The first addition to the queue (transitioning from empty to having
 // some names) causes a processing task to be added to the Renderer Thread.
 // The processing task gathers all buffered names, and send them via IPC
@@ -16,7 +16,7 @@
 // If the processing task is not able to completely empty the queue, it
 // schedules a future continuation of the task, and keeps the map of already
 // sent names.  If the entire queue is processed, then the list of "sent names"
-// is cleared so that future gatherings may again pass along the same names.
+// is cleared so that future gatherings might again pass along the same names.
 
 #ifndef CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_
 #define CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_
@@ -33,11 +33,11 @@
 // the Browser's global functions.
 void DnsPrefetchCString(const char* hostname, size_t length);
 
-class RenderDnsMaster {
+class RendererNetPredictor {
  public:
-  RenderDnsMaster();
+  RendererNetPredictor();
 
-  ~RenderDnsMaster() {}
+  ~RendererNetPredictor() {}
 
   // Push a name into the queue to be resolved.
   void Resolve(const char* name, size_t length);
@@ -101,9 +101,9 @@ class RenderDnsMaster {
   int buffer_full_discard_count_;
   int numeric_ip_discard_count_;
 
-  ScopedRunnableMethodFactory<RenderDnsMaster> render_dns_factory_;
+  ScopedRunnableMethodFactory<RendererNetPredictor> renderer_predictor_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderDnsMaster);
-};  // class RenderDnsMaster
+  DISALLOW_COPY_AND_ASSIGN(RendererNetPredictor);
+};  // class RendererNetPredictor
 
 #endif  // CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_

@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Single threaded tests of DnsHostInfo functionality.
+// Single threaded tests of UrlInfo functionality.
 
 #include <time.h>
 #include <string>
@@ -18,17 +18,17 @@ namespace {
 class DnsHostInfoTest : public testing::Test {
 };
 
-typedef chrome_browser_net::DnsHostInfo DnsHostInfo;
+typedef chrome_browser_net::UrlInfo UrlInfo;
 
 TEST(DnsHostInfoTest, StateChangeTest) {
-  DnsHostInfo info_practice, info;
+  UrlInfo info_practice, info;
   GURL url1("http://domain1.com:80"), url2("https://domain2.com:443");
 
   // First load DLL, so that their load time won't interfere with tests.
   // Some tests involve timing function performance, and DLL time can overwhelm
   // test durations (which are considering network vs cache response times).
   info_practice.SetUrl(url2);
-  info_practice.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
+  info_practice.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
   info_practice.SetAssignedState();
   info_practice.SetFoundState();
   PlatformThread::Sleep(500);  // Allow time for DLLs to fully load.
@@ -37,7 +37,7 @@ TEST(DnsHostInfoTest, StateChangeTest) {
   info.SetUrl(url1);
 
   EXPECT_TRUE(info.NeedsDnsUpdate()) << "error in construction state";
-  info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
+  info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
   EXPECT_FALSE(info.NeedsDnsUpdate())
     << "update needed after being queued";
   info.SetAssignedState();
@@ -51,7 +51,7 @@ TEST(DnsHostInfoTest, StateChangeTest) {
   // the required time till expiration will be halved (guessing that we were
   // half way through having the cache expire when we did the lookup.
   EXPECT_LT(info.resolve_duration().InMilliseconds(),
-    DnsHostInfo::kMaxNonNetworkDnsLookupDuration.InMilliseconds())
+    UrlInfo::kMaxNonNetworkDnsLookupDuration.InMilliseconds())
     << "Non-net time is set too low";
 
   info.set_cache_expiration(TimeDelta::FromMilliseconds(300));
@@ -61,7 +61,7 @@ TEST(DnsHostInfoTest, StateChangeTest) {
 
   // That was a nice life when the object was found.... but next time it won't
   // be found.  We'll sleep for a while, and then come back with not-found.
-  info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
+  info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
   info.SetAssignedState();
   EXPECT_FALSE(info.NeedsDnsUpdate());
   // Greater than minimal expected network latency on DNS lookup.
@@ -84,7 +84,7 @@ TEST(DnsHostInfoTest, StateChangeTest) {
 
 // When a system gets "congested" relative to DNS, it means it is doing too many
 // DNS resolutions, and bogging down the system.  When we detect such a
-// situation, we divert the sequence of states a DnsHostInfo instance moves
+// situation, we divert the sequence of states a UrlInfo instance moves
 // through.  Rather than proceeding from QUEUED (waiting in a name queue for a
 // worker thread that can resolve the name) to ASSIGNED (where a worker thread
 // actively resolves the name), we enter the ASSIGNED state (without actually
@@ -92,11 +92,11 @@ TEST(DnsHostInfoTest, StateChangeTest) {
 // the corresponding name was put in the work_queue_.  This test drives through
 // the state transitions used in such congestion handling.
 TEST(DnsHostInfoTest, CongestionResetStateTest) {
-  DnsHostInfo info;
+  UrlInfo info;
   GURL url("http://domain1.com:80");
 
   info.SetUrl(url);
-  info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
+  info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
   info.SetAssignedState();
   EXPECT_TRUE(info.is_assigned());
 
@@ -109,13 +109,13 @@ TEST(DnsHostInfoTest, CongestionResetStateTest) {
   EXPECT_FALSE(info.was_nonexistant());
 
   // Make sure we're completely re-usable, by going throug a normal flow.
-  info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
+  info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
   info.SetAssignedState();
   info.SetFoundState();
   EXPECT_TRUE(info.was_found());
 
   // Use the congestion flow, and check that we end up in the found state.
-  info.SetQueuedState(DnsHostInfo::UNIT_TEST_MOTIVATED);
+  info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
   info.SetAssignedState();
   info.RemoveFromQueue();  // Do the reset.
   EXPECT_FALSE(info.is_assigned());

@@ -1,15 +1,20 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A DnsMaster object is instantiated once in the browser
-// process, and manages asynchronous resolution of DNS hostnames.
-// Most hostname lists are sent out by renderer processes, and
-// involve lists of hostnames that *might* be used in the near
-// future by the browsing user.  The goal of this class is to
-// cause the underlying DNS structure to lookup a hostname before
-// it is really needed, and hence reduce latency in the standard
-// lookup paths.
+// A Predictor object is instantiated once in the browser process, and manages
+// both preresolution of hostnames, as well as TCP/IP preconnection to expected
+// subresources.
+// Most hostname lists are provided by the renderer processes, and include URLs
+// that *might* be used in the near future by the browsing user.  One goal of
+// this class is to cause the underlying DNS structure to lookup a hostname
+// before it is really needed, and hence reduce latency in the standard lookup
+// paths.
+// Subresource relationships are usually acquired from the referrer field in a
+// navigation.  A subresource URL may be associated with a referrer URL.  Later
+// navigations may, if the likelihood of needing the subresource is high enough,
+// cause this module to speculatively create a TCP/IP connection that will
+// probably be needed to fetch the subresource.
 
 #ifndef CHROME_BROWSER_NET_DNS_MASTER_H_
 #define CHROME_BROWSER_NET_DNS_MASTER_H_
@@ -35,11 +40,11 @@ namespace chrome_browser_net {
 
 typedef chrome_common_net::UrlList UrlList;
 typedef chrome_common_net::NameList NameList;
-typedef std::map<GURL, DnsHostInfo> Results;
+typedef std::map<GURL, UrlInfo> Results;
 
-// Note that DNS master is not thread safe, and must only be called from
+// Note that Predictor is not thread safe, and must only be called from
 // the IO thread. Failure to do so will result in a DCHECK at runtime.
-class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
+class Predictor : public base::RefCountedThreadSafe<Predictor> {
  public:
   // A version number for prefs that are saved. This should be incremented when
   // we change the format so that we discard old data.
@@ -47,7 +52,7 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
 
 // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.
-  DnsMaster(net::HostResolver* host_resolver,
+  Predictor(net::HostResolver* host_resolver,
             base::TimeDelta max_queue_delay_ms, size_t max_concurrent,
             bool preconnect_enabled);
 
@@ -63,30 +68,30 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
 
   // Add hostname(s) to the queue for processing.
   void ResolveList(const UrlList& urls,
-                   DnsHostInfo::ResolutionMotivation motivation);
+                   UrlInfo::ResolutionMotivation motivation);
   void Resolve(const GURL& url,
-               DnsHostInfo::ResolutionMotivation motivation);
+               UrlInfo::ResolutionMotivation motivation);
 
   // Get latency benefit of the prefetch that we are navigating to.
   bool AccruePrefetchBenefits(const GURL& referrer,
-                              DnsHostInfo* navigation_info);
+                              UrlInfo* navigation_info);
 
   // Instigate preresolution of any domains we predict will be needed after this
   // navigation.
-  void NavigatingTo(const GURL& url);
+  void PredictSubresources(const GURL& url);
 
   // Instigate pre-connection to any URLs we predict will be needed after this
   // navigation (typically more-embedded resources on a page).
-  void NavigatingToFrame(const GURL& url);
+  void PredictFrameSubresources(const GURL& url);
 
   // Record details of a navigation so that we can preresolve the host name
   // ahead of time the next time the users navigates to the indicated host.
-  void NonlinkNavigation(const GURL& referring_url, const GURL& target_url);
+  void LearnFromNavigation(const GURL& referring_url, const GURL& target_url);
 
   // Dump HTML table containing list of referrers for about:dns.
   void GetHtmlReferrerLists(std::string* output);
 
-  // Dump the list of currently know referrer domains and related prefetchable
+  // Dump the list of currently known referrer domains and related prefetchable
   // domains.
   void GetHtmlInfo(std::string* output);
 
@@ -112,23 +117,25 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   }
 
   // For unit test code only.
-  size_t max_concurrent_lookups() const { return max_concurrent_lookups_; }
+  size_t max_concurrent_dns_lookups() const {
+    return max_concurrent_dns_lookups_;
+  }
 
   // Flag setting to use preconnection instead of just DNS pre-fetching.
   bool preconnect_enabled() const { return preconnect_enabled_; }
 
  private:
-  friend class base::RefCountedThreadSafe<DnsMaster>;
-  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, BenefitLookupTest);
-  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, ShutdownWhenResolutionIsPendingTest);
-  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, SingleLookupTest);
-  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, ConcurrentLookupTest);
-  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, MassiveConcurrentLookupTest);
-  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, PriorityQueuePushPopTest);
-  FRIEND_TEST_ALL_PREFIXES(DnsMasterTest, PriorityQueueReorderTest);
+  friend class base::RefCountedThreadSafe<Predictor>;
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, BenefitLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, ShutdownWhenResolutionIsPendingTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, SingleLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, ConcurrentLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, MassiveConcurrentLookupTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueuePushPopTest);
+  FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);
   friend class WaitForResolutionHelper;  // For testing.
 
-  ~DnsMaster();
+  ~Predictor();
 
   class LookupRequest;
 
@@ -145,7 +152,7 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
     HostNameQueue();
     ~HostNameQueue();
     void Push(const GURL& url,
-              DnsHostInfo::ResolutionMotivation motivation);
+              UrlInfo::ResolutionMotivation motivation);
     bool IsEmpty() const;
     GURL Pop();
 
@@ -173,11 +180,10 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   }
 
   // Only for testing. Return how long was the resolution
-  // or DnsHostInfo::kNullDuration if it hasn't been resolved yet.
+  // or UrlInfo::kNullDuration if it hasn't been resolved yet.
   base::TimeDelta GetResolutionDuration(const GURL& url) {
-
     if (results_.find(url) == results_.end())
-      return DnsHostInfo::kNullDuration;
+      return UrlInfo::kNullDuration;
     return results_[url].resolve_duration();
   }
 
@@ -193,8 +199,8 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
 
   // Queue hostname for resolution.  If queueing was done, return the pointer
   // to the queued instance, otherwise return NULL.
-  DnsHostInfo* AppendToResolutionQueue(const GURL& url,
-      DnsHostInfo::ResolutionMotivation motivation);
+  UrlInfo* AppendToResolutionQueue(const GURL& url,
+      UrlInfo::ResolutionMotivation motivation);
 
   // Check to see if too much queuing delay has been noted for the given info,
   // which indicates that there is "congestion" or growing delay in handling the
@@ -208,7 +214,7 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // will greatly reduce the number of resolutions done, but it will assure that
   // any resolutions that are done, are in a timely and hence potentially
   // helpful manner.
-  bool CongestionControlPerformed(DnsHostInfo* info);
+  bool CongestionControlPerformed(UrlInfo* info);
 
   // Take lookup requests from work_queue_ and tell HostResolver to look them up
   // asynchronously, provided we don't exceed concurrent resolution limit.
@@ -234,17 +240,17 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   bool shutdown_;
 
   // A list of successful events resulting from pre-fetching.
-  DnsHostInfo::DnsInfoTable cache_hits_;
+  UrlInfo::DnsInfoTable dns_cache_hits_;
   // A map of hosts that were evicted from our cache (after we prefetched them)
   // and before the HTTP stack tried to look them up.
   Results cache_eviction_map_;
 
   // The number of concurrent lookups currently allowed.
-  const size_t max_concurrent_lookups_;
+  const size_t max_concurrent_dns_lookups_;
 
   // The maximum queueing delay that is acceptable before we enter congestion
   // reduction mode, and discard all queued (but not yet assigned) resolutions.
-  const base::TimeDelta max_queue_delay_;
+  const base::TimeDelta max_dns_queue_delay_;
 
   // The host resovler we warm DNS entries for.
   scoped_refptr<net::HostResolver> host_resolver_;
@@ -253,7 +259,7 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // subresources and omni-box search URLs.
   bool preconnect_enabled_;
 
-  DISALLOW_COPY_AND_ASSIGN(DnsMaster);
+  DISALLOW_COPY_AND_ASSIGN(Predictor);
 };
 
 }  // namespace chrome_browser_net

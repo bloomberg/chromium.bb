@@ -1,11 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A DnsHostInfo object is used to store status of a Dns lookup of a specific
-// hostname.
-// It includes progress, from placement in the DnsMaster's queue, to resolution
-// by the DNS service as either FOUND or NO_SUCH_NAME.
+// A UrlInfo object is used to store prediction related information about a host
+// port and scheme triplet.  When performing DNS pre-resolution of the host/port
+// pair, its state is monitored as it is resolved.
+// It includes progress, from placement in the Predictor's queue, to resolution
+// by the DNS service as either FOUND or NO_SUCH_NAME.  Each instance may also
+// hold records of previous resolution times, which might later be shown to be
+// savings relative to resolution time during a navigation.
+// UrlInfo objects are also used to describe frames, and additional instances
+// may describe associated subresources, for future speculative connections to
+// those expected subresources.
 
 #ifndef CHROME_BROWSER_NET_DNS_HOST_INFO_H_
 #define CHROME_BROWSER_NET_DNS_HOST_INFO_H_
@@ -20,7 +26,7 @@
 namespace chrome_browser_net {
 
 // Use command line switch to enable detailed logging.
-void EnableDnsDetailedLog(bool enable);
+void EnablePredictorDetailedLog(bool enable);
 
 enum DnsBenefit {
   PREFETCH_NO_BENEFIT,  // Prefetch never hit the network. Name was pre-cached.
@@ -30,7 +36,7 @@ enum DnsBenefit {
   PREFETCH_OBLIVIOUS  // No prefetch attempt was even made.
 };
 
-class DnsHostInfo {
+class UrlInfo {
  public:
   // Reasons for a domain to be resolved.
   enum ResolutionMotivation {
@@ -65,15 +71,15 @@ class DnsHostInfo {
   static const base::TimeDelta kMaxNonNetworkDnsLookupDuration;
   // The number of OS cache entries we can guarantee(?) before cache eviction
   // might likely take place.
-  static const int kMaxGuaranteedCacheSize = 50;
+  static const int kMaxGuaranteedDnsCacheSize = 50;
 
-  typedef std::vector<DnsHostInfo> DnsInfoTable;
+  typedef std::vector<UrlInfo> DnsInfoTable;
 
   static const base::TimeDelta kNullDuration;
 
-  // DnsHostInfo are usually made by the default constructor during
-  // initializing of the DnsMaster's map (of info for Hostnames).
-  DnsHostInfo()
+  // UrlInfo are usually made by the default constructor during
+  // initializing of the Predictor's map (of info for Hostnames).
+  UrlInfo()
       : state_(PENDING),
         old_prequeue_state_(state_),
         resolve_duration_(kNullDuration),
@@ -84,7 +90,7 @@ class DnsHostInfo {
         was_linked_(false) {
   }
 
-  ~DnsHostInfo() {}
+  ~UrlInfo() {}
 
   // NeedDnsUpdate decides, based on our internal info,
   // if it would be valuable to attempt to update (prefectch)
@@ -131,7 +137,7 @@ class DnsHostInfo {
   base::TimeDelta queue_duration() const { return queue_duration_;}
   base::TimeDelta benefits_remaining() const { return benefits_remaining_; }
 
-  DnsBenefit AccruePrefetchBenefits(DnsHostInfo* navigation_info);
+  DnsBenefit AccruePrefetchBenefits(UrlInfo* navigation_info);
 
   void DLogResultsStats(const char* message) const;
 
@@ -194,7 +200,7 @@ class DnsHostInfo {
 
   // We put these objects into a std::map, and hence we
   // need some "evil" constructors.
-  // DISALLOW_COPY_AND_ASSIGN(DnsHostInfo);
+  // DISALLOW_COPY_AND_ASSIGN(UrlInfo);
 };
 
 }  // namespace chrome_browser_net

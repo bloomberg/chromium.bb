@@ -1,15 +1,16 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This class helps to remember what domains may be needed to be resolved when a
 // navigation takes place to a given URL.  This information is gathered when a
-// navigation resolution was not foreseen by identifying the referrer field that
-// induced the navigation.  When future navigations take place to known referrer
-// sites, then we automatically pre-resolve the expected set of useful domains.
+// navigation to a subresource identifies a referring URL.
+// When future navigations take place to known referrer sites, then we
+// speculatively either pre-warm a TCP/IP conneciton, or at a minimum, resolve
+// the host name via DNS.
 
-// All access to this class is performed via the DnsMaster class, and is
-// protected by the its lock.
+// All access to this class is performed via the Predictor class, which only
+// operates on the IO thread.
 
 #ifndef CHROME_BROWSER_NET_REFERRER_H_
 #define CHROME_BROWSER_NET_REFERRER_H_

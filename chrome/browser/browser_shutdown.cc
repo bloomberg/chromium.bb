@@ -112,7 +112,7 @@ void Shutdown() {
 
   PrefService* prefs = g_browser_process->local_state();
 
-  chrome_browser_net::SaveDnsPrefetchStateForNextStartupAndTrim(prefs);
+  chrome_browser_net::SavePredictorStateForNextStartupAndTrim(prefs);
 
   MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics) {

@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Single threaded tests of RenderDnsMaster functionality.
+// Single threaded tests of RendererNetPredictor functionality.
 
 #include "chrome/renderer/net/render_dns_master.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,8 +20,8 @@ TEST(RenderDnsMasterTest, NumericIpDiscardCheck) {
   // Combination of digits plus dots.
   const std::string N1("1.3."), N2("5.5.7.12");
 
-#define TESTNAME(string) RenderDnsMaster::is_numeric_ip((string.data()), \
-                                                        (string).size())
+#define TESTNAME(string) RendererNetPredictor::is_numeric_ip((string.data()), \
+                                                             (string).size())
 
   EXPECT_TRUE(TESTNAME(N1));
   EXPECT_TRUE(TESTNAME(N2));

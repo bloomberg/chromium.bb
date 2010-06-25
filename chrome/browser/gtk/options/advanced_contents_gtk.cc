@@ -821,7 +821,7 @@ void PrivacySection::OnDNSPrefetchingChange(GtkWidget* widget,
           UserMetricsAction("Options_DnsPrefetchCheckbox_Disable"),
       privacy_section->profile()->GetPrefs());
   privacy_section->dns_prefetch_enabled_.SetValue(enabled);
-  chrome_browser_net::EnableDnsPrefetch(enabled);
+  chrome_browser_net::EnablePredictor(enabled);
 }
 
 // static
@@ -882,7 +882,7 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
     bool enabled = dns_prefetch_enabled_.GetValue();
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(enable_dns_prefetching_checkbox_), enabled);
-    chrome_browser_net::EnableDnsPrefetch(enabled);
+    chrome_browser_net::EnablePredictor(enabled);
   }
   if (!pref_name || *pref_name == prefs::kSafeBrowsingEnabled) {
     gtk_toggle_button_set_active(

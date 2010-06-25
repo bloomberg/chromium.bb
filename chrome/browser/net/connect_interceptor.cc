@@ -24,7 +24,7 @@ URLRequestJob* ConnectInterceptor::MaybeIntercept(URLRequest* request) {
     // link navigation.  For now, we'll "learn" that to preconnect when a user
     // actually does a click... which will probably waste space in our referrers
     // table (since it probably won't be that deterministic).
-    NonlinkNavigation(referring_url, request->url().GetWithEmptyPath());
+    LearnFromNavigation(referring_url, request->url().GetWithEmptyPath());
   }
   // Now we use previous learning and setup for our subresources.
   if (request->was_fetched_via_proxy())
@@ -34,7 +34,7 @@ URLRequestJob* ConnectInterceptor::MaybeIntercept(URLRequest* request) {
   // foo.jpg or goo.gif etc.), but better would be to get this info from webkit
   // and have it add the info to the request (we currently only set the
   // priority, but we could record whether it was a frame).
-  NavigatingToFrame(request->url().GetWithEmptyPath());
+  PredictFrameSubresources(request->url().GetWithEmptyPath());
   return NULL;
 }
 

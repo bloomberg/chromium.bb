@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See header file for description of RenderDnsMaster class
+// See header file for description of RendererNetPredictor class
 
 
 #include "chrome/renderer/net/render_dns_master.h"
@@ -26,13 +26,13 @@ void DnsPrefetchCString(const char* hostname, size_t length) {
 // SubmitHostsnames() (which reads names from our queue).
 static const size_t kMAX_SUBMISSION_PER_TASK = 30;
 
-RenderDnsMaster::RenderDnsMaster()
+RendererNetPredictor::RendererNetPredictor()
     : c_string_queue_(1000),
-      ALLOW_THIS_IN_INITIALIZER_LIST(render_dns_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(renderer_predictor_factory_(this)) {
   Reset();
 }
 
-void RenderDnsMaster::Reset() {
+void RendererNetPredictor::Reset() {
   domain_map_.clear();
   c_string_queue_.Clear();
   buffer_full_discard_count_ = 0;
@@ -41,7 +41,7 @@ void RenderDnsMaster::Reset() {
 }
 
 // Push names into queue quickly!
-void RenderDnsMaster::Resolve(const char* name, size_t length) {
+void RendererNetPredictor::Resolve(const char* name, size_t length) {
   if (!length)
     return;  // Don't store empty strings in buffer.
   if (is_numeric_ip(name, length))
@@ -54,10 +54,10 @@ void RenderDnsMaster::Resolve(const char* name, size_t length) {
       DCHECK_EQ(old_size, 0u);
       if (0 != old_size)
         return;  // Overkill safety net: Don't send too many InvokeLater's.
-      render_dns_factory_.RevokeAll();
+      renderer_predictor_factory_.RevokeAll();
       RenderThread::current()->message_loop()->PostDelayedTask(FROM_HERE,
-          render_dns_factory_.NewRunnableMethod(
-              &RenderDnsMaster::SubmitHostnames), 10);
+          renderer_predictor_factory_.NewRunnableMethod(
+              &RendererNetPredictor::SubmitHostnames), 10);
     }
     return;
   }
@@ -70,7 +70,7 @@ void RenderDnsMaster::Resolve(const char* name, size_t length) {
 
 // Extract data from the Queue, and then send it off the the Browser process
 // to be resolved.
-void RenderDnsMaster::SubmitHostnames() {
+void RendererNetPredictor::SubmitHostnames() {
   // Get all names out of the C_string_queue (into our map)
   ExtractBufferedNames();
   // TBD: IT could be that we should only extract about as many names as we are
@@ -88,10 +88,10 @@ void RenderDnsMaster::SubmitHostnames() {
   // This will help to avoid overloads when a page has a TON of links.
   DnsPrefetchNames(kMAX_SUBMISSION_PER_TASK);
   if (new_name_count_ > 0 || 0 < c_string_queue_.Size()) {
-    render_dns_factory_.RevokeAll();
+    renderer_predictor_factory_.RevokeAll();
     RenderThread::current()->message_loop()->PostDelayedTask(FROM_HERE,
-        render_dns_factory_.NewRunnableMethod(
-            &RenderDnsMaster::SubmitHostnames), 10);
+        renderer_predictor_factory_.NewRunnableMethod(
+            &RendererNetPredictor::SubmitHostnames), 10);
   } else {
     // TODO(JAR): Should we only clear the map when we navigate, or reload?
     domain_map_.clear();
@@ -99,7 +99,7 @@ void RenderDnsMaster::SubmitHostnames() {
 }
 
 // Pull some hostnames from the queue, and add them to our map.
-void RenderDnsMaster::ExtractBufferedNames(size_t size_goal) {
+void RendererNetPredictor::ExtractBufferedNames(size_t size_goal) {
   size_t count(0);  // Number of entries to find (0 means find all).
   if (size_goal > 0) {
     if (size_goal <= domain_map_.size())
@@ -127,7 +127,7 @@ void RenderDnsMaster::ExtractBufferedNames(size_t size_goal) {
   }
 }
 
-void RenderDnsMaster::DnsPrefetchNames(size_t max_count) {
+void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
   // We are on the renderer thread, and just need to send things to the browser.
   chrome_common_net::NameList names;
   for (DomainUseMap::iterator it = domain_map_.begin();
@@ -151,7 +151,7 @@ void RenderDnsMaster::DnsPrefetchNames(size_t max_count) {
 // is_numeric_ip() checks to see if all characters in name are either numeric,
 // or dots.  Such a name will not actually be passed to DNS, as it is an IP
 // address.
-bool RenderDnsMaster::is_numeric_ip(const char* name, size_t length) {
+bool RendererNetPredictor::is_numeric_ip(const char* name, size_t length) {
   // Scan for a character outside our lookup list.
   while (length-- > 0) {
     if (!isdigit(*name) && '.' != *name)

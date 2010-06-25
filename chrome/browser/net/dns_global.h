@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This is the global interface for the dns prefetch services.  It centralizes
 // initialization, along with all the callbacks etc. to connect to the browser
 // process.  This allows the more standard DNS prefetching services, such as
-// provided by DnsMaster to be left as more generally usable code, and possibly
+// provided by Predictor to be left as more generally usable code, and possibly
 // be shared across multiple client projects.
 
 #ifndef CHROME_BROWSER_NET_DNS_GLOBAL_H_
@@ -26,22 +26,22 @@ class PrefService;
 namespace chrome_browser_net {
 
 // Deletes |referral_list| when done.
-void FinalizeDnsPrefetchInitialization(
-    DnsMaster* global_dns_master,
+void FinalizePredictorInitialization(
+    Predictor* global_predictor,
     net::HostResolver::Observer* global_prefetch_observer,
     const std::vector<GURL>& urls_to_prefetch,
     ListValue* referral_list);
 
-// Free all resources allocated by FinalizeDnsPrefetchInitialization. After that
+// Free all resources allocated by FinalizePredictorInitialization. After that
 // you must not call any function from this file.
-void FreeDnsPrefetchResources();
+void FreePredictorResources();
 
 // Creates the HostResolver observer for the prefetching system.
-net::HostResolver::Observer* CreatePrefetchObserver();
+net::HostResolver::Observer* CreateResolverObserver();
 
 //------------------------------------------------------------------------------
-// Global APIs relating to Prefetching in browser
-void EnableDnsPrefetch(bool enable);
+// Global APIs relating to predictions in browser.
+void EnablePredictor(bool enable);
 void RegisterPrefs(PrefService* local_state);
 void RegisterUserPrefs(PrefService* user_prefs);
 
@@ -52,30 +52,30 @@ void DnsPrefetchList(const NameList& hostnames);
 // This API is used by the autocomplete popup box (as user types).
 // This will either preresolve the domain name, or possibly preconnect creating
 // an open TCP/IP connection to the host.
-void DnsPrefetchUrl(const GURL& url, bool preconnectable);
+void AnticipateUrl(const GURL& url, bool preconnectable);
 
 // When displaying info in about:dns, the following API is called.
-void DnsPrefetchGetHtmlInfo(std::string* output);
+void PredictorGetHtmlInfo(std::string* output);
 
 //------------------------------------------------------------------------------
-// When we navigate, we may know in advance some other domains that will need to
+// When we navigate, we may know in advance some other URLs that will need to
 // be resolved.  This function initiates those side effects.
-void NavigatingTo(const GURL& url);
+void PredictSubresources(const GURL& url);
 
 // When we navigate to a frame that may contain embedded resources, we may know
 // in advance some other URLs that will need to be connected to (via TCP and
 // sometimes SSL).  This function initiates those connections
-void NavigatingToFrame(const GURL& url);
+void PredictFrameSubresources(const GURL& url);
 
 // Call when we should learn from a navigation about a relationship to a
 // subresource target, and its containing frame, which was loaded as a referring
 // URL.
-void NonlinkNavigation(const GURL& referring_url, const GURL& target_url);
+void LearnFromNavigation(const GURL& referring_url, const GURL& target_url);
 
 //------------------------------------------------------------------------------
-void SaveDnsPrefetchStateForNextStartupAndTrim(PrefService* prefs);
+void SavePredictorStateForNextStartupAndTrim(PrefService* prefs);
 // Helper class to handle global init and shutdown.
-class DnsGlobalInit {
+class PredictorInit {
  public:
   // Too many concurrent lookups negate benefits of prefetching by trashing
   // the OS cache before all resource loading is complete.
@@ -87,14 +87,14 @@ class DnsGlobalInit {
   // of that state.  The following is the suggested default time limit.
   static const int kMaxPrefetchQueueingDelayMs;
 
-  DnsGlobalInit(PrefService* user_prefs, PrefService* local_state,
+  PredictorInit(PrefService* user_prefs, PrefService* local_state,
                 bool preconnect_enabled);
 
  private:
   // Maintain a field trial instance when we do A/B testing.
   scoped_refptr<FieldTrial> trial_;
 
-  DISALLOW_COPY_AND_ASSIGN(DnsGlobalInit);
+  DISALLOW_COPY_AND_ASSIGN(PredictorInit);
 };
 
 }  // namespace chrome_browser_net

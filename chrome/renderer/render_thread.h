@@ -34,8 +34,8 @@ class FilePath;
 class IndexedDBDispatcher;
 class ListValue;
 class NullableString16;
-class RenderDnsMaster;
 class RendererHistogram;
+class RendererNetPredictor;
 class RendererWebKitClientImpl;
 class SpellCheck;
 class SkBitmap;
@@ -310,7 +310,7 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<UserScriptSlave> user_script_slave_;
-  scoped_ptr<RenderDnsMaster> dns_master_;
+  scoped_ptr<RendererNetPredictor> renderer_net_predictor_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_filter_;

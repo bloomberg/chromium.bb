@@ -1561,7 +1561,7 @@ const int kDisabledIndex = 1;
     [self recordUserAction:UserMetricsAction(
                            "Options_DnsPrefetchCheckbox_Disable")];
   dnsPrefetch_.SetValue(value ? true : false);
-  chrome_browser_net::EnableDnsPrefetch(value ? true : false);
+  chrome_browser_net::EnablePredictor(value ? true : false);
 }
 
 // Returns whether the DNS prefetch checkbox should be enabled.
