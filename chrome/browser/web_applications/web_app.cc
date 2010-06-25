@@ -5,7 +5,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 
 #if defined(OS_WIN)
-#include <ShellAPI.h>
+#include <shellapi.h>
 #endif  // defined(OS_WIN)
 
 #include <algorithm>
@@ -43,6 +43,7 @@
 
 namespace {
 
+#if defined(OS_WIN)
 const FilePath::CharType kIconChecksumFileExt[] = FILE_PATH_LITERAL(".ico.md5");
 
 // Returns true if |ch| is in visible ASCII range and not one of
@@ -81,12 +82,9 @@ FilePath GetSanitizedFileName(const string16& name) {
     file_name += c;
   }
 
-#if defined(OS_WIN)
   return FilePath(file_name);
-#elif defined(OS_POSIX)
-  return FilePath(UTF16ToUTF8(file_name));
-#endif
 }
+#endif  // defined(OS_WIN)
 
 // Returns relative directory of given web app url.
 FilePath GetWebAppDir(const GURL& url) {
@@ -720,6 +718,7 @@ FilePath GetDataDir(const FilePath& profile_path) {
   return profile_path.Append(chrome::kWebAppDirname);
 }
 
+#if defined(TOOLKIT_VIEWS)
 void GetIconsInfo(const webkit_glue::WebApplicationInfo& app_info,
                   IconInfoList* icons) {
   DCHECK(icons);
@@ -734,6 +733,7 @@ void GetIconsInfo(const webkit_glue::WebApplicationInfo& app_info,
 
   std::sort(icons->begin(), icons->end(), &IconPrecedes);
 }
+#endif
 
 void GetShortcutInfoForTab(TabContents* tab_contents,
                            ShellIntegration::ShortcutInfo* info) {
