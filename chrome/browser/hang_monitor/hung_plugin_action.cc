@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/win_util.h"
 #include "base/win_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
@@ -62,8 +63,7 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
                           HungWindowResponseCallback,
                           reinterpret_cast<ULONG_PTR>(this));
       current_hung_plugin_window_ = hung_window;
-      const UINT mb_flags = MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND;
-      if (IDYES == win_util::MessageBox(NULL, msg, title, mb_flags)) {
+      if (platform_util::SimpleYesNoBox(NULL, title, msg)) {
         *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
       } else {
         // If the user choses to ignore the hung window warning, the

@@ -34,8 +34,10 @@
 // See http://crbug.com/40039 for details.
 #define MAYBE_KeyEvents DISABLED_KeyEvents
 
-// See http://crbug.com/47089 for details.
+// Two bugs here. http://crbug.com/47089 for general Linux Views, and
+// http://crbug.com/47452 for ChromiumOS.
 #define MAYBE_CloseWithModalDialog DISABLED_CloseWithModalDialog
+// See http://crbug.com/47089 for details.
 #define MAYBE_CloseMenuAfterClosingContextMenu \
         DISABLED_CloseMenuAfterClosingContextMenu
 #else

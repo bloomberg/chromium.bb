@@ -8,12 +8,52 @@
 
 #include "app/gtk_util.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
+
+namespace {
+
+void SetDialogTitle(GtkWidget* dialog, const string16& title) {
+  gtk_window_set_title(GTK_WINDOW(dialog), UTF16ToUTF8(title).c_str());
+
+#if !defined(OS_CHROMEOS)
+  // The following code requires the dialog to be realized. However, we host
+  // dialog's content in a Chrome window without really realize the dialog
+  // on ChromeOS. Thus, skip the following code for ChromeOS.
+  gtk_widget_realize(dialog);
+
+  // Make sure it's big enough to show the title.
+  GtkRequisition req;
+  gtk_widget_size_request(dialog, &req);
+  int width;
+  gtk_util::GetWidgetSizeFromCharacters(dialog, title.length(), 0,
+                                        &width, NULL);
+  // The fudge factor accounts for extra space needed by the frame
+  // decorations as well as width differences between average text and the
+  // actual title text.
+  width = width * 1.2 + 50;
+
+  if (width > req.width)
+    gtk_widget_set_size_request(dialog, width, -1);
+#endif  // !defined(OS_CHROMEOS)
+}
+
+int g_dialog_response;
+
+void HandleOnResponseDialog(GtkWidget* widget,
+                            int response,
+                            void* user_data) {
+  g_dialog_response = response;
+  gtk_widget_destroy(widget);
+  MessageLoop::current()->QuitNow();
+}
+
+}  // namespace
 
 namespace platform_util {
 
@@ -42,30 +82,29 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   GtkWidget* dialog = gtk_message_dialog_new(parent, GTK_DIALOG_MODAL,
       GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", UTF16ToUTF8(message).c_str());
   gtk_util::ApplyMessageDialogQuirks(dialog);
-  gtk_window_set_title(GTK_WINDOW(dialog), UTF16ToUTF8(title).c_str());
+  SetDialogTitle(dialog, title);
 
   g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   gtk_util::ShowDialog(dialog);
+}
 
-#if !defined(OS_CHROMEOS)
-  // The following code requires the dialog to be realized. However, we host
-  // dialog's content in a Chrome window without really realize the dialog
-  // on ChromeOS. Thus, skip the following code for ChromeOS.
+bool SimpleYesNoBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message) {
+  GtkWidget* dialog = gtk_message_dialog_new(parent, GTK_DIALOG_MODAL,
+      GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+      UTF16ToUTF8(message).c_str());
+  gtk_util::ApplyMessageDialogQuirks(dialog);
+  SetDialogTitle(dialog, title);
 
-  // Make sure it's big enough to show the title.
-  GtkRequisition req;
-  gtk_widget_size_request(dialog, &req);
-  int width;
-  gtk_util::GetWidgetSizeFromCharacters(dialog, title.length(), 0,
-                                        &width, NULL);
-  // The fudge factor accounts for extra space needed by the frame
-  // decorations as well as width differences between average text and the
-  // actual title text.
-  width = width * 1.2 + 50;
-
-  if (width > req.width)
-    gtk_widget_set_size_request(dialog, width, -1);
-#endif  // !defined(OS_CHROMEOS)
+  g_signal_connect(dialog,
+                   "response",
+                   G_CALLBACK(HandleOnResponseDialog),
+                   NULL);
+  gtk_util::ShowDialog(dialog);
+  // Not gtk_dialog_run as it prevents timers from running in the unit tests.
+  MessageLoop::current()->Run();
+  return g_dialog_response == GTK_RESPONSE_YES;
 }
 
 /* Warning: this may be either Linux or ChromeOS */
