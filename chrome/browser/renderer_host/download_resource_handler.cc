@@ -77,6 +77,13 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->request_id = global_id_.request_id;
   info->content_disposition = content_disposition_;
   info->mime_type = response->response_head.mime_type;
+
+  std::string content_type_header;
+  if (!response->response_head.headers ||
+      !response->response_head.headers->GetMimeType(&content_type_header))
+    content_type_header = "";
+  info->original_mime_type = content_type_header;
+
   info->save_as = save_as_ && save_info_.file_path.empty();
   info->is_dangerous = false;
   info->referrer_charset = request_->context()->referrer_charset();

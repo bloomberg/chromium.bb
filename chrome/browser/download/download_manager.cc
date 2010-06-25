@@ -95,6 +95,7 @@ DownloadItem::DownloadItem(const DownloadCreateInfo& info)
       url_(info.url),
       referrer_url_(info.referrer_url),
       mime_type_(info.mime_type),
+      original_mime_type_(info.original_mime_type),
       total_bytes_(info.total_bytes),
       received_bytes_(info.received_bytes),
       start_tick_(base::TimeTicks()),
@@ -126,6 +127,7 @@ DownloadItem::DownloadItem(int32 download_id,
                            const GURL& url,
                            const GURL& referrer_url,
                            const std::string& mime_type,
+                           const std::string& original_mime_type,
                            const FilePath& original_name,
                            const base::Time start_time,
                            int64 download_size,
@@ -142,6 +144,7 @@ DownloadItem::DownloadItem(int32 download_id,
       url_(url),
       referrer_url_(referrer_url),
       mime_type_(mime_type),
+      original_mime_type_(original_mime_type),
       total_bytes_(download_size),
       received_bytes_(0),
       start_tick_(base::TimeTicks::Now()),
@@ -796,6 +799,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->url,
                                 info->referrer_url,
                                 info->mime_type,
+                                info->original_mime_type,
                                 info->original_name,
                                 info->start_time,
                                 info->total_bytes,
@@ -982,8 +986,10 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
 
   // Handle chrome extensions explicitly and skip the shell execute.
   if (download->is_extension_install()) {
-    OpenChromeExtension(download->full_path(), download->url(),
-                        download->referrer_url());
+    OpenChromeExtension(download->full_path(),
+                        download->url(),
+                        download->referrer_url(),
+                        download->original_mime_type());
     download->set_auto_opened(true);
   } else if (download->open_when_complete() ||
              ShouldOpenFileBasedOnExtension(download->full_path()) ||
@@ -1439,16 +1445,20 @@ void DownloadManager::OpenDownload(const DownloadItem* download,
   // Open Chrome extensions with ExtensionsService. For everything else do shell
   // execute.
   if (download->is_extension_install()) {
-    OpenChromeExtension(download->full_path(), download->url(),
-                        download->referrer_url());
+    OpenChromeExtension(download->full_path(),
+                        download->url(),
+                        download->referrer_url(),
+                        download->original_mime_type());
   } else {
     OpenDownloadInShell(download, parent_window);
   }
 }
 
-void DownloadManager::OpenChromeExtension(const FilePath& full_path,
-                                          const GURL& download_url,
-                                          const GURL& referrer_url) {
+void DownloadManager::OpenChromeExtension(
+    const FilePath& full_path,
+    const GURL& download_url,
+    const GURL& referrer_url,
+    const std::string& original_mime_type) {
   // We don't support extensions in OTR mode.
   ExtensionsService* service = profile_->GetExtensionsService();
   if (service) {
@@ -1469,6 +1479,8 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
     } else {
       bool is_gallery_download =
           ExtensionsService::IsDownloadFromGallery(download_url, referrer_url);
+      installer->set_original_mime_type(original_mime_type);
+      installer->set_apps_require_extension_mime_type(true);
       installer->set_allow_privilege_increase(true);
       installer->set_original_url(download_url);
       installer->set_limit_web_extent_to_download_host(!is_gallery_download);

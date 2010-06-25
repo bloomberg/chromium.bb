@@ -90,6 +90,17 @@ class CrxInstaller
     limit_web_extent_to_download_host_ = val;
   }
 
+  // If |apps_require_extension_mime_type_| is set to true, be sure to set
+  // |original_mime_type_| as well.
+  void set_apps_require_extension_mime_type(
+      bool apps_require_extension_mime_type) {
+    apps_require_extension_mime_type_ = apps_require_extension_mime_type;
+  }
+
+  void set_original_mime_type(const std::string& original_mime_type) {
+    original_mime_type_ = original_mime_type;
+  }
+
  private:
   ~CrxInstaller();
 
@@ -187,6 +198,14 @@ class CrxInstaller
   // The root of the unpacked extension directory. This is a subdirectory of
   // temp_dir_, so we don't have to delete it explicitly.
   FilePath unpacked_extension_root_;
+
+  // True when the CRX being installed was just downloaded.
+  // Used to trigger extra checks before installing.
+  bool apps_require_extension_mime_type_;
+
+  // The value of the content type header sent with the CRX.
+  // Ignorred unless |require_extension_mime_type_| is true.
+  std::string original_mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

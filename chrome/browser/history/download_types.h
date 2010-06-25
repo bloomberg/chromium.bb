@@ -78,6 +78,10 @@ struct DownloadCreateInfo {
   int64 db_handle;
   std::string content_disposition;
   std::string mime_type;
+  // The value of the content type header sent with the downloaded item.  It
+  // may be different from |mime_type|, which may be set based on heuristics
+  // which may look at the file extension and first few bytes of the file.
+  std::string original_mime_type;
   bool save_as;
   // Whether this download is potentially dangerous (ex: exe, dll, ...).
   bool is_dangerous;

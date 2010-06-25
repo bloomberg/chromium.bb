@@ -114,6 +114,7 @@ class DownloadItem {
                const GURL& url,
                const GURL& referrer_url,
                const std::string& mime_type,
+               const std::string& original_mime_type,
                const FilePath& original_name,
                const base::Time start_time,
                int64 download_size,
@@ -199,6 +200,7 @@ class DownloadItem {
   GURL url() const { return url_; }
   GURL referrer_url() const { return referrer_url_; }
   std::string mime_type() const { return mime_type_; }
+  std::string original_mime_type() const { return original_mime_type_; }
   int64 total_bytes() const { return total_bytes_; }
   void set_total_bytes(int64 total_bytes) { total_bytes_ = total_bytes; }
   int64 received_bytes() const { return received_bytes_; }
@@ -262,6 +264,10 @@ class DownloadItem {
 
   // The mimetype of the download
   std::string mime_type_;
+
+  // The value of the content type header received when downloading
+  // this item.  |mime_type_| may be different because of type sniffing.
+  std::string original_mime_type_;
 
   // Total bytes expected
   int64 total_bytes_;
@@ -577,8 +583,10 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                            gfx::NativeView parent_window);
 
   // Opens downloaded Chrome extension file (*.crx).
-  void OpenChromeExtension(const FilePath& full_path, const GURL& download_url,
-                           const GURL& referrer_url);
+  void OpenChromeExtension(const FilePath& full_path,
+                           const GURL& download_url,
+                           const GURL& referrer_url,
+                           const std::string& original_mime_type);
 
   // Shutdown the download manager.  This call is needed only after Init.
   void Shutdown();

@@ -46,7 +46,8 @@ CrxInstaller::CrxInstaller(const FilePath& install_directory,
       limit_web_extent_to_download_host_(false),
       create_app_shortcut_(false),
       frontend_(frontend),
-      client_(client) {
+      client_(client),
+      apps_require_extension_mime_type_(false) {
   extensions_enabled_ = frontend_->extensions_enabled();
 }
 
@@ -127,6 +128,20 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // Note: We take ownership of |extension| and |temp_dir|.
   extension_.reset(extension);
   temp_dir_ = temp_dir;
+
+  // If the extension was downloaded, apps_require_extension_mime_type_
+  // will be set.  In this case, check that if the extension is an app,
+  // it was served with the right mime type.  Make an exception for file
+  // URLs, which come from the users computer and have no headers.
+  if (extension->is_app() &&
+      !original_url_.SchemeIsFile() &&
+      apps_require_extension_mime_type_ &&
+      original_mime_type_ != Extension::kMimeType) {
+    ReportFailureFromFileThread(StringPrintf(
+        "Applications must be served with content type %s.",
+        Extension::kMimeType));
+    return;
+  }
 
   // The unpack dir we don't have to delete explicity since it is a child of
   // the temp dir.
