@@ -240,6 +240,13 @@ void GtkIMContextWrapper::OnFocusOut() {
 }
 
 void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
+  gboolean show_input_method_menu = TRUE;
+
+  g_object_get(gtk_widget_get_settings(GTK_WIDGET(host_view_->native_view())),
+               "gtk-show-input-method-menu", &show_input_method_menu, NULL);
+  if (!show_input_method_menu)
+    return;
+
   std::string label = gtk_util::ConvertAcceleratorsFromWindowsStyle(
       l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU));
   GtkWidget* menuitem = gtk_menu_item_new_with_mnemonic(label.c_str());
