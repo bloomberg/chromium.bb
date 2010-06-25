@@ -58,6 +58,23 @@ bool TestInitialize() {
   return true;
 }
 
+bool TestEntryPoints() {
+  // np_entry.cc only defines NP_GetEntryPoints() for Windows and Mac OS X.
+  if (NACL_OSX || NACL_WINDOWS) {
+    typedef NPError (*FP)(NPPluginFuncs* funcs);
+    FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_GetEntryPoints"));
+    if (NULL == func) {
+      return false;
+    }
+    NPPluginFuncs plugin_funcs;
+    if (NPERR_NO_ERROR != (*func)(&plugin_funcs)) {
+      fprintf(stderr, "ERROR: NP_GetEntryPoints returned error\n");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool TestShutdown() {
   typedef NPError (*FP)(void);
   FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_Shutdown"));
@@ -89,6 +106,7 @@ int main(int argc, char** argv) {
   bool success =
     (TestMIMEDescription() &&
      TestInitialize() &&
+     TestEntryPoints() &&
      TestShutdown());
 
   // Test closing the .so
