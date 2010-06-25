@@ -3594,3 +3594,9 @@
    fun:main
 }
 
+{
+   bug_47471
+   Memcheck:Leak
+   ...
+   fun:*ExtensionMenuManagerTest*
+}
