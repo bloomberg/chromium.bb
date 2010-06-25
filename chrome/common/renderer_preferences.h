@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -63,8 +63,7 @@ struct RendererPreferences {
   SkColor inactive_selection_bg_color;
   SkColor inactive_selection_fg_color;
 
-  // Browser wants a look at all top level requests. This is set to true for
-  // external tabs and pinned tabs.
+  // Browser wants a look at all top level requests
   bool browser_handles_top_level_requests;
 
   // Cursor blink rate in seconds.
