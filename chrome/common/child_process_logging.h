@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,17 @@
 #define CHROME_COMMON_CHILD_PROCESS_LOGGING_H_
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
+
+#if defined(OS_WIN)
+// The maximum number of active extensions we will report.
+// Also used in chrome/app, but we define it here to avoid a common->app
+// dependency.
+static const int kMaxReportedActiveExtensions = 10;
+#endif
 
 namespace child_process_logging {
 

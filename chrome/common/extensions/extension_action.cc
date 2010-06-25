@@ -8,7 +8,6 @@
 
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
@@ -158,7 +157,8 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   rect_paint.setStyle(SkPaint::kFill_Style);
   rect_paint.setAntiAlias(true);
   rect_paint.setColor(background_color);
-  canvas->AsCanvasSkia()->drawRoundRect(rect, SkIntToScalar(2), SkIntToScalar(2),
+  canvas->AsCanvasSkia()->drawRoundRect(rect, SkIntToScalar(2),
+                                        SkIntToScalar(2),
                                         rect_paint);
 
   // Overlay the gradient. It is stretchy, so we do this in three parts.
