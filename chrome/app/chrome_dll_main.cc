@@ -527,8 +527,8 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // Show the man page on --help or -h.
-  if (parsed_command_line.HasSwitch("help") ||
-      parsed_command_line.HasSwitch("h")) {
+  if (parsed_command_line.HasSwitch(switches::kHelp) ||
+      parsed_command_line.HasSwitch(switches::kHelpShort)) {
     FilePath binary(parsed_command_line.argv()[0]);
     execlp("man", "man", binary.BaseName().value().c_str(), NULL);
     PLOG(FATAL) << "execlp failed";

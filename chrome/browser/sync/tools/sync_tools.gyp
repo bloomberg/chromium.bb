@@ -20,6 +20,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/chrome/chrome.gyp:common_constants',
         '<(DEPTH)/chrome/chrome.gyp:notifier',
         '<(DEPTH)/chrome/chrome.gyp:sync_notifier',
         '<(DEPTH)/third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',

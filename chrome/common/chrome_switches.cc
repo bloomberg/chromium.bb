@@ -453,6 +453,11 @@ const char kGpuProcess[]                    = "gpu-process";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
+// These flags show the man page on Linux. They are equivalent to each
+// other.
+const char kHelp[]                          = "help";
+const char kHelpShort[]                     = "h";
+
 // Make Windows happy by allowing it to show "Enable access to this program"
 // checkbox in Add/Remove Programs->Set Program Access and Defaults. This
 // only shows an error box because the only way to hide Chrome is by
@@ -500,6 +505,18 @@ const char kInProcessWebGL[]                = "in-process-webgl";
 
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
+
+// Back up the profile.
+const char kInstallerTestBackup[]           = "backup";
+
+// Control the build under test.
+const char kInstallerTestBuild[]            = "build";
+
+// Uninstall before running the tests.
+const char kInstallerTestClean[]            = "clean";
+
+// Force the installer tests to run, regardless of the current platform.
+const char kInstallerTestForce[]            = "force";
 
 // Runs the Native Client inside the renderer process.
 const char kInternalNaCl[]                  = "internal-nacl";
@@ -769,17 +786,41 @@ const char kSingleProcess[]                 = "single-process";
 // Start the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 
-// Override the default server used for profile sync.
-const char kSyncServiceURL[]                = "sync-url";
+// Control Sync XMPP client settings.
+const char kSyncAllowPlain[]                = "allow-plain";
 
-// Override the default notification method for sync.
-const char kSyncNotificationMethod[]        = "sync-notification-method";
+// Control Sync XMPP client settings.
+const char kSyncDisableTls[]                = "disable-tls";
+
+// Email used for sync.
+const char kSyncEmail[]                     = "email";
 
 // Use the SyncerThread implementation that matches up with the old pthread
 // impl semantics, but using Chrome synchronization primitives.  The only
 // difference between this and the default is that we now have no timeout on
 // Stop().  Should only use if you experience problems with the default.
 const char kSyncerThreadTimedStop[]         = "syncer-thread-timed-stop";
+
+// Override the default notification method for sync.
+const char kSyncNotificationMethod[]        = "sync-notification-method";
+
+// Password used for sync.
+const char kSyncPassword[]                  = "password";
+
+// Port used for sync.
+const char kSyncPort[]                      = "port";
+
+// Server used for sync.
+const char kSyncServer[]                    = "server";
+
+// Override the default server used for profile sync.
+const char kSyncServiceURL[]                = "sync-url";
+
+// Control Sync XMPP client settings.
+const char kSyncUseSslTcp[]                 = "use-ssl-tcp";
+
+// Control Sync XMPP client settings.
+const char kSyncUseCacheInvalidation[]      = "use-cache-invalidation";
 
 // Pass the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
@@ -911,6 +952,9 @@ const char kLoginUser[]                     = "login-user";
 
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";
+
+// Set logging output to the given file.
+const char kChromeosLogToFile[]             = "logtofile";
 
 // Specify startup customization manifest.
 // TODO(denisromanov): delete this when not needed for testing.

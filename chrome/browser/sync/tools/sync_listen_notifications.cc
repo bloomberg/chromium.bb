@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/sync_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/notifier/base/task_pump.h"
 #include "chrome/common/net/notifier/communicator/xmpp_socket_adapter.h"
 #include "chrome/common/net/notifier/listener/listen_task.h"
@@ -336,7 +337,7 @@ int main(int argc, char* argv[]) {
 
   // Parse command line.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string email = command_line.GetSwitchValueASCII("email");
+  std::string email = command_line.GetSwitchValueASCII(switches::kSyncEmail);
   if (email.empty()) {
     printf("Usage: %s --email=foo@bar.com [--password=mypassword] "
            "[--server=talk.google.com] [--port=5222] [--allow-plain] "
@@ -344,12 +345,15 @@ int main(int argc, char* argv[]) {
            argv[0]);
     return -1;
   }
-  std::string password = command_line.GetSwitchValueASCII("password");
-  std::string server = command_line.GetSwitchValueASCII("server");
+  std::string password =
+      command_line.GetSwitchValueASCII(switches::kSyncPassword);
+  std::string server =
+      command_line.GetSwitchValueASCII(switches::kSyncServer);
   if (server.empty()) {
     server = "talk.google.com";
   }
-  std::string port_str = command_line.GetSwitchValueASCII("port");
+  std::string port_str =
+      command_line.GetSwitchValueASCII(switches::kSyncPort);
   int port = 5222;
   if (!port_str.empty()) {
     int port_from_port_str = std::strtol(port_str.c_str(), NULL, 10);
@@ -359,11 +363,11 @@ int main(int argc, char* argv[]) {
       port = port_from_port_str;
     }
   }
-  bool allow_plain = command_line.HasSwitch("allow-plain");
-  bool disable_tls = command_line.HasSwitch("disable-tls");
-  bool use_ssl_tcp = command_line.HasSwitch("use-ssl-tcp");
+  bool allow_plain = command_line.HasSwitch(switches::kSyncAllowPlain);
+  bool disable_tls = command_line.HasSwitch(switches::kSyncDisableTls);
+  bool use_ssl_tcp = command_line.HasSwitch(switches::kSyncUseSslTcp);
   if (use_ssl_tcp && (port != 443)) {
-    LOG(WARNING) << "--use-ssl-tcp is set but port is " << port
+    LOG(WARNING) << switches::kSyncUseSslTcp << " is set but port is " << port
                  << " instead of 443";
   }
 
@@ -406,7 +410,7 @@ int main(int argc, char* argv[]) {
   CacheInvalidationNotifierDelegate cache_invalidation_notifier_delegate(
       &message_loop, data_types);
   XmppNotificationClient::Delegate* delegate = NULL;
-  if (command_line.HasSwitch("use-cache-invalidation")) {
+  if (command_line.HasSwitch(switches::kSyncUseCacheInvalidation)) {
     delegate = &cache_invalidation_notifier_delegate;
   } else {
     delegate = &legacy_notifier_delegate;

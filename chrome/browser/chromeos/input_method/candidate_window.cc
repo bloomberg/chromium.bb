@@ -23,6 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "third_party/cros/chromeos_cros_api.h"
@@ -1018,7 +1019,8 @@ int main(int argc, char** argv) {
 
   // Write logs to a file for debugging, if --logtofile=FILE_NAME is given.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string log_file_name = command_line.GetSwitchValueASCII("logtofile");
+  std::string log_file_name =
+      command_line.GetSwitchValueASCII(switches::kChromeosLogToFile);
   if (!log_file_name.empty()) {
     logging::SetMinLogLevel(logging::LOG_INFO);
     logging::InitLogging(log_file_name.c_str(),
