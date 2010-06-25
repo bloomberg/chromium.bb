@@ -57,34 +57,8 @@
 _start:
     mov r11, #0 /* clear frame pointer */
     mov r14, #0 /* clear link register */
-    ldr r0, .L_fini
-    bl atexit
-
     nop
     nop
-    nop
-    bl __pthread_initialize
-
-    ldr r0, .L__pthread_shutdown
-    nop
-    nop
-    bl atexit
-
-    nop
-    nop
-    nop
-    bl _init
-
-    nop
-    nop
-    nop
-    bl __srpc_init
-
-    nop
-    nop
-    nop
-    bl __av_wait
-
     /* TODO(robertm): We should be doing this in sel_ldr. */
     ldr r0, [sp] /* get argc */
     add r1, sp, #4 /* get argv */
@@ -94,34 +68,16 @@ _start:
     bic r3, sp, #7 /* aligned stack value in r3 */
     teq r3, sp  /* update sp if sp != r3, this will make it 8 aligned  */
     pushne {r1}
-    bl main
+    bl __nacl_startup
 
-    str r0, [sp] /* save return value from main().
-                    this memory location used to contain argc */
-    nop
-    nop
-    bl __srpc_wait
-
-    ldr r0, [sp]  /* restore return value from main() */
-    nop
-    nop
-    bl exit    /* from newlib */
-
-    /* some data referenced above */
-    .align NACL_ARM_BUNDLE_SIZE_LOG
+    /* unreachable */
     bkpt    0x7777
-.L_fini:
-    .long _fini
-.L__pthread_shutdown:
-    .long __pthread_shutdown
-    .long 0
+    bkpt    0x7777
+    bkpt    0x7777
+
 /* ====================================================================== */
 /* Some runtime code for ARM */
 /* NOTE: this code can only clobber r0 and hence is hand coded */
-/* ====================================================================== */
-    .section .text
-
-/* ====================================================================== */
 /* Access to tls. We also have an unused trampoline version of this */
 /* ====================================================================== */
     .align NACL_ARM_BUNDLE_SIZE_LOG

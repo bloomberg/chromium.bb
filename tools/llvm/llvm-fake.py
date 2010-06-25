@@ -110,7 +110,7 @@ global_config_flags = {
     # TODO: get rid of the next two lines
     '-DNACL_TARGET_SUBARCH=32',
     '-DNACL_LINUX=1',
-    '-ffixed-r9'
+    '-ffixed-r9',
   ] + arm_flags,
 
 
@@ -526,6 +526,7 @@ def MassageFinalLinkCommandArm(args):
   if '-nostdlib' not in args:
     out.append(LIBDIR_ARM_2 + '/crt1.o')
     out.append(LIBDIR_ARM_2 + '/crti.o')
+    out.append(LIBDIR_ARM_2 + '/nacl_startup.o')
     out.append(LIBDIR_ARM_2 + '/intrinsics.o')
 
   out += args
@@ -636,7 +637,8 @@ def GenerateCombinedBitcodeFile(argv):
   if '-nostdlib' not in argv:
     if last_bitcode_pos != None:
         # Splice in the extra symbols.
-        args_bit_ld = (args_bit_ld[:last_bitcode_pos] +
+        args_bit_ld = ([PNACL_BITCODE_ROOT + "/nacl_startup.o"] +
+                       args_bit_ld[:last_bitcode_pos] +
                        args_bit_ld[last_bitcode_pos:] +
                        [# NOTE: bad things happen when '-lc' is not first
                         '-lc',
@@ -645,22 +647,14 @@ def GenerateCombinedBitcodeFile(argv):
                         '-lnosys',
                         ])
 
-  # NOTE: .bc will be appended to the output name by LLVM_LD
-  # These are the functions/symbols that are used by the NaCl runtime and
-  # therefore cannot be internalized but should be linked in from libraries
-  # even if they are not directly referenced in bitcode.
-  # TODO(espindola): Give a pointer to a doc explaining how/why these are used.
-  public_functions = ['atexit',
-                      'environ',
+  # NOTE:.bc will be appended to the output name by LLVM_LD
+  # NOTE:These are to insure that dependencies for libgcc.a are satified
+  #      c.f. http://code.google.com/p/nativeclient/issues/detail?id=639
+  public_functions = ['environ',
                       'memset',
-                      'exit',
-                      'main',
+                      'abort',
                       'raise',
-                      '__av_wait',
-                      '__pthread_initialize',
-                      '__pthread_shutdown',
-                      '__srpc_init',
-                      '__srpc_wait']
+                      ]
 
   # if we are not in barebones mode keep some symbols other than main
   # alive which are called form crtX.o

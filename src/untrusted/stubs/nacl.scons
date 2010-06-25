@@ -56,3 +56,8 @@ crt_platform = env.StaticLibrary('crt_platform',
                                  [env.StaticObject('tls.o', ['tls.c'])])
 
 env.AddObjectToSdk(objects + [crt_platform], is_platform=True)
+
+
+# NOTE: This object file is NOT truely platform specific
+o = env.ComponentObject('nacl_startup', ['nacl_startup.c'])
+env.AddObjectToSdk(o, is_platform=False)
