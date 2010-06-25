@@ -43,6 +43,8 @@ class ImageLoadingTracker : public NotificationObserver {
 
   class Observer {
    public:
+    virtual ~Observer();
+
     // Will be called when the image with the given index has loaded.
     // The |image| is owned by the tracker, so the observer should make a copy
     // if they need to access it after this call. |image| can be null if valid
@@ -72,10 +74,11 @@ class ImageLoadingTracker : public NotificationObserver {
   // When an image has finished loaded and been resized on the file thread, it
   // is posted back to this method on the original thread.  This method then
   // calls the observer's OnImageLoaded and deletes the ImageLoadingTracker if
-  // it was the last image in the list.
+  // it was the last image in the list. The |original_size| should be the size
+  // of the image before any resizing was done.
   // |image| may be null if the file failed to decode.
   void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
-                     int id);
+                     const gfx::Size& original_size, int id);
 
   // NotificationObserver method. If an extension is uninstalled while we're
   // waiting for the image we remove the entry from load_map_.

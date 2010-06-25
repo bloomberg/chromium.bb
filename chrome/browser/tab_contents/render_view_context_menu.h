@@ -91,6 +91,8 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
       const std::vector<ExtensionMenuItem*>& items,
       menus::SimpleMenuModel* menu_model,
       int *index);
+  // This will set the icon on the most recently-added item in the menu_model_.
+  void SetExtensionIcon(const std::string& extension_id);
 
   // Opens the specified URL string in a new tab.  If |in_current_window| is
   // false, a new window is created to hold the new tab.

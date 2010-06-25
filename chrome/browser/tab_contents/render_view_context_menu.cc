@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/favicon_size.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
@@ -195,6 +196,7 @@ void RenderViewContextMenu::AppendExtensionItems(
     menu_model_.AddSubMenu(menu_id, title, submenu);
     RecursivelyAppendExtensionItems(submenu_items, submenu, index);
   }
+  SetExtensionIcon(extension_id);
 }
 
 void RenderViewContextMenu::RecursivelyAppendExtensionItems(
@@ -251,6 +253,20 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
     }
     last_type = item->type();
   }
+}
+
+void RenderViewContextMenu::SetExtensionIcon(const std::string& extension_id) {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionMenuManager* menu_manager = service->menu_manager();
+
+  int index = menu_model_.GetItemCount() - 1;
+  DCHECK(index >= 0);
+
+  const SkBitmap& icon = menu_manager->GetIconForExtension(extension_id);
+  DCHECK(icon.width() == kFavIconSize);
+  DCHECK(icon.height() == kFavIconSize);
+
+  menu_model_.SetIcon(index, icon);
 }
 
 void RenderViewContextMenu::AppendAllExtensionItems() {

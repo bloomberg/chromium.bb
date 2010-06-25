@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -16,6 +17,11 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_resource.h"
+#include "gfx/favicon_size.h"
+#include "gfx/size.h"
+#include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 #include "webkit/glue/context_menu.h"
 
 ExtensionMenuItem::ExtensionMenuItem(const std::string& extension_id,
@@ -96,7 +102,9 @@ void ExtensionMenuItem::AddChild(ExtensionMenuItem* item) {
   children_.push_back(item);
 }
 
-ExtensionMenuManager::ExtensionMenuManager() : next_item_id_(1) {
+ExtensionMenuManager::ExtensionMenuManager()
+    : next_item_id_(1),
+      ALLOW_THIS_IN_INITIALIZER_LIST(image_tracker_(this)) {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
 }
@@ -126,20 +134,37 @@ const ExtensionMenuItem::List* ExtensionMenuManager::MenuItems(
   return NULL;
 }
 
-int ExtensionMenuManager::AddContextItem(ExtensionMenuItem* item) {
+int ExtensionMenuManager::AddContextItem(Extension* extension,
+                                         ExtensionMenuItem* item) {
   const std::string& extension_id = item->extension_id();
   // The item must have a non-empty extension id.
   if (extension_id.empty())
     return 0;
 
+  DCHECK_EQ(extension->id(), extension_id);
+
   DCHECK_EQ(0, item->id());
   item->set_id(next_item_id_++);
 
+  bool first_item = !ContainsKey(context_items_, extension_id);
   context_items_[extension_id].push_back(item);
   items_by_id_[item->id()] = item;
 
   if (item->type() == ExtensionMenuItem::RADIO && item->checked())
     RadioItemSelected(item);
+
+  // If this is the first item for this extension, start loading its icon.
+  if (first_item) {
+    ExtensionResource icon_resource;
+    extension->GetIconPathAllowLargerSize(&icon_resource,
+                                          Extension::EXTENSION_ICON_BITTY);
+    if (!icon_resource.extension_root().empty()) {
+      image_tracker_.LoadImage(extension,
+                               icon_resource,
+                               gfx::Size(kFavIconSize, kFavIconSize),
+                               ImageLoadingTracker::CACHE);
+    }
+  }
 
   return item->id();
 }
@@ -233,6 +258,7 @@ bool ExtensionMenuManager::RemoveContextMenuItem(int id) {
     return false;
   }
 
+  bool result = false;
   ExtensionMenuItem::List& list = i->second;
   ExtensionMenuItem::List::iterator j;
   for (j = list.begin(); j < list.end(); ++j) {
@@ -241,14 +267,20 @@ bool ExtensionMenuManager::RemoveContextMenuItem(int id) {
       delete *j;
       list.erase(j);
       items_by_id_.erase(id);
-      return true;
+      result = true;
+      break;
     } else if ((*j)->RemoveChild(id)) {
       items_by_id_.erase(id);
-      return true;
+      result = true;
+      break;
     }
   }
-  NOTREACHED();  // The check at the very top should prevent getting here.
-  return false;
+  DCHECK(result);  // The check at the very top should have prevented this.
+
+  if (list.empty() && ContainsKey(extension_icons_, extension_id))
+    extension_icons_.erase(extension_id);
+
+  return result;
 }
 
 void ExtensionMenuManager::RemoveAllContextItems(std::string extension_id) {
@@ -267,6 +299,9 @@ void ExtensionMenuManager::RemoveAllContextItems(std::string extension_id) {
   }
   STLDeleteElements(&context_items_[extension_id]);
   context_items_.erase(extension_id);
+
+  if (ContainsKey(extension_icons_, extension_id))
+    extension_icons_.erase(extension_id);
 }
 
 ExtensionMenuItem* ExtensionMenuManager::GetItemById(int id) const {
@@ -421,4 +456,58 @@ void ExtensionMenuManager::Observe(NotificationType type,
   if (ContainsKey(context_items_, extension->id())) {
     RemoveAllContextItems(extension->id());
   }
+}
+
+const SkBitmap& ExtensionMenuManager::GetIconForExtension(
+    const std::string& extension_id) {
+  const SkBitmap* result = NULL;
+  if (ContainsKey(extension_icons_, extension_id)) {
+    result = &(extension_icons_[extension_id]);
+  } else {
+    EnsureDefaultIcon();
+    result = &default_icon_;
+  }
+  DCHECK(result);
+  DCHECK(result->width() == kFavIconSize);
+  DCHECK(result->height() == kFavIconSize);
+  return *result;
+}
+
+void ExtensionMenuManager::OnImageLoaded(SkBitmap* image,
+                                         ExtensionResource resource,
+                                         int index) {
+  if (!image)
+    return;
+
+  const std::string extension_id = resource.extension_id();
+
+  // Make sure we still have menu items for this extension (since image loading
+  // is asynchronous, there's a slight chance they may have all been removed
+  // while the icon was loading).
+  if (!ContainsKey(context_items_, extension_id))
+    return;
+
+  if (image->width() == kFavIconSize && image->height() == kFavIconSize)
+    extension_icons_[extension_id] = *image;
+  else
+    extension_icons_[extension_id] = ScaleToFavIconSize(*image);
+}
+
+void ExtensionMenuManager::EnsureDefaultIcon() {
+  if (default_icon_.empty()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    SkBitmap* src = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
+    if (src->width() == kFavIconSize && src->height() == kFavIconSize) {
+      default_icon_ = *src;
+    } else {
+      default_icon_ = SkBitmap(ScaleToFavIconSize(*src));
+    }
+  }
+}
+
+SkBitmap ExtensionMenuManager::ScaleToFavIconSize(const SkBitmap& source) {
+  return skia::ImageOperations::Resize(source,
+                                       skia::ImageOperations::RESIZE_LANCZOS3,
+                                       kFavIconSize,
+                                       kFavIconSize);
 }

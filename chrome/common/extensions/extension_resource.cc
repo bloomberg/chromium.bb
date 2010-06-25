@@ -14,9 +14,11 @@ bool ExtensionResource::check_for_file_thread_ = false;
 ExtensionResource::ExtensionResource() {
 }
 
-ExtensionResource::ExtensionResource(const FilePath& extension_root,
+ExtensionResource::ExtensionResource(const std::string& extension_id,
+                                     const FilePath& extension_root,
                                      const FilePath& relative_path)
-    : extension_root_(extension_root),
+    : extension_id_(extension_id),
+      extension_root_(extension_root),
       relative_path_(relative_path) {
 }
 

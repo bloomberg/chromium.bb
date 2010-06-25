@@ -14,11 +14,14 @@
 #include "base/linked_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 struct ContextMenuParams;
 
+class Extension;
 class ExtensionMessageService;
 class Profile;
 class TabContents;
@@ -167,7 +170,9 @@ class ExtensionMenuItem {
 };
 
 // This class keeps track of menu items added by extensions.
-class ExtensionMenuManager : public NotificationObserver {
+class ExtensionMenuManager
+    : public ImageLoadingTracker::Observer,
+      public NotificationObserver {
  public:
   ExtensionMenuManager();
   virtual ~ExtensionMenuManager();
@@ -182,9 +187,11 @@ class ExtensionMenuManager : public NotificationObserver {
   // put them into a submenu if there are more than 1.
   const ExtensionMenuItem::List* MenuItems(const std::string& extension_id);
 
-  // Takes ownership of |item|. Returns the id assigned to the item. Has the
-  // side-effect of incrementing the next_item_id_ member.
-  int AddContextItem(ExtensionMenuItem* item);
+  // Adds a top-level menu item for an extension, requiring the |extension|
+  // pointer so it can load the icon for the extension. Takes ownership of
+  // |item|. Returns the id assigned to the item. Has the side-effect of
+  // incrementing the next_item_id_ member.
+  int AddContextItem(Extension* extension, ExtensionMenuItem* item);
 
   // Add an item as a child of another item which has been previously added, and
   // takes ownership of |item|. Returns the id assigned to the item, or 0 on
@@ -217,6 +224,15 @@ class ExtensionMenuManager : public NotificationObserver {
   virtual void Observe(NotificationType type, const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // This returns a bitmap of width/height kFavIconSize, loaded either from an
+  // entry specified in the extension's 'icon' section of the manifest, or a
+  // default extension icon.
+  const SkBitmap& GetIconForExtension(const std::string& extension_id);
+
+  // Implements the ImageLoadingTracker::Observer interface.
+  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+                             int index);
+
  private:
   // This is a helper function which takes care of de-selecting any other radio
   // items in the same group (i.e. that are adjacent in the list).
@@ -224,6 +240,13 @@ class ExtensionMenuManager : public NotificationObserver {
 
   // Returns true if item is a descendant of an item with id |ancestor_id|.
   bool DescendantOf(ExtensionMenuItem* item, int ancestor_id);
+
+  // Makes sure we've done one-time initialization of the default extension icon
+  // default_icon_.
+  void EnsureDefaultIcon();
+
+  // Helper function to return a copy of |src| scaled to kFavIconSize.
+  SkBitmap ScaleToFavIconSize(const SkBitmap& src);
 
   // We keep items organized by mapping an extension id to a list of items.
   typedef std::map<std::string, ExtensionMenuItem::List> MenuItemMap;
@@ -238,6 +261,15 @@ class ExtensionMenuManager : public NotificationObserver {
   int next_item_id_;
 
   NotificationRegistrar registrar_;
+
+  // Used for loading extension icons.
+  ImageLoadingTracker image_tracker_;
+
+  // Maps extension id to an SkBitmap with the icon for that extension.
+  std::map<std::string, SkBitmap> extension_icons_;
+
+  // The default icon we'll use if an extension doesn't have one.
+  SkBitmap default_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMenuManager);
 };

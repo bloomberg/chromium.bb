@@ -760,11 +760,11 @@ ExtensionResource Extension::GetResource(const std::string& relative_path) {
 #elif defined(OS_WIN)
   FilePath relative_file_path(UTF8ToWide(relative_path));
 #endif
-  return ExtensionResource(path(), relative_file_path);
+  return ExtensionResource(id(), path(), relative_file_path);
 }
 
 ExtensionResource Extension::GetResource(const FilePath& relative_file_path) {
-  return ExtensionResource(path(), relative_file_path);
+  return ExtensionResource(id(), path(), relative_file_path);
 }
 
 // TODO(rafaelw): Move ParsePEMKeyBytes, ProducePEM & FormatPEMForOutput to a
@@ -1584,27 +1584,62 @@ void Extension::SetBackgroundPageReady() {
       NotificationService::NoDetails());
 }
 
+static std::string SizeToString(const gfx::Size& max_size) {
+  return IntToString(max_size.width()) + "x" + IntToString(max_size.height());
+}
+
 void Extension::SetCachedImage(const ExtensionResource& source,
-                               const SkBitmap& image) {
+                               const SkBitmap& image,
+                               const gfx::Size& original_size) {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
-  image_cache_[source.relative_path()] = image;
+  const FilePath& path = source.relative_path();
+  gfx::Size actual_size(image.width(), image.height());
+  if (actual_size == original_size) {
+    image_cache_[ImageCacheKey(path, std::string())] = image;
+  } else {
+    image_cache_[ImageCacheKey(path, SizeToString(actual_size))] = image;
+  }
 }
 
-bool Extension::HasCachedImage(const ExtensionResource& source) {
+bool Extension::HasCachedImage(const ExtensionResource& source,
+                               const gfx::Size& max_size) {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
-  return image_cache_.find(source.relative_path()) != image_cache_.end();
+  return GetCachedImageImpl(source, max_size) != NULL;
 }
 
-SkBitmap Extension::GetCachedImage(const ExtensionResource& source) {
+SkBitmap Extension::GetCachedImage(const ExtensionResource& source,
+                                   const gfx::Size& max_size) {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
-  ImageCache::iterator i = image_cache_.find(source.relative_path());
-  if (i == image_cache_.end())
-    return SkBitmap();
-  return i->second;
+  SkBitmap* image = GetCachedImageImpl(source, max_size);
+  return image ? *image : SkBitmap();
 }
+
+SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
+                                        const gfx::Size& max_size) {
+  const FilePath& path = source.relative_path();
+
+  // Look for exact size match.
+  ImageCache::iterator i = image_cache_.find(
+      ImageCacheKey(path, SizeToString(max_size)));
+  if (i != image_cache_.end())
+    return &(i->second);
+
+  // If we have the original size version cached, return that if it's small
+  // enough.
+  i = image_cache_.find(ImageCacheKey(path, std::string()));
+  if (i != image_cache_.end()) {
+    SkBitmap& image = i->second;
+    if (image.width() <= max_size.width() &&
+        image.height() <= max_size.height())
+      return &(i->second);
+  }
+
+  return NULL;
+}
+
 
 ExtensionResource Extension::GetIconPath(Icons icon) {
   std::map<int, std::string>::const_iterator iter = icons_.find(icon);

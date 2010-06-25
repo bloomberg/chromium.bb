@@ -20,9 +20,12 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/codec/png_codec.h"
 #include "net/base/mime_sniffer.h"
+#include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
@@ -843,4 +846,87 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
                                              new_extension.get()))
         << kTests[i].base_name;
   }
+}
+
+// Returns a copy of |source| resized to |size| x |size|.
+static SkBitmap ResizedCopy(const SkBitmap& source, int size) {
+  return skia::ImageOperations::Resize(source,
+                                       skia::ImageOperations::RESIZE_LANCZOS3,
+                                       size,
+                                       size);
+}
+
+static bool SizeEquals(const SkBitmap& bitmap, const gfx::Size& size) {
+  return bitmap.width() == size.width() && bitmap.height() == size.height();
+}
+
+TEST(ExtensionTest, ImageCaching) {
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions");
+
+  // Initialize the Extension.
+  std::string errors;
+  scoped_ptr<Extension> extension(new Extension(path));
+  DictionaryValue values;
+  values.SetString(keys::kName, "test");
+  values.SetString(keys::kVersion, "0.1");
+  ASSERT_TRUE(extension->InitFromValue(values, false, &errors));
+
+  // Create an ExtensionResource pointing at an icon.
+  FilePath icon_relative_path(FILE_PATH_LITERAL("icon3.png"));
+  ExtensionResource resource(extension->id(),
+                             extension->path(),
+                             icon_relative_path);
+
+  // Read in the icon file.
+  FilePath icon_absolute_path = extension->path().Append(icon_relative_path);
+  std::string raw_png;
+  ASSERT_TRUE(file_util::ReadFileToString(icon_absolute_path, &raw_png));
+  SkBitmap image;
+  ASSERT_TRUE(gfx::PNGCodec::Decode(
+      reinterpret_cast<const unsigned char*>(raw_png.data()),
+      raw_png.length(),
+      &image));
+
+  // Make sure the icon file is the size we expect.
+  gfx::Size original_size(66, 66);
+  ASSERT_EQ(image.width(), original_size.width());
+  ASSERT_EQ(image.height(), original_size.height());
+
+  // Create two resized versions at size 16x16 and 24x24.
+  SkBitmap image16 = ResizedCopy(image, 16);
+  SkBitmap image24 = ResizedCopy(image, 24);
+
+  gfx::Size size16(16, 16);
+  gfx::Size size24(24, 24);
+
+  // Cache the 16x16 copy.
+  EXPECT_FALSE(extension->HasCachedImage(resource, size16));
+  extension->SetCachedImage(resource, image16, original_size);
+  EXPECT_TRUE(extension->HasCachedImage(resource, size16));
+  EXPECT_TRUE(SizeEquals(extension->GetCachedImage(resource, size16), size16));
+  EXPECT_FALSE(extension->HasCachedImage(resource, size24));
+  EXPECT_FALSE(extension->HasCachedImage(resource, original_size));
+
+  // Cache the 24x24 copy.
+  extension->SetCachedImage(resource, image24, original_size);
+  EXPECT_TRUE(extension->HasCachedImage(resource, size24));
+  EXPECT_TRUE(SizeEquals(extension->GetCachedImage(resource, size24), size24));
+  EXPECT_FALSE(extension->HasCachedImage(resource, original_size));
+
+  // Cache the original, and verify that it gets returned when we ask for a
+  // max_size that is larger than the original.
+  gfx::Size size128(128, 128);
+  EXPECT_TRUE(image.width() < size128.width() &&
+              image.height() < size128.height());
+  extension->SetCachedImage(resource, image, original_size);
+  EXPECT_TRUE(extension->HasCachedImage(resource, original_size));
+  EXPECT_TRUE(extension->HasCachedImage(resource, size128));
+  EXPECT_TRUE(SizeEquals(extension->GetCachedImage(resource, original_size),
+                         original_size));
+  EXPECT_TRUE(SizeEquals(extension->GetCachedImage(resource, size128),
+                         original_size));
+  EXPECT_EQ(extension->GetCachedImage(resource, original_size).getPixels(),
+            extension->GetCachedImage(resource, size128).getPixels());
 }
