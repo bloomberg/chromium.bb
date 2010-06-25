@@ -5,15 +5,10 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PLUGIN_SWITCHES_H_
 #define WEBKIT_GLUE_PLUGINS_PLUGIN_SWITCHES_H_
 
-#include "build/build_config.h"
-
 namespace switches {
 
-extern const char kEnablePepperTesting[];
-
-#if defined(OS_POSIX)
 extern const char kDebugPluginLoading[];
-#endif
+extern const char kEnablePepperTesting[];
 
 }  // namespace switches
 

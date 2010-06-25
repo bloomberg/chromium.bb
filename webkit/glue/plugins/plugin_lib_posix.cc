@@ -28,6 +28,8 @@
 
 namespace {
 
+using NPAPI::PluginList;
+
 // Copied from nsplugindefs.h instead of including the file since it has a bunch
 // of dependencies.
 enum nsPluginVariable {
@@ -116,10 +118,16 @@ void UnwrapNSPluginWrapper(void **dl, FilePath* unwrapped_path) {
   if (!newdl) {
     // We couldn't load the unwrapped plugin for some reason, despite
     // being able to load the wrapped one.  Just use the wrapped one.
+    LOG_IF(INFO, PluginList::DebugPluginLoading())
+        << "Could not use unwrapped nspluginwrapper plugin "
+        << unwrapped_path->value() << ", using the wrapped one.";
     return;
   }
 
   // Unload the wrapped plugin, and use the wrapped plugin instead.
+  LOG_IF(INFO, PluginList::DebugPluginLoading())
+      << "Using unwrapped version " << unwrapped_path->value()
+      << " of nspluginwrapper-wrapped plugin.";
   base::UnloadNativeLibrary(*dl);
   *dl = newdl;
   *unwrapped_path = path;
@@ -135,12 +143,20 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
   // http://mxr.mozilla.org/firefox/source/modules/plugin/base/src/nsPluginsDirUnix.cpp
 
   // Skip files that aren't appropriate for our architecture.
-  if (!ELFMatchesCurrentArchitecture(filename))
+  if (!ELFMatchesCurrentArchitecture(filename)) {
+    LOG_IF(INFO, PluginList::DebugPluginLoading())
+        << "Skipping plugin " << filename.value()
+        << " because it doesn't match the current architecture.";
     return false;
+  }
 
   void* dl = base::LoadNativeLibrary(filename);
-  if (!dl)
+  if (!dl) {
+    LOG_IF(INFO, PluginList::DebugPluginLoading())
+        << "While reading plugin info, unable to load library "
+        << filename.value() << ", skipping.";
     return false;
+  }
 
   info->path = filename;
   info->enabled = true;
@@ -176,6 +192,15 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     NP_GetValue(NULL, nsPluginVariable_DescriptionString, &description);
     if (description)
       info->desc = UTF8ToUTF16(description);
+
+    LOG_IF(INFO, PluginList::DebugPluginLoading())
+        << "Got info for plugin " << filename.value()
+        << " Name = \"" << UTF16ToUTF8(info->name)
+        << "\", Description = \"" << UTF16ToUTF8(info->desc) << "\".";
+  } else {
+    LOG_IF(INFO, PluginList::DebugPluginLoading())
+        << "Plugin " << filename.value()
+        << " has no GetValue() and probably won't work.";
   }
 
   // Intentionally not unloading the plugin here, it can lead to crashes.

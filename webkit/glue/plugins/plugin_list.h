@@ -73,6 +73,10 @@ class PluginList {
   // Gets the one instance of the PluginList.
   static PluginList* Singleton();
 
+  // Returns true if we're in debug-plugin-loading mode. This is controlled
+  // by a command line switch.
+  static bool DebugPluginLoading();
+
   // Returns true iff the plugin list has been loaded already.
   bool PluginsLoaded();
 

@@ -170,8 +170,11 @@ bool PluginLib::Load() {
 
   if (!internal_) {
     library = base::LoadNativeLibrary(web_plugin_info_.path);
-    if (library == 0)
+    if (library == 0) {
+      LOG_IF(INFO, PluginList::DebugPluginLoading())
+          << "Couldn't load plugin " << web_plugin_info_.path.value();
       return rv;
+    }
 
 #if defined(OS_MACOSX)
     // According to the WebKit source, QuickTime at least requires us to call
@@ -217,10 +220,17 @@ bool PluginLib::Load() {
   }
 
   if (!internal_) {
-    if (rv)
+    if (rv) {
+      LOG_IF(INFO, PluginList::DebugPluginLoading())
+          << "Plugin " << web_plugin_info_.path.value()
+          << " loaded successfully.";
       library_ = library;
-    else
+    } else {
+      LOG_IF(INFO, PluginList::DebugPluginLoading())
+          << "Plugin " << web_plugin_info_.path.value()
+          << " failed to load, unloading.";
       base::UnloadNativeLibrary(library);
+    }
   }
 
   return rv;
@@ -276,11 +286,17 @@ void PluginLib::Unload() {
       FreePluginLibraryTask* free_library_task =
           new FreePluginLibraryTask(skip_unload_ ? NULL : library_,
                                     entry_points_.np_shutdown);
+      LOG_IF(INFO, PluginList::DebugPluginLoading())
+          << "Scheduling delayed unload for plugin "
+          << web_plugin_info_.path.value();
       MessageLoop::current()->PostTask(FROM_HERE, free_library_task);
     } else {
       Shutdown();
-      if (!skip_unload_)
+      if (!skip_unload_) {
+        LOG_IF(INFO, PluginList::DebugPluginLoading())
+            << "Unloading plugin " << web_plugin_info_.path.value();
         base::UnloadNativeLibrary(library_);
+      }
     }
 
     library_ = NULL;

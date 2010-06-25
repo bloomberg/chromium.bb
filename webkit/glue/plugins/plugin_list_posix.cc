@@ -4,23 +4,12 @@
 
 #include "webkit/glue/plugins/plugin_list.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
-#include "webkit/glue/plugins/plugin_switches.h"
 
 namespace {
-
-// Return true if we're in debug-plugin-loading mode.
-bool DebugPluginLoading() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDebugPluginLoading);
-}
-
-// Shorthand way of logging plugin load status.
-#define PLUG_LOG if (DebugPluginLoading()) LOG(INFO)
 
 // We build up a list of files and mtimes so we can sort them.
 typedef std::pair<FilePath, base::Time> FileAndTime;
@@ -159,16 +148,19 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
     // symlinks.
     FilePath orig_path = path;
     file_util::AbsolutePath(&path);
-    PLUG_LOG << "Resolved " << orig_path.value() << " -> " << path.value();
+    LOG_IF(INFO, PluginList::DebugPluginLoading())
+        << "Resolved " << orig_path.value() << " -> " << path.value();
 
     if (visited_plugins->find(path) != visited_plugins->end()) {
-      PLUG_LOG << "Skipping duplicate instance of " << path.value();
+      LOG_IF(INFO, PluginList::DebugPluginLoading())
+          << "Skipping duplicate instance of " << path.value();
       continue;
     }
     visited_plugins->insert(path);
 
     if (IsBlacklistedPlugin(path)) {
-      PLUG_LOG << "Skipping blacklisted plugin " << path.value();
+      LOG_IF(INFO, PluginList::DebugPluginLoading())
+          << "Skipping blacklisted plugin " << path.value();
       continue;
     }
 
@@ -208,10 +200,12 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
-  PLUG_LOG << "Considering " << info.path.value() << " (" << info.name << ")";
+  LOG_IF(INFO, PluginList::DebugPluginLoading())
+      << "Considering " << info.path.value() << " (" << info.name << ")";
 
   if (IsUndesirablePlugin(info)) {
-    PLUG_LOG << info.path.value() << " is undesirable.";
+    LOG_IF(INFO, PluginList::DebugPluginLoading())
+        << info.path.value() << " is undesirable.";
 
     // See if we have a better version of this plugin.
     for (size_t i = 0; i < plugins->size(); ++i) {
@@ -219,8 +213,9 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
           !IsUndesirablePlugin(plugins->at(i))) {
         // Skip the current undesirable one so we can use the better one
         // we just found.
-        PLUG_LOG << "Skipping " << info.path.value() << ", preferring "
-                 << plugins->at(i).path.value();
+        LOG_IF(INFO, PluginList::DebugPluginLoading())
+            << "Skipping " << info.path.value() << ", preferring "
+            << plugins->at(i).path.value();
         return false;
       }
     }
@@ -228,7 +223,8 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
 
   // TODO(evanm): prefer the newest version of flash, etc. here?
 
-  PLUG_LOG << "Using " << info.path.value();
+  LOG_IF(INFO, PluginList::DebugPluginLoading())
+      << "Using " << info.path.value();
 
   return true;
 }

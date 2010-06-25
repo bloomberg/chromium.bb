@@ -6,16 +6,18 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"
+#include "webkit/glue/plugins/plugin_switches.h"
 #include "webkit/glue/webkit_glue.h"
-#include "googleurl/src/gurl.h"
 
 namespace NPAPI {
 
@@ -24,6 +26,12 @@ base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
 // static
 PluginList* PluginList::Singleton() {
   return g_singleton.Pointer();
+}
+
+// static
+bool PluginList::DebugPluginLoading() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDebugPluginLoading);
 }
 
 bool PluginList::PluginsLoaded() {
