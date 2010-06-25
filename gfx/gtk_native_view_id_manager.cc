@@ -116,6 +116,7 @@ void GtkNativeViewManager::OnRealize(gfx::NativeView widget) {
 }
 
 void GtkNativeViewManager::OnUnrealize(gfx::NativeView widget) {
+  AutoLock unrealize_locked(unrealize_lock_);
   AutoLock locked(lock_);
 
   const gfx::NativeViewId id = GetWidgetId(widget);

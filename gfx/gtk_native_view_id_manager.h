@@ -63,6 +63,8 @@ class GtkNativeViewManager {
   void OnUnrealize(gfx::NativeView widget);
   void OnDestroy(gfx::NativeView widget);
 
+  Lock& unrealize_lock() { return unrealize_lock_; }
+
  private:
   // This object is a singleton:
   GtkNativeViewManager();
@@ -78,12 +80,18 @@ class GtkNativeViewManager {
 
   gfx::NativeViewId GetWidgetId(gfx::NativeView id);
 
+  // This lock can be used to block GTK from unrealizing windows. This is needed
+  // when the BACKGROUND_X11 thread is using a window obtained via GetXIDForId,
+  // and can't allow the X11 resource to be deleted.
+  Lock unrealize_lock_;
+
   // protects native_view_to_id_ and id_to_info_
   Lock lock_;
-    // If asked for an id for the same widget twice, we want to return the same
-    // id. So this records the current mapping.
-    std::map<gfx::NativeView, gfx::NativeViewId> native_view_to_id_;
-    std::map<gfx::NativeViewId, NativeViewInfo> id_to_info_;
+
+  // If asked for an id for the same widget twice, we want to return the same
+  // id. So this records the current mapping.
+  std::map<gfx::NativeView, gfx::NativeViewId> native_view_to_id_;
+  std::map<gfx::NativeViewId, NativeViewInfo> id_to_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkNativeViewManager);
 };
