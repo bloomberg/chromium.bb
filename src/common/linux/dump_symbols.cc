@@ -239,8 +239,7 @@ static bool LoadDwarf(const string &dwarf_filename,
 // success, or false if we don't recognize HEADER's machine
 // architecture.
 static bool DwarfCFIRegisterNames(const ElfW(Ehdr) *elf_header,
-                                  vector<string> *register_names)
-{
+                                  vector<string> *register_names) {
   switch (elf_header->e_machine) {
     case EM_386:
       *register_names = DwarfCFIToModule::RegisterNames::I386();
