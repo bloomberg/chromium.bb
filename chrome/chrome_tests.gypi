@@ -975,7 +975,6 @@
         'browser/tabs/tab_strip_model_unittest.cc',
         'browser/task_manager_unittest.cc',
         'browser/thumbnail_store_unittest.cc',
-        'browser/translate/translate_manager_unittest.cc',
         'browser/translate/translate_manager2_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/views/accessibility_event_router_views_unittest.cc',
@@ -1243,7 +1242,6 @@
           ],
           'sources/': [
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
-             ['exclude', 'browser/translate/translate_manager_unittest\\.cc$'],
           ],
           'link_settings': {
             'libraries': [
@@ -1275,7 +1273,6 @@
             'browser/printing/print_job_unittest.cc',
             'browser/rlz/rlz_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
-            'browser/translate/translate_manager2_unittest.cc',
             'browser/views/bookmark_editor_view_unittest.cc',
             'browser/views/extensions/browser_action_drag_data_unittest.cc',
             'browser/views/find_bar_host_unittest.cc',

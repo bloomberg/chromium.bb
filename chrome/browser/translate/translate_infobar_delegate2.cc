@@ -303,11 +303,3 @@ void TranslateInfoBarDelegate2::GetAfterTranslateStrings(
   strings->push_back(text.substr(offsets[0], offsets[1]));
   strings->push_back(text.substr(offsets[1]));
 }
-
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-// Necessary so we link OK on Mac and Linux while the new translate infobars
-// are being ported to these platforms.
-InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
-  return NULL;
-}
-#endif
