@@ -71,6 +71,9 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const { return 0; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
+  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
+    return NULL;
+  }
   virtual bool IsEnabledAt(int index) const;
   virtual menus::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}

@@ -239,6 +239,11 @@ bool LanguageMenuButton::GetIconAt(int index, SkBitmap* icon) const {
   return false;
 }
 
+menus::ButtonMenuItemModel* LanguageMenuButton::GetButtonMenuItemAt(
+    int index) const {
+  return NULL;
+}
+
 bool LanguageMenuButton::IsEnabledAt(int index) const {
   // Just return true so all input method names and input method propertie names
   // could be clicked.

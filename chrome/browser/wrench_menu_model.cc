@@ -5,20 +5,26 @@
 #include "chrome/browser/wrench_menu_model.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "app/l10n_util.h"
+#include "app/menus/button_menu_item_model.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -61,8 +67,13 @@ void ToolsMenuModel::Build(Browser* browser) {
 WrenchMenuModel::WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                                  Browser* browser)
     : menus::SimpleMenuModel(delegate),
+      delegate_(delegate),
       browser_(browser) {
   Build();
+  UpdateZoomControls();
+
+  registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
+                 Source<Profile>(browser_->profile()));
 }
 
 WrenchMenuModel::~WrenchMenuModel() {
@@ -125,15 +136,59 @@ bool WrenchMenuModel::GetIconAt(int index, SkBitmap* icon) const {
   return false;
 }
 
+bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
+  return false;
+}
+
+string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
+  // TODO(erg): Hook up percentage calculation once I add that widget.
+  return string16();
+}
+
+void WrenchMenuModel::ExecuteCommand(int command_id) {
+  if (delegate_)
+    delegate_->ExecuteCommand(command_id);
+}
+
+void WrenchMenuModel::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  DCHECK_EQ(NotificationType::ZOOM_LEVEL_CHANGED, type.value);
+  UpdateZoomControls();
+}
+
 void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 
   AddSeparator();
+#if defined(OS_LINUX)
+  edit_menu_item_model_.reset(new menus::ButtonMenuItemModel(IDS_EDIT, this));
+  edit_menu_item_model_->AddItemWithStringId(IDC_CUT, IDS_CUT);
+  edit_menu_item_model_->AddItemWithStringId(IDC_COPY, IDS_COPY);
+  edit_menu_item_model_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
+  AddButtonItem(0, edit_menu_item_model_.get());
+#else
+  // TODO(port): Move to the above.
   CreateCutCopyPaste();
+#endif
+
   AddSeparator();
+#if defined(OS_LINUX)
+  zoom_menu_item_model_.reset(
+      new menus::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
+  zoom_menu_item_model_->AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
+  zoom_menu_item_model_->AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
+  zoom_menu_item_model_->AddSpace();
+  zoom_menu_item_model_->AddItemWithImage(
+      IDC_FULLSCREEN, IDR_FULLSCREEN_MENU_BUTTON);
+  AddButtonItem(0, zoom_menu_item_model_.get());
+#else
+  // TODO(port): Move to the above.
   CreateZoomFullscreen();
+#endif
+
   AddSeparator();
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   AddItemWithStringId(IDC_FIND, IDS_FIND);
@@ -186,6 +241,37 @@ void WrenchMenuModel::CreateZoomFullscreen() {
   AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
   AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS);
   AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
+}
+
+void WrenchMenuModel::UpdateZoomControls() {
+  bool enable_increment, enable_decrement;
+  int zoom_percent =
+      static_cast<int>(GetZoom(&enable_increment, &enable_decrement) * 100);
+
+  // TODO(erg): Route the stringified zoom_percent through
+  // GetLabelForCommandId(). Also make a way to use enable_increment/decrement.
+  zoom_label_ = l10n_util::GetStringFUTF16(
+      IDS_ZOOM_PERCENT, IntToString16(zoom_percent));
+}
+
+double WrenchMenuModel::GetZoom(bool* enable_increment,
+                                bool* enable_decrement) {
+  TabContents* selected_tab = browser_->GetSelectedTabContents();
+  *enable_decrement = *enable_increment = false;
+  if (!selected_tab)
+    return 1;
+
+  HostZoomMap* zoom_map = selected_tab->profile()->GetHostZoomMap();
+  if (!zoom_map)
+    return 1;
+
+  // This code comes from  WebViewImpl::setZoomLevel.
+  int zoom_level = zoom_map->GetZoomLevel(selected_tab->GetURL());
+  double value = static_cast<double>(
+      std::max(std::min(std::pow(1.2, zoom_level), 3.0), .5));
+  *enable_decrement = (value != .5);
+  *enable_increment = (value != 3.0);
+  return value;
 }
 
 string16 WrenchMenuModel::GetSyncMenuLabel() const {

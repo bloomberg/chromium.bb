@@ -11,14 +11,19 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class Browser;
 class EncodingMenuModel;
 
+namespace menus {
+class ButtonMenuItemModel;
+}  // namespace menus
+
 class ToolsMenuModel : public menus::SimpleMenuModel {
  public:
-  explicit ToolsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
-                          Browser* browser);
+  ToolsMenuModel(menus::SimpleMenuModel::Delegate* delegate, Browser* browser);
   virtual ~ToolsMenuModel();
 
  private:
@@ -30,10 +35,12 @@ class ToolsMenuModel : public menus::SimpleMenuModel {
 };
 
 // A menu model that builds the contents of the wrench menu.
-class WrenchMenuModel : public menus::SimpleMenuModel {
+class WrenchMenuModel : public menus::SimpleMenuModel,
+                        public menus::ButtonMenuItemModel::Delegate,
+                        public NotificationObserver {
  public:
-  explicit WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
-                           Browser* browser);
+  WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+                  Browser* browser);
   virtual ~WrenchMenuModel();
 
   // Returns true if the WrenchMenuModel is enabled.
@@ -45,26 +52,47 @@ class WrenchMenuModel : public menus::SimpleMenuModel {
   virtual bool HasIcons() const { return true; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
 
- protected:
-  // Adds the cut/copy/paste items to the menu. The default implementation adds
-  // three real menu items, while platform specific subclasses add their own
-  // native monstrosities.
-  virtual void CreateCutCopyPaste();
+  // Overridden from menus::ButtonMenuItemModel::Delegate:
+  virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+  virtual string16 GetLabelForCommandId(int command_id) const;
+  virtual void ExecuteCommand(int command_id);
 
-  // Adds the zoom/fullscreen items to the menu. Like CreateCutCopyPaste().
-  virtual void CreateZoomFullscreen();
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   void Build();
+
+  // Adds custom items to the menu. Deprecated in favor of a cross platform
+  // model for button items.
+  void CreateCutCopyPaste();
+  void CreateZoomFullscreen();
+
+  // Calculates |zoom_label_| in response to a zoom change.
+  void UpdateZoomControls();
+  double GetZoom(bool* enable_increment, bool* enable_decrement);
 
   string16 GetSyncMenuLabel() const;
   string16 GetAboutEntryMenuLabel() const;
   bool IsDynamicItem(int index) const;
 
+  // Models for the special menu items with buttons.
+  scoped_ptr<menus::ButtonMenuItemModel> edit_menu_item_model_;
+  scoped_ptr<menus::ButtonMenuItemModel> zoom_menu_item_model_;
+
+  // Label of the zoom label in the zoom menu item.
+  string16 zoom_label_;
+
   // Tools menu.
   scoped_ptr<ToolsMenuModel> tools_menu_model_;
 
+  menus::SimpleMenuModel::Delegate* delegate_; // weak
+
   Browser* browser_;  // weak
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuModel);
 };
