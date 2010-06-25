@@ -16,6 +16,7 @@
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "third_party/ppapi/c/pp_event.h"
 #include "third_party/ppapi/c/pp_rect.h"
+#include "third_party/ppapi/cpp/completion_callback.h"
 #include "third_party/ppapi/cpp/image_data.h"
 
 using std::string;
@@ -47,7 +48,9 @@ ChromotingPlugin::~ChromotingPlugin() {
     main_thread_->Stop();
 }
 
-bool ChromotingPlugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
+bool ChromotingPlugin::Init(uint32_t argc,
+                            const char* argn[],
+                            const char* argv[]) {
   LOG(INFO) << "Started ChromotingPlugin::Init";
 
   // Extract the URL from the arguments.
@@ -126,7 +129,7 @@ void ChromotingPlugin::ViewChanged(const PP_Rect& position,
       }
     }
     device_context_.ReplaceContents(&image);
-    device_context_.Flush(NULL, this);
+    device_context_.Flush(pp::CompletionCallback(NULL, this));
   } else {
     LOG(ERROR) << "Unable to allocate image.";
   }

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/glue/plugins/pepper_resource.h"
@@ -46,8 +46,8 @@ class DeviceContext2D : public Resource {
                       const PP_Rect* src_rect);
   bool Scroll(const PP_Rect* clip_rect, int32_t dx, int32_t dy);
   bool ReplaceContents(PP_Resource image);
-  bool Flush(PPB_DeviceContext2D_FlushCallback callback,
-             void* callback_data);
+  int32_t Flush(const PP_CompletionCallback& callback);
+
   bool ReadImageData(PP_Resource image, int32_t x, int32_t y);
 
   // Assciates this device with the given plugin instance. You can pass NULL to
@@ -69,16 +69,32 @@ class DeviceContext2D : public Resource {
 
  private:
   // Tracks a call to flush that requires a callback.
-  // See unpainted_flush_callbacks_ below.
   class FlushCallbackData {
    public:
-    FlushCallbackData(PPB_DeviceContext2D_FlushCallback c, void* d);
+    FlushCallbackData() {
+      Clear();
+    }
 
-    void Execute(PP_Resource device_context);
+    FlushCallbackData(const PP_CompletionCallback& callback) {
+      Set(callback);
+    }
+
+    bool is_null() const { return !callback_.func; }
+
+    void Set(const PP_CompletionCallback& callback) {
+      callback_ = callback;
+    }
+
+    void Clear() {
+      callback_ = PP_MakeCompletionCallback(NULL, 0);
+    }
+
+    void Execute(int32_t result) {
+      PP_RunCompletionCallback(&callback_, result);
+    }
 
    private:
-    PPB_DeviceContext2D_FlushCallback callback_;
-    void* callback_data_;
+    PP_CompletionCallback callback_;
   };
 
   // Called internally to execute the different queued commands. The
@@ -141,8 +157,8 @@ class DeviceContext2D : public Resource {
   // the unpainted callbacks. When the renderer has initiated a paint, we'll
   // move it to the painted callbacks list. When the renderer receives a flush,
   // we'll execute the callback and remove it from the list.
-  scoped_ptr<FlushCallbackData> unpainted_flush_callback_;
-  scoped_ptr<FlushCallbackData> painted_flush_callback_;
+  FlushCallbackData unpainted_flush_callback_;
+  FlushCallbackData painted_flush_callback_;
 
   // When doing offscreen flushes, we issue a task that issues the callback
   // later. This is set when one of those tasks is pending so that we can

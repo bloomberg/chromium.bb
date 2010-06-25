@@ -12,6 +12,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
@@ -119,14 +120,13 @@ bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
   return context->ReplaceContents(image);
 }
 
-bool Flush(PP_Resource device_context,
-           PPB_DeviceContext2D_FlushCallback callback,
-           void* callback_data) {
+int32_t Flush(PP_Resource device_context,
+              PP_CompletionCallback callback) {
   scoped_refptr<DeviceContext2D> context(
       ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
   if (!context.get())
-    return false;
-  return context->Flush(callback, callback_data);
+    return PP_Error_BadResource;
+  return context->Flush(callback);
 }
 
 const PPB_DeviceContext2D ppb_devicecontext2d = {
@@ -170,17 +170,6 @@ struct DeviceContext2D::QueuedOperation {
   // Valid when type == REPLACE.
   scoped_refptr<ImageData> replace_image;
 };
-
-DeviceContext2D::FlushCallbackData::FlushCallbackData(
-    PPB_DeviceContext2D_FlushCallback c,
-    void* d)
-    : callback_(c),
-      callback_data_(d) {
-}
-
-void DeviceContext2D::FlushCallbackData::Execute(PP_Resource device_context) {
-  callback_(device_context, callback_data_);
-}
 
 DeviceContext2D::DeviceContext2D(PluginModule* module)
     : Resource(module),
@@ -291,16 +280,15 @@ bool DeviceContext2D::ReplaceContents(PP_Resource image) {
   return true;
 }
 
-bool DeviceContext2D::Flush(PPB_DeviceContext2D_FlushCallback callback,
-                            void* callback_data) {
+int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
-    return false;
+    return PP_Error_InProgress;
 
   // TODO(brettw) check that the current thread is not the main one and
   // implement blocking flushes in this case.
-  if (!callback)
-    return false;
+  if (!callback.func)
+    return PP_Error_BadArgument;
 
   gfx::Rect changed_rect;
   for (size_t i = 0; i < queued_operations_.size(); i++) {
@@ -336,16 +324,14 @@ bool DeviceContext2D::Flush(PPB_DeviceContext2D_FlushCallback callback,
     visible_changed_rect = bound_instance_->clip().Intersect(changed_rect);
 
   if (bound_instance_ && !visible_changed_rect.IsEmpty()) {
-    unpainted_flush_callback_.reset(new FlushCallbackData(callback,
-                                                          callback_data));
+    unpainted_flush_callback_.Set(callback);
     bound_instance_->InvalidateRect(visible_changed_rect);
   } else {
     // There's nothing visible to invalidate so just schedule the callback to
     // execute in the next round of the message loop.
-    ScheduleOffscreenCallback(
-        FlushCallbackData(callback, callback_data));
+    ScheduleOffscreenCallback(FlushCallbackData(callback));
   }
-  return true;
+  return PP_Error_WouldBlock;
 }
 
 bool DeviceContext2D::ReadImageData(PP_Resource image, int32_t x, int32_t y) {
@@ -398,13 +384,13 @@ bool DeviceContext2D::BindToInstance(PluginInstance* new_instance) {
     // When the device is detached, we'll not get any more paint callbacks so
     // we need to clear the list, but we still want to issue any pending
     // callbacks to the plugin.
-    if (unpainted_flush_callback_.get()) {
-      ScheduleOffscreenCallback(*unpainted_flush_callback_.get());
-      unpainted_flush_callback_.reset();
+    if (!unpainted_flush_callback_.is_null()) {
+      ScheduleOffscreenCallback(unpainted_flush_callback_);
+      unpainted_flush_callback_.Clear();
     }
-    if (painted_flush_callback_.get()) {
-      ScheduleOffscreenCallback(*painted_flush_callback_.get());
-      painted_flush_callback_.reset();
+    if (!painted_flush_callback_.is_null()) {
+      ScheduleOffscreenCallback(painted_flush_callback_);
+      painted_flush_callback_.Clear();
     }
   } else if (flushed_any_data_) {
     // Only schedule a paint if this backing store has had any data flushed to
@@ -469,22 +455,22 @@ void DeviceContext2D::Paint(WebKit::WebCanvas* canvas,
 void DeviceContext2D::ViewInitiatedPaint() {
   // Move any "unpainted" callback to the painted state. See
   // |unpainted_flush_callback_| in the header for more.
-  if (unpainted_flush_callback_.get()) {
-    DCHECK(!painted_flush_callback_.get());
-    painted_flush_callback_.swap(unpainted_flush_callback_);
+  if (!unpainted_flush_callback_.is_null()) {
+    DCHECK(painted_flush_callback_.is_null());
+    std::swap(painted_flush_callback_, unpainted_flush_callback_);
   }
 }
 
 void DeviceContext2D::ViewFlushedPaint() {
   // Notify any "painted" callback. See |unpainted_flush_callback_| in the
   // header for more.
-  if (painted_flush_callback_.get()) {
+  if (!painted_flush_callback_.is_null()) {
     // We must clear this variable before issuing the callback. It will be
     // common for the plugin to issue another invalidate in response to a flush
     // callback, and we don't want to think that a callback is already pending.
-    scoped_ptr<FlushCallbackData> callback;
-    callback.swap(painted_flush_callback_);
-    callback->Execute(GetResource());
+    FlushCallbackData callback;
+    std::swap(callback, painted_flush_callback_);
+    callback.Execute(PP_OK);
   }
 }
 
@@ -549,11 +535,12 @@ void DeviceContext2D::ExecuteOffscreenCallback(FlushCallbackData data) {
   // common for the plugin to issue another invalidate in response to a flush
   // callback, and we don't want to think that a callback is already pending.
   offscreen_flush_pending_ = false;
-  data.Execute(GetResource());
+  data.Execute(PP_OK);
 }
 
 bool DeviceContext2D::HasPendingFlush() const {
-  return unpainted_flush_callback_.get() || painted_flush_callback_.get() ||
+  return !unpainted_flush_callback_.is_null() ||
+         !painted_flush_callback_.is_null() ||
          offscreen_flush_pending_;
 }
 
