@@ -18,6 +18,7 @@
                 <div style="display:inline">
                   (
                     <span class="optional" jsdisplay="optional">optional</span>
+                    <span class="enum" jsdisplay="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span jsdisplay="getTypeRef($this)">
                         <a jsvalues=".href: getTypeRefPage($this) + '#type-' + getTypeRef($this)" jscontent="getTypeRef($this)"> Type</a>
@@ -27,6 +28,7 @@
                           array of <span jsselect="items"><span transclude="typeTemplate"></span></span>
                         </span>
                         <span jsdisplay="!isArray($this)" jscontent="getTypeName($this)">paramType</span>
+                        <span jsdisplay="!isArray($this) && enum" jscontent="getEnumValues(enum, type);"></span>
                       </span>
                     </span>
                   )

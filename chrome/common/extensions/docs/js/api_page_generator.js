@@ -299,6 +299,14 @@ function getTypeRef(type) {
   return type["$ref"];
 }
 
+function getEnumValues(enumList, type) {
+  if (type === "string") {
+    enumList = enumList.map(function(e) { return '"' + e + '"'});
+  }
+  var retval = enumList.join(', ');
+  return "[" + retval + "]";
+}
+
 function showPageTOC() {
   return module || getDataFromPageHTML('pageData-showTOC');
 }
