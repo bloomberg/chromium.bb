@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
+#include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -779,10 +780,12 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
 }
 
 void ExtensionsService::UnloadAllExtensions() {
-  ExtensionList::iterator iter;
-  for (iter = extensions_.begin(); iter != extensions_.end(); ++iter)
-    delete *iter;
+  STLDeleteContainerPointers(extensions_.begin(), extensions_.end());
   extensions_.clear();
+
+  STLDeleteContainerPointers(disabled_extensions_.begin(),
+                             disabled_extensions_.end());
+  disabled_extensions_.clear();
 
   // TODO(erikkay) should there be a notification for this?  We can't use
   // EXTENSION_UNLOADED since that implies that the extension has been disabled

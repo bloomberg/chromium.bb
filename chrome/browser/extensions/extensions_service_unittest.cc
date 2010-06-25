@@ -1438,6 +1438,66 @@ TEST_F(ExtensionsServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   EXPECT_NE(std::string(good0), loaded_[1]->id());
 }
 
+// Tests disabling extensions
+TEST_F(ExtensionsServiceTest, DisableExtension) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  // A simple extension that should install without error.
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  InstallExtension(path, true);
+
+  const char* extension_id = good_crx;
+  EXPECT_FALSE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->GetExtensionById(extension_id, true) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(extension_id, false) != NULL);
+  EXPECT_TRUE(service_->disabled_extensions()->empty());
+
+  // Disable it.
+  service_->DisableExtension(extension_id);
+
+  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->GetExtensionById(extension_id, true) != NULL);
+  EXPECT_FALSE(service_->GetExtensionById(extension_id, false) != NULL);
+  EXPECT_FALSE(service_->disabled_extensions()->empty());
+}
+
+// Tests reloading extensions
+TEST_F(ExtensionsServiceTest, ReloadExtensions) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  // Simple extension that should install without error.
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  InstallExtension(path, true);
+  const char* extension_id = good_crx;
+  service_->DisableExtension(extension_id);
+
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(1u, service_->disabled_extensions()->size());
+
+  service_->ReloadExtensions();
+
+  // Extension counts shouldn't change.
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(1u, service_->disabled_extensions()->size());
+
+  service_->EnableExtension(extension_id);
+
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  service_->ReloadExtensions();
+
+  // Extension counts shouldn't change.
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+}
+
 // Tests uninstalling normal extensions
 TEST_F(ExtensionsServiceTest, UninstallExtension) {
   InitializeEmptyExtensionsService();
