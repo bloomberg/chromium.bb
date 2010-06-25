@@ -691,6 +691,9 @@ void BrowserWindowGtk::Close() {
   // Cancel any pending callback from the window configure debounce timer.
   window_configure_debounce_timer_.Stop();
 
+  // Likewise for the loading animation.
+  loading_animation_timer_.Stop();
+
   GtkWidget* window = GTK_WIDGET(window_);
   // To help catch bugs in any event handlers that might get fired during the
   // destruction, set window_ to NULL before any handlers will run.
