@@ -3593,10 +3593,3 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
-
-{
-   bug_47471
-   Memcheck:Leak
-   ...
-   fun:*ExtensionMenuManagerTest*
-}

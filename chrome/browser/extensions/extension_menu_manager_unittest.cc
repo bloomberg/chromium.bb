@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -43,11 +44,14 @@ class ExtensionMenuManagerTest : public testing::Test {
   // Creates and returns a test Extension. The caller does *not* own the return
   // value.
   Extension* AddExtension(std::string name) {
-    return prefs_.AddExtension(name);
+    Extension* extension = prefs_.AddExtension(name);
+    extensions_.push_back(extension);
+    return extension;
   }
 
  protected:
   ExtensionMenuManager manager_;
+  ScopedVector<Extension> extensions_;
   TestExtensionPrefs prefs_;
 
  private:
