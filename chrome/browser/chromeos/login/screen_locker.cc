@@ -152,6 +152,7 @@ class LockWindow : public views::WidgetGtk {
   LockWindow()
       : WidgetGtk(views::WidgetGtk::TYPE_POPUP),
         toplevel_focus_widget_(NULL) {
+    EnableDoubleBuffer(true);
   }
 
   // GTK propagates key events from parents to children.
@@ -205,6 +206,9 @@ class GrabWidget : public views::WidgetGtk {
   virtual void Show() {
     views::WidgetGtk::Show();
     GtkWidget* current_grab_window;
+    // Grab gtk input first so that the menu holding grab will close itself.
+    gtk_grab_add(window_contents());
+
     // Make sure there is no grab widget so that gtk simply propagates
     // an event.  This is necessary to allow message bubble and password
     // field, button to process events simultaneously. GTK
@@ -555,6 +559,8 @@ void ScreenLocker::Show() {
     ScreenLocker* locker =
         new ScreenLocker(UserManager::Get()->logged_in_user());
     locker->Init(bounds);
+  } else {
+    LOG(INFO) << "Show(): screen locker already exists. ignoring";
   }
 }
 
@@ -562,9 +568,8 @@ void ScreenLocker::Show() {
 void ScreenLocker::Hide() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   DCHECK(screen_locker_);
-  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-  gdk_pointer_ungrab(GDK_CURRENT_TIME);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, screen_locker_);
+  LOG(INFO) << "Hide Screen Locker:" << screen_locker_;
+  MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker_);
 }
 
 // static
@@ -590,11 +595,16 @@ void ScreenLocker::InitClass() {
 // ScreenLocker, private:
 
 ScreenLocker::~ScreenLocker() {
+  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   ClearErrors();
   if (input_event_observer_.get())
     MessageLoopForUI::current()->RemoveObserver(input_event_observer_.get());
 
+  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+  gdk_pointer_ungrab(GDK_CURRENT_TIME);
+
   DCHECK(lock_window_);
+  LOG(INFO) << "Closing ScreenLocker window";
   lock_window_->Close();
   // lock_widget_ will be deleted by gtk's destroy signal.
   screen_locker_ = NULL;
