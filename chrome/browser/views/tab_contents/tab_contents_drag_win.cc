@@ -292,8 +292,10 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
   }
 
   // Set drag image.
-  drag_utils::SetDragImageOnDataObject(
-      image, gfx::Size(image.width(), image.height()), image_offset, &data);
+  if (!image.isNull()) {
+    drag_utils::SetDragImageOnDataObject(
+        image, gfx::Size(image.width(), image.height()), image_offset, &data);
+  }
 
   // Keep a local reference to drag_source_ in case that EndDragging is called
   // before DoDragDrop returns.
