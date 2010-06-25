@@ -839,3 +839,9 @@
    fun:ThreadFunc
    fun:start_thread
 }
+{
+   bug_47471
+   Heapcheck:Leak
+   ...
+   fun:ExtensionMenuManagerTest*
+}
