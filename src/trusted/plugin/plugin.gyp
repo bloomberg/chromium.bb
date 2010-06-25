@@ -158,6 +158,7 @@
           ],
           'sources': [
             '<@(common_sources)',
+            '<@(npapi_sources)',
             'nacl_entry_points.cc',
             'srpc/video_chrome.cc',
           ],
@@ -174,6 +175,7 @@
           },
           'sources': [
             '<@(common_sources)',
+            '<@(npapi_sources)',
             'nacl_entry_points.cc',
             'srpc/video_chrome.cc',
           ],
