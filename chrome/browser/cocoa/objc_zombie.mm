@@ -189,20 +189,26 @@ Class ZombieWasa(id object) {
 // attempting to send.  |viaSelector| is the selector of the
 // dispatch-related method which is being invoked to send |aSelector|
 // (for instance, -respondsToSelector:).
-void LogAndDie(id object, SEL aSelector, SEL viaSelector) {
+void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
   Class wasa = ZombieWasa(object);
   const char* wasaName = (wasa ? class_getName(wasa) : "<unknown>");
   NSString* aString =
       [NSString stringWithFormat:@"Zombie <%s: %p> received -%s",
                                  wasaName, object, sel_getName(aSelector)];
-  if (viaSelector) {
+  if (viaSelector != NULL) {
     const char* viaName = sel_getName(viaSelector);
     aString = [aString stringByAppendingFormat:@" (via -%s)", viaName];
   }
 
   // Set a value for breakpad to report, then crash.
   SetCrashKeyValue(@"zombie", aString);
-  LOG(FATAL) << [aString UTF8String];
+  LOG(ERROR) << [aString UTF8String];
+
+  // This is how about:crash is implemented.  Using instead of
+  // |DebugUtil::BreakDebugger()| or |LOG(FATAL)| to make the top of
+  // stack more immediately obvious in crash dumps.
+  int* zero = NULL;
+  *zero = 0;
 }
 
 // Initialize our globals, returning YES on success.
@@ -237,15 +243,42 @@ BOOL ZombieInit() {
 + (void)initialize {
 }
 
-// Override a few methods related to message dispatch to provide
-// diagnostic information.
+// Any method not explicitly defined will end up here, forcing a
+// crash.
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+  ZombieObjectCrash(self, aSelector, NULL);
+  return nil;
+}
+
+// Override a few methods often used for dynamic dispatch to log the
+// message the caller is attempting to send, rather than the utility
+// method being used to send it.
 - (BOOL)respondsToSelector:(SEL)aSelector {
-  LogAndDie(self, aSelector, _cmd);
+  ZombieObjectCrash(self, aSelector, _cmd);
   return NO;
 }
-- (id)forwardingTargetForSelector:(SEL)aSelector {
-  LogAndDie(self, aSelector, _cmd);
+
+- (id)performSelector:(SEL)aSelector {
+  ZombieObjectCrash(self, aSelector, _cmd);
   return nil;
+}
+
+- (id)performSelector:(SEL)aSelector withObject:(id)anObject {
+  ZombieObjectCrash(self, aSelector, _cmd);
+  return nil;
+}
+
+- (id)performSelector:(SEL)aSelector
+           withObject:(id)anObject
+           withObject:(id)anotherObject {
+  ZombieObjectCrash(self, aSelector, _cmd);
+  return nil;
+}
+
+- (void)performSelector:(SEL)aSelector
+             withObject:(id)anArgument
+             afterDelay:(NSTimeInterval)delay {
+  ZombieObjectCrash(self, aSelector, _cmd);
 }
 
 @end
