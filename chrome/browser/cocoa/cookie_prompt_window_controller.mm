@@ -137,10 +137,6 @@ static const CGFloat kExtraMarginForDetailsView = 10;
   [self doLayoutTweaks];
   [self replaceCookieDetailsView];
 
-  bool rememberEnabled = dialog_->DecisionPersistable();
-  [radioGroupMatrix_ setEnabled:rememberEnabled];
-  [radioGroupMatrix_ selectCell:(
-      rememberEnabled ? rememberChoiceCell_ : askChoiceCell_)];
   [[detailsViewController_ view] setHidden:YES];
 }
 

@@ -39,7 +39,6 @@ class CookieTreeNode;
   IBOutlet NSView* disclosureButtonSuperView_;
   IBOutlet NSMatrix* radioGroupMatrix_;
   IBOutlet NSButtonCell* rememberChoiceCell_;
-  IBOutlet NSButtonCell* askChoiceCell_;
 }
 
 // Designated initializer.

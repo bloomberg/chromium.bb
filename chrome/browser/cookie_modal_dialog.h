@@ -72,9 +72,6 @@ class CookiePromptModalDialog : public AppModalDialog {
   virtual void CancelWindow();
   virtual bool IsValid();
 
-  // Whether the user may choose to have the browser remember the decision.
-  bool DecisionPersistable();
-
 #if defined(OS_MACOSX)
   virtual void CloseModalDialog();
 #endif

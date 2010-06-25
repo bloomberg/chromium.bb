@@ -148,15 +148,12 @@ void CookiePromptView::Init() {
           IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
       display_host));
   int radio_group_id = 0;
-  bool remember_enabled = parent_->DecisionPersistable();
   remember_radio_ = new views::RadioButton(
       l10n_util::GetStringF(IDS_COOKIE_ALERT_REMEMBER_RADIO, display_host),
       radio_group_id);
   remember_radio_->set_listener(this);
-  remember_radio_->SetEnabled(remember_enabled);
   ask_radio_ = new views::RadioButton(
       l10n_util::GetString(IDS_COOKIE_ALERT_ASK_RADIO), radio_group_id);
-  ask_radio_->SetEnabled(remember_enabled);
   ask_radio_->set_listener(this);
   allow_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_COOKIE_ALERT_ALLOW_BUTTON));
@@ -230,7 +227,8 @@ void CookiePromptView::Init() {
     layout->AddView(cookie_info_view, 1, 1, GridLayout::FILL,
                     GridLayout::CENTER);
 
-    cookie_info_view->SetCookieString(parent_->origin(), parent_->cookie_line());
+    cookie_info_view->SetCookieString(parent_->origin(),
+                                      parent_->cookie_line());
     info_view_ = cookie_info_view;
   } else if (type == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE) {
     LocalStorageSetItemInfoView* view = new LocalStorageSetItemInfoView();
@@ -263,10 +261,7 @@ void CookiePromptView::Init() {
   info_view_->SetVisible(expanded_view_);
 
   // Set default values.
-  if (remember_enabled)
-    remember_radio_->SetChecked(true);
-  else
-    ask_radio_->SetChecked(true);
+  remember_radio_->SetChecked(true);
 }
 
 int CookiePromptView::GetExtendedViewHeight() {

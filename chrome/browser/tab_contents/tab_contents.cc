@@ -2974,11 +2974,11 @@ void TabContents::Observe(NotificationType type,
       GURL entry_url;
       if (entry)
         entry_url = entry->url();
-      Source<HostContentSettingsMap> content_settings(source);
       if (settings_details.ptr()->update_all() ||
           settings_details.ptr()->pattern().Matches(entry_url)) {
         render_view_host()->SendContentSettings(entry_url,
-            content_settings.ptr()->GetContentSettings(entry_url));
+            profile()->GetHostContentSettingsMap()->
+                GetContentSettings(entry_url));
       }
       break;
     }
