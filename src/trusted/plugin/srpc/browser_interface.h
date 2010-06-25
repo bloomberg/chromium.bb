@@ -38,6 +38,8 @@ class BrowserInterface {
   virtual ~BrowserInterface() { }
 
   // Functions for communication with the browser.
+
+  // Convert a string to an identifier.
   virtual uintptr_t StringToIdentifier(const nacl::string& str) = 0;
   // Convert an identifier to a string.
   virtual nacl::string IdentifierToString(uintptr_t ident) = 0;
@@ -61,7 +63,7 @@ class BrowserInterface {
   virtual bool EvalString(InstanceIdentifier plugin_identifier,
                           const nacl::string& str) = 0;
 
-  // Gets the origin of current page.
+  // Gets the origin of the current page.
   virtual bool GetOrigin(InstanceIdentifier instance_id,
                          nacl::string* origin) = 0;
 

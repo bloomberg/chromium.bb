@@ -230,10 +230,9 @@ if test_env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('linux'):
 
 # PPAPI integration, used when built into Chrome.
 ppapi_inputs = [
-    # TODO(polina): uncomment these when ready.
-    #'ppapi/browser_impl_ppapi.cc',
-    #'ppapi/plugin_ppapi.cc',
-    #'ppapi/scriptable_impl_ppapi.cc',
+    'ppapi/browser_interface_ppapi.cc',
+    'ppapi/plugin_ppapi.cc',
+    'ppapi/scriptable_handle_ppapi.cc',
 ]
 
 ppNaClPlugin = 'ppNaClPlugin'

@@ -162,11 +162,11 @@ static inline void *NaClArrayCheckHelper(void *arg) {
   return arg;
 }
 
-#  define NACL_ARRAY_SIZE(arr)                                          \
-  (NaClArrayCheckHelper(                                                \
-      __builtin_types_compatible_p(__typeof__(&arr[0]),                 \
-                                   __typeof__(arr))),                   \
-   NACL_ARRAY_SIZE_UNSAFE(arr))
+#  define NACL_ARRAY_SIZE(arr)                                         \
+  (NaClArrayCheckHelper(                                               \
+      __builtin_types_compatible_p(__typeof__(&arr[0]),                \
+                                   __typeof__(arr))),                  \
+  NACL_ARRAY_SIZE_UNSAFE(arr))
 # else  /* __GNUC__ */
 
 /*
@@ -248,8 +248,14 @@ static inline void *NaClArrayCheckHelper(void *arg) {
  * This should be used in the private: declarations for a class
  */
 #define NACL_DISALLOW_COPY_AND_ASSIGN(TypeName) \
-    TypeName(const TypeName&);               \
+    TypeName(const TypeName&);                  \
     void operator=(const TypeName&)
+
+/* A macro to use in place of unimplemented sections of code */
+#define NACL_UNIMPLEMENTED()                                       \
+    fprintf(stderr, "%s:%d: unimplemented\n", __FILE__, __LINE__); \
+    exit(1);
+
 
 // nacl_bit_cast<Dest,Source> is a template function that implements the
 // equivalent of "*reinterpret_cast<Dest*>(&source)".  We need this in
