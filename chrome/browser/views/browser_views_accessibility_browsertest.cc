@@ -12,6 +12,7 @@
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -224,6 +225,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 // Retrieve accessibility object for Page menu button and verify accessibility
 // info.
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestPageMenuAccObj) {
+  if (WrenchMenuModel::IsEnabled())
+    return;  // If the wrench menu is enabled there is no page menu.
+
   // Verify Page menu button MSAA name and role.
   TestViewAccessibilityObject(GetToolbarView()->GetViewByID(VIEW_ID_PAGE_MENU),
                               l10n_util::GetString(IDS_ACCNAME_PAGE),

@@ -75,7 +75,11 @@ static bool CalculateEnabled() {
     std::string value = cl->GetSwitchValueASCII(switches::kNewWrenchMenu);
     return value.empty() || value == "true";
   }
+#if defined(TOOLKIT_VIEWS)
+  return true;
+#else
   return false;
+#endif
 }
 
 // static

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/keyboard_codes.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -69,8 +70,10 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
 
   ASSERT_TRUE(browser->StartTrackingPopupMenus());
 
-  // Press RIGHT to focus the app menu, then RETURN or DOWN to open it.
-  ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_RIGHT, 0));
+  if (!WrenchMenuModel::IsEnabled()) {
+    // Press RIGHT to focus the app menu, then RETURN or DOWN to open it.
+    ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_RIGHT, 0));
+  }
   if (alternate_key_sequence)
     ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_DOWN, 0));
   else
