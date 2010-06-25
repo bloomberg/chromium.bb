@@ -70,8 +70,12 @@ class UserController : public views::ButtonListener,
 
   int user_index() const { return user_index_; }
   bool is_user_selected() const { return is_user_selected_; }
+  bool is_guest() const { return is_guest_; }
 
   const UserManager::User& user() const { return user_; }
+
+  // Enables or disables tooltip with user's email.
+  void EnableNameTooltip(bool enable);
 
   // Resets password text and sets the enabled state of the password.
   void ClearAndEnablePassword();
@@ -148,6 +152,10 @@ class UserController : public views::ButtonListener,
   // Is this the guest user?
   const bool is_guest_;
 
+  // Should we show tooltips above user image and label to help distinguish
+  // users with the same display name.
+  bool show_name_tooltip_;
+
   // If is_guest_ is false, this is the user being shown.
   UserManager::User user_;
 
@@ -171,6 +179,10 @@ class UserController : public views::ButtonListener,
 
   // View that that is used for new user login.
   NewUserView* new_user_view_;
+
+  // Views that show display name of the user.
+  views::Label* label_view_;
+  views::Label* unselected_label_view_;
 
   NotificationRegistrar registrar_;
 

@@ -83,6 +83,7 @@ UserController::UserController(Delegate* delegate)
     : user_index_(-1),
       is_user_selected_(false),
       is_guest_(true),
+      show_name_tooltip_(false),
       delegate_(delegate),
       password_field_(NULL),
       submit_button_(NULL),
@@ -92,7 +93,9 @@ UserController::UserController(Delegate* delegate)
       label_window_(NULL),
       unselected_label_window_(NULL),
       user_view_(NULL),
-      new_user_view_(NULL) {
+      new_user_view_(NULL),
+      label_view_(NULL),
+      unselected_label_view_(NULL) {
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -104,6 +107,7 @@ UserController::UserController(Delegate* delegate,
     : user_index_(-1),
       is_user_selected_(false),
       is_guest_(false),
+      show_name_tooltip_(false),
       user_(user),
       delegate_(delegate),
       password_field_(NULL),
@@ -114,7 +118,9 @@ UserController::UserController(Delegate* delegate,
       label_window_(NULL),
       unselected_label_window_(NULL),
       user_view_(NULL),
-      new_user_view_(NULL) {
+      new_user_view_(NULL),
+      label_view_(NULL),
+      unselected_label_view_(NULL) {
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -126,6 +132,8 @@ UserController::~UserController() {
   image_window_->Close();
   user_view_ = NULL;
   new_user_view_ = NULL;
+  label_view_ = NULL;
+  unselected_label_view_ = NULL;
   border_window_->Close();
   label_window_->Close();
   unselected_label_window_->Close();
@@ -155,6 +163,22 @@ void UserController::ClearAndEnablePassword() {
     password_field_->SetText(string16());
     SetPasswordEnabled(true);
   }
+}
+
+void UserController::EnableNameTooltip(bool enable) {
+  if (is_guest_)
+    return;
+
+  std::wstring tooltip_text;
+  if (enable)
+    tooltip_text = UTF8ToWide(user_.email());
+
+  if (user_view_)
+    user_view_->SetTooltipText(tooltip_text);
+  if (label_view_)
+    label_view_->SetTooltipText(tooltip_text);
+  if (unselected_label_view_)
+    unselected_label_view_->SetTooltipText(tooltip_text);
 }
 
 void UserController::ButtonPressed(views::Button* sender,
@@ -258,7 +282,6 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
 
   if (!is_guest_) {
     user_view_->SetImage(user_.image());
-    user_view_->SetTooltipText(UTF8ToWide(user_.email()));
   } else {
     user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_LOGIN_OTHER_USER));
@@ -325,8 +348,10 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   views::Label* label = new views::Label(text);
   label->SetColor(kTextColor);
   label->SetFont(font);
-  if (!is_guest_)
-    label->SetTooltipText(UTF8ToWide(user_.email()));
+  if (type == WM_IPC_WINDOW_LOGIN_LABEL)
+    label_view_ = label;
+  else
+    unselected_label_view_ = label;
 
   window->SetContentsView(label);
 

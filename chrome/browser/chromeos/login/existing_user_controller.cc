@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <set>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -53,6 +54,26 @@ const char kParamSuffix[] = "\n";
 // URL prefix for CAPTCHA image.
 const char kCaptchaUrlPrefix[] = "http://www.google.com/accounts/";
 
+// Checks if display names are unique. If there are duplicates, enables
+// tooltips with full emails to let users distinguish their accounts.
+// Otherwise, disables the tooltips.
+void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
+  bool show_name_tooltips = false;
+  std::set<std::string> visible_display_names;
+  for (size_t i = 0; i < controllers.size(); ++i) {
+    const std::string& display_name =
+        controllers[i]->user().GetDisplayName();
+    if (visible_display_names.count(display_name) > 0) {
+      show_name_tooltips = true;
+      break;
+    }
+    visible_display_names.insert(display_name);
+  }
+  for (size_t i = 0; i < controllers.size(); ++i)
+    if (!controllers[i]->is_guest())
+      controllers[i]->EnableNameTooltip(show_name_tooltips);
+}
+
 }  // namespace
 
 ExistingUserController::ExistingUserController(
@@ -73,10 +94,9 @@ ExistingUserController::ExistingUserController(
                                UserController::kPadding))));
   }
 
-  for (size_t i = 0, max = std::min(users.size(), max_users - 1); i < max;
-       ++i) {
+  size_t visible_users_count = std::min(users.size(), max_users - 1);
+  for (size_t i = 0; i < visible_users_count; ++i)
     controllers_.push_back(new UserController(this, users[i]));
-  }
 
   // Add the view representing the guest user last.
   controllers_.push_back(new UserController(this));
@@ -91,6 +111,8 @@ void ExistingUserController::Init() {
     (controllers_[i])->Init(static_cast<int>(i),
                             static_cast<int>(controllers_.size()));
   }
+
+  EnableTooltipsIfNeeded(controllers_);
 
   WmMessageListener::instance()->AddObserver(this);
 
@@ -202,16 +224,13 @@ void ExistingUserController::RemoveUser(UserController* source) {
   UserManager::Get()->RemoveUser(source->user().email());
 
   // We need to unmap entry windows, the windows will be unmapped in destructor.
+  controllers_.erase(controllers_.begin() + source->user_index());
   delete source;
-  int new_size = static_cast<int>(controllers_.size()) - 1;
-  for (int i = 0; i < static_cast<int>(controllers_.size()); ++i) {
-    if (controllers_[i] == source) {
-      controllers_.erase(controllers_.begin() + i);
-      --i;
-    } else {
-      controllers_[i]->UpdateUserCount(i, new_size);
-    }
-  }
+
+  EnableTooltipsIfNeeded(controllers_);
+  int new_size = static_cast<int>(controllers_.size());
+  for (int i = 0; i < new_size; ++i)
+    controllers_[i]->UpdateUserCount(i, new_size);
 }
 
 void ExistingUserController::OnLoginFailure(const std::string& error) {
