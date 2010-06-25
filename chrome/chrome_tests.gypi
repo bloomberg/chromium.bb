@@ -298,7 +298,6 @@
       ],
       'sources': [
         'app/chrome_main_uitest.cc',
-        'browser/appcache/appcache_ui_test.cc',
         'browser/browser_encoding_uitest.cc',
         'browser/browser_uitest.cc',
         'browser/cookie_modal_dialog_uitest.cc',

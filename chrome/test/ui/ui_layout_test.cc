@@ -156,16 +156,6 @@ void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
   ASSERT_TRUE(file_util::CopyDirectory(src_dir, dest_dir, true));
 }
 
-static size_t FindInsertPosition(const std::string& html) {
-  size_t tag_start = html.find("<html");
-  if (tag_start == std::string::npos)
-    return 0;
-  size_t tag_end = html.find(">", tag_start);
-  if (tag_end == std::string::npos)
-    return 0;
-  return tag_end + 1;
-}
-
 void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
                                  int port) {
   SCOPED_TRACE(test_case_file_name.c_str());
@@ -185,10 +175,9 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   ASSERT_TRUE(file_util::ReadFileToString(test_file_path, &test_html));
 
   // Injects the layout test controller into the test HTML.
-  size_t insertion_position = FindInsertPosition(test_html);
-  test_html.insert(insertion_position, layout_test_controller_);
-  ReplaceFirstSubstringAfterOffset(
-      &test_html, insertion_position, "%COOKIE%", status_cookie.c_str());
+  test_html.insert(0, layout_test_controller_);
+  ReplaceSubstringsAfterOffset(
+      &test_html, 0, "%COOKIE%", status_cookie.c_str());
 
   // Creates the new layout test HTML file.
   FilePath new_test_file_path(new_layout_test_dir_);
