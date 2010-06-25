@@ -32,8 +32,9 @@
 #include <ctype.h>
 #include <cairo.h>
 #include <glib.h>
-#include <linux/input.h>
 #include <cairo-drm.h>
+
+#include <X11/keysym.h>
 
 #include "wayland-util.h"
 #include "wayland-client.h"
@@ -387,25 +388,56 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 }
 
 static void
-key_handler(struct window *window, uint32_t key, uint32_t unicode,
+key_handler(struct window *window, uint32_t key, uint32_t sym,
 	    uint32_t state, uint32_t modifiers, void *data)
 {
 	struct terminal *terminal = data;
-	char ch = unicode;
+	char ch[2];
+	int len = 0;
 
-	switch (key) {
-	case KEY_F11:
+	switch (sym) {
+	case XK_F11:
 		if (!state)
 			break;
 		terminal->fullscreen ^= 1;
 		window_set_fullscreen(window, terminal->fullscreen);
 		window_schedule_redraw(terminal->window);
 		break;
+
+	case XK_Delete:
+		sym = 0x04;
+	case XK_BackSpace:
+	case XK_Tab:
+	case XK_Linefeed:
+	case XK_Clear:
+	case XK_Return:
+	case XK_Pause:
+	case XK_Scroll_Lock:
+	case XK_Sys_Req:
+	case XK_Escape:
+		ch[len++] = sym & 0x7f;
+		break;
+
+	case XK_Shift_L:
+	case XK_Shift_R:
+	case XK_Control_L:
+	case XK_Control_R:
+	case XK_Alt_L:
+	case XK_Alt_R:
+		break;
+
 	default:
-		if (state && unicode)
-			write(terminal->master, &ch, 1);
+		if (modifiers & WINDOW_MODIFIER_CONTROL)
+			sym = sym & 0x1f;
+		else if (modifiers & WINDOW_MODIFIER_ALT)
+			ch[len++] = 0x1b;
+		if (sym < 256)
+			ch[len++] = sym;
 		break;
 	}
+
+	if (state && len > 0)
+		write(terminal->master, ch, len);
 }
 
 static void

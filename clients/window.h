@@ -54,8 +54,10 @@ display_run(struct display *d);
 
 enum {
 	WINDOW_MODIFIER_SHIFT = 0x01,
-	WINDOW_MODIFIER_ALT = 0x02,
+	WINDOW_MODIFIER_LOCK = 0x02,
 	WINDOW_MODIFIER_CONTROL = 0x04,
+	WINDOW_MODIFIER_ALT = 0x08,
+	WINDOW_MODIFIER_MOD2 = 0x10,
 };
 
 typedef void (*window_resize_handler_t)(struct window *window, void *data);

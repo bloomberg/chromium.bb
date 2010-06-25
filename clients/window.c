@@ -39,6 +39,8 @@
 #include <EGL/eglext.h>
 #include <cairo-gl.h>
 
+#include <X11/extensions/XKBcommon.h>
+
 #include <linux/input.h>
 #include "wayland-util.h"
 #include "wayland-client.h"
@@ -62,6 +64,7 @@ struct display {
 	struct wl_list window_list;
 	char *device_name;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
+	XkbcDescPtr xkb;
 };
 
 struct window {
@@ -413,128 +416,33 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 	}
 }
 
-
-struct key {
-	uint32_t code[4];
-} evdev_keymap[] = {
-	{ { 0, 0 } },		/* 0 */
-	{ { 0x1b, 0x1b } },
-	{ { '1', '!' } },
-	{ { '2', '@' } },
-	{ { '3', '#' } },
-	{ { '4', '$' } },
-	{ { '5', '%' } },
-	{ { '6', '^' } },
-	{ { '7', '&' } },
-	{ { '8', '*' } },
-	{ { '9', '(' } },
-	{ { '0', ')' } },
-	{ { '-', '_' } },
-	{ { '=', '+' } },
-	{ { '\b', '\b' } },
-	{ { '\t', '\t' } },
-
-	{ { 'q', 'Q', 0x11 } },		/* 16 */
-	{ { 'w', 'W', 0x17 } },
-	{ { 'e', 'E', 0x05 } },
-	{ { 'r', 'R', 0x12 } },
-	{ { 't', 'T', 0x14 } },
-	{ { 'y', 'Y', 0x19 } },
-	{ { 'u', 'U', 0x15 } },
-	{ { 'i', 'I', 0x09 } },
-	{ { 'o', 'O', 0x0f } },
-	{ { 'p', 'P', 0x10 } },
-	{ { '[', '{', 0x1b } },
-	{ { ']', '}', 0x1d } },
-	{ { '\n', '\n' } },
-	{ { 0, 0 } },
-	{ { 'a', 'A', 0x01} },
-	{ { 's', 'S', 0x13 } },
-
-	{ { 'd', 'D', 0x04 } },		/* 32 */
-	{ { 'f', 'F', 0x06 } },
-	{ { 'g', 'G', 0x07 } },
-	{ { 'h', 'H', 0x08 } },
-	{ { 'j', 'J', 0x0a } },
-	{ { 'k', 'K', 0x0b } },
-	{ { 'l', 'L', 0x0c } },
-	{ { ';', ':' } },
-	{ { '\'', '"' } },
-	{ { '`', '~' } },
-	{ { 0, 0 } },
-	{ { '\\', '|', 0x1c } },
-	{ { 'z', 'Z', 0x1a } },
-	{ { 'x', 'X', 0x18 } },
-	{ { 'c', 'C', 0x03 } },
-	{ { 'v', 'V', 0x16 } },
-
-	{ { 'b', 'B', 0x02 } },		/* 48 */
-	{ { 'n', 'N', 0x0e } },
-	{ { 'm', 'M', 0x0d } },
-	{ { ',', '<' } },
-	{ { '.', '>' } },
-	{ { '/', '?' } },
-	{ { 0, 0 } },
-	{ { '*', '*' } },
-	{ { 0, 0 } },
-	{ { ' ', ' ' } },
-	{ { 0, 0 } }
-
-	/* 59 */
-};
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
-static void
-window_update_modifiers(struct window *window, uint32_t key, uint32_t state)
-{
-	uint32_t mod = 0;
-
-	switch (key) {
-	case KEY_LEFTSHIFT:
-	case KEY_RIGHTSHIFT:
-		mod = WINDOW_MODIFIER_SHIFT;
-		break;
-	case KEY_LEFTCTRL:
-	case KEY_RIGHTCTRL:
-		mod = WINDOW_MODIFIER_CONTROL;
-		break;
-	case KEY_LEFTALT:
-	case KEY_RIGHTALT:
-		mod = WINDOW_MODIFIER_ALT;
-		break;
-	}
-
-	if (state)
-		window->modifiers |= mod;
-	else
-		window->modifiers &= ~mod;
-}
-
 static void
 window_handle_key(void *data, struct wl_input_device *input_device,
 		  uint32_t key, uint32_t state)
 {
 	struct window *window = data;
-	uint32_t unicode = 0;
+	struct display *d = window->display;
+	uint32_t code, sym, level;
 
+	code = key + d->xkb->min_key_code;
 	if (window->keyboard_device != input_device)
 		return;
 
-	window_update_modifiers(window, key, state);
+	level = 0;
+	if (window->modifiers & WINDOW_MODIFIER_SHIFT &&
+	    XkbKeyGroupWidth(d->xkb, code, 0) > 1)
+		level = 1;
 
-	if (key < ARRAY_LENGTH(evdev_keymap)) {
-		if (window->modifiers & WINDOW_MODIFIER_CONTROL)
-			unicode = evdev_keymap[key].code[2];
-		else if (window->modifiers & WINDOW_MODIFIER_SHIFT)
-			unicode = evdev_keymap[key].code[1];
-		else
-			unicode = evdev_keymap[key].code[0];
-	}
+	sym = XkbKeySymEntry(d->xkb, code, level, 0);
+
+	if (state)
+		window->modifiers |= d->xkb->map->modmap[code];
+	else
+		window->modifiers &= ~d->xkb->map->modmap[code];
 
 	if (window->key_handler)
-		(*window->key_handler)(window, key, unicode,
-				       state, window->modifiers, window->user_data);
+		(*window->key_handler)(window, key, sym, state,
+				       window->modifiers, window->user_data);
 }
 
 static void
@@ -551,6 +459,7 @@ window_handle_keyboard_focus(void *data,
 			     struct wl_array *keys)
 {
 	struct window *window = data;
+	struct display *d = window->display;
 	uint32_t *k, *end;
 
 	if (window->keyboard_device == input_device && surface != window->surface)
@@ -563,7 +472,7 @@ window_handle_keyboard_focus(void *data,
 	if (window->keyboard_device) {
 		end = keys->data + keys->size;
 		for (k = keys->data; k < end; k++)
-			window_update_modifiers(window, *k, 1);
+			window->modifiers |= d->xkb->map->modmap[*k];
 	} else {
 		window->modifiers = 0;
 	}
@@ -894,6 +803,26 @@ display_render_frame(struct display *d)
 	cairo_destroy(cr);
 }
 
+static void
+init_xkb(struct display *d)
+{
+	XkbRMLVOSet rmlvo;
+	char rules[] = "evdev", model[] = "pc105", layout[] = "us";
+
+	rmlvo.rules = rules;
+	rmlvo.model = model;
+	rmlvo.layout = layout;
+	rmlvo.variant = "";
+	rmlvo.options = "";
+
+	XkbcInitAtoms(NULL, NULL);
+	d->xkb = XkbcCompileKeymapFromRules(&rmlvo);
+	if (!d->xkb) {
+		fprintf(stderr, "Failed to compile keymap\n");
+		exit(1);
+	}
+}
+
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
@@ -992,6 +921,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	g_source_attach(d->source, NULL);
 
 	wl_list_init(&d->window_list);
+
+	init_xkb(d);
 
 	return d;
 }
