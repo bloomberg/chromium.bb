@@ -1039,7 +1039,6 @@
         'renderer/audio_message_filter_unittest.cc',
         'renderer/extensions/extension_api_json_validity_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
-        'renderer/form_autocomplete_unittest.cc',
         'renderer/form_manager_unittest.cc',
         'renderer/media/audio_renderer_impl_unittest.cc',
         'renderer/net/render_dns_master_unittest.cc',
@@ -1411,7 +1410,10 @@
         'browser/sessions/session_restore_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager_browsertest.cc',
-        'test/automation/dom_automation_browsertest.cc'
+        'renderer/form_autocomplete_browsertest.cc',
+        'test/automation/dom_automation_browsertest.cc',
+        'test/render_view_test.cc',
+        'test/render_view_test.h',
       ],
       'conditions': [
         ['chromeos==0', {
