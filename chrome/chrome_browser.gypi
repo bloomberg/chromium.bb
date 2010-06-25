@@ -1550,8 +1550,6 @@
         'browser/history/history_backend.h',
         'browser/history/history_database.cc',
         'browser/history/history_database.h',
-        'browser/history/history_index.cc',
-        'browser/history/history_index.h',
         'browser/history/history_marshaling.h',
         'browser/history/history_notifications.h',
         'browser/history/history_publisher.cc',
