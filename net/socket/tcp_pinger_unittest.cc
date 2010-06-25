@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,8 +65,7 @@ void TCPPingerTest::SetUp() {
 
 TEST_F(TCPPingerTest, Ping) {
   net::AddressList addr;
-  scoped_refptr<net::HostResolver> resolver(
-      net::CreateSystemHostResolver(NULL));
+  scoped_refptr<net::HostResolver> resolver(net::CreateSystemHostResolver());
 
   net::HostResolver::RequestInfo info("localhost", listen_port_);
   int rv = resolver->Resolve(info, &addr, NULL, NULL, net::BoundNetLog());
@@ -79,8 +78,7 @@ TEST_F(TCPPingerTest, Ping) {
 
 TEST_F(TCPPingerTest, PingFail) {
   net::AddressList addr;
-  scoped_refptr<net::HostResolver> resolver(
-      net::CreateSystemHostResolver(NULL));
+  scoped_refptr<net::HostResolver> resolver(net::CreateSystemHostResolver());
 
   // "Kill" "server"
   listen_sock_ = NULL;

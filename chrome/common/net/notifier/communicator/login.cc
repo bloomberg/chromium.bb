@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "chrome/common/net/notifier/communicator/product_info.h"
 #include "chrome/common/net/notifier/communicator/single_login_attempt.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/network_change_notifier.h"
 #include "talk/base/common.h"
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/logging.h"
@@ -42,7 +41,6 @@ Login::Login(talk_base::TaskParent* parent,
              net::HostResolver* host_resolver,
              ServerInformation* server_list,
              int server_count,
-             net::NetworkChangeNotifier* network_change_notifier,
              talk_base::FirewallManager* firewall,
              bool proxy_only,
              bool previous_login_successful)
@@ -55,7 +53,6 @@ Login::Login(talk_base::TaskParent* parent,
                                         server_count,
                                         firewall,
                                         proxy_only)),
-      network_change_notifier_(network_change_notifier),
       single_attempt_(NULL),
       successful_connection_(previous_login_successful),
       state_(STATE_OPENING),
@@ -63,9 +60,8 @@ Login::Login(talk_base::TaskParent* parent,
       unexpected_disconnect_occurred_(false),
       google_host_(user_settings.host()),
       google_user_(user_settings.user()) {
-  DCHECK(network_change_notifier_);
   // Hook up all the signals and observers.
-  network_change_notifier_->AddObserver(this);
+  net::NetworkChangeNotifier::AddObserver(this);
   auto_reconnect_.SignalStartConnection.connect(this,
                                                 &Login::StartConnection);
   auto_reconnect_.SignalTimerStartStop.connect(
@@ -89,7 +85,7 @@ Login::~Login() {
     single_attempt_->Abort();
     single_attempt_ = NULL;
   }
-  network_change_notifier_->RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveObserver(this);
 }
 
 void Login::StartConnection() {

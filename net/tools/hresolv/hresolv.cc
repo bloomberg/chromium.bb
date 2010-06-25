@@ -447,7 +447,7 @@ int main(int argc, char** argv) {
       base::TimeDelta::FromSeconds(0));
 
   scoped_refptr<net::HostResolver> host_resolver(
-      new net::HostResolverImpl(NULL, cache, NULL, 100u));
+      new net::HostResolverImpl(NULL, cache, 100u));
   ResolverInvoker invoker(host_resolver.get());
   invoker.ResolveAll(hosts_and_times, options.async);
 

@@ -61,19 +61,14 @@ class ScopedInternet {
 class URLRequestTestContext : public URLRequestContext {
  public:
   URLRequestTestContext() {
-    host_resolver_ = net::CreateSystemHostResolver(NULL);
+    host_resolver_ = net::CreateSystemHostResolver();
     proxy_service_ = net::ProxyService::CreateNull();
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
-    http_transaction_factory_ =
-        new net::HttpCache(
-          net::HttpNetworkLayer::CreateFactory(NULL, host_resolver_,
-                                               proxy_service_,
-                                               ssl_config_service_,
-                                               http_auth_handler_factory_,
-                                               NULL,
-                                               NULL),
-          net::HttpCache::DefaultBackend::InMemory(0));
+    http_transaction_factory_ = new net::HttpCache(
+        net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
+            ssl_config_service_, http_auth_handler_factory_, NULL, NULL),
+        net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL, NULL);
   }

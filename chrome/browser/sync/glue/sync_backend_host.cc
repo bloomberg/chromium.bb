@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,8 +67,6 @@ SyncBackendHost::~SyncBackendHost() {
 void SyncBackendHost::Initialize(
     const GURL& sync_service_url,
     const syncable::ModelTypeSet& types,
-    chrome_common_net::NetworkChangeNotifierThread*
-        network_change_notifier_thread,
     URLRequestContextGetter* baseline_context_getter,
     const std::string& lsid,
     bool delete_sync_data_folder,
@@ -107,7 +105,6 @@ void SyncBackendHost::Initialize(
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
                         Core::DoInitializeOptions(
                             sync_service_url, true,
-                            network_change_notifier_thread,
                             new HttpBridgeFactory(baseline_context_getter),
                             new HttpBridgeFactory(baseline_context_getter),
                             lsid,
@@ -392,7 +389,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       kGaiaServiceId,
       kGaiaSourceForChrome,
       options.service_url.SchemeIsSecure(),
-      options.network_change_notifier_thread,
       options.http_bridge_factory,
       options.auth_http_bridge_factory,
       host_,  // ModelSafeWorkerRegistrar.

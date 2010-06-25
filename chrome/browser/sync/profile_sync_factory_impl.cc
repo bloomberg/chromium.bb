@@ -61,23 +61,15 @@ using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
 using browser_sync::UnrecoverableErrorHandler;
 
-ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
-    Profile* profile,
-    chrome_common_net::NetworkChangeNotifierThread*
-        network_change_notifier_thread,
-    CommandLine* command_line)
+ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(Profile* profile,
+                                               CommandLine* command_line)
     : profile_(profile),
-      network_change_notifier_thread_(network_change_notifier_thread),
       command_line_(command_line) {
-  DCHECK(network_change_notifier_thread_);
 }
 
 ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
-  ProfileSyncService* pss =
-      new ProfileSyncService(this,
-                             profile_,
-                             network_change_notifier_thread_,
-                             browser_defaults::kBootstrapSyncAuthentication);
+  ProfileSyncService* pss = new ProfileSyncService(
+      this, profile_, browser_defaults::kBootstrapSyncAuthentication);
 
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.

@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/test/testing_profile.h"
 
 using browser_sync::DataTypeController;
@@ -28,17 +27,13 @@ class ProfileSyncFactoryImplTest : public testing::Test {
     FilePath program_path(FILE_PATH_LITERAL("chrome.exe"));
     command_line_.reset(new CommandLine(program_path));
     profile_sync_service_factory_.reset(
-        new ProfileSyncFactoryImpl(profile_.get(),
-                                   &fake_network_change_notifier_thread_,
-                                   command_line_.get()));
+        new ProfileSyncFactoryImpl(profile_.get(), command_line_.get()));
   }
 
   MessageLoop message_loop_;
   ChromeThread ui_thread_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<CommandLine> command_line_;
-  chrome_common_net::FakeNetworkChangeNotifierThread
-      fake_network_change_notifier_thread_;
   scoped_ptr<ProfileSyncFactoryImpl> profile_sync_service_factory_;
 };
 

@@ -131,13 +131,13 @@ class TestCookiePolicy : public net::CookiePolicy {
 class TestURLRequestContext : public URLRequestContext {
  public:
   TestURLRequestContext() {
-    host_resolver_ = net::CreateSystemHostResolver(NULL);
+    host_resolver_ = net::CreateSystemHostResolver();
     proxy_service_ = net::ProxyService::CreateNull();
     Init();
   }
 
   explicit TestURLRequestContext(const std::string& proxy) {
-    host_resolver_ = net::CreateSystemHostResolver(NULL);
+    host_resolver_ = net::CreateSystemHostResolver();
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules().ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);
@@ -160,15 +160,14 @@ class TestURLRequestContext : public URLRequestContext {
     ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
-    http_transaction_factory_ =
-        new net::HttpCache(
-          net::HttpNetworkLayer::CreateFactory(NULL, host_resolver_,
-                                               proxy_service_,
-                                               ssl_config_service_,
-                                               http_auth_handler_factory_,
-                                               network_delegate_,
-                                               NULL),
-          net::HttpCache::DefaultBackend::InMemory(0));
+    http_transaction_factory_ = new net::HttpCache(
+        net::HttpNetworkLayer::CreateFactory(host_resolver_,
+                                             proxy_service_,
+                                             ssl_config_service_,
+                                             http_auth_handler_factory_,
+                                             network_delegate_,
+                                             NULL),
+        net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL, NULL);
     accept_language_ = "en-us,fr";

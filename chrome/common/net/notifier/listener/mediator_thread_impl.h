@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -40,13 +40,8 @@ namespace buzz {
 class XmppClient;
 }  // namespace buzz
 
-namespace chrome_common_net {
-class NetworkChangeNotifierThread;
-}  // namespace chrome_common_net
-
 namespace net {
 class HostResolver;
-class NetworkChangeNotifier;
 }  // namespace net
 
 namespace notifier {
@@ -64,9 +59,7 @@ class MediatorThreadImpl
     : public MediatorThread,
       public sigslot::has_slots<> {
  public:
-  explicit MediatorThreadImpl(
-      chrome_common_net::NetworkChangeNotifierThread*
-          network_change_notifier_thread);
+  MediatorThreadImpl();
   virtual ~MediatorThreadImpl();
 
   virtual void SetDelegate(Delegate* delegate);
@@ -128,10 +121,7 @@ class MediatorThreadImpl
   void OnSubscriptionStateChangeOnParentThread(
       bool success);
 
-  chrome_common_net::NetworkChangeNotifierThread*
-      network_change_notifier_thread_;
   base::Thread worker_thread_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_refptr<net::HostResolver> host_resolver_;
 
   // All buzz::XmppClients are owned by their parent.  The root parent is the

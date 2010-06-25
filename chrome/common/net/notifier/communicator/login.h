@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,6 @@ class Login : public net::NetworkChangeNotifier::Observer,
         net::HostResolver* host_resolver,
         ServerInformation* server_list,
         int server_count,
-        net::NetworkChangeNotifier* network_change_notifier,
         talk_base::FirewallManager* firewall,
         bool proxy_only,
         bool previous_login_successful);
@@ -126,7 +125,6 @@ class Login : public net::NetworkChangeNotifier::Observer,
 
   talk_base::TaskParent* parent_;
   scoped_ptr<LoginSettings> login_settings_;
-  net::NetworkChangeNotifier* network_change_notifier_;
   AutoReconnect auto_reconnect_;
   SingleLoginAttempt* single_attempt_;
   bool successful_connection_;

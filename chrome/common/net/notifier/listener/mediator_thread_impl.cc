@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "chrome/common/net/network_change_notifier_proxy.h"
 #include "chrome/common/net/notifier/base/task_pump.h"
 #include "chrome/common/net/notifier/communicator/connection_options.h"
 #include "chrome/common/net/notifier/communicator/const_communicator.h"
@@ -27,15 +26,11 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 namespace notifier {
 
-MediatorThreadImpl::MediatorThreadImpl(
-    chrome_common_net::NetworkChangeNotifierThread*
-        network_change_notifier_thread)
+MediatorThreadImpl::MediatorThreadImpl()
     : delegate_(NULL),
       parent_message_loop_(MessageLoop::current()),
-      network_change_notifier_thread_(network_change_notifier_thread),
       worker_thread_("MediatorThread worker thread") {
   DCHECK(parent_message_loop_);
-  DCHECK(network_change_notifier_thread_);
 }
 
 MediatorThreadImpl::~MediatorThreadImpl() {
@@ -115,7 +110,6 @@ void MediatorThreadImpl::Logout() {
   parent_message_loop_->SetNestableTasksAllowed(old_state);
   // worker_thread_ should have cleaned all this up.
   CHECK(!login_.get());
-  CHECK(!network_change_notifier_.get());
   CHECK(!pump_.get());
 }
 
@@ -167,13 +161,9 @@ void MediatorThreadImpl::DoLogin(
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   LOG(INFO) << "P2P: Thread logging into talk network.";
 
-  network_change_notifier_.reset(
-      new chrome_common_net::NetworkChangeNotifierProxy(
-          network_change_notifier_thread_));
   // TODO(akalin): Use an existing HostResolver from somewhere (maybe
   // the IOThread one).
-  host_resolver_ =
-      net::CreateSystemHostResolver(network_change_notifier_.get());
+  host_resolver_ = net::CreateSystemHostResolver();
 
   // Start a new pump for the login.
   login_.reset();
@@ -202,7 +192,6 @@ void MediatorThreadImpl::DoLogin(
                                    host_resolver_.get(),
                                    server_list,
                                    server_list_count,
-                                   network_change_notifier_.get(),
                                    // talk_base::FirewallManager* is NULL.
                                    NULL,
                                    // Both the proxy and a non-proxy route
@@ -230,7 +219,6 @@ void MediatorThreadImpl::DoDisconnect() {
   pump_.reset();
 
   host_resolver_ = NULL;
-  network_change_notifier_.reset();
 }
 
 void MediatorThreadImpl::DoSubscribeForUpdates(

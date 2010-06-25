@@ -19,18 +19,15 @@
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_util.h"
-#include "net/base/network_change_notifier.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_handler_negotiate.h"
 
 namespace {
 
-net::HostResolver* CreateGlobalHostResolver(
-    net::NetworkChangeNotifier* network_change_notifier) {
+net::HostResolver* CreateGlobalHostResolver() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  net::HostResolver* global_host_resolver =
-      net::CreateSystemHostResolver(network_change_notifier);
+  net::HostResolver* global_host_resolver = net::CreateSystemHostResolver();
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {
@@ -135,10 +132,7 @@ void IOThread::Init() {
   globals_ = new Globals;
 
   globals_->net_log.reset(new ChromeNetLog());
-  globals_->network_change_notifier.reset(
-      net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier());
-  globals_->host_resolver =
-      CreateGlobalHostResolver(globals_->network_change_notifier.get());
+  globals_->host_resolver = CreateGlobalHostResolver();
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory());
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
@@ -32,9 +31,7 @@ typedef GoogleServiceAuthError AuthError;
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
   ProfileSyncServiceForWizardTest(ProfileSyncFactory* factory, Profile* profile)
-      : ProfileSyncService(factory, profile,
-                           &fake_network_change_notifier_thread_,
-                           false),
+      : ProfileSyncService(factory, profile, false),
         user_accepted_merge_and_sync_(false),
         user_cancelled_dialog_(false) {
     RegisterPreferences();
@@ -81,9 +78,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   bool user_cancelled_dialog_;
 
  private:
-  chrome_common_net::FakeNetworkChangeNotifierThread
-      fake_network_change_notifier_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceForWizardTest);
 };
 

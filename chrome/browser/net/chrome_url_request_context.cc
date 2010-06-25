@@ -83,7 +83,6 @@ net::ProxyConfigService* CreateProxyConfigService(
 
 // Create a proxy service according to the options on command line.
 net::ProxyService* CreateProxyService(
-    net::NetworkChangeNotifier* network_change_notifier,
     net::NetLog* net_log,
     URLRequestContext* context,
     net::ProxyConfigService* proxy_config_service,
@@ -103,7 +102,6 @@ net::ProxyService* CreateProxyService(
       proxy_config_service,
       use_v8,
       context,
-      network_change_notifier,
       net_log,
       io_loop);
 }
@@ -239,8 +237,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   context->set_proxy_service(
-      CreateProxyService(io_thread_globals->network_change_notifier.get(),
-                         io_thread_globals->net_log.get(),
+      CreateProxyService(io_thread_globals->net_log.get(),
                          context,
                          proxy_config_service_.release(),
                          command_line,
@@ -250,8 +247,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
       net::DISK_CACHE, disk_cache_path_, cache_size_,
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
   net::HttpCache* cache =
-      new net::HttpCache(io_thread_globals->network_change_notifier.get(),
-                         context->host_resolver(),
+      new net::HttpCache(context->host_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
@@ -379,8 +375,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
       net::HttpCache::DefaultBackend::InMemory(0);
 
   net::HttpCache* cache =
-      new net::HttpCache(io_thread_globals->network_change_notifier.get(),
-                         context->host_resolver(),
+      new net::HttpCache(context->host_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
@@ -477,15 +472,13 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
   } else {
     // If original HttpCache doesn't exist, simply construct one with a whole
     // new set of network stack.
-    cache = new net::HttpCache(
-        io_thread_globals->network_change_notifier.get(),
-        main_context->host_resolver(),
-        main_context->proxy_service(),
-        main_context->ssl_config_service(),
-        main_context->http_auth_handler_factory(),
-        &io_thread_globals->network_delegate,
-        io_thread_globals->net_log.get(),
-        backend);
+    cache = new net::HttpCache(main_context->host_resolver(),
+                               main_context->proxy_service(),
+                               main_context->ssl_config_service(),
+                               main_context->http_auth_handler_factory(),
+                               &io_thread_globals->network_delegate,
+                               io_thread_globals->net_log.get(),
+                               backend);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(

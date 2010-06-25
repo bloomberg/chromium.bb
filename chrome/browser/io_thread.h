@@ -26,7 +26,6 @@ class Predictor;
 
 namespace net {
 class HttpAuthHandlerFactory;
-class NetworkChangeNotifier;
 class URLSecurityManager;
 }  // namespace net
 
@@ -34,7 +33,6 @@ class IOThread : public BrowserProcessSubThread {
  public:
   struct Globals {
     scoped_ptr<ChromeNetLog> net_log;
-    scoped_ptr<net::NetworkChangeNotifier> network_change_notifier;
     // TODO(willchan): Stop reference counting HostResolver.  It's owned by
     // IOThread now.
     scoped_refptr<net::HostResolver> host_resolver;

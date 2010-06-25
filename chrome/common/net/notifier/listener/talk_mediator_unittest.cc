@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/common/net/fake_network_change_notifier_thread.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_mock.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
 #include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
@@ -43,9 +42,8 @@ class TalkMediatorImplTest : public testing::Test {
     const bool kInitializeSsl = true;
     const bool kConnectImmediately = false;
     const bool kInvalidateXmppAuthToken = false;
-    return new TalkMediatorImpl(
-        new MediatorThreadImpl(&fake_network_change_notifier_thread_),
-        kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken);
+    return new TalkMediatorImpl(new MediatorThreadImpl(), kInitializeSsl,
+                                kConnectImmediately, kInvalidateXmppAuthToken);
   }
 
   TalkMediatorImpl* NewMockedTalkMediator(
@@ -58,8 +56,6 @@ class TalkMediatorImplTest : public testing::Test {
                                 kInvalidateXmppAuthToken);
   }
 
-  chrome_common_net::FakeNetworkChangeNotifierThread
-      fake_network_change_notifier_thread_;
   int last_message_;
 
  private:

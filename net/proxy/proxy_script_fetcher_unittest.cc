@@ -32,16 +32,14 @@ class RequestContext : public URLRequestContext {
  public:
   RequestContext() {
     net::ProxyConfig no_proxy;
-    host_resolver_ = net::CreateSystemHostResolver(NULL);
+    host_resolver_ = net::CreateSystemHostResolver();
     proxy_service_ = net::ProxyService::CreateFixed(no_proxy);
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
 
-    http_transaction_factory_ =
-        new net::HttpCache(
-            net::HttpNetworkLayer::CreateFactory(
-                NULL, host_resolver_, proxy_service_, ssl_config_service_,
-                NULL, NULL, NULL),
-            net::HttpCache::DefaultBackend::InMemory(0));
+    http_transaction_factory_ = new net::HttpCache(
+        net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
+            ssl_config_service_, NULL, NULL, NULL),
+        net::HttpCache::DefaultBackend::InMemory(0));
   }
 
  private:

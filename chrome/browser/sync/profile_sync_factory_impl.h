@@ -11,17 +11,9 @@
 class CommandLine;
 class Profile;
 
-namespace chrome_common_net {
-class NetworkChangeNotifierThread;
-}
-
 class ProfileSyncFactoryImpl : public ProfileSyncFactory {
  public:
-  ProfileSyncFactoryImpl(
-      Profile* profile,
-      chrome_common_net::NetworkChangeNotifierThread*
-          network_change_notifier_thread,
-      CommandLine* command_line);
+  ProfileSyncFactoryImpl(Profile* profile, CommandLine* command_line);
   virtual ~ProfileSyncFactoryImpl() {}
 
   // ProfileSyncFactory interface.
@@ -65,8 +57,6 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
 
  private:
   Profile* profile_;
-  chrome_common_net::NetworkChangeNotifierThread*
-      network_change_notifier_thread_;
   CommandLine* command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncFactoryImpl);

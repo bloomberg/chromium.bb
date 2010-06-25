@@ -12,7 +12,9 @@
 
 class CloudPrintProxy;
 class JsonPrefStore;
-class ServiceNetworkChangeNotifierThread;
+namespace net {
+class NetworkChangeNotifier;
+}
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
@@ -46,16 +48,12 @@ class ServiceProcess {
     return file_thread_.get();
   }
   CloudPrintProxy* CreateCloudPrintProxy(JsonPrefStore* service_prefs);
-  ServiceNetworkChangeNotifierThread* network_change_notifier_thread() const {
-    return network_change_notifier_thread_.get();
-  }
 
  private:
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
   std::vector<CloudPrintProxy*> cloud_print_proxy_list_;
-  scoped_refptr<ServiceNetworkChangeNotifierThread>
-      network_change_notifier_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

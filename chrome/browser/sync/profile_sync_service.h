@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,10 +30,6 @@ class NotificationSource;
 class NotificationType;
 class Profile;
 class ProfileSyncFactory;
-
-namespace chrome_common_net {
-class NetworkChangeNotifierThread;
-}
 
 // Various UI components such as the New Tab page can be driven by observing
 // the ProfileSyncService through this interface.
@@ -128,8 +124,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ProfileSyncService(ProfileSyncFactory* factory_,
                      Profile* profile,
-                     chrome_common_net::NetworkChangeNotifierThread*
-                         network_change_notifier_thread,
                      bool bootstrap_sync_authentication);
   virtual ~ProfileSyncService();
 
@@ -381,9 +375,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // The profile whose data we are synchronizing.
   Profile* profile_;
-
-  chrome_common_net::NetworkChangeNotifierThread*
-      network_change_notifier_thread_;
 
   // True if the profile sync service should attempt to use an LSID
   // cookie for authentication.  This is typically set to true in

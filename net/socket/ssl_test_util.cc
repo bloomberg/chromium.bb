@@ -229,8 +229,7 @@ bool TestServerLauncher::WaitToStart(const std::string& host_name, int port) {
   // Verify that the webserver is actually started.
   // Otherwise tests can fail if they run faster than Python can start.
   net::AddressList addr;
-  scoped_refptr<net::HostResolver> resolver(
-      net::CreateSystemHostResolver(NULL));
+  scoped_refptr<net::HostResolver> resolver(net::CreateSystemHostResolver());
   net::HostResolver::RequestInfo info(host_name, port);
   int rv = resolver->Resolve(info, &addr, NULL, NULL, BoundNetLog());
   if (rv != net::OK)
@@ -369,7 +368,7 @@ bool LaunchTestServerAsJob(const std::wstring& cmdline,
   PROCESS_INFORMATION process_info;
 
   // If this code is run under a debugger, the test server process is
-  // automatically associated with a job object created by the debugger. 
+  // automatically associated with a job object created by the debugger.
   // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this.
   if (!CreateProcess(NULL,
                      const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,

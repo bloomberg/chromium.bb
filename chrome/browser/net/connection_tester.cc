@@ -53,15 +53,10 @@ class ExperimentURLRequestContext : public URLRequestContext {
     ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
-    http_transaction_factory_ =
-        new net::HttpCache(
-            net::HttpNetworkLayer::CreateFactory(NULL, host_resolver_,
-                                                 proxy_service_,
-                                                 ssl_config_service_,
-                                                 http_auth_handler_factory_,
-                                                 NULL,
-                                                 NULL),
-            net::HttpCache::DefaultBackend::InMemory(0));
+    http_transaction_factory_ = new net::HttpCache(
+        net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
+            ssl_config_service_, http_auth_handler_factory_, NULL, NULL),
+        net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL, NULL);
 
@@ -84,8 +79,8 @@ class ExperimentURLRequestContext : public URLRequestContext {
       scoped_refptr<net::HostResolver>* host_resolver) {
     // Create a vanilla HostResolver that disables caching.
     const size_t kMaxJobs = 50u;
-    scoped_refptr<net::HostResolverImpl> impl = new net::HostResolverImpl(
-        NULL, NULL, NULL, kMaxJobs);
+    scoped_refptr<net::HostResolverImpl> impl =
+        new net::HostResolverImpl(NULL, NULL, kMaxJobs);
 
     *host_resolver = impl;
 
@@ -155,9 +150,8 @@ class ExperimentURLRequestContext : public URLRequestContext {
       return net::ERR_NOT_IMPLEMENTED;
     }
 
-    *proxy_service = net::ProxyService::Create(
-        config_service.release(),
-        true, this, NULL, NULL, MessageLoop::current());
+    *proxy_service = net::ProxyService::Create(config_service.release(), true,
+        this, NULL, MessageLoop::current());
 
     return net::OK;
   }

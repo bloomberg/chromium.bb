@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,16 +51,12 @@ const char* ProfileSyncService::kSyncServerUrl =
 const char* ProfileSyncService::kDevServerUrl =
     "https://clients4.google.com/chrome-sync/dev";
 
-ProfileSyncService::ProfileSyncService(
-    ProfileSyncFactory* factory,
-    Profile* profile,
-    chrome_common_net::NetworkChangeNotifierThread*
-        network_change_notifier_thread,
-    bool bootstrap_sync_authentication)
+ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
+                                       Profile* profile,
+                                       bool bootstrap_sync_authentication)
     : last_auth_error_(AuthError::None()),
       factory_(factory),
       profile_(profile),
-      network_change_notifier_thread_(network_change_notifier_thread),
       bootstrap_sync_authentication_(bootstrap_sync_authentication),
       sync_service_url_(kDevServerUrl),
       backend_initialized_(false),
@@ -72,7 +68,6 @@ ProfileSyncService::ProfileSyncService(
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
   DCHECK(factory);
   DCHECK(profile);
-  DCHECK(network_change_notifier_thread_);
   registrar_.Add(this,
                  NotificationType::SYNC_CONFIGURE_START,
                  NotificationService::AllSources());
@@ -110,7 +105,6 @@ ProfileSyncService::ProfileSyncService()
     : last_auth_error_(AuthError::None()),
       factory_(NULL),
       profile_(NULL),
-      network_change_notifier_thread_(NULL),
       bootstrap_sync_authentication_(false),
       sync_service_url_(kSyncServerUrl),
       backend_initialized_(false),
@@ -273,7 +267,6 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   GetPreferredDataTypes(&types);
   backend_->Initialize(sync_service_url_,
                        types,
-                       network_change_notifier_thread_,
                        profile_->GetRequestContext(),
                        GetLsidForAuthBootstraping(),
                        delete_sync_data_folder,

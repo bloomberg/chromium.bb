@@ -118,7 +118,6 @@ class TCPClientSocketPool : public ClientSocketPool {
       const scoped_refptr<ClientSocketPoolHistograms>& histograms,
       HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
-      NetworkChangeNotifier* network_change_notifier,
       NetLog* net_log);
 
   // ClientSocketPool methods:

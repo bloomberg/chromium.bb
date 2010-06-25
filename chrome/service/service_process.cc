@@ -6,7 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
-#include "chrome/service/net/service_network_change_notifier_thread.h"
+#include "net/base/network_change_notifier.h"
 
 ServiceProcess* g_service_process = NULL;
 
@@ -16,6 +16,7 @@ ServiceProcess::ServiceProcess() {
 }
 
 bool ServiceProcess::Initialize() {
+  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   io_thread_.reset(new base::Thread("ServiceProcess_IO"));
@@ -26,17 +27,16 @@ bool ServiceProcess::Initialize() {
     Teardown();
     return false;
   }
-  network_change_notifier_thread_ =
-      new ServiceNetworkChangeNotifierThread(io_thread_->message_loop());
-  network_change_notifier_thread_->Initialize();
   return true;
 }
 
 bool ServiceProcess::Teardown() {
-  network_change_notifier_thread_ = NULL;
   io_thread_.reset();
   file_thread_.reset();
   STLDeleteElements(&cloud_print_proxy_list_);
+  // The NetworkChangeNotifier must be destroyed after all other threads that
+  // might use it have been shut down.
+  network_change_notifier_.reset();
   return true;
 }
 

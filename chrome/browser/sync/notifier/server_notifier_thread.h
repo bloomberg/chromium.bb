@@ -20,10 +20,6 @@
 #include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 
-namespace chrome_common_net {
-class NetworkChangeNotifierThread;
-}  // namespace chrome_common_net
-
 namespace sync_notifier {
 
 class ChromeInvalidationClient;
@@ -32,9 +28,7 @@ class ServerNotifierThread
     : public notifier::MediatorThreadImpl,
       public invalidation::InvalidationListener {
  public:
-  explicit ServerNotifierThread(
-      chrome_common_net::NetworkChangeNotifierThread*
-          network_change_notifier_thread);
+  ServerNotifierThread();
 
   virtual ~ServerNotifierThread();
 

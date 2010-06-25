@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
-#include "chrome/common/net/network_change_notifier_proxy.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
 #include "chrome/common/net/notifier/listener/notification_constants.h"
 #include "chrome/common/net/notifier/listener/talk_mediator.h"
@@ -883,8 +882,6 @@ class SyncManager::SyncInternal
             const char* gaia_service_id,
             const char* gaia_source,
             bool use_ssl,
-            chrome_common_net::NetworkChangeNotifierThread*
-                network_change_notifier_thread,
             HttpPostProviderFactory* post_factory,
             HttpPostProviderFactory* auth_post_factory,
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
@@ -1166,10 +1163,6 @@ class SyncManager::SyncInternal
   // The sync dir_manager to which we belong.
   SyncManager* const sync_manager_;
 
-  // An object that notifies us whenever there is a network-related
-  // change (e.g., disconnections).
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-
   // The entity that provides us with information about which types to sync.
   // The instance is shared between the SyncManager and the Syncer.
   ModelSafeWorkerRegistrar* registrar_;
@@ -1201,8 +1194,6 @@ bool SyncManager::Init(const FilePath& database_location,
                        const char* gaia_service_id,
                        const char* gaia_source,
                        bool use_ssl,
-                       chrome_common_net::NetworkChangeNotifierThread*
-                           network_change_notifier_thread,
                        HttpPostProviderFactory* post_factory,
                        HttpPostProviderFactory* auth_post_factory,
                        ModelSafeWorkerRegistrar* registrar,
@@ -1221,7 +1212,6 @@ bool SyncManager::Init(const FilePath& database_location,
                      gaia_service_id,
                      gaia_source,
                      use_ssl,
-                     network_change_notifier_thread,
                      post_factory,
                      auth_post_factory,
                      registrar,
@@ -1271,8 +1261,6 @@ bool SyncManager::SyncInternal::Init(
     const char* gaia_service_id,
     const char* gaia_source,
     bool use_ssl,
-    chrome_common_net::NetworkChangeNotifierThread*
-        network_change_notifier_thread,
     HttpPostProviderFactory* post_factory,
     HttpPostProviderFactory* auth_post_factory,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
@@ -1310,29 +1298,22 @@ bool SyncManager::SyncInternal::Init(
   // Watch various objects for aggregated status.
   allstatus_.WatchConnectionManager(connection_manager());
 
-  network_change_notifier_.reset(
-      new chrome_common_net::NetworkChangeNotifierProxy(
-          network_change_notifier_thread));
-  network_change_notifier_->AddObserver(this);
-  // TODO(akalin): CheckServerReachable() can block, which may cause
-  // jank if we try to shut down sync.  Fix this.
+  net::NetworkChangeNotifier::AddObserver(this);
+  // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
+  // try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
 
-  // NOTIFICATION_SERVER uses a substantially different notification
-  // method, so it has its own MediatorThread implementation.
-  // Everything else just uses MediatorThreadImpl.
+  // NOTIFICATION_SERVER uses a substantially different notification method, so
+  // it has its own MediatorThread implementation.  Everything else just uses
+  // MediatorThreadImpl.
   notifier::MediatorThread* mediator_thread =
       (notification_method == browser_sync::NOTIFICATION_SERVER) ?
-      static_cast<notifier::MediatorThread*>(
-          new sync_notifier::ServerNotifierThread(
-              network_change_notifier_thread)) :
-      static_cast<notifier::MediatorThread*>(
-          new notifier::MediatorThreadImpl(network_change_notifier_thread));
+      new sync_notifier::ServerNotifierThread() :
+      new notifier::MediatorThreadImpl();
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
-  talk_mediator_.reset(new TalkMediatorImpl(
-      mediator_thread,
-      kInitializeSsl, kConnectImmediately, invalidate_xmpp_auth_token));
+  talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, kInitializeSsl,
+      kConnectImmediately, invalidate_xmpp_auth_token));
   if (notification_method != browser_sync::NOTIFICATION_LEGACY &&
       notification_method != browser_sync::NOTIFICATION_SERVER) {
     if (notification_method == browser_sync::NOTIFICATION_TRANSITIONAL) {
@@ -1595,10 +1576,7 @@ void SyncManager::SyncInternal::Shutdown() {
     core_message_loop_->SetNestableTasksAllowed(old_state);
   }
 
-  if (network_change_notifier_.get()) {
-    network_change_notifier_->RemoveObserver(this);
-    network_change_notifier_.reset();
-  }
+  net::NetworkChangeNotifier::RemoveObserver(this);
 
   if (dir_manager()) {
     dir_manager()->FinalSaveChangesForAll();

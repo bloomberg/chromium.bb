@@ -57,9 +57,9 @@ void TestShellRequestContext::Init(
   scoped_ptr<net::ProxyConfigService> proxy_config_service(
       net::ProxyService::CreateSystemProxyConfigService(NULL, NULL));
 #endif
-  host_resolver_ = net::CreateSystemHostResolver(NULL);
+  host_resolver_ = net::CreateSystemHostResolver();
   proxy_service_ = net::ProxyService::Create(proxy_config_service.release(),
-                                             false, NULL, NULL, NULL, NULL);
+                                             false, NULL, NULL, NULL);
   ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
 
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
@@ -69,9 +69,8 @@ void TestShellRequestContext::Init(
       cache_path, 0, SimpleResourceLoaderBridge::GetCacheThread());
 
   net::HttpCache* cache =
-      new net::HttpCache(NULL, host_resolver_, proxy_service_,
-                         ssl_config_service_, http_auth_handler_factory_,
-                         NULL, NULL, backend);
+      new net::HttpCache(host_resolver_, proxy_service_, ssl_config_service_,
+                         http_auth_handler_factory_, NULL, NULL, backend);
 
   cache->set_mode(cache_mode);
   http_transaction_factory_ = cache;

@@ -18,10 +18,7 @@
 
 namespace sync_notifier {
 
-ServerNotifierThread::ServerNotifierThread(
-    chrome_common_net::NetworkChangeNotifierThread*
-        network_change_notifier_thread)
-    : notifier::MediatorThreadImpl(network_change_notifier_thread) {}
+ServerNotifierThread::ServerNotifierThread() {}
 
 ServerNotifierThread::~ServerNotifierThread() {}
 

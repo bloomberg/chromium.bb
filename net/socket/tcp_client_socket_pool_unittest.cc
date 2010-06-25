@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/base/mock_host_resolver.h"
-#include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/client_socket.h"
@@ -272,7 +271,6 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
                                       histograms_,
                                       host_resolver_,
                                       &client_socket_factory_,
-                                      &notifier_,
                                       NULL)) {
   }
 
@@ -285,7 +283,6 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   scoped_refptr<ClientSocketPoolHistograms> histograms_;
   scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
-  MockNetworkChangeNotifier notifier_;
   scoped_refptr<TCPClientSocketPool> pool_;
 };
 
@@ -684,7 +681,9 @@ TEST_F(TCPClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
   EXPECT_EQ(1, pool_->IdleSocketCount());
 
   // After an IP address change, we should have 0 idle sockets.
-  notifier_.NotifyIPAddressChange();
+  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  MessageLoop::current()->RunAllPending();  // Notification happens async.
+
   EXPECT_EQ(0, pool_->IdleSocketCount());
 }
 
@@ -742,13 +741,8 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
     EXPECT_EQ(0, pool_->IdleSocketCount());
     handle.Reset();
 
-    pool_ = new TCPClientSocketPool(kMaxSockets,
-                                    kMaxSocketsPerGroup,
-                                    histograms_,
-                                    host_resolver_,
-                                    &client_socket_factory_,
-                                    NULL,
-                                    NULL);
+    pool_ = new TCPClientSocketPool(kMaxSockets, kMaxSocketsPerGroup,
+        histograms_, host_resolver_, &client_socket_factory_, NULL);
   }
 }
 

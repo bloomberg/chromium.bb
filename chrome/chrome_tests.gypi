@@ -520,7 +520,6 @@
         'chrome_resources',
         'chrome_strings',
         'common',
-        'common_net_test_support',
         'debugger',
         'profile_import',
         'renderer',
@@ -964,7 +963,6 @@
         'browser/sync/glue/theme_util_unittest.cc',
         'browser/sync/glue/typed_url_model_associator_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',
-        'browser/sync/net/network_change_notifier_io_thread_unittest.cc',
         'browser/sync/profile_sync_factory_impl_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',
@@ -1029,7 +1027,6 @@
         'common/json_pref_store_unittest.cc',
         'common/json_value_serializer_unittest.cc',
         'common/mru_cache_unittest.cc',
-        # TODO(sanjeevr): Move the 2 below files to common_net_unit_tests
         'common/net/gaia/gaia_authenticator_unittest.cc',
         'common/net/url_fetcher_unittest.cc',
         'common/net/test_url_fetcher_factory.cc',
@@ -1070,7 +1067,6 @@
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'renderer/translate_helper_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
-        'service/net/service_network_change_notifier_thread_unittest.cc',
         'test/browser_with_test_window_test.cc',
         'test/browser_with_test_window_test.h',
         'test/file_test_utils.cc',
@@ -1806,58 +1802,6 @@
       ], # conditions
     },
     {
-      'target_name': 'common_net_test_support',
-      'type': '<(library)',
-      'sources': [
-        'common/net/fake_network_change_notifier_thread.cc',
-        'common/net/fake_network_change_notifier_thread.h',
-        'common/net/thread_blocker.cc',
-        'common/net/thread_blocker.h',
-      ],
-      'dependencies': [
-        'common_net',
-        '../base/base.gyp:base',
-        '../net/net.gyp:net_base',
-      ],
-    },
-    {
-      # TODO(akalin): Add this to all.gyp.
-      'target_name': 'common_net_unit_tests',
-      'type': 'executable',
-      'sources': [
-        # TODO(akalin): Write our own test suite and runner.
-        '../base/test/run_all_unittests.cc',
-        '../base/test/test_suite.h',
-        'common/net/fake_network_change_notifier_thread_unittest.cc',
-        'common/net/mock_network_change_observer.h',
-        'common/net/network_change_notifier_proxy_unittest.cc',
-        'common/net/network_change_observer_proxy_unittest.cc',
-        'common/net/thread_blocker_unittest.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        'common_net',
-        'common_net_test_support',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-      ],
-      # TODO(akalin): Remove this once we have our own test suite and
-      # runner.
-      'conditions': [
-        ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
-          'dependencies': [
-            # Needed to handle the #include chain:
-            #   base/test/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'notifier_unit_tests',
       'type': 'executable',
       'sources': [
@@ -1873,7 +1817,6 @@
         '..',
       ],
       'dependencies': [
-        'common_net_test_support',
         'notifier',
         '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
@@ -1948,7 +1891,6 @@
       'dependencies': [
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'common',
-        'common_net_test_support',
         'debugger',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',

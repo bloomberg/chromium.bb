@@ -74,6 +74,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
@@ -899,6 +900,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
+      net::NetworkChangeNotifier::Create());
 
   const char* kThreadName = "CrBrowserMain";
   PlatformThread::SetName(kThreadName);
