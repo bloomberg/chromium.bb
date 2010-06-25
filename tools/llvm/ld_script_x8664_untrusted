@@ -6,10 +6,12 @@ ENTRY(_start)
 SEARCH_DIR("/b/slave/hardy32-toolchain_x86-32/build/native_client/tools/sdk/nacl-sdk/nacl64/lib");
 PHDRS
 {
-  headers PT_PHDR FILEHDR PHDRS ;  /* put the headers in a non-loadable seg */
+  headers PT_PHDR FILEHDR PHDRS FLAGS(4) ;  /* put the headers in a non-loadable
+                                               seg */
   text    PT_LOAD FLAGS(5) ;       /* read + execute */
   rodata  PT_LOAD FLAGS(4) ;       /* read */
   data    PT_LOAD FLAGS(6) ;       /* read + write */
+  tls     PT_TLS;
   /* TODO(sehr): do we need a stack? */
 }
 SECTIONS
@@ -68,7 +70,7 @@ SECTIONS
   PROVIDE (etext = .);
   . = . + 32; /* reserve space for HLTs */
   . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
-  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
+  .rodata   ALIGN(0x10000)      : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
   .rodata1        : { *(.rodata1) }
   .nacl_rpc_methods : { *(.nacl_rpc_methods) }
   .eh_frame_hdr : { *(.eh_frame_hdr) }
@@ -84,12 +86,12 @@ SECTIONS
   /* The total size of the TLS template area must be a multiple of 0x20,
    * but it's size calculation is hardcoded in bfd_elf_final_link function
    * so the only thing we can do is align segments here properly */
-  .tdata	ALIGN(0x20)  : {
+  .tdata ALIGN(0x10000)  : {
     PROVIDE (__tls_template_start = .);
     *(.tdata .tdata.* .gnu.linkonce.td.*)
     . = ALIGN(0x20);
     PROVIDE (__tls_template_tdata_end = .);
-  }
+  } : rodata :tls
   .tbss		ALIGN(0x20)  : {
     *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon)
     . = ALIGN(0x20);
@@ -101,7 +103,7 @@ SECTIONS
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  }
+  } : rodata
   .init_array     :
   {
      PROVIDE_HIDDEN (__init_array_start = .);
@@ -152,7 +154,7 @@ SECTIONS
   . = DATA_SEGMENT_RELRO_END (24, .);
   .got.plt        : { *(.got.plt)  *(.igot.plt) }
   . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
-  .data           :
+  .data   ALIGN(0x10000)        :
   {
     *(.data .data.* .gnu.linkonce.d.*)
     SORT(CONSTRUCTORS)
