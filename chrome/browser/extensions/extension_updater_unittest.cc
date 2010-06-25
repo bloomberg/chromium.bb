@@ -115,13 +115,12 @@ void CreateTestPendingExtensions(int count, const GURL& update_url,
   for (int i = 1; i <= count; i++) {
     bool is_theme = (i % 2) == 0;
     const bool kInstallSilently = true;
-    scoped_ptr<Version> version(
-        Version::GetVersionFromString(StringPrintf("%d.0.0.0", i)));
-    ASSERT_TRUE(version.get());
+    const Extension::State kInitialState = Extension::ENABLED;
+    const bool kInitialIncognitoEnabled = false;
     std::string id = GenerateId(StringPrintf("extension%i", i));
     (*pending_extensions)[id] =
-        PendingExtensionInfo(update_url, *version,
-                             is_theme, kInstallSilently);
+        PendingExtensionInfo(update_url, is_theme, kInstallSilently,
+                             kInitialState, kInitialIncognitoEnabled);
   }
 }
 
@@ -326,7 +325,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtractParameters(decoded, &params);
     if (pending) {
       EXPECT_EQ(pending_extensions.begin()->first, params["id"]);
-      EXPECT_EQ("1.0.0.0", params["v"]);
+      EXPECT_EQ("0.0.0.0", params["v"]);
     } else {
       EXPECT_EQ(extensions[0]->id(), params["id"]);
       EXPECT_EQ(extensions[0]->VersionString(), params["v"]);
@@ -446,16 +445,15 @@ class ExtensionUpdaterTest : public testing::Test {
     UpdateManifest::Results updates;
     for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
          it != pending_extensions.end(); ++it) {
-      fetch_data.AddExtension(it->first,
-                              it->second.version.GetString(),
+      fetch_data.AddExtension(it->first, "1.0.0.0",
                               ManifestFetchData::kNeverPinged);
       AddParseResult(it->first,
                      "1.1", "http://localhost/e1_1.1.crx", &updates);
     }
     std::vector<int> updateable =
         updater->DetermineUpdates(fetch_data, updates);
-    // Only the first one is updateable.
-    EXPECT_EQ(1u, updateable.size());
+    // All the apps should be updateable.
+    EXPECT_EQ(3u, updateable.size());
     for (std::vector<int>::size_type i = 0; i < updateable.size(); ++i) {
       EXPECT_EQ(static_cast<int>(i), updateable[i]);
     }
@@ -552,10 +550,12 @@ class ExtensionUpdaterTest : public testing::Test {
     if (pending) {
       const bool kIsTheme = false;
       const bool kInstallSilently = true;
+      const Extension::State kInitialState = Extension::ENABLED;
+      const bool kInitialIncognitoEnabled = false;
       PendingExtensionMap pending_extensions;
       pending_extensions[id] =
-          PendingExtensionInfo(test_url, *version,
-                               kIsTheme, kInstallSilently);
+          PendingExtensionInfo(test_url, kIsTheme, kInstallSilently,
+                               kInitialState, kInitialIncognitoEnabled);
       service.set_pending_extensions(pending_extensions);
     }
 
@@ -880,18 +880,15 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
     STLDeleteElements(&extensions);
   }
 
-  scoped_ptr<Version> version(Version::GetVersionFromString("0"));
-  ASSERT_TRUE(version.get());
-
   // Extensions with invalid update URLs should be rejected.
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL("http:google.com:foo"),
-                                              *version, false, false));
+                                              false, false, true, false));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // Extensions with empty IDs should be rejected.
   builder.AddPendingExtension(
-      "", PendingExtensionInfo(GURL(), *version, false, false));
+      "", PendingExtensionInfo(GURL(), false, false, true, false));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // TODO(akalin): Test that extensions with empty update URLs
@@ -900,7 +897,8 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // Extensions with empty update URLs should have a default one
   // filled in.
   builder.AddPendingExtension(
-      GenerateId("foo"), PendingExtensionInfo(GURL(), *version, false, false));
+      GenerateId("foo"), PendingExtensionInfo(GURL(),
+                                              false, false, true, false));
   std::vector<ManifestFetchData*> fetches = builder.GetFetches();
   ASSERT_EQ(1u, fetches.size());
   scoped_ptr<ManifestFetchData> fetch(fetches[0]);

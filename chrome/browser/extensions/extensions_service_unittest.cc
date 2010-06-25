@@ -429,9 +429,16 @@ class ExtensionsServiceTest
     ExtensionErrorReporter::GetInstance()->ClearErrors();
   }
 
+  enum UpdateState {
+    FAILED_SILENTLY,
+    FAILED,
+    UPDATED,
+    INSTALLED,
+    ENABLED
+  };
+
   void UpdateExtension(const std::string& id, const FilePath& in_path,
-                       bool should_succeed, bool should_install,
-                       bool expect_report_on_failure) {
+                       UpdateState expected_state) {
     ASSERT_TRUE(file_util::PathExists(in_path));
 
     // We need to copy this to a temporary location because Update() will delete
@@ -440,17 +447,39 @@ class ExtensionsServiceTest
     path = path.Append(in_path.BaseName());
     ASSERT_TRUE(file_util::CopyFile(in_path, path));
 
+    int previous_enabled_extension_count =
+        service_->extensions()->size();
+    int previous_installed_extension_count =
+        previous_enabled_extension_count +
+        service_->disabled_extensions()->size();
+
     service_->UpdateExtension(id, path, GURL());
     loop_.RunAllPending();
-    std::vector<std::string> errors = GetErrors();
 
-    if (should_succeed) {
-      EXPECT_EQ(0u, errors.size()) << path.value();
-      EXPECT_EQ(should_install ? 1u : 0u, service_->extensions()->size());
+    std::vector<std::string> errors = GetErrors();
+    int error_count = errors.size();
+    int enabled_extension_count =
+        service_->extensions()->size();
+    int installed_extension_count =
+        enabled_extension_count + service_->disabled_extensions()->size();
+
+    int expected_error_count = (expected_state == FAILED) ? 1 : 0;
+    EXPECT_EQ(expected_error_count, error_count) << path.value();
+
+    if (expected_state <= FAILED) {
+      EXPECT_EQ(previous_enabled_extension_count,
+                enabled_extension_count);
+      EXPECT_EQ(previous_installed_extension_count,
+                installed_extension_count);
     } else {
-      if (expect_report_on_failure) {
-        EXPECT_EQ(1u, errors.size()) << path.value();
-      }
+      int expected_installed_extension_count =
+          (expected_state >= INSTALLED) ? 1 : 0;
+      int expected_enabled_extension_count =
+          (expected_state >= ENABLED) ? 1 : 0;
+      EXPECT_EQ(expected_installed_extension_count,
+                installed_extension_count);
+      EXPECT_EQ(expected_enabled_extension_count,
+                enabled_extension_count);
     }
 
     // Update() should delete the temporary input file.
@@ -1142,7 +1171,7 @@ TEST_F(ExtensionsServiceTest, UpdateExtension) {
   ASSERT_EQ(good_crx, good->id());
 
   path = extensions_path.AppendASCII("good2.crx");
-  UpdateExtension(good_crx, path, true, true, true);
+  UpdateExtension(good_crx, path, ENABLED);
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
 }
 
@@ -1154,7 +1183,7 @@ TEST_F(ExtensionsServiceTest, UpdateNotInstalledExtension) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   FilePath path = extensions_path.AppendASCII("good.crx");
-  UpdateExtension(good_crx, path, true, false, true);
+  UpdateExtension(good_crx, path, UPDATED);
   loop_.RunAllPending();
 
   ASSERT_EQ(0u, service_->extensions()->size());
@@ -1178,7 +1207,7 @@ TEST_F(ExtensionsServiceTest, UpdateWillNotDowngrade) {
 
   // Change path from good2.crx -> good.crx
   path = extensions_path.AppendASCII("good.crx");
-  UpdateExtension(good_crx, path, false, false, true);
+  UpdateExtension(good_crx, path, FAILED);
   ASSERT_EQ("1.0.0.1", service_->extensions()->at(0)->VersionString());
 }
 
@@ -1194,7 +1223,7 @@ TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
   InstallExtension(path, true);
   Extension* good = service_->extensions()->at(0);
   ASSERT_EQ(good_crx, good->id());
-  UpdateExtension(good_crx, path, false, false, false);
+  UpdateExtension(good_crx, path, FAILED_SILENTLY);
 }
 
 // Test adding a pending extension.
@@ -1203,21 +1232,20 @@ TEST_F(ExtensionsServiceTest, AddPendingExtension) {
 
   const std::string kFakeId("fake-id");
   const GURL kFakeUpdateURL("http:://fake.update/url");
-  scoped_ptr<Version> fake_version(Version::GetVersionFromString("4.3.2.1"));
-  ASSERT_TRUE(fake_version.get());
   const bool kFakeIsTheme(false);
   const bool kFakeInstallSilently(true);
+  const Extension::State kFakeInitialState(Extension::ENABLED);
+  const bool kFakeInitialIncognitoEnabled(false);
 
-  service_->AddPendingExtension(kFakeId, kFakeUpdateURL,
-                                *fake_version, kFakeIsTheme,
-                                kFakeInstallSilently);
+  service_->AddPendingExtension(
+      kFakeId, kFakeUpdateURL, kFakeIsTheme, kFakeInstallSilently,
+      kFakeInitialState, kFakeInitialIncognitoEnabled);
   PendingExtensionMap::const_iterator it =
       service_->pending_extensions().find(kFakeId);
   ASSERT_TRUE(it != service_->pending_extensions().end());
   EXPECT_EQ(kFakeUpdateURL, it->second.update_url);
   EXPECT_EQ(kFakeIsTheme, it->second.is_theme);
   EXPECT_EQ(kFakeInstallSilently, it->second.install_silently);
-  EXPECT_TRUE(it->second.version.Equals(*fake_version));
 }
 
 namespace {
@@ -1225,27 +1253,36 @@ const char kGoodId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodUpdateURL[] = "http://good.update/url";
 const bool kGoodIsTheme = false;
 const bool kGoodInstallSilently = true;
-const char kGoodVersion[] = "1.2.3.4";
+const Extension::State kGoodInitialState = Extension::DISABLED;
+const bool kGoodInitialIncognitoEnabled = true;
 }  // namespace
 
 // Test updating a pending extension.
 TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
   InitializeEmptyExtensionsService();
-  scoped_ptr<Version> good_version(
-      Version::GetVersionFromString(kGoodVersion));
-  ASSERT_TRUE(good_version.get());
-  service_->AddPendingExtension(kGoodId, GURL(kGoodUpdateURL),
-                                *good_version, kGoodIsTheme,
-                                kGoodInstallSilently);
+  service_->AddPendingExtension(
+      kGoodId, GURL(kGoodUpdateURL), kGoodIsTheme,
+      kGoodInstallSilently, kGoodInitialState,
+      kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   FilePath path = extensions_path.AppendASCII("good.crx");
-  UpdateExtension(kGoodId, path, true, true, false);
+  UpdateExtension(kGoodId, path, INSTALLED);
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
+
+  Extension* extension = service_->GetExtensionById(kGoodId, true);
+  ASSERT_TRUE(extension);
+
+  bool enabled = service_->GetExtensionById(kGoodId, false);
+  EXPECT_EQ(kGoodInitialState == Extension::ENABLED, enabled);
+  EXPECT_EQ(kGoodInitialState,
+            service_->extension_prefs()->GetExtensionState(extension->id()));
+  EXPECT_EQ(kGoodInitialIncognitoEnabled,
+            service_->IsIncognitoEnabled(extension));
 }
 
 // TODO(akalin): Test updating a pending extension non-silently once
@@ -1255,20 +1292,18 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
 // Test updating a pending extension with wrong is_theme.
 TEST_F(ExtensionsServiceTest, UpdatePendingExtensionWrongIsTheme) {
   InitializeEmptyExtensionsService();
-  scoped_ptr<Version> good_version(
-      Version::GetVersionFromString(kGoodVersion));
-  ASSERT_TRUE(good_version.get());
   // Add pending extension with a flipped is_theme.
-  service_->AddPendingExtension(kGoodId, GURL(kGoodUpdateURL),
-                                *good_version, !kGoodIsTheme,
-                                kGoodInstallSilently);
+  service_->AddPendingExtension(
+      kGoodId, GURL(kGoodUpdateURL), !kGoodIsTheme,
+      kGoodInstallSilently, kGoodInitialState,
+      kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   FilePath path = extensions_path.AppendASCII("good.crx");
-  UpdateExtension(kGoodId, path, true, false, false);
+  UpdateExtension(kGoodId, path, UPDATED);
 
   // TODO(akalin): Figure out how to check that the extensions
   // directory is cleaned up properly in OnExtensionInstalled().
@@ -1284,7 +1319,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionNotPending) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   FilePath path = extensions_path.AppendASCII("good.crx");
-  UpdateExtension(kGoodId, path, true, false, false);
+  UpdateExtension(kGoodId, path, UPDATED);
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
 }
@@ -1305,10 +1340,11 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   // Use AddPendingExtensionInternal() as AddPendingExtension() would
   // balk.
   service_->AddPendingExtensionInternal(
-      good->id(), good->update_url(), *good->version(),
-      good->is_theme(), kGoodInstallSilently);
+      good->id(), good->update_url(), good->is_theme(),
+      kGoodInstallSilently, kGoodInitialState,
+      kGoodInitialIncognitoEnabled);
 
-  UpdateExtension(good->id(), path, true, true, false);
+  UpdateExtension(good->id(), path, INSTALLED);
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
 }
@@ -1354,7 +1390,7 @@ TEST_F(ExtensionsServiceTest, UnloadBlacklistedExtension) {
   InstallExtension(path, true);
   Extension* good = service_->extensions()->at(0);
   EXPECT_EQ(good_crx, good->id());
-  UpdateExtension(good_crx, path, false, false, false);
+  UpdateExtension(good_crx, path, FAILED_SILENTLY);
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
