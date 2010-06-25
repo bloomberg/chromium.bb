@@ -823,6 +823,7 @@
         'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
         'browser/history/expire_history_backend_unittest.cc',
         'browser/history/history_backend_unittest.cc',
+        'browser/history/history_index_unittest.cc',
         'browser/history/history_querying_unittest.cc',
         'browser/history/history_types_unittest.cc',
         'browser/history/history_unittest.cc',
