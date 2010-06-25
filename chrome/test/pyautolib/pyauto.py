@@ -647,8 +647,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       all_data = f.read()
       f.close()
       return all_data
-    except IOError:
-      raise
     finally:
       shutil.rmtree(tempdir)
 
