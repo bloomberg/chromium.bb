@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -603,7 +603,8 @@ class StatisticsRecorder {
   static void GetHistograms(Histograms* output);
 
   // Find a histogram by name. It matches the exact name. This method is thread
-  // safe.
+  // safe.  If a matching histogram is not found, then the |histogram| is
+  // not changed.
   static bool FindHistogram(const std::string& query,
                             scoped_refptr<Histogram>* histogram);
 

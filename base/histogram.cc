@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,16 +30,9 @@ scoped_refptr<Histogram> Histogram::FactoryGet(const std::string& name,
   if (maximum >= kSampleType_MAX)
     maximum = kSampleType_MAX - 1;
 
-  if (StatisticsRecorder::FindHistogram(name, &histogram)) {
-    DCHECK(histogram.get() != NULL);
-  } else {
+  if (!StatisticsRecorder::FindHistogram(name, &histogram)) {
     histogram = new Histogram(name, minimum, maximum, bucket_count);
-    scoped_refptr<Histogram> registered_histogram(NULL);
-    StatisticsRecorder::FindHistogram(name, &registered_histogram);
-    // Allow a NULL return to mean that the StatisticsRecorder was not started.
-    if (registered_histogram.get() != NULL &&
-        registered_histogram.get() != histogram.get())
-      histogram = registered_histogram;
+    StatisticsRecorder::FindHistogram(name, &histogram);
   }
 
   DCHECK(HISTOGRAM == histogram->histogram_type());
@@ -584,15 +577,9 @@ scoped_refptr<Histogram> LinearHistogram::FactoryGet(
   if (maximum >= kSampleType_MAX)
     maximum = kSampleType_MAX - 1;
 
-  if (StatisticsRecorder::FindHistogram(name, &histogram)) {
-    DCHECK(histogram.get() != NULL);
-  } else {
+  if (!StatisticsRecorder::FindHistogram(name, &histogram)) {
     histogram = new LinearHistogram(name, minimum, maximum, bucket_count);
-    scoped_refptr<Histogram> registered_histogram(NULL);
-    StatisticsRecorder::FindHistogram(name, &registered_histogram);
-    if (registered_histogram.get() != NULL &&
-        registered_histogram.get() != histogram.get())
-      histogram = registered_histogram;
+    StatisticsRecorder::FindHistogram(name, &histogram);
   }
 
   DCHECK(LINEAR_HISTOGRAM == histogram->histogram_type());
@@ -673,15 +660,9 @@ scoped_refptr<Histogram> BooleanHistogram::FactoryGet(const std::string& name,
                                                       Flags flags) {
   scoped_refptr<Histogram> histogram(NULL);
 
-  if (StatisticsRecorder::FindHistogram(name, &histogram)) {
-    DCHECK(histogram.get() != NULL);
-  } else {
+  if (!StatisticsRecorder::FindHistogram(name, &histogram)) {
     histogram = new BooleanHistogram(name);
-    scoped_refptr<Histogram> registered_histogram(NULL);
-    StatisticsRecorder::FindHistogram(name, &registered_histogram);
-    if (registered_histogram.get() != NULL &&
-        registered_histogram.get() != histogram.get())
-      histogram = registered_histogram;
+    StatisticsRecorder::FindHistogram(name, &histogram);
   }
 
   DCHECK(BOOLEAN_HISTOGRAM == histogram->histogram_type());
@@ -712,16 +693,9 @@ scoped_refptr<Histogram> CustomHistogram::FactoryGet(
 
   DCHECK_LT(ranges.back(), kSampleType_MAX);
 
-  if (StatisticsRecorder::FindHistogram(name, &histogram)) {
-    DCHECK(histogram.get());
-    DCHECK_EQ(histogram->histogram_type(), CUSTOM_HISTOGRAM);
-  } else {
+  if (!StatisticsRecorder::FindHistogram(name, &histogram)) {
     histogram = new CustomHistogram(name, ranges);
-    scoped_refptr<Histogram> registered_histogram(NULL);
-    StatisticsRecorder::FindHistogram(name, &registered_histogram);
-    if (registered_histogram.get() &&
-        registered_histogram.get() != histogram.get())
-      histogram = registered_histogram;
+    StatisticsRecorder::FindHistogram(name, &histogram);
   }
 
   DCHECK_EQ(histogram->histogram_type(), CUSTOM_HISTOGRAM);
@@ -776,7 +750,6 @@ StatisticsRecorder::~StatisticsRecorder() {
     WriteGraph("", &output);
     LOG(INFO) << output;
   }
-
   // Clean up.
   delete histograms_;
   histograms_ = NULL;
@@ -800,7 +773,6 @@ void StatisticsRecorder::Register(Histogram* histogram) {
     return;
   const std::string name = histogram->histogram_name();
   AutoLock auto_lock(*lock_);
-
   DCHECK(histograms_->end() == histograms_->find(name));
 
   (*histograms_)[name] = histogram;
@@ -859,6 +831,7 @@ void StatisticsRecorder::GetHistograms(Histograms* output) {
   for (HistogramMap::iterator it = histograms_->begin();
        histograms_->end() != it;
        ++it) {
+    DCHECK(it->second->histogram_name() == it->first);
     output->push_back(it->second);
   }
 }
