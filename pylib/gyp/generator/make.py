@@ -100,6 +100,24 @@ all_deps :=
 # C++ apps need to be linked with g++.  Not sure what's appropriate.
 LINK ?= $(CXX)
 
+# We want to use GNU ar's T option if available because it's much faster.
+# We try to archive and link a file to see ar and ld support this feature.
+define detect_arflags
+$(shell \
+    mkdir -p $(obj).$(1)/arflags;
+    if echo 'int main(){}' > $(obj).$(1)/arflags/artest.c &&
+       $(CXX.$(1)) -c $(obj).$(1)/arflags/artest.c -o $(obj).$(1)/arflags/artest.o> /dev/null 2>&1 &&
+       $(AR.$(1)) crT $(obj).$(1)/arflags/artest.a $(obj).$(1)/arflags/artest.o > /dev/null 2>&1 &&
+       $(LINK.$(1)) $(obj).$(1)/arflags/artest.a -o $(obj).$(1)/arflags/artest > /dev/null 2>&1 ; then
+      arflags=crT;
+    else
+      arflags=cr;
+    fi;
+    echo ARFLAGS.$(1) := $$arflags > $(obj).$(1)/arflags/arflags.mk;
+    echo $$arflags;
+ )
+endef
+
 CC.target ?= $(CC)
 CFLAGS.target ?= $(CFLAGS)
 CXX.target ?= $(CXX)
@@ -107,6 +125,14 @@ CXXFLAGS.target ?= $(CXXFLAGS)
 LINK.target ?= $(LINK)
 LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
+# We don't want to run the detection multiple times. So, we
+# - use $(obj).target/arflags/arflags.target.mk as the cache of the detection,
+# - use := to avoid the right hand side multiple times, and
+# - use ifeq instead of ?= because ?= is like ifeq and =, not ifeq and := .
+-include $(obj).target/arflags/arflags.mk
+ifeq ($(ARFLAGS.target),)
+  ARFLAGS.target := $(call detect_arflags,target)
+endif
 RANLIB.target ?= ranlib
 
 CC.host ?= gcc
@@ -116,6 +142,11 @@ CXXFLAGS.host ?=
 LINK.host ?= g++
 LDFLAGS.host ?=
 AR.host ?= ar
+# See the description for ARFLAGS.target.
+-include $(obj).host/arflags/arflags.mk
+ifeq ($(ARFLAGS.host),)
+  ARFLAGS.host := $(call detect_arflags,host)
+endif
 RANLIB.host ?= ranlib
 
 # Flags to make gcc output dependency info.  Note that you need to be
@@ -170,7 +201,7 @@ quiet_cmd_cxx = CXX($(TOOLSET)) $@
 cmd_cxx = $(CXX.$(TOOLSET)) $(CXXFLAGS.$(TOOLSET)) $(GYP_CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
 quiet_cmd_alink = AR+RANLIB($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) rc $@ $(filter %.o,$^) && $(RANLIB.$(TOOLSET)) $@
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %.o,$^) && $(RANLIB.$(TOOLSET)) $@
 
 quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
