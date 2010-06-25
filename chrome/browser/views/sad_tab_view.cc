@@ -57,9 +57,8 @@ void SadTabView::Paint(gfx::Canvas* canvas) {
                                             kBackgroundColor,
                                             kBackgroundEndColor))->safeUnref();
   paint.setStyle(SkPaint::kFill_Style);
-  canvas->drawRectCoords(0, 0,
-                         SkIntToScalar(width()), SkIntToScalar(height()),
-                         paint);
+  canvas->AsCanvasSkia()->drawRectCoords(
+      0, 0, SkIntToScalar(width()), SkIntToScalar(height()), paint);
 
   canvas->DrawBitmapInt(*sad_tab_bitmap_, icon_bounds_.x(), icon_bounds_.y());
 

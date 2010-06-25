@@ -13,7 +13,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -169,8 +169,8 @@ void AppInfoView::Paint(gfx::Canvas* canvas) {
   border_paint.setAntiAlias(true);
   border_paint.setARGB(0xFF, 0xC8, 0xC8, 0xC8);
 
-  canvas->drawRoundRect(border_rect, SkIntToScalar(2), SkIntToScalar(2),
-      border_paint);
+  canvas->AsCanvasSkia()->drawRoundRect(
+      border_rect, SkIntToScalar(2), SkIntToScalar(2), border_paint);
 
   SkRect inner_rect = {
     border_rect.fLeft + SkDoubleToScalar(0.5),
@@ -182,8 +182,8 @@ void AppInfoView::Paint(gfx::Canvas* canvas) {
   SkPaint inner_paint;
   inner_paint.setAntiAlias(true);
   inner_paint.setARGB(0xFF, 0xF8, 0xF8, 0xF8);
-  canvas->drawRoundRect(inner_rect, SkIntToScalar(1.5), SkIntToScalar(1.5),
-      inner_paint);
+  canvas->AsCanvasSkia()->drawRoundRect(
+      inner_rect, SkIntToScalar(1.5), SkIntToScalar(1.5), inner_paint);
 }
 
 };  // namespace

@@ -15,7 +15,6 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
-#include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "gfx/insets.h"
@@ -273,7 +272,7 @@ AutocompleteResultView::~AutocompleteResultView() {
 void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
   const ResultViewState state = GetState();
   if (state != NORMAL)
-    canvas->drawColor(GetColor(state, BACKGROUND));
+    canvas->AsCanvasSkia()->drawColor(GetColor(state, BACKGROUND));
 
   // Paint the icon.
   canvas->DrawBitmapInt(*GetIcon(), MirroredLeftPointForRect(icon_bounds_),
@@ -765,8 +764,7 @@ void AutocompletePopupContentsView::Paint(gfx::Canvas* canvas) {
   // Instead, we paint all our children into a second canvas and use that as a
   // shader to fill a path representing the round-rect clipping region. This
   // yields a nice anti-aliased edge.
-  // TODO(beng): Convert to CanvasSkia
-  gfx::Canvas contents_canvas(width(), height(), true);
+  gfx::CanvasSkia contents_canvas(width(), height(), true);
   contents_canvas.drawColor(GetColor(NORMAL, BACKGROUND));
   View::PaintChildren(&contents_canvas);
   // We want the contents background to be slightly transparent so we can see
@@ -788,7 +786,7 @@ void AutocompletePopupContentsView::Paint(gfx::Canvas* canvas) {
 
   gfx::Path path;
   MakeContentsPath(&path, GetLocalBounds(false));
-  canvas->drawPath(path, paint);
+  canvas->AsCanvasSkia()->drawPath(path, paint);
 
   // Now we paint the border, so it will be alpha-blended atop the contents.
   // This looks slightly better in the corners than drawing the contents atop
@@ -935,8 +933,9 @@ void AutocompletePopupContentsView::MakeCanvasTransparent(
   // Allow the window blur effect to show through the popup background.
   SkAlpha alpha = GetThemeProvider()->ShouldUseNativeFrame() ?
       kGlassPopupAlpha : kOpaquePopupAlpha;
-  canvas->drawColor(SkColorSetA(GetColor(NORMAL, BACKGROUND), alpha),
-                    SkXfermode::kDstIn_Mode);
+  canvas->AsCanvasSkia()->drawColor(
+      SkColorSetA(GetColor(NORMAL, BACKGROUND), alpha),
+      SkXfermode::kDstIn_Mode);
 }
 
 void AutocompletePopupContentsView::OpenIndex(

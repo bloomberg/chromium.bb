@@ -6,7 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "views/border.h"
@@ -54,7 +54,7 @@ static void DrawRoundedRect(
   } else {
     paint.setColor(top_color);
   }
-  canvas->drawPath(path, paint);
+  canvas->AsCanvasSkia()->drawPath(path, paint);
 
   if (stroke_color != 0) {
     // Expand rect by 0.5px so resulting stroke will take the whole pixel.
@@ -67,7 +67,7 @@ static void DrawRoundedRect(
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(SK_Scalar1));
     paint.setColor(stroke_color);
-    canvas->drawRoundRect(
+    canvas->AsCanvasSkia()->drawRoundRect(
       rect,
       SkIntToScalar(corner_radius), SkIntToScalar(corner_radius),
       paint);
@@ -92,7 +92,7 @@ static void DrawRoundedRectShadow(
   rect.set(
       SkIntToScalar(x + shadow / 2), SkIntToScalar(y + shadow / 2),
       SkIntToScalar(x + w - shadow / 2), SkIntToScalar(y + h - shadow / 2));
-  canvas->drawRoundRect(
+  canvas->AsCanvasSkia()->drawRoundRect(
       rect,
       SkIntToScalar(corner_radius), SkIntToScalar(corner_radius),
       paint);
@@ -113,8 +113,9 @@ static void DrawRectWithBorder(int w,
   if (padding > 0) {
     SkPaint paint;
     paint.setColor(padding_color);
-    canvas->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
-                           SkIntToScalar(w), SkIntToScalar(h), paint);
+    canvas->AsCanvasSkia()->drawRectCoords(
+        SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(w), SkIntToScalar(h),
+        paint);
   }
   if (border->shadow > 0) {
     DrawRoundedRectShadow(

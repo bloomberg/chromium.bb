@@ -8,7 +8,7 @@
 #include "app/theme_provider.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/path.h"
 #include "gfx/skia_util.h"
@@ -91,18 +91,20 @@ void SideTab::Paint(gfx::Canvas* canvas) {
     paint.setAntiAlias(true);
     SkRect border_rect = { SkIntToScalar(0), SkIntToScalar(0),
                            SkIntToScalar(width()), SkIntToScalar(height()) };
-    canvas->drawRoundRect(border_rect, SkIntToScalar(kRoundRectRadius),
-                          SkIntToScalar(kRoundRectRadius), paint);
+    canvas->AsCanvasSkia()->drawRoundRect(border_rect,
+                                          SkIntToScalar(kRoundRectRadius),
+                                          SkIntToScalar(kRoundRectRadius),
+                                          paint);
   }
 
   if (ShouldShowIcon()) {
     if (data().phantom) {
       SkRect bounds;
       bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-      canvas->saveLayerAlpha(&bounds, kPhantomTabIconAlpha,
-                             SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas->AsCanvasSkia()->saveLayerAlpha(
+          &bounds, kPhantomTabIconAlpha, SkCanvas::kARGB_ClipLayer_SaveFlag);
       PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
-      canvas->restore();
+      canvas->AsCanvasSkia()->restore();
     } else {
       PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
     }

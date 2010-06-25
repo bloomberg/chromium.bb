@@ -17,7 +17,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/tabs/tab_controller.h"
 #include "chrome/common/chrome_switches.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
 #include "gfx/skbitmap_operations.h"
@@ -437,7 +437,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {
                           image_size, favicon_x, dst_y, image_size, image_size,
                           false);
   } else {
-    canvas->save();
+    canvas->AsCanvasSkia()->save();
     canvas->ClipRectInt(0, 0, width(), height());
     if (should_display_crashed_favicon_) {
       canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
@@ -460,7 +460,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {
                               true);
       }
     }
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
   }
 }
 

@@ -12,7 +12,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/common/render_messages.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -406,7 +406,7 @@ TEST_F(RenderWidgetHostTest, Background) {
   host_->set_view(view.get());
 
   // Create a checkerboard background to test with.
-  gfx::Canvas canvas(4, 4, true);
+  gfx::CanvasSkia canvas(4, 4, true);
   canvas.FillRectInt(SK_ColorBLACK, 0, 0, 2, 2);
   canvas.FillRectInt(SK_ColorWHITE, 2, 0, 2, 2);
   canvas.FillRectInt(SK_ColorWHITE, 0, 2, 2, 2);

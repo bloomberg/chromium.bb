@@ -19,7 +19,7 @@
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/views/infobars/infobar_button_border.h"
 #include "chrome/browser/views/infobars/infobar_text_button.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -757,11 +757,12 @@ void TranslateInfoBar::FadeBackground(gfx::Canvas* canvas,
     double animation_value, TranslateInfoBarDelegate::TranslateState state) {
   // Draw background into an offscreen buffer with alpha value per animation
   // value, then blend it back into the current canvas.
-  canvas->saveLayerAlpha(NULL, static_cast<int>(animation_value * 255),
+  canvas->AsCanvasSkia()->saveLayerAlpha(
+      NULL, static_cast<int>(animation_value * 255),
       SkCanvas::kARGB_NoClipLayer_SaveFlag);
-  canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   GetBackground(state)->Paint(canvas, this);
-  canvas->restore();
+  canvas->AsCanvasSkia()->restore();
 }
 
 inline TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() const {

@@ -9,7 +9,6 @@
 #include "app/win_util.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-#include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
@@ -1122,9 +1121,9 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
 }
 
 void WidgetWin::SizeContents(const gfx::Size& window_size) {
-  contents_.reset(new gfx::Canvas(window_size.width(),
-                                  window_size.height(),
-                                  false));
+  contents_.reset(new gfx::CanvasSkia(window_size.width(),
+                                      window_size.height(),
+                                      false));
 }
 
 void WidgetWin::PaintLayeredWindow() {

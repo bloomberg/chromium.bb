@@ -619,13 +619,13 @@ void TabRendererGtk::Paint(gfx::Canvas* canvas) {
 }
 
 SkBitmap TabRendererGtk::PaintBitmap() {
-  gfx::Canvas canvas(width(), height(), false);
+  gfx::CanvasSkia canvas(width(), height(), false);
   Paint(&canvas);
   return canvas.ExtractBitmap();
 }
 
 cairo_surface_t* TabRendererGtk::PaintToSurface() {
-  gfx::Canvas canvas(width(), height(), false);
+  gfx::CanvasSkia canvas(width(), height(), false);
   Paint(&canvas);
   return cairo_surface_reference(cairo_get_target(canvas.beginPlatformPaint()));
 }
@@ -804,7 +804,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
   if (loading_animation_.animation_state() != ANIMATION_NONE) {
     PaintLoadingAnimation(canvas);
   } else {
-    canvas->save();
+    canvas->AsCanvasSkia()->save();
     canvas->ClipRectInt(0, 0, width(), height() - kFavIconTitleSpacing);
     if (should_display_crashed_favicon_) {
       canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
@@ -818,8 +818,9 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
       if (!data_.favicon.isNull()) {
         if (data_.is_default_favicon && theme_provider_->UseGtkTheme()) {
           GdkPixbuf* favicon = GtkThemeProvider::GetDefaultFavicon(true);
-          canvas->DrawGdkPixbuf(favicon, favicon_bounds_.x(),
-                                favicon_bounds_.y() + fav_icon_hiding_offset_);
+          canvas->AsCanvasSkia()->DrawGdkPixbuf(
+              favicon, favicon_bounds_.x(),
+              favicon_bounds_.y() + fav_icon_hiding_offset_);
         } else {
           // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
           // to using that class to render the favicon).
@@ -833,7 +834,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
         }
       }
     }
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
   }
 }
 
@@ -847,11 +848,13 @@ void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
     if (throb_value > 0) {
       SkRect bounds;
       bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-      canvas->saveLayerAlpha(&bounds, static_cast<int>(throb_value * 0xff),
-                             SkCanvas::kARGB_ClipLayer_SaveFlag);
-      canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+      canvas->AsCanvasSkia()->saveLayerAlpha(
+          &bounds, static_cast<int>(throb_value * 0xff),
+          SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
+                                       SkXfermode::kClear_Mode);
       PaintActiveTabBackground(canvas);
-      canvas->restore();
+      canvas->AsCanvasSkia()->restore();
     }
   }
 }

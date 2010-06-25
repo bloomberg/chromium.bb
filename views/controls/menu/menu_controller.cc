@@ -9,7 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
@@ -470,7 +470,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       View::ConvertPointToScreen(source->GetScrollViewContainer(), &press_loc);
       View::ConvertPointToView(NULL, item, &press_loc);
       // TODO(beng): Convert to CanvasSkia
-      gfx::Canvas canvas(item->width(), item->height(), false);
+      gfx::CanvasSkia canvas(item->width(), item->height(), false);
       item->Paint(&canvas, true);
 
       OSExchangeData data;

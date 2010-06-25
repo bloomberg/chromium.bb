@@ -18,7 +18,7 @@
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip_controller.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
@@ -294,31 +294,31 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   if (HasPhantomTabs()) {
     SkRect bounds;
     bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-    canvas->saveLayerAlpha(&bounds, kPhantomTabAlpha,
-                           SkCanvas::kARGB_ClipLayer_SaveFlag);
-    canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+    canvas->AsCanvasSkia()->saveLayerAlpha(
+        &bounds, kPhantomTabAlpha, SkCanvas::kARGB_ClipLayer_SaveFlag);
+    canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
     for (int i = tab_count() - 1; i >= 0; --i) {
       Tab* tab = GetTabAtTabDataIndex(i);
       if (tab->data().phantom)
         tab->ProcessPaint(canvas);
     }
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
 
-    canvas->saveLayerAlpha(&bounds, kPhantomTabIconAlpha,
-                           SkCanvas::kARGB_ClipLayer_SaveFlag);
-    canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+    canvas->AsCanvasSkia()->saveLayerAlpha(
+        &bounds, kPhantomTabIconAlpha, SkCanvas::kARGB_ClipLayer_SaveFlag);
+    canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
     for (int i = tab_count() - 1; i >= 0; --i) {
       Tab* tab = GetTabAtTabDataIndex(i);
       if (tab->data().phantom) {
-        canvas->save();
+        canvas->AsCanvasSkia()->save();
         canvas->ClipRectInt(tab->MirroredX(), tab->y(), tab->width(),
                             tab->height());
         canvas->TranslateInt(tab->MirroredX(), tab->y());
         tab->PaintIcon(canvas);
-        canvas->restore();
+        canvas->AsCanvasSkia()->restore();
       }
     }
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
   }
 
   Tab* selected_tab = NULL;

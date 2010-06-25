@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/resource_bundle.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/throbber.h"
@@ -46,7 +46,7 @@ class BackgroundPainter : public views::Painter {
         NULL);
     paint.setShader(s);
     s->unref();
-    canvas->drawRect(rect, paint);
+    canvas->AsCanvasSkia()->drawRect(rect, paint);
   }
 
  private:

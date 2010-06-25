@@ -5,7 +5,7 @@
 #include "views/controls/menu/menu_item_view.h"
 
 #include "app/resource_bundle.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -70,7 +70,8 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   // only need the background when we want it to look different, as when we're
   // selected.
   if (render_selection)
-    canvas->drawColor(kSelectedBackgroundColor, SkXfermode::kSrc_Mode);
+    canvas->AsCanvasSkia()->drawColor(kSelectedBackgroundColor,
+                                      SkXfermode::kSrc_Mode);
 
   // Render the check.
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
@@ -103,13 +104,13 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
     paint.setShader(shader);
     shader->unref();
     int radius = kIndicatorSize / 2;
-    canvas->drawCircle(radius, radius, radius, paint);
+    canvas->AsCanvasSkia()->drawCircle(radius, radius, radius, paint);
 
     paint.setStrokeWidth(SkIntToScalar(0));
     paint.setShader(NULL);
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setColor(kBaseStroke);
-    canvas->drawCircle(radius, radius, radius, paint);
+    canvas->AsCanvasSkia()->drawCircle(radius, radius, radius, paint);
 
     if (GetDelegate()->IsItemChecked(GetCommand())) {
       SkPoint selected_gradient_points[2];
@@ -125,13 +126,15 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
       paint.setShader(shader);
       shader->unref();
       paint.setStyle(SkPaint::kFill_Style);
-      canvas->drawCircle(radius, radius, kSelectedIndicatorSize / 2, paint);
+      canvas->AsCanvasSkia()->drawCircle(radius, radius,
+                                         kSelectedIndicatorSize / 2, paint);
 
       paint.setStrokeWidth(SkIntToScalar(0));
       paint.setShader(NULL);
       paint.setStyle(SkPaint::kStroke_Style);
       paint.setColor(kIndicatorStroke);
-      canvas->drawCircle(radius, radius, kSelectedIndicatorSize / 2, paint);
+      canvas->AsCanvasSkia()->drawCircle(radius, radius,
+                                         kSelectedIndicatorSize / 2, paint);
     }
 
     canvas->TranslateInt(

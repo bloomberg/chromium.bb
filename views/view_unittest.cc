@@ -8,7 +8,7 @@
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/background.h"
@@ -81,7 +81,7 @@ void PaintRootView(views::RootView* root, bool empty_paint) {
     // User isn't logged in, so that PaintNow will generate an empty rectangle.
     // Invoke paint directly.
     gfx::Rect paint_rect = root->GetScheduledPaintRect();
-    gfx::Canvas canvas(paint_rect.width(), paint_rect.height(), true);
+    gfx::CanvasSkia canvas(paint_rect.width(), paint_rect.height(), true);
     canvas.TranslateInt(-paint_rect.x(), -paint_rect.y());
     canvas.ClipRectInt(0, 0, paint_rect.width(), paint_rect.height());
     root->ProcessPaint(&canvas);
@@ -387,7 +387,7 @@ TEST_F(ViewTest, MouseEvent) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void TestView::Paint(gfx::Canvas* canvas) {
-  canvas->getClipBounds(&last_clip_);
+  canvas->AsCanvasSkia()->getClipBounds(&last_clip_);
 }
 
 void CheckRect(const SkRect& check_rect, const SkRect& target_rect) {

@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "views/widget/widget.h"
 
@@ -125,7 +126,7 @@ void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
            SkIntToScalar(height()));
   SkPath path;
   path.addRoundRect(rect, rad, SkPath::kCW_Direction);
-  canvas->drawPath(path, paint);
+  canvas->AsCanvasSkia()->drawPath(path, paint);
 
   int text_width = views::Label::font().GetStringWidth(text_);
   gfx::Rect body_bounds(kTextHorizPadding / 2, 0, text_width, height());

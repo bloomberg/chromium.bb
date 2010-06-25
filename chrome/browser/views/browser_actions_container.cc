@@ -323,8 +323,8 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   if (icon.isNull())
     icon = button_->default_icon();
 
-  // TODO(beng): Convert to CanvasSkia
-  gfx::Canvas* canvas = new gfx::Canvas(icon.width(), icon.height(), false);
+  gfx::Canvas* canvas =
+      new gfx::CanvasSkia(icon.width(), icon.height(), false);
   canvas->DrawBitmapInt(icon, 0, 0);
 
   if (tab_id >= 0) {

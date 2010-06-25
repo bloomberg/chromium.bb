@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_theme_provider.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -414,7 +414,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
   SkPaint shadow_paint;
   shadow_paint.setFlags(SkPaint::kAntiAlias_Flag);
   shadow_paint.setColor(kShadowColor);
-  canvas->drawPath(shadow_path, shadow_paint);
+  canvas->AsCanvasSkia()->drawPath(shadow_path, shadow_paint);
 
   // Draw the bubble.
   rect.set(SkIntToScalar(kShadowThickness),
@@ -423,7 +423,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
            SkIntToScalar(height - kShadowThickness));
   SkPath path;
   path.addRoundRect(rect, rad, SkPath::kCW_Direction);
-  canvas->drawPath(path, paint);
+  canvas->AsCanvasSkia()->drawPath(path, paint);
 
   // Draw highlight text and then the text body. In order to make sure the text
   // is aligned to the right on RTL UIs, we mirror the text bounds if the

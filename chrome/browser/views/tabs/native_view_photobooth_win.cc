@@ -5,7 +5,7 @@
 #include "chrome/browser/views/tabs/native_view_photobooth_win.h"
 
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/widget/widget_win.h"
@@ -100,7 +100,7 @@ void NativeViewPhotoboothWin::PaintScreenshotIntoCanvas(
 
   // Transfer the contents of the layered capture window to the screen-shot
   // canvas' DIB.
-  HDC target_dc = canvas->beginPlatformPaint();
+  HDC target_dc = canvas->AsCanvasSkia()->beginPlatformPaint();
   HDC source_dc = GetDC(current_hwnd_);
   RECT window_rect = {0};
   GetWindowRect(current_hwnd_, &window_rect);
@@ -109,12 +109,11 @@ void NativeViewPhotoboothWin::PaintScreenshotIntoCanvas(
          SRCCOPY);
   // Windows screws up the alpha channel on all text it draws, and so we need
   // to call makeOpaque _after_ the blit to correct for this.
-  canvas->getTopPlatformDevice().makeOpaque(target_bounds.x(),
-                                            target_bounds.y(),
-                                            target_bounds.width(),
-                                            target_bounds.height());
+  canvas->AsCanvasSkia()->getTopPlatformDevice().makeOpaque(
+      target_bounds.x(), target_bounds.y(), target_bounds.width(),
+      target_bounds.height());
   ReleaseDC(current_hwnd_, source_dc);
-  canvas->endPlatformPaint();
+  canvas->AsCanvasSkia()->endPlatformPaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

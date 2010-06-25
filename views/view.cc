@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_handle.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/background.h"
@@ -378,7 +378,7 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
     return;
 
   // We're going to modify the canvas, save it's state first.
-  canvas->save();
+  canvas->AsCanvasSkia()->save();
 
   // Paint this View and its children, setting the clip rect to the bounds
   // of this View and translating the origin to the local bounds' top left
@@ -393,7 +393,7 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
     canvas->TranslateInt(MirroredX(), y());
 
     // Save the state again, so that any changes don't effect PaintChildren.
-    canvas->save();
+    canvas->AsCanvasSkia()->save();
 
     // If the View we are about to paint requested the canvas to be flipped, we
     // should change the transform appropriately.
@@ -401,7 +401,7 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
     if (flip_canvas) {
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
-      canvas->save();
+      canvas->AsCanvasSkia()->save();
     }
 
     Paint(canvas);
@@ -410,14 +410,14 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
     // we don't pass the canvas with the mirrored transform to Views that
     // didn't request the canvas to be flipped.
     if (flip_canvas)
-      canvas->restore();
+      canvas->AsCanvasSkia()->restore();
 
-    canvas->restore();
+    canvas->AsCanvasSkia()->restore();
     PaintChildren(canvas);
   }
 
   // Restore the canvas's original transform.
-  canvas->restore();
+  canvas->AsCanvasSkia()->restore();
 }
 
 void View::PaintNow() {
