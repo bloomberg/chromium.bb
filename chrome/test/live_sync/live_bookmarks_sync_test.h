@@ -37,16 +37,6 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
     return (verifier_helper_.get() != NULL);
   }
 
-  // Sets up sync profiles and clients, syncs each of them, and initializes the
-  // verifier bookmark model.
-  virtual bool SetupSync() {
-    if (!LiveSyncTest::SetupSync())
-      return false;
-    verifier_helper_.reset(BookmarkModelVerifier::Create(
-        GetVerifierBookmarkModel()));
-    return (verifier_helper_.get() != NULL);
-  }
-
   // Used to access the bookmarks within a particular sync profile.
   BookmarkModel* GetBookmarkModel(int index) {
     return GetProfile(index)->GetBookmarkModel();
