@@ -34,13 +34,13 @@ deps = {
     "/trunk/deps/third_party/WebKit@33467",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu42@47106",
+    "/trunk/deps/third_party/icu42@50871",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell128@48011",
+   "/trunk/deps/third_party/hunspell128@50872",
 
   "src/third_party/hunspell_dictionaries":
-   "/trunk/deps/third_party/hunspell_dictionaries@48011",
+   "/trunk/deps/third_party/hunspell_dictionaries@50872",
 
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@327",
@@ -222,7 +222,7 @@ deps_os = {
 
     # TODO(ajwong): Move this into the OS-independent block.
     "src/third_party/yasm/source/patched-yasm":
-      "/trunk/deps/third_party/yasm/patched-yasm@29937",
+      "/trunk/deps/third_party/yasm/patched-yasm@50870",
 
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
@@ -244,7 +244,7 @@ deps_os = {
 
     # TODO(ajwong): Move this into the OS-independent block.
     "src/third_party/yasm/source/patched-yasm":
-      "/trunk/deps/third_party/yasm/patched-yasm@29937",
+      "/trunk/deps/third_party/yasm/patched-yasm@50870",
 
     "src/third_party/swig/linux":
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
