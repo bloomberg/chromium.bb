@@ -41,8 +41,6 @@
 
 #include <string>
 
-#include <elf.h>
-#include <link.h>
 #include "common/language.h"
 #include "common/module.h"
 #include "common/dwarf/bytereader.h"
