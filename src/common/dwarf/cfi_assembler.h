@@ -46,9 +46,9 @@
 namespace google_breakpad {
 
 using dwarf2reader::DwarfPointerEncoding;
-using google_breakpad::TestAssembler::Endianness;
-using google_breakpad::TestAssembler::Label;
-using google_breakpad::TestAssembler::Section;
+using google_breakpad::test_assembler::Endianness;
+using google_breakpad::test_assembler::Label;
+using google_breakpad::test_assembler::Section;
 using std::string;
 
 class CFISection: public Section {

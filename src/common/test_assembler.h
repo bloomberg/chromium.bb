@@ -68,7 +68,7 @@ using std::list;
 using std::string;
 using std::vector;
 
-namespace TestAssembler {
+namespace test_assembler {
 
 // A Label represents a value not yet known that we need to store in a
 // section. As long as all the labels a section refers to are defined
@@ -475,7 +475,7 @@ class Section {
   Label start_;
 };
 
-}  // namespace TestAssembler
+}  // namespace test_assembler
 }  // namespace google_breakpad
 
 #endif  // PROCESSOR_TEST_ASSEMBLER_H_

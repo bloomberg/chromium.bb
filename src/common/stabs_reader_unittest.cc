@@ -56,10 +56,10 @@ using ::testing::Test;
 using ::testing::_;
 using google_breakpad::StabsHandler;
 using google_breakpad::StabsReader;
-using google_breakpad::TestAssembler::Label;
-using google_breakpad::TestAssembler::Section;
-using google_breakpad::TestAssembler::kBigEndian;
-using google_breakpad::TestAssembler::kLittleEndian;
+using google_breakpad::test_assembler::Label;
+using google_breakpad::test_assembler::Section;
+using google_breakpad::test_assembler::kBigEndian;
+using google_breakpad::test_assembler::kLittleEndian;
 using std::map;
 using std::string;
 
