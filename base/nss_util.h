@@ -7,6 +7,10 @@
 
 #include "base/basictypes.h"
 
+#if defined(USE_NSS)
+class Lock;
+#endif  // defined(USE_NSS)
+
 // This file specifically doesn't depend on any NSS or NSPR headers because it
 // is included by various (non-crypto) parts of chrome to call the
 // initialization functions.
@@ -32,6 +36,30 @@ void OpenPersistentNSSDB();
 // Convert a NSS PRTime value into a base::Time object.
 // We use a int64 instead of PRTime here to avoid depending on NSPR headers.
 Time PRTimeToBaseTime(int64 prtime);
+
+#if defined(USE_NSS)
+// NSS has a bug which can cause a deadlock or stall in some cases when writing
+// to the certDB and keyDB. It also has a bug which causes concurrent key pair
+// generations to scribble over each other. To work around this, we synchronize
+// writes to the NSS databases with a global lock. The lock is hidden beneath a
+// function for easy disabling when the bug is fixed. Callers should allow for
+// it to return NULL in the future.
+//
+// See https://bugzilla.mozilla.org/show_bug.cgi?id=564011
+Lock* GetNSSWriteLock();
+
+// A helper class that acquires the NSS write Lock while the AutoNSSWriteLock
+// is in scope.
+class AutoNSSWriteLock {
+ public:
+  AutoNSSWriteLock();
+  ~AutoNSSWriteLock();
+ private:
+  Lock *lock_;
+  DISALLOW_COPY_AND_ASSIGN(AutoNSSWriteLock);
+};
+
+#endif  // defined(USE_NSS)
 
 }  // namespace base
 

@@ -18,6 +18,11 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 
+#if defined(USE_NSS)
+#include "base/lock.h"
+#include "base/scoped_ptr.h"
+#endif // defined(USE_NSS)
+
 // On some platforms, we use NSS for SSL only -- we don't use NSS for crypto
 // or certificate verification, and we don't use the NSS certificate and key
 // databases.
@@ -163,10 +168,17 @@ class NSSInitSingleton {
     // log in.
     PK11SlotInfo* slot = PK11_GetInternalKeySlot();
     if (slot) {
+      // PK11_InitPin may write to the keyDB, but no other thread can use NSS
+      // yet, so we don't need to lock.
       if (PK11_NeedUserInit(slot))
         PK11_InitPin(slot, NULL, NULL);
       PK11_FreeSlot(slot);
     }
+
+    // TODO(davidben): When https://bugzilla.mozilla.org/show_bug.cgi?id=564011
+    // is fixed, we will no longer need the lock. We should detect this and not
+    // initialize a Lock here.
+    write_lock_.reset(new Lock());
 
     root_ = InitDefaultRootCerts();
 #endif  // defined(USE_NSS_FOR_SSL_ONLY)
@@ -219,10 +231,19 @@ class NSSInitSingleton {
     return PK11_GetInternalKeySlot();
   }
 
+#if defined(USE_NSS)
+  Lock* write_lock() {
+    return write_lock_.get();
+  }
+#endif // defined(USE_NSS)
+
  private:
   PK11SlotInfo* real_db_slot_;  // Overrides internal key slot if non-NULL.
   SECMODModule *root_;
   bool chromeos_user_logged_in_;
+#if defined(USE_NSS)
+  scoped_ptr<Lock> write_lock_;
+#endif // defined(USE_NSS)
 };
 
 }  // namespace
@@ -236,6 +257,25 @@ void EnsureNSPRInit() {
 void EnsureNSSInit() {
   Singleton<NSSInitSingleton>::get();
 }
+
+#if defined(USE_NSS)
+Lock* GetNSSWriteLock() {
+  return Singleton<NSSInitSingleton>::get()->write_lock();
+}
+
+AutoNSSWriteLock::AutoNSSWriteLock() : lock_(GetNSSWriteLock()) {
+  // May be NULL if the lock is not needed in our version of NSS.
+  if (lock_)
+    lock_->Acquire();
+}
+
+AutoNSSWriteLock::~AutoNSSWriteLock() {
+  if (lock_) {
+    lock_->AssertAcquired();
+    lock_->Release();
+  }
+}
+#endif  // defined(USE_NSS)
 
 #if defined(OS_CHROMEOS)
 void OpenPersistentNSSDB() {
