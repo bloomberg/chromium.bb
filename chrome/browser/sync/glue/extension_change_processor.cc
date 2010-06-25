@@ -48,7 +48,9 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
   DCHECK(profile_);
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
-    case NotificationType::EXTENSION_UNLOADED: {
+    case NotificationType::EXTENSION_UPDATE_DISABLED:
+    case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_UNLOADED_DISABLED: {
       DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
       Extension* extension = Details<Extension>(details).ptr();
       CHECK(extension);
@@ -144,15 +146,24 @@ void ExtensionChangeProcessor::StopImpl() {
 void ExtensionChangeProcessor::StartObserving() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_);
-  LOG(INFO) << "Observing EXTENSION_LOADED and EXTENSION_UNLOADED";
-  // TODO(akalin): We miss notifications when we uninstall a disabled
-  // extension since EXTENSION_UNLOADED isn't sent in that case.  Add
-  // an EXTENSION_UNINSTALLED notification and listen to it.
+  LOG(INFO) << "Observing EXTENSION_LOADED, EXTENSION_UPDATE_DISABLED, "
+            << "EXTENSION_UNLOADED, and EXTENSION_UNLOADED_DISABLED";
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_LOADED,
       Source<Profile>(profile_));
+  // Despite the name, this notification is exactly like
+  // EXTENSION_LOADED but with an initial state of DISABLED.
+  //
+  // TODO(akalin): See if the themes change processor needs to listen
+  // to any of these, too.
+  notification_registrar_.Add(
+      this, NotificationType::EXTENSION_UPDATE_DISABLED,
+      Source<Profile>(profile_));
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_UNLOADED,
+      Source<Profile>(profile_));
+  notification_registrar_.Add(
+      this, NotificationType::EXTENSION_UNLOADED_DISABLED,
       Source<Profile>(profile_));
 }
 
