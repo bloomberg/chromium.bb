@@ -843,17 +843,41 @@ bool SelectFileDialogImpl::RunOpenFileDialog(
   ofn.hwndOwner = owner;
 
   wchar_t filename[MAX_PATH];
-  base::wcslcpy(filename, path->value().c_str(), arraysize(filename));
+  // According to http://support.microsoft.com/?scid=kb;en-us;222003&x=8&y=12,
+  // The lpstrFile Buffer MUST be NULL Terminated.
+  filename[0] = 0;
+  // Define the dir in here to keep the string buffer pointer pointed to
+  // ofn.lpstrInitialDir available during the period of running the
+  // GetOpenFileName.
+  FilePath dir;
+  // Use lpstrInitialDir to specify the initial directory
+  if (!path->empty()) {
+    bool is_dir;
+    file_util::FileInfo file_info;
+    if (file_util::GetFileInfo(*path, &file_info))
+      is_dir = file_info.is_directory;
+    else
+      is_dir = file_util::EndsWithSeparator(*path);
+    if (is_dir) {
+      ofn.lpstrInitialDir = path->value().c_str();
+    } else {
+      dir = path->DirName();
+      ofn.lpstrInitialDir = dir.value().c_str();
+      // Only pure filename can be put in lpstrFile field.
+      base::wcslcpy(filename, path->BaseName().value().c_str(),
+                    arraysize(filename));
+    }
+  }
 
   ofn.lpstrFile = filename;
   ofn.nMaxFile = MAX_PATH;
+
   // We use OFN_NOCHANGEDIR so that the user can rename or delete the directory
   // without having to close Chrome first.
   ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
-  if (!filter.empty()) {
+  if (!filter.empty())
     ofn.lpstrFilter = filter.c_str();
-  }
   bool success = !!GetOpenFileName(&ofn);
   DisableOwner(owner);
   if (success)
