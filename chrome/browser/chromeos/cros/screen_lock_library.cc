@@ -36,18 +36,50 @@ void ScreenLockLibraryImpl::RemoveObserver(Observer* observer) {
 }
 
 void ScreenLockLibraryImpl::NotifyScreenLockRequested() {
+  // Make sure we run on IO thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &ScreenLockLibraryImpl::NotifyScreenLockRequested));
+    return;
+  }
   chromeos::NotifyScreenLockRequested();
 }
 
 void ScreenLockLibraryImpl::NotifyScreenLockCompleted() {
+  // Make sure we run on IO thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &ScreenLockLibraryImpl::NotifyScreenLockCompleted));
+    return;
+  }
   chromeos::NotifyScreenLockCompleted();
 }
 
 void ScreenLockLibraryImpl::NotifyScreenUnlockRequested() {
+  // Make sure we run on IO thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &ScreenLockLibraryImpl::NotifyScreenUnlockRequested));
+    return;
+  }
   chromeos::NotifyScreenUnlockRequested();
 }
 
 void ScreenLockLibraryImpl::NotifyScreenUnlockCompleted() {
+  // Make sure we run on IO thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &ScreenLockLibraryImpl::NotifyScreenUnlockCompleted));
+    return;
+  }
   chromeos::NotifyScreenUnlockCompleted();
 }
 
