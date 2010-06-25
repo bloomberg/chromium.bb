@@ -15,6 +15,13 @@
 #include "net/url_request/url_request_unittest.h"
 #include "views/event.h"
 
+#if defined(OS_LINUX)
+// http://crbug.com/47575
+#define MAYBE_BrowserCloseNoUnloadListeners FLAKY_BrowserCloseNoUnloadListeners
+#else
+#define MAYBE_BrowserCloseNoUnloadListeners BrowserCloseNoUnloadListeners
+#endif
+
 const std::string NOLISTENERS_HTML =
     "<html><head><title>nolisteners</title></head><body></body></html>";
 
@@ -271,7 +278,7 @@ TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadSync) {
 }
 
 // Tests closing the browser on a page with no unload listeners registered.
-TEST_F(UnloadTest, BrowserCloseNoUnloadListeners) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseNoUnloadListeners) {
   LoadUrlAndQuitBrowser(NOLISTENERS_HTML, L"nolisteners");
 }
 
