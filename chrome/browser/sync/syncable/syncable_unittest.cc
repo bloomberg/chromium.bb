@@ -301,6 +301,38 @@ class SyncableDirectoryTest : public testing::Test {
     return 1 == dir_->kernel_->dirty_metahandles->count(metahandle);
   }
 
+  bool IsSafeToPermanentlyDelete(Entry* e) {
+    return e->Get(IS_DEL) && !e->Get(IS_UNSYNCED) &&
+           !e->Get(IS_UNAPPLIED_UPDATE);
+  }
+
+  void CheckPurgeEntriesWithTypeInSucceeded(const ModelTypeSet& types_to_purge,
+                                            bool before_reload) {
+    {
+      ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
+      MetahandleSet all_set;
+      dir_->GetAllMetaHandles(&trans, &all_set);
+      EXPECT_EQ(before_reload ? 7U : 3U, all_set.size());
+      for (MetahandleSet::iterator iter = all_set.begin();
+           iter != all_set.end(); ++iter) {
+        Entry e(&trans, GET_BY_HANDLE, *iter);
+        if ((types_to_purge.count(e.GetModelType()) ||
+             types_to_purge.count(e.GetServerModelType())) &&
+             (!before_reload || !IsSafeToPermanentlyDelete(&e))) {
+          FAIL() << "Illegal type should have been deleted.";
+        }
+      }
+    }
+
+    EXPECT_FALSE(dir_->initial_sync_ended_for_type(PREFERENCES));
+    EXPECT_FALSE(dir_->initial_sync_ended_for_type(AUTOFILL));
+    EXPECT_TRUE(dir_->initial_sync_ended_for_type(BOOKMARKS));
+
+    EXPECT_EQ(0, dir_->last_download_timestamp(PREFERENCES));
+    EXPECT_EQ(0, dir_->last_download_timestamp(AUTOFILL));
+    EXPECT_EQ(1, dir_->last_download_timestamp(BOOKMARKS));
+  }
+
   scoped_ptr<Directory> dir_;
   FilePath file_path_;
 
@@ -395,6 +427,13 @@ TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   AddDefaultExtensionValue(BOOKMARKS, &bookmark_specs);
   AddDefaultExtensionValue(PREFERENCES, &preference_specs);
   AddDefaultExtensionValue(AUTOFILL, &autofill_specs);
+  dir_->set_initial_sync_ended_for_type(BOOKMARKS, true);
+  dir_->set_last_download_timestamp(BOOKMARKS, 1);
+  dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
+  dir_->set_last_download_timestamp(PREFERENCES, 1);
+  dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
+  dir_->set_last_download_timestamp(AUTOFILL, 1);
+
 
   std::set<ModelType> types_to_purge;
   types_to_purge.insert(PREFERENCES);
@@ -453,30 +492,9 @@ TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
 
   // We first query the in-memory data, and then reload the directory (without
   // saving) to verify that disk does not still have the data.
-  int test_scan_run = 0;
-  do {
-    string message = "Testing ";
-    message += test_scan_run == 0 ? "before " : "after ";
-    message += "directory reload.";
-    SCOPED_TRACE(testing::Message(message.c_str()));
-    {
-      ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-      MetahandleSet all_set;
-      dir_->GetAllMetaHandles(&trans, &all_set);
-      EXPECT_EQ(3U, all_set.size());
-      for (MetahandleSet::iterator iter = all_set.begin();
-           iter != all_set.end(); ++iter) {
-        Entry e(&trans, GET_BY_HANDLE, *iter);
-        if (types_to_purge.count(e.GetModelType()) ||
-            types_to_purge.count(e.GetServerModelType())) {
-          FAIL() << "Illegal type should have been deleted.";
-        }
-      }
-    }
-    if (test_scan_run == 0)
-      ReloadDir();
-    test_scan_run++;
-  } while (test_scan_run < 2);
+  CheckPurgeEntriesWithTypeInSucceeded(types_to_purge, true);
+  SaveAndReloadDir();
+  CheckPurgeEntriesWithTypeInSucceeded(types_to_purge, false);
 }
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {

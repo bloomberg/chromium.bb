@@ -936,6 +936,12 @@ class Directory {
                              BaseTransaction* trans,
                              const Id& parent_id);
 
+  // Internal setters that do not acquire a lock internally.  These are unsafe
+  // on their own; caller must guarantee exclusive access manually by holding
+  // a ScopedKernelLock.
+  void set_initial_sync_ended_for_type_unsafe(ModelType type, bool x);
+  void set_last_download_timestamp_unsafe(ModelType model_type, int64 x);
+
   Directory& operator = (const Directory&);
 
   // TODO(sync):  If lookups and inserts in these sets become

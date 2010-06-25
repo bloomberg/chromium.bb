@@ -75,10 +75,6 @@ class DirectoryBackingStore {
   // calls SaveChanges *must* be the thread that owns/destroys |this|.
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot);
 
-  // Removes each entry whose metahandle is in |handles| from the database.
-  // Does synchronous I/O.  Returns false on error.
-  bool DeleteEntries(const MetahandleSet& handles);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion67To68);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion68To69);

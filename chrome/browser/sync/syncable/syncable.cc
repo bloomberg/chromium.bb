@@ -611,38 +611,41 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
 }
 
 void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
-  DCHECK_EQ(0U, types.count(UNSPECIFIED));
-  DCHECK_EQ(0U, types.count(TOP_LEVEL_FOLDER));
+  if (types.count(UNSPECIFIED) != 0U || types.count(TOP_LEVEL_FOLDER) != 0U) {
+    NOTREACHED() << "Don't support purging unspecified or top level entries.";
+    return;
+  }
 
   if (types.empty())
     return;
 
-  ScopedKernelLock lock(this);
-  MetahandleSet to_delete;
-  MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
-  while (it != kernel_->metahandles_index->end()) {
-    const sync_pb::EntitySpecifics& local_specifics = (*it)->ref(SPECIFICS);
-    const sync_pb::EntitySpecifics& server_specifics =
-        (*it)->ref(SERVER_SPECIFICS);
-    ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
-    ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
+  {
+    ScopedKernelLock lock(this);
+    for (MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
+         it != kernel_->metahandles_index->end(); ++it) {
+      const sync_pb::EntitySpecifics& local_specifics = (*it)->ref(SPECIFICS);
+      const sync_pb::EntitySpecifics& server_specifics =
+          (*it)->ref(SERVER_SPECIFICS);
+      ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
+      ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
 
-    // Note the dance around incrementing |it|, since we sometimes use erase().
-    if (types.count(local_type) > 0 || types.count(server_type) > 0) {
-      to_delete.insert((*it)->ref(META_HANDLE));
-      size_t num_erased = 0;
-      num_erased = kernel_->ids_index->erase(*it);
-      DCHECK_EQ(1u, num_erased);
-      num_erased = kernel_->client_tag_index->erase(*it);
-      DCHECK_EQ((*it)->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
-      kernel_->metahandles_index->erase(it++);
-    } else {
-      ++it;
+      if (types.count(local_type) > 0 || types.count(server_type) > 0) {
+        // Set conditions for permanent deletion.
+        (*it)->put(IS_DEL, true);
+        (*it)->put(IS_UNSYNCED, false);
+        (*it)->put(IS_UNAPPLIED_UPDATE, false);
+        (*it)->mark_dirty(kernel_->dirty_metahandles);
+        DCHECK(!SafeToPurgeFromMemory(*it));
+      }
+    }
+
+    // Ensure meta tracking for these data types reflects the deleted state.
+    for (std::set<ModelType>::const_iterator it = types.begin();
+         it != types.end(); ++it) {
+      set_initial_sync_ended_for_type_unsafe(*it, false);
+      set_last_download_timestamp_unsafe(*it, 0);
     }
   }
-
-  // Synchronously wipe these entries from disk.
-  store_->DeleteEntries(to_delete);
 }
 
 void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
@@ -682,10 +685,7 @@ int64 Directory::last_download_timestamp(ModelType model_type) const {
 void Directory::set_last_download_timestamp(ModelType model_type,
     int64 timestamp) {
   ScopedKernelLock lock(this);
-  if (kernel_->persisted_info.last_download_timestamp[model_type] == timestamp)
-    return;
-  kernel_->persisted_info.last_download_timestamp[model_type] = timestamp;
-  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+  set_last_download_timestamp_unsafe(model_type, timestamp);
 }
 
 bool Directory::initial_sync_ended_for_type(ModelType type) const {
@@ -695,9 +695,22 @@ bool Directory::initial_sync_ended_for_type(ModelType type) const {
 
 void Directory::set_initial_sync_ended_for_type(ModelType type, bool x) {
   ScopedKernelLock lock(this);
+  set_initial_sync_ended_for_type_unsafe(type, x);
+}
+
+void Directory::set_initial_sync_ended_for_type_unsafe(ModelType type,
+                                                       bool x) {
   if (kernel_->persisted_info.initial_sync_ended[type] == x)
     return;
   kernel_->persisted_info.initial_sync_ended.set(type, x);
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+}
+
+void Directory::set_last_download_timestamp_unsafe(ModelType model_type,
+                                                   int64 timestamp) {
+  if (kernel_->persisted_info.last_download_timestamp[model_type] == timestamp)
+    return;
+  kernel_->persisted_info.last_download_timestamp[model_type] = timestamp;
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
