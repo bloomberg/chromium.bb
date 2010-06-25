@@ -214,12 +214,9 @@ static void
 window_draw_decorations(struct window *window)
 {
 	cairo_t *cr;
-	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
-	cairo_pattern_t *pattern, *gradient, *outline, *bright, *dim;
+	cairo_pattern_t *outline, *bright, *dim;
 	int width, height;
-	int shadow_dx = 4, shadow_dy = 4;
-	cairo_matrix_t matrix;
 
 	window->cairo_surface =
 		display_create_surface(window->display, &window->allocation);
@@ -771,7 +768,6 @@ static const char socket_name[] = "\0wayland";
 static void
 display_render_frame(struct display *d)
 {
-	struct rectangle r = { 0, 0, 128, 128 };
 	int radius = 8;
 	cairo_t *cr;
 
