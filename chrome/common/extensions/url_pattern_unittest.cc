@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_ptr.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -132,3 +133,28 @@ TEST(URLPatternTest, Match9) {
   EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/https://google.com")));
   EXPECT_FALSE(pattern.MatchesUrl(GURL("chrome://history")));
 };
+
+void TestPatternOverlap(const URLPattern& pattern1, const URLPattern& pattern2,
+                        bool expect_overlap) {
+  EXPECT_EQ(expect_overlap, pattern1.OverlapsWith(pattern2))
+      << pattern1.GetAsString() << ", " << pattern2.GetAsString();
+  EXPECT_EQ(expect_overlap, pattern2.OverlapsWith(pattern1))
+      << pattern2.GetAsString() << ", " << pattern1.GetAsString();
+}
+
+TEST(URLPatternTest, OverlapsWith) {
+  URLPattern pattern1("http://www.google.com/foo/*");
+  URLPattern pattern2("https://www.google.com/foo/*");
+  URLPattern pattern3("http://*.google.com/foo/*");
+  URLPattern pattern4("http://*.yahooo.com/foo/*");
+  URLPattern pattern5("http://www.yahooo.com/bar/*");
+  URLPattern pattern6("http://www.yahooo.com/bar/baz/*");
+
+  TestPatternOverlap(pattern1, pattern1, true);
+  TestPatternOverlap(pattern1, pattern2, false);
+  TestPatternOverlap(pattern1, pattern3, true);
+  TestPatternOverlap(pattern1, pattern4, false);
+  TestPatternOverlap(pattern3, pattern4, false);
+  TestPatternOverlap(pattern4, pattern5, false);
+  TestPatternOverlap(pattern5, pattern6, true);
+}

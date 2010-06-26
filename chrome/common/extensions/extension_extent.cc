@@ -13,3 +13,18 @@ bool ExtensionExtent::ContainsURL(const GURL& url) const {
 
   return false;
 }
+
+bool ExtensionExtent::OverlapsWith(const ExtensionExtent& other) const {
+  // Two extension extents overlap if there is any one URL that would match at
+  // least one pattern in each of the extents.
+  for (PatternList::const_iterator i = patterns_.begin();
+       i != patterns_.end(); ++i) {
+    for (PatternList::const_iterator j = other.patterns().begin();
+         j != other.patterns().end(); ++j) {
+      if (i->OverlapsWith(*j))
+        return true;
+    }
+  }
+
+  return false;
+}

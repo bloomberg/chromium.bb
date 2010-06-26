@@ -80,22 +80,6 @@ class URLPattern {
   // Parse() instead, which returns success or failure.
   explicit URLPattern(const std::string& pattern);
 
-  // Initializes this instance by parsing the provided string. On failure, the
-  // instance will have some intermediate values and is in an invalid state.
-  bool Parse(const std::string& pattern_str);
-
-  // Returns true if this instance matches the specified URL.
-  bool MatchesUrl(const GURL& url) const;
-
-  // Returns true if |test| matches our host.
-  bool MatchesHost(const std::string& host) const;
-  bool MatchesHost(const GURL& test) const;
-
-  // Returns true if |test| matches our path.
-  bool MatchesPath(const GURL& test) const;
-
-  std::string GetAsString() const;
-
   // Get the scheme the pattern matches. This will always return a valid scheme
   // if is_valid() returns true.
   std::string scheme() const { return scheme_; }
@@ -117,6 +101,28 @@ class URLPattern {
     path_ = path;
     path_escaped_ = "";
   }
+
+  // Initializes this instance by parsing the provided string. On failure, the
+  // instance will have some intermediate values and is in an invalid state.
+  bool Parse(const std::string& pattern_str);
+
+  // Returns true if this instance matches the specified URL.
+  bool MatchesUrl(const GURL& url) const;
+
+  // Returns true if |test| matches our host.
+  bool MatchesHost(const std::string& test) const;
+  bool MatchesHost(const GURL& test) const;
+
+  // Returns true if |test| matches our path.
+  bool MatchesPath(const std::string& test) const;
+
+  // Returns a string representing this instance.
+  std::string GetAsString() const;
+
+  // Determine whether there is a URL that would match this instance and another
+  // instance. This method is symmetrical: Calling other.OverlapsWith(this)
+  // would result in the same answer.
+  bool OverlapsWith(const URLPattern& other) const;
 
  private:
   // The scheme for the pattern.

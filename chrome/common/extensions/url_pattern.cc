@@ -98,7 +98,7 @@ bool URLPattern::MatchesUrl(const GURL &test) const {
   if (!MatchesHost(test))
     return false;
 
-  if (!MatchesPath(test))
+  if (!MatchesPath(test.PathForRequest()))
     return false;
 
   return true;
@@ -143,14 +143,14 @@ bool URLPattern::MatchesHost(const GURL& test) const {
   return test.host()[test.host().length() - host_.length() - 1] == '.';
 }
 
-bool URLPattern::MatchesPath(const GURL& test) const {
+bool URLPattern::MatchesPath(const std::string& test) const {
   if (path_escaped_.empty()) {
     path_escaped_ = path_;
     ReplaceSubstringsAfterOffset(&path_escaped_, 0, "\\", "\\\\");
     ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
   }
 
-  if (!MatchPatternASCII(test.PathForRequest(), path_escaped_))
+  if (!MatchPatternASCII(test, path_escaped_))
     return false;
 
   return true;
@@ -172,4 +172,26 @@ std::string URLPattern::GetAsString() const {
     spec += path_;
 
   return spec;
+}
+
+bool URLPattern::OverlapsWith(const URLPattern& other) const {
+  if (scheme_ != other.scheme())
+    return false;
+
+  if (!MatchesHost(other.host()) && !other.MatchesHost(host_))
+    return false;
+
+  // We currently only use OverlapsWith() for the patterns inside
+  // ExtensionExtent. In those cases, we know that the path will have only a
+  // single wildcard at the end. This makes figuring out overlap much easier. It
+  // seems like there is probably a computer-sciency way to solve the general
+  // case, but we don't need that yet.
+  DCHECK(path_.find('*') == path_.size() - 1);
+  DCHECK(other.path().find('*') == other.path().size() - 1);
+
+  if (!MatchesPath(other.path().substr(0, other.path().size() - 1)) &&
+      !other.MatchesPath(path_.substr(0, path_.size() - 1)))
+    return false;
+
+  return true;
 }

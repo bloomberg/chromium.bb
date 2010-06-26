@@ -22,7 +22,11 @@ class ExtensionExtent {
   void AddPattern(const URLPattern& pattern) { patterns_.push_back(pattern); }
   void ClearPaths() { patterns_.clear(); }
 
+  // Test if the extent contains a URL.
   bool ContainsURL(const GURL& url) const;
+
+  // Returns true if there is a single URL that would be in two extents.
+  bool OverlapsWith(const ExtensionExtent& other) const;
 
  private:
   // The list of URL patterns that comprise the extent.

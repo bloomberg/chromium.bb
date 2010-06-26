@@ -1019,7 +1019,11 @@ Extension* ExtensionsService::GetExtensionByWebExtent(const GURL& url) {
 
 Extension* ExtensionsService::GetExtensionByOverlappingWebExtent(
     const ExtensionExtent& extent) {
-  // TODO(aa): Make this work for the new extents. http://crbug.com/47445.
+  for (size_t i = 0; i < extensions_.size(); ++i) {
+    if (extensions_[i]->web_extent().OverlapsWith(extent))
+      return extensions_[i];
+  }
+
   return NULL;
 }
 

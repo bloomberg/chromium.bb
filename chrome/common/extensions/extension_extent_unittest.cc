@@ -33,3 +33,23 @@ TEST(ExtensionExtentTest, Two) {
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.yahoo.com/monkey")));
   EXPECT_FALSE(extent.ContainsURL(GURL("https://www.apple.com/monkey")));
 }
+
+TEST(ExtensionExtentTest, OverlapsWith) {
+  ExtensionExtent extent1;
+  extent1.AddPattern(URLPattern("http://www.google.com/f*"));
+  extent1.AddPattern(URLPattern("http://www.yahoo.com/b*"));
+
+  ExtensionExtent extent2;
+  extent2.AddPattern(URLPattern("http://www.reddit.com/f*"));
+  extent2.AddPattern(URLPattern("http://www.yahoo.com/z*"));
+
+  ExtensionExtent extent3;
+  extent3.AddPattern(URLPattern("http://www.google.com/q/*"));
+  extent3.AddPattern(URLPattern("http://www.yahoo.com/b/*"));
+
+  EXPECT_FALSE(extent1.OverlapsWith(extent2));
+  EXPECT_FALSE(extent2.OverlapsWith(extent1));
+
+  EXPECT_TRUE(extent1.OverlapsWith(extent3));
+  EXPECT_TRUE(extent3.OverlapsWith(extent1));
+}
