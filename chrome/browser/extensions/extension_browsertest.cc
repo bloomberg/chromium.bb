@@ -81,7 +81,8 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
     // OnExtensionInstalled ensures the other extension prefs are set up with
     // the defaults.
     Extension* extension = service->extensions()->at(num_after - 1);
-    service->extension_prefs()->OnExtensionInstalled(extension);
+    service->extension_prefs()->OnExtensionInstalled(
+        extension, Extension::ENABLED, false);
     service->SetIsIncognitoEnabled(extension, true);
   }
 

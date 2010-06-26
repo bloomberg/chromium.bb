@@ -74,19 +74,22 @@ static bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
 }  // namespace
 
 PendingExtensionInfo::PendingExtensionInfo(const GURL& update_url,
-                                           const Version& version,
                                            bool is_theme,
-                                           bool install_silently)
+                                           bool install_silently,
+                                           bool enable_on_install,
+                                           bool enable_incognito_on_install)
     : update_url(update_url),
-      version(version),
       is_theme(is_theme),
-      install_silently(install_silently) {}
+      install_silently(install_silently),
+      enable_on_install(enable_on_install),
+      enable_incognito_on_install(enable_incognito_on_install) {}
 
 PendingExtensionInfo::PendingExtensionInfo()
     : update_url(),
-      version(),
       is_theme(false),
-      install_silently(false) {}
+      install_silently(false),
+      enable_on_install(false),
+      enable_incognito_on_install(false) {}
 
 // ExtensionsService.
 
@@ -272,21 +275,25 @@ void ExtensionsService::UpdateExtension(const std::string& id,
 
 void ExtensionsService::AddPendingExtension(
     const std::string& id, const GURL& update_url,
-    const Version& version, bool is_theme, bool install_silently) {
+    bool is_theme, bool install_silently,
+    bool enable_on_install, bool enable_incognito_on_install) {
   if (GetExtensionByIdInternal(id, true, true)) {
     LOG(DFATAL) << "Trying to add pending extension " << id
                 << " which already exists";
     return;
   }
-  AddPendingExtensionInternal(id, update_url, version,
-                              is_theme, install_silently);
+  AddPendingExtensionInternal(
+      id, update_url, is_theme, install_silently,
+      enable_on_install, enable_incognito_on_install);
 }
 
 void ExtensionsService::AddPendingExtensionInternal(
     const std::string& id, const GURL& update_url,
-    const Version& version, bool is_theme, bool install_silently) {
+    bool is_theme, bool install_silently,
+    bool enable_on_install, bool enable_incognito_on_install) {
   pending_extensions_[id] =
-      PendingExtensionInfo(update_url, version, is_theme, install_silently);
+      PendingExtensionInfo(update_url, is_theme, install_silently,
+                           enable_on_install, enable_incognito_on_install);
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
@@ -908,23 +915,52 @@ void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
 
 void ExtensionsService::OnExtensionInstalled(Extension* extension,
                                              bool allow_privilege_increase) {
+  // Ensure extension is deleted unless we transfer ownership.
+  scoped_ptr<Extension> scoped_extension(extension);
+  Extension::State initial_state = Extension::DISABLED;
+  bool initial_enable_incognito = false;
   PendingExtensionMap::iterator it =
       pending_extensions_.find(extension->id());
-  if (it != pending_extensions_.end() &&
-      (it->second.is_theme != extension->is_theme())) {
-    LOG(WARNING) << "Not installing pending extension " << extension->id()
-                 << " with is_theme = " << extension->is_theme()
-                 << "; expected is_theme = " << it->second.is_theme;
-    // Delete the extension directory since we're not going to load
-    // it.
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
-        NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
-    delete extension;
-    return;
+  if (it != pending_extensions_.end()) {
+    // Set initial state from pending extension data.
+    if (it->second.is_theme != extension->is_theme()) {
+      LOG(WARNING)
+          << "Not installing pending extension " << extension->id()
+          << " with is_theme = " << extension->is_theme()
+          << "; expected is_theme = " << it->second.is_theme;
+      // Delete the extension directory since we're not going to
+      // load it.
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
+      return;
+    }
+    if (it->second.is_theme) {
+      DCHECK(it->second.enable_on_install);
+      initial_state = Extension::ENABLED;
+      DCHECK(!it->second.enable_incognito_on_install);
+      initial_enable_incognito = false;
+    } else {
+      initial_state =
+          it->second.enable_on_install ?
+          Extension::ENABLED : Extension::DISABLED;
+      initial_enable_incognito =
+          it->second.enable_incognito_on_install;
+    }
+
+    pending_extensions_.erase(it);
+  } else {
+    // Make sure we don't enable a disabled extension.
+    Extension::State existing_state =
+        extension_prefs_->GetExtensionState(extension->id());
+    initial_state =
+        (existing_state == Extension::DISABLED) ?
+        Extension::DISABLED : Extension::ENABLED;
+    initial_enable_incognito = false;
   }
 
-  extension_prefs_->OnExtensionInstalled(extension);
+  extension_prefs_->OnExtensionInstalled(
+      extension, initial_state, initial_enable_incognito);
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.
@@ -940,16 +976,11 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
         Details<Extension>(extension));
   }
 
-  // Also load the extension.
-  OnExtensionLoaded(extension, allow_privilege_increase);
-
-  // Erase any pending extension.
-  if (it != pending_extensions_.end()) {
-    pending_extensions_.erase(it);
-  }
-
   if (profile_->GetTemplateURLModel())
     profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
+
+  // Transfer ownership of |extension| to OnExtensionLoaded.
+  OnExtensionLoaded(scoped_extension.release(), allow_privilege_increase);
 }
 
 Extension* ExtensionsService::GetExtensionByIdInternal(const std::string& id,

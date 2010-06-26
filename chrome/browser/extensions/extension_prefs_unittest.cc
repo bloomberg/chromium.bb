@@ -345,3 +345,26 @@ class ExtensionPrefsAppToolbars : public ExtensionPrefsTest {
   std::string extension_id_overridden_off_;
 };
 TEST_F(ExtensionPrefsAppToolbars, ExtensionPrefsAppToolbars) {}
+
+class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    extension_.reset(prefs_.AddExtension("on_extension_installed"));
+    EXPECT_EQ(Extension::ENABLED,
+              prefs()->GetExtensionState(extension_->id()));
+    EXPECT_FALSE(prefs()->IsIncognitoEnabled(extension_->id()));
+    prefs()->OnExtensionInstalled(extension_.get(),
+                                  Extension::DISABLED, true);
+  }
+
+  virtual void Verify() {
+    EXPECT_EQ(Extension::DISABLED,
+              prefs()->GetExtensionState(extension_->id()));
+    EXPECT_TRUE(prefs()->IsIncognitoEnabled(extension_->id()));
+  }
+
+ private:
+  scoped_ptr<Extension> extension_;
+};
+TEST_F(ExtensionPrefsOnExtensionInstalled,
+       ExtensionPrefsOnExtensionInstalled) {}
