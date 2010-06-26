@@ -303,19 +303,38 @@ TEST_F(TranslateManager2Test, NormalTranslate) {
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate2::AFTER_TRANSLATE, infobar->type());
 
-  // Simulate translating again from there but with 2 different languages.
-  infobar->SetOriginalLanguage(0);
-  infobar->SetTargetLanguage(1);
-  std::string new_original_lang = infobar->GetOriginalLanguageCode();
-  std::string new_target_lang = infobar->GetTargetLanguageCode();
+  // Simulate changing the original language, this should trigger a translation.
   process()->sink().ClearMessages();
-  infobar->Translate();
+  std::string new_original_lang = infobar->GetLanguageCodeAt(0);
+  infobar->SetOriginalLanguage(0);
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_EQ(0, page_id);
+  EXPECT_EQ(new_original_lang, original_lang);
+  EXPECT_EQ("en", target_lang);
+  // Simulate the render notifying the translation has been done.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0,
+      new_original_lang, "en", TranslateErrors::NONE));
+  // infobar is now invalid.
+  TranslateInfoBarDelegate2* new_infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(new_infobar != NULL);
+  EXPECT_NE(infobar, new_infobar);
+  infobar = new_infobar;
 
-  // Test that we sent the right message to the renderer.
+  // Simulate changing the target language, this should trigger a translation.
+  process()->sink().ClearMessages();
+  std::string new_target_lang = infobar->GetLanguageCodeAt(1);
+  infobar->SetTargetLanguage(1);
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_EQ(0, page_id);
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ(new_target_lang, target_lang);
+  // Simulate the render notifying the translation has been done.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0,
+      new_original_lang, new_target_lang, TranslateErrors::NONE));
+  // infobar is now invalid.
+  new_infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(new_infobar != NULL);
+  EXPECT_NE(infobar, new_infobar);
 }
 
 TEST_F(TranslateManager2Test, TranslateScriptNotAvailable) {

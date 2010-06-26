@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-
 #include "chrome/browser/translate/translate_infobar_delegate2.h"
+
+#include <algorithm>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -83,23 +83,23 @@ int TranslateInfoBarDelegate2::GetLanguageCount() const {
   return static_cast<int>(languages_.size());
 }
 
-const std::string& TranslateInfoBarDelegate2::GetLanguageCodeAt(
+std::string TranslateInfoBarDelegate2::GetLanguageCodeAt(
     int index) const {
   DCHECK(index >=0 && index < GetLanguageCount());
   return languages_[index].first;
 }
 
-const string16& TranslateInfoBarDelegate2::GetLanguageDisplayableNameAt(
+string16 TranslateInfoBarDelegate2::GetLanguageDisplayableNameAt(
     int index) const {
   DCHECK(index >=0 && index < GetLanguageCount());
   return languages_[index].second;
 }
 
-const std::string& TranslateInfoBarDelegate2::GetOriginalLanguageCode() const {
+std::string TranslateInfoBarDelegate2::GetOriginalLanguageCode() const {
   return GetLanguageCodeAt(original_language_index());
 }
 
-const std::string& TranslateInfoBarDelegate2::GetTargetLanguageCode() const {
+std::string TranslateInfoBarDelegate2::GetTargetLanguageCode() const {
   return GetLanguageCodeAt(target_language_index());
 }
 
@@ -153,6 +153,10 @@ void TranslateInfoBarDelegate2::InfoBarDismissed() {
   // The user closed the infobar without clicking the translate button.
   TranslationDeclined();
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslateCloseInfobar", 1);
+}
+
+void TranslateInfoBarDelegate2::InfoBarClosed() {
+  delete this;
 }
 
 SkBitmap* TranslateInfoBarDelegate2::GetIcon() const {
