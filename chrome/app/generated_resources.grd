@@ -3374,6 +3374,9 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more websites.">
         Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.yahoo.com</ex></ph>, and <ph name="NUMBER_OF_OTHER_WEBSITES">$3<ex>3</ex></ph> other websites
       </message>
+      <message name="IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
+        Your bookmarks
+      </message>
       <message name="IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
         Your browsing history
       </message>

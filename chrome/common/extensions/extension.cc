@@ -32,6 +32,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
@@ -145,6 +146,19 @@ const char* Extension::kPermissionNames[] = {
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
+
+const Extension::SimplePermissions& Extension::GetSimplePermissions() {
+  static SimplePermissions permissions;
+  if (permissions.empty()) {
+    permissions[Extension::kBookmarkPermission] =
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS);
+    permissions[Extension::kGeolocationPermission] =
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION);
+  }
+  return permissions;
+}
 
 Extension::~Extension() {
 }
@@ -850,10 +864,18 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
       return true;
   }
 
-  // If we're going from not having history to not having it, it's an increase.
   if (!old_extension->HasEffectiveBrowsingHistoryPermission() &&
       new_extension->HasEffectiveBrowsingHistoryPermission()) {
     return true;
+  }
+
+  const SimplePermissions& simple_permissions = GetSimplePermissions();
+  for (SimplePermissions::const_iterator iter = simple_permissions.begin();
+       iter != simple_permissions.end(); ++iter) {
+    if (!old_extension->HasApiPermission(iter->first) &&
+        new_extension->HasApiPermission(iter->first)) {
+      return true;
+    }
   }
 
   // Nothing much has changed.

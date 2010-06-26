@@ -823,7 +823,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     { "hosts3", false },  // http://a,http://b -> http://a
     { "hosts4", true },  // http://a -> http://a,http://b
     { "permissions1", false },  // tabs -> tabs
-    { "permissions2", false },  // tabs -> tabs,bookmarks
+    { "permissions2", true },  // tabs -> tabs,bookmarks
     { "permissions3", true },  // http://a -> http://a,tabs
     { "permissions4", false },  // plugin -> plugin,tabs
     { "plugin1", false },  // plugin -> plugin

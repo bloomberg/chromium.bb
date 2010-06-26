@@ -89,6 +89,11 @@ class Extension {
   static const int kBrowserActionIconMaxSize;
 
   // Each permission is a module that the extension is permitted to use.
+  //
+  // NOTE: If you add a permission, consider also changing:
+  // - Extension::GetSimplePermissions()
+  // - Extension::IsPrivilegeIncrease()
+  // - ExtensionInstallUI::GetV2Warnings()
   static const char* kBackgroundPermission;
   static const char* kBookmarkPermission;
   static const char* kExperimentalPermission;
@@ -100,6 +105,13 @@ class Extension {
 
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
+
+  // A "simple permission" is one that has a one-to-one mapping with a message
+  // that is displayed in the install UI. This is in contrast to more complex
+  // permissions like http access, where the exact message displayed depends on
+  // several factors.
+  typedef std::map<std::string, string16> SimplePermissions;
+  static const SimplePermissions& GetSimplePermissions();
 
   // An NPAPI plugin included in the extension.
   struct PluginInfo {

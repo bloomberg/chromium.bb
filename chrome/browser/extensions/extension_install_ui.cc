@@ -109,12 +109,15 @@ static void GetV2Warnings(Extension* extension,
             IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY));
   }
 
-  if (extension->HasApiPermission(Extension::kGeolocationPermission)) {
-    warnings->push_back(l10n_util::GetStringUTF16(
-        IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION));
-  }
+  const Extension::SimplePermissions& simple_permissions =
+      Extension::GetSimplePermissions();
 
-  // TODO(aa): camera/mic, what else?
+  for (Extension::SimplePermissions::const_iterator iter =
+           simple_permissions.begin();
+       iter != simple_permissions.end(); ++iter) {
+    if (extension->HasApiPermission(iter->first))
+      warnings->push_back(iter->second);
+  }
 }
 
 }  // namespace
