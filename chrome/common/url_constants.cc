@@ -51,6 +51,11 @@ const char kAboutNetInternalsURL[] = "about:net-internals";
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutShorthangURL[] = "about:shorthang";
 const char kAboutTermsURL[] = "about:terms";
+const char kAboutAboutURL[] = "about:about";
+const char kAboutDNSURL[] = "about:dns";
+const char kAboutHistogramsURL[] = "about:histograms";
+const char kAboutVersionURL[] = "about:version";
+
 
 // Use an obfuscated URL to make this nondiscoverable, we only want this
 // to be used for testing.
