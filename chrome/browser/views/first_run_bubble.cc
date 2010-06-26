@@ -8,14 +8,14 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/win_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/options_window.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -45,22 +45,6 @@ const int kStringSeparationPadding = 2;
 
 // Margin around close button.
 const int kMarginRightOfCloseButton = 7;
-
-std::wstring GetDefaultSearchEngineName(Profile* profile) {
-  if (!profile) {
-    NOTREACHED();
-    return std::wstring();
-  }
-  const TemplateURL* const default_provider =
-      profile->GetTemplateURLModel()->GetDefaultSearchProvider();
-  if (!default_provider) {
-    // TODO(cpu): bug 1187517. It is possible to have no default provider.
-    // returning an empty string is a stopgap measure for the crash
-    // http://code.google.com/p/chromium/issues/detail?id=2573
-    return std::wstring();
-  }
-  return default_provider->short_name();
-}
 
 }  // namespace
 
@@ -133,7 +117,7 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
   AddChildView(label2_);
 
   std::wstring question_str = l10n_util::GetStringF(IDS_FR_BUBBLE_QUESTION,
-      GetDefaultSearchEngineName(profile));
+      UTF16ToWideHack(GetDefaultSearchEngineName(profile)));
   label3_ = new views::Label(question_str);
   label3_->SetMultiLine(true);
   label3_->SetFont(font);
@@ -142,7 +126,7 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
   AddChildView(label3_);
 
   std::wstring keep_str = l10n_util::GetStringF(IDS_FR_BUBBLE_OK,
-      GetDefaultSearchEngineName(profile));
+      UTF16ToWideHack(GetDefaultSearchEngineName(profile)));
   keep_button_ = new views::NativeButton(this, keep_str);
   keep_button_->SetIsDefault(true);
   AddChildView(keep_button_);
@@ -421,7 +405,7 @@ FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
 
   label1_ = new views::Label(l10n_util::GetStringF(IDS_FR_SE_BUBBLE_TITLE,
-      GetDefaultSearchEngineName(profile_)));
+      UTF16ToWideHack(GetDefaultSearchEngineName(profile_))));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);

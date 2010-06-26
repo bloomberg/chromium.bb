@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/options_window.h"
-#include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/search_engines/util.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
@@ -28,19 +28,6 @@ const int kButtonPadding = 4;
 
 // Padding between content and edge of info bubble.
 const int kContentBorder = 7;
-
-string16 GetDefaultSearchEngineName(Profile* profile) {
-  if (!profile) {
-    NOTREACHED();
-    return string16();
-  }
-  const TemplateURL* const default_provider =
-      profile->GetTemplateURLModel()->GetDefaultSearchProvider();
-  if (!default_provider) {
-    return string16();
-  }
-  return WideToUTF16(default_provider->short_name());
-}
 }  // namespace
 
 // static

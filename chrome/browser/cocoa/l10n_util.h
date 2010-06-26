@@ -4,6 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/string16.h"
+
 namespace cocoa_l10n_util {
 
 // Compare function for -[NSArray sortedArrayUsingFunction:context:] that
@@ -15,5 +17,16 @@ NSInteger CompareFrameY(id view1, id view2, void* context);
 //   editable field: left as is
 //   anything else: do  +[GTMUILocalizerAndLayoutTweaker sizeToFitView:]
 NSSize WrapOrSizeToFit(NSView* view);
+
+// Walks views in top-down order, wraps each to their current width, and moves
+// the latter ones down to prevent overlaps. Returns the vertical delta in view
+// coordinates.
+CGFloat VerticallyReflowGroup(NSArray* views);
+
+// Like |ReplaceStringPlaceholders(const string16&, const string16&, size_t*)|,
+// but for a NSString formatString.
+NSString* ReplaceNSStringPlaceholders(NSString* formatString,
+                                      const string16& a,
+                                      size_t* offset);
 
 }  // namespace cocoa_l10n_util

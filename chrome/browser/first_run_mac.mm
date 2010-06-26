@@ -70,10 +70,8 @@ FirstRunController::FirstRunController()
 
 void FirstRunController::FirstRunDone() {
   // Set preference to show first run bubble and welcome page.
-  // TODO(jeremy): Implement
-  // FirstRun::SetShowFirstRunBubblePref(true);
-  // FirstRun::SetShowWelcomePagePref();
-  delete this;
+  FirstRun::SetShowFirstRunBubblePref(true);
+  FirstRun::SetShowWelcomePagePref();
 }
 
 bool FirstRunController::DoFirstRun(Profile* profile,
@@ -151,6 +149,9 @@ bool FirstRunController::DoFirstRun(Profile* profile,
     ignore_result(gc.release());
     StartImportingWithUI(nil, items, importer_host_.get(),
                          source_profile, profile, this, true);
+  } else {
+    // This is called by the importer if it runs.
+    FirstRunDone();
   }
 
   return true;

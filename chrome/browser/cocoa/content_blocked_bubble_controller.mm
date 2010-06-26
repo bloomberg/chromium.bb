@@ -6,17 +6,14 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
-#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/blocked_popup_container.h"
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 #import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/cocoa/info_bubble_view.h"
+#import "chrome/browser/cocoa/l10n_util.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/host_content_settings_map.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -55,17 +52,6 @@ const int kGeoHostPadding = 4;
 
 // Minimal padding between "Manage" and "Done" buttons.
 const int kManageDonePadding = 8;
-
-// Like |ReplaceStringPlaceholders(const string16&, const string16&, size_t*)|,
-// but for a NSString formatString.
-NSString* ReplaceNSStringPlaceholders(NSString* formatString,
-                                      const string16& a,
-                                      size_t* offset) {
-  return base::SysUTF16ToNSString(
-      ReplaceStringPlaceholders(base::SysNSStringToUTF16(formatString),
-                                a,
-                                offset));
-}
 
 void SetControlSize(NSControl* control, NSControlSize controlSize) {
   CGFloat fontSize = [NSFont systemFontSizeForControlSize:controlSize];
@@ -136,20 +122,11 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
                  nibPaths_requires_an_entry_for_every_setting_type);
   const int settingsType = model->content_type();
   DCHECK_LT(settingsType, CONTENT_SETTINGS_NUM_TYPES);
-  NSString* nibPath =
-      [mac_util::MainAppBundle() pathForResource:nibPaths[settingsType]
-                                          ofType:@"nib"];
-  if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
-    parentWindow_ = parentWindow;
-    anchor_ = anchoredAt;
+  if ((self = [super initWithWindowNibPath:nibPaths[settingsType]
+                              parentWindow:parentWindow
+                                anchoredAt:anchoredAt])) {
     contentSettingBubbleModel_.reset(model.release());
-
-    // Watch to see if the parent window closes, and if so, close this one.
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(parentWindowWillClose:)
-                   name:NSWindowWillCloseNotification
-                 object:parentWindow_];
+    [self showWindow:nil];
   }
   return self;
 }
@@ -184,7 +161,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
   // Copy |host_| into radio group label.
   NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag:kAllowTag];
-  [radioCell setTitle:ReplaceNSStringPlaceholders(
+  [radioCell setTitle:cocoa_l10n_util::ReplaceNSStringPlaceholders(
       [radioCell title], UTF8ToUTF16(radioGroup.url.host()), NULL)];
 
   // Layout radio group labels post-localization.
@@ -218,7 +195,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
   // If the link text is too long, clamp it.
   [button sizeToFit];
-  int maxWidth = NSWidth([bubble_ frame]) - 2 * NSMinX(referenceFrame);
+  int maxWidth = NSWidth([[self bubble] frame]) - 2 * NSMinX(referenceFrame);
   NSRect buttonFrame = [button frame];
   if (NSWidth(buttonFrame) > maxWidth) {
     buttonFrame.size.width = maxWidth;
@@ -276,7 +253,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
                            title:base::SysUTF8ToNSString(title)
                             icon:image
                   referenceFrame:radioFrame];
-    [bubble_ addSubview:button];
+    [[self bubble] addSubview:button];
     popupLinks_[button] = row;
   }
 }
@@ -379,11 +356,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (void)awakeFromNib {
-  DCHECK([self window]);
-  DCHECK_EQ(self, [[self window] delegate]);
-
-  [bubble_ setBubbleType:info_bubble::kWhiteInfoBubble];
-  [bubble_ setArrowLocation:info_bubble::kTopRight];
+  [[self bubble] setBubbleType:info_bubble::kWhiteInfoBubble];
+  [[self bubble] setArrowLocation:info_bubble::kTopRight];
 
   // Adapt window size to bottom buttons. Do this before all other layouting.
   [self sizeToFitManageDoneButtons];
@@ -397,73 +371,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   if (contentSettingBubbleModel_->content_type() ==
       CONTENT_SETTINGS_TYPE_GEOLOCATION)
     [self initializeGeoLists];
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Bubble-management related stuff
-
-// TODO(thakis): All that junk below should be in some superclass that all the
-// bubble controllers (bookmark bubble, extension installed bubble, page/browser
-// action bubble, content blocked bubble) derive from -- http://crbug.com/36366
-
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
-}
-
-- (void)parentWindowWillClose:(NSNotification*)notification {
-  [self close];
-}
-
-- (void)windowWillClose:(NSNotification*)notification {
-  // We caught a close so we don't need to watch for the parent closing.
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self autorelease];
-}
-
-// We want this to be a child of a browser window.  addChildWindow:
-// (called from this function) will bring the window on-screen;
-// unfortunately, [NSWindowController showWindow:] will also bring it
-// on-screen (but will cause unexpected changes to the window's
-// position).  We cannot have an addChildWindow: and a subsequent
-// showWindow:. Thus, we have our own version.
-- (void)showWindow:(id)sender {
-  NSWindow* window = [self window];  // completes nib load
-
-  NSPoint origin = anchor_;
-  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
-                                  info_bubble::kBubbleArrowWidth / 2.0, 0);
-  offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
-  origin.x -= NSWidth([window frame]) - offsets.width;
-  origin.y -= NSHeight([window frame]);
-  [window setFrameOrigin:origin];
-  [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
-  [window makeKeyAndOrderFront:self];
-}
-
-- (void)close {
-  [parentWindow_ removeChildWindow:[self window]];
-  [super close];
-}
-
-// The controller is the delegate of the window so it receives did resign key
-// notifications. When key is resigned mirror Windows behavior and close the
-// window.
-- (void)windowDidResignKey:(NSNotification*)notification {
-  NSWindow* window = [self window];
-  DCHECK_EQ([notification object], window);
-  if ([window isVisible]) {
-    // If the window isn't visible, it is already closed, and this notification
-    // has been sent as part of the closing operation, so no need to close.
-    [self close];
-  }
-}
-
-// By implementing this, ESC causes the window to go away.
-- (IBAction)cancel:(id)sender {
-  // This is not a "real" cancel as potential changes to the radio group are not
-  // undone. That's ok.
-  [self close];
 }
 
 ///////////////////////////////////////////////////////////////////////////////

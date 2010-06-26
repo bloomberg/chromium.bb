@@ -47,9 +47,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual ~LocationBarViewMac();
 
   // Overridden from LocationBar:
-  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
-      NOTIMPLEMENTED();
-  }
+  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
   virtual std::wstring GetInputString() const;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const;
   virtual PageTransition::Type GetPageTransition() const;
@@ -433,6 +431,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   // tab contents state.
   void RefreshContentSettingsViews();
 
+  void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
+
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
@@ -476,6 +476,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Used to register for notifications received by NotificationObserver.
   NotificationRegistrar registrar_;
+
+  // Used to schedule a task for the first run info bubble.
+  ScopedRunnableMethodFactory<LocationBarViewMac> first_run_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewMac);
 };

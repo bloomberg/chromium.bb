@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/l10n_util.h"
 
+#include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace cocoa_l10n_util {
@@ -44,6 +46,33 @@ NSSize WrapOrSizeToFit(NSView* view) {
     }
   }
   return [GTMUILocalizerAndLayoutTweaker sizeToFitView:view];
+}
+
+CGFloat VerticallyReflowGroup(NSArray* views) {
+  views = [views sortedArrayUsingFunction:CompareFrameY
+                                  context:NULL];
+  CGFloat localVerticalShift = 0;
+  for (NSInteger index = [views count] - 1; index >= 0; --index) {
+    NSView* view = [views objectAtIndex:index];
+
+    NSSize delta = WrapOrSizeToFit(view);
+    localVerticalShift += delta.height;
+    if (localVerticalShift) {
+      NSPoint origin = [view frame].origin;
+      origin.y -= localVerticalShift;
+      [view setFrameOrigin:origin];
+    }
+  }
+  return localVerticalShift;
+}
+
+NSString* ReplaceNSStringPlaceholders(NSString* formatString,
+                                      const string16& a,
+                                      size_t* offset) {
+  return base::SysUTF16ToNSString(
+      ReplaceStringPlaceholders(base::SysNSStringToUTF16(formatString),
+                                a,
+                                offset));
 }
 
 }  // namespace cocoa_l10n_util

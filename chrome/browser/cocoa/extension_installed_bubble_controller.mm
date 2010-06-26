@@ -225,7 +225,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   NSPoint origin =
       [parentWindow_ convertBaseToScreen:[self calculateArrowPoint]];
   NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
-                                  info_bubble::kBubbleArrowWidth / 2.0, 0);
+                              info_bubble::kBubbleArrowWidth / 2.0, 0);
   offsets = [[window contentView] convertSize:offsets toView:nil];
   origin.x -= NSWidth([window frame]) - offsets.width;
   origin.y -= NSHeight([window frame]);

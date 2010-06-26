@@ -10,6 +10,7 @@
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#import "chrome/browser/cocoa/base_bubble_controller.h"
 
 class ContentSettingBubbleModel;
 @class InfoBubbleView;
@@ -21,13 +22,8 @@ typedef std::map<NSButton*, int> PopupLinks;
 }
 
 // Manages a "content blocked" bubble.
-@interface ContentBlockedBubbleController
-    : NSWindowController<NSWindowDelegate> {
+@interface ContentBlockedBubbleController : BaseBubbleController {
  @private
-  NSWindow* parentWindow_;  // weak
-  NSPoint anchor_;
-  IBOutlet InfoBubbleView* bubble_;  // to set arrow position
-
   IBOutlet NSTextField* titleLabel_;
   IBOutlet NSMatrix* allowBlockRadioGroup_;
 

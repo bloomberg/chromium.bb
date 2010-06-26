@@ -20,6 +20,7 @@
 #include "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/cocoa/first_run_bubble_controller.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #include "chrome/browser/command_updater.h"
@@ -79,7 +80,8 @@ LocationBarViewMac::LocationBarViewMac(
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
-      transition_(PageTransition::TYPED) {
+      transition_(PageTransition::TYPED),
+      first_run_bubble_(this) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_setting_view =
         new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
@@ -107,6 +109,25 @@ LocationBarViewMac::~LocationBarViewMac() {
   [cell setLocationIconView:NULL];
   [cell setSecurityLabelView:NULL];
   [cell setStarIconView:NULL];
+}
+
+void LocationBarViewMac::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
+  // We need the browser window to be shown before we can show the bubble, but
+  // we get called before that's happened.
+  Task* task = first_run_bubble_.NewRunnableMethod(
+      &LocationBarViewMac::ShowFirstRunBubbleInternal, bubble_type);
+  MessageLoop::current()->PostTask(FROM_HERE, task);
+}
+
+void LocationBarViewMac::ShowFirstRunBubbleInternal(
+    FirstRun::BubbleType bubble_type) {
+  if (!field_ || ![field_ window])
+    return;
+
+  // The bubble needs to be just below the Omnibox and slightly to the right
+  // of the left omnibox icon, so shift x and y co-ordinates.
+  const NSPoint kOffset = NSMakePoint(-18, 4);
+  [FirstRunBubbleController showForView:field_ offset:kOffset profile:profile_];
 }
 
 std::wstring LocationBarViewMac::GetInputString() const {
@@ -888,9 +909,9 @@ void LocationBarViewMac::ContentSettingImageView::OnMousePressed(NSRect bounds)
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           tabContents, profile_,
           content_setting_image_model_->get_content_settings_type());
-  [[ContentBlockedBubbleController showForModel:model
+  [ContentBlockedBubbleController showForModel:model
                                    parentWindow:window
-                                     anchoredAt:anchor] showWindow:nil];
+                                     anchoredAt:anchor];
 }
 
 NSString* LocationBarViewMac::ContentSettingImageView::GetToolTip() {

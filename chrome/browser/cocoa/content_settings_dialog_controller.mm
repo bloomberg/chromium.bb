@@ -28,32 +28,6 @@ namespace {
 // Stores the currently visible content settings dialog, if any.
 ContentSettingsDialogController* g_instance = nil;
 
-// Walks views in top-down order, wraps each to their current width, and moves
-// the latter ones down to prevent overlaps.
-CGFloat VerticallyReflowGroup(NSArray* views) {
-  views = [views sortedArrayUsingFunction:cocoa_l10n_util::CompareFrameY
-                                  context:NULL];
-  CGFloat localVerticalShift = 0;
-  for (NSInteger index = [views count] - 1; index >= 0; --index) {
-    NSView* view = [views objectAtIndex:index];
-
-    // Since the tab pane is in a horizontal resizer in IB, it's convenient
-    // to give all the subviews flexible width so that their sizes are
-    // autoupdated in IB. However, in chrome, the subviews shouldn't have
-    // flexible widths as this looks weird.
-    [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
-
-    NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
-    localVerticalShift += delta.height;
-    if (localVerticalShift) {
-      NSPoint origin = [view frame].origin;
-      origin.y -= localVerticalShift;
-      [view setFrameOrigin:origin];
-    }
-  }
-  return localVerticalShift;
-}
-
 }  // namespace
 
 
@@ -196,8 +170,17 @@ class PrefObserverDisabler {
   // Adapt views to potentially long localized strings.
   CGFloat windowDelta = 0;
   for (NSTabViewItem* tab in [tabView_ tabViewItems]) {
+    NSArray* subviews = [[tab view] subviews];
     windowDelta = MAX(windowDelta,
-                      VerticallyReflowGroup([[tab view] subviews]));
+                      cocoa_l10n_util::VerticallyReflowGroup(subviews));
+
+    for (NSView* view in subviews) {
+      // Since the tab pane is in a horizontal resizer in IB, it's convenient
+      // to give all the subviews flexible width so that their sizes are
+      // autoupdated in IB. However, in chrome, the subviews shouldn't have
+      // flexible widths as this looks weird.
+      [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+    }
   }
 
   NSRect frame = [[self window] frame];

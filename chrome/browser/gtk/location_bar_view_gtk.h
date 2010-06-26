@@ -392,7 +392,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // The transition type to use for the navigation.
   PageTransition::Type transition_;
 
-  // Used schedule a task for the first run info bubble.
+  // Used to schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarViewGtk> first_run_bubble_;
 
   // When true, the location bar view is read only and also is has a slightly

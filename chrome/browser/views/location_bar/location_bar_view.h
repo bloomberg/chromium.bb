@@ -356,7 +356,7 @@ class LocationBarView : public LocationBar,
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   bool show_focus_rect_;
 
-  // Used schedule a task for the first run info bubble.
+  // Used to schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);

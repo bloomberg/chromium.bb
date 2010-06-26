@@ -49,7 +49,7 @@ TEST_F(ContentBlockedBubbleControllerTest, Init) {
         parentWindow:parent
          anchoredAt:NSMakePoint(50, 20)];
     EXPECT_TRUE(controller != nil);
-    [controller showWindow:nil];
+    EXPECT_TRUE([[controller window] isVisible]);
     [parent.get() close];
   }
 }
