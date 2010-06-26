@@ -128,6 +128,10 @@ class ResourceLoaderBridge {
     // True if the response was delivered after NPN is negotiated.
     bool was_npn_negotiated;
 
+    // True if response could use alternate protocol. However, browser will
+    // ignore the alternate protocol when spdy is not enabled on browser side.
+    bool was_alternate_protocol_available;
+
     // True if the response was fetched via an explicit proxy (as opposed to a
     // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
     // Note: we cannot tell if a transparent proxy may have been involved.

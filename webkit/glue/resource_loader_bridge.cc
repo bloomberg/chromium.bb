@@ -26,6 +26,7 @@ ResourceLoaderBridge::ResponseInfo::ResponseInfo() {
   appcache_id = appcache::kNoCacheId;
   was_fetched_via_spdy = false;
   was_npn_negotiated = false;
+  was_alternate_protocol_available = false;
   was_fetched_via_proxy = false;
 }
 

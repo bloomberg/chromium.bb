@@ -3005,6 +3005,8 @@ void RenderView::didReceiveResponse(
   // Record page load flags.
   navigation_state->set_was_fetched_via_spdy(response.wasFetchedViaSPDY());
   navigation_state->set_was_npn_negotiated(response.wasNpnNegotiated());
+  navigation_state->set_was_alternate_protocol_available(
+      response.wasAlternateProtocolAvailable());
   navigation_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());
 
   // Consider loading an alternate error page for 404 responses.
@@ -4715,7 +4717,12 @@ void RenderView::DumpLoadHistograms() const {
   //                and StartToFinish, consider removing one or the other.
   static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
       !FieldTrialList::Find("SpdyImpact")->group_name().empty());
-  if (use_spdy_histogram && navigation_state->was_npn_negotiated()) {
+  // Spdy requests triggered by alternate protocol are excluded here.
+  // This is because when alternate protocol is avaiable, FieldTrial will
+  // either use npn_spdy or pure http, not npn_http via TLS. That will cause
+  // bias for npn_spdy and npn_http.
+  if (use_spdy_histogram && navigation_state->was_npn_negotiated() &&
+      !navigation_state->was_alternate_protocol_available()) {
     UMA_HISTOGRAM_ENUMERATION(
         FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
         abandoned_page ? 1 : 0, 2);
@@ -4744,6 +4751,56 @@ void RenderView::DumpLoadHistograms() const {
         break;
       default:
         break;
+    }
+  }
+
+  // Histograms to compare the impact of alternate protocol: when the
+  // protocol(spdy) is used vs. when it is ignored and http is used.
+  if (navigation_state->was_alternate_protocol_available()) {
+    if (!navigation_state->was_npn_negotiated()) {
+      // This means that even there is alternate protocols for npn_http or
+      // npn_spdy, they are not taken (due to the fieldtrial).
+      switch (load_type) {
+        case NavigationState::LINK_LOAD_NORMAL:
+          PLT_HISTOGRAM(
+              "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_http",
+              start_to_finish);
+          PLT_HISTOGRAM(
+              "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_http",
+              start_to_commit);
+          break;
+        case NavigationState::NORMAL_LOAD:
+          PLT_HISTOGRAM(
+              "PLT.StartToFinish_NormalLoad_AlternateProtocol_http",
+              start_to_finish);
+          PLT_HISTOGRAM(
+              "PLT.StartToCommit_NormalLoad_AlternateProtocol_http",
+              start_to_commit);
+          break;
+        default:
+          break;
+      }
+    } else if (navigation_state->was_fetched_via_spdy()) {
+      switch (load_type) {
+        case NavigationState::LINK_LOAD_NORMAL:
+          PLT_HISTOGRAM(
+              "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_spdy",
+              start_to_finish);
+          PLT_HISTOGRAM(
+              "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_spdy",
+              start_to_commit);
+          break;
+        case NavigationState::NORMAL_LOAD:
+          PLT_HISTOGRAM(
+              "PLT.StartToFinish_NormalLoad_AlternateProtocol_spdy",
+              start_to_finish);
+          PLT_HISTOGRAM(
+              "PLT.StartToCommit_NormalLoad_AlternateProtocol_spdy",
+              start_to_commit);
+          break;
+        default:
+          break;
+      }
     }
   }
 

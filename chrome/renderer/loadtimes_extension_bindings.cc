@@ -134,6 +134,10 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         load_times->Set(
             v8::String::New("wasNpnNegotiated"),
             v8::Boolean::New(navigation_state->was_npn_negotiated()));
+        load_times->Set(
+            v8::String::New("wasAlternateProtocolAvailable"),
+            v8::Boolean::New(
+                navigation_state->was_alternate_protocol_available()));
         return load_times;
       }
     }

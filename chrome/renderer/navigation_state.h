@@ -223,6 +223,13 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_was_npn_negotiated(bool value) { was_npn_negotiated_ = value; }
   bool was_npn_negotiated() const { return was_npn_negotiated_; }
 
+  void set_was_alternate_protocol_available(bool value) {
+    was_alternate_protocol_available_ = value;
+  }
+  bool was_alternate_protocol_available() const {
+    return was_alternate_protocol_available_;
+  }
+
   void set_was_fetched_via_proxy(bool value) {
     was_fetched_via_proxy_ = value;
   }
@@ -287,6 +294,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   bool was_npn_negotiated_;
   bool was_fetched_via_proxy_;
   bool was_translated_;
+  bool was_alternate_protocol_available_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };
