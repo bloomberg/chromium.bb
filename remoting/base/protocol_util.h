@@ -7,6 +7,7 @@
 
 #include "google/protobuf/message_lite.h"
 #include "media/base/data_buffer.h"
+#include "remoting/base/protocol/chromotocol.pb.h"
 
 // This file defines utility methods used for encoding and decoding the protocol
 // used in Chromoting.
@@ -18,6 +19,8 @@ namespace remoting {
 // decode the message.
 scoped_refptr<media::DataBuffer> SerializeAndFrameMessage(
     const google::protobuf::MessageLite& msg);
+
+int GetBytesPerPixel(PixelFormat format);
 
 }  // namespace remoting
 

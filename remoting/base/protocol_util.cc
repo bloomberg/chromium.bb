@@ -24,4 +24,19 @@ scoped_refptr<media::DataBuffer> SerializeAndFrameMessage(
   return buffer;
 }
 
+int GetBytesPerPixel(PixelFormat format) {
+  // Note: The order is important here for performace. This is sorted from the
+  // most common to the less common (PixelFormatAscii is mostly used
+  // just for testing).
+  switch (format) {
+    case PixelFormatRgb24:  return 3;
+    case PixelFormatRgb565: return 2;
+    case PixelFormatRgb32:  return 4;
+    case PixelFormatAscii:  return 1;
+    default:
+      NOTREACHED() << "Pixel format not supported";
+      return 0;
+  }
+}
+
 }  // namespace remoting

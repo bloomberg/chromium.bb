@@ -4,6 +4,8 @@
 
 #include "remoting/client/decoder_verbatim.h"
 
+#include "remoting/base/protocol_util.h"
+
 namespace remoting {
 
 DecoderVerbatim::DecoderVerbatim()
@@ -37,20 +39,6 @@ bool DecoderVerbatim::PartialDecode(HostMessage* message) {
   int y = message->update_stream_packet().header().y();
   PixelFormat pixel_format =
       message->update_stream_packet().header().pixel_format();
-  int bytes_per_pixel = 0;
-
-  // TODO(hclam): Extract the following to an util function.
-  if (pixel_format == PixelFormatRgb24) {
-    bytes_per_pixel = 3;
-  } else if (pixel_format == PixelFormatRgb565) {
-    bytes_per_pixel = 2;
-  } else if (pixel_format == PixelFormatRgb32) {
-    bytes_per_pixel = 4;
-  } else if (pixel_format == PixelFormatAscii) {
-    bytes_per_pixel = 1;
-  } else {
-    NOTREACHED() << "Pixel format not supported";
-  }
 
   if (static_cast<PixelFormat>(frame_->format()) != pixel_format) {
     NOTREACHED() << "Pixel format of message doesn't match the video frame. "
@@ -59,6 +47,7 @@ bool DecoderVerbatim::PartialDecode(HostMessage* message) {
                  << " Color space conversion required.";
   }
 
+  int bytes_per_pixel = GetBytesPerPixel(pixel_format);
   // Copy the data line by line.
   const int src_stride = bytes_per_pixel * width;
   const char* src = message->update_stream_packet().data().c_str();
