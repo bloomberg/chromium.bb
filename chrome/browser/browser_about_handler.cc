@@ -86,7 +86,6 @@ namespace {
 
 // The (alphabetized) paths used for the about pages.
 const char kCreditsPath[] = "credits";
-const char kCachePath[] = "cache";
 const char kDnsPath[] = "dns";
 const char kHistogramsPath[] = "histograms";
 const char kMemoryRedirectPath[] = "memory-redirect";
@@ -97,10 +96,6 @@ const char kTasksPath[] = "tasks";
 const char kTcmallocPath[] = "tcmalloc";
 const char kTermsPath[] = "terms";
 const char kVersionPath[] = "version";
-const char kAboutPath[] = "about";
-// Not about:* pages, but included to make about:about look nicer
-const char kNetInternalsPath[] = "net-internals";
-const char kPluginsPath[] = "plugins";
 
 #if defined(OS_LINUX)
 const char kLinuxProxyConfigPath[] = "linux-proxy-config";
@@ -111,31 +106,6 @@ const char kNetworkPath[] = "network";
 const char kOSCreditsPath[] = "os-credits";
 const char kSysPath[] = "system";
 #endif
-
-// Add path here to be included in about:about
-const char *kAllAboutPaths[] = {
-  kCachePath,
-  kCreditsPath,
-  kDnsPath,
-  kHistogramsPath,
-  kMemoryPath,
-  kNetInternalsPath,
-  kPluginsPath,
-  kStatsPath,
-  kSyncPath,
-  kTasksPath,
-  kTcmallocPath,
-  kTermsPath,
-  kVersionPath,
-#if defined(OS_LINUX)
-  kLinuxProxyConfigPath,
-#endif
-#if defined(OS_CHROMEOS)
-  kNetworkPath,
-  kOSCreditPath,
-  kSysPath,
-#endif
-  };
 
 // Points to the singleton AboutSource object, if any.
 ChromeURLDataManager::DataSource* about_source = NULL;
@@ -234,37 +204,6 @@ class ChromeOSAboutVersionHandler {
 #endif
 
 // Individual about handlers ---------------------------------------------------
-
-std::string AboutAbout() {
-  std::string html;
-  html.append("<html><head><title>About Pages</title></head><body>\n");
-  html.append("<h2>List of About pages</h2><ul>\n");
-  for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
-    if (kAllAboutPaths[i] == kNetInternalsPath ||
-        kAllAboutPaths[i] == kPluginsPath)
-      html.append("<li><a href='chrome://");
-    else
-      html.append("<li><a href='chrome://about/");
-    html.append(kAllAboutPaths[i]);
-    html.append("/'>about:");
-    html.append(kAllAboutPaths[i]);
-    html.append("</a>\n");
-  }
-  const char *debug[] = { "crash", "hang", "shorthang" };
-  html.append("</ul><h2>For Debug</h2>");
-  html.append("</ul><p>The following pages are for debugging purposes only. "
-              "Because they crash or hang the renderer, they're not linked "
-              "directly; you can type them into the address bar if you need "
-              "them.</p><ul>");
-  for (size_t i = 0; i < arraysize(debug); i++) {
-    html.append("<li>");
-    html.append("about:");
-    html.append(debug[i]);
-    html.append("\n");
-  }
-  html.append("</ul></body></html>");
-  return html;
-}
 
 #if defined(OS_CHROMEOS)
 std::string AboutNetwork(const std::string& query) {
@@ -801,8 +740,6 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
   } else if (path == kCreditsPath) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_CREDITS_HTML).as_string();
-  } else if (path == kAboutPath) {
-    response = AboutAbout();
 #if defined(OS_CHROMEOS)
   } else if (path == kOSCreditsPath) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
