@@ -149,7 +149,7 @@ int FtpDirectoryListingBuffer::OnEndOfInput() {
   }
 
   if (parsers_.size() != 1) {
-    DCHECK(!current_parser_);
+    current_parser_ = NULL;
 
     // We may hit an ambiguity in case of listings which have no entries. That's
     // fine, as long as all remaining parsers agree that the listing is empty.
