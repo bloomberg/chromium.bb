@@ -839,6 +839,11 @@ NPObject* GetNPObject(PP_Var var) {
   return GetNPObjectUnchecked(var);
 }
 
+PP_Var StringToPPVar(const std::string& str) {
+  DCHECK(IsStringUTF8(str));
+  return VarFromUtf8(str.data(), str.size());
+}
+
 String* GetString(PP_Var var) {
   if (var.type != PP_VarType_String)
     return NULL;

@@ -5,6 +5,8 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_VAR_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_VAR_H_
 
+#include <string>
+
 typedef struct _pp_Var PP_Var;
 typedef struct _ppb_Var PPB_Var;
 typedef struct NPObject NPObject;
@@ -29,6 +31,10 @@ PP_Var NPObjectToPPVar(NPObject* object);
 // call WebBindings::retainObject.  Returns NULL if the PP_Var is not an object
 // type.
 NPObject* GetNPObject(PP_Var var);
+
+// Returns a PP_Var of type string that contains a copy of the given string.
+// The input data must be valid UTF-8 encoded text.
+PP_Var StringToPPVar(const std::string& str);
 
 // Returns the String corresponding to the PP_Var.  This pointer has not been
 // AddRef'd, so you should not call Release!  Returns NULL if the PP_Var is not

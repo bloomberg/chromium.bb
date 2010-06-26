@@ -13,6 +13,10 @@ namespace pepper {
 
 class Buffer;
 class DeviceContext2D;
+class DirectoryReader;
+class FileChooser;
+class FileIO;
+class FileRef;
 class ImageData;
 class PluginModule;
 class URLLoader;
@@ -30,12 +34,16 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
 
   // Type-specific getters for individual resource types. These will return
   // NULL if the resource does not match the specified type.
+  virtual Buffer* AsBuffer() { return NULL; }
   virtual DeviceContext2D* AsDeviceContext2D() { return NULL; }
+  virtual DirectoryReader* AsDirectoryReader() { return NULL; }
+  virtual FileChooser* AsFileChooser() { return NULL; }
+  virtual FileIO* AsFileIO() { return NULL; }
+  virtual FileRef* AsFileRef() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
   virtual URLLoader* AsURLLoader() { return NULL; }
   virtual URLRequestInfo* AsURLRequestInfo() { return NULL; }
   virtual URLResponseInfo* AsURLResponseInfo() { return NULL; }
-  virtual Buffer* AsBuffer() { return NULL; }
 
  private:
   PluginModule* module_;  // Non-owning pointer to our module.

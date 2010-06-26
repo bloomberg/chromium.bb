@@ -15,6 +15,9 @@
 #include "third_party/ppapi/c/ppb_buffer.h"
 #include "third_party/ppapi/c/ppb_core.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
+#include "third_party/ppapi/c/ppb_file_io.h"
+#include "third_party/ppapi/c/ppb_file_io_trusted.h"
+#include "third_party/ppapi/c/ppb_file_system.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
 #include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppb_testing.h"
@@ -29,6 +32,10 @@
 #include "third_party/ppapi/c/pp_var.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
+#include "webkit/glue/plugins/pepper_directory_reader.h"
+#include "webkit/glue/plugins/pepper_file_io.h"
+#include "webkit/glue/plugins/pepper_file_ref.h"
+#include "webkit/glue/plugins/pepper_file_system.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
@@ -157,6 +164,16 @@ const void* GetInterface(const char* name) {
     return URLResponseInfo::GetInterface();
   if (strcmp(name, PPB_BUFFER_INTERFACE) == 0)
     return Buffer::GetInterface();
+  if (strcmp(name, PPB_FILEREF_INTERFACE) == 0)
+    return FileRef::GetInterface();
+  if (strcmp(name, PPB_FILEIO_INTERFACE) == 0)
+    return FileIO::GetInterface();
+  if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
+    return FileIO::GetTrustedInterface();
+  if (strcmp(name, PPB_FILESYSTEM_INTERFACE) == 0)
+    return FileSystem::GetInterface();
+  if (strcmp(name, PPB_DIRECTORYREADER_INTERFACE) == 0)
+    return DirectoryReader::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

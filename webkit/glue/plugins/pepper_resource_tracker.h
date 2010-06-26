@@ -18,6 +18,10 @@ namespace pepper {
 
 class Buffer;
 class DeviceContext2D;
+class DirectoryReader;
+class FileChooser;
+class FileIO;
+class FileRef;
 class ImageData;
 class Resource;
 class URLLoader;
@@ -48,12 +52,16 @@ class ResourceTracker {
 
   // Helpers for converting resources to a specific type. Returns NULL if the
   // resource is invalid or is a different type.
+  scoped_refptr<Buffer> GetAsBuffer(PP_Resource res) const;
   scoped_refptr<DeviceContext2D> GetAsDeviceContext2D(PP_Resource res) const;
+  scoped_refptr<DirectoryReader> GetAsDirectoryReader(PP_Resource res) const;
+  scoped_refptr<FileChooser> GetAsFileChooser(PP_Resource res) const;
+  scoped_refptr<FileIO> GetAsFileIO(PP_Resource res) const;
+  scoped_refptr<FileRef> GetAsFileRef(PP_Resource res) const;
   scoped_refptr<ImageData> GetAsImageData(PP_Resource res) const;
   scoped_refptr<URLLoader> GetAsURLLoader(PP_Resource res) const;
   scoped_refptr<URLRequestInfo> GetAsURLRequestInfo(PP_Resource res) const;
   scoped_refptr<URLResponseInfo> GetAsURLResponseInfo(PP_Resource res) const;
-  scoped_refptr<Buffer> GetAsBuffer(PP_Resource res) const;
 
  private:
   friend struct DefaultSingletonTraits<ResourceTracker>;
