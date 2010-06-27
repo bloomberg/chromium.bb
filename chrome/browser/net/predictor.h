@@ -16,8 +16,8 @@
 // cause this module to speculatively create a TCP/IP connection that will
 // probably be needed to fetch the subresource.
 
-#ifndef CHROME_BROWSER_NET_DNS_MASTER_H_
-#define CHROME_BROWSER_NET_DNS_MASTER_H_
+#ifndef CHROME_BROWSER_NET_PREDICTOR_H_
+#define CHROME_BROWSER_NET_PREDICTOR_H_
 
 #include <map>
 #include <queue>
@@ -27,9 +27,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/net/dns_host_info.h"
+#include "chrome/browser/net/url_info.h"
 #include "chrome/browser/net/referrer.h"
-#include "chrome/common/net/dns.h"
+#include "chrome/common/net/predictor_common.h"
 #include "net/base/host_port_pair.h"
 
 namespace net {
@@ -264,4 +264,4 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
 }  // namespace chrome_browser_net
 
-#endif  // CHROME_BROWSER_NET_DNS_MASTER_H_
+#endif  // CHROME_BROWSER_NET_PREDICTOR_H_

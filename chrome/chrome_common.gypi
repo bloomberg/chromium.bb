@@ -320,10 +320,10 @@
       'target_name': 'common_net',
       'type': '<(library)',
       'sources': [
-        'common/net/dns.h',
         'common/net/http_return.h',
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
+        'common/net/predictor_common.h',
         'common/net/socket_stream.h',
         'common/net/url_fetcher.cc',
         'common/net/url_fetcher.h',

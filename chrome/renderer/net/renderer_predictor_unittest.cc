@@ -4,7 +4,7 @@
 
 // Single threaded tests of RendererNetPredictor functionality.
 
-#include "chrome/renderer/net/render_dns_master.h"
+#include "chrome/renderer/net/renderer_net_predictor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <algorithm>

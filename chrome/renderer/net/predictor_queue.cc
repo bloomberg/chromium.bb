@@ -4,7 +4,7 @@
 
 // See header file for description of DnsQueue class
 
-#include "chrome/renderer/net/render_dns_queue.h"
+#include "chrome/renderer/net/predictor_queue.h"
 
 #include "base/logging.h"
 #include "base/stats_counters.h"

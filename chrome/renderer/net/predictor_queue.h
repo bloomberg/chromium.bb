@@ -21,8 +21,8 @@
 // rendering, the supplier is the renderer (typically), and the consumer
 // is a thread that sends messages to an async DNS resolver.
 
-#ifndef CHROME_RENDERER_NET_RENDER_DNS_QUEUE_H__
-#define CHROME_RENDERER_NET_RENDER_DNS_QUEUE_H__
+#ifndef CHROME_RENDERER_NET_PREDICTOR_QUEUE_H__
+#define CHROME_RENDERER_NET_PREDICTOR_QUEUE_H__
 
 #include <string>
 
@@ -89,4 +89,4 @@ class DnsQueue {
   DISALLOW_COPY_AND_ASSIGN(DnsQueue);
 };  // class DnsQueue
 
-#endif  // CHROME_RENDERER_NET_RENDER_DNS_QUEUE_H__
+#endif  // CHROME_RENDERER_NET_PREDICTOR_QUEUE_H__

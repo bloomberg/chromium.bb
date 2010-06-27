@@ -24,7 +24,7 @@
 #include "chrome/common/socket_stream_dispatcher.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/plugin/npobject_util.h"
-#include "chrome/renderer/net/render_dns_master.h"
+#include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/url_util.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/connect_interceptor.h"
 
-#include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/net/predictor_api.h"
 
 namespace chrome_browser_net {
 

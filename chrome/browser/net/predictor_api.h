@@ -8,8 +8,8 @@
 // provided by Predictor to be left as more generally usable code, and possibly
 // be shared across multiple client projects.
 
-#ifndef CHROME_BROWSER_NET_DNS_GLOBAL_H_
-#define CHROME_BROWSER_NET_DNS_GLOBAL_H_
+#ifndef CHROME_BROWSER_NET_PREDICTOR_API_H_
+#define CHROME_BROWSER_NET_PREDICTOR_API_H_
 
 
 #include <string>
@@ -18,7 +18,7 @@
 #include "base/field_trial.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/net/dns_master.h"
+#include "chrome/browser/net/predictor.h"
 #include "net/base/host_resolver.h"
 
 class PrefService;
@@ -99,4 +99,4 @@ class PredictorInit {
 
 }  // namespace chrome_browser_net
 
-#endif  // CHROME_BROWSER_NET_DNS_GLOBAL_H_
+#endif  // CHROME_BROWSER_NET_PREDICTOR_API_H_

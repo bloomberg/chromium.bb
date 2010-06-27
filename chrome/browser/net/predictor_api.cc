@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/net/predictor_api.h"
 
 #include <map>
 #include <string>
@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/dns_host_info.h"
+#include "chrome/browser/net/url_info.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/pref_service.h"

@@ -5,15 +5,15 @@
 // See header file for description of RendererNetPredictor class
 
 
-#include "chrome/renderer/net/render_dns_master.h"
+#include "chrome/renderer/net/renderer_net_predictor.h"
 
 #include <ctype.h>
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/common/net/dns.h"
+#include "chrome/common/net/predictor_common.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/net/render_dns_queue.h"
+#include "chrome/renderer/net/predictor_queue.h"
 #include "chrome/renderer/render_thread.h"
 
 // This API is used in the render process by renderer_glue.cc.

@@ -18,8 +18,8 @@
 // sent names.  If the entire queue is processed, then the list of "sent names"
 // is cleared so that future gatherings might again pass along the same names.
 
-#ifndef CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_
-#define CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_
+#ifndef CHROME_RENDERER_NET_RENDERER_NET_PREDICTOR_H_
+#define CHROME_RENDERER_NET_RENDERER_NET_PREDICTOR_H_
 
 #include <map>
 #include <string>
@@ -27,7 +27,7 @@
 
 #include "base/basictypes.h"
 #include "base/task.h"
-#include "chrome/renderer/net/render_dns_queue.h"
+#include "chrome/renderer/net/predictor_queue.h"
 
 // Global API consists to do Prefetching in renderer.  This uses IPC to reach
 // the Browser's global functions.
@@ -106,4 +106,4 @@ class RendererNetPredictor {
   DISALLOW_COPY_AND_ASSIGN(RendererNetPredictor);
 };  // class RendererNetPredictor
 
-#endif  // CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_
+#endif  // CHROME_RENDERER_NET_RENDERER_NET_PREDICTOR_H_

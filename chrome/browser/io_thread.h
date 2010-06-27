@@ -13,7 +13,7 @@
 #include "base/task.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/common/net/dns.h"
+#include "chrome/common/net/predictor_common.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "net/base/host_resolver.h"
 

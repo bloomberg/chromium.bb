@@ -13,8 +13,8 @@
 // may describe associated subresources, for future speculative connections to
 // those expected subresources.
 
-#ifndef CHROME_BROWSER_NET_DNS_HOST_INFO_H_
-#define CHROME_BROWSER_NET_DNS_HOST_INFO_H_
+#ifndef CHROME_BROWSER_NET_URL_INFO_H_
+#define CHROME_BROWSER_NET_URL_INFO_H_
 
 #include <string>
 #include <vector>
@@ -205,4 +205,4 @@ class UrlInfo {
 
 }  // namespace chrome_browser_net
 
-#endif  // CHROME_BROWSER_NET_DNS_HOST_INFO_H_
+#endif  // CHROME_BROWSER_NET_URL_INFO_H_

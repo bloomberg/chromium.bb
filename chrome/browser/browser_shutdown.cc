@@ -31,7 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_plugin_lib.h"
-#include "net/dns_global.h"
+#include "net/predictor_api.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/rlz/rlz.h"

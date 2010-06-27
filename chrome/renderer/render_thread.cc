@@ -52,7 +52,7 @@
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
-#include "chrome/renderer/net/render_dns_master.h"
+#include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_view.h"

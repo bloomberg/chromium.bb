@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-#include "chrome/renderer/net/render_dns_queue.h"
+#include "chrome/renderer/net/predictor_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Single threaded tests of DnsQueue functionality.

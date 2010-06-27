@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/platform_thread.h"
-#include "chrome/browser/net/dns_host_info.h"
+#include "chrome/browser/net/url_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
