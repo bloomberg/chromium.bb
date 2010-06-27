@@ -23,6 +23,7 @@
 #include "base/third_party/nspr/prtime.h"
 #include "chrome/common/logging_chrome.h"
 #include "googleurl/src/gurl.h"
+#include "libxml/xmlwriter.h"
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
@@ -34,13 +35,66 @@ using base::TimeDelta;
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
-// static
-std::string MetricsLogBase::version_extension_;
+namespace {
 
 // libxml take xmlChar*, which is unsigned char*
 inline const unsigned char* UnsignedChar(const char* input) {
   return reinterpret_cast<const unsigned char*>(input);
 }
+
+}  // namespace
+
+class MetricsLogBase::XmlWrapper {
+ public:
+  XmlWrapper()
+      : doc_(NULL),
+        buffer_(NULL),
+        writer_(NULL) {
+    buffer_ = xmlBufferCreate();
+    DCHECK(buffer_);
+
+    #if defined(OS_CHROMEOS)
+      writer_ = xmlNewTextWriterDoc(&doc_, /* compression */ 0);
+    #else
+      writer_ = xmlNewTextWriterMemory(buffer_, /* compression */ 0);
+    #endif  // OS_CHROMEOS
+    DCHECK(writer_);
+
+    int result = xmlTextWriterSetIndent(writer_, 2);
+    DCHECK_EQ(0, result);
+  }
+
+  ~XmlWrapper() {
+    FreeDocWriter();
+    if (buffer_) {
+      xmlBufferFree(buffer_);
+      buffer_ = NULL;
+    }
+  }
+
+  void FreeDocWriter() {
+    if (writer_) {
+      xmlFreeTextWriter(writer_);
+      writer_ = NULL;
+    }
+    if (doc_) {
+      xmlFreeDoc(doc_);
+      doc_ = NULL;
+    }
+  }
+
+  xmlDocPtr doc() const { return doc_; }
+  xmlTextWriterPtr writer() const { return writer_; }
+  xmlBufferPtr buffer() const { return buffer_; }
+
+ private:
+  xmlDocPtr doc_;
+  xmlBufferPtr buffer_;
+  xmlTextWriterPtr writer_;
+};
+
+// static
+std::string MetricsLogBase::version_extension_;
 
 MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
                                const std::string& version_string)
@@ -48,53 +102,31 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
       client_id_(client_id),
       session_id_(IntToString(session_id)),
       locked_(false),
-      doc_(NULL),
-      buffer_(NULL),
-      writer_(NULL),
+      xml_wrapper_(new XmlWrapper),
       num_events_(0) {
-
-  buffer_ = xmlBufferCreate();
-  DCHECK(buffer_);
-
-  #if defined(OS_CHROMEOS)
-    writer_ = xmlNewTextWriterDoc(&doc_, /* compression */ 0);
-  #else
-    writer_ = xmlNewTextWriterMemory(buffer_, /* compression */ 0);
-  #endif  // OS_CHROMEOS
-  DCHECK(writer_);
-
-  int result = xmlTextWriterSetIndent(writer_, 2);
-  DCHECK_EQ(0, result);
 
   StartElement("log");
   WriteAttribute("clientid", client_id_);
   WriteInt64Attribute("buildtime", GetBuildTime());
   WriteAttribute("appversion", version_string);
-
-  DCHECK_GE(result, 0);
 }
 
 MetricsLogBase::~MetricsLogBase() {
-  FreeDocWriter();
-
-  if (buffer_) {
-    xmlBufferFree(buffer_);
-    buffer_ = NULL;
-  }
+  delete xml_wrapper_;
 }
 
 void MetricsLogBase::CloseLog() {
   DCHECK(!locked_);
   locked_ = true;
 
-  int result = xmlTextWriterEndDocument(writer_);
+  int result = xmlTextWriterEndDocument(xml_wrapper_->writer());
   DCHECK_GE(result, 0);
 
-  result = xmlTextWriterFlush(writer_);
+  result = xmlTextWriterFlush(xml_wrapper_->writer());
   DCHECK_GE(result, 0);
 
 #if defined(OS_CHROMEOS)
-  xmlNodePtr root = xmlDocGetRootElement(doc_);
+  xmlNodePtr root = xmlDocGetRootElement(xml_wrapper_->doc());
   if (!hardware_class_.empty()) {
     // The hardware class is determined after the first ongoing log is
     // constructed, so this adds the root element's "hardwareclass"
@@ -105,19 +137,20 @@ void MetricsLogBase::CloseLog() {
 
   // Flattens the XML tree into a character buffer.
   PerfTimer dump_timer;
-  result = xmlNodeDump(buffer_, doc_, root, /* level */ 0, /* format */ 1);
+  result = xmlNodeDump(xml_wrapper_->buffer(), xml_wrapper_->doc(),
+                       root, /* level */ 0, /* format */ 1);
   DCHECK_GE(result, 0);
   UMA_HISTOGRAM_TIMES("UMA.XMLNodeDumpTime", dump_timer.Elapsed());
 
   PerfTimer free_timer;
-  FreeDocWriter();
+  xml_wrapper_->FreeDocWriter();
   UMA_HISTOGRAM_TIMES("UMA.XMLWriterDestructionTime", free_timer.Elapsed());
 #endif  // OS_CHROMEOS
 }
 
 int MetricsLogBase::GetEncodedLogSize() {
   DCHECK(locked_);
-  return buffer_->use;
+  return xml_wrapper_->buffer()->use;
 }
 
 bool MetricsLogBase::GetEncodedLog(char* buffer, int buffer_size) {
@@ -125,13 +158,13 @@ bool MetricsLogBase::GetEncodedLog(char* buffer, int buffer_size) {
   if (buffer_size < GetEncodedLogSize())
     return false;
 
-  memcpy(buffer, buffer_->content, GetEncodedLogSize());
+  memcpy(buffer, xml_wrapper_->buffer()->content, GetEncodedLogSize());
   return true;
 }
 
 std::string MetricsLogBase::GetEncodedLogString() {
   DCHECK(locked_);
-  return std::string(reinterpret_cast<char*>(buffer_->content));
+  return std::string(reinterpret_cast<char*>(xml_wrapper_->buffer()->content));
 }
 
 int MetricsLogBase::GetElapsedSeconds() {
@@ -285,7 +318,7 @@ void MetricsLogBase::WriteAttribute(const std::string& name,
   DCHECK(!locked_);
   DCHECK(!name.empty());
 
-  int result = xmlTextWriterWriteAttribute(writer_,
+  int result = xmlTextWriterWriteAttribute(xml_wrapper_->writer(),
                                            UnsignedChar(name.c_str()),
                                            UnsignedChar(value.c_str()));
   DCHECK_GE(result, 0);
@@ -314,30 +347,19 @@ const char* MetricsLogBase::WindowEventTypeToString(WindowEventType type) {
   }
 }
 
-void MetricsLogBase::FreeDocWriter() {
-  if (writer_) {
-    xmlFreeTextWriter(writer_);
-    writer_ = NULL;
-  }
-
-  if (doc_) {
-    xmlFreeDoc(doc_);
-    doc_ = NULL;
-  }
-}
-
 void MetricsLogBase::StartElement(const char* name) {
   DCHECK(!locked_);
   DCHECK(name);
 
-  int result = xmlTextWriterStartElement(writer_, UnsignedChar(name));
+  int result = xmlTextWriterStartElement(xml_wrapper_->writer(),
+                                         UnsignedChar(name));
   DCHECK_GE(result, 0);
 }
 
 void MetricsLogBase::EndElement() {
   DCHECK(!locked_);
 
-  int result = xmlTextWriterEndElement(writer_);
+  int result = xmlTextWriterEndElement(xml_wrapper_->writer());
   DCHECK_GE(result, 0);
 }
 

@@ -17,8 +17,6 @@
 #include "base/time.h"
 #include "chrome/common/page_transition_types.h"
 
-#include "libxml/xmlwriter.h"
-
 class GURL;
 class MetricsLog;
 
@@ -105,6 +103,8 @@ class MetricsLogBase {
   }
 
  protected:
+  class XmlWrapper;
+
   // Returns a string containing the current time.
   // Virtual so that it can be overridden for testing.
   virtual std::string GetCurrentTimeString();
@@ -165,9 +165,9 @@ class MetricsLogBase {
   // not a real lock.
   bool locked_;
 
-  xmlDocPtr doc_;
-  xmlBufferPtr buffer_;
-  xmlTextWriterPtr writer_;
+  // Isolated to limit the dependency on the XML library for our consumers.
+  XmlWrapper* xml_wrapper_;
+
   int num_events_;  // the number of events recorded in this log
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLogBase);

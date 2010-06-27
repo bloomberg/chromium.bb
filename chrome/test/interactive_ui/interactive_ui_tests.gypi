@@ -17,7 +17,6 @@
     '<(DEPTH)/skia/skia.gyp:skia',
     '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
     '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
-    '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
     '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
     '<(DEPTH)/testing/gtest.gyp:gtest',
     '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',

@@ -80,7 +80,6 @@
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
             '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
             '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-            '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
             '<(DEPTH)/third_party/lzma_sdk/lzma_sdk.gyp:lzma_sdk',
           ],
           'sources': [

@@ -36,6 +36,12 @@ class HistogramSynchronizer;
 class PrefService;
 class TemplateURLModel;
 
+// Forward declaration of the xmlNode to avoid having tons of gyp files
+// needing to depend on the libxml third party lib.
+struct _xmlNode;
+typedef struct _xmlNode xmlNode;
+typedef xmlNode* xmlNodePtr;
+
 // This is used to quickly log stats from child process related notifications in
 // MetricsService::child_stats_buffer_.  The buffer's contents are transferred
 // out when Local State is periodically saved.  The information is then

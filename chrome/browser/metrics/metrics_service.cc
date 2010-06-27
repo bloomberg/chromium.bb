@@ -187,6 +187,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "libxml/xmlwriter.h"
 
 #if !defined(OS_WIN)
 #include "base/rand_util.h"
@@ -700,7 +701,7 @@ void MetricsService::InitializeMetricsState() {
 
   // Initialize uptime counters.
   int64 startup_uptime = MetricsLog::GetIncrementalUptime(pref);
-  DCHECK(0 == startup_uptime);
+  DCHECK_EQ(0, startup_uptime);
   // For backwards compatibility, leave this intact in case Omaha is checking
   // them.  prefs::kStabilityLastTimestampSec may also be useless now.
   // TODO(jar): Delete these if they have no uses.
