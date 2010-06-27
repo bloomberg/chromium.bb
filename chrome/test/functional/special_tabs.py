@@ -18,7 +18,6 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   special_url_tabs = {
     'about:': 'About Version',
-    'about:about': 'About Pages',
     'about:appcache-internals': 'AppCache Internals',
     'about:credits': 'Credits',
     'about:dns': 'About DNS',
