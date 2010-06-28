@@ -500,21 +500,8 @@ TEST_F(AutoFillDialogControllerTest, TwoCreditCardsDeleteOne) {
   ASSERT_EQ(observer_.credit_cards_[0], credit_card);
 }
 
-TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesFalse) {
-  LoadDialog();
-  [controller_ save:nil];
-
-  // Should hit our observer.
-  ASSERT_TRUE(observer_.hit_);
-
-  // Auxiliary profiles setting should be unchanged.
-  ASSERT_FALSE(helper_.profile()->GetPrefs()->GetBoolean(
-      prefs::kAutoFillAuxiliaryProfilesEnabled));
-}
-
+// Auxilliary profiles are enabled by default.
 TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesTrue) {
-  helper_.profile()->GetPrefs()->SetBoolean(
-      prefs::kAutoFillAuxiliaryProfilesEnabled, true);
   LoadDialog();
   [controller_ save:nil];
 
@@ -523,6 +510,20 @@ TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesTrue) {
 
   // Auxiliary profiles setting should be unchanged.
   ASSERT_TRUE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+}
+
+TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesFalse) {
+  helper_.profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  LoadDialog();
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Auxiliary profiles setting should be unchanged.
+  ASSERT_FALSE(helper_.profile()->GetPrefs()->GetBoolean(
       prefs::kAutoFillAuxiliaryProfilesEnabled));
 }
 
