@@ -81,10 +81,10 @@ bool BrowserActionTestUtil::HidePopup() {
 // static
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
   // On Linux we actually just limit the size of the extension view.
-  return gfx::Size(ExtensionViewGtk::kMinWidth, ExtensionViewGtk::kMinHeight);
+  return gfx::Size(ExtensionPopupGtk::kMinWidth, ExtensionPopupGtk::kMinHeight);
 }
 
 // static
 gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
-  return gfx::Size(ExtensionViewGtk::kMaxWidth, ExtensionViewGtk::kMaxHeight);
+  return gfx::Size(ExtensionPopupGtk::kMaxWidth, ExtensionPopupGtk::kMaxHeight);
 }

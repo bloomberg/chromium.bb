@@ -5,22 +5,16 @@
 #include "chrome/browser/gtk/extension_view_gtk.h"
 
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
-
-// The minimum/maximum dimensions of the extension view.
-// The minimum is just a little larger than the size of a browser action button.
-// The maximum is an arbitrary number that should be smaller than most screens.
-const int ExtensionViewGtk::kMinWidth = 25;
-const int ExtensionViewGtk::kMinHeight = 25;
-const int ExtensionViewGtk::kMaxWidth = 800;
-const int ExtensionViewGtk::kMaxHeight = 600;
 
 ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
                                    Browser* browser)
     : browser_(browser),
       extension_host_(extension_host),
-      render_widget_host_view_(NULL) {
+      render_widget_host_view_(NULL),
+      container_(NULL) {
 }
 
 void ExtensionViewGtk::Init() {
@@ -44,11 +38,8 @@ void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
 }
 
 void ExtensionViewGtk::UpdatePreferredSize(const gfx::Size& new_size) {
-  int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));
-  int height = std::max(kMinHeight, std::min(kMaxHeight, new_size.height()));
-
-  render_widget_host_view_->SetSize(gfx::Size(width, height));
-  gtk_widget_set_size_request(native_view(), width, height);
+  if (container_)
+    container_->OnExtensionPreferredSizeChanged(this, new_size);
 }
 
 void ExtensionViewGtk::CreateWidgetHostView() {
@@ -67,7 +58,7 @@ void ExtensionViewGtk::RenderViewCreated() {
 
   // Tell the renderer not to draw scrollbars in popups unless the
   // popups are at the maximum allowed size.
-  gfx::Size largest_popup_size(ExtensionViewGtk::kMaxWidth,
-                               ExtensionViewGtk::kMaxHeight);
+  gfx::Size largest_popup_size(ExtensionPopupGtk::kMaxWidth,
+                               ExtensionPopupGtk::kMaxHeight);
   extension_host_->DisableScrollbarsForSmallWindows(largest_popup_size);
 }

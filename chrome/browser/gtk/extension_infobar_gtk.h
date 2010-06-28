@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/gtk/extension_view_gtk.h"
 #include "chrome/browser/gtk/infobar_gtk.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -17,7 +18,8 @@ class ExtensionResource;
 class ExtensionViewGtk;
 
 class ExtensionInfoBarGtk : public InfoBar,
-                            public ImageLoadingTracker::Observer {
+                            public ImageLoadingTracker::Observer,
+                            public ExtensionViewGtk::Container {
  public:
   explicit ExtensionInfoBarGtk(ExtensionInfoBarDelegate* delegate);
   virtual ~ExtensionInfoBarGtk();
@@ -25,6 +27,10 @@ class ExtensionInfoBarGtk : public InfoBar,
   // Overridden from ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(
       SkBitmap* image, ExtensionResource resource, int index);
+
+  // ExtensionViewGtk::Container implementation
+  virtual void OnExtensionPreferredSizeChanged(ExtensionViewGtk* view,
+                                               const gfx::Size& new_size);
 
  private:
   // Build the widgets of the Infobar.

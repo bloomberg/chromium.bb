@@ -15,10 +15,20 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;
+
+// The minimum/maximum dimensions of the extension popup.
+// The minimum is just a little larger than the size of a browser action button.
+// The maximum is an arbitrary number that should be smaller than most screens.
+const int ExtensionPopupGtk::kMinWidth = 25;
+const int ExtensionPopupGtk::kMinHeight = 25;
+const int ExtensionPopupGtk::kMaxWidth = 800;
+const int ExtensionPopupGtk::kMaxHeight = 600;
 
 ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
                                      ExtensionHost* host,
@@ -30,6 +40,8 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
       anchor_(anchor),
       being_inspected_(inspect),
       method_factory_(this) {
+  host_->view()->SetContainer(this);
+
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
   if (host->did_stop_loading()) {
@@ -127,6 +139,16 @@ void ExtensionPopupGtk::InfoBubbleClosing(InfoBubbleGtk* bubble,
                                           bool closed_by_escape) {
   current_extension_popup_ = NULL;
   delete this;
+}
+
+void ExtensionPopupGtk::OnExtensionPreferredSizeChanged(
+    ExtensionViewGtk* view,
+    const gfx::Size& new_size) {
+  int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));
+  int height = std::max(kMinHeight, std::min(kMaxHeight, new_size.height()));
+
+  view->render_view_host()->view()->SetSize(gfx::Size(width, height));
+  gtk_widget_set_size_request(view->native_view(), width, height);
 }
 
 // static

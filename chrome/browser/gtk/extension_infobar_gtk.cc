@@ -6,6 +6,8 @@
 
 #include "app/resource_bundle.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "gfx/gtk_util.h"
@@ -16,6 +18,7 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(ExtensionInfoBarDelegate* delegate)
       tracker_(this),
       delegate_(delegate),
       view_(NULL) {
+  delegate_->extension_host()->view()->SetContainer(this);
   BuildWidgets();
 }
 
@@ -69,7 +72,15 @@ void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,
                                          GtkAllocation* allocation) {
   gfx::Size new_size(allocation->width, allocation->height);
 
-  // TODO(finnur): Size the infobar based on HTML content (up to 72 pixels).
+  delegate_->extension_host()->view()->render_view_host()->view()
+      ->SetSize(new_size);
+}
+
+void ExtensionInfoBarGtk::OnExtensionPreferredSizeChanged(
+    ExtensionViewGtk* view,
+    const gfx::Size& new_size) {
+  // TODO(rafaelw) - Size the InfobarGtk vertically based on the preferred size
+  // of the content.
 }
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar() {

@@ -7,6 +7,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/gtk/extension_view_gtk.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -17,7 +18,8 @@ class ExtensionHost;
 class GURL;
 
 class ExtensionPopupGtk : public NotificationObserver,
-                          public InfoBubbleGtkDelegate {
+                          public InfoBubbleGtkDelegate,
+                          public ExtensionViewGtk::Container {
  public:
   ExtensionPopupGtk(Browser* browser,
                     ExtensionHost* host,
@@ -39,6 +41,10 @@ class ExtensionPopupGtk : public NotificationObserver,
   virtual void InfoBubbleClosing(InfoBubbleGtk* bubble,
                                  bool closed_by_escape);
 
+  // ExtensionViewGtk::Container implementation
+  virtual void OnExtensionPreferredSizeChanged(ExtensionViewGtk* view,
+                                               const gfx::Size& new_size);
+
   // Destroys the popup widget. This will in turn destroy us since we delete
   // ourselves when the info bubble closes. Returns true if we successfully
   // closed the bubble.
@@ -52,6 +58,12 @@ class ExtensionPopupGtk : public NotificationObserver,
   bool being_inspected() const {
     return being_inspected_;
   }
+
+  // Declared here for testing.
+  static const int kMinWidth;
+  static const int kMinHeight;
+  static const int kMaxWidth;
+  static const int kMaxHeight;
 
  private:
   // Shows the popup widget. Called after loading completes.
