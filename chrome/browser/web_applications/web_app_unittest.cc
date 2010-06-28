@@ -57,7 +57,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
 
 TEST_F(WebApplicationTest, GetDataDir) {
   FilePath test_path(FILE_PATH_LITERAL("/path/to/test"));
-  FilePath result = web_app::GetDataDir(FilePath(FILE_PATH_LITERAL(test_path)));
+  FilePath result = web_app::GetDataDir(test_path);
   test_path = test_path.AppendASCII("Web Applications");
   EXPECT_EQ(test_path.value(), result.value());
 }

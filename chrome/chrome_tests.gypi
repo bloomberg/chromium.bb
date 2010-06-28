@@ -1000,6 +1000,7 @@
         'browser/views/info_bubble_unittest.cc',
         'browser/views/status_icons/status_tray_win_unittest.cc',
         'browser/visitedlink_unittest.cc',
+        'browser/web_applications/web_app_unittest.cc',
         'browser/webdata/web_data_service_test_util.h',
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
