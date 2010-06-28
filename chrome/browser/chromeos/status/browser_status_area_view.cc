@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/status/browser_status_area_view.h"
 
 #include "app/l10n_util.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/theme_background.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -112,23 +114,20 @@ void BrowserStatusAreaView::Init() {
   app_menu_menu_.reset(new views::Menu2(app_menu_contents_.get()));
 }
 
-AppMenuModel* BrowserStatusAreaView::CreateAppMenuModel(
+menus::SimpleMenuModel* BrowserStatusAreaView::CreateAppMenuModel(
     menus::SimpleMenuModel::Delegate* delegate) {
   Browser* browser = browser_view_->browser();
-  AppMenuModel* menu_model = new AppMenuModel(delegate, browser);
+  menus::SimpleMenuModel* menu_model;
+
+  if (WrenchMenuModel::IsEnabled())
+    menu_model = new WrenchMenuModel(delegate, browser);
+  else
+    menu_model = new AppMenuModel(delegate, browser);
 
   // Options menu always uses StatusAreaView as delegate, so
   // we can reuse it.
   if (!options_menu_contents_.get())
     options_menu_contents_.reset(new OptionsMenuModel(browser_view_));
-
-#if !defined(OS_CHROMEOS)
-  int sync_index = menu_model->GetIndexOfCommandId(IDC_SYNC_BOOKMARKS);
-  DCHECK_GE(sync_index, 0);
-  menu_model->InsertItemWithStringIdAt(
-      sync_index + 1, IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
-  menu_model->InsertSeparatorAt(sync_index + 1);
-#endif
 
   int options_index = menu_model->GetIndexOfCommandId(IDC_OPTIONS);
   DCHECK_GE(options_index, 0);

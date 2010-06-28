@@ -12,8 +12,6 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/view.h"
 
-class AppMenuModel;
-
 namespace chromeos {
 
 class BrowserView;
@@ -30,8 +28,9 @@ class BrowserStatusAreaView : public StatusAreaView,
 
   virtual void Init();
 
-  // Creates an AppMenuModel for chromeos.
-  AppMenuModel* CreateAppMenuModel(menus::SimpleMenuModel::Delegate* delegate);
+  // Creates the app menu model.
+  menus::SimpleMenuModel* CreateAppMenuModel(
+      menus::SimpleMenuModel::Delegate* delegate);
 
   StatusAreaButton* menu_view() const { return menu_view_; }
 
