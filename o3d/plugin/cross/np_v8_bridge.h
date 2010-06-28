@@ -265,6 +265,8 @@ class NPV8Bridge {
   void SetGlobalProperty(const String& name,
                          NPObjectPtr<NPObject>& np_object);
 
+ private:
+
   // Converts a V8 value into an NPVariant. The NPVariant must be freed with
   // NPN_ReleaseVariantValue. Caller must enter the script context.
   NPVariant V8ToNPVariant(v8::Local<v8::Value> value);
@@ -285,8 +287,6 @@ class NPV8Bridge {
   // Determines whether the given NPObject is currently referenced by V8 through
   // a proxy.
   bool IsNPObjectReferenced(NPObjectPtr<NPObject> np_object);
-
- private:
 
   NPObjectPtr<NPObject> NPEvaluateObject(const char* script);
 

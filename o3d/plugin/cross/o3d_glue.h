@@ -456,10 +456,6 @@ class PluginObject: public NPObject {
     return user_agent_.find("MSIE") != user_agent_.npos;
   }
 
-  v8::Handle<v8::Context> script_context() {
-    return np_v8_bridge_.script_context();
-  }
-
   o3d::NPV8Bridge* np_v8_bridge() { return &np_v8_bridge_; }
 
   // Creates the renderer.

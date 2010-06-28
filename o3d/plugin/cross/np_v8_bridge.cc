@@ -162,12 +162,16 @@ class NPV8Object : public NPObject {
   }
 
   static NPObject* Allocate(NPP npp, NPClass* np_class) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = new NPV8Object();
     np_v8_object->bridge_ = NULL;
     return np_v8_object;
   }
 
   static void Deallocate(NPObject* np_object) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     // Uncomment this line to see objects with a non-zero reference
     // count being deallocated. For example, Firefox does this when unloading
@@ -178,12 +182,16 @@ class NPV8Object : public NPObject {
   }
 
   static void Invalidate(NPObject* np_object) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     np_v8_object->bridge_ = NULL;
     np_v8_object->UnlinkFromV8();
   }
 
   static bool HasMethod(NPObject* np_object, NPIdentifier np_name) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -216,6 +224,8 @@ class NPV8Object : public NPObject {
   static bool Invoke(NPObject* np_object, NPIdentifier np_name,
                      const NPVariant* np_args, uint32_t numArgs,
                      NPVariant* result) {
+    v8::Locker locker;
+
     // This works around a bug in Chrome:
     // http://code.google.com/p/chromium/issues/detail?id=5110
     // NPN_InvokeDefault is transformed into a call to Invoke on the plugin with
@@ -260,6 +270,8 @@ class NPV8Object : public NPObject {
   // Called when an object is called as a function "f(...)".
   static bool InvokeDefault(NPObject* np_object, const NPVariant* np_args,
                             uint32_t numArgs, NPVariant* result) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -295,6 +307,8 @@ class NPV8Object : public NPObject {
   // Called when an object is called as a constructor "new C(...)".
   static bool Construct(NPObject* np_object, const NPVariant* np_args,
                         uint32_t numArgs, NPVariant* result) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -331,6 +345,8 @@ class NPV8Object : public NPObject {
   }
 
   static bool HasProperty(NPObject* np_object, NPIdentifier np_name) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -379,6 +395,8 @@ class NPV8Object : public NPObject {
 
   static bool GetProperty(NPObject* np_object, NPIdentifier np_name,
                           NPVariant* result) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -410,6 +428,8 @@ class NPV8Object : public NPObject {
 
   static bool SetProperty(NPObject* np_object, NPIdentifier np_name,
                           const NPVariant* np_value) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -435,6 +455,8 @@ class NPV8Object : public NPObject {
   }
 
   static bool RemoveProperty(NPObject* np_object, NPIdentifier np_name) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -468,6 +490,8 @@ class NPV8Object : public NPObject {
 
   static bool Enumerate(NPObject* np_object, NPIdentifier** np_names,
                         uint32_t* numNames) {
+    v8::Locker locker;
+
     NPV8Object* np_v8_object = static_cast<NPV8Object*> (np_object);
     NPV8Bridge* bridge = np_v8_object->bridge_;
     if (bridge == NULL)
@@ -540,6 +564,8 @@ NPV8Bridge::NPV8Bridge(ServiceLocator* service_locator, NPP npp)
 }
 
 NPV8Bridge::~NPV8Bridge() {
+  v8::Locker locker;
+
   // Do not call weak reference callback after the bridge is destroyed
   // because the callbacks assume it exists. The only purpose of the callback
   // is to remove the corresponding object entry from the NP-V8 object map
@@ -613,6 +639,8 @@ String MakeWrapFunctionScript() {
 }  // namespace anonymous
 
 void NPV8Bridge::Initialize(const NPObjectPtr<NPObject>& global_np_object) {
+  v8::Locker locker;
+
   HandleScope handle_scope;
 
   global_np_object_ = global_np_object;
@@ -677,6 +705,8 @@ void NPV8Bridge::Initialize(const NPObjectPtr<NPObject>& global_np_object) {
 }
 
 void NPV8Bridge::ReleaseNPObjects() {
+  v8::Locker locker;
+
   np_v8_object_map_.clear();
   np_construct_functions_.clear();
 
@@ -693,6 +723,8 @@ v8::Handle<Context> NPV8Bridge::script_context() {
 
 bool NPV8Bridge::Evaluate(const NPVariant* np_args, int numArgs,
                           NPVariant* np_result) {
+  v8::Locker locker;
+
   HandleScope handle_scope;
   Context::Scope scope(script_context_);
 
@@ -748,6 +780,8 @@ bool NPV8Bridge::Evaluate(const NPVariant* np_args, int numArgs,
 
 void NPV8Bridge::SetGlobalProperty(const String& name,
                                    NPObjectPtr<NPObject>& np_object) {
+  v8::Locker locker;
+
   HandleScope handle_scope;
   Context::Scope scope(script_context_);
   script_context_->Global()->Set(v8::String::New(name.c_str()),
