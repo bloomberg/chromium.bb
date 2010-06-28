@@ -1400,8 +1400,9 @@ private:
 
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
-  tabStripModel_->InsertTabContentsAt(modelIndex, contents, true, false,
-                                      pinned);
+  tabStripModel_->InsertTabContentsAt(
+      modelIndex, contents,
+      TabStripModel::ADD_SELECTED | (pinned ? TabStripModel::ADD_PINNED : 0));
 }
 
 // Called when the tab strip view changes size. As we only registered for
@@ -1640,7 +1641,8 @@ private:
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
                                 browser_->profile());
       browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, index,
-                              Browser::ADD_SELECTED | Browser::ADD_FORCE_INDEX,
+                              TabStripModel::ADD_SELECTED |
+                                  TabStripModel::ADD_FORCE_INDEX,
                               NULL, std::string());
       break;
     case CURRENT_TAB:

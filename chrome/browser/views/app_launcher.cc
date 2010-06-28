@@ -390,9 +390,10 @@ void AppLauncher::AddTabWithURL(const GURL& url,
     case chromeos::StatusAreaView::OPEN_TABS_ON_LEFT: {
       // Add the new tab at the first non-pinned location.
       int index = browser_->tabstrip_model()->IndexOfFirstNonMiniTab();
-      browser_->AddTabWithURL(url, GURL(), transition, index,
-                              Browser::ADD_SELECTED | Browser::ADD_FORCE_INDEX,
-                              NULL, std::string());
+      browser_->AddTabWithURL(
+          url, GURL(), transition, index,
+          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX, NULL,
+          std::string());
       break;
     }
     case chromeos::StatusAreaView::OPEN_TABS_CLOBBER: {
@@ -401,16 +402,18 @@ void AppLauncher::AddTabWithURL(const GURL& url,
       break;
     }
     case chromeos::StatusAreaView::OPEN_TABS_ON_RIGHT: {
-      browser_->AddTabWithURL(url, GURL(), transition, -1,
-                              Browser::ADD_SELECTED | Browser::ADD_FORCE_INDEX,
-                              NULL, std::string());
+      browser_->AddTabWithURL(
+          url, GURL(), transition, -1,
+          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX, NULL,
+          std::string());
       break;
     }
   }
 #else
-  browser_->AddTabWithURL(url, GURL(), transition, -1,
-                          Browser::ADD_SELECTED | Browser::ADD_FORCE_INDEX,
-                          NULL, std::string());
+  browser_->AddTabWithURL(
+      url, GURL(), transition, -1,
+      TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX, NULL,
+      std::string());
 #endif
 }
 

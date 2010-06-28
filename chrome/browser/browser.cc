@@ -431,7 +431,7 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
     browser = Browser::Create(off_the_record_profile);
   // TODO(eroman): should we have referrer here?
   browser->AddTabWithURL(
-      url, GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED, NULL,
+      url, GURL(), PageTransition::LINK, -1, TabStripModel::ADD_SELECTED, NULL,
       std::string());
   browser->window()->Show();
 }
@@ -564,8 +564,8 @@ TabContents* Browser::OpenApplicationWindow(
   Browser* browser = Browser::CreateForApp(app_name, extension, profile,
                                            as_panel);
   TabContents* tab_contents = browser->AddTabWithURL(
-      url, GURL(), PageTransition::START_PAGE, -1, Browser::ADD_SELECTED, NULL,
-      std::string());
+      url, GURL(), PageTransition::START_PAGE, -1, TabStripModel::ADD_SELECTED,
+      NULL, std::string());
 
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   tab_contents->render_view_host()->SyncRendererPrefs();
@@ -873,19 +873,12 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
     contents = CreateTabContentsForURL(url_to_load, referrer, profile_,
                                        transition, false, instance);
     contents->SetExtensionAppById(extension_app_id);
-    // TODO(sky): TabStripModel::AddTabContents should take add_types directly.
-    tabstrip_model_.AddTabContents(contents, index,
-                                   (add_types & ADD_FORCE_INDEX) != 0,
-                                   transition,
-                                   (add_types & ADD_SELECTED) != 0);
-    tabstrip_model_.SetTabPinned(
-        tabstrip_model_.GetIndexOfTabContents(contents),
-        (add_types & ADD_PINNED) != 0);
-
+    tabstrip_model_.AddTabContents(contents, index, transition, add_types);
+    // TODO(sky): figure out why this is needed. Without it we seem to get
+    // failures in startup tests.
     // By default, content believes it is not hidden.  When adding contents
     // in the background, tell it that it's hidden.
-    if ((add_types & ADD_SELECTED) == 0) {
-      // TODO(sky): see if this is really needed. I suspect not as
+    if ((add_types & TabStripModel::ADD_SELECTED) == 0) {
       // TabStripModel::AddTabContents invokes HideContents if not foreground.
       contents->WasHidden();
     }
@@ -905,7 +898,8 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
 
 TabContents* Browser::AddTab(TabContents* tab_contents,
                              PageTransition::Type type) {
-  tabstrip_model_.AddTabContents(tab_contents, -1, false, type, true);
+  tabstrip_model_.AddTabContents(
+      tab_contents, -1, type, TabStripModel::ADD_SELECTED);
   return tab_contents;
 }
 
@@ -949,7 +943,9 @@ TabContents* Browser::AddRestoredTab(
 
   bool really_pin =
       (pin && tab_index == tabstrip_model()->IndexOfFirstNonMiniTab());
-  tabstrip_model_.InsertTabContentsAt(tab_index, new_tab, select, false);
+  tabstrip_model_.InsertTabContentsAt(
+      tab_index, new_tab,
+      select ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE);
   if (really_pin)
     tabstrip_model_.SetTabPinned(tab_index, true);
   if (select) {
@@ -1022,8 +1018,8 @@ void Browser::ShowSingletonTab(const GURL& url) {
   }
 
   // Otherwise, just create a new tab.
-  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK,
-                -1, Browser::ADD_SELECTED, NULL, std::string());
+  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
+                TabStripModel::ADD_SELECTED, NULL, std::string());
 }
 
 void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
@@ -1099,8 +1095,10 @@ TabContents* Browser::GetOrCloneTabForDisposition(
   TabContents* current_tab = GetSelectedTabContents();
   if (ShouldOpenNewTabForWindowDisposition(disposition)) {
     current_tab = current_tab->Clone();
-    tabstrip_model_.AddTabContents(current_tab, -1, false, PageTransition::LINK,
-                                   disposition == NEW_FOREGROUND_TAB);
+    tabstrip_model_.AddTabContents(
+        current_tab, -1, PageTransition::LINK,
+        disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_SELECTED :
+                                            TabStripModel::ADD_NONE);
   }
   return current_tab;
 }
@@ -1806,8 +1804,8 @@ void Browser::OpenUpdateChromeDialog() {
 
 void Browser::OpenHelpTab() {
   GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kHelpContentUrl));
-  AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK,
-                -1, Browser::ADD_SELECTED, NULL, std::string());
+  AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
+                TabStripModel::ADD_SELECTED, NULL, std::string());
 }
 
 void Browser::OpenThemeGalleryTabAndActivate() {
@@ -2138,7 +2136,7 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
   TabContents* tab_contents = AddTabWithURL(
       GURL(chrome::kChromeUINewTabURL), GURL(), PageTransition::TYPED, index,
-      foreground ? Browser::ADD_SELECTED : Browser::ADD_NONE, NULL,
+      foreground ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE, NULL,
       std::string());
   tab_contents->set_new_tab_start_time(new_tab_start_time);
   return tab_contents;
@@ -2215,8 +2213,10 @@ void Browser::DuplicateContentsAt(int index) {
     // window next to the tab being duplicated.
     new_contents = contents->Clone();
     pinned = tabstrip_model_.IsTabPinned(index);
-    tabstrip_model_.InsertTabContentsAt(index + 1, new_contents, true,
-                                        true, pinned);
+    int add_types = TabStripModel::ADD_SELECTED |
+        TabStripModel::ADD_INHERIT_GROUP |
+        (pinned ? TabStripModel::ADD_PINNED : 0);
+    tabstrip_model_.InsertTabContentsAt(index + 1, new_contents, add_types);
   } else {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
@@ -2517,8 +2517,8 @@ void Browser::AddNewContents(TabContents* source,
     // AddTabContents method does.
     if (type_ & TYPE_APP)
       transition = PageTransition::START_PAGE;
-    b->tabstrip_model()->AddTabContents(new_contents, -1, false, transition,
-                                        true);
+    b->tabstrip_model()->AddTabContents(
+        new_contents, -1, transition, TabStripModel::ADD_SELECTED);
     b->window()->Show();
     return;
   }
@@ -2531,9 +2531,10 @@ void Browser::AddNewContents(TabContents* source,
                             initial_pos, user_gesture);
     browser->window()->Show();
   } else if (disposition != SUPPRESS_OPEN) {
-    tabstrip_model_.AddTabContents(new_contents, -1, false,
-                                   PageTransition::LINK,
-                                   disposition == NEW_FOREGROUND_TAB);
+    tabstrip_model_.AddTabContents(
+        new_contents, -1, PageTransition::LINK,
+        disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_SELECTED :
+                                            TabStripModel::ADD_NONE);
   }
 }
 
@@ -3767,8 +3768,9 @@ void Browser::OpenURLAtIndex(TabContents* source,
     return;
   } else if (disposition == NEW_WINDOW) {
     Browser* browser = Browser::Create(profile_);
-    int add_types = force_index ? Browser::ADD_FORCE_INDEX : Browser::ADD_NONE;
-    add_types |= Browser::ADD_SELECTED;
+    int add_types = force_index ? TabStripModel::ADD_FORCE_INDEX :
+                                  TabStripModel::ADD_NONE;
+    add_types |= TabStripModel::ADD_SELECTED;
     new_contents = browser->AddTabWithURL(url, referrer, transition, index,
                                           add_types, instance, std::string());
     browser->window()->Show();
@@ -3803,9 +3805,9 @@ void Browser::OpenURLAtIndex(TabContents* source,
     return;
   } else if (disposition != SUPPRESS_OPEN) {
     int add_types = disposition != NEW_BACKGROUND_TAB ?
-        Browser::ADD_SELECTED : Browser::ADD_NONE;
+        TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE;
     if (force_index)
-      add_types |= Browser::ADD_FORCE_INDEX;
+      add_types |= TabStripModel::ADD_FORCE_INDEX;
     new_contents = AddTabWithURL(url, referrer, transition, index, add_types,
                                  instance, std::string());
   }

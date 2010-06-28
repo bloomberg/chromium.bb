@@ -751,10 +751,11 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     if (!process_startup && !URLRequest::IsHandledURL(tabs[i].url))
       continue;
 
-    int add_types = first_tab ? Browser::ADD_SELECTED : Browser::ADD_NONE;
-    add_types |= Browser::ADD_FORCE_INDEX;
+    int add_types = first_tab ? TabStripModel::ADD_SELECTED :
+                                TabStripModel::ADD_NONE;
+    add_types |= TabStripModel::ADD_FORCE_INDEX;
     if (tabs[i].is_pinned)
-      add_types |= Browser::ADD_PINNED;
+      add_types |= TabStripModel::ADD_PINNED;
     int index = browser->GetIndexForInsertionDuringRestore(i);
 
     TabContents* tab = browser->AddTabWithURL(

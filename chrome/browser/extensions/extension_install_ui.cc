@@ -198,7 +198,7 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
       url += "/#";
       url += hash_params;
       browser->AddTabWithURL(GURL(url), GURL(), PageTransition::TYPED, -1,
-                             Browser::ADD_SELECTED, NULL, std::string());
+                             TabStripModel::ADD_SELECTED, NULL, std::string());
     }
 
     return;

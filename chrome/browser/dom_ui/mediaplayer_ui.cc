@@ -503,7 +503,7 @@ void MediaPlayer::PopupPlaylist(Browser* creator) {
   playlist_browser_ = Browser::CreateForPopup(profile);
   playlist_browser_->AddTabWithURL(
       GURL(kMediaplayerPlaylistURL), GURL(), PageTransition::LINK,
-      -1, Browser::ADD_SELECTED, NULL, std::string());
+      -1, TabStripModel::ADD_SELECTED, NULL, std::string());
   playlist_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
                                                    kPopupTop,
                                                    kPopupWidth,
@@ -535,7 +535,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
 #endif
   mediaplayer_browser_->AddTabWithURL(
       GURL(kMediaplayerURL), GURL(), PageTransition::LINK,
-      -1, Browser::ADD_SELECTED, NULL, std::string());
+      -1, TabStripModel::ADD_SELECTED, NULL, std::string());
   mediaplayer_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
                                                       kPopupTop,
                                                       kPopupWidth,

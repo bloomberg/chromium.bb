@@ -105,18 +105,18 @@ bool TabStripModel::ContainsIndex(int index) const {
 }
 
 void TabStripModel::AppendTabContents(TabContents* contents, bool foreground) {
-  // Tabs opened in the foreground using this method inherit the group of the
-  // previously selected tab.
   int index = order_controller_->DetermineInsertionIndexForAppending();
-  InsertTabContentsAt(index, contents, foreground, foreground);
+  InsertTabContentsAt(index, contents,
+                      foreground ? (ADD_INHERIT_GROUP | ADD_SELECTED) :
+                                   ADD_NONE);
 }
 
 void TabStripModel::InsertTabContentsAt(int index,
                                         TabContents* contents,
-                                        bool foreground,
-                                        bool inherit_group,
-                                        bool pinned) {
-  index = ConstrainInsertionIndex(index, contents->is_app() || pinned);
+                                        int add_types) {
+  bool foreground = add_types & ADD_SELECTED;
+  index = ConstrainInsertionIndex(index, contents->is_app() ||
+                                  add_types & ADD_PINNED);
 
   // In tab dragging situations, if the last tab in the window was detached
   // then the user aborted the drag, we will have the |closing_all_| member
@@ -129,8 +129,8 @@ void TabStripModel::InsertTabContentsAt(int index,
   // since the old contents and the new contents will be the same...
   TabContents* selected_contents = GetSelectedTabContents();
   TabContentsData* data = new TabContentsData(contents);
-  data->pinned = pinned;
-  if (inherit_group && selected_contents) {
+  data->pinned = (add_types & ADD_PINNED) == ADD_PINNED;
+  if ((add_types & ADD_INHERIT_GROUP) && selected_contents) {
     if (foreground) {
       // Forget any existing relationships, we don't want to make things too
       // confusing by having multiple groups active at the same time.
@@ -150,9 +150,8 @@ void TabStripModel::InsertTabContentsAt(int index,
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
       TabInsertedAt(contents, index, foreground));
 
-  if (foreground) {
+  if (foreground)
     ChangeSelectedContentsFrom(selected_contents, index, false);
-  }
 }
 
 void TabStripModel::ReplaceNavigationControllerAt(
@@ -160,7 +159,9 @@ void TabStripModel::ReplaceNavigationControllerAt(
   // This appears to be OK with no flicker since no redraw event
   // occurs between the call to add an aditional tab and one to close
   // the previous tab.
-  InsertTabContentsAt(index + 1, controller->tab_contents(), true, true);
+  InsertTabContentsAt(
+      index + 1, controller->tab_contents(),
+      ADD_SELECTED | ADD_INHERIT_GROUP);
   std::vector<int> closing_tabs;
   closing_tabs.push_back(index);
   InternalCloseTabs(closing_tabs, CLOSE_NONE);
@@ -479,24 +480,24 @@ int TabStripModel::ConstrainInsertionIndex(int index, bool mini_tab) {
 
 void TabStripModel::AddTabContents(TabContents* contents,
                                    int index,
-                                   bool force_index,
                                    PageTransition::Type transition,
-                                   bool foreground) {
+                                   int add_types) {
   // If the newly-opened tab is part of the same task as the parent tab, we want
   // to inherit the parent's "group" attribute, so that if this tab is then
   // closed we'll jump back to the parent tab.
   // TODO(jbs): Perhaps instead of trying to infer this we should expose
   // inherit_group directly to callers, who may have more context
-  bool inherit_group = false;
+  bool inherit_group = (add_types & ADD_INHERIT_GROUP) == ADD_INHERIT_GROUP;
 
-  if (transition == PageTransition::LINK && !force_index) {
+  if (transition == PageTransition::LINK &&
+      (add_types & ADD_FORCE_INDEX) == 0) {
     // We assume tabs opened via link clicks are part of the same task as their
     // parent.  Note that when |force_index| is true (e.g. when the user
     // drag-and-drops a link to the tab strip), callers aren't really handling
     // link clicks, they just want to score the navigation like a link click in
     // the history backend, so we don't inherit the group in this case.
     index = order_controller_->DetermineInsertionIndex(
-        contents, transition, foreground);
+        contents, transition, add_types & ADD_SELECTED);
     inherit_group = true;
   } else {
     // For all other types, respect what was passed to us, normalizing -1s and
@@ -514,12 +515,17 @@ void TabStripModel::AddTabContents(TabContents* contents,
     // is re-selected, not the next-adjacent.
     inherit_group = true;
   }
-  InsertTabContentsAt(index, contents, foreground, inherit_group);
+  InsertTabContentsAt(
+      index, contents,
+      add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfTabContents(contents);
+
   if (inherit_group && transition == PageTransition::TYPED)
     contents_data_.at(index)->reset_group_on_select = true;
 
+  // TODO(sky): figure out why this is here and not in InsertTabContentsAt. When
+  // here we seem to get failures in startup perf tests.
   // Ensure that the new TabContentsView begins at the same size as the
   // previous TabContentsView if it existed.  Otherwise, the initial WebKit
   // layout will be performed based on a width of 0 pixels, causing a
@@ -529,7 +535,7 @@ void TabStripModel::AddTabContents(TabContents* contents,
   // layout is performed with sane view dimensions even when we're opening a
   // new background tab.
   if (TabContents* old_contents = GetSelectedTabContents()) {
-    if (!foreground) {
+    if ((add_types & ADD_SELECTED) == 0) {
       contents->view()->SizeContents(old_contents->view()->GetContainerSize());
       // We need to hide the contents or else we get and execute paints for
       // background tabs. With enough background tabs they will steal the

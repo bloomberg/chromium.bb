@@ -254,8 +254,8 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
     // Insert a new tab.
     TabContents* contents = model_->delegate()->CreateTabContentsForURL(
         url, GURL(), model_->profile(), PageTransition::TYPED, false, NULL);
-    model_->AddTabContents(contents, index, false,
-                           PageTransition::GENERATED, true);
+    model_->AddTabContents(contents, index, PageTransition::GENERATED,
+                           TabStripModel::ADD_SELECTED);
   } else {
     UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
                               model_->profile());

@@ -104,22 +104,6 @@ class Browser : public TabStripModelDelegate,
     MAXIMIZED_STATE_UNMAXIMIZED
   };
 
-  // Constants passed to AddTabWithURL.
-  enum AddTabTypes {
-    // Used to indicate nothing special should happen to the newly inserted
-    // tab.
-    ADD_NONE        = 0,
-
-    // The tab should be selected.
-    ADD_SELECTED    = 1 << 0,
-
-    // The tab should be pinned.
-    ADD_PINNED      = 1 << 1,
-
-    // See TabStripModel::AddTabContents for details.
-    ADD_FORCE_INDEX = 1 << 2,
-  };
-
   // Constructors, Creation, Showing //////////////////////////////////////////
 
   // Creates a new browser of the given |type| and for the given |profile|. The
@@ -339,8 +323,8 @@ class Browser : public TabStripModelDelegate,
   int GetIndexForInsertionDuringRestore(int relative_index);
 
   // Adds a new tab at the specified index. |add_types| is a bitmask of the
-  // values defined by AddTabTypes; see AddTabTypes for details. If |instance|
-  // is not null, its process will be used to render the tab. If
+  // values defined by TabStripModel::AddTabTypes; see it for details. If
+  // |instance| is not null, its process will be used to render the tab. If
   // |extension_app_id| is non-empty the new tab is an app tab.
   TabContents* AddTabWithURL(const GURL& url,
                              const GURL& referrer,

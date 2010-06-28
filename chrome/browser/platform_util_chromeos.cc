@@ -81,8 +81,8 @@ void OpenItem(const FilePath& full_path) {
     }
     Browser* browser = BrowserList::GetLastActive();
     browser->AddTabWithURL(
-        GURL(path), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
-        NULL, std::string());
+        GURL(path), GURL(), PageTransition::LINK, -1,
+        TabStripModel::ADD_SELECTED, NULL, std::string());
     return;
   }
   if (ext == ".avi" ||
@@ -114,8 +114,8 @@ void OpenItem(const FilePath& full_path) {
 static void OpenURL(const std::string& url) {
   Browser* browser = BrowserList::GetLastActive();
   browser->AddTabWithURL(
-      GURL(url), GURL(), PageTransition::LINK, -1, Browser::ADD_SELECTED,
-      NULL, std::string());
+      GURL(url), GURL(), PageTransition::LINK, -1,
+      TabStripModel::ADD_SELECTED, NULL, std::string());
 }
 
 void OpenExternal(const GURL& url) {
