@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
-#include "base/waitable_event.h"
+#include "media/base/callback.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
@@ -40,6 +40,10 @@ typedef X11VideoRenderer Renderer;
 Display* g_display = NULL;
 Window g_window = 0;
 bool g_running = false;
+
+void Quit(MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
 
 // Initialize X11. Returns true if successful. This method creates the X11
 // window. Further initialization is done in X11VideoRenderer.
@@ -131,7 +135,6 @@ void TerminateHandler(int signal) {
 void PeriodicalUpdate(
     media::PipelineImpl* pipeline,
     MessageLoop* message_loop,
-    base::WaitableEvent* stop_event,
     bool audio_only) {
   if (!g_running) {
     message_loop->Quit();
@@ -173,11 +176,9 @@ void PeriodicalUpdate(
           KeySym key = XKeycodeToKeysym(g_display, e.xkey.keycode, 0);
           if (key == XK_Escape) {
             g_running = false;
-            // QuitNow is more responsive than Quit since renderer_base is till
-            // posting paint messages.
-            pipeline->Stop(NewCallback(stop_event,
-                                       &base::WaitableEvent::Signal));
-            message_loop->Quit();
+            // Quit message_loop only when pipeline is fully stopped.
+            pipeline->Stop(media::TaskToCallbackAdapter::NewCallback(
+                NewRunnableFunction(Quit, message_loop)));
             return;
           } else if (key == XK_space) {
             if (pipeline->GetPlaybackRate() < 0.01f) // paused
@@ -194,7 +195,7 @@ void PeriodicalUpdate(
 
   message_loop->PostDelayedTask(FROM_HERE,
       NewRunnableFunction(PeriodicalUpdate, pipeline,
-                          message_loop, stop_event, audio_only), 10);
+                          message_loop, audio_only), 10);
 }
 
 int main(int argc, char** argv) {
@@ -232,7 +233,6 @@ int main(int argc, char** argv) {
   scoped_ptr<base::Thread> thread;
   scoped_refptr<media::PipelineImpl> pipeline;
   MessageLoop message_loop;
-  base::WaitableEvent stop_event(false, false);
   thread.reset(new base::Thread("PipelineThread"));
   thread->Start();
   if (InitPipeline(thread->message_loop(), filename.c_str(),
@@ -245,11 +245,8 @@ int main(int argc, char** argv) {
 
     message_loop.PostTask(FROM_HERE,
         NewRunnableFunction(PeriodicalUpdate, pipeline.get(),
-                            &message_loop, &stop_event, audio_only));
+                            &message_loop, audio_only));
     message_loop.Run();
-
-    // Need to wait for pipeline to be fully stopped before stopping the thread.
-    stop_event.Wait();
   } else{
     std::cout << "Pipeline initialization failed..." << std::endl;
   }
