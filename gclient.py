@@ -311,8 +311,7 @@ class Dependency(GClientKeywords):
     return deps
 
   def _RunHookAction(self, hook_dict, matching_file_list):
-    """Runs the action from a single hook.
-    """
+    """Runs the action from a single hook."""
     logging.info(hook_dict)
     logging.info(matching_file_list)
     command = hook_dict['action'][:]
@@ -329,7 +328,7 @@ class Dependency(GClientKeywords):
     # Use a discrete exit status code of 2 to indicate that a hook action
     # failed.  Users of this script may wish to treat hook action failures
     # differently from VC failures.
-    gclient_utils.SubprocessCall(command, self.root_dir(), fail_status=2)
+    return gclient_utils.SubprocessCall(command, self.root_dir(), fail_status=2)
 
   def _RunHooks(self, command, file_list, is_using_git):
     """Evaluates all hooks, running actions as needed.
@@ -370,9 +369,39 @@ class Dependency(GClientKeywords):
   def enforced_os(self):
     return self.parent.enforced_os()
 
+  def recursion_limit(self):
+    return self.parent.recursion_limit() - 1
+
+  def tree(self, force_all):
+    return self.parent.tree(force_all)
+
+  def get_custom_deps(self, name, url):
+    """Returns a custom deps if applicable."""
+    if self.parent:
+      url = self.parent.get_custom_deps(name, url)
+    # None is a valid return value to disable a dependency.
+    return self.custom_deps.get(name, url)
+
+  def __str__(self):
+    out = []
+    for i in ('name', 'url', 'safesync_url', 'custom_deps', 'custom_vars',
+              'deps_hooks'):
+      # 'deps_file'
+      if self.__dict__[i]:
+        out.append('%s: %s' % (i, self.__dict__[i]))
+
+    for d in self.dependencies:
+      out.extend(['  ' + x for x in str(d).splitlines()])
+      out.append('')
+    return '\n'.join(out)
+
+  def __repr__(self):
+    return '%s: %s' % (self.name, self.url)
+
 
 class GClient(Dependency):
-  """Main gclient checkout root where .gclient resides."""
+  """Object that represent a gclient checkout. A tree of Dependency(), one per
+  solution or DEPS entry."""
   SUPPORTED_COMMANDS = [
     'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
     'runhooks'
@@ -429,6 +458,9 @@ solutions = [
     self._enforced_os = list(set(enforced_os))
     self._root_dir = root_dir
     self.config_content = None
+    # Do not change previous behavior. Only solution level and immediate DEPS
+    # are processed.
+    self._recursion_limit = 2
 
   def SetConfig(self, content):
     assert self.dependencies == []
@@ -674,13 +706,13 @@ solutions = [
           if not self._options.delete_unversioned_trees or modified_files:
             # There are modified files in this entry. Keep warning until
             # removed.
-            print(("\nWARNING: \"%s\" is no longer part of this client.  "
-                   "It is recommended that you manually remove it.\n") %
+            print(('\nWARNING: \'%s\' is no longer part of this client.  '
+                   'It is recommended that you manually remove it.\n') %
                       entry_fixed)
           else:
             # Delete the entry
-            print("\n________ deleting \'%s\' " +
-                  "in \'%s\'") % (entry_fixed, self.root_dir())
+            print('\n________ deleting \'%s\' ' +
+                  'in \'%s\'') % (entry_fixed, self.root_dir())
             gclient_utils.RemoveDirectory(e_dir)
       # record the current list of entries for next time
       self._SaveEntries(entries)
@@ -770,11 +802,35 @@ solutions = [
       snapclient.SetConfig(config)
       print(snapclient.config_content)
 
+  def ParseDepsFile(self, direct_reference):
+    """No DEPS to parse for a .gclient file."""
+    self.direct_reference = direct_reference
+    self.deps_parsed = True
+
   def root_dir(self):
+    """Root directory of gclient checkout."""
     return self._root_dir
 
   def enforced_os(self):
+    """What deps_os entries that are to be parsed."""
     return self._enforced_os
+
+  def recursion_limit(self):
+    """How recursive can each dependencies in DEPS file can load DEPS file."""
+    return self._recursion_limit
+
+  def tree(self, force_all):
+    """Returns a flat list of all the dependencies."""
+    def subtree(dep):
+      if not force_all and not dep.direct_reference:
+        # Was loaded from a From() keyword in a DEPS file, don't load all its
+        # dependencies.
+        return []
+      result = dep.dependencies[:]
+      for d in dep.dependencies:
+        result.extend(subtree(d))
+      return result
+    return subtree(self)
 
 
 #### gclient commands.
