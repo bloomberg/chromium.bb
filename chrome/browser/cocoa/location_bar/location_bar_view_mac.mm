@@ -126,7 +126,7 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal(
 
   // The bubble needs to be just below the Omnibox and slightly to the right
   // of the left omnibox icon, so shift x and y co-ordinates.
-  const NSPoint kOffset = NSMakePoint(-18, 4);
+  const NSPoint kOffset = NSMakePoint(1, 4);
   [FirstRunBubbleController showForView:field_ offset:kOffset profile:profile_];
 }
 
