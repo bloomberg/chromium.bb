@@ -257,8 +257,11 @@ int SpdyNetworkTransaction::DoSendRequest() {
       return error_code;
   }
   scoped_refptr<SpdyStream> spdy_stream;
-  if (request_->method == "GET")
-    spdy_stream = spdy_->GetPushStream(request_->url, net_log_);
+  if (request_->method == "GET") {
+    int error = spdy_->GetPushStream(request_->url, &spdy_stream, net_log_);
+    if (error != OK)
+      return error;
+  }
   if (spdy_stream.get()) {
     DCHECK(spdy_stream->pushed());
     CHECK(spdy_stream->GetDelegate() == NULL);
@@ -266,9 +269,12 @@ int SpdyNetworkTransaction::DoSendRequest() {
     stream_->InitializeRequest(*request_, base::Time::Now(), NULL);
     // "vary" field?
   } else {
-    spdy_stream = spdy_->CreateStream(request_->url,
-                                      request_->priority,
-                                      net_log_);
+    int error = spdy_->CreateStream(request_->url,
+                                    request_->priority,
+                                    &spdy_stream,
+                                    net_log_);
+    if (error != OK)
+      return error;
     DCHECK(!spdy_stream->pushed());
     CHECK(spdy_stream->GetDelegate() == NULL);
     stream_.reset(new SpdyHttpStream(spdy_stream));
