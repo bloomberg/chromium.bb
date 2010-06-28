@@ -53,17 +53,70 @@ class ClickNotifyingWidget : public views::WidgetGtk {
 
  private:
   gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
-    if (!controller_->is_user_selected()) {
-      WmIpc::Message message(WM_IPC_MESSAGE_WM_SELECT_LOGIN_USER);
-      message.set_param(0, controller_->user_index());
-      WmIpc::instance()->SendMessage(message);
-    }
+    if (!controller_->is_user_selected())
+      controller_->SelectUser(controller_->user_index());
+
     return views::WidgetGtk::OnButtonPress(widget, event);
   }
 
   UserController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
+};
+
+// NativeButton that will always return focus to password field.
+class UserEntryNativeButton : public views::NativeButton {
+ public:
+  UserEntryNativeButton(UserController* controller,
+                        views::ButtonListener* listener,
+                        const std::wstring& label)
+      : NativeButton(listener, label),
+        controller_(controller) {}
+
+  // Overridden from View:
+  virtual void DidGainFocus() {
+    controller_->FocusPasswordField();
+  }
+
+  UserController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserEntryNativeButton);
+};
+
+// Textfield with custom processing for Tab/Shift+Tab to select entries.
+class UserEntryTextfield : public views::Textfield {
+ public:
+  explicit UserEntryTextfield(UserController* controller)
+      : Textfield(),
+        controller_(controller) {}
+
+  UserEntryTextfield(UserController* controller,
+                     views::Textfield::StyleFlags style)
+      : Textfield(style),
+        controller_(controller) {}
+
+  // Overridden from View:
+  virtual bool OnKeyPressed(const views::KeyEvent& e) {
+    if (e.GetKeyCode() == base::VKEY_TAB) {
+      int index = controller_->user_index() + (e.IsShiftDown() ? -1 : 1);
+      controller_->SelectUser(index);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // Overridden from views::Textfield:
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+    if (e.GetKeyCode() == base::VKEY_TAB)
+      return true;
+    else
+      return views::Textfield::SkipDefaultKeyEventProcessing(e);
+  }
+
+  UserController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserEntryTextfield);
 };
 
 }  // namespace
@@ -162,6 +215,7 @@ void UserController::ClearAndEnablePassword() {
   } else {
     password_field_->SetText(string16());
     SetPasswordEnabled(true);
+    FocusPasswordField();
   }
 }
 
@@ -191,6 +245,12 @@ bool UserController::HandleKeystroke(
     const views::Textfield::Keystroke& keystroke) {
   if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
     Login();
+    return true;
+  } else if (keystroke.GetKeyboardCode() == base::VKEY_LEFT) {
+    SelectUser(user_index() - 1);
+    return true;
+  } else if (keystroke.GetKeyboardCode() == base::VKEY_RIGHT) {
+    SelectUser(user_index() + 1);
     return true;
   }
   delegate_->ClearErrors();
@@ -238,12 +298,14 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
     new_user_view_->Init();
     control_view = new_user_view_;
   } else {
-    password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+    password_field_ = new UserEntryTextfield(this,
+                                             views::Textfield::STYLE_PASSWORD);
     password_field_->set_text_to_display_when_empty(
         l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
     password_field_->SetController(this);
-    submit_button_ = new views::NativeButton(
-        this, l10n_util::GetString(IDS_LOGIN_BUTTON));
+    submit_button_ = new UserEntryNativeButton(
+        this, this, l10n_util::GetString(IDS_LOGIN_BUTTON));
+    submit_button_->SetFocusable(false);
     control_view = new views::View();
     GridLayout* layout = new GridLayout(control_view);
     control_view->SetLayoutManager(layout);
@@ -400,6 +462,14 @@ void UserController::OnRemoveUser() {
 
 void UserController::OnChangePhoto() {
   // TODO(dpolukhin): implement change user photo, see http://crosbug.com/2348
+}
+
+void UserController::SelectUser(int index) {
+  delegate_->SelectUser(index);
+}
+
+void UserController::FocusPasswordField() {
+  password_field_->RequestFocus();
 }
 
 }  // namespace chromeos

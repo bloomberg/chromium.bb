@@ -233,6 +233,15 @@ void ExistingUserController::RemoveUser(UserController* source) {
     controllers_[i]->UpdateUserCount(i, new_size);
 }
 
+void ExistingUserController::SelectUser(int index) {
+  if (index >= 0 && index < static_cast<int>(controllers_.size()) &&
+      index != static_cast<int>(selected_view_index_)) {
+    WmIpc::Message message(WM_IPC_MESSAGE_WM_SELECT_LOGIN_USER);
+    message.set_param(0, index);
+    WmIpc::instance()->SendMessage(message);
+  }
+}
+
 void ExistingUserController::OnLoginFailure(const std::string& error) {
   LOG(INFO) << "OnLoginFailure";
   ClearCaptchaState();

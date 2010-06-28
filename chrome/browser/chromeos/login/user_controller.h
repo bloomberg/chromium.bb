@@ -47,6 +47,10 @@ class UserController : public views::ButtonListener,
     virtual void ActivateWizard(const std::string& screen_name) = 0;
     virtual void RemoveUser(UserController* source) = 0;
     virtual void AddStartUrl(const GURL& start_url) = 0;
+
+    // Selects user entry with specified |index|.
+    // Does nothing if current user is already selected.
+    virtual void SelectUser(int index) = 0;
    protected:
     virtual ~Delegate() {}
   };
@@ -118,6 +122,12 @@ class UserController : public views::ButtonListener,
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();
   virtual void OnChangePhoto();
+
+  // Selects user entry with specified |index|.
+  void SelectUser(int index);
+
+  // Sets focus on password field.
+  void FocusPasswordField();
 
   // Padding between the user windows.
   static const int kPadding;

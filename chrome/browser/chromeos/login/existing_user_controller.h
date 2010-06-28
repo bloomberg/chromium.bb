@@ -73,6 +73,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void ActivateWizard(const std::string& screen_name);
   virtual void RemoveUser(UserController* source);
   virtual void AddStartUrl(const GURL& start_url) { start_url_ = start_url; }
+  virtual void SelectUser(int index);
 
   // LoginStatusConsumer:
   virtual void OnLoginFailure(const std::string& error);
