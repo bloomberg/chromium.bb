@@ -29,14 +29,6 @@
     # Currently ignored on Windows.
     'coverage%': 0,
 
-    # To do a shared build on linux we need to be able to choose between type
-    # static_library and shared_library. We default to doing a static build
-    # but you can override this with "gyp -Dlibrary=shared_library" or you
-    # can add the following line (without the #) to ~/.gyp/include.gypi
-    # {'variables': {'library': 'shared_library'}}
-    # to compile as shared by default
-    'library%': 'static_library',
-
     # TODO(sgk): eliminate this if possible.
     # It would be nicer to support this via a setting in 'target_defaults'
     # in chrome/app/locales/locales.gypi overriding the setting in the
@@ -53,7 +45,6 @@
 
     # The NaCl debugger functionality should be turned off until it's ready
     'nacl_debug_stub%': 0,
-
 
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {
@@ -73,6 +64,14 @@
         # based on 'buildtype' (i.e. we don't care about saving symbols for
         # non-Official builds).
         'buildtype%': 'Dev',
+
+        # To do a shared build on linux we need to be able to choose between
+        # type static_library and shared_library. We default to doing a static
+        # build but you can override this with "gyp -Dlibrary=shared_library"
+        # or you can add the following line (without the #) to
+        # ~/.gyp/include.gypi {'variables': {'library': 'shared_library'}}
+        # to compile as shared by default
+        'library%': 'static_library',
       },
       'nacl_standalone%': '<(nacl_standalone)',
       # Define branding and buildtype on the basis of their settings within the
@@ -102,12 +101,23 @@
       'sysroot%': '',
 
       # NOTE: end adapted from them chrome common.gypi file for arm
+
+      'library%': '<(library)',
+
+      # Variable 'component' is for cases where we would like to build some
+      # components as dynamic shared libraries but still need variable
+      # 'library' for static libraries.
+      # By default, component is set to whatever library is set to and
+      # it can be overriden by the GYP command line or by ~/.gyp/include.gypi.
+      'component%': '<(library)',
     },
     # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
     'nacl_standalone%': '<(nacl_standalone)',
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
+    'library%': '<(library)',
+    'component%': '<(component)',
 
     'linux2%': 0,
       'conditions': [
@@ -277,7 +287,14 @@
             'Optimization': '0',
             'PreprocessorDefinitions': ['_DEBUG'],
             'BasicRuntimeChecks': '3',
-            'RuntimeLibrary': '1',
+
+            'conditions': [
+              ['component=="shared_library"', {
+                'RuntimeLibrary': '3',  # 3 = /MDd (debug DLL)
+              }, {
+                'RuntimeLibrary': '1',  # 1 = /MTd (debug static)
+              }],
+            ],
           },
            # VCLinkerTool LinkIncremental values below:
            #   0 == default
@@ -299,6 +316,14 @@
             'PreprocessorDefinitions': ['NDEBUG'],
             'Optimization': '2',
             'StringPooling': 'true',
+
+            'conditions': [
+              ['component=="shared_library"', {
+                'RuntimeLibrary': '2',  # 2 = /MD (nondebug DLL)
+              }, {
+                'RuntimeLibrary': '0',  # 0 = /MT (nondebug static)
+              }],
+            ],
           },
           'VCLinkerTool': {
             'LinkIncremental': '1',
@@ -712,7 +737,6 @@
           'WINVER=0x0600',
           'WIN32',
           '_WINDOWS',
-          '_HAS_EXCEPTIONS=0',
           'NOMINMAX',
           '_CRT_RAND_S',
           'CERT_CHAIN_PARA_HAS_EXTRA_FIELDS',
@@ -727,6 +751,13 @@
           'NACL_OSX=0',
           'NACL_WINDOWS=1'
         ],
+        'conditions': [
+          ['component=="static_library"', {
+            'defines': [
+              '_HAS_EXCEPTIONS=0',
+            ],
+          }],
+        ],
         'msvs_system_include_dirs': [
           '<(DEPTH)/third_party/platformsdk_win7/files/Include',
           '$(VSInstallDir)/VC/atlmfc/include',
@@ -736,13 +767,20 @@
         'msvs_settings': {
           'VCCLCompilerTool': {
             'MinimalRebuild': 'false',
-            'ExceptionHandling': '0',
             'BufferSecurityCheck': 'true',
             'EnableFunctionLevelLinking': 'true',
             'RuntimeTypeInfo': 'false',
             'WarningLevel': '3',
             'WarnAsError': 'true',
             'DebugInformationFormat': '3',
+
+            'conditions': [
+              ['component=="shared_library"', {
+                'ExceptionHandling': '1',  # /EHsc
+              }, {
+                'ExceptionHandling': '0',
+              }],
+            ],
           },
           'VCLibrarianTool': {
             'AdditionalOptions': ['/ignore:4221'],
