@@ -31,7 +31,8 @@ static const int64 kMaxUpdateIntervalMinutes = 60;
 TopSites::TopSites(Profile* profile) : profile_(profile),
                                        mock_history_service_(NULL),
                                        last_num_urls_changed_(0),
-                                       migration_in_progress_(false) {
+                                       migration_in_progress_(false),
+                                       waiting_for_results_(true) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
@@ -161,9 +162,23 @@ bool TopSites::SetPageThumbnailNoDB(const GURL& url,
   return true;
 }
 
-MostVisitedURLList TopSites::GetMostVisitedURLs() {
-  AutoLock lock(lock_);
-  return top_sites_;
+void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
+                                  GetTopSitesCallback* callback) {
+
+  scoped_refptr<CancelableRequest<GetTopSitesCallback> > request(
+      new CancelableRequest<GetTopSitesCallback>(callback));
+  // This ensures cancelation of requests when either the consumer or the
+  // provider is deleted. Deletion of requests is also guaranteed.
+  AddRequest(request, consumer);
+  if (waiting_for_results_) {
+    // A request came in before we have any top sites.
+    // We have to keep track of the requests ourselves.
+    pending_callbacks_.insert(request);
+    return;
+  }
+  if (request->canceled())
+    return;
+  request->ForwardResult(GetTopSitesCallback::TupleType(top_sites_));
 }
 
 bool TopSites::GetPageThumbnail(const GURL& url, RefCountedBytes** data) const {
@@ -278,6 +293,8 @@ void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
   // Take ownership of the most visited data.
   top_sites_.clear();
   top_sites_.swap(*most_visited);
+  waiting_for_results_ = false;
+
 
   // Save the redirect information for quickly mapping to the canonical URLs.
   canonical_urls_.clear();
@@ -402,6 +419,18 @@ base::TimeDelta TopSites::GetUpdateDelay() {
 void TopSites::OnTopSitesAvailable(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
+  if (!pending_callbacks_.empty()) {
+    PendingCallbackSet copy(pending_callbacks_);
+    PendingCallbackSet::iterator i;
+    for (i = pending_callbacks_.begin();
+         i != pending_callbacks_.end(); ++i) {
+      scoped_refptr<CancelableRequest<GetTopSitesCallback> > request = *i;
+      if (!request->canceled())
+        request->ForwardResult(GetTopSitesCallback::TupleType(pages));
+    }
+    pending_callbacks_.clear();
+  }
+
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
       this, &TopSites::UpdateMostVisited, pages));
 }

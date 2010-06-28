@@ -117,12 +117,7 @@ void MostVisitedHandler::RegisterMessages() {
 void MostVisitedHandler::HandleGetMostVisited(const Value* value) {
   if (!got_first_most_visited_request_) {
     // If our intial data is already here, return it.
-    if (pages_value_.get()) {
-      FundamentalValue first_run(IsFirstRun());
-      dom_ui_->CallJavascriptFunction(L"mostVisitedPages",
-                                      *(pages_value_.get()), first_run);
-      pages_value_.reset();
-    }
+    SendPagesValue();
     got_first_most_visited_request_ = true;
   } else {
     StartQueryForMostVisited();
@@ -151,12 +146,22 @@ void MostVisitedHandler::SetPagesValue(const
   }
 }
 
+void MostVisitedHandler::SendPagesValue() {
+  if (pages_value_.get()) {
+    FundamentalValue first_run(IsFirstRun());
+    dom_ui_->CallJavascriptFunction(L"mostVisitedPages",
+                                    *(pages_value_.get()), first_run);
+    pages_value_.reset();
+  }
+}
+
 void MostVisitedHandler::StartQueryForMostVisited() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     // Use TopSites.
-    history::MostVisitedURLList top_urls =
-        dom_ui_->GetProfile()->GetTopSites()->GetMostVisitedURLs();
-    SetPagesValue(top_urls);
+    history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
+    ts->GetMostVisitedURLs(
+        &topsites_consumer_,
+        NewCallback(this, &MostVisitedHandler::OnMostVisitedURLsAvailable));
     return;
   }
 
@@ -416,10 +421,15 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
   }
 
   if (got_first_most_visited_request_) {
-    FundamentalValue first_run(IsFirstRun());
-    dom_ui_->CallJavascriptFunction(L"mostVisitedPages", *(pages_value_.get()),
-                                    first_run);
-    pages_value_.reset();
+    SendPagesValue();
+  }
+}
+
+void MostVisitedHandler::OnMostVisitedURLsAvailable(
+    const history::MostVisitedURLList& data) {
+  SetPagesValue(data);
+  if (got_first_most_visited_request_) {
+    SendPagesValue();
   }
 }
 

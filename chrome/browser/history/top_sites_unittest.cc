@@ -24,17 +24,20 @@ static const unsigned char kBlob[] =
 
 class TopSitesTest : public testing::Test {
  public:
-  TopSitesTest() {
+  TopSitesTest() : number_of_callbacks_(0) {
   }
   ~TopSitesTest() {
   }
 
   TopSites& top_sites() { return *top_sites_; }
+  MostVisitedURLList& urls() { return urls_; }
   Profile& profile() {return *profile_;}
   FilePath& file_name() { return file_name_; }
   RefCountedBytes* google_thumbnail() { return google_thumbnail_; }
   RefCountedBytes* random_thumbnail() { return random_thumbnail_; }
   RefCountedBytes* weewar_thumbnail() { return weewar_thumbnail_; }
+  CancelableRequestConsumer* consumer() { return &consumer_; }
+  size_t number_of_callbacks() {return number_of_callbacks_; }
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
@@ -62,6 +65,12 @@ class TopSitesTest : public testing::Test {
     EXPECT_TRUE(file_util::Delete(file_name_, false));
   }
 
+  // Callback for TopSites::GetMostVisitedURLs.
+  void OnTopSitesAvailable(const history::MostVisitedURLList& data) {
+    urls_ = data;
+    number_of_callbacks_++;
+  }
+
   // Wrappers that allow private TopSites functions to be called from the
   // individual tests without making them all be friends.
   GURL GetCanonicalURL(const GURL& url) const {
@@ -85,6 +94,8 @@ class TopSitesTest : public testing::Test {
 
  private:
   scoped_refptr<TopSites> top_sites_;
+  MostVisitedURLList urls_;
+  size_t number_of_callbacks_;
   scoped_ptr<TestingProfile> profile_;
   ScopedTempDir temp_dir_;
   FilePath file_name_;  // Database filename.
@@ -92,6 +103,7 @@ class TopSitesTest : public testing::Test {
   scoped_refptr<RefCountedBytes> random_thumbnail_;
   scoped_refptr<RefCountedBytes> weewar_thumbnail_;
   MessageLoop message_loop_;
+  CancelableRequestConsumer consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };
@@ -395,10 +407,13 @@ TEST_F(TopSitesTest, GetMostVisited) {
 
   top_sites().StartQueryForMostVisited();
   MessageLoop::current()->RunAllPending();
-  MostVisitedURLList results = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(2u, results.size());
-  EXPECT_EQ(news, results[0].url);
-  EXPECT_EQ(google, results[1].url);
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(2u, urls().size());
+  EXPECT_EQ(news, urls()[0].url);
+  EXPECT_EQ(google, urls()[1].url);
 }
 
 TEST_F(TopSitesTest, MockDatabase) {
@@ -422,10 +437,13 @@ TEST_F(TopSitesTest, MockDatabase) {
 
   top_sites().ReadDatabase();
 
-  MostVisitedURLList result = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(asdf_url, result[0].url);
-  EXPECT_EQ(asdf_title, result[0].title);
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(1u, urls().size());
+  EXPECT_EQ(asdf_url, urls()[0].url);
+  EXPECT_EQ(asdf_title, urls()[0].title);
 
   MostVisitedURL url2;
   url2.url = google_url;
@@ -437,12 +455,15 @@ TEST_F(TopSitesTest, MockDatabase) {
 
   top_sites().ReadDatabase();
 
-  result = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(google_url, result[0].url);
-  EXPECT_EQ(google_title, result[0].title);
-  EXPECT_EQ(asdf_url, result[1].url);
-  EXPECT_EQ(asdf_title, result[1].title);
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(2u, urls().size());
+  EXPECT_EQ(google_url, urls()[0].url);
+  EXPECT_EQ(google_title, urls()[0].title);
+  EXPECT_EQ(asdf_url, urls()[1].url);
+  EXPECT_EQ(asdf_title, urls()[1].title);
 
   MockHistoryServiceImpl hs;
   // Add one old, one new URL to the history.
@@ -455,6 +476,7 @@ TEST_F(TopSitesTest, MockDatabase) {
   MessageLoop::current()->RunAllPending();
 
   std::map<GURL, TopSites::Images> thumbnails;
+  MostVisitedURLList result;
   db->GetPageThumbnails(&result, &thumbnails);
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google_title, result[0].title);
@@ -571,10 +593,13 @@ TEST_F(TopSitesTest, RealDatabase) {
 
   top_sites().ReadDatabase();
 
-  MostVisitedURLList result = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(asdf_url, result[0].url);
-  EXPECT_EQ(asdf_title, result[0].title);
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(1u, urls().size());
+  EXPECT_EQ(asdf_url, urls()[0].url);
+  EXPECT_EQ(asdf_title, urls()[0].title);
 
   TopSites::Images img_result;
   db->GetPageThumbnail(asdf_url, &img_result);
@@ -600,19 +625,22 @@ TEST_F(TopSitesTest, RealDatabase) {
 
   top_sites().ReadDatabase();
 
-  result = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(google1_url, result[0].url);
-  EXPECT_EQ(google_title, result[0].title);
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(2u, urls().size());
+  EXPECT_EQ(google1_url, urls()[0].url);
+  EXPECT_EQ(google_title, urls()[0].title);
   EXPECT_TRUE(top_sites().GetPageThumbnail(google1_url, &thumbnail_result));
   EXPECT_TRUE(ThumbnailsAreEqual(google_thumbnail(), thumbnail_result));
-  ASSERT_EQ(3u, result[0].redirects.size());
-  EXPECT_EQ(google1_url, result[0].redirects[0]);
-  EXPECT_EQ(google2_url, result[0].redirects[1]);
-  EXPECT_EQ(google3_url, result[0].redirects[2]);
+  ASSERT_EQ(3u, urls()[0].redirects.size());
+  EXPECT_EQ(google1_url, urls()[0].redirects[0]);
+  EXPECT_EQ(google2_url, urls()[0].redirects[1]);
+  EXPECT_EQ(google3_url, urls()[0].redirects[2]);
 
-  EXPECT_EQ(asdf_url, result[1].url);
-  EXPECT_EQ(asdf_title, result[1].title);
+  EXPECT_EQ(asdf_url, urls()[1].url);
+  EXPECT_EQ(asdf_title, urls()[1].title);
 
   MockHistoryServiceImpl hs;
   // Add one old, one new URL to the history.
@@ -625,10 +653,11 @@ TEST_F(TopSitesTest, RealDatabase) {
   MessageLoop::current()->RunAllPending();
 
   std::map<GURL, TopSites::Images> thumbnails;
-  db->GetPageThumbnails(&result, &thumbnails);
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(google_title, result[0].title);
-  EXPECT_EQ(news_title, result[1].title);
+  MostVisitedURLList results;
+  db->GetPageThumbnails(&results, &thumbnails);
+  ASSERT_EQ(2u, results.size());
+  EXPECT_EQ(google_title, results[0].title);
+  EXPECT_EQ(news_title, results[1].title);
 
   scoped_ptr<SkBitmap> weewar_bitmap(
       gfx::JPEGCodec::Decode(weewar_thumbnail()->front(),
@@ -696,8 +725,11 @@ TEST_F(TopSitesTest, DeleteNotifications) {
   top_sites().StartQueryForMostVisited();
   MessageLoop::current()->RunAllPending();
 
-  MostVisitedURLList result = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(2u, result.size());
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(2u, urls().size());
 
   hs.RemoveMostVisitedURL();
 
@@ -708,9 +740,12 @@ TEST_F(TopSitesTest, DeleteNotifications) {
                       (const NotificationDetails&)details);
   MessageLoop::current()->RunAllPending();
 
-  result = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(google_title, result[0].title);
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(1u, urls().size());
+  EXPECT_EQ(google_title, urls()[0].title);
 
   hs.RemoveMostVisitedURL();
   details.all_history = true;
@@ -718,8 +753,11 @@ TEST_F(TopSitesTest, DeleteNotifications) {
                       Source<Profile> (&profile()),
                       (const NotificationDetails&)details);
   MessageLoop::current()->RunAllPending();
-  result = top_sites().GetMostVisitedURLs();
-  ASSERT_EQ(0u, result.size());
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(0u, urls().size());
 }
 
 TEST_F(TopSitesTest, GetUpdateDelay) {
@@ -759,6 +797,109 @@ TEST_F(TopSitesTest, Migration) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(2, hs.GetNumberOfThumbnailRequests());
   EXPECT_FALSE(top_sites().migration_in_progress_);
+}
+
+TEST_F(TopSitesTest, QueueingRequestsForTopSites) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  CancelableRequestConsumer c1;
+  CancelableRequestConsumer c2;
+  CancelableRequestConsumer c3;
+  top_sites().GetMostVisitedURLs(
+      &c1,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  top_sites().GetMostVisitedURLs(
+      &c2,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  top_sites().GetMostVisitedURLs(
+      &c3,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  EXPECT_EQ(0u, number_of_callbacks());
+  EXPECT_EQ(0u, urls().size());
+
+  MostVisitedURLList pages;
+  MostVisitedURL url;
+  url.url = GURL("http://1.com/");
+  url.redirects.push_back(url.url);
+  pages.push_back(url);
+  url.url = GURL("http://2.com/");
+  url.redirects.push_back(url.url);
+  pages.push_back(url);
+  top_sites().OnTopSitesAvailable(0, pages);
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(3u, number_of_callbacks());
+
+  ASSERT_EQ(2u, urls().size());
+  EXPECT_EQ("http://1.com/", urls()[0].url.spec());
+  EXPECT_EQ("http://2.com/", urls()[1].url.spec());
+
+  url.url = GURL("http://3.com/");
+  url.redirects.push_back(url.url);
+  pages.push_back(url);
+  top_sites().OnTopSitesAvailable(0, pages);
+  MessageLoop::current()->RunAllPending();
+
+  top_sites().GetMostVisitedURLs(
+      &c3,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  EXPECT_EQ(4u, number_of_callbacks());
+
+  ASSERT_EQ(3u, urls().size());
+  EXPECT_EQ("http://1.com/", urls()[0].url.spec());
+  EXPECT_EQ("http://2.com/", urls()[1].url.spec());
+  EXPECT_EQ("http://3.com/", urls()[2].url.spec());
+}
+
+TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
+  CancelableRequestConsumer c1;
+  CancelableRequestConsumer c2;
+  top_sites().GetMostVisitedURLs(
+      &c1,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  top_sites().GetMostVisitedURLs(
+      &c2,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  {
+    CancelableRequestConsumer c3;
+    top_sites().GetMostVisitedURLs(
+        &c3,
+        NewCallback(static_cast<TopSitesTest*>(this),
+                    &TopSitesTest::OnTopSitesAvailable));
+    // c3 is out of scope, and the request should be cancelled.
+  }
+
+  // No requests until OnTopSitesAvailable is called.
+  EXPECT_EQ(0u, number_of_callbacks());
+  EXPECT_EQ(0u, urls().size());
+
+  MostVisitedURLList pages;
+  MostVisitedURL url;
+  url.url = GURL("http://1.com/");
+  url.redirects.push_back(url.url);
+  pages.push_back(url);
+  url.url = GURL("http://2.com/");
+  pages.push_back(url);
+
+  top_sites().OnTopSitesAvailable(0, pages);
+
+  // 1 request was canceled.
+  EXPECT_EQ(2u, number_of_callbacks());
+
+  ASSERT_EQ(2u, urls().size());
+  EXPECT_EQ("http://1.com/", urls()[0].url.spec());
+  EXPECT_EQ("http://2.com/", urls()[1].url.spec());
 }
 
 }  // namespace history

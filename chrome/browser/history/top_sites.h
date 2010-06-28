@@ -45,7 +45,8 @@ typedef std::vector<MostVisitedURL> MostVisitedURLList;
 // a nontrivial performance win, especially when the browser is starting and
 // the UI thread is busy.
 class TopSites : public NotificationObserver,
-                 public base::RefCountedThreadSafe<TopSites> {
+                 public base::RefCountedThreadSafe<TopSites>,
+                 public CancelableRequestProvider {
  public:
   explicit TopSites(Profile* profile);
 
@@ -82,9 +83,13 @@ class TopSites : public NotificationObserver,
                         const SkBitmap& thumbnail,
                         const ThumbnailScore& score);
 
-  // Returns a list of most visited URLs or an empty list if it's not
-  // cached yet.
-  MostVisitedURLList GetMostVisitedURLs();
+  // Callback for GetMostVisitedURLs.
+  typedef Callback1<const MostVisitedURLList&>::Type GetTopSitesCallback;
+
+  // Returns a list of most visited URLs via a callback.
+  // NOTE: the callback may be called immediately if we have the data cached.
+  void GetMostVisitedURLs(CancelableRequestConsumer* consumer,
+                          GetTopSitesCallback* callback);
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   bool GetPageThumbnail(const GURL& url, RefCountedBytes** data) const;
@@ -104,6 +109,8 @@ class TopSites : public NotificationObserver,
   friend class TopSitesTest_DeleteNotifications_Test;
   friend class TopSitesTest_GetUpdateDelay_Test;
   friend class TopSitesTest_Migration_Test;
+  friend class TopSitesTest_QueueingRequestsForTopSites_Test;
+  friend class TopSitesTest_CancelingRequestsForTopSites_Test;
 
   ~TopSites();
 
@@ -239,6 +246,16 @@ class TopSites : public NotificationObserver,
 
   // URLs for which we are expecting thumbnails.
   std::set<GURL> migration_pending_urls_;
+
+  // The map of requests for the top sites list. Can only be
+  // non-empty at startup. After we read the top sites from the DB, we'll
+  // always have a cached list.
+  typedef std::set<scoped_refptr<CancelableRequest<GetTopSitesCallback> > >
+      PendingCallbackSet;
+  PendingCallbackSet pending_callbacks_;
+
+  // Are we waiting for the top sites from HistoryService?
+  bool waiting_for_results_;
 
   // TODO(brettw): use the blacklist.
   // std::set<GURL> blacklist_;

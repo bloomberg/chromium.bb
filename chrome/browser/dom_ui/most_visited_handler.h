@@ -78,6 +78,9 @@ class MostVisitedHandler : public DOMMessageHandler,
   void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
                                std::vector<PageUsageData*>* data);
 
+  // Callback for TopSites.
+  void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
+
   // Puts the passed URL in the blacklist (so it does not show as a thumbnail).
   void BlacklistURL(const GURL& url);
 
@@ -95,6 +98,9 @@ class MostVisitedHandler : public DOMMessageHandler,
   // Sets pages_value_ from MostVisitedURLs.
   void SetPagesValue(const history::MostVisitedURLList& urls);
 
+  // Sends pages_value_ to the javascript side to and resets page_value_.
+  void SendPagesValue();
+
   // Returns true if we should treat this as the first run of the new tab page.
   bool IsFirstRun();
 
@@ -104,6 +110,7 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   // Our consumer for the history service.
   CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;
+  CancelableRequestConsumer topsites_consumer_;
 
   // The most visited URLs, in priority order.
   // Only used for matching up clicks on the page to which most visited entry
