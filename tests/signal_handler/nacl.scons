@@ -30,4 +30,5 @@ nodes.append(crash_env.CommandSelLdrTestNacl(
         stderr_golden=env.File('trusted-fault.stderr'),
         exit_status='segfault'))
 
-env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_signal_handler_test')
+if not env.IsRunningUnderValgrind():
+  env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_signal_handler_test')

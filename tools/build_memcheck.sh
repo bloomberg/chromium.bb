@@ -31,25 +31,9 @@
 # This script builds a NaCl-compatible valgrind binary (memceck-only).
 # The binary is packed into a self-contained .sh script.
 
-# Take this specific version of valgrind and VEX.
-VALGRIND_REV=11096
-VEX_REV=1964
-
-# Locate the patch file.
-PATCH_DIR=`dirname $0`
-PATCH_DIR=`cd $PATCH_DIR && pwd`
-PATCH_FILE=$PATCH_DIR/patches/valgrind-$VALGRIND_REV-VEX-$VEX_REV.patch
-
 # Checkout valgrind
 get_valgrind() {
-  svn co -r$VALGRIND_REV svn://svn.valgrind.org/valgrind/trunk
-  # Make sure we are at specific revision of VEX.
-  (cd trunk/VEX && svn up -r$VEX_REV)
-}
-
-patch_valgrind() {
-  echo "*** Using patch file $PATCH_FILE ***"
-  patch -p 0 < $PATCH_FILE
+  svn co http://valgrind-variant.googlecode.com/svn/trunk/valgrind
 }
 
 build_valgrind() {
@@ -62,7 +46,7 @@ build_valgrind() {
   ./configure --enable-only64bit --prefix=`pwd`/inst && \
   make -j 8 && \
   make install &&
-  strip $TMP_BUILD_DIR/trunk/inst/lib/valgrind/memcheck-amd64-linux
+  strip $TMP_BUILD_DIR/valgrind/inst/lib/valgrind/memcheck-amd64-linux
 }
 
 pack_memcheck() {
@@ -71,7 +55,7 @@ pack_memcheck() {
   wget \
   http://data-race-test.googlecode.com/svn-history/r1882/trunk/tsan_binary/mk-self-contained-valgrind.sh
   chmod +x mk-self-contained-valgrind.sh
-  ./mk-self-contained-valgrind.sh $TMP_BUILD_DIR/trunk/inst \
+  ./mk-self-contained-valgrind.sh $TMP_BUILD_DIR/valgrind/inst \
     memcheck $TMP_BUILD_DIR/memcheck.sh
 }
 
@@ -83,7 +67,6 @@ rm -rf $TMP_BUILD_DIR
 mkdir -p $TMP_BUILD_DIR
 cd $TMP_BUILD_DIR
 get_valgrind
-cd trunk
-patch_valgrind
+cd valgrind
 build_valgrind
 pack_memcheck

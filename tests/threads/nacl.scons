@@ -51,4 +51,4 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('race_test.nexe')],
     size='small',
     )
-env.AddNodeToTestSuite(node, TEST_SUITES, 'run_race_test')
+env.AddNodeToTestSuite(node, TEST_SUITES + ['tsan_bot_tests'], 'run_race_test')

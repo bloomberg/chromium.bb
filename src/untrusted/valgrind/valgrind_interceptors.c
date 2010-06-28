@@ -29,6 +29,8 @@
 #include <pthread.h>
 #include <errno.h>
 #include <sched.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/third_party/valgrind/nacl_valgrind.h"
 #include "native_client/src/third_party/valgrind/nacl_memcheck.h"
@@ -110,25 +112,21 @@ static const int kRedZoneSize = 32;
 /* Used for sanity checking. */
 static const size_t kMallocMagic = 0x1234abcd;
 
-/* We need to delay the reuse of free-ed memory so that memcheck can report
- the uses of free-ed memory with detailed stacks.
- When a pointer is passed to free(), we put it into this FIFO queue.
- Instead of free-ing this pointer instantly, we free a pointer
- in the back of the queue.
- */
-enum {
-  kDelayReuseQueueSize = 1024
-};
-static size_t delay_reuse_queue[kDelayReuseQueueSize];
-static size_t drq_begin;
-
-/* Generic malloc() handler. */
-INLINE static size_t handle_malloc(OrigFn fn, size_t size) {
-  size_t ptr;
-  uint64_t base;
+/* size: user-requested allocation size
+   returns: real allocation size
+*/
+INLINE static size_t handle_malloc_before(size_t size) {
   start_ignore_all_accesses_and_sync();
-  /* Allocate memory with red zones fro both sides. */
-  CALL_FN_W_W(ptr, fn, size + 2 * kRedZoneSize);
+  return size + 2 * kRedZoneSize;
+}
+
+/* ptr: address of allocated memory block (with the size received from
+       handle_malloc_before())
+   size: user-requested allocation size
+   returns: address that should be returned to the caller
+*/
+INLINE static size_t handle_malloc_after(size_t ptr, size_t size) {
+  uint64_t base;
   /* Mark all memory as defined, put our own data at the beginning. */
   base = VALGRIND_SANDBOX_PTR(ptr);
   VALGRIND_MAKE_MEM_DEFINED(base, kRedZoneSize);
@@ -149,7 +147,7 @@ INLINE static size_t handle_malloc(OrigFn fn, size_t size) {
 /* Generic free() handler. */
 INLINE static void handle_free(OrigFn fn, size_t ptr) {
   uint64_t base;
-  size_t size, old_ptr;
+  size_t size;
   start_ignore_all_accesses_and_sync();
   /* Get the size of allocated region, check sanity. */
   ptr -= kRedZoneSize;
@@ -165,21 +163,53 @@ INLINE static void handle_free(OrigFn fn, size_t ptr) {
   VALGRIND_MAKE_MEM_NOACCESS(base + 2 * sizeof(size_t),
                              size - 2 * sizeof(size_t) + 2 * kRedZoneSize);
   VALGRIND_FREELIKE_BLOCK(base + kRedZoneSize, kRedZoneSize);
-  /* Actually de-allocate a pointer free-ed some time ago
-   (take it from the reuse queue) */
-  old_ptr = delay_reuse_queue[drq_begin];
-  CALL_FN_v_W(fn, old_ptr);
-  /* Put the current pointer into the eruse queue. */
-  delay_reuse_queue[drq_begin] = ptr;
-  drq_begin = (drq_begin + 1) % kDelayReuseQueueSize;
+  CALL_FN_v_W(fn, ptr);
   stop_ignore_all_accesses_and_sync();
 }
 
 /* malloc() */
 size_t VG_NACL_FUNC(malloc)(size_t size) {
   OrigFn fn;
+  size_t ptr;
   VALGRIND_GET_ORIG_FN(fn);
-  return handle_malloc(fn, size);
+  size_t allocSize = handle_malloc_before(size);
+  CALL_FN_W_W(ptr, fn, allocSize);
+  return handle_malloc_after(ptr, size);
+}
+
+/* calloc() */
+size_t VG_NACL_FUNC(calloc)(size_t nmemb, size_t size) {
+  OrigFn fn;
+  size_t ptr;
+  VALGRIND_GET_ORIG_FN(fn);
+  size_t allocSize = handle_malloc_before(nmemb * size);
+  CALL_FN_W_WW(ptr, fn, 1, allocSize);
+  return handle_malloc_after(ptr, nmemb * size);
+}
+
+/* realloc() */
+size_t VG_NACL_FUNC(realloc)(size_t origPtr, size_t size) {
+  if (!origPtr) {
+    return (size_t)malloc(size);
+  }
+  if (!size) {
+    free((void*)origPtr);
+    return 0;
+  }
+  size_t newPtr = (size_t)malloc(size);
+  if (!newPtr) {
+    free((void*)origPtr);
+    return 0;
+  }
+
+  VALGRIND_MAKE_MEM_DEFINED(VALGRIND_SANDBOX_PTR(origPtr - kRedZoneSize),
+      kRedZoneSize);
+  size_t origSize = ((size_t*)(origPtr - kRedZoneSize))[1];
+  size_t copySize = size < origSize ? size : origSize;
+
+  memcpy((void*)newPtr, (void*)origPtr, copySize);
+  free((void*)origPtr);
+  return newPtr;
 }
 
 /* free() */
@@ -187,6 +217,14 @@ void VG_NACL_FUNC(free)(size_t ptr) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
   handle_free(fn, ptr);
+}
+
+/* strlen() */
+size_t VG_NACL_FUNC(strlen)(char* ptr) {
+  size_t i = 0;
+  while (ptr[i])
+    ++i;
+  return i;
 }
 
 /* nc_allocate_memory_block_mu() - a cached malloc for thread stack & tls. */

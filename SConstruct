@@ -130,24 +130,41 @@ def CheckArguments():
       sys.exit(-1)
 
 
-def SetArgument(key, value, why):
+# Sets a command line argument. Dies if an argument with this name is already
+# defined.
+def SetArgument(key, value):
+  print '    %s=%s' % (key, str(value))
   if ARGUMENTS.has_key(key):
-    print 'ERROR: %s redefines %s' % (why, key)
+    print 'ERROR: %s redefined' % (key, )
     sys.exit(-1)
   else:
     ARGUMENTS[key] = value
-    print '    %s=%s' % (key, str(value))
 
+# Expands "macro" command line arguments.
 def ExpandArguments():
   if ARGUMENTS.get('buildbot') == 'memcheck':
     print 'builbot=memcheck expands to the following arguments:'
     SetArgument('run_under',
-                'src/third_party/valgrind/bin/memcheck.sh,--log-file=mc.log',
-                'memcheck')
-    SetArgument('scale_timeout', 20, 'memcheck')
-    SetArgument('running_on_valgrind', True, 'memcheck')
-    SetArgument('with_valgrind', True, 'memcheck')
+                'src/third_party/valgrind/bin/memcheck.sh,--log-file=mc.log')
+    SetArgument('scale_timeout', 20)
+    SetArgument('running_on_valgrind', True)
+    SetArgument('with_valgrind', True)
+  elif ARGUMENTS.get('buildbot') == 'tsan':
+    print 'builbot=tsan expands to the following arguments:'
+    SetArgument('run_under',
+                'src/third_party/valgrind/bin/tsan.sh,--log-file=tsan.log,' +
+                '--ignore=src/third_party/valgrind/nacl.ignore,' +
+                '--nacl-untrusted,--error-exitcode=1')
+    SetArgument('scale_timeout', 20)
+    SetArgument('running_on_valgrind', True)
+    SetArgument('with_valgrind', True)
+  elif ARGUMENTS.get('buildbot'):
+    print 'ERROR: unexpected argument buildbot="%s"' % (
+        ARGUMENTS.get('buildbot'), )
+    sys.exit(-1)
 
+#-----------------------------------------------------------
+ExpandArguments()
 
 # ----------------------------------------------------------
 environment_list = []
@@ -276,6 +293,7 @@ Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
 
 Alias('memcheck_bot_tests', 'small_tests')
+Alias('tsan_bot_tests', [])
 
 # ----------------------------------------------------------
 def Banner(text):
@@ -1867,7 +1885,6 @@ if VerboseConfigInfo(pre_base_env):
   os.system(pre_base_env.subst('${PYTHON} tools/sysinfo.py'))
 
 CheckArguments()
-ExpandArguments()
 
 selected_envs = FilterEnvironments(environment_list)
 family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)
