@@ -415,6 +415,13 @@ test-x86-64-currently-working() {
           run_barebones_regs_test \
           run_barebones_switch_test \
           run_barebones_vtable_test \
+          run_hello_world_test \
+          run_at_exit_test \
+          run_exit_test \
+          run_misc_math_test \
+          run_sysbasic_test \
+          run_tls_test \
+          run_noop_test \
           "$@"
 }
 
