@@ -125,20 +125,17 @@ class NetworkMenuButton : public StatusAreaButton,
         : type(menus::MenuModel::TYPE_SEPARATOR),
           flags(0) {}
     MenuItem(menus::MenuModel::ItemType type, string16 label, SkBitmap icon,
-             WifiNetwork wifi_network, CellularNetwork cellular_network,
-             int flags)
+             const std::string& wireless_path, int flags)
         : type(type),
           label(label),
           icon(icon),
-          wifi_network(wifi_network),
-          cellular_network(cellular_network),
+          wireless_path(wireless_path),
           flags(flags) {}
 
     menus::MenuModel::ItemType type;
     string16 label;
     SkBitmap icon;
-    WifiNetwork wifi_network;
-    CellularNetwork cellular_network;
+    std::string wireless_path;
     int flags;
   };
   typedef std::vector<MenuItem> MenuItemVector;

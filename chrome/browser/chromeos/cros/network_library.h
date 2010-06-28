@@ -77,6 +77,15 @@ class WirelessNetwork : public Network {
     return name_ < other.name();
   }
 
+  // We frequently want to compare networks by service path.
+  struct ServicePathEq {
+    explicit ServicePathEq(const std::string& path_in) : path(path_in) {}
+    bool operator()(const WirelessNetwork& a) {
+      return a.service_path().compare(path) == 0;
+    }
+    const std::string& path;
+  };
+
   const std::string& name() const { return name_; }
   int strength() const { return strength_; }
   bool auto_connect() const { return auto_connect_; }
@@ -289,6 +298,13 @@ class NetworkLibrary {
   // Returns the list of remembered cellular networks.
   virtual const CellularNetworkVector& remembered_cellular_networks() const = 0;
 
+  // Search the current list of networks by path and if the network
+  // is available, copy the result and return true.
+  virtual bool FindWifiNetworkByPath(const std::string& path,
+                                     WifiNetwork* result) const = 0;
+  virtual bool FindCellularNetworkByPath(const std::string& path,
+                                         CellularNetwork* result) const = 0;
+
   // Request a scan for new wifi networks.
   virtual void RequestWifiScan() = 0;
 
@@ -416,6 +432,11 @@ class NetworkLibraryImpl : public NetworkLibrary,
     return remembered_cellular_networks_;
   }
 
+  virtual bool FindWifiNetworkByPath(const std::string& path,
+                                     WifiNetwork* network) const;
+  virtual bool FindCellularNetworkByPath(const std::string& path,
+                                         CellularNetwork* network) const;
+
   virtual void RequestWifiScan();
   virtual bool ConnectToPreferredNetworkIfAvailable();
   virtual bool PreferredNetworkConnected();
@@ -493,10 +514,16 @@ class NetworkLibraryImpl : public NetworkLibrary,
   WifiNetwork* GetPreferredNetwork();
 
   // Gets the WifiNetwork with the given name. Returns NULL if not found.
+  // Only used by GetPreferredNetwork() to lookup "Google" and "GoogleA" (hack)
   WifiNetwork* GetWifiNetworkByName(const std::string& name);
 
-  // Gets the WifiNetwork with the given path. Returns NULL if not found.
-  WifiNetwork* GetWifiNetworkByPath(const std::string& path);
+  // Gets the WirelessNetwork (WifiNetwork or CellularNetwork) by path
+  template<typename T>
+  T* GetWirelessNetworkByPath(std::vector<T>& networks,
+                              const std::string& path);
+  template<typename T>
+  const T* GetWirelessNetworkByPath(const std::vector<T>& networks,
+                                    const std::string& path) const;
 
   // Enables/disables the specified network device.
   void EnableNetworkDeviceType(ConnectionType device, bool enable);

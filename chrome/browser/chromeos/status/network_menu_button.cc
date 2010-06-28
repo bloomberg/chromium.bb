@@ -116,18 +116,24 @@ void NetworkMenuButton::ActivatedAt(int index) {
       window->Show();
     }
   } else if (flags & FLAG_WIFI) {
-    WifiNetwork wifi = menu_items_[index].wifi_network;
-
-    // If clicked on a network that we are already connected to or we are
-    // currently trying to connect to, then open config dialog.
-    if (wifi.name() == cros->wifi_name()) {
+    WifiNetwork wifi;
+    bool wifi_exists = cros->FindWifiNetworkByPath(
+        menu_items_[index].wireless_path, &wifi);
+    if (!wifi_exists) {
+      // If we are attempting to connect to a network that no longer exists,
+      // display a notification.
+      // TODO(stevenjb): Show notification.
+    } else if (wifi.name() == cros->wifi_name()) {
       if (cros->wifi_connected()) {
+        // If we are already connected, open the config dialog.
         NetworkConfigView* view = new NetworkConfigView(wifi, false);
         view->set_browser_mode(host_->IsBrowserMode());
         views::Window* window = views::Window::CreateChromeWindow(
             host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
+      } else {
+        // TODO(stevenjb): Connection in progress. Show dialog?
       }
     } else {
       // If wifi network is not encrypted, then directly connect.
@@ -145,11 +151,17 @@ void NetworkMenuButton::ActivatedAt(int index) {
       }
     }
   } else if (flags & FLAG_CELLULAR) {
-    CellularNetwork cellular = menu_items_[index].cellular_network;
+    CellularNetwork cellular;
+    bool cellular_exists = cros->FindCellularNetworkByPath(
+        menu_items_[index].wireless_path, &cellular);
 
-    // If clicked on a network that we are already connected to or we are
-    // currently trying to connect to, then open config dialog.
-    if (cellular.name() == cros->cellular_name()) {
+    if (!cellular_exists) {
+      // If we are attempting to connect to a network that no longer exists,
+      // display a notification.
+      // TODO(stevenjb): Show notification.
+    } else if (cellular.name() == cros->cellular_name()) {
+      // If clicked on a network that we are already connected to or we are
+      // currently trying to connect to, then open config dialog.
       if (cros->cellular_connected()) {
         NetworkConfigView* view = new NetworkConfigView(cellular);
         view->set_browser_mode(host_->IsBrowserMode());
@@ -157,6 +169,8 @@ void NetworkMenuButton::ActivatedAt(int index) {
             host_->GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
+      } else {
+        // TODO(stevenjb): Connection in progress. Show dialog?
       }
     } else {
       cros->ConnectToCellularNetwork(cellular);
@@ -422,7 +436,7 @@ void NetworkMenuButton::InitMenuItems() {
   int flag = (cros->ethernet_connecting() || cros->ethernet_connected()) ?
       FLAG_ETHERNET | FLAG_ASSOCIATED : FLAG_ETHERNET;
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      IconForDisplay(icon, badge), WifiNetwork(), CellularNetwork(), flag));
+      IconForDisplay(icon, badge), std::string(), flag));
 
   // Wifi
   const WifiNetworkVector& wifi_networks = cros->wifi_networks();
@@ -435,8 +449,7 @@ void NetworkMenuButton::InitMenuItems() {
     flag = (wifi_networks[i].name() == cros->wifi_name()) ?
         FLAG_WIFI | FLAG_ASSOCIATED : FLAG_WIFI;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        IconForDisplay(icon, badge), wifi_networks[i], CellularNetwork(),
-        flag));
+        IconForDisplay(icon, badge), wifi_networks[i].service_path(), flag));
   }
 
   // Cellular
@@ -451,7 +464,7 @@ void NetworkMenuButton::InitMenuItems() {
     flag = (cell_networks[i].name() == cros->cellular_name()) ?
         FLAG_CELLULAR | FLAG_ASSOCIATED : FLAG_CELLULAR;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        IconForDisplay(icon, badge), WifiNetwork(), cell_networks[i], flag));
+        IconForDisplay(icon, badge), cell_networks[i].service_path(), flag));
   }
 
   // No networks available message.
@@ -459,7 +472,7 @@ void NetworkMenuButton::InitMenuItems() {
     label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
                 l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
+        SkBitmap(), std::string(), FLAG_DISABLED));
   }
 
   // Other networks
@@ -467,7 +480,7 @@ void NetworkMenuButton::InitMenuItems() {
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
       IconForDisplay(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
                      SkBitmap()),
-      WifiNetwork(), CellularNetwork(), FLAG_OTHER_NETWORK));
+      std::string(), FLAG_OTHER_NETWORK));
 
   if (cros->wifi_available() || cros->cellular_available()) {
     // Separator.
@@ -480,7 +493,7 @@ void NetworkMenuButton::InitMenuItems() {
       label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_WIFI));
+          SkBitmap(), std::string(), FLAG_TOGGLE_WIFI));
     }
 
     // Turn Cellular Off. (only if cellular available)
@@ -490,7 +503,7 @@ void NetworkMenuButton::InitMenuItems() {
       label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_CELLULAR));
+          SkBitmap(), std::string(), FLAG_TOGGLE_CELLULAR));
     }
   }
 
@@ -499,7 +512,7 @@ void NetworkMenuButton::InitMenuItems() {
 //  menu_items_.push_back(MenuItem(cros->offline_mode() ?
 //      menus::MenuModel::TYPE_CHECK : menus::MenuModel::TYPE_COMMAND,
 //      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
-//      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_OFFLINE));
+//      SkBitmap(), std::string(), FLAG_TOGGLE_OFFLINE));
 
   if (cros->Connected() || host_->ShouldOpenButtonOptions(this)) {
     // Separator.
@@ -509,7 +522,7 @@ void NetworkMenuButton::InitMenuItems() {
     if (cros->Connected()) {
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
           ASCIIToUTF16(cros->IPAddress()), SkBitmap(),
-          WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
+          std::string(), FLAG_DISABLED));
     }
 
     // Network settings.
@@ -517,7 +530,7 @@ void NetworkMenuButton::InitMenuItems() {
       label =
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG);
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_OPTIONS));
+          SkBitmap(), std::string(), FLAG_OPTIONS));
     }
   }
 }

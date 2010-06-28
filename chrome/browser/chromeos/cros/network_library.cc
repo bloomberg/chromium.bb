@@ -263,6 +263,32 @@ void NetworkLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+bool NetworkLibraryImpl::FindWifiNetworkByPath(
+    const std::string& path, WifiNetwork* result) const {
+  const WifiNetwork* wifi =
+      GetWirelessNetworkByPath(wifi_networks_, path);
+  if (wifi) {
+    if (result)
+      *result = *wifi;
+    return true;
+  }
+  return false;
+}
+
+bool NetworkLibraryImpl::FindCellularNetworkByPath(
+    const std::string& path, CellularNetwork* result) const {
+  const CellularNetwork* cellular =
+      GetWirelessNetworkByPath(cellular_networks_, path);
+  if (cellular) {
+    if (result)
+      *result = *cellular;
+    return true;
+  }
+  return false;
+}
+
 void NetworkLibraryImpl::RequestWifiScan() {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     RequestScan(TYPE_WIFI);
@@ -300,7 +326,7 @@ bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
     for (int i = 0; i < 30; i++) {
       // Update the system and refetch the network.
       UpdateSystemInfo();
-      wifi = GetWifiNetworkByPath(wifi_path);
+      wifi = GetWirelessNetworkByPath(wifi_networks_, wifi_path);
       // See if identity and certpath are available.
       if (wifi && !wifi->identity().empty() && !wifi->cert_path().empty()) {
         LOG(INFO) << "Google wifi set up after " << (i*0.1) << " seconds.";
@@ -386,7 +412,8 @@ void NetworkLibraryImpl::DisconnectFromWirelessNetwork(
 
 void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
   // Update the wifi network in the local cache.
-  WifiNetwork* wifi = GetWifiNetworkByPath(network.service_path());
+  WifiNetwork* wifi = GetWirelessNetworkByPath(wifi_networks_,
+                                               network.service_path());
   if (wifi)
     *wifi = network;
 
@@ -619,13 +646,21 @@ WifiNetwork* NetworkLibraryImpl::GetWifiNetworkByName(const std::string& name) {
   return NULL;
 }
 
-WifiNetwork* NetworkLibraryImpl::GetWifiNetworkByPath(const std::string& path) {
-  for (size_t i = 0; i < wifi_networks_.size(); ++i) {
-    if (wifi_networks_[i].service_path().compare(path) == 0) {
-      return &wifi_networks_[i];
-    }
-  }
-  return NULL;
+template<typename T> T* NetworkLibraryImpl::GetWirelessNetworkByPath(
+    std::vector<T>& networks, const std::string& path) {
+  typedef typename std::vector<T>::iterator iter_t;
+  iter_t iter = std::find_if(networks.begin(), networks.end(),
+                             WirelessNetwork::ServicePathEq(path));
+  return (iter != networks.end()) ? &(*iter) : NULL;
+}
+
+// const version
+template<typename T> const T* NetworkLibraryImpl::GetWirelessNetworkByPath(
+    const std::vector<T>& networks, const std::string& path) const {
+  typedef typename std::vector<T>::const_iterator iter_t;
+  iter_t iter = std::find_if(networks.begin(), networks.end(),
+                             WirelessNetwork::ServicePathEq(path));
+  return (iter != networks.end()) ? &(*iter) : NULL;
 }
 
 void NetworkLibraryImpl::EnableNetworkDeviceType(ConnectionType device,
