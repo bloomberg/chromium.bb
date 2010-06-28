@@ -1451,6 +1451,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'm':         'sourcecode.c.objc',
         'mm':        'sourcecode.cpp.objcpp',
         'nib':       'wrapper.nib',
+        'o':         'compiled.mach-o.objfile',
         'pdf':       'image.pdf',
         'pl':        'text.script.perl',
         'plist':     'text.plist.xml',
@@ -1837,7 +1838,16 @@ class PBXFrameworksBuildPhase(XCBuildPhase):
     return 'Frameworks'
 
   def FileGroup(self, path):
-    return (self.PBXProjectAncestor().FrameworksGroup(), False)
+    (root, ext) = posixpath.splitext(path)
+    if ext != '':
+      ext = ext[1:].lower()
+    if ext == 'o':
+      # .o files are added to Xcode Frameworks phases, but conceptually aren't
+      # frameworks, they're more like sources or intermediates. Redirect them
+      # to show up in one of those other groups.
+      return self.PBXProjectAncestor().RootGroupForPath(path)
+    else:
+      return (self.PBXProjectAncestor().FrameworksGroup(), False)
 
 
 class PBXShellScriptBuildPhase(XCBuildPhase):

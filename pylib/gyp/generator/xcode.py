@@ -491,8 +491,16 @@ def InstalledXcodeVersion():
 
 
 def AddSourceToTarget(source, pbxp, xct):
-  # TODO(mark): Perhaps this can be made a little bit fancier.
+  # TODO(mark): Perhaps source_extensions and library_extensions can be made a
+  # little bit fancier.
   source_extensions = ['c', 'cc', 'cpp', 'cxx', 'm', 'mm', 's']
+
+  # .o is conceptually more of a "source" than a "library," but Xcode thinks
+  # of "sources" as things to compile and "libraries" (or "frameworks") as
+  # things to link with. Adding an object file to an Xcode target's frameworks
+  # phase works properly.
+  library_extensions = ['a', 'dylib', 'framework', 'o']
+
   basename = posixpath.basename(source)
   (root, ext) = posixpath.splitext(basename)
   if ext != '':
@@ -500,9 +508,11 @@ def AddSourceToTarget(source, pbxp, xct):
 
   if ext in source_extensions:
     xct.SourcesPhase().AddFile(source)
+  elif ext in library_extensions:
+    xct.FrameworksPhase().AddFile(source)
   else:
-    # Files that aren't added to a sources build phase can still go into
-    # the project file, just not as part of a build phase.
+    # Files that aren't added to a sources or frameworks build phase can still
+    # go into the project file, just not as part of a build phase.
     pbxp.AddOrGetFileInRootGroup(source)
 
 
