@@ -68,8 +68,4 @@ bool DownloadUrl(const std::string& url, HWND caller_window) {
 }
 #endif
 
-bool IsSingleProcess() {
-  return true;
-}
-
 }  // namespace webkit_glue

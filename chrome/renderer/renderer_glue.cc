@@ -15,7 +15,6 @@
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/resource_bundle.h"
-#include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
@@ -280,10 +279,6 @@ std::string GetProductVersion() {
   product += version_info.get() ? WideToASCII(version_info->product_version())
                                 : "0.0.0.0";
   return product;
-}
-
-bool IsSingleProcess() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
 
 }  // namespace webkit_glue
