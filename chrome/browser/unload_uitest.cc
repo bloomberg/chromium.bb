@@ -17,7 +17,8 @@
 
 #if defined(OS_LINUX)
 // http://crbug.com/47575
-#define MAYBE_BrowserCloseNoUnloadListeners FLAKY_BrowserCloseNoUnloadListeners
+#define MAYBE_BrowserCloseNoUnloadListeners \
+        DISABLED_BrowserCloseNoUnloadListeners
 #else
 #define MAYBE_BrowserCloseNoUnloadListeners BrowserCloseNoUnloadListeners
 #endif
