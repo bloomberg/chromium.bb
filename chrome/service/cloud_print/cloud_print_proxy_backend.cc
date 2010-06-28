@@ -289,6 +289,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     const std::string cloud_print_xmpp_token,
     const std::string email, const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  LOG(INFO) << "CP_PROXY: Starting proxy, id: " << proxy_id;
 
   print_system_ =
       cloud_print::PrintSystem::CreateInstance(print_system_settings_.get());
@@ -337,6 +338,7 @@ void CloudPrintProxyBackend::Core::EndRegistration() {
 }
 
 void CloudPrintProxyBackend::Core::DoShutdown() {
+  LOG(INFO) << "CP_PROXY: Shutdown proxy, id: " << proxy_id_;
   if (print_server_watcher_ != NULL)
     print_server_watcher_->StopWatching();
 
@@ -362,6 +364,7 @@ void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
 
 void CloudPrintProxyBackend::Core::DoHandlePrinterNotification(
     const std::string& printer_id) {
+  LOG(INFO) << "CP_PROXY: Handle printer notification, id: " << printer_id;
   JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
   if (index != job_handler_map_.end())
     index->second->NotifyJobAvailable();
@@ -416,7 +419,7 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
       for (it = info.options.begin(); it != info.options.end(); ++it) {
         // TODO(gene) Escape '=' char from name. Warning for now.
         if (it->first.find('=') != std::string::npos) {
-          LOG(WARNING) << "CUPS option name contains '=' character";
+          LOG(WARNING) << "CP_PROXY: CUPS option name contains '=' character";
           NOTREACHED();
         }
         std::string msg(it->first);
@@ -454,7 +457,8 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
           &CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse;
       request_->Start();
     } else {
-      LOG(ERROR) << "CP: Failed to get printer info for: " << info.printer_name;
+      LOG(ERROR) << "CP_PROXY: Failed to get printer info for: " <<
+          info.printer_name;
       next_upload_index_++;
       MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
           &CloudPrintProxyBackend::Core::RegisterNextPrinter));
@@ -544,6 +548,7 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
   std::string printer_id;
   printer_data->GetString(kIdValue, &printer_id);
   DCHECK(!printer_id.empty());
+  LOG(INFO) << "CP_PROXY: Init job handler for printer id: " << printer_id;
   JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
   // We might already have a job handler for this printer
   if (index == job_handler_map_.end()) {
@@ -569,6 +574,8 @@ void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
     const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
+  LOG(INFO) << "CP_PROXY: Handle register printer response, code: " <<
+      response_code;
   Task* next_task =
       NewRunnableMethod(this,
                         &CloudPrintProxyBackend::Core::RegisterNextPrinter);
@@ -598,6 +605,7 @@ void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
 }
 
 void CloudPrintProxyBackend::Core::HandleServerError(Task* task_to_retry) {
+  LOG(INFO) << "CP_PROXY: Server error.";
   CloudPrintHelpers::HandleServerError(
       &server_error_count_, -1, kMaxRetryInterval, kBaseRetryInterval,
       task_to_retry, NULL);
@@ -623,6 +631,7 @@ void CloudPrintProxyBackend::Core::OnNotificationStateChange(
 
 void CloudPrintProxyBackend::Core::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
+  LOG(INFO) << "CP_PROXY: Incoming notification.";
   if (0 == base::strcasecmp(kCloudPrintTalkServiceUrl,
                              notification_data.service_url.c_str())) {
     backend_->core_thread_.message_loop()->PostTask(
@@ -647,6 +656,7 @@ void CloudPrintProxyBackend::Core::OnPrinterAdded() {
 // PrinterJobHandler::Delegate implementation
 void CloudPrintProxyBackend::Core::OnPrinterJobHandlerShutdown(
     PrinterJobHandler* job_handler, const std::string& printer_id) {
+  LOG(INFO) << "CP_PROXY: Printer job handle shutdown, id " << printer_id;
   job_handler_map_.erase(printer_id);
 }
 
