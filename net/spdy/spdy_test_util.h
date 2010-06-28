@@ -40,6 +40,13 @@ const uint8 kGetSynReply[] = {
   0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
 };
 
+const uint8 kGetRst[] = {
+  0x80, 0x01, 0x00, 0x03,                                        // header
+  0x00, 0x00, 0x00, 0x08,
+  0x00, 0x00, 0x00, 0x01,
+  0x00, 0x00, 0x00, 0x05,                                        // 4 headers
+};
+
 const uint8 kGetBodyFrame[] = {
   0x00, 0x00, 0x00, 0x01,                                        // header
   0x01, 0x00, 0x00, 0x06,                                        // FIN, length
