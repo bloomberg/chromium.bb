@@ -12,10 +12,10 @@
 #include "base/logging.h"
 #include "base/waitable_event.h"
 #include "base/message_loop.h"
-#include "chrome/common/net/notifier/communicator/gaia_token_pre_xmpp_auth.h"
-#include "chrome/common/net/notifier/communicator/xmpp_socket_adapter.h"
+#include "remoting/jingle_glue/gaia_token_pre_xmpp_auth.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/relay_port_allocator.h"
+#include "remoting/jingle_glue/xmpp_socket_adapter.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionmanager.h"
@@ -120,8 +120,7 @@ void JingleClient::DoInitialize(const std::string& username,
   client_->SignalStateChange.connect(
       this, &JingleClient::OnConnectionStateChanged);
 
-  buzz::AsyncSocket* socket =
-      new notifier::XmppSocketAdapter(settings, false);
+  buzz::AsyncSocket* socket = new XmppSocketAdapter(settings, false);
 
   client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
   client_->Start();
@@ -221,8 +220,8 @@ void JingleClient::UpdateState(State new_state) {
 buzz::PreXmppAuth* JingleClient::CreatePreXmppAuth(
     const buzz::XmppClientSettings& settings) {
   buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
-  return new notifier::GaiaTokenPreXmppAuth(jid.Str(), settings.auth_cookie(),
-                                            settings.token_service());
+  return new GaiaTokenPreXmppAuth(jid.Str(), settings.auth_cookie(),
+                                  settings.token_service());
 }
 
 }  // namespace remoting

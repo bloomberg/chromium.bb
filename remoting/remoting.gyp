@@ -252,9 +252,7 @@
       'target_name': 'chromoting_jingle_glue',
       'type': '<(library)',
       'dependencies': [
-        # TODO(sergeyu): move all code that is shared between notifier and
-        # jingle_glue to a separate library and use it here.
-        '../chrome/chrome.gyp:notifier',
+        '../net/net.gyp:net',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
@@ -263,18 +261,26 @@
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'sources': [
-        'jingle_glue/iq_request.h',
+        'jingle_glue/gaia_token_pre_xmpp_auth.cc',
+        'jingle_glue/gaia_token_pre_xmpp_auth.h',
         'jingle_glue/iq_request.cc',
-        'jingle_glue/jingle_channel.h',
+        'jingle_glue/iq_request.h',
         'jingle_glue/jingle_channel.cc',
-        'jingle_glue/jingle_client.h',
+        'jingle_glue/jingle_channel.h',
         'jingle_glue/jingle_client.cc',
-        'jingle_glue/jingle_info_task.h',
+        'jingle_glue/jingle_client.h',
         'jingle_glue/jingle_info_task.cc',
-        'jingle_glue/jingle_thread.h',
+        'jingle_glue/jingle_info_task.h',
         'jingle_glue/jingle_thread.cc',
-        'jingle_glue/relay_port_allocator.h',
+        'jingle_glue/jingle_thread.h',
         'jingle_glue/relay_port_allocator.cc',
+        'jingle_glue/relay_port_allocator.h',
+        'jingle_glue/ssl_adapter.cc',
+        'jingle_glue/ssl_adapter.h',
+        'jingle_glue/ssl_socket_adapter.cc',
+        'jingle_glue/ssl_socket_adapter.h',
+        'jingle_glue/xmpp_socket_adapter.cc',
+        'jingle_glue/xmpp_socket_adapter.h',
       ],
     },  # end of target 'chromoting_jingle_glue'
 
@@ -305,13 +311,6 @@
         '../gfx/gfx.gyp:*',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        # TODO(hclam): Remove all these extra dependencies notifier is moved
-        # outside of chrome.gyp.
-        '../chrome/chrome.gyp:browser',
-        '../chrome/chrome.gyp:chrome_version_info',
-        '../chrome/chrome.gyp:debugger',
-        '../chrome/chrome.gyp:plugin',
-        '../chrome/chrome.gyp:renderer',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:database',

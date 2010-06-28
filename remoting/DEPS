@@ -1,8 +1,11 @@
 include_rules = [
-  "+chrome/common",
   "+gfx",
   "+google/protobuf",
   "+media/base",
+
+  # TODO(ajwong): Remove when xmpp code is out of jingle_glue.
+  "+net",  
+
   "+talk",
   "+third_party/npapi",
   "+third_party/zlib",
