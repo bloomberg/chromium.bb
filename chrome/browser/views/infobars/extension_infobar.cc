@@ -67,6 +67,14 @@ ExtensionInfoBar::~ExtensionInfoBar() {
 
 void ExtensionInfoBar::OnExtensionPreferredSizeChanged(ExtensionView* view) {
   DCHECK(view == delegate_->extension_host()->view());
+  
+  // When the infobar is closed, it animates to 0 vertical height. We'll
+  // continue to get size changed notifications from the ExtensionView, but we
+  // need to ignore them otherwise we'll try to re-animate open (and leak the
+  // infobar view).
+  if (delegate_->closing())
+    return;
+
   delegate_->extension_host()->view()->SetVisible(true);
 
   gfx::Size sz = view->GetPreferredSize();

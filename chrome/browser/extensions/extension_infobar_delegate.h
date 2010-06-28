@@ -33,6 +33,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   void set_observer(DelegateObserver* observer) { observer_ = observer; }
 
   // Overridden from InfoBarDelegate:
+  virtual void InfoBarDismissed() { closing_ = true; }
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual void InfoBarClosed();
   virtual InfoBar* CreateInfoBar();
@@ -48,6 +49,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  bool closing() { return closing_; }
  private:
   // The extension host we are showing the InfoBar for. The delegate needs to
   // own this since the InfoBar gets deleted and recreated when you switch tabs
@@ -63,6 +65,10 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   TabContents* tab_contents_;
 
   NotificationRegistrar registrar_;
+
+  // Whether we are currently animating to close. This is used to ignore
+  // ExtensionView::PreferredSizeChanged notifications.
+  bool closing_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoBarDelegate);
 };

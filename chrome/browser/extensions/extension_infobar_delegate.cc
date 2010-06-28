@@ -20,7 +20,8 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
     : InfoBarDelegate(tab_contents),
       observer_(NULL),
       extension_(extension),
-      tab_contents_(tab_contents) {
+      tab_contents_(tab_contents),
+      closing_(false) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   extension_host_.reset(manager->CreateInfobar(url, browser));
