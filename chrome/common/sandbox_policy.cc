@@ -430,6 +430,11 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   bool child_needs_help =
       DebugFlags::ProcessDebugFlags(cmd_line, type, in_sandbox);
 
+  // Prefetch hints on windows:
+  // Using a different prefetch profile per process type will allow Windows
+  // to create separate pretetch settings for browser, renderer etc.
+  cmd_line->AppendLooseValue(StringPrintf(L"/prefetch:%d", type));
+
   if (!in_sandbox) {
     base::LaunchApp(*cmd_line, false, false, &process);
     return process;
