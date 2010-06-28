@@ -23,3 +23,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, sources))
   return results
+
+def GetPreferredTrySlaves():
+  return ['win', 'linux', 'linux_view', 'linux_chromeos', 'mac']
