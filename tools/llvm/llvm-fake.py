@@ -226,7 +226,7 @@ LLVM_GXX = BASE_ARM + '/llvm-gcc-4.2/bin/llvm-g++'
 
 LLC_ARM = BASE_ARM + '/llvm/bin/llc'
 
-LLC_SFI_ARM = BASE_ARM + '/llvm/bin/llc-sfi'
+LLC_SFI_ARM = BASE_ARM + '/llvm/bin/llc'
 
 # NOTE: this is currently a user provided binary
 LLC_SFI_X8632 = BASE + '/llc-x86-32-sfi'

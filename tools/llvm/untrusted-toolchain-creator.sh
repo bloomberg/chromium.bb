@@ -297,9 +297,6 @@ llvm() {
                   ${LLVM_DEV}
   pushd ${tmpdir}/llvm-trunk
 
-  # TODO(adonovan): this is a hack which Cliff will revert ASAP (Jun
-  # 14 2010)
-  Run "Patching hack" patch -p1 < ${PATCH_DIR}/llvm-hack-sfi.patch
 
   # The --with-binutils-include is to allow llvm to build the gold plugin
   local binutils_include="${TMP}/binutils.nacl/src/binutils-2.20/include"
@@ -326,9 +323,6 @@ llvm() {
 
   RunWithLog "Installing LLVM" ${TMP}/llvm-install.log \
        make ${MAKE_OPTS} install
-
-  Run "Linking llc-sfi" ln -s \
-           llc ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm/bin/llc-sfi
 
   SubBanner "Linking the plugin"
   mkdir -p ${BFD_PLUGIN_DIR}
@@ -985,11 +979,6 @@ untrusted_sdk() {
   prune
   tarball $1
 }
-
-#@
-#@ llc-sfi
-#@
-#@   Build and install SFI llc.
 
 #@
 #@ llvm
