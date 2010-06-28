@@ -250,7 +250,8 @@ bool Image::LoadMetafile(const NativeMetafile& metafile) {
                               kCGImageAlphaPremultipliedLast));
     DCHECK(bitmap_context.get());
     metafile.RenderPage(page_number, bitmap_context,
-                        CGRectMake(0, 0, size_.width(), size_.height()));
+                        CGRectMake(0, 0, size_.width(), size_.height()),
+                        true, false, false, false);
   }
 #else
   NOTIMPLEMENTED();

@@ -44,6 +44,7 @@
 #include "printing/units.h"
 #include "skia/ext/vector_platform_device.h"
 #endif
+#include "printing/native_metafile.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npapi_extensions_private.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
@@ -1136,10 +1137,10 @@ int WebPluginDelegatePepper::PrintBegin(const gfx::Rect& printable_area,
 
 bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
                                               WebKit::WebCanvas* canvas) {
-#if !defined(OS_WIN)
-  // TODO(sanjeevr): Add vector print support for Mac and Linux.
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+  // TODO(sanjeevr): Add vector print support for Linux.
   return false;
-#endif  // !defined(OS_WIN)
+#endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
   NPPPrintExtensions* print_extensions = GetPrintExtensions();
   if (!print_extensions)
     return false;
@@ -1165,7 +1166,19 @@ bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
     return false;
 
   bool ret = false;
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+  printing::NativeMetafile metafile;
+  // Create a PDF metafile and render from there into the passed in context.
+  if (metafile.Init(pdf_output, output_size)) {
+    // Flip the transform.
+    CGContextSaveGState(canvas);
+    CGContextTranslateCTM(canvas, 0, current_printable_area_.height());
+    CGContextScaleCTM(canvas, 1.0, -1.0);
+    ret = metafile.RenderPage(1, canvas, current_printable_area_.ToCGRect(),
+                              true, false, true, true);
+    CGContextRestoreGState(canvas);
+  }
+#elif defined(OS_WIN)
   // On Windows, we now need to render the PDF to the DC that backs the
   // supplied canvas.
   skia::VectorPlatformDevice& device =

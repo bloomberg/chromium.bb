@@ -105,7 +105,10 @@ void PdfMetafile::Close() {
 }
 
 bool PdfMetafile::RenderPage(unsigned int page_number, CGContextRef context,
-                             const CGRect rect) const {
+                             const CGRect rect, bool shrink_to_fit,
+                             bool stretch_to_fit,
+                             bool center_horizontally,
+                             bool center_vertically) const {
   CGPDFDocumentRef pdf_doc = GetPDFDocument();
   if (!pdf_doc) {
     LOG(ERROR) << "Unable to create PDF document from data";
@@ -113,14 +116,43 @@ bool PdfMetafile::RenderPage(unsigned int page_number, CGContextRef context,
   }
   CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
   CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFMediaBox);
+  float scaling_factor = 1.0;
+  // See if we need to scale the output.
+  bool scaling_needed =
+      (shrink_to_fit && ((source_rect.size.width > rect.size.width) ||
+                         (source_rect.size.height > rect.size.height))) ||
+      (stretch_to_fit && (source_rect.size.width < rect.size.width) &&
+          (source_rect.size.height < rect.size.height));
+  if (scaling_needed) {
+    float x_scaling_factor = rect.size.width / source_rect.size.width;
+    float y_scaling_factor = rect.size.height / source_rect.size.height;
+    if (x_scaling_factor > y_scaling_factor) {
+      scaling_factor = y_scaling_factor;
+    } else {
+      scaling_factor = x_scaling_factor;
+    }
+  }
+  // Some PDFs have a non-zero origin. Need to take that into account.
+  float x_offset = rect.origin.x - (source_rect.origin.x * scaling_factor);
+  float y_offset = rect.origin.y - (source_rect.origin.y * scaling_factor);
 
+  if (center_vertically) {
+    x_offset += (rect.size.width -
+                     (source_rect.size.width * scaling_factor))/2;
+  }
+  if (center_horizontally) {
+    y_offset += (rect.size.height -
+                     (source_rect.size.height * scaling_factor))/2;
+  } else {
+    // Since 0 y begins at the bottom, we need to adjust so the output appears
+    // nearer the top if we are not centering horizontally.
+    y_offset += rect.size.height - (source_rect.size.height * scaling_factor);
+  }
   CGContextSaveGState(context);
-  CGContextTranslateCTM(context, rect.origin.x, rect.origin.y);
-  CGContextScaleCTM(context, rect.size.width / source_rect.size.width,
-                    rect.size.height / source_rect.size.height);
+  CGContextTranslateCTM(context, x_offset, y_offset);
+  CGContextScaleCTM(context, scaling_factor, scaling_factor);
   CGContextDrawPDFPage(context, pdf_page);
   CGContextRestoreGState(context);
-
   return true;
 }
 

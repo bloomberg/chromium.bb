@@ -31,7 +31,8 @@ void PrintedDocument::RenderPrintedPage(
   const printing::NativeMetafile* metafile = page.native_metafile();
   // Each NativeMetafile is a one-page PDF, and pages use 1-based indexing.
   const int page_number = 1;
-  metafile->RenderPage(page_number, context, target_rect);
+  metafile->RenderPage(page_number, context, target_rect, true, false, false,
+                       false);
 
   // TODO(stuartmorgan): Print the header and footer.
 }

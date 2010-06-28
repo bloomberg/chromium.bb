@@ -51,10 +51,23 @@ class PdfMetafile {
   void Close();
 
   // Renders the given page into |rect| in the given context.
-  // Pages use a 1-based index.
+  // Pages use a 1-based index. The rendering uses the following arguments
+  // to determine scaling and translation factors.
+  // |shrink_to_fit| specifies whether the output should be shrunk to fit the
+  // supplied |rect| if the page size is larger than |rect| in any dimension.
+  // If this is false, parts of the PDF page that lie outside the bounds will be
+  // clipped.
+  // |stretch_to_fit| specifies whether the output should be stretched to fit
+  // the supplied bounds if the page size is smaller than |rect| in all
+  // dimensions.
+  // |center_horizontally| specifies whether the final image (after any scaling
+  // is done) should be centered horizontally within the given |rect|.
+  // |center_vertically| specifies whether the final image (after any scaling
+  // is done) should be centered vertically within the given |rect|.
+  // Note that all scaling preserves the original aspect ratio of the page.
   bool RenderPage(unsigned int page_number, CGContextRef context,
-                  const CGRect rect) const;
-
+                  const CGRect rect, bool shrink_to_fit, bool stretch_to_fit,
+                  bool center_horizontally, bool center_vertically) const;
   unsigned int GetPageCount() const;
 
   // Returns the bounds of the given page.
