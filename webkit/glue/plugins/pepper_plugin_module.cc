@@ -44,9 +44,6 @@
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
-typedef bool (*PPP_InitializeModuleFunc)(PP_Module, PPB_GetInterface);
-typedef void (*PPP_ShutdownModuleFunc)();
-
 namespace pepper {
 
 namespace {
@@ -187,11 +184,9 @@ const void* GetInterface(const char* name) {
 
 }  // namespace
 
-PluginModule::PluginModule(const FilePath& filename)
-    : filename_(filename),
-      initialized_(false),
-      library_(0),
-      ppp_get_interface_(NULL) {
+PluginModule::PluginModule()
+    : initialized_(false),
+      library_(NULL) {
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
 }
@@ -203,25 +198,31 @@ PluginModule::~PluginModule() {
 
   GetLivePluginSet()->erase(this);
 
-  if (library_) {
-    PPP_ShutdownModuleFunc shutdown_module =
-        reinterpret_cast<PPP_ShutdownModuleFunc>(
-            base::GetFunctionPointerFromNativeLibrary(library_,
-                                                      "PPP_ShutdownModule"));
-    if (shutdown_module)
-      shutdown_module();
+  if (entry_points_.shutdown_module)
+    entry_points_.shutdown_module();
+
+  if (library_)
     base::UnloadNativeLibrary(library_);
-  }
 }
 
 // static
 scoped_refptr<PluginModule> PluginModule::CreateModule(
-    const FilePath& filename) {
+    const FilePath& path) {
   // FIXME(brettw) do uniquifying of the plugin here like the NPAPI one.
 
-  scoped_refptr<PluginModule> lib(new PluginModule(filename));
-  if (!lib->Load())
-    lib = NULL;
+  scoped_refptr<PluginModule> lib(new PluginModule());
+  if (!lib->InitFromFile(path))
+    return NULL;
+
+  return lib;
+}
+
+scoped_refptr<PluginModule> PluginModule::CreateInternalModule(
+    EntryPoints entry_points) {
+  scoped_refptr<PluginModule> lib(new PluginModule());
+  if (!lib->InitFromEntryPoints(entry_points))
+    return NULL;
+
   return lib;
 }
 
@@ -233,39 +234,71 @@ PluginModule* PluginModule::FromPPModule(PP_Module module) {
   return lib;
 }
 
-bool PluginModule::Load() {
+bool PluginModule::InitFromEntryPoints(const EntryPoints& entry_points) {
   if (initialized_)
     return true;
-  initialized_ = true;
 
-  library_ = base::LoadNativeLibrary(filename_);
-  if (!library_)
-    return false;
-
-  // Save the GetInterface function pointer for later.
-  ppp_get_interface_ =
-      reinterpret_cast<PPP_GetInterfaceFunc>(
-          base::GetFunctionPointerFromNativeLibrary(library_,
-                                                    "PPP_GetInterface"));
-  if (!ppp_get_interface_) {
-    LOG(WARNING) << "No PPP_GetInterface in plugin library";
-    return false;
-  }
-
-  // Call the plugin initialize function.
-  PPP_InitializeModuleFunc initialize_module =
-      reinterpret_cast<PPP_InitializeModuleFunc>(
-          base::GetFunctionPointerFromNativeLibrary(library_,
-                                                    "PPP_InitializeModule"));
-  if (!initialize_module) {
-    LOG(WARNING) << "No PPP_InitializeModule in plugin library";
-    return false;
-  }
-  int retval = initialize_module(GetPPModule(), &GetInterface);
+  // Attempt to run the initialization funciton.
+  int retval = entry_points.initialize_module(GetPPModule(), &GetInterface);
   if (retval != 0) {
     LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
     return false;
   }
+
+  entry_points_ = entry_points;
+  initialized_ = true;
+  return true;
+}
+
+bool PluginModule::InitFromFile(const FilePath& path) {
+  if (initialized_)
+    return true;
+
+  base::NativeLibrary library = base::LoadNativeLibrary(path);
+  if (!library)
+    return false;
+
+  EntryPoints entry_points;
+  if (!LoadEntryPoints(library, &entry_points) ||
+      !InitFromEntryPoints(entry_points)) {
+    base::UnloadNativeLibrary(library);
+    return false;
+  }
+
+  // We let InitFromEntryPoints() handle setting the all the internal state
+  // of the object other than the |library_| reference.
+  library_ = library;
+  return true;
+}
+
+// static
+bool PluginModule::LoadEntryPoints(const base::NativeLibrary& library,
+                                   EntryPoints* entry_points) {
+
+  entry_points->get_interface =
+      reinterpret_cast<PPP_GetInterfaceFunc>(
+          base::GetFunctionPointerFromNativeLibrary(library,
+                                                    "PPP_GetInterface"));
+  if (!entry_points->get_interface) {
+    LOG(WARNING) << "No PPP_GetInterface in plugin library";
+    return false;
+  }
+
+  entry_points->initialize_module =
+      reinterpret_cast<PPP_InitializeModuleFunc>(
+          base::GetFunctionPointerFromNativeLibrary(library,
+                                                    "PPP_InitializeModule"));
+  if (!entry_points->initialize_module) {
+    LOG(WARNING) << "No PPP_InitializeModule in plugin library";
+    return false;
+  }
+
+  // It's okay for PPP_ShutdownModule to not be defined and shutdown_module to
+  // be NULL.
+  entry_points->shutdown_module =
+      reinterpret_cast<PPP_ShutdownModuleFunc>(
+          base::GetFunctionPointerFromNativeLibrary(library,
+                                                    "PPP_ShutdownModule"));
 
   return true;
 }
@@ -293,9 +326,9 @@ PluginInstance* PluginModule::GetSomeInstance() const {
 }
 
 const void* PluginModule::GetPluginInterface(const char* name) const {
-  if (!ppp_get_interface_)
+  if (!entry_points_.get_interface)
     return NULL;
-  return ppp_get_interface_(name);
+  return entry_points_.get_interface(name);
 }
 
 void PluginModule::InstanceCreated(PluginInstance* instance) {

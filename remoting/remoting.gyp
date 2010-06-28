@@ -16,46 +16,8 @@
   },
 
   'conditions': [
-    # Chromoting Client targets
     ['OS=="linux" or OS=="mac"', {
       'targets': [
-        {
-          'target_name': 'chromoting_client_plugin',
-          'type': 'static_library',
-          'defines': [
-            'HAVE_STDINT_H',  # Required by on2_integer.h
-          ],
-          'dependencies': [
-            'chromoting_base',
-            'chromoting_client',
-            'chromoting_jingle_glue',
-            '../third_party/ppapi/ppapi.gyp:ppapi_cpp',
-            '../third_party/zlib/zlib.gyp:zlib',
-          ],
-          'sources': [
-            'client/plugin/chromoting_plugin.cc',
-            'client/plugin/chromoting_plugin.h',
-            'client/plugin/pepper_view.cc',
-            'client/plugin/pepper_view.h',
-            '../media/base/yuv_convert.cc',
-            '../media/base/yuv_convert.h',
-            '../media/base/yuv_row.h',
-            '../media/base/yuv_row_posix.cc',
-            '../media/base/yuv_row_table.cc',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'sources': [
-                '../media/base/yuv_row_win.cc',
-              ],
-            }],
-            ['OS=="linux" and target_arch=="x64" and linux_fpic!=1', {
-              # Shared libraries need -fPIC on x86-64
-              'cflags': ['-fPIC'],
-            }],
-          ],  # end of 'conditions'
-        },  # end of target 'chromoting_client_plugin'
-
         # Simple webserver for testing chromoting client plugin.
         {
           'target_name': 'chromoting_client_test_webserver',
@@ -63,13 +25,13 @@
           'sources': [
             'tools/client_webserver/main.c',
           ],
-        },  # end of target 'chromoting_client_test_webserver'
-
-      ],  # end of Client targets
-    }],  # end of OS conditions for Client targets
+        }
+      ],  # end of target 'chromoting_client_test_webserver'
+    }],
 
     # TODO(hclam): Enable this target for mac.
     ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+
       'targets': [
         {
           'target_name': 'chromoting_x11_client',
@@ -99,6 +61,45 @@
   ],  # end of 'conditions'
 
   'targets': [
+    {
+      'target_name': 'chromoting_plugin',
+      'type': 'static_library',
+      'defines': [
+        'HAVE_STDINT_H',  # Required by on2_integer.h
+      ],
+      'dependencies': [
+        'chromoting_base',
+        'chromoting_client',
+        'chromoting_jingle_glue',
+        '../third_party/ppapi/ppapi.gyp:ppapi_c',
+        '../third_party/zlib/zlib.gyp:zlib',
+      ],
+      'sources': [
+        'client/plugin/chromoting_plugin.cc',
+        'client/plugin/chromoting_plugin.h',
+        'client/plugin/pepper_entrypoints.cc',
+        'client/plugin/pepper_entrypoints.h',
+        'client/plugin/pepper_view.cc',
+        'client/plugin/pepper_view.h',
+        '../media/base/yuv_convert.cc',
+        '../media/base/yuv_convert.h',
+        '../media/base/yuv_row.h',
+        '../media/base/yuv_row_table.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'sources': [
+            '../media/base/yuv_row_win.cc',
+          ],
+        }],
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="mac"', {
+          'sources': [
+            '../media/base/yuv_row_posix.cc',
+          ],
+        }],
+      ],  # end of 'conditions'
+    },  # end of target 'chromoting_plugin'
+
     {
       'target_name': 'chromoting_base',
       'type': '<(library)',
@@ -311,11 +312,6 @@
         '../gfx/gfx.gyp:*',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '../webkit/support/webkit_support.gyp:appcache',
-        '../webkit/support/webkit_support.gyp:database',
-        '../webkit/support/webkit_support.gyp:glue',
-        '../webkit/support/webkit_support.gyp:webkit_support',
       ],
       'include_dirs': [
         '../testing/gmock/include',
