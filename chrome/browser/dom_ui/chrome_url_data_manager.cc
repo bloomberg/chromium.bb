@@ -158,6 +158,13 @@ bool ChromeURLDataManager::URLToFilePath(const GURL& url,
   if (i == Singleton<ChromeURLDataManager>()->file_sources_.end())
     return false;
 
+  // Check that |relative_path| is not an absolute path (otherwise AppendASCII()
+  // will DCHECK). The awkward use of StringType is because on some systems
+  // FilePath expects a std::string, but on others a std::wstring.
+  FilePath p(FilePath::StringType(relative_path.begin(), relative_path.end()));
+  if (p.IsAbsolute())
+    return false;
+
   *file_path = i->second.AppendASCII(relative_path);
 
   return true;
