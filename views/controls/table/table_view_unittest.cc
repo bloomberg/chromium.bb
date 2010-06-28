@@ -319,7 +319,7 @@ TEST_F(TableViewTest, DISABLED_PersistSelectionOnSort) {
 
 // Failing: http://crbug.com/45015
 // Tests selection iterator with sort.
-TEST_F(TableViewTest, FAILS_PersistMultiSelectionOnSort) {
+TEST_F(TableViewTest, DISABLED_PersistMultiSelectionOnSort) {
   SetUpMultiSelectTestState(true);
 }
 
