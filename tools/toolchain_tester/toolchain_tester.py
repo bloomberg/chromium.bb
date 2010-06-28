@@ -30,6 +30,7 @@ REPORT_STREAMS = [sys.stdout]
 TIMEOUT = 120
 VERBOSE = 0
 TMP_PREFIX = '/tmp/tc_test_'
+SHOW_CONSOLE = 1
 
 # module with settings for compiler, etc.
 CFG = None
@@ -48,7 +49,7 @@ def Banner(message):
   Print('=' * 70)
 
 # ======================================================================
-def RunCommand(cmd):
+def RunCommand(cmd, always_dump_stdout_stderr):
   """Run a shell command given as an argv style vector."""
   if VERBOSE:
     Print(str(cmd))
@@ -72,6 +73,9 @@ def RunCommand(cmd):
 
   if retcode != 0:
     Print('Error: command failed %d %s' % (retcode, str(cmd)))
+    always_dump_stdout_stderr = True
+
+  if always_dump_stdout_stderr:
     Print(stderr)
     Print(stdout)
   return retcode
@@ -90,7 +94,7 @@ def MakeExecutableCustom(config, test, extra):
   for phase, command in config.GetCommands(d):
     command = command.split()
     try:
-      retcode = RunCommand(command)
+      retcode = RunCommand(command, SHOW_CONSOLE)
     except Exception, err:
       Print("cannot run phase %s: %s" % (phase, str(err)))
       return phase
@@ -106,6 +110,7 @@ def ParseCommandLineArgs(argv):
   try:
     opts, args = getopt.getopt(argv[1:], '',
                                ['verbose',
+                                'show_console',
                                 'config=',
                                 'tmp='])
   except getopt.GetoptError, err:
@@ -117,6 +122,8 @@ def ParseCommandLineArgs(argv):
     o = o[2:]
     if o == 'verbose':
       VERBOSE = 1
+    elif o == 'show_console':
+      SHOW_CONSOLE = 1
     elif o == 'tmp':
       TMP_PREFIX = a
     elif o == 'config':
