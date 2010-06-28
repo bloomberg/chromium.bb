@@ -1508,8 +1508,18 @@ void SyncManager::SyncInternal::SetPassphrase(
     // passphrase get applied as soon as possible.
     sync_manager_->RequestNudge();
   } else {
+    WriteTransaction trans(GetUserShare());
+    WriteNode node(&trans);
+    if (!node.InitByTagLookup(kNigoriTag)) {
+      // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
+      NOTREACHED();
+      return;
+    }
     cryptographer->AddKey(params);
-    // TODO(albertb): Update the Nigori node on the server with the new keys.
+
+    sync_pb::NigoriSpecifics specifics;
+    cryptographer->GetKeys(specifics.mutable_encrypted());
+    node.SetNigoriSpecifics(specifics);
   }
   observer_->OnPassphraseAccepted();
 }

@@ -122,7 +122,7 @@ class ProfileSyncServicePasswordTest : public testing::Test {
     MessageLoop::current()->RunAllPending();
   }
 
-  void StartSyncService(Task* task) {
+  void StartSyncService(Task* root_task, Task* node_task) {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_, &profile_,
                                                 false, false));
@@ -144,7 +144,7 @@ class ProfileSyncServicePasswordTest : public testing::Test {
 
       // State changes once for the backend init and once for startup done.
       EXPECT_CALL(observer_, OnStateChanged()).
-          WillOnce(Return()).
+          WillOnce(InvokeTask(root_task)).
           WillOnce(Return()).
           WillOnce(QuitUIMessageLoop());
 
@@ -152,13 +152,17 @@ class ProfileSyncServicePasswordTest : public testing::Test {
       service_->Initialize();
       MessageLoop::current()->Run();
 
-      EXPECT_CALL(observer_, OnStateChanged()).
-          WillOnce(InvokeTask(task)).
-          WillOnce(Return()).
-          WillOnce(QuitUIMessageLoop());
+      // Only set the passphrase if we actually created the password and nigori
+      // root nodes.
+      if (root_task) {
+        EXPECT_CALL(observer_, OnStateChanged()).
+            WillOnce(InvokeTask(node_task)).
+            WillOnce(Return()).
+            WillOnce(QuitUIMessageLoop());
 
-      service_->SetPassphrase("foo");
-      MessageLoop::current()->Run();
+        service_->SetPassphrase("foo");
+        MessageLoop::current()->Run();
+      }
     }
   }
 
@@ -170,22 +174,50 @@ class ProfileSyncServicePasswordTest : public testing::Test {
     ASSERT_TRUE(dir.good());
 
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry node(&wtrans,
-                      CREATE,
-                      wtrans.root_id(),
-                      browser_sync::kPasswordTag);
-    node.Put(UNIQUE_SERVER_TAG, browser_sync::kPasswordTag);
-    node.Put(IS_DIR, true);
-    node.Put(SERVER_IS_DIR, false);
-    node.Put(IS_UNSYNCED, false);
-    node.Put(IS_UNAPPLIED_UPDATE, false);
-    node.Put(SERVER_VERSION, 20);
-    node.Put(BASE_VERSION, 20);
-    node.Put(IS_DEL, false);
-    node.Put(ID, ids_.MakeServer(browser_sync::kPasswordTag));
-    sync_pb::EntitySpecifics specifics;
-    specifics.MutableExtension(sync_pb::password);
-    node.Put(SPECIFICS, specifics);
+
+    MutableEntry password_node(&wtrans,
+                               CREATE,
+                               wtrans.root_id(),
+                               browser_sync::kPasswordTag);
+    password_node.Put(UNIQUE_SERVER_TAG, browser_sync::kPasswordTag);
+    password_node.Put(IS_DIR, true);
+    password_node.Put(SERVER_IS_DIR, false);
+    password_node.Put(IS_UNSYNCED, false);
+    password_node.Put(IS_UNAPPLIED_UPDATE, false);
+    password_node.Put(SERVER_VERSION, 20);
+    password_node.Put(BASE_VERSION, 20);
+    password_node.Put(IS_DEL, false);
+    password_node.Put(ID, ids_.MakeServer(browser_sync::kPasswordTag));
+    sync_pb::EntitySpecifics password_specifics;
+    password_specifics.MutableExtension(sync_pb::password);
+    password_node.Put(SPECIFICS, password_specifics);
+  }
+
+  void CreateNigoriRoot() {
+    UserShare* user_share = service_->backend()->GetUserShareHandle();
+    DirectoryManager* dir_manager = user_share->dir_manager.get();
+
+    ScopedDirLookup dir(dir_manager, user_share->authenticated_name);
+    ASSERT_TRUE(dir.good());
+
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+
+    MutableEntry nigori_node(&wtrans,
+                             CREATE,
+                             wtrans.root_id(),
+                             browser_sync::kNigoriTag);
+    nigori_node.Put(UNIQUE_SERVER_TAG, browser_sync::kNigoriTag);
+    nigori_node.Put(IS_DIR, false);
+    nigori_node.Put(SERVER_IS_DIR, false);
+    nigori_node.Put(IS_UNSYNCED, false);
+    nigori_node.Put(IS_UNAPPLIED_UPDATE, false);
+    nigori_node.Put(SERVER_VERSION, 20);
+    nigori_node.Put(BASE_VERSION, 20);
+    nigori_node.Put(IS_DEL, false);
+    nigori_node.Put(ID, ids_.MakeServer(browser_sync::kNigoriTag));
+    sync_pb::EntitySpecifics nigori_specifics;
+    nigori_specifics.MutableExtension(sync_pb::nigori);
+    nigori_node.Put(SPECIFICS, nigori_specifics);
   }
 
   void AddPasswordSyncNode(const PasswordForm& entry) {
@@ -240,12 +272,13 @@ class ProfileSyncServicePasswordTest : public testing::Test {
   }
 
   void SetIdleChangeProcessorExpectations() {
-    EXPECT_CALL(*(password_store_.get()), AddLoginImpl(_)).Times(0);
-    EXPECT_CALL(*(password_store_.get()), UpdateLoginImpl(_)).Times(0);
-    EXPECT_CALL(*(password_store_.get()), RemoveLoginImpl(_)).Times(0);
+    EXPECT_CALL(*password_store_, AddLoginImpl(_)).Times(0);
+    EXPECT_CALL(*password_store_, UpdateLoginImpl(_)).Times(0);
+    EXPECT_CALL(*password_store_, RemoveLoginImpl(_)).Times(0);
   }
 
   friend class CreatePasswordRootTask;
+  friend class CreateNigoriRootTask;
   friend class AddPasswordEntriesTask;
 
   MessageLoopForUI message_loop_;
@@ -270,7 +303,22 @@ class CreatePasswordRootTask : public Task {
   }
 
   virtual void Run() {
+    test_->CreateNigoriRoot();
     test_->CreatePasswordRoot();
+  }
+
+ private:
+  ProfileSyncServicePasswordTest* test_;
+};
+
+class CreateNigoriRootTask : public Task {
+ public:
+  explicit CreateNigoriRootTask(ProfileSyncServicePasswordTest* test)
+      : test_(test) {
+  }
+
+  virtual void Run() {
+    test_->CreateNigoriRoot();
   }
 
  private:
@@ -285,7 +333,6 @@ class AddPasswordEntriesTask : public Task {
   }
 
   virtual void Run() {
-    test_->CreatePasswordRoot();
     for (size_t i = 0; i < entries_.size(); ++i) {
       test_->AddPasswordSyncNode(entries_[i]);
     }
@@ -301,19 +348,21 @@ TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
   EXPECT_CALL(backend_, RequestPause()).
       WillRepeatedly(testing::DoAll(Notify(NotificationType::SYNC_PAUSED),
                                     testing::Return(true)));
-  // Don't create the root password node so startup fails.
-  StartSyncService(NULL);
+  // Create the nigori root node so that password model association is
+  // attempted, but not the password root node so that it fails.
+  CreateNigoriRootTask task(this);
+  StartSyncService(&task, NULL);
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }
 
 TEST_F(ProfileSyncServicePasswordTest, EmptyNativeEmptySync) {
-  EXPECT_CALL(*(password_store_.get()), FillAutofillableLogins(_))
+  EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
       .WillOnce(Return(true));
-  EXPECT_CALL(*(password_store_.get()), FillBlacklistLogins(_))
+  EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
   CreatePasswordRootTask task(this);
-  StartSyncService(&task);
+  StartSyncService(&task, NULL);
   std::vector<PasswordForm> sync_entries;
   GetPasswordEntriesFromSyncDB(&sync_entries);
   EXPECT_EQ(0U, sync_entries.size());
@@ -337,13 +386,13 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySync) {
   new_form->blacklisted_by_user = false;
   forms.push_back(new_form);
   expected_forms.push_back(*new_form);
-  EXPECT_CALL(*(password_store_.get()), FillAutofillableLogins(_))
+  EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(forms), Return(true)));
-  EXPECT_CALL(*(password_store_.get()), FillBlacklistLogins(_))
+  EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
   CreatePasswordRootTask task(this);
-  StartSyncService(&task);
+  StartSyncService(&task, NULL);
   std::vector<PasswordForm> sync_forms;
   GetPasswordEntriesFromSyncDB(&sync_forms);
   ASSERT_EQ(1U, sync_forms.size());
@@ -389,13 +438,13 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySyncSameUsername) {
     expected_forms.push_back(*new_form);
   }
 
-  EXPECT_CALL(*(password_store_.get()), FillAutofillableLogins(_))
+  EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(forms), Return(true)));
-  EXPECT_CALL(*(password_store_.get()), FillBlacklistLogins(_))
+  EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
   CreatePasswordRootTask task(this);
-  StartSyncService(&task);
+  StartSyncService(&task, NULL);
   std::vector<PasswordForm> sync_forms;
   GetPasswordEntriesFromSyncDB(&sync_forms);
   ASSERT_EQ(2U, sync_forms.size());
@@ -444,15 +493,14 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
     expected_forms.push_back(new_form);
   }
 
-  EXPECT_CALL(*(password_store_.get()), FillAutofillableLogins(_))
+  EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(native_forms), Return(true)));
-  EXPECT_CALL(*(password_store_.get()), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store_, FillBlacklistLogins(_)).WillOnce(Return(true));
+  EXPECT_CALL(*password_store_, AddLoginImpl(_)).Times(1);
 
-  AddPasswordEntriesTask task(this, sync_forms);
-
-  EXPECT_CALL(*(password_store_.get()), AddLoginImpl(_)).Times(1);
-  StartSyncService(&task);
+  CreatePasswordRootTask root_task(this);
+  AddPasswordEntriesTask node_task(this, sync_forms);
+  StartSyncService(&root_task, &node_task);
 
   std::vector<PasswordForm> new_sync_forms;
   GetPasswordEntriesFromSyncDB(&new_sync_forms);
@@ -518,15 +566,15 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncMergeEntry) {
     expected_forms.push_back(new_form);
   }
 
-  EXPECT_CALL(*(password_store_.get()), FillAutofillableLogins(_))
+  EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
       .WillOnce(DoAll(SetArgumentPointee<0>(native_forms), Return(true)));
-  EXPECT_CALL(*(password_store_.get()), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store_, FillBlacklistLogins(_)).WillOnce(Return(true));
+  EXPECT_CALL(*password_store_, UpdateLoginImpl(_)).Times(1);
 
-  AddPasswordEntriesTask task(this, sync_forms);
+  CreatePasswordRootTask root_task(this);
+  AddPasswordEntriesTask node_task(this, sync_forms);
 
-  EXPECT_CALL(*(password_store_.get()), UpdateLoginImpl(_)).Times(1);
-  StartSyncService(&task);
+  StartSyncService(&root_task, &node_task);
 
   std::vector<PasswordForm> new_sync_forms;
   GetPasswordEntriesFromSyncDB(&new_sync_forms);
