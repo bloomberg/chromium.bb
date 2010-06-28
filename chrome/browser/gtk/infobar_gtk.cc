@@ -40,6 +40,10 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
       theme_provider_(NULL) {
   // Create |hbox_| and pad the sides.
   hbox_ = gtk_hbox_new(FALSE, kElementPadding);
+
+  // Make the whole infor bar horizontally shrinkable.
+  gtk_widget_set_size_request(hbox_, 0, -1);
+
   GtkWidget* padding = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(padding),
       0, 0, kLeftPadding, kRightPadding);
