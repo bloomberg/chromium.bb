@@ -98,10 +98,7 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
     FilePath relative_path = directory_path.BaseName().Append(
         extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 #if defined(OS_WIN)
-    // TODO(tc): This is a hack, we should normalize paths another way.
-    FilePath::StringType path = relative_path.value();
-    std::replace(path.begin(), path.end(), '\\', '/');
-    relative_path = FilePath(path);
+    relative_path = relative_path.NormalizeWindowsPathSeparators();
 #endif
 
     // TODO(tc): Make a map of FilePath -> resource ids so we don't have to
@@ -110,6 +107,9 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
     for (size_t i = 0; i < kBookmarkManagerResourcesSize; ++i) {
       FilePath bm_resource_path =
           FilePath().AppendASCII(kBookmarkManagerResources[i].name);
+#if defined(OS_WIN)
+      bm_resource_path = bm_resource_path.NormalizeWindowsPathSeparators();
+#endif
       if (relative_path == bm_resource_path) {
         return new URLRequestResourceBundleJob(request, relative_path,
             kBookmarkManagerResources[i].value);
