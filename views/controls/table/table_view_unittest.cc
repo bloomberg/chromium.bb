@@ -395,7 +395,8 @@ TEST_F(TableViewTest, DISABLED_PersistMultiSelectionOnAdd) {
   VerifySelectedRows(1, 0, -1);
 }
 
-TEST_F(NullModelTableViewTest, NullModel) {
+// Crashing: http://crbug.com/45015
+TEST_F(NullModelTableViewTest, DISABLED_NullModel) {
   // There's nothing explicit to test. If there is a bug in TableView relating
   // to a NULL model we'll crash.
 }
