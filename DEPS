@@ -127,6 +127,9 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/workers@" +
     Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/http/tests/appcache":
+    Var("webkit_trunk") + "/LayoutTests/http/tests/appcache@" +
+    Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/http/tests/workers@" +
     Var("webkit_revision"),
