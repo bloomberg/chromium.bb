@@ -1007,7 +1007,8 @@
             "type": "object",
             "name": "options",
             "optional": true,
-            "description": "Set parameters of image capture, such as the format of the resulting image.  This parameter was added in version 5.0 .  Earlier versions of chrome will throw an exception unless you omit it.",
+            "min_version": "5.0.372.0",
+            "description": "Set parameters of image capture, such as the format of the resulting image.",
             "properties": {
               "format": {
                 "type": "string",
@@ -1016,7 +1017,7 @@
                 "description": "The format of the resulting image.  Default is jpeg."
               },
               "quality": {
-                "type": "integer", 
+                "type": "integer",
                 "name": "quality",
                 "optional": true,
                 "minimum": 0,
@@ -1326,6 +1327,7 @@
         "name": "setPopup",
         "type": "function",
         "description": "Sets the html document to be opened as a popup when the user clicks on the page action's icon.",
+        "min_version": "5.0.308.0",
         "parameters": [
           {
             "name": "details",
@@ -1415,6 +1417,7 @@
       {
         "name": "setPopup",
         "type": "function",
+        "min_version": "5.0.316.0",
         "description": "Sets the html document to be opened as a popup when the user clicks on the browser action's icon.",
         "parameters": [
           {

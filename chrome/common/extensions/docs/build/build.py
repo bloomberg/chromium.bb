@@ -60,7 +60,7 @@ def RenderPage(name, test_shell):
   p = Popen([test_shell, "--layout-tests", generator_url],
       stdout=PIPE)
 
-  # the remaining output will be the content of the generated page.
+  # The remaining output will be the content of the generated page.
   result = p.stdout.read()
 
   content_start = result.find(_expected_output_preamble)
@@ -75,9 +75,10 @@ def RenderPage(name, test_shell):
                         "\nAnd open it in chrome using the file: scheme.\n" +
                         "Look from javascript errors via the inspector.")
     raise Exception("test_shell returned unexpected output: " + result)
-  result = result[content_start:content_end + len(_expected_output_postamble)] + "\n"
+  postamble_length = len(_expected_output_postamble)
+  result = result[content_start:content_end + postamble_length] + "\n"
 
-  # remove the trailing #EOF that test shell appends to the output.
+  # Remove the trailing #EOF that test shell appends to the output.
   result = result.replace('#EOF', '')
 
   # Remove page_shell
