@@ -7,6 +7,8 @@
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
@@ -410,6 +412,15 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
             contextInfo:&creditCards_[i]];
     }
   }
+}
+
+// Navigates to the AutoFill help url.
+- (IBAction)openHelp:(id)sender {
+  Browser* browser = BrowserList::GetLastActive();
+
+  if (!browser || !browser->GetSelectedTabContents())
+    browser = Browser::Create(profile_);
+  browser->OpenAutoFillHelpTabAndActivate();
 }
 
 // Edit address sheet was dismissed.  Non-zero |returnCode| indicates a save.

@@ -1814,6 +1814,12 @@ void Browser::OpenThemeGalleryTabAndActivate() {
   window_->Activate();
 }
 
+void Browser::OpenAutoFillHelpTabAndActivate() {
+  OpenURL(GURL(l10n_util::GetStringUTF8(IDS_AUTOFILL_HELP_URL)),
+          GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  window_->Activate();
+}
+
 #if defined(OS_CHROMEOS)
 void Browser::OpenSystemOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"),

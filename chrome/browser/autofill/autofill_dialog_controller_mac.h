@@ -119,10 +119,14 @@ class Profile;
 // credit card list.
 - (IBAction)deleteSelection:(id)sender;
 
-// IBActions for editing an item.  |sender| is expected to be the "Edit..."
+// IBAction for editing an item.  |sender| is expected to be the "Edit..."
 // button.  The editing acts on the selected item in either the address or
 // credit card list.
 - (IBAction)editSelection:(id)sender;
+
+// IBAction for opening the help link.  |sender| is expected to be the
+// "About AutoFill" link.
+- (IBAction)openHelp:(id)sender;
 
 // NSTableView data source methods.
 - (id)tableView:(NSTableView *)tableView
