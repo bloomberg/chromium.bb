@@ -13,6 +13,7 @@
 #include "chrome/renderer/ggl/ggl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 #if !defined(OS_MACOSX)
 #define FLIP_FRAMEBUFFER_VERTICALLY
@@ -38,7 +39,12 @@ class WebGraphicsContext3DCommandBufferImpl
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
+  // TODO(vangelis): Remove this version of initialize() once the changes
+  //                 to WebGraphicsContext3D have been checked in upstream.
   virtual bool initialize(WebGraphicsContext3D::Attributes attributes);
+  virtual bool initialize(WebGraphicsContext3D::Attributes attributes,
+                          WebKit::WebView*);
+
   virtual bool makeContextCurrent();
 
   virtual int width();
@@ -51,6 +57,9 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void reshape(int width, int height);
 
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size);
+
+  virtual unsigned int getPlatformTextureId();
+  virtual void prepareTexture();
 
   virtual void activeTexture(unsigned long texture);
   virtual void attachShader(WebGLId program, WebGLId shader);

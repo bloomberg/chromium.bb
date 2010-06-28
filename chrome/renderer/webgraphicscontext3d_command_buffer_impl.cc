@@ -28,6 +28,14 @@ WebGraphicsContext3DCommandBufferImpl::
   }
 }
 
+// TODO(vangelis): Properly implement this method once the upstream WebKit
+// changes have landed.
+bool WebGraphicsContext3DCommandBufferImpl::initialize(
+    WebGraphicsContext3D::Attributes attributes,
+    WebKit::WebView*) {
+  return initialize(attributes);
+}
+
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes) {
   RenderThread* render_thread = RenderThread::current();
@@ -79,6 +87,17 @@ int WebGraphicsContext3DCommandBufferImpl::sizeInBytes(int type) {
 
 bool WebGraphicsContext3DCommandBufferImpl::isGLES2Compliant() {
   return true;
+}
+
+unsigned int WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
+  DCHECK(context_);
+  return ggl::GetParentTextureId(context_);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
+  // Copies the contents of the off-screen render target into the texture
+  // used by the compositor.
+  ggl::SwapBuffers(context_);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
