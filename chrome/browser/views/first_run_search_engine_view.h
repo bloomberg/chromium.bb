@@ -52,6 +52,10 @@ class SearchEngineChoice : public views::NativeButton {
   // Accessor for the search engine data this button represents.
   const TemplateURL* GetSearchEngine() { return search_engine_; }
 
+  // Used for UX testing.
+  void set_slot(int slot) { slot_ = slot; }
+  int slot() const { return slot_; }
+
  private:
   // Either an ImageView of a logo, or a Label with text.  Owned by
   // FirstRunSearchEngineView.
@@ -62,6 +66,9 @@ class SearchEngineChoice : public views::NativeButton {
 
   // Data for the search engine held here.
   const TemplateURL* search_engine_;
+
+  // Used for UX testing. Gives slot in which search engine was shown.
+  int slot_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineChoice);
 };
@@ -83,9 +90,10 @@ class FirstRunSearchEngineView
       public TemplateURLModelObserver {
  public:
   // |observer| is the FirstRunView that waits for us to pass back a search
-  // engine choice; |profile| allows us to get the set of imported search
-  // engines, and display the KeywordEditorView on demand; |randomize|
-  // is true if logos are to be displayed in random order.
+  // engine choice.
+  // |profile| allows us to get the set of imported search engines, and
+  // display the KeywordEditorView on demand.
+  // |randomize| is true if logos are to be displayed in random order.
   FirstRunSearchEngineView(SearchEngineSelectionObserver* observer,
                            Profile* profile, bool randomize);
 
@@ -121,6 +129,9 @@ class FirstRunSearchEngineView
   // One for each search engine choice offered, either three or four.
   std::vector<SearchEngineChoice*> search_engine_choices_;
 
+  // If logos are to be displayed in random order. Used for UX testing.
+  bool randomize_;
+
   // The profile associated with this import process.
   Profile* profile_;
 
@@ -128,9 +139,6 @@ class FirstRunSearchEngineView
   SearchEngineSelectionObserver* observer_;
 
   bool text_direction_is_rtl_;
-
-  // If logos are to be displayed in random order.  Used for UX testing.
-  bool randomize_;
 
   // Image of browser search box with grey background and bubble arrow.
   views::ImageView* background_image_;

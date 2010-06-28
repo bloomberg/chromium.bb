@@ -219,6 +219,14 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
   Profile* profile() const { return profile_; }
 
+  void SetSearchEngineDialogSlot(int slot) {
+    search_engine_dialog_chosen_slot_ = slot;
+  }
+
+  int GetSearchEngineDialogSlot() const {
+    return search_engine_dialog_chosen_slot_;
+  }
+
  protected:
   // Cover method for the method of the same name on the HistoryService.
   // url is the one that was visited with the given search terms.
@@ -364,6 +372,10 @@ class TemplateURLModel : public WebDataServiceConsumer,
   std::vector<history::URLVisitedDetails> visits_to_add_;
 
   const TemplateURL* default_search_provider_;
+
+  // Used for UX testing. Gives the slot in the search engine dialog that was
+  // chosen as the default search engine.
+  int search_engine_dialog_chosen_slot_;
 
   // The default search provider from preferences. This is only valid if
   // GetDefaultSearchProvider is invoked and we haven't been loaded or loading

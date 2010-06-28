@@ -1406,7 +1406,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       Upgrade::SaveLastModifiedTimeOfExe();
 #endif
 
-      // Record now as the last succesful chrome start.
+      // Record now as the last successful chrome start.
       GoogleUpdateSettings::SetLastRunTime();
       // Call Recycle() here as late as possible, before going into the loop
       // because Start() will add things to it while creating the main window.
@@ -1424,12 +1424,30 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (FirstRun::InSearchExperimentLocale() && record_search_engine) {
     const TemplateURL* default_search_engine =
         profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+    // Record the search engine chosen.
     if (master_prefs.run_search_engine_experiment) {
       UMA_HISTOGRAM_ENUMERATION(
           "Chrome.SearchSelectExperiment",
           TemplateURLPrepopulateData::GetSearchEngineType(
-              default_search_engine),
+          default_search_engine),
           TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
+      // If the selection has been randomized, also record the winner by slot.
+      if (master_prefs.randomize_search_engine_experiment) {
+        size_t engine_pos = profile->GetTemplateURLModel()->
+            GetSearchEngineDialogSlot();
+        if (engine_pos < 4) {
+          std::string experiment_type = "Chrome.SearchSelectExperimentSlot";
+          // Nicer in UMA if slots are 1-based.
+          experiment_type.push_back('1' + engine_pos);
+          UMA_HISTOGRAM_ENUMERATION(
+              experiment_type,
+              TemplateURLPrepopulateData::GetSearchEngineType(
+              default_search_engine),
+              TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
+        } else {
+          NOTREACHED() << "Invalid search engine selection slot.";
+        }
+      }
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "Chrome.SearchSelectExempt",

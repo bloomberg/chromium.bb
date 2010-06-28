@@ -184,8 +184,10 @@ FirstRunSearchEngineView::~FirstRunSearchEngineView() {
 
 void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
                                              const views::Event& event) {
-  observer_->SearchEngineChosen(
-      static_cast<SearchEngineChoice*>(sender)->GetSearchEngine());
+  SearchEngineChoice* choice = static_cast<SearchEngineChoice*>(sender);
+  profile_->GetTemplateURLModel()->SetSearchEngineDialogSlot(
+      choice->slot());
+  observer_->SearchEngineChosen(choice->GetSearchEngine());
 }
 
 void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
@@ -257,6 +259,14 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
     srand(seed);
     std::random_shuffle(search_engine_choices_.begin(),
                         search_engine_choices_.end());
+    // Assign to each choice the position in which it is shown on the screen.
+    std::vector<SearchEngineChoice*>::iterator it;
+    int slot = 0;
+    for (it = search_engine_choices_.begin();
+         it != search_engine_choices_.end();
+         it++) {
+      (*it)->set_slot(slot++);
+    }
   }
 
   // Now that we know how many logos to show, lay out and become visible.
