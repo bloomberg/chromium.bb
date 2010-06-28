@@ -14,16 +14,10 @@
 #include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "printing/units.h"
 #include "skia/ext/vector_platform_device_linux.h"
 
 namespace {
-
-// The hardcoded margins, in points. These values are based on 72 dpi,
-// with approximately 0.25 margins on top, left, and right, and 0.56 on bottom.
-const double kTopMargin = 0.25 * 72.0;
-const double kBottomMargin = 0.56 * 72.0;
-const double kLeftMargin = 0.25 * 72.0;
-const double kRightMargin = 0.25 * 72.0;
 
 // Tests if |surface| is valid.
 bool IsSurfaceValid(cairo_surface_t* surface) {
@@ -248,5 +242,10 @@ void PdfPsMetafile::CleanUpAll() {
   data_.clear();
   skia::VectorPlatformDevice::ClearFontCache();
 }
+
+const double PdfPsMetafile::kTopMargin = 0.25 * printing::kPointsPerInch;
+const double PdfPsMetafile::kBottomMargin = 0.56 * printing::kPointsPerInch;
+const double PdfPsMetafile::kLeftMargin = 0.25 * printing::kPointsPerInch;
+const double PdfPsMetafile::kRightMargin = 0.25 * printing::kPointsPerInch;
 
 }  // namespace printing

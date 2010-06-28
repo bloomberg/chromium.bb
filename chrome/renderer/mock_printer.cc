@@ -9,12 +9,13 @@
 #include "base/shared_memory.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_message_utils.h"
+#include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockPrinter::MockPrinter()
   : printable_width_(0),
     printable_height_(0),
-    dpi_(72),
+    dpi_(printing::kPointsPerInch),
     max_shrink_(2.0),
     min_shrink_(1.25),
     desired_dpi_(72),
@@ -195,4 +196,3 @@ bool MockPrinter::SaveBitmap(
 int MockPrinter::CreateDocumentCookie() {
   return ++current_document_cookie_;
 }
-

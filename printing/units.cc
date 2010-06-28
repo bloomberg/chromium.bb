@@ -39,4 +39,12 @@ int ConvertHundredThousanthMeterToMilliInch(int cmm) {
   return ConvertUnit(cmm, 254, 100);
 }
 
+int ConvertPixelsToPoint(int pixels) {
+  return ConvertUnit(pixels, kPixelsPerInch, kPointsPerInch);
+}
+
+double ConvertPixelsToPointDouble(double pixels) {
+  return ConvertUnitDouble(pixels, kPixelsPerInch, kPointsPerInch);
+}
+
 }  // namespace printing

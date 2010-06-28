@@ -50,4 +50,12 @@ TEST(UnitsTest, Convertions) {
   EXPECT_EQ(-1000,
             ConvertHundredThousanthMeterToMilliInch(-kHundrethsMMPerInch));
   EXPECT_EQ(0, ConvertHundredThousanthMeterToMilliInch(0));
+
+  EXPECT_EQ(8.25, ConvertPixelsToPointDouble(11.0));
+  // Round down.
+  EXPECT_EQ(8, ConvertPixelsToPoint(11));
+  EXPECT_EQ(7.5, ConvertPixelsToPointDouble(10.0));
+  // Round up.
+  EXPECT_EQ(8, ConvertPixelsToPoint(10));
+  EXPECT_EQ(0, ConvertPixelsToPoint(0));
 }

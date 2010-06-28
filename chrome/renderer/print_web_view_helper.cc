@@ -37,7 +37,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
 #if defined(OS_MACOSX)
   // On the Mac, the printable area is in points, don't do any scaling based
   // on dpi.
-  dpi = 72;
+  dpi = printing::kPointsPerInch;
 #endif  // defined(OS_MACOSX)
   print_canvas_size_.set_width(
       printing::ConvertUnit(print_params.printable_size.width(), dpi,

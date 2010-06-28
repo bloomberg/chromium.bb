@@ -77,6 +77,13 @@ class PdfPsMetafile {
   // This function should ONLY be called after PDF/PS file is closed.
   bool SaveTo(const base::FileDescriptor& fd) const;
 
+  // The hardcoded margins, in points. These values are based on 72 dpi,
+  // with 0.25 margins on top, left, and right, and 0.56 on bottom.
+  static const double kTopMargin;
+  static const double kRightMargin;
+  static const double kBottomMargin;
+  static const double kLeftMargin;
+
  private:
   // Cleans up all resources.
   void CleanUpAll();

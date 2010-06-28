@@ -8,9 +8,11 @@
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "printing/native_metafile.h"
+#include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
+using printing::NativeMetafile;
 using WebKit::WebFrame;
 
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
@@ -23,14 +25,11 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   // For testing purpose, we hard-coded printing parameters here.
 
   // The paper size is US Letter (8.5 in. by 11 in.).
-  // Using default margins:
-  //   Left = 0.25 in.
-  //   Right = 0.25 in.
-  //   Top = 0.25 in.
-  //   Bottom = 0.56 in.
-  const int kDPI = 72;
-  const int kWidth = static_cast<int>((8.5-0.25-0.25) * kDPI);
-  const int kHeight = static_cast<int>((11-0.25-0.56) * kDPI);
+  const int kDPI = printing::kPointsPerInch;
+  const int kWidth = static_cast<int>(
+      8.5 * kDPI - NativeMetafile::kLeftMargin - NativeMetafile::kRightMargin);
+  const int kHeight = static_cast<int>(
+      11 * kDPI - NativeMetafile::kTopMargin - NativeMetafile::kBottomMargin);
   ViewMsg_Print_Params default_settings;
   default_settings.printable_size = gfx::Size(kWidth, kHeight);
   default_settings.dpi = kDPI;
