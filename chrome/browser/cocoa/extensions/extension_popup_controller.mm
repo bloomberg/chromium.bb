@@ -42,14 +42,12 @@ class DevtoolsNotificationBridge : public NotificationObserver {
                const NotificationDetails& details) {
     switch (type.value) {
       case NotificationType::EXTENSION_HOST_DID_STOP_LOADING: {
-        if (Details<ExtensionHost>([controller_ extensionHost]) ==
-            details)
+        if (Details<ExtensionHost>([controller_ extensionHost]) == details)
           [controller_ showDevTools];
         break;
       }
       case NotificationType::DEVTOOLS_WINDOW_CLOSING: {
-        RenderViewHost* rvh =
-            [controller_ extensionHost]->render_view_host();
+        RenderViewHost* rvh = [controller_ extensionHost]->render_view_host();
         if (Details<RenderViewHost>(rvh) == details)
           // Allow the devtools to finish detaching before we close the popup
           [controller_ performSelector:@selector(close)
@@ -92,6 +90,7 @@ class DevtoolsNotificationBridge : public NotificationObserver {
   parentWindow_ = parentWindow;
   anchor_ = [parentWindow convertBaseToScreen:anchoredAt];
   host_.reset(host);
+  beingInspected_ = devMode;
 
   scoped_nsobject<InfoBubbleView> view([[InfoBubbleView alloc] init]);
   if (!view.get())
@@ -127,8 +126,7 @@ class DevtoolsNotificationBridge : public NotificationObserver {
   [window setDelegate:self];
   [window setContentView:view];
   self = [super initWithWindow:window];
-  if (devMode) {
-    beingInspected_ = true;
+  if (beingInspected_) {
     // Listen for the the devtools window closing.
     notificationBridge_.reset(new DevtoolsNotificationBridge(self));
     registrar_.reset(new NotificationRegistrar);
@@ -138,15 +136,12 @@ class DevtoolsNotificationBridge : public NotificationObserver {
     registrar_->Add(notificationBridge_.get(),
                     NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
                     Source<Profile>(host->profile()));
-  } else {
-    beingInspected_ = false;
   }
   return self;
 }
 
 - (void)showDevTools {
-  DevToolsManager::GetInstance()->OpenDevToolsWindow(
-      host_->render_view_host());
+  DevToolsManager::GetInstance()->OpenDevToolsWindow(host_->render_view_host());
 }
 
 - (void)dealloc {

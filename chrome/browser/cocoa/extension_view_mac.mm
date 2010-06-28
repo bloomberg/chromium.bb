@@ -63,7 +63,7 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
 
   // On first display of some extensions, this function is called with zero
   // width after the correct size has been set. Bail if zero is seen, assuming
-  // that an extension popup view doesn't want any dimensions to ever be zero.
+  // that an extension's view doesn't want any dimensions to ever be zero.
   // TODO(andybons): Verify this assumption and look into WebCore's
   // |contentesPreferredWidth| to see why this is occurring.
   if (NSIsEmptyRect(frame))
@@ -74,7 +74,7 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
 
   // RenderWidgetHostViewCocoa overrides setFrame but not setFrameSize.
   // We need to defer the update back to the RenderWidgetHost so we don't
-  // get the flickering effect on 10.5 of http://crbug.com/31970.
+  // get the flickering effect on 10.5 of http://crbug.com/31970
   [hostView setFrameWithDeferredUpdate:frame];
   [hostView setNeedsDisplay:YES];
 }

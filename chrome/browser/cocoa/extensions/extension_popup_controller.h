@@ -50,7 +50,7 @@ class NotificationRegistrar;
   scoped_ptr<DevtoolsNotificationBridge> notificationBridge_;
 
   // Whether the popup has a devtools window attached to it.
-  bool beingInspected_;
+  BOOL beingInspected_;
 }
 
 // Returns the ExtensionHost object associated with this popup.

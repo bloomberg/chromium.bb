@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,10 +85,6 @@ const float kAnimateCloseDuration = 0.12;
 // notifying the InfoBarDelegate that the infobar was closed and removing the
 // infobar from its container, if necessary.
 - (void)cleanUpAfterAnimation:(BOOL)finished;
-
-// Removes the ok and cancel buttons, and resizes the textfield to use the
-// space.
-- (void)removeButtons;
 
 // Sets the info bar message to the specified |message|, with a hypertext
 // style link. |link| will be inserted into message at |linkOffset|.
@@ -215,6 +211,15 @@ const float kAnimateCloseDuration = 0.12;
   [[label_.get() textStorage] setAttributedString:attributedString];
 }
 
+- (void)removeButtons {
+  // Extend the label all the way across.
+  NSRect labelFrame = [label_.get() frame];
+  labelFrame.size.width = NSMaxX([cancelButton_ frame]) - NSMinX(labelFrame);
+  [okButton_ removeFromSuperview];
+  [cancelButton_ removeFromSuperview];
+  [label_.get() setFrame:labelFrame];
+}
+
 @end
 
 @implementation InfoBarController (PrivateMethods)
@@ -240,16 +245,6 @@ const float kAnimateCloseDuration = 0.12;
 - (void)removeInfoBar {
   DCHECK(delegate_);
   [containerController_ removeDelegate:delegate_];
-}
-
-- (void)removeButtons {
-  // Extend the label all the way across.
-  // Remove the ok and cancel buttons, since they are not needed.
-  NSRect labelFrame = [label_.get() frame];
-  labelFrame.size.width = NSMaxX([cancelButton_ frame]) - NSMinX(labelFrame);
-  [okButton_ removeFromSuperview];
-  [cancelButton_ removeFromSuperview];
-  [label_.get() setFrame:labelFrame];
 }
 
 - (void)cleanUpAfterAnimation:(BOOL)finished {

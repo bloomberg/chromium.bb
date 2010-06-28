@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class InfoBarDelegate;
 // Initializes a new InfoBarController.
 - (id)initWithDelegate:(InfoBarDelegate*)delegate;
 
-// Called when someone clicks on the ok or cancel buttons.  Subclasses
+// Called when someone clicks on the OK or Cancel buttons.  Subclasses
 // must override if they do not hide the buttons.
 - (void)ok:(id)sender;
 - (void)cancel:(id)sender;
@@ -73,6 +73,10 @@ class InfoBarDelegate;
 // Sets the info bar message to the specified |message|.
 - (void)setLabelToMessage:(NSString*)message;
 
+// Removes the OK and Cancel buttons and resizes the textfield to use the
+// space.
+- (void)removeButtons;
+
 @property(nonatomic, assign) id<InfoBarContainer> containerController;
 @property(nonatomic, readonly) InfoBarDelegate* delegate;
 
@@ -94,7 +98,7 @@ class InfoBarDelegate;
 
 
 @interface ConfirmInfoBarController : InfoBarController
-// Called when the ok and cancel buttons are clicked.
+// Called when the OK and Cancel buttons are clicked.
 - (IBAction)ok:(id)sender;
 - (IBAction)cancel:(id)sender;
 // Called when there is a click on the link in the infobar.

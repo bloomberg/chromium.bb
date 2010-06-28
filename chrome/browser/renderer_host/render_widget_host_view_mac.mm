@@ -1106,6 +1106,12 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
+- (void)setFrameSize:(NSSize)newSize {
+  [super setFrameSize:newSize];
+  if (renderWidgetHostView_->render_widget_host_)
+    renderWidgetHostView_->render_widget_host_->WasResized();
+}
+
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
   if (renderWidgetHostView_->render_widget_host_)
