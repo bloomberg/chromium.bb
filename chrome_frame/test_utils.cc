@@ -21,7 +21,6 @@
 
 const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
 const wchar_t kChromeLauncherExeName[] = L"chrome_launcher.exe";
-const char kReferenceChromeFrameDllName[] = "npchrome_tab.dll";
 
 // Statics
 FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
@@ -112,8 +111,7 @@ FilePath ScopedChromeFrameRegistrar::GetReferenceChromeFrameDllPath() {
   reference_build_dir = reference_build_dir.AppendASCII("reference_build");
   reference_build_dir = reference_build_dir.AppendASCII("chrome");
   reference_build_dir = reference_build_dir.AppendASCII("servers");
-  reference_build_dir = reference_build_dir.AppendASCII(
-      kReferenceChromeFrameDllName);
+  reference_build_dir = reference_build_dir.Append(kChromeFrameDllName);
   return reference_build_dir;
 }
 
