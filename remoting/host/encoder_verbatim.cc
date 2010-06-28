@@ -6,7 +6,7 @@
 
 #include "gfx/rect.h"
 #include "media/base/data_buffer.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
+#include "remoting/base/protocol_util.h"
 
 namespace remoting {
 
@@ -48,19 +48,7 @@ void EncoderVerbatim::SetSize(int width, int height) {
 }
 
 void EncoderVerbatim::SetPixelFormat(PixelFormat pixel_format) {
-  // These are sorted so that the most common formats are checked first.
-  // TODO(hclam): Extract this into a util function.
-  if (pixel_format == PixelFormatRgb24) {
-    bytes_per_pixel_ = 3;
-  } else if (pixel_format == PixelFormatRgb565) {
-    bytes_per_pixel_ = 2;
-  } else if (pixel_format == PixelFormatRgb32) {
-    bytes_per_pixel_ = 4;
-  } else if (pixel_format != PixelFormatAscii) {
-    bytes_per_pixel_ = 1;
-  } else {
-    NOTREACHED() << "Pixel format not supported";
-  }
+  bytes_per_pixel_ = GetBytesPerPixel(pixel_format);
   pixel_format_ = pixel_format;
 }
 
