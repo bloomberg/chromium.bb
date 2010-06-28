@@ -1402,7 +1402,6 @@
         'browser/extensions/extension_omnibox_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
-        'browser/extensions/extension_rlz_apitest.cc',
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',
         'browser/extensions/extension_tabs_apitest.cc',
@@ -1481,9 +1480,6 @@
           }
         }],
         ['OS=="linux"', {
-          'sources/': [
-            ['exclude', '^browser/extensions/extension_rlz_apitest.cc'],
-          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -1537,9 +1533,6 @@
         ['OS=="mac"', {
           'sources': [
             'browser/extensions/browser_action_test_util_mac.mm',
-          ],
-          'sources/': [
-            ['exclude', '^browser/extensions/extension_rlz_apitest.cc'],
           ],
           'include_dirs': [
             '../third_party/GTM',

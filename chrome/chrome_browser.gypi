@@ -1178,8 +1178,6 @@
         'browser/extensions/extension_processes_api_constants.h',
         'browser/extensions/extension_protocols.cc',
         'browser/extensions/extension_protocols.h',
-        'browser/extensions/extension_rlz_module.cc',
-        'browser/extensions/extension_rlz_module.h',
         'browser/extensions/extension_shelf_model.cc',
         'browser/extensions/extension_shelf_model.h',
         'browser/extensions/extension_tabs_module.cc',
@@ -3021,7 +3019,6 @@
 
             # Exclude all of rlz.
             ['exclude', '^browser/rlz/'],
-            ['exclude', '^browser/extensions/extension_rlz_module'],
 
             # Exclude all of views.
             ['exclude', '^browser/views/'],

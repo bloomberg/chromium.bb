@@ -256,7 +256,6 @@ var chrome = chrome || {};
       "experimental.omnibox",
       "experimental.popup",
       "experimental.processes",
-      "experimental.rlz",
       "history",
       "pageAction",
       "pageActions",
