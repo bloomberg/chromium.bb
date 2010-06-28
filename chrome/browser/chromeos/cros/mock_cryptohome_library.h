@@ -16,10 +16,16 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
  public:
   MockCryptohomeLibrary() {}
   virtual ~MockCryptohomeLibrary() {}
-  MOCK_METHOD2(Mount, bool(const std::string& user_email,
-                           const std::string& passhash));
+  MOCK_METHOD3(Mount, bool(const std::string& user_email,
+                           const std::string& passhash,
+                           int* error_code));
+  MOCK_METHOD1(MountForBwsi, bool(int*));
   MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
                               const std::string& passhash));
+  MOCK_METHOD3(MigrateKey, bool(const std::string& user_email,
+                                const std::string& old_hash,
+                                const std::string& new_hash));
+  MOCK_METHOD1(Remove, bool(const std::string& user_email));
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD0(GetSystemSalt, CryptohomeBlob(void));
 };

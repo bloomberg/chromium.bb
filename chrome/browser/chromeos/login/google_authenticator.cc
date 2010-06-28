@@ -70,15 +70,8 @@ const char GoogleAuthenticator::kFormatCaptcha[] =
     "logincaptcha=%s";
 // static
 const char GoogleAuthenticator::kSecondFactor[] = "Info=InvalidSecondFactor";
-
-// static
-const char GoogleAuthenticator::kSystemSalt[] = "/home/.shadow/salt";
-// static
-const char GoogleAuthenticator::kOpenSSLMagic[] = "Salted__";
 // static
 const char GoogleAuthenticator::kLocalaccountFile[] = "localaccount";
-// static
-const char GoogleAuthenticator::kTmpfsTrigger[] = "incognito";
 
 // static
 const int GoogleAuthenticator::kClientLoginTimeoutMs = 5000;
@@ -149,7 +142,7 @@ bool GoogleAuthenticator::AuthenticateToLogin(
   // TODO(cmasone): Figure out how to parallelize fetch, username/password
   // processing without impacting testability.
   username_.assign(Canonicalize(username));
-  StoreHashedPassword(password);
+  ascii_hash_.assign(HashPassword(password));
   TryClientLogin();
   return true;
 }
@@ -157,7 +150,7 @@ bool GoogleAuthenticator::AuthenticateToLogin(
 bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
                                                const std::string& password) {
   username_.assign(Canonicalize(username));
-  StoreHashedPassword(password);
+  ascii_hash_.assign(HashPassword(password));
   unlock_ = true;
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
@@ -168,7 +161,8 @@ bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
 
 void GoogleAuthenticator::LoginOffTheRecord() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(kTmpfsTrigger, "")) {
+  int mount_error = chromeos::kCryptohomeMountErrorNone;
+  if (CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
     AuthenticationNotificationDetails details(true);
     NotificationService::current()->Notify(
         NotificationType::LOGIN_AUTHENTICATION,
@@ -176,6 +170,7 @@ void GoogleAuthenticator::LoginOffTheRecord() {
         Details<AuthenticationNotificationDetails>(&details));
     consumer_->OnOffTheRecordLoginSuccess();
   } else {
+    LOG(ERROR) << "Could not mount tmpfs cryptohome: " << mount_error;
     consumer_->OnLoginFailure("Could not mount tmpfs cryptohome");
   }
 }
@@ -238,10 +233,15 @@ void GoogleAuthenticator::OnLoginSuccess(const std::string& data) {
       NotificationService::AllSources(),
       Details<AuthenticationNotificationDetails>(&details));
 
+  int mount_error = chromeos::kCryptohomeMountErrorNone;
   if (unlock_ ||
-      CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
-                                                        ascii_hash_.c_str())) {
+      (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
+                                                         ascii_hash_.c_str(),
+                                                         &mount_error))) {
     consumer_->OnLoginSuccess(username_, data);
+  } else if (!unlock_ &&
+             mount_error == chromeos::kCryptohomeMountErrorKeyFailure) {
+    consumer_->OnPasswordChangeDetected(data);
   } else {
     OnLoginFailure("Could not mount cryptohome");
   }
@@ -262,8 +262,9 @@ void GoogleAuthenticator::CheckOffline(const std::string& error) {
 }
 
 void GoogleAuthenticator::CheckLocalaccount(const std::string& error) {
+  int mount_error = chromeos::kCryptohomeMountErrorNone;
   if (!localaccount_.empty() && localaccount_ == username_ &&
-      CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(kTmpfsTrigger, "")) {
+      CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
     LOG(WARNING) << "Logging in with localaccount: " << localaccount_;
     consumer_->OnLoginSuccess(username_, std::string());
   } else {
@@ -282,6 +283,27 @@ void GoogleAuthenticator::OnLoginFailure(const std::string& data) {
   // TODO(cmasone): what can we do to expose these OS/server-side error strings
   // in an internationalizable way?
   consumer_->OnLoginFailure(data);
+}
+
+void GoogleAuthenticator::DoPasswordChange(const std::string& old_password,
+                                           const std::string& credentials) {
+  std::string old_hash = HashPassword(old_password);
+  if (CrosLibrary::Get()->GetCryptohomeLibrary()->MigrateKey(username_,
+                                                             old_hash,
+                                                             ascii_hash_)) {
+    OnLoginSuccess(credentials);
+    return;
+  }
+  // User seems to have given us the wrong old password...
+  consumer_->OnPasswordChangeDetected(credentials);
+}
+
+void GoogleAuthenticator::SkipPasswordChange(const std::string& credentials) {
+  if (CrosLibrary::Get()->GetCryptohomeLibrary()->Remove(username_)) {
+    OnLoginSuccess(credentials);
+  } else {
+    OnLoginFailure("Could not destroy your old data!");
+  }
 }
 
 void GoogleAuthenticator::LoadSystemSalt() {
@@ -310,7 +332,7 @@ void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
   set_localaccount(localaccount);
 }
 
-void GoogleAuthenticator::StoreHashedPassword(const std::string& password) {
+std::string GoogleAuthenticator::HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii
   // of password, then end.
   std::string ascii_salt = SaltAsAscii();
@@ -337,7 +359,7 @@ void GoogleAuthenticator::StoreHashedPassword(const std::string& password) {
               passhash.size() / 2,  // only want top half, at least for now.
               ascii_buf,
               sizeof(ascii_buf));
-  ascii_hash_.assign(ascii_buf, sizeof(ascii_buf) - 1);
+  return std::string(ascii_buf, sizeof(ascii_buf) - 1);
 }
 
 std::string GoogleAuthenticator::SaltAsAscii() {

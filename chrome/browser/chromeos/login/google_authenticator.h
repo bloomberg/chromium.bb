@@ -71,8 +71,6 @@ class GoogleAuthenticator : public Authenticator,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-
-
   // Public for testing.
   void set_system_salt(const chromeos::CryptohomeBlob& new_salt) {
     system_salt_ = new_salt;
@@ -93,6 +91,26 @@ class GoogleAuthenticator : public Authenticator,
   void CheckLocalaccount(const std::string& error);
   void OnLoginFailure(const std::string& data);
 
+  // If a password logs the user in online, but cannot be used to
+  // mount his cryptohome, we expect that a password change has
+  // occurred.  Call this method to migrate the user's encrypted data
+  // forward to use his new password.  |old_password| is the password
+  // his data was last encrypted with, |credentials| is the blob of auth
+  // data passed back through OnPasswordChangeDetected().
+  //
+  // Call this on the UI thread.
+  void DoPasswordChange(const std::string& old_password,
+                        const std::string& credentials);
+
+  // If a password logs the user in online, but cannot be used to
+  // mount his cryptohome, we expect that a password change has
+  // occurred.  Call this method to erase the user's encrypted data
+  // and create a new cryptohome.  |credentials| is the blob of auth
+  // data passed back through OnPasswordChangeDetected().
+  //
+  // Call this on the UI thread.
+  void SkipPasswordChange(const std::string& credentials);
+
   void Cancel();
 
   // Perform basic canonicalization of |email_address|, taking into account
@@ -100,10 +118,6 @@ class GoogleAuthenticator : public Authenticator,
   // For example, c.masone@gmail.com == cMaSone@gmail.com, per
   // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
   static std::string Canonicalize(const std::string& email_address);
-
-  // The signal to cryptohomed that we want a tmpfs.
-  // TODO(cmasone): revisit this after cryptohome re-impl
-  static const char kTmpfsTrigger[];
 
  private:
   // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
@@ -118,7 +132,7 @@ class GoogleAuthenticator : public Authenticator,
   void LoadLocalaccount(const std::string& filename);
 
   // Stores a hash of |password|, salted with the ascii of |system_salt_|.
-  void StoreHashedPassword(const std::string& password);
+  std::string HashPassword(const std::string& password);
 
   // Returns the ascii encoding of the system salt.
   std::string SaltAsAscii();
@@ -162,11 +176,6 @@ class GoogleAuthenticator : public Authenticator,
   // needed to complete authentication, the user provided the right password.
   static const char kSecondFactor[];
 
-  // Chromium OS system salt stored here.
-  static const char kSystemSalt[];
-  // String that appears at the start of OpenSSL cipher text with embedded salt.
-  static const char kOpenSSLMagic[];
-
   // Name of a file, next to chrome, that contains a local account username.
   static const char kLocalaccountFile[];
 
@@ -186,7 +195,7 @@ class GoogleAuthenticator : public Authenticator,
   bool fetch_completed_;
 
   friend class GoogleAuthenticatorTest;
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, SaltToAsciiTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, SaltToAscii);
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, CheckTwoFactorResponse);
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, CheckNormalErrorCode);
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, EmailAddressNoOp);
@@ -205,14 +214,13 @@ class GoogleAuthenticator : public Authenticator,
                            EmailAddressIgnorePlusSuffix);
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
                            EmailAddressIgnoreMultiPlusSuffix);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadSaltOnlyOnceTest);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadLocalaccountTest);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest,
-                           ReadLocalaccountTrailingWSTest);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadNoLocalaccountTest);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, LoginNetFailureTest);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, LoginDeniedTest);
-  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, TwoFactorLoginTest);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadSaltOnlyOnce);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadLocalaccount);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadLocalaccountTrailingWS);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, ReadNoLocalaccount);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, LoginNetFailure);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, LoginDenied);
+  FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, TwoFactorLogin);
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAuthenticator);
 };

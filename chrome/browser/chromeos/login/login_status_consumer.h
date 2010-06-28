@@ -19,6 +19,10 @@ class LoginStatusConsumer {
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& credentials) = 0;
   virtual void OnOffTheRecordLoginSuccess() {}
+  virtual void OnPasswordChangeDetected(const std::string& credentials) {
+    // TODO(nkostylev): uncomment NOTREACHED once UI is in place.
+    // NOTREACHED();
+  };
 };
 
 }  // namespace chromeos

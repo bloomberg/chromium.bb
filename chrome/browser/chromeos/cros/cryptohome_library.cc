@@ -14,9 +14,28 @@ bool CryptohomeLibraryImpl::CheckKey(const std::string& user_email,
   return chromeos::CryptohomeCheckKey(user_email.c_str(), passhash.c_str());
 }
 
+bool CryptohomeLibraryImpl::MigrateKey(const std::string& user_email,
+                                       const std::string& old_hash,
+                                       const std::string& new_hash) {
+  return chromeos::CryptohomeMigrateKey(user_email.c_str(),
+                                        old_hash.c_str(),
+                                        new_hash.c_str());
+}
+
+bool CryptohomeLibraryImpl::Remove(const std::string& user_email) {
+  return chromeos::CryptohomeRemove(user_email.c_str());
+}
+
 bool CryptohomeLibraryImpl::Mount(const std::string& user_email,
-                                  const std::string& passhash) {
-  return chromeos::CryptohomeMount(user_email.c_str(), passhash.c_str());
+                                  const std::string& passhash,
+                                  int* error_code) {
+  return chromeos::CryptohomeMountAllowFail(user_email.c_str(),
+                                            passhash.c_str(),
+                                            error_code);
+}
+
+bool CryptohomeLibraryImpl::MountForBwsi(int* error_code) {
+  return chromeos::CryptohomeMountGuest(error_code);
 }
 
 bool CryptohomeLibraryImpl::IsMounted() {
