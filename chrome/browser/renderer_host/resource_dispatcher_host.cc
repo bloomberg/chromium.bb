@@ -1298,6 +1298,11 @@ void ResourceDispatcherHost::OnReadCompleted(URLRequest* request,
   DCHECK(request);
   RESOURCE_LOG("OnReadCompleted: " << request->url().spec());
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+
+  // OnReadCompleted can be called without Read (e.g., for chrome:// URLs).
+  // Make sure we know that a read has begun.
+  info->set_has_started_reading(true);
+
   if (PauseRequestIfNeeded(info)) {
     info->set_paused_read_bytes(bytes_read);
     RESOURCE_LOG("OnReadCompleted pausing: " << request->url().spec());

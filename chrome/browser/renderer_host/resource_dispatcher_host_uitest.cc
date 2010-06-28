@@ -317,4 +317,27 @@ TEST_F(ResourceDispatcherTest, CrossOriginRedirectBlocked) {
                  L"Title Of More Awesomeness", 2);
 }
 
+// Tests that ResourceDispatcherHostRequestInfo is updated correctly on failed
+// requests, to prevent calling Read on a request that has already failed.
+// See bug 40250.
+TEST_F(ResourceDispatcherTest, CrossSiteFailedRequest) {
+  scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
+  scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
+  ASSERT_TRUE(tab.get());
+
+  // Visit another URL first to trigger a cross-site navigation.
+  GURL url(chrome::kChromeUINewTabURL);
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
+
+  // Visit a URL that fails without calling ResourceDispatcherHost::Read.
+  GURL broken_url("chrome://theme");
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(broken_url));
+
+  // Make sure the navigation finishes.
+  std::wstring tab_title;
+  EXPECT_TRUE(tab->GetTabTitle(&tab_title));
+  EXPECT_EQ(L"chrome://theme/ is not available", tab_title);
+}
+
 }  // namespace
