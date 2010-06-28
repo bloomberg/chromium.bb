@@ -62,10 +62,10 @@ readonly TMP=/tmp/crosstool-untrusted
 # Environmental options: each optional *_DEV variable specifies a
 # directory to use instead of the Mercurial repository.  Use these
 # options to test pending changes.
-readonly LLVM_GCC_DEV=${LLVM_GCC_DEV:-}   # llvm-gcc
-readonly LLVM_DEV=${LLVM_DEV:-}           # llvm
-readonly NEWLIB_DEV=${NEWLIB_DEV:-}       # newlib
-readonly BINUTILS_DEV=${BINUTILS_DEV:-}   # binutils
+LLVM_GCC_DEV=${LLVM_GCC_DEV:-}   # llvm-gcc
+LLVM_DEV=${LLVM_DEV:-}           # llvm
+NEWLIB_DEV=${NEWLIB_DEV:-}       # newlib
+BINUTILS_DEV=${BINUTILS_DEV:-}   # binutils
 
 # Current milestones within each Hg repo:
 readonly LLVM_REV=8f933e976274 # (on the arm-sfi branch)
@@ -978,6 +978,20 @@ untrusted_sdk() {
   examples
   prune
   tarball $1
+}
+
+
+#@
+#@ untrusted_sdk_from_llvm_checkout <dir>  <tarball>
+#@
+#@   Create untrusted SDK tarball given a dir wirh checked out llvm branch
+untrusted_sdk_from_llvm_checkout() {
+  if [ ! -d $1/.hg ] ; then
+    echo "ERRROR: there is no .hg file in $1"
+    exit -1
+  fi
+  export LLVM_DEV=$1
+  untrusted_sdk $2
 }
 
 #@
