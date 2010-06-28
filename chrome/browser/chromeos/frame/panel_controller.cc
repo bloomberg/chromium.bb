@@ -271,10 +271,9 @@ void PanelController::Close() {
   }
 }
 
-void PanelController::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+void PanelController::OnCloseButtonPressed() {
   DCHECK(title_content_);
-  if (title_window_ && sender == title_content_->close_button()) {
+  if (title_window_) {
     if (delegate_)
       delegate_->ClosePanel();
     Close();
@@ -285,7 +284,7 @@ PanelController::TitleContentView::TitleContentView(
     PanelController* panel_controller)
         : panel_controller_(panel_controller) {
   InitializeResources();
-  close_button_ = new views::ImageButton(panel_controller_);
+  close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL, close_button_n);
   close_button_->SetImage(views::CustomButton::BS_HOT, close_button_h);
   close_button_->SetImage(views::CustomButton::BS_PUSHED, close_button_p);
@@ -361,6 +360,12 @@ void PanelController::TitleContentView::OnFocusOut() {
 
 void PanelController::TitleContentView::OnClose() {
   panel_controller_ = NULL;
+}
+
+void PanelController::TitleContentView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  if (panel_controller_ && sender == close_button_)
+    panel_controller_->OnCloseButtonPressed();
 }
 
 }  // namespace chromeos

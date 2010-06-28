@@ -276,7 +276,11 @@ void BrowserTabStripController::CreateNewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),
                             model_->profile());
 
-  Browser* browser = model_->GetSelectedTabContents()->delegate()->GetBrowser();
+  TabContents* selected_tab = model_->GetSelectedTabContents();
+  if (!selected_tab)
+    return;
+
+  Browser* browser = selected_tab->delegate()->GetBrowser();
   if (browser->OpenAppsPanelAsNewTab())
     return;
 

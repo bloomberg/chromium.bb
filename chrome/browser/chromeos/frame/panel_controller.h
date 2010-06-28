@@ -25,7 +25,7 @@ class WidgetGtk;
 namespace chromeos {
 
 // Controls interactions with the WM for popups / panels.
-class PanelController : public views::ButtonListener {
+class PanelController {
  public:
   enum State {
     INITIAL,
@@ -66,11 +66,9 @@ class PanelController : public views::ButtonListener {
 
   void SetState(State state);
 
-  // ButtonListener methods.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
  private:
-  class TitleContentView : public views::View {
+  class TitleContentView : public views::View,
+                           public views::ButtonListener {
    public:
     explicit TitleContentView(PanelController* panelController);
     virtual ~TitleContentView() {}
@@ -86,6 +84,9 @@ class PanelController : public views::ButtonListener {
     views::Label* title_label() { return title_label_; }
     views::ImageButton* close_button() { return close_button_; }
 
+    // ButtonListener methods.
+    virtual void ButtonPressed(views::Button* sender,
+                               const views::Event& event);
    private:
     views::ImageView* title_icon_;
     views::Label* title_label_;
@@ -93,6 +94,9 @@ class PanelController : public views::ButtonListener {
     PanelController* panel_controller_;
     DISALLOW_COPY_AND_ASSIGN(TitleContentView);
   };
+
+  // Called from TitleContentView's ButtonPressed handler.
+  void OnCloseButtonPressed();
 
   // Dispatches client events to PanelController instances
   static bool OnPanelClientEvent(
