@@ -117,7 +117,7 @@ bool ReadImageData(PP_Resource device_context_2d,
                    PP_Resource image,
                    int32_t x, int32_t y) {
   scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(device_context_2d));
+      Resource::GetAs<DeviceContext2D>(device_context_2d));
   if (!context.get())
     return false;
   return context->ReadImageData(image, x, y);

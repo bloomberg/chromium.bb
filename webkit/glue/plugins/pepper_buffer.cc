@@ -14,7 +14,6 @@
 #include "third_party/ppapi/c/ppb_buffer.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
-#include "webkit/glue/plugins/pepper_resource_tracker.h"
 
 namespace pepper {
 
@@ -34,12 +33,11 @@ PP_Resource Create(PP_Module module_id, int32_t size) {
 }
 
 bool IsBuffer(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsBuffer(resource).get();
+  return !!Resource::GetAs<Buffer>(resource).get();
 }
 
 bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
-  scoped_refptr<Buffer> buffer(
-      ResourceTracker::Get()->GetAsBuffer(resource));
+  scoped_refptr<Buffer> buffer(Resource::GetAs<Buffer>(resource));
   if (!buffer.get())
     return false;
   buffer->Describe(size_in_bytes);
@@ -47,16 +45,14 @@ bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
 }
 
 void* Map(PP_Resource resource) {
-  scoped_refptr<Buffer> buffer(
-      ResourceTracker::Get()->GetAsBuffer(resource));
+  scoped_refptr<Buffer> buffer(Resource::GetAs<Buffer>(resource));
   if (!buffer.get())
     return NULL;
   return buffer->Map();
 }
 
 void Unmap(PP_Resource resource) {
-  scoped_refptr<Buffer> buffer(
-      ResourceTracker::Get()->GetAsBuffer(resource));
+  scoped_refptr<Buffer> buffer(Resource::GetAs<Buffer>(resource));
   if (!buffer)
     return;
   return buffer->Unmap();

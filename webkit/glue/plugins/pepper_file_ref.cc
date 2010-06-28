@@ -63,12 +63,11 @@ PP_Resource CreateTemporaryFileRef(PP_Instance instance_id, const char* path) {
 }
 
 bool IsFileRef(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsFileRef(resource).get();
+  return !!Resource::GetAs<FileRef>(resource).get();
 }
 
 PP_FileSystemType GetFileSystemType(PP_Resource file_ref_id) {
-  scoped_refptr<FileRef> file_ref(
-      ResourceTracker::Get()->GetAsFileRef(file_ref_id));
+  scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref.get())
     return PP_FileSystemType_External;
 
@@ -76,8 +75,7 @@ PP_FileSystemType GetFileSystemType(PP_Resource file_ref_id) {
 }
 
 PP_Var GetName(PP_Resource file_ref_id) {
-  scoped_refptr<FileRef> file_ref(
-      ResourceTracker::Get()->GetAsFileRef(file_ref_id));
+  scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref.get())
     return PP_MakeVoid();
 
@@ -85,8 +83,7 @@ PP_Var GetName(PP_Resource file_ref_id) {
 }
 
 PP_Var GetPath(PP_Resource file_ref_id) {
-  scoped_refptr<FileRef> file_ref(
-      ResourceTracker::Get()->GetAsFileRef(file_ref_id));
+  scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref.get())
     return PP_MakeVoid();
 
@@ -97,8 +94,7 @@ PP_Var GetPath(PP_Resource file_ref_id) {
 }
 
 PP_Resource GetParent(PP_Resource file_ref_id) {
-  scoped_refptr<FileRef> file_ref(
-      ResourceTracker::Get()->GetAsFileRef(file_ref_id));
+  scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref.get())
     return 0;
 

@@ -27,12 +27,12 @@ PP_Resource Create(PP_Instance instance_id,
 }
 
 bool IsFileChooser(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsFileChooser(resource).get();
+  return !!Resource::GetAs<FileChooser>(resource).get();
 }
 
 int32_t Show(PP_Resource chooser_id, PP_CompletionCallback callback) {
   scoped_refptr<FileChooser> chooser(
-      ResourceTracker::Get()->GetAsFileChooser(chooser_id).get());
+      Resource::GetAs<FileChooser>(chooser_id).get());
   if (!chooser.get())
     return PP_Error_BadResource;
 
@@ -41,7 +41,7 @@ int32_t Show(PP_Resource chooser_id, PP_CompletionCallback callback) {
 
 PP_Resource GetNextChosenFile(PP_Resource chooser_id) {
   scoped_refptr<FileChooser> chooser(
-      ResourceTracker::Get()->GetAsFileChooser(chooser_id).get());
+      Resource::GetAs<FileChooser>(chooser_id).get());
   if (!chooser.get())
     return 0;
 

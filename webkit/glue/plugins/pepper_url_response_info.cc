@@ -6,20 +6,19 @@
 
 #include "base/logging.h"
 #include "third_party/ppapi/c/pp_var.h"
-#include "webkit/glue/plugins/pepper_resource_tracker.h"
 
 namespace pepper {
 
 namespace {
 
 bool IsURLResponseInfo(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsURLResponseInfo(resource).get();
+  return !!Resource::GetAs<URLResponseInfo>(resource).get();
 }
 
 PP_Var GetProperty(PP_Resource response_id,
                    PP_URLResponseProperty property) {
   scoped_refptr<URLResponseInfo> response(
-      ResourceTracker::Get()->GetAsURLResponseInfo(response_id));
+      Resource::GetAs<URLResponseInfo>(response_id));
   if (!response.get())
     return PP_MakeVoid();
 

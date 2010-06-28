@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
-#include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_string.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
@@ -27,14 +26,14 @@ PP_Resource Create(PP_Module module_id) {
 }
 
 bool IsURLRequestInfo(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsURLRequestInfo(resource).get();
+  return !!Resource::GetAs<URLRequestInfo>(resource).get();
 }
 
 bool SetProperty(PP_Resource request_id,
                  PP_URLRequestProperty property,
                  PP_Var var) {
   scoped_refptr<URLRequestInfo> request(
-      ResourceTracker::Get()->GetAsURLRequestInfo(request_id));
+      Resource::GetAs<URLRequestInfo>(request_id));
   if (!request.get())
     return false;
 
@@ -49,7 +48,7 @@ bool SetProperty(PP_Resource request_id,
 
 bool AppendDataToBody(PP_Resource request_id, PP_Var var) {
   scoped_refptr<URLRequestInfo> request(
-      ResourceTracker::Get()->GetAsURLRequestInfo(request_id));
+      Resource::GetAs<URLRequestInfo>(request_id));
   if (!request.get())
     return false;
 

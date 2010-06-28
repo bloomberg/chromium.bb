@@ -16,7 +16,6 @@
 #include "third_party/ppapi/c/ppb_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
-#include "webkit/glue/plugins/pepper_resource_tracker.h"
 
 namespace pepper {
 
@@ -43,7 +42,7 @@ PP_Resource Create(PP_Module module_id,
 }
 
 bool IsImageData(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsImageData(resource).get();
+  return !!Resource::GetAs<ImageData>(resource).get();
 }
 
 bool Describe(PP_Resource resource,
@@ -51,8 +50,7 @@ bool Describe(PP_Resource resource,
   // Give predictable values on failure.
   memset(desc, 0, sizeof(PP_ImageDataDesc));
 
-  scoped_refptr<ImageData> image_data(
-      ResourceTracker::Get()->GetAsImageData(resource));
+  scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
   if (!image_data.get())
     return false;
   image_data->Describe(desc);
@@ -60,16 +58,14 @@ bool Describe(PP_Resource resource,
 }
 
 void* Map(PP_Resource resource) {
-  scoped_refptr<ImageData> image_data(
-      ResourceTracker::Get()->GetAsImageData(resource));
+  scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
   if (!image_data.get())
     return NULL;
   return image_data->Map();
 }
 
 void Unmap(PP_Resource resource) {
-  scoped_refptr<ImageData> image_data(
-      ResourceTracker::Get()->GetAsImageData(resource));
+  scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
   if (!image_data)
     return;
   return image_data->Unmap();

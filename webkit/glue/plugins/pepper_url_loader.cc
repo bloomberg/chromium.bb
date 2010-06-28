@@ -9,7 +9,6 @@
 #include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/ppb_url_loader.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
-#include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 
@@ -29,19 +28,18 @@ PP_Resource Create(PP_Instance instance_id) {
 }
 
 bool IsURLLoader(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsURLLoader(resource).get();
+  return !!Resource::GetAs<URLLoader>(resource).get();
 }
 
 int32_t Open(PP_Resource loader_id,
              PP_Resource request_id,
              PP_CompletionCallback callback) {
-  scoped_refptr<URLLoader> loader(
-      ResourceTracker::Get()->GetAsURLLoader(loader_id));
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
     return PP_Error_BadResource;
 
   scoped_refptr<URLRequestInfo> request(
-      ResourceTracker::Get()->GetAsURLRequestInfo(request_id));
+      Resource::GetAs<URLRequestInfo>(request_id));
   if (!request.get())
     return PP_Error_BadResource;
 
@@ -50,8 +48,7 @@ int32_t Open(PP_Resource loader_id,
 
 int32_t FollowRedirect(PP_Resource loader_id,
                        PP_CompletionCallback callback) {
-  scoped_refptr<URLLoader> loader(
-      ResourceTracker::Get()->GetAsURLLoader(loader_id));
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
     return PP_Error_BadResource;
 
@@ -61,8 +58,7 @@ int32_t FollowRedirect(PP_Resource loader_id,
 bool GetUploadProgress(PP_Resource loader_id,
                        int64_t* bytes_sent,
                        int64_t* total_bytes_to_be_sent) {
-  scoped_refptr<URLLoader> loader(
-      ResourceTracker::Get()->GetAsURLLoader(loader_id));
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
     return false;
 
@@ -74,8 +70,7 @@ bool GetUploadProgress(PP_Resource loader_id,
 bool GetDownloadProgress(PP_Resource loader_id,
                          int64_t* bytes_received,
                          int64_t* total_bytes_to_be_received) {
-  scoped_refptr<URLLoader> loader(
-      ResourceTracker::Get()->GetAsURLLoader(loader_id));
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
     return false;
 
@@ -85,8 +80,7 @@ bool GetDownloadProgress(PP_Resource loader_id,
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader_id) {
-  scoped_refptr<URLLoader> loader(
-      ResourceTracker::Get()->GetAsURLLoader(loader_id));
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
     return 0;
 
@@ -102,8 +96,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
                          char* buffer,
                          int32_t bytes_to_read,
                          PP_CompletionCallback callback) {
-  scoped_refptr<URLLoader> loader(
-      ResourceTracker::Get()->GetAsURLLoader(loader_id));
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
     return PP_Error_BadResource;
 
@@ -111,8 +104,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
 }
 
 void Close(PP_Resource loader_id) {
-  scoped_refptr<URLLoader> loader(
-      ResourceTracker::Get()->GetAsURLLoader(loader_id));
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
     return;
 

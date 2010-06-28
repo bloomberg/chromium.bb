@@ -23,7 +23,6 @@
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
-#include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
 using WebKit::WebFrame;
@@ -214,12 +213,9 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
     return true;
   }
 
-  scoped_refptr<Resource> device_resource =
-      ResourceTracker::Get()->GetResource(device_id);
-  if (!device_resource.get())
-    return false;
+  scoped_refptr<DeviceContext2D> device_2d =
+      Resource::GetAs<DeviceContext2D>(device_id);
 
-  DeviceContext2D* device_2d = device_resource->AsDeviceContext2D();
   if (device_2d) {
     if (!device_2d->BindToInstance(this))
       return false;  // Can't bind to more than one instance.

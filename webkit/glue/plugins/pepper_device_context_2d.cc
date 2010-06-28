@@ -21,7 +21,6 @@
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
-#include "webkit/glue/plugins/pepper_resource_tracker.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -78,14 +77,14 @@ PP_Resource Create(PP_Module module_id, int32_t width, int32_t height,
 
 bool IsDeviceContext2D(PP_Resource resource) {
   scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(resource));
+      Resource::GetAs<DeviceContext2D>(resource));
   return !!context.get();
 }
 
 bool Describe(PP_Resource device_context,
               int32_t* width, int32_t* height, bool* is_always_opaque) {
   scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
+      Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return false;
   return context->Describe(width, height, is_always_opaque);
@@ -96,7 +95,7 @@ bool PaintImageData(PP_Resource device_context,
                     int32_t x, int32_t y,
                     const PP_Rect* src_rect) {
   scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
+      Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return false;
   return context->PaintImageData(image, x, y, src_rect);
@@ -106,7 +105,7 @@ bool Scroll(PP_Resource device_context,
             const PP_Rect* clip_rect,
             int32_t dx, int32_t dy) {
   scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
+      Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return false;
   return context->Scroll(clip_rect, dx, dy);
@@ -114,7 +113,7 @@ bool Scroll(PP_Resource device_context,
 
 bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
   scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
+      Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return false;
   return context->ReplaceContents(image);
@@ -123,7 +122,7 @@ bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
 int32_t Flush(PP_Resource device_context,
               PP_CompletionCallback callback) {
   scoped_refptr<DeviceContext2D> context(
-      ResourceTracker::Get()->GetAsDeviceContext2D(device_context));
+      Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return PP_Error_BadResource;
   return context->Flush(callback);
@@ -209,8 +208,7 @@ bool DeviceContext2D::Describe(int32_t* width, int32_t* height,
 bool DeviceContext2D::PaintImageData(PP_Resource image,
                                      int32_t x, int32_t y,
                                      const PP_Rect* src_rect) {
-  scoped_refptr<ImageData> image_resource(
-      ResourceTracker::Get()->GetAsImageData(image));
+  scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
   if (!image_resource.get())
     return false;
 
@@ -262,8 +260,7 @@ bool DeviceContext2D::Scroll(const PP_Rect* clip_rect,
 }
 
 bool DeviceContext2D::ReplaceContents(PP_Resource image) {
-  scoped_refptr<ImageData> image_resource(
-      ResourceTracker::Get()->GetAsImageData(image));
+  scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
   if (!image_resource.get())
     return false;
   if (image_resource->format() != PP_IMAGEDATAFORMAT_BGRA_PREMUL)
@@ -336,8 +333,7 @@ int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
 
 bool DeviceContext2D::ReadImageData(PP_Resource image, int32_t x, int32_t y) {
   // Get and validate the image object to paint into.
-  scoped_refptr<ImageData> image_resource(
-      ResourceTracker::Get()->GetAsImageData(image));
+  scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
   if (!image_resource.get())
     return false;
   if (image_resource->format() != PP_IMAGEDATAFORMAT_BGRA_PREMUL)

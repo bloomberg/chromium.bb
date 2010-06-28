@@ -16,7 +16,7 @@ namespace {
 
 PP_Resource Create(PP_Resource directory_ref_id) {
   scoped_refptr<FileRef> directory_ref(
-      ResourceTracker::Get()->GetAsFileRef(directory_ref_id));
+      Resource::GetAs<FileRef>(directory_ref_id));
   if (!directory_ref.get())
     return 0;
 
@@ -26,14 +26,14 @@ PP_Resource Create(PP_Resource directory_ref_id) {
 }
 
 bool IsDirectoryReader(PP_Resource resource) {
-  return !!ResourceTracker::Get()->GetAsDirectoryReader(resource).get();
+  return !!Resource::GetAs<DirectoryReader>(resource).get();
 }
 
 int32_t GetNextEntry(PP_Resource reader_id,
                      PP_DirectoryEntry* entry,
                      PP_CompletionCallback callback) {
   scoped_refptr<DirectoryReader> reader(
-      ResourceTracker::Get()->GetAsDirectoryReader(reader_id));
+      Resource::GetAs<DirectoryReader>(reader_id));
   if (!reader.get())
     return PP_Error_BadResource;
 
