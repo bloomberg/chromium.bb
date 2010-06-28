@@ -69,12 +69,12 @@ static void sha1tostr(const u_char *sha1, char *sha1str)
  * read-only and only supports sequential access. */
 
 typedef struct {
+	/* in and out are the underlying buffers to be used with lzma_stream. */
+	u_char in[BUFSIZ];
+	u_char out[BUFSIZ];
+
 	lzma_stream ls;
 	FILE *f;
-
-	/* in and out are the underlying buffers to be used with lzma_stream. */
-	u_char *in;
-	u_char *out;
 
 	/* read_out points to the first byte in out not yet consumed by an
 	 * xzread call. read_out_len tracks the amount of data available in
@@ -104,16 +104,6 @@ static xzfile *xzdopen(FILE *f, lzma_ret *err)
 	xzf->ls = ls;
 	xzf->f = f;
 
-	xzf->in = NULL;
-	xzf->out = NULL;
-	if (!(xzf->in = malloc(BUFSIZ)) || !(xzf->out = malloc(BUFSIZ))) {
-		if (err) *err = LZMA_MEM_ERROR;
-		free(xzf->out);
-		free(xzf->in);
-		free(xzf);
-		return NULL;
-	}
-
 	xzf->read_out = xzf->out;
 	xzf->read_out_len = 0;
 
@@ -140,8 +130,6 @@ static xzfile *xzdopen(FILE *f, lzma_ret *err)
 	                                   LZMA_TELL_UNSUPPORTED_CHECK);
 	if (xzf->err != LZMA_OK) {
 		if (err) *err = xzf->err;
-		free(xzf->out);
-		free(xzf->in);
 		free(xzf);
 		return NULL;
 	}
@@ -159,8 +147,6 @@ static lzma_ret xzclose(xzfile *xzf)
 	lzma_end(&xzf->ls);
 	if (fclose(xzf->f) != 0)
 		lzma_err = LZMA_STREAM_END;
-	free(xzf->out);
-	free(xzf->in);
 	free(xzf);
 
 	return lzma_err;
