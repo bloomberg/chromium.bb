@@ -1641,13 +1641,18 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
                         chrome::kBrowserProcessExecutablePath);
   properties->SetString(L"HelperProcessExecutablePath",
                         chrome::kHelperProcessExecutablePath);
-#if defined(OS_WIN)
   properties->SetString(L"command_line_string",
       CommandLine::ForCurrentProcess()->command_line_string());
-#elif defined(OS_POSIX)
-  properties->SetString(L"command_line_string",
-      JoinString(CommandLine::ForCurrentProcess()->argv(), ' '));
+
+  std::string branding;
+#if defined(GOOGLE_CHROME_BUILD)
+  branding = "Google Chrome";
+#elif defined(CHROMIUM_BUILD)
+  branding = "Chromium";
+#else
+  branding = "Unknown Branding";
 #endif
+  properties->SetString(L"branding", branding);
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set(L"properties", properties);

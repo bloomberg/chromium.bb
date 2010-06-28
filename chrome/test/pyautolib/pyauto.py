@@ -497,7 +497,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
           u'HelperProcessExecutableName': u'Chromium Helper',
           u'HelperProcessExecutablePath': u'Chromium Helper.app/Contents/'
                                             'MacOS/Chromium Helper',
-          u'command_line_string': "COMMAND_LINE_STRING --WITH-FLAGS"},
+          u'command_line_string': "COMMAND_LINE_STRING --WITH-FLAGS",
+          u'branding': 'Chromium',}
         # The order of the windows and tabs listed here will be the same as
         # what shows up on screen.
         u'windows': [ { u'index': 0,
