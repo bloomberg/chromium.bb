@@ -130,7 +130,10 @@ extern const char kEnableVideoLayering[];
 extern const char kEnableVideoLogging[];
 extern const char kEnableWatchdog[];
 extern const char kEnableXSSAuditor[];
+// Experimental features.
+extern const char kExperimentalEnableNegotiateAuth[];
 extern const char kExperimentalSpellcheckerFeatures[];
+// End experimental features.
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsUpdateFrequency[];

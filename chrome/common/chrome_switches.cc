@@ -402,6 +402,10 @@ const char kEnableWatchdog[]                = "enable-watchdog";
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 
+// Enables the experimental Negotiate authentication protocol.
+const char kExperimentalEnableNegotiateAuth[] =
+    "experimental-enable-negotiate-auth";
+
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
 // misppelled by typing the word with two consecutive letters swapped. The

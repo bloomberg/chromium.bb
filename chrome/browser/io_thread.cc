@@ -207,6 +207,22 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
     auth_filter->SetWhitelist(auth_server_whitelist);
   }
 
+  // Set the flag that enables or disables the Negotiate auth handler.
+#if defined(OS_WIN)
+  static const bool kNegotiateAuthEnabledDefault = true;
+#else
+  static const bool kNegotiateAuthEnabledDefault = false;
+#endif
+  bool negotiate_auth_enabled = kNegotiateAuthEnabledDefault;
+  if (command_line.HasSwitch(switches::kExperimentalEnableNegotiateAuth)) {
+    std::string enable_negotiate_auth = command_line.GetSwitchValueASCII(
+        switches::kExperimentalEnableNegotiateAuth);
+    // Enabled if no value, or value is 'true'.  Disabled otherwise.
+    negotiate_auth_enabled =
+        enable_negotiate_auth.empty() ||
+        (StringToLowerASCII(enable_negotiate_auth) == "true");
+  }
+
   net::HttpAuthHandlerRegistryFactory* registry_factory =
       net::HttpAuthHandlerFactory::CreateDefault();
 
@@ -219,18 +235,22 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
   registry_factory->SetURLSecurityManager("negotiate",
                                           globals_->url_security_manager.get());
 
-  // Configure the Negotiate settings for the Kerberos SPN.
-  // TODO(cbentzel): Read the related IE registry settings on Windows builds.
-  // TODO(cbentzel): Ugly use of static_cast here.
-  net::HttpAuthHandlerNegotiate::Factory* negotiate_factory =
-      static_cast<net::HttpAuthHandlerNegotiate::Factory*>(
-          registry_factory->GetSchemeFactory("negotiate"));
-  DCHECK(negotiate_factory);
-  if (command_line.HasSwitch(switches::kDisableAuthNegotiateCnameLookup))
-    negotiate_factory->set_disable_cname_lookup(true);
-  if (command_line.HasSwitch(switches::kEnableAuthNegotiatePort))
-    negotiate_factory->set_use_port(true);
-
+  if (negotiate_auth_enabled) {
+    // Configure the Negotiate settings for the Kerberos SPN.
+    // TODO(cbentzel): Read the related IE registry settings on Windows builds.
+    // TODO(cbentzel): Ugly use of static_cast here.
+    net::HttpAuthHandlerNegotiate::Factory* negotiate_factory =
+        static_cast<net::HttpAuthHandlerNegotiate::Factory*>(
+            registry_factory->GetSchemeFactory("negotiate"));
+    DCHECK(negotiate_factory);
+    if (command_line.HasSwitch(switches::kDisableAuthNegotiateCnameLookup))
+      negotiate_factory->set_disable_cname_lookup(true);
+    if (command_line.HasSwitch(switches::kEnableAuthNegotiatePort))
+      negotiate_factory->set_use_port(true);
+  } else {
+    // Disable the Negotiate authentication handler.
+    registry_factory->RegisterSchemeFactory("negotiate", NULL);
+  }
   return registry_factory;
 }
 
