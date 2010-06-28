@@ -11,7 +11,6 @@
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
-using WebKit::WebCompositionCommand;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
