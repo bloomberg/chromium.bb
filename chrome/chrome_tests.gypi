@@ -265,7 +265,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
         }],
       ],
     },
@@ -409,7 +409,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
           'link_settings': {
             'libraries': [
               '-lOleAcc.lib',
@@ -489,7 +489,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
           'link_settings': {
             'libraries': [
               '-lOleAcc.lib',
@@ -1119,6 +1119,7 @@
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
           ],
           'sources!': [
+            'browser/printing/print_job_unittest.cc',
             'browser/views/bookmark_bar_view_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
           ],
@@ -1235,7 +1236,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
@@ -1289,7 +1290,6 @@
             'browser/extensions/extension_process_manager_unittest.cc',
             'browser/importer/importer_unittest.cc',
             'browser/login_prompt_unittest.cc',
-            'browser/printing/print_job_unittest.cc',
             'browser/rlz/rlz_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
             'browser/views/bookmark_editor_view_unittest.cc',
@@ -1469,7 +1469,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
@@ -1605,7 +1605,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
@@ -1798,7 +1798,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
         }], # OS="win"
       ], # conditions
     },
