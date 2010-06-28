@@ -37,12 +37,6 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
 
   switch (message.param(0)) {
     case WM_IPC_SYSTEM_KEY_VOLUME_MUTE:
-      // TODO(davej): Toggle behavior is broken until we can either recieve
-      // notification of key up events without autorepeat, or add a timer to
-      // ignore autorepeated keys.  Currently we get notified on key down and
-      // key repeat which would cause us to rapidly cycle mute/unmute/mute as
-      // long as mute key was held.
-      // Refer to http://crosbug.com/3754 and http://crosbug.com/3751
       audio_handler_->SetMute(true);
       VolumeBubble::instance()->ShowVolumeBubble(0);
       break;

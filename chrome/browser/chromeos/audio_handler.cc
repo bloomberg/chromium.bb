@@ -109,7 +109,7 @@ void AudioHandler::SetMute(bool do_mute) {
 
   DLOG(INFO) << "Setting Mute to " << do_mute;
 
-  mixer_->SetMute(do_mute ? 1 : 0);
+  mixer_->SetMute(do_mute);
 }
 
 void AudioHandler::ToggleMute() {
@@ -164,4 +164,3 @@ double AudioHandler::PercentToVolumeDb(double volume_percent) {
 }
 
 }  // namespace chromeos
-
