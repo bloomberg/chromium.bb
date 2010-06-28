@@ -846,7 +846,7 @@ void LocationBarView::ShowFirstRunBubbleInternal(
     return;
 
   // Point at the start of the edit control; adjust to look as good as possible.
-  const int kXOffset = 1;   // Text looks like it actually starts 1 px in.
+  const int kXOffset = 6;   // Text looks like it actually starts 6 px in.
   const int kYOffset = -4;  // Point into the omnibox, not just at its edge.
   gfx::Point origin(location_entry_view_->bounds().x() + kXOffset,
                     y() + height() + kYOffset);
