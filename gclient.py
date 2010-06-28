@@ -450,11 +450,15 @@ solutions = [
         # Raise a new exception with the human readable message:
         raise gclient_utils.Error('\n'.join(error_message))
     for s in config_dict.get('solutions', []):
-      self.dependencies.append(Dependency(
-          self, s['name'], s['url'],
-          s.get('safesync_url', None),
-          s.get('custom_deps', {}),
-          s.get('custom_vars', {})))
+      try:
+        self.dependencies.append(Dependency(
+            self, s['name'], s['url'],
+            s.get('safesync_url', None),
+            s.get('custom_deps', {}),
+            s.get('custom_vars', {})))
+      except KeyError:
+        raise gclient_utils.Error('Invalid .gclient file. Solution is '
+                                  'incomplete: %s' % s)
     # .gclient can have hooks.
     self.deps_hooks = config_dict.get('hooks', [])
 
