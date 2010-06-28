@@ -9,7 +9,8 @@
 namespace remoting {
 
 DecoderVerbatim::DecoderVerbatim()
-    : updated_rects_(NULL) {
+    : updated_rects_(NULL),
+      reverse_rows_(true) {
 }
 
 bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
@@ -51,13 +52,20 @@ bool DecoderVerbatim::PartialDecode(HostMessage* message) {
   // Copy the data line by line.
   const int src_stride = bytes_per_pixel * width;
   const char* src = message->update_stream_packet().data().c_str();
+  int src_stride_dir = src_stride;
+  if (reverse_rows_) {
+    // Copy rows from bottom to top to flip the image vertically.
+    src += (height - 1) * src_stride;
+    // Change the direction of the stride to work bottom to top.
+    src_stride_dir *= -1;
+  }
   const int dest_stride = frame_->stride(media::VideoFrame::kRGBPlane);
   uint8* dest = frame_->data(media::VideoFrame::kRGBPlane) +
       dest_stride * y + bytes_per_pixel * x;
   for (int i = 0; i < height; ++i) {
     memcpy(dest, src, src_stride);
     dest += dest_stride;
-    src += src_stride;
+    src += src_stride_dir;
   }
 
   updated_rects_->clear();

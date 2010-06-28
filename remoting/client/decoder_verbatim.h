@@ -30,6 +30,10 @@ class DecoderVerbatim : public Decoder {
   scoped_refptr<media::VideoFrame> frame_;
   UpdatedRects* updated_rects_;
 
+  // True if we should reverse the rows when copying data into the target
+  // frame buffer.
+  bool reverse_rows_;
+
   DISALLOW_COPY_AND_ASSIGN(DecoderVerbatim);
 };
 
