@@ -12,6 +12,7 @@
 
 using ::testing::_;
 using ::testing::NotNull;
+using ::testing::StrictMock;
 
 namespace remoting {
 
@@ -23,13 +24,13 @@ class ClientConnectionTest : public testing::Test {
  protected:
   virtual void SetUp() {
     decoder_ = new MockProtocolDecoder();
-    channel_ = new MockJingleChannel();
+    channel_ = new StrictMock<MockJingleChannel>();
 
     // Allocate a ClientConnection object with the mock objects. we give the
     // ownership of decoder to the viewer.
     viewer_ = new ClientConnection(&message_loop_,
-                         decoder_,
-                         &handler_);
+                                   decoder_,
+                                   &handler_);
 
     viewer_->set_jingle_channel(channel_.get());
   }
@@ -37,8 +38,11 @@ class ClientConnectionTest : public testing::Test {
   MessageLoop message_loop_;
   MockProtocolDecoder* decoder_;
   MockClientConnectionEventHandler handler_;
-  scoped_refptr<MockJingleChannel> channel_;
   scoped_refptr<ClientConnection> viewer_;
+
+  // |channel_| is wrapped with StrictMock because we limit strictly the calls
+  // to it.
+  scoped_refptr<StrictMock<MockJingleChannel> > channel_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionTest);
@@ -93,6 +97,25 @@ TEST_F(ClientConnectionTest, ParseMessages) {
 
   viewer_->OnPacketReceived(channel_.get(), data);
   message_loop_.RunAllPending();
+}
+
+// Test that we can close client connection more than once and operations
+// after the connection is closed has no effect.
+TEST_F(ClientConnectionTest, Close) {
+  EXPECT_CALL(*channel_, Close());
+  viewer_->Disconnect();
+
+  viewer_->SendBeginUpdateStreamMessage();
+  scoped_ptr<UpdateStreamPacketHeader> header(new UpdateStreamPacketHeader);
+  header->set_x(0);
+  header->set_y(0);
+  header->set_width(640);
+  header->set_height(480);
+
+  scoped_refptr<media::DataBuffer> data = new media::DataBuffer(10);
+  viewer_->SendUpdateStreamPacketMessage(header.get(), data);
+  viewer_->SendEndUpdateStreamMessage();
+  viewer_->Disconnect();
 }
 
 }  // namespace remoting

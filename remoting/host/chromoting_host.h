@@ -17,12 +17,11 @@
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
-namespace base {
-class WaitableEvent;
-}  // namespace base
+class Task;
 
 namespace remoting {
 
+class ChromotingHostContext;
 class MutableHostConfig;
 
 // A class to implement the functionality of a host process.
@@ -51,24 +50,24 @@ class MutableHostConfig;
 //    return to the idle state. We then go to step (2) if there a new
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
-                   public ClientConnection::EventHandler,
-                   public JingleClient::Callback {
+                       public ClientConnection::EventHandler,
+                       public JingleClient::Callback {
  public:
-  ChromotingHost(MutableHostConfig* config, Capturer* capturer,
-                 Encoder* encoder, EventExecutor* executor,
-                 base::WaitableEvent* host_done);
+  ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
+                 Capturer* capturer, Encoder* encoder, EventExecutor* executor);
   virtual ~ChromotingHost();
 
-  // Run the host porcess. This method returns only after the message loop
-  // of the host process exits.
-  void Run();
+  // Start the host porcess. This methods starts the chromoting host
+  // asynchronously.
+  //
+  // |shutdown_task| is called if Start() has failed ot Shutdown() is called
+  // and all related operations are completed.
+  //
+  // This method can only be called once during the lifetime of this object.
+  void Start(Task* shutdown_task);
 
   // This method is called when we need to the host process.
-  void DestroySession();
-
-  // This method talks to the cloud to register the host process. If
-  // successful we will start listening to network requests.
-  void RegisterHost();
+  void Shutdown();
 
   // This method is called if a client is connected to this object.
   void OnClientConnected(ClientConnection* client);
@@ -95,20 +94,21 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       scoped_refptr<JingleChannel> channel);
 
  private:
-  // The message loop that this class runs on.
-  MessageLoop* message_loop();
+  enum State {
+    kInitial,
+    kStarted,
+    kStopped,
+  };
 
-  // The main thread that this object runs on.
-  base::Thread main_thread_;
+  // This method connects to the talk network and start listening for incoming
+  // connections.
+  void DoStart(Task* shutdown_task);
 
-  // Used to handle the Jingle connection.
-  JingleThread network_thread_;
+  // This method shuts down the host process.
+  void DoShutdown();
 
-  // A thread that hosts capture operations.
-  base::Thread capture_thread_;
-
-  // A thread that hosts encode operations.
-  base::Thread encode_thread_;
+  // The context that the chromoting host runs on.
+  ChromotingHostContext* context_;
 
   scoped_refptr<MutableHostConfig> config_;
 
@@ -137,8 +137,17 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Session manager for the host process.
   scoped_refptr<SessionManager> session_;
 
-  // Signals the host is ready to be destroyed.
-  base::WaitableEvent* host_done_;
+  // This task gets executed when this object fails to connect to the
+  // talk network or Shutdown() is called.
+  scoped_ptr<Task> shutdown_task_;
+
+  // Tracks the internal state of the host.
+  // This variable is written on the main thread of ChromotingHostContext
+  // and read by jingle thread.
+  State state_;
+
+  // Lock is to lock the access to |state_|.
+  Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };

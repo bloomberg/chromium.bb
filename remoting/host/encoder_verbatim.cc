@@ -30,7 +30,8 @@ void EncoderVerbatim::Encode(const DirtyRects& dirty_rects,
       EncodingState state = EncodingInProgress;
       if (i == 0) {
         state |= EncodingStarting;
-      } else if (i == num_rects - 1) {
+      }
+      if (i == num_rects - 1) {
         state |= EncodingEnded;
       }
       data_available_callback->Run(header.release(),

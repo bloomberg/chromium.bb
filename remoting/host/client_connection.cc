@@ -38,7 +38,10 @@ ClientConnection::~ClientConnection() {
 void ClientConnection::SendInitClientMessage(int width, int height) {
   DCHECK_EQ(loop_, MessageLoop::current());
   DCHECK(!update_stream_size_);
-  DCHECK(channel_.get());
+
+  // If we are disconnected then return.
+  if (!channel_)
+    return;
 
   HostMessage msg;
   msg.mutable_init_client()->set_width(width);
@@ -49,7 +52,10 @@ void ClientConnection::SendInitClientMessage(int width, int height) {
 
 void ClientConnection::SendBeginUpdateStreamMessage() {
   DCHECK_EQ(loop_, MessageLoop::current());
-  DCHECK(channel_.get());
+
+  // If we are disconnected then return.
+  if (!channel_)
+    return;
 
   HostMessage msg;
   msg.mutable_begin_update_stream();
@@ -65,7 +71,10 @@ void ClientConnection::SendUpdateStreamPacketMessage(
     const UpdateStreamPacketHeader* header,
     scoped_refptr<DataBuffer> data) {
   DCHECK_EQ(loop_, MessageLoop::current());
-  DCHECK(channel_.get());
+
+  // If we are disconnected then return.
+  if (!channel_)
+    return;
 
   HostMessage msg;
   msg.mutable_update_stream_packet()->mutable_header()->CopyFrom(*header);
@@ -81,7 +90,10 @@ void ClientConnection::SendUpdateStreamPacketMessage(
 
 void ClientConnection::SendEndUpdateStreamMessage() {
   DCHECK_EQ(loop_, MessageLoop::current());
-  DCHECK(channel_.get());
+
+  // If we are disconnected then return.
+  if (!channel_)
+    return;
 
   HostMessage msg;
   msg.mutable_end_update_stream();
@@ -116,8 +128,11 @@ int ClientConnection::GetPendingUpdateStreamMessages() {
 void ClientConnection::Disconnect() {
   DCHECK_EQ(loop_, MessageLoop::current());
 
-  DCHECK(channel_.get());
-  channel_->Close();
+  // If there is a channel then close it and release the reference.
+  if (channel_) {
+    channel_->Close();
+    channel_ = NULL;
+  }
 }
 
 void ClientConnection::OnStateChange(JingleChannel* channel,

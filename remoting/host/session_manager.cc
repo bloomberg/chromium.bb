@@ -139,6 +139,12 @@ void SessionManager::RemoveClient(scoped_refptr<ClientConnection> client) {
       NewRunnableMethod(this, &SessionManager::DoRemoveClient, client));
 }
 
+void SessionManager::RemoveAllClients() {
+  network_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoRemoveAllClients));
+}
+
 void SessionManager::DoCapture() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
@@ -166,8 +172,7 @@ void SessionManager::DoCapture() {
   ScheduleNextCapture();
 
   // And finally perform one capture.
-  DCHECK(capturer_.get());
-  capturer_->CaptureDirtyRects(
+  capturer()->CaptureDirtyRects(
       NewRunnableMethod(this, &SessionManager::CaptureDoneTask));
 }
 
@@ -190,13 +195,11 @@ void SessionManager::DoEncode(const CaptureData *capture_data) {
 
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
-  DCHECK(encoder_.get());
-
   // TODO(hclam): Enable |force_refresh| if a new client was
   // added.
-  encoder_->SetSize(capture_data->width_, capture_data->height_);
-  encoder_->SetPixelFormat(capture_data->pixel_format_);
-  encoder_->Encode(
+  encoder()->SetSize(capture_data->width_, capture_data->height_);
+  encoder()->SetPixelFormat(capture_data->pixel_format_);
+  encoder()->Encode(
       capture_data->dirty_rects_,
       capture_data->data_,
       capture_data->data_strides_,
@@ -239,7 +242,7 @@ void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
   network_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &SessionManager::DoSendInit, client,
-                        capturer_->GetWidth(), capturer_->GetHeight()));
+                        capturer()->GetWidth(), capturer()->GetHeight()));
 
   // And then add the client to the list so it can receive update stream.
   // It is important we do so in such order or the client will receive
@@ -288,8 +291,16 @@ void SessionManager::DoRemoveClient(scoped_refptr<ClientConnection> client) {
   // TODO(hclam): Is it correct to do to a scoped_refptr?
   ClientConnectionList::iterator it
       = std::find(clients_.begin(), clients_.end(), client);
-  if (it != clients_.end())
+  if (it != clients_.end()) {
     clients_.erase(it);
+  }
+}
+
+void SessionManager::DoRemoveAllClients() {
+  DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  // Clear the list of clients.
+  clients_.clear();
 }
 
 void SessionManager::DoRateControl() {
@@ -354,12 +365,12 @@ void SessionManager::CaptureDoneTask() {
   scoped_ptr<CaptureData> data(new CaptureData);
 
   // Save results of the capture.
-  capturer_->GetData(data->data_);
-  capturer_->GetDataStride(data->data_strides_);
-  capturer_->GetDirtyRects(&data->dirty_rects_);
-  data->pixel_format_ = capturer_->GetPixelFormat();
-  data->width_ = capturer_->GetWidth();
-  data->height_ = capturer_->GetHeight();
+  capturer()->GetData(data->data_);
+  capturer()->GetDataStride(data->data_strides_);
+  capturer()->GetDirtyRects(&data->dirty_rects_);
+  data->pixel_format_ = capturer()->GetPixelFormat();
+  data->width_ = capturer()->GetWidth();
+  data->height_ = capturer()->GetHeight();
 
   encode_loop_->PostTask(
       FROM_HERE,
@@ -384,10 +395,20 @@ void SessionManager::EncodeDataAvailableTask(
                         data,
                         state));
 
-  if (state == Encoder::EncodingEnded) {
+  if (state & Encoder::EncodingEnded) {
     capture_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &SessionManager::DoFinishEncode));
   }
+}
+
+Capturer* SessionManager::capturer() {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+  return capturer_.get();
+}
+
+Encoder* SessionManager::encoder() {
+  DCHECK_EQ(encode_loop_, MessageLoop::current());
+  return encoder_.get();
 }
 
 }  // namespace remoting

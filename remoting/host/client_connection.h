@@ -90,7 +90,10 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // TODO(hclam): Report this number accurately.
   virtual int GetPendingUpdateStreamMessages();
 
-  // Disconnect the remote viewer.
+  // Disconnect the client connection. This method is allowed to be called
+  // more than once and calls after the first one will be ignored.
+  //
+  // After this method is called all the send method calls will be ignored.
   virtual void Disconnect();
 
   /////////////////////////////////////////////////////////////////////////////

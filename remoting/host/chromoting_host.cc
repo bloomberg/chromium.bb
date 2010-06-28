@@ -5,117 +5,63 @@
 #include "remoting/host/chromoting_host.h"
 
 #include "base/stl_util-inl.h"
-#include "base/waitable_event.h"
+#include "base/task.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/protocol_decoder.h"
+#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 
 namespace remoting {
 
-ChromotingHost::ChromotingHost(MutableHostConfig* config,
+ChromotingHost::ChromotingHost(ChromotingHostContext* context,
+                               MutableHostConfig* config,
                                Capturer* capturer,
                                Encoder* encoder,
-                               EventExecutor* executor,
-                               base::WaitableEvent* host_done)
-      : main_thread_("MainThread"),
-        capture_thread_("CaptureThread"),
-        encode_thread_("EncodeThread"),
-        config_(config),
-        capturer_(capturer),
-        encoder_(encoder),
-        executor_(executor),
-        host_done_(host_done) {
-  // TODO(ajwong): The thread injection and object ownership is odd here.
-  // Fix so we do not start this thread in the constructor, so we only
-  // take in a session manager, don't let session manager own the
-  // capturer/encoder, and then associate the capturer and encoder threads with
-  // the capturer and encoder objects directly.  This will require a
-  // non-refcounted NewRunnableMethod.
-  main_thread_.StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_UI, 0));
-  network_thread_.Start();
+                               EventExecutor* executor)
+    : context_(context),
+      config_(config),
+      capturer_(capturer),
+      encoder_(encoder),
+      executor_(executor),
+      state_(kInitial) {
 }
 
 ChromotingHost::~ChromotingHost() {
-  // TODO(ajwong): We really need to inject these threads and get rid of these
-  // start/stops.
-  main_thread_.Stop();
-  network_thread_.Stop();
-  DCHECK(!encode_thread_.IsRunning());
-  DCHECK(!capture_thread_.IsRunning());
 }
 
-void ChromotingHost::Run() {
+void ChromotingHost::Start(Task* shutdown_task) {
   // Submit a task to perform host registration. We'll also start
   // listening to connection if registration is done.
-  message_loop()->PostTask(
+  context_->main_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &ChromotingHost::RegisterHost));
+      NewRunnableMethod(this, &ChromotingHost::DoStart, shutdown_task));
 }
 
 // This method is called when we need to destroy the host process.
-void ChromotingHost::DestroySession() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // First we tell the session to pause and then we wait until all
-  // the tasks are done.
-  if (session_.get()) {
-    session_->Pause();
-
-    // TODO(hclam): Revise the order.
-    DCHECK(encode_thread_.IsRunning());
-    encode_thread_.Stop();
-
-    DCHECK(capture_thread_.IsRunning());
-    capture_thread_.Stop();
-  }
-}
-
-// This method talks to the cloud to register the host process. If
-// successful we will start listening to network requests.
-void ChromotingHost::RegisterHost() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(!jingle_client_);
-
-  std::string xmpp_login;
-  std::string xmpp_auth_token;
-  if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
-      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
-    LOG(ERROR) << "XMMP credentials are not defined in config.";
-    return;
-  }
-
-  // Connect to the talk network with a JingleClient.
-  jingle_client_ = new JingleClient(&network_thread_);
-  jingle_client_->Init(xmpp_login, xmpp_auth_token,
-                       kChromotingTokenServiceName, this);
+void ChromotingHost::Shutdown() {
+  context_->main_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &ChromotingHost::DoShutdown));
 }
 
 // This method is called if a client is connected to this object.
 void ChromotingHost::OnClientConnected(ClientConnection* client) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Create a new RecordSession if there was none.
   if (!session_.get()) {
-    // The first we need to make sure capture and encode thread are
-    // running.
-    capture_thread_.Start();
-    encode_thread_.Start();
-
     // Then we create a SessionManager passing the message loops that
     // it should run on.
-    // Note that we pass the ownership of the capturer and encoder to
-    // the session manager.
     DCHECK(capturer_.get());
     DCHECK(encoder_.get());
-    session_ = new SessionManager(capture_thread_.message_loop(),
-                                  encode_thread_.message_loop(),
-                                  message_loop(),
-                                  capturer_.release(),
-                                  encoder_.release());
+    session_ = new SessionManager(context_->capture_message_loop(),
+                                  context_->encode_message_loop(),
+                                  context_->main_message_loop(),
+                                  capturer_.get(),
+                                  encoder_.get());
 
     // Immediately add the client and start the session.
     session_->AddClient(client);
@@ -128,26 +74,24 @@ void ChromotingHost::OnClientConnected(ClientConnection* client) {
 }
 
 void ChromotingHost::OnClientDisconnected(ClientConnection* client) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  // Remove the client from the session manager.
-  if (session_.get())
+  // Remove the client from the session manager and pause the session.
+  // TODO(hclam): Pause only if the last client disconnected.
+  if (session_.get()) {
     session_->RemoveClient(client);
+    session_->Pause();
+  }
 
   // Also remove reference to ClientConnection from this object.
   client_ = NULL;
-
-  // TODO(hclam): If the last client has disconnected we need to destroy
-  // the session manager and shutdown the capture and encode threads.
-  // Right now we assume that there's only one client.
-  DestroySession();
 }
 
 ////////////////////////////////////////////////////////////////////////////
 // ClientConnection::EventHandler implementations
 void ChromotingHost::HandleMessages(ClientConnection* client,
                                 ClientMessageList* messages) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Delegate the messages to EventExecutor and delete the unhandled
   // messages.
@@ -157,7 +101,7 @@ void ChromotingHost::HandleMessages(ClientConnection* client,
 }
 
 void ChromotingHost::OnConnectionOpened(ClientConnection* client) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Completes the client connection.
   LOG(INFO) << "Connection to client established.";
@@ -165,7 +109,7 @@ void ChromotingHost::OnConnectionOpened(ClientConnection* client) {
 }
 
 void ChromotingHost::OnConnectionClosed(ClientConnection* client) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Completes the client connection.
   LOG(INFO) << "Connection to client closed.";
@@ -173,7 +117,7 @@ void ChromotingHost::OnConnectionClosed(ClientConnection* client) {
 }
 
 void ChromotingHost::OnConnectionFailed(ClientConnection* client) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // The client has disconnected.
   LOG(ERROR) << "Connection failed unexpectedly.";
@@ -183,10 +127,9 @@ void ChromotingHost::OnConnectionFailed(ClientConnection* client) {
 ////////////////////////////////////////////////////////////////////////////
 // JingleClient::Callback implementations
 void ChromotingHost::OnStateChange(JingleClient* jingle_client,
-                               JingleClient::State state) {
-  DCHECK_EQ(jingle_client_.get(), jingle_client);
-
+                                   JingleClient::State state) {
   if (state == JingleClient::CONNECTED) {
+    DCHECK_EQ(jingle_client_.get(), jingle_client);
     LOG(INFO) << "Host connected as "
               << jingle_client->GetFullJid() << "." << std::endl;
 
@@ -197,17 +140,21 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     LOG(INFO) << "Host disconnected from talk network." << std::endl;
     heartbeat_sender_ = NULL;
 
-    // Quit the message loop if disconected.
     // TODO(sergeyu): We should try reconnecting here instead of terminating
     // the host.
-    message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    host_done_->Signal();
+    // Post a shutdown task to properly shutdown the chromoting host.
+    context_->main_message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &ChromotingHost::DoShutdown));
   }
 }
 
 bool ChromotingHost::OnAcceptConnection(
     JingleClient* jingle_client, const std::string& jid,
     JingleChannel::Callback** channel_callback) {
+  AutoLock auto_lock(lock_);
+  if (state_ != kStarted)
+    return false;
+
   DCHECK_EQ(jingle_client_.get(), jingle_client);
 
   // TODO(hclam): Allow multiple clients to connect to the host.
@@ -218,13 +165,18 @@ bool ChromotingHost::OnAcceptConnection(
 
   // If we accept the connected then create a client object and set the
   // callback.
-  client_ = new ClientConnection(message_loop(), new ProtocolDecoder(), this);
+  client_ = new ClientConnection(context_->main_message_loop(),
+                                 new ProtocolDecoder(), this);
   *channel_callback = client_.get();
   return true;
 }
 
 void ChromotingHost::OnNewConnection(JingleClient* jingle_client,
-                                 scoped_refptr<JingleChannel> channel) {
+                                     scoped_refptr<JingleChannel> channel) {
+  AutoLock auto_lock(lock_);
+  if (state_ != kStarted)
+    return;
+
   DCHECK_EQ(jingle_client_.get(), jingle_client);
 
   // Since the session manager has not started, it is still safe to access
@@ -233,8 +185,67 @@ void ChromotingHost::OnNewConnection(JingleClient* jingle_client,
   client_->set_jingle_channel(channel);
 }
 
-MessageLoop* ChromotingHost::message_loop() {
-  return main_thread_.message_loop();
+void ChromotingHost::DoStart(Task* shutdown_task) {
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+  DCHECK(!jingle_client_);
+  DCHECK(shutdown_task);
+
+  // Make sure this object is not started.
+  {
+    AutoLock auto_lock(lock_);
+    if (state_ != kInitial)
+      return;
+    state_ = kStarted;
+  }
+
+  // Save the shutdown task.
+  shutdown_task_.reset(shutdown_task);
+
+  std::string xmpp_login;
+  std::string xmpp_auth_token;
+  if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
+      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
+    LOG(ERROR) << "XMMP credentials are not defined in config.";
+    return;
+  }
+
+  // Connect to the talk network with a JingleClient.
+  jingle_client_ = new JingleClient(context_->jingle_thread());
+  jingle_client_->Init(xmpp_login, xmpp_auth_token,
+                       kChromotingTokenServiceName, this);
+}
+
+void ChromotingHost::DoShutdown() {
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+
+  // No-op if this object is not started yet.
+  {
+    AutoLock auto_lock(lock_);
+    if (state_ != kStarted)
+      return;
+    state_ = kStopped;
+  }
+
+  // Tell the session to pause and then disconnect all clients.
+  if (session_.get()) {
+    session_->Pause();
+    session_->RemoveAllClients();
+  }
+
+  // Disconnect all clients.
+  if (client_) {
+    client_->Disconnect();
+  }
+
+  // Disconnect from the talk network.
+  if (jingle_client_) {
+    jingle_client_->Close();
+  }
+
+  // Lastly call the shutdown task.
+  if (shutdown_task_.get()) {
+    shutdown_task_->Run();
+  }
 }
 
 }  // namespace remoting

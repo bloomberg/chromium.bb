@@ -67,7 +67,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
  public:
 
   // Construct a SessionManager. Message loops and threads are provided.
-  // Ownership of Capturer and Encoder are given to this object.
+  // This object does not own capturer and encoder.
   SessionManager(MessageLoop* capture_loop,
                  MessageLoop* encode_loop,
                  MessageLoop* network_loop,
@@ -94,6 +94,9 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 
   // Remove a client from receiving screen updates.
   void RemoveClient(scoped_refptr<ClientConnection> client);
+
+  // Remove all clients.
+  void RemoveAllClients();
 
  private:
 
@@ -130,6 +133,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void DoSetMaxRate(double max_rate);
   void DoAddClient(scoped_refptr<ClientConnection> client);
   void DoRemoveClient(scoped_refptr<ClientConnection> client);
+  void DoRemoveAllClients();
   void DoRateControl();
 
   // Hepler method to schedule next capture using the current rate.
@@ -144,6 +148,10 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void EncodeDataAvailableTask(const UpdateStreamPacketHeader *header,
                                const scoped_refptr<media::DataBuffer>& data,
                                Encoder::EncodingState state);
+
+  // Getters for capturer and encoder.
+  Capturer* capturer();
+  Encoder* encoder();
 
   // Message loops used by this class.
   MessageLoop* capture_loop_;

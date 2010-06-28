@@ -27,6 +27,7 @@
 #include "base/waitable_event.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
+#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/encoder_verbatim.h"
 #include "remoting/host/json_host_config.h"
 
@@ -51,6 +52,10 @@ const std::string kDefaultConfigPath = ".ChromotingConfig.json";
 const char kHomePath[] = "HOME";
 static char* GetEnvironmentVar(const char* x) { return getenv(x); }
 #endif
+
+void ShutdownTask(MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
 
 const std::string kFakeSwitchName = "fake";
 const std::string kConfigSwitchName = "config";
@@ -96,6 +101,7 @@ int main(int argc, char** argv) {
 
   if (fake) {
     // Inject a fake capturer.
+    LOG(INFO) << "Usage a fake capturer.";
     capturer.reset(new remoting::CapturerFake());
   }
 
@@ -111,16 +117,25 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  base::WaitableEvent host_done(false, false);
+  // Allocate a chromoting context and starts it.
+  remoting::ChromotingHostContext context;
+  context.Start();
+
+  // Construct a chromoting host.
   scoped_refptr<remoting::ChromotingHost> host =
-      new remoting::ChromotingHost(config,
+      new remoting::ChromotingHost(&context,
+                                   config,
                                    capturer.release(),
                                    encoder.release(),
-                                   executor.release(),
-                                   &host_done);
-  host->Run();
-  host_done.Wait();
+                                   executor.release());
 
+  // Let the chromoting host runs until the shutdown task is executed.
+  MessageLoop message_loop;
+  host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
+  message_loop.Run();
+
+  // And then stop the chromoting context.
+  context.Stop();
   file_io_thread.Stop();
   return 0;
 }
