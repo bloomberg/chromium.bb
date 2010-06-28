@@ -1948,9 +1948,11 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
 #else
   NOTIMPLEMENTED() << " convert plugin path to plugin name";
 #endif
+  SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_INFOBAR_PLUGIN_CRASHED);
   AddInfoBar(new SimpleAlertInfoBarDelegate(
       this, l10n_util::GetStringF(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
-      NULL, true));
+      crash_icon, true));
 }
 
 void TabContents::OnCrashedWorker() {
