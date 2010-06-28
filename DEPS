@@ -2,12 +2,12 @@ vars = {
   "webkit_trunk":
   "http://svn.webkit.org/repository/webkit/trunk",
   "webkit_revision": "62028",
-  "ffmpeg_revision": "49485",
+  "ffmpeg_revision": "51060",
   "skia_revision": "583",
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
   "nacl_revision": "2555",
-  "libvpx_revision": "47941",
+  "libvpx_revision": "51060",
   "libjingle_revision": "21",
 }
 
