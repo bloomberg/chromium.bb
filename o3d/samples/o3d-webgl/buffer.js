@@ -68,6 +68,12 @@ o3d.Buffer.prototype.gl_buffer_ = 0;
  */
 o3d.Buffer.prototype.ArrayType = WebGLFloatArray;
 
+o3d.Buffer.prototype.__defineGetter__('numElements',
+    function() {
+      return (!this.array_) ? 0 : this.array_.length / this.totalComponents;
+    }
+);
+
 /**
  * Allocates memory for the data to be stored in the buffer based on
  * the types of fields set on the buffer.
@@ -112,11 +118,37 @@ o3d.Buffer.prototype.resize = function(numElements) {
  */
 o3d.Buffer.prototype.createField =
     function(fieldType, numComponents) {
+  // Check if array has already been allocated. If so, we need to reshuffle
+  // the data currently stored.
+  var alreadyAllocated = this.array_ && this.array_.length > 0;
+  var savedData = [];
+  var numElements = this.numElements;
+
+  // Make copies of the existing field data.
+  if (alreadyAllocated) {
+    for (var i = 0; i < this.fields_.length; i++) {
+      savedData[i] = this.fields_[i].getAt(0, numElements);
+    }
+  }
+
+  // Create the new field.
   var f = new o3d.Field();
   f.buffer = this;
   f.numComponents = numComponents;
   f.size = numComponents * (fieldType=='UByteNField' ? 1 : 4);
   this.fields_.push(f);
+
+  // Resize the buffer with the new field, and replace data.
+  if (alreadyAllocated) {
+    this.allocateElements(numElements);
+    for (var i = 0; i < this.fields_.length; i++) {
+      var fieldData = savedData[i];
+      if (fieldData) {
+        this.fields_[i].setAt(0, fieldData);
+      }
+    }
+  }
+
   return f;
 };
 
@@ -132,6 +164,8 @@ o3d.Buffer.prototype.createField =
  */
 o3d.Buffer.prototype.removeField =
     function(field) {
+  // TODO(luchen): Removing fields does not require a reshuffling, but may want
+  // to do it anyways to save space.
   var i = 0;
   for (var j = 0; j < this.fields_.length; ++j) {
     if (this.fields_[i] == field)
@@ -220,7 +254,7 @@ o3d.inherit('VertexBufferBase', 'Buffer');
  * Modifying this copy has no effect on the buffer.
  */
 o3d.VertexBufferBase.prototype.get = function() {
-  return this.getAtHelper_(0, this.array_.length / this.totalComponents,
+  return this.getAtHelper_(0, this.numElements,
       0, this.totalComponents);
 };
 
