@@ -338,7 +338,6 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
       timings[i] = end_time - start_time;
 
       CoFreeUnusedLibraries();
-      ASSERT_TRUE(GetModuleHandle(kChromeFrameDllName) == NULL);
 
       // TODO(beng): Can't shut down so quickly. Figure out why, and fix. If we
       // do, we crash.
