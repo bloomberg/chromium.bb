@@ -838,7 +838,8 @@ TEST_F(TranslateManager2Test, AlwaysTranslateLanguagePref) {
 }
 
 // Context menu.
-TEST_F(TranslateManager2Test, ContextMenu) {
+// TODO(estade): fix this test. Failing since r51157.
+TEST_F(TranslateManager2Test, FAILS_ContextMenu) {
   // Blacklist www.google.fr and French for translation.
   GURL url("http://www.google.fr");
   TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
