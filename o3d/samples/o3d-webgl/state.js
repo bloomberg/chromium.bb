@@ -544,6 +544,8 @@ o3d.State.prototype.set = function() {
     this.gl.disable(this.gl.DITHER);
   }
 
+  this.gl.depthMask(stateParams['ZWriteEnable'].value);
+
   if (stateParams['ZEnable'].value) {
     this.gl.enable(this.gl.DEPTH_TEST);
     this.gl.depthFunc(
