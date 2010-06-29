@@ -504,6 +504,20 @@ PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
   return NULL;
 }
 
+bool MacKeychainPasswordFormAdapter::HasPasswordsMergeableWithForm(
+    const PasswordForm& query_form) {
+  std::string username = UTF16ToUTF8(query_form.username_value);
+  std::vector<SecKeychainItemRef> matches =
+      MatchingKeychainItems(query_form.signon_realm, query_form.scheme,
+                            NULL, username.c_str());
+  for (std::vector<SecKeychainItemRef>::iterator i = matches.begin();
+       i != matches.end(); ++i) {
+    keychain_->Free(*i);
+  }
+
+  return matches.size() != 0;
+}
+
 std::vector<PasswordForm*>
     MacKeychainPasswordFormAdapter::GetAllPasswordFormPasswords() {
   SecAuthenticationType supported_auth_types[] = {
@@ -762,30 +776,36 @@ void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
 }
 
 void PasswordStoreMac::UpdateLoginImpl(const PasswordForm& form) {
+  int update_count = 0;
+  if (!login_metadata_db_->UpdateLogin(form, &update_count))
+    return;
+
+  MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
+  if (update_count == 0 &&
+      !keychain_adapter.HasPasswordsMergeableWithForm(form)) {
+    // If the password isn't in either the DB or the keychain, then it must have
+    // been deleted after autofill happened, and should not be re-added.
+    return;
+  }
+
   // The keychain add will update if there is a collision and add if there
   // isn't, which is the behavior we want, so there's no separate update call.
   if (AddToKeychainIfNecessary(form)) {
-    int update_count = 0;
-    if (login_metadata_db_->UpdateLogin(form, &update_count)) {
-      // Update will catch any database entries that we already had, but we
-      // could also be updating a keychain-only form, in which case we need to
-      // add.
-      PasswordStoreChangeList changes;
-      if (update_count == 0) {
-        if (login_metadata_db_->AddLogin(form)) {
-          changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
-                                                form));
-        }
-      } else {
-        changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE,
+    PasswordStoreChangeList changes;
+    if (update_count == 0) {
+      if (login_metadata_db_->AddLogin(form)) {
+        changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
                                               form));
       }
-      if (!changes.empty()) {
-        NotificationService::current()->Notify(
-            NotificationType::LOGINS_CHANGED,
-            NotificationService::AllSources(),
-            Details<PasswordStoreChangeList>(&changes));
-      }
+    } else {
+      changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE,
+                                            form));
+    }
+    if (!changes.empty()) {
+      NotificationService::current()->Notify(
+          NotificationType::LOGINS_CHANGED,
+          NotificationService::AllSources(),
+          Details<PasswordStoreChangeList>(&changes));
     }
   }
 }

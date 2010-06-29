@@ -104,7 +104,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   };
 
   // Schedule the given task to be run in the PasswordStore's own thread.
-  void ScheduleTask(Task* task);
+  virtual void ScheduleTask(Task* task);
 
   // These will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.

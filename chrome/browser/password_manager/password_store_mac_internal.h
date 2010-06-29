@@ -40,6 +40,13 @@ class MacKeychainPasswordFormAdapter {
   webkit_glue::PasswordForm* PasswordExactlyMatchingForm(
       const webkit_glue::PasswordForm& query_form);
 
+  // Returns true if PasswordsMergeableWithForm would return any items. This is
+  // a separate method because calling PasswordsMergeableWithForm and checking
+  // the return count would require reading the passwords from the keychain,
+  // thus potentially triggering authorizaiton UI, whereas this won't.
+  bool HasPasswordsMergeableWithForm(
+      const webkit_glue::PasswordForm& query_form);
+
   // Returns all keychain items of types corresponding to password forms.
   std::vector<webkit_glue::PasswordForm*> GetAllPasswordFormPasswords();
 
