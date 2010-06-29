@@ -224,15 +224,7 @@ LLVM_GCC = BASE_ARM + '/llvm-gcc-4.2/bin/llvm-gcc'
 
 LLVM_GXX = BASE_ARM + '/llvm-gcc-4.2/bin/llvm-g++'
 
-LLC_ARM = BASE_ARM + '/llvm/bin/llc'
-
-LLC_SFI_ARM = BASE_ARM + '/llvm/bin/llc'
-
-# NOTE: this is currently a user provided binary
-LLC_SFI_X8632 = BASE + '/llc-x86-32-sfi'
-
-# NOTE: this is currently a user provided binary
-LLC_SFI_X8664 = BASE + '/llc-x86-64-sfi'
+LLC = BASE_ARM + '/llvm/bin/llc'
 
 LLVM_LINK = BASE_ARM + '/llvm/bin/llvm-link'
 
@@ -302,9 +294,9 @@ def SfiCompile(argv, out_pos, mode):
       [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
   if mode == 'sfi':
-    llc = [LLC_SFI_ARM] + global_config_flags['LLC_SFI_SANDBOXING']
+    llc = [LLC] + global_config_flags['LLC_SFI_SANDBOXING']
   else:
-    llc = [LLC_ARM]
+    llc = [LLC]
   llc += global_config_flags['LLC_SHARED_ARM']
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
@@ -713,7 +705,7 @@ def BitcodeToNative(argv, llc, llc_flags, ascom, as_flags, ld, ld_flags, root):
 
 def Incarnation_bcldarm(argv):
   output = BitcodeToNative(argv,
-                           LLC_SFI_ARM,
+                           LLC,
                            global_config_flags['LLC_SHARED_ARM'] +
                            global_config_flags['LLC_SFI_SANDBOXING'],
                            AS_ARM,
@@ -725,7 +717,7 @@ def Incarnation_bcldarm(argv):
 
 def Incarnation_bcldx8632(argv):
   output = BitcodeToNative(argv,
-                           LLC_SFI_X8632,
+                           LLC,
                            global_config_flags['LLC_SHARED_X8632'],
                            AS_X86,
                            global_config_flags['AS_X8632'],
@@ -736,7 +728,7 @@ def Incarnation_bcldx8632(argv):
 
 def Incarnation_bcldx8664(argv):
   output = BitcodeToNative(argv,
-                           LLC_SFI_X8664,
+                           LLC,
                            global_config_flags['LLC_SHARED_X8664'],
                            AS_X86,
                            global_config_flags['AS_X8664'],

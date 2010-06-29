@@ -426,6 +426,37 @@ test-x86-64-currently-working() {
 }
 
 #@
+#@ test-all
+#@
+#@   all these tests should pass
+test-all() {
+  test-preparation
+  test-arm-old
+  test-arm
+  test-x86-64-currently-working
+  test-x86-32 -k
+}
+
+#@
+#@ rebuild-all-extra-sdks
+#@
+#@   rebuild extra sdks for all platforms
+rebuild-all-extra-sdks() {
+    local PLATFORMS=(arm x86-32 x86-64)
+    for p in ${PLATFORMS} ; do
+      ./scons MODE=nacl_extra_sdk \
+              platform=$p \
+              sdl=none \
+              naclsdk_validate=0 \
+              extra_sdk_clean \
+              extra_sdk_update_header \
+              install_libpthread \
+              extra_sdk_update \
+              "$@"
+    done
+}
+
+#@
 #@ test-spec <official-spec-dir> <setup>
 #@
 #@   run spec tests
@@ -472,26 +503,37 @@ checkout-and-build-llc() {
   make -j 6 tools-only
 
   cd ${saved_dir}
-  llc-symlinking
-  exit 0
+  Banner "do not forget to run  tools/llvm/pnacl-helper.sh install-llc"
 }
 
 
 #@
-#@ llc-symlinking
+#@ install-llc
 #@
-#@   Symlink release-llc-binary from ${PNACL_HG_CLIENT}
-#@   to be accessible by the driver script.
-#@   This is a temporary measure until we have a unified llc.
-llc-symlinking() {
-  cd ${PNACL_HG_CLIENT}/nacl-llvm-branches/llvm-trunk
-  llc=$(readlink -f Release/bin/llc)
-  echo "sym-linking:  ${llc} ${SYMLINK_LLC_X86_32}"
-  ln -sf ${llc} ${SYMLINK_LLC_X86_32}
-  echo "sym-linking:  ${llc} ${SYMLINK_LLC_X86_64}"
-  ln -sf ${llc} ${SYMLINK_LLC_X86_64}
-  exit 0
+#@   Copy a locally built llc into the toolchain for testing
+install-llc() {
+  pushd ${PNACL_HG_CLIENT}/nacl-llvm-branches/llvm-trunk
 
+  if [ -f Debug/bin/llc ] ; then
+     echo "ERROR: there is also a debug build in your setup"
+     exit -1
+  fi
+
+  local llc=$(readlink -f Release/bin/llc)
+
+  if [ ! -f ${llc} ] ; then
+     echo "ERROR: there is no ${llc} - maybe run 'make -j 5 tools-only'"
+     exit -1
+  fi
+
+  local dst=toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin
+  # back up llc the first time we install a local one
+  if [ ! -f ${dst}/llc.saved ] ; then
+    cp ${dst}/llc ${dst}/llc.saved
+  fi
+
+  cp -f ${llc} ${dst}
+  popd
 }
 
 
