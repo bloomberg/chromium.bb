@@ -46,14 +46,14 @@ class Device3DBufferImpl {
 };
 
 struct Device3DImpl {
-  std::map<int32, Device3DBufferImpl*> id_map;
+  std::map<int32_t, Device3DBufferImpl*> id_map;
   int shared_memory_desc;
   size_t size;
 };
 
 static NPError QueryCapability(NPP instance,
-                               int32 capability,
-                               int32 *value) {
+                               int32_t capability,
+                               int32_t *value) {
   return NPERR_GENERIC_ERROR;
 }
 
@@ -89,9 +89,9 @@ static NPError InitializeContext(NPP instance,
           NPPToWireFormat(instance),
           config3d->commandBufferSize,
           &shm_desc,
-          reinterpret_cast<int32_t *>(&context3d->commandBufferSize),
-          reinterpret_cast<int32_t *>(&context3d->getOffset),
-          reinterpret_cast<int32_t *>(&context3d->putOffset));
+          &context3d->commandBufferSize,
+          &context3d->getOffset,
+          &context3d->putOffset);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -133,7 +133,7 @@ static NPError InitializeContext(NPP instance,
 
 static NPError GetStateContext(NPP instance,
                                NPDeviceContext* context,
-                               int32 state,
+                               int32_t state,
                                intptr_t *value) {
   NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
@@ -155,7 +155,7 @@ static NPError GetStateContext(NPP instance,
 
 static NPError SetStateContext(NPP instance,
                                NPDeviceContext* context,
-                               int32 state,
+                               int32_t state,
                                intptr_t value) {
   NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
@@ -188,8 +188,8 @@ static NPError FlushContext(NPP instance,
   NaClSrpcError retval =
       nav->Device3DFlush(NPPToWireFormat(instance),
                          context3d->putOffset,
-                         reinterpret_cast<int32_t *>(&context3d->getOffset),
-                         reinterpret_cast<int32_t *>(&context3d->token),
+                         &context3d->getOffset,
+                         &context3d->token,
                          &error);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
@@ -234,7 +234,7 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
 NPError CreateBuffer(NPP instance,
                      NPDeviceContext* context,
                      size_t size,
-                     int32* id) {
+                     int32_t* id) {
   NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NPDeviceContext3D* context3d = reinterpret_cast<NPDeviceContext3D*>(context);
@@ -254,7 +254,7 @@ NPError CreateBuffer(NPP instance,
           NPPToWireFormat(instance),
           static_cast<int32_t>(size),
           &shm_desc,
-          reinterpret_cast<int32_t *>(id));
+          id);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -281,10 +281,10 @@ NPError CreateBuffer(NPP instance,
 
 NPError DestroyBuffer(NPP instance,
                       NPDeviceContext* context,
-                      int32 id) {
+                      int32_t id) {
   NPDeviceContext3D* context3d = reinterpret_cast<NPDeviceContext3D*>(context);
   Device3DImpl* impl = reinterpret_cast<Device3DImpl*>(context3d->reserved);
-  std::map<int32, Device3DBufferImpl*>::iterator iter;
+  std::map<int32_t, Device3DBufferImpl*>::iterator iter;
   Device3DBufferImpl* buffer_impl = NULL;
 
   if (NULL == impl) {
@@ -313,11 +313,11 @@ NPError DestroyBuffer(NPP instance,
 
 NPError MapBuffer(NPP instance,
                   NPDeviceContext* context,
-                  int32 id,
+                  int32_t id,
                   NPDeviceBuffer* buffer) {
   NPDeviceContext3D* context3d = reinterpret_cast<NPDeviceContext3D*>(context);
   Device3DImpl* impl = reinterpret_cast<Device3DImpl*>(context3d->reserved);
-  std::map<int32, Device3DBufferImpl*>::iterator iter;
+  std::map<int32_t, Device3DBufferImpl*>::iterator iter;
   Device3DBufferImpl* buffer_impl = NULL;
   void* map_addr = MAP_FAILED;
 

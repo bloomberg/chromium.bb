@@ -141,8 +141,8 @@ class NPAudioClosure : public NPClosure {
 };
 
 static NPError QueryCapability(NPP instance,
-                               int32 capability,
-                               int32 *value) {
+                               int32_t capability,
+                               int32_t *value) {
   // UNREFERENCED_PARAMETER(instance);
   // UNREFERENCED_PARAMETER(capability);
   // UNREFERENCED_PARAMETER(value);
@@ -177,19 +177,7 @@ static NPError InitializeContext(NPP instance,
   context_audio->inBuffer = NULL;
   context_audio->reserved = NULL;
 
-  DebugPrintf("Set the config and base stuff\n");
   // Get the configuration parameters for passing.
-  // TODO(sehr): the SRPC generators speak int32_t, while npruntime likes
-  // int32.  Find a way to avoid all these casts.
-  int32_t sample_rate = static_cast<int32_t>(config_audio->sampleRate);
-  int32_t sample_type = static_cast<int32_t>(config_audio->sampleType);
-  int32_t output_channel_map =
-      static_cast<int32_t>(config_audio->outputChannelMap);
-  int32_t input_channel_map =
-      static_cast<int32_t>(config_audio->inputChannelMap);
-  int32_t sample_frame_count =
-      static_cast<int32_t>(config_audio->sampleFrameCount);
-  int32_t flags = static_cast<int32_t>(config_audio->flags);
   DebugPrintf("Set the configs\n");
 
   // Create an implementation structure to hold the descriptors
@@ -238,12 +226,12 @@ static NPError InitializeContext(NPP instance,
           channel,
           NPPToWireFormat(instance),
           id,
-          sample_rate,
-          sample_type,
-          output_channel_map,
-          input_channel_map,
-          sample_frame_count,
-          flags);
+          config_audio->sampleRate,
+          config_audio->sampleType,
+          config_audio->outputChannelMap,
+          config_audio->inputChannelMap,
+          config_audio->sampleFrameCount,
+          config_audio->flags);
   DebugPrintf("Called init\n");
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
@@ -253,7 +241,7 @@ static NPError InitializeContext(NPP instance,
 
 static NPError GetStateContext(NPP instance,
                                NPDeviceContext* context,
-                               int32 state,
+                               int32_t state,
                                intptr_t *value) {
   // UNREFERENCED_PARAMETER(context);
   NPNavigator* nav = NPNavigator::GetNavigator();
@@ -276,7 +264,7 @@ static NPError GetStateContext(NPP instance,
 
 static NPError SetStateContext(NPP instance,
                                NPDeviceContext* context,
-                               int32 state,
+                               int32_t state,
                                intptr_t value) {
   // UNREFERENCED_PARAMETER(context);
   NPNavigator* nav = NPNavigator::GetNavigator();
@@ -354,21 +342,21 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
 NPError CreateBuffer(NPP instance,
                      NPDeviceContext* context,
                      size_t size,
-                     int32* id) {
+                     int32_t* id) {
   // There is no corresponding function in the trusted pepper implementation.
   return NPERR_GENERIC_ERROR;
 }
 
 NPError DestroyBuffer(NPP instance,
                       NPDeviceContext* context,
-                      int32 id) {
+                      int32_t id) {
   // There is no corresponding function in the trusted pepper implementation.
   return NPERR_GENERIC_ERROR;
 }
 
 NPError MapBuffer(NPP instance,
                   NPDeviceContext* context,
-                  int32 id,
+                  int32_t id,
                   NPDeviceBuffer* buffer) {
   // There is no corresponding function in the trusted pepper implementation.
   return NPERR_GENERIC_ERROR;

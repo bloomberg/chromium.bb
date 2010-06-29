@@ -283,7 +283,7 @@ bool ScriptablePluginObject::GetBar(NPVariant* result) {
   NPVariant variant;
   NPString npstr;
   npstr.UTF8Characters = "new Array();";
-  npstr.UTF8Length = static_cast<uint32>(strlen(npstr.UTF8Characters));
+  npstr.UTF8Length = static_cast<uint32_t>(strlen(npstr.UTF8Characters));
   if (!NPN_Evaluate(npp_, window_object, &npstr, &variant) ||
       !NPVARIANT_IS_OBJECT(variant)) {
     return true;

@@ -43,7 +43,7 @@ class EventHandler {
  private:
   static char* string_duplicate(const char* cstr, size_t* len);
   static void MakeNPVariant(const char* cstr, NPVariant* var);
-  std::string EventName(double timestamp, int32 type);
+  std::string EventName(double timestamp, int32_t type);
 
   NPP npp_;
   NPObject* text_box_;

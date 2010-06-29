@@ -98,8 +98,8 @@ NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
 
 NPError NPP_New(NPMIMEType pluginType,
                 NPP instance,
-                uint16 mode,
-                int16 argc, char* argn[], char* argv[],
+                uint16_t mode,
+                int16_t argc, char* argn[], char* argv[],
                 NPSavedData* saved) {
   if (browser->version >= 14) {
     PluginObject* obj = reinterpret_cast<PluginObject*>(
@@ -132,7 +132,7 @@ NPError NPP_NewStream(NPP instance,
                       NPMIMEType type,
                       NPStream* stream,
                       NPBool seekable,
-                      uint16* stype) {
+                      uint16_t* stype) {
   *stype = NP_ASFILEONLY;
   return NPERR_NO_ERROR;
 }
@@ -159,7 +159,7 @@ int32_t NPP_WriteReady(NPP instance, NPStream* stream) {
 void NPP_Print(NPP instance, NPPrint* platformPrint) {
 }
 
-int16 NPP_HandleEvent(NPP instance, void* event) {
+int16_t NPP_HandleEvent(NPP instance, void* event) {
   return event_handler->handle(event);
 }
 
@@ -182,7 +182,14 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
           "Simple Pepper plug-in for manual testing.";
       break;
     case NPPVpluginNeedsXEmbed:
-      *(reinterpret_cast<NPBool*>(value)) = TRUE;
+      // TODO(msneck): The definition of TRUE and FALSE seem to have
+      // disappeared on the BuildBot while building the partial SDK.  Once
+      // the CL is to update the Chrome revision in native_client/DEPS has
+      // been submitted and works, then we can try to track down the new
+      // location, spelling, and definition of TRUE and FALSE.  But until
+      // then, we're going to have to use 1 and 0.  A very temporary hack
+      // just to get the BuildBots to work.
+      *(reinterpret_cast<NPBool*>(value)) = 1;
       break;
     case NPPVpluginScriptableNPObject: {
       void** v = reinterpret_cast<void**>(value);

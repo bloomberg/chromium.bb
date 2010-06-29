@@ -39,8 +39,8 @@ struct Device2DImpl {
 };
 
 static NPError QueryCapability(NPP instance,
-                               int32 capability,
-                               int32 *value) {
+                               int32_t capability,
+                               int32_t *value) {
   // The config struct is empty, so return error.
   return NPERR_GENERIC_ERROR;
 }
@@ -73,11 +73,11 @@ static NPError InitializeContext(NPP instance,
           channel,
           NPPToWireFormat(instance),
           &shm_desc,
-          reinterpret_cast<int32_t *>(&context2d->stride),
-          reinterpret_cast<int32_t *>(&context2d->dirty.left),
-          reinterpret_cast<int32_t *>(&context2d->dirty.top),
-          reinterpret_cast<int32_t *>(&context2d->dirty.right),
-          reinterpret_cast<int32_t *>(&context2d->dirty.bottom));
+          &context2d->stride,
+          &context2d->dirty.left,
+          &context2d->dirty.top,
+          &context2d->dirty.right,
+          &context2d->dirty.bottom);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -118,7 +118,7 @@ static NPError InitializeContext(NPP instance,
 
 static NPError GetStateContext(NPP instance,
                                NPDeviceContext* context,
-                               int32 state,
+                               int32_t state,
                                intptr_t *value) {
   NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
@@ -140,7 +140,7 @@ static NPError GetStateContext(NPP instance,
 
 static NPError SetStateContext(NPP instance,
                                NPDeviceContext* context,
-                               int32 state,
+                               int32_t state,
                                intptr_t value) {
   NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
@@ -172,11 +172,11 @@ static NPError FlushContext(NPP instance,
   NaClSrpcError retval =
       Device2DRpcClient::Device2DFlush(nav->channel(),
           NPPToWireFormat(instance),
-          reinterpret_cast<int32_t *>(&context2d->stride),
-          reinterpret_cast<int32_t *>(&context2d->dirty.left),
-          reinterpret_cast<int32_t *>(&context2d->dirty.top),
-          reinterpret_cast<int32_t *>(&context2d->dirty.right),
-          reinterpret_cast<int32_t *>(&context2d->dirty.bottom));
+          &context2d->stride,
+          &context2d->dirty.left,
+          &context2d->dirty.top,
+          &context2d->dirty.right,
+          &context2d->dirty.bottom);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }

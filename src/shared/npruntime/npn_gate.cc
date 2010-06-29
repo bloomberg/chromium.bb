@@ -205,11 +205,18 @@ NPError NPN_GetValue(NPP instance,
   switch (variable) {
     case NPNVjavascriptEnabledBool:
     case NPNVSupportsWindowless:
-      *reinterpret_cast<NPBool*>(value) = TRUE;
+      // TODO(msneck): The definition of TRUE and FALSE seem to have
+      // disappeared on the BuildBot while building the partial SDK.  Once
+      // the CL is to update the Chrome revision in native_client/DEPS has
+      // been submitted and works, then we can try to track down the new
+      // location, spelling, and definition of TRUE and FALSE.  But until
+      // then, we're going to have to use 1 and 0.  A very temporary hack
+      // just to get the BuildBots to work.
+      *reinterpret_cast<NPBool*>(value) = 1;
       return NPERR_NO_ERROR;
 
     case NPNVSupportsXEmbedBool:
-      *reinterpret_cast<NPBool*>(value) = FALSE;
+      *reinterpret_cast<NPBool*>(value) = 0;
       return NPERR_NO_ERROR;
 
     case NPNVisOfflineBool:

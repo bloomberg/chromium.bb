@@ -78,7 +78,7 @@ bool EventHandler::addText(const char* cstr) {
   return true;
 }
 
-std::string EventHandler::EventName(double timestamp, int32 type) {
+std::string EventHandler::EventName(double timestamp, int32_t type) {
   std::string str = DoubleToString(timestamp) + ": ";
   switch (type) {
     case NPEventType_MouseDown:

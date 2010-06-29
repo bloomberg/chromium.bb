@@ -346,7 +346,7 @@ void Draw3DCallback(void* data) {
 }
 
 void PluginObject::New(NPMIMEType pluginType,
-                       int16 argc,
+                       int16_t argc,
                        char* argn[],
                        char* argv[]) {
   // Default to 2D rendering.
@@ -428,7 +428,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
     cfg.sampleFrameCount = 1024;
     cfg.startThread      = 1;  // Start a thread for the audio producer.
     cfg.flags            = 0;
-    cfg.callback         = &SineWaveCallback<200, int16>;
+    cfg.callback         = &SineWaveCallback<200, int16_t>;
     NPError err = deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);
     if (err != NPERR_NO_ERROR) {
       printf("Failed to initialize audio context\n");

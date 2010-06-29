@@ -45,7 +45,7 @@ class PluginObject {
   NPObject* header() { return &header_; }
   NPP npp() const { return npp_; }
 
-  void New(NPMIMEType pluginType, int16 argc, char* argn[], char* argv[]);
+  void New(NPMIMEType pluginType, int16_t argc, char* argn[], char* argv[]);
   void SetWindow(const NPWindow& window);
   bool IsChecksumCheckSuccess();
   std::string ReportChecksum();
