@@ -49,7 +49,7 @@ bool RpcRead(void* obj, plugin::SrpcParams* params) {
   }
 
   // Ensure we will access valid addresses.
-  if (NULL == shared_memory->map_addr()) {
+  if (NULL == shared_memory->shm_addr()) {
     params->set_exception_string("Shared memory not mapped");
     return false;
   }
@@ -57,7 +57,7 @@ bool RpcRead(void* obj, plugin::SrpcParams* params) {
     params->set_exception_string("Offset + length overflows");
     return false;
   }
-  if (offset + len > shared_memory->size()) {
+  if (offset + len > shared_memory->shm_size()) {
     params->set_exception_string(
         "Offset + length overlaps end of shared memory");
     return false;
@@ -81,7 +81,7 @@ bool RpcRead(void* obj, plugin::SrpcParams* params) {
   }
 
   unsigned char* shm_addr =
-    reinterpret_cast<unsigned char*>(shared_memory->map_addr()) + offset;
+    reinterpret_cast<unsigned char*>(shared_memory->shm_addr()) + offset;
   unsigned char* out = reinterpret_cast<unsigned char*>(ret_string);
   // NPAPI wants length to be the number of bytes, not UTF-8 characters.
   for (unsigned int i = 0; i < len; ++i) {
@@ -129,7 +129,7 @@ bool RpcWrite(void* obj, plugin::SrpcParams* params) {
   }
 
   // Ensure we will access valid addresses.
-  if (NULL == shared_memory->map_addr()) {
+  if (NULL == shared_memory->shm_addr()) {
     params->set_exception_string("Shared memory not mapped");
     return false;
   }
@@ -137,7 +137,7 @@ bool RpcWrite(void* obj, plugin::SrpcParams* params) {
     params->set_exception_string("Offset + length overflows");
     return false;
   }
-  if (offset + len > shared_memory->size()) {
+  if (offset + len > shared_memory->shm_size()) {
     params->set_exception_string(
         "Offset + length overlaps end of shared memory");
     return false;
@@ -150,7 +150,7 @@ bool RpcWrite(void* obj, plugin::SrpcParams* params) {
     reinterpret_cast<unsigned const char*>(str_param->u.sval);
   uint32_t utf_bytes = nacl::saturate_cast<uint32_t>(strlen(str_param->u.sval));
   unsigned char* shm_addr =
-    reinterpret_cast<unsigned char*>(shared_memory->map_addr()) + offset;
+    reinterpret_cast<unsigned char*>(shared_memory->shm_addr()) + offset;
 
   // TODO(sehr): pull this code out for better testability.
   for (unsigned int i = 0; i < len;) {
@@ -230,7 +230,7 @@ bool SharedMemory::Init(Plugin* plugin,
     return false;
   }
 
-  if (0 > wrapper->Map(&map_addr_, &size_)) {
+  if (0 > wrapper->Map(&addr_, &size_)) {
     // BUG: we are leaking the shared memory object here.
     return false;
   }
@@ -260,7 +260,7 @@ SharedMemory* SharedMemory::New(Plugin* plugin, off_t length) {
 }
 
 SharedMemory::SharedMemory() : handle_(0),
-                               map_addr_(NULL),
+                               addr_(NULL),
                                size_(0) {
   PLUGIN_PRINTF(("SharedMemory::SharedMemory(%p)\n",
                  static_cast<void*>(this)));
@@ -277,7 +277,7 @@ SharedMemory::~SharedMemory() {
   // Free the memory that was mapped to the descriptor.
   // shared_memory->desc_->vtbl->Unmap(shared_memory->desc_,
   //                                   shared_memory->plugin_->effp_,
-  //                                   shared_memory->map_addr_,
+  //                                   shared_memory->addr_,
   //                                   shared_memory->size_);
   // After invalidation, the browser does not respect reference counting,
   // so we shut down here what we can and prevent attempts to shut down
@@ -287,7 +287,7 @@ SharedMemory::~SharedMemory() {
   // if (desc() && plugin_) {
   //   desc()->vtbl->Unmap(desc(),
   //     plugin_->effp_,
-  //     map_addr_,
+  //     addr_,
   //     size_);
   // }
   // TODO(sehr): is there a missing delete desc() here?

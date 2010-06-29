@@ -31,8 +31,8 @@ class MultimediaSocket {
   bool InitializeModuleMultimedia(Plugin* plugin);
 
   // accessor
-  ConnectedSocket* connected_socket() const {
-    return static_cast<ConnectedSocket*>(connected_socket_->handle());
+  PortableHandle* connected_socket() const {
+    return connected_socket_->handle();
   }
 
   void UpcallThreadExiting();

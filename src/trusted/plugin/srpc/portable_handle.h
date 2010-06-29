@@ -18,11 +18,19 @@
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 
+struct NaClDesc;
+
+namespace nacl {
+class DescWrapper;
+}  // namespace
+
 namespace plugin {
 
 // Forward declarations for externals.
 class BrowserInterface;
 class Plugin;
+class ScriptableHandle;
+class ServiceRuntime;
 
 typedef enum {
   METHOD_CALL = 0,
@@ -46,14 +54,26 @@ class PortableHandle {
   // Get the method signature so ScriptableHandle can marshal the inputs
   bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
 
-  // DescBasedHandles can be conveyed over SRPC channels.
-  virtual bool IsDescBasedHandle() const { return false; }
-
   // The interface to the browser.
   virtual BrowserInterface* browser_interface() const = 0;
 
   // Every portable object has a pointer to the root plugin object.
   virtual Plugin* plugin() const = 0;
+
+  // DescBasedHandle objects encapsulate a descriptor.
+  virtual nacl::DescWrapper* wrapper() const { return NULL; }
+  virtual NaClDesc* desc() const { return NULL; }
+
+  // SharedMemory objects are mapped in at a non-NULL address and have a
+  // non-zero size.
+  virtual void* shm_addr() const { return NULL; }
+  virtual size_t shm_size() const { return 0; }
+
+  // SocketAddress objects can be connected to, returning a ConnectedSocket.
+  virtual ScriptableHandle* Connect(ServiceRuntime* service_runtime) {
+    UNREFERENCED_PARAMETER(service_runtime);
+    return NULL;
+  }
 
  protected:
   PortableHandle();

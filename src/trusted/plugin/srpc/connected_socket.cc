@@ -94,11 +94,11 @@ bool ConnectedSocket::Init(Plugin* plugin,
   }
 
   PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p, %d, %d, %p)\n",
-                 static_cast<void *>(plugin),
-                 static_cast<void *>(wrapper),
+                 static_cast<void*>(plugin),
+                 static_cast<void*>(wrapper),
                  is_srpc_client,
                  (NULL == service_runtime),
-                 static_cast<void *>(service_runtime)));
+                 static_cast<void*>(service_runtime)));
 
   service_runtime_ = service_runtime;
 
@@ -133,20 +133,20 @@ ConnectedSocket::ConnectedSocket()
   : service_runtime_(NULL),
     srpc_client_(NULL) {
   PLUGIN_PRINTF(("ConnectedSocket::ConnectedSocket(%p)\n",
-                 static_cast<void *>(this)));
+                 static_cast<void*>(this)));
 }
 
 ConnectedSocket::~ConnectedSocket() {
   PLUGIN_PRINTF(("ConnectedSocket::~ConnectedSocket(%p)\n",
-                 static_cast<void *>(this)));
+                 static_cast<void*>(this)));
 
   // Free the SRPC connection.
   delete srpc_client_;
   //  Free the rpc method descriptors and terminate the connection to
   //  the service runtime instance.
   PLUGIN_PRINTF(("ConnectedSocket(%p): deleting SRI %p\n",
-                 static_cast<void *>(this),
-                 static_cast<void *>(service_runtime_)));
+                 static_cast<void*>(this),
+                 static_cast<void*>(service_runtime_)));
 
   if (service_runtime_) {
     delete service_runtime_;

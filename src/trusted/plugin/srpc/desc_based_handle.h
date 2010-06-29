@@ -35,11 +35,13 @@ class DescBasedHandle : public PortableHandle {
   virtual BrowserInterface* browser_interface() const;
   virtual Plugin* plugin() const { return plugin_; }
   // Get the contained descriptor.
-  nacl::DescWrapper* wrapper() const { return wrapper_; }
-  struct NaClDesc* desc() const { return wrapper_->desc(); }
-
-  // Only DescBasedHandles can be conveyed over SRPC channels.
-  virtual bool IsDescBasedHandle() const { return true; }
+  virtual nacl::DescWrapper* wrapper() const { return wrapper_; }
+  virtual NaClDesc* desc() const {
+    if (NULL == wrapper_) {
+      return NULL;
+    }
+    return wrapper_->desc();
+  }
 
  protected:
   DescBasedHandle();

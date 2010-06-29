@@ -33,8 +33,8 @@ class SrtSocket {
 #endif
   bool Log(int severity, nacl::string msg);
 
-  ConnectedSocket* connected_socket() const {
-    return static_cast<ConnectedSocket*>(connected_socket_->handle());
+  PortableHandle* connected_socket() const {
+    return connected_socket_->handle();
   }
 
  private:

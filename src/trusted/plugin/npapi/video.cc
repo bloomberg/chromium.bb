@@ -150,11 +150,11 @@ static int XKeysymToNaCl(KeySym xsym) {
   return NACL_KEY_UNKNOWN;
 }
 
-void VideoMap::RedrawAsync(void *platform_parm) {
+void VideoMap::RedrawAsync(void* platform_parm) {
   PLUGIN_PRINTF(("VideoMap::RedrawAsync %p\n",
-                 static_cast<void *>(platform_parm)));
+                 static_cast<void*>(platform_parm)));
   if (0 != untrusted_video_share_->u.h.video_ready) {
-    Display *display = reinterpret_cast<Display *>(platform_parm);
+    Display* display = reinterpret_cast<Display*>(platform_parm);
     Drawable window = reinterpret_cast<Drawable>(window_->window);
     GC gc = XCreateGC(display, window, 0, NULL);
     XImage image;
@@ -195,7 +195,7 @@ struct NPSetWindowCallbackStruct {
 void VideoMap::Redraw() {
   Display* display =
       static_cast<NPSetWindowCallbackStruct*>(window_->ws_info)->display;
-  this->RedrawAsync(reinterpret_cast<void *>(display));
+  this->RedrawAsync(reinterpret_cast<void*>(display));
 }
 
 void VideoMap::XEventHandler(Widget widget,
@@ -311,7 +311,7 @@ void VideoMap::XEventHandler(Widget widget,
 #if NACL_OSX
 // convert global mouse coordinate to local space
 // TODO(nfullagar): why do these only work in the paint event?
-static void GlobalToLocalHelper(NPWindow* window, Point *point) {
+static void GlobalToLocalHelper(NPWindow* window, Point* point) {
   NP_Port* npport = static_cast<NP_Port*>(window->window);
   CGrafPtr our_port = npport->port;
   GrafPtr save;
@@ -422,10 +422,10 @@ static int MacKeyToNaCl(int mk) {
   return NACL_KEY_UNKNOWN;
 }
 
-int16_t VideoMap::HandleEvent(void *param) {
+int16_t VideoMap::HandleEvent(void* param) {
   PLUGIN_PRINTF(("VideoMap::HandleEvent(%p, %p)\n",
-                 static_cast<void *>(this),
-                 static_cast<void *>(param)));
+                 static_cast<void*>(this),
+                 static_cast<void*>(param)));
   uint16_t x;
   uint16_t y;
   uint16_t button;
@@ -793,7 +793,7 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
   int nsym;
   const int KEY_REPEAT_BIT = (1 << 30);
   const int KEY_EXTENDED_BIT = (1 << 24);
-  VideoMap *video = reinterpret_cast<VideoMap*>(
+  VideoMap* video = reinterpret_cast<VideoMap*>(
       GetWindowLongPtr(hwnd, GWLP_USERDATA));
   if ((NULL == video) || (NULL == video->untrusted_video_share_)) {
     return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -914,7 +914,7 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void VideoMap::RedrawAsync(void *platform_parm) {
+void VideoMap::RedrawAsync(void* platform_parm) {
   PLUGIN_PRINTF(("VideoMap::RedrawAsync()\n"));
   HWND hwnd = static_cast<HWND>(window_->window);
   HDC hdc = GetDC(hwnd);
@@ -983,7 +983,7 @@ void VideoMap::Redraw() {
 #endif  // NACL_WINDOWS
 
 // assumes event is already normalized to NaClMultimediaEvent
-int VideoMap::EventQueuePut(union NaClMultimediaEvent *event) {
+int VideoMap::EventQueuePut(union NaClMultimediaEvent* event) {
   int windex;
   if (EventQueueIsFull()) {
     return -1;
@@ -1007,7 +1007,7 @@ int VideoMap::EventQueueIsFull() {
 
 // Gets the last recorded mouse motion (position)
 // note: outputs normalized for NaCl events
-void VideoMap::GetMotion(uint16_t *x, uint16_t *y) {
+void VideoMap::GetMotion(uint16_t* x, uint16_t* y) {
   *x = event_state_motion_last_x_;
   *y = event_state_motion_last_y_;
 }
@@ -1023,7 +1023,7 @@ void VideoMap::SetMotion(uint16_t x, uint16_t y, int last_valid) {
 // Gets the relative mouse motion and updates position
 // note: the inputs must be normalized for NaCl events
 void VideoMap::GetRelativeMotion(uint16_t x, uint16_t y,
-    int16_t *rel_x, int16_t *rel_y) {
+    int16_t* rel_x, int16_t* rel_y) {
   if (event_state_motion_last_valid_) {
     *rel_x = x - event_state_motion_last_x_;
     *rel_y = y - event_state_motion_last_y_;
@@ -1080,8 +1080,8 @@ int VideoMap::GetKeyMod() {
 }
 
 // handle video map specific NPAPI SetWindow
-bool VideoMap::SetWindow(PluginWindow *window) {
-  PLUGIN_PRINTF(("VideoMap::SetWindow(%p)\n", static_cast<void *>(window)));
+bool VideoMap::SetWindow(PluginWindow* window) {
+  PLUGIN_PRINTF(("VideoMap::SetWindow(%p)\n", static_cast<void*>(window)));
 
   // first check window->width & window->height...
   if ((NULL == window_) && (window->window) &&
@@ -1139,19 +1139,19 @@ bool VideoMap::SetWindow(PluginWindow *window) {
 }
 
 #if !NACL_OSX
-int16_t VideoMap::HandleEvent(void *param) {
+int16_t VideoMap::HandleEvent(void* param) {
   PLUGIN_PRINTF(("VideoMap::HandleEvent(%p, %p)\n",
-                 static_cast<void *>(this),
-                 static_cast<void *>(param)));
+                 static_cast<void*>(this),
+                 static_cast<void*>(param)));
   return 0;
 }
 #endif  // !NACL_OSX
 
 ScriptableHandle* VideoMap::VideoSharedMemorySetup() {
   PLUGIN_PRINTF(("VideoMap::VideoSharedMemorySetup(%p, %p, %p)\n",
-                 static_cast<void *>(this),
-                 static_cast<void *>(video_shared_memory_),
-                 static_cast<void *>(video_handle_)));
+                 static_cast<void*>(this),
+                 static_cast<void*>(video_shared_memory_),
+                 static_cast<void*>(video_handle_)));
   if (NULL == video_shared_memory_) {
     if (NULL  == video_handle_) {
       // The plugin has not set up a shared memory object for the display.
@@ -1164,7 +1164,7 @@ ScriptableHandle* VideoMap::VideoSharedMemorySetup() {
       // Create a SharedMemory object that the script can get at.
       // SRPC_Plugin initially takes exclusive ownership
       PLUGIN_PRINTF(("VideoMap::VideoSharedMemorySetup plugin (%p)\n",
-                     static_cast<void *>(plugin_)));
+                     static_cast<void*>(plugin_)));
 
       video_shared_memory_ =
           plugin_->browser_interface()->NewScriptableHandle(
@@ -1172,7 +1172,7 @@ ScriptableHandle* VideoMap::VideoSharedMemorySetup() {
     }
   }
   PLUGIN_PRINTF(("VideoMap::VideoSharedMemorySetup returns %p\n",
-                 static_cast<void *>(video_shared_memory_)));
+                 static_cast<void*>(video_shared_memory_)));
   // Anyone requesting video_shared_memory_ begins sharing ownership.
   video_shared_memory_->AddRef();
   return video_shared_memory_;
@@ -1201,8 +1201,8 @@ void VideoMap::Invalidate() {
 }
 
 VideoCallbackData* VideoMap::InitCallbackData(nacl::DescWrapper* desc,
-                                              Plugin *p,
-                                              MultimediaSocket *msp) {
+                                              Plugin* p,
+                                              MultimediaSocket* msp) {
   // initialize with refcount set to 2
   video_callback_data_ = new(std::nothrow) VideoCallbackData(desc, p, 2, msp);
   return video_callback_data_;
@@ -1211,7 +1211,7 @@ VideoCallbackData* VideoMap::InitCallbackData(nacl::DescWrapper* desc,
 // static method
 VideoCallbackData* VideoMap::ReleaseCallbackData(VideoCallbackData* vcd) {
   PLUGIN_PRINTF(("VideoMap::ReleaseCallbackData (%p), refcount was %d\n",
-                 static_cast<void *>(vcd), vcd->refcount));
+                 static_cast<void*>(vcd), vcd->refcount));
   --vcd->refcount;
   if (0 == vcd->refcount) {
     delete vcd;
@@ -1226,13 +1226,13 @@ VideoCallbackData* VideoMap::ReleaseCallbackData(VideoCallbackData* vcd) {
 // and ignore the refcount.
 void VideoMap::ForceDeleteCallbackData(VideoCallbackData* vcd) {
   PLUGIN_PRINTF(("VideoMap::ForceDeleteCallbackData (%p)\n",
-                 static_cast<void *>(vcd)));
+                 static_cast<void*>(vcd)));
   delete vcd;
 }
 
 // opens shared memory map into untrusted space
 // returns 0 success, -1 failure
-int VideoMap::InitializeSharedMemory(PluginWindow *window) {
+int VideoMap::InitializeSharedMemory(PluginWindow* window) {
   int width = window->width;
   int height = window->height;
   const int bytes_per_pixel = 4;
@@ -1240,8 +1240,8 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
   size_t vps_size = sizeof(struct NaClVideoShare) + image_size;
 
   PLUGIN_PRINTF(("VideoMap::Initialize(%p)  this: %p\n",
-                 static_cast<void *>(window),
-                 static_cast<void *>(this)));
+                 static_cast<void*>(window),
+                 static_cast<void*>(this)));
   PLUGIN_PRINTF(("VideoMap::Initialize width, height: %d, %d\n",
                  width, height));
   if (NULL == window_) {
@@ -1258,7 +1258,7 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
       return -1;
     }
     PLUGIN_PRINTF(("VideoMap::Initialize assigning window to this(%p)\n",
-                   static_cast<void *>(this)));
+                   static_cast<void*>(this)));
     // map video & event shared memory structure between trusted & untrusted
     window_ = window;
 
@@ -1332,7 +1332,7 @@ void VideoMap::RequestRedraw() {
 #endif
 }
 
-VideoMap::VideoMap(Plugin *plugin)
+VideoMap::VideoMap(Plugin* plugin)
   : event_state_button_(kClear),
     event_state_key_mod_(kClear),
     event_state_motion_last_x_(0),
@@ -1367,14 +1367,14 @@ VideoMap::VideoMap(Plugin *plugin)
 VideoMap::~VideoMap() {
   Disable();
   PLUGIN_PRINTF(("VideoMap::~VideoMap() releasing video_callback_data_ (%p)\n",
-                 static_cast<void *>(video_callback_data_)));
+                 static_cast<void*>(video_callback_data_)));
   if (NULL != video_callback_data_) {
     video_callback_data_->portable_plugin = NULL;
     video_callback_data_ = ReleaseCallbackData(video_callback_data_);
   }
   if (NULL != platform_specific()) {
 #if NACL_LINUX && defined(MOZ_X11)
-    XCloseDisplay(static_cast<Display *>(platform_specific()));
+    XCloseDisplay(static_cast<Display*>(platform_specific()));
 #endif
     set_platform_specific(NULL);
   }

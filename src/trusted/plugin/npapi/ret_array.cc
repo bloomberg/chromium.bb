@@ -16,7 +16,7 @@ using nacl::assert_cast;
 namespace plugin {
 
 RetArray::RetArray(NPP npp) : npp_(npp) {
-  PLUGIN_PRINTF(("RetArray::RetArray(%p)\n", static_cast<void *>(this)));
+  PLUGIN_PRINTF(("RetArray::RetArray(%p)\n", static_cast<void*>(this)));
 
   NPObject* window;
   NPN_GetValue(npp_, NPNVWindowNPObject, &window);
@@ -32,7 +32,7 @@ RetArray::RetArray(NPP npp) : npp_(npp) {
   NPN_ReleaseObject(window);
 }
 
-void RetArray::SetAt(int index, NPVariant *value) {
+void RetArray::SetAt(int index, NPVariant* value) {
   NPN_SetProperty(npp_,
                   NPVARIANT_TO_OBJECT(array_),
                   NPN_GetIntIdentifier(index),
@@ -40,11 +40,11 @@ void RetArray::SetAt(int index, NPVariant *value) {
 }
 
 RetArray::~RetArray() {
-  PLUGIN_PRINTF(("RetArray::~RetArray(%p)\n", static_cast<void *>(this)));
+  PLUGIN_PRINTF(("RetArray::~RetArray(%p)\n", static_cast<void*>(this)));
   NPN_ReleaseVariantValue(&array_);
 }
 
-bool RetArray::ExportVariant(NPVariant *copy) {
+bool RetArray::ExportVariant(NPVariant* copy) {
   NPN_RetainObject(NPVARIANT_TO_OBJECT(array_));
   memcpy(copy, &array_, sizeof(NPVariant));
   return true;

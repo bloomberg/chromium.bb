@@ -93,10 +93,8 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
             return false;
           }
           // This function is called only when we are dealing with a
-          // DescBasedHandle
-          plugin::DescBasedHandle* desc_handle =
-              static_cast<plugin::DescBasedHandle*>(scriptable_obj->handle());
-
+          // DescBasedHandle.
+          plugin::PortableHandle* desc_handle = scriptable_obj->handle();
           inputs[i]->u.hval = desc_handle->desc();
         }
         break;

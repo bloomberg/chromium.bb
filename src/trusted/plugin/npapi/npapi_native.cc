@@ -50,7 +50,7 @@ bool ScalarToNPVariant(const char* value, NPVariant* var) {
     return false;
   }
   uint32_t length = assert_cast<uint32_t>(strlen(value) + 1);
-  char *tmpstr = reinterpret_cast<char*>(NPN_MemAlloc(length));
+  char* tmpstr = reinterpret_cast<char*>(NPN_MemAlloc(length));
   if (NULL == tmpstr) {
     return false;
   }
@@ -78,12 +78,10 @@ bool NPVariantToScalar(const NPVariant* var, NaClDesc** value) {
   ScriptableImplNpapi* scriptable_handle =
       static_cast<ScriptableImplNpapi*>(obj);
   // This function is called only when we are dealing with a DescBasedHandle
-  DescBasedHandle *desc_handle =
-      static_cast<DescBasedHandle*>(scriptable_handle->handle());
-
+  PortableHandle* desc_handle = scriptable_handle->handle();
   // Make result available to the caller.
   *value = desc_handle->desc();
-  return true;
+  return (NULL != *value);
 }
 
 bool NPVariantToScalar(const NPVariant* var, bool* b) {

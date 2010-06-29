@@ -276,19 +276,20 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin* plugin) {
 
   SrpcParams params("oo", "");
 
+  PortableHandle* internal_video_shared_memory = video_shared_memory->handle();
   params.ins()[0]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-  SharedMemory* internal_video_shared_memory =
-      static_cast<SharedMemory*>(video_shared_memory->handle());
   params.ins()[0]->u.hval = internal_video_shared_memory->desc();
   params.ins()[1]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
   params.ins()[1]->u.hval = desc[1]->desc();
 
-  PLUGIN_PRINTF(("CS:IMM params %p\n", static_cast<void*>(&params)));
+  PLUGIN_PRINTF(("MultimediaSocket::InitializeModuleMultimedia:"
+                 " params %p\n", static_cast<void*>(&params)));
 
   bool rpc_result = (connected_socket()->Invoke(kNaClMultimediaBridgeIdent,
                                                 METHOD_CALL,
                                                 &params));
-  PLUGIN_PRINTF(("CS:IMM returned %d\n", static_cast<int>(rpc_result)));
+  PLUGIN_PRINTF(("MultmediaSocket::InitializeModuleMultimedia:"
+                 " returned %d\n", static_cast<int>(rpc_result)));
   desc[1]->Delete();
 
   return rpc_result;

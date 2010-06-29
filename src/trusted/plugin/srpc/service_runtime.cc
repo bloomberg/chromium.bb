@@ -80,9 +80,8 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
 
   // that can be used to forcibly shut down the sel_ldr.
   PLUGIN_PRINTF((" connecting for SrtSocket\n"));
-  SocketAddress* real_socket_address =
-      static_cast<SocketAddress*>(default_socket_address_->handle());
-  raw_channel = real_socket_address->Connect(NULL);
+  PortableHandle* portable_socket_address = default_socket_address_->handle();
+  raw_channel = portable_socket_address->Connect(NULL);
   if (NULL == raw_channel) {
     PLUGIN_PRINTF(("ServiceRuntime::Start: "
                   "service runtime Connect failed.\n"));
@@ -209,7 +208,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
   // (gracefully) shut down the NaCl module.  NB: the default
   // srpc_shutdown_request handler is not (yet) very graceful.
   PLUGIN_PRINTF((" connecting for MultiMediaSocket\n"));
-  raw_channel = real_socket_address->Connect(NULL);
+  raw_channel = portable_socket_address->Connect(NULL);
   if (NULL == raw_channel) {
     PLUGIN_PRINTF(("ServiceRuntime::Start: "
                    "command channel Connect failed.\n"));
@@ -219,7 +218,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
   PLUGIN_PRINTF((" connecting for javascript SRPC use\n"));
   // The third connect on the socket address returns the channel used to
   // perform SRPC calls.
-  default_socket_ = real_socket_address->Connect(this);
+  default_socket_ = portable_socket_address->Connect(this);
   if (NULL == default_socket_) {
     PLUGIN_PRINTF(("ServiceRuntime::Start: "
                    "SRPC channel Connect failed.\n"));

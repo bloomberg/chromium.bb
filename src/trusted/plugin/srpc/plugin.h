@@ -45,7 +45,7 @@ class Plugin : public PortableHandle {
   // Updates local_url(), nacl_module_origin() and logical_url().
   bool Load(nacl::string logical_url,
             const char* local_url,
-            plugin::StreamShmBuffer *buffer);
+            plugin::StreamShmBuffer* buffer);
 
   // Log a message by sending it to the service runtime.
   bool LogAtServiceRuntime(int severity, nacl::string msg);
@@ -88,7 +88,7 @@ class Plugin : public PortableHandle {
   // Returns the URL of the locally-cached copy of the downloaded NaCl
   // module, if any.  May be NULL, e.g. in Chrome.
   const char* local_url() const { return local_url_; }
-  void set_local_url(const char *url);
+  void set_local_url(const char* url);
 
   // Returns the logical URL of NaCl module as defined by the "src" or
   // "nexes" attribute (and thus seen by the user).
@@ -96,7 +96,7 @@ class Plugin : public PortableHandle {
   // we need to investigate how streams report redirection (or if they do)
   // for our origin checks, etc.
   const char* logical_url() const { return logical_url_; }
-  void set_logical_url(const char *url);
+  void set_logical_url(const char* url);
 
   // Origin of page with the embed tag that created this plugin instance.
   nacl::string origin() const { return origin_; }

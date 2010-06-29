@@ -33,16 +33,14 @@ bool Map(void* obj, plugin::SrpcParams* params) {
   plugin::SharedMemory* portable_shared_memory =
       plugin::SharedMemory::New(ptr->plugin(), shm_wrapper);
   plugin::ScriptableHandle* shared_memory =
-    ptr->plugin()->browser_interface()->NewScriptableHandle(
-        portable_shared_memory);
+    ptr->browser_interface()->NewScriptableHandle(portable_shared_memory);
   if (NULL == shared_memory) {
     return false;
   }
   PLUGIN_PRINTF(("ScriptableHandle::Invoke: new returned %p\n",
-                 static_cast<void *>(shared_memory)));
+                 static_cast<void*>(shared_memory)));
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval =
-      static_cast<plugin::ScriptableHandle*>(shared_memory);
+  params->outs()[0]->u.oval = shared_memory;
   return true;
 }
 
@@ -53,12 +51,12 @@ namespace plugin {
 DescBasedHandle::DescBasedHandle(): plugin_(NULL),
                                     wrapper_(NULL) {
   PLUGIN_PRINTF(("DescBasedHandle::DescBasedHandle(%p)\n",
-                 static_cast<void *>(this)));
+                 static_cast<void*>(this)));
 }
 
 DescBasedHandle::~DescBasedHandle() {
   PLUGIN_PRINTF(("DescBasedHandle::~DescBasedHandle(%p)\n",
-                 static_cast<void *>(this)));
+                 static_cast<void*>(this)));
   if (NULL != wrapper_) {
     wrapper_->Delete();
     wrapper_ = NULL;

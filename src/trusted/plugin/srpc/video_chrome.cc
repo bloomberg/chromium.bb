@@ -26,12 +26,12 @@ void VideoMap::Redraw() {
   return;
 }
 
-void VideoMap::RedrawAsync(void *platform_parm) {
+void VideoMap::RedrawAsync(void* platform_parm) {
   return;
 }
 
 // assumes event is already normalized to NaClMultimediaEvent
-int VideoMap::EventQueuePut(union NaClMultimediaEvent *event) {
+int VideoMap::EventQueuePut(union NaClMultimediaEvent* event) {
   return -1;
 }
 
@@ -42,7 +42,7 @@ int VideoMap::EventQueueIsFull() {
 
 // Gets the last recorded mouse motion (position)
 // note: outputs normalized for NaCl events
-void VideoMap::GetMotion(uint16_t *x, uint16_t *y) {
+void VideoMap::GetMotion(uint16_t* x, uint16_t* y) {
   return;
 }
 
@@ -56,8 +56,8 @@ void VideoMap::SetMotion(uint16_t x, uint16_t y, int last_valid) {
 // note: the inputs must be normalized for NaCl events
 void VideoMap::GetRelativeMotion(uint16_t x,
                                  uint16_t y,
-                                 int16_t *rel_x,
-                                 int16_t *rel_y) {
+                                 int16_t* rel_x,
+                                 int16_t* rel_y) {
   return;
 }
 
@@ -86,13 +86,13 @@ int VideoMap::GetKeyMod() {
 }
 
 // handle video map specific NPAPI SetWindow
-bool VideoMap::SetWindow(PluginWindow *window) {
+bool VideoMap::SetWindow(PluginWindow* window) {
   // TODO(gregoryd): do something with this information
   // or remove this file.
   return true;
 }
 
-int16_t VideoMap::HandleEvent(void *param) {
+int16_t VideoMap::HandleEvent(void* param) {
   return 0;
 }
 
@@ -105,8 +105,8 @@ void VideoMap::Invalidate() {
 }
 
 VideoCallbackData* VideoMap::InitCallbackData(nacl::DescWrapper* desc,
-                                              Plugin *p,
-                                              MultimediaSocket *msp) {
+                                              Plugin* p,
+                                              MultimediaSocket* msp) {
   return NULL;
 }
 
@@ -125,7 +125,7 @@ void VideoMap::ForceDeleteCallbackData(VideoCallbackData* vcd) {
 
 // opens shared memory map into untrusted space
 // returns 0 success, -1 failure
-int VideoMap::InitializeSharedMemory(PluginWindow *window) {
+int VideoMap::InitializeSharedMemory(PluginWindow* window) {
   return -1;
 }
 
@@ -134,7 +134,7 @@ void VideoMap::RequestRedraw() {
   return;
 }
 
-VideoMap::VideoMap(Plugin *plugin) {
+VideoMap::VideoMap(Plugin* plugin) {
 }
 
 VideoMap::~VideoMap() {

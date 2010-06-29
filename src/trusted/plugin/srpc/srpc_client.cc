@@ -48,7 +48,7 @@ bool SrpcClient::Init(BrowserInterface* browser_interface,
                  static_cast<void*>(browser_interface),
                  static_cast<void*>(socket)));
   // Open the channel to pass RPC information back and forth
-  if (!NaClSrpcClientCtor(&srpc_channel_, socket->desc())) {
+  if (!NaClSrpcClientCtor(&srpc_channel_, socket->wrapper()->desc())) {
     return false;
   }
   browser_interface_ = browser_interface;

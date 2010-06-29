@@ -50,9 +50,9 @@ bool CopyToNPString(const nacl::string& string, NPString* npstr) {
   return true;
 }
 
-void FreeNPString(NPString& npstr) {
+void FreeNPString(NPString* npstr) {
   void* str_bytes =
-      reinterpret_cast<void*>(const_cast<NPUTF8*>(npstr.UTF8Characters));
+      reinterpret_cast<void*>(const_cast<NPUTF8*>(npstr->UTF8Characters));
   NPN_MemFree(str_bytes);
 }
 
@@ -107,7 +107,7 @@ bool BrowserImplNpapi::EvalString(InstanceIdentifier instance_id,
   // Free the dummy return from the evaluate.
   NPN_ReleaseVariantValue(&dummy_return);
   // Free the string copy we allocated in CopyToNPString.
-  FreeNPString(str);
+  FreeNPString(&str);
 
   return true;
 }
@@ -138,7 +138,7 @@ bool BrowserImplNpapi::Alert(InstanceIdentifier instance_id,
 }
 
 bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
-                                 nacl::string *origin) {
+                                 nacl::string* origin) {
   NPVariant loc_value;
   NPVariant href_value;
 
@@ -149,7 +149,7 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
 
   // TODO(gregoryd): consider making this block a function returning origin.
   do {
-    NPObject *win_obj;  // TODO(adonovan): NPN_ReleaseObject(win_obj) needed?
+    NPObject* win_obj;  // TODO(adonovan): NPN_ReleaseObject(win_obj) needed?
     if (NPERR_NO_ERROR !=
         NPN_GetValue(instance_id, NPNVWindowNPObject, &win_obj)) {
         PLUGIN_PRINTF(("GetOrigin: No window object\n"));
@@ -163,7 +163,7 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
         PLUGIN_PRINTF(("GetOrigin: no location property value\n"));
         break;
     }
-    NPObject *loc_obj = NPVARIANT_TO_OBJECT(loc_value);
+    NPObject* loc_obj = NPVARIANT_TO_OBJECT(loc_value);
 
     if (!NPN_GetProperty(instance_id,
                          loc_obj,
@@ -176,7 +176,6 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
         nacl::string(NPVARIANT_TO_STRING(href_value).UTF8Characters,
                      NPVARIANT_TO_STRING(href_value).UTF8Length);
     PLUGIN_PRINTF(("GetOrigin: origin %s\n", origin->c_str()));
-
   } while (0);
 
   NPN_ReleaseVariantValue(&loc_value);

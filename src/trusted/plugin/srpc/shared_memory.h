@@ -28,8 +28,8 @@ class SharedMemory : public DescBasedHandle {
   static SharedMemory* New(Plugin* plugin, nacl::DescWrapper* wrapper);
   static SharedMemory* New(Plugin* plugin, off_t length);
 
-  void* map_addr() const { return map_addr_; }
-  size_t size() const { return size_; }
+  virtual void* shm_addr() const { return addr_; }
+  virtual size_t shm_size() const { return size_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(SharedMemory);
@@ -40,7 +40,7 @@ class SharedMemory : public DescBasedHandle {
   bool Init(Plugin* plugin, nacl::DescWrapper* wrapper, off_t length);
   void LoadMethods();
   NaClHandle handle_;
-  void* map_addr_;
+  void* addr_;
   size_t size_;
 };
 

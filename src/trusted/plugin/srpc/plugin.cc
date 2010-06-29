@@ -47,8 +47,8 @@ static int32_t stringToInt32(char* src) {
 // process.  Issue 605.
 PLUGIN_JMPBUF g_LoaderEnv;
 
-bool UrlAsNaClDesc(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
 
   const char* url = params->ins()[0]->u.sval;
   plugin::ScriptableHandle* callback_obj =
@@ -70,8 +70,8 @@ bool UrlAsNaClDesc(void *obj, plugin::SrpcParams *params) {
   return true;
 }
 
-bool ShmFactory(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool ShmFactory(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
 
   plugin::SharedMemory* portable_shared_memory =
       plugin::SharedMemory::New(plugin, params->ins()[0]->u.ival);
@@ -84,13 +84,12 @@ bool ShmFactory(void *obj, plugin::SrpcParams *params) {
   }
 
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval =
-      static_cast<plugin::ScriptableHandle*>(shared_memory);
+  params->outs()[0]->u.oval = shared_memory;
   return true;
 }
 
-bool DefaultSocketAddress(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool DefaultSocketAddress(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   if (NULL == plugin->socket_address()) {
     params->set_exception_string("no socket address");
     return false;
@@ -98,22 +97,21 @@ bool DefaultSocketAddress(void *obj, plugin::SrpcParams *params) {
   plugin->socket_address()->AddRef();
   // Plug the scriptable object into the return values.
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval =
-      static_cast<plugin::ScriptableHandle*>(plugin->socket_address());
+  params->outs()[0]->u.oval = plugin->socket_address();
   return true;
 }
 
 // A method to test the cost of invoking a method in a plugin without
 // making an RPC to the service runtime.  Used for performance evaluation.
-bool NullPluginMethod(void *obj, plugin::SrpcParams *params) {
+bool NullPluginMethod(void* obj, plugin::SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_INT;
   params->outs()[0]->u.ival = 0;
   return true;
 }
 
-bool SocketAddressFactory(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool SocketAddressFactory(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   // Type check the input parameter.
   if (NACL_SRPC_ARG_TYPE_STRING != params->ins()[0]->tag) {
     return false;
@@ -137,13 +135,12 @@ bool SocketAddressFactory(void *obj, plugin::SrpcParams *params) {
   }
   // Plug the scriptable object into the return values.
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval =
-      static_cast<plugin::ScriptableHandle*>(socket_address);
+  params->outs()[0]->u.oval = socket_address;
   return true;
 }
 
-bool GetModuleReadyProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   if (plugin->socket()) {
     params->outs()[0]->u.ival = 1;
   } else {
@@ -152,13 +149,13 @@ bool GetModuleReadyProperty(void *obj, plugin::SrpcParams *params) {
   return true;
 }
 
-bool SetModuleReadyProperty(void *obj, plugin::SrpcParams *params) {
+bool SetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   params->set_exception_string("__moduleReady is a read-only property");
   return false;
 }
 
-bool GetNexesProperty(void *obj, plugin::SrpcParams *params) {
+bool GetNexesProperty(void* obj, plugin::SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   UNREFERENCED_PARAMETER(params);
   // Note, "get" must be present in the method map for "set" to work.
@@ -168,13 +165,13 @@ bool GetNexesProperty(void *obj, plugin::SrpcParams *params) {
 
 // Update "nexes", a write-only property that computes a value to
 // assign to the "src" property based on the supported sandbox.
-bool SetNexesProperty(void *obj, plugin::SrpcParams *params) {
+bool SetNexesProperty(void* obj, plugin::SrpcParams* params) {
   return reinterpret_cast<plugin::Plugin*>(obj)->
       SetNexesPropertyImpl(params->ins()[0]->u.sval);
 }
 
-bool GetSrcProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   if (plugin->logical_url() != NULL) {
     params->outs()[0]->u.sval = strdup(plugin->logical_url());
     PLUGIN_PRINTF(("GetSrcProperty 'src' = %s\n", plugin->logical_url()));
@@ -186,44 +183,44 @@ bool GetSrcProperty(void *obj, plugin::SrpcParams *params) {
   }
 }
 
-bool SetSrcProperty(void *obj, plugin::SrpcParams *params) {
+bool SetSrcProperty(void* obj, plugin::SrpcParams* params) {
   PLUGIN_PRINTF(("SetSrcProperty\n"));
   return reinterpret_cast<plugin::Plugin*>(obj)->
       SetSrcPropertyImpl(params->ins()[0]->u.sval);
 }
 
-bool GetHeightProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetHeightProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   params->outs()[0]->u.ival = plugin->height();
   return true;
 }
 
-bool SetHeightProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool SetHeightProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   plugin->set_height(params->ins()[0]->u.ival);
   return true;
 }
 
-bool GetWidthProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetWidthProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   params->outs()[0]->u.ival = plugin->width();
   return true;
 }
 
-bool SetWidthProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool SetWidthProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   plugin->set_width(params->ins()[0]->u.ival);
   return true;
 }
 
-bool GetVideoUpdateModeProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool GetVideoUpdateModeProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   params->outs()[0]->u.ival = plugin->video_update_mode();
   return true;
 }
 
-bool SetVideoUpdateModeProperty(void *obj, plugin::SrpcParams *params) {
-  plugin::Plugin *plugin = reinterpret_cast<plugin::Plugin*>(obj);
+bool SetVideoUpdateModeProperty(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   plugin->set_video_update_mode(params->ins()[0]->u.ival);
   return true;
 }
@@ -262,37 +259,28 @@ void Plugin::LoadMethods() {
 }
 
 bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
-  // The requested method is not implemented by the Plugin,
-  // maybe it is implemented by the NaCl module
-  if (socket_) {
-    ConnectedSocket* real_socket =
-        static_cast<ConnectedSocket*>(socket_->handle());
-    return real_socket->HasMethod(method_id, call_type);
+  if (NULL == socket_) {
+    return false;
   }
-  return PortableHandle::HasMethodEx(method_id, call_type);
+  return socket_->handle()->HasMethod(method_id, call_type);
 }
 
 bool Plugin::InvokeEx(uintptr_t method_id,
                       CallType call_type,
-                      SrpcParams *params) {
-  if (socket_) {
-    ConnectedSocket* real_socket =
-        static_cast<ConnectedSocket*>(socket_->handle());
-    return real_socket->Invoke(method_id, call_type, params);
+                      SrpcParams* params) {
+  if (NULL == socket_) {
+    return false;
   }
-  // the method is not supported
-  return PortableHandle::InvokeEx(method_id, call_type, params);
+  return socket_->handle()->Invoke(method_id, call_type, params);
 }
 
 bool Plugin::InitParamsEx(uintptr_t method_id,
                           CallType call_type,
-                          SrpcParams *params) {
-  if (socket_) {
-    ConnectedSocket* real_socket =
-        static_cast<ConnectedSocket*>(socket_->handle());
-    return real_socket->InitParams(method_id, call_type, params);
+                          SrpcParams* params) {
+  if (NULL == socket_) {
+    return false;
   }
-  return false;
+  return socket_->handle()->InitParams(method_id, call_type, params);
 }
 
 
@@ -411,7 +399,7 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   // implicitly called GET on it, which calls Load() and set_logical_url().
   // In the absence of this attr, we use the "nexes" attribute if present.
   if (logical_url() == NULL) {
-    const char *nexes_attr = LookupArgument("nexes");
+    const char* nexes_attr = LookupArgument("nexes");
     if (nexes_attr != NULL) {
       SetNexesPropertyImpl(nexes_attr);
     }
@@ -435,11 +423,11 @@ Plugin::Plugin()
     width_(0),
     video_update_mode_(kVideoUpdatePluginPaint),
     wrapper_factory_(NULL) {
-  PLUGIN_PRINTF(("Plugin::Plugin(%p)\n", static_cast<void *>(this)));
+  PLUGIN_PRINTF(("Plugin::Plugin(%p)\n", static_cast<void*>(this)));
 }
 
 Plugin::~Plugin() {
-  PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void *>(this)));
+  PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
 
   // After invalidation, the browser does not respect reference counting,
   // so we shut down here what we can and prevent attempts to shut down
@@ -466,18 +454,18 @@ Plugin::~Plugin() {
   socket_address_ = NULL;
   socket_ = NULL;
   service_runtime_ = NULL;
-  PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void *>(this)));
+  PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
   free(local_url_);
   free(logical_url_);
 }
 
-void Plugin::set_local_url(const char *url) {
+void Plugin::set_local_url(const char* url) {
   PLUGIN_PRINTF(("Plugin::set_local_url(%s)\n", url));
   if (local_url_ != NULL) free(local_url_);
   local_url_ = strdup(url);
 }
 
-void Plugin::set_logical_url(const char *url) {
+void Plugin::set_logical_url(const char* url) {
   PLUGIN_PRINTF(("Plugin::set_logical_url(%s)\n", url));
   if (logical_url_ != NULL) free(logical_url_);
   logical_url_ = strdup(url);
@@ -485,19 +473,18 @@ void Plugin::set_logical_url(const char *url) {
 
 // Create a new service node from a downloaded service.
 bool Plugin::Load(nacl::string logical_url, const char* local_url) {
-  return Load(logical_url, local_url,
-              static_cast<StreamShmBuffer*>(NULL));
+  return Load(logical_url, local_url, static_cast<StreamShmBuffer*>(NULL));
 }
 
 bool Plugin::Load(nacl::string logical_url,
                   const char* local_url,
-                  StreamShmBuffer *shmbufp) {
+                  StreamShmBuffer* shmbufp) {
   BrowserInterface* browser_interface = this->browser_interface();
 
   if (NULL == shmbufp) {
     PLUGIN_PRINTF(("Plugin::Load(%s)\n", local_url));
   } else {
-    PLUGIN_PRINTF(("Plugin::Load(%p)\n", reinterpret_cast<void *>(shmbufp)));
+    PLUGIN_PRINTF(("Plugin::Load(%p)\n", reinterpret_cast<void*>(shmbufp)));
   }
 
   // Save the origin and local_url.
@@ -560,12 +547,12 @@ bool Plugin::Load(nacl::string logical_url,
     service_runtime_started = service_runtime_->Start(local_url_);
   } else {
     int32_t size;
-    NaClDesc *raw_desc = shmbufp->shm(&size);
+    NaClDesc* raw_desc = shmbufp->shm(&size);
     if (NULL == raw_desc) {
       PLUGIN_PRINTF((" extracting shm failed\n"));
       return false;
     }
-    nacl::DescWrapper *wrapped_shm =
+    nacl::DescWrapper* wrapped_shm =
         wrapper_factory_->MakeGeneric(NaClDescRef(raw_desc));
     service_runtime_started = service_runtime_->Start(local_url_, wrapped_shm);
     // Start consumes the wrapped_shm.
@@ -580,10 +567,10 @@ bool Plugin::Load(nacl::string logical_url,
   PLUGIN_PRINTF(("  Load: started sel_ldr\n"));
   socket_address_ = service_runtime_->default_socket_address();
   PLUGIN_PRINTF(("  Load: established socket address %p\n",
-           static_cast<void *>(socket_address_)));
+           static_cast<void*>(socket_address_)));
   socket_ = service_runtime_->default_socket();
   PLUGIN_PRINTF(("  Load: established socket %p\n",
-                 static_cast<void *>(socket_)));
+                 static_cast<void*>(socket_)));
   // Plugin takes ownership of socket_ from service_runtime_,
   // so we do not need to call NPN_RetainObject.
   // Invoke the onload handler, if any.
@@ -595,7 +582,7 @@ bool Plugin::LogAtServiceRuntime(int severity, nacl::string msg) {
   return service_runtime_->Log(severity, msg);
 }
 
-char* Plugin::LookupArgument(const char *key) {
+char* Plugin::LookupArgument(const char* key) {
   char** keys = argn();
   for (int ii = 0, len = argc(); ii < len; ++ii) {
     if (!strcmp(keys[ii], key)) {
