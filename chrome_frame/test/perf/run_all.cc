@@ -15,6 +15,8 @@ int main(int argc, char **argv) {
   PlatformThread::SetName("ChromeFrame perf tests");
 
   SetConfigBool(kChromeFrameHeadlessMode, true);
+  SetConfigBool(kChromeFrameUnpinnedMode, true);
+
   base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
 
   // Use ctor/raii to register the local Chrome Frame dll.
@@ -23,6 +25,8 @@ int main(int argc, char **argv) {
   int ret = perf_suite.Run();
 
   DeleteConfigValue(kChromeFrameHeadlessMode);
+  DeleteConfigValue(kChromeFrameUnpinnedMode);
+
   if (crash_service)
     base::KillProcess(crash_service, 0, false);
   return ret;

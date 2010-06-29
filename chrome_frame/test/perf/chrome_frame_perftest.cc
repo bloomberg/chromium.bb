@@ -282,7 +282,6 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
   ChromeFrameStartupTest() {}
 
   virtual void SetUp() {
-    SetConfigBool(kChromeFrameUnpinnedMode, true);
     ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app_));
 
     chrome_dll_ = dir_app_.Append(FILE_PATH_LITERAL("chrome.dll"));
@@ -296,9 +295,6 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
     avcodec52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avcodec-52.dll"));
     avformat52_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avformat-52.dll"));
     avutil50_dll_ = dir_app_.Append(FILE_PATH_LITERAL("avutil-50.dll"));
-  }
-  virtual void TearDown() {
-    DeleteConfigValue(kChromeFrameUnpinnedMode);
   }
 
   // TODO(iyengar)
