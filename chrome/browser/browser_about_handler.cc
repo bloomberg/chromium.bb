@@ -86,7 +86,7 @@ namespace {
 
 // The (alphabetized) paths used for the about pages.
 const char kCreditsPath[] = "credits";
-const char kCachePath[] = "cache";
+const char kCachePath[] = "view-http-cache";
 const char kDnsPath[] = "dns";
 const char kHistogramsPath[] = "histograms";
 const char kMemoryRedirectPath[] = "memory-redirect";
@@ -241,7 +241,8 @@ std::string AboutAbout() {
   html.append("<h2>List of About pages</h2><ul>\n");
   for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
     if (kAllAboutPaths[i] == kNetInternalsPath ||
-        kAllAboutPaths[i] == kPluginsPath)
+        kAllAboutPaths[i] == kPluginsPath ||
+        kAllAboutPaths[i] == kCachePath)
       html.append("<li><a href='chrome://");
     else
       html.append("<li><a href='chrome://about/");
