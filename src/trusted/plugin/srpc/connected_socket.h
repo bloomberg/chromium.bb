@@ -28,7 +28,6 @@ class ConnectedSocket : public DescBasedHandle {
  public:
   static ConnectedSocket* New(Plugin* plugin,
                               nacl::DescWrapper* desc,
-                              bool is_srpc_client,
                               ServiceRuntime* service_runtime);
 
   virtual bool InvokeEx(uintptr_t method_id,
@@ -45,7 +44,6 @@ class ConnectedSocket : public DescBasedHandle {
   virtual ~ConnectedSocket();
   bool Init(Plugin* plugin,
             nacl::DescWrapper* desc,
-            bool is_srpc_client,
             ServiceRuntime* service_runtime);
   ServiceRuntime* service_runtime_;
   SrpcClient* srpc_client_;

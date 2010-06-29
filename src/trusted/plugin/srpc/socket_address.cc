@@ -98,7 +98,7 @@ ScriptableHandle* SocketAddress::Connect(ServiceRuntime* sri) {
     PLUGIN_PRINTF(("SocketAddress::Connect: take returned %p\n",
                    static_cast<void*>(con_desc)));
     ConnectedSocket* portable_connected_socket =
-        ConnectedSocket::New(plugin(), con_desc, true, sri);
+        ConnectedSocket::New(plugin(), con_desc, sri);
     ScriptableHandle* connected_socket =
         plugin()->browser_interface()->NewScriptableHandle(
             portable_connected_socket);

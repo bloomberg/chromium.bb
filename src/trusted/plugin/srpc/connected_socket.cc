@@ -65,14 +65,13 @@ bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
 
 ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
                                       nacl::DescWrapper* desc,
-                                      bool is_srpc_client,
                                       ServiceRuntime* service_runtime) {
   PLUGIN_PRINTF(("ConnectedSocket::New()\n"));
 
   ConnectedSocket* connected_socket = new(std::nothrow) ConnectedSocket();
 
   if (connected_socket == NULL ||
-      !connected_socket->Init(plugin, desc, is_srpc_client, service_runtime)) {
+      !connected_socket->Init(plugin, desc, service_runtime)) {
     // Ok to delete if NULL.
     delete connected_socket;
     return NULL;
@@ -83,7 +82,6 @@ ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
 
 bool ConnectedSocket::Init(Plugin* plugin,
                            nacl::DescWrapper* wrapper,
-                           bool is_srpc_client,
                            ServiceRuntime* service_runtime) {
   // TODO(sehr): this lock seems like it should be movable to PluginNpapi.
   VideoScopedGlobalLock video_lock;
@@ -93,38 +91,35 @@ bool ConnectedSocket::Init(Plugin* plugin,
     return false;
   }
 
-  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p, %d, %d, %p)\n",
+  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p, %d, %p)\n",
                  static_cast<void*>(plugin),
                  static_cast<void*>(wrapper),
-                 is_srpc_client,
                  (NULL == service_runtime),
                  static_cast<void*>(service_runtime)));
 
   service_runtime_ = service_runtime;
 
-  if (is_srpc_client) {
-    // Get SRPC client interface going over socket.  Only the JavaScript main
-    // channel may use proxied NPAPI (not the command channels).
-    srpc_client_ = new(std::nothrow) SrpcClient(NULL != service_runtime);
-    if (NULL == srpc_client_) {
-      // Return an error.
-      // TODO(sehr): make sure that clients check for this as well.
-      // BUG: This leaks socket.
-      PLUGIN_PRINTF(("ConnectedSocket::Init -- new failed.\n"));
-      return false;
-    }
-    if (!srpc_client_->Init(browser_interface(), this)) {
-      delete srpc_client_;
-      srpc_client_ = NULL;
-      // BUG: This leaks socket.
-      PLUGIN_PRINTF(("ConnectedSocket::Init -- SrpcClient::Init failed.\n"));
-      return false;
-    }
+  // Get SRPC client interface going over socket.  Only the JavaScript main
+  // channel may use proxied NPAPI (not the command channels).
+  srpc_client_ = new(std::nothrow) SrpcClient(NULL != service_runtime);
+  if (NULL == srpc_client_) {
+    // Return an error.
+    // TODO(sehr): make sure that clients check for this as well.
+    // BUG: This leaks socket.
+    PLUGIN_PRINTF(("ConnectedSocket::Init -- new failed.\n"));
+    return false;
+  }
+  if (!srpc_client_->Init(browser_interface(), this)) {
+    delete srpc_client_;
+    srpc_client_ = NULL;
+    // BUG: This leaks socket.
+    PLUGIN_PRINTF(("ConnectedSocket::Init -- SrpcClient::Init failed.\n"));
+    return false;
+  }
 
-    // Only enable video on socket with service_runtime.
-    if (NULL != service_runtime_) {
-      plugin->EnableVideo();
-    }
+  // Only enable video on socket with service_runtime.
+  if (NULL != service_runtime_) {
+    plugin->EnableVideo();
   }
   return true;
 }
