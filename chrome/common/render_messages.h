@@ -367,8 +367,18 @@ struct ViewHostMsg_Resource_Request {
 
 // Parameters for a render request.
 struct ViewMsg_Print_Params {
+  // Physical size of the page, including non-printable margins,
+  // in pixels according to dpi.
+  gfx::Size page_size;
+
   // In pixels according to dpi_x and dpi_y.
   gfx::Size printable_size;
+
+  // The y-offset of the printable area, in pixels according to dpi.
+  int margin_top;
+
+  // The x-offset of the printable area, in pixels according to dpi.
+  int margin_left;
 
   // Specifies dots per inch.
   double dpi;
@@ -390,7 +400,10 @@ struct ViewMsg_Print_Params {
 
   // Warning: do not compare document_cookie.
   bool Equals(const ViewMsg_Print_Params& rhs) const {
-    return printable_size == rhs.printable_size &&
+    return page_size == rhs.page_size &&
+           printable_size == rhs.printable_size &&
+           margin_top == rhs.margin_top &&
+           margin_left == rhs.margin_left &&
            dpi == rhs.dpi &&
            min_shrink == rhs.min_shrink &&
            max_shrink == rhs.max_shrink &&
@@ -401,7 +414,8 @@ struct ViewMsg_Print_Params {
   // Checking if the current params is empty. Just initialized after a memset.
   bool IsEmpty() const {
     return !document_cookie && !desired_dpi && !max_shrink && !min_shrink &&
-           !dpi && printable_size.IsEmpty() && !selection_only;
+           !dpi && printable_size.IsEmpty() && !selection_only &&
+           page_size.IsEmpty() && !margin_top && !margin_left;
   }
 };
 
@@ -441,6 +455,12 @@ struct ViewHostMsg_DidPrintPage_Params {
 
   // Shrink factor used to render this page.
   double actual_shrink;
+
+  // The size of the page the page author specified.
+  gfx::Size page_size;
+
+  // The printable area the page author specified.
+  gfx::Rect content_area;
 };
 
 // Parameters for creating an audio output stream.
@@ -1485,7 +1505,10 @@ template <>
 struct ParamTraits<ViewMsg_Print_Params> {
   typedef ViewMsg_Print_Params param_type;
   static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.page_size);
     WriteParam(m, p.printable_size);
+    WriteParam(m, p.margin_top);
+    WriteParam(m, p.margin_left);
     WriteParam(m, p.dpi);
     WriteParam(m, p.min_shrink);
     WriteParam(m, p.max_shrink);
@@ -1494,7 +1517,10 @@ struct ParamTraits<ViewMsg_Print_Params> {
     WriteParam(m, p.selection_only);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->printable_size) &&
+    return ReadParam(m, iter, &p->page_size) &&
+           ReadParam(m, iter, &p->printable_size) &&
+           ReadParam(m, iter, &p->margin_top) &&
+           ReadParam(m, iter, &p->margin_left) &&
            ReadParam(m, iter, &p->dpi) &&
            ReadParam(m, iter, &p->min_shrink) &&
            ReadParam(m, iter, &p->max_shrink) &&
@@ -1551,13 +1577,17 @@ struct ParamTraits<ViewHostMsg_DidPrintPage_Params> {
     WriteParam(m, p.document_cookie);
     WriteParam(m, p.page_number);
     WriteParam(m, p.actual_shrink);
+    WriteParam(m, p.page_size);
+    WriteParam(m, p.content_area);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->metafile_data_handle) &&
            ReadParam(m, iter, &p->data_size) &&
            ReadParam(m, iter, &p->document_cookie) &&
            ReadParam(m, iter, &p->page_number) &&
-           ReadParam(m, iter, &p->actual_shrink);
+           ReadParam(m, iter, &p->actual_shrink) &&
+           ReadParam(m, iter, &p->page_size) &&
+           ReadParam(m, iter, &p->content_area);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<ViewHostMsg_DidPrintPage_Params>");

@@ -137,9 +137,12 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
                                    ViewMsg_Print_Params* params) {
   DCHECK(params);
 #if defined(OS_WIN) || defined(OS_MACOSX)
+  params->page_size = settings.page_setup_device_units().physical_size();
   params->printable_size.SetSize(
       settings.page_setup_device_units().content_area().width(),
       settings.page_setup_device_units().content_area().height());
+  params->margin_top = settings.page_setup_device_units().content_area().x();
+  params->margin_left = settings.page_setup_device_units().content_area().y();
   params->dpi = settings.dpi();
   // Currently hardcoded at 1.25. See PrintSettings' constructor.
   params->min_shrink = settings.min_shrink;
