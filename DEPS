@@ -290,12 +290,5 @@ hooks = [
     "pattern": ".",
     "action": ["python", "src/build/gyp_chromium"],
   },
-  {
-    # Workaround XCode dependecies problem.
-    # TODO(bradnelson): remove this when fixed.
-    "pattern": ".",
-    "action": ["python",
-               "src/build/mac/clobber_generated_headers.py"],
-  },
 ]
 
