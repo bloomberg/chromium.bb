@@ -227,7 +227,7 @@ class NSSInitSingleton {
 
   PK11SlotInfo* GetDefaultKeySlot() {
     if (real_db_slot_)
-      return real_db_slot_;
+      return PK11_ReferenceSlot(real_db_slot_);
     return PK11_GetInternalKeySlot();
   }
 

@@ -12,6 +12,8 @@
 
 namespace base {
 
+// Returns a reference to the default NSS key slot. Caller must release
+// reference with PK11_FreeSlot.
 PK11SlotInfo* GetDefaultNSSKeySlot();
 
 }  // namespace base
