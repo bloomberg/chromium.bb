@@ -256,13 +256,12 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     if (show_highlighted_ && hover_animation_->is_animating()) {
       // Draw the hover bitmap into an offscreen buffer, then blend it
       // back into the current canvas.
-      canvas->AsCanvasSkia()->saveLayerAlpha(NULL,
-          static_cast<int>(hover_animation_->GetCurrentValue() * 255),
-          SkCanvas::kARGB_NoClipLayer_SaveFlag);
+      canvas->SaveLayerAlpha(
+          static_cast<int>(hover_animation_->GetCurrentValue() * 255));
       canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
                                        SkXfermode::kClear_Mode);
       PaintBorder(canvas);
-      canvas->AsCanvasSkia()->restore();
+      canvas->Restore();
     } else if ((show_highlighted_ &&
                 (state_ == BS_HOT || state_ == BS_PUSHED)) ||
                (state_ == BS_NORMAL && normal_has_border_)) {

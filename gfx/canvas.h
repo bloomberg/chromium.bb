@@ -66,6 +66,21 @@ class Canvas {
   // Creates a canvas with the specified size.
   static Canvas* CreateCanvas(int width, int height, bool is_opaque);
 
+  // Saves a copy of the drawing state onto a stack, operating on this copy
+  // until a balanced call to Restore() is made.
+  virtual void Save() = 0;
+
+  // As with Save(), except draws to a layer that is blended with the canvas
+  // at the specified alpha once Restore() is called.
+  // |layer_bounds| are the bounds of the layer relative to the current
+  // transform.
+  virtual void SaveLayerAlpha(U8CPU alpha) = 0;
+  virtual void SaveLayerAlpha(U8CPU alpha, const gfx::Rect& layer_bounds) = 0;
+
+  // Restores the drawing state after a call to Save*(). It is an error to
+  // call Restore() more times than Save*().
+  virtual void Restore() = 0;
+
   // Retrieves the clip rectangle and sets it in the specified rectangle if any.
   // Returns true if the clip rect is non-empty.
   virtual bool GetClipRect(gfx::Rect* clip_rect) = 0;

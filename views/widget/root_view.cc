@@ -176,7 +176,7 @@ void RootView::ProcessPaint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 
   // Save the current transforms.
-  canvas->AsCanvasSkia()->save();
+  canvas->Save();
 
   // Set the clip rect according to the invalid rect.
   int clip_x = invalid_rect_.x() + x();
@@ -188,7 +188,7 @@ void RootView::ProcessPaint(gfx::Canvas* canvas) {
   View::ProcessPaint(canvas);
 
   // Restore the previous transform
-  canvas->AsCanvasSkia()->restore();
+  canvas->Restore();
 
   ClearPaintRect();
 }

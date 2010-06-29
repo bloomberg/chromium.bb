@@ -148,10 +148,10 @@ void Painter::PaintPainterAt(int x, int y, int w, int h,
   DCHECK(canvas && painter);
   if (w < 0 || h < 0)
     return;
-  canvas->AsCanvasSkia()->save();
+  canvas->Save();
   canvas->TranslateInt(x, y);
   painter->Paint(w, h, canvas);
-  canvas->AsCanvasSkia()->restore();
+  canvas->Restore();
 }
 
 // static

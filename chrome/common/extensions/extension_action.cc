@@ -117,7 +117,7 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   if (SkColorGetA(background_color) == 0x00)
     background_color = SkColorSetARGB(255, 218, 0, 24);  // Default badge color.
 
-  canvas->AsCanvasSkia()->save();
+  canvas->Save();
 
   SkPaint* text_paint = GetTextPaint();
   text_paint->setColor(text_color);
@@ -158,8 +158,7 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
   rect_paint.setAntiAlias(true);
   rect_paint.setColor(background_color);
   canvas->AsCanvasSkia()->drawRoundRect(rect, SkIntToScalar(2),
-                                        SkIntToScalar(2),
-                                        rect_paint);
+                                        SkIntToScalar(2), rect_paint);
 
   // Overlay the gradient. It is stretchy, so we do this in three parts.
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
@@ -189,5 +188,5 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
                                    rect.fLeft + (rect.width() - text_width) / 2,
                                    rect.fTop + kTextSize + kTopTextPadding,
                                    *text_paint);
-  canvas->AsCanvasSkia()->restore();
+  canvas->Restore();
 }

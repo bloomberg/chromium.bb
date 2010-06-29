@@ -266,18 +266,10 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
   double opacity = sin(animation_progress * PI * kCompleteAnimationCycles +
                    PI/2) / 2 + 0.5;
 
-  SkRect bounds;
-  bounds.set(SkIntToScalar(complete_bounds.x()),
-             SkIntToScalar(complete_bounds.y()),
-             SkIntToScalar(complete_bounds.x() + complete_bounds.width()),
-             SkIntToScalar(complete_bounds.y() + complete_bounds.height()));
-  canvas->AsCanvasSkia()->saveLayerAlpha(
-      &bounds,
-      static_cast<int>(255.0 * opacity),
-      SkCanvas::kARGB_ClipLayer_SaveFlag);
+  canvas->SaveLayerAlpha(static_cast<int>(255.0 * opacity), complete_bounds);
   canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   canvas->DrawBitmapInt(*complete, complete_bounds.x(), complete_bounds.y());
-  canvas->AsCanvasSkia()->restore();
+  canvas->Restore();
 }
 
 // Load a language dependent height so that the dangerous download confirmation

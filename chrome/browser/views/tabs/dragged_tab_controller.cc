@@ -97,7 +97,7 @@ class DockView : public views::View {
     bool rtl_ui = base::i18n::IsRTL();
     if (rtl_ui) {
       // Flip canvas to draw the mirrored tab images for RTL UI.
-      canvas->AsCanvasSkia()->save();
+      canvas->Save();
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
     }
@@ -171,7 +171,7 @@ class DockView : public views::View {
         break;
     }
     if (rtl_ui)
-      canvas->AsCanvasSkia()->restore();
+      canvas->Restore();
   }
 
  private:

@@ -80,6 +80,10 @@ class CanvasSkia : public skia::PlatformCanvas,
   SkBitmap ExtractBitmap() const;
 
   // Overridden from Canvas2:
+  virtual void Save();
+  virtual void SaveLayerAlpha(U8CPU alpha);
+  virtual void SaveLayerAlpha(U8CPU alpha, const gfx::Rect& layer_bounds);
+  virtual void Restore();
   virtual bool GetClipRect(gfx::Rect* clip_rect);
   virtual bool ClipRectInt(int x, int y, int w, int h);
   virtual bool IntersectsClipRectInt(int x, int y, int w, int h);

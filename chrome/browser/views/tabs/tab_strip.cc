@@ -292,33 +292,30 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // Phantom tabs appear behind all other tabs and are rendered first. To make
   // them slightly transparent we render them to a different layer.
   if (HasPhantomTabs()) {
-    SkRect bounds;
-    bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-    canvas->AsCanvasSkia()->saveLayerAlpha(
-        &bounds, kPhantomTabAlpha, SkCanvas::kARGB_ClipLayer_SaveFlag);
+    gfx::Rect local_bounds = GetLocalBounds(true);
+    canvas->SaveLayerAlpha(kPhantomTabAlpha, local_bounds);
     canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
     for (int i = tab_count() - 1; i >= 0; --i) {
       Tab* tab = GetTabAtTabDataIndex(i);
       if (tab->data().phantom)
         tab->ProcessPaint(canvas);
     }
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
 
-    canvas->AsCanvasSkia()->saveLayerAlpha(
-        &bounds, kPhantomTabIconAlpha, SkCanvas::kARGB_ClipLayer_SaveFlag);
+    canvas->SaveLayerAlpha(kPhantomTabIconAlpha, local_bounds);
     canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
     for (int i = tab_count() - 1; i >= 0; --i) {
       Tab* tab = GetTabAtTabDataIndex(i);
       if (tab->data().phantom) {
-        canvas->AsCanvasSkia()->save();
+        canvas->Save();
         canvas->ClipRectInt(tab->MirroredX(), tab->y(), tab->width(),
                             tab->height());
         canvas->TranslateInt(tab->MirroredX(), tab->y());
         tab->PaintIcon(canvas);
-        canvas->AsCanvasSkia()->restore();
+        canvas->Restore();
       }
     }
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
   }
 
   Tab* selected_tab = NULL;

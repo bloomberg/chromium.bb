@@ -99,12 +99,10 @@ void SideTab::Paint(gfx::Canvas* canvas) {
 
   if (ShouldShowIcon()) {
     if (data().phantom) {
-      SkRect bounds;
-      bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-      canvas->AsCanvasSkia()->saveLayerAlpha(
-          &bounds, kPhantomTabIconAlpha, SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas->SaveLayerAlpha(kPhantomTabIconAlpha,
+                             gfx::Rect(width(), height()));
       PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
-      canvas->AsCanvasSkia()->restore();
+      canvas->Restore();
     } else {
       PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
     }

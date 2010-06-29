@@ -382,10 +382,10 @@ void OpaqueBrowserFrameView::PaintChildren(gfx::Canvas* canvas) {
       continue;
     }
     if (child == otr_avatar_icon_) {
-      canvas->AsCanvasSkia()->save();
+      canvas->Save();
       canvas->ClipRectInt(0, 2, width(), otr_avatar_icon_->height() - 10);
       child->ProcessPaint(canvas);
-      canvas->AsCanvasSkia()->restore();
+      canvas->Restore();
     } else {
       child->ProcessPaint(canvas);
     }
@@ -781,11 +781,8 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Split our canvas out so we can mask out the corners of the toolbar
   // without masking out the frame.
-  SkRect bounds;
-  bounds.set(SkIntToScalar(x - kClientEdgeThickness), SkIntToScalar(y),
-             SkIntToScalar(x + w + kClientEdgeThickness * 2),
-             SkIntToScalar(y + h));
-  canvas->AsCanvasSkia()->saveLayerAlpha(&bounds, 255);
+  canvas->SaveLayerAlpha(
+      255, gfx::Rect(x - kClientEdgeThickness, y, w + kClientEdgeThickness, h));
   canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
   SkColor theme_toolbar_color =
@@ -836,7 +833,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       toolbar_right_mask->height() - bottom_edge_height,
       toolbar_right_mask->width(), bottom_edge_height, right_x, bottom_y,
       toolbar_right_mask->width(), bottom_edge_height, false, paint);
-  canvas->AsCanvasSkia()->restore();
+  canvas->Restore();
 
   canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
       left_x, y,

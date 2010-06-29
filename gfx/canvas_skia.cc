@@ -29,6 +29,31 @@ SkBitmap CanvasSkia::ExtractBitmap() const {
   return result;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// CanvasSkia, Canvas implementation:
+
+void CanvasSkia::Save() {
+  save();
+}
+
+void CanvasSkia::SaveLayerAlpha(U8CPU alpha) {
+  saveLayerAlpha(NULL, alpha);
+}
+
+
+void CanvasSkia::SaveLayerAlpha(U8CPU alpha, const gfx::Rect& layer_bounds) {
+  SkRect bounds;
+  bounds.set(SkIntToScalar(layer_bounds.x()),
+             SkIntToScalar(layer_bounds.y()),
+             SkIntToScalar(layer_bounds.right()),
+             SkIntToScalar(layer_bounds.bottom()));
+  saveLayerAlpha(&bounds, alpha);
+}
+
+void CanvasSkia::Restore() {
+  restore();
+}
+
 bool CanvasSkia::GetClipRect(gfx::Rect* r) {
   SkRect clip;
   if (!getClipBounds(&clip)) {

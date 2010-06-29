@@ -264,14 +264,14 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
     // Draw left edge. We explicitly set a clip as the image is bigger than just
     // the corner.
-    canvas->AsCanvasSkia()->save();
+    canvas->Save();
     canvas->ClipRectInt(x - kNonClientBorderThickness,
                         y - kNonClientBorderThickness,
                         kNonClientBorderThickness,
                         kNonClientBorderThickness);
     canvas->DrawBitmapInt(*toolbar_left, x - kNonClientBorderThickness,
                           y - kNonClientBorderThickness);
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
 
     // Draw center edge. We need to draw a while line above the toolbar for the
     // image to overlay nicely.
@@ -279,14 +279,14 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
     canvas->TileImageInt(*toolbar_center, x, y - kNonClientBorderThickness, w,
                          toolbar_center->height());
     // Right edge. Again, we have to clip because of image size.
-    canvas->AsCanvasSkia()->save();
+    canvas->Save();
     canvas->ClipRectInt(x + w - kNonClientBorderThickness,
                         y - kNonClientBorderThickness,
                         kNonClientBorderThickness,
                         kNonClientBorderThickness);
     canvas->DrawBitmapInt(*tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
                           x + w, y);
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
   } else {
     // Draw the toolbar background, setting src_y of the paint to the tab
     // strip height as the toolbar background begins at the top of the tabs.
@@ -356,11 +356,11 @@ void GlassBrowserFrameView::PaintOTRAvatar(gfx::Canvas* canvas) {
     gfx::Point tabstrip_origin(browser_view_->tabstrip()->bounds().origin());
     View::ConvertPointToView(frame_->GetWindow()->GetClientView(), this,
                              &tabstrip_origin);
-    canvas->AsCanvasSkia()->save();
+    canvas->Save();
     canvas->ClipRectInt(dst_x, 2, w, tabstrip_origin.y() - 4);
     canvas->DrawBitmapInt(otr_avatar_icon, src_x, src_y, w, h, dst_x, dst_y,
                           w, h, false);
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
   } else {
     canvas->DrawBitmapInt(otr_avatar_icon, src_x, src_y, w, h, dst_x, dst_y,
                           w, h, false);

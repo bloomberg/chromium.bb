@@ -804,7 +804,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
   if (loading_animation_.animation_state() != ANIMATION_NONE) {
     PaintLoadingAnimation(canvas);
   } else {
-    canvas->AsCanvasSkia()->save();
+    canvas->Save();
     canvas->ClipRectInt(0, 0, width(), height() - kFavIconTitleSpacing);
     if (should_display_crashed_favicon_) {
       canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
@@ -834,7 +834,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
         }
       }
     }
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
   }
 }
 
@@ -846,15 +846,12 @@ void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
 
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
-      SkRect bounds;
-      bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-      canvas->AsCanvasSkia()->saveLayerAlpha(
-          &bounds, static_cast<int>(throb_value * 0xff),
-          SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas->SaveLayerAlpha(static_cast<int>(throb_value * 0xff),
+                             gfx::Rect(width(), height()));
       canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
                                        SkXfermode::kClear_Mode);
       PaintActiveTabBackground(canvas);
-      canvas->AsCanvasSkia()->restore();
+      canvas->Restore();
     }
   }
 }

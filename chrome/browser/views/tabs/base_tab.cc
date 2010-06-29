@@ -437,7 +437,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {
                           image_size, favicon_x, dst_y, image_size, image_size,
                           false);
   } else {
-    canvas->AsCanvasSkia()->save();
+    canvas->Save();
     canvas->ClipRectInt(0, 0, width(), height());
     if (should_display_crashed_favicon_) {
       canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
@@ -460,7 +460,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {
                               true);
       }
     }
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
   }
 }
 

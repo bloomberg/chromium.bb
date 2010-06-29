@@ -220,12 +220,12 @@ class ResizeCorner : public views::View {
     if (rtl_dir) {
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
-      canvas->AsCanvasSkia()->save();
+      canvas->Save();
     }
     canvas->DrawBitmapInt(*bitmap, width() - bitmap->width(),
                           height() - bitmap->height());
     if (rtl_dir)
-      canvas->AsCanvasSkia()->restore();
+      canvas->Restore();
   }
 
   static gfx::Size GetSize() {

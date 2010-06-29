@@ -148,12 +148,10 @@ void TranslateInfoBarBase::FadeBackground(gfx::Canvas* canvas,
                                           const InfoBarBackground& background) {
   // Draw the background into an offscreen buffer with alpha value per animation
   // value, then blend it back into the current canvas.
-  canvas->AsCanvasSkia()->saveLayerAlpha(
-      NULL, static_cast<int>(animation_value * 255),
-      SkCanvas::kARGB_NoClipLayer_SaveFlag);
+  canvas->SaveLayerAlpha(static_cast<int>(animation_value * 255));
   canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   background.Paint(canvas, this);
-  canvas->AsCanvasSkia()->restore();
+  canvas->Restore();
 }
 
 // TranslateInfoBarDelegate views specific method:

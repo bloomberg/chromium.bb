@@ -515,7 +515,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
     // (hot_)body_image_set->bottom_left, and drop_down_image_set,
     // for RTL UI, we flip the canvas to draw those images mirrored.
     // Consequently, we do not need to mirror the x-axis of those images.
-    canvas->AsCanvasSkia()->save();
+    canvas->Save();
     canvas->TranslateInt(width(), 0);
     canvas->ScaleInt(-1, 1);
   }
@@ -536,9 +536,8 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
   // Overlay our body hot state.
   if (body_hover_animation_->GetCurrentValue() > 0) {
-    canvas->AsCanvasSkia()->saveLayerAlpha(NULL,
-        static_cast<int>(body_hover_animation_->GetCurrentValue() * 255),
-        SkCanvas::kARGB_NoClipLayer_SaveFlag);
+    canvas->SaveLayerAlpha(
+        static_cast<int>(body_hover_animation_->GetCurrentValue() * 255));
     canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
     int x = kLeftPadding;
@@ -557,10 +556,10 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                  hot_body_image_set_.bottom_right,
                  x, box_y_, box_height_,
                  hot_body_image_set_.top_right->width());
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
     if (rtl_ui) {
-      canvas->AsCanvasSkia()->restore();
-      canvas->AsCanvasSkia()->save();
+      canvas->Restore();
+      canvas->Save();
       // Flip it for drawing drop-down images for RTL locales.
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
@@ -578,10 +577,8 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
     // Overlay our drop-down hot state.
     if (drop_hover_animation_->GetCurrentValue() > 0) {
-      canvas->AsCanvasSkia()->saveLayerAlpha(
-          NULL,
-          static_cast<int>(drop_hover_animation_->GetCurrentValue() * 255),
-          SkCanvas::kARGB_NoClipLayer_SaveFlag);
+      canvas->SaveLayerAlpha(
+          static_cast<int>(drop_hover_animation_->GetCurrentValue() * 255));
       canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
                                        SkXfermode::kClear_Mode);
 
@@ -590,7 +587,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                    drop_down_image_set->bottom,
                    x, box_y_, box_height_, drop_down_image_set->top->width());
 
-      canvas->AsCanvasSkia()->restore();
+      canvas->Restore();
     }
   }
 
@@ -598,7 +595,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
     // Restore the canvas to avoid file name etc. text are drawn flipped.
     // Consequently, the x-axis of following canvas->DrawXXX() method should be
     // mirrored so the text and images are down in the right positions.
-    canvas->AsCanvasSkia()->restore();
+    canvas->Restore();
   }
 
   // Print the text, left aligned and always print the file extension.
