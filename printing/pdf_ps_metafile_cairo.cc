@@ -98,11 +98,6 @@ bool PdfPsMetafile::Init() {
       return false;
   }
 
-  // Don't let WebKit draw over the margins.
-  cairo_surface_set_device_offset(surface_,
-                                  static_cast<int>(kLeftMargin),
-                                  static_cast<int>(kTopMargin));
-
   // Cairo always returns a valid pointer.
   // Hence, we have to check if it points to a "nil" object.
   if (!IsSurfaceValid(surface_)) {
@@ -139,7 +134,11 @@ bool PdfPsMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
 }
 
 cairo_t* PdfPsMetafile::StartPage(double width_in_points,
-                                  double height_in_points) {
+                                  double height_in_points,
+                                  double margin_top_in_points,
+                                  double margin_right_in_points,
+                                  double margin_bottom_in_points,
+                                  double margin_left_in_points) {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
   // Passing this check implies page_surface_ is NULL, and current_page_ is
@@ -149,8 +148,15 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
 
   // We build in extra room for the margins. The Cairo PDF backend will scale
   // the output to fit a page.
-  double width = width_in_points + kLeftMargin + kRightMargin;
-  double height = height_in_points + kTopMargin + kBottomMargin;
+  double width =
+      width_in_points + margin_left_in_points + margin_right_in_points;
+  double height =
+      height_in_points + margin_top_in_points + margin_bottom_in_points;
+
+  // Don't let WebKit draw over the margins.
+  cairo_surface_set_device_offset(surface_,
+                                  margin_left_in_points,
+                                  margin_top_in_points);
 
   switch (format_) {
     case PDF:
@@ -243,9 +249,9 @@ void PdfPsMetafile::CleanUpAll() {
   skia::VectorPlatformDevice::ClearFontCache();
 }
 
-const double PdfPsMetafile::kTopMargin = 0.25 * printing::kPointsPerInch;
-const double PdfPsMetafile::kBottomMargin = 0.56 * printing::kPointsPerInch;
-const double PdfPsMetafile::kLeftMargin = 0.25 * printing::kPointsPerInch;
-const double PdfPsMetafile::kRightMargin = 0.25 * printing::kPointsPerInch;
+const double PdfPsMetafile::kTopMarginInInch = 0.25;
+const double PdfPsMetafile::kBottomMarginInInch = 0.56;
+const double PdfPsMetafile::kLeftMarginInInch = 0.25;
+const double PdfPsMetafile::kRightMarginInInch = 0.25;
 
 }  // namespace printing

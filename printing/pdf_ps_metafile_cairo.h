@@ -53,7 +53,12 @@ class PdfPsMetafile {
   // Prepares a new cairo surface/context for rendering a new page.
   // The unit is in point (=1/72 in).
   // Returns NULL when failed.
-  cairo_t* StartPage(double width, double height);
+  cairo_t* StartPage(double width_in_points,
+                     double height_in_points,
+                     double margin_top_in_points,
+                     double margin_right_in_points,
+                     double margin_bottom_in_points,
+                     double margin_left_in_points);
 
   // Destroys the surface and the context used in rendering current page.
   // The results of current page will be appended into buffer |data_|.
@@ -79,10 +84,10 @@ class PdfPsMetafile {
 
   // The hardcoded margins, in points. These values are based on 72 dpi,
   // with 0.25 margins on top, left, and right, and 0.56 on bottom.
-  static const double kTopMargin;
-  static const double kRightMargin;
-  static const double kBottomMargin;
-  static const double kLeftMargin;
+  static const double kTopMarginInInch;
+  static const double kRightMarginInInch;
+  static const double kBottomMarginInInch;
+  static const double kLeftMarginInInch;
 
  private:
   // Cleans up all resources.
