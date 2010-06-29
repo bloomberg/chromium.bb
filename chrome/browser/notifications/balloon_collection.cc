@@ -42,7 +42,7 @@ void BalloonCollectionImpl::Add(const Notification& notification,
                                 Profile* profile) {
   Balloon* new_balloon = MakeBalloon(notification, profile);
 
-  new_balloon->SetPosition(layout_.OffScreenLocation(), true);
+  new_balloon->SetPosition(layout_.OffScreenLocation(), false);
   new_balloon->Show();
   balloons_.push_back(new_balloon);
   PositionBalloons(false);
