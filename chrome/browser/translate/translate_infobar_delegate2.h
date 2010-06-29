@@ -105,11 +105,23 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   virtual bool ShouldAlwaysTranslate();
   virtual void ToggleAlwaysTranslate();
 
+  // Methods called by the extra-buttons that can appear on the "before
+  // translate" infobar (when the user has accepted/declined the translation
+  // several times).
+  virtual void AlwaysTranslatePageLanguage();
+  virtual void NeverTranslatePageLanguage();
+
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
   string16 GetMessageInfoBarText();
   string16 GetMessageInfoBarButtonText();
   void MessageInfoBarButtonPressed();
+
+  // Called by the before translate infobar to figure-out if it should show
+  // an extra button to let the user black-list/white-list that language (based
+  // on how many times the user accepted/declined translation).
+  bool ShouldShowNeverTranslateButton();
+  bool ShouldShowAlwaysTranslateButton();
 
   // Sets this infobar background animation based on the previous infobar shown.
   // A fading background effect is used when transitioning from a normal state

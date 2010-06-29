@@ -63,6 +63,8 @@ class BeforeTranslateInfoBar
   views::MenuButton* options_menu_button_;
   InfoBarTextButton* accept_button_;
   InfoBarTextButton* deny_button_;
+  InfoBarTextButton* never_translate_button_;
+  InfoBarTextButton* always_translate_button_;
 
   scoped_ptr<views::Menu2> languages_menu_;
   LanguagesMenuModel2 languages_menu_model_;

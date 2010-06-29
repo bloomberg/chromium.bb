@@ -126,6 +126,10 @@ bool TranslateInfoBarDelegate2::IsError() {
 }
 
 void TranslateInfoBarDelegate2::Translate() {
+  const std::string& original_language_code = GetOriginalLanguageCode();
+  prefs_.ResetTranslationDeniedCount(original_language_code);
+  prefs_.IncrementTranslationAcceptedCount(original_language_code);
+
   Singleton<TranslateManager2>::get()->TranslatePage(
       tab_contents_,
       GetLanguageCodeAt(original_language_index()),
@@ -138,6 +142,10 @@ void TranslateInfoBarDelegate2::RevertTranslation() {
 }
 
 void TranslateInfoBarDelegate2::TranslationDeclined() {
+  const std::string& original_language_code = GetOriginalLanguageCode();
+  prefs_.ResetTranslationAcceptedCount(original_language_code);
+  prefs_.IncrementTranslationDeniedCount(original_language_code);
+
   // Remember that the user declined the translation so as to prevent showing a
   // translate infobar for that page again.  (TranslateManager initiates
   // translations when getting a LANGUAGE_DETERMINED from the page, which
@@ -169,14 +177,11 @@ InfoBarDelegate::Type TranslateInfoBarDelegate2::GetInfoBarType() {
 }
 
 bool TranslateInfoBarDelegate2::IsLanguageBlacklisted() {
-  const std::string& original_lang =
-      GetLanguageCodeAt(original_language_index());
-  return prefs_.IsLanguageBlacklisted(original_lang);
+  return prefs_.IsLanguageBlacklisted(GetOriginalLanguageCode());
 }
 
 void TranslateInfoBarDelegate2::ToggleLanguageBlacklist() {
-  const std::string& original_lang =
-      GetLanguageCodeAt(original_language_index());
+  const std::string& original_lang = GetOriginalLanguageCode();
   if (prefs_.IsLanguageBlacklisted(original_lang)) {
     prefs_.RemoveLanguageFromBlacklist(original_lang);
   } else {
@@ -209,12 +214,27 @@ bool TranslateInfoBarDelegate2::ShouldAlwaysTranslate() {
 }
 
 void TranslateInfoBarDelegate2::ToggleAlwaysTranslate() {
-  std::string original_lang = GetOriginalLanguageCode();
-  std::string target_lang = GetTargetLanguageCode();
+  const std::string& original_lang = GetOriginalLanguageCode();
+  const std::string& target_lang = GetTargetLanguageCode();
   if (prefs_.IsLanguagePairWhitelisted(original_lang, target_lang))
     prefs_.RemoveLanguagePairFromWhitelist(original_lang, target_lang);
   else
     prefs_.WhitelistLanguagePair(original_lang, target_lang);
+}
+
+void TranslateInfoBarDelegate2::AlwaysTranslatePageLanguage() {
+  const std::string& original_lang = GetOriginalLanguageCode();
+  const std::string& target_lang = GetTargetLanguageCode();
+  DCHECK(!prefs_.IsLanguagePairWhitelisted(original_lang, target_lang));
+  prefs_.WhitelistLanguagePair(original_lang, target_lang);
+  Translate();
+}
+
+void TranslateInfoBarDelegate2::NeverTranslatePageLanguage() {
+  std::string original_lang = GetOriginalLanguageCode();
+  DCHECK(!prefs_.IsLanguageBlacklisted(original_lang));
+  prefs_.BlacklistLanguage(original_lang);
+  tab_contents_->RemoveInfoBar(this);
 }
 
 string16 TranslateInfoBarDelegate2::GetMessageInfoBarText() {
@@ -257,9 +277,17 @@ string16 TranslateInfoBarDelegate2::GetMessageInfoBarButtonText() {
 void TranslateInfoBarDelegate2::MessageInfoBarButtonPressed() {
   DCHECK(type_ == TRANSLATION_ERROR);
   Singleton<TranslateManager2>::get()->TranslatePage(
-      tab_contents_,
-      GetLanguageCodeAt(original_language_index()),
-      GetLanguageCodeAt(target_language_index()));
+      tab_contents_, GetOriginalLanguageCode(), GetTargetLanguageCode());
+}
+
+bool TranslateInfoBarDelegate2::ShouldShowNeverTranslateButton() {
+  DCHECK(type_ == BEFORE_TRANSLATE);
+  return prefs_.GetTranslationDeniedCount(GetOriginalLanguageCode()) >= 3;
+}
+
+bool TranslateInfoBarDelegate2::ShouldShowAlwaysTranslateButton() {
+  DCHECK(type_ == BEFORE_TRANSLATE);
+  return prefs_.GetTranslationAcceptedCount(GetOriginalLanguageCode()) >= 3;
 }
 
 void TranslateInfoBarDelegate2::UpdateBackgroundAnimation(

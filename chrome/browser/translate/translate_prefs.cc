@@ -5,6 +5,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/scoped_pref_update.h"
 
@@ -14,6 +15,10 @@ const wchar_t TranslatePrefs::kPrefTranslateSiteBlacklist[] =
     L"translate_site_blacklist";
 const wchar_t TranslatePrefs::kPrefTranslateWhitelists[] =
     L"translate_whitelists";
+const wchar_t TranslatePrefs::kPrefTranslateDeniedCount[] =
+    L"translate_denied_count";
+const wchar_t TranslatePrefs::kPrefTranslateAcceptedCount[] =
+    L"translate_accepted_count";
 
 // TranslatePrefs: public: -----------------------------------------------------
 
@@ -92,6 +97,49 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
     prefs_->ScheduleSavePersistentPrefs();
 }
 
+int TranslatePrefs::GetTranslationDeniedCount(const std::string& language) {
+  DictionaryValue* dict =
+      prefs_->GetMutableDictionary(kPrefTranslateDeniedCount);
+  int count = 0;
+  return dict->GetInteger(UTF8ToWide(language), &count) ? count : 0;
+}
+
+void TranslatePrefs::IncrementTranslationDeniedCount(
+    const std::string& language) {
+  DictionaryValue* dict =
+      prefs_->GetMutableDictionary(kPrefTranslateDeniedCount);
+  int count = 0;
+  dict->GetInteger(UTF8ToWide(language), &count);
+  dict->SetInteger(UTF8ToWide(language), count + 1);
+}
+
+void TranslatePrefs::ResetTranslationDeniedCount(const std::string& language) {
+  prefs_->GetMutableDictionary(kPrefTranslateDeniedCount)->
+      SetInteger(UTF8ToWide(language), 0);
+}
+
+int TranslatePrefs::GetTranslationAcceptedCount(const std::string& language) {
+  DictionaryValue* dict =
+      prefs_->GetMutableDictionary(kPrefTranslateAcceptedCount);
+  int count = 0;
+  return dict->GetInteger(UTF8ToWide(language), &count) ? count : 0;
+}
+
+void TranslatePrefs::IncrementTranslationAcceptedCount(
+    const std::string& language) {
+  DictionaryValue* dict =
+      prefs_->GetMutableDictionary(kPrefTranslateAcceptedCount);
+  int count = 0;
+  dict->GetInteger(UTF8ToWide(language), &count);
+  dict->SetInteger(UTF8ToWide(language), count + 1);
+}
+
+void TranslatePrefs::ResetTranslationAcceptedCount(
+    const std::string& language) {
+  prefs_->GetMutableDictionary(kPrefTranslateAcceptedCount)->
+      SetInteger(UTF8ToWide(language), 0);
+}
+
 // TranslatePrefs: public, static: ---------------------------------------------
 
 bool TranslatePrefs::CanTranslate(PrefService* user_prefs,
@@ -117,6 +165,10 @@ void TranslatePrefs::RegisterUserPrefs(PrefService* user_prefs) {
     user_prefs->RegisterDictionaryPref(kPrefTranslateWhitelists);
     MigrateTranslateWhitelists(user_prefs);
   }
+  if (!user_prefs->FindPreference(kPrefTranslateDeniedCount))
+    user_prefs->RegisterDictionaryPref(kPrefTranslateDeniedCount);
+  if (!user_prefs->FindPreference(kPrefTranslateAcceptedCount))
+    user_prefs->RegisterDictionaryPref(kPrefTranslateAcceptedCount);
 }
 
 // TranslatePrefs: private, static: --------------------------------------------

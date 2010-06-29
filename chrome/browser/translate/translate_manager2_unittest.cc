@@ -925,3 +925,61 @@ TEST_F(TranslateManager2Test, ContextMenu) {
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 }
+
+// Tests that an extra always/never translate button is shown on the "before
+// translate" infobar when the translation is accepted/declined 3 times.
+TEST_F(TranslateManager2Test, BeforeTranslateExtraButtons) {
+  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  translate_prefs.ResetTranslationAcceptedCount("fr");
+  translate_prefs.ResetTranslationDeniedCount("fr");
+  translate_prefs.ResetTranslationAcceptedCount("de");
+  translate_prefs.ResetTranslationDeniedCount("de");
+
+  TranslateInfoBarDelegate2* infobar;
+  for (int i = 0; i < 4; ++i) {
+    SimulateNavigation(GURL("http://www.google.fr"), 1, "Le Google", "fr");
+    infobar = GetTranslateInfoBar();
+    ASSERT_TRUE(infobar != NULL);
+    EXPECT_EQ(TranslateInfoBarDelegate2::BEFORE_TRANSLATE, infobar->type());
+    if (i < 3) {
+      EXPECT_FALSE(infobar->ShouldShowAlwaysTranslateButton());
+      infobar->Translate();
+      process()->sink().ClearMessages();
+    } else {
+      EXPECT_TRUE(infobar->ShouldShowAlwaysTranslateButton());
+    }
+  }
+  // Simulate the user pressing "Always translate French".
+  infobar->AlwaysTranslatePageLanguage();
+  EXPECT_TRUE(translate_prefs.IsLanguagePairWhitelisted("fr", "en"));
+  // Simulate the translate script being retrieved (it only needs to be done
+  // once in the test as it is cached).
+  SimulateURLFetch(true);
+  // That should have triggered a page translate.
+  int page_id = 0;
+  std::string original_lang, target_lang;
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  process()->sink().ClearMessages();
+
+  // Now test that declining the translation causes a "never translate" button
+  // to be shown.
+  for (int i = 0; i < 4; ++i) {
+    SimulateNavigation(GURL("http://www.google.de"), 1, "Das Google", "de");
+    infobar = GetTranslateInfoBar();
+    ASSERT_TRUE(infobar != NULL);
+    EXPECT_EQ(TranslateInfoBarDelegate2::BEFORE_TRANSLATE, infobar->type());
+    if (i < 3) {
+      EXPECT_FALSE(infobar->ShouldShowNeverTranslateButton());
+      infobar->TranslationDeclined();
+    } else {
+      EXPECT_TRUE(infobar->ShouldShowNeverTranslateButton());
+    }
+  }
+  // Simulate the user pressing "Never translate French".
+  infobar->NeverTranslatePageLanguage();
+  EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("de"));
+  // No translation should have occured and the infobar should be gone.
+  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  process()->sink().ClearMessages();
+  ASSERT_TRUE(GetTranslateInfoBar() == NULL);
+}

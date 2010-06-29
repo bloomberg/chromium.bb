@@ -19,6 +19,8 @@ class InfoBarTextButton : public views::TextButton {
   // |message_id|.
   static InfoBarTextButton* CreateWithMessageID(views::ButtonListener* listener,
                                                 int message_id);
+  static InfoBarTextButton* CreateWithMessageIDAndParam(
+      views::ButtonListener* listener, int message_id, const string16& param);
 
   virtual ~InfoBarTextButton();
 

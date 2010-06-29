@@ -18,6 +18,8 @@
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
     TranslateInfoBarDelegate2* delegate)
     : TranslateInfoBarBase(delegate),
+      never_translate_button_(NULL),
+      always_translate_button_(NULL),
       languages_menu_model_(delegate, LanguagesMenuModel2::ORIGINAL),
       options_menu_model_(delegate) {
   size_t offset = 0;
@@ -48,6 +50,22 @@ BeforeTranslateInfoBar::BeforeTranslateInfoBar(
       CreateMenuButton(l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS),
                        false, this);
   AddChildView(options_menu_button_);
+
+  if (delegate->ShouldShowNeverTranslateButton()) {
+    const string16& language = delegate->GetLanguageDisplayableNameAt(
+        delegate->original_language_index());
+    never_translate_button_ = InfoBarTextButton::CreateWithMessageIDAndParam(
+        this, IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE, language);
+    AddChildView(never_translate_button_);
+  }
+
+  if (delegate->ShouldShowAlwaysTranslateButton()) {
+    const string16& language = delegate->GetLanguageDisplayableNameAt(
+        delegate->original_language_index());
+    always_translate_button_ = InfoBarTextButton::CreateWithMessageIDAndParam(
+        this, IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, language);
+    AddChildView(always_translate_button_);
+  }
 
   UpdateOriginalButtonText();
 }
@@ -89,6 +107,20 @@ void BeforeTranslateInfoBar::Layout() {
   deny_button_->SetBounds(
         accept_button_->bounds().right() + InfoBar::kButtonButtonSpacing,
         OffsetY(this, pref_size), pref_size.width(), pref_size.height());
+
+  if (never_translate_button_) {
+    pref_size = never_translate_button_->GetPreferredSize();
+    never_translate_button_->SetBounds(
+          deny_button_->bounds().right() + InfoBar::kButtonButtonSpacing,
+          OffsetY(this, pref_size), pref_size.width(), pref_size.height());
+  }
+  if (always_translate_button_) {
+    DCHECK(!never_translate_button_);
+    pref_size = always_translate_button_->GetPreferredSize();
+    always_translate_button_->SetBounds(
+          deny_button_->bounds().right() + InfoBar::kButtonButtonSpacing,
+          OffsetY(this, pref_size), pref_size.width(), pref_size.height());
+  }
 }
 
 void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
@@ -97,6 +129,11 @@ void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
     GetDelegate()->Translate();
   } else if (sender == deny_button_) {
     RemoveInfoBar();
+    GetDelegate()->TranslationDeclined();
+  } else if (sender == never_translate_button_) {
+    GetDelegate()->NeverTranslatePageLanguage();
+  } else if (sender == always_translate_button_) {
+    GetDelegate()->AlwaysTranslatePageLanguage();
   } else {
     TranslateInfoBarBase::ButtonPressed(sender, event);
   }

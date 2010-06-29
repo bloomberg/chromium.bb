@@ -93,6 +93,8 @@ static const wchar_t* kSynchronizedPreferences[] = {
   TranslatePrefs::kPrefTranslateLanguageBlacklist,
   TranslatePrefs::kPrefTranslateSiteBlacklist,
   TranslatePrefs::kPrefTranslateWhitelists,
+  TranslatePrefs::kPrefTranslateDeniedCount,
+  TranslatePrefs::kPrefTranslateAcceptedCount,
 
   // Desktop notification permissions.
   prefs::kDesktopNotificationAllowedOrigins,

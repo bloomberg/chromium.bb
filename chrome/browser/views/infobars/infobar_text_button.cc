@@ -22,6 +22,13 @@ InfoBarTextButton* InfoBarTextButton::CreateWithMessageID(
                                l10n_util::GetStringUTF16(message_id));
 }
 
+// static
+InfoBarTextButton* InfoBarTextButton::CreateWithMessageIDAndParam(
+      views::ButtonListener* listener, int message_id, const string16& param) {
+  return new InfoBarTextButton(listener,
+                               l10n_util::GetStringFUTF16(message_id, param));
+}
+
 InfoBarTextButton::~InfoBarTextButton() {
 }
 
