@@ -1006,12 +1006,9 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 			    &set_domain);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
-		ret = -errno;
 		fprintf(stderr, "%s:%d: Error setting to CPU domain %d: %s\n",
 			__FILE__, __LINE__, bo_gem->gem_handle,
 			strerror(errno));
-		pthread_mutex_unlock(&bufmgr_gem->lock);
-		return ret;
 	}
 
 	pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -1086,9 +1083,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 			    DRM_IOCTL_I915_GEM_SET_DOMAIN,
 			    &set_domain);
 	} while (ret == -1 && errno == EINTR);
-
 	if (ret != 0) {
-		ret = -errno;
 		fprintf(stderr, "%s:%d: Error setting domain %d: %s\n",
 			__FILE__, __LINE__, bo_gem->gem_handle,
 			strerror(errno));
@@ -1096,7 +1091,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
-	return ret;
+	return 0;
 }
 
 int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
