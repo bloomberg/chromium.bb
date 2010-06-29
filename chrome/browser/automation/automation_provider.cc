@@ -13,6 +13,7 @@
 #include "base/file_version_info.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/json/string_escape.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -1609,19 +1610,6 @@ void AutomationProvider::SetWindowDimensions(Browser* browser,
   Send(reply_message);
 }
 
-std::string AutomationProvider::JSONErrorString(std::string err) {
-  std::string prefix = "{\"error\": \"";
-  std::string no_quote_err = err;
-  std::string suffix = "\"}";
-
-  // Don't allow input string to break JSON by embedding quotes.
-  // Try and make sure the input string won't break json quoting rules.
-  if (no_quote_err.find("\"") != std::string::npos)
-    no_quote_err = "unhappy about embedded quote in error string";
-
-  return prefix + no_quote_err + suffix;
-}
-
 // Sample json input: { "command": "GetBrowserInfo" }
 // Refer to GetBrowserInfo() in chrome/test/pyautolib/pyauto.py for
 // sample json output.
@@ -2247,11 +2235,21 @@ void AutomationProvider::SaveTabContents(Browser* browser,
     }
   }
 
-  // if we get here, error.
+  // If we get here, error.
   DCHECK(!json_return.empty());
   AutomationMsg_SendJSONRequest::WriteReplyParams(
       reply_message, json_return, false);
   Send(reply_message);
+}
+
+/* static */
+std::string AutomationProvider::JSONErrorString(const std::string& err) {
+  std::string prefix = "{\"error\": \"";
+  std::string no_quote_err;
+  std::string suffix = "\"}";
+
+  base::JsonDoubleQuote(err, false, &no_quote_err);
+  return prefix + no_quote_err + suffix;
 }
 
 void AutomationProvider::SendJSONRequest(int handle,
