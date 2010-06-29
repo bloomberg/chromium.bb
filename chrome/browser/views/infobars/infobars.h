@@ -51,21 +51,6 @@ class InfoBar : public views::View,
   // InfoBar is added to the view hierarchy.
   void set_container(InfoBarContainer* container) { container_ = container; }
 
-  // Starts animating the InfoBar open.
-  void AnimateOpen();
-
-  // Opens the InfoBar immediately.
-  void Open();
-
-  // Starts animating the InfoBar closed. It will not be closed until the
-  // animation has completed, when |Close| will be called.
-  void AnimateClose();
-
-  // Closes the InfoBar immediately and removes it from its container. Notifies
-  // the delegate that it has closed. The InfoBar is deleted after this function
-  // is called.
-  void Close();
-
   // The target height of the InfoBar, regardless of what its current height
   // is (due to animation).
   static const double kDefaultTargetHeight;
@@ -118,6 +103,23 @@ class InfoBar : public views::View,
   virtual void AnimationEnded(const Animation* animation);
 
  private:
+  friend class InfoBarContainer;
+
+  // Starts animating the InfoBar open.
+  void AnimateOpen();
+
+  // Opens the InfoBar immediately.
+  void Open();
+
+  // Starts animating the InfoBar closed. It will not be closed until the
+  // animation has completed, when |Close| will be called.
+  void AnimateClose();
+
+  // Closes the InfoBar immediately and removes it from its container. Notifies
+  // the delegate that it has closed. The InfoBar is deleted after this function
+  // is called.
+  void Close();
+
   // Called when an InfoBar is added or removed from a view hierarchy to do
   // setup and shutdown.
   void InfoBarAdded();

@@ -96,7 +96,7 @@ void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
   if (sender == accept_button_) {
     GetDelegate()->Translate();
   } else if (sender == deny_button_) {
-    Close();
+    RemoveInfoBar();
   } else {
     TranslateInfoBarBase::ButtonPressed(sender, event);
   }

@@ -142,43 +142,6 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
 InfoBar::~InfoBar() {
 }
 
-void InfoBar::AnimateOpen() {
-  animation_->Show();
-}
-
-void InfoBar::Open() {
-  // Set the animation value to 1.0 so that GetPreferredSize() returns the right
-  // size.
-  animation_->Reset(1.0);
-  if (container_)
-    container_->InfoBarAnimated(false);
-}
-
-void InfoBar::AnimateClose() {
-  bool restore_focus = true;
-#if defined(OS_WIN)
-  // Do not restore focus (and active state with it) on Windows if some other
-  // top-level window became active.
-  if (GetWidget() &&
-      !win_util::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView())) {
-    restore_focus = false;
-  }
-#endif  // defined(OS_WIN)
-  DestroyFocusTracker(restore_focus);
-  animation_->Hide();
-}
-
-void InfoBar::Close() {
-  GetParent()->RemoveChildView(this);
-  // Note that we only tell the delegate we're closed here, and not when we're
-  // simply destroyed (by virtue of a tab switch or being moved from window to
-  // window), since this action can cause the delegate to destroy itself.
-  if (delegate_) {
-    delegate_->InfoBarClosed();
-    delegate_ = NULL;
-  }
-}
-
 // InfoBar, views::View overrides: ---------------------------------------------
 
 bool InfoBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
@@ -259,6 +222,43 @@ void InfoBar::AnimationEnded(const Animation* animation) {
 }
 
 // InfoBar, private: -----------------------------------------------------------
+
+void InfoBar::AnimateOpen() {
+  animation_->Show();
+}
+
+void InfoBar::Open() {
+  // Set the animation value to 1.0 so that GetPreferredSize() returns the right
+  // size.
+  animation_->Reset(1.0);
+  if (container_)
+    container_->InfoBarAnimated(false);
+}
+
+void InfoBar::AnimateClose() {
+  bool restore_focus = true;
+#if defined(OS_WIN)
+  // Do not restore focus (and active state with it) on Windows if some other
+  // top-level window became active.
+  if (GetWidget() &&
+      !win_util::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView())) {
+    restore_focus = false;
+  }
+#endif  // defined(OS_WIN)
+  DestroyFocusTracker(restore_focus);
+  animation_->Hide();
+}
+
+void InfoBar::Close() {
+  GetParent()->RemoveChildView(this);
+  // Note that we only tell the delegate we're closed here, and not when we're
+  // simply destroyed (by virtue of a tab switch or being moved from window to
+  // window), since this action can cause the delegate to destroy itself.
+  if (delegate_) {
+    delegate_->InfoBarClosed();
+    delegate_ = NULL;
+  }
+}
 
 void InfoBar::InfoBarAdded() {
   // The container_ pointer must be set before adding to the view hierarchy.
