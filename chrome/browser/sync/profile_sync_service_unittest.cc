@@ -1314,17 +1314,9 @@ TEST_F(ProfileSyncServiceTestWithData, RecoverAfterDeletingSyncDataDirectory) {
   ExpectModelMatch();
 }
 
-#if defined(OS_MACOSX)
-// TODO(dantasse) This test fails on the mac. See http://crbug.com/33443
-#define MAYBE_TestStartupWithOldSyncData DISABLED_TestStartupWithOldSyncData
-#else
-#define MAYBE_TestStartupWithOldSyncData TestStartupWithOldSyncData
-#endif
-
 // Make sure that things still work if sync is not enabled, but some old sync
 // databases are lingering in the "Sync Data" folder.
-
-TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
+TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
   const char* nonsense1 = "reginald";
   const char* nonsense2 = "beartato";
   const char* nonsense3 = "harrison";
