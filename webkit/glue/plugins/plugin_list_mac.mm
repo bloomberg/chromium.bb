@@ -69,7 +69,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   // Load from the machine-wide area
   GetPluginCommonDirectory(plugin_dirs, false);
 
-  // Load any bundled plugins
+  // Load any bundled plugins (deprecated)
+  // TODO(stuartmorgan): Remove this once it's not used in TestShell.
   GetPluginPrivateDirectory(plugin_dirs);
 }
 

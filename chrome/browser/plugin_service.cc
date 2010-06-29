@@ -84,11 +84,15 @@ PluginService::PluginService()
 
   // Have the NPAPI plugin list search for Chrome plugins as well.
   ChromePluginLib::RegisterPluginsWithNPAPI();
-  // Load the one specified on the command line as well.
+
+  // Load any specified on the command line as well.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   FilePath path = command_line->GetSwitchValuePath(switches::kLoadPlugin);
   if (!path.empty())
     NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
+  path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
+  if (!path.empty())
+    NPAPI::PluginList::Singleton()->AddExtraPluginDir(path);
 
   chrome::RegisterInternalDefaultPlugin();
 
