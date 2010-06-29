@@ -81,15 +81,12 @@ bool EncodingMenuController::IsItemChecked(
     Profile* browser_profile,
     const std::string& current_tab_encoding,
     int item_id) {
-  if (!DoesCommandBelongToEncodingMenu(item_id)) {
+  if (!DoesCommandBelongToEncodingMenu(item_id))
     return false;
-  }
 
   std::string encoding = current_tab_encoding;
-  if (encoding.empty()) {
-    encoding = WideToASCII(browser_profile->GetPrefs()->GetString(
-        prefs::kDefaultCharset));
-  }
+  if (encoding.empty())
+    encoding = browser_profile->GetPrefs()->GetString(prefs::kDefaultCharset);
 
   if (item_id == IDC_ENCODING_AUTO_DETECT) {
     return browser_profile->GetPrefs()->GetBoolean(
@@ -124,9 +121,8 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
   // encodings and other encodings.
   encodings = CharacterEncoding::GetCurrentDisplayEncodings(
       g_browser_process->GetApplicationLocale(),
-      WideToASCII(profile->GetPrefs()->GetString(prefs::kStaticEncodings)),
-      WideToASCII(profile->GetPrefs()->GetString(
-          prefs::kRecentlySelectedEncoding)));
+      profile->GetPrefs()->GetString(prefs::kStaticEncodings),
+      profile->GetPrefs()->GetString(prefs::kRecentlySelectedEncoding));
   DCHECK(encodings);
   DCHECK(!encodings->empty());
 

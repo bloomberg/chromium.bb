@@ -177,7 +177,7 @@ TEST_F(WebDatabaseTest, Keywords) {
   GURL favicon_url("http://favicon.url/");
   GURL originating_url("http://google.com/");
   template_url.SetFavIconURL(favicon_url);
-  template_url.SetURL(L"http://url/", 0, 0);
+  template_url.SetURL("http://url/", 0, 0);
   template_url.set_safe_for_autoreplace(true);
   template_url.set_show_in_default_list(true);
   template_url.set_originating_url(originating_url);
@@ -253,10 +253,10 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
   GURL favicon_url("http://favicon.url/");
   GURL originating_url("http://originating.url/");
   template_url.SetFavIconURL(favicon_url);
-  template_url.SetURL(L"http://url/", 0, 0);
+  template_url.SetURL("http://url/", 0, 0);
   template_url.set_safe_for_autoreplace(true);
   template_url.set_show_in_default_list(true);
-  template_url.SetSuggestionsURL(L"url2", 0, 0);
+  template_url.SetSuggestionsURL("url2", 0, 0);
   SetID(1, &template_url);
 
   EXPECT_TRUE(db.AddKeyword(template_url));
@@ -312,7 +312,7 @@ TEST_F(WebDatabaseTest, KeywordWithNoFavicon) {
   TemplateURL template_url;
   template_url.set_short_name(L"short_name");
   template_url.set_keyword(L"keyword");
-  template_url.SetURL(L"http://url/", 0, 0);
+  template_url.SetURL("http://url/", 0, 0);
   template_url.set_safe_for_autoreplace(true);
   SetID(-100, &template_url);
 

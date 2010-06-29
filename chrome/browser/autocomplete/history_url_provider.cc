@@ -663,8 +663,10 @@ void HistoryURLProvider::RunAutocompletePasses(
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
   std::wstring languages(languages_);
-  if (languages.empty() && profile_)
-    languages = profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  if (languages.empty() && profile_) {
+    languages =
+        UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  }
   scoped_ptr<HistoryURLProviderParams> params(
       new HistoryURLProviderParams(input, trim_http, languages));
 

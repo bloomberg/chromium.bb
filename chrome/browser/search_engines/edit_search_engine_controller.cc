@@ -29,8 +29,8 @@ bool EditSearchEngineController::IsTitleValid(
 }
 
 bool EditSearchEngineController::IsURLValid(
-    const std::wstring& url_input) const {
-  std::wstring url = GetFixedUpURL(url_input);
+    const std::string& url_input) const {
+  std::string url = GetFixedUpURL(url_input);
   if (url.empty())
     return false;
 
@@ -45,14 +45,14 @@ bool EditSearchEngineController::IsURLValid(
     if (template_url_ ==
         profile_->GetTemplateURLModel()->GetDefaultSearchProvider())
       return false;
-    return GURL(WideToUTF16Hack(url)).is_valid();
+    return GURL(url).is_valid();
   }
 
   // If the url has a search term, replace it with a random string and make
   // sure the resulting URL is valid. We don't check the validity of the url
   // with the search term as that is not necessarily valid.
-  return GURL(WideToUTF8(template_ref.ReplaceSearchTerms(TemplateURL(), L"a",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()))).is_valid();
+  return GURL(template_ref.ReplaceSearchTerms(TemplateURL(), L"a",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())).is_valid();
 }
 
 bool EditSearchEngineController::IsKeywordValid(
@@ -69,8 +69,8 @@ bool EditSearchEngineController::IsKeywordValid(
 void EditSearchEngineController::AcceptAddOrEdit(
     const std::wstring& title_input,
     const std::wstring& keyword_input,
-    const std::wstring& url_input) {
-  std::wstring url_string = GetFixedUpURL(url_input);
+    const std::string& url_input) {
+  std::string url_string = GetFixedUpURL(url_input);
   DCHECK(!url_string.empty());
 
   const TemplateURL* existing =
@@ -120,10 +120,10 @@ void EditSearchEngineController::CleanUpCancelledAdd() {
   }
 }
 
-std::wstring EditSearchEngineController::GetFixedUpURL(
-    const std::wstring& url_input) const {
-  std::wstring url;
-  TrimWhitespace(TemplateURLRef::DisplayURLToURLRef(url_input),
+std::string EditSearchEngineController::GetFixedUpURL(
+    const std::string& url_input) const {
+  std::string url;
+  TrimWhitespace(TemplateURLRef::DisplayURLToURLRef(UTF8ToWide(url_input)),
                  TRIM_ALL, &url);
   if (url.empty())
     return url;
@@ -133,14 +133,14 @@ std::wstring EditSearchEngineController::GetFixedUpURL(
   // we need to replace the search terms before testing for the scheme.
   TemplateURL t_url;
   t_url.SetURL(url, 0, 0);
-  std::wstring expanded_url =
+  std::string expanded_url =
       t_url.url()->ReplaceSearchTerms(t_url, L"x", 0, std::wstring());
   url_parse::Parsed parts;
   std::string scheme(
-      URLFixerUpper::SegmentURL(WideToUTF8(expanded_url), &parts));
+      URLFixerUpper::SegmentURL(expanded_url, &parts));
   if (!parts.scheme.is_valid()) {
     scheme.append("://");
-    url.insert(0, UTF8ToWide(scheme));
+    url.insert(0, scheme);
   }
 
   return url;

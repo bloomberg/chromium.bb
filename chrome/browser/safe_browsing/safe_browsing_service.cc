@@ -258,8 +258,8 @@ void SafeBrowsingService::OnNewMacKeys(const std::string& client_key,
                                        const std::string& wrapped_key) {
   PrefService* prefs = g_browser_process->local_state();
   if (prefs) {
-    prefs->SetString(prefs::kSafeBrowsingClientKey, ASCIIToWide(client_key));
-    prefs->SetString(prefs::kSafeBrowsingWrappedKey, ASCIIToWide(wrapped_key));
+    prefs->SetString(prefs::kSafeBrowsingClientKey, client_key);
+    prefs->SetString(prefs::kSafeBrowsingWrappedKey, wrapped_key);
   }
 }
 
@@ -604,9 +604,9 @@ void SafeBrowsingService::Start() {
   std::string client_key, wrapped_key;
   if (local_state) {
     client_key =
-      WideToASCII(local_state->GetString(prefs::kSafeBrowsingClientKey));
+      local_state->GetString(prefs::kSafeBrowsingClientKey);
     wrapped_key =
-      WideToASCII(local_state->GetString(prefs::kSafeBrowsingWrappedKey));
+      local_state->GetString(prefs::kSafeBrowsingWrappedKey);
   }
 
   // We will issue network fetches using the default profile's request context.

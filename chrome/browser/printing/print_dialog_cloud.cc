@@ -120,8 +120,8 @@ GURL CloudPrintService::GetCloudPrintServiceURL() {
   GURL cloud_print_service_url = GURL(command_line.GetSwitchValueASCII(
       switches::kCloudPrintServiceURL));
   if (cloud_print_service_url.is_empty()) {
-    cloud_print_service_url = GURL(WideToUTF8(
-        profile_->GetPrefs()->GetString(prefs::kCloudPrintServiceURL)));
+    cloud_print_service_url = GURL(
+        profile_->GetPrefs()->GetString(prefs::kCloudPrintServiceURL));
   }
   return cloud_print_service_url;
 }

@@ -169,8 +169,7 @@ void LanguageConfigView::ButtonPressed(
     UiLanguageButton* button = static_cast<UiLanguageButton*>(sender);
     PrefService* prefs = g_browser_process->local_state();
     if (prefs) {
-      prefs->SetString(prefs::kApplicationLocale,
-                       UTF8ToWide(button->language_code()));
+      prefs->SetString(prefs::kApplicationLocale, button->language_code());
       prefs->SavePersistentPrefs();
       RestartMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
     }

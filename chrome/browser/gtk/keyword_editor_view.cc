@@ -59,7 +59,7 @@ void KeywordEditorView::Show(Profile* profile) {
 void KeywordEditorView::OnEditedKeyword(const TemplateURL* template_url,
                                         const std::wstring& title,
                                         const std::wstring& keyword,
-                                        const std::wstring& url) {
+                                        const std::string& url) {
   if (template_url) {
     controller_->ModifyTemplateURL(template_url, title, keyword, url);
 

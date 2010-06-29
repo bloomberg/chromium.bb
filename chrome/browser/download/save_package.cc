@@ -1266,11 +1266,17 @@ void SavePackage::ContinueSave(SavePackageParam* param,
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   StringPrefMember save_file_path;
   save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);
+#if defined(OS_POSIX)
+  std::string path_string = param->dir.value();
+#elif defined(OS_WIN)
+  std::string path_string = WideToUTF8(param->dir.value());
+#endif
   // If user change the default saving directory, we will remember it just
   // like IE and FireFox.
   if (!tab_contents_->profile()->IsOffTheRecord() &&
-      save_file_path.GetValue() != param->dir.ToWStringHack())
-    save_file_path.SetValue(param->dir.ToWStringHack());
+      save_file_path.GetValue() != path_string) {
+    save_file_path.SetValue(path_string);
+  }
 
   param->save_type = (index == 1) ? SavePackage::SAVE_AS_ONLY_HTML :
                                     SavePackage::SAVE_AS_COMPLETE_HTML;

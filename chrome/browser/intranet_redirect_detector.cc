@@ -20,8 +20,8 @@
 const size_t IntranetRedirectDetector::kNumCharsInHostnames = 10;
 
 IntranetRedirectDetector::IntranetRedirectDetector()
-    : redirect_origin_(WideToUTF8(g_browser_process->local_state()->GetString(
-          prefs::kLastKnownIntranetRedirectOrigin))),
+    : redirect_origin_(g_browser_process->local_state()->GetString(
+          prefs::kLastKnownIntranetRedirectOrigin)),
       ALLOW_THIS_IN_INITIALIZER_LIST(fetcher_factory_(this)),
       in_startup_sleep_(true),
       request_context_available_(!!Profile::GetDefaultRequestContext()) {
@@ -140,7 +140,7 @@ void IntranetRedirectDetector::OnURLFetchComplete(
 
   g_browser_process->local_state()->SetString(
       prefs::kLastKnownIntranetRedirectOrigin, redirect_origin_.is_valid() ?
-          UTF8ToWide(redirect_origin_.spec()) : std::wstring());
+          redirect_origin_.spec() : std::string());
 }
 
 void IntranetRedirectDetector::Observe(NotificationType type,

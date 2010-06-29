@@ -59,7 +59,7 @@ class KeywordEditorView : public views::View,
   virtual void OnEditedKeyword(const TemplateURL* template_url,
                                const std::wstring& title,
                                const std::wstring& keyword,
-                               const std::wstring& url);
+                               const std::string& url);
 
   // Overridden to invoke Layout.
   virtual gfx::Size GetPreferredSize();

@@ -75,7 +75,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     GURL url = tab_contents()->GetURL();
     std::wstring display_host_wide;
     net::AppendFormattedHost(url,
-        profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+        UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages)),
         &display_host_wide, NULL, NULL);
     std::string display_host(WideToUTF8(display_host_wide));
 

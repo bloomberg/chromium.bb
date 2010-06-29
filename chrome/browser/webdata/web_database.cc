@@ -546,7 +546,7 @@ static void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
                        url.GetFavIconURL()));
   }
   if (url.url())
-    s->BindString(3, WideToUTF8(url.url()->url()));
+    s->BindString(3, url.url()->url());
   else
     s->BindString(3, std::string());
   s->BindInt(4, url.safe_for_autoreplace() ? 1 : 0);
@@ -561,7 +561,7 @@ static void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindString(8, JoinStrings(";", url.input_encodings()));
   s->BindInt(9, url.show_in_default_list() ? 1 : 0);
   if (url.suggestions_url())
-    s->BindString(10, WideToUTF8(url.suggestions_url()->url()));
+    s->BindString(10, url.suggestions_url()->url());
   else
     s->BindString(10, std::string());
   s->BindInt(11, url.prepopulate_id());
@@ -629,7 +629,7 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
       template_url->SetFavIconURL(GURL(tmp));
 
     tmp = s.ColumnString(4);
-    template_url->SetURL(UTF8ToWide(tmp), 0, 0);
+    template_url->SetURL(tmp, 0, 0);
 
     template_url->set_safe_for_autoreplace(s.ColumnInt(5) == 1);
 
@@ -648,7 +648,7 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
     template_url->set_show_in_default_list(s.ColumnInt(10) == 1);
 
     tmp = s.ColumnString(11);
-    template_url->SetSuggestionsURL(UTF8ToWide(tmp), 0, 0);
+    template_url->SetSuggestionsURL(tmp, 0, 0);
 
     template_url->set_prepopulate_id(s.ColumnInt(12));
 

@@ -912,9 +912,9 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     if (!homepage.is_valid() || homepage.spec() == GetNewTabUIURLString()) {
       newTabPageIsHomePage_.SetValue(true);
       if (!homepage.has_host())
-        homepage_.SetValue(std::wstring());
+        homepage_.SetValue(std::string());
     } else {
-      homepage_.SetValue(UTF8ToWide(homepage.spec()));
+      homepage_.SetValue(homepage.spec());
     }
   }
 }
@@ -951,7 +951,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     [self setNewTabPageIsHomePageIndex:useNewTabPage];
   }
   if (*prefName == prefs::kHomePage) {
-    NSString* value = base::SysWideToNSString(homepage_.GetValue());
+    NSString* value = base::SysUTF8ToNSString(homepage_.GetValue());
     [self setHomepageURL:value];
   }
 
@@ -1114,7 +1114,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
 
 // Returns the homepage URL.
 - (NSString*)homepageURL {
-  NSString* value = base::SysWideToNSString(homepage_.GetValue());
+  NSString* value = base::SysUTF8ToNSString(homepage_.GetValue());
   return value;
 }
 
@@ -1429,7 +1429,7 @@ const int kDisabledIndex = 1;
     [self recordUserAction:UserMetricsAction("Options_SetDownloadDirectory")];
     NSURL* path = [[panel URLs] lastObject];  // We only allow 1 item.
     [self willChangeValueForKey:@"defaultDownloadLocation"];
-    defaultDownloadLocation_.SetValue(base::SysNSStringToWide([path path]));
+    defaultDownloadLocation_.SetValue(base::SysNSStringToUTF8([path path]));
     [self didChangeValueForKey:@"defaultDownloadLocation"];
   }
 }
@@ -1440,7 +1440,7 @@ const int kDisabledIndex = 1;
   [panel setAllowsMultipleSelection:NO];
   [panel setCanChooseFiles:NO];
   [panel setCanChooseDirectories:YES];
-  NSString* path = base::SysWideToNSString(defaultDownloadLocation_.GetValue());
+  NSString* path = base::SysUTF8ToNSString(defaultDownloadLocation_.GetValue());
   [panel beginSheetForDirectory:path
                            file:nil
                           types:nil
@@ -1647,7 +1647,7 @@ const int kDisabledIndex = 1;
 
 - (NSURL*)defaultDownloadLocation {
   NSString* pathString =
-      base::SysWideToNSString(defaultDownloadLocation_.GetValue());
+      base::SysUTF8ToNSString(defaultDownloadLocation_.GetValue());
   return [NSURL fileURLWithPath:pathString];
 }
 

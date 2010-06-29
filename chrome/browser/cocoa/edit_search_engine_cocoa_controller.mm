@@ -120,7 +120,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   DCHECK([self validateFields]);
   std::wstring title = base::SysNSStringToWide([nameField_ stringValue]);
   std::wstring keyword = base::SysNSStringToWide([keywordField_ stringValue]);
-  std::wstring url = base::SysNSStringToWide([urlField_ stringValue]);
+  std::string url = base::SysNSStringToUTF8([urlField_ stringValue]);
   controller_->AcceptAddOrEdit(title, keyword, url);
   [self doClose];
 }
@@ -169,7 +169,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
       forImageView:keywordImage_
          textField:keywordField_];
 
-  std::wstring url = base::SysNSStringToWide([urlField_ stringValue]);
+  std::string url = base::SysNSStringToUTF8([urlField_ stringValue]);
   BOOL urlValid = controller_->IsURLValid(url);
   [self setIsValid:urlValid
            toolTip:IDS_SEARCH_ENGINES_INVALID_URL_TT

@@ -43,7 +43,7 @@ class Preferences : public NotificationObserver {
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
  private:
-  void SetTimeZone(const std::wstring& id);
+  void SetTimeZone(const std::string& id);
 
   // Writes boolean |value| to the input method (IBus) configuration daemon.
   // |section| (e.g. "general") and |name| (e.g. "use_global_engine") should
@@ -62,19 +62,19 @@ class Preferences : public NotificationObserver {
   // |section| and |name| should not be NULL.
   void SetLanguageConfigString(const char* section,
                                const char* name,
-                               const std::wstring& value);
+                               const std::string& value);
 
   // Writes a string list to the input method (IBus) configuration daemon.
   // |section| and |name| should not be NULL.
   void SetLanguageConfigStringList(const char* section,
                                    const char* name,
-                                   const std::vector<std::wstring>& values);
+                                   const std::vector<std::string>& values);
 
   // A variant of SetLanguageConfigStringList. You can pass comma-separated
   // values. Examples of |value|: "", "Control+space,Hiragana"
   void SetLanguageConfigStringListAsCSV(const char* section,
                                         const char* name,
-                                        const std::wstring& value);
+                                        const std::string& value);
 
   StringPrefMember timezone_;
   BooleanPrefMember tap_to_click_enabled_;

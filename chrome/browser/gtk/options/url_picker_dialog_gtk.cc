@@ -196,7 +196,7 @@ std::string UrlPickerDialogGtk::GetURLForPath(GtkTreePath* path) const {
     return std::string();
   }
   std::wstring languages =
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
   // trailing slash, and unescape most characters, but we need to not drop any
   // username/password, or unescape anything that changes the meaning.

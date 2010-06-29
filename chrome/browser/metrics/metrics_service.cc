@@ -455,14 +455,14 @@ void MetricsService::SetRecording(bool enabled) {
     if (client_id_.empty()) {
       PrefService* pref = g_browser_process->local_state();
       DCHECK(pref);
-      client_id_ = WideToUTF8(pref->GetString(prefs::kMetricsClientID));
+      client_id_ = pref->GetString(prefs::kMetricsClientID);
       if (client_id_.empty()) {
         client_id_ = GenerateClientID();
-        pref->SetString(prefs::kMetricsClientID, UTF8ToWide(client_id_));
+        pref->SetString(prefs::kMetricsClientID, client_id_);
 
         // Might as well make a note of how long this ID has existed
         pref->SetString(prefs::kMetricsClientIDTimestamp,
-                        Int64ToWString(Time::Now().ToTimeT()));
+                        Int64ToString(Time::Now().ToTimeT()));
       }
     }
     child_process_logging::SetClientId(client_id_);
@@ -667,13 +667,13 @@ void MetricsService::InitializeMetricsState() {
 
   if ((pref->GetInt64(prefs::kStabilityStatsBuildTime)
        != MetricsLog::GetBuildTime()) ||
-      (WideToUTF8(pref->GetString(prefs::kStabilityStatsVersion))
+      (pref->GetString(prefs::kStabilityStatsVersion)
        != MetricsLog::GetVersionString())) {
     // This is a new version, so we don't want to confuse the stats about the
     // old version with info that we upload.
     DiscardOldStabilityStats(pref);
     pref->SetString(prefs::kStabilityStatsVersion,
-                    UTF8ToWide(MetricsLog::GetVersionString()));
+                    MetricsLog::GetVersionString());
     pref->SetInt64(prefs::kStabilityStatsBuildTime,
                    MetricsLog::GetBuildTime());
   }

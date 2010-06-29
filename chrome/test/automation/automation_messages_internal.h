@@ -833,7 +833,7 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetStringPreference,
                              int /* browser handle */,
                              std::wstring /* pref name */,
-                             std::wstring /* pref value */,
+                             std::string /* pref value */,
                              bool)
 
   // This messages gets a boolean-value preference.

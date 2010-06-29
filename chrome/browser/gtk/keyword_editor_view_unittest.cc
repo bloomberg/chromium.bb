@@ -30,7 +30,7 @@ class KeywordEditorViewTest : public testing::Test {
     TemplateURL* template_url = new TemplateURL();
     template_url->set_short_name(UTF8ToWide(name));
     template_url->set_keyword(UTF8ToWide(keyword));
-    template_url->SetURL(L"http://example.com/{searchTerms}", 0, 0);
+    template_url->SetURL("http://example.com/{searchTerms}", 0, 0);
     profile_->GetTemplateURLModel()->Add(template_url);
     if (make_default)
       profile_->GetTemplateURLModel()->SetDefaultSearchProvider(template_url);
@@ -105,7 +105,7 @@ TEST_F(KeywordEditorViewTest, Add) {
   EXPECT_STREQ("!,_,A1 (Default),_,@,_", GetDisplayedEngines(editor).c_str());
   EXPECT_EQ(-1, GetSelectedRowNum(editor));
 
-  editor.OnEditedKeyword(NULL, L"B", L"b", L"example.com");
+  editor.OnEditedKeyword(NULL, L"B", L"b", "example.com");
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.edit_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.remove_button_));
@@ -113,7 +113,7 @@ TEST_F(KeywordEditorViewTest, Add) {
   EXPECT_STREQ("!,_,A1 (Default),_,@,_,B", GetDisplayedEngines(editor).c_str());
   EXPECT_EQ(6, GetSelectedRowNum(editor));
 
-  editor.OnEditedKeyword(NULL, L"C", L"c", L"example.com/{searchTerms}");
+  editor.OnEditedKeyword(NULL, L"C", L"c", "example.com/{searchTerms}");
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.edit_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.remove_button_));
@@ -122,7 +122,7 @@ TEST_F(KeywordEditorViewTest, Add) {
                GetDisplayedEngines(editor).c_str());
   EXPECT_EQ(7, GetSelectedRowNum(editor));
 
-  editor.OnEditedKeyword(NULL, L"D", L"d", L"example.com");
+  editor.OnEditedKeyword(NULL, L"D", L"d", "example.com");
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.edit_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(editor.remove_button_));
@@ -239,23 +239,23 @@ TEST_F(KeywordEditorViewTest, Edit) {
   EXPECT_STREQ("!,_,A,B (Default),_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(a, L"AA", L"a", L"example.com/{searchTerms}");
+  editor.OnEditedKeyword(a, L"AA", L"a", "example.com/{searchTerms}");
   EXPECT_STREQ("!,_,AA,B (Default),_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(b, L"BB", L"b", L"foo.example.com/{searchTerms}");
+  editor.OnEditedKeyword(b, L"BB", L"b", "foo.example.com/{searchTerms}");
   EXPECT_STREQ("!,_,AA,BB (Default),_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(b, L"BBB", L"b", L"example.com");
+  editor.OnEditedKeyword(b, L"BBB", L"b", "example.com");
   EXPECT_STREQ("!,_,AA,BBB,_,@,_,C,D",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(d, L"DD", L"d", L"example.com");
+  editor.OnEditedKeyword(d, L"DD", L"d", "example.com");
   EXPECT_STREQ("!,_,AA,BBB,_,@,_,C,DD",
                GetDisplayedEngines(editor).c_str());
 
-  editor.OnEditedKeyword(c, L"CC", L"cc", L"example.com");
+  editor.OnEditedKeyword(c, L"CC", L"cc", "example.com");
   EXPECT_STREQ("!,_,AA,BBB,_,@,_,CC,DD",
                GetDisplayedEngines(editor).c_str());
 }

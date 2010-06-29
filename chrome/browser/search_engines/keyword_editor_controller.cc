@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -29,7 +30,7 @@ void KeywordEditorController::RegisterPrefs(PrefService* prefs) {
 
 int KeywordEditorController::AddTemplateURL(const std::wstring& title,
                                             const std::wstring& keyword,
-                                            const std::wstring& url) {
+                                            const std::string& url) {
   DCHECK(!url.empty());
 
   UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeyword"),
@@ -54,7 +55,7 @@ int KeywordEditorController::AddTemplateURL(const std::wstring& title,
 void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
                                                 const std::wstring& title,
                                                 const std::wstring& keyword,
-                                                const std::wstring& url) {
+                                                const std::string& url) {
   const int index = table_model_->IndexOfTemplateURL(template_url);
   if (index == -1) {
     // Will happen if url was deleted out from under us while the user was

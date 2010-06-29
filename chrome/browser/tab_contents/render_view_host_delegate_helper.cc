@@ -183,19 +183,19 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   WebPreferences web_prefs;
 
   web_prefs.fixed_font_family =
-      prefs->GetString(prefs::kWebKitFixedFontFamily);
+      UTF8ToWide(prefs->GetString(prefs::kWebKitFixedFontFamily));
   web_prefs.serif_font_family =
-      prefs->GetString(prefs::kWebKitSerifFontFamily);
+      UTF8ToWide(prefs->GetString(prefs::kWebKitSerifFontFamily));
   web_prefs.sans_serif_font_family =
-      prefs->GetString(prefs::kWebKitSansSerifFontFamily);
+      UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily));
   if (prefs->GetBoolean(prefs::kWebKitStandardFontIsSerif))
     web_prefs.standard_font_family = web_prefs.serif_font_family;
   else
     web_prefs.standard_font_family = web_prefs.sans_serif_font_family;
   web_prefs.cursive_font_family =
-      prefs->GetString(prefs::kWebKitCursiveFontFamily);
+      UTF8ToWide(prefs->GetString(prefs::kWebKitCursiveFontFamily));
   web_prefs.fantasy_font_family =
-      prefs->GetString(prefs::kWebKitFantasyFontFamily);
+      UTF8ToWide(prefs->GetString(prefs::kWebKitFantasyFontFamily));
 
   web_prefs.default_font_size =
       prefs->GetInteger(prefs::kWebKitDefaultFontSize);
@@ -206,8 +206,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   web_prefs.minimum_logical_font_size =
       prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize);
 
-  web_prefs.default_encoding =
-      WideToASCII(prefs->GetString(prefs::kDefaultCharset));
+  web_prefs.default_encoding = prefs->GetString(prefs::kDefaultCharset);
 
   web_prefs.javascript_can_open_windows_automatically =
       prefs->GetBoolean(prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
@@ -290,8 +289,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
           web_prefs.default_encoding);
   if (web_prefs.default_encoding.empty()) {
     prefs->ClearPref(prefs::kDefaultCharset);
-    web_prefs.default_encoding = WideToASCII(
-        prefs->GetString(prefs::kDefaultCharset));
+    web_prefs.default_encoding = prefs->GetString(prefs::kDefaultCharset);
   }
   DCHECK(!web_prefs.default_encoding.empty());
 

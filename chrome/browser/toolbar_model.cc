@@ -36,8 +36,9 @@ std::wstring ToolbarModel::GetText() const {
 
   NavigationController* navigation_controller = GetNavigationController();
   if (navigation_controller) {
-    languages = navigation_controller->profile()->GetPrefs()->GetString(
-                    prefs::kAcceptLanguages);
+    languages = UTF8ToWide(
+        navigation_controller->profile()->GetPrefs()->GetString(
+        prefs::kAcceptLanguages));
     NavigationEntry* entry = navigation_controller->GetActiveEntry();
     if (!navigation_controller->tab_contents()->ShouldDisplayURL()) {
       // Explicitly hide the URL for this tab.

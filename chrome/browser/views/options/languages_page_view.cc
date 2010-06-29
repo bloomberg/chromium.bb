@@ -401,7 +401,7 @@ void LanguagesPageView::InitControlLayout() {
 void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kAcceptLanguages) {
     language_order_table_model_->SetAcceptLanguagesString(
-        WideToASCII(accept_languages_.GetValue()));
+        accept_languages_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kApplicationLocale) {
     int index = ui_language_model_->GetSelectedLanguageIndex(
@@ -431,10 +431,9 @@ void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
     // dictionary language in the user profile now correctly stores "fr"
     // instead of "fr-FR".
     if (index < 0) {
-      const std::string& lang_region = WideToASCII(
-          dictionary_language_.GetValue());
-      dictionary_language_.SetValue(ASCIIToWide(
-          SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region)));
+      const std::string& lang_region = dictionary_language_.GetValue();
+      dictionary_language_.SetValue(
+          SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
           prefs::kSpellCheckDictionary);
     }
@@ -547,15 +546,15 @@ void LanguagesPageView::OnMoveUpLanguage() {
 
 void LanguagesPageView::SaveChanges() {
   if (language_order_table_model_.get() && language_table_edited_) {
-    accept_languages_.SetValue(ASCIIToWide(
-        language_order_table_model_->GetLanguageList()));
+    accept_languages_.SetValue(
+        language_order_table_model_->GetLanguageList());
   }
 
   if (ui_language_index_selected_ != -1) {
     UserMetricsRecordAction(UserMetricsAction("Options_AppLanguage"),
                             g_browser_process->local_state());
-    app_locale_.SetValue(ASCIIToWide(ui_language_model_->
-        GetLocaleFromIndex(ui_language_index_selected_)));
+    app_locale_.SetValue(ui_language_model_->
+        GetLocaleFromIndex(ui_language_index_selected_));
 
     // Remove pref values for spellcheck dictionaries forcefully.
     PrefService* prefs = profile()->GetPrefs();
@@ -566,8 +565,8 @@ void LanguagesPageView::SaveChanges() {
   if (spellcheck_language_index_selected_ != -1) {
     UserMetricsRecordAction(UserMetricsAction("Options_DictionaryLanguage"),
                             profile()->GetPrefs());
-    dictionary_language_.SetValue(ASCIIToWide(dictionary_language_model_->
-        GetLocaleFromIndex(spellcheck_language_index_selected_)));
+    dictionary_language_.SetValue(dictionary_language_model_->
+        GetLocaleFromIndex(spellcheck_language_index_selected_));
   }
 
   if (enable_spellcheck_checkbox_clicked_)

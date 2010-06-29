@@ -77,7 +77,7 @@ class KeywordEditorControllerTest : public testing::Test,
 
 // Tests adding a TemplateURL.
 TEST_F(KeywordEditorControllerTest, Add) {
-  controller_->AddTemplateURL(L"a", L"b", L"http://c");
+  controller_->AddTemplateURL(L"a", L"b", "http://c");
 
   // Verify the observer was notified.
   VerifyChangeCount(0, 0, 1, 0);
@@ -95,29 +95,29 @@ TEST_F(KeywordEditorControllerTest, Add) {
   EXPECT_EQ(L"a", turl->short_name());
   EXPECT_EQ(L"b", turl->keyword());
   EXPECT_TRUE(turl->url() != NULL);
-  EXPECT_TRUE(turl->url()->url() == L"http://c");
+  EXPECT_TRUE(turl->url()->url() == "http://c");
 }
 
 // Tests modifying a TemplateURL.
 TEST_F(KeywordEditorControllerTest, Modify) {
-  controller_->AddTemplateURL(L"a", L"b", L"http://c");
+  controller_->AddTemplateURL(L"a", L"b", "http://c");
   ClearChangeCount();
 
   // Modify the entry.
   const TemplateURL* turl = model_->GetTemplateURLs()[0];
-  controller_->ModifyTemplateURL(turl, L"a1", L"b1", L"http://c1");
+  controller_->ModifyTemplateURL(turl, L"a1", L"b1", "http://c1");
 
   // Make sure it was updated appropriately.
   VerifyChangeCount(0, 1, 0, 0);
   EXPECT_EQ(L"a1", turl->short_name());
   EXPECT_EQ(L"b1", turl->keyword());
   EXPECT_TRUE(turl->url() != NULL);
-  EXPECT_TRUE(turl->url()->url() == L"http://c1");
+  EXPECT_TRUE(turl->url()->url() == "http://c1");
 }
 
 // Tests making a TemplateURL the default search provider.
 TEST_F(KeywordEditorControllerTest, MakeDefault) {
-  controller_->AddTemplateURL(L"a", L"b", L"http://c{searchTerms}");
+  controller_->AddTemplateURL(L"a", L"b", "http://c{searchTerms}");
   ClearChangeCount();
 
   const TemplateURL* turl = model_->GetTemplateURLs()[0];

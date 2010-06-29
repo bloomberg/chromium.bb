@@ -652,7 +652,7 @@ void ChromeURLRequestContextGetter::Observe(
     DCHECK(pref_name_in && prefs);
     if (*pref_name_in == prefs::kAcceptLanguages) {
       std::string accept_language =
-          WideToASCII(prefs->GetString(prefs::kAcceptLanguages));
+          prefs->GetString(prefs::kAcceptLanguages);
       ChromeThread::PostTask(
           ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(
@@ -661,7 +661,7 @@ void ChromeURLRequestContextGetter::Observe(
               accept_language));
     } else if (*pref_name_in == prefs::kDefaultCharset) {
       std::string default_charset =
-          WideToASCII(prefs->GetString(prefs::kDefaultCharset));
+          prefs->GetString(prefs::kDefaultCharset);
       ChromeThread::PostTask(
           ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(
@@ -944,9 +944,8 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
 
   // Set up Accept-Language and Accept-Charset header values
   accept_language_ = net::HttpUtil::GenerateAcceptLanguageHeader(
-      WideToASCII(prefs->GetString(prefs::kAcceptLanguages)));
-  std::string default_charset =
-      WideToASCII(prefs->GetString(prefs::kDefaultCharset));
+      prefs->GetString(prefs::kAcceptLanguages));
+  std::string default_charset = prefs->GetString(prefs::kDefaultCharset);
   accept_charset_ =
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
 
@@ -1053,23 +1052,22 @@ net::ProxyConfig* CreateProxyConfig(const PrefService* pref_service) {
   }
 
   if (pref_service->HasPrefPath(prefs::kProxyServer)) {
-    std::wstring proxy_server = pref_service->GetString(prefs::kProxyServer);
-    proxy_config->proxy_rules().ParseFromString(WideToASCII(proxy_server));
+    std::string proxy_server = pref_service->GetString(prefs::kProxyServer);
+    proxy_config->proxy_rules().ParseFromString(proxy_server);
   }
 
   if (pref_service->HasPrefPath(prefs::kProxyPacUrl)) {
-    std::wstring proxy_pac = pref_service->GetString(prefs::kProxyPacUrl);
-    proxy_config->set_pac_url(GURL(WideToASCII(proxy_pac)));
+    std::string proxy_pac = pref_service->GetString(prefs::kProxyPacUrl);
+    proxy_config->set_pac_url(GURL(proxy_pac));
   }
 
   proxy_config->set_auto_detect(pref_service->GetBoolean(
       prefs::kProxyAutoDetect));
 
   if (pref_service->HasPrefPath(prefs::kProxyBypassList)) {
-    std::wstring proxy_bypass =
+    std::string proxy_bypass =
         pref_service->GetString(prefs::kProxyBypassList);
-    proxy_config->proxy_rules().bypass_rules.ParseFromString(
-        WideToASCII(proxy_bypass));
+    proxy_config->proxy_rules().bypass_rules.ParseFromString(proxy_bypass);
   }
 
   return proxy_config;

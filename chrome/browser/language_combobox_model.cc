@@ -166,8 +166,7 @@ int LanguageComboboxModel::GetSelectedLanguageIndex(const std::wstring& prefs) {
     local_state = profile_->GetPrefs();
 
   DCHECK(local_state);
-  const std::string& current_locale =
-      WideToASCII(local_state->GetString(prefs.c_str()));
+  const std::string& current_locale = local_state->GetString(prefs.c_str());
 
   return GetIndexFromLocale(current_locale);
 }

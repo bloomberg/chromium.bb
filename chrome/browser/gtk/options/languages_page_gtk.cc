@@ -281,10 +281,8 @@ void LanguagesPageGtk::SetColumnValues(int row, GtkTreeIter* iter) {
 }
 
 void LanguagesPageGtk::OnAnyModelUpdate() {
-  if (!initializing_) {
-    accept_languages_.SetValue(ASCIIToWide(
-        language_order_table_model_->GetLanguageList()));
-  }
+  if (!initializing_)
+    accept_languages_.SetValue(language_order_table_model_->GetLanguageList());
   EnableControls();
 }
 
@@ -317,7 +315,7 @@ void LanguagesPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
   initializing_ = true;
   if (!pref_name || *pref_name == prefs::kAcceptLanguages) {
     language_order_table_model_->SetAcceptLanguagesString(
-        WideToASCII(accept_languages_.GetValue()));
+        accept_languages_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kSpellCheckDictionary) {
     int index = dictionary_language_model_->GetSelectedLanguageIndex(
@@ -325,10 +323,9 @@ void LanguagesPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
 
     // If not found, fall back from "language-region" to "language".
     if (index < 0) {
-      const std::string& lang_region = WideToASCII(
-          dictionary_language_.GetValue());
-      dictionary_language_.SetValue(ASCIIToWide(
-          SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region)));
+      const std::string& lang_region = dictionary_language_.GetValue();
+      dictionary_language_.SetValue(
+          SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
           prefs::kSpellCheckDictionary);
     }
@@ -449,5 +446,5 @@ void LanguagesPageGtk::OnDictionaryLanguageChanged(GtkWidget* widget) {
 
   UserMetricsRecordAction(UserMetricsAction("Options_DictionaryLanguage"),
                           profile()->GetPrefs());
-  dictionary_language_.SetValue(ASCIIToWide(language));
+  dictionary_language_.SetValue(language);
 }

@@ -277,7 +277,7 @@ void BookmarkEditorView::Init() {
   std::wstring url_text;
   if (details_.type == EditDetails::EXISTING_NODE) {
     std::wstring languages = profile_
-        ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
+        ? UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages))
         : std::wstring();
     // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
     // trailing slash, and unescape most characters, but we need to not drop any

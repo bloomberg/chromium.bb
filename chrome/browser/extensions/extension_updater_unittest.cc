@@ -625,8 +625,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // blacklist.
     EXPECT_TRUE(service.processed_blacklist());
 
-    EXPECT_EQ(version, WideToASCII(service.pref_service()->
-      GetString(prefs::kExtensionBlacklistUpdateVersion)));
+    EXPECT_EQ(version, service.pref_service()->
+      GetString(prefs::kExtensionBlacklistUpdateVersion));
 
     URLFetcher::set_factory(NULL);
   }

@@ -586,14 +586,19 @@ bool DownloadManager::Init(Profile* profile) {
 
   // We store any file extension that should be opened automatically at
   // download completion in this pref.
-  std::wstring extensions_to_open =
+  std::string extensions_to_open =
       prefs->GetString(prefs::kDownloadExtensionsToOpen);
-  std::vector<std::wstring> extensions;
-  SplitString(extensions_to_open, L':', &extensions);
+  std::vector<std::string> extensions;
+  SplitString(extensions_to_open, ':', &extensions);
+
   for (size_t i = 0; i < extensions.size(); ++i) {
-    if (!extensions[i].empty() && !IsExecutableFile(
-        FilePath::FromWStringHack(extensions[i])))
-      auto_open_.insert(FilePath::FromWStringHack(extensions[i]).value());
+#if defined(OS_POSIX)
+    FilePath path(extensions[i]);
+#elif defined(OS_WIN)
+    FilePath path(UTF8ToWide(extensions[i]));
+#endif
+    if (!extensions[i].empty() && !IsExecutableFile(path))
+      auto_open_.insert(path.value());
   }
 
   other_download_manager_observer_.reset(
@@ -1618,22 +1623,20 @@ bool DownloadManager::HasAutoOpenFileTypesRegistered() const {
 void DownloadManager::SaveAutoOpens() {
   PrefService* prefs = profile_->GetPrefs();
   if (prefs) {
-    FilePath::StringType extensions;
+    std::string extensions;
     for (AutoOpenSet::iterator it = auto_open_.begin();
          it != auto_open_.end(); ++it) {
-      extensions += *it + FILE_PATH_LITERAL(":");
+#if defined(OS_POSIX)
+      std::string this_extension = *it;
+#elif defined(OS_WIN)
+      std::string this_extension = base::SysWideToUTF8(*it);
+#endif
+      extensions += this_extension + ":";
     }
     if (!extensions.empty())
       extensions.erase(extensions.size() - 1);
 
-    std::wstring extensions_w;
-#if defined(OS_WIN)
-    extensions_w = extensions;
-#elif defined(OS_POSIX)
-    extensions_w = base::SysNativeMBToWide(extensions);
-#endif
-
-    prefs->SetString(prefs::kDownloadExtensionsToOpen, extensions_w);
+    prefs->SetString(prefs::kDownloadExtensionsToOpen, extensions);
   }
 }
 

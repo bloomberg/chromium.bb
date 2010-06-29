@@ -192,7 +192,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(model->loaded());
 
     TemplateURL* template_url = new TemplateURL();
-    template_url->SetURL(UTF8ToWide(kSearchURL), 0, 0);
+    template_url->SetURL(kSearchURL, 0, 0);
     template_url->set_keyword(UTF8ToWide(kSearchKeyword));
     template_url->set_short_name(UTF8ToWide(kSearchShortName));
 

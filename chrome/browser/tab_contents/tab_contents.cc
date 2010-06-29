@@ -1835,7 +1835,7 @@ void TabContents::GenerateKeywordIfNecessary(
   }
 
   const TemplateURL* current_url;
-  std::wstring url = UTF8ToWide(params.searchable_form_url.spec());
+  GURL url = params.searchable_form_url;
   if (!url_model->CanReplaceKeyword(keyword, url, &current_url))
     return;
 
@@ -1850,7 +1850,7 @@ void TabContents::GenerateKeywordIfNecessary(
   TemplateURL* new_url = new TemplateURL();
   new_url->set_keyword(keyword);
   new_url->set_short_name(keyword);
-  new_url->SetURL(url, 0, 0);
+  new_url->SetURL(url.spec(), 0, 0);
   new_url->add_input_encoding(params.searchable_form_encoding);
   DCHECK(controller_.GetLastCommittedEntry());
   const GURL& favicon_url =
@@ -2818,7 +2818,7 @@ void TabContents::LoadStateChanged(const GURL& url,
   upload_position_ = upload_position;
   upload_size_ = upload_size;
   std::wstring languages =
-      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   std::string host = url.host();
   load_state_host_ =
       net::IDNToUnicode(host.c_str(), host.size(), languages, NULL);
@@ -3050,7 +3050,7 @@ std::wstring TabContents::GetMessageBoxTitle(const GURL& frame_url,
   // TODO(brettw) it should be easier than this to do the correct language
   // handling without getting the accept language from the profile.
   std::wstring base_address = gfx::ElideUrl(clean_url, gfx::Font(), 0,
-      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages)));
   // Force URL to have LTR directionality.
   base::i18n::GetDisplayStringInLTRDirectionality(&base_address);
 

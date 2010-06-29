@@ -47,7 +47,7 @@ void ProfileWriter::AddHomepage(const GURL& home_page) {
   // NOTE: We set the kHomePage value, but keep the NewTab page as the homepage.
   const PrefService::Preference* pref = prefs->FindPreference(prefs::kHomePage);
   if (pref && !pref->IsManaged()) {
-    prefs->SetString(prefs::kHomePage, ASCIIToWide(home_page.spec()));
+    prefs->SetString(prefs::kHomePage, home_page.spec());
     prefs->ScheduleSavePersistentPrefs();
   }
 }
@@ -166,13 +166,13 @@ static std::string BuildHostPathKey(const TemplateURL* t_url,
                                     bool try_url_if_invalid) {
   if (t_url->url()) {
     if (try_url_if_invalid && !t_url->url()->IsValid())
-      return HostPathKeyForURL(GURL(WideToUTF8(t_url->url()->url())));
+      return HostPathKeyForURL(GURL(t_url->url()->url()));
 
     if (t_url->url()->SupportsReplacement()) {
-      return HostPathKeyForURL(
-          GURL(WideToUTF8(t_url->url()->ReplaceSearchTerms(
-              *t_url, L"random string",
-              TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()))));
+      return HostPathKeyForURL(GURL(
+          t_url->url()->ReplaceSearchTerms(
+          *t_url, L"random string",
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
     }
   }
   return std::string();

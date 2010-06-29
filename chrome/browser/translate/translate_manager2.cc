@@ -424,7 +424,7 @@ void TranslateManager2::DoTranslatePage(TabContents* tab,
   TranslateInfoBarDelegate2* infobar = GetTranslateInfoBarDelegate2(tab);
   if (infobar) {
     // We don't show the translating infobar if no translate infobar is already
-    // showing (that is the case when the translation was triggered by the 
+    // showing (that is the case when the translation was triggered by the
     // "always translate" for example).
     infobar = TranslateInfoBarDelegate2::CreateInstance(
         TranslateInfoBarDelegate2::TRANSLATING, TranslateErrors::NONE,
@@ -474,10 +474,10 @@ bool TranslateManager2::IsAcceptLanguage(TabContents* tab,
 
 void TranslateManager2::InitAcceptLanguages(PrefService* prefs) {
   // We have been asked for this profile, build the languages.
-  std::wstring accept_langs_str = prefs->GetString(prefs::kAcceptLanguages);
+  std::string accept_langs_str = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<std::string> accept_langs_list;
   LanguageSet accept_langs_set;
-  SplitString(WideToASCII(accept_langs_str), ',', &accept_langs_list);
+  SplitString(accept_langs_str, ',', &accept_langs_list);
   std::vector<std::string>::const_iterator iter;
   std::string ui_lang =
       GetLanguageCode(g_browser_process->GetApplicationLocale());

@@ -2916,7 +2916,7 @@ void AutomationProvider::SetIntPreference(int handle,
 
 void AutomationProvider::SetStringPreference(int handle,
                                              const std::wstring& name,
-                                             const std::wstring& value,
+                                             const std::string& value,
                                              bool* success) {
   *success = false;
   if (browser_tracker_->ContainsHandle(handle)) {

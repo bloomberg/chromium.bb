@@ -207,8 +207,7 @@ void WebResourceService::Init() {
   std::string locale = g_browser_process->GetApplicationLocale();
 
   if (prefs_->HasPrefPath(prefs::kNTPTipsServer)) {
-     web_resource_server_ =
-         WideToASCII(prefs_->GetString(prefs::kNTPTipsServer));
+     web_resource_server_ = prefs_->GetString(prefs::kNTPTipsServer);
      // If we are in the correct locale, initialization is done.
      if (EndsWith(web_resource_server_, locale, false))
        return;
@@ -218,7 +217,7 @@ void WebResourceService::Init() {
   // locale, reset the server and force an immediate update of tips.
   web_resource_server_ = kDefaultResourceServer;
   web_resource_server_.append(locale);
-  prefs_->SetString(prefs::kNTPTipsCacheUpdate, L"");
+  prefs_->SetString(prefs::kNTPTipsCacheUpdate, "");
 }
 
 void WebResourceService::EndFetch() {
@@ -270,12 +269,12 @@ void WebResourceService::StartAfterDelay() {
   // Check whether we have ever put a value in the web resource cache;
   // if so, pull it out and see if it's time to update again.
   if (prefs_->HasPrefPath(prefs::kNTPTipsCacheUpdate)) {
-    std::wstring last_update_pref =
+    std::string last_update_pref =
       prefs_->GetString(prefs::kNTPTipsCacheUpdate);
     if (!last_update_pref.empty()) {
       int ms_until_update = kCacheUpdateDelay -
           static_cast<int>((base::Time::Now() - base::Time::FromDoubleT(
-          StringToDouble(WideToASCII(last_update_pref)))).InMilliseconds());
+          StringToDouble(last_update_pref))).InMilliseconds());
 
       delay = ms_until_update > kCacheUpdateDelay ?
               kCacheUpdateDelay : (ms_until_update < kStartResourceFetchDelay ?
@@ -293,6 +292,6 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
 
   // Update resource server and cache update time in preferences.
   prefs_->SetString(prefs::kNTPTipsCacheUpdate,
-      DoubleToWString(base::Time::Now().ToDoubleT()));
-  prefs_->SetString(prefs::kNTPTipsServer, ASCIIToWide(web_resource_server_));
+      DoubleToString(base::Time::Now().ToDoubleT()));
+  prefs_->SetString(prefs::kNTPTipsServer, web_resource_server_);
 }

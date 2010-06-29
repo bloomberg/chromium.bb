@@ -53,7 +53,7 @@ class TemplateURLTableModel : public TableModel,
 
   // Update the entry at the specified index.
   void ModifyTemplateURL(int index, const std::wstring& title,
-                         const std::wstring& keyword, const std::wstring& url);
+                         const std::wstring& keyword, const std::string& url);
 
   // Reloads the icon at the specified index.
   void ReloadIcon(int index);

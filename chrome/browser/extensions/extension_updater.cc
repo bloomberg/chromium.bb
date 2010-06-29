@@ -577,7 +577,7 @@ void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
 
   // Update the pref value for blacklist version
   prefs_->SetString(kExtensionBlacklistUpdateVersion,
-    ASCIIToWide(current_extension_fetch_.version));
+                    current_extension_fetch_.version);
   prefs_->ScheduleSavePersistentPrefs();
 }
 
@@ -693,11 +693,10 @@ void ExtensionUpdater::CheckNow() {
   if (blacklist_checks_enabled_ && service_->HasInstalledExtensions()) {
     ManifestFetchData* blacklist_fetch =
         new ManifestFetchData(GURL(kBlacklistUpdateUrl));
-    std::wstring version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
+    std::string version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
     int ping_days =
         CalculatePingDays(service_->extension_prefs()->BlacklistLastPingDay());
-    blacklist_fetch->AddExtension(kBlacklistAppID, WideToASCII(version),
-                                  ping_days);
+    blacklist_fetch->AddExtension(kBlacklistAppID, version, ping_days);
     StartUpdateCheck(blacklist_fetch);
   }
 
@@ -717,8 +716,7 @@ void ExtensionUpdater::CheckNow() {
 bool ExtensionUpdater::GetExistingVersion(const std::string& id,
                                           std::string* version) {
   if (id == kBlacklistAppID) {
-    *version =
-      WideToASCII(prefs_->GetString(kExtensionBlacklistUpdateVersion));
+    *version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
     return true;
   }
   Extension* extension = service_->GetExtensionById(id, false);

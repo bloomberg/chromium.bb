@@ -117,7 +117,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
       // Previous keyword was generated from URL where OSDD was placed and
       // it gives wrong result when OSDD is located on third party site that
       // has nothing in common with search engine in OSDD.
-      GURL keyword_url(WideToUTF16Hack(template_url->url()->url()));
+      GURL keyword_url(template_url->url()->url());
       std::wstring new_keyword = TemplateURLModel::GenerateKeyword(
           keyword_url, false);
       if (!new_keyword.empty())
@@ -127,7 +127,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     const TemplateURL* existing_url;
     if (keyword_.empty() ||
         !model || !model->loaded() ||
-        !model->CanReplaceKeyword(keyword_, template_url->url()->url(),
+        !model->CanReplaceKeyword(keyword_, GURL(template_url->url()->url()),
                                   &existing_url)) {
       if (autodetected_ || !model || !model->loaded()) {
         fetcher_->RequestCompleted(this);

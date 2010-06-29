@@ -24,8 +24,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Sanity) {
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Race) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  GetPrefs(0)->SetString(prefs::kHomePage, L"http://www.google.com/1");
-  GetPrefs(1)->SetString(prefs::kHomePage, L"http://www.google.com/2");
+  GetPrefs(0)->SetString(prefs::kHomePage, "http://www.google.com/1");
+  GetPrefs(1)->SetString(prefs::kHomePage, "http://www.google.com/2");
   EXPECT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
 
   EXPECT_EQ(GetPrefs(0)->GetString(prefs::kHomePage),

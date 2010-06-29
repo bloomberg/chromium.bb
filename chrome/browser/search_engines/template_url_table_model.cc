@@ -82,7 +82,7 @@ class ModelEntry {
     if (!fav_icon_url.is_valid()) {
       // The favicon url isn't always set. Guess at one here.
       if (template_url_.url() && template_url_.url()->IsValid()) {
-        GURL url = GURL(WideToUTF16Hack(template_url_.url()->url()));
+        GURL url = GURL(template_url_.url()->url());
         if (url.is_valid())
           fav_icon_url = TemplateURL::GenerateFaviconURL(url);
       }
@@ -271,7 +271,7 @@ void TemplateURLTableModel::Add(int index, TemplateURL* template_url) {
 void TemplateURLTableModel::ModifyTemplateURL(int index,
                                               const std::wstring& title,
                                               const std::wstring& keyword,
-                                              const std::wstring& url) {
+                                              const std::string& url) {
   DCHECK(index >= 0 && index <= RowCount());
   const TemplateURL* template_url = &GetTemplateURL(index);
   template_url_model_->RemoveObserver(this);

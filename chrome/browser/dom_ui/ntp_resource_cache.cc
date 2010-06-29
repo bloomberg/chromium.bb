@@ -381,8 +381,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   std::vector<std::string> subst;
 
   // Cache-buster for background.
-  subst.push_back(WideToUTF8(
-      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
+  subst.push_back(
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID));  // $1
 
   // Colors.
   subst.push_back(SkColorToRGBAString(color_background));  // $2
@@ -451,8 +451,8 @@ void NTPResourceCache::CreateNewTabCSS() {
   std::vector<std::string> subst2;
 
   // Cache-buster for background.
-  subst.push_back(WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
+  subst.push_back(
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID));  // $1
 
   // Colors.
   subst.push_back(SkColorToRGBAString(color_background));  // $2

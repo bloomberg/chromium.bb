@@ -56,7 +56,7 @@ class LanguagesPageGtkTest : public testing::Test {
 };
 
 TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
-  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"en,ja,es");
+  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, "en,ja,es");
   LanguagesPageGtk page(profile_.get());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
@@ -74,8 +74,8 @@ TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
 
   gtk_button_clicked(GTK_BUTTON(page.remove_button_));
   EXPECT_STREQ("English,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("en,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("en,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
@@ -92,8 +92,8 @@ TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
 
   gtk_button_clicked(GTK_BUTTON(page.remove_button_));
   EXPECT_STREQ("English", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("en", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("en",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
@@ -110,8 +110,8 @@ TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
 
   gtk_button_clicked(GTK_BUTTON(page.remove_button_));
   EXPECT_STREQ("", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
@@ -120,7 +120,7 @@ TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
 }
 
 TEST_F(LanguagesPageGtkTest, RemoveMultipleAcceptLang) {
-  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"en,ja,es,fr,it");
+  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, "en,ja,es,fr,it");
   LanguagesPageGtk page(profile_.get());
   GtkTreeIter iter;
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(page.language_order_store_),
@@ -136,8 +136,8 @@ TEST_F(LanguagesPageGtkTest, RemoveMultipleAcceptLang) {
 
   gtk_button_clicked(GTK_BUTTON(page.remove_button_));
   EXPECT_STREQ("English,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("en,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("en,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(1, page.FirstSelectedRowNum());
 
@@ -151,14 +151,14 @@ TEST_F(LanguagesPageGtkTest, RemoveMultipleAcceptLang) {
 
   gtk_button_clicked(GTK_BUTTON(page.remove_button_));
   EXPECT_STREQ("", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(-1, page.FirstSelectedRowNum());
 }
 
 TEST_F(LanguagesPageGtkTest, MoveAcceptLang) {
-  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"en,ja,es");
+  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, "en,ja,es");
   LanguagesPageGtk page(profile_.get());
   EXPECT_STREQ("English,Japanese,Spanish", GetDisplayedLangs(page).c_str());
   GtkTreeIter iter;
@@ -173,33 +173,33 @@ TEST_F(LanguagesPageGtkTest, MoveAcceptLang) {
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
   EXPECT_STREQ("Japanese,English,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("ja,en,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("ja,en,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
 
   gtk_button_clicked(GTK_BUTTON(page.move_down_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
   EXPECT_STREQ("Japanese,Spanish,English", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("ja,es,en", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("ja,es,en",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
 
   gtk_button_clicked(GTK_BUTTON(page.move_up_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
   EXPECT_STREQ("Japanese,English,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("ja,en,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("ja,en,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
 
   gtk_button_clicked(GTK_BUTTON(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
   EXPECT_STREQ("English,Japanese,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("en,ja,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("en,ja,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
 }
 
 TEST_F(LanguagesPageGtkTest, AddAcceptLang) {
-  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"");
+  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, "");
   LanguagesPageGtk page(profile_.get());
   EXPECT_STREQ("", GetDisplayedLangs(page).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
@@ -209,8 +209,8 @@ TEST_F(LanguagesPageGtkTest, AddAcceptLang) {
 
   page.OnAddLanguage("en");
   EXPECT_STREQ("English", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("en", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("en",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
@@ -219,8 +219,8 @@ TEST_F(LanguagesPageGtkTest, AddAcceptLang) {
 
   page.OnAddLanguage("es");
   EXPECT_STREQ("English,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("en,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("en,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
@@ -231,8 +231,8 @@ TEST_F(LanguagesPageGtkTest, AddAcceptLang) {
   gtk_tree_selection_unselect_all(page.language_order_selection_);
   page.OnAddLanguage("en");
   EXPECT_STREQ("English,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("en,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("en,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
@@ -265,20 +265,20 @@ TEST_F(LanguagesPageGtkTest, EnableSpellChecking) {
 // TODO(mattm): add EnableAutoSpellChecking test
 
 TEST_F(LanguagesPageGtkTest, DictionaryLanguage) {
-  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"it");
-  profile_->GetPrefs()->SetString(prefs::kSpellCheckDictionary, L"es");
+  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, "it");
+  profile_->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "es");
   LanguagesPageGtk page(profile_.get());
   EXPECT_STREQ("Italian", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("it", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("it",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_STREQ("Spanish", GetDisplayedSpellCheckerLang(page).c_str());
   int spanish_index = gtk_combo_box_get_active(
         GTK_COMBO_BOX(page.dictionary_language_combobox_));
 
-  profile_->GetPrefs()->SetString(prefs::kSpellCheckDictionary, L"fr");
+  profile_->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "fr");
   EXPECT_STREQ("Italian", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("it", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("it",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_STREQ("French", GetDisplayedSpellCheckerLang(page).c_str());
   int french_index = gtk_combo_box_get_active(
         GTK_COMBO_BOX(page.dictionary_language_combobox_));
@@ -286,22 +286,22 @@ TEST_F(LanguagesPageGtkTest, DictionaryLanguage) {
   gtk_combo_box_set_active(
         GTK_COMBO_BOX(page.dictionary_language_combobox_), spanish_index);
   EXPECT_STREQ("Italian,Spanish", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("it,es", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("it,es",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_STREQ("Spanish", GetDisplayedSpellCheckerLang(page).c_str());
 
   gtk_combo_box_set_active(
         GTK_COMBO_BOX(page.dictionary_language_combobox_), french_index);
   EXPECT_STREQ("Italian,French", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("it,fr", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("it,fr",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_STREQ("French", GetDisplayedSpellCheckerLang(page).c_str());
 
   gtk_combo_box_set_active(
         GTK_COMBO_BOX(page.dictionary_language_combobox_),
         page.dictionary_language_model_->GetIndexFromLocale("it"));
   EXPECT_STREQ("Italian", GetDisplayedLangs(page).c_str());
-  EXPECT_STREQ("it", WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("it",
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages).c_str());
   EXPECT_STREQ("Italian", GetDisplayedSpellCheckerLang(page).c_str());
 }

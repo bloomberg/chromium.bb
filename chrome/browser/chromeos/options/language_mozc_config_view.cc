@@ -85,8 +85,8 @@ void LanguageMozcConfigView::ItemChanged(
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     if (current.combobox == sender) {
-      const std::wstring config_value =
-          UTF8ToWide(current.combobox_model->GetConfigValueAt(new_index));
+      const std::string config_value =
+          current.combobox_model->GetConfigValueAt(new_index);
       LOG(INFO) << "Changing Mozc pref to " << config_value;
       // Update the Chrome pref.
       current.multiple_choice_pref.SetValue(config_value);
@@ -220,9 +220,9 @@ void LanguageMozcConfigView::NotifyPrefChanged() {
   }
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
-    const std::wstring value = current.multiple_choice_pref.GetValue();
+    const std::string value = current.multiple_choice_pref.GetValue();
     for (int i = 0; i < current.combobox_model->num_items(); ++i) {
-      if (UTF8ToWide(current.combobox_model->GetConfigValueAt(i)) == value) {
+      if (current.combobox_model->GetConfigValueAt(i) == value) {
         current.combobox->SetSelectedItem(i);
         break;
       }
@@ -242,7 +242,7 @@ void LanguageMozcConfigView::ResetToDefaults() {
   }
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
     prefs_and_comboboxes_[i].multiple_choice_pref.SetValue(
-        UTF8ToWide(kMozcMultipleChoicePrefs[i].default_pref_value));
+        kMozcMultipleChoicePrefs[i].default_pref_value);
   }
   for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
     prefs_and_sliders_[i].integer_pref.SetValue(

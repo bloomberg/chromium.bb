@@ -42,7 +42,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
     // Convert the name/size preference values to NSFont objects.
     serifName_.Init(prefs::kWebKitSerifFontFamily, profile->GetPrefs(), NULL);
     serifSize_.Init(prefs::kWebKitDefaultFontSize, profile->GetPrefs(), NULL);
-    NSString* serif = base::SysWideToNSString(serifName_.GetValue());
+    NSString* serif = base::SysUTF8ToNSString(serifName_.GetValue());
     serifFont_.reset(
         [[NSFont fontWithName:serif size:serifSize_.GetValue()] retain]);
 
@@ -50,7 +50,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
                         NULL);
     sansSerifSize_.Init(prefs::kWebKitDefaultFontSize, profile->GetPrefs(),
                         NULL);
-    NSString* sansSerif = base::SysWideToNSString(sansSerifName_.GetValue());
+    NSString* sansSerif = base::SysUTF8ToNSString(sansSerifName_.GetValue());
     sansSerifFont_.reset(
         [[NSFont fontWithName:sansSerif
                          size:sansSerifSize_.GetValue()] retain]);
@@ -59,7 +59,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
                          NULL);
     fixedWidthSize_.Init(prefs::kWebKitDefaultFixedFontSize,
                          profile->GetPrefs(), NULL);
-    NSString* fixedWidth = base::SysWideToNSString(fixedWidthName_.GetValue());
+    NSString* fixedWidth = base::SysUTF8ToNSString(fixedWidthName_.GetValue());
     fixedWidthFont_.reset(
         [[NSFont fontWithName:fixedWidth
                          size:fixedWidthSize_.GetValue()] retain]);
@@ -93,7 +93,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
     // Find and set the default encoding.
     defaultEncoding_.Init(prefs::kDefaultCharset, profile->GetPrefs(), NULL);
     NSString* defaultEncoding =
-        base::SysWideToNSString(defaultEncoding_.GetValue());
+        base::SysUTF8ToNSString(defaultEncoding_.GetValue());
     NSUInteger index = 0;
     for (NSDictionary* entry in encodings_.get()) {
       NSString* encoding = [entry objectForKey:kCharacterInfoEncoding];
@@ -201,23 +201,23 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
 
 - (IBAction)save:(id)sender {
   if (changedSerif_) {
-    serifName_.SetValue(base::SysNSStringToWide([serifFont_ fontName]));
+    serifName_.SetValue(base::SysNSStringToUTF8([serifFont_ fontName]));
     serifSize_.SetValue([serifFont_ pointSize]);
   }
   if (changedSansSerif_) {
     sansSerifName_.SetValue(
-        base::SysNSStringToWide([sansSerifFont_ fontName]));
+        base::SysNSStringToUTF8([sansSerifFont_ fontName]));
     sansSerifSize_.SetValue([sansSerifFont_ pointSize]);
   }
   if (changedFixedWidth_) {
     fixedWidthName_.SetValue(
-        base::SysNSStringToWide([fixedWidthFont_ fontName]));
+        base::SysNSStringToUTF8([fixedWidthFont_ fontName]));
     fixedWidthSize_.SetValue([fixedWidthFont_ pointSize]);
   }
   if (changedEncoding_) {
     NSDictionary* object = [encodings_ objectAtIndex:defaultEncodingIndex_];
     NSString* newEncoding = [object objectForKey:kCharacterInfoEncoding];
-    std::wstring encoding = base::SysNSStringToWide(newEncoding);
+    std::string encoding = base::SysNSStringToUTF8(newEncoding);
     defaultEncoding_.SetValue(encoding);
   }
   [self closeSheet:sender];

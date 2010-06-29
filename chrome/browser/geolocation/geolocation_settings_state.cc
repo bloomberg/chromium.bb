@@ -75,7 +75,7 @@ std::string GeolocationSettingsState::GURLToFormattedHost(
     const GURL& url) const {
   std::wstring display_host_wide;
   net::AppendFormattedHost(
-      url, profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      url, UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       &display_host_wide, NULL, NULL);
   return WideToUTF8(display_host_wide);
 }

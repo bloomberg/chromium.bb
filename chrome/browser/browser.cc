@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1368,7 +1368,7 @@ void Browser::WriteCurrentURLToClipboard() {
 
   chrome_browser_net::WriteURLToClipboard(
       contents->GetURL(),
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       g_browser_process->clipboard());
 }
 
@@ -1506,13 +1506,12 @@ void Browser::OverrideEncoding(int encoding_id) {
      contents->SetOverrideEncoding(selected_encoding);
   // Update the list of recently selected encodings.
   std::string new_selected_encoding_list;
-  if (CharacterEncoding::UpdateRecentlySelectdEncoding(
-        WideToASCII(profile_->GetPrefs()->GetString(
-            prefs::kRecentlySelectedEncoding)),
+  if (CharacterEncoding::UpdateRecentlySelectedEncoding(
+        profile_->GetPrefs()->GetString(prefs::kRecentlySelectedEncoding),
         encoding_id,
         &new_selected_encoding_list)) {
     profile_->GetPrefs()->SetString(prefs::kRecentlySelectedEncoding,
-                                    ASCIIToWide(new_selected_encoding_list));
+                                    new_selected_encoding_list);
   }
 }
 
@@ -1842,9 +1841,10 @@ void Browser::SetNewHomePagePrefs(PrefService* prefs) {
       prefs->FindPreference(prefs::kHomePage);
   if (home_page_pref &&
       !home_page_pref->IsManaged() &&
-      !prefs->HasPrefPath(prefs::kHomePage))
+      !prefs->HasPrefPath(prefs::kHomePage)) {
     prefs->SetString(prefs::kHomePage,
-        ASCIIToWide(GoogleURLTracker::kDefaultGoogleHomepage));
+        GoogleURLTracker::kDefaultGoogleHomepage);
+  }
   const PrefService::Preference* home_page_is_new_tab_page_pref =
       prefs->FindPreference(prefs::kHomePageIsNewTabPage);
   if (home_page_is_new_tab_page_pref &&
@@ -2648,7 +2648,8 @@ void Browser::UpdateTargetURL(TabContents* source, const GURL& url) {
 
   if (source == GetSelectedTabContents()) {
     PrefService* prefs = profile_->GetPrefs();
-    GetStatusBubble()->SetURL(url, prefs->GetString(prefs::kAcceptLanguages));
+    GetStatusBubble()->SetURL(
+        url, UTF8ToWide(prefs->GetString(prefs::kAcceptLanguages)));
   }
 }
 
@@ -3866,7 +3867,7 @@ GURL Browser::GetHomePage() const {
   if (profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
     return GURL(chrome::kChromeUINewTabURL);
   GURL home_page(URLFixerUpper::FixupURL(
-      WideToUTF8(profile_->GetPrefs()->GetString(prefs::kHomePage)),
+      profile_->GetPrefs()->GetString(prefs::kHomePage),
       std::string()));
   if (!home_page.is_valid())
     return GURL(chrome::kChromeUINewTabURL);

@@ -1,21 +1,20 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_i18n_api.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-namespace {
-  // Errors.
-  const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
-}  // namespace
+// Errors.
+static const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
 
 bool GetAcceptLanguagesFunction::RunImpl() {
   std::wstring acceptLanguages =
-      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   // Currently, there are 2 ways to set browser's accept-languages: through UI
   // or directly modify the preference file. The accept-languages set through
   // UI is guranteed to be valid, and the accept-languages string returned from

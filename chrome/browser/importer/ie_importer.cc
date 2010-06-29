@@ -346,15 +346,15 @@ void IEImporter::ImportSearchEngines() {
   RegKey key(HKEY_CURRENT_USER, kSearchScopePath, KEY_READ);
   std::wstring default_search_engine_name;
   const TemplateURL* default_search_engine = NULL;
-  std::map<std::wstring, TemplateURL*> search_engines_map;
+  std::map<std::string, TemplateURL*> search_engines_map;
   key.ReadValue(L"DefaultScope", &default_search_engine_name);
   RegistryKeyIterator key_iterator(HKEY_CURRENT_USER, kSearchScopePath);
   while (key_iterator.Valid()) {
     std::wstring sub_key_name = kSearchScopePath;
     sub_key_name.append(L"\\").append(key_iterator.Name());
     RegKey sub_key(HKEY_CURRENT_USER, sub_key_name.c_str(), KEY_READ);
-    std::wstring url;
-    if (!sub_key.ReadValue(L"URL", &url) || url.empty()) {
+    std::wstring wide_url;
+    if (!sub_key.ReadValue(L"URL", &wide_url) || wide_url.empty()) {
       LOG(INFO) << "No URL for IE search engine at " << key_iterator.Name();
       ++key_iterator;
       continue;
@@ -372,7 +372,8 @@ void IEImporter::ImportSearchEngines() {
       }
     }
 
-    std::map<std::wstring, TemplateURL*>::iterator t_iter =
+    std::string url(WideToUTF8(wide_url));
+    std::map<std::string, TemplateURL*>::iterator t_iter =
         search_engines_map.find(url);
     TemplateURL* template_url =
         (t_iter != search_engines_map.end()) ? t_iter->second : NULL;
@@ -395,7 +396,7 @@ void IEImporter::ImportSearchEngines() {
   }
 
   // ProfileWriter::AddKeywords() requires a vector and we have a map.
-  std::map<std::wstring, TemplateURL*>::iterator t_iter;
+  std::map<std::string, TemplateURL*>::iterator t_iter;
   std::vector<TemplateURL*> search_engines;
   int default_search_engine_index = -1;
   for (t_iter = search_engines_map.begin(); t_iter != search_engines_map.end();

@@ -25,8 +25,9 @@ using testing::Property;
 
 class TestPrefObserver : public NotificationObserver {
  public:
-  TestPrefObserver(const PrefService* prefs, const std::wstring& pref_name,
-      const std::wstring& new_pref_value)
+  TestPrefObserver(const PrefService* prefs,
+                   const std::wstring& pref_name,
+                   const std::string& new_pref_value)
       : observer_fired_(false),
         prefs_(prefs),
         pref_name_(pref_name),
@@ -48,7 +49,7 @@ class TestPrefObserver : public NotificationObserver {
 
   bool observer_fired() { return observer_fired_; }
 
-  void Reset(const std::wstring& new_pref_value) {
+  void Reset(const std::string& new_pref_value) {
     observer_fired_ = false;
     new_pref_value_ = new_pref_value;
   }
@@ -57,7 +58,7 @@ class TestPrefObserver : public NotificationObserver {
   bool observer_fired_;
   const PrefService* prefs_;
   const std::wstring pref_name_;
-  std::wstring new_pref_value_;
+  std::string new_pref_value_;
 };
 
 // TODO(port): port this test to POSIX.
@@ -74,14 +75,14 @@ TEST(PrefServiceTest, LocalizedPrefs) {
   // The locale default should take preference over the user default.
   EXPECT_FALSE(prefs.GetBoolean(kBoolean));
   EXPECT_EQ(1, prefs.GetInteger(kInteger));
-  EXPECT_EQ(L"hello", prefs.GetString(kString));
+  EXPECT_EQ("hello", prefs.GetString(kString));
 
   prefs.SetBoolean(kBoolean, true);
   EXPECT_TRUE(prefs.GetBoolean(kBoolean));
   prefs.SetInteger(kInteger, 5);
   EXPECT_EQ(5, prefs.GetInteger(kInteger));
-  prefs.SetString(kString, L"foo");
-  EXPECT_EQ(L"foo", prefs.GetString(kString));
+  prefs.SetString(kString, "foo");
+  EXPECT_EQ("foo", prefs.GetString(kString));
 }
 #endif
 
@@ -91,7 +92,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   const wchar_t pref_name[] = L"homepage";
   prefs.RegisterStringPref(pref_name, "");
 
-  const std::wstring new_pref_value(L"http://www.google.com/");
+  const std::string new_pref_value("http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
   prefs.AddPrefObserver(pref_name, &obs);
   // This should fire the checks in TestPrefObserver::Observe.
@@ -107,12 +108,12 @@ TEST(PrefServiceTest, NoObserverFire) {
   EXPECT_FALSE(obs.observer_fired());
 
   // Clearing the pref should cause the pref to fire.
-  obs.Reset(L"");
+  obs.Reset("");
   prefs.ClearPref(pref_name);
   EXPECT_TRUE(obs.observer_fired());
 
   // Clearing the pref again should not cause the pref to fire.
-  obs.Reset(L"");
+  obs.Reset("");
   prefs.ClearPref(pref_name);
   EXPECT_FALSE(obs.observer_fired());
 
@@ -134,7 +135,7 @@ TEST(PrefServiceTest, HasPrefPath) {
   EXPECT_FALSE(prefs.HasPrefPath(path));
 
   // Set a value and make sure we have a path.
-  prefs.SetString(path, L"blah");
+  prefs.SetString(path, "blah");
   EXPECT_TRUE(prefs.HasPrefPath(path));
 }
 
@@ -142,13 +143,13 @@ TEST(PrefServiceTest, Observers) {
   const wchar_t pref_name[] = L"homepage";
 
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(pref_name, std::wstring(L"http://www.cnn.com"));
+  dict->SetString(pref_name, std::string("http://www.cnn.com"));
   DummyPrefStore* pref_store = new DummyPrefStore();
   pref_store->set_prefs(dict);
   PrefService prefs(new PrefValueStore(NULL, pref_store, NULL));
   prefs.RegisterStringPref(pref_name, "");
 
-  const std::wstring new_pref_value(L"http://www.google.com/");
+  const std::string new_pref_value("http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
   prefs.AddPrefObserver(pref_name, &obs);
   // This should fire the checks in TestPrefObserver::Observe.
@@ -158,7 +159,7 @@ TEST(PrefServiceTest, Observers) {
   EXPECT_TRUE(obs.observer_fired());
 
   // Now try adding a second pref observer.
-  const std::wstring new_pref_value2(L"http://www.youtube.com/");
+  const std::string new_pref_value2("http://www.youtube.com/");
   obs.Reset(new_pref_value2);
   TestPrefObserver obs2(&prefs, pref_name, new_pref_value2);
   prefs.AddPrefObserver(pref_name, &obs2);
@@ -169,7 +170,7 @@ TEST(PrefServiceTest, Observers) {
 
   // Make sure obs2 still works after removing obs.
   prefs.RemovePrefObserver(pref_name, &obs);
-  obs.Reset(L"");
+  obs.Reset("");
   obs2.Reset(new_pref_value);
   // This should only fire the observer in obs2.
   prefs.SetString(pref_name, new_pref_value);
@@ -183,7 +184,7 @@ TEST(PrefServiceTest, Observers) {
 class PrefServiceSetValueTest : public testing::Test {
  protected:
   static const wchar_t name_[];
-  static const wchar_t value_[];
+  static const char value_[];
 
   PrefServiceSetValueTest()
       : prefs_(new PrefValueStore(NULL, new DummyPrefStore(), NULL)),
@@ -206,8 +207,9 @@ class PrefServiceSetValueTest : public testing::Test {
   scoped_ptr<Value> null_value_;
   NotificationObserverMock observer_;
 };
+
 const wchar_t PrefServiceSetValueTest::name_[] = L"name";
-const wchar_t PrefServiceSetValueTest::value_[] = L"value";
+const char PrefServiceSetValueTest::value_[] = "value";
 
 TEST_F(PrefServiceSetValueTest, SetStringValue) {
   const char default_string[] = "default";
@@ -241,7 +243,7 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   Mock::VerifyAndClearExpectations(&observer_);
   DictionaryValue* dict = prefs_.GetMutableDictionary(name_);
   EXPECT_EQ(1U, dict->size());
-  std::wstring out_value;
+  std::string out_value;
   dict->GetString(name_, &out_value);
   EXPECT_EQ(value_, out_value);
 
@@ -273,7 +275,7 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   Mock::VerifyAndClearExpectations(&observer_);
   ListValue* list = prefs_.GetMutableList(name_);
   ASSERT_EQ(1U, list->GetSize());
-  std::wstring out_value;
+  std::string out_value;
   list->GetString(0, &out_value);
   EXPECT_EQ(value_, out_value);
 

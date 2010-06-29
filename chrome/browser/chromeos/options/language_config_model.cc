@@ -136,7 +136,7 @@ void LanguageConfigModel::UpdateInputMethodPreferences(
   // function below uses stable sort, the relateve order of input methods that
   // belong to the same language (e.g. "mozc" and "xkb:jp::jpn") is maintained.
   input_method::SortInputMethodIdsByNames(&new_input_method_ids);
-  preload_engines_.SetValue(UTF8ToWide(JoinString(new_input_method_ids, ',')));
+  preload_engines_.SetValue(JoinString(new_input_method_ids, ','));
 }
 
 void LanguageConfigModel::DeactivateInputMethodsFor(
@@ -186,11 +186,10 @@ bool LanguageConfigModel::InputMethodIsActivated(
 
 void LanguageConfigModel::GetActiveInputMethodIds(
     std::vector<std::string>* out_input_method_ids) {
-  const std::wstring value = preload_engines_.GetValue();
+  const std::string value = preload_engines_.GetValue();
   out_input_method_ids->clear();
-  if (!value.empty()) {
-    SplitString(WideToUTF8(value), ',', out_input_method_ids);
-  }
+  if (!value.empty())
+    SplitString(value, ',', out_input_method_ids);
 }
 
 void LanguageConfigModel::GetInputMethodIdsFromLanguageCode(

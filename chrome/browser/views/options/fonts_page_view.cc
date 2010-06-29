@@ -240,16 +240,18 @@ void FontsPageView::FontSelected(const gfx::Font& const_font, void* params) {
 void FontsPageView::SaveChanges() {
   // Set Fonts.
   if (font_changed_) {
-    serif_name_.SetValue(serif_font_display_view_->font_name());
+    serif_name_.SetValue(WideToUTF8(serif_font_display_view_->font_name()));
     serif_size_.SetValue(serif_font_size_pixel_);
-    sans_serif_name_.SetValue(sans_serif_font_display_view_->font_name());
+    sans_serif_name_.SetValue(
+        WideToUTF8(sans_serif_font_display_view_->font_name()));
     sans_serif_size_.SetValue(sans_serif_font_size_pixel_);
-    fixed_width_name_.SetValue(fixed_width_font_display_view_->font_name());
+    fixed_width_name_.SetValue(WideToUTF8(
+        fixed_width_font_display_view_->font_name()));
     fixed_width_size_.SetValue(fixed_width_font_size_pixel_);
   }
   // Set Encoding.
   if (default_encoding_changed_)
-    default_encoding_.SetValue(ASCIIToWide(default_encoding_selected_));
+    default_encoding_.SetValue(default_encoding_selected_);
 }
 
 void FontsPageView::InitControlLayout() {
@@ -296,19 +298,19 @@ void FontsPageView::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kWebKitFixedFontFamily) {
     fixed_width_font_size_pixel_ = fixed_width_size_.GetValue();
     fixed_width_font_display_view_->SetFontType(
-        fixed_width_name_.GetValue(),
+        UTF8ToWide(fixed_width_name_.GetValue()),
         fixed_width_font_size_pixel_);
   }
   if (!pref_name || *pref_name == prefs::kWebKitSerifFontFamily) {
     serif_font_size_pixel_ = serif_size_.GetValue();
     serif_font_display_view_->SetFontType(
-        serif_name_.GetValue(),
+        UTF8ToWide(serif_name_.GetValue()),
         serif_font_size_pixel_);
   }
   if (!pref_name || *pref_name == prefs::kWebKitSansSerifFontFamily) {
     sans_serif_font_size_pixel_ = sans_serif_size_.GetValue();
     sans_serif_font_display_view_->SetFontType(
-        sans_serif_name_.GetValue(),
+        UTF8ToWide(sans_serif_name_.GetValue()),
         sans_serif_font_size_pixel_);
   }
 }

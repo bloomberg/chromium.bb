@@ -52,7 +52,7 @@ void KeywordEditorModelObserver::OnEditedKeyword(
     const TemplateURL* template_url,
     const std::wstring& title,
     const std::wstring& keyword,
-    const std::wstring& url) {
+    const std::string& url) {
   KeywordEditorController* controller = [controller_ controller];
   if (template_url) {
     controller->ModifyTemplateURL(template_url, title, keyword, url);

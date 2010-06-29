@@ -154,16 +154,16 @@ const char kHangulKeyboardConfigName[] = "HangulKeyboard";
 
 const struct HangulKeyboardNameIDPair {
   int message_id;
-  const wchar_t* keyboard_id;
+  const char* keyboard_id;
 } kHangulKeyboardNameIDPairs[] = {
   // We have to sync the |keyboard_id|s with those in
   // ibus-hangul/files/setup/main.py.
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_2_SET, L"2" },
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_2_SET, "2" },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_FINAL,
-    L"3f" },
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_390, L"39" },
+    "3f" },
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_390, "39" },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_NO_SHIFT,
-    L"3s" },
+    "3s" },
   // We don't support "Sebeolsik 2 set" keyboard.
 };
 

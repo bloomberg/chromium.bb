@@ -1579,8 +1579,9 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
   PrefService* prefs = GetPrefs();
   if (prefs->GetBoolean(prefs::kEnableSpellCheck)) {
     // Retrieve the (perhaps updated recently) dictionary name from preferences.
-    spellcheck_host_ = new SpellCheckHost(this,
-        WideToASCII(prefs->GetString(prefs::kSpellCheckDictionary)),
+    spellcheck_host_ = new SpellCheckHost(
+        this,
+        prefs->GetString(prefs::kSpellCheckDictionary),
         GetRequestContext());
     spellcheck_host_->Initialize();
   } else if (notify) {

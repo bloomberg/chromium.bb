@@ -156,7 +156,7 @@ PasswordStore* PasswordsPageGtk::GetPasswordStore() {
 void PasswordsPageGtk::SetPasswordList(
     const std::vector<webkit_glue::PasswordForm*>& result) {
   std::wstring languages =
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   gtk_list_store_clear(password_list_store_);
   STLDeleteElements(&password_list_);
   password_list_ = result;

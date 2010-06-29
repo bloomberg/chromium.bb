@@ -13,6 +13,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_registrar.h"
 
+class GURL;
 class Extension;
 class PrefService;
 class Profile;
@@ -59,7 +60,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Each initializer is mapped to a TemplateURL.
   struct Initializer {
     const wchar_t* const keyword;
-    const wchar_t* const url;
+    const char* const url;
     const wchar_t* const content;
   };
 
@@ -92,7 +93,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // url gives the url of the search query. The url is used to avoid generating
   // a TemplateURL for an existing TemplateURL that shares the same host.
   bool CanReplaceKeyword(const std::wstring& keyword,
-                         const std::wstring& url,
+                         const GURL& url,
                          const TemplateURL** template_url_to_replace);
 
   // Returns (in |matches|) all keywords beginning with |prefix|, sorted
@@ -164,7 +165,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   void ResetTemplateURL(const TemplateURL* url,
                         const std::wstring& title,
                         const std::wstring& keyword,
-                        const std::wstring& search_url);
+                        const std::string& search_url);
 
   // The default search provider. This may be null.
   void SetDefaultSearchProvider(const TemplateURL* url);

@@ -18,12 +18,12 @@
 namespace {
 
 // Make a Gtk font name string from a font family name and pixel size.
-std::string MakeFontName(std::wstring family_name, int pixel_size) {
+std::string MakeFontName(std::string family_name, int pixel_size) {
   // The given font might not be available (the default fonts we use are not
   // installed by default on some distros).  So figure out which font we are
   // actually falling back to and display that.  (See crbug.com/31381.)
   std::wstring actual_family_name = gfx::Font::CreateFont(
-      family_name, pixel_size).FontName();
+      UTF8ToWide(family_name), pixel_size).FontName();
   std::string fontname;
   // TODO(mattm): We can pass in the size in pixels (px), and the font button
   // actually honors it, but when you open the selector it interprets it as
@@ -152,7 +152,7 @@ void FontsPageGtk::SetFontsFromButton(StringPrefMember* name_pref,
   PangoFontDescription* desc = pango_font_description_from_string(
       gtk_font_button_get_font_name(GTK_FONT_BUTTON(font_button)));
   int size = pango_font_description_get_size(desc);
-  name_pref->SetValue(UTF8ToWide(pango_font_description_get_family(desc)));
+  name_pref->SetValue(pango_font_description_get_family(desc));
   size_pref->SetValue(size / PANGO_SCALE);
   pango_font_description_free(desc);
   // Reset the button font in px, since the chooser will have set it in points.
@@ -181,6 +181,6 @@ void FontsPageGtk::OnFixedFontSet(GtkWidget* font_button) {
 
 void FontsPageGtk::OnDefaultEncodingChanged(GtkWidget* combo_box) {
   int index = gtk_combo_box_get_active(GTK_COMBO_BOX(combo_box));
-  default_encoding_.SetValue(ASCIIToWide(default_encoding_combobox_model_->
-      GetEncodingCharsetByIndex(index)));
+  default_encoding_.SetValue(default_encoding_combobox_model_->
+      GetEncodingCharsetByIndex(index));
 }

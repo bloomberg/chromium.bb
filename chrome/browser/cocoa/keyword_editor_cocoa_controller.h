@@ -37,7 +37,7 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
   virtual void OnEditedKeyword(const TemplateURL* template_url,
                                const std::wstring& title,
                                const std::wstring& keyword,
-                               const std::wstring& url);
+                               const std::string& url);
 
   // TableModelObserver overrides. Invalidate icon cache.
   virtual void OnModelChanged();

@@ -412,7 +412,7 @@ bool BrowserProxy::SetIntPreference(const std::wstring& name, int value) {
 }
 
 bool BrowserProxy::SetStringPreference(const std::wstring& name,
-                                       const std::wstring& value) {
+                                       const std::string& value) {
   if (!is_valid())
     return false;
 

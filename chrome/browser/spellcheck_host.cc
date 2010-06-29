@@ -110,8 +110,7 @@ int SpellCheckHost::GetSpellCheckLanguages(
                              NULL);
   dictionary_language_pref.Init(prefs::kSpellCheckDictionary,
                                 profile->GetPrefs(), NULL);
-  std::string dictionary_language =
-      WideToASCII(dictionary_language_pref.GetValue());
+  std::string dictionary_language = dictionary_language_pref.GetValue();
 
   // The current dictionary language should be there.
   languages->push_back(dictionary_language);
@@ -120,12 +119,11 @@ int SpellCheckHost::GetSpellCheckLanguages(
   // from this list to the existing list of spell check languages.
   std::vector<std::string> accept_languages;
 
-  if (SpellCheckerPlatform::SpellCheckerAvailable()) {
+  if (SpellCheckerPlatform::SpellCheckerAvailable())
     SpellCheckerPlatform::GetAvailableLanguages(&accept_languages);
-  } else {
-    SplitString(WideToASCII(accept_languages_pref.GetValue()), ',',
-                &accept_languages);
-  }
+  else
+    SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
+
   for (std::vector<std::string>::const_iterator i = accept_languages.begin();
        i != accept_languages.end(); ++i) {
     std::string language =

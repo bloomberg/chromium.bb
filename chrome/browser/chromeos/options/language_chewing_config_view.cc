@@ -69,8 +69,8 @@ void LanguageChewingConfigView::ItemChanged(
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     if (current.combobox == sender) {
-      const std::wstring config_value =
-          UTF8ToWide(current.combobox_model->GetConfigValueAt(new_index));
+      const std::string config_value =
+          current.combobox_model->GetConfigValueAt(new_index);
       LOG(INFO) << "Changing Chewing pref to " << config_value;
       // Update the Chrome pref.
       current.multiple_choice_pref.SetValue(config_value);
@@ -203,9 +203,9 @@ void LanguageChewingConfigView::NotifyPrefChanged() {
   }
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
-    const std::wstring value = current.multiple_choice_pref.GetValue();
+    const std::string value = current.multiple_choice_pref.GetValue();
     for (int i = 0; i < current.combobox_model->num_items(); ++i) {
-      if (UTF8ToWide(current.combobox_model->GetConfigValueAt(i)) == value) {
+      if (current.combobox_model->GetConfigValueAt(i) == value) {
         current.combobox->SetSelectedItem(i);
         break;
       }

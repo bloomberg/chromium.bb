@@ -21,8 +21,8 @@ const char GoogleURLTracker::kDefaultGoogleHomepage[] =
     "http://www.google.com/";
 
 GoogleURLTracker::GoogleURLTracker()
-    : google_url_(WideToUTF8(g_browser_process->local_state()->GetString(
-          prefs::kLastKnownGoogleURL))),
+    : google_url_(g_browser_process->local_state()->GetString(
+          prefs::kLastKnownGoogleURL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(fetcher_factory_(this)),
       in_startup_sleep_(true),
       already_fetched_(false),
@@ -158,7 +158,7 @@ void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source,
     return;
 
   // Update the saved base URL if it has changed.
-  const std::wstring base_url_str(UTF8ToWide(base_url.spec()));
+  const std::string base_url_str(base_url.spec());
   if (g_browser_process->local_state()->GetString(prefs::kLastKnownGoogleURL) !=
       base_url_str) {
     g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,

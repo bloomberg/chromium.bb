@@ -511,35 +511,35 @@ static const PasswordList kFirefox2Passwords[] = {
 
 typedef struct {
   const wchar_t* keyword;
-  const wchar_t* url;
+  const char* url;
 } KeywordList;
 
 static const KeywordList kFirefox2Keywords[] = {
   // Searh plugins
   { L"amazon.com",
-    L"http://www.amazon.com/exec/obidos/external-search/?field-keywords="
-    L"{searchTerms}&mode=blended" },
+    "http://www.amazon.com/exec/obidos/external-search/?field-keywords="
+    "{searchTerms}&mode=blended" },
   { L"answers.com",
-    L"http://www.answers.com/main/ntquery?s={searchTerms}&gwp=13" },
+    "http://www.answers.com/main/ntquery?s={searchTerms}&gwp=13" },
   { L"search.creativecommons.org",
-    L"http://search.creativecommons.org/?q={searchTerms}" },
+    "http://search.creativecommons.org/?q={searchTerms}" },
   { L"search.ebay.com",
-    L"http://search.ebay.com/search/search.dll?query={searchTerms}&"
-    L"MfcISAPICommand=GetResult&ht=1&ebaytag1=ebayreg&srchdesc=n&"
-    L"maxRecordsReturned=300&maxRecordsPerPage=50&SortProperty=MetaEndSort" },
+    "http://search.ebay.com/search/search.dll?query={searchTerms}&"
+    "MfcISAPICommand=GetResult&ht=1&ebaytag1=ebayreg&srchdesc=n&"
+    "maxRecordsReturned=300&maxRecordsPerPage=50&SortProperty=MetaEndSort" },
   { L"google.com",
-    L"http://www.google.com/search?q={searchTerms}&ie=utf-8&oe=utf-8&aq=t" },
+    "http://www.google.com/search?q={searchTerms}&ie=utf-8&oe=utf-8&aq=t" },
   { L"search.yahoo.com",
-    L"http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8" },
+    "http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8" },
   { L"flickr.com",
-    L"http://www.flickr.com/photos/tags/?q={searchTerms}" },
+    "http://www.flickr.com/photos/tags/?q={searchTerms}" },
   { L"imdb.com",
-    L"http://www.imdb.com/find?q={searchTerms}" },
+    "http://www.imdb.com/find?q={searchTerms}" },
   { L"webster.com",
-    L"http://www.webster.com/cgi-bin/dictionary?va={searchTerms}" },
+    "http://www.webster.com/cgi-bin/dictionary?va={searchTerms}" },
   // Search keywords.
-  { L"google", L"http://www.google.com/" },
-  { L"< > & \" ' \\ /", L"http://g.cn/"},
+  { L"google", "http://www.google.com/" },
+  { L"< > & \" ' \\ /", "http://g.cn/"},
 };
 
 static const int kDefaultFirefox2KeywordIndex = 8;
@@ -650,7 +650,7 @@ class FirefoxObserver : public ProfileWriter,
   int password_count_;
   int keyword_count_;
   std::wstring default_keyword_;
-  std::wstring default_keyword_url_;
+  std::string default_keyword_url_;
 };
 
 TEST_F(ImporterTest, Firefox2Importer) {
@@ -708,30 +708,30 @@ static const PasswordList kFirefox3Passwords[] = {
 
 static const KeywordList kFirefox3Keywords[] = {
   { L"amazon.com",
-    L"http://www.amazon.com/exec/obidos/external-search/?field-keywords="
-    L"{searchTerms}&mode=blended" },
+    "http://www.amazon.com/exec/obidos/external-search/?field-keywords="
+    "{searchTerms}&mode=blended" },
   { L"answers.com",
-    L"http://www.answers.com/main/ntquery?s={searchTerms}&gwp=13" },
+    "http://www.answers.com/main/ntquery?s={searchTerms}&gwp=13" },
   { L"search.creativecommons.org",
-    L"http://search.creativecommons.org/?q={searchTerms}" },
+    "http://search.creativecommons.org/?q={searchTerms}" },
   { L"search.ebay.com",
-    L"http://search.ebay.com/search/search.dll?query={searchTerms}&"
-    L"MfcISAPICommand=GetResult&ht=1&ebaytag1=ebayreg&srchdesc=n&"
-    L"maxRecordsReturned=300&maxRecordsPerPage=50&SortProperty=MetaEndSort" },
+    "http://search.ebay.com/search/search.dll?query={searchTerms}&"
+    "MfcISAPICommand=GetResult&ht=1&ebaytag1=ebayreg&srchdesc=n&"
+    "maxRecordsReturned=300&maxRecordsPerPage=50&SortProperty=MetaEndSort" },
   { L"google.com",
-    L"http://www.google.com/search?q={searchTerms}&ie=utf-8&oe=utf-8&aq=t" },
+    "http://www.google.com/search?q={searchTerms}&ie=utf-8&oe=utf-8&aq=t" },
   { L"en.wikipedia.org",
-    L"http://en.wikipedia.org/wiki/Special:Search?search={searchTerms}" },
+    "http://en.wikipedia.org/wiki/Special:Search?search={searchTerms}" },
   { L"search.yahoo.com",
-    L"http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8" },
+    "http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8" },
   { L"flickr.com",
-    L"http://www.flickr.com/photos/tags/?q={searchTerms}" },
+    "http://www.flickr.com/photos/tags/?q={searchTerms}" },
   { L"imdb.com",
-    L"http://www.imdb.com/find?q={searchTerms}" },
+    "http://www.imdb.com/find?q={searchTerms}" },
   { L"webster.com",
-    L"http://www.webster.com/cgi-bin/dictionary?va={searchTerms}" },
+    "http://www.webster.com/cgi-bin/dictionary?va={searchTerms}" },
   // Search keywords.
-  { L"\x4E2D\x6587", L"http://www.google.com/" },
+  { L"\x4E2D\x6587", "http://www.google.com/" },
 };
 
 static const int kDefaultFirefox3KeywordIndex = 8;
@@ -854,7 +854,7 @@ class Firefox3Observer : public ProfileWriter,
   int keyword_count_;
   bool import_search_engines_;
   std::wstring default_keyword_;
-  std::wstring default_keyword_url_;
+  std::string default_keyword_url_;
 };
 
 TEST_F(ImporterTest, Firefox30Importer) {

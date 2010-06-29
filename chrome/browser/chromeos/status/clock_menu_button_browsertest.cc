@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(ClockMenuButtonTest, TimezoneTest) {
   std::wstring text_before = clock->text();
   StringPrefMember timezone;
   timezone.Init(prefs::kTimeZone, browser()->profile()->GetPrefs(), NULL);
-  timezone.SetValue(ASCIIToWide("Asia/Hong_Kong"));
+  timezone.SetValue("Asia/Hong_Kong");
   std::wstring text_after = clock->text();
   EXPECT_NE(text_before, text_after);
 }

@@ -86,7 +86,7 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
   // Save new locale.
   DCHECK(g_browser_process);
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, UTF8ToWide(locale));
+  prefs->SetString(prefs::kApplicationLocale, locale);
   prefs->SavePersistentPrefs();
 
   // Switch the locale.

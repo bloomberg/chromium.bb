@@ -39,12 +39,12 @@ class ProfileSyncServicePreferenceTest
     : public AbstractProfileSyncServiceTest {
  protected:
   ProfileSyncServicePreferenceTest()
-      : example_url0_(L"http://example.com/0"),
-        example_url1_(L"http://example.com/1"),
-        example_url2_(L"http://example.com/2"),
+      : example_url0_("http://example.com/0"),
+        example_url1_("http://example.com/1"),
+        example_url2_("http://example.com/2"),
         not_synced_preference_name_(L"nonsense_pref_name"),
         not_synced_preference_default_value_("default"),
-        non_default_charset_value_(L"foo") {}
+        non_default_charset_value_("foo") {}
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
@@ -188,12 +188,12 @@ class ProfileSyncServicePreferenceTest
 
   PreferenceModelAssociator* model_associator_;
   PreferenceChangeProcessor* change_processor_;
-  std::wstring example_url0_;
-  std::wstring example_url1_;
-  std::wstring example_url2_;
+  std::string example_url0_;
+  std::string example_url1_;
+  std::string example_url2_;
   std::wstring not_synced_preference_name_;
   std::string not_synced_preference_default_value_;
-  std::wstring non_default_charset_value_;
+  std::string non_default_charset_value_;
 };
 
 class AddPreferenceEntriesTask : public Task {
@@ -298,7 +298,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
 
   scoped_ptr<const Value> value(GetSyncedValue(prefs::kHomePage));
   ASSERT_TRUE(value.get());
-  std::wstring string_value;
+  std::string string_value;
   EXPECT_TRUE(static_cast<const StringValue*>(value.get())->
               GetAsString(&string_value));
   EXPECT_EQ(example_url1_, string_value);

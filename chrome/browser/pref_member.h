@@ -171,14 +171,14 @@ class RealPrefMember : public PrefMember<double> {
   DISALLOW_COPY_AND_ASSIGN(RealPrefMember);
 };
 
-class StringPrefMember : public PrefMember<std::wstring> {
+class StringPrefMember : public PrefMember<std::string> {
  public:
-  StringPrefMember() : PrefMember<std::wstring>() { }
+  StringPrefMember() : PrefMember<std::string>() { }
   virtual ~StringPrefMember() { }
 
  protected:
   virtual void UpdateValueFromPref();
-  virtual void UpdatePref(const std::wstring& value);
+  virtual void UpdatePref(const std::string& value);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StringPrefMember);

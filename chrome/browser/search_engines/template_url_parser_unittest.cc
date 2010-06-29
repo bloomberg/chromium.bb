@@ -90,7 +90,7 @@ TEST_F(TemplateURLParserTest, TestDictionary) {
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   EXPECT_EQ(template_url_.url()->url(),
-            L"http://dictionary.reference.com/browse/{searchTerms}?r=75");
+            "http://dictionary.reference.com/browse/{searchTerms}?r=75");
 }
 
 TEST_F(TemplateURLParserTest, TestMSDN) {
@@ -104,7 +104,7 @@ TEST_F(TemplateURLParserTest, TestMSDN) {
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   EXPECT_EQ(template_url_.url()->url(),
-            L"http://search.msdn.microsoft.com/search/default.aspx?Query={searchTerms}&brand=msdn&locale=en-US");
+            "http://search.msdn.microsoft.com/search/default.aspx?Query={searchTerms}&brand=msdn&locale=en-US");
 }
 
 TEST_F(TemplateURLParserTest, TestWikipedia) {
@@ -118,11 +118,11 @@ TEST_F(TemplateURLParserTest, TestWikipedia) {
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   EXPECT_EQ(template_url_.url()->url(),
-      L"http://en.wikipedia.org/w/index.php?title=Special:Search&search={searchTerms}");
+      "http://en.wikipedia.org/w/index.php?title=Special:Search&search={searchTerms}");
   EXPECT_TRUE(template_url_.suggestions_url() != NULL);
   EXPECT_TRUE(template_url_.suggestions_url()->SupportsReplacement());
   EXPECT_EQ(template_url_.suggestions_url()->url(),
-      L"http://en.wikipedia.org/w/api.php?action=opensearch&search={searchTerms}");
+      "http://en.wikipedia.org/w/api.php?action=opensearch&search={searchTerms}");
   ASSERT_EQ(2U, template_url_.input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_.input_encodings()[0]);
   EXPECT_EQ("Shift_JIS", template_url_.input_encodings()[1]);
@@ -166,10 +166,10 @@ TEST_F(TemplateURLParserTest, TestFirefoxEbay) {
   EXPECT_EQ(L"eBay", template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
-  std::wstring exp_url =
-      L"http://search.ebay.com/search/search.dll?query={searchTerms}&"
-      L"MfcISAPICommand=GetResult&ht=1&srchdesc=n&maxRecordsReturned=300&"
-      L"maxRecordsPerPage=50&SortProperty=MetaEndSort";
+  std::string exp_url =
+      "http://search.ebay.com/search/search.dll?query={searchTerms}&"
+      "MfcISAPICommand=GetResult&ht=1&srchdesc=n&maxRecordsReturned=300&"
+      "maxRecordsPerPage=50&SortProperty=MetaEndSort";
   EXPECT_EQ(exp_url, template_url_.url()->url());
   ASSERT_EQ(1U, template_url_.input_encodings().size());
   EXPECT_EQ("ISO-8859-1", template_url_.input_encodings()[0]);
@@ -187,7 +187,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxWebster) {
   EXPECT_EQ(L"Webster", template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
-  EXPECT_EQ(L"http://www.webster.com/cgi-bin/dictionary?va={searchTerms}",
+  EXPECT_EQ("http://www.webster.com/cgi-bin/dictionary?va={searchTerms}",
             template_url_.url()->url());
   ASSERT_EQ(1U, template_url_.input_encodings().size());
   EXPECT_EQ("ISO-8859-1", template_url_.input_encodings()[0]);
@@ -205,10 +205,10 @@ TEST_F(TemplateURLParserTest, TestFirefoxYahoo) {
   EXPECT_EQ(L"Yahoo", template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
-  EXPECT_EQ(L"http://ff.search.yahoo.com/gossip?"
-            L"output=fxjson&command={searchTerms}",
+  EXPECT_EQ("http://ff.search.yahoo.com/gossip?"
+            "output=fxjson&command={searchTerms}",
             template_url_.suggestions_url()->url());
-  EXPECT_EQ(L"http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8",
+  EXPECT_EQ("http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8",
             template_url_.url()->url());
   ASSERT_EQ(1U, template_url_.input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_.input_encodings()[0]);
@@ -229,7 +229,7 @@ TEST_F(TemplateURLParserTest, TestPostSuggestion) {
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   EXPECT_TRUE(template_url_.suggestions_url() == NULL);
-  EXPECT_EQ(L"http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8",
+  EXPECT_EQ("http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8",
             template_url_.url()->url());
   ASSERT_EQ(1U, template_url_.input_encodings().size());
   EXPECT_EQ("UTF-8", template_url_.input_encodings()[0]);

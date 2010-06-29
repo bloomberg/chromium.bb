@@ -206,7 +206,7 @@ TEST_F(EditSearchEngineControllerTest, EditTemplateURL) {
   TemplateURL url;
   url.set_short_name(L"Foobar");
   url.set_keyword(L"keyword");
-  std::wstring urlString = TemplateURLRef::DisplayURLToURLRef(
+  std::string urlString = TemplateURLRef::DisplayURLToURLRef(
       L"http://foo-bar.com");
   url.SetURL(urlString, 0, 1);
   TestingProfile* profile = browser_helper_.profile();

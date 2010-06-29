@@ -35,15 +35,12 @@
 
 namespace {
 
-static const int kStartupRadioGroup = 1;
-static const int kHomePageRadioGroup = 2;
-static const SkColor kDefaultBrowserLabelColor = SkColorSetRGB(0, 135, 0);
-static const SkColor kNotDefaultBrowserLabelColor = SkColorSetRGB(135, 0, 0);
+const int kStartupRadioGroup = 1;
+const int kHomePageRadioGroup = 2;
+const SkColor kDefaultBrowserLabelColor = SkColorSetRGB(0, 135, 0);
+const SkColor kNotDefaultBrowserLabelColor = SkColorSetRGB(135, 0, 0);
 
-std::wstring GetNewTabUIURLString() {
-  return UTF8ToWide(chrome::kChromeUINewTabURL);
-}
-}
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // SearchEngineListModel
@@ -380,7 +377,7 @@ void GeneralPageView::NotifyPrefChanged(const std::wstring* pref_name) {
       *pref_name == prefs::kHomePage) {
     bool managed =
         new_tab_page_is_home_page_.IsManaged() || homepage_.IsManaged();
-    bool homepage_valid = homepage_.GetValue() != GetNewTabUIURLString();
+    bool homepage_valid = homepage_.GetValue() != chrome::kChromeUINewTabURL;
     bool use_new_tab_page_for_homepage =
         new_tab_page_is_home_page_.GetValue() || !homepage_valid;
     homepage_use_newtab_radio_->SetChecked(use_new_tab_page_for_homepage);
@@ -389,7 +386,7 @@ void GeneralPageView::NotifyPrefChanged(const std::wstring* pref_name) {
     homepage_use_url_radio_->SetEnabled(!managed);
 
     if (homepage_valid)
-      homepage_use_url_textfield_->SetText(homepage_.GetValue());
+      homepage_use_url_textfield_->SetText(UTF8ToWide(homepage_.GetValue()));
     EnableHomepageURLField(!managed && !use_new_tab_page_for_homepage);
   }
 
@@ -750,13 +747,12 @@ void GeneralPageView::UpdateHomepagePrefs() {
     URLFixerUpper::FixupURL(
        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string());
   bool new_tab_page_is_home_page = homepage_use_newtab_radio_->checked();
-  if (!homepage.is_valid() ||
-      UTF8ToWide(homepage.spec()) == GetNewTabUIURLString()) {
+  if (!homepage.is_valid() || homepage.spec() == chrome::kChromeUINewTabURL) {
     new_tab_page_is_home_page = true;
     if (!homepage.has_host())
-      homepage_.SetValue(std::wstring());
+      homepage_.SetValue(std::string());
   } else {
-    homepage_.SetValue(UTF8ToWide(homepage.spec()));
+    homepage_.SetValue(homepage.spec());
   }
   new_tab_page_is_home_page_.SetValue(new_tab_page_is_home_page);
 }

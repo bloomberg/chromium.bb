@@ -123,7 +123,8 @@ class CanonicalEncodingMap {
  private:
   scoped_ptr<IdToCanonicalEncodingNameMapType> id_to_encoding_name_map_;
   scoped_ptr<CanonicalEncodingNameToIdMapType> encoding_name_to_id_map_;
-  scoped_ptr<CanonicalNameDisplayNameMapType> encoding_name_to_display_name_map_;
+  scoped_ptr<CanonicalNameDisplayNameMapType>
+      encoding_name_to_display_name_map_;
   std::vector<int> locale_dependent_encoding_ids_;
   std::vector<CharacterEncoding::EncodingInfo> current_display_encodings_;
 
@@ -171,7 +172,8 @@ const CanonicalNameDisplayNameMapType*
     }
     // Then save in the overrides.
     for (int i = 0; i < canonical_display_name_overrides_length; ++i) {
-      (*encoding_name_to_display_name_map_)[canonical_display_name_overrides[i].canonical_form] =
+      (*encoding_name_to_display_name_map_)
+          [canonical_display_name_overrides[i].canonical_form] =
           canonical_display_name_overrides[i].display_form;
     }
     DCHECK(static_cast<int>(encoding_name_to_display_name_map_->size()) ==
@@ -499,7 +501,7 @@ const std::vector<CharacterEncoding::EncodingInfo>*
 }
 
 // Static
-bool CharacterEncoding::UpdateRecentlySelectdEncoding(
+bool CharacterEncoding::UpdateRecentlySelectedEncoding(
     const std::string& original_selected_encodings,
     int new_selected_encoding_id,
     std::string* selected_encodings) {

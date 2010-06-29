@@ -195,7 +195,7 @@ struct ParamTraits<TemplateURLRef> {
     WriteParam(m, p.page_offset());
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    std::wstring url;
+    std::string url;
     int index_offset;
     int page_offset;
     if (!ReadParam(m, iter, &url) ||

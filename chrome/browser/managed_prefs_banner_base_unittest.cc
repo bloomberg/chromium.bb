@@ -39,9 +39,9 @@ TEST_F(ManagedPrefsBannerBaseTest, VisibilityTest) {
   EXPECT_FALSE(banner.DetermineVisibility());
   managed_prefs_->prefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
   EXPECT_FALSE(banner.DetermineVisibility());
-  user_prefs_->prefs()->SetString(prefs::kHomePage, L"http://foo.com");
+  user_prefs_->prefs()->SetString(prefs::kHomePage, "http://foo.com");
   EXPECT_FALSE(banner.DetermineVisibility());
-  managed_prefs_->prefs()->SetString(prefs::kHomePage, L"http://bar.com");
+  managed_prefs_->prefs()->SetString(prefs::kHomePage, "http://bar.com");
   EXPECT_TRUE(banner.DetermineVisibility());
 }
 
@@ -62,5 +62,5 @@ TEST_F(ManagedPrefsBannerBaseTest, NotificationTest) {
   EXPECT_CALL(banner, OnUpdateVisibility()).Times(0);
   pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, true);
   EXPECT_CALL(banner, OnUpdateVisibility()).Times(1);
-  pref_service_->SetString(prefs::kHomePage, L"http://foo.com");
+  pref_service_->SetString(prefs::kHomePage, "http://foo.com");
 }

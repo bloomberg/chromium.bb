@@ -30,13 +30,13 @@ class SearchEngineListModelTest : public PlatformTest {
     // Build a fake set of template urls.
     template_model_.reset(new TemplateURLModel(helper_.profile()));
     TemplateURL* t_url = new TemplateURL();
-    t_url->SetURL(L"http://www.google.com/?q={searchTerms}", 0, 0);
+    t_url->SetURL("http://www.google.com/?q={searchTerms}", 0, 0);
     t_url->set_keyword(L"keyword");
     t_url->set_short_name(L"google");
     t_url->set_show_in_default_list(true);
     template_model_->Add(t_url);
     t_url = new TemplateURL();
-    t_url->SetURL(L"http://www.google2.com/?q={searchTerms}", 0, 0);
+    t_url->SetURL("http://www.google2.com/?q={searchTerms}", 0, 0);
     t_url->set_keyword(L"keyword2");
     t_url->set_short_name(L"google2");
     t_url->set_show_in_default_list(true);
@@ -81,13 +81,13 @@ TEST_F(SearchEngineListModelTest, Default) {
 
   // Add two more URLs, neither of which are shown in the default list.
   TemplateURL* t_url = new TemplateURL();
-  t_url->SetURL(L"http://www.google3.com/?q={searchTerms}", 0, 0);
+  t_url->SetURL("http://www.google3.com/?q={searchTerms}", 0, 0);
   t_url->set_keyword(L"keyword3");
   t_url->set_short_name(L"google3 not eligible");
   t_url->set_show_in_default_list(false);
   template_model_->Add(t_url);
   t_url = new TemplateURL();
-  t_url->SetURL(L"http://www.google4.com/?q={searchTerms}", 0, 0);
+  t_url->SetURL("http://www.google4.com/?q={searchTerms}", 0, 0);
   t_url->set_keyword(L"keyword4");
   t_url->set_short_name(L"google4");
   t_url->set_show_in_default_list(false);
@@ -110,7 +110,7 @@ TEST_F(SearchEngineListModelTest, Default) {
 TEST_F(SearchEngineListModelTest, Notification) {
   // Add one more item to force a notification.
   TemplateURL* t_url = new TemplateURL();
-  t_url->SetURL(L"http://www.google3.com/foo/bar", 0, 0);
+  t_url->SetURL("http://www.google3.com/foo/bar", 0, 0);
   t_url->set_keyword(L"keyword3");
   t_url->set_short_name(L"google3");
   t_url->set_show_in_default_list(true);

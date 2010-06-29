@@ -711,9 +711,8 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
 
   bool url_is_newtab = url.spec() == chrome::kChromeUINewTabURL;
   home_page_is_new_tab_page_.SetValue(url_is_newtab);
-  if (!url_is_newtab) {
-    home_page_.SetValue(UTF8ToWide(url.spec()));
-  }
+  if (!url_is_newtab)
+    home_page_.SetValue(url.spec());
 }
 
 void BrowserToolbarGtk::NotifyPrefChanged(const std::wstring* pref) {

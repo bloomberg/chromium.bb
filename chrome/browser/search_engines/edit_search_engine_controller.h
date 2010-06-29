@@ -22,7 +22,7 @@ class EditSearchEngineControllerDelegate {
   virtual void OnEditedKeyword(const TemplateURL* template_url,
                                const std::wstring& title,
                                const std::wstring& keyword,
-                               const std::wstring& url) = 0;
+                               const std::string& url) = 0;
 };
 
 // EditSearchEngineController provides the core platform independent logic
@@ -43,7 +43,7 @@ class EditSearchEngineController {
   // URL. The URL is valid if it contains no search terms and is a valid
   // url, or if it contains a search term and replacing that search term with a
   // character results in a valid url.
-  bool IsURLValid(const std::wstring& url_input) const;
+  bool IsURLValid(const std::string& url_input) const;
 
   // Returns true if the value of |keyword_input| represents a valid keyword.
   // The keyword is valid if it is non-empty and does not conflict with an
@@ -53,7 +53,7 @@ class EditSearchEngineController {
   // Completes the add or edit of a search engine.
   void AcceptAddOrEdit(const std::wstring& title_input,
                        const std::wstring& keyword_input,
-                       const std::wstring& url_input);
+                       const std::string& url_input);
 
   // Deletes an unused TemplateURL, if its add was cancelled and it's not
   // already owned by the TemplateURLModel.
@@ -66,7 +66,7 @@ class EditSearchEngineController {
  private:
   // Fixes up and returns the URL the user has input. The returned URL is
   // suitable for use by TemplateURL.
-  std::wstring GetFixedUpURL(const std::wstring& url_input) const;
+  std::string GetFixedUpURL(const std::string& url_input) const;
 
   // The TemplateURL we're displaying information for. It may be NULL. If we
   // have a keyword_editor_view, we assume that this TemplateURL is already in

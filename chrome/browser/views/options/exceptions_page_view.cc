@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -51,7 +52,7 @@ void ExceptionsTableModel::OnPasswordStoreRequestDone(
 
   STLDeleteElements<PasswordRows>(&saved_signons_);
   std::wstring languages =
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   for (size_t i = 0; i < result.size(); ++i) {
     saved_signons_.push_back(new PasswordRow(
         gfx::SortedDisplayURL(result[i]->origin, languages), result[i]));

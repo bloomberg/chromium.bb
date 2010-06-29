@@ -155,18 +155,17 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   if (pref_service) {
     previous_input_method_pref_.Init(
         prefs::kLanguagePreviousInputMethod, pref_service, this);
-    const std::wstring& previous_input_method_id =
+    const std::string& previous_input_method_id =
         previous_input_method_pref_.GetValue();
-    if (!previous_input_method_id.empty()) {
-      library->ChangeInputMethod(WideToUTF8(previous_input_method_id));
-    }
+    if (!previous_input_method_id.empty())
+      library->ChangeInputMethod(previous_input_method_id);
+
     current_input_method_pref_.Init(
         prefs::kLanguageCurrentInputMethod, pref_service, this);
-    const std::wstring& current_input_method_id =
+    const std::string& current_input_method_id =
         current_input_method_pref_.GetValue();
-    if (!current_input_method_id.empty()) {
-      library->ChangeInputMethod(WideToUTF8(current_input_method_id));
-    }
+    if (!current_input_method_id.empty())
+      library->ChangeInputMethod(current_input_method_id);
   }
   library->AddObserver(this);
 }
@@ -399,8 +398,8 @@ void LanguageMenuButton::InputMethodChanged(InputMethodLibrary* obj) {
   // Update Chrome prefs as well.
   if (GetPrefService(host_)) {
     // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
-    previous_input_method_pref_.SetValue(UTF8ToWide(previous_input_method.id));
-    current_input_method_pref_.SetValue(UTF8ToWide(current_input_method.id));
+    previous_input_method_pref_.SetValue(previous_input_method.id);
+    current_input_method_pref_.SetValue(current_input_method.id);
   }
 }
 

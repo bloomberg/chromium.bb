@@ -32,7 +32,7 @@ class EditSearchEngineDialog {
   // Retrieve the user input in the various fields.
   std::wstring GetTitleInput() const;
   std::wstring GetKeywordInput() const;
-  std::wstring GetURLInput() const;
+  std::string GetURLInput() const;
 
   // Set sensitivity of buttons based on entry state.
   void EnableControls();

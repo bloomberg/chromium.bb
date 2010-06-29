@@ -308,8 +308,7 @@ bool BrowserThemeProvider::UsingDefaultTheme() {
 }
 
 std::string BrowserThemeProvider::GetThemeID() const {
-  std::wstring id = profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
-  return WideToUTF8(id);
+  return profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 }
 
 // static
@@ -572,7 +571,7 @@ void BrowserThemeProvider::SavePackName(const FilePath& pack_path) {
 }
 
 void BrowserThemeProvider::SaveThemeID(const std::string& id) {
-  profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, UTF8ToWide(id));
+  profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, id);
 }
 
 void BrowserThemeProvider::BuildFromExtension(Extension* extension) {

@@ -591,7 +591,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       icu::TimeZone::adoptDefault(timezone);
       // Save timezone to default profile preferences.
       PrefService* prefs = ProfileManager::GetDefaultProfile()->GetPrefs();
-      prefs->SetString(prefs::kTimeZone, UTF8ToWide(timezone_name));
+      prefs->SetString(prefs::kTimeZone, timezone_name);
       prefs->SavePersistentPrefs();
     }
   }

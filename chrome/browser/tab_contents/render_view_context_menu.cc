@@ -971,7 +971,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       StringPrefMember dictionary_language;
       dictionary_language.Init(prefs::kSpellCheckDictionary,
           profile_->GetPrefs(), NULL);
-      dictionary_language.SetValue(ASCIIToWide(languages[language_number]));
+      dictionary_language.SetValue(languages[language_number]);
     }
     return;
   }
@@ -1365,7 +1365,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   chrome_browser_net::WriteURLToClipboard(
       url,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       g_browser_process->clipboard());
 }
 

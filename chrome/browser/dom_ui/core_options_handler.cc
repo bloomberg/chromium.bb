@@ -193,7 +193,7 @@ void CoreOptionsHandler::HandleSetPref(const Value* value,
         pref_service->SetInteger(pref_name.c_str(), int_value);
       break;
     case Value::TYPE_STRING:
-      pref_service->SetString(pref_name.c_str(), UTF8ToWide(value_string));
+      pref_service->SetString(pref_name.c_str(), value_string);
       break;
     default:
       NOTREACHED();

@@ -51,7 +51,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   }
   prefs->RegisterStringPref(
       prefs::kLanguageHangulKeyboard,
-      WideToUTF8(kHangulKeyboardNameIDPairs[0].keyboard_id));
+      kHangulKeyboardNameIDPairs[0].keyboard_id);
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(kPinyinBooleanPrefs[i].pref_name,
                                kPinyinBooleanPrefs[i].default_pref_value);
@@ -167,14 +167,16 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
   // here.
 
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngineInMenu) {
-    SetLanguageConfigStringListAsCSV(kHotKeySectionName,
-                             kNextEngineInMenuConfigName,
-                             language_hotkey_next_engine_in_menu_.GetValue());
+    SetLanguageConfigStringListAsCSV(
+        kHotKeySectionName,
+        kNextEngineInMenuConfigName,
+        language_hotkey_next_engine_in_menu_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyPreviousEngine) {
-    SetLanguageConfigStringListAsCSV(kHotKeySectionName,
-                             kPreviousEngineConfigName,
-                             language_hotkey_previous_engine_.GetValue());
+    SetLanguageConfigStringListAsCSV(
+        kHotKeySectionName,
+        kPreviousEngineConfigName,
+        language_hotkey_previous_engine_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines) {
     SetLanguageConfigStringListAsCSV(kGeneralSectionName,
@@ -257,9 +259,9 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
   }
 }
 
-void Preferences::SetTimeZone(const std::wstring& id) {
+void Preferences::SetTimeZone(const std::string& id) {
   icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-      icu::UnicodeString::fromUTF8(WideToASCII(id)));
+      icu::UnicodeString::fromUTF8(id));
   icu::TimeZone::adoptDefault(timezone);
 }
 
@@ -285,10 +287,10 @@ void Preferences::SetLanguageConfigInteger(const char* section,
 
 void Preferences::SetLanguageConfigString(const char* section,
                                           const char* name,
-                                          const std::wstring& value) {
+                                          const std::string& value) {
   ImeConfigValue config;
   config.type = ImeConfigValue::kValueTypeString;
-  config.string_value = WideToUTF8(value);
+  config.string_value = value;
   CrosLibrary::Get()->GetInputMethodLibrary()->
       SetImeConfig(section, name, config);
 }
@@ -296,25 +298,25 @@ void Preferences::SetLanguageConfigString(const char* section,
 void Preferences::SetLanguageConfigStringList(
     const char* section,
     const char* name,
-    const std::vector<std::wstring>& values) {
+    const std::vector<std::string>& values) {
   ImeConfigValue config;
   config.type = ImeConfigValue::kValueTypeStringList;
-  for (size_t i = 0; i < values.size(); ++i) {
-    config.string_list_value.push_back(WideToUTF8(values[i]));
-  }
+  for (size_t i = 0; i < values.size(); ++i)
+    config.string_list_value.push_back(values[i]);
+
   CrosLibrary::Get()->GetInputMethodLibrary()->
       SetImeConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
                                                    const char* name,
-                                                   const std::wstring& value) {
+                                                   const std::string& value) {
   LOG(INFO) << "Setting " << name << " to '" << value << "'";
 
-  std::vector<std::wstring> split_values;
-  if (!value.empty()) {
-    SplitString(value, L',', &split_values);
-  }
+  std::vector<std::string> split_values;
+  if (!value.empty())
+    SplitString(value, ',', &split_values);
+
   // We should call the cros API even when |value| is empty, to disable default
   // config.
   SetLanguageConfigStringList(section, name, split_values);

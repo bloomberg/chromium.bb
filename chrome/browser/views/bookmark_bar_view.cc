@@ -115,9 +115,6 @@ static const int kSeparatorStartX = 2;
 // Left-padding for the instructional text.
 static const int kInstructionsPadding = 6;
 
-// Color of the instructional text.
-static const SkColor kInstructionsColor = SkColorSetRGB(128, 128, 142);
-
 // Tag for the 'Other bookmarks' button.
 static const int kOtherFolderButtonTag = 1;
 
@@ -193,7 +190,7 @@ class BookmarkButton : public views::TextButton {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
     *tooltip = CreateToolTipForURLAndTitle(location, url_, text(),
-        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+        UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
     return !tooltip->empty();
   }
 

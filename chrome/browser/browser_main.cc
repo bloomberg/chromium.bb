@@ -425,8 +425,10 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
     // becomes our default language in the prefs.
     // Other platforms obey the system locale.
     std::wstring install_lang;
-    if (GoogleUpdateSettings::GetLanguage(&install_lang))
-      local_state->SetString(prefs::kApplicationLocale, install_lang);
+    if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
+      local_state->SetString(prefs::kApplicationLocale,
+                             WideToASCII(install_lang));
+    }
 #endif  // defined(OS_WIN)
   }
 
@@ -990,7 +992,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     g_browser_process->SetApplicationLocale(l10n_util::GetLocaleOverride());
 #else
     std::string app_locale = ResourceBundle::InitSharedInstance(
-        local_state->GetString(prefs::kApplicationLocale));
+        ASCIIToWide(local_state->GetString(prefs::kApplicationLocale)));
     g_browser_process->SetApplicationLocale(app_locale);
 
     FilePath resources_pack_path;

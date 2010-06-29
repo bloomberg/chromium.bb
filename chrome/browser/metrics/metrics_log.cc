@@ -59,7 +59,7 @@ int64 MetricsLog::GetIncrementalUptime(PrefService* pref) {
 std::string MetricsLog::GetInstallDate() const {
   PrefService* pref = g_browser_process->local_state();
   if (pref) {
-    return WideToUTF8(pref->GetString(prefs::kMetricsClientIDTimestamp));
+    return pref->GetString(prefs::kMetricsClientIDTimestamp);
   } else {
     NOTREACHED();
     return "0";

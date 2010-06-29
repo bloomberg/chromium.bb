@@ -61,10 +61,10 @@ class AbstractPreferenceMergeTest : public testing::Test {
 class ListPreferenceMergeTest : public AbstractPreferenceMergeTest {
  protected:
   ListPreferenceMergeTest() :
-      server_url0_(L"http://example.com/server0"),
-      server_url1_(L"http://example.com/server1"),
-      local_url0_(L"http://example.com/local0"),
-      local_url1_(L"http://example.com/local1") {}
+      server_url0_("http://example.com/server0"),
+      server_url1_("http://example.com/server1"),
+      local_url0_("http://example.com/local0"),
+      local_url1_("http://example.com/local1") {}
 
   virtual void SetUp() {
     AbstractPreferenceMergeTest::SetUp();
@@ -72,10 +72,10 @@ class ListPreferenceMergeTest : public AbstractPreferenceMergeTest {
     server_url_list_.Append(Value::CreateStringValue(server_url1_));
   }
 
-  std::wstring server_url0_;
-  std::wstring server_url1_;
-  std::wstring local_url0_;
-  std::wstring local_url1_;
+  std::string server_url0_;
+  std::string server_url1_;
+  std::string local_url0_;
+  std::string local_url1_;
   ListValue server_url_list_;
 };
 

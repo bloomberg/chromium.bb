@@ -330,10 +330,10 @@ double PrefService::GetReal(const wchar_t* path) const {
   return result;
 }
 
-std::wstring PrefService::GetString(const wchar_t* path) const {
+std::string PrefService::GetString(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 
-  std::wstring result;
+  std::string result;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -581,7 +581,7 @@ void PrefService::SetReal(const wchar_t* path, double value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-void PrefService::SetString(const wchar_t* path, const std::wstring& value) {
+void PrefService::SetString(const wchar_t* path, const std::string& value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);

@@ -121,7 +121,7 @@ class PrefService : public NonThreadSafe {
   bool GetBoolean(const wchar_t* path) const;
   int GetInteger(const wchar_t* path) const;
   double GetReal(const wchar_t* path) const;
-  std::wstring GetString(const wchar_t* path) const;
+  std::string GetString(const wchar_t* path) const;
   FilePath GetFilePath(const wchar_t* path) const;
 
   // Returns the branch if it exists.  If it's not a branch or the branch does
@@ -142,7 +142,7 @@ class PrefService : public NonThreadSafe {
   void SetBoolean(const wchar_t* path, bool value);
   void SetInteger(const wchar_t* path, int value);
   void SetReal(const wchar_t* path, double value);
-  void SetString(const wchar_t* path, const std::wstring& value);
+  void SetString(const wchar_t* path, const std::string& value);
   void SetFilePath(const wchar_t* path, const FilePath& value);
 
   // Int64 helper methods that actually store the given value as a string.

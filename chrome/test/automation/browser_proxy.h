@@ -184,7 +184,7 @@ class BrowserProxy : public AutomationResourceProxy {
 
   // Sets the string value of the specified preference.
   bool SetStringPreference(const std::wstring& name,
-                           const std::wstring& value) WARN_UNUSED_RESULT;
+                           const std::string& value) WARN_UNUSED_RESULT;
 
   // Gets the boolean value of the specified preference.
   bool GetBooleanPreference(const std::wstring& name,

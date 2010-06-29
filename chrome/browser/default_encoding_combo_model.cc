@@ -39,9 +39,9 @@ int DefaultEncodingComboboxModel::GetSelectedEncodingIndex(Profile* profile) {
   current_encoding_string.Init(prefs::kDefaultCharset,
                                profile->GetPrefs(),
                                NULL);
-  const std::wstring current_encoding = current_encoding_string.GetValue();
+  const std::string current_encoding = current_encoding_string.GetValue();
   for (int i = 0; i < GetItemCount(); ++i) {
-    if (GetEncodingCharsetByIndex(i) == WideToASCII(current_encoding))
+    if (GetEncodingCharsetByIndex(i) == current_encoding)
       return i;
   }
 

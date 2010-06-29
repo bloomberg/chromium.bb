@@ -235,8 +235,8 @@ std::wstring EditSearchEngineDialog::GetKeywordInput() const {
   return UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(keyword_entry_)));
 }
 
-std::wstring EditSearchEngineDialog::GetURLInput() const {
-  return UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(url_entry_)));
+std::string EditSearchEngineDialog::GetURLInput() const {
+  return gtk_entry_get_text(GTK_ENTRY(url_entry_));
 }
 
 void EditSearchEngineDialog::EnableControls() {

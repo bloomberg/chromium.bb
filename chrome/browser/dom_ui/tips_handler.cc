@@ -46,9 +46,8 @@ void TipsHandler::HandleGetTips(const Value* content) {
   // the tip service starts up.
   PrefService* current_prefs = dom_ui_->GetProfile()->GetPrefs();
   if (current_prefs->HasPrefPath(prefs::kNTPTipsServer)) {
-    std::wstring server = current_prefs->GetString(prefs::kNTPTipsServer);
-    std::wstring locale =
-        ASCIIToWide(g_browser_process->GetApplicationLocale());
+    std::string server = current_prefs->GetString(prefs::kNTPTipsServer);
+    std::string locale = g_browser_process->GetApplicationLocale();
     if (!EndsWith(server, locale, false)) {
       dom_ui_->CallJavascriptFunction(L"tips", list_value);
       return;

@@ -893,9 +893,10 @@ void LocationBarViewMac::ContentSettingImageView::OnMousePressed(NSRect bounds)
     return;
   GURL url = tabContents->GetURL();
   std::wstring displayHost;
-  net::AppendFormattedHost(url,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &displayHost,
-      NULL, NULL);
+  net::AppendFormattedHost(
+      url,
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      &displayHost, NULL, NULL);
 
   // Transform mouse coordinates to screen space.
   AutocompleteTextField* textField = owner_->GetAutocompleteTextField();

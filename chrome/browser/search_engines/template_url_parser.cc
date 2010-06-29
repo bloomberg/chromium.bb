@@ -200,7 +200,7 @@ class ParsingContext {
   void DeriveImageFromURL() {
     if (derive_image_from_url_ &&
         url_->GetFavIconURL().is_empty() && url_->url()) {
-      GURL url(WideToUTF8(url_->url()->url()));  // More url's please...
+      GURL url(url_->url()->url());  // More url's please...
       url_->SetFavIconURL(TemplateURL::GenerateFaviconURL(url));
     }
   }
@@ -296,7 +296,7 @@ void ParseURL(const xmlChar** atts, ParsingContext* context) {
 
   TemplateURL* turl = context->template_url();
   const xmlChar** attributes = atts;
-  std::wstring template_url;
+  std::string template_url;
   bool is_post = false;
   bool is_html_url = false;
   bool is_suggest_url = false;
@@ -311,7 +311,7 @@ void ParseURL(const xmlChar** atts, ParsingContext* context) {
       is_html_url = (type == kHTMLType);
       is_suggest_url = (type == kSuggestionType);
     } else if (name == kURLTemplateAttribute) {
-      template_url = XMLCharToWide(value);
+      template_url = XMLCharToString(value);
     } else if (name == kURLIndexOffsetAttribute) {
       index_offset =
           std::max(1, StringToInt(WideToUTF16Hack(XMLCharToWide(value))));
@@ -406,7 +406,7 @@ void ProcessURLParams(ParsingContext* context) {
   if (!context->parameter_filter() && context->extra_params().empty())
     return;
 
-  GURL url(WideToUTF8(t_url_ref->url()));
+  GURL url(t_url_ref->url());
   // If there is a parameter filter, parse the existing URL and remove any
   // unwanted parameter.
   TemplateURLParser::ParameterFilter* filter = context->parameter_filter();
@@ -443,11 +443,11 @@ void ProcessURLParams(ParsingContext* context) {
     repl.SetQueryStr(new_query);
     url = url.ReplaceComponents(repl);
     if (context->is_suggestion()) {
-      t_url->SetSuggestionsURL(UTF8ToWide(url.spec()),
+      t_url->SetSuggestionsURL(url.spec(),
                                t_url_ref->index_offset(),
                                t_url_ref->page_offset());
     } else {
-      t_url->SetURL(UTF8ToWide(url.spec()),
+      t_url->SetURL(url.spec(),
                     t_url_ref->index_offset(),
                     t_url_ref->page_offset());
     }
@@ -527,7 +527,7 @@ void CharactersImpl(void *ctx, const xmlChar *ch, int len) {
 bool IsHTTPRef(const TemplateURLRef* ref) {
   if (ref == NULL)
     return true;
-  GURL url(WideToUTF8(ref->url()));
+  GURL url(ref->url());
   return (url.is_valid() && (url.SchemeIs(chrome::kHttpScheme) ||
                              url.SchemeIs(chrome::kHttpsScheme)));
 }
@@ -581,7 +581,7 @@ bool TemplateURLParser::Parse(const unsigned char* data, size_t length,
   if (context.method() == ParsingContext::POST)
     return false;
   if (context.suggestion_method() == ParsingContext::POST)
-    url->SetSuggestionsURL(L"", 0, 0);
+    url->SetSuggestionsURL("", 0, 0);
 
   if (!url->short_name().empty() && !url->description().empty()) {
     // So far so good, make sure the urls are http.

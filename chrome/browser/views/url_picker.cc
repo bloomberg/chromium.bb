@@ -219,8 +219,8 @@ bool UrlPicker::AcceleratorPressed(
 void UrlPicker::OnSelectionChanged() {
   int selection = url_table_->FirstSelectedRow();
   if (selection >= 0 && selection < url_table_model_->RowCount()) {
-    std::wstring languages =
-        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+    std::wstring languages = UTF8ToWide(
+        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
     // trailing slash, and unescape most characters, but we need to not drop any
     // username/password, or unescape anything that changes the meaning.

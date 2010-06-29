@@ -126,11 +126,11 @@ class DateTimeSection : public SettingsPageSection,
           L"(GMT+%d) " : L"(GMT%d) "), hour_offset) + output;
     }
 
-    virtual std::wstring GetTimeZoneIDAt(int index) {
+    virtual std::string GetTimeZoneIDAt(int index) {
       icu::UnicodeString id;
       timezones_[index]->getID(id);
-      std::wstring output;
-      UTF16ToWide(id.getBuffer(), id.length(), &output);
+      std::string output;
+      UTF16ToUTF8(id.getBuffer(), id.length(), &output);
       return output;
     }
 
@@ -141,7 +141,7 @@ class DateTimeSection : public SettingsPageSection,
   };
 
   // Selects the timezone.
-  void SelectTimeZone(const std::wstring& id);
+  void SelectTimeZone(const std::string& id);
 
   // TimeZone combobox model.
   views::Combobox* timezone_combobox_;
@@ -184,12 +184,12 @@ void DateTimeSection::InitContents(GridLayout* layout) {
 
 void DateTimeSection::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kTimeZone) {
-    std::wstring timezone = timezone_.GetValue();
+    std::string timezone = timezone_.GetValue();
     SelectTimeZone(timezone);
   }
 }
 
-void DateTimeSection::SelectTimeZone(const std::wstring& id) {
+void DateTimeSection::SelectTimeZone(const std::string& id) {
   for (int i = 0; i < timezone_combobox_model_.GetItemCount(); i++) {
     if (timezone_combobox_model_.GetTimeZoneIDAt(i) == id) {
       timezone_combobox_->SetSelectedItem(i);

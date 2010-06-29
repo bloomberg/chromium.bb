@@ -88,7 +88,7 @@ class CharacterEncoding {
   // |new_selected_encoding_id|. If the encoding is already in the original
   // list, then returns false. Otherwise |selected_encoding_list| will return a
   // new string for user selected encoding short list and function returns true.
-  static bool UpdateRecentlySelectdEncoding(
+  static bool UpdateRecentlySelectedEncoding(
       const std::string& original_selected_encodings,
       int new_selected_encoding_id,
       std::string* selected_encodings);

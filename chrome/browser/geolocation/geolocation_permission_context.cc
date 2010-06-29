@@ -290,7 +290,8 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(
               tab_contents, this,
               render_process_id, render_view_id,
               i->bridge_id, i->requesting_frame,
-              profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+              UTF8ToWide(profile_->GetPrefs()->GetString(
+                  prefs::kAcceptLanguages)));
       tab_contents->AddInfoBar(i->infobar_delegate);
       break;
     }

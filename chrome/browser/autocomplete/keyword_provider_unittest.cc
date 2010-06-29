@@ -36,13 +36,13 @@ class KeywordProviderTest : public testing::Test {
 
 void KeywordProviderTest::SetUp() {
   static const TemplateURLModel::Initializer kTestKeywordData[] = {
-    { L"aa", L"aa.com?foo=%s", L"aa" },
-    { L"aaaa", L"http://aaaa/?aaaa=1&b=%s&c", L"aaaa" },
-    { L"aaaaa", L"%s", L"aaaaa" },
-    { L"ab", L"bogus URL %s", L"ab" },
-    { L"weasel", L"weasel%sweasel", L"weasel" },
-    { L"www", L" +%2B?=%sfoo ", L"www" },
-    { L"z", L"%s=z", L"z" },
+    { L"aa", "aa.com?foo=%s", L"aa" },
+    { L"aaaa", "http://aaaa/?aaaa=1&b=%s&c", L"aaaa" },
+    { L"aaaaa", "%s", L"aaaaa" },
+    { L"ab", "bogus URL %s", L"ab" },
+    { L"weasel", "weasel%sweasel", L"weasel" },
+    { L"www", " +%2B?=%sfoo ", L"www" },
+    { L"z", "%s=z", L"z" },
   };
 
   model_.reset(new TemplateURLModel(kTestKeywordData,
@@ -180,7 +180,7 @@ TEST_F(KeywordProviderTest, Description) {
 TEST_F(KeywordProviderTest, AddKeyword) {
   TemplateURL* template_url = new TemplateURL();
   std::wstring keyword(L"foo");
-  std::wstring url(L"http://www.google.com/foo?q={searchTerms}");
+  std::string url("http://www.google.com/foo?q={searchTerms}");
   template_url->SetURL(url, 0, 0);
   template_url->set_keyword(keyword);
   template_url->set_short_name(L"Test");

@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_switches.h"
@@ -1886,7 +1887,8 @@ const PrepopulatedEngine* engines_CA[] =
 
 // Switzerland
 const PrepopulatedEngine* engines_CH[] =
-    { &google, &yahoo_ch, &bing_de_CH, &bing_fr_CH, &search_de_CH, &search_fr_CH, };
+    { &google, &yahoo_ch, &bing_de_CH, &bing_fr_CH, &search_de_CH,
+      &search_fr_CH, };
 
 // Chile
 const PrepopulatedEngine* engines_CL[] =
@@ -2808,11 +2810,11 @@ void GetPrepopulatedEngines(PrefService* prefs,
 
   for (size_t i = 0; i < num_engines; ++i) {
     TemplateURL* new_turl = new TemplateURL();
-    new_turl->SetURL(engines[i]->search_url, 0, 0);
+    new_turl->SetURL(WideToUTF8(engines[i]->search_url), 0, 0);
     if (engines[i]->favicon_url)
       new_turl->SetFavIconURL(GURL(engines[i]->favicon_url));
     if (engines[i]->suggest_url)
-      new_turl->SetSuggestionsURL(engines[i]->suggest_url, 0, 0);
+      new_turl->SetSuggestionsURL(WideToUTF8(engines[i]->suggest_url), 0, 0);
     new_turl->set_short_name(engines[i]->name);
     if (engines[i]->keyword == NULL)
       new_turl->set_autogenerate_keyword(true);

@@ -1162,7 +1162,8 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
   GURL url = tab_contents->GetURL();
   std::wstring display_host;
   net::AppendFormattedHost(url,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host,
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      &display_host,
       NULL, NULL);
 
   info_bubble_ = new ContentSettingBubbleGtk(

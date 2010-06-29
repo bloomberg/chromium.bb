@@ -111,8 +111,8 @@ PasswordStore* PasswordsExceptionsPageGtk::GetPasswordStore() {
 
 void PasswordsExceptionsPageGtk::SetExceptionList(
     const std::vector<webkit_glue::PasswordForm*>& result) {
-  std::wstring languages =
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  std::wstring languages = UTF8ToWide(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   gtk_list_store_clear(exception_list_store_);
   STLDeleteElements(&exception_list_);
   exception_list_ = result;

@@ -17,10 +17,10 @@ class TemplateURLTest : public testing::Test {
     TemplateURLRef::google_base_url_ = NULL;
   }
 
-  void CheckSuggestBaseURL(const wchar_t* base_url,
-                           const wchar_t* base_suggest_url) const {
+  void CheckSuggestBaseURL(const char* base_url,
+                           const char* base_suggest_url) const {
     delete TemplateURLRef::google_base_url_;
-    TemplateURLRef::google_base_url_ = new std::wstring(base_url);
+    TemplateURLRef::google_base_url_ = new std::string(base_url);
     EXPECT_STREQ(base_suggest_url,
                  TemplateURLRef::GoogleBaseSuggestURLValue().c_str());
   }
@@ -34,22 +34,22 @@ TEST_F(TemplateURLTest, Defaults) {
 }
 
 TEST_F(TemplateURLTest, TestValidWithComplete) {
-  TemplateURLRef ref(L"{searchTerms}", 0, 0);
+  TemplateURLRef ref("{searchTerms}", 0, 0);
   ASSERT_TRUE(ref.IsValid());
 }
 
 TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
   struct SearchTermsCase {
-    const wchar_t* url;
+    const char* url;
     const wchar_t* terms;
     const char* output;
   } search_term_cases[] = {
-    { L"http://foo{searchTerms}", L"sea rch/bar", "http://foosea%20rch/bar" },
-    { L"http://foo{searchTerms}?boo=abc", L"sea rch/bar",
+    { "http://foo{searchTerms}", L"sea rch/bar", "http://foosea%20rch/bar" },
+    { "http://foo{searchTerms}?boo=abc", L"sea rch/bar",
       "http://foosea%20rch/bar?boo=abc" },
-    { L"http://foo/?boo={searchTerms}", L"sea rch/bar",
+    { "http://foo/?boo={searchTerms}", L"sea rch/bar",
       "http://foo/?boo=sea+rch%2Fbar" },
-    { L"http://en.wikipedia.org/{searchTerms}", L"wiki/?",
+    { "http://en.wikipedia.org/{searchTerms}", L"wiki/?",
       "http://en.wikipedia.org/wiki/%3F" }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
@@ -59,8 +59,8 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
     ASSERT_TRUE(ref.IsValid());
 
     ASSERT_TRUE(ref.SupportsReplacement());
-    GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, value.terms,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+    GURL result = GURL(ref.ReplaceSearchTerms(t_url, value.terms,
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
     ASSERT_TRUE(result.is_valid());
     ASSERT_EQ(value.output, result.spec());
   }
@@ -68,45 +68,45 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
 
 TEST_F(TemplateURLTest, URLRefTestCount) {
   TemplateURL t_url;
-  TemplateURLRef ref(L"http://foo{searchTerms}{count?}", 0, 0);
+  TemplateURLRef ref("http://foo{searchTerms}{count?}", 0, 0);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"X",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result = GURL(ref.ReplaceSearchTerms(t_url, L"X",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://foox/", result.spec());
 }
 
 TEST_F(TemplateURLTest, URLRefTestCount2) {
   TemplateURL t_url;
-  TemplateURLRef ref(L"http://foo{searchTerms}{count}", 0, 0);
+  TemplateURLRef ref("http://foo{searchTerms}{count}", 0, 0);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"X",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result = GURL(ref.ReplaceSearchTerms(t_url, L"X",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://foox10/", result.spec());
 }
 
 TEST_F(TemplateURLTest, URLRefTestIndices) {
   TemplateURL t_url;
-  TemplateURLRef ref(L"http://foo{searchTerms}x{startIndex?}y{startPage?}",
+  TemplateURLRef ref("http://foo{searchTerms}x{startIndex?}y{startPage?}",
                      1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"X",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result = GURL(ref.ReplaceSearchTerms(t_url, L"X",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://fooxxy/", result.spec());
 }
 
 TEST_F(TemplateURLTest, URLRefTestIndices2) {
   TemplateURL t_url;
-  TemplateURLRef ref(L"http://foo{searchTerms}x{startIndex}y{startPage}", 1, 2);
+  TemplateURLRef ref("http://foo{searchTerms}x{startIndex}y{startPage}", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"X",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result = GURL(ref.ReplaceSearchTerms(t_url, L"X",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://fooxx1y2/", result.spec());
 }
@@ -114,11 +114,11 @@ TEST_F(TemplateURLTest, URLRefTestIndices2) {
 TEST_F(TemplateURLTest, URLRefTestEncoding) {
   TemplateURL t_url;
   TemplateURLRef ref(
-      L"http://foo{searchTerms}x{inputEncoding?}y{outputEncoding?}a", 1, 2);
+      "http://foo{searchTerms}x{inputEncoding?}y{outputEncoding?}a", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"X",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result = GURL(ref.ReplaceSearchTerms(t_url, L"X",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://fooxxutf-8ya/", result.spec());
 }
@@ -126,11 +126,11 @@ TEST_F(TemplateURLTest, URLRefTestEncoding) {
 TEST_F(TemplateURLTest, InputEncodingBeforeSearchTerm) {
   TemplateURL t_url;
   TemplateURLRef ref(
-      L"http://foox{inputEncoding?}a{searchTerms}y{outputEncoding?}b", 1, 2);
+      "http://foox{inputEncoding?}a{searchTerms}y{outputEncoding?}b", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"X",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result = GURL(ref.ReplaceSearchTerms(t_url, L"X",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://fooxutf-8axyb/", result.spec());
 }
@@ -138,11 +138,11 @@ TEST_F(TemplateURLTest, InputEncodingBeforeSearchTerm) {
 TEST_F(TemplateURLTest, URLRefTestEncoding2) {
   TemplateURL t_url;
   TemplateURLRef ref(
-      L"http://foo{searchTerms}x{inputEncoding}y{outputEncoding}a", 1, 2);
+      "http://foo{searchTerms}x{inputEncoding}y{outputEncoding}a", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"X",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result = GURL(ref.ReplaceSearchTerms(t_url, L"X",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   ASSERT_EQ("http://fooxxutf-8yutf-8a/", result.spec());
 }
@@ -174,7 +174,7 @@ TEST_F(TemplateURLTest, URLRefTermToWide) {
   encodings.push_back("big-5");
   t_url.set_input_encodings(encodings);
 
-  TemplateURLRef ref(L"http://foo?q={searchTerms}", 1, 2);
+  TemplateURLRef ref("http://foo?q={searchTerms}", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
 
@@ -201,16 +201,16 @@ TEST_F(TemplateURLTest, SetFavIcon) {
 
 TEST_F(TemplateURLTest, DisplayURLToURLRef) {
   struct TestData {
-    const std::wstring url;
+    const std::string url;
     const std::wstring expected_result;
   } data[] = {
-    { L"http://foo{searchTerms}x{inputEncoding}y{outputEncoding}a",
+    { "http://foo{searchTerms}x{inputEncoding}y{outputEncoding}a",
       L"http://foo%sx{inputEncoding}y{outputEncoding}a" },
-    { L"http://X",
+    { "http://X",
       L"http://X" },
-    { L"http://foo{searchTerms",
+    { "http://foo{searchTerms",
       L"http://foo{searchTerms" },
-    { L"http://foo{searchTerms}{language}",
+    { "http://foo{searchTerms}{language}",
       L"http://foo%s{language}" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
@@ -223,32 +223,32 @@ TEST_F(TemplateURLTest, DisplayURLToURLRef) {
 
 TEST_F(TemplateURLTest, ReplaceSearchTerms) {
   struct TestData {
-    const std::wstring url;
+    const std::string url;
     const std::string expected_result;
   } data[] = {
-    { L"http://foo/{language}{searchTerms}{inputEncoding}",
+    { "http://foo/{language}{searchTerms}{inputEncoding}",
       "http://foo/{language}XUTF-8" },
-    { L"http://foo/{language}{inputEncoding}{searchTerms}",
+    { "http://foo/{language}{inputEncoding}{searchTerms}",
       "http://foo/{language}UTF-8X" },
-    { L"http://foo/{searchTerms}{language}{inputEncoding}",
+    { "http://foo/{searchTerms}{language}{inputEncoding}",
       "http://foo/X{language}UTF-8" },
-    { L"http://foo/{searchTerms}{inputEncoding}{language}",
+    { "http://foo/{searchTerms}{inputEncoding}{language}",
       "http://foo/XUTF-8{language}" },
-    { L"http://foo/{inputEncoding}{searchTerms}{language}",
+    { "http://foo/{inputEncoding}{searchTerms}{language}",
       "http://foo/UTF-8X{language}" },
-    { L"http://foo/{inputEncoding}{language}{searchTerms}",
+    { "http://foo/{inputEncoding}{language}{searchTerms}",
       "http://foo/UTF-8{language}X" },
-    { L"http://foo/{language}a{searchTerms}a{inputEncoding}a",
+    { "http://foo/{language}a{searchTerms}a{inputEncoding}a",
       "http://foo/{language}aXaUTF-8a" },
-    { L"http://foo/{language}a{inputEncoding}a{searchTerms}a",
+    { "http://foo/{language}a{inputEncoding}a{searchTerms}a",
       "http://foo/{language}aUTF-8aXa" },
-    { L"http://foo/{searchTerms}a{language}a{inputEncoding}a",
+    { "http://foo/{searchTerms}a{language}a{inputEncoding}a",
       "http://foo/Xa{language}aUTF-8a" },
-    { L"http://foo/{searchTerms}a{inputEncoding}a{language}a",
+    { "http://foo/{searchTerms}a{inputEncoding}a{language}a",
       "http://foo/XaUTF-8a{language}a" },
-    { L"http://foo/{inputEncoding}a{searchTerms}a{language}a",
+    { "http://foo/{inputEncoding}a{searchTerms}a{language}a",
       "http://foo/UTF-8aXa{language}a" },
-    { L"http://foo/{inputEncoding}a{language}a{searchTerms}a",
+    { "http://foo/{inputEncoding}a{language}a{searchTerms}a",
       "http://foo/UTF-8a{language}aXa" },
   };
   TemplateURL turl;
@@ -260,8 +260,8 @@ TEST_F(TemplateURLTest, ReplaceSearchTerms) {
     std::string expected_result = data[i].expected_result;
     ReplaceSubstringsAfterOffset(&expected_result, 0, "{language}",
         g_browser_process->GetApplicationLocale());
-    GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(turl, L"X",
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+    GURL result = GURL(ref.ReplaceSearchTerms(turl, L"X",
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
     EXPECT_TRUE(result.is_valid());
     EXPECT_EQ(expected_result, result.spec());
   }
@@ -274,21 +274,21 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
   struct TestData {
     const std::string encoding;
     const std::wstring search_term;
-    const std::wstring url;
+    const std::string url;
     const std::string expected_result;
   } data[] = {
-    { "BIG5",  L"\x60BD", L"http://foo/?{searchTerms}{inputEncoding}",
+    { "BIG5",  L"\x60BD", "http://foo/?{searchTerms}{inputEncoding}",
       "http://foo/?%B1~BIG5" },
-    { "UTF-8", L"blah",   L"http://foo/?{searchTerms}{inputEncoding}",
+    { "UTF-8", L"blah",   "http://foo/?{searchTerms}{inputEncoding}",
       "http://foo/?blahUTF-8" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     TemplateURL turl;
     turl.add_input_encoding(data[i].encoding);
     TemplateURLRef ref(data[i].url, 1, 2);
-    GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(turl,
+    GURL result = GURL(ref.ReplaceSearchTerms(turl,
         data[i].search_term, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-        std::wstring())));
+        std::wstring()));
     EXPECT_TRUE(result.is_valid());
     EXPECT_EQ(data[i].expected_result, result.spec());
   }
@@ -313,13 +313,13 @@ TEST_F(TemplateURLTest, Suggestions) {
   };
   TemplateURL turl;
   turl.add_input_encoding("UTF-8");
-  TemplateURLRef ref(L"http://bar/foo?{google:acceptedSuggestion}"
-      L"{google:originalQueryForSuggestion}q={searchTerms}", 1, 2);
+  TemplateURLRef ref("http://bar/foo?{google:acceptedSuggestion}"
+      "{google:originalQueryForSuggestion}q={searchTerms}", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(turl, L"foobar",
-        data[i].accepted_suggestion, data[i].original_query_for_suggestion)));
+    GURL result = GURL(ref.ReplaceSearchTerms(turl, L"foobar",
+        data[i].accepted_suggestion, data[i].original_query_for_suggestion));
     EXPECT_TRUE(result.is_valid());
     EXPECT_EQ(data[i].expected_result, result.spec());
   }
@@ -331,11 +331,11 @@ TEST_F(TemplateURLTest, RLZ) {
   RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
 
   TemplateURL t_url;
-  TemplateURLRef ref(L"http://bar/?{google:RLZ}{searchTerms}", 1, 2);
+  TemplateURLRef ref("http://bar/?{google:RLZ}{searchTerms}", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result = GURL(WideToUTF8(ref.ReplaceSearchTerms(t_url, L"x",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+  GURL result(ref.ReplaceSearchTerms(t_url, L"x",
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring()));
   ASSERT_TRUE(result.is_valid());
   std::string expected_url = "http://bar/?";
   if (!rlz_string.empty()) {
@@ -348,29 +348,29 @@ TEST_F(TemplateURLTest, RLZ) {
 
 TEST_F(TemplateURLTest, HostAndSearchTermKey) {
   struct TestData {
-    const std::wstring url;
+    const std::string url;
     const std::string host;
     const std::string path;
     const std::string search_term_key;
   } data[] = {
-    { L"http://blah/?foo=bar&q={searchTerms}&b=x", "blah", "/", "q"},
+    { "http://blah/?foo=bar&q={searchTerms}&b=x", "blah", "/", "q"},
 
     // No query key should result in empty values.
-    { L"http://blah/{searchTerms}", "", "", ""},
+    { "http://blah/{searchTerms}", "", "", ""},
 
     // No term should result in empty values.
-    { L"http://blah/", "", "", ""},
+    { "http://blah/", "", "", ""},
 
     // Multiple terms should result in empty values.
-    { L"http://blah/?q={searchTerms}&x={searchTerms}", "", "", ""},
+    { "http://blah/?q={searchTerms}&x={searchTerms}", "", "", ""},
 
     // Term in the host shouldn't match.
-    { L"http://{searchTerms}", "", "", ""},
+    { "http://{searchTerms}", "", "", ""},
 
-    { L"http://blah/?q={searchTerms}", "blah", "/", "q"},
+    { "http://blah/?q={searchTerms}", "blah", "/", "q"},
 
     // Single term with extra chars in value should match.
-    { L"http://blah/?q=stock:{searchTerms}", "blah", "/", "q"},
+    { "http://blah/?q=stock:{searchTerms}", "blah", "/", "q"},
   };
 
   TemplateURL t_url;
@@ -384,15 +384,15 @@ TEST_F(TemplateURLTest, HostAndSearchTermKey) {
 
 TEST_F(TemplateURLTest, GoogleBaseSuggestURL) {
   static const struct {
-    const wchar_t* const base_url;
-    const wchar_t* const base_suggest_url;
+    const char* const base_url;
+    const char* const base_suggest_url;
   } data[] = {
-    { L"http://google.com/", L"http://clients1.google.com/complete/", },
-    { L"http://www.google.com/", L"http://clients1.google.com/complete/", },
-    { L"http://www.google.co.uk/", L"http://clients1.google.co.uk/complete/", },
-    { L"http://www.google.com.by/",
-      L"http://clients1.google.com.by/complete/", },
-    { L"http://google.com/intl/xx/", L"http://clients1.google.com/complete/", },
+    { "http://google.com/", "http://clients1.google.com/complete/", },
+    { "http://www.google.com/", "http://clients1.google.com/complete/", },
+    { "http://www.google.co.uk/", "http://clients1.google.co.uk/complete/", },
+    { "http://www.google.com.by/",
+      "http://clients1.google.com.by/complete/", },
+    { "http://google.com/intl/xx/", "http://clients1.google.com/complete/", },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i)
@@ -401,7 +401,7 @@ TEST_F(TemplateURLTest, GoogleBaseSuggestURL) {
 
 TEST_F(TemplateURLTest, Keyword) {
   TemplateURL t_url;
-  t_url.SetURL(L"http://www.google.com/search", 0, 0);
+  t_url.SetURL("http://www.google.com/search", 0, 0);
   EXPECT_FALSE(t_url.autogenerate_keyword());
   t_url.set_keyword(L"foo");
   EXPECT_EQ(L"foo", t_url.keyword());
@@ -414,58 +414,58 @@ TEST_F(TemplateURLTest, Keyword) {
 }
 
 TEST_F(TemplateURLTest, ParseParameterKnown) {
-  std::wstring parsed_url(L"{searchTerms}");
+  std::string parsed_url("{searchTerms}");
   TemplateURLRef url_ref(parsed_url, 0, 0);
   TemplateURLRef::Replacements replacements;
   EXPECT_TRUE(url_ref.ParseParameter(0, 12, &parsed_url, &replacements));
-  EXPECT_EQ(std::wstring(), parsed_url);
+  EXPECT_EQ(std::string(), parsed_url);
   ASSERT_EQ(1U, replacements.size());
   EXPECT_EQ(static_cast<size_t>(0), replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
 }
 
 TEST_F(TemplateURLTest, ParseParameterUnknown) {
-  std::wstring parsed_url(L"{}");
+  std::string parsed_url("{}");
   TemplateURLRef url_ref(parsed_url, 0, 0);
   TemplateURLRef::Replacements replacements;
   EXPECT_FALSE(url_ref.ParseParameter(0, 1, &parsed_url, &replacements));
-  EXPECT_EQ(L"{}", parsed_url);
+  EXPECT_EQ("{}", parsed_url);
   EXPECT_TRUE(replacements.empty());
 }
 
 TEST_F(TemplateURLTest, ParseURLEmpty) {
-  TemplateURLRef url_ref(L"", 0, 0);
+  TemplateURLRef url_ref("", 0, 0);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ(std::wstring(), url_ref.ParseURL(L"", &replacements, &valid));
+  EXPECT_EQ(std::string(), url_ref.ParseURL("", &replacements, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 }
 
 TEST_F(TemplateURLTest, ParseURLNoTemplateEnd) {
-  TemplateURLRef url_ref(L"{", 0, 0);
+  TemplateURLRef url_ref("{", 0, 0);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ(std::wstring(), url_ref.ParseURL(L"{", &replacements, &valid));
+  EXPECT_EQ(std::string(), url_ref.ParseURL("{", &replacements, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_FALSE(valid);
 }
 
 TEST_F(TemplateURLTest, ParseURLNoKnownParameters) {
-  TemplateURLRef url_ref(L"{}", 0, 0);
+  TemplateURLRef url_ref("{}", 0, 0);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ(L"{}", url_ref.ParseURL(L"{}", &replacements, &valid));
+  EXPECT_EQ("{}", url_ref.ParseURL("{}", &replacements, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 }
 
 TEST_F(TemplateURLTest, ParseURLTwoParameters) {
-  TemplateURLRef url_ref(L"{}{{%s}}", 0, 0);
+  TemplateURLRef url_ref("{}{{%s}}", 0, 0);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ(L"{}{}",
-            url_ref.ParseURL(L"{}{{searchTerms}}", &replacements, &valid));
+  EXPECT_EQ("{}{}",
+            url_ref.ParseURL("{}{{searchTerms}}", &replacements, &valid));
   ASSERT_EQ(1U, replacements.size());
   EXPECT_EQ(static_cast<size_t>(3), replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
@@ -473,10 +473,10 @@ TEST_F(TemplateURLTest, ParseURLTwoParameters) {
 }
 
 TEST_F(TemplateURLTest, ParseURLNestedParameter) {
-  TemplateURLRef url_ref(L"{%s", 0, 0);
+  TemplateURLRef url_ref("{%s", 0, 0);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ(L"{", url_ref.ParseURL(L"{{searchTerms}", &replacements, &valid));
+  EXPECT_EQ("{", url_ref.ParseURL("{{searchTerms}", &replacements, &valid));
   ASSERT_EQ(1U, replacements.size());
   EXPECT_EQ(static_cast<size_t>(1), replacements[0].index);
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);

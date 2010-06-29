@@ -28,14 +28,14 @@ class KeywordEditorController {
   // Returns the index of the added URL.
   int AddTemplateURL(const std::wstring& title,
                      const std::wstring& keyword,
-                     const std::wstring& url);
+                     const std::string& url);
 
   // Invoked when the user modifies a TemplateURL. Updates the TemplateURLModel
   // and table model appropriately.
   void ModifyTemplateURL(const TemplateURL* template_url,
                          const std::wstring& title,
                          const std::wstring& keyword,
-                         const std::wstring& url);
+                         const std::string& url);
 
   // Return true if the given |url| can be made the default.
   bool CanMakeDefault(const TemplateURL* url) const;
