@@ -269,6 +269,14 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
       return;
     }
   }
+  if (NULL != rpc &&
+      DISPATCH_EOF == retval) {
+    dprintf(("SRPC: EOF is received instead of response. "
+             "Probably, the other side "
+             "(usually, nacl module or browser plugin) crashed."));
+    rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
+    return;
+  }
 }
 
 /*
