@@ -29,7 +29,6 @@ std::string GetDisplayURL(const TemplateURL& turl) {
   return turl.url() ? WideToUTF8(turl.url()->DisplayURL()) : std::string();
 }
 
-
 // Forces text to lowercase when connected to an editable's "insert-text"
 // signal.  (Like views Textfield::STYLE_LOWERCASE.)
 void LowercaseInsertTextHandler(GtkEditable *editable, const gchar *text,
@@ -48,6 +47,22 @@ void LowercaseInsertTextHandler(GtkEditable *editable, const gchar *text,
     // inserting the original.
     g_signal_stop_emission_by_name(G_OBJECT(editable), "insert_text");
   }
+}
+
+void SetWidgetStyle(GtkWidget* entry, GtkStyle* label_style,
+                    GtkStyle* dialog_style) {
+  gtk_widget_modify_fg(entry, GTK_STATE_NORMAL,
+                       &label_style->fg[GTK_STATE_NORMAL]);
+  gtk_widget_modify_fg(entry, GTK_STATE_INSENSITIVE,
+                       &label_style->fg[GTK_STATE_INSENSITIVE]);
+  // GTK_NO_WINDOW widgets like GtkLabel don't draw their own background, so we
+  // combine the normal or insensitive foreground of the label style with the
+  // normal background of the window style to achieve the "normal label" and
+  // "insensitive label" colors.
+  gtk_widget_modify_base(entry, GTK_STATE_NORMAL,
+                         &dialog_style->bg[GTK_STATE_NORMAL]);
+  gtk_widget_modify_base(entry, GTK_STATE_INSENSITIVE,
+                         &dialog_style->bg[GTK_STATE_NORMAL]);
 }
 
 }  // namespace
@@ -152,6 +167,16 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
     gtk_editable_set_editable(
         GTK_EDITABLE(url_entry_),
         controller_->template_url()->prepopulate_id() == 0);
+
+    if (controller_->template_url()->prepopulate_id() != 0) {
+      GtkWidget* fake_label = gtk_label_new("Fake label");
+      gtk_widget_set_sensitive(fake_label,
+          controller_->template_url()->prepopulate_id() == 0);
+      GtkStyle* label_style = gtk_widget_get_style(fake_label);
+      GtkStyle* dialog_style = gtk_widget_get_style(dialog_);
+      SetWidgetStyle(url_entry_, label_style, dialog_style);
+      gtk_widget_destroy(fake_label);
+    }
   }
 
   GtkWidget* controls = gtk_util::CreateLabeledControlsGroup(NULL,
