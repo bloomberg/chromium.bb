@@ -127,7 +127,9 @@ class AccessibilityEventRouterGtk {
       GtkWidget* widget, NotificationType type, Profile* profile);
   void SendTabNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
-  void SendTextBoxNotification(
+  void SendEntryNotification(
+      GtkWidget* widget, NotificationType type, Profile* profile);
+  void SendTextViewNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
 
   void InstallEventListeners();
@@ -164,6 +166,9 @@ class AccessibilityEventRouterGtk {
   // figure out where to route a few events that can't be directly traced
   // to a window with a profile (like menu events).
   Profile* most_recent_profile_;
+
+  // The most recent focused widget.
+  GtkWidget* most_recent_widget_;
 
   // Used to schedule invocations of StartListening() and to defer handling
   // of some events until the next time through the event loop.

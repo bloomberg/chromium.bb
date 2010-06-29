@@ -69,7 +69,6 @@
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #elif defined(OS_LINUX)
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
 #endif
@@ -664,16 +663,6 @@ bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
-  accessible_view_helper_.reset(new AccessibleViewHelper(
-      this, browser_->profile()));
-
-#if defined(OS_LINUX)
-  if (!accessible_widget_helper_.get()) {
-    accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-        GTK_WIDGET(GetWindow()->GetNativeWindow()), browser_->profile()));
-  }
-#endif
-
   // If the window is already visible, just activate it.
   if (frame_->GetWindow()->IsVisible()) {
     frame_->GetWindow()->Activate();
@@ -1754,6 +1743,9 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
 // BrowserView, private:
 
 void BrowserView::Init() {
+  accessible_view_helper_.reset(new AccessibleViewHelper(
+      this, browser_->profile()));
+
   SetLayoutManager(CreateLayoutManager());
   // Stow a pointer to this object onto the window handle so that we can get
   // at it later when all we have is a native view.

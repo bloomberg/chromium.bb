@@ -8,6 +8,7 @@
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
+#include "views/widget/widget.h"
 
 using views::View;
 
@@ -18,6 +19,11 @@ AccessibleViewHelper::AccessibleViewHelper(
       view_tree_(view_tree) {
   if (!accessibility_event_router_->AddViewTree(view_tree_, profile))
     view_tree_ = NULL;
+
+#if defined(OS_LINUX)
+  GtkWidget* widget = view_tree->GetWidget()->GetNativeView();
+  widget_helper_.reset(new AccessibleWidgetHelper(widget, profile));
+#endif
 }
 
 AccessibleViewHelper::~AccessibleViewHelper() {

@@ -9,9 +9,14 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/views/accessibility_event_router_views.h"
+
+#if defined(OS_LINUX)
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
+#endif
 
 class Profile;
 
@@ -62,6 +67,10 @@ class AccessibleViewHelper {
   views::View* view_tree_;
   std::string window_title_;
   std::vector<views::View*> managed_views_;
+
+#if defined(OS_LINUX)
+  scoped_ptr<AccessibleWidgetHelper> widget_helper_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AccessibleViewHelper);
 };

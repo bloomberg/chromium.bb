@@ -14,7 +14,8 @@ AccessibleWidgetHelper::AccessibleWidgetHelper(
     : accessibility_event_router_(AccessibilityEventRouterGtk::GetInstance()),
       profile_(profile),
       root_widget_(root_widget) {
-  accessibility_event_router_->AddRootWidget(root_widget_, profile);
+  CHECK(profile_);
+  accessibility_event_router_->AddRootWidget(root_widget_, profile_);
 }
 
 AccessibleWidgetHelper::~AccessibleWidgetHelper() {

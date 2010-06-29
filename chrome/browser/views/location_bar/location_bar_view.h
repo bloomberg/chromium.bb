@@ -26,6 +26,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
 #else
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #endif
 
 class Browser;
@@ -355,6 +356,10 @@ class LocationBarView : public LocationBar,
   // True if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   bool show_focus_rect_;
+
+#if defined(OS_LINUX)
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
+#endif
 
   // Used to schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;

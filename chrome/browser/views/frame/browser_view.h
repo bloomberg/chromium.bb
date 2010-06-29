@@ -62,8 +62,6 @@ class ZoomMenuModel;
 #if defined(OS_WIN)
 class AeroPeekManager;
 class JumpList;
-#elif defined(OS_LINUX)
-class AccessibleWidgetHelper;
 #endif
 
 namespace views {
@@ -609,9 +607,6 @@ class BrowserView : public BrowserBubbleHost,
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
-#if defined(OS_LINUX)
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-#endif
 
   // Loads extension_app_icon_ asynchronously on the file thread.
   ImageLoadingTracker extension_app_icon_loader_;

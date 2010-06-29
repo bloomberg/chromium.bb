@@ -138,6 +138,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
     enable_tab_to_search_ = enable;
   }
 
+  GtkWidget* text_view() {
+    return text_view_;
+  }
+
  private:
   CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void, HandleBeginUserAction,
                      GtkTextBuffer*);

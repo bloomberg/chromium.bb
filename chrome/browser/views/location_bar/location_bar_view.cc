@@ -154,6 +154,13 @@ void LocationBarView::Init() {
   // Hide the widget. NativeViewHostGtk will make it visible again as
   // necessary.
   gtk_widget_hide(location_entry_->GetNativeView());
+
+  // Associate an accessible name with the location entry.
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      location_entry_->text_view(), profile_));
+  accessible_widget_helper_->SetWidgetName(
+      location_entry_->text_view(),
+      l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
 #endif
   location_entry_view_ = new views::NativeViewHost;
   location_entry_view_->SetID(VIEW_ID_AUTOCOMPLETE);
