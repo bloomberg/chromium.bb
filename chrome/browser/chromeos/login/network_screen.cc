@@ -178,8 +178,10 @@ void NetworkScreen::OnDialogAccepted() {
 }
 
 void NetworkScreen::OnDialogCancelled() {
-  view()->EnableContinue(false);
-  view()->SetSelectedNetworkItem(0);
+  if (view()) {
+    view()->EnableContinue(false);
+    view()->SetSelectedNetworkItem(0);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
