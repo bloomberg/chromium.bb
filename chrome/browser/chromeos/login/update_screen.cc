@@ -49,7 +49,10 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
   // Depending on the result decide what to do next.
   update_result_ = result;
   update_error_ = error_code;
-  LOG(INFO) << "Update result: " << update_error_;
+  LOG(INFO) << "Update result: " << result;
+  if (error_code != GOOGLE_UPDATE_NO_ERROR)
+    LOG(INFO) << "Update error code: " << error_code;
+  LOG(INFO) << "Update version: " << version;
   switch (update_result_) {
     case UPGRADE_IS_AVAILABLE:
       checking_for_update_ = false;
