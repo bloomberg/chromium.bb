@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'no_libjingle_logging%': 0,
+  },
   'target_defaults': {
     'defines': [
       'FEATURE_ENABLE_SSL',
@@ -77,6 +80,11 @@
         ['OS=="openbsd" or OS=="freebsd"', {
           'defines': [
             'BSD',
+          ],
+        }],
+        ['no_libjingle_logging==1', {
+          'defines': [
+            'NO_LIBJINGLE_LOGGING',
           ],
         }],
       ],
