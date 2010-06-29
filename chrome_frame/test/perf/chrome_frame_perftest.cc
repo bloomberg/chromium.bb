@@ -982,6 +982,7 @@ TEST_F(RegularChromeFrameActiveXMemoryTest, MemoryTestAboutBlank) {
 // TODO(iyengar)
 // Revisit why the chrome frame dll does not unload correctly when this test is
 // run.
+// http://code.google.com/p/chromium/issues/detail?id=47812
 TEST_F(RegularChromeFrameActiveXMemoryTest, DISABLED_MemoryTestUrls) {
   // TODO(iyengar)
   // We should use static pages to measure memory usage.
@@ -996,7 +997,11 @@ TEST_F(RegularChromeFrameActiveXMemoryTest, DISABLED_MemoryTestUrls) {
 typedef ChromeFrameActiveXMemoryTest<ChromeFrameMemoryTestReference>
     ReferenceBuildChromeFrameActiveXMemoryTest;
 
-TEST_F(ReferenceBuildChromeFrameActiveXMemoryTest, MemoryTestAboutBlank) {
+// Disabled to investigate why the chrome frame dll does not unload while
+// running this test.
+// http://code.google.com/p/chromium/issues/detail?id=47812
+TEST_F(ReferenceBuildChromeFrameActiveXMemoryTest,
+       DISABLED_MemoryTestAboutBlank) {
   char *urls[] = {"about:blank"};
   RunTest("memory_about_blank_reference", urls, arraysize(urls));
 }
