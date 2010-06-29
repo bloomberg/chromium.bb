@@ -19,8 +19,10 @@
 // http://crbug.com/47575
 #define MAYBE_BrowserCloseNoUnloadListeners \
         DISABLED_BrowserCloseNoUnloadListeners
+#define MAYBE_BrowserCloseUnload DISABLED_BrowserCloseUnload
 #else
 #define MAYBE_BrowserCloseNoUnloadListeners BrowserCloseNoUnloadListeners
+#define MAYBE_BrowserCloseUnload BrowserCloseUnload
 #endif
 
 const std::string NOLISTENERS_HTML =
@@ -284,7 +286,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseNoUnloadListeners) {
 }
 
 // Tests closing the browser on a page with an unload listener registered.
-TEST_F(UnloadTest, BrowserCloseUnload) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseUnload) {
   LoadUrlAndQuitBrowser(UNLOAD_HTML, L"unload");
 }
 
