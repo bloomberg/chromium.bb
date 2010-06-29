@@ -146,7 +146,7 @@
         'host/chromoting_host.cc',
         'host/chromoting_host.h',
         'host/chromoting_host_context.cc',
-        'host/chromoting_hsot_context.h',
+        'host/chromoting_host_context.h',
         'host/client_connection.cc',
         'host/client_connection.h',
         'host/differ.h',
