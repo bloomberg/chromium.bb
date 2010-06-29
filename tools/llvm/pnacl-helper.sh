@@ -19,15 +19,14 @@ readonly PNACL_X8632_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8632
 readonly PNACL_X8664_ROOT=${PNACL_TOOLCHAIN_ROOT}/x8664
 readonly PNACL_BITCODE_ROOT=${PNACL_TOOLCHAIN_ROOT}/bitcode
 
-readonly PNACL_HG_CLIENT=$(readlink -f ${PNACL_TOOLCHAIN_ROOT}/hg)
+readonly PNACL_HG_CLIENT=$(readlink -f "${PNACL_TOOLCHAIN_ROOT}/../hg")
 
 readonly ARM_UNTRUSTED=$(readlink -f toolchain/linux_arm-untrusted)
 readonly LLVM_DIS=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm/bin/llvm-dis
 readonly LLVM_AR=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ar
 
-# NOTE: temporary measure until we have a unified llc
-readonly SYMLINK_LLC_X86_32=${ARM_UNTRUSTED}/llc-x86-32-sfi
-readonly SYMLINK_LLC_X86_64=${ARM_UNTRUSTED}/llc-x86-64-sfi
+
+readonly BUILDER_SCRIPT=tools/llvm/untrusted-toolchain-creator.sh
 
 ######################################################################
 # Helpers
@@ -234,8 +233,7 @@ build-bitcode-newlib() {
   export TARGET_CODE=bc-arm  # "bc" is important; "arm" is incidental.
   Banner "Newlib"
   mkdir -p ${PNACL_BITCODE_ROOT}
-  tools/llvm/untrusted-toolchain-creator.sh newlib-libonly \
-       $(pwd)/${PNACL_BITCODE_ROOT}
+  ${BUILDER_SCRIPT} newlib-libonly $(pwd)/${PNACL_BITCODE_ROOT}
 }
 
 #@
@@ -498,7 +496,7 @@ checkout-and-build-llc() {
   echo "configure + make"
   ./configure --disable-jit \
               --enable-optimized \
-              --enable-targets=x86,x86_64 \
+              --enable-targets=x86,x86_64,arm \
               --target=arm-none-linux-gnueabi
   make -j 6 tools-only
 
@@ -510,7 +508,7 @@ checkout-and-build-llc() {
 #@
 #@ install-llc
 #@
-#@   Copy a locally built llc into the toolchain for testing
+#@   Copy a locally built llc into the toolchain for initial testing
 install-llc() {
   pushd ${PNACL_HG_CLIENT}/nacl-llvm-branches/llvm-trunk
 
@@ -534,7 +532,22 @@ install-llc() {
 
   cp -f ${llc} ${dst}
   popd
+  Banner "do not forget to test with tools/llvm/pnacl-helper.sh test-all"
 }
+
+
+#@
+#@  toolchain-build-from-local-llvm-repo
+#@
+#@   Run this before "hg push" followed by tools/llvm/pnacl-helper.sh test-all
+toolchain-build-from-local-llvm-repo() {
+  ${BUILDER_SCRIPT} untrusted_sdk_from_llvm_checkout \
+                    ${PNACL_HG_CLIENT}/nacl-llvm-branches \
+                    /tmp/dummy_tarball_location
+}
+
+
+
 
 
 ######################################################################
