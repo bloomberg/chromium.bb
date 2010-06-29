@@ -17,16 +17,9 @@
 
 #if defined(OS_LINUX)
 // http://crbug.com/47575
-#define MAYBE_BrowserCloseNoUnloadListeners \
-        DISABLED_BrowserCloseNoUnloadListeners
-#define MAYBE_BrowserCloseUnload DISABLED_BrowserCloseUnload
-#define MAYBE_BrowserCloseTwoSecondBeforeUnload \
-        DISABLED_BrowserCloseTwoSecondBeforeUnload
+#define SKIP_LINUX(test) DISABLED_##test
 #else
-#define MAYBE_BrowserCloseNoUnloadListeners BrowserCloseNoUnloadListeners
-#define MAYBE_BrowserCloseUnload BrowserCloseUnload
-#define MAYBE_BrowserCloseTwoSecondBeforeUnload \
-        BrowserCloseTwoSecondBeforeUnload
+#define SKIP_LINUX(test) test
 #endif
 
 const std::string NOLISTENERS_HTML =
@@ -285,12 +278,12 @@ TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadSync) {
 }
 
 // Tests closing the browser on a page with no unload listeners registered.
-TEST_F(UnloadTest, MAYBE_BrowserCloseNoUnloadListeners) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseNoUnloadListeners)) {
   LoadUrlAndQuitBrowser(NOLISTENERS_HTML, L"nolisteners");
 }
 
 // Tests closing the browser on a page with an unload listener registered.
-TEST_F(UnloadTest, MAYBE_BrowserCloseUnload) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseUnload)) {
   LoadUrlAndQuitBrowser(UNLOAD_HTML, L"unload");
 }
 
@@ -349,14 +342,14 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseWithInnerFocusedFrame) {
 
 // Tests closing the browser with a beforeunload handler that takes
 // two seconds to run.
-TEST_F(UnloadTest, MAYBE_BrowserCloseTwoSecondBeforeUnload) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseTwoSecondBeforeUnload)) {
   LoadUrlAndQuitBrowser(TWO_SECOND_BEFORE_UNLOAD_HTML,
                         L"twosecondbeforeunload");
 }
 
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an infinite loop.
-TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseInfiniteUnload)) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -365,7 +358,7 @@ TEST_F(UnloadTest, BrowserCloseInfiniteUnload) {
 }
 
 // Tests closing the browser with a beforeunload handler that hangs.
-TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnload) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseInfiniteBeforeUnload)) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -375,7 +368,7 @@ TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnload) {
 
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an infinite loop followed by an alert.
-TEST_F(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseInfiniteUnloadAlert)) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -385,7 +378,7 @@ TEST_F(UnloadTest, BrowserCloseInfiniteUnloadAlert) {
 
 // Tests closing the browser with a beforeunload handler that hangs then
 // pops up an alert.
-TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnloadAlert) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseInfiniteBeforeUnloadAlert)) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -396,13 +389,13 @@ TEST_F(UnloadTest, BrowserCloseInfiniteBeforeUnloadAlert) {
 
 // Tests closing the browser on a page with an unload listener registered where
 // the unload handler has an 2 second long loop followed by an alert.
-TEST_F(UnloadTest, BrowserCloseTwoSecondUnloadAlert) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseTwoSecondUnloadAlert)) {
   LoadUrlAndQuitBrowser(TWO_SECOND_UNLOAD_ALERT_HTML, L"twosecondunloadalert");
 }
 
 // Tests closing the browser with a beforeunload handler that takes
 // two seconds to run then pops up an alert.
-TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
+TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseTwoSecondBeforeUnloadAlert)) {
   LoadUrlAndQuitBrowser(TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML,
                         L"twosecondbeforeunloadalert");
 }
