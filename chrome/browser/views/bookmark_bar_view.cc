@@ -953,9 +953,9 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
 
 void BookmarkBarView::Loaded(BookmarkModel* model) {
   volatile int button_count = GetBookmarkButtonCount();
-  CHECK(button_count == 0);  // If non-zero it means Load was invoked more than
-                             // once, or we didn't properly clear things. Either
-                             // of which shouldn't happen
+  DCHECK(button_count == 0);  // If non-zero it means Load was invoked more than
+                              // once, or we didn't properly clear things.
+                              // Either of which shouldn't happen
   const BookmarkNode* node = model_->GetBookmarkBarNode();
   DCHECK(node && model_->other_node());
   // Create a button for each of the children on the bookmark bar.
@@ -966,8 +966,6 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
 
   Layout();
   SchedulePaint();
-
-  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkModelBeingDeleted(BookmarkModel* model) {
@@ -988,14 +986,12 @@ void BookmarkBarView::BookmarkNodeMoved(BookmarkModel* model,
                                         int new_index) {
   BookmarkNodeRemovedImpl(model, old_parent, old_index);
   BookmarkNodeAddedImpl(model, new_parent, new_index);
-  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
                                         const BookmarkNode* parent,
                                         int index) {
   BookmarkNodeAddedImpl(model, parent, index);
-  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
@@ -1022,7 +1018,6 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
                                           int old_index,
                                           const BookmarkNode* node) {
   BookmarkNodeRemovedImpl(model, parent, old_index);
-  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
@@ -1049,7 +1044,6 @@ void BookmarkBarView::BookmarkNodeChanged(BookmarkModel* model,
                                           const BookmarkNode* node) {
   NotifyModelChanged();
   BookmarkNodeChangedImpl(model, node);
-  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
@@ -1092,8 +1086,6 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
 
   Layout();
   SchedulePaint();
-
-  CheckIntegrity();
 }
 
 void BookmarkBarView::BookmarkNodeFavIconLoaded(BookmarkModel* model,
@@ -1130,8 +1122,6 @@ int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
     // dnd, such as pressing the mouse and hitting control-b.
     return DragDropTypes::DRAG_NONE;
   }
-
-  CheckIntegrity();
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
@@ -1739,14 +1729,4 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   sync_error_button->SetIcon(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING));
   return sync_error_button;
-}
-
-void BookmarkBarView::CheckIntegrity() {
-  // We better be on the ui thread.
-  CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  // And the number of views on the bookmark bar better match that of the model.
-  volatile int model_count = model_->GetBookmarkBarNode()->GetChildCount();
-  volatile int view_count = GetBookmarkButtonCount();
-  CHECK_EQ(model_count, view_count);
 }

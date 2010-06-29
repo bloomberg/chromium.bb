@@ -429,10 +429,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // Creates the sync error button and adds it as a child view.
   views::TextButton* CreateSyncErrorButton();
 
-  // Asserts the number of bookmark buttons we have matches that of the model,
-  // as well as this being invoked on the ui thread.
-  void CheckIntegrity();
-
   NotificationRegistrar registrar_;
 
   Profile* profile_;
