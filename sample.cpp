@@ -216,11 +216,14 @@ int main(int argc, char* argv[])
         {
             const Block* const pBlock  = pBlockEntry->GetBlock();
             const unsigned long trackNum = pBlock->GetTrackNumber();
+            const Track *pTrack = pTracks->GetTrackByNumber(trackNum);
+            const long long trackType_ = pTrack->GetType();
+            const unsigned long trackType = static_cast<unsigned long>(trackType_);
             const long size = pBlock->GetSize();
             const long long time_ns = pBlock->GetTime(pCluster);
 
             printf("\t\t\tBlock\t\t:%s,%15ld,%s,%15lld\n",
-                   (trackNum == VIDEO_TRACK) ? "V" : "A",
+                   (trackType == VIDEO_TRACK) ? "V" : "A",
                    size,
                    pBlock->IsKey() ? "I" : "P",
                    time_ns);
