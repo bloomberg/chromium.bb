@@ -19,6 +19,8 @@
 
 namespace {
 
+const cairo_user_data_key_t kPdfMetafileKey = {0};
+
 // Tests if |surface| is valid.
 bool IsSurfaceValid(cairo_surface_t* surface) {
   return cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS;
@@ -58,6 +60,10 @@ cairo_status_t WriteCairoStream(void* dst_buffer,
   buffer->append(reinterpret_cast<const char*>(src_data), src_data_length);
 
   return CAIRO_STATUS_SUCCESS;
+}
+
+void DestroyContextData(void* data) {
+  // Nothing to be done here.
 }
 
 }  // namespace
@@ -115,6 +121,8 @@ bool PdfPsMetafile::Init() {
     return false;
   }
 
+  cairo_set_user_data(context_, &kPdfMetafileKey, this, DestroyContextData);
+
   return true;
 }
 
@@ -129,6 +137,23 @@ bool PdfPsMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
 
   data_ = std::string(reinterpret_cast<const char*>(src_buffer),
                       src_buffer_size);
+
+  return true;
+}
+
+bool PdfPsMetafile::SetRawData(const void* src_buffer,
+                               uint32 src_buffer_size) {
+  if (!context_) {
+    // If Init has not already been called, just call Init()
+    return Init(src_buffer, src_buffer_size);
+  }
+  // If a context has already been created, remember this data in
+  // raw_override_data_
+  if (src_buffer == NULL || src_buffer_size == 0)
+    return false;
+
+  raw_override_data_ = std::string(reinterpret_cast<const char*>(src_buffer),
+                                   src_buffer_size);
 
   return true;
 }
@@ -191,6 +216,12 @@ void PdfPsMetafile::Close() {
   DCHECK(IsContextValid(context_));
 
   cairo_surface_finish(surface_);
+
+  // If we have raw PDF/PS data set use that instead of what was drawn.
+  if (!raw_override_data_.empty()) {
+    data_ = raw_override_data_;
+    raw_override_data_.clear();
+  }
   DCHECK(!data_.empty());  // Make sure we did get something.
 
   CleanUpContext(&context_);
@@ -240,6 +271,11 @@ bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
   }
 
   return success;
+}
+
+PdfPsMetafile* PdfPsMetafile::FromCairoContext(cairo_t* context) {
+  return reinterpret_cast<PdfPsMetafile*>(
+      cairo_get_user_data(context, &kPdfMetafileKey));
 }
 
 void PdfPsMetafile::CleanUpAll() {

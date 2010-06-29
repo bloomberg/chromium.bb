@@ -301,10 +301,22 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   int current_printer_dpi_;
 #if defined(OS_MACOSX)
   // On the Mac, when we draw the bitmap to the PDFContext, it seems necessary
-  // to keep the pixels valis until CGContextEndPage is called. We use this
+  // to keep the pixels valid until CGContextEndPage is called. We use this
   // variable to hold on to the pixels.
   SkBitmap last_printed_page_;
 #endif   // defined(OS_MACOSX)
+#if defined (OS_LINUX)
+  // On Linux, we always send all pages from the renderer to the browser.
+  // So, if the plugin supports printPagesAsPDF we print the entire output
+  // in one shot in the first call to PrintPage.
+  // (This is a temporary hack until we change the WebFrame and WebPlugin print
+  // interfaces).
+  // Specifies the total number of pages to be printed. It it set in PrintBegin.
+  int32 num_pages_;
+  // Specifies whether we have already output all pages. This is used to ignore
+  // subsequent PrintPage requests.
+  bool pdf_output_done_;
+#endif   // defined(OS_LINUX)
 
 #if defined(ENABLE_GPU)
   // The command buffer used to issue commands to the nested GPU plugin.

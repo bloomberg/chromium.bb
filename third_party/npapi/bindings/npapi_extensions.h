@@ -952,6 +952,13 @@ struct _NPDeviceContextAudio {
 
 /* Printing related APIs ---------------------------------------------------*/
 
+/* Defines a contiguous range of pages to be printed. Page numbers use a
+ * zero-based index. */
+typedef struct _NPPrintPageNumberRange {
+  int32_t firstPageNumber;
+  int32_t lastPageNumber;
+} NPPrintPageNumberRange;
+
 /* Being a print operation. Returns the total number of pages to print at the
  * given printableArea size and DPI. printableArea is in points (a point is 1/72
  * of an inch). The plugin is expected to remember the values of printableArea
@@ -975,12 +982,14 @@ typedef NPError (*NPPPrintPageRasterPtr) (
     NPDeviceContext2D* printSurface);
 /* Ends the print operation */
 typedef NPError (*NPPPrintEndPtr) (NPP instance);
-/* Prints the specified page as PDF. The plugin allocates the output buffer
+/* Prints the specified pages as PDF. The plugin allocates the output buffer
  * pointed to by pdf_output using the browser-supplied NPN_MemAlloc function.
  * The caller is expected to free the output buffer upon success.*/
-typedef NPError (*NPPrintPageAsPDFPtr)(NPP instance, int32_t page_number,
-                                       unsigned char** pdf_output,
-                                       int32_t* output_size);
+typedef NPError (*NPPrintPagesAsPDFPtr)(NPP instance,
+                                        NPPrintPageNumberRange* page_ranges,
+                                        int32_t page_range_count,
+                                        unsigned char** pdf_output,
+                                        int32_t* output_size);
 
 
 /* TODO(sanjeevr) : Provide a vector interface for printing. We need to decide
@@ -992,7 +1001,7 @@ typedef struct _NPPPrintExtensions {
   NPPGetRasterDimensionsPtr getRasterDimensions;
   NPPPrintPageRasterPtr printPageRaster;
   NPPPrintEndPtr printEnd;
-  NPPrintPageAsPDFPtr printPageAsPDF;
+  NPPrintPagesAsPDFPtr printPagesAsPDF;
 } NPPPrintExtensions;
 
 /* Returns NULL if the plugin does not support print extensions */

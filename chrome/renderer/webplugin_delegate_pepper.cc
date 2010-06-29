@@ -1161,15 +1161,15 @@ int WebPluginDelegatePepper::PrintBegin(const gfx::Rect& printable_area,
       current_printer_dpi_ = printer_dpi;
     }
   }
+#if defined (OS_LINUX)
+  num_pages_ = num_pages;
+  pdf_output_done_ = false;
+#endif  // (OS_LINUX)
   return num_pages;
 }
 
 bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
                                               WebKit::WebCanvas* canvas) {
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
-  // TODO(sanjeevr): Add vector print support for Linux.
-  return false;
-#endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
   NPPPrintExtensions* print_extensions = GetPrintExtensions();
   if (!print_extensions)
     return false;
@@ -1189,13 +1189,40 @@ bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
 
   unsigned char* pdf_output = NULL;
   int32 output_size = 0;
-  NPError err = print_extensions->printPageAsPDF(instance()->npp(), page_number,
-                                                 &pdf_output, &output_size);
+  NPPrintPageNumberRange page_range;
+#if defined(OS_LINUX)
+  // On Linux we will try and output all pages as PDF in the first call to
+  // PrintPage. This is a temporary hack.
+  // TODO(sanjeevr): Remove this hack and fix this by changing the print
+  // interfaces for WebFrame and WebPlugin.
+  if (page_number != 0)
+    return pdf_output_done_;
+  page_range.firstPageNumber = 0;
+  page_range.lastPageNumber = num_pages_ - 1;
+#else  // defined(OS_LINUX)
+  page_range.firstPageNumber = page_range.lastPageNumber = page_number;
+#endif  // defined(OS_LINUX)
+  NPError err = print_extensions->printPagesAsPDF(instance()->npp(),
+                                                  &page_range, 1,
+                                                  &pdf_output, &output_size);
   if (err != NPERR_NO_ERROR)
     return false;
 
   bool ret = false;
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX)
+  // On Linux we need to get the backing PdfPsMetafile and write the bits
+  // directly.
+  cairo_t* context = canvas->beginPlatformPaint();
+  printing::NativeMetafile* metafile =
+      printing::NativeMetafile::FromCairoContext(context);
+  DCHECK(metafile);
+  if (metafile) {
+    ret = metafile->SetRawData(pdf_output, output_size);
+    if (ret)
+      pdf_output_done_ = true;
+  }
+  canvas->endPlatformPaint();
+#elif defined(OS_MACOSX)
   printing::NativeMetafile metafile;
   // Create a PDF metafile and render from there into the passed in context.
   if (metafile.Init(pdf_output, output_size)) {
@@ -1335,7 +1362,10 @@ void WebPluginDelegatePepper::PrintEnd() {
   current_printer_dpi_ = -1;
 #if defined(OS_MACOSX)
   last_printed_page_ = SkBitmap();
-#endif  // defined(OS_MACOSX)
+#elif defined(OS_LINUX)
+  num_pages_ = 0;
+  pdf_output_done_ = false;
+#endif  // defined(OS_LINUX)
 }
 
 bool WebPluginDelegatePepper::SupportsFind() {
@@ -1351,6 +1381,10 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
       instance_(instance),
       nested_delegate_(NULL),
       current_printer_dpi_(-1),
+#if defined (OS_LINUX)
+      num_pages_(0),
+      pdf_output_done_(false),
+#endif  // (OS_LINUX)
 #if defined(ENABLE_GPU)
       command_buffer_(NULL),
 #endif

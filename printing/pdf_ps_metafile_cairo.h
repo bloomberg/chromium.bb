@@ -48,6 +48,12 @@ class PdfPsMetafile {
   // Note: Only call in the browser to initialize |data_|.
   bool Init(const void* src_buffer, uint32 src_buffer_size);
 
+  // Sets raw PS/PDF data for the document. This is used when a cairo drawing
+  // surface has already been created. This method will cause all subsequent
+  // drawing on the surface to be discarded (in Close()). If Init() has not yet
+  // been called this method simply calls the second version of Init.
+  bool SetRawData(const void* src_buffer, uint32 src_buffer_size);
+
   FileFormat GetFileFormat() const { return format_; }
 
   // Prepares a new cairo surface/context for rendering a new page.
@@ -89,6 +95,10 @@ class PdfPsMetafile {
   static const double kBottomMarginInInch;
   static const double kLeftMarginInInch;
 
+  // Returns the PdfPsMetafile object that owns the given context. Returns NULL
+  // if the context was not created by a PdfPdMetafile object.
+  static PdfPsMetafile* FromCairoContext(cairo_t* context);
+
  private:
   // Cleans up all resources.
   void CleanUpAll();
@@ -101,6 +111,8 @@ class PdfPsMetafile {
 
   // Buffer stores PDF/PS contents for entire PDF/PS file.
   std::string data_;
+  // Buffer stores raw PDF/PS contents set by SetRawPageData.
+  std::string raw_override_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfPsMetafile);
 };
