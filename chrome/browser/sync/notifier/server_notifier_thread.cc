@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/net/notifier/listener/notification_defines.h"
 #include "google/cacheinvalidation/invalidation-client-impl.h"
 #include "talk/xmpp/jid.h"
@@ -61,15 +62,13 @@ void ServerNotifierThread::Invalidate(
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   CHECK(invalidation::IsCallbackRepeatable(callback));
   LOG(INFO) << "Invalidate: " << InvalidationToString(invalidation);
-  // Signal notification only for the invalidated types.
+  // TODO(akalin): Signal notification only for the invalidated types.
   parent_message_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(
           this,
           &ServerNotifierThread::SignalIncomingNotification));
   RunAndDeleteClosure(callback);
-  // A real implementation would respond to the invalidation for the
-  // given object (e.g., refetch the invalidated object).
 }
 
 void ServerNotifierThread::InvalidateAll(
@@ -132,31 +131,23 @@ void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
 void ServerNotifierThread::RegisterTypes() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
 
-  // TODO(akalin): This is a giant hack!  Make this configurable.  Add
-  // a mapping to/from ModelType.
-  std::vector<std::string> data_types;
-  data_types.push_back("AUTOFILL");
-  data_types.push_back("BOOKMARK");
-  data_types.push_back("EXTENSION");
-  data_types.push_back("PASSWORD");
-  data_types.push_back("THEME");
-  data_types.push_back("TYPED_URL");
-  data_types.push_back("PREFERENCE");
-
-  std::vector<invalidation::ObjectId> object_ids;
-
-  for (std::vector<std::string>::const_iterator it = data_types.begin();
-       it != data_types.end(); ++it) {
+  // TODO(akalin): Make this configurable instead of listening to
+  // notifications for all possible types.
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
+    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+    std::string notification_type;
+    if (!syncable::RealModelTypeToNotificationType(
+            model_type, &notification_type)) {
+      LOG(ERROR) << "Could not get notification type for model type "
+                 << syncable::ModelTypeToString(model_type);
+      continue;
+    }
     invalidation::ObjectId object_id;
-    object_id.mutable_name()->set_string_value(*it);
+    object_id.mutable_name()->set_string_value(notification_type);
     object_id.set_source(invalidation::ObjectId::CHROME_SYNC);
-    object_ids.push_back(object_id);
-  }
-
-  for (std::vector<invalidation::ObjectId>::const_iterator it =
-           object_ids.begin(); it != object_ids.end(); ++it) {
     chrome_invalidation_client_->Register(
-        *it,
+        object_id,
         invalidation::NewPermanentCallback(
             this, &ServerNotifierThread::RegisterCallback));
   }

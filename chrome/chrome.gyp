@@ -1093,6 +1093,7 @@
       ],
       'dependencies': [
         'notifier',
+        'sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
       # This target exports a hard dependency because it depends on
