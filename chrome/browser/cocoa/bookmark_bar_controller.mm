@@ -1650,7 +1650,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       bookmarkModel_->Move(sourceNode, destParent, destIndex);
   }
 
-  [self closeAllBookmarkFolders];  // For a hover open, if needed.
+  [self closeFolderAndStopTrackingMenus];
 
   // Movement of a node triggers observers (like us) to rebuild the
   // bar so we don't have to do so explicitly.
