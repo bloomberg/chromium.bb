@@ -9,6 +9,7 @@
 #include "base/test/test_file_util.h"
 #include "base/values.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
@@ -245,7 +246,7 @@ class KioskModeTest : public UITest {
 };
 
 TEST_F(KioskModeTest, EnableKioskModeTest) {
-  // Load a dummy url.
+  // Load a local file.
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("title1.html");
 
@@ -301,5 +302,31 @@ TEST_F(LaunchBrowserWithNonAsciiUserDatadir, TestNonAsciiUserDataDir) {
   ASSERT_TRUE(browser.get());
 }
 #endif  // defined(OS_WIN)
+
+class AppModeTest : public UITest {
+ public:
+  AppModeTest() {
+    // Load a local file.
+    FilePath test_file(test_data_directory_);
+    test_file = test_file.AppendASCII("title1.html");
+    GURL test_file_url(net::FilePathToFileURL(test_file));
+
+    launch_arguments_.AppendSwitchWithValue(switches::kApp,
+                                            test_file_url.spec());
+  }
+};
+
+TEST_F(AppModeTest, EnableAppModeTest) {
+  // Test that an application browser window loads correctly.
+
+  // Verify that the window is present.
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  // Verify the browser is an application.
+  Browser::Type type;
+  ASSERT_TRUE(browser->GetType(&type));
+  EXPECT_EQ(Browser::TYPE_APP, type);
+}
 
 }  // namespace
