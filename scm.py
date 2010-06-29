@@ -800,6 +800,7 @@ class SVN(object):
       filenames = [RelativePath(f, root) for f in filenames]
       # Get information about the modified items (files and directories)
       data = dict([(f, SVN.CaptureInfo(f)) for f in filenames])
+      diffs = []
       if full_move:
         # Eliminate modified files inside moved/copied directory.
         for (filename, info) in data.iteritems():
@@ -811,8 +812,32 @@ class SVN(object):
           if not filename in filenames:
             # Remove filtered out items.
             del data[filename]
+      else:
+        metaheaders = []
+        for (filename, info) in data.iteritems():
+          if SVN.IsMovedInfo(info):
+            # for now, the most common case is a head copy,
+            # so let's just encode that as a straight up cp.
+            srcurl = info.get('Copied From URL')
+            root = info.get('Repository Root')
+            rev = int(info.get('Copied From Rev'))
+            assert srcurl.startswith(root)
+            src = srcurl[len(root)+1:]
+            srcinfo = SVN.CaptureInfo(srcurl)
+            if (srcinfo.get('Revision') != rev and
+                SVN.Capture(['diff', '-r', '%d:head' % rev, srcurl])):
+              metaheaders.append("#$ svn cp -r %d %s %s "
+                                 "### WARNING: note non-trunk copy\n" %
+                                 (rev, src, filename))
+            else:
+              metaheaders.append("#$ cp %s %s\n" % (src,
+                                                    filename))
+
+        if metaheaders:
+          diffs.append("### BEGIN SVN COPY METADATA\n")
+          diffs.extend(metaheaders)
+          diffs.append("### END SVN COPY METADATA\n")
       # Now ready to do the actual diff.
-      diffs = []
       for filename in sorted(data.iterkeys()):
         diffs.append(SVN._DiffItemInternal(filename, data[filename], bogus_dir,
                                            full_move=full_move,
