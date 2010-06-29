@@ -107,11 +107,11 @@ $(shell \
     mkdir -p $(obj).$(1)/arflags;
     if echo 'int main(){}' > $(obj).$(1)/arflags/artest.c &&
        $(CXX.$(1)) -c $(obj).$(1)/arflags/artest.c -o $(obj).$(1)/arflags/artest.o> /dev/null 2>&1 &&
-       $(AR.$(1)) crT $(obj).$(1)/arflags/artest.a $(obj).$(1)/arflags/artest.o > /dev/null 2>&1 &&
+       $(AR.$(1)) crsT $(obj).$(1)/arflags/artest.a $(obj).$(1)/arflags/artest.o > /dev/null 2>&1 &&
        $(LINK.$(1)) $(obj).$(1)/arflags/artest.a -o $(obj).$(1)/arflags/artest > /dev/null 2>&1 ; then
-      arflags=crT;
+      arflags=crsT;
     else
-      arflags=cr;
+      arflags=crs;
     fi;
     echo ARFLAGS.$(1) := $$arflags > $(obj).$(1)/arflags/arflags.mk;
     echo $$arflags;
@@ -133,7 +133,6 @@ AR.target ?= $(AR)
 ifeq ($(ARFLAGS.target),)
   ARFLAGS.target := $(call detect_arflags,target)
 endif
-RANLIB.target ?= ranlib
 
 CC.host ?= gcc
 CFLAGS.host ?=
@@ -147,7 +146,6 @@ AR.host ?= ar
 ifeq ($(ARFLAGS.host),)
   ARFLAGS.host := $(call detect_arflags,host)
 endif
-RANLIB.host ?= ranlib
 
 # Flags to make gcc output dependency info.  Note that you need to be
 # careful here to use the flags that ccache and distcc can understand.
@@ -200,8 +198,8 @@ cmd_cc = $(CC.$(TOOLSET)) $(CFLAGS.$(TOOLSET)) $(GYP_CFLAGS) $(DEPFLAGS) -c -o $
 quiet_cmd_cxx = CXX($(TOOLSET)) $@
 cmd_cxx = $(CXX.$(TOOLSET)) $(CXXFLAGS.$(TOOLSET)) $(GYP_CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
-quiet_cmd_alink = AR+RANLIB($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %.o,$^) && $(RANLIB.$(TOOLSET)) $@
+quiet_cmd_alink = AR($(TOOLSET)) $@
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %.o,$^)
 
 quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
