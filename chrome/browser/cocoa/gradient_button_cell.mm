@@ -226,8 +226,9 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     [innerPath fill];
   } else {
     if (showClickedGradient) {
-      NSGradient* clickedGradient;
-      if (isFlatButton) {
+      NSGradient* clickedGradient = nil;
+      if (isFlatButton &&
+          [self tag] == kStandardButtonTypeWithLimitedClickFeedback) {
         clickedGradient = gradient;
       } else {
         clickedGradient = themeProvider ? themeProvider->GetNSGradient(

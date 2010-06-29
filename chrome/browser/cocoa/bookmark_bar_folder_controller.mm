@@ -182,6 +182,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
                                          contextMenu:menu
                                             cellText:nil
                                            cellImage:image];
+  [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
   return cell;
 }
 

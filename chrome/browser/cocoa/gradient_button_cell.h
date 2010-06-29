@@ -24,6 +24,10 @@ enum {
   kStandardButtonType = 0,
   kRightButtonType = 1,
   kMiddleButtonType = 2,
+  // Draws like a standard button, except when clicked where the interior
+  // doesn't darken using the theme's "pressed" gradient. Instead uses the
+  // normal un-pressed gradient.
+  kStandardButtonTypeWithLimitedClickFeedback = 3,
 };
 typedef NSInteger ButtonType;
 

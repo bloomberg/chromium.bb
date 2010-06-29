@@ -1377,6 +1377,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
                                                        contextMenu:menu
                                                           cellText:nil
                                                          cellImage:image];
+  [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
 
   // Note: a quirk of setting a cell's text color is that it won't work
   // until the cell is associated with a button, so we can't theme the cell yet.
