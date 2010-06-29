@@ -25,7 +25,5 @@ void HighResolutionTimerManager::OnPowerStateChange(bool on_battery_power) {
 void HighResolutionTimerManager::UseHiResClock(bool use) {
   if (use == hi_res_clock_used_)
     return;
-  bool result = base::Time::UseHighResolutionTimer(use);
-  DCHECK(result);
-  hi_res_clock_used_ = use;
+  base::Time::EnableHighResolutionTimer(use);
 }

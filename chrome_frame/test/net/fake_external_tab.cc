@@ -304,7 +304,7 @@ void CFUrlRequestUnittestRunner::Initialize() {
   // directly because it will attempt to initialize some things such as
   // ICU that have already been initialized for this process.
   InitializeLogging();
-  base::Time::UseHighResolutionTimer(true);
+  base::Time::EnableHighResolutionTimer(true);
 
   SuppressErrorDialogs();
   DebugUtil::SuppressDialogs();
