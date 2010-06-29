@@ -20,9 +20,13 @@
 #define MAYBE_BrowserCloseNoUnloadListeners \
         DISABLED_BrowserCloseNoUnloadListeners
 #define MAYBE_BrowserCloseUnload DISABLED_BrowserCloseUnload
+#define MAYBE_BrowserCloseTwoSecondBeforeUnload \
+        DISABLED_BrowserCloseTwoSecondBeforeUnload
 #else
 #define MAYBE_BrowserCloseNoUnloadListeners BrowserCloseNoUnloadListeners
 #define MAYBE_BrowserCloseUnload BrowserCloseUnload
+#define MAYBE_BrowserCloseTwoSecondBeforeUnload \
+        BrowserCloseTwoSecondBeforeUnload
 #endif
 
 const std::string NOLISTENERS_HTML =
@@ -345,7 +349,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseWithInnerFocusedFrame) {
 
 // Tests closing the browser with a beforeunload handler that takes
 // two seconds to run.
-TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnload) {
+TEST_F(UnloadTest, MAYBE_BrowserCloseTwoSecondBeforeUnload) {
   LoadUrlAndQuitBrowser(TWO_SECOND_BEFORE_UNLOAD_HTML,
                         L"twosecondbeforeunload");
 }
