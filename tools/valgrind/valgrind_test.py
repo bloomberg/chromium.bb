@@ -781,6 +781,11 @@ def RunTool(argv, module):
 
   tool = ToolFactory().Create(tool_name)
   MODULES_TO_SANITY_CHECK = ["base"]
+
+  # TODO(timurrrr): this is a temporary workaround for http://crbug.com/47844
+  if tool_name == "tsan" and common.IsMac():
+    MODULES_TO_SANITY_CHECK = []
+
   check_sanity = module in MODULES_TO_SANITY_CHECK
   return tool.Main(args, check_sanity)
 
