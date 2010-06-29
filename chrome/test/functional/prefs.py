@@ -111,14 +111,8 @@ class PrefsTest(pyauto.PyUITest):
     # Assert defaults first
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
     self.SetPrefs(pyauto.kShowHomeButton, True)
-    if self.IsMac():     # win/linux don't have the
-      self.assertFalse(  # "browser.show_page_options_buttons" pref
-          self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
-      self.SetPrefs(pyauto.kShowPageOptionsButtons, True)
     self.RestartBrowser(clear_profile=False)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
-    if self.IsMac():
-      self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowPageOptionsButtons))
 
   def testHomepagePrefs(self):
     """Verify homepage prefs."""
