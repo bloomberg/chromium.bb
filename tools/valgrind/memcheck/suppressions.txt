@@ -3276,26 +3276,6 @@
 }
 
 {
-   bug_46421
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt4pairISsPN3net13CookieMonster15CanonicalCookieEEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseISt4pairISsPN3net13CookieMonster15CanonicalCookieEESaIS5_EE11_M_allocateEj
-   fun:_ZNSt6vectorISt4pairISsPN3net13CookieMonster15CanonicalCookieEESaIS5_EE20_M_allocate_and_copyIPS5_EES9_jT_SA_
-   fun:_ZNSt6vectorISt4pairISsPN3net13CookieMonster15CanonicalCookieEESaIS5_EE7reserveEj
-   fun:_ZN3net13CookieMonster9InitStoreEv
-   fun:_ZN3net13CookieMonster15InitIfNecessaryEv
-   fun:_ZN3net13CookieMonster9DeleteAllEb
-   fun:_ZN3net13CookieMonsterD0Ev
-   fun:_ZN4base20RefCountedThreadSafeIN3net11CookieStoreENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE14DeleteInternalEPS2_
-   fun:_ZN4base33DefaultRefCountedThreadSafeTraitsIN3net11CookieStoreEE8DestructEPS2_
-   fun:_ZN4base20RefCountedThreadSafeIN3net11CookieStoreENS_33DefaultRefCountedThreadSafeTraitsIS2_EEE7ReleaseEv
-   fun:_ZN13scoped_refptrIN3net11CookieStoreEED1Ev
-   fun:_ZN17URLRequestContextD2Ev
-   fun:_ZN23ChromeURLRequestContextD0Ev
-}
-
-{
    bug_46558
    Memcheck:Cond
    fun:_ZN8chromeos11CrosLibraryD0Ev
