@@ -174,10 +174,6 @@ wtf::hashtable<webcore::atomicstring,std::pair<webcore::atomicstring,webcore::st
 # 46106
 PREFIX: webcore::reportfatalerrorinv8___v8::internal::v8::fatalprocessoutofmemory___v8::internal::setelement___v8::internal::runtime::setobjectproperty___v8::internal::runtime_setproperty___v8::internal::invoke___v8::internal::execution::call___v8::script::run___webcore::v8proxy::runscript___webcore::v8proxy::evaluate___webcore::scriptcontroller::evaluate___webcore::scriptcontroller::executescript___webcore::htmltokenizer::scriptexecution
 
-# 47080
-PREFIX:
-webcore::html5documentparser::write___webcore::document::write___webcore::document::write___webcore::v8htmldocument::writecallback___v8::internal::handleapicallhelper<0>___v8::internal::builtin_handleapicall___v8::internal::invoke___v8::internal::execution::call___v8::script::run___webcore::v8proxy::runscript___webcore::v8proxy::evaluate___webcore::scriptcontroller::evaluate___webcore::scriptcontroller::executescript___webcore::html5documentparser::executescript___webcore::html5scriptrunner::runscript
-
 # 47207
 messageloop::runtask___messageloop::deferorrunpendingtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
