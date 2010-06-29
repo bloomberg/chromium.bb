@@ -134,7 +134,7 @@ cr.define('cr.ui', function() {
         // On Windows, we only clear the selection if neither Shift nor Ctrl are
         // pressed.
         if (cr.isMac) {
-          this.clear();
+          this.clear_();
         } else if (!isDown && !e.shiftKey && !e.ctrlKey)
           // Keep anchor and lead indexes. Note that this is intentionally
           // different than on the Mac.
@@ -338,9 +338,17 @@ cr.define('cr.ui', function() {
     clear: function() {
       this.beginChange_();
       this.length_ = 0;
+      this.clear_();
+      this.endChange_();
+    },
+
+    /**
+     * Clears all selected as well as the lead and anchor index.
+     * @private
+     */
+    clear_: function() {
       this.anchorIndex = this.leadIndex = -1;
       this.clearAllSelected_();
-      this.endChange_();
     },
 
     /**
