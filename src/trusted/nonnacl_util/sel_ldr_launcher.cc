@@ -210,7 +210,12 @@ void SelLdrLauncher::Init(const nacl::string& application_name,
                           const vector<nacl::string>& app_argv) {
   // make sure we don't call this twice
   assert(sel_ldr_ == "");
-  sel_ldr_ = GetSelLdrPathName();
+  char* var = getenv("NACL_SEL_LDR");
+  if (var != NULL) {
+    sel_ldr_ = var;
+  } else {
+    sel_ldr_ = GetSelLdrPathName();
+  }
   application_name_ = application_name;
   copy(sel_ldr_argv.begin(), sel_ldr_argv.end(), back_inserter(sel_ldr_argv_));
   copy(app_argv.begin(), app_argv.end(), back_inserter(application_argv_));

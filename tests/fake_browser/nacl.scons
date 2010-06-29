@@ -1,0 +1,50 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# This is built by tests/srpc_hw/nacl.scons.
+srpc_hello_world_prog = env.File('${STAGING_DIR}/srpc_hw.nexe')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  # The test fails in our ARM cross-compile/QEMU environment, but only
+  # because the environment lacks libraries, which causes the dlopen()
+  # to fail.
+  Return()
+
+trusted_env = env['TRUSTED_ENV']
+
+if trusted_env.Bit('windows'):
+  # The test uses dlopen() which is not available natively on Windows.
+  Return()
+
+if trusted_env.Bit('linux'):
+  # We do not depend on libpthread ourselves, but poor old gdb has
+  # some trouble coping with loading libpthread after startup.
+  trusted_env.Replace(LIBS=['dl', 'pthread'])
+
+trusted_env.Append(LIBS=['platform', 'gio'])
+
+fake_browser = trusted_env.ComponentProgram(
+    'fake_browser_test',
+    ['fake_browser_test.cc'])
+
+if trusted_env.Bit('mac'):
+  plugin = trusted_env.File('${STAGING_DIR}/npGoogleNaClPlugin')
+else:
+  plugin = trusted_env.File('${STAGING_DIR}/${SHLIBPREFIX}'
+                            'npGoogleNaClPlugin${SHLIBSUFFIX}')
+sel_ldr = trusted_env.File(
+    '${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
+node = env.CommandTest('fake_browser_test.out',
+                       [fake_browser, plugin, srpc_hello_world_prog],
+                       'medium',
+                       osenv='NACL_SEL_LDR=%s' % sel_ldr)
+env.Depends(node, sel_ldr)
+
+env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_test')

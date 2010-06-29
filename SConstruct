@@ -1417,6 +1417,7 @@ nacl_env.Append(
     'tests/data_not_executable/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',
+    'tests/fake_browser/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/hello_world/nacl.scons',
