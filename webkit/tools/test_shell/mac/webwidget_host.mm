@@ -174,7 +174,7 @@ void WebWidgetHost::Paint() {
       canvas_->getTopPlatformDevice().GetBitmapContext();
   [NSGraphicsContext setCurrentContext:
       [NSGraphicsContext graphicsContextWithGraphicsPort:bitmap_context
-                                                 flipped:NO]];
+                                                 flipped:YES]];
 
   // This may result in more invalidation
   webwidget_->layout();
