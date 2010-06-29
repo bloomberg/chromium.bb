@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
@@ -70,6 +71,12 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_PLUGINS_NONE_INSTALLED));
   localized_strings.SetString(L"pluginDisabled",
       l10n_util::GetString(IDS_PLUGINS_DISABLED_PLUGIN));
+  localized_strings.SetString(L"pluginDownload",
+      l10n_util::GetString(IDS_PLUGINS_DOWNLOAD));
+  localized_strings.SetString(L"pluginName",
+      l10n_util::GetString(IDS_PLUGINS_NAME));
+  localized_strings.SetString(L"pluginPriority",
+      l10n_util::GetString(IDS_PLUGINS_PRIORITY));
   localized_strings.SetString(L"pluginVersion",
       l10n_util::GetString(IDS_PLUGINS_VERSION));
   localized_strings.SetString(L"pluginDescription",
@@ -136,10 +143,6 @@ class PluginsDOMHandler : public DOMMessageHandler {
   void HandleShowTermsOfServiceMessage(const Value* value);
 
  private:
-  // Creates a dictionary containing all the information about the given plugin;
-  // this is put into the list to "return" for the "requestPluginsData" message.
-  DictionaryValue* CreatePluginDetailValue(const WebPluginInfo& plugin);
-
   // Creates a dictionary containing the important parts of the information
   // about the given plugin; this is put into a list and saved in prefs.
   DictionaryValue* CreatePluginSummaryValue(const WebPluginInfo& plugin);
@@ -163,18 +166,8 @@ void PluginsDOMHandler::RegisterMessages() {
 void PluginsDOMHandler::HandleRequestPluginsData(const Value* value) {
   DictionaryValue* results = new DictionaryValue();
 
-  // Add plugins to the results structure.
-  ListValue* plugins_list = new ListValue();
-
-  std::vector<WebPluginInfo> plugins;
-  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
-
-  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
-       it != plugins.end();
-       ++it) {
-    plugins_list->Append(CreatePluginDetailValue(*it));
-  }
-  results->Set(L"plugins", plugins_list);
+  // Grouped plugins.
+  results->Set(L"plugins", PluginUpdater::GetInstance()->GetPluginGroupsData());
 
   dom_ui_->CallJavascriptFunction(L"returnPluginsData", *results);
 }
@@ -186,26 +179,35 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
     return;
 
   const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() != 2)
+  if (list->GetSize() != 3)
     return;
 
-  FilePath::StringType plugin_path;
   std::string enable_str;
-  if (!list->GetString(0, &plugin_path) ||
-      !list->GetString(1, &enable_str))
+  std::string is_group_str;
+  if (!list->GetString(1, &enable_str) ||
+      !list->GetString(2, &is_group_str))
     return;
 
-  if (enable_str == "true")
-    NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(plugin_path));
-  else
-    NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(plugin_path));
+  if (is_group_str == "true") {
+    std::wstring group_name;
+    if (!list->GetString(0, &group_name))
+      return;
 
-  // TODO(viettrungluu): It's morally wrong to do this here (it should be done
-  // by the plugins service), and we might also want to ensure that the plugins
+    PluginUpdater::GetInstance()->EnablePluginGroup(enable_str == "true",
+                                                    WideToUTF16(group_name));
+  } else {
+    FilePath::StringType file_path;
+    if (!list->GetString(0, &file_path))
+      return;
+
+    PluginUpdater::GetInstance()->EnablePluginFile(enable_str == "true",
+                                                   file_path);
+  }
+
+  // TODO(viettrungluu): We might also want to ensure that the plugins
   // list is always written to prefs even when the user hasn't disabled a
-  // plugin. This will require refactoring the plugin list and service.
-  // <http://crbug.com/39101>
-  UpdatePreferences();
+  // plugin. <http://crbug.com/39101>
+  PluginUpdater::GetInstance()->UpdatePreferences(dom_ui_->GetProfile());
 }
 
 void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const Value* value) {
@@ -214,72 +216,6 @@ void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const Value* value) {
   browser->OpenURL(GURL(chrome::kAboutTermsURL),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();
-}
-
-DictionaryValue* PluginsDOMHandler::CreatePluginDetailValue(
-    const WebPluginInfo& plugin) {
-  DictionaryValue* plugin_data = new DictionaryValue();
-  plugin_data->SetString(L"path", plugin.path.value());
-  plugin_data->SetStringFromUTF16(L"name", plugin.name);
-  plugin_data->SetStringFromUTF16(L"version", plugin.version);
-  plugin_data->SetStringFromUTF16(L"description", plugin.desc);
-  plugin_data->SetBoolean(L"enabled", plugin.enabled);
-
-  ListValue* mime_types = new ListValue();
-  for (std::vector<WebPluginMimeType>::const_iterator type_it =
-           plugin.mime_types.begin();
-       type_it != plugin.mime_types.end();
-       ++type_it) {
-    DictionaryValue* mime_type = new DictionaryValue();
-    mime_type->SetString(L"mimeType", type_it->mime_type);
-    mime_type->SetStringFromUTF16(L"description", type_it->description);
-
-    ListValue* file_extensions = new ListValue();
-    for (std::vector<std::string>::const_iterator ext_it =
-             type_it->file_extensions.begin();
-         ext_it != type_it->file_extensions.end();
-         ++ext_it) {
-      file_extensions->Append(new StringValue(*ext_it));
-    }
-    mime_type->Set(L"fileExtensions", file_extensions);
-
-    mime_types->Append(mime_type);
-  }
-  plugin_data->Set(L"mimeTypes", mime_types);
-
-  return plugin_data;
-}
-
-DictionaryValue* PluginsDOMHandler::CreatePluginSummaryValue(
-    const WebPluginInfo& plugin) {
-  DictionaryValue* plugin_data = new DictionaryValue();
-  plugin_data->SetString(L"path", plugin.path.value());
-  plugin_data->SetStringFromUTF16(L"name", plugin.name);
-  plugin_data->SetStringFromUTF16(L"version", plugin.version);
-  plugin_data->SetBoolean(L"enabled", plugin.enabled);
-  return plugin_data;
-}
-
-// TODO(viettrungluu): move this (and the registration of the prefs into the
-// plugins service.
-void PluginsDOMHandler::UpdatePreferences() {
-  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
-
-  FilePath internal_dir;
-  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
-    prefs->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
-
-  ListValue* plugins_list = prefs->GetMutableList(prefs::kPluginsPluginsList);
-  plugins_list->Clear();
-
-  std::vector<WebPluginInfo> plugins;
-  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
-
-  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
-       it != plugins.end();
-       ++it) {
-    plugins_list->Append(CreatePluginSummaryValue(*it));
-  }
 }
 
 }  // namespace

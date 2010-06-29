@@ -156,9 +156,6 @@ class PluginService
   // Set to true if chrome plugins are enabled. Defaults to true.
   static bool enable_chrome_plugins_;
 
-  // Set to true iff the internal pdf plugin is enabled by default.
-  static bool enable_internal_pdf_;
-
   DISALLOW_COPY_AND_ASSIGN(PluginService);
 };
 
