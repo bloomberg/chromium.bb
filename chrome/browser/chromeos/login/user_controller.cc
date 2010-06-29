@@ -64,6 +64,24 @@ class ClickNotifyingWidget : public views::WidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
 };
 
+// Returns tooltip text for user name. Tooltip contains user's display name
+// and his email domain to distinguish this user from the other one with the
+// same display name.
+std::string GetNameTooltip(const UserManager::User& user) {
+  const std::string& email = user.email();
+  size_t at_pos = email.rfind('@');
+  if (at_pos == std::string::npos) {
+    NOTREACHED();
+    return std::string();
+  }
+  size_t domain_start = at_pos + 1;
+  std::string domain = email.substr(domain_start,
+                                    email.length() - domain_start);
+  return StringPrintf("%s (%s)",
+                      user.GetDisplayName().c_str(),
+                      domain.c_str());
+}
+
 // NativeButton that will always return focus to password field.
 class UserEntryNativeButton : public views::NativeButton {
  public:
@@ -225,7 +243,7 @@ void UserController::EnableNameTooltip(bool enable) {
 
   std::wstring tooltip_text;
   if (enable)
-    tooltip_text = UTF8ToWide(user_.email());
+    tooltip_text = UTF8ToWide(GetNameTooltip(user_));
 
   if (user_view_)
     user_view_->SetTooltipText(tooltip_text);

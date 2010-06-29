@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <set>
+#include <map>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -58,20 +58,18 @@ const char kCaptchaUrlPrefix[] = "http://www.google.com/accounts/";
 // tooltips with full emails to let users distinguish their accounts.
 // Otherwise, disables the tooltips.
 void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
-  bool show_name_tooltips = false;
-  std::set<std::string> visible_display_names;
-  for (size_t i = 0; i < controllers.size(); ++i) {
+  std::map<std::string, int> visible_display_names;
+  for (size_t i = 0; i + 1 < controllers.size(); ++i) {
     const std::string& display_name =
         controllers[i]->user().GetDisplayName();
-    if (visible_display_names.count(display_name) > 0) {
-      show_name_tooltips = true;
-      break;
-    }
-    visible_display_names.insert(display_name);
+    ++visible_display_names[display_name];
   }
-  for (size_t i = 0; i < controllers.size(); ++i)
-    if (!controllers[i]->is_guest())
-      controllers[i]->EnableNameTooltip(show_name_tooltips);
+  for (size_t i = 0; i + 1 < controllers.size(); ++i) {
+    const std::string& display_name =
+        controllers[i]->user().GetDisplayName();
+    bool show_tooltip = visible_display_names[display_name] > 1;
+    controllers[i]->EnableNameTooltip(show_tooltip);
+  }
 }
 
 }  // namespace
