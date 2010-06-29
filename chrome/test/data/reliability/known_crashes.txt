@@ -188,3 +188,7 @@ webcore::bmpimagereader::decodebmp___webcore::icoimagedecoder::decodeatindex___w
 # 47439
 PREFIX:
 webcore::position::getinlineboxandoffset___webcore::position::getinlineboxandoffset___webcore::frame::firstrectforrange___webkit::webviewimpl::caretorselectionbounds
+
+# 47839
+PREFIX:
+base::objectwatcher::stopwatching___lockimpl::unlock___`anonymous namespace'::rolloverprotectednow___lockimpl::lock___conditionvariable::signal___watchdog::armsometimedeltaago___`anonymous namespace'::jankobserverhelper::startprocessingtimers___base::messagepumpforio::waitforiocompletion___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
