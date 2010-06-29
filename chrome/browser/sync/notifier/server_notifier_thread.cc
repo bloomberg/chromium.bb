@@ -110,12 +110,12 @@ void ServerNotifierThread::StartInvalidationListener() {
   StopInvalidationListener();
   chrome_invalidation_client_.reset(new ChromeInvalidationClient());
 
-  // TODO(akalin): Make cache_guid() part of the app name.  If we do
+  // TODO(akalin): Make cache_guid() part of the client ID.  If we do
   // so and we somehow propagate it up to the server somehow, we can
   // make it so that we won't receive any notifications that were
   // generated from our own changes.
-  const std::string kAppName = "server_notifier_thread";
-  chrome_invalidation_client_->Start(kAppName, this, xmpp_client());
+  const std::string kClientId = "server_notifier_thread";
+  chrome_invalidation_client_->Start(kClientId, this, xmpp_client());
 }
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {

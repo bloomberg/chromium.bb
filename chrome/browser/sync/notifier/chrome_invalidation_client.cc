@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
-#include "google/cacheinvalidation/invalidation-client-impl.h"
 
 namespace sync_notifier {
 
@@ -24,7 +23,7 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
 }
 
 void ChromeInvalidationClient::Start(
-    const std::string& app_name,
+    const std::string& client_id,
     invalidation::InvalidationListener* listener,
     buzz::XmppClient* xmpp_client) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
@@ -34,11 +33,9 @@ void ChromeInvalidationClient::Start(
 
   invalidation::ClientType client_type;
   client_type.set_type(invalidation::ClientType::CHROME_SYNC);
-  invalidation::ClientConfig ticl_config;
   invalidation_client_.reset(
-      new invalidation::InvalidationClientImpl(
-          &chrome_system_resources_, client_type, app_name, listener,
-          ticl_config));
+      invalidation::InvalidationClient::Create(
+          &chrome_system_resources_, client_type, client_id, listener));
   cache_invalidation_packet_handler_.reset(
       new CacheInvalidationPacketHandler(xmpp_client,
                                          invalidation_client_.get()));

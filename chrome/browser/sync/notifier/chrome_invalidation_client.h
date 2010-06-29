@@ -35,7 +35,7 @@ class ChromeInvalidationClient {
 
   // Does not take ownership of |listener| nor |xmpp_client|.
   void Start(
-      const std::string& app_name,
+      const std::string& client_id,
       invalidation::InvalidationListener* listener,
       buzz::XmppClient* xmpp_client);
 
