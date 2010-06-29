@@ -68,7 +68,7 @@ NEWLIB_DEV=${NEWLIB_DEV:-}       # newlib
 BINUTILS_DEV=${BINUTILS_DEV:-}   # binutils
 
 # Current milestones within each Hg repo:
-readonly LLVM_REV=8eadcf4c6eb4
+readonly LLVM_REV=d79814984841
 readonly LLVM_GCC_REV=1e60ad236357
 readonly NEWLIB_REV=5d64fed35b93
 readonly BINUTILS_REV=80d1927e7089
