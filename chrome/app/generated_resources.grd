@@ -4328,6 +4328,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">
         Content Settings
       </message>
+      <message name="IDS_CONTENT_SETTINGS_FEATURES_LABEL" desc="Label above a box listing several features, in the content settings dialog">
+        Features:
+      </message>
       <message name="IDS_COOKIES_TAB_LABEL" desc="Label for Cookies tab on Content Settings dialog">
         Cookies
       </message>
