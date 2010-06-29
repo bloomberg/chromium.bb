@@ -99,9 +99,9 @@ class DecoderBase : public Decoder {
   // Method that may be implemented by the derived class if desired.  It will
   // be called from within the MediaFilter::Stop() method prior to stopping the
   // base class.
-  //
-  // TODO(ajwong): Make this asynchronous.
-  virtual void DoStop() {}
+  virtual void DoStop(Task* done_cb) {
+    AutoTaskRunner done_runner(done_cb);
+  }
 
   // Derived class can implement this method and perform seeking logic prior
   // to the base class.
@@ -150,8 +150,10 @@ class DecoderBase : public Decoder {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
 
     // Delegate to the subclass first.
-    DoStop();
+    DoStop(NewRunnableMethod(this, &DecoderBase::OnStopComplete, callback));
+  }
 
+  void OnStopComplete(FilterCallback* callback) {
     // Throw away all buffers in all queues.
     result_queue_.clear();
     state_ = kStopped;

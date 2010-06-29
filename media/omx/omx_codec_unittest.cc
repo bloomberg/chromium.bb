@@ -295,8 +295,7 @@ class OmxCodecTest : public testing::Test {
   }
 
   void ExpectStop() {
-    EXPECT_CALL(stop_callback_, OnFilterCallback());
-    EXPECT_CALL(stop_callback_, OnCallbackDestroyed());
+    EXPECT_CALL(stop_task_, Run());
     ExpectToIdle();
     ExpectIdleToLoaded();
     ExpectToEmpty();
@@ -355,7 +354,7 @@ class OmxCodecTest : public testing::Test {
   VideoDecodeEngine::FillThisBufferCallback* decode_done_cb_;
   TaskMocker init_done_cb_task_;
 
-  MockFilterCallback stop_callback_;
+  TaskMocker stop_task_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OmxCodecTest);
@@ -375,7 +374,7 @@ TEST_F(OmxCodecTest, SimpleStartAndStop) {
   EXPECT_EQ(VideoDecodeEngine::kNormal, omx_engine_->state());
 
   ExpectStop();
-  omx_engine_->Stop(stop_callback_.NewCallback());
+  omx_engine_->Stop(stop_task_.CreateTask());
   message_loop_.RunAllPending();
 }
 
@@ -422,7 +421,7 @@ TEST_F(OmxCodecTest, NormalFlow) {
 
   // Shutdown.
   ExpectStop();
-  omx_engine_->Stop(stop_callback_.NewCallback());
+  omx_engine_->Stop(stop_task_.CreateTask());
   message_loop_.RunAllPending();
 }
 
@@ -474,7 +473,7 @@ TEST_F(OmxCodecTest, RecycleInputBuffers) {
 
   // Shutdown.
   ExpectStop();
-  omx_engine_->Stop(stop_callback_.NewCallback());
+  omx_engine_->Stop(stop_task_.CreateTask());
   message_loop_.RunAllPending();
 }
 

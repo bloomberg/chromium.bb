@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/waitable_event.h"
+#include "media/base/callback.h"
 #include "media/base/factory.h"
 #include "media/base/filter_host.h"
 #include "media/base/limits.h"
@@ -73,7 +74,34 @@ void OmxVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
 }
 
 void OmxVideoDecoder::Stop(FilterCallback* callback) {
-  omx_engine_->Stop(callback);
+  omx_engine_->Stop(
+     NewRunnableMethod(this,
+                       &OmxVideoDecoder::StopCompleteTask, callback));
+}
+
+void OmxVideoDecoder::StopCompleteTask(FilterCallback* callback) {
+  AutoCallbackRunner done_runner(callback);
+}
+
+void OmxVideoDecoder::Pause(FilterCallback* callback) {
+  omx_engine_->Pause(
+       NewRunnableMethod(this,
+                         &OmxVideoDecoder::PauseCompleteTask, callback));
+}
+
+void OmxVideoDecoder::PauseCompleteTask(FilterCallback* callback) {
+  AutoCallbackRunner done_runner(callback);
+}
+
+void OmxVideoDecoder::Seek(base::TimeDelta time,
+                           FilterCallback* callback) {
+  omx_engine_->Flush(
+     NewRunnableMethod(this,
+                       &OmxVideoDecoder::SeekCompleteTask, callback));
+}
+
+void OmxVideoDecoder::SeekCompleteTask(FilterCallback* callback) {
+  AutoCallbackRunner done_runner(callback);
 }
 
 void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,

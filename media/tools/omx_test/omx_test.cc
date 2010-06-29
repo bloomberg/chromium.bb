@@ -126,9 +126,9 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
     if (!frame_count_)
       first_sample_delivered_time_ = base::TimeTicks::HighResNow();
 
-    // If we are readding to the end, then stop.
+    // If we are reading to the end, then stop.
     if (frame->IsEndOfStream()) {
-      engine_->Stop(NewCallback(this, &TestApp::StopCallback));
+      engine_->Stop(NewRunnableMethod(this, &TestApp::StopCallback));
       return;
     }
 

@@ -61,9 +61,10 @@ class VideoDecodeEngine {
   // engine through |FillThisBuffer|. Output buffers are returned to outside
   // by |FillThisBufferCallback|.
   virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer) = 0;
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) {
-    NOTREACHED();
-  };
+  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) = 0;
+
+  virtual void Stop(Task* done_cb) = 0;
+  virtual void Pause(Task* done_cb) = 0;
 
   // Flushes the decode engine of any buffered input packets.
   virtual void Flush(Task* done_cb) = 0;

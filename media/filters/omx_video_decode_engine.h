@@ -44,17 +44,12 @@ class OmxVideoDecodeEngine :
                           Task* done_cb);
   virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> video_frame);
+  virtual void Stop(Task* done_cb);
+  virtual void Pause(Task* done_cb);
   virtual void Flush(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
 
   virtual State state() const;
-
-  // Stops the engine.
-  //
-  // TODO(ajwong): Normalize this interface with Task like the others, and
-  // promote to the abstract interface.
-  // TODO(boliu): Should the callback type be FilterCallback*?
-  virtual void Stop(Callback0::Type* done_cb);
 
   // Subclass can provide a different value.
   virtual int current_omx_spec_version() const { return 0x00000101; }
@@ -102,7 +97,9 @@ class OmxVideoDecodeEngine :
   // Methods to be executed in |message_loop_|, they correspond to the
   // public methods.
   void InitializeTask();
-  void StopTask(Callback* callback);
+  void StopTask(Task* task);
+  void PauseTask(Task* task);
+  void FlushTask(Task* task);
 
   // Transition method sequence for initialization
   bool CreateComponent();
@@ -117,6 +114,9 @@ class OmxVideoDecodeEngine :
   void DeinitFromExecuting(OMX_STATETYPE state);
   void DeinitFromIdle(OMX_STATETYPE state);
   void DeinitFromLoaded(OMX_STATETYPE state);
+  void PauseFromExecuting(OMX_STATETYPE state);
+  void PortFlushDone(int port);
+  void ComponentFlushDone();
 
   void StopOnError();
 
@@ -139,6 +139,9 @@ class OmxVideoDecodeEngine :
   // based on the current state.
   bool CanAcceptInput();
   bool CanAcceptOutput();
+
+  bool InputPortFlushed();
+  bool OutputPortFlushed();
 
   // Method to send input buffers to component
   void EmptyBufferTask();
@@ -203,14 +206,17 @@ class OmxVideoDecodeEngine :
   int input_buffer_size_;
   int input_port_;
   int input_buffers_at_component_;
+  int input_pending_request_;
   bool input_queue_has_eos_;
   bool input_has_fed_eos_;
+  bool input_port_flushed_;
 
   std::vector<OMX_BUFFERHEADERTYPE*> output_buffers_;
   int output_buffer_count_;
   int output_buffer_size_;
   int output_port_;
   bool output_eos_;
+  bool output_port_flushed_;
   bool uses_egl_image_;
   base::TimeDelta last_pts_;
 
@@ -228,7 +234,9 @@ class OmxVideoDecodeEngine :
   scoped_ptr<EmptyThisBufferCallback> empty_this_buffer_callback_;
   scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;
 
-  scoped_ptr<Callback> stop_callback_;
+  scoped_ptr<Task> stop_callback_;
+  scoped_ptr<Task> flush_callback_;
+  scoped_ptr<Task> pause_callback_;
 
   // Free input OpenMAX buffers that can be used to take input bitstream from
   // demuxer.

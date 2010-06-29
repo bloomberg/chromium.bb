@@ -38,6 +38,7 @@ OmxVideoDecodeEngine::OmxVideoDecodeEngine()
       input_buffer_size_(0),
       input_port_(0),
       input_buffers_at_component_(0),
+      input_pending_request_(0),
       input_queue_has_eos_(false),
       input_has_fed_eos_(false),
       output_buffer_count_(0),
@@ -116,6 +117,8 @@ void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(!free_input_buffers_.empty());
 
+  --input_pending_request_;
+
   if (!CanAcceptInput()) {
     FinishEmptyBuffer(buffer);
     return;
@@ -141,14 +144,115 @@ void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
 
   // Try to feed buffers into the decoder.
   EmptyBufferTask();
+
+  if (il_state_ == kIlPause && input_pending_request_ == 0) {
+    if (pause_callback_.get()) {
+      pause_callback_->Run();
+      pause_callback_.reset();
+    }
+  }
+}
+
+void OmxVideoDecodeEngine::Pause(Task* done_cb) {
+  message_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &OmxVideoDecodeEngine::PauseTask, done_cb));
+}
+
+void OmxVideoDecodeEngine::PauseTask(Task* done_cb) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(il_state_, kIlExecuting);
+
+  pause_callback_.reset(done_cb);
+
+  client_state_ = kClientFlushing;
+
+  expected_il_state_ = kIlPause;
+  OnStateSetEventFunc = &OmxVideoDecodeEngine::PauseFromExecuting;
+  TransitionToState(OMX_StatePause);
+}
+
+void OmxVideoDecodeEngine::PauseFromExecuting(OMX_STATETYPE state) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  OnStateSetEventFunc = NULL;
+  il_state_ = kIlPause;
+
+  if (input_pending_request_ == 0 ) {
+    if (pause_callback_.get()) {
+      pause_callback_->Run();
+      pause_callback_.reset(NULL);
+    }
+  }
 }
 
 void OmxVideoDecodeEngine::Flush(Task* done_cb) {
+  message_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &OmxVideoDecodeEngine::FlushTask, done_cb));
+}
+
+void OmxVideoDecodeEngine::FlushTask(Task* done_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  AutoTaskRunner done_cb_runner(done_cb);
+  if (client_state_ != kClientFlushing) {
+    // TODO(jiesun): how to prevent initial seek.
+    AutoTaskRunner done_runner(done_cb);
+    return;
+  }
 
-  // TODO(wjia): to flush component
+  flush_callback_.reset(done_cb);
+
+  // TODO(jiesun): return buffers to filter who allocate them.
+  while (!output_frames_ready_.empty())
+    output_frames_ready_.pop();
+
+  while (!available_input_buffers_.empty())
+    available_input_buffers_.pop();
+
+  input_port_flushed_ = false;
+  output_port_flushed_ = false;
+  OnFlushEventFunc = &OmxVideoDecodeEngine::PortFlushDone;
+  OMX_ERRORTYPE omxresult;
+  omxresult = OMX_SendCommand(component_handle_,
+                              OMX_CommandFlush,
+                              OMX_ALL, 0);
+}
+
+bool OmxVideoDecodeEngine::InputPortFlushed() {
+  DCHECK_EQ(client_state_, kClientFlushing);
+  // Port flushed is defined by OpenMAX component had signal flush done and
+  // We had all buffers returned from demuxer and OpenMAX component.
+  int free_input_size = static_cast<int>(free_input_buffers_.size());
+  return input_port_flushed_ && free_input_size == input_buffer_count_;
+}
+
+bool OmxVideoDecodeEngine::OutputPortFlushed() {
+  DCHECK_EQ(client_state_, kClientFlushing);
+  // Port flushed is defined by OpenMAX component had signal flush done and
+  // We had all buffers returned from renderer and OpenMAX component.
+  // TODO(jiesun): egl image path may use different value.
+  return output_port_flushed_ /*&&
+         available_output_frames_.size() == output_buffer_count_*/;
+}
+
+void OmxVideoDecodeEngine::ComponentFlushDone() {
+  if (flush_callback_.get()) {
+    flush_callback_->Run();
+    flush_callback_.reset(NULL);
+
+    InitialReadBuffer();
+    OnStateSetEventFunc = &OmxVideoDecodeEngine::DoneSetStateExecuting;
+    TransitionToState(OMX_StateExecuting);
+  }
+}
+
+void OmxVideoDecodeEngine::PortFlushDone(int port) {
+  if (port == input_port_ || port == static_cast<int>(OMX_ALL))
+    input_port_flushed_ = true;
+  if (port == output_port_ || port == static_cast<int>(OMX_ALL))
+    output_port_flushed_ = true;
+
+  if (InputPortFlushed() && OutputPortFlushed())
+    ComponentFlushDone();
 }
 
 VideoFrame::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
@@ -181,7 +285,7 @@ VideoDecodeEngine::State OmxVideoDecodeEngine::state() const {
   return kError;
 }
 
-void OmxVideoDecodeEngine::Stop(Callback0::Type* done_cb) {
+void OmxVideoDecodeEngine::Stop(Task* done_cb) {
   // TODO(wjia): make this call in the thread.
   // DCHECK_EQ(message_loop_, MessageLoop::current());
 
@@ -203,8 +307,10 @@ void OmxVideoDecodeEngine::OnFormatChange(
 void OmxVideoDecodeEngine::FinishEmptyBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  if (!input_queue_has_eos_)
+  if (!input_queue_has_eos_) {
     empty_this_buffer_callback_->Run(buffer);
+    ++input_pending_request_;
+  }
 }
 
 void OmxVideoDecodeEngine::FinishFillBuffer(OMX_BUFFERHEADERTYPE* buffer) {
@@ -687,10 +793,10 @@ void OmxVideoDecodeEngine::OnPortEnableEventRun(int port) {
 }
 
 // Functions for stopping
-void OmxVideoDecodeEngine::StopTask(Callback* callback) {
+void OmxVideoDecodeEngine::StopTask(Task* task) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  stop_callback_.reset(callback);
+  stop_callback_.reset(task);
 
   if (client_state_ == kClientError) {
     OnStopDone();
@@ -1115,7 +1221,8 @@ void OmxVideoDecodeEngine::EmptyBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
 
   Buffer* stored_buffer = static_cast<Buffer*>(buffer->pAppPrivate);
   buffer->pAppPrivate = NULL;
-  FinishEmptyBuffer(stored_buffer);
+  if (client_state_ != kClientFlushing)
+    FinishEmptyBuffer(stored_buffer);
   stored_buffer->Release();
 
   // Enqueue the available buffer because the decoder has consumed it.
@@ -1127,6 +1234,10 @@ void OmxVideoDecodeEngine::EmptyBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
 
   // Try to feed more data into the decoder.
   EmptyBufferTask();
+
+  if (client_state_ == kClientFlushing &&
+      InputPortFlushed() && OutputPortFlushed())
+    ComponentFlushDone();
 }
 
 void OmxVideoDecodeEngine::FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
@@ -1142,10 +1253,17 @@ void OmxVideoDecodeEngine::FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer) {
     output_eos_ = true;
     DLOG(INFO) << "Output has EOS";
   }
-  output_frames_ready_.push(buffer);
+
+  // TODO(jiesun): return this buffer to allocator?
+  if (client_state_ != kClientFlushing)
+    output_frames_ready_.push(buffer);
 
   // Try to fulfill one read request.
   FulfillOneRead();
+
+  if (client_state_ == kClientFlushing &&
+      InputPortFlushed() && OutputPortFlushed())
+    ComponentFlushDone();
 }
 
 void OmxVideoDecodeEngine::EventHandlerCompleteTask(OMX_EVENTTYPE event,

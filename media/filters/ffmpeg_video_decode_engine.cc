@@ -212,6 +212,17 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   fill_this_buffer_callback_->Run(video_frame);
 }
 
+void FFmpegVideoDecodeEngine::Stop(Task* done_cb) {
+  // TODO(jiesun): Release buffers when we support buffer recycling.
+  AutoTaskRunner done_runner(done_cb);
+}
+
+void FFmpegVideoDecodeEngine::Pause(Task* done_cb) {
+  // TODO(jiesun): Stop out-going buffer exchange when we support
+  // buffer recycling.
+  AutoTaskRunner done_runner(done_cb);
+}
+
 void FFmpegVideoDecodeEngine::Flush(Task* done_cb) {
   AutoTaskRunner done_runner(done_cb);
 

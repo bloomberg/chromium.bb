@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "media/base/mock_filters.h"
+#include "media/base/mock_task.h"
 #include "media/filters/decoder_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,6 +13,7 @@
 using ::testing::_;
 using ::testing::NotNull;
 using ::testing::StrictMock;
+using ::testing::WithArg;
 
 namespace media {
 
@@ -69,7 +71,7 @@ class MockDecoderImpl : public media::DecoderBase<
                void(media::DemuxerStream* demuxer_stream,
                     bool* success,
                     Task* done_cb));
-  MOCK_METHOD0(DoStop, void());
+  MOCK_METHOD1(DoStop, void(Task* done_cb));
   MOCK_METHOD2(DoSeek, void(base::TimeDelta time, Task* done_cb));
   MOCK_METHOD1(DoDecode, void(media::Buffer* input));
 
@@ -152,7 +154,8 @@ TEST(DecoderBaseTest, FlowControl) {
   message_loop.RunAllPending();
 
   // Stop.
-  EXPECT_CALL(*decoder, DoStop());
+  EXPECT_CALL(*decoder, DoStop(_))
+      .WillOnce(WithArg<0>(InvokeRunnable()));
   EXPECT_CALL(callback, OnFilterCallback());
   EXPECT_CALL(callback, OnCallbackDestroyed());
   decoder->Stop(callback.NewCallback());
