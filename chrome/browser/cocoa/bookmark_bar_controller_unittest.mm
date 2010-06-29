@@ -996,7 +996,7 @@ TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
   EXPECT_GT([buttons count], 0u);
   for (NSButton* button in buttons) {
     EXPECT_FLOAT_EQ(
-        bookmarks::kBookmarkBarHeight - 2 *
+        (bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset) - 2 *
                     bookmarks::kBookmarkVerticalPadding,
         [button frame].size.height);
   }

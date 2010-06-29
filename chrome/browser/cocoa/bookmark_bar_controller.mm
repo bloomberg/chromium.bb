@@ -109,7 +109,7 @@ namespace {
 
 // Overlap (in pixels) between the toolbar and the bookmark bar (when showing in
 // normal mode).
-const CGFloat kBookmarkBarOverlap = 5.0;
+const CGFloat kBookmarkBarOverlap = 3.0;
 
 // Duration of the bookmark bar animations.
 const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;

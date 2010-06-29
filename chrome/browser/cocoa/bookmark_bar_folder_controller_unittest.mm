@@ -533,8 +533,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   // and grown vertically.
   NSRect expectedToWindowFrame = oldToWindowFrame;
   expectedToWindowFrame.origin.x -= horizontalShift;
-  expectedToWindowFrame.origin.y -= bookmarks::kBookmarkBarHeight;
-  expectedToWindowFrame.size.height += bookmarks::kBookmarkBarHeight;
+  expectedToWindowFrame.origin.y -=
+      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
+  expectedToWindowFrame.size.height +=
+      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
   EXPECT_NSRECT_EQ(expectedToWindowFrame, newToWindowFrame);
 
   // Move the button back to the bar at the beginning.
@@ -595,8 +597,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
   EXPECT_NSRECT_EQ(oldToFolderFrame, newToFolderFrame);
   // The toWindow should have shifted down vertically and grown vertically.
   NSRect expectedToWindowFrame = oldToWindowFrame;
-  expectedToWindowFrame.origin.y -= bookmarks::kBookmarkBarHeight;
-  expectedToWindowFrame.size.height += bookmarks::kBookmarkBarHeight;
+  expectedToWindowFrame.origin.y -=
+      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
+  expectedToWindowFrame.size.height +=
+      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
   EXPECT_NSRECT_EQ(expectedToWindowFrame, newToWindowFrame);
 
   // Copy the button back to the bar after "3b".
@@ -668,8 +672,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
   EXPECT_NSRECT_EQ(oldToWindowFrame, newToWindowFrame);
   NSRect newToSubwindowFrame = [toSubwindow frame];
   NSRect expectedToSubwindowFrame = oldToSubwindowFrame;
-  expectedToSubwindowFrame.origin.y -= bookmarks::kBookmarkBarHeight;
-  expectedToSubwindowFrame.size.height += bookmarks::kBookmarkBarHeight;
+  expectedToSubwindowFrame.origin.y -=
+      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
+  expectedToSubwindowFrame.size.height +=
+      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
   EXPECT_NSRECT_EQ(expectedToSubwindowFrame, newToSubwindowFrame);
 }
 

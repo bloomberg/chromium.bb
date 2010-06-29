@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,15 @@
 
 namespace bookmarks {
 
-// Our height, when opened in "always visible" mode.
-const int kBookmarkBarHeight = 28;
+// Correction used for computing other values based on the height.
+const int kVisualHeightOffset = 2;
+
+// Bar height, when opened in "always visible" mode. This is actually a little
+// smaller than it should be (by |kVisualHeightOffset| points) because of the
+// visual overlap with the main toolbar. When using this to compute values
+// other than the actual height of the toolbar, be sure to add
+// |kVisualHeightOffset|.
+const int kBookmarkBarHeight = 26;
 
 // Our height, when visible in "new tab page" mode.
 const int kNTPBookmarkBarHeight = 40;
@@ -20,10 +27,10 @@ const int kNTPBookmarkBarHeight = 40;
 // The amount of space between the inner bookmark bar and the outer toolbar on
 // new tab pages.
 const int kNTPBookmarkBarPadding =
-    (kNTPBookmarkBarHeight - kBookmarkBarHeight) / 2;
+    (kNTPBookmarkBarHeight - (kBookmarkBarHeight + kVisualHeightOffset)) / 2;
 
 // The height of buttons in the bookmark bar.
-const int kBookmarkButtonHeight = kBookmarkBarHeight;
+const int kBookmarkButtonHeight = kBookmarkBarHeight + kVisualHeightOffset;
 
 }  // namespace bookmarks
 

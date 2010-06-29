@@ -266,6 +266,10 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     [NSGraphicsContext restoreGraphicsState];
   }
 
+  // Don't draw anything else for disabled flat buttons.
+  if (isFlatButton && ![self isEnabled])
+    return;
+
   // Draw the outer stroke.
   NSColor* strokeColor = nil;
   if (showClickedGradient) {

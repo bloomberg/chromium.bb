@@ -231,6 +231,10 @@ class PrefObserverBridge : public NotificationObserver {
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
   [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
 
+  [backButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [forwardButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [reloadButton_ setShowsBorderOnlyWhileMouseInside:YES];
+  [homeButton_ setShowsBorderOnlyWhileMouseInside:YES];
   [wrenchButton_ setShowsBorderOnlyWhileMouseInside:YES];
 
   [self initCommandStatus:commands_];
