@@ -7,6 +7,7 @@
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "base/thread_local.h"
+#include "base/weak_ptr.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/gpu_channel_host.h"
@@ -51,7 +52,7 @@ class GLES2Initializer {
 }  // namespace anonymous
 
 // Manages a GL context.
-class Context {
+class Context : public base::SupportsWeakPtr<Context> {
  public:
   Context(GpuChannelHost* channel, Context* parent);
   ~Context();
@@ -88,7 +89,7 @@ class Context {
 
  private:
   scoped_refptr<GpuChannelHost> channel_;
-  Context* parent_;
+  base::WeakPtr<Context> parent_;
   uint32 parent_texture_id_;
   CommandBufferProxy* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
@@ -100,7 +101,7 @@ class Context {
 
 Context::Context(GpuChannelHost* channel, Context* parent)
     : channel_(channel),
-      parent_(parent),
+      parent_(parent ? parent->AsWeakPtr() : base::WeakPtr<Context>()),
       parent_texture_id_(0),
       command_buffer_(NULL),
       gles2_helper_(NULL),
@@ -123,7 +124,7 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
   Singleton<GLES2Initializer>::get();
 
   // Allocate a frame buffer ID with respect to the parent.
-  if (parent_) {
+  if (parent_.get()) {
     // Flush any remaining commands in the parent context to make sure the
     // texture id accounting stays consistent.
     int32 token = parent_->gles2_helper_->InsertToken();
@@ -136,7 +137,7 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
     command_buffer_ = channel_->CreateViewCommandBuffer(view);
   } else {
     CommandBufferProxy* parent_command_buffer =
-        parent_ ? parent_->command_buffer_ : NULL;
+        parent_.get() ? parent_->command_buffer_ : NULL;
     command_buffer_ = channel_->CreateOffscreenCommandBuffer(
         parent_command_buffer,
         size,
@@ -194,7 +195,7 @@ void Context::ResizeOffscreen(const gfx::Size& size) {
 }
 
 void Context::Destroy() {
-  if (parent_ && parent_texture_id_ != 0)
+  if (parent_.get() && parent_texture_id_ != 0)
     parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
 
   delete gles2_implementation_;
