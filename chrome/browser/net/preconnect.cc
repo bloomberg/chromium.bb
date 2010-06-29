@@ -8,6 +8,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "net/base/host_port_pair.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -54,8 +55,13 @@ void Preconnect::PreconnectOnIOThread(const GURL& url) {
   if (!callback_instance_)
     callback_instance_ = new Preconnect;
 
+  net::HostPortPair endpoint(url.host(), url.EffectiveIntPort());
+  std::string group_name = endpoint.ToString();
+  if (url.SchemeIs("https"))
+    group_name = StringPrintf("ssl/%s", group_name.c_str());
+
   // TODO(jar): This does not handle proxies currently.
-  handle.Init(url.spec(), params, net::LOWEST,
+  handle.Init(group_name, params, net::LOWEST,
               callback_instance_, pool, net::BoundNetLog());
   handle.Reset();
 }
