@@ -87,6 +87,36 @@ static void UpdateCairoFontOptions() {
     g_free(rgba_style);
 }
 
+// TODO(sky): this is a copy of the one in gtk_util. It needs to be moved to a
+// common place.
+// Common implementation of ConvertAcceleratorsFromWindowsStyle() and
+// RemoveWindowsStyleAccelerators().
+// Replaces all ampersands (as used in our grd files to indicate mnemonics)
+// to |target|. Similarly any underscores get replaced with two underscores as
+// is needed by pango.
+std::string ConvertAmperstandsTo(const std::string& label,
+                                 const std::string& target) {
+  std::string ret;
+  ret.reserve(label.length() * 2);
+  for (size_t i = 0; i < label.length(); ++i) {
+    if ('_' == label[i]) {
+      ret.push_back('_');
+      ret.push_back('_');
+    } else if ('&' == label[i]) {
+      if (i + 1 < label.length() && '&' == label[i + 1]) {
+        ret.push_back('&');
+        ++i;
+      } else {
+        ret.append(target);
+      }
+    } else {
+      ret.push_back(label[i]);
+    }
+  }
+
+  return ret;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -154,7 +184,7 @@ static void SetupPangoLayout(PangoLayout* layout,
 
   // Set text and accelerator character if needed.
   std::string utf8 = WideToUTF8(text);
-  if (flags & gfx::Canvas::HIDE_PREFIX) {
+  if (flags & gfx::Canvas::SHOW_PREFIX) {
     // Escape the text string to be used as markup.
     gchar* escaped_text = g_markup_escape_text(utf8.c_str(), utf8.size());
     pango_layout_set_markup_with_accel(layout,
@@ -162,6 +192,10 @@ static void SetupPangoLayout(PangoLayout* layout,
                                        strlen(escaped_text),
                                        kAcceleratorChar, NULL);
     g_free(escaped_text);
+  } else if (flags & gfx::Canvas::HIDE_PREFIX) {
+    // Remove the ampersand character.
+    utf8 = ConvertAmperstandsTo(utf8, "");
+    pango_layout_set_text(layout, utf8.data(), utf8.size());
   } else {
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
