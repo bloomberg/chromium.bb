@@ -50,6 +50,11 @@ class PasswordStoreDefault : public PasswordStore,
   void OnWebDataServiceRequestDone(WebDataService::Handle handle,
                                    const WDTypedResult *result);
 
+ protected:
+  inline bool DeleteAndRecreateDatabaseFile() {
+    return login_db_->DeleteAndRecreateDatabaseFile();
+  }
+
  private:
   // Migrates logins from the WDS to the LoginDatabase.
   void MigrateIfNecessary();

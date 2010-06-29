@@ -220,9 +220,13 @@ ssize_t PasswordStoreX::MigrateLogins() {
         // where some fail. The only real problem with this is that we might
         // leave passwords in the login database and never come back to clean
         // them out if any of these calls do fail.
-        // TODO(mdm): Really we should just delete the login database file.
         PasswordStoreDefault::RemoveLoginImpl(*forms[i]);
       }
+      // Finally, delete the database file itself. We remove the passwords from
+      // it before deleting the file just in case there is some problem deleting
+      // the file (e.g. directory is not writable, but file is), which would
+      // otherwise cause passwords to re-migrate next (or maybe every) time.
+      DeleteAndRecreateDatabaseFile();
     }
   }
   ssize_t result = ok ? forms.size() : -1;

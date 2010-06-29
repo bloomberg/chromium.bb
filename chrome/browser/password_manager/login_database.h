@@ -10,10 +10,10 @@
 
 #include "app/sql/connection.h"
 #include "app/sql/meta_table.h"
+#include "base/file_path.h"
 #include "base/string16.h"
 #include "webkit/glue/password_form.h"
 
-class FilePath;
 struct sqlite3;
 
 // Interface to the database storage of login information, intended as a helper
@@ -69,6 +69,13 @@ class LoginDatabase {
   // Loads the complete list of blacklist forms into |forms|.
   bool GetBlacklistLogins(std::vector<webkit_glue::PasswordForm*>* forms) const;
 
+  // Deletes the login database file on disk, and creates a new, empty database.
+  // This can be used after migrating passwords to some other store, to ensure
+  // that SQLite doesn't leave fragments of passwords in the database file.
+  // Returns true on success; otherwise, whether the file was deleted and
+  // whether further use of this login database will succeed is unspecified.
+  bool DeleteAndRecreateDatabaseFile();
+
  private:
   // Returns an encrypted version of plain_text.
   std::string EncryptedString(const string16& plain_text) const;
@@ -89,11 +96,11 @@ class LoginDatabase {
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted, std::vector<webkit_glue::PasswordForm*>* forms) const;
 
+  FilePath db_path_;
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };
-
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_LOGIN_DATABASE_H_

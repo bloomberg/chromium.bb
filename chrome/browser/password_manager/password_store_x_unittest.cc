@@ -27,6 +27,8 @@ using testing::Property;
 using testing::WithArg;
 using webkit_glue::PasswordForm;
 
+typedef std::vector<PasswordForm*> VectorOfForms;
+
 namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
@@ -243,64 +245,29 @@ class LoginDatabaseQueryTask : public Task {
   MockLoginDatabaseReturn* mock_return_;
 };
 
-const PasswordFormData g_autofillable_data[] = {
-  { PasswordForm::SCHEME_HTML,
-    "http://foo.example.com",
-    "http://foo.example.com/origin",
-    "http://foo.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"username_value",
-    L"password_value",
-    true, false, 1 },
-  { PasswordForm::SCHEME_HTML,
-    "http://bar.example.com",
-    "http://bar.example.com/origin",
-    "http://bar.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"username_value",
-    L"password_value",
-    true, false, 2 },
-  { PasswordForm::SCHEME_HTML,
-    "http://baz.example.com",
-    "http://baz.example.com/origin",
-    "http://baz.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"username_value",
-    L"password_value",
-    true, false, 3 },
-};
-const PasswordFormData g_blacklisted_data[] = {
-  { PasswordForm::SCHEME_HTML,
-    "http://blacklisted.example.com",
-    "http://blacklisted.example.com/origin",
-    "http://blacklisted.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    NULL,
-    NULL,
-    false, false, 1 },
-  { PasswordForm::SCHEME_HTML,
-    "http://blacklisted2.example.com",
-    "http://blacklisted2.example.com/origin",
-    "http://blacklisted2.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    NULL,
-    NULL,
-    false, false, 2 },
-};
+// Generate |count| expected logins, either autofillable or blacklisted.
+void InitExpectedForms(bool autofillable, size_t count, VectorOfForms* forms) {
+  const char* domain = autofillable ? "example" : "blacklisted";
+  for (size_t i = 0; i < count; ++i) {
+    std::string realm = StringPrintf("http://%zu.%s.com", i, domain);
+    std::string origin = StringPrintf("http://%zu.%s.com/origin", i, domain);
+    std::string action = StringPrintf("http://%zu.%s.com/action", i, domain);
+    PasswordFormData data = {
+      PasswordForm::SCHEME_HTML,
+      realm.c_str(),
+      origin.c_str(),
+      action.c_str(),
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      autofillable ? L"username_value" : NULL,
+      autofillable ? L"password_value" : NULL,
+      autofillable, false, i + 1 };
+    forms->push_back(CreatePasswordFormFromData(data));
+  }
+}
 
 }  // anonymous namespace
-
-typedef std::vector<PasswordForm*> VectorOfForms;
 
 // LoginDatabase isn't reference counted, but in these unit tests that won't be
 // a problem as it always outlives the threads we post tasks to.
@@ -330,8 +297,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
     profile_.reset(new TestingProfile());
 
     login_db_.reset(new LoginDatabase());
-    ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
-        FILE_PATH_LITERAL("login_test"))));
+    ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append("login_test")));
 
     wds_ = new WebDataService();
     ASSERT_TRUE(wds_->Init(temp_dir_.path()));
@@ -381,16 +347,10 @@ MATCHER(EmptyWDResult, "") {
 
 TEST_P(PasswordStoreXTest, WDSMigration) {
   VectorOfForms expected_autofillable;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(g_autofillable_data); ++i) {
-    expected_autofillable.push_back(
-        CreatePasswordFormFromData(g_autofillable_data[i]));
-  }
+  InitExpectedForms(true, 5, &expected_autofillable);
 
   VectorOfForms expected_blacklisted;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(g_blacklisted_data); ++i) {
-    expected_blacklisted.push_back(
-        CreatePasswordFormFromData(g_blacklisted_data[i]));
-  }
+  InitExpectedForms(false, 5, &expected_blacklisted);
 
   // Populate the WDS with logins that should be migrated.
   for (VectorOfForms::iterator it = expected_autofillable.begin();
@@ -642,16 +602,16 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
   VectorOfForms expected_autofillable;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(g_autofillable_data); ++i) {
-    expected_autofillable.push_back(
-        CreatePasswordFormFromData(g_autofillable_data[i]));
-  }
+  InitExpectedForms(true, 50, &expected_autofillable);
 
   VectorOfForms expected_blacklisted;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(g_blacklisted_data); ++i) {
-    expected_blacklisted.push_back(
-        CreatePasswordFormFromData(g_blacklisted_data[i]));
-  }
+  InitExpectedForms(false, 50, &expected_blacklisted);
+
+  // Get the initial size of the login DB file, before we populate it.
+  // This will be used later to make sure it gets back to this size.
+  const FilePath login_db_file = temp_dir_.path().Append("login_test");
+  file_util::FileInfo db_file_start_info;
+  ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_start_info));
 
   LoginDatabase* login_db = login_db_.get();
 
@@ -678,6 +638,11 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   WaitableEvent done(false, false);
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
   done.Wait();
+
+  // Get the new size of the login DB file. We expect it to be larger.
+  file_util::FileInfo db_file_full_info;
+  ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_full_info));
+  EXPECT_GT(db_file_full_info.size, db_file_start_info.size);
 
   // Pretend that the WDS migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
@@ -755,6 +720,17 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Wait for the login DB methods to execute on the DB thread.
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
   done.Wait();
+
+  if (GetParam() == WORKING_BACKEND) {
+    // If the migration succeeded, then not only should there be no logins left
+    // in the login DB, but also the file should have been deleted and then
+    // recreated. We approximate checking for this by checking that the file
+    // size is equal to the size before we populated it, even though it was
+    // larger after populating it.
+    file_util::FileInfo db_file_end_info;
+    ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_end_info));
+    EXPECT_EQ(db_file_start_info.size, db_file_end_info.size);
+  }
 
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);

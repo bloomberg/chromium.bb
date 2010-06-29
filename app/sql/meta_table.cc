@@ -45,6 +45,10 @@ bool MetaTable::Init(Connection* db, int version, int compatible_version) {
   return true;
 }
 
+void MetaTable::Reset() {
+  db_ = NULL;
+}
+
 bool MetaTable::SetValue(const char* key, const std::string& value) {
   Statement s;
   if (!PrepareSetStatement(&s, key))
@@ -146,4 +150,3 @@ bool MetaTable::PrepareGetStatement(Statement* statement, const char* key) {
 }
 
 }  // namespace sql
-

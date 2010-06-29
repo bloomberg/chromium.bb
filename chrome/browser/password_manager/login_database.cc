@@ -10,6 +10,7 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/time.h"
@@ -76,6 +77,9 @@ bool LoginDatabase::Init(const FilePath& db_path) {
     db_.Close();
     return false;
   }
+
+  // Save the path for DeleteDatabaseFile().
+  db_path_ = db_path;
 
   // If the file on disk is an older database version, bring it up to date.
   MigrateOldVersionsAsNeeded();
@@ -389,4 +393,12 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
     forms->push_back(new_form);
   }
   return s.Succeeded();
+}
+
+bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
+  DCHECK(db_.is_open());
+  meta_table_.Reset();
+  db_.Close();
+  file_util::Delete(db_path_, false);
+  return Init(db_path_);
 }
