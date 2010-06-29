@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
-#include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/notifier/base/task_pump.h"
@@ -24,7 +23,6 @@
 #include "chrome/common/net/notifier/listener/listen_task.h"
 #include "chrome/common/net/notifier/listener/notification_constants.h"
 #include "chrome/common/net/notifier/listener/subscribe_task.h"
-#include "google/cacheinvalidation/invalidation-client.h"
 #include "talk/base/cryptstring.h"
 #include "talk/base/logging.h"
 #include "talk/base/sigslot.h"
@@ -194,47 +192,21 @@ class LegacyNotifierDelegate : public XmppNotificationClient::Delegate {
   }
 };
 
-// The actual listener for sync notifications from the cache
-// invalidation service.
+// The actual listener for sync notifications.
 class ChromeInvalidationListener
-    : public invalidation::InvalidationListener {
+    : public sync_notifier::ChromeInvalidationClient::Listener {
  public:
   ChromeInvalidationListener() {}
 
-  virtual void Invalidate(const invalidation::Invalidation& invalidation,
-                          invalidation::Closure* callback) {
-    CHECK(invalidation::IsCallbackRepeatable(callback));
-    LOG(INFO) << "Invalidate: "
-              << sync_notifier::InvalidationToString(invalidation);
-    sync_notifier::RunAndDeleteClosure(callback);
-    // A real implementation would respond to the invalidation for the
-    // given object (e.g., refetch the invalidated object).
+  virtual void OnInvalidate(syncable::ModelType model_type) {
+    LOG(INFO) << "Invalidate: " << syncable::ModelTypeToString(model_type);
+    // A real implementation would respond to the invalidation.
   }
 
-  virtual void InvalidateAll(invalidation::Closure* callback) {
-    CHECK(invalidation::IsCallbackRepeatable(callback));
+  virtual void OnInvalidateAll() {
     LOG(INFO) << "InvalidateAll";
-    sync_notifier::RunAndDeleteClosure(callback);
     // A real implementation would loop over the current registered
     // data types and send notifications for those.
-  }
-
-  virtual void AllRegistrationsLost(invalidation::Closure* callback) {
-    CHECK(invalidation::IsCallbackRepeatable(callback));
-    LOG(INFO) << "AllRegistrationsLost";
-    sync_notifier::RunAndDeleteClosure(callback);
-    // A real implementation would try to re-register for all
-    // registered data types.
-  }
-
-  virtual void RegistrationLost(const invalidation::ObjectId& object_id,
-                                invalidation::Closure* callback) {
-    CHECK(invalidation::IsCallbackRepeatable(callback));
-    LOG(INFO) << "RegistrationLost: "
-              << sync_notifier::ObjectIdToString(object_id);
-    sync_notifier::RunAndDeleteClosure(callback);
-    // A real implementation would try to re-register for this
-    // particular data type.
   }
 
  private:
@@ -245,20 +217,7 @@ class ChromeInvalidationListener
 class CacheInvalidationNotifierDelegate
     : public XmppNotificationClient::Delegate {
  public:
-  CacheInvalidationNotifierDelegate(
-      MessageLoop* message_loop,
-      const std::vector<std::string>& data_types) {
-    if (data_types.empty()) {
-      LOG(WARNING) << "No data types given";
-    }
-    for (std::vector<std::string>::const_iterator it = data_types.begin();
-         it != data_types.end(); ++it) {
-      invalidation::ObjectId object_id;
-      object_id.mutable_name()->set_string_value(*it);
-      object_id.set_source(invalidation::ObjectId::CHROME_SYNC);
-      object_ids_.push_back(object_id);
-    }
-  }
+  CacheInvalidationNotifierDelegate() {}
 
   virtual ~CacheInvalidationNotifierDelegate() {}
 
@@ -272,53 +231,20 @@ class CacheInvalidationNotifierDelegate
     chrome_invalidation_client_.Start(kAppName,
                                       &chrome_invalidation_listener_,
                                       xmpp_client);
-
-    for (std::vector<invalidation::ObjectId>::const_iterator it =
-             object_ids_.begin(); it != object_ids_.end(); ++it) {
-      chrome_invalidation_client_.Register(
-          *it,
-          invalidation::NewPermanentCallback(
-              this, &CacheInvalidationNotifierDelegate::RegisterCallback));
-    }
+    chrome_invalidation_client_.RegisterTypes();
   }
 
   virtual void OnLogout() {
     LOG(INFO) << "Logged out";
-
-    // TODO(akalin): Figure out the correct place to put this.
-    for (std::vector<invalidation::ObjectId>::const_iterator it =
-             object_ids_.begin(); it != object_ids_.end(); ++it) {
-      chrome_invalidation_client_.Unregister(
-          *it,
-          invalidation::NewPermanentCallback(
-              this, &CacheInvalidationNotifierDelegate::RegisterCallback));
-    }
-
     chrome_invalidation_client_.Stop();
   }
 
   virtual void OnError(buzz::XmppEngine::Error error, int subcode) {
     LOG(INFO) << "Error: " << error << ", subcode: " << subcode;
-
-    // TODO(akalin): Figure out whether we should unregister here,
-    // too.
     chrome_invalidation_client_.Stop();
   }
 
  private:
-  void RegisterCallback(
-      const invalidation::RegistrationUpdateResult& result) {
-    LOG(INFO) << "Registered: "
-              << sync_notifier::RegistrationUpdateResultToString(result);
-  }
-
-  void UnregisterCallback(
-      const invalidation::RegistrationUpdateResult& result) {
-    LOG(INFO) << "Unregistered: "
-              << sync_notifier::RegistrationUpdateResultToString(result);
-  }
-
-  std::vector<invalidation::ObjectId> object_ids_;
   ChromeInvalidationListener chrome_invalidation_listener_;
   sync_notifier::ChromeInvalidationClient chrome_invalidation_client_;
 };
@@ -396,19 +322,9 @@ int main(int argc, char* argv[]) {
   talk_base::ThreadManager::SetCurrent(&main_thread);
   MessageLoopForIO message_loop;
 
-  // TODO(akalin): Make this configurable.
-  // TODO(akalin): Store these constants in a header somewhere (maybe
-  // browser/sync/protocol).
-  std::vector<std::string> data_types;
-  data_types.push_back("AUTOFILL");
-  data_types.push_back("BOOKMARK");
-  data_types.push_back("THEME");
-  data_types.push_back("PREFERENCE");
-
   // Connect and listen.
   LegacyNotifierDelegate legacy_notifier_delegate;
-  CacheInvalidationNotifierDelegate cache_invalidation_notifier_delegate(
-      &message_loop, data_types);
+  CacheInvalidationNotifierDelegate cache_invalidation_notifier_delegate;
   XmppNotificationClient::Delegate* delegate = NULL;
   if (command_line.HasSwitch(switches::kSyncUseCacheInvalidation)) {
     delegate = &cache_invalidation_notifier_delegate;

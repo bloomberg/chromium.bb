@@ -16,17 +16,15 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "base/task.h"
+#include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
-#include "google/cacheinvalidation/invalidation-client.h"
 
 namespace sync_notifier {
 
-class ChromeInvalidationClient;
-
 class ServerNotifierThread
     : public notifier::MediatorThreadImpl,
-      public invalidation::InvalidationListener {
+      public ChromeInvalidationClient::Listener {
  public:
   ServerNotifierThread();
 
@@ -47,17 +45,11 @@ class ServerNotifierThread
   // Must not be called.
   virtual void SendNotification(const OutgoingNotificationData& data);
 
-  // invalidation::InvalidationListener implementation.
+  // ChromeInvalidationClient::Listener implementation.
 
-  virtual void Invalidate(const invalidation::Invalidation& invalidation,
-                          invalidation::Closure* callback);
+  virtual void OnInvalidate(syncable::ModelType model_type);
 
-  virtual void InvalidateAll(invalidation::Closure* callback);
-
-  virtual void AllRegistrationsLost(invalidation::Closure* callback);
-
-  virtual void RegistrationLost(const invalidation::ObjectId& object_id,
-                                invalidation::Closure* callback);
+  virtual void OnInvalidateAll();
 
  private:
   // Posted to the worker thread by ListenForUpdates().
@@ -65,14 +57,6 @@ class ServerNotifierThread
 
   // Posted to the worker thread by SubscribeForUpdates().
   void RegisterTypesAndSignalSubscribed();
-
-  // Register the sync types that we're interested in getting
-  // notifications for.
-  void RegisterTypes();
-
-  // Called when we get a registration response back.
-  void RegisterCallback(
-      const invalidation::RegistrationUpdateResult& result);
 
   // Signal to the delegate that we're subscribed.
   void SignalSubscribed();

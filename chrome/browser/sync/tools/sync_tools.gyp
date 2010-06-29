@@ -23,7 +23,6 @@
         '<(DEPTH)/chrome/chrome.gyp:common_constants',
         '<(DEPTH)/chrome/chrome.gyp:notifier',
         '<(DEPTH)/chrome/chrome.gyp:sync_notifier',
-        '<(DEPTH)/third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle',
       ],
     },

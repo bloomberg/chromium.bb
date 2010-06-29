@@ -14,6 +14,7 @@
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 
 namespace buzz {
@@ -27,35 +28,57 @@ class CacheInvalidationPacketHandler;
 // TODO(akalin): Hook this up to a NetworkChangeNotifier so we can
 // properly notify invalidation_client_.
 
-class ChromeInvalidationClient {
+class ChromeInvalidationClient : public invalidation::InvalidationListener {
  public:
+  class Listener {
+   public:
+    virtual ~Listener();
+
+    virtual void OnInvalidate(syncable::ModelType model_type) = 0;
+
+    virtual void OnInvalidateAll() = 0;
+  };
+
   ChromeInvalidationClient();
 
-  ~ChromeInvalidationClient();
+  // Calls Stop().
+  virtual ~ChromeInvalidationClient();
 
   // Does not take ownership of |listener| nor |xmpp_client|.
   void Start(
-      const std::string& client_id,
-      invalidation::InvalidationListener* listener,
+      const std::string& client_id, Listener* listener,
       buzz::XmppClient* xmpp_client);
 
   void Stop();
 
-  // The following functions must only be called between calls to
-  // Start() and Stop().  See invalidation-client.h for documentation.
+  // Register the sync types that we're interested in getting
+  // notifications for.  Must only be called between calls to Start()
+  // and Stop().
+  void RegisterTypes();
 
-  void Register(const invalidation::ObjectId& oid,
-                invalidation::RegistrationCallback* callback);
+  // invalidation::InvalidationListener implementation.
+  //
+  // TODO(akalin): Move these into a private inner class.
 
-  void Unregister(const invalidation::ObjectId& oid,
-                  invalidation::RegistrationCallback* callback);
+  virtual void Invalidate(const invalidation::Invalidation& invalidation,
+                          invalidation::Closure* callback);
+
+  virtual void InvalidateAll(invalidation::Closure* callback);
+
+  virtual void AllRegistrationsLost(invalidation::Closure* callback);
+
+  virtual void RegistrationLost(const invalidation::ObjectId& object_id,
+                                invalidation::Closure* callback);
 
  private:
   NonThreadSafe non_thread_safe_;
   ChromeSystemResources chrome_system_resources_;
+  Listener* listener_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<CacheInvalidationPacketHandler>
       cache_invalidation_packet_handler_;
+
+  void OnRegister(const invalidation::RegistrationUpdateResult& result);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
 };
