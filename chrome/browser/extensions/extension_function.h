@@ -35,10 +35,7 @@ class QuotaLimitHeuristic;
 
 // Abstract base class for extension functions the ExtensionFunctionDispatcher
 // knows how to dispatch to.
-//
-// TODO(aa): This will have to become reference counted when we introduce
-// APIs that live beyond a single stack frame.
-class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
+class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
  public:
   ExtensionFunction() : request_id_(-1), name_(""), has_callback_(false) {}
 
@@ -98,7 +95,7 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   virtual void Run() = 0;
 
  protected:
-  friend class base::RefCounted<ExtensionFunction>;
+  friend class base::RefCountedThreadSafe<ExtensionFunction>;
 
   virtual ~ExtensionFunction() {}
 
