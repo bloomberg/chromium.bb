@@ -1361,6 +1361,9 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
 
   // This will actually start up the sync service.
   service_->EnableForUser();
+  syncable::ModelTypeSet set;
+  set.insert(syncable::BOOKMARKS);
+  service_->OnUserChoseDatatypes(false, set);
 
   // Stop the service so we can read the new Sync Data files that were created.
   service_.reset();

@@ -265,7 +265,11 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 #endif
 
   syncable::ModelTypeSet types;
-  GetPreferredDataTypes(&types);
+  // If sync setup hasn't finished, we don't want to initialize routing info
+  // for any data types so that we don't download updates for types that the
+  // user chooses not to sync on the first DownloadUpdatesCommand.
+  if (HasSyncSetupCompleted())
+    GetPreferredDataTypes(&types);
   backend_->Initialize(sync_service_url_,
                        types,
                        profile_->GetRequestContext(),
@@ -296,6 +300,9 @@ void ProfileSyncService::StartUp() {
   // we'll want to start from a fresh SyncDB, so delete any old one that might
   // be there.
   InitializeBackend(!HasSyncSetupCompleted());
+
+  if (HasSyncSetupCompleted())
+    ConfigureDataTypeManagerAndStartSync();
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
@@ -331,15 +338,7 @@ void ProfileSyncService::EnableForUser() {
     return;
   }
   expecting_first_run_auth_needed_event_ = true;
-
-  // Lock in the preference values for the datatype's enable/disable state.
-  // This won't change any values, but it will cause the current default
-  // values to persist as explicit preferences, even if the user doesn't
-  // click the "configure" button during the setup process.
   DCHECK(!data_type_manager_.get());
-  syncable::ModelTypeSet preferred_types;
-  GetPreferredDataTypes(&preferred_types);
-  ChangePreferredDataTypes(preferred_types);
 
   StartUp();
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -449,7 +448,9 @@ void ProfileSyncService::OnBackendInitialized() {
     UpdateLastSyncedTime();
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 
-  StartProcessingChangesIfReady();
+  if (bootstrap_sync_authentication_) {
+    SetSyncSetupCompleted();
+  }
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {
@@ -596,11 +597,6 @@ void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
 
   ChangePreferredDataTypes(chosen_types);
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
-
-  // If the backend has already started syncing, that's okay;
-  // SyncerThread::Start() checks if it's already running before starting.
-  backend_->StartSyncing();
-  // TODO(dantasse): pass the chosen_types parameter through to the backend
 }
 
 void ProfileSyncService::OnUserCancelledDialog() {
@@ -631,11 +627,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
         preferred_types.count(model_type) != 0);
   }
 
-  if (data_type_manager_.get()) {
-    syncable::ModelTypeSet validated_preferred_types;
-    GetPreferredDataTypes(&validated_preferred_types);
-    data_type_manager_->Configure(validated_preferred_types);
-  }
+  ConfigureDataTypeManagerAndStartSync();
 }
 
 void ProfileSyncService::GetPreferredDataTypes(
@@ -679,19 +671,18 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
   backend_->SetPassphrase(passphrase);
 }
 
-void ProfileSyncService::StartProcessingChangesIfReady() {
-  DCHECK(backend_initialized_);
-
-  if (bootstrap_sync_authentication_) {
-    SetSyncSetupCompleted();
+void ProfileSyncService::ConfigureDataTypeManagerAndStartSync() {
+  if (!data_type_manager_.get()) {
+    data_type_manager_.reset(
+        factory_->CreateDataTypeManager(backend_.get(),
+                                        data_type_controllers_));
   }
-
-  data_type_manager_.reset(
-      factory_->CreateDataTypeManager(backend_.get(), data_type_controllers_));
 
   syncable::ModelTypeSet types;
   GetPreferredDataTypes(&types);
   data_type_manager_->Configure(types);
+
+  backend_->StartSyncing();
 }
 
 void ProfileSyncService::ActivateDataType(

@@ -60,7 +60,7 @@ void AllStatus::WatchConnectionManager(ServerConnectionManager* conn_mgr) {
 }
 
 void AllStatus::WatchSyncerThread(SyncerThread* syncer_thread) {
-  syncer_thread_hookup_.reset(
+  syncer_thread_hookup_.reset(syncer_thread == NULL ? NULL :
       syncer_thread->relay_channel()->AddObserver(this));
 }
 

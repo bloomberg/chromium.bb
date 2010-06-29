@@ -66,7 +66,7 @@ class ProfileSyncServicePreferenceTest
       return false;
 
     service_.reset(new TestProfileSyncService(
-        &factory_, profile_.get(), false, false));
+        &factory_, profile_.get(), false, true));
     service_->AddObserver(&observer_);
 
     // Register the preference data type.
@@ -92,12 +92,11 @@ class ProfileSyncServicePreferenceTest
     EXPECT_CALL(observer_, OnStateChanged()).
         WillOnce(InvokeTask(task)).
         WillOnce(Return()).
-        WillOnce(QuitUIMessageLoop());
+        WillOnce(Return());
     service_->RegisterDataTypeController(
         new PreferenceDataTypeController(&factory_,
                                          service_.get()));
     service_->Initialize();
-    MessageLoop::current()->Run();
     return true;
   }
 

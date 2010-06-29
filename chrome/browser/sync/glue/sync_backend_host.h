@@ -276,6 +276,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // syncing (generally after initialization and authentication).
     void DoStartSyncing();
 
+    // Called on the SyncBackendHost core_thread_ to nudge/pause/resume the
+    // syncer.
+    void DoRequestNudge();
+    void DoRequestPause();
+    void DoRequestResume();
+
     // Called on our SyncBackendHost's |core_thread_| to set the passphrase
     // on behalf of SyncBackendHost::SupplyPassphrase.
     void DoSetPassphrase(const std::string& passphrase);

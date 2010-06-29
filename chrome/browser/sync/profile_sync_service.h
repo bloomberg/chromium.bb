@@ -313,11 +313,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // so we don't need this hack anymore.
   ProfileSyncService();
 
-  // Call this after any of the subsystems being synced (the bookmark
-  // model and the sync backend) finishes its initialization.  When everything
-  // is ready, this function will bootstrap the subsystems so that they are
-  // initially in sync, and start forwarding changes between the two models.
-  void StartProcessingChangesIfReady();
+  // Helper to install and configure a data type manager, and startthe
+  // syncer thread (which is an idempotent operation).
+  void ConfigureDataTypeManagerAndStartSync();
 
   // Returns whether processing changes is allowed.  Check this before doing
   // any model-modifying operations.

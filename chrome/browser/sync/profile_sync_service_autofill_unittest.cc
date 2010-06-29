@@ -137,7 +137,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   void StartSyncService(Task* task, bool will_fail_association) {
     if (!service_.get()) {
       service_.reset(
-          new TestProfileSyncService(&factory_, &profile_, false, false));
+          new TestProfileSyncService(&factory_, &profile_, false, true));
       service_->AddObserver(&observer_);
       AutofillDataTypeController* data_type_controller =
           new AutofillDataTypeController(&factory_,

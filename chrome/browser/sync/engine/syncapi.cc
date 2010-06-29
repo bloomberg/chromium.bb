@@ -1377,10 +1377,11 @@ bool SyncManager::SyncInternal::Init(
 }
 
 void SyncManager::SyncInternal::StartSyncing() {
-  syncer_thread()->Start();  // Start the syncer thread. This won't actually
-                             // result in any syncing until at least the
-                             // DirectoryManager broadcasts the OPENED event,
-                             // and a valid server connection is detected.
+  if (syncer_thread())  // NULL during certain unittests.
+    syncer_thread()->Start();  // Start the syncer thread. This won't actually
+                               // result in any syncing until at least the
+                               // DirectoryManager broadcasts the OPENED event,
+                               // and a valid server connection is detected.
 }
 
 void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
@@ -2073,6 +2074,12 @@ void SyncManager::SetupForTestMode(const std::wstring& test_username) {
 void SyncManager::SyncInternal::SetupForTestMode(
     const std::wstring& test_username) {
   share_.authenticated_name = WideToUTF8(test_username);
+
+  // Some tests are targeting only local db operations & integrity, and don't
+  // want syncer thread interference.
+  syncer_event_.reset();
+  allstatus_.WatchSyncerThread(NULL);
+  syncer_thread_ = NULL;
 
   if (!dir_manager()->Open(username_for_share()))
     DCHECK(false) << "Could not open directory when running in test mode";

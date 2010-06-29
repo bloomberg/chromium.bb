@@ -153,7 +153,7 @@ class ProfileSyncServiceTypedUrlTest : public testing::Test {
   void StartSyncService(Task* task) {
     if (!service_.get()) {
       service_.reset(
-          new TestProfileSyncService(&factory_, &profile_, false, false));
+          new TestProfileSyncService(&factory_, &profile_, false, true));
       service_->AddObserver(&observer_);
       TypedUrlDataTypeController* data_type_controller =
           new TypedUrlDataTypeController(&factory_,

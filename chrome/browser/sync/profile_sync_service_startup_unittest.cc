@@ -99,6 +99,9 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(4);
   service_->EnableForUser();
+  syncable::ModelTypeSet set;
+  set.insert(syncable::BOOKMARKS);
+  service_->OnUserChoseDatatypes(false, set);
 }
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {

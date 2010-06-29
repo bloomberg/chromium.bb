@@ -222,7 +222,8 @@ void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
   // downloading updates for newly added data types.  Once this is
   // complete, the configure_ready_task_ is run via an
   // OnInitializationComplete notification.
-  core_->syncapi()->RequestNudge();
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestNudge));
 }
 
 void SyncBackendHost::ActivateDataType(
@@ -260,11 +261,15 @@ void SyncBackendHost::DeactivateDataType(
 }
 
 bool SyncBackendHost::RequestPause() {
-  return core_->syncapi()->RequestPause();
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+     NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestPause));
+  return true;
 }
 
 bool SyncBackendHost::RequestResume() {
-  return core_->syncapi()->RequestResume();
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+     NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestResume));
+  return true;
 }
 
 void SyncBackendHost::Core::NotifyPaused() {
@@ -598,6 +603,18 @@ void SyncBackendHost::Core::StartSavingChanges() {
   save_changes_timer_.Start(
       base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
       this, &Core::SaveChanges);
+}
+
+void SyncBackendHost::Core::DoRequestNudge() {
+  syncapi_->RequestNudge();
+}
+
+void SyncBackendHost::Core::DoRequestResume() {
+  syncapi_->RequestResume();
+}
+
+void SyncBackendHost::Core::DoRequestPause() {
+  syncapi()->RequestPause();
 }
 
 void SyncBackendHost::Core::SaveChanges() {

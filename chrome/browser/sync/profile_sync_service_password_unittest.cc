@@ -125,7 +125,7 @@ class ProfileSyncServicePasswordTest : public testing::Test {
   void StartSyncService(Task* root_task, Task* node_task) {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_, &profile_,
-                                                false, false));
+                                                false, true));
       service_->AddObserver(&observer_);
       PasswordDataTypeController* data_type_controller =
           new PasswordDataTypeController(&factory_,
@@ -146,11 +146,10 @@ class ProfileSyncServicePasswordTest : public testing::Test {
       EXPECT_CALL(observer_, OnStateChanged()).
           WillOnce(InvokeTask(root_task)).
           WillOnce(Return()).
-          WillOnce(QuitUIMessageLoop());
+          WillOnce(Return());
 
       service_->RegisterDataTypeController(data_type_controller);
       service_->Initialize();
-      MessageLoop::current()->Run();
 
       // Only set the passphrase if we actually created the password and nigori
       // root nodes.
