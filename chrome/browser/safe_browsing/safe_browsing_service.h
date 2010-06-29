@@ -122,6 +122,8 @@ class SafeBrowsingService
   // Update management.  Called on the IO thread.
   void UpdateStarted();
   void UpdateFinished(bool update_succeeded);
+  // Whether there is an update in progress. Called on the IO thread.
+  bool IsUpdateInProgress() const;
 
   // The blocking page on the UI thread has completed.
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,

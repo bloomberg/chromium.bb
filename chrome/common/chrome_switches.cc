@@ -747,6 +747,16 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // Runs the plugin processes inside the sandbox.
 const char kSafePlugins[]                   = "safe-plugins";
 
+// URL prefix used by safebrowsing to fetch hash, download data and
+// report malware.
+const char kSbInfoURLPrefix[] = "safebrowsing-info-url-prefix";
+// URL prefix used by safebrowsing to get MAC key.
+const char kSbMacKeyURLPrefix[] = "safebrowsing-mackey-url-prefix";
+// If present, safebrowsing only performs update when
+// SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
+// This is used for testing only.
+const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
+
 // Enable support for SDCH filtering (dictionary based expansion of content).
 // Optional argument is *the* only domain name that will have SDCH suppport.
 // Default is  "-enable-sdch" to advertise SDCH on all domains.
