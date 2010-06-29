@@ -55,6 +55,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Throttling);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, AuthInvalid);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Pause);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, StartWhenNotConnected);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, PauseWhenNotConnected);
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
  public:
@@ -180,8 +182,11 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     // False when we want to stop the thread.
     bool stop_syncer_thread_;
 
-    // True when the thread should pause itself.
-    bool pause_;
+    // True when a pause was requested.
+    bool pause_requested_;
+
+    // True when the thread is paused.
+    bool paused_;
 
     Syncer* syncer_;
 
@@ -201,7 +206,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
     ProtectedFields()
         : stop_syncer_thread_(false),
-          pause_(false),
+          pause_requested_(false),
+          paused_(false),
           syncer_(NULL),
           connected_(false) {}
   } vault_;
@@ -269,9 +275,15 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   int UserIdleTime();
 
+  void WaitUntilConnectedOrQuit();
+
   // The thread will remain in this method until a resume is requested
   // or shutdown is started.
   void PauseUntilResumedOrQuit();
+
+  void EnterPausedState();
+
+  void ExitPausedState();
 
   // For unit tests only.
   virtual void DisableIdleDetection() { disable_idle_detection_ = true; }

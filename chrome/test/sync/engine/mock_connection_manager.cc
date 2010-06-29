@@ -102,6 +102,12 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
     fail_next_postbuffer_ = false;
     return false;
   }
+
+  if (!server_reachable_) {
+    params->response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
+    return false;
+  }
+
   // Default to an ok connection.
   params->response->server_status = HttpResponse::SERVER_CONNECTION_OK;
   response.set_store_birthday(store_birthday_);
@@ -478,4 +484,24 @@ bool MockConnectionManager::IsModelTypePresentInSpecifics(
   syncable::AddDefaultExtensionValue(value, &value_filter);
   value_filter.MergeFrom(filter);
   return value_filter.SerializeAsString() == filter.SerializeAsString();
+}
+
+void MockConnectionManager::SetServerReachable() {
+  server_status_ = HttpResponse::SERVER_CONNECTION_OK;
+  server_reachable_ = true;
+  browser_sync::ServerConnectionEvent event = {
+    browser_sync::ServerConnectionEvent::STATUS_CHANGED,
+    server_status_,
+    server_reachable_ };
+  channel_->NotifyListeners(event);
+}
+
+void MockConnectionManager::SetServerNotReachable() {
+  server_status_ = HttpResponse::CONNECTION_UNAVAILABLE;
+  server_reachable_ = false;
+  browser_sync::ServerConnectionEvent event = {
+    browser_sync::ServerConnectionEvent::STATUS_CHANGED,
+    server_status_,
+    server_reachable_ };
+  channel_->NotifyListeners(event);
 }

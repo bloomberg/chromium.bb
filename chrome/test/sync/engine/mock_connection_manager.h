@@ -180,6 +180,10 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     expected_filter_ = expected_filter;
   }
 
+  void SetServerReachable();
+
+  void SetServerNotReachable();
+
  private:
   sync_pb::SyncEntity* AddUpdateFull(syncable::Id id, syncable::Id parentid,
                                      string name, int64 version,

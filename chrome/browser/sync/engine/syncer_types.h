@@ -99,6 +99,14 @@ struct SyncerEvent {
     // This event is sent when the thread is resumed in response to a
     // resume request.
     RESUMED,
+
+    // This event is sent when the thread is waiting for a connection
+    // to be established.
+    WAITING_FOR_CONNECTION,
+
+    // This event is sent when a connection has been established and
+    // the thread continues.
+    CONNECTED,
   };
 
   explicit SyncerEvent(EventCause cause) : what_happened(cause),

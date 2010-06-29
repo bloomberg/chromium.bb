@@ -215,6 +215,12 @@ void AllStatus::HandleChannelEvent(const SyncerEvent& event) {
     case SyncerEvent::RESUMED:
       lock.set_notify_plan(DONT_NOTIFY);
       break;
+    case SyncerEvent::WAITING_FOR_CONNECTION:
+      lock.set_notify_plan(DONT_NOTIFY);
+      break;
+    case SyncerEvent::CONNECTED:
+      lock.set_notify_plan(DONT_NOTIFY);
+      break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
       lock.set_notify_plan(DONT_NOTIFY);

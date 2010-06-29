@@ -32,6 +32,15 @@ using sessions::SyncSessionContext;
 typedef testing::Test SyncerThreadTest;
 typedef SyncerThread::WaitInterval WaitInterval;
 
+ACTION_P(SignalEvent, event) {
+  event->Signal();
+}
+
+class ListenerMock : public ChannelEventHandler<SyncerEvent> {
+ public:
+  MOCK_METHOD1(HandleChannelEvent, void(const SyncerEvent&));
+};
+
 class SyncerThreadWithSyncerTest : public testing::Test,
                                    public ModelSafeWorkerRegistrar,
                                    public ChannelEventHandler<SyncerEvent> {
@@ -96,6 +105,33 @@ class SyncerThreadWithSyncerTest : public testing::Test,
         break;
     }
     EXPECT_FALSE(syncer_thread()->vault_.connected_);
+  }
+
+  bool Pause(ListenerMock* listener) {
+    WaitableEvent event(false, false);
+    EXPECT_CALL(*listener, HandleChannelEvent(
+        Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
+        WillOnce(SignalEvent(&event));
+    if (!syncer_thread()->RequestPause())
+      return false;
+    event.Wait();
+    return true;
+  }
+
+  bool Resume(ListenerMock* listener) {
+    WaitableEvent event(false, false);
+    EXPECT_CALL(*listener, HandleChannelEvent(
+        Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
+        WillOnce(SignalEvent(&event));
+    if (!syncer_thread()->RequestResume())
+      return false;
+    event.Wait();
+    return true;
+  }
+
+  void PreventThreadFromPolling() {
+    const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
+    syncer_thread()->SetSyncerShortPollInterval(poll_interval);
   }
 
  private:
@@ -621,10 +657,10 @@ TEST_F(SyncerThreadWithSyncerTest, Nudge) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);
   // We don't want a poll to happen during this test (except the first one).
-  const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
-  syncer_thread()->SetSyncerShortPollInterval(poll_interval);
+  PreventThreadFromPolling();
   EXPECT_TRUE(syncer_thread()->Start());
   metadb()->Open();
+  const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
   interceptor.WaitForSyncShare(1, poll_interval + poll_interval);
 
   EXPECT_EQ(static_cast<unsigned int>(1),
@@ -713,23 +749,11 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-ACTION_P(SignalEvent, event) {
-  event->Signal();
-}
-
-class ListenerMock : public ChannelEventHandler<SyncerEvent> {
- public:
-  MOCK_METHOD1(HandleChannelEvent, void(const SyncerEvent&));
-};
-
-// TODO(skrul): Bug 39070.
-TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
+TEST_F(SyncerThreadWithSyncerTest, Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
-  // We don't want a poll to happen during this test (except the first one).
-  const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
-  syncer_thread()->SetSyncerShortPollInterval(poll_interval);
+  PreventThreadFromPolling();
 
   ListenerMock listener;
   scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
@@ -738,10 +762,6 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
       Times(AnyNumber());
-
-  // Syncer thread is not running, should fail.
-  EXPECT_FALSE(syncer_thread()->RequestPause());
-  EXPECT_FALSE(syncer_thread()->RequestResume());
 
   // Wait for the initial sync to complete.
   EXPECT_CALL(listener, HandleChannelEvent(
@@ -752,42 +772,170 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   sync_cycle_ended_event.Wait();
 
   // Request a pause.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
-      WillOnce(SignalEvent(&paused_event));
-  ASSERT_TRUE(syncer_thread()->RequestPause());
-  paused_event.Wait();
+  ASSERT_TRUE(Pause(&listener));
 
   // Resuming the pause.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
-      WillOnce(SignalEvent(&resumed_event));
-  ASSERT_TRUE(syncer_thread()->RequestResume());
-  resumed_event.Wait();
+  ASSERT_TRUE(Resume(&listener));
 
   // Not paused, should fail.
   EXPECT_FALSE(syncer_thread()->RequestResume());
 
   // Request a pause.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
-      WillOnce(SignalEvent(&paused_event));
-  ASSERT_TRUE(syncer_thread()->RequestPause());
-  paused_event.Wait();
+  ASSERT_TRUE(Pause(&listener));
 
   // Nudge the syncer, this should do nothing while we are paused.
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
 
   // Resuming will cause the nudge to be processed and a sync cycle to run.
   EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
-      WillOnce(SignalEvent(&resumed_event));
-  // Wait for the sync cycle to run.
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+      WillOnce(SignalEvent(&sync_cycle_ended_event));
+  ASSERT_TRUE(Resume(&listener));
+  sync_cycle_ended_event.Wait();
+
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+}
+
+TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
+  WaitableEvent sync_cycle_ended_event(false, false);
+  WaitableEvent event(false, false);
+  ListenerMock listener;
+  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
+  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+  PreventThreadFromPolling();
+
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+      Times(AnyNumber());
+
+  connection()->SetServerNotReachable();
+  metadb()->Open();
+
+  // Syncer thread will always go through once cycle at the start,
+  // then it will wait for a connection.
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
-  ASSERT_TRUE(syncer_thread()->RequestResume());
-  resumed_event.Wait();
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
+      WillOnce(SignalEvent(&event));
+  ASSERT_TRUE(syncer_thread()->Start());
+  sync_cycle_ended_event.Wait();
+  event.Wait();
+
+  // Connect, will put the syncer thread into its usually poll wait.
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
+      WillOnce(SignalEvent(&event));
+  connection()->SetServerReachable();
+  event.Wait();
+
+  // Nudge the syncer to complete a cycle.
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+      WillOnce(SignalEvent(&sync_cycle_ended_event));
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+  sync_cycle_ended_event.Wait();
+
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+}
+
+TEST_F(SyncerThreadWithSyncerTest, PauseWhenNotConnected) {
+  WaitableEvent sync_cycle_ended_event(false, false);
+  WaitableEvent event(false, false);
+  ListenerMock listener;
+  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
+  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+  PreventThreadFromPolling();
+
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+      Times(AnyNumber());
+
+  // Put the thread into a "waiting for connection" state.
+  connection()->SetServerNotReachable();
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+      WillOnce(SignalEvent(&sync_cycle_ended_event));
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
+      WillOnce(SignalEvent(&event));
+  metadb()->Open();
+  ASSERT_TRUE(syncer_thread()->Start());
+  sync_cycle_ended_event.Wait();
+  event.Wait();
+
+  // Pause and resume the thread while waiting for a connection.
+  ASSERT_TRUE(Pause(&listener));
+  ASSERT_TRUE(Resume(&listener));
+
+  // Make a connection and let the syncer cycle.
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+      WillOnce(SignalEvent(&sync_cycle_ended_event));
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
+      WillOnce(SignalEvent(&event));
+  connection()->SetServerReachable();
+  event.Wait();
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+  sync_cycle_ended_event.Wait();
+
+  // Disconnect and get into the waiting for a connection state.
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
+      WillOnce(SignalEvent(&event));
+  connection()->SetServerNotReachable();
+  event.Wait();
+
+  // Pause so we can test getting a connection while paused.
+  ASSERT_TRUE(Pause(&listener));
+
+  // Get a connection then resume.
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
+      WillOnce(SignalEvent(&event));
+  connection()->SetServerReachable();
+  event.Wait();
+
+  ASSERT_TRUE(Resume(&listener));
+
+  // Cycle the syncer to show we are not longer paused.
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+      WillOnce(SignalEvent(&sync_cycle_ended_event));
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+  sync_cycle_ended_event.Wait();
+
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+}
+
+TEST_F(SyncerThreadWithSyncerTest, PauseResumeWhenNotRunning) {
+  WaitableEvent sync_cycle_ended_event(false, false);
+  WaitableEvent event(false, false);
+  ListenerMock listener;
+  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
+  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+  PreventThreadFromPolling();
+
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+      Times(AnyNumber());
+
+  // Pause and resume the syncer while not running
+  ASSERT_TRUE(Pause(&listener));
+  ASSERT_TRUE(Resume(&listener));
+
+  // Pause the thread then start the syncer.
+  ASSERT_TRUE(Pause(&listener));
+  metadb()->Open();
+  ASSERT_TRUE(syncer_thread()->Start());
+
+  // Resume and let the syncer cycle.
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+      WillOnce(SignalEvent(&sync_cycle_ended_event));
+  ASSERT_TRUE(Resume(&listener));
   sync_cycle_ended_event.Wait();
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));

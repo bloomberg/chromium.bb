@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/http_return.h"
 
 namespace syncable {
@@ -37,6 +38,10 @@ class ClientToServerMessage;
 // How many connection errors are accepted before network handles are closed
 // and reopened.
 static const int32 kMaxConnectionErrorsBeforeReset = 10;
+
+static const int32 kUnsetResponseCode = -1;
+static const int32 kUnsetContentLength = -1;
+static const int32 kUnsetPayloadLength = -1;
 
 // HttpResponse gathers the relevant output properties of an HTTP request.
 // Depending on the value of the server_status code, response_code, and
@@ -93,6 +98,12 @@ struct HttpResponse {
 
   // Identifies the type of failure, if any.
   ServerConnectionCode server_status;
+
+  HttpResponse()
+      : response_code(kUnsetResponseCode),
+        content_length(kUnsetContentLength),
+        payload_length(kUnsetPayloadLength),
+        server_status(NONE) {}
 };
 
 inline bool IsGoodReplyFromServer(HttpResponse::ServerConnectionCode code) {

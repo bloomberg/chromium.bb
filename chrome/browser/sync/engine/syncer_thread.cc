@@ -163,21 +163,48 @@ bool SyncerThread::Stop(int max_wait) {
 
 bool SyncerThread::RequestPause() {
   AutoLock lock(lock_);
-  if (!thread_.IsRunning())
+  if (vault_.pause_requested_ || vault_.paused_)
     return false;
 
-  vault_.pause_ = true;
-  vault_field_changed_.Broadcast();
+  if (thread_.IsRunning()) {
+    // Set the pause request.  The syncer thread will read this
+    // request, enter the paused state, and send the PAUSED
+    // notification.
+    vault_.pause_requested_ = true;
+    vault_field_changed_.Broadcast();
+    LOG(INFO) << "Pause requested.";
+  } else {
+    // If the thread is not running, go directly into the paused state
+    // and notify.
+    EnterPausedState();
+    LOG(INFO) << "Paused while not running.";
+  }
   return true;
 }
 
 bool SyncerThread::RequestResume() {
   AutoLock lock(lock_);
-  if (!thread_.IsRunning() || !vault_.pause_)
+  // Only valid to request a resume when we are already paused or we
+  // have a pause pending.
+  if (!(vault_.paused_ || vault_.pause_requested_))
     return false;
 
-  vault_.pause_ = false;
-  vault_field_changed_.Broadcast();
+  if (thread_.IsRunning()) {
+    if (vault_.pause_requested_) {
+      // If pause was requested we have not yet paused.  In this case,
+      // the resume cancels the pause request.
+      SyncerEvent event(SyncerEvent::RESUMED);
+      relay_channel()->Notify(event);
+      LOG(INFO) << "Pending pause canceled by resume.";
+    } else {
+      // Unpause and notify.
+      vault_.paused_ = false;
+      vault_field_changed_.Broadcast();
+    }
+  } else {
+    ExitPausedState();
+    LOG(INFO) << "Resumed while not running.";
+  }
   return true;
 }
 
@@ -223,29 +250,33 @@ void SyncerThread::ThreadMainLoop() {
   idle_query_.reset(new IdleQueryLinux());
 #endif
 
+  if (vault_.syncer_ == NULL) {
+    LOG(INFO) << "Syncer thread waiting for database initialization.";
+    while (vault_.syncer_ == NULL && !vault_.stop_syncer_thread_)
+      vault_field_changed_.Wait();
+    LOG_IF(INFO, !(vault_.syncer_ == NULL))
+        << "Syncer was found after DB started.";
+  }
+
   while (!vault_.stop_syncer_thread_) {
     // The Wait()s in these conditionals using |vault_| are not TimedWait()s (as
     // below) because we cannot poll until these conditions are met, so we wait
     // indefinitely.
-    if (!vault_.connected_) {
-      LOG(INFO) << "Syncer thread waiting for connection.";
-      while (!vault_.connected_ && !vault_.stop_syncer_thread_)
-        vault_field_changed_.Wait();
-      LOG_IF(INFO, vault_.connected_) << "Syncer thread found connection.";
+
+    // If we are not connected, enter WaitUntilConnectedOrQuit() which
+    // will return only when the network is connected or a quit is
+    // requested.  Note that it is possible to exit
+    // WaitUntilConnectedOrQuit() in the paused state which will be
+    // handled by the next statement.
+    if (!vault_.connected_ && !initial_sync_for_thread) {
+      WaitUntilConnectedOrQuit();
       continue;
     }
 
-    if (vault_.syncer_ == NULL) {
-      LOG(INFO) << "Syncer thread waiting for database initialization.";
-      while (vault_.syncer_ == NULL && !vault_.stop_syncer_thread_)
-        vault_field_changed_.Wait();
-      LOG_IF(INFO, !(vault_.syncer_ == NULL))
-          << "Syncer was found after DB started.";
-      continue;
-    }
-
-    // Check if a pause was requested.
-    if (vault_.pause_) {
+    // Check if we should be paused or if a pause was requested.  Note
+    // that we don't check initial_sync_for_thread here since we want
+    // the pause to happen regardless if it is the initial sync or not.
+    if (vault_.pause_requested_ || vault_.paused_) {
       PauseUntilResumedOrQuit();
       continue;
     }
@@ -303,22 +334,68 @@ void SyncerThread::ThreadMainLoop() {
 #endif
 }
 
+void SyncerThread::WaitUntilConnectedOrQuit() {
+  LOG(INFO) << "Syncer thread waiting for connection.";
+  SyncerEvent event(SyncerEvent::WAITING_FOR_CONNECTION);
+  relay_channel()->Notify(event);
+
+  bool is_paused = vault_.paused_;
+
+  while (!vault_.connected_ && !vault_.stop_syncer_thread_) {
+    if (!is_paused && vault_.pause_requested_) {
+      // If we get a pause request while waiting for a connection,
+      // enter the paused state.
+      EnterPausedState();
+      is_paused = true;
+      LOG(INFO) << "Syncer thread entering disconnected pause.";
+    }
+
+    if (is_paused && !vault_.paused_) {
+      ExitPausedState();
+      is_paused = false;
+      LOG(INFO) << "Syncer thread exiting disconnected pause.";
+    }
+
+    vault_field_changed_.Wait();
+  }
+
+  if (!vault_.stop_syncer_thread_) {
+    SyncerEvent event(SyncerEvent::CONNECTED);
+    relay_channel()->Notify(event);
+    LOG(INFO) << "Syncer thread found connection.";
+  }
+}
+
 void SyncerThread::PauseUntilResumedOrQuit() {
   LOG(INFO) << "Syncer thread entering pause.";
-  SyncerEvent event(SyncerEvent::PAUSED);
-  relay_channel()->Notify(event);
+  // If pause was requested (rather than already being paused), send
+  // the PAUSED notification.
+  if (vault_.pause_requested_)
+    EnterPausedState();
 
   // Thread will get stuck here until either a resume is requested
   // or shutdown is started.
-  while (vault_.pause_ && !vault_.stop_syncer_thread_)
+  while (vault_.paused_ && !vault_.stop_syncer_thread_)
     vault_field_changed_.Wait();
 
   // Notify that we have resumed if we are not shutting down.
-  if (!vault_.stop_syncer_thread_) {
-    SyncerEvent event(SyncerEvent::RESUMED);
-    relay_channel()->Notify(event);
-  }
+  if (!vault_.stop_syncer_thread_)
+    ExitPausedState();
+
   LOG(INFO) << "Syncer thread exiting pause.";
+}
+
+void SyncerThread::EnterPausedState() {
+  vault_.pause_requested_ = false;
+  vault_.paused_ = true;
+  SyncerEvent event(SyncerEvent::PAUSED);
+  relay_channel()->Notify(event);
+}
+
+void SyncerThread::ExitPausedState() {
+  vault_.paused_ = false;
+  SyncerEvent event(SyncerEvent::RESUMED);
+  relay_channel()->Notify(event);
 }
 
 // We check how long the user's been idle and sync less often if the machine is

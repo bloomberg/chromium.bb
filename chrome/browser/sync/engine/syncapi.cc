@@ -1804,7 +1804,7 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
   if (!initialized()) {
     // This could be the first time that the syncer has completed a full
     // download; if so, we should signal that initialization is complete.
-    if (event.snapshot->is_share_usable)
+    if (event.snapshot && event.snapshot->is_share_usable)
       MarkAndNotifyInitializationComplete();
   }
 
