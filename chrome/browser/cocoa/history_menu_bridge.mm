@@ -160,16 +160,11 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
       if (!tabs.size())
         continue;
 
-      // Create the item for the parent/window.
+      // Create the item for the parent/window. Do not set the title yet because
+      // the actual number of items that are in the menu will not be known until
+      // things like the NTP are filtered out, which is done when the tab items
+      // are actually created.
       HistoryItem* item = new HistoryItem();
-      if (tabs.size() == 1) {
-        item->title = l10n_util::GetStringUTF16(
-            IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE);
-      } else {
-        item->title =l10n_util::GetStringFUTF16(
-            IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE,
-                IntToString16(tabs.size()));
-      }
       item->session_id = entry_win->id;
 
       // Create the submenu.
@@ -202,6 +197,17 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
           AddItemToMenu(tab_item, submenu.get(), kRecentlyClosed + 1,
                         subindex++);
         }
+      }
+
+      // Now that the number of tabs that has been added is known, set the title
+      // of the parent menu item.
+      if (item->tabs.size() == 1) {
+        item->title = l10n_util::GetStringUTF16(
+            IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE);
+      } else {
+        item->title =l10n_util::GetStringFUTF16(
+            IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE,
+                IntToString16(item->tabs.size()));
       }
 
       // Sometimes it is possible for there to not be any subitems for a given
