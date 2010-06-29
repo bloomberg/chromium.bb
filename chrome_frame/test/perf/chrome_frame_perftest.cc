@@ -792,6 +792,7 @@ class ChromeFrameActiveXMemoryTest : public MemoryTestBase {
     PrintResults(test_name_.c_str());
 
     CoFreeUnusedLibraries();
+    PlatformThread::Sleep(100);
   }
 
   void NavigateImpl(const std::string& url) {
