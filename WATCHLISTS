@@ -169,7 +169,7 @@
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org'],
     'sync': ['tim@chromium.org', 'nick@chromium.org',
-             'idana@chromium.org'],
+             'idana@chromium.org', 'rsimha@chromium.org'],
     'layout_tests': ['pam+watch@chromium.org', 'dpranke+watch@chromium.org'],
     'tools': ['pam+watch@chromium.org'],
     'tests': ['phajdan.jr@chromium.org'],
