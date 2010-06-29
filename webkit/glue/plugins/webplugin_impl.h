@@ -93,6 +93,7 @@ class WebPluginImpl : public WebPlugin,
                          int printer_dpi);
   virtual bool printPage(int page_number, WebKit::WebCanvas* canvas);
   virtual void printEnd();
+  virtual WebKit::WebString selectedText();
 
   // WebPlugin implementation:
   void SetWindow(gfx::PluginWindowHandle window);

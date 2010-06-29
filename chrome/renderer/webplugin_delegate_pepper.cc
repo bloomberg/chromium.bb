@@ -55,6 +55,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
+#include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(ENABLE_GPU)
@@ -509,10 +510,38 @@ void WebPluginDelegatePepper::Zoom(int factor) {
 }
 
 void WebPluginDelegatePepper::Copy() {
+  ScopedClipboardWriterGlue scw(webkit_glue::ClipboardGetClipboard());
+  string16 text = GetSelectedText(true);
+  if (!text.empty()) {
+    // Got html data.
+    scw.WriteHTML(text, std::string());
+    return;
+  }
+
+  text = GetSelectedText(false);
+  if (!text.empty())
+    scw.WriteText(text);
+}
+
+string16 WebPluginDelegatePepper::GetSelectedText() {
+  return GetSelectedText(false);
+}
+
+string16 WebPluginDelegatePepper::GetSelectedText(bool html) {
   NPPExtensions* extensions = NULL;
   instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
-  if (extensions && extensions->copy)
-    extensions->copy(instance()->npp());
+  if (!extensions || !extensions->getSelection)
+    return string16();
+
+  void* text;
+  NPSelectionType type = html ? NPSelectionTypeHTML : NPSelectionTypePlainText;
+  NPP npp = instance()->npp();
+  if (extensions->getSelection(npp, &type, &text) != NPERR_NO_ERROR)
+    return string16();
+
+  string16 rv = UTF8ToUTF16(static_cast<char*>(text));
+  NPAPI::PluginHost::Singleton()->host_functions()->memfree(text);
+  return rv;
 }
 
 NPError WebPluginDelegatePepper::Device2DQueryCapability(int32 capability,

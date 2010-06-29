@@ -11,7 +11,6 @@
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
-#include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 
 // FindInstance()
@@ -473,11 +472,6 @@ static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
   }
 }
 
-static void CopyTextToClipboard(NPP id, const char* content) {
-  ScopedClipboardWriterGlue scw(webkit_glue::ClipboardGetClipboard());
-  scw.WriteText(UTF8ToUTF16(content));
-}
-
 static NPError ChooseFile(NPP id,
                           const char* mime_types,
                           NPChooseFileMode mode,
@@ -539,7 +533,6 @@ namespace NPAPI {
 NPError GetPepperExtensionsFunctions(void* value) {
   static const NPNExtensions kExtensions = {
     &AcquireDevice,
-    &CopyTextToClipboard,
     &NumberOfFindResultsChanged,
     &SelectedFindResultChanged,
     &ChooseFile,

@@ -422,6 +422,13 @@ void WebPluginImpl::printEnd() {
     delegate_->PrintEnd();
 }
 
+WebString WebPluginImpl::selectedText() {
+  if (!delegate_)
+    return WebString();
+
+  return delegate_->GetSelectedText();
+}
+
 
 // -----------------------------------------------------------------------------
 

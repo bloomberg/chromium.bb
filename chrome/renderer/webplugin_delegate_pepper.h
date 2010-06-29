@@ -97,6 +97,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   virtual NPFontExtensions* GetFontExtensions();
   virtual void Zoom(int factor);
   virtual void Copy();
+  virtual string16 GetSelectedText();
 
   // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);
@@ -265,6 +266,9 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   void SendNestedDelegateGeometryToBrowser(const gfx::Rect& window_rect,
                                            const gfx::Rect& clip_rect);
 
+  // Returns the selection.  If nothing is selected, returns an empty string.
+  // If html is true, it will return a string only if html data is available.
+  string16 GetSelectedText(bool html);
 
   base::WeakPtr<RenderView> render_view_;
 

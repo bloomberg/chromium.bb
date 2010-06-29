@@ -159,6 +159,8 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   virtual void Zoom(int factor) {}
   // Copy the selected text.
   virtual void Copy() {}
+  // Gets the selected UTF8 text, if any.
+  virtual string16 GetSelectedText() { return string16(); }
 };
 
 }  // namespace webkit_glue

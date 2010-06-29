@@ -410,11 +410,6 @@ typedef NPDevice* (*NPAcquireDevicePtr)(
     NPP instance,
     NPDeviceID device);
 
-/* Copy UTF-8 string into clipboard */
-typedef void (*NPCopyTextToClipboardPtr)(
-    NPP instance,
-    const char* content);
-
 /* Updates the number of find results for the current search term.  If
  * there are no matches 0 should be passed in.  Only when the plugin has
  * finished searching should it pass in the final count with finalResult set to
@@ -711,8 +706,6 @@ typedef NPFontExtensions* (*NPGetFontExtensionsPtr)(
 struct NPNExtensions {
   /* Device interface acquisition */
   NPAcquireDevicePtr acquireDevice;
-  /* Clipboard functionality */
-  NPCopyTextToClipboardPtr copyTextToClipboard;
   /* Find */
   NPNumberOfFindResultsChangedPtr numberOfFindResultsChanged;
   NPSelectedFindResultChangedPtr selectedFindResultChanged;
@@ -1045,16 +1038,31 @@ typedef NPError (*NPPWidgetPropertyChangedPtr) (
     NPWidgetID id,
     NPWidgetProperty property);
 
-/* Tells the plugin to copy the selected text */
-typedef NPError (*NPPCopyPtr) (
-    NPP instance);
+/* type of selection */
+typedef enum {
+  NPSelectionTypeAny       = 0,
+  NPSelectionTypePlainText = 1,
+  NPSelectionTypeHTML      = 2
+} NPSelectionType;
+
+/* Gets the selection.  NPERR_GENERIC_ERROR is returned if nothing is selected.
+ * 'type' is both an input and output parameter.  The caller can request a
+ * specific type, and if the plugin can't provide it, it will return
+ * NPERR_GENERIC_ERROR.  Or the caller can specify NPSelectionTypeAny to let the
+ * plugin pick the best format for the data.  The result is returned in a buffer
+ * that's owned by the caller and which is allocated using NPN_MemAlloc.  If no
+ * data is available, NPERR_GENERIC_ERROR is returned. */
+typedef NPError (*NPPGetSelectionPtr) (
+    NPP instance,
+    NPSelectionType* type,
+    void** data);
 
 typedef struct _NPPExtensions {
   NPPGetPrintExtensionsPtr getPrintExtensions;
   NPPGetFindExtensionsPtr getFindExtensions;
   NPPZoomPtr zoom;
   NPPWidgetPropertyChangedPtr widgetPropertyChanged;
-  NPPCopyPtr copy;
+  NPPGetSelectionPtr getSelection;
 } NPPExtensions;
 
 #endif  /* _NP_EXTENSIONS_H_ */
