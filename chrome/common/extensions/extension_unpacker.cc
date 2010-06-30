@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/extension_unpacker.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
@@ -11,6 +12,7 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "net/base/file_stream.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -142,12 +144,23 @@ bool ExtensionUnpacker::Run() {
     extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
 
 #if defined(OS_WIN)
+  // To understand crbug/35198, allow users who can reproduce the issue
+  // to enable extra logging while unpacking.
+  bool extra_logging = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIssue35198ExtraLogging);
+  LOG(INFO) << "Extra logging for issue 35198: " << extra_logging;
+
   std::ostringstream log_stream;
   std::string dir_string = WideToUTF8(temp_install_dir_.value());
   log_stream << kCouldNotCreateDirectoryError << dir_string << std::endl;
+
   if (!file_util::CreateDirectoryExtraLogging(temp_install_dir_, log_stream)) {
-    log_stream.flush();
-    SetError(log_stream.str());
+    if (extra_logging) {
+      log_stream.flush();
+      SetError(log_stream.str());
+    } else {
+      SetError(kCouldNotCreateDirectoryError + dir_string);
+    }
     return false;
   }
 #else
