@@ -9,9 +9,9 @@ cr.define('cr.ui', function() {
    * Creates a new menu item element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLButtonElement}
+   * @extends {HTMLDivElement}
    */
-  var MenuItem = cr.ui.define('button');
+  var MenuItem = cr.ui.define('div');
 
   /**
    * Creates a new menu separator element.
@@ -127,6 +127,12 @@ cr.define('cr.ui', function() {
       }
     }
   };
+
+  /**
+   * Whether the menu item is disabled or not.
+   * @type {boolean}
+   */
+  cr.defineProperty(MenuItem, 'disabled', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the menu item is hidden or not.
