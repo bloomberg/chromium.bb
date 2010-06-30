@@ -50,10 +50,14 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD0(ConnectToPreferredNetworkIfAvailable, bool(void));
   MOCK_METHOD0(PreferredNetworkConnected, bool(void));
   MOCK_METHOD0(PreferredNetworkFailed, bool(void));
-  MOCK_METHOD4(ConnectToWifiNetwork, void(WifiNetwork, const string16&,
-                                          const string16&, const string16&));
-  MOCK_METHOD5(ConnectToWifiNetwork, void(const string16&, const string16&,
-                                          const string16&, const string16&,
+  MOCK_METHOD4(ConnectToWifiNetwork, void(WifiNetwork,
+                                          const std::string&,
+                                          const std::string&,
+                                          const std::string&));
+  MOCK_METHOD5(ConnectToWifiNetwork, void(const std::string&,
+                                          const std::string&,
+                                          const std::string&,
+                                          const std::string&,
                                           bool));
   MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork));
   MOCK_METHOD1(DisconnectFromWirelessNetwork, void(const WirelessNetwork&));

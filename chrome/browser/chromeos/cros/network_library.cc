@@ -359,34 +359,34 @@ bool NetworkLibraryImpl::PreferredNetworkFailed() {
 }
 
 void NetworkLibraryImpl::ConnectToWifiNetwork(WifiNetwork network,
-                                              const string16& password,
-                                              const string16& identity,
-                                              const string16& certpath) {
+                                              const std::string& password,
+                                              const std::string& identity,
+                                              const std::string& certpath) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     ConnectToNetworkWithCertInfo(network.service_path().c_str(),
-                     password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-                     identity.empty() ? NULL : UTF16ToUTF8(identity).c_str(),
-                     certpath.empty() ? NULL : UTF16ToUTF8(certpath).c_str());
+                     password.empty() ? NULL : password.c_str(),
+                     identity.empty() ? NULL : identity.c_str(),
+                     certpath.empty() ? NULL : certpath.c_str());
   }
 }
 
-void NetworkLibraryImpl::ConnectToWifiNetwork(const string16& ssid,
-                                              const string16& password,
-                                              const string16& identity,
-                                              const string16& certpath,
+void NetworkLibraryImpl::ConnectToWifiNetwork(const std::string& ssid,
+                                              const std::string& password,
+                                              const std::string& identity,
+                                              const std::string& certpath,
                                               bool auto_connect) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // First create a service from hidden network.
-    ServiceInfo* service = GetWifiService(UTF16ToUTF8(ssid).c_str(),
+    ServiceInfo* service = GetWifiService(ssid.c_str(),
                                           SECURITY_UNKNOWN);
     if (service) {
       // Set auto-connect.
       SetAutoConnect(service->service_path, auto_connect);
       // Now connect to that service.
       ConnectToNetworkWithCertInfo(service->service_path,
-                       password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
-                       identity.empty() ? NULL : UTF16ToUTF8(identity).c_str(),
-                       certpath.empty() ? NULL : UTF16ToUTF8(certpath).c_str());
+                       password.empty() ? NULL : password.c_str(),
+                       identity.empty() ? NULL : identity.c_str(),
+                       certpath.empty() ? NULL : certpath.c_str());
 
       // Clean up ServiceInfo object.
       FreeServiceInfo(service);

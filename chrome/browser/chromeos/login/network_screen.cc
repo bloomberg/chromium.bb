@@ -223,7 +223,7 @@ void NetworkScreen::ConnectToNetwork(NetworkList::NetworkType type,
         WaitForConnection(network);
         chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
             ConnectToWifiNetwork(network->wifi_network,
-                                 string16(), string16(), string16());
+                                 std::string(), std::string(), std::string());
       }
     } else if (NetworkList::NETWORK_CELLULAR == network->network_type) {
       WaitForConnection(network);

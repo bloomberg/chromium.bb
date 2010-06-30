@@ -139,7 +139,8 @@ void NetworkMenuButton::ActivatedAt(int index) {
       // If wifi network is not encrypted, then directly connect.
       // Otherwise, we open password dialog window.
       if (!wifi.encrypted()) {
-        cros->ConnectToWifiNetwork(wifi, string16(), string16(), string16());
+        cros->ConnectToWifiNetwork(wifi, std::string(),
+                                   std::string(), std::string());
       } else {
         NetworkConfigView* view = new NetworkConfigView(wifi, true);
         view->set_browser_mode(host_->IsBrowserMode());

@@ -115,7 +115,8 @@ void NetworkConfigView::TabSelectedAt(int index) {
 }
 
 void NetworkConfigView::SetLoginTextfieldFocus() {
-  wificonfig_view_->FocusFirstField();
+  if (wificonfig_view_)
+    wificonfig_view_->FocusFirstField();
 }
 
 void NetworkConfigView::Layout() {
@@ -125,9 +126,26 @@ void NetworkConfigView::Layout() {
 
 gfx::Size NetworkConfigView::GetPreferredSize() {
   // TODO(chocobo): Once UI is finalized, create locale settings.
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
+  gfx::Size result(views::Window::GetLocalizedContentsSize(
       IDS_IMPORT_DIALOG_WIDTH_CHARS,
       IDS_IMPORT_DIALOG_HEIGHT_LINES));
+  result.set_height(0);  // IMPORT_DIALOG height is too large
+  // Expand the default size to fit results if necessary
+  if (wificonfig_view_) {
+    gfx::Size s = wificonfig_view_->GetPreferredSize();
+    s.set_height(s.height() + kPanelVertMargin * 2);
+    s.set_width(s.width() + kPanelHorizMargin * 2);
+    result = gfx::Size(std::max(result.width(), s.width()),
+                       std::max(result.height(), s.height()));
+  }
+  if (ipconfig_view_) {
+    gfx::Size s = ipconfig_view_->GetPreferredSize();
+    s.set_height(s.height() + kPanelVertMargin * 2);
+    s.set_width(s.width() + kPanelHorizMargin * 2);
+    result = gfx::Size(std::max(result.width(), s.width()),
+                       std::max(result.height(), s.height()));
+  }
+  return result;
 }
 
 void NetworkConfigView::ViewHierarchyChanged(

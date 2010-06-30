@@ -373,7 +373,7 @@ void WirelessSection::ButtonClicked(int button, int connection_type, int id) {
           view->SetLoginTextfieldFocus();
         } else {
           CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-              wifi_networks_[id], string16(), string16(), string16());
+              wifi_networks_[id], std::string(), std::string(), std::string());
         }
       } else if (button == DISCONNECT_BUTTON) {
         CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromWirelessNetwork(

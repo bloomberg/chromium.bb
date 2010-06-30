@@ -364,8 +364,8 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiSelected) {
   network_screen->ItemChanged(&combobox, 0, 1);
   network_view->SetSelectedNetworkItem(1);
   EXPECT_CALL(*mock_network_library_,
-              ConnectToWifiNetwork(A<WifiNetwork>(), string16(), string16(),
-                                   string16()))
+              ConnectToWifiNetwork(A<WifiNetwork>(), std::string(),
+                                   std::string(), std::string()))
       .Times(1);
   ui_test_utils::RunAllPendingInMessageLoop();
   NetworkChangedExpectations(true);
@@ -482,8 +482,8 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, WifiWaiting) {
   network_screen->ItemChanged(&combobox, 0, 1);
   network_view->SetSelectedNetworkItem(1);
   EXPECT_CALL(*mock_network_library_,
-              ConnectToWifiNetwork(A<WifiNetwork>(), string16(), string16(),
-                                   string16()))
+              ConnectToWifiNetwork(A<WifiNetwork>(), std::string(),
+                                   std::string(), std::string()))
       .Times(1);
   ui_test_utils::RunAllPendingInMessageLoop();
   NetworkChangedExpectations(true);

@@ -322,15 +322,15 @@ class NetworkLibrary {
 
   // Connect to the specified wireless network with password.
   virtual void ConnectToWifiNetwork(WifiNetwork network,
-                                    const string16& password,
-                                    const string16& identity,
-                                    const string16& certpath) = 0;
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath) = 0;
 
   // Connect to the specified wifi ssid with password.
-  virtual void ConnectToWifiNetwork(const string16& ssid,
-                                    const string16& password,
-                                    const string16& identity,
-                                    const string16& certpath,
+  virtual void ConnectToWifiNetwork(const std::string& ssid,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath,
                                     bool auto_connect) = 0;
 
   // Connect to the specified cellular network.
@@ -442,13 +442,13 @@ class NetworkLibraryImpl : public NetworkLibrary,
   virtual bool PreferredNetworkConnected();
   virtual bool PreferredNetworkFailed();
   virtual void ConnectToWifiNetwork(WifiNetwork network,
-                                    const string16& password,
-                                    const string16& identity,
-                                    const string16& certpath);
-  virtual void ConnectToWifiNetwork(const string16& ssid,
-                                    const string16& password,
-                                    const string16& identity,
-                                    const string16& certpath,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath);
+  virtual void ConnectToWifiNetwork(const std::string& ssid,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath,
                                     bool auto_connect);
   virtual void ConnectToCellularNetwork(CellularNetwork network);
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network);

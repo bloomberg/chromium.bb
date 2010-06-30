@@ -54,9 +54,9 @@ class WifiConfigView : public views::View,
   virtual bool Save();
 
   // Get the typed in ssid.
-  const string16& GetSSID() const;
+  const std::string GetSSID() const;
   // Get the typed in passphrase.
-  const string16& GetPassphrase() const;
+  const std::string GetPassphrase() const;
 
   // Returns true if the textfields are non-empty and we can login.
   bool can_login() const { return can_login_; }
@@ -88,7 +88,7 @@ class WifiConfigView : public views::View,
   views::Textfield* identity_textfield_;
   views::NativeButton* certificate_browse_button_;
   scoped_refptr<SelectFileDialog> select_file_dialog_;
-  FilePath certificate_path_;
+  std::string certificate_path_;
   views::Textfield* passphrase_textfield_;
   views::ImageButton* passphrase_visible_button_;
   views::Checkbox* autoconnect_checkbox_;

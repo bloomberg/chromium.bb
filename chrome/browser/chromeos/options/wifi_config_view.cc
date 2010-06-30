@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -61,11 +62,17 @@ void WifiConfigView::UpdateCanLogin(void) {
     // only enforce ssid is non-empty.
     can_login = !ssid_textfield_->text().empty();
   } else {
-    // Connecting to an encrypted network, so make sure passphrase is non-empty.
-    can_login = !passphrase_textfield_->text().empty();
-    if (identity_textfield_ != NULL)
-      can_login = !identity_textfield_->text().empty() &&
+    // Connecting to an encrypted network
+    if (passphrase_textfield_ != NULL) {
+      // if the network requires a passphrase, make sure it is non empty.
+      can_login &= !passphrase_textfield_->text().empty();
+    }
+    if (identity_textfield_ != NULL) {
+      // If we have an identity field, we can login if we have a non empty
+      // identity and a certificate path
+      can_login &= !identity_textfield_->text().empty() &&
           !certificate_path_.empty();
+    }
   }
 
   // Update the login button enable/disable state if can_login_ changes.
@@ -102,28 +109,27 @@ void WifiConfigView::ButtonPressed(views::Button* sender,
 
 void WifiConfigView::FileSelected(const FilePath& path,
                                    int index, void* params) {
-  certificate_path_ = path;
-  certificate_browse_button_->SetLabel(path.BaseName().ToWStringHack());
+  certificate_path_ = path.value();
+  if (certificate_browse_button_)
+    certificate_browse_button_->SetLabel(path.BaseName().ToWStringHack());
   UpdateCanLogin();  // TODO(njw) Check if the passphrase decrypts the key.
 }
 
 bool WifiConfigView::Login() {
-  string16 identity_string, certificate_path_string;
-
+  std::string identity_string;
   if (identity_textfield_ != NULL) {
-    identity_string = identity_textfield_->text();
-    certificate_path_string = WideToUTF16(certificate_path_.ToWStringHack());
+    identity_string = UTF16ToUTF8(identity_textfield_->text());
   }
   if (other_network_) {
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-        ssid_textfield_->text(), passphrase_textfield_->text(),
-        identity_string, certificate_path_string,
+        GetSSID(), GetPassphrase(),
+        identity_string, certificate_path_,
         autoconnect_checkbox_->checked());
   } else {
     Save();
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-        wifi_, passphrase_textfield_->text(),
-        identity_string, certificate_path_string);
+        wifi_, GetPassphrase(),
+        identity_string, certificate_path_);
   }
   return true;
 }
@@ -154,12 +160,18 @@ bool WifiConfigView::Save() {
   return true;
 }
 
-const string16& WifiConfigView::GetSSID() const {
-  return ssid_textfield_->text();
+const std::string WifiConfigView::GetSSID() const {
+  std::string result;
+  if (ssid_textfield_ != NULL)
+    result = UTF16ToUTF8(ssid_textfield_->text());
+  return result;
 }
 
-const string16& WifiConfigView::GetPassphrase() const {
-  return passphrase_textfield_->text();
+const std::string WifiConfigView::GetPassphrase() const {
+  std::string result;
+  if (passphrase_textfield_ != NULL)
+    result = UTF16ToUTF8(passphrase_textfield_->text());
+  return result;
 }
 
 void WifiConfigView::FocusFirstField() {
@@ -169,6 +181,23 @@ void WifiConfigView::FocusFirstField() {
     identity_textfield_->RequestFocus();
   else if (passphrase_textfield_)
     passphrase_textfield_->RequestFocus();
+}
+
+// Parse 'path' to determine if the certificate is stored in a pkcs#11 device.
+// flimflam recognizes the string "SETTINGS:" to specify authentication
+// parameters. 'key_id=' indicates that the certificate is stored in a pkcs#11
+// device. See src/third_party/flimflam/files/doc/service-api.txt.
+static bool is_certificate_in_pkcs11(const std::string& path) {
+  static const std::string settings_string("SETTINGS:");
+  static const std::string pkcs11_key("key_id");
+  if (path.find(settings_string) == 0) {
+    std::string::size_type idx = path.find(pkcs11_key);
+    if (idx != std::string::npos)
+      idx = path.find_first_not_of(kWhitespaceASCII, idx + pkcs11_key.length());
+    if (idx != std::string::npos && path[idx] == '=')
+      return true;
+  }
+  return false;
 }
 
 void WifiConfigView::Init() {
@@ -201,6 +230,10 @@ void WifiConfigView::Init() {
   }
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
+  // Certificates stored in a pkcs11 device can not be browsed
+  // and do not require a passphrase.
+  bool certificate_in_pkcs11 = false;
+
   // Add ID and cert password if we're using 802.1x
   // XXX we're cheating and assuming 802.1x means EAP-TLS - not true
   // in general, but very common. WPA Supplicant doesn't report the
@@ -221,21 +254,29 @@ void WifiConfigView::Init() {
     layout->AddView(new views::Label(l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
     if (!wifi_.cert_path().empty()) {
-      certificate_path_ = FilePath(wifi_.cert_path());
-      certificate_browse_button_ = new views::NativeButton(
-          this, UTF8ToWide(wifi_.cert_path()));
-    } else {
-      certificate_browse_button_ = new views::NativeButton(
-          this,
-          l10n_util::GetString(
-              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON));
+      certificate_path_ = wifi_.cert_path();
+      certificate_in_pkcs11 = is_certificate_in_pkcs11(certificate_path_);
     }
-    layout->AddView(certificate_browse_button_);
+    if (certificate_in_pkcs11) {
+      std::wstring label = l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED);
+      views::Label* cert_text = new views::Label(label);
+      cert_text->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      layout->AddView(cert_text);
+    } else {
+      std::wstring label;
+      if (!certificate_path_.empty())
+        label = UTF8ToWide(certificate_path_);
+      else
+        label = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON;
+      certificate_browse_button_ = new views::NativeButton(this, label);
+      layout->AddView(certificate_browse_button_);
+    }
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
   // Add passphrase if other_network or wifi is encrypted.
-  if (other_network_ || wifi_.encrypted()) {
+  if (other_network_ || (wifi_.encrypted() && !certificate_in_pkcs11)) {
     layout->StartRow(0, column_view_set_id);
     int label_text_id;
     if (wifi_.encryption() == SECURITY_8021X)
