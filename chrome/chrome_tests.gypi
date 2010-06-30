@@ -843,6 +843,7 @@
         'browser/history/history_querying_unittest.cc',
         'browser/history/history_types_unittest.cc',
         'browser/history/history_unittest.cc',
+        'browser/history/in_memory_url_index_unittest.cc',
         'browser/history/query_parser_unittest.cc',
         'browser/history/snippet_unittest.cc',
         'browser/history/starred_url_database_unittest.cc',
