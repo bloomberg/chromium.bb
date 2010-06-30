@@ -22,10 +22,10 @@ class SystemOptionsHandler : public OptionsPageUIHandler {
 
  private:
   // Creates the map of timezones used by the options page.
-  DictionaryValue* GetTimezoneMap();
+  ListValue* GetTimezoneList();
 
   // Gets timezone name.
-  std::string GetTimezoneName(const icu::TimeZone* timezone);
+  std::wstring GetTimezoneName(const icu::TimeZone* timezone);
 
   // Gets timezone ID which is also used as timezone pref value.
   std::wstring GetTimezoneID(const icu::TimeZone* timezone);

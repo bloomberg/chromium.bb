@@ -97,33 +97,36 @@ void SystemOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(L"accessibility",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION));
 
-  localized_strings->Set(L"timezoneMap", GetTimezoneMap());
+  localized_strings->Set(L"timezoneList", GetTimezoneList());
 }
 
-DictionaryValue* SystemOptionsHandler::GetTimezoneMap() {
-  DictionaryValue* timezoneMap = new DictionaryValue();
+ListValue* SystemOptionsHandler::GetTimezoneList() {
+  ListValue* timezoneList = new ListValue();
   for (std::vector<icu::TimeZone*>::iterator iter = timezones_.begin();
        iter != timezones_.end(); ++iter) {
     const icu::TimeZone* timezone = *iter;
-    timezoneMap->SetString(GetTimezoneID(timezone).c_str(),
-                           GetTimezoneName(timezone));
+    static const std::wstring delimiter(L"|");
+    std::wstring value = GetTimezoneID(timezone);
+    value += delimiter;
+    value += GetTimezoneName(timezone);
+    timezoneList->Append(Value::CreateStringValue(value));
   }
-  return timezoneMap;
+  return timezoneList;
 }
 
-std::string SystemOptionsHandler::GetTimezoneName(
+std::wstring SystemOptionsHandler::GetTimezoneName(
     const icu::TimeZone* timezone) {
   DCHECK(timezone);
   icu::UnicodeString name;
   timezone->getDisplayName(name);
-  std::string output;
-  UTF16ToUTF8(name.getBuffer(), name.length(), &output);
+  std::wstring output;
+  UTF16ToWide(name.getBuffer(), name.length(), &output);
   int hour_offset = timezone->getRawOffset() / 3600000;
-  const char* format;
+  const wchar_t* format;
   if (hour_offset == 0)
-    format = "(GMT) ";
+    format = L"(GMT) ";
   else
-    format = "(GMT%+d) ";
+    format = L"(GMT%+d) ";
 
   return StringPrintf(format, hour_offset) + output;
 }

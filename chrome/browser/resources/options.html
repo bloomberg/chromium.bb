@@ -3,31 +3,45 @@
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
+
+<!-- TODO(zelidrag) need a better icon here -->
 <link rel="icon" href="../../app/theme/history_favicon.png">
-<script src="shared/js/local_strings.js"></script>
+
+<script src="chrome://resources/js/class_list.js"></script>
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="options/preferences.js"></script>
+<script src="options/pref_ui.js"></script>
+<script src="options/options_page.js"></script>
+<script src="options/chromeos_system_options.js"></script>
 <script>
+
 ///////////////////////////////////////////////////////////////////////////////
-// Globals:
+// DummyOptions Functions:
+// TODO(zelidrag): Remove DummyOptions once we put the second page in.
 
-function $(o) {return document.getElementById(o);}
-
-// Extracts preference value out of reponse callback of fetchPrefs call.
-function getPref(dict, name) {
-  return eval('dict.'+name);
+function DummyOptions(model) {
+  OptionsPage.call(this, 'dummy', 'Dummy Options Page', 'dummyPage');
 }
 
-// Sets new value for preference.
-function setBooleanPref(name, value) {
-  chrome.send('setBooleanPref', [name, String(value)]);
+DummyOptions.instance = null;
+
+DummyOptions.getInstance = function() {
+  if (DummyOptions.instance)
+    return DummyOptions.instance;
+  // TODO(zelidrag): hook model in.
+  DummyOptions.instance = new DummyOptions(null);
+  return DummyOptions.instance;
 }
 
-function setIntegerPref(name, value) {
-  chrome.send('setIntegerPref', [name, String(value)]);
-}
+// Inherit SystemOptions from OptionsPage.
+DummyOptions.prototype = {
+  __proto__: OptionsPage.prototype,
+};
 
-function setStringPref(name, value) {
-  chrome.send('setStringPref', [name, value]);
-}
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
 /**
@@ -35,224 +49,112 @@ function setStringPref(name, value) {
  */
 function load() {
   localStrings = new LocalStrings();
-  loadSystemPrefs();
-    
-  selectPage('system');
-  // TODO(zelidrag): preserve first that needs to be shown.
+  OptionsPage.register(SystemOptions.getInstance());
+  OptionsPage.register(DummyOptions.getInstance());
+
+  Preferences.getInstance().initialize();
+  OptionsPage.showPageByName(SystemOptions.getInstance().name);
 }
 
-function selectPage(name) {
-  var page = $(name+'Page');
-  var nav = $(name+'PageNav');
-  page.style.visibility = 'visible';
-  nav.class = 'navbar_item navbar_item_selected';
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// System (ChromeOS) Functions:
-
-var kTimeZone = 'settings.datetime.timezone';
-var kTapToClickEnabled = 'settings.touchpad.enable_tap_to_click';
-var kVertEdgeScrollEnabled = 'settings.touchpad.enable_vert_edge_scroll';
-var kTouchpadSpeedFactor = 'settings.touchpad.speed_factor';
-var kTouchpadSensitivity = 'settings.touchpad.sensitivity';
-var kAccessibilityEnabled = 'settings.accessibility';
-       
-/**
- * Loads ChromeOS System preferences.
- */
-function loadSystemPrefs() {
-  chrome.send("fetchPrefs", ['systemPrefsFetched', '',
-                             kTimeZone,
-                             kTapToClickEnabled,
-                             kVertEdgeScrollEnabled,
-                             kTouchpadSpeedFactor,
-                             kTouchpadSensitivity,
-                             kAccessibilityEnabled]);
-}
-
-function setupTimezones(selectedValue) {
-  timezoneSel = $('timezoneSel');
-  for (key in templateData.timezoneMap) {
-    var selected = key == selectedValue;
-    timezoneSel.options[timezoneSel.options.length] =
-        new Option(templateData.timezoneMap[key], key, false, selected);
-  }
-}
-
-function systemPrefsFetched(context, dict) {
-  $('tapToClickChk').checked = getPref(dict, kTapToClickEnabled);
-  $('vertScrollChk').checked = getPref(dict, kVertEdgeScrollEnabled);
-  $('sensitivityRng').value = getPref(dict, kTouchpadSensitivity);
-  $('speedRng').value = getPref(dict, kTouchpadSpeedFactor);
-  $('accesibilityChk').checked = getPref(dict, kAccessibilityEnabled);
-  setupTimezones(getPref(dict, kTimeZone));
-}
-
-function selectChanged(control) {
-  if (control.id == 'timezoneSel') {
-    setStringPref(kTimeZone, control.options[control.selectedIndex].value);
-  }
-}
-
-function checkboxChanged(control) {
-  if (control.id == 'tapToClickChk') {
-    setBooleanPref(kTapToClickEnabled, control.checked);
-  } else if (control.id == 'vertScrollChk') {
-    setBooleanPref(kVertEdgeScrollEnabled, control.checked);
-  } else if (control.id == 'vertScrollChk') {
-    setBooleanPref(kTapToClickEnabled, control.checked);
-  } else if (control.id == 'accesibilityChk') {
-    setBooleanPref(kAccessibilityEnabled, control.checked);
-  } 
-}
-
-function rangeChanged(control) {
-  if (control.id == 'sensitivityRng') {
-    setIntegerPref(kTouchpadSensitivity, control.value);
-  } else if (control.id == 'speedRng') {
-    setIntegerPref(kTouchpadSpeedFactor, control.value);
-  }
-}
-
-function buttonClicked(control) {
-  if (conrol.id == 'languageBtn') {
-    // TODO: Open ChromeOS language settings page.
-  }
-}
-
+window.onpopstate = function(e) {
+  OptionsPage.setState(e.state);
+};
 
 </script>
 <link rel="stylesheet" href="dom_ui.css">
 <!-- TODO(zelidrag) just a temp style placeholder until redesign -->
 <style>
-.navbar_container {
+#main-content {
+  display: -webkit-box;
+}
+
+#navbar-container {
   border: 1px solid black;
   background-color: #dfdfdf;  
-  cursor:pointer;
+  cursor: pointer;
   font-weight: bold; 
-  float:left;
   height: 400px;
   padding: 10px;
-  position:relative;
+  position: relative;
   width: 200px;
 }
-.navbar_item, .navbar_item2 {
+
+.navbar-item, .navbar-item2 {
   margin: 5px;
   padding: 5px;
 }
-.navbar_item_selected {
-  background-color: #000000;  
+
+.navbar-item-selected {
+  background-color: #FFFFFF;  
 }
-.navbar_item_normal {
-  background-color: #dfdfdf;  
+
+.navbar-item-normal {
+  background-color: #dfdfdf;
 }
+
 #mainview {
+  -webkit-box-align: stretch;
   border: 1px solid black;
-  float:left;
   height: 400px;
   width: 600px;
   padding: 10px;
-  position:relative;
+  position: relative;
 }
+
 .section {
   margin-top: 10px;
 }
+
 .option {
   margin-top: 5px;
 }
-.section_title {
+
+.section-title {
   font-weight: bold; 
 }
-.option_control_table {
-  padding-left:10px;
+
+.option-control-table {
+  margin-top: 5px;
+  -webkit-padding-start: 10px;
 }
-.navbar2 {
+
+.hidden {
   visibility: hidden;
 }
-.page {
-  visibility: hidden;
+
+.touch-slider {
+  -webkit-appearance: slider-horizontal;
 }
+
 </style>
 </head>
-<body onload="load();" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body onload="load();"
+    i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div class="header">
 </div>
-<div class="main">
-  <div class="navbar_container">
-     <ul class="navbar">
-       <li class="navbar_item navbar_item_normal" id="systemPageNav" i18n-values=".innerText:systemPage"></li>
-       <li class="navbar_item navbar_item_normal" id="internetPageNav" i18n-values=".innerText:internetPage"></li>
-       <li class="navbar_item navbar_item_normal" id="basicsPageNav" i18n-values=".innerText:basicsPage"></li>
-       <li class="navbar_item navbar_item_normal" id="personalStuffPageNav" i18n-values=".innerText:personalStuffPage"></li>
-       <li class="navbar_item navbar_item_normal" id="underHoodPageNav" i18n-values=".innerText:underHoodPage"></li>
+<div id="main-content">
+  <div id="navbar-container">
+     <ul id="navbar">
      </ul>
      <hr/>
-     <ul class="navbar2">
+     <ul class="hidden">
      </ul>
   </div>
   <div id="mainview">
-     <div class="page" id="systemPage">
-       <div class="section">
-          <div class="section_title" i18n-values=".innerText:datetime_title"></div>
-          <div class="option">
-             <table class="option_control_table">
-             <tr>
-               <td class="option_name" i18n-values=".innerText:timezone"></td>
-               <td class="option_value">
-                 <select id="timezoneSel" class="control timezone_dropdown" onchange="selectChanged(this)"></select>
-               </td>
-             </tr>
-             </table>
-          </div>
-       </div>
-       <div class="section">
-          <div class="section_title" i18n-values=".innerText:touchpad"></div>
-          <div class="option">
-             <table class="option_control_table">
-             <tr>
-               <td class="option_name" i18n-values=".innerText:sensitivity"></td>
-               <td class="option_value">
-                 <input id="sensitivityRng" type="range" min="1" max="10" class="touchSlider" style="-webkit-appearance:slider-horizontal;" onchange="rangeChanged(this)">
-               </td>
-             </tr>
-             <tr>
-               <td class="option_name" i18n-values=".innerText:speed_factor"></td>
-               <td class="option_value">
-                 <input id="speedRng" type="range" min="1" max="10" class="touchSlider" style="-webkit-appearance:slider-horizontal;" onchange="rangeChanged(this)">
-               </td>
-             </tr>
-             <tr>
-               <td class="option_name" colspan="2"><input id="tapToClickChk" type="checkbox" onchange="checkboxChanged(this)"/><span  i18n-values=".innerText:enable_tap_to_click"></span></td>
-             </tr>
-             <tr>
-               <td class="option_name" colspan="2"><input id="vertScrollChk" type="checkbox" onchange="checkboxChanged(this)"/><span  i18n-values=".innerText:enable_vert_edge_scroll"></span></td>
-             </tr>
-             </table>
-          </div>
-       </div>
-       <div class="section">
-          <div class="section_title" i18n-values=".innerText:language"></div>
-          <div class="option">
-             <table class="option_control_table">
-             <tr>
-               <td class="option_name"><button id="languageBtn" onclick="buttonClicked" i18n-values=".innerText:language_customize"></button></td>
-             </tr>
-             </table>
-          </div>
-       </div>
-       <div class="section">
-          <div class="section_title" i18n-values=".innerText:accessibility_title"></div>
-          <div class="option">
-             <table class="option_control_table">
-             <tr>
-               <td class="option_name"><input id="accesibilityChk" onchange="checkboxChanged(this)" type="checkbox"/><span  i18n-values=".innerText:accessibility"></span></td>
-             </tr>
-             </table>
-          </div>
-       </div>
+     <!-- include file="options/chromeos_system_options.html" -->
+     <div class="page hidden" id="dummyPage">
+        <!-- TODO(zelidrag): remove this one once we get another page here -->
+        Dummy page
      </div>
   </div>
 </div>
+<script>
+// Decorate the existing elements in the document.
+cr.ui.decorate('input[pref][type=checkbox]', PrefCheckbox);
+cr.ui.decorate('input[pref][type=range]', PrefRange);
+cr.ui.decorate('select[pref]', PrefSelect);
+<!-- TODO(zelidrag) add other elements here when we implement them -->
+</script>
 </body>
 </html>

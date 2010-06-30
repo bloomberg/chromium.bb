@@ -1,0 +1,68 @@
+<div class="page hidden" id="systemPage">
+  <div class="section">
+    <div class="section-title" i18n-content="datetime_title"></div>
+    <div class="option">
+       <table class="option-control-table">
+       <tr>
+         <td class="option-name" i18n-content="timezone"></td>
+         <td class="option-value">
+           <select id="timezone-select" class="control"
+                pref="settings.datetime.timezone"></select>
+         </td>
+       </tr>
+       </table>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title" i18n-content="touchpad"></div>
+    <table class="option-control-table">
+       <tr>
+         <td class="option-name" i18n-content="sensitivity"></td>
+         <td class="option-value">
+           <input id="sensitivity-range" type="range" min="1" max="10"
+               pref="settings.touchpad.sensitivity" class="touch-slider">
+         </td>
+       </tr>
+       <tr>
+         <td class="option-name" i18n-content="speed_factor"></td>
+         <td class="option-value">
+           <input id="speed-range" type="range" min="1" max="10"
+              pref="settings.touchpad.speed_factor" class="touch-slider">
+         </td>
+       </tr>
+       <tr>
+         <td class="option-name" colspan="2"><label><input
+              id="tap-to-click-check"
+              pref="settings.touchpad.enable_tap_to_click"
+              type="checkbox"><span i18n-content="enable_tap_to_click"></span></label></td>
+       </tr>
+       <tr>
+         <td class="option-name" colspan="2"><label><input
+             id="vert-scroll-check"
+             pref="settings.touchpad.enable_vert_edge_scroll"
+             type="checkbox"><span
+               i18n-content="enable_vert_edge_scroll"></span></label></td>
+       </tr>
+     </table>
+  </div>
+  <div class="section">
+    <div class="section-title" i18n-content="language"></div>
+    <table class="option-control-table">
+      <tr>
+        <td class="option-name"><button id="language-button"
+            i18n-content="language_customize"></button>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="section">
+    <div class="section-title" i18n-content="accessibility_title"></div>
+    <table class="option-control-table">
+      <tr>
+        <td class="option-name"><label><input id="accesibility-check"
+            pref="settings.accessibility" type="checkbox"><span
+            i18n-content="accessibility"></span></label></td>
+      </tr>
+    </table>
+  </div>
+</div>

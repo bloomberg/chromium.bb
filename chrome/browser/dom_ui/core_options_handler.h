@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_DOM_UI_CORE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_CORE_OPTIONS_HANDLER_H_
 
+#include <map>
+#include <string>
+
 #include "base/values.h"
 #include "chrome/browser/dom_ui/options_ui.h"
 
@@ -13,6 +16,7 @@
 class CoreOptionsHandler : public OptionsPageUIHandler {
  public:
   CoreOptionsHandler();
+  virtual ~CoreOptionsHandler();
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
@@ -26,6 +30,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual void RegisterMessages();
 
  private:
+  typedef std::multimap<std::wstring, std::wstring> PreferenceCallbackMap;
   // Callback for the "fetchPrefs" message. This message accepts the list of
   // preference names passed as |value| parameter (ListValue). It passes results
   // dictionary of preference values by calling prefsFetched() JS method on the
@@ -47,6 +52,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   void NotifyPrefChanged(const std::wstring* pref_name);
 
+  PreferenceCallbackMap pref_callback_map_;
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);
 };
 

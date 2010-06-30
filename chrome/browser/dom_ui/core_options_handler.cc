@@ -21,6 +21,21 @@
 CoreOptionsHandler::CoreOptionsHandler() {
 }
 
+CoreOptionsHandler::~CoreOptionsHandler() {
+  // Remove registered preference change notification observers.
+  DCHECK(dom_ui_);
+  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  std::wstring last_pref;
+  for (PreferenceCallbackMap::const_iterator iter = pref_callback_map_.begin();
+       iter != pref_callback_map_.end();
+       ++iter) {
+    if (last_pref != iter->first) {
+      pref_service->RemovePrefObserver(iter->first.c_str(), this);
+      last_pref = iter->first;
+    }
+  }
+}
+
 void CoreOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
@@ -55,7 +70,7 @@ void CoreOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("fetchPrefs",
       NewCallback(this, &CoreOptionsHandler::HandleFetchPrefs));
   dom_ui_->RegisterMessageCallback("observePrefs",
-      NewCallback(this, &CoreOptionsHandler::HandleFetchPrefs));
+      NewCallback(this, &CoreOptionsHandler::HandleObservePefs));
   dom_ui_->RegisterMessageCallback("setBooleanPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetBooleanPref));
   dom_ui_->RegisterMessageCallback("setIntegerPref",
@@ -71,10 +86,9 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
 
   const ListValue* param_values = static_cast<const ListValue*>(value);
 
-  // First param is name of callback function, the second one is the value of
-  // context that is just passed through - so, there needs to be at least one
-  // more for the actual preference identifier.
-  const size_t kMinFetchPrefsParamCount = 3;
+  // First param is name of callback function, so, there needs to be at least
+  // one more element for the actual preference identifier.
+  const size_t kMinFetchPrefsParamCount = 2;
   if (param_values->GetSize() < kMinFetchPrefsParamCount)
     return;
 
@@ -89,18 +103,13 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
   if (!callback->GetAsString(&callback_function))
     return;
 
-  // Get context param (just passthrough value)
-  Value* context;
-  if (!param_values->Get(1, &context) || !context)
-    return;
-
   // Get the list of name for prefs to build the response dictionary.
   DictionaryValue result_value;
   Value* list_member;
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
 
-  for (size_t i = 2; i < param_values->GetSize(); i++) {
+  for (size_t i = 1; i < param_values->GetSize(); i++) {
     if (!param_values->Get(i, &list_member))
       break;
 
@@ -116,8 +125,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
     result_value.Set(pref_name.c_str(),
         pref ? pref->GetValue()->DeepCopy() : Value::CreateNullValue());
   }
-  dom_ui_->CallJavascriptFunction(callback_function.c_str(), *context,
-                                  result_value);
+  dom_ui_->CallJavascriptFunction(callback_function.c_str(), result_value);
 }
 
 void CoreOptionsHandler::HandleObservePefs(const Value* value) {
@@ -128,19 +136,37 @@ void CoreOptionsHandler::HandleObservePefs(const Value* value) {
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
   DictionaryValue result_value;
   const ListValue* list_value = static_cast<const ListValue*>(value);
-  Value* list_member;
-  for (size_t i = 0; i < list_value->GetSize(); i++) {
+
+  // First param is name is JS callback function name, the rest are pref
+  // identifiers that we are observing.
+  const size_t kMinObservePrefsParamCount = 2;
+  if (list_value->GetSize() < kMinObservePrefsParamCount)
+    return;
+
+  // Get preference change callback function name.
+  std::wstring callback_func_name;
+  Value* list_member = 0;
+  if (!list_value->Get(0, &list_member) ||
+      !list_member->IsType(Value::TYPE_STRING) ||
+      !list_member->GetAsString(&callback_func_name))
+    return;
+
+  // Get all other parameters - pref identifiers.
+  for (size_t i = 1; i < list_value->GetSize(); i++) {
     if (!list_value->Get(i, &list_member))
       break;
 
-    if (!list_member->IsType(Value::TYPE_STRING))
-      continue;
-
+    // Just ignore bad pref identifiers for now.
     std::wstring pref_name;
-    if (!list_member->GetAsString(&pref_name))
+    if (!list_member->IsType(Value::TYPE_STRING) ||
+        !list_member->GetAsString(&pref_name))
       continue;
 
-    pref_service->AddPrefObserver(pref_name.c_str(), this);
+    if (pref_callback_map_.find(pref_name) == pref_callback_map_.end())
+      pref_service->AddPrefObserver(pref_name.c_str(), this);
+
+    pref_callback_map_.insert(
+        PreferenceCallbackMap::value_type(pref_name, callback_func_name));
   }
 }
 
@@ -201,13 +227,20 @@ void CoreOptionsHandler::HandleSetPref(const Value* value,
 }
 
 void CoreOptionsHandler::NotifyPrefChanged(const std::wstring* pref_name) {
+  DCHECK(pref_name);
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
   const PrefService::Preference* pref =
       pref_service->FindPreference(pref_name->c_str());
   if (pref) {
-    DictionaryValue result_value;
-    result_value.Set(pref_name->c_str(), pref->GetValue()->DeepCopy());
-    dom_ui_->CallJavascriptFunction(L"prefsChanged", result_value);
+    for (PreferenceCallbackMap::const_iterator iter =
+        pref_callback_map_.find(*pref_name);
+        iter != pref_callback_map_.end(); ++iter) {
+      const std::wstring& callback_function = iter->second;
+      ListValue result_value;
+      result_value.Append(Value::CreateStringValue(pref_name->c_str()));
+      result_value.Append(pref->GetValue()->DeepCopy());
+      dom_ui_->CallJavascriptFunction(callback_function, result_value);
+    }
   }
 }

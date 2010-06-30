@@ -107,6 +107,10 @@ def InlineFile(input_filename, output_filename):
       return src_match.group(0)
     return pattern % ReadFile(filepath)
 
+  def InlineIncludeFiles(src_match):
+    """Helper function to inline external script files"""
+    return InlineFileContents(src_match, '%s')
+
   def InlineScript(src_match):
     """Helper function to inline external script files"""
     return InlineFileContents(src_match, '<script>%s</script>')
@@ -150,6 +154,11 @@ def InlineFile(input_filename, output_filename):
   flat_text = re.sub(
       '<link rel="stylesheet".+?href="(?P<filename>[^"\']*)".*?>',
       InlineCssFile,
+      flat_text)
+
+  flat_text = re.sub(
+      '<!--\s*include\s+file="(?P<filename>[^"\']*)".*-->',
+      InlineIncludeFiles,
       flat_text)
 
   # TODO(glen): Make this regex not match src="" text that is not inside a tag
