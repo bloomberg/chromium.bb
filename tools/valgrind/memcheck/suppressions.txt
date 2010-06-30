@@ -3534,19 +3534,6 @@
    fun:sqlite3EndTable
 }
 {
-   bug_47863
-   Memcheck:Addr4
-   ...
-   fun:_ZN21ExtensionsServiceTest7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN17ExtensionsService21NotifyExtensionLoadedEP9Extension
-   fun:_ZN17ExtensionsService17OnExtensionLoadedEP9Extensionb
-   fun:_ZN17ExtensionsService22LoadInstalledExtensionERK13ExtensionInfob
-   fun:_ZN17ExtensionsService25ContinueLoadAllExtensionsEPSt6vectorI10linked_ptrI13ExtensionInfoESaIS3_EEN4base9TimeTicksEb
-   fun:_ZN17ExtensionsService17LoadAllExtensionsEv
-   fun:_ZN17ExtensionsService16ReloadExtensionsEv
-}
-{
    bug_47950
    Memcheck:Leak
    fun:_Znw*
