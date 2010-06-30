@@ -563,15 +563,12 @@ void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
   int image_name = GetThemeFrameResource();
   CairoCachedSurface* surface = theme_provider->GetUnthemedSurfaceNamed(
       image_name, widget);
-  if (event->area.y < surface->Height()) {
-    surface->SetSource(cr,
-        0,
-        UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
-    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT);
-    cairo_rectangle(cr, event->area.x, event->area.y,
-                    event->area.width, event->area.height);
-    cairo_fill(cr);
-  }
+  surface->SetSource(
+      cr, 0, UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT);
+  cairo_rectangle(cr, event->area.x, event->area.y,
+                  event->area.width, event->area.height);
+  cairo_fill(cr);
 }
 
 void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
