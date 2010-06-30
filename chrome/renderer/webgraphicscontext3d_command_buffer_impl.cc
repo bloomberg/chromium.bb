@@ -465,6 +465,9 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveUniform(
   return true;
 }
 
+DELEGATE_TO_GL_4(getAttachedShaders, GetAttachedShaders,
+                 WebGLId, int, int*, unsigned int*)
+
 DELEGATE_TO_GL_2R(getAttribLocation, GetAttribLocation,
                   WebGLId, const char*, int)
 
