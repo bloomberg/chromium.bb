@@ -1229,3 +1229,15 @@
    fun:_ZN7WebCore16HTML5TreeBuilder8finishedEv
    fun:_ZN7WebCore19HTML5DocumentParser3endEv
 }
+{
+   bug_47949
+   Memcheck:Cond
+   fun:rips_f_DrawRing
+   fun:rips_f_BltShape
+   fun:ripc_Render
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:CGContextFillRect
+   fun:NSRectFill
+   fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
+}
