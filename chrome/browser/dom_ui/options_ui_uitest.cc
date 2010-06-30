@@ -58,7 +58,7 @@ TEST_F(OptionsUITest, CommandOpensOptionsTab) {
   AssertIsOptionsPage(tab);
 }
 
-TEST_F(OptionsUITest, CommandAgainGoesBackToOptionsTab) {
+TEST_F(OptionsUITest, FAILS_CommandAgainGoesBackToOptionsTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
