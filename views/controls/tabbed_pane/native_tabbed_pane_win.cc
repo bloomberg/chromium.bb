@@ -195,13 +195,12 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   // inherit the WS_EX_LAYOUTRTL property and this will result in the contents
   // being flipped, which is not what we want (because we handle mirroring in
   // views without the use of Windows' support for mirroring). Therefore,
-  // we initially create our HWND without the aforementioned property and we
-  // explicitly set this property our child is created. This way, on RTL
-  // locales, our tabs will be nicely rendered from right to left (by virtue of
-  // Windows doing the right thing with the TabbedPane HWND) and each tab
-  // contents will use an RTL layout correctly (by virtue of the mirroring
-  // infrastructure in views doing the right thing with each View we put
-  // in the tab).
+  // we initially create our HWND without WS_EX_LAYOUTRTL and we explicitly set
+  // this property our child is created. This way, on RTL locales, our tabs
+  // will be nicely rendered from right to left (by virtue of Windows doing the
+  // right thing with the TabbedPane HWND) and each tab contents will use an
+  // RTL layout correctly (by virtue of the mirroring infrastructure in views
+  // doing the right thing with each View we put in the tab).
   DWORD style = WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE | WS_CLIPCHILDREN;
   HWND tab_control = ::CreateWindowEx(0,
                                       WC_TABCONTROL,
@@ -220,8 +219,8 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   content_window_->Init(tab_control, gfx::Rect());
 
   // Explicitly setting the WS_EX_LAYOUTRTL property for the HWND (see above
-  // for a thorough explanation regarding why we waited until |content_window_|
-  // if created before we set this property for the tabbed pane's HWND).
+  // for why we waited until |content_window_| is created before we set this
+  // property for the tabbed pane's HWND).
   if (base::i18n::IsRTL())
     l10n_util::HWNDSetRTLLayout(tab_control);
 
