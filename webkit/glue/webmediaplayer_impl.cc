@@ -436,13 +436,6 @@ int WebMediaPlayerImpl::dataRate() const {
   return 0;
 }
 
-// This will be deleted once the WebKit::WebMediaPlayer interface is updated.
-const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() const {
-  DCHECK(MessageLoop::current() == main_loop_);
-
-  return buffered_;
-}
-
 const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK(MessageLoop::current() == main_loop_);
 
