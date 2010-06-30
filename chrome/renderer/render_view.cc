@@ -2111,7 +2111,14 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
     // The form has been auto-filled, so give the user the chance to clear the
     // form.
     form_manager_.ClearFormWithNode(node);
+  } else if (form_manager_.FormWithNodeIsAutoFilled(node)) {
+    // Fill a specific field value.
+    // Cast away const'ness in this case where we're filling the element
+    // directly.
+    WebInputElement element = node.toConst<WebInputElement>();
+    element.setValue(value);
   } else {
+    // Fill the values for the whole form.
     QueryAutoFillFormData(node, value, label, AUTOFILL_FILL);
   }
 

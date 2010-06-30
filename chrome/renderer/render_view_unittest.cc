@@ -1021,3 +1021,65 @@ TEST_F(RenderViewTest, SendForms) {
                 ASCIIToUTF16("hidden"),
                 0))) << form2.fields[2];
 }
+
+TEST_F(RenderViewTest, FillFormElement) {
+  // Don't want any delay for form state sync changes. This will still post a
+  // message so updates will get coalesced, but as soon as we spin the message
+  // loop, it will generate an update.
+  view_->set_send_content_state_immediately(true);
+
+  LoadHTML("<form method=\"POST\">"
+           "  <input type=\"text\" id=\"firstname\"/>"
+           "  <input type=\"text\" id=\"middlename\"/>"
+           "</form>");
+
+  // Verify that "FormsSeen" sends the expected number of fields.
+  ProcessPendingMessages();
+  const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
+      ViewHostMsg_FormsSeen::ID);
+  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  ViewHostMsg_FormsSeen::Param params;
+  ViewHostMsg_FormsSeen::Read(message, &params);
+  const std::vector<FormData>& forms = params.a;
+  ASSERT_EQ(1UL, forms.size());
+  ASSERT_EQ(2UL, forms[0].fields.size());
+  EXPECT_TRUE(forms[0].fields[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("firstname"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20))) << forms[0].fields[0];
+  EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("middlename"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20))) << forms[0].fields[1];
+
+  // Verify that |didAcceptAutoFillSuggestion()| sets the value of the expected
+  // field.
+  WebFrame* web_frame = GetMainFrame();
+  WebDocument document = web_frame->document();
+  WebInputElement firstname =
+      document.getElementById("firstname").to<WebInputElement>();
+  WebInputElement middlename =
+      document.getElementById("middlename").to<WebInputElement>();
+  middlename.setAutofilled(true);
+  // didAcceptAutoFillSuggestions expects a non-zero number of suggestions.
+  view_->suggestions_count_ = 4;
+
+  // Accept a suggestion in a form that has been auto-filled.  This triggers
+  // the direct filling of the firstname element with value parameter.
+  view_->didAcceptAutoFillSuggestion(firstname,
+                                     WebKit::WebString::fromUTF8("David"),
+                                     WebKit::WebString(),
+                                     0);
+
+  ProcessPendingMessages();
+  const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
+      ViewHostMsg_FillAutoFillFormData::ID);
+
+  // No message should be sent in this case.  |firstname| is filled directly.
+  ASSERT_EQ(static_cast<IPC::Message*>(NULL), message2);
+  EXPECT_EQ(firstname.value(), WebKit::WebString::fromUTF8("David"));
+}

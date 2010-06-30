@@ -589,6 +589,7 @@ class RenderView : public RenderWidget,
   FRIEND_TEST(RenderViewTest, JSBlockSentAfterPageLoad);
   FRIEND_TEST(RenderViewTest, UpdateTargetURLWithInvalidURL);
   FRIEND_TEST(RenderViewTest, SendForms);
+  FRIEND_TEST(RenderViewTest, FillFormElement);
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, int> HostZoomLevels;
