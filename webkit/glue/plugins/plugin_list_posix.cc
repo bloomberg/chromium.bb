@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/sha1.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
 
@@ -24,6 +25,40 @@ bool CompareTime(const FileAndTime& a, const FileAndTime& b) {
 
   // Sort by mtime, descending.
   return a.second > b.second;
+}
+
+// Return true if |path| matches a known (file size, sha1sum) pair.
+// The use of the file size is an optimization so we don't have to read in
+// the entire file unless we have to.
+bool IsBlacklistedBySha1sum(const FilePath& path) {
+  const struct BadEntry {
+    int64 size;
+    std::string sha1;
+  } bad_entries[] = {
+    // Flash 9 r31 - http://crbug.com/29237
+    { 7040080, "fa5803061125ca47846713b34a26a42f1f1e98bb" },
+    // Flash 9 r48 - http://crbug.com/29237
+    { 7040036, "0c4b3768a6d4bfba003088e4b9090d381de1af2b" },
+  };
+
+  int64 size;
+  if (!file_util::GetFileSize(path, &size))
+    return false;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(bad_entries); i++) {
+    if (bad_entries[i].size != size)
+      continue;
+
+    std::string file_content;
+    if (!file_util::ReadFileToString(path, &file_content))
+      continue;
+    std::string sha1 = base::SHA1HashString(file_content);
+    std::string sha1_readable;
+    for (size_t j = 0; j < sha1.size(); j++)
+      StringAppendF(&sha1_readable, "%02x", sha1[j] & 0xFF);
+    if (bad_entries[i].sha1 == sha1_readable)
+      return true;
+  }
+  return false;
 }
 
 // Some plugins are shells around other plugins; we prefer to use the
@@ -61,7 +96,7 @@ bool IsBlacklistedPlugin(const FilePath& path) {
       return true;
     }
   }
-  return false;
+  return IsBlacklistedBySha1sum(path);
 }
 
 }  // anonymous namespace
