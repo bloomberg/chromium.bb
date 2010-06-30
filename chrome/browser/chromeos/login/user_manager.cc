@@ -45,7 +45,7 @@ void save_path_to_local_state(const std::string& username,
   images->SetWithoutPathExpansion(UTF8ToWide(username),
                                   new StringValue(image_path));
   LOG(INFO) << "Saving path to user image in Local State.";
-  local_state->ScheduleSavePersistentPrefs();
+  local_state->SavePersistentPrefs();
 }
 
 // Saves image to file with specified path. Runs on FILE thread.
@@ -169,7 +169,7 @@ void UserManager::UserLoggedIn(const std::string& email) {
       logged_in_user_ = *it;
     }
   }
-  prefs->ScheduleSavePersistentPrefs();
+  prefs->SavePersistentPrefs();
   NotifyOnLogin();
 }
 
@@ -190,7 +190,7 @@ void UserManager::RemoveUser(const std::string& email) {
     if (email != user_email)
       prefs_users->Append(Value::CreateStringValue(user_email));
   }
-  prefs->ScheduleSavePersistentPrefs();
+  prefs->SavePersistentPrefs();
 }
 
 void UserManager::SaveUserImage(const std::string& username,

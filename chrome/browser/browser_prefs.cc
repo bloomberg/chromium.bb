@@ -56,6 +56,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
@@ -90,6 +91,7 @@ void RegisterLocalState(PrefService* local_state) {
   AutoFillManager::RegisterBrowserPrefs(local_state);
 #if defined(OS_CHROMEOS)
   chromeos::UserManager::RegisterPrefs(local_state);
+  WizardController::RegisterPrefs(local_state);
 #endif
 }
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
+class PrefService;
 class WizardContentsView;
 class WizardScreen;
 
@@ -94,6 +95,9 @@ class WizardController : public chromeos::ScreenObserver,
   void SetCustomization(
       const chromeos::StartupCustomizationDocument* customization);
 
+  // Registers OOBE preferences.
+  static void RegisterPrefs(PrefService* local_state);
+
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
   static const char kAccountScreenName[];
@@ -136,6 +140,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Determines which screen to show first by the parameter, shows it and
   // sets it as the current one.
   void ShowFirstScreen(const std::string& first_screen_name);
+
+  // Marks OOBE process as completed.
+  void MarkOobeCompleted();
 
   // Widget we're showing in.
   views::Widget* widget_;

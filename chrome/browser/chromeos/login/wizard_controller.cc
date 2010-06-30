@@ -14,6 +14,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"  // For NOTREACHED.
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -44,6 +45,10 @@
 
 namespace {
 
+// A boolean pref of the OOBE complete flag.
+const wchar_t kOobeComplete[] = L"OobeComplete";
+
+// Default size of the OOBE screen.
 const int kWizardScreenWidth = 700;
 const int kWizardScreenHeight = 416;
 
@@ -236,8 +241,10 @@ void WizardController::Init(const std::string& first_screen_name,
       NULL);
   window->SetContentsView(contents_);
 
-  if (chromeos::UserManager::Get()->GetUsers().empty() ||
-      first_screen_name == kOutOfBoxScreenName) {
+  PrefService* prefs = g_browser_process->local_state();
+  bool oobe_complete = prefs->GetBoolean(kOobeComplete);
+
+  if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {
     is_out_of_box_ = true;
   }
 
@@ -337,6 +344,11 @@ void WizardController::SetCustomization(
   customization_.reset(customization);
 }
 
+// static
+void WizardController::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterBooleanPref(kOobeComplete, false);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
 void WizardController::OnLoginSignInSelected() {
@@ -364,6 +376,7 @@ void WizardController::OnNetworkConnected() {
     ShowUpdateScreen();
     GetUpdateScreen()->StartUpdate();
   } else {
+    // TODO(nkostylev): Remove this path after accelerator is removed.
     ShowLoginScreen();
   }
 }
@@ -394,16 +407,18 @@ void WizardController::OnAccountCreated() {
 }
 
 void WizardController::OnConnectionFailed() {
-  // TODO(dpolukhin): show error message before going back to network screen.
-  is_out_of_box_ = false;
-  ShowNetworkScreen();
+  // TODO(dpolukhin): show error message after login screen is displayed.
+  ShowLoginScreen();
 }
 
 void WizardController::OnUpdateCompleted() {
+  MarkOobeCompleted();
   ShowLoginScreen();
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
+  MarkOobeCompleted();
+  // TODO(nkostylev): Update should be required during OOBE.
   // We do not want to block users from being able to proceed to the login
   // screen if there is any error checking for an update.
   // They could use "browse without sign-in" feature to set up the network to be
@@ -479,6 +494,13 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   }
 }
 
+void WizardController::MarkOobeCompleted() {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(kOobeComplete, true);
+  // Make sure that changes are reflected immediately.
+  prefs->SavePersistentPrefs();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, chromeos::ScreenObserver overrides:
 void WizardController::OnExit(ExitCodes exit_code) {
@@ -550,6 +572,12 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   gfx::Rect screen_bounds(CalculateScreenBounds(size));
 
+  // Check whether we need to execute OOBE process.
+  bool oobe_complete = g_browser_process->local_state()->
+      GetBoolean(kOobeComplete);
+
+  // TODO(nkostylev): Always switch to ExistingUserController after OOBE
+  // is completed. Enable it after fix for WM is ready.
   if (first_screen_name.empty() &&
       chromeos::CrosLibrary::Get()->EnsureLoaded() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -563,42 +591,46 @@ void ShowLoginWizard(const std::string& first_screen_name,
     }
   }
 
-  // Load partner customization startup manifest if needed.
   scoped_ptr<chromeos::StartupCustomizationDocument> customization;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kStartupManifest)) {
-    customization.reset(new chromeos::StartupCustomizationDocument());
-    FilePath manifest_path =
-        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kStartupManifest);
-    bool manifest_loaded = customization->LoadManifestFromFile(manifest_path);
-    DCHECK(manifest_loaded) << manifest_path.value();
-  }
 
-  // Do UX customizations if needed.
-  if (customization != NULL) {
-    // Switch to initial locale if specified by customization.
-    const std::string locale = customization->initial_locale();
-    if (!locale.empty()) {
-      chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
+  if (!oobe_complete) {
+    // Load partner customization startup manifest if needed.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kStartupManifest)) {
+      customization.reset(new chromeos::StartupCustomizationDocument());
+      FilePath manifest_path =
+          CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+              switches::kStartupManifest);
+      bool manifest_loaded = customization->LoadManifestFromFile(manifest_path);
+      DCHECK(manifest_loaded) << manifest_path.value();
     }
 
-    // Set initial timezone if specified by customization.
-    const std::string timezone_name = customization->initial_timezone();
-    if (!timezone_name.empty()) {
-      icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-          icu::UnicodeString::fromUTF8(timezone_name));
-      icu::TimeZone::adoptDefault(timezone);
-      // Save timezone to default profile preferences.
-      PrefService* prefs = ProfileManager::GetDefaultProfile()->GetPrefs();
-      prefs->SetString(prefs::kTimeZone, timezone_name);
-      prefs->SavePersistentPrefs();
+    // Do UX customizations if needed.
+    if (customization != NULL) {
+      // Switch to initial locale if specified by customization.
+      const std::string locale = customization->initial_locale();
+      if (!locale.empty()) {
+        chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
+      }
+
+      // Set initial timezone if specified by customization.
+      const std::string timezone_name = customization->initial_timezone();
+      if (!timezone_name.empty()) {
+        icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
+            icu::UnicodeString::fromUTF8(timezone_name));
+        icu::TimeZone::adoptDefault(timezone);
+        // Save timezone to default profile preferences.
+        PrefService* prefs = ProfileManager::GetDefaultProfile()->GetPrefs();
+        prefs->SetString(prefs::kTimeZone, timezone_name);
+        prefs->SavePersistentPrefs();
+      }
     }
   }
 
   // Create and show the wizard.
   WizardController* controller = new WizardController();
-  controller->SetCustomization(customization.release());
+  if (!oobe_complete)
+    controller->SetCustomization(customization.release());
   controller->ShowBackground(screen_bounds);
   controller->Init(first_screen_name, screen_bounds);
   controller->Show();

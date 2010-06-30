@@ -14,7 +14,8 @@ namespace {
 const int kMinimalUpdateTime = 3;
 
 // Progress bar increment step.
-const int kUpdateCheckProgressIncrement = 20;
+const int kBeforeUpdateCheckProgressIncrement = 10;
+const int kAfterUpdateCheckProgressIncrement = 10;
 const int kUpdateCompleteProgressIncrement = 75;
 
 }  // anonymous namespace
@@ -57,7 +58,7 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
     case UPGRADE_IS_AVAILABLE:
       checking_for_update_ = false;
       // Advance view progress bar.
-      view()->AddProgress(kUpdateCheckProgressIncrement);
+      view()->AddProgress(kAfterUpdateCheckProgressIncrement);
       // Create new Google Updater instance and install the update.
       google_updater_ = CreateGoogleUpdate();
       google_updater_->CheckForUpdate(true, NULL);
@@ -68,7 +69,7 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
       // Fall through.
     case UPGRADE_ALREADY_UP_TO_DATE:
       checking_for_update_ = false;
-      view()->AddProgress(kUpdateCheckProgressIncrement);
+      view()->AddProgress(kAfterUpdateCheckProgressIncrement);
       // Fall through.
     case UPGRADE_ERROR:
       if (MinimalUpdateTimeElapsed()) {
@@ -95,6 +96,7 @@ void UpdateScreen::StartUpdate() {
   checking_for_update_ = true;
   google_updater_ = CreateGoogleUpdate();
   google_updater_->CheckForUpdate(false, NULL);
+  view()->AddProgress(kBeforeUpdateCheckProgressIncrement);
   LOG(INFO) << "Checking for update";
 }
 
