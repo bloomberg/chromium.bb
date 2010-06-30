@@ -22,9 +22,9 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/nss_util.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
-#include "base/waitable_event.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -68,6 +68,8 @@ int main(int argc, char** argv) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   base::AtExitManager exit_manager;
+
+  base::EnsureNSPRInit();
 
   scoped_ptr<remoting::Capturer> capturer;
   scoped_ptr<remoting::Encoder> encoder;
@@ -130,7 +132,7 @@ int main(int argc, char** argv) {
                                    executor.release());
 
   // Let the chromoting host runs until the shutdown task is executed.
-  MessageLoop message_loop;
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
   host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
   message_loop.Run();
 

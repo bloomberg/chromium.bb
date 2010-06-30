@@ -22,8 +22,7 @@ ChromotingHostContext::~ChromotingHostContext() {
 
 void ChromotingHostContext::Start() {
   // Start all the threads.
-  main_thread_.StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_UI, 0));
+  main_thread_.Start();
   capture_thread_.Start();
   encode_thread_.Start();
   jingle_thread_.Start();
