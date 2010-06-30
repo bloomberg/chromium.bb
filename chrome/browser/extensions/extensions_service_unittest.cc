@@ -1527,6 +1527,10 @@ TEST_F(ExtensionsServiceTest, ReloadExtensions) {
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 
+  // Need to clear |loaded_| manually before reloading as the
+  // EnableExtension() call above inserted into it and
+  // UnloadAllExtensions() doesn't send out notifications.
+  loaded_.clear();
   service_->ReloadExtensions();
 
   // Extension counts shouldn't change.
