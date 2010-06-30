@@ -113,6 +113,8 @@ ACCEPTABLE_ARGUMENTS = {
     'running_on_valgrind': False,
     # activates buildbot-specific presets
     'buildbot': None,
+    # werror=0 allows "-Werror" (warnings as errors) to be omitted.
+    'werror': None,
     # link with valgrind untrusted bits
     'with_valgrind': False,
     # use_libcrypto=0 allows use of -lcrypt to be disabled, which
@@ -166,6 +168,11 @@ def ExpandArguments():
 #-----------------------------------------------------------
 ExpandArguments()
 
+if int(ARGUMENTS.get('werror', 1)):
+  werror_flags = ['-Werror']
+else:
+  werror_flags = []
+
 # ----------------------------------------------------------
 environment_list = []
 
@@ -203,7 +210,7 @@ pre_base_env['ENV']['CYGWIN'] = os.environ.get('CYGWIN', 'nodosfilewarning')
 
 def EnsureRequiredBuildWarnings(env):
   if env.Bit('linux') or env.Bit('mac'):
-    required_env_flags = sets.Set(['-pedantic', '-Wall', '-Werror' ])
+    required_env_flags = sets.Set(['-pedantic', '-Wall'] + werror_flags)
     ccflags = sets.Set(env.get('CCFLAGS'))
 
     if not required_env_flags.issubset(ccflags):
@@ -1205,7 +1212,6 @@ unix_like_env.Prepend(
   CFLAGS = ['-std=gnu99', '-Wdeclaration-after-statement' ],
   CCFLAGS = [
     # '-malign-double',
-    '-Werror',
     '-Wall',
     '-pedantic',
     '-Wextra',
@@ -1213,7 +1219,7 @@ unix_like_env.Prepend(
     '-Wswitch-enum',
     '-Wsign-compare',
     '-fvisibility=hidden',
-  ],
+  ] + werror_flags,
   CXXFLAGS=['-std=c++98'],
   LIBPATH=['/usr/lib'],
   LIBS = ['pthread'],
@@ -1365,9 +1371,9 @@ nacl_env = pre_base_env.Clone(
                '-fomit-frame-pointer',
                '-Wall',
                '-fdiagnostics-show-option',
-               '-pedantic',
-               '-Werror',
-               '${EXTRA_CCFLAGS}'] ,
+               '-pedantic'] +
+              werror_flags +
+              ['${EXTRA_CCFLAGS}'] ,
     CPPPATH = ['$SOURCE_ROOT'],
     CFLAGS = ['${EXTRA_CFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
@@ -1392,7 +1398,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
     nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
   nacl_env.FilterOut(CCFLAGS = ['-Werror'])
-  nacl_env.Append(CFLAGS = ['-Werror'])
+  nacl_env.Append(CFLAGS = werror_flags)
 
   # NOTE: we change the linker command line to make it possible to
   #       sneak in startup and cleanup code
@@ -1557,9 +1563,9 @@ nacl_extra_sdk_env = pre_base_env.Clone(
 # TODO(robertm): consider moving some of these flags to the naclsdk tool
 nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
                                    '-fdiagnostics-show-option',
-                                   '-pedantic',
-                                   '-Werror',
-                                   '${EXTRA_CCFLAGS}',
+                                   '-pedantic'] +
+                                  werror_flags +
+                                  ['${EXTRA_CCFLAGS}',
                                ])
 
 # Optionally disable certain link warning which cause ASMs to
@@ -1630,7 +1636,7 @@ nacl_extra_sdk_env.Append(
 # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
   nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
-  nacl_extra_sdk_env.Append(CFLAGS = ['-Werror'])
+  nacl_extra_sdk_env.Append(CFLAGS = werror_flags)
 
 environment_list.append(nacl_extra_sdk_env)
 
