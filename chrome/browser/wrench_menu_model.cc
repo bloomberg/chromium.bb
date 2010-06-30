@@ -23,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
@@ -68,15 +69,22 @@ WrenchMenuModel::WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                                  Browser* browser)
     : menus::SimpleMenuModel(delegate),
       delegate_(delegate),
-      browser_(browser) {
+      browser_(browser),
+      tabstrip_model_(browser_->tabstrip_model()) {
   Build();
   UpdateZoomControls();
 
+  tabstrip_model_->AddObserver(this);
+
   registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
                  Source<Profile>(browser_->profile()));
+  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                 NotificationService::AllSources());
 }
 
 WrenchMenuModel::~WrenchMenuModel() {
+  if (tabstrip_model_)
+    tabstrip_model_->RemoveObserver(this);
 }
 
 static bool CalculateEnabled() {
@@ -137,12 +145,12 @@ bool WrenchMenuModel::GetIconAt(int index, SkBitmap* icon) const {
 }
 
 bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
-  return false;
+  return command_id == IDC_ZOOM_PERCENT_DISPLAY;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
-  // TODO(erg): Hook up percentage calculation once I add that widget.
-  return string16();
+  DCHECK_EQ(IDC_ZOOM_PERCENT_DISPLAY, command_id);
+  return zoom_label_;
 }
 
 void WrenchMenuModel::ExecuteCommand(int command_id) {
@@ -150,10 +158,30 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
     delegate_->ExecuteCommand(command_id);
 }
 
+void WrenchMenuModel::TabSelectedAt(TabContents* old_contents,
+                                    TabContents* new_contents,
+                                    int index,
+                                    bool user_gesture) {
+  // The user has switched between tabs and the new tab may have a different
+  // zoom setting.
+  UpdateZoomControls();
+}
+
+void WrenchMenuModel::TabReplacedAt(TabContents* old_contents,
+                                    TabContents* new_contents, int index) {
+  UpdateZoomControls();
+}
+
+void WrenchMenuModel::TabStripModelDeleted() {
+  // During views shutdown, the tabstrip model/browser is deleted first, while
+  // it is the opposite in gtk land.
+  tabstrip_model_->RemoveObserver(this);
+  tabstrip_model_ = NULL;
+}
+
 void WrenchMenuModel::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::ZOOM_LEVEL_CHANGED, type.value);
   UpdateZoomControls();
 }
 
@@ -179,6 +207,8 @@ void WrenchMenuModel::Build() {
   zoom_menu_item_model_.reset(
       new menus::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
+  zoom_menu_item_model_->AddButtonLabel(IDC_ZOOM_PERCENT_DISPLAY,
+                                        IDS_ZOOM_PLUS2);
   zoom_menu_item_model_->AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddSpace();
   zoom_menu_item_model_->AddItemWithImage(
@@ -247,9 +277,6 @@ void WrenchMenuModel::UpdateZoomControls() {
   bool enable_increment, enable_decrement;
   int zoom_percent =
       static_cast<int>(GetZoom(&enable_increment, &enable_decrement) * 100);
-
-  // TODO(erg): Route the stringified zoom_percent through
-  // GetLabelForCommandId(). Also make a way to use enable_increment/decrement.
   zoom_label_ = l10n_util::GetStringFUTF16(
       IDS_ZOOM_PERCENT, IntToString16(zoom_percent));
 }

@@ -62,7 +62,11 @@ struct _GtkCustomMenuItem {
   // Label on left side of menu item.
   GtkWidget* label;
 
-  // Possible button widgets
+  // List of all widgets we added. Used to find the leftmost and rightmost
+  // continuous buttons.
+  GList* all_widgets;
+
+  // Possible button widgets. Used for keyboard navigation.
   GList* button_widgets;
 
   // The widget that currently has highlight.
@@ -85,6 +89,11 @@ GtkWidget* gtk_custom_menu_item_new(const char* title);
 // Adds a button to our list of items in the |hbox|.
 GtkWidget* gtk_custom_menu_item_add_button(GtkCustomMenuItem* menu_item,
                                            int command_id);
+
+// Adds a button to our list of items in the |hbox|, but that isn't part of
+// |button_widgets| to prevent it from being activatable.
+GtkWidget* gtk_custom_menu_item_add_button_label(GtkCustomMenuItem* menu_item,
+                                                 int command_id);
 
 // Adds a vertical space in the |hbox|.
 void gtk_custom_menu_item_add_space(GtkCustomMenuItem* menu_item);

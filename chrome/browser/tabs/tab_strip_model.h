@@ -125,6 +125,10 @@ class TabStripModelObserver {
   // use this as a trigger to try and close the window containing the
   // TabStripModel, for example...
   virtual void TabStripEmpty() {}
+
+  // Sent when the tabstrip model is about to be deleted and any reference held
+  // must be dropped.
+  virtual void TabStripModelDeleted() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -758,7 +758,10 @@ void BrowserToolbarGtk::PopupForButtonNextTo(GtkWidget* button,
                                              GtkMenuDirectionType dir) {
   GtkWidget* other_button = button == page_menu_button_.get() ?
       app_menu_button_.get() : page_menu_button_.get();
-  PopupForButton(other_button);
+  // TODO(erg): When we move to wrench menu only, remove |menu_bar_helper_| so
+  // this won't be necessary.
+  if (other_button)
+    PopupForButton(other_button);
 }
 
 void BrowserToolbarGtk::AnimationEnded(const Animation* animation) {

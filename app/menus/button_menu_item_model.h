@@ -17,22 +17,14 @@ namespace menus {
 //
 // TODO(erg): There are still two major pieces missing from this model. It
 // needs to be able to group buttons together so they all have the same
-// width. ButtonSides needs to be used to communicate how buttons are squashed
-// together.
+// width.
 class ButtonMenuItemModel {
  public:
   // Types of buttons.
   enum ButtonType {
     TYPE_SPACE,
-    TYPE_BUTTON
-  };
-
-  // Which sides of the button are visible.
-  enum ButtonSides {
-    SIDE_NONE = 0,
-    SIDE_LEFT = 1 << 0,
-    SIDE_RIGHT = 1 << 1,
-    SIDE_BOTH = SIDE_LEFT | SIDE_RIGHT
+    TYPE_BUTTON,
+    TYPE_BUTTON_LABEL
   };
 
   class Delegate {
@@ -54,8 +46,17 @@ class ButtonMenuItemModel {
   // Adds a button that will emit |command_id|.
   void AddItemWithStringId(int command_id, int string_id);
 
+  // Adds a button that will emit |command_id|. Sizes for all items with the
+  // same |group| id will be set to the largest item in the group.
+  void AddItemWithStringIdAndGroup(int command_id, int string_id, int group);
+
   // Adds a button that has an icon instead of a label.
   void AddItemWithImage(int command_id, int icon_idr);
+
+  // Adds a non-clickable button with a desensitized label that doesn't do
+  // anything. Usually combined with IsLabelForCommandIdDynamic() to add
+  // information.
+  void AddButtonLabel(int command_id, int string_id);
 
   // Adds a small horizontal space.
   void AddSpace();
@@ -69,11 +70,19 @@ class ButtonMenuItemModel {
   // Changes a position into a command ID.
   int GetCommandIdAt(int index) const;
 
-  const string16& GetLabelAt(int index) const;
+  // Whether the label for item |index| changes.
+  bool IsLabelDynamicAt(int index) const;
+
+  // Returns the current label value for the button at |index|.
+  string16 GetLabelAt(int index) const;
 
   // If the button at |index| should have an icon instead, returns true and
   // sets the IDR |icon|.
   bool GetIconAt(int index, int* icon) const;
+
+  // If the button at |index| should have its size equalized as part of a
+  // group, returns true and sets the group number |group|.
+  bool GetGroupAt(int index, int* group) const;
 
   // Called from implementations.
   void ActivatedCommand(int command_id);
@@ -88,8 +97,8 @@ class ButtonMenuItemModel {
     int command_id;
     ButtonType type;
     string16 label;
-    int sides;
     int icon_idr;
+    int group;
   };
   std::vector<Item> items_;
 

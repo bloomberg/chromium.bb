@@ -72,6 +72,33 @@ void OnSubmenuShow(GtkWidget* widget, gpointer user_data) {
 #endif
 }
 
+void OnSubmenuShowButtonMenuItem(GtkWidget* widget, GtkButton* button) {
+  menus::ButtonMenuItemModel* model =
+      reinterpret_cast<menus::ButtonMenuItemModel*>(
+          g_object_get_data(G_OBJECT(button), "button-model"));
+  int index = GPOINTER_TO_INT(g_object_get_data(
+      G_OBJECT(button), "button-model-id"));
+
+  std::string label =
+      ConvertAcceleratorsFromWindowsStyle(
+          UTF16ToUTF8(model->GetLabelAt(index)));
+  gtk_button_set_label(GTK_BUTTON(button), label.c_str());
+}
+
+void SetupDynamicLabelMenuButton(GtkWidget* button,
+                                 GtkWidget* menu,
+                                 menus::ButtonMenuItemModel* model,
+                                 int index) {
+  if (model->IsLabelDynamicAt(index)) {
+    g_object_set_data(G_OBJECT(button), "button-model",
+                      reinterpret_cast<void*>(model));
+    g_object_set_data(G_OBJECT(button), "button-model-id",
+                      GINT_TO_POINTER(index));
+    g_signal_connect(menu, "show", G_CALLBACK(OnSubmenuShowButtonMenuItem),
+                     button);
+  }
+}
+
 // Popup menus may get squished if they open up too close to the bottom of the
 // screen. This function takes the size of the screen, the size of the menu,
 // an optional widget, the Y position of the mouse click, and adjusts the popup
@@ -269,9 +296,7 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
       case menus::MenuModel::TYPE_BUTTON_ITEM: {
         menus::ButtonMenuItemModel* button_menu_item_model =
             model->GetButtonMenuItemAt(i);
-
-        menu_item = BuildButtomMenuItem(button_menu_item_model);
-
+        menu_item = BuildButtomMenuItem(button_menu_item_model, menu);
         connect_to_activate = false;
         break;
       }
@@ -316,9 +341,17 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
   }
 }
 
-GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model) {
+GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
+                                        GtkWidget* menu) {
   GtkWidget* menu_item = gtk_custom_menu_item_new(
       RemoveWindowsStyleAccelerators(UTF16ToUTF8(model->label())).c_str());
+
+  // Set up the callback to the model for when it is clicked.
+  g_object_set_data(G_OBJECT(menu_item), "button-model",
+                    reinterpret_cast<void*>(model));
+  g_signal_connect(menu_item, "button-pushed",
+                   G_CALLBACK(OnMenuButtonPressed), this);
+
   for (int i = 0; i < model->GetItemCount(); ++i) {
     switch (model->GetTypeAt(i)) {
       case menus::ButtonMenuItemModel::TYPE_SPACE: {
@@ -346,17 +379,23 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model) {
                   UTF16ToUTF8(model->GetLabelAt(i))).c_str());
         }
 
-        // TODO(erg): Set up dynamic labels here.
+        SetupDynamicLabelMenuButton(button, menu, model, i);
+        break;
+      }
+      case menus::ButtonMenuItemModel::TYPE_BUTTON_LABEL: {
+        GtkWidget* button = gtk_custom_menu_item_add_button_label(
+            GTK_CUSTOM_MENU_ITEM(menu_item),
+            model->GetCommandIdAt(i));
+        gtk_button_set_label(
+            GTK_BUTTON(button),
+            RemoveWindowsStyleAccelerators(
+                UTF16ToUTF8(model->GetLabelAt(i))).c_str());
+        SetupDynamicLabelMenuButton(button, menu, model, i);
         break;
       }
     }
   }
 
-  // Set up the callback to the model for when it is clicked.
-  g_object_set_data(G_OBJECT(menu_item), "button-model",
-                    reinterpret_cast<void*>(model));
-  g_signal_connect(menu_item, "button-pushed",
-                   G_CALLBACK(OnMenuButtonPressed), this);
   return menu_item;
 }
 

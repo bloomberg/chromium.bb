@@ -117,7 +117,8 @@ class MenuGtk {
   // Implementation of the above; called recursively.
   void BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu);
   // Builds a menu item with buttons in it from the data in the model.
-  GtkWidget* BuildButtomMenuItem(menus::ButtonMenuItemModel* model);
+  GtkWidget* BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
+                                 GtkWidget* menu);
 
   // Contains implementation for OnMenuShow.
   void UpdateMenu();

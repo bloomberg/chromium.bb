@@ -173,6 +173,7 @@
 #define IDC_ZOOM_PLUS                   38001
 #define IDC_ZOOM_NORMAL                 38002
 #define IDC_ZOOM_MINUS                  38003
+#define IDC_ZOOM_PERCENT_DISPLAY        38004
 
 // Focus various bits of UI
 #define IDC_FOCUS_TOOLBAR               39000

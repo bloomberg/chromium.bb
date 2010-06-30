@@ -17,18 +17,31 @@ ButtonMenuItemModel::ButtonMenuItemModel(
 
 void ButtonMenuItemModel::AddItemWithStringId(int command_id, int string_id) {
   Item item = { command_id, TYPE_BUTTON, l10n_util::GetStringUTF16(string_id),
-                SIDE_BOTH, -1 };
+                -1, -1};
+  items_.push_back(item);
+}
+
+void ButtonMenuItemModel::AddItemWithStringIdAndGroup(
+    int command_id, int string_id, int group) {
+  Item item = { command_id, TYPE_BUTTON, l10n_util::GetStringUTF16(string_id),
+                -1, group };
   items_.push_back(item);
 }
 
 void ButtonMenuItemModel::AddItemWithImage(int command_id,
                                            int icon_idr) {
-  Item item = { command_id, TYPE_BUTTON, string16(), SIDE_BOTH, icon_idr };
+  Item item = { command_id, TYPE_BUTTON, string16(), icon_idr, -1 };
+  items_.push_back(item);
+}
+
+void ButtonMenuItemModel::AddButtonLabel(int command_id, int string_id) {
+  Item item = { command_id, TYPE_BUTTON_LABEL,
+                l10n_util::GetStringUTF16(string_id), -1, -1 };
   items_.push_back(item);
 }
 
 void ButtonMenuItemModel::AddSpace() {
-  Item item = { 0, TYPE_SPACE, string16(), SIDE_NONE, -1 };
+  Item item = { 0, TYPE_SPACE, string16(), -1, -1 };
   items_.push_back(item);
 }
 
@@ -45,7 +58,15 @@ int ButtonMenuItemModel::GetCommandIdAt(int index) const {
   return items_[index].command_id;
 }
 
-const string16& ButtonMenuItemModel::GetLabelAt(int index) const {
+bool ButtonMenuItemModel::IsLabelDynamicAt(int index) const {
+  if (delegate_)
+    return delegate_->IsLabelForCommandIdDynamic(GetCommandIdAt(index));
+  return false;
+}
+
+string16 ButtonMenuItemModel::GetLabelAt(int index) const {
+  if (IsLabelDynamicAt(index))
+    return delegate_->GetLabelForCommandId(GetCommandIdAt(index));
   return items_[index].label;
 }
 
@@ -54,6 +75,14 @@ bool ButtonMenuItemModel::GetIconAt(int index, int* icon_idr) const {
     return false;
 
   *icon_idr = items_[index].icon_idr;
+  return true;
+}
+
+bool ButtonMenuItemModel::GetGroupAt(int index, int* group) const {
+  if (items_[index].group == -1)
+    return false;
+
+  *group = items_[index].group;
   return true;
 }
 

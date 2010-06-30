@@ -11,6 +11,7 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -37,6 +38,7 @@ class ToolsMenuModel : public menus::SimpleMenuModel {
 // A menu model that builds the contents of the wrench menu.
 class WrenchMenuModel : public menus::SimpleMenuModel,
                         public menus::ButtonMenuItemModel::Delegate,
+                        public TabStripModelObserver,
                         public NotificationObserver {
  public:
   WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
@@ -56,6 +58,15 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   virtual bool IsLabelForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
+
+  // Overridden from TabStripModelObserver:
+  virtual void TabSelectedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index,
+                             bool user_gesture);
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents, int index);
+  virtual void TabStripModelDeleted();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -91,6 +102,7 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   menus::SimpleMenuModel::Delegate* delegate_; // weak
 
   Browser* browser_;  // weak
+  TabStripModel* tabstrip_model_; // weak
 
   NotificationRegistrar registrar_;
 

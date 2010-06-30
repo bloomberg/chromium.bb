@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/gtk_custom_menu_item.h"
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_custom_menu.h"
 
@@ -27,9 +28,23 @@ static void set_selected(GtkCustomMenuItem* item, GtkWidget* selected) {
   }
 }
 
+// When GtkButtons set the label text, they rebuild the widget hierarchy each
+// and every time. Therefore, we can't just fish out the label from the button
+// and set some properties; we have to create this callback function that
+// listens on the button's "notify" signal, which is emitted right after the
+// label has been (re)created. (Label values can change dynamically.)
+static void on_button_label_set(GObject* object) {
+  GtkButton* button = GTK_BUTTON(object);
+  gtk_widget_set_sensitive(GTK_BIN(button)->child, FALSE);
+  gtk_misc_set_padding(GTK_MISC(GTK_BIN(button)->child), 2, 0);
+}
+
 static void gtk_custom_menu_item_finalize(GObject *object);
 static gint gtk_custom_menu_item_expose(GtkWidget* widget,
                                         GdkEventExpose* event);
+static gboolean gtk_custom_menu_item_hbox_expose(GtkWidget* widget,
+                                                 GdkEventExpose* event,
+                                                 GtkCustomMenuItem* menu_item);
 static void gtk_custom_menu_item_select(GtkItem *item);
 static void gtk_custom_menu_item_deselect(GtkItem *item);
 static void gtk_custom_menu_item_activate(GtkMenuItem* menu_item);
@@ -56,6 +71,7 @@ static void gtk_custom_menu_item_style_set(GtkCustomMenuItem* item,
 }
 
 static void gtk_custom_menu_item_init(GtkCustomMenuItem* item) {
+  item->all_widgets = NULL;
   item->button_widgets = NULL;
   item->currently_selected_button = NULL;
   item->previously_selected_button = NULL;
@@ -72,6 +88,10 @@ static void gtk_custom_menu_item_init(GtkCustomMenuItem* item) {
 
   g_signal_connect(item, "style-set",
                    G_CALLBACK(gtk_custom_menu_item_style_set), NULL);
+
+  g_signal_connect(item->hbox, "expose-event",
+                   G_CALLBACK(gtk_custom_menu_item_hbox_expose),
+                   item);
 
   gtk_widget_show_all(menu_hbox);
 }
@@ -103,6 +123,7 @@ static void gtk_custom_menu_item_class_init(GtkCustomMenuItemClass* klass) {
 
 static void gtk_custom_menu_item_finalize(GObject *object) {
   GtkCustomMenuItem* item = GTK_CUSTOM_MENU_ITEM(object);
+  g_list_free(item->all_widgets);
   g_list_free(item->button_widgets);
 
   G_OBJECT_CLASS(gtk_custom_menu_item_parent_class)->finalize(object);
@@ -121,6 +142,97 @@ static gint gtk_custom_menu_item_expose(GtkWidget* widget,
   }
 
   return FALSE;
+}
+
+static void gtk_custom_menu_item_expose_button(GtkWidget* hbox,
+                                               GdkEventExpose* event,
+                                               GList* button_item) {
+  // We search backwards to find the leftmost and rightmost buttons. The
+  // current button may be that button.
+  GtkWidget* current_button = GTK_WIDGET(button_item->data);
+  GtkWidget* first_button = current_button;
+  for (GList* i = button_item; i && GTK_IS_BUTTON(i->data);
+       i = g_list_previous(i)) {
+    first_button = GTK_WIDGET(i->data);
+  }
+
+  GtkWidget* last_button = current_button;
+  for (GList* i = button_item; i && GTK_IS_BUTTON(i->data);
+       i = g_list_next(i)) {
+    last_button = GTK_WIDGET(i->data);
+  }
+
+  if (base::i18n::IsRTL())
+    std::swap(first_button, last_button);
+
+  int x = first_button->allocation.x;
+  int y = first_button->allocation.y;
+  int width = last_button->allocation.width + last_button->allocation.x -
+              first_button->allocation.x;
+  int height = last_button->allocation.height;
+
+  gtk_paint_box(hbox->style, hbox->window,
+                static_cast<GtkStateType>(
+                    GTK_WIDGET_STATE(current_button)),
+                GTK_SHADOW_OUT,
+                &current_button->allocation, hbox, "button",
+                x, y, width, height);
+
+  // Propagate to the button's children.
+  gtk_container_propagate_expose(
+      GTK_CONTAINER(current_button),
+      gtk_bin_get_child(GTK_BIN(current_button)),
+      event);
+}
+
+static gboolean gtk_custom_menu_item_hbox_expose(GtkWidget* widget,
+                                                 GdkEventExpose* event,
+                                                 GtkCustomMenuItem* menu_item) {
+  // First render all the buttons that aren't the currently selected item.
+  for (GList* current_item = menu_item->all_widgets;
+       current_item != NULL; current_item = g_list_next(current_item)) {
+    if (GTK_IS_BUTTON(current_item->data)) {
+      if (GTK_WIDGET(current_item->data) !=
+          menu_item->currently_selected_button) {
+        gtk_custom_menu_item_expose_button(widget, event, current_item);
+      }
+    }
+  }
+
+  // As a separate pass, draw the buton separators above. We need to draw the
+  // separators in a separate pass because we are drawing on top of the
+  // buttons. Otherwise, the vlines are overwritten by the next button.
+  for (GList* current_item = menu_item->all_widgets;
+       current_item != NULL; current_item = g_list_next(current_item)) {
+    if (GTK_IS_BUTTON(current_item->data)) {
+      // Check to see if this is the last button in a run.
+      GList* next_item = g_list_next(current_item);
+      if (next_item && GTK_IS_BUTTON(next_item->data)) {
+        GtkWidget* current_button = GTK_WIDGET(current_item->data);
+        GtkAllocation child_alloc =
+            gtk_bin_get_child(GTK_BIN(current_button))->allocation;
+        int half_offset = widget->style->xthickness / 2;
+        gtk_paint_vline(widget->style, widget->window,
+                        static_cast<GtkStateType>(
+                            GTK_WIDGET_STATE(current_button)),
+                        &event->area, widget, "button",
+                        child_alloc.y,
+                        child_alloc.y + child_alloc.height,
+                        current_button->allocation.x +
+                        current_button->allocation.width - half_offset);
+      }
+    }
+  }
+
+  // Finally, draw the selected item on top of the separators so there are no
+  // artifacts inside the button area.
+  GList* selected = g_list_find(menu_item->all_widgets,
+                                menu_item->currently_selected_button);
+  if (selected) {
+    gtk_custom_menu_item_expose_button(widget, event, selected);
+  }
+
+  return TRUE;
 }
 
 static void gtk_custom_menu_item_select(GtkItem* item) {
@@ -185,7 +297,23 @@ GtkWidget* gtk_custom_menu_item_add_button(GtkCustomMenuItem* menu_item,
   gtk_box_pack_start(GTK_BOX(menu_item->hbox), button, FALSE, FALSE, 0);
   gtk_widget_show(button);
 
+  menu_item->all_widgets = g_list_append(menu_item->all_widgets, button);
   menu_item->button_widgets = g_list_append(menu_item->button_widgets, button);
+
+  return button;
+}
+
+GtkWidget* gtk_custom_menu_item_add_button_label(GtkCustomMenuItem* menu_item,
+                                                 int command_id) {
+  GtkWidget* button = gtk_button_new_with_label("");
+  g_object_set_data(G_OBJECT(button), "command-id",
+                    GINT_TO_POINTER(command_id));
+  gtk_box_pack_start(GTK_BOX(menu_item->hbox), button, FALSE, FALSE, 0);
+  g_signal_connect(button, "notify", G_CALLBACK(on_button_label_set), NULL);
+  gtk_widget_show(button);
+
+  menu_item->all_widgets = g_list_append(menu_item->all_widgets, button);
+
   return button;
 }
 
@@ -195,6 +323,8 @@ void gtk_custom_menu_item_add_space(GtkCustomMenuItem* menu_item) {
 
   gtk_box_pack_start(GTK_BOX(menu_item->hbox), fixed, FALSE, FALSE, 0);
   gtk_widget_show(fixed);
+
+  menu_item->all_widgets = g_list_append(menu_item->all_widgets, fixed);
 }
 
 void gtk_custom_menu_item_receive_motion_event(GtkCustomMenuItem* menu_item,
