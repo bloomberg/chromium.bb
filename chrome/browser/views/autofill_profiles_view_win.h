@@ -193,6 +193,7 @@ class AutoFillProfilesView : public views::View,
                                  const string16& new_contents);
 
     bool IsValid() const;
+
    protected:
     // views::View methods:
     virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
@@ -204,6 +205,7 @@ class AutoFillProfilesView : public views::View,
       // Only stub is needed, it is never called.
       NOTREACHED();
     }
+
    private:
     void UpdateButtons();
     AutoFillProfilesView* autofill_view_;
@@ -392,7 +394,6 @@ class AutoFillProfilesView : public views::View,
     // Find an index of the item in the model, -1 if not present.
     int GetIndex(const std::wstring& value);
 
-   protected:
    private:
     std::vector<std::wstring> cb_strings_;
 
@@ -417,8 +418,6 @@ class AutoFillProfilesView : public views::View,
     void AddItem(int index);
     void RemoveItem(int index);
     void UpdateItem(int index);
-
-   protected:
 
     // TableModel members:
     virtual int RowCount();

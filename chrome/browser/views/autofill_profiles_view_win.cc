@@ -162,9 +162,17 @@ void AutoFillProfilesView::EditClicked() {
 void AutoFillProfilesView::DeleteClicked() {
   DCHECK(scroll_view_);
   DCHECK(table_model_.get());
-  int selected_item_index = scroll_view_->FirstSelectedRow();
-  DCHECK(selected_item_index >= 0);
-  table_model_->RemoveItem(selected_item_index);
+  DCHECK_GT(scroll_view_->SelectedRowCount(), 0);
+  int last_view_row = -1;
+  for (views::TableView::iterator i = scroll_view_->SelectionBegin();
+       i != scroll_view_->SelectionEnd(); ++i) {
+    last_view_row = scroll_view_->ModelToView(*i);
+    table_model_->RemoveItem(*i);
+  }
+  if (last_view_row >= table_model_->RowCount())
+    last_view_row = table_model_->RowCount() - 1;
+  if (last_view_row >= 0)
+    scroll_view_->Select(scroll_view_->ViewToModel(last_view_row));
   UpdateButtonState();
 }
 
@@ -180,9 +188,9 @@ void AutoFillProfilesView::UpdateButtonState() {
   add_credit_card_button_->SetEnabled(personal_data_manager_->IsDataLoaded() &&
                                       !child_dialog_opened_);
 
-  int selected_item_index = scroll_view_->FirstSelectedRow();
-  edit_button_->SetEnabled(selected_item_index >= 0 && !child_dialog_opened_);
-  remove_button_->SetEnabled(selected_item_index >= 0 && !child_dialog_opened_);
+  int selected_row_count = scroll_view_->SelectedRowCount();
+  edit_button_->SetEnabled(selected_row_count == 1 && !child_dialog_opened_);
+  remove_button_->SetEnabled(selected_row_count > 0 && !child_dialog_opened_);
 }
 
 void AutoFillProfilesView::ChildWindowOpened() {
@@ -382,7 +390,7 @@ void AutoFillProfilesView::Init() {
   columns.back().sortable = false;
 
   scroll_view_ = new views::TableView(table_model_.get(), columns,
-                                      views::TEXT_ONLY, true, true, true);
+                                      views::TEXT_ONLY, false, true, true);
   scroll_view_->SetObserver(this);
 
   add_address_button_ = new views::NativeButton(this,
