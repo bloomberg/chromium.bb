@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 
+#include <algorithm>
 #include <map>
 #include <utility>
 
@@ -19,6 +20,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 
@@ -546,7 +548,17 @@ void ReorderInputMethodIdsForLanguageCode(
 
 bool GetInputMethodIdsFromLanguageCode(
     const std::string& normalized_language_code,
-    bool keyboard_layout_only,
+    InputMethodType type,
+    std::vector<std::string>* out_input_method_ids) {
+  return GetInputMethodIdsFromLanguageCodeInternal(
+      *Singleton<IdMaps>::get()->language_code_to_ids,
+      normalized_language_code, type, out_input_method_ids);
+}
+
+bool GetInputMethodIdsFromLanguageCodeInternal(
+    const std::multimap<std::string, std::string>& language_code_to_ids,
+    const std::string& normalized_language_code,
+    InputMethodType type,
     std::vector<std::string>* out_input_method_ids) {
   DCHECK(out_input_method_ids);
   out_input_method_ids->clear();
@@ -554,12 +566,11 @@ bool GetInputMethodIdsFromLanguageCode(
   bool result = false;
   std::pair<LanguageCodeToIdsMap::const_iterator,
       LanguageCodeToIdsMap::const_iterator> range =
-      Singleton<IdMaps>::get()->language_code_to_ids->equal_range(
-          normalized_language_code);
+      language_code_to_ids.equal_range(normalized_language_code);
   for (LanguageCodeToIdsMap::const_iterator iter = range.first;
        iter != range.second; ++iter) {
     const std::string& input_method_id = iter->second;
-    if ((!keyboard_layout_only) || IsKeyboardLayout(input_method_id)) {
+    if ((type == kAllInputMethods) || IsKeyboardLayout(input_method_id)) {
       out_input_method_ids->push_back(input_method_id);
       result = true;
     }
@@ -568,6 +579,30 @@ bool GetInputMethodIdsFromLanguageCode(
     LOG(ERROR) << "Unknown language code: " << normalized_language_code;
   }
   return result;
+}
+
+void EnableInputMethods(const std::string& language_code, InputMethodType type,
+                        const std::string& initial_input_method_id) {
+  std::vector<std::string> input_method_ids;
+  GetInputMethodIdsFromLanguageCode(language_code, type, &input_method_ids);
+
+  if (std::count(input_method_ids.begin(), input_method_ids.end(),
+                 kHardwareKeyboardLayout) == 0) {
+    input_method_ids.push_back(kHardwareKeyboardLayout);
+  }
+  // First, sort the vector by input method id, then by its display name.
+  std::sort(input_method_ids.begin(), input_method_ids.end());
+  SortInputMethodIdsByNames(&input_method_ids);
+
+  // Update ibus-daemon setting.
+  ImeConfigValue value;
+  value.type = ImeConfigValue::kValueTypeStringList;
+  value.string_list_value = input_method_ids;
+  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+  library->SetImeConfig(kGeneralSectionName, kPreloadEnginesConfigName, value);
+  if (!initial_input_method_id.empty()) {
+    library->ChangeInputMethod(initial_input_method_id);
+  }
 }
 
 }  // namespace input_method

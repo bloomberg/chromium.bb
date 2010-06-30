@@ -107,11 +107,6 @@ void SortLanguageCodesByNames(std::vector<std::string>* language_codes);
 // using the unicode string comparator. Uses stable sorting.
 void SortInputMethodIdsByNames(std::vector<std::string>* input_method_ids);
 
-// This function is only for unit tests. Do not use this.
-void SortInputMethodIdsByNamesInternal(
-    const std::map<std::string, std::string>& id_to_language_code_map,
-    std::vector<std::string>* input_method_ids);
-
 // Reorders the given input method ids for the language code. For
 // example, if |language_codes| is "fr" and |input_method_ids| contains
 // ["xkb:be::fra", and "xkb:fr::fra"], the list is reordered to
@@ -121,14 +116,44 @@ void ReorderInputMethodIdsForLanguageCode(
     const std::string& language_code,
     std::vector<std::string>* input_method_ids);
 
+enum InputMethodType {
+  kKeyboardLayoutsOnly,
+  kAllInputMethods,
+};
+
 // Gets input method ids that belong to |language_code|.
-// If |keyboard_layout_only| is true, the function does not return input methods
-// that are not for keybord layout switching. Returns true on success. Note that
-// the function might return false if ibus-daemon is not running, or
+// If |type| is |kKeyboardLayoutsOnly|, the function does not return input
+// methods that are not for keybord layout switching. Returns true on success.
+// Note that the function might return false if ibus-daemon is not running, or
 // |language_code| is unknown.
 bool GetInputMethodIdsFromLanguageCode(
     const std::string& language_code,
-    bool keyboard_layout_only,
+    InputMethodType type,
+    std::vector<std::string>* out_input_method_ids);
+
+// Enables input methods (e.g. Chinese, Japanese) and keyboard layouts (e.g.
+// US qwerty, US dvorak, French azerty) that are necessary for the language code
+// and then switches to |initial_input_method_id| if the string is not empty.
+// For example, if |language_code| is "en-US", US qwerty and US dvorak layouts
+// would be enabled. Likewise, for Germany locale, US qwerty layout and several
+// keyboard layouts for Germany would be enabled.
+// If |type| is kAllInputMethods, all keyboard layouts and all input methods
+// are enabled. If it's kKeyboardLayoutsOnly, only keyboard layouts are enabled.
+// For example, for Japanese, xkb:jp::jpn is enabled when kKeyboardLayoutsOnly,
+// and xkb:jp::jpn, mozc, mozc-jp, mozc-dv are enabled when kAllInputMethods.
+void EnableInputMethods(const std::string& language_code, InputMethodType type,
+                        const std::string& initial_input_method_id);
+
+
+// DO NOT USE Functions below. These are only exported for unit tests.
+void SortInputMethodIdsByNamesInternal(
+    const std::map<std::string, std::string>& id_to_language_code_map,
+    std::vector<std::string>* input_method_ids);
+
+bool GetInputMethodIdsFromLanguageCodeInternal(
+    const std::multimap<std::string, std::string>& language_code_to_ids,
+    const std::string& normalized_language_code,
+    InputMethodType type,
     std::vector<std::string>* out_input_method_ids);
 
 }  // namespace input_method

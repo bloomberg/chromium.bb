@@ -270,5 +270,36 @@ TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_Noop) {
   EXPECT_EQ("xkb:be::fra", input_method_ids[1]);
 }
 
+TEST(LanguageConfigModelTest, GetInputMethodIdsForLanguageCode) {
+  std::multimap<std::string, std::string> language_code_to_ids_map;
+  language_code_to_ids_map.insert(std::make_pair("ja", "mozc"));
+  language_code_to_ids_map.insert(std::make_pair("ja", "mozc-jp"));
+  language_code_to_ids_map.insert(std::make_pair("ja", "xkb:jp:jpn"));
+  language_code_to_ids_map.insert(std::make_pair("fr", "xkb:fr:fra"));
+
+  std::vector<std::string> result;
+  EXPECT_TRUE(GetInputMethodIdsFromLanguageCodeInternal(
+      language_code_to_ids_map, "ja", kAllInputMethods, &result));
+  EXPECT_EQ(3U, result.size());
+  EXPECT_TRUE(GetInputMethodIdsFromLanguageCodeInternal(
+      language_code_to_ids_map, "ja", kKeyboardLayoutsOnly, &result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ("xkb:jp:jpn", result[0]);
+
+  EXPECT_TRUE(GetInputMethodIdsFromLanguageCodeInternal(
+      language_code_to_ids_map, "fr", kAllInputMethods, &result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ("xkb:fr:fra", result[0]);
+  EXPECT_TRUE(GetInputMethodIdsFromLanguageCodeInternal(
+      language_code_to_ids_map, "fr", kKeyboardLayoutsOnly, &result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ("xkb:fr:fra", result[0]);
+
+  EXPECT_FALSE(GetInputMethodIdsFromLanguageCodeInternal(
+      language_code_to_ids_map, "invalid_lang", kAllInputMethods, &result));
+  EXPECT_FALSE(GetInputMethodIdsFromLanguageCodeInternal(
+      language_code_to_ids_map, "invalid_lang", kKeyboardLayoutsOnly, &result));
+}
+
 }  // namespace input_method
 }  // namespace chromeos
