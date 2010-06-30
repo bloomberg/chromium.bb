@@ -993,6 +993,8 @@
         'browser/sync/notifier/chrome_system_resources.h',
         'browser/sync/notifier/invalidation_util.cc',
         'browser/sync/notifier/invalidation_util.h',
+        'browser/sync/notifier/registration_manager.cc',
+        'browser/sync/notifier/registration_manager.h',
         'browser/sync/notifier/server_notifier_thread.cc',
         'browser/sync/notifier/server_notifier_thread.h',
       ],

@@ -13,8 +13,24 @@ void RunAndDeleteClosure(invalidation::Closure* task) {
   delete task;
 }
 
-// We need to write our own protobuf to string functions because we
-// use LITE_RUNTIME, which doesn't support DebugString().
+bool RealModelTypeToObjectId(syncable::ModelType model_type,
+                             invalidation::ObjectId* object_id) {
+  std::string notification_type;
+  if (!syncable::RealModelTypeToNotificationType(
+          model_type, &notification_type)) {
+    return false;
+  }
+  object_id->mutable_name()->set_string_value(notification_type);
+  object_id->set_source(invalidation::ObjectId::CHROME_SYNC);
+  return true;
+}
+
+bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
+                             syncable::ModelType* model_type) {
+  return
+      syncable::NotificationTypeToRealModelType(
+          object_id.name().string_value(), model_type);
+}
 
 std::string ObjectIdToString(
     const invalidation::ObjectId& object_id) {

@@ -24,6 +24,7 @@ class XmppClient;
 namespace sync_notifier {
 
 class CacheInvalidationPacketHandler;
+class RegistrationManager;
 
 // TODO(akalin): Hook this up to a NetworkChangeNotifier so we can
 // properly notify invalidation_client_.
@@ -77,8 +78,7 @@ class ChromeInvalidationClient : public invalidation::InvalidationListener {
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<CacheInvalidationPacketHandler>
       cache_invalidation_packet_handler_;
-
-  void OnRegister(const invalidation::RegistrationUpdateResult& result);
+  scoped_ptr<RegistrationManager> registration_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
 };

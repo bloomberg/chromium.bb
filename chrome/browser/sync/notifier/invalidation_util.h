@@ -9,11 +9,18 @@
 
 #include <string>
 
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 
 namespace sync_notifier {
 
 void RunAndDeleteClosure(invalidation::Closure* task);
+
+bool RealModelTypeToObjectId(syncable::ModelType model_type,
+                             invalidation::ObjectId* object_id);
+
+bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
+                             syncable::ModelType* model_type);
 
 // We need to write our own protobuf-to-string functions because we
 // use LITE_RUNTIME, which doesn't support DebugString().

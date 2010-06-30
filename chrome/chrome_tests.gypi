@@ -1821,6 +1821,7 @@
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/engine/verify_updates_command_unittest.cc',
         'browser/sync/glue/change_processor_mock.h',
+        'browser/sync/notifier/registration_manager_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',
         'browser/sync/sessions/ordered_commit_set_unittest.cc',
@@ -1866,6 +1867,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'profile_import',
         'syncapi',
+        'sync_notifier',
         'test_support_unit',
       ],
       'conditions': [
