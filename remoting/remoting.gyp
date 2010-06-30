@@ -104,7 +104,7 @@
       'target_name': 'chromoting_base',
       'type': '<(library)',
       'dependencies': [
-        '../gfx/gfx.gyp:*',
+        '../gfx/gfx.gyp:gfx',
         '../media/media.gyp:media',
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
@@ -193,6 +193,11 @@
             'host/event_executor_mac.cc',
             'host/event_executor_mac.h',
           ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+            ],
+          },
         }],
       ],
     },  # end of target 'chromoting_host'
@@ -311,7 +316,7 @@
         'chromoting_jingle_glue',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../gfx/gfx.gyp:*',
+        '../gfx/gfx.gyp:gfx',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
