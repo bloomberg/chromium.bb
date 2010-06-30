@@ -136,6 +136,7 @@ void NewUserView::Init() {
   language_switch_menu_.InitLanguageMenu();
   languages_menubutton_ = new views::MenuButton(
       NULL, std::wstring(), &language_switch_menu_, true);
+  languages_menubutton_->SetFocusable(true);
   AddChildView(languages_menubutton_);
 
   AddAccelerator(accel_focus_user_);
