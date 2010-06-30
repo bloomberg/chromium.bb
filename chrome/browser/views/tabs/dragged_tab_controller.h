@@ -42,6 +42,12 @@ class DraggedTabController : public TabContentsDelegate,
                        BaseTabStrip* source_tabstrip);
   virtual ~DraggedTabController();
 
+  // Returns true if there is a drag underway and the drag is attached to
+  // |tab_strip|.
+  // NOTE: this returns false if the dragged tab controller is in the process
+  // of finishing the drag.
+  static bool IsAttachedTo(BaseTabStrip* tab_strip);
+
   // Capture information needed to be used during a drag session for this
   // controller's associated source tab and BaseTabStrip. |mouse_offset| is the
   // distance of the mouse pointer from the tab's origin.
@@ -322,6 +328,9 @@ class DraggedTabController : public TabContentsDelegate,
 
   // Did the mouse move enough that we started a drag?
   bool started_drag_;
+
+  // Is the drag active?
+  bool active_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabController);
 };

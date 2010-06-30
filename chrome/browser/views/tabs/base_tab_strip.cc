@@ -430,7 +430,7 @@ void BaseTabStrip::StoppedDraggingTab(BaseTab* tab) {
 }
 
 void BaseTabStrip::PrepareForAnimation() {
-  if (!IsDragSessionActive()) {
+  if (!IsDragSessionActive() && !DraggedTabController::IsAttachedTo(this)) {
     for (int i = 0; i < tab_count(); ++i)
       base_tab_at_tab_index(i)->set_dragging(false);
   }

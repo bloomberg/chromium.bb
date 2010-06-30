@@ -53,6 +53,9 @@ static const int kHorizontalMoveThreshold = 16;  // Pixels.
 // an attached vertical tab.
 static const int kVerticalMoveThreshold = 8;
 
+// If non-null there is a drag underway.
+static DraggedTabController* instance_;
+
 namespace {
 
 // Delay, in ms, during dragging before we bring a window to front.
@@ -341,7 +344,9 @@ DraggedTabController::DraggedTabController(BaseTab* source_tab,
       last_move_screen_loc_(0),
       mini_(source_tab->data().mini),
       pinned_(source_tabstrip->IsTabPinned(source_tab)),
-      started_drag_(false) {
+      started_drag_(false),
+      active_(true) {
+  instance_ = this;
   SetDraggedContents(
       GetModel(source_tabstrip_)->GetTabContentsAt(source_model_index_));
   // Listen for Esc key presses.
@@ -349,6 +354,9 @@ DraggedTabController::DraggedTabController(BaseTab* source_tab,
 }
 
 DraggedTabController::~DraggedTabController() {
+  if (instance_ == this)
+    instance_ = NULL;
+
   in_destructor_ = true;
   MessageLoopForUI::current()->RemoveObserver(this);
   // Need to delete the view here manually _before_ we reset the dragged
@@ -357,6 +365,12 @@ DraggedTabController::~DraggedTabController() {
   // uses GetIndexForDraggedContents, which will be invalid.
   view_.reset(NULL);
   SetDraggedContents(NULL);  // This removes our observer.
+}
+
+// static
+bool DraggedTabController::IsAttachedTo(BaseTabStrip* tab_strip) {
+  return instance_ && instance_->active_ &&
+      instance_->attached_tabstrip_ == tab_strip;
 }
 
 void DraggedTabController::CaptureDragInfo(views::View* tab,
@@ -1044,6 +1058,8 @@ void DraggedTabController::EndDragImpl(EndDragType type) {
   // tab strip) and the navigation controller/tab contents is deleted before
   // the animation finishes, this is invoked twice. The second time through
   // type == TAB_DESTROYED.
+
+  active_ = false;
 
   bring_to_front_timer_.Stop();
 
