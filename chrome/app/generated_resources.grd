@@ -7042,6 +7042,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE" desc="Error message to show for translate infobar when translate server is unable to translate page">
         The translation failed because of a server error.
       </message>
+      <message name="IDS_TRANSLATE_INFOBAR_UNKNOWN_PAGE_LANGUAGE" desc="Error message to show for translate infobar when the page language could not be determined.">
+        The translation failed because the page's language could not be determined.
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE" desc="Error message to show for translate infobar when the original and target languages are identical">
+        The translation failed because the page is already in <ph name="language">$1<ex>English</ex></ph>.
+      </message>
 
       <!-- Desktop notifications -->
       <message name="IDS_NOTIFICATION_BALLOON_DISMISS_LABEL" desc="Text on the button which dismisses the balloon.">

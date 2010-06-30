@@ -275,11 +275,9 @@ void TranslateManager2::OnURLFetchComplete(const URLFetcher* source,
     }
 
     if (error) {
-      ShowInfoBar(tab,
-                  TranslateInfoBarDelegate2::CreateInstance(
-                      TranslateInfoBarDelegate2::TRANSLATION_ERROR,
-                      TranslateErrors::NETWORK,
-                      tab, request.source_lang, request.target_lang));
+      ShowInfoBar(tab, TranslateInfoBarDelegate2::CreateErrorDelegate(
+          TranslateErrors::NETWORK, tab,
+          request.source_lang, request.target_lang));
     } else {
       // Translate the page.
       DoTranslatePage(tab, translate_script_,
@@ -359,9 +357,9 @@ void TranslateManager2::InitiateTranslation(TabContents* tab,
   }
 
   // Prompts the user if he/she wants the page translated.
-  tab->AddInfoBar(TranslateInfoBarDelegate2::CreateInstance(
-      TranslateInfoBarDelegate2::BEFORE_TRANSLATE,
-      TranslateErrors::NONE, tab, page_lang, target_lang));
+  tab->AddInfoBar(TranslateInfoBarDelegate2::CreateDelegate(
+      TranslateInfoBarDelegate2::kBeforeTranslate, tab,
+      page_lang, target_lang));
 }
 
 void TranslateManager2::InitiateTranslationPosted(
@@ -426,9 +424,8 @@ void TranslateManager2::DoTranslatePage(TabContents* tab,
     // We don't show the translating infobar if no translate infobar is already
     // showing (that is the case when the translation was triggered by the
     // "always translate" for example).
-    infobar = TranslateInfoBarDelegate2::CreateInstance(
-        TranslateInfoBarDelegate2::TRANSLATING, TranslateErrors::NONE,
-        tab, source_lang, target_lang);
+    infobar = TranslateInfoBarDelegate2::CreateDelegate(
+        TranslateInfoBarDelegate2::kTranslating, tab, source_lang, target_lang);
     ShowInfoBar(tab, infobar);
   }
   tab->language_state().set_translation_pending(true);
@@ -441,13 +438,13 @@ void TranslateManager2::PageTranslated(TabContents* tab,
   // Create the new infobar to display.
   TranslateInfoBarDelegate2* infobar;
   if (details->error_type != TranslateErrors::NONE) {
-    infobar = TranslateInfoBarDelegate2::CreateInstance(
-        TranslateInfoBarDelegate2::TRANSLATION_ERROR, details->error_type,
-        tab, details->source_language, details->target_language);
+    infobar = TranslateInfoBarDelegate2::CreateErrorDelegate(
+        details->error_type, tab,
+        details->source_language, details->target_language);
   } else {
-    infobar = TranslateInfoBarDelegate2::CreateInstance(
-        TranslateInfoBarDelegate2::AFTER_TRANSLATE, TranslateErrors::NONE,
-        tab, details->source_language, details->target_language);
+    infobar = TranslateInfoBarDelegate2::CreateDelegate(
+        TranslateInfoBarDelegate2::kAfterTranslate, tab,
+        details->source_language, details->target_language);
   }
   ShowInfoBar(tab, infobar);
 }

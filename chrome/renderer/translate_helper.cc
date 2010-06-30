@@ -182,7 +182,10 @@ void TranslateHelper::CheckTranslateStatus() {
     if (source_lang_ == kAutoDetectionLanguage) {
       actual_source_lang = GetOriginalPageLanguage();
       if (actual_source_lang.empty()) {
-        NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
+        NotifyBrowserTranslationFailed(TranslateErrors::UNKNOWN_LANGUAGE);
+        return;
+      } else if (actual_source_lang == target_lang_) {
+        NotifyBrowserTranslationFailed(TranslateErrors::IDENTICAL_LANGUAGES);
         return;
       }
     } else {
