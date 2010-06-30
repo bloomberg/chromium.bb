@@ -47,28 +47,27 @@ using std::string;
 namespace syncable {
 
 namespace {
-// A lot of these tests were written expecting to be able to read and write
-// object data on entries.  However, the design has changed.
-void PutDataAsExtendedAttribute(WriteTransaction* wtrans,
-                                MutableEntry* e,
-                                const char* bytes,
-                                size_t bytes_length) {
-  ExtendedAttributeKey key(e->Get(META_HANDLE), "DATA");
-  MutableExtendedAttribute attr(wtrans, CREATE, key);
-  Blob bytes_blob(bytes, bytes + bytes_length);
-  attr.mutable_value()->swap(bytes_blob);
+void PutDataAsBookmarkFavicon(WriteTransaction* wtrans,
+                              MutableEntry* e,
+                              const char* bytes,
+                              size_t bytes_length) {
+  sync_pb::EntitySpecifics specifics;
+  specifics.MutableExtension(sync_pb::bookmark)->set_url("http://demo/");
+  specifics.MutableExtension(sync_pb::bookmark)->set_favicon(bytes,
+      bytes_length);
+  e->Put(SPECIFICS, specifics);
 }
 
-void ExpectDataFromExtendedAttributeEquals(BaseTransaction* trans,
-                                           Entry* e,
-                                           const char* bytes,
-                                           size_t bytes_length) {
+void ExpectDataFromBookmarkFaviconEquals(BaseTransaction* trans,
+                                         Entry* e,
+                                         const char* bytes,
+                                         size_t bytes_length) {
   ASSERT_TRUE(e->good());
-  Blob expected_value(bytes, bytes + bytes_length);
-  ExtendedAttributeKey key(e->Get(META_HANDLE), "DATA");
-  ExtendedAttribute attr(trans, GET_BY_HANDLE, key);
-  EXPECT_FALSE(attr.is_deleted());
-  EXPECT_EQ(expected_value, attr.value());
+  ASSERT_TRUE(e->Get(SPECIFICS).HasExtension(sync_pb::bookmark));
+  ASSERT_EQ("http://demo/",
+      e->Get(SPECIFICS).GetExtension(sync_pb::bookmark).url());
+  ASSERT_EQ(std::string(bytes, bytes_length),
+      e->Get(SPECIFICS).GetExtension(sync_pb::bookmark).favicon());
 }
 }  // namespace
 
@@ -138,7 +137,7 @@ TEST_F(SyncableGeneralTest, General) {
     WriteTransaction trans(&dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
     ASSERT_TRUE(e.good());
-    PutDataAsExtendedAttribute(&trans, &e, s, sizeof(s));
+    PutDataAsBookmarkFavicon(&trans, &e, s, sizeof(s));
   }
 
   // Test reading back the contents that we just wrote.
@@ -146,7 +145,7 @@ TEST_F(SyncableGeneralTest, General) {
     WriteTransaction trans(&dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
     ASSERT_TRUE(e.good());
-    ExpectDataFromExtendedAttributeEquals(&trans, &e, s, sizeof(s));
+    ExpectDataFromBookmarkFaviconEquals(&trans, &e, s, sizeof(s));
   }
 
   // Verify it exists in the folder.
@@ -1410,7 +1409,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
           MutableEntry me(&trans, CREATE, trans.root_id(), "Jeff");
           me.Put(BASE_VERSION, 1);
           me.Put(ID, jeff_id);
-          PutDataAsExtendedAttribute(&trans, &me, test_bytes,
+          PutDataAsBookmarkFavicon(&trans, &me, test_bytes,
                                      sizeof(test_bytes));
         }
         {
@@ -1439,7 +1438,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
           CHECK(dir.good());
           ReadTransaction trans(dir, __FILE__, __LINE__);
           Entry e(&trans, GET_BY_ID, jeff_id);
-          ExpectDataFromExtendedAttributeEquals(&trans, &e, test_bytes,
+          ExpectDataFromBookmarkFaviconEquals(&trans, &e, test_bytes,
                                                 sizeof(test_bytes));
         }
         // Same result as CloseAllDirectories, but more code coverage.
@@ -1575,26 +1574,6 @@ void FakeSync(MutableEntry* e, const char* fake_id) {
   e->Put(IS_UNSYNCED, false);
   e->Put(BASE_VERSION, 2);
   e->Put(ID, Id::CreateFromServerId(fake_id));
-}
-
-TEST_F(SyncableDirectoryTest, Bug1509232) {
-  const string a = "alpha";
-  const Id entry_id = dir_.get()->NextId();
-  CreateEntry(a, entry_id);
-  {
-    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&trans, GET_BY_ID, entry_id);
-    ASSERT_TRUE(e.good());
-    ExtendedAttributeKey key(e.Get(META_HANDLE), "resourcefork");
-    MutableExtendedAttribute ext(&trans, CREATE, key);
-    ASSERT_TRUE(ext.good());
-    const char value[] = "stuff";
-    Blob value_blob(value, value + arraysize(value));
-    ext.mutable_value()->swap(value_blob);
-    ext.delete_attribute();
-  }
-  // This call to SaveChanges used to CHECK fail.
-  dir_.get()->SaveChanges();
 }
 
 class SyncableClientTagTest : public SyncableDirectoryTest {

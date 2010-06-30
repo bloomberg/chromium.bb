@@ -167,7 +167,6 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       ids_index(new Directory::IdsIndex),
       parent_id_child_index(new Directory::ParentIdChildIndex),
       client_tag_index(new Directory::ClientTagIndex),
-      extended_attributes(new ExtendedAttributes),
       unapplied_update_metahandles(new MetahandleSet),
       unsynced_metahandles(new MetahandleSet),
       dirty_metahandles(new MetahandleSet),
@@ -198,7 +197,6 @@ Directory::Kernel::~Kernel() {
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete dirty_metahandles;
-  delete extended_attributes;
   delete parent_id_child_index;
   delete client_tag_index;
   delete ids_index;
@@ -254,14 +252,12 @@ DirOpenResult Directory::OpenImpl(const FilePath& file_path,
   // Temporary indices before kernel_ initialized in case Load fails. We 0(1)
   // swap these later.
   MetahandlesIndex metas_bucket;
-  ExtendedAttributes xattrs_bucket;
-  DirOpenResult result = store_->Load(&metas_bucket, &xattrs_bucket, &info);
+  DirOpenResult result = store_->Load(&metas_bucket, &info);
   if (OPENED != result)
     return result;
 
   kernel_ = new Kernel(db_path, name, info);
   kernel_->metahandles_index->swap(metas_bucket);
-  kernel_->extended_attributes->swap(xattrs_bucket);
   InitializeIndices();
   return OPENED;
 }
@@ -526,15 +522,6 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   }
   ClearDirtyMetahandles();
 
-  // Do the same for extended attributes.
-  for (ExtendedAttributes::iterator i = kernel_->extended_attributes->begin();
-       i != kernel_->extended_attributes->end(); ++i) {
-    if (!i->second.dirty)
-      continue;
-    snapshot->dirty_xattrs[i->first] = i->second;
-    i->second.dirty = false;
-  }
-
   // Fill kernel_info_status and kernel_info.
   snapshot->kernel_info = kernel_->persisted_info;
   // To avoid duplicates when the process crashes, we record the next_id to be
@@ -595,19 +582,6 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       delete entry;
     }
   }
-
-  ExtendedAttributes::const_iterator i = snapshot.dirty_xattrs.begin();
-  while (i != snapshot.dirty_xattrs.end()) {
-    ExtendedAttributeKey key(i->first.metahandle, i->first.key);
-    ExtendedAttributes::iterator found =
-        kernel_->extended_attributes->find(key);
-    if (found == kernel_->extended_attributes->end() ||
-        found->second.dirty || !i->second.is_deleted) {
-      ++i;
-    } else {
-      kernel_->extended_attributes->erase(found);
-    }
-  }
 }
 
 void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
@@ -665,15 +639,6 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
     if (found != kernel_->metahandles_index->end()) {
       (*found)->mark_dirty(kernel_->dirty_metahandles);
     }
-  }
-
-  for (ExtendedAttributes::const_iterator i = snapshot.dirty_xattrs.begin();
-       i != snapshot.dirty_xattrs.end(); ++i) {
-    ExtendedAttributeKey key(i->first.metahandle, i->first.key);
-    ExtendedAttributes::iterator found =
-        kernel_->extended_attributes->find(key);
-    if (found != kernel_->extended_attributes->end())
-      found->second.dirty = true;
   }
 }
 
@@ -750,46 +715,6 @@ void Directory::GetUnsyncedMetaHandles(BaseTransaction* trans,
   ScopedKernelLock lock(this);
   copy(kernel_->unsynced_metahandles->begin(),
        kernel_->unsynced_metahandles->end(), back_inserter(*result));
-}
-
-void Directory::GetAllExtendedAttributes(BaseTransaction* trans,
-                                         int64 metahandle,
-                                         std::set<ExtendedAttribute>* result) {
-  AttributeKeySet keys;
-  GetExtendedAttributesList(trans, metahandle, &keys);
-  AttributeKeySet::iterator iter;
-  for (iter = keys.begin(); iter != keys.end(); ++iter) {
-      ExtendedAttributeKey key(metahandle, *iter);
-      ExtendedAttribute extended_attribute(trans, GET_BY_HANDLE, key);
-      CHECK(extended_attribute.good());
-      result->insert(extended_attribute);
-  }
-}
-
-void Directory::GetExtendedAttributesList(BaseTransaction* trans,
-    int64 metahandle, AttributeKeySet* result) {
-  ExtendedAttributes::iterator iter;
-  for (iter = kernel_->extended_attributes->begin();
-       iter != kernel_->extended_attributes->end(); ++iter) {
-    if (iter->first.metahandle == metahandle) {
-      if (!iter->second.is_deleted)
-        result->insert(iter->first.key);
-    }
-  }
-}
-
-void Directory::DeleteAllExtendedAttributes(WriteTransaction* trans,
-                                            int64 metahandle) {
-  AttributeKeySet keys;
-  GetExtendedAttributesList(trans, metahandle, &keys);
-  AttributeKeySet::iterator iter;
-  for (iter = keys.begin(); iter != keys.end(); ++iter) {
-    ExtendedAttributeKey key(metahandle, *iter);
-    MutableExtendedAttribute attribute(trans, GET_BY_HANDLE, key);
-    // This flags the attribute for deletion during SaveChanges.  At that time
-    // any deleted attributes are purged from disk and memory.
-    attribute.delete_attribute();
-  }
 }
 
 int64 Directory::unsynced_entity_count() const {
@@ -1094,20 +1019,6 @@ Directory* Entry::dir() const {
 const string& Entry::Get(StringField field) const {
   DCHECK(kernel_);
   return kernel_->ref(field);
-}
-
-void Entry::GetAllExtendedAttributes(BaseTransaction* trans,
-    std::set<ExtendedAttribute> *result) {
-  dir()->GetAllExtendedAttributes(trans, kernel_->ref(META_HANDLE), result);
-}
-
-void Entry::GetExtendedAttributesList(BaseTransaction* trans,
-    AttributeKeySet* result) {
-  dir()->GetExtendedAttributesList(trans, kernel_->ref(META_HANDLE), result);
-}
-
-void Entry::DeleteAllExtendedAttributes(WriteTransaction *trans) {
-  dir()->DeleteAllExtendedAttributes(trans, kernel_->ref(META_HANDLE));
 }
 
 syncable::ModelType Entry::GetServerModelType() const {
@@ -1492,41 +1403,6 @@ Id Directory::GetLastChildId(BaseTransaction* trans,
   return GetChildWithNullIdField(NEXT_ID, trans, parent_id);
 }
 
-ExtendedAttribute::ExtendedAttribute(BaseTransaction* trans, GetByHandle,
-                                     const ExtendedAttributeKey& key) {
-  Directory::Kernel* const kernel = trans->directory()->kernel_;
-  ScopedKernelLock lock(trans->directory());
-  Init(trans, kernel, &lock, key);
-}
-
-bool ExtendedAttribute::Init(BaseTransaction* trans,
-                             Directory::Kernel* const kernel,
-                             ScopedKernelLock* lock,
-                             const ExtendedAttributeKey& key) {
-  i_ = kernel->extended_attributes->find(key);
-  good_ = kernel->extended_attributes->end() != i_;
-  return good_;
-}
-
-MutableExtendedAttribute::MutableExtendedAttribute(
-    WriteTransaction* trans, GetByHandle,
-    const ExtendedAttributeKey& key) :
-        ExtendedAttribute(trans, GET_BY_HANDLE, key) {
-}
-
-MutableExtendedAttribute::MutableExtendedAttribute(
-    WriteTransaction* trans, Create, const ExtendedAttributeKey& key) {
-  Directory::Kernel* const kernel = trans->directory()->kernel_;
-  ScopedKernelLock lock(trans->directory());
-  if (!Init(trans, kernel, &lock, key)) {
-    ExtendedAttributeValue val;
-    val.is_deleted = false;
-    val.dirty = true;
-    i_ = kernel->extended_attributes->insert(std::make_pair(key, val)).first;
-    good_ = true;
-  }
-}
-
 bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
                       const Id& new_parent_id) {
   if (entry_id.IsRoot())
@@ -1541,15 +1417,6 @@ bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
     ancestor_id = new_parent.Get(PARENT_ID);
   }
   return true;
-}
-
-const Blob* GetExtendedAttributeValue(const Entry& e,
-                                      const string& attribute_name) {
-  ExtendedAttributeKey key(e.Get(META_HANDLE), attribute_name);
-  ExtendedAttribute extended_attribute(e.trans(), GET_BY_HANDLE, key);
-  if (extended_attribute.good() && !extended_attribute.is_deleted())
-    return &extended_attribute.value();
-  return NULL;
 }
 
 // This function sets only the flags needed to get this entry to sync.

@@ -49,13 +49,10 @@ using syncable::Blob;
 using syncable::CountEntriesWithName;
 using syncable::Directory;
 using syncable::Entry;
-using syncable::ExtendedAttribute;
-using syncable::ExtendedAttributeKey;
 using syncable::GetFirstEntryWithName;
 using syncable::GetOnlyEntryWithName;
 using syncable::Id;
 using syncable::MutableEntry;
-using syncable::MutableExtendedAttribute;
 using syncable::ReadTransaction;
 using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
@@ -94,12 +91,6 @@ using sessions::ScopedSetSessionWriteTransaction;
 using sessions::StatusController;
 using sessions::SyncSessionContext;
 using sessions::SyncSession;
-
-namespace {
-const char* kTestData = "Hello World!";
-const int kTestDataLen = 12;
-const int64 kTestLogRequestTimestamp = 123456;
-}  // namespace
 
 class SyncerTest : public testing::Test,
                    public SyncSession::Delegate,
@@ -211,10 +202,6 @@ class SyncerTest : public testing::Test,
   void WriteTestDataToEntry(WriteTransaction* trans, MutableEntry* entry) {
     EXPECT_FALSE(entry->Get(IS_DIR));
     EXPECT_FALSE(entry->Get(IS_DEL));
-    Blob test_value(kTestData, kTestData + kTestDataLen);
-    ExtendedAttributeKey key(entry->Get(META_HANDLE), "DATA");
-    MutableExtendedAttribute attr(trans, CREATE, key);
-    attr.mutable_value()->swap(test_value);
     sync_pb::EntitySpecifics specifics;
     specifics.MutableExtension(sync_pb::bookmark)->set_url("http://demo/");
     specifics.MutableExtension(sync_pb::bookmark)->set_favicon("PNG");
@@ -224,11 +211,6 @@ class SyncerTest : public testing::Test,
   void VerifyTestDataInEntry(BaseTransaction* trans, Entry* entry) {
     EXPECT_FALSE(entry->Get(IS_DIR));
     EXPECT_FALSE(entry->Get(IS_DEL));
-    Blob test_value(kTestData, kTestData + kTestDataLen);
-    ExtendedAttributeKey key(entry->Get(META_HANDLE), "DATA");
-    ExtendedAttribute attr(trans, GET_BY_HANDLE, key);
-    EXPECT_FALSE(attr.is_deleted());
-    EXPECT_TRUE(test_value == attr.value());
     VerifyTestBookmarkDataInEntry(entry);
   }
   void VerifyTestBookmarkDataInEntry(Entry* entry) {
@@ -542,7 +524,6 @@ TEST_F(SyncerTest, TestCommitMetahandleIterator) {
 TEST_F(SyncerTest, TestGetUnsyncedAndSimpleCommit) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  string xattr_key = "key";
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(),
@@ -1065,51 +1046,6 @@ TEST_F(SyncerTest, DontGetStuckWithTwoSameNames) {
   SyncRepeatedlyToTriggerStuckSignal(session_.get());
   EXPECT_FALSE(session_->status_controller()->syncer_status().syncer_stuck);
   syncer_events_.clear();
-}
-
-TEST_F(SyncerTest, ExtendedAttributeWithNullCharacter) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  ASSERT_TRUE(dir.good());
-  size_t xattr_count = 2;
-  string xattr_keys[] = { "key", "key2" };
-  syncable::Blob xattr_values[2];
-  const char* value[] = { "value", "val\0ue" };
-  int value_length[] = { 5, 6 };
-  for (size_t i = 0; i < xattr_count; i++) {
-    for (int j = 0; j < value_length[i]; j++)
-      xattr_values[i].push_back(value[i][j]);
-  }
-  sync_pb::SyncEntity* ent =
-      mock_server_->AddUpdateBookmark(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateExtendedAttributes(
-      ent, xattr_keys, xattr_values, xattr_count);
-
-  // Add some other items.
-  mock_server_->AddUpdateBookmark(2, 0, "fred", 2, 10);
-  mock_server_->AddUpdateBookmark(3, 0, "sue", 15, 10);
-
-  syncer_->SyncShare(this);
-  ReadTransaction trans(dir, __FILE__, __LINE__);
-  Entry entry1(&trans, syncable::GET_BY_ID, ids_.FromNumber(1));
-  ASSERT_TRUE(entry1.good());
-  EXPECT_TRUE(1 == entry1.Get(syncable::BASE_VERSION));
-  EXPECT_TRUE(1 == entry1.Get(syncable::SERVER_VERSION));
-  set<ExtendedAttribute> client_extended_attributes;
-  entry1.GetAllExtendedAttributes(&trans, &client_extended_attributes);
-  EXPECT_TRUE(xattr_count == client_extended_attributes.size());
-  for (size_t i = 0; i < xattr_count; i++) {
-    ExtendedAttributeKey key(entry1.Get(syncable::META_HANDLE), xattr_keys[i]);
-    ExtendedAttribute expected_xattr(&trans, syncable::GET_BY_HANDLE, key);
-    EXPECT_TRUE(expected_xattr.good());
-    for (int j = 0; j < value_length[i]; ++j) {
-      EXPECT_TRUE(xattr_values[i][j] ==
-          static_cast<char>(expected_xattr.value().at(j)));
-    }
-  }
-  Entry entry2(&trans, syncable::GET_BY_ID, ids_.FromNumber(2));
-  ASSERT_TRUE(entry2.good());
-  Entry entry3(&trans, syncable::GET_BY_ID, ids_.FromNumber(3));
-  ASSERT_TRUE(entry3.good());
 }
 
 TEST_F(SyncerTest, TestBasicUpdate) {

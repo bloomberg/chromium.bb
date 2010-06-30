@@ -59,13 +59,11 @@ class DirectoryBackingStore {
 
   virtual ~DirectoryBackingStore();
 
-  // Loads and drops all currently persisted meta entries into
-  // |entry_bucket|, all currently persisted xattrs in |xattrs_bucket|,
-  // and loads appropriate persisted kernel info in |info_bucket|.
+  // Loads and drops all currently persisted meta entries into |entry_bucket|
+  // and loads appropriate persisted kernel info into |info_bucket|.
   // NOTE: On success (return value of OPENED), the buckets are populated with
   // newly allocated items, meaning ownership is bestowed upon the caller.
   DirOpenResult Load(MetahandlesIndex* entry_bucket,
-                     ExtendedAttributes* xattrs_bucket,
                      Directory::KernelLoadInfo* kernel_load_info);
 
   // Updates the on-disk store with the input |snapshot| as a database
@@ -80,9 +78,9 @@ class DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion68To69);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion69To70);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion70To71);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion71To72);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
   FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
   friend class MigrationTest;
 
@@ -99,8 +97,6 @@ class DirectoryBackingStore {
   int CreateMetasTable(bool is_temporary);
   // Returns an sqlite return code, SQLITE_DONE on success.
   int CreateModelsTable();
-  // Returns an sqlite return code, SQLITE_DONE on success.
-  int CreateExtendedAttributeTable();
 
   // We don't need to load any synced and applied deleted entries, we can
   // in fact just purge them forever on startup.
@@ -110,17 +106,12 @@ class DirectoryBackingStore {
 
   // Load helpers for entries and attributes.
   bool LoadEntries(MetahandlesIndex* entry_bucket);
-  bool LoadExtendedAttributes(ExtendedAttributes* xattrs_bucket);
   bool LoadInfo(Directory::KernelLoadInfo* info);
 
   // Save/update helpers for entries.  Return false if sqlite commit fails.
   bool SaveEntryToDB(const EntryKernel& entry);
   bool SaveNewEntryToDB(const EntryKernel& entry);
   bool UpdateEntryToDB(const EntryKernel& entry);
-
-  // Save/update helpers for attributes.  Return false if sqlite commit fails.
-  bool SaveExtendedAttributeToDB(ExtendedAttributes::const_iterator i);
-  bool DeleteExtendedAttributeFromDB(ExtendedAttributes::const_iterator i);
 
   // Creates a new sqlite3 handle to the backing database. Sets sqlite operation
   // timeout preferences and registers our overridden sqlite3 operators for
@@ -161,6 +152,7 @@ class DirectoryBackingStore {
   bool MigrateVersion68To69();
   bool MigrateVersion69To70();
   bool MigrateVersion70To71();
+  bool MigrateVersion71To72();
 
   // The handle to our sqlite on-disk store for initialization and loading, and
   // for saving changes periodically via SaveChanges, respectively.

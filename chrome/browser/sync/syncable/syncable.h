@@ -182,7 +182,6 @@ class WriteTransaction;
 class ReadTransaction;
 class Directory;
 class ScopedDirLookup;
-class ExtendedAttribute;
 
 // Instead of:
 //   Entry e = transaction.GetById(id);
@@ -417,13 +416,6 @@ class Entry {
     return kernel_->ref(ID).IsRoot();
   }
 
-  void GetAllExtendedAttributes(BaseTransaction* trans,
-                                std::set<ExtendedAttribute>* result);
-  void GetExtendedAttributesList(BaseTransaction* trans,
-                                 AttributeKeySet* result);
-  // Flags all extended attributes for deletion on the next SaveChanges.
-  void DeleteAllExtendedAttributes(WriteTransaction *trans);
-
   Directory* dir() const;
 
   const EntryKernel GetKernelCopy() const {
@@ -606,27 +598,6 @@ struct DirectoryChangeEvent {
   }
 };
 
-struct ExtendedAttributeKey {
-  int64 metahandle;
-  std::string key;
-  inline bool operator < (const ExtendedAttributeKey& x) const {
-    if (metahandle != x.metahandle)
-      return metahandle < x.metahandle;
-    return key.compare(x.key) < 0;
-  }
-  ExtendedAttributeKey(int64 metahandle, const std::string& key)
-      : metahandle(metahandle), key(key) {  }
-};
-
-struct ExtendedAttributeValue {
-  Blob value;
-  bool is_deleted;
-  bool dirty;
-};
-
-typedef std::map<ExtendedAttributeKey, ExtendedAttributeValue>
-    ExtendedAttributes;
-
 // A list of metahandles whose metadata should not be purged.
 typedef std::multiset<int64> Pegs;
 
@@ -661,9 +632,7 @@ struct PathMatcher;
 class Directory {
   friend class BaseTransaction;
   friend class Entry;
-  friend class ExtendedAttribute;
   friend class MutableEntry;
-  friend class MutableExtendedAttribute;
   friend class ReadTransaction;
   friend class ReadTransactionWithoutDB;
   friend class ScopedKernelLock;
@@ -723,7 +692,6 @@ class Directory {
     KernelShareInfoStatus kernel_info_status;
     PersistedKernelInfo kernel_info;
     OriginalEntries dirty_metas;
-    ExtendedAttributes dirty_xattrs;
     SaveChangesSnapshot() : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {
     }
   };
@@ -866,14 +834,6 @@ class Directory {
   void GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
                                      UnappliedUpdateMetaHandles* result);
 
-  void GetAllExtendedAttributes(BaseTransaction* trans, int64 metahandle,
-                                std::set<ExtendedAttribute>* result);
-  // Get all extended attribute keys associated with a metahandle
-  void GetExtendedAttributesList(BaseTransaction* trans, int64 metahandle,
-                                 AttributeKeySet* result);
-  // Flags all extended attributes for deletion on the next SaveChanges.
-  void DeleteAllExtendedAttributes(WriteTransaction* trans, int64 metahandle);
-
   // Get the channel for post save notification, used by the syncer.
   inline Channel* channel() const {
     return kernel_->channel;
@@ -1002,7 +962,6 @@ class Directory {
     // So we don't have to create an EntryKernel every time we want to
     // look something up in an index.  Needle in haystack metaphor.
     EntryKernel needle;
-    ExtendedAttributes* const extended_attributes;
 
     // 3 in-memory indices on bits used extremely frequently by the syncer.
     MetahandleSet* const unapplied_update_metahandles;
@@ -1134,54 +1093,6 @@ int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
                        const void* b);
 
 int64 Now();
-
-class ExtendedAttribute {
- public:
-  ExtendedAttribute(BaseTransaction* trans, GetByHandle,
-                    const ExtendedAttributeKey& key);
-  int64 metahandle() const { return i_->first.metahandle; }
-  const std::string& key() const { return i_->first.key; }
-  const Blob& value() const { return i_->second.value; }
-  bool is_deleted() const { return i_->second.is_deleted; }
-  bool good() const { return good_; }
-  bool operator < (const ExtendedAttribute& x) const {
-    return i_->first < x.i_->first;
-  }
- protected:
-  bool Init(BaseTransaction* trans,
-            Directory::Kernel* const kernel,
-            ScopedKernelLock* lock,
-            const ExtendedAttributeKey& key);
-  ExtendedAttribute() { }
-  ExtendedAttributes::iterator i_;
-  bool good_;
-};
-
-class MutableExtendedAttribute : public ExtendedAttribute {
- public:
-  MutableExtendedAttribute(WriteTransaction* trans, GetByHandle,
-                           const ExtendedAttributeKey& key);
-  MutableExtendedAttribute(WriteTransaction* trans, Create,
-                           const ExtendedAttributeKey& key);
-
-  Blob* mutable_value() {
-    i_->second.dirty = true;
-    i_->second.is_deleted = false;
-    return &(i_->second.value);
-  }
-
-  void delete_attribute() {
-    i_->second.dirty = true;
-    i_->second.is_deleted = true;
-  }
-};
-
-// Get an extended attribute from an Entry by name. Returns a pointer
-// to a const Blob containing the attribute data, or NULL if there is
-// no attribute with the given name. The pointer is valid for the
-// duration of the Entry's transaction.
-const Blob* GetExtendedAttributeValue(const Entry& e,
-                                      const std::string& attribute_name);
 
 // This function sets only the flags needed to get this entry to sync.
 void MarkForSyncing(syncable::MutableEntry* e);

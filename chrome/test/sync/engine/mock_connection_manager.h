@@ -61,7 +61,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // compile for both the int64 and string id based versions of the server.
   // The SyncEntity returned is only valid until the Sync is completed
   // (e.g. with SyncShare.) It allows to add further entity properties before
-  // sync, using AddUpdateExtendedAttributes.
+  // sync, using SetLastXXX() methods and/or GetMutableLastUpdate().
   sync_pb::SyncEntity* AddUpdateDirectory(syncable::Id id,
                                           syncable::Id parent_id,
                                           string name,
@@ -94,11 +94,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                          string name,
                                          int64 version,
                                          int64 sync_ts);
-  void AddUpdateExtendedAttributes(sync_pb::SyncEntity* ent,
-                                   std::string* xattr_key,
-                                   syncable::Blob* xattr_value,
-                                   int xattr_count);
-
   void SetLastUpdateDeleted();
   void SetLastUpdateServerTag(const string& tag);
   void SetLastUpdateClientTag(const string& tag);

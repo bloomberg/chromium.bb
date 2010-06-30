@@ -30,7 +30,6 @@ using syncable::CTIME;
 using syncable::ComparePathNames;
 using syncable::Directory;
 using syncable::Entry;
-using syncable::ExtendedAttributeKey;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::ID;
@@ -42,7 +41,6 @@ using syncable::Id;
 using syncable::META_HANDLE;
 using syncable::MTIME;
 using syncable::MutableEntry;
-using syncable::MutableExtendedAttribute;
 using syncable::NEXT_ID;
 using syncable::NON_UNIQUE_NAME;
 using syncable::PARENT_ID;
@@ -406,28 +404,6 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   // commit we don't apply it as time differences may occur.
   if (server_entry.version() > local_entry->Get(BASE_VERSION)) {
     local_entry->Put(IS_UNAPPLIED_UPDATE, true);
-  }
-  ApplyExtendedAttributes(local_entry, server_entry);
-}
-
-// static
-void SyncerUtil::ApplyExtendedAttributes(
-    syncable::MutableEntry* local_entry,
-    const SyncEntity& server_entry) {
-  local_entry->DeleteAllExtendedAttributes(local_entry->write_transaction());
-  if (server_entry.has_extended_attributes()) {
-    const sync_pb::ExtendedAttributes & extended_attributes =
-      server_entry.extended_attributes();
-    for (int i = 0; i < extended_attributes.extendedattribute_size(); i++) {
-      const string& string_key =
-          extended_attributes.extendedattribute(i).key();
-      ExtendedAttributeKey key(local_entry->Get(META_HANDLE), string_key);
-      MutableExtendedAttribute local_attribute(local_entry->write_transaction(),
-          CREATE, key);
-      SyncerProtoUtil::CopyProtoBytesIntoBlob(
-          extended_attributes.extendedattribute(i).value(),
-          local_attribute.mutable_value());
-    }
   }
 }
 

@@ -428,19 +428,6 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(
                            name, version, sync_ts);
 }
 
-void MockConnectionManager::AddUpdateExtendedAttributes(SyncEntity* ent,
-    string* xattr_key, syncable::Blob* xattr_value, int xattr_count) {
-  sync_pb::ExtendedAttributes* mutable_extended_attributes =
-      ent->mutable_extended_attributes();
-  for (int i = 0; i < xattr_count; i++) {
-    sync_pb::ExtendedAttributes_ExtendedAttribute* extended_attribute =
-        mutable_extended_attributes->add_extendedattribute();
-    extended_attribute->set_key(xattr_key[i]);
-    SyncerProtoUtil::CopyBlobIntoProtoBytes(xattr_value[i],
-        extended_attribute->mutable_value());
-  }
-}
-
 SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
   DCHECK(updates_.entries_size() > 0);
   return updates_.mutable_entries()->Mutable(updates_.entries_size() - 1);

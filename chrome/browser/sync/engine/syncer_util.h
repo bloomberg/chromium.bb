@@ -63,10 +63,6 @@ class SyncerUtil {
       const SyncEntity& server_entry,
       const std::string& name);
 
-  static void ApplyExtendedAttributes(
-      syncable::MutableEntry* local_entry,
-      const SyncEntity& server_entry);
-
   // Creates a new Entry iff no Entry exists with the given id.
   static void CreateNewEntry(syncable::WriteTransaction *trans,
                              const syncable::Id& id);

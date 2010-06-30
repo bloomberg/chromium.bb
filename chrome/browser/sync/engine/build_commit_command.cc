@@ -19,7 +19,6 @@
 using std::set;
 using std::string;
 using std::vector;
-using syncable::ExtendedAttribute;
 using syncable::IS_DEL;
 using syncable::Id;
 using syncable::MutableEntry;
@@ -162,21 +161,6 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
         meta_entry.Get(syncable::CTIME)));
     sync_entry->set_mtime(ClientTimeToServerTime(
         meta_entry.Get(syncable::MTIME)));
-
-    set<ExtendedAttribute> extended_attributes;
-    meta_entry.GetAllExtendedAttributes(
-        session->write_transaction(), &extended_attributes);
-    set<ExtendedAttribute>::iterator iter;
-    sync_pb::ExtendedAttributes* mutable_extended_attributes =
-        sync_entry->mutable_extended_attributes();
-    for (iter = extended_attributes.begin(); iter != extended_attributes.end();
-        ++iter) {
-      sync_pb::ExtendedAttributes_ExtendedAttribute *extended_attribute =
-          mutable_extended_attributes->add_extendedattribute();
-      extended_attribute->set_key(iter->key());
-      SyncerProtoUtil::CopyBlobIntoProtoBytes(iter->value(),
-          extended_attribute->mutable_value());
-    }
 
     // Deletion is final on the server, let's move things and then delete them.
     if (meta_entry.Get(IS_DEL)) {

@@ -10,15 +10,6 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-// Used to store and send extended attributes, which are arbitrary
-// key value pairs.
-message ExtendedAttributes {
-  repeated group ExtendedAttribute = 1 {
-    required string key = 2;
-    required bytes value = 3;
-  }
-}
-
 // Used for inspecting how long we spent performing operations in different
 // backends. All times must be in millis.
 message ProfilingData {
@@ -180,7 +171,8 @@ message SyncEntity {
 
   // Arbitrary key/value pairs associated with this item.
   // Present in both GetUpdatesResponse and CommitMessage.
-  optional ExtendedAttributes extended_attributes = 17;
+  // Deprecated.
+  // optional ExtendedAttributes extended_attributes = 17;
 
   // If true, indicates that this item has been (or should be) deleted.
   // Present in both GetUpdatesResponse and CommitMessage.
