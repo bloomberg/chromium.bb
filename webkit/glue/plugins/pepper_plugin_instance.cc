@@ -23,6 +23,7 @@
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
 using WebKit::WebFrame;
@@ -251,6 +252,11 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
 
   return instance_interface_->Initialize(GetPPInstance(),
                                          argc, argn.get(), argv.get());
+}
+
+bool PluginInstance::HandleDocumentLoad(URLLoader* loader) {
+  return instance_interface_->HandleDocumentLoad(GetPPInstance(),
+                                                 loader->GetResource());
 }
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,

@@ -23,6 +23,7 @@ namespace pepper {
 class PluginDelegate;
 class PluginInstance;
 class PluginModule;
+class URLLoader;
 
 class WebPluginImpl : public WebKit::WebPlugin {
  public:
@@ -69,6 +70,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
 
   scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
   scoped_refptr<PluginInstance> instance_;
+  scoped_refptr<URLLoader> document_loader_;
   gfx::Rect plugin_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);

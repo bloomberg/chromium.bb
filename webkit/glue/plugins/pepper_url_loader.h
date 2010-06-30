@@ -40,20 +40,6 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
                            PP_CompletionCallback callback);
   void Close();
 
-  URLResponseInfo* response_info() const { return response_info_; }
-
-  // Progress counters.
-  int64_t bytes_sent() const { return bytes_sent_; }
-  int64_t total_bytes_to_be_sent() const { return total_bytes_to_be_sent_; }
-  int64_t bytes_received() const { return bytes_received_; }
-  int64_t total_bytes_to_be_received() const {
-    return total_bytes_to_be_received_;
-  }
-
- private:
-  void RunCallback(int32_t result);
-  size_t FillUserBuffer();
-
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(WebKit::WebURLLoader* loader,
                                WebKit::WebURLRequest& new_request,
@@ -69,6 +55,20 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   virtual void didFinishLoading(WebKit::WebURLLoader* loader);
   virtual void didFail(WebKit::WebURLLoader* loader,
                        const WebKit::WebURLError& error);
+
+  URLResponseInfo* response_info() const { return response_info_; }
+
+  // Progress counters.
+  int64_t bytes_sent() const { return bytes_sent_; }
+  int64_t total_bytes_to_be_sent() const { return total_bytes_to_be_sent_; }
+  int64_t bytes_received() const { return bytes_received_; }
+  int64_t total_bytes_to_be_received() const {
+    return total_bytes_to_be_received_;
+  }
+
+ private:
+  void RunCallback(int32_t result);
+  size_t FillUserBuffer();
 
   scoped_refptr<PluginInstance> instance_;
   scoped_ptr<WebKit::WebURLLoader> loader_;

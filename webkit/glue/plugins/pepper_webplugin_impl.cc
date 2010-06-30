@@ -11,6 +11,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
 using WebKit::WebCanvas;
@@ -103,15 +104,32 @@ bool WebPluginImpl::handleInputEvent(const WebKit::WebInputEvent& event,
 
 void WebPluginImpl::didReceiveResponse(
     const WebKit::WebURLResponse& response) {
+  DCHECK(!document_loader_);
+
+  document_loader_ = new URLLoader(instance_);
+  document_loader_->didReceiveResponse(NULL, response);
+
+  if (!instance_->HandleDocumentLoad(document_loader_))
+    document_loader_ = NULL;
 }
 
 void WebPluginImpl::didReceiveData(const char* data, int data_length) {
+  if (document_loader_)
+    document_loader_->didReceiveData(NULL, data, data_length);
 }
 
 void WebPluginImpl::didFinishLoading() {
+  if (document_loader_) {
+    document_loader_->didFinishLoading(NULL);
+    document_loader_ = NULL;
+  }
 }
 
-void WebPluginImpl::didFailLoading(const WebKit::WebURLError&) {
+void WebPluginImpl::didFailLoading(const WebKit::WebURLError& error) {
+  if (document_loader_) {
+    document_loader_->didFail(NULL, error);
+    document_loader_ = NULL;
+  }
 }
 
 void WebPluginImpl::didFinishLoadingFrameRequest(const WebKit::WebURL& url,

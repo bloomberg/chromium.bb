@@ -34,6 +34,7 @@ namespace pepper {
 class DeviceContext2D;
 class PluginDelegate;
 class PluginModule;
+class URLLoader;
 
 class PluginInstance : public base::RefCounted<PluginInstance> {
  public:
@@ -78,6 +79,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool Initialize(WebKit::WebPluginContainer* container,
                   const std::vector<std::string>& arg_names,
                   const std::vector<std::string>& arg_values);
+  bool HandleDocumentLoad(URLLoader* loader);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
                         WebKit::WebCursorInfo* cursor_info);
   PP_Var GetInstanceObject();

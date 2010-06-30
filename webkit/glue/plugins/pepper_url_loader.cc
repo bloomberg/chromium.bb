@@ -221,29 +221,6 @@ void URLLoader::Close() {
   NOTIMPLEMENTED();  // TODO(darin): Implement me.
 }
 
-void URLLoader::RunCallback(int32_t result) {
-  if (!pending_callback_.func)
-    return;
-
-  PP_CompletionCallback callback = {0};
-  std::swap(callback, pending_callback_);
-  PP_RunCompletionCallback(&callback, result);
-}
-
-size_t URLLoader::FillUserBuffer() {
-  DCHECK(user_buffer_);
-  DCHECK(user_buffer_size_);
-
-  size_t bytes_to_copy = std::min(buffer_.size(), user_buffer_size_);
-  std::copy(buffer_.begin(), buffer_.begin() + bytes_to_copy, user_buffer_);
-  buffer_.erase(buffer_.begin(), buffer_.begin() + bytes_to_copy);
-
-  // Reset for next time.
-  user_buffer_ = NULL;
-  user_buffer_size_ = 0;
-  return bytes_to_copy;
-}
-
 void URLLoader::willSendRequest(WebURLLoader* loader,
                                 WebURLRequest& new_request,
                                 const WebURLResponse& redirect_response) {
@@ -282,6 +259,29 @@ void URLLoader::didFinishLoading(WebURLLoader* loader) {
 void URLLoader::didFail(WebURLLoader* loader, const WebURLError& error) {
   // TODO(darin): Provide more detailed error information.
   RunCallback(PP_Error_Failed);
+}
+
+void URLLoader::RunCallback(int32_t result) {
+  if (!pending_callback_.func)
+    return;
+
+  PP_CompletionCallback callback = {0};
+  std::swap(callback, pending_callback_);
+  PP_RunCompletionCallback(&callback, result);
+}
+
+size_t URLLoader::FillUserBuffer() {
+  DCHECK(user_buffer_);
+  DCHECK(user_buffer_size_);
+
+  size_t bytes_to_copy = std::min(buffer_.size(), user_buffer_size_);
+  std::copy(buffer_.begin(), buffer_.begin() + bytes_to_copy, user_buffer_);
+  buffer_.erase(buffer_.begin(), buffer_.begin() + bytes_to_copy);
+
+  // Reset for next time.
+  user_buffer_ = NULL;
+  user_buffer_size_ = 0;
+  return bytes_to_copy;
 }
 
 }  // namespace pepper
