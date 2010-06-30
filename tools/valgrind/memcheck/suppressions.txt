@@ -3546,3 +3546,10 @@
    fun:_ZN17ExtensionsService17LoadAllExtensionsEv
    fun:_ZN17ExtensionsService16ReloadExtensionsEv
 }
+{
+   bug_47950
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN57_GLOBAL__N_net_spdy_spdy_http_stream.cc_9D292295_3FA9B9B532CreateSpdyHeadersFromHttpRequestERKN3net15HttpRequestInfoEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE
+}
