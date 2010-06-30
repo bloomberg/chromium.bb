@@ -144,7 +144,7 @@ void fb_NPN_ReleaseVariantValue(NPVariant* variant) {
 NPObject* fb_NPN_CreateObject(NPP npp, NPClass* a_class) {
   NPObject* npobj;
   if (a_class->allocate == NULL) {
-    npobj = new NPObject;
+    npobj = reinterpret_cast<NPObject*>(malloc(sizeof(NPObject)));
   } else {
     npobj = a_class->allocate(npp, a_class);
   }
