@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/string_util.h"
+#include "base/singleton.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -23,10 +24,14 @@ using WebKit::WebURLResponse;
 
 namespace appcache {
 
-static IDMap<WebApplicationCacheHostImpl> all_hosts;
+typedef IDMap<WebApplicationCacheHostImpl> HostsMap;
+
+static HostsMap* all_hosts() {
+  return Singleton<HostsMap>::get();
+}
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
-  return all_hosts.Lookup(id);
+  return all_hosts()->Lookup(id);
 }
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromFrame(
@@ -45,7 +50,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     AppCacheBackend* backend)
     : client_(client),
       backend_(backend),
-      ALLOW_THIS_IN_INITIALIZER_LIST(host_id_(all_hosts.Add(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(host_id_(all_hosts()->Add(this))),
       has_status_(false),
       status_(UNCACHED),
       has_cached_status_(false),
@@ -60,7 +65,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
 
 WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
   backend_->UnregisterHost(host_id_);
-  all_hosts.Remove(host_id_);
+  all_hosts()->Remove(host_id_);
 }
 
 void WebApplicationCacheHostImpl::OnCacheSelected(int64 selected_cache_id,
@@ -85,11 +90,7 @@ void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
 
 void WebApplicationCacheHostImpl::OnProgressEventRaised(
     const GURL& url, int num_total, int num_complete) {
-  // TODO(michaeln): Widen the webkit api to accept the additional data.
-  // Also send the 'final' event once webkit layout tests have been updated.
-  // See https://bugs.webkit.org/show_bug.cgi?id=37602
-  if (num_complete < num_total)
-    client_->notifyEventListener(WebApplicationCacheHost::ProgressEvent);
+  client_->notifyProgressEventListener(url, num_total, num_complete);
 }
 
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(
@@ -106,9 +107,6 @@ void WebApplicationCacheHostImpl::willStartSubResourceRequest(
 }
 
 void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
-  if (document_response_.appCacheID() != kNoCacheId)
-    LogLoadedFromCacheMessage();
-
   // Reset any previous status values we've received from the backend
   // since we're now selecting a new cache.
   has_status_ = false;
@@ -121,9 +119,6 @@ void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
 
 bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     const WebURL& manifest_url) {
-  if (document_response_.appCacheID() != kNoCacheId)
-    LogLoadedFromCacheMessage();
-
   // Reset any previous status values we've received from the backend
   // since we're now selecting a new cache.
   has_status_ = false;
@@ -235,16 +230,6 @@ bool WebApplicationCacheHostImpl::swapCache() {
   has_status_ = false;
   has_cached_status_ = false;
   return backend_->SwapCache(host_id_);
-}
-
-void WebApplicationCacheHostImpl::LogLoadedFromCacheMessage() {
-  DCHECK(!document_response_.appCacheManifestURL().isEmpty());
-  GURL manifest_url = document_response_.appCacheManifestURL();
-  std::string message = StringPrintf(
-      "Document %s was loaded from appcache %s",
-      document_url_.spec().c_str(),
-      manifest_url.spec().c_str());
-  OnLogMessage(LOG_INFO, message);
 }
 
 }  // appcache namespace

@@ -58,8 +58,6 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
     NO
   };
 
-  void LogLoadedFromCacheMessage();
-
   WebKit::WebApplicationCacheHostClient* client_;
   AppCacheBackend* backend_;
   int host_id_;

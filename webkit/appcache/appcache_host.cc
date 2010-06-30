@@ -5,6 +5,7 @@
 #include "webkit/appcache/appcache_host.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_request_handler.h"
@@ -313,8 +314,14 @@ void AppCacheHost::FinishCacheSelection(
     // context being navigated.
     DCHECK(cache->owning_group());
     DCHECK(new_master_entry_url_.is_empty());
-    AssociateCache(cache);
     AppCacheGroup* owing_group = cache->owning_group();
+    const char* kFormatString =
+        "Document was loaded from appcache with manifest %s";
+    frontend_->OnLogMessage(
+        host_id_, LOG_INFO,
+        StringPrintf(
+            kFormatString, owing_group->manifest_url().spec().c_str()));
+    AssociateCache(cache);
     if (!owing_group->is_obsolete() && !owing_group->is_being_deleted()) {
       owing_group->StartUpdateWithHost(this);
       ObserveGroupBeingUpdated(owing_group);
@@ -327,6 +334,12 @@ void AppCacheHost::FinishCacheSelection(
     // resource from which document was loaded as the new master resourse.
     DCHECK(!group->is_obsolete());
     DCHECK(new_master_entry_url_.is_valid());
+    const char* kFormatString = group->HasCache() ?
+        "Adding master entry to appcache with manifest %s" :
+        "Creating appcache with manifest %s";
+    frontend_->OnLogMessage(
+        host_id_, LOG_INFO,
+        StringPrintf(kFormatString, group->manifest_url().spec().c_str()));
     AssociateCache(NULL);  // The UpdateJob may produce one for us later.
     group->StartUpdateWithNewMasterEntry(this, new_master_entry_url_);
     ObserveGroupBeingUpdated(group);
