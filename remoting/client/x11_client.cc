@@ -140,7 +140,7 @@ class X11Client : public HostConnection::HostEventCallback {
     // Saves the dimension and resize the window.
     width_ = msg->init_client().width();
     height_ = msg->init_client().height();
-    LOG(INFO) << "Init client receievd: " << width_ << "x" << height_;
+    LOG(INFO) << "Init client received: " << width_ << "x" << height_;
     XResizeWindow(display_, window_, width_, height_);
 
     // Now construct the X11View that renders the remote desktop.

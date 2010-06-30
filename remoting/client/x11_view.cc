@@ -33,8 +33,8 @@ void X11View::Paint() {
   if (!frame_)
     InitPaintTarget();
 
-  // Upload the image to a pixmap. And then creats a picture from the pixmap
-  // and composite the picture over the picture represending the window.
+  // Upload the image to a pixmap. And then create a picture from the pixmap
+  // and composite the picture over the picture representing the window.
 
   // Creates a XImage.
   XImage image;
@@ -145,9 +145,9 @@ void X11View::HandleEndUpdateStream(HostMessage* msg) {
 
 void X11View::OnPartialDecodeDone() {
   // Decoder has produced some output so schedule a paint. We'll get a Paint()
-  // call in the short future. Note that we can get UpdateStreamPacket during
+  // call in the near future. Note that we can get UpdateStreamPacket during
   // this short period of time and we will perform decode again and the
-  // information of updated rects will be lost.
+  // information in updated rects will be lost.
   // There are several ways to solve this problem.
   // 1. Merge the updated rects and perform one paint.
   // 2. Queue the updated rects and perform two paints.

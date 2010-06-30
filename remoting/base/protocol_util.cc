@@ -25,7 +25,7 @@ scoped_refptr<media::DataBuffer> SerializeAndFrameMessage(
 }
 
 int GetBytesPerPixel(PixelFormat format) {
-  // Note: The order is important here for performace. This is sorted from the
+  // Note: The order is important here for performance. This is sorted from the
   // most common to the less common (PixelFormatAscii is mostly used
   // just for testing).
   switch (format) {
