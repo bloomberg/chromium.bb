@@ -125,13 +125,18 @@ CXXFLAGS.target ?= $(CXXFLAGS)
 LINK.target ?= $(LINK)
 LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
-# We don't want to run the detection multiple times. So, we
+# We detect arflags at compile-time (see detect_arflags above), but we
+# don't want to run the detection multiple times. So, we
 # - use $(obj).target/arflags/arflags.target.mk as the cache of the detection,
 # - use := to avoid the right hand side multiple times, and
 # - use ifeq instead of ?= because ?= is like ifeq and =, not ifeq and := .
 -include $(obj).target/arflags/arflags.mk
 ifeq ($(ARFLAGS.target),)
-  ARFLAGS.target := $(call detect_arflags,target)
+  # Temporarily disabling detect_arflags call due to a bug in gold with the
+  # detected flag.
+  # TODO(evan): reenable this once there is a release of gold > 2.20.1.
+  # ARFLAGS.target := $(call detect_arflags,target)
+  ARFLAGS.target := crs
 endif
 
 CC.host ?= gcc
@@ -144,7 +149,9 @@ AR.host ?= ar
 # See the description for ARFLAGS.target.
 -include $(obj).host/arflags/arflags.mk
 ifeq ($(ARFLAGS.host),)
-  ARFLAGS.host := $(call detect_arflags,host)
+  # Temporarily disabled -- see ARFLAGS.target.
+  # ARFLAGS.host := $(call detect_arflags,host)
+  ARFLAGS.host := crs
 endif
 
 # Flags to make gcc output dependency info.  Note that you need to be
