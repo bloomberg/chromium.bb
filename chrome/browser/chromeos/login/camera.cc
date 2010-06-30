@@ -129,7 +129,8 @@ Camera::Camera(Delegate* delegate)
       desired_width_(kFrameWidth),
       desired_height_(kFrameHeight),
       frame_width_(kFrameWidth),
-      frame_height_(kFrameHeight) {
+      frame_height_(kFrameHeight),
+      mirrored_(false) {
 }
 
 Camera::~Camera() {
@@ -378,7 +379,18 @@ void Camera::ProcessImage(void* data) {
   image.allocPixels();
   {
     SkAutoLockPixels lock_image(image);
-    uint32_t* dst = image.getAddr32(0, 0);
+    // We should reflect the image from the Y axis depending on the value of
+    // |mirrored_|. Hence variable increments and origin point.
+    int dst_x_origin = 0;
+    int dst_x_increment = 1;
+    int dst_y_increment = 0;
+    if (mirrored_) {
+      dst_x_origin = image.width() - 1;
+      dst_x_increment = -1;
+      dst_y_increment = 2 * image.width();
+    }
+    uint32_t* dst = image.getAddr32(dst_x_origin, 0);
+
     uint32_t* src = reinterpret_cast<uint32_t*>(data) +
                     crop_top * (frame_width_ / 2);
     for (int y = 0; y < image.height(); ++y) {
@@ -389,9 +401,12 @@ void Camera::ProcessImage(void* data) {
         uint8_t u = (yuyv >> 8) & 0xFF;
         uint8_t y1 = (yuyv >> 16) & 0xFF;
         uint8_t v = (yuyv >> 24) & 0xFF;
-        *dst++ = convert_yuv_to_rgba(y0, u, v);
-        *dst++ = convert_yuv_to_rgba(y1, u, v);
+        *dst = convert_yuv_to_rgba(y0, u, v);
+        dst += dst_x_increment;
+        *dst = convert_yuv_to_rgba(y1, u, v);
+        dst += dst_x_increment;
       }
+      dst += dst_y_increment;
       src += crop_right / 2;
     }
   }

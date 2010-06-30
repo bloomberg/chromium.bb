@@ -50,6 +50,8 @@ class Camera {
   // times.
   void StopCapturing();
 
+  void set_mirrored(bool mirrored) { mirrored_ = mirrored; }
+
  private:
   // Tries to open the device with specified name. Returns opened device
   // descriptor if succeeds, -1 otherwise.
@@ -106,6 +108,10 @@ class Camera {
   // desired size.
   int frame_width_;
   int frame_height_;
+
+  // If set to true, the returned image will be reflected from the Y axis to
+  // mimic mirror behavior.
+  bool mirrored_;
 
   DISALLOW_COPY_AND_ASSIGN(Camera);
 };

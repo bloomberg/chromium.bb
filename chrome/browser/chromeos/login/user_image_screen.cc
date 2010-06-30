@@ -35,8 +35,13 @@ UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
       this,
       NotificationType::SCREEN_LOCK_STATE_CHANGED,
       NotificationService::AllSources());
-  if (!camera_->Initialize(kFrameWidth, kFrameHeight))
+  if (!camera_->Initialize(kFrameWidth, kFrameHeight)) {
     camera_.reset();
+  } else {
+    // We want to mimic mirror behavior so we want the image reflected from Y
+    // axis.
+    camera_->set_mirrored(true);
+  }
 }
 
 UserImageScreen::~UserImageScreen() {
