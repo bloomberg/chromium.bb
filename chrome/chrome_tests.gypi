@@ -784,6 +784,7 @@
         'browser/configuration_policy_provider_win_unittest.cc',
         'browser/cookies_tree_model_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',
+				'browser/dock_info_unittest.cc',
         'browser/dom_ui/dom_ui_theme_source_unittest.cc',
         'browser/dom_ui/dom_ui_unittest.cc',
         'browser/dom_ui/html_dialog_tab_contents_delegate_unittest.cc',
@@ -1178,6 +1179,7 @@
           'sources!': [
             # Blocked on bookmark manager.
             'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
+						'browser/dock_info_unittest.cc',
             'browser/gtk/reload_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/password_manager/password_store_default_unittest.cc',
