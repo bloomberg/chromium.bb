@@ -44,6 +44,10 @@ const int kButtonSize = 29;
 // use their maximum allowed size.
 const int kButtonPadding = 3;
 
+// The padding to the right of the browser action buttons (between the buttons
+// and the separator, or chevron if it's showing).
+const int kPaddingToRightOfButtons = 5;
+
 // The padding to the left, top and bottom of the browser actions toolbar
 // separator.
 const int kSeparatorPadding = 2;
@@ -370,8 +374,13 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   signals_.Connect(overflow_button_.widget(), "button-press-event",
                    G_CALLBACK(OnOverflowButtonPressThunk), this);
 
+  // Add some blank space on the right of the browser action buttons.
+  GtkWidget* spacer = gtk_alignment_new(0, 0, 1, 1);
+  gtk_widget_set_size_request(spacer, kPaddingToRightOfButtons, -1);
+
   gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_.get(), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), spacer, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_button_.widget(),
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), separator_, FALSE, FALSE, 0);
