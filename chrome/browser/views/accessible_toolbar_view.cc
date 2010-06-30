@@ -58,8 +58,13 @@ bool AccessibleToolbarView::SetToolbarFocus(int view_storage_id,
   if (!initial_focus)
     return false;
 
-  // Set focus to the initial view
-  focus_manager_->SetFocusedView(initial_focus);
+  // Set focus to the initial view. If it's a location bar, use a special
+  // method that tells it to select all, also.
+  if (initial_focus->GetClassName() == LocationBarView::kViewClassName) {
+    static_cast<LocationBarView*>(initial_focus)->FocusLocation(true);
+  } else {
+    focus_manager_->SetFocusedView(initial_focus);
+  }
 
   // If we already have toolbar focus, we're done.
   if (toolbar_has_focus_)
@@ -93,18 +98,13 @@ void AccessibleToolbarView::RemoveToolbarFocus() {
   focus_manager_->UnregisterAccelerator(right_key_, this);
 }
 
-void AccessibleToolbarView::RemoveToolbarFocusIfNoChildHasFocus() {
-  views::View* focused_view = focus_manager_->GetFocusedView();
-  if (toolbar_has_focus_ && (!focused_view || !IsParentOf(focused_view)))
-    RemoveToolbarFocus();
-}
-
 void AccessibleToolbarView::RestoreLastFocusedView() {
   views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
   if (last_focused_view) {
-    focus_manager_->SetFocusedView(last_focused_view);
+    focus_manager_->SetFocusedViewWithReason(
+        last_focused_view, views::FocusManager::kReasonFocusRestore);
   } else {
     // Focus the location bar
     views::View* view = GetAncestorWithClassName(BrowserView::kViewClassName);
@@ -165,10 +165,12 @@ bool AccessibleToolbarView::AcceleratorPressed(
       focus_manager_->AdvanceFocus(false);
       return true;
     case base::VKEY_HOME:
-      focus_manager_->SetFocusedView(GetFirstFocusableChild());
+      focus_manager_->SetFocusedViewWithReason(
+          GetFirstFocusableChild(), views::FocusManager::kReasonFocusTraversal);
       return true;
     case base::VKEY_END:
-      focus_manager_->SetFocusedView(GetLastFocusableChild());
+      focus_manager_->SetFocusedViewWithReason(
+          GetLastFocusableChild(), views::FocusManager::kReasonFocusTraversal);
       return true;
     default:
       return false;
@@ -195,19 +197,24 @@ bool AccessibleToolbarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 void AccessibleToolbarView::FocusWillChange(views::View* focused_before,
                                             views::View* focused_now) {
-  if (!focused_now || !IsParentOf(focused_now)) {
-    // The focus is no longer in the toolbar, so we should remove toolbar
-    // focus (i.e. make most of the controls not focusable again).
-    // Defer this rather than running it right away, for two reasons:
-    // 1. Sometimes the focus gets sets to NULL and then immediately back
-    //    to something in this toolbar. We don't want to do anything in
-    //    that case.
-    // 2. If we do want to remove toolbar focus, we can't remove this as
-    //    a focus change listener while FocusManager is in the middle of
-    //    iterating over the list of listeners.
+  if (!focused_now)
+    return;
+
+  views::FocusManager::FocusChangeReason reason =
+      focus_manager_->focus_change_reason();
+  if (!IsParentOf(focused_now) ||
+      reason == views::FocusManager::kReasonDirectFocusChange) {
+    // We should remove toolbar focus (i.e. make most of the controls
+    // not focusable again) either because the focus is leaving the toolbar,
+    // or because the focus changed within the toolbar due to the user
+    // directly focusing to a specific view (e.g., clicking on it).
+    //
+    // Defer rather than calling RemoveToolbarFocus right away, because we can't
+    // remove |this| as a focus change listener while FocusManager is in the
+    // middle of iterating over the list of listeners.
     MessageLoop::current()->PostTask(
         FROM_HERE, method_factory_.NewRunnableMethod(
-            &AccessibleToolbarView::RemoveToolbarFocusIfNoChildHasFocus));
+            &AccessibleToolbarView::RemoveToolbarFocus));
   }
 }
 

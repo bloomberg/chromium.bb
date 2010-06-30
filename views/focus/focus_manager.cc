@@ -67,7 +67,8 @@ void FocusManager::WidgetFocusManager::OnWidgetFocusEvent(
 
 FocusManager::FocusManager(Widget* widget)
     : widget_(widget),
-      focused_view_(NULL) {
+      focused_view_(NULL),
+      focus_change_reason_(kReasonDirectFocusChange) {
   DCHECK(widget_);
   stored_focused_view_storage_id_ =
       ViewStorage::GetSharedInstance()->CreateStorageID();
@@ -123,7 +124,7 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
     } else if (index >= static_cast<int>(views.size())) {
       index = 0;
     }
-    SetFocusedView(views[index]);
+    SetFocusedViewWithReason(views[index], kReasonFocusTraversal);
     return false;
   }
 
@@ -184,7 +185,7 @@ void FocusManager::AdvanceFocus(bool reverse) {
   // first element on the page.
   if (v) {
     v->AboutToRequestFocusFromTabTraversal(reverse);
-    SetFocusedView(v);
+    SetFocusedViewWithReason(v, kReasonFocusTraversal);
   }
 }
 
@@ -279,7 +280,10 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
   return NULL;
 }
 
-void FocusManager::SetFocusedView(View* view) {
+void FocusManager::SetFocusedViewWithReason(
+    View* view, FocusChangeReason reason) {
+  focus_change_reason_ = reason;
+
   if (focused_view_ == view)
     return;
 
@@ -357,8 +361,10 @@ void FocusManager::RestoreFocusedView() {
 
   View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
   if (view) {
-    if (ContainsView(view))
-      view->RequestFocus();
+    if (ContainsView(view) &&
+        (view->IsFocusable() || view->IsAccessibilityFocusable())) {
+      SetFocusedViewWithReason(view, kReasonFocusRestore);
+    }
   } else {
     // Clearing the focus will focus the root window, so we still get key
     // events.

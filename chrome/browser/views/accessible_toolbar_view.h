@@ -62,10 +62,6 @@ class AccessibleToolbarView : public views::View,
   // Remove toolbar focus.
   virtual void RemoveToolbarFocus();
 
-  // Remove toolbar focus unless a child (including indirect children)
-  // still has the focus.
-  void RemoveToolbarFocusIfNoChildHasFocus();
-
   void RestoreLastFocusedView();
 
   View* GetFirstFocusableChild();

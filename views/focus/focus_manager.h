@@ -148,6 +148,20 @@ class FocusManager {
     DISALLOW_COPY_AND_ASSIGN(WidgetFocusManager);
   };
 
+  // The reason why the focus changed.
+  enum FocusChangeReason {
+    // The focus changed because the user traversed focusable views using
+    // keys like Tab or Shift+Tab.
+    kReasonFocusTraversal,
+
+    // The focus changed due to restoring the focus.
+    kReasonFocusRestore,
+
+    // The focus changed due to a click or a shortcut to jump directly to
+    // a particular view.
+    kReasonDirectFocusChange
+  };
+
   explicit FocusManager(Widget* widget);
   virtual ~FocusManager();
 
@@ -168,9 +182,21 @@ class FocusManager {
   // Advances the focus (backward if reverse is true).
   void AdvanceFocus(bool reverse);
 
-  // The FocusManager is handling the selected view for the RootView.
+  // The FocusManager keeps track of the focused view within a RootView.
   View* GetFocusedView() const { return focused_view_; }
-  void SetFocusedView(View* view);
+
+  // Low-level methods to force the focus to change (and optionally provide
+  // a reason). If the focus change should only happen if the view is
+  // currenty focusable, enabled, and visible, call view->RequestFocus().
+  void SetFocusedViewWithReason(View* view, FocusChangeReason reason);
+  void SetFocusedView(View* view) {
+    SetFocusedViewWithReason(view, kReasonDirectFocusChange);
+  }
+
+  // Get the reason why the focus most recently changed.
+  FocusChangeReason focus_change_reason() const {
+    return focus_change_reason_;
+  }
 
   // Clears the focused view. The window associated with the top root view gets
   // the native focus (so we still get keyboard events).
@@ -271,6 +297,9 @@ class FocusManager {
   // The storage id used in the ViewStorage to store/restore the view that last
   // had focus.
   int stored_focused_view_storage_id_;
+
+  // The reason why the focus most recently changed.
+  FocusChangeReason focus_change_reason_;
 
   // The accelerators and associated targets.
   typedef std::list<AcceleratorTarget*> AcceleratorTargetList;
