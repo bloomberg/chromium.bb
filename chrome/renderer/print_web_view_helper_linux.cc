@@ -13,79 +13,35 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 
-using printing::ConvertPixelsToPoint;
-using printing::ConvertPixelsToPointDouble;
 using printing::NativeMetafile;
 using WebKit::WebFrame;
 using WebKit::WebSize;
 
-// If frame is NULL, this function returns the default value.
-static void GetPageSizeAndMarginsInPoints(WebFrame* frame,
-                                          int page_index,
-                                          double* content_width_in_points,
-                                          double* content_height_in_points,
-                                          double* margin_top_in_points,
-                                          double* margin_right_in_points,
-                                          double* margin_bottom_in_points,
-                                          double* margin_left_in_points) {
+static void FillDefaultPrintParams(ViewMsg_Print_Params* params) {
   // TODO(myhuang): Get printing parameters via IPC
   // using the print_web_view_helper.cc version of Print.
   // For testing purpose, we hard-coded printing parameters here.
 
   // The paper size is US Letter (8.5 in. by 11 in.).
-  WebSize page_size_in_pixels(8.5 * printing::kPixelsPerInch,
-                              11.0 * printing::kPixelsPerInch);
-
-  int margin_top_in_pixels = static_cast<int>(
+  double page_width_in_pixel = 8.5 * printing::kPixelsPerInch;
+  double page_height_in_pixel = 11.0 * printing::kPixelsPerInch;
+  params->page_size = gfx::Size(
+      static_cast<int>(page_width_in_pixel),
+      static_cast<int>(page_height_in_pixel));
+  params->printable_size = gfx::Size(
+      static_cast<int>(
+          page_width_in_pixel -
+          (NativeMetafile::kLeftMarginInInch +
+           NativeMetafile::kRightMarginInInch) * printing::kPixelsPerInch),
+      static_cast<int>(
+          page_height_in_pixel -
+          (NativeMetafile::kTopMarginInInch +
+           NativeMetafile::kBottomMarginInInch) * printing::kPixelsPerInch));
+  params->margin_top = static_cast<int>(
       NativeMetafile::kTopMarginInInch * printing::kPixelsPerInch);
-  int margin_right_in_pixels = static_cast<int>(
-      NativeMetafile::kRightMarginInInch * printing::kPixelsPerInch);
-  int margin_bottom_in_pixels = static_cast<int>(
-      NativeMetafile::kBottomMarginInInch * printing::kPixelsPerInch);
-  int margin_left_in_pixels = static_cast<int>(
+  params->margin_left = static_cast<int>(
       NativeMetafile::kLeftMarginInInch * printing::kPixelsPerInch);
-
-  if (frame) {
-    frame->pageSizeAndMarginsInPixels(page_index,
-                                      page_size_in_pixels,
-                                      margin_top_in_pixels,
-                                      margin_right_in_pixels,
-                                      margin_bottom_in_pixels,
-                                      margin_left_in_pixels);
-  }
-
-  *content_width_in_points = ConvertPixelsToPoint(page_size_in_pixels.width
-                                                  - margin_left_in_pixels
-                                                  - margin_right_in_pixels);
-  *content_height_in_points = ConvertPixelsToPoint(page_size_in_pixels.height
-                                                   - margin_top_in_pixels
-                                                   - margin_bottom_in_pixels);
-
-  // Invalid page size and/or margins. We just use the default setting.
-  if (*content_width_in_points < 1.0 || *content_height_in_points < 1.0) {
-    GetPageSizeAndMarginsInPoints(NULL,
-                                  page_index,
-                                  content_width_in_points,
-                                  content_height_in_points,
-                                  margin_top_in_points,
-                                  margin_right_in_points,
-                                  margin_bottom_in_points,
-                                  margin_left_in_points);
-    return;
-  }
-
-  if (margin_top_in_points)
-    *margin_top_in_points =
-        ConvertPixelsToPointDouble(margin_top_in_pixels);
-  if (margin_right_in_points)
-    *margin_right_in_points =
-        ConvertPixelsToPointDouble(margin_right_in_pixels);
-  if (margin_bottom_in_points)
-    *margin_bottom_in_points =
-        ConvertPixelsToPointDouble(margin_bottom_in_pixels);
-  if (margin_left_in_points)
-    *margin_left_in_points =
-        ConvertPixelsToPointDouble(margin_left_in_pixels);
+  params->dpi = printing::kPixelsPerInch;
 }
 
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
@@ -93,19 +49,23 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   if (IsPrinting())
     return;
 
+  ViewMsg_Print_Params default_settings;
+  FillDefaultPrintParams(&default_settings);
+
   double content_width, content_height;
-  GetPageSizeAndMarginsInPoints(frame, 0, &content_width, &content_height,
+  GetPageSizeAndMarginsInPoints(frame, 0, default_settings,
+                                &content_width, &content_height,
                                 NULL, NULL, NULL, NULL);
 
-  ViewMsg_Print_Params default_settings;
-  default_settings.printable_size = gfx::Size(
-      static_cast<int>(content_width), static_cast<int>(content_height));
   default_settings.dpi = printing::kPointsPerInch;
   default_settings.min_shrink = 1.25;
   default_settings.max_shrink = 2.0;
   default_settings.desired_dpi = printing::kPointsPerInch;
   default_settings.document_cookie = 0;
   default_settings.selection_only = false;
+
+  default_settings.printable_size = gfx::Size(
+      static_cast<int>(content_width), static_cast<int>(content_height));
 
   ViewMsg_PrintPages_Params print_settings;
   print_settings.params = default_settings;
@@ -171,6 +131,9 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame,
                                    printing::NativeMetafile* metafile) {
+  ViewMsg_Print_Params default_params;
+  FillDefaultPrintParams(&default_params);
+
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;
@@ -179,6 +142,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   double margin_left_in_points;
   GetPageSizeAndMarginsInPoints(frame,
                                 params.page_number,
+                                default_params,
                                 &content_width_in_points,
                                 &content_height_in_points,
                                 &margin_top_in_points,

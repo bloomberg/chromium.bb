@@ -125,6 +125,17 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   virtual void didStopLoading();
 
  private:
+  static void GetPageSizeAndMarginsInPoints(
+      WebKit::WebFrame* frame,
+      int page_index,
+      const ViewMsg_Print_Params& default_params,
+      double* content_width_in_points,
+      double* content_height_in_points,
+      double* margin_top_in_points,
+      double* margin_right_in_points,
+      double* margin_bottom_in_points,
+      double* margin_left_in_points);
+
   RenderView* render_view_;
   WebKit::WebView* print_web_view_;
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
