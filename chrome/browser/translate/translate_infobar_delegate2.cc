@@ -355,6 +355,6 @@ void TranslateInfoBarDelegate2::GetAfterTranslateStrings(
   }
 
   strings->push_back(text.substr(0, offsets[0]));
-  strings->push_back(text.substr(offsets[0], offsets[1]));
+  strings->push_back(text.substr(offsets[0], offsets[1] - offsets[0]));
   strings->push_back(text.substr(offsets[1]));
 }
