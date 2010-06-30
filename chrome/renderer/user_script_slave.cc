@@ -145,7 +145,8 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
   GURL frame_url = GURL(frame->url());
   // Don't bother if this is not a URL we inject script into.
-  if (!URLPattern::IsValidScheme(frame_url.scheme()))
+  if (!URLPattern(UserScript::kValidUserScriptSchemes).IsValidScheme(
+                                 frame_url.scheme()))
     return true;
 
   // Don't inject user scripts into the gallery itself.  This prevents

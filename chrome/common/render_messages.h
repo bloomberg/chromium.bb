@@ -2221,13 +2221,17 @@ template <>
 struct ParamTraits<URLPattern> {
   typedef URLPattern param_type;
   static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.valid_schemes());
     WriteParam(m, p.GetAsString());
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
+    int valid_schemes;
     std::string spec;
-    if (!ReadParam(m, iter, &spec))
+    if (!ReadParam(m, iter, &valid_schemes) ||
+        !ReadParam(m, iter, &spec))
       return false;
 
+    p->set_valid_schemes(valid_schemes);
     return p->Parse(spec);
   }
   static void Log(const param_type& p, std::wstring* l) {

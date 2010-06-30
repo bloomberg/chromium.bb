@@ -791,7 +791,7 @@ static bool ExtensionWantsFileAccess(const Extension* extension) {
     for (UserScript::PatternList::const_iterator pattern =
              it->url_patterns().begin();
          pattern != it->url_patterns().end(); ++pattern) {
-      if (pattern->scheme() == chrome::kFileScheme)
+      if (pattern->MatchesScheme(chrome::kFileScheme))
         return true;
     }
   }

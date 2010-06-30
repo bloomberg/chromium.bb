@@ -65,22 +65,8 @@ static void ConvertHexadecimalToIDAlphabet(std::string* id) {
     (*id)[i] = HexStringToInt(id->substr(i, 1)) + 'a';
 }
 
-const char* kValidUserScriptSchemes[] = {
-  chrome::kHttpScheme,
-  chrome::kHttpsScheme,
-  chrome::kFileScheme,
-  chrome::kFtpScheme,
-};
-
-// Whether the URL pattern is allowed for user scripts.
-bool ValidUrlPatternInUserScript(const URLPattern& pattern) {
-  const std::string scheme = pattern.scheme();
-  for (size_t i = 0; i < arraysize(kValidUserScriptSchemes); ++i) {
-    if (scheme == kValidUserScriptSchemes[i])
-      return true;
-  }
-  return false;
-}
+const int kValidWebExtentSchemes =
+    URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
 
 }  // namespace
 
@@ -278,8 +264,8 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       return false;
     }
 
-    URLPattern pattern;
-    if (!pattern.Parse(match_str) || !ValidUrlPatternInUserScript(pattern)) {
+    URLPattern pattern(UserScript::kValidUserScriptSchemes);
+    if (!pattern.Parse(match_str)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
           IntToString(definition_index), IntToString(j));
       return false;
@@ -566,7 +552,7 @@ bool Extension::LoadWebURLs(const DictionaryValue* manifest,
       return false;
     }
 
-    URLPattern pattern;
+    URLPattern pattern(kValidWebExtentSchemes);
     if (!pattern.Parse(pattern_string)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidWebURL, UintToString(i));
@@ -636,8 +622,11 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
   // If there is no extent, we default the extent based on the launch URL.
   if (web_extent_.is_empty() && !launch_web_url_.empty()) {
     GURL launch_url(launch_web_url_);
-    URLPattern pattern;
-    pattern.set_scheme(launch_url.scheme());
+    URLPattern pattern(kValidWebExtentSchemes);
+    if (!pattern.SetScheme("*")) {
+      *error = errors::kInvalidLaunchWebURL;
+      return false;
+    }
     pattern.set_host(launch_url.host());
     pattern.set_path("/*");
     web_extent_.AddPattern(pattern);
@@ -1403,7 +1392,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       }
 
       // Otherwise, it's a host pattern permission.
-      URLPattern pattern;
+      URLPattern pattern(URLPattern::SCHEMES_ALL);
       if (!pattern.Parse(permission_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermission, IntToString(i));
@@ -1651,22 +1640,16 @@ Extension::Icons Extension::GetIconPathAllowLargerSize(
   return EXTENSION_ICON_LARGE;
 }
 
-// We support http:// and https:// as well as chrome://favicon//.
-// chrome://resources/ is supported but only for component extensions.
 bool Extension::CanAccessURL(const URLPattern pattern) const {
-  if (pattern.scheme() == chrome::kHttpScheme ||
-      pattern.scheme() == chrome::kHttpsScheme) {
-    return true;
+  if (pattern.MatchesScheme(chrome::kChromeUIScheme)) {
+    // Only allow access to chrome://favicon to regular extensions. Component
+    // extensions can have access to all of chrome://*.
+    return (pattern.host() == chrome::kChromeUIFavIconHost ||
+            location() == Extension::COMPONENT);
   }
-  if (pattern.scheme() == chrome::kChromeUIScheme &&
-      pattern.host() == chrome::kChromeUIFavIconHost) {
-    return true;
-  }
-  if (location() == Extension::COMPONENT &&
-      pattern.scheme() == chrome::kChromeUIScheme) {
-    return true;
-  }
-  return false;
+
+  // Otherwise, the valid schemes were handled by URLPattern.
+  return true;
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {

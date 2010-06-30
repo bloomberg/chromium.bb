@@ -11,12 +11,9 @@
   "permissions": [ "notifications" ],
   "app": {
     "urls": [
-      "http://mail.google.com/mail/",
-      "https://mail.google.com/mail/",
-      "http://gmail.com/",
-      "https://gmail.com/",
-      "http://www.gmail.com/",
-      "https://www.gmail.com/"
+      "*://mail.google.com/mail/",
+      "*://gmail.com/",
+      "*://www.gmail.com/"
     ],
     "launch": {
       "web_url": "https://mail.google.com/mail/"

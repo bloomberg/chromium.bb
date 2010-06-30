@@ -28,7 +28,7 @@ TEST(URLPatternTest, ParseInvalid) {
 
 // all pages for a given scheme
 TEST(URLPatternTest, Match1) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   EXPECT_TRUE(pattern.Parse("http://*/*"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("", pattern.host());
@@ -43,7 +43,7 @@ TEST(URLPatternTest, Match1) {
 
 // all domains
 TEST(URLPatternTest, Match2) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   EXPECT_TRUE(pattern.Parse("https://*/foo*"));
   EXPECT_EQ("https", pattern.scheme());
   EXPECT_EQ("", pattern.host());
@@ -57,7 +57,7 @@ TEST(URLPatternTest, Match2) {
 
 // subdomains
 TEST(URLPatternTest, Match3) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   EXPECT_TRUE(pattern.Parse("http://*.google.com/foo*bar"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("google.com", pattern.host());
@@ -72,7 +72,7 @@ TEST(URLPatternTest, Match3) {
 
 // glob escaping
 TEST(URLPatternTest, Match5) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   EXPECT_TRUE(pattern.Parse("file:///foo?bar\\*baz"));
   EXPECT_EQ("file", pattern.scheme());
   EXPECT_EQ("", pattern.host());
@@ -84,7 +84,7 @@ TEST(URLPatternTest, Match5) {
 
 // ip addresses
 TEST(URLPatternTest, Match6) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   EXPECT_TRUE(pattern.Parse("http://127.0.0.1/*"));
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("127.0.0.1", pattern.host());
@@ -95,7 +95,7 @@ TEST(URLPatternTest, Match6) {
 
 // subdomain matching with ip addresses
 TEST(URLPatternTest, Match7) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   EXPECT_TRUE(pattern.Parse("http://*.0.0.1/*")); // allowed, but useless
   EXPECT_EQ("http", pattern.scheme());
   EXPECT_EQ("0.0.1", pattern.host());
@@ -107,7 +107,7 @@ TEST(URLPatternTest, Match7) {
 
 // unicode
 TEST(URLPatternTest, Match8) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   // The below is the ASCII encoding of the following URL:
   // http://*.\xe1\x80\xbf/a\xc2\x81\xe1*
   EXPECT_TRUE(pattern.Parse("http://*.xn--gkd/a%C2%81%E1*"));
@@ -123,7 +123,7 @@ TEST(URLPatternTest, Match8) {
 
 // chrome://
 TEST(URLPatternTest, Match9) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   EXPECT_TRUE(pattern.Parse("chrome://favicon/*"));
   EXPECT_EQ("chrome", pattern.scheme());
   EXPECT_EQ("favicon", pattern.host());
@@ -132,6 +132,37 @@ TEST(URLPatternTest, Match9) {
   EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
   EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/https://google.com")));
   EXPECT_FALSE(pattern.MatchesUrl(GURL("chrome://history")));
+};
+
+// *://
+TEST(URLPatternTest, Match10) {
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
+  EXPECT_TRUE(pattern.Parse("*://*/*"));
+  EXPECT_TRUE(pattern.MatchesScheme("http"));
+  EXPECT_TRUE(pattern.MatchesScheme("https"));
+  EXPECT_FALSE(pattern.MatchesScheme("chrome"));
+  EXPECT_FALSE(pattern.MatchesScheme("file"));
+  EXPECT_FALSE(pattern.MatchesScheme("ftp"));
+  EXPECT_TRUE(pattern.match_subdomains());
+  EXPECT_EQ("/*", pattern.path());
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
+  EXPECT_FALSE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
+  EXPECT_FALSE(pattern.MatchesUrl(GURL("file:///foo/bar")));
+};
+
+// <all_urls>
+TEST(URLPatternTest, Match11) {
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
+  EXPECT_TRUE(pattern.Parse("<all_urls>"));
+  EXPECT_TRUE(pattern.MatchesScheme("chrome"));
+  EXPECT_TRUE(pattern.MatchesScheme("http"));
+  EXPECT_TRUE(pattern.MatchesScheme("https"));
+  EXPECT_TRUE(pattern.MatchesScheme("file"));
+  EXPECT_TRUE(pattern.match_subdomains());
+  EXPECT_EQ("/*", pattern.path());
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("file:///foo/bar")));
 };
 
 void TestPatternOverlap(const URLPattern& pattern1, const URLPattern& pattern2,
@@ -143,12 +174,17 @@ void TestPatternOverlap(const URLPattern& pattern1, const URLPattern& pattern2,
 }
 
 TEST(URLPatternTest, OverlapsWith) {
-  URLPattern pattern1("http://www.google.com/foo/*");
-  URLPattern pattern2("https://www.google.com/foo/*");
-  URLPattern pattern3("http://*.google.com/foo/*");
-  URLPattern pattern4("http://*.yahooo.com/foo/*");
-  URLPattern pattern5("http://www.yahooo.com/bar/*");
-  URLPattern pattern6("http://www.yahooo.com/bar/baz/*");
+  URLPattern pattern1(URLPattern::SCHEMES_ALL, "http://www.google.com/foo/*");
+  URLPattern pattern2(URLPattern::SCHEMES_ALL, "https://www.google.com/foo/*");
+  URLPattern pattern3(URLPattern::SCHEMES_ALL, "http://*.google.com/foo/*");
+  URLPattern pattern4(URLPattern::SCHEMES_ALL, "http://*.yahooo.com/foo/*");
+  URLPattern pattern5(URLPattern::SCHEMES_ALL, "http://www.yahooo.com/bar/*");
+  URLPattern pattern6(URLPattern::SCHEMES_ALL,
+                      "http://www.yahooo.com/bar/baz/*");
+  URLPattern pattern7(URLPattern::SCHEMES_ALL, "file:///*");
+  URLPattern pattern8(URLPattern::SCHEMES_ALL, "*://*/*");
+  URLPattern pattern9(URLPattern::SCHEME_HTTPS, "*://*/*");
+  URLPattern pattern10(URLPattern::SCHEMES_ALL, "<all_urls>");
 
   TestPatternOverlap(pattern1, pattern1, true);
   TestPatternOverlap(pattern1, pattern2, false);
@@ -157,4 +193,13 @@ TEST(URLPatternTest, OverlapsWith) {
   TestPatternOverlap(pattern3, pattern4, false);
   TestPatternOverlap(pattern4, pattern5, false);
   TestPatternOverlap(pattern5, pattern6, true);
+
+  // Test that scheme restrictions work.
+  TestPatternOverlap(pattern1, pattern8, true);
+  TestPatternOverlap(pattern1, pattern9, false);
+  TestPatternOverlap(pattern1, pattern10, true);
+
+  // Test that '<all_urls>' includes file URLs, while scheme '*' does not.
+  TestPatternOverlap(pattern7, pattern8, false);
+  TestPatternOverlap(pattern7, pattern10, true);
 }

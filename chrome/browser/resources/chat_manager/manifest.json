@@ -16,8 +16,7 @@
       "js/chatbridgehook.js"
     ],
     "matches": [
-      "http://talkgadget.google.com/*",
-      "https://talkgadget.google.com/*"
+      "*://talkgadget.google.com/*"
     ],
     "run_at": "document_end",
     "all_frames": true
@@ -27,15 +26,13 @@
       "js/gmailbridgehook.js"
     ],
     "matches": [
-      "http://mail.google.com/*",
-      "https://mail.google.com/*"
+      "*://mail.google.com/*"
     ],
     "run_at": "document_end"
   }],
   "permissions": [
     "tabs",
-    "http://talkgadget.google.com/*",
-    "https://talkgadget.google.com/*"
+    "*://talkgadget.google.com/*"
   ],
   "launch": {
     "local_path": "central_roster_viewer.html",

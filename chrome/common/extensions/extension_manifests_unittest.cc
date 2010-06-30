@@ -113,7 +113,7 @@ TEST_F(ManifestTest, AppWebUrls) {
   scoped_ptr<Extension> extension(
       LoadAndExpectSuccess("web_urls_default.json"));
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
-  EXPECT_EQ("http://www.google.com/*",
+  EXPECT_EQ("*://www.google.com/*",
             extension->web_extent().patterns()[0].GetAsString());
 }
 

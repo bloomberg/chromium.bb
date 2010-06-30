@@ -11,8 +11,7 @@
   },
   "app": {
     "urls": [
-      "http://www.google.com/calendar/",
-      "https://www.google.com/calendar/"
+      "*://www.google.com/calendar/"
     ],
     "launch": {
       "container": "tab",

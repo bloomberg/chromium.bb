@@ -236,13 +236,6 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermission));
 
-  // Test permissions scheme.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
-  input_value->GetList(keys::kPermissions, &permissions);
-  permissions->Set(0, Value::CreateStringValue("file:///C:/foo.txt"));
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermissionScheme));
-
   // Multiple page actions are not allowed.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   DictionaryValue* action = new DictionaryValue;
@@ -319,6 +312,12 @@ TEST(ExtensionTest, InitFromValueValid) {
   EXPECT_EQ("my extension", extension.name());
   EXPECT_EQ(extension.id(), extension.url().host());
   EXPECT_EQ(path.value(), extension.path().value());
+
+  // Test permissions scheme.
+  ListValue* permissions = new ListValue;
+  permissions->Set(0, Value::CreateStringValue("file:///C:/foo.txt"));
+  input_value.Set(keys::kPermissions, permissions);
+  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
 
   // Test with an options page.
   input_value.SetString(keys::kOptionsPage, "options.html");

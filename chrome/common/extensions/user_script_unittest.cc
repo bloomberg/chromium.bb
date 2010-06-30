@@ -63,7 +63,7 @@ TEST(UserScriptTest, Match5) {
 }
 
 TEST(UserScriptTest, Match6) {
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   ASSERT_TRUE(pattern.Parse("http://*/foo*"));
 
   UserScript script;
@@ -78,7 +78,7 @@ TEST(UserScriptTest, UrlPatternGlobInteraction) {
   // If there are both, match intersection(union(globs), union(urlpatterns)).
   UserScript script;
   
-  URLPattern pattern;
+  URLPattern pattern(URLPattern::SCHEMES_ALL);
   ASSERT_TRUE(pattern.Parse("http://www.google.com/*"));
   script.add_url_pattern(pattern);
 
@@ -105,8 +105,8 @@ TEST(UserScriptTest, UrlPatternGlobInteraction) {
 }
 
 TEST(UserScriptTest, Pickle) {
-  URLPattern pattern1;
-  URLPattern pattern2;
+  URLPattern pattern1(URLPattern::SCHEMES_ALL);
+  URLPattern pattern2(URLPattern::SCHEMES_ALL);
   ASSERT_TRUE(pattern1.Parse("http://*/foo*"));
   ASSERT_TRUE(pattern2.Parse("http://bar/baz*"));
 

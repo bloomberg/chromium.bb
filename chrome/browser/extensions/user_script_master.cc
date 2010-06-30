@@ -107,7 +107,7 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       } else if (GetDeclarationValue(line, kDescriptionDeclaration, &value)) {
         script->set_description(value);
       } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {
-        URLPattern pattern;
+        URLPattern pattern(UserScript::kValidUserScriptSchemes);
         if (!pattern.Parse(value))
           return false;
         script->add_url_pattern(pattern);

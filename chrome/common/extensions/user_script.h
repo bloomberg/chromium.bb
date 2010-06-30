@@ -24,6 +24,9 @@ class UserScript {
   // The file extension for standalone user scripts.
   static const char kFileExtension[];
 
+  // The bitmask for valid user script injectable schemes used by URLPattern.
+  static const int kValidUserScriptSchemes;
+
   // Check if a file or URL has the user script file extension.
   static bool HasUserScriptFileExtension(const GURL& url);
   static bool HasUserScriptFileExtension(const FilePath& path);

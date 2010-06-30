@@ -11,13 +11,16 @@
 // A pattern that can be used to match URLs. A URLPattern is a very restricted
 // subset of URL syntax:
 //
-// <url-pattern> := <scheme>://<host><path>
-// <scheme> := 'http' | 'https' | 'file' | 'ftp' | 'chrome'
+// <url-pattern> := <scheme>://<host><path> | '<all_urls>'
+// <scheme> := '*' | 'http' | 'https' | 'file' | 'ftp' | 'chrome'
 // <host> := '*' | '*.' <anychar except '/' and '*'>+
 // <path> := '/' <any chars>
 //
 // * Host is not used when the scheme is 'file'.
 // * The path can have embedded '*' characters which act as glob wildcards.
+// * '<all_urls>' is a special pattern that matches any URL that contains a
+//   valid scheme (as specified by valid_schemes_).
+// * The '*' scheme pattern excludes file URLs.
 //
 // Examples of valid patterns:
 // - http://*/*
@@ -69,25 +72,38 @@
 // than the original glob, which is probably better than nothing.
 class URLPattern {
  public:
-  // Returns true if the specified scheme can be used in URL patterns, and false
-  // otherwise.
-  static bool IsValidScheme(const std::string& scheme);
+  // A collection of scheme bitmasks for use with valid_schemes.
+  enum SchemeMasks {
+    SCHEME_HTTP = 1<<0,
+    SCHEME_HTTPS = 1<<1,
+    SCHEME_FILE = 1<<2,
+    SCHEME_FTP = 1<<3,
+    SCHEME_CHROMEUI = 1<<4,
 
+    SCHEMES_ALL =
+        SCHEME_HTTP | SCHEME_HTTPS | SCHEME_FILE | SCHEME_FTP | SCHEME_CHROMEUI,
+  };
+
+  // Note: don't use this directly. This exists so URLPattern can be used
+  // with STL containers.
   URLPattern();
+
+  // Construct an URLPattern with the given set of allowable schemes. See
+  // valid_schemes_ for more info.
+  explicit URLPattern(int valid_schemes);
 
   // Convenience to construct a URLPattern from a string. The string is expected
   // to be a valid pattern. If the string is not known ahead of time, use
   // Parse() instead, which returns success or failure.
-  explicit URLPattern(const std::string& pattern);
+  URLPattern(int valid_schemes, const std::string& pattern);
 
-  // Get the scheme the pattern matches. This will always return a valid scheme
-  // if is_valid() returns true.
-  std::string scheme() const { return scheme_; }
-  void set_scheme(const std::string& scheme) { scheme_ = scheme; }
+  // Gets the bitmask of valid schemes.
+  int valid_schemes() const { return valid_schemes_; }
+  void set_valid_schemes(int valid_schemes) { valid_schemes_ = valid_schemes; }
 
   // Gets the host the pattern matches. This can be an empty string if the
   // pattern matches all hosts (the input was <scheme>://*/<whatever>).
-  std::string host() const { return host_; }
+  const std::string& host() const { return host_; }
   void set_host(const std::string& host) { host_ = host; }
 
   // Gets whether to match subdomains of host().
@@ -96,7 +112,7 @@ class URLPattern {
 
   // Gets the path the pattern matches with the leading slash. This can have
   // embedded asterisks which are interpreted using glob rules.
-  std::string path() const { return path_; }
+  const std::string& path() const { return path_; }
   void set_path(const std::string& path) {
     path_ = path;
     path_escaped_ = "";
@@ -106,8 +122,23 @@ class URLPattern {
   // instance will have some intermediate values and is in an invalid state.
   bool Parse(const std::string& pattern_str);
 
+  // Sets the scheme for pattern matches. This can be a single '*' if the
+  // pattern matches all valid schemes (as defined by the valid_schemes_
+  // property). Returns false on failure (if the scheme is not valid).
+  bool SetScheme(const std::string& scheme);
+  // Note: You should use MatchesScheme() instead of this getter unless you
+  // absolutely need the exact scheme. This is exposed for testing.
+  const std::string& scheme() const { return scheme_; }
+
+  // Returns true if the specified scheme can be used in this URL pattern, and
+  // false otherwise. Uses valid_schemes_ to determine validity.
+  bool IsValidScheme(const std::string& scheme) const;
+
   // Returns true if this instance matches the specified URL.
   bool MatchesUrl(const GURL& url) const;
+
+  // Returns true if |test| matches our scheme.
+  bool MatchesScheme(const std::string& test) const;
 
   // Returns true if |test| matches our host.
   bool MatchesHost(const std::string& test) const;
@@ -125,6 +156,15 @@ class URLPattern {
   bool OverlapsWith(const URLPattern& other) const;
 
  private:
+  // A bitmask containing the schemes which are considered valid for this
+  // pattern. Parse() uses this to decide whether a pattern contains a valid
+  // scheme. MatchesScheme uses this to decide whether a wildcard scheme_
+  // matches a given test scheme.
+  int valid_schemes_;
+
+  // True if this is a special-case "<all_urls>" pattern.
+  bool match_all_urls_;
+
   // The scheme for the pattern.
   std::string scheme_;
 

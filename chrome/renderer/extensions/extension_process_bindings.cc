@@ -628,11 +628,21 @@ void ExtensionProcessBindings::SetHostPermissions(
     const GURL& extension_url,
     const std::vector<URLPattern>& permissions) {
   for (size_t i = 0; i < permissions.size(); ++i) {
-    WebSecurityPolicy::addOriginAccessWhitelistEntry(
-        extension_url,
-        WebKit::WebString::fromUTF8(permissions[i].scheme()),
-        WebKit::WebString::fromUTF8(permissions[i].host()),
-        permissions[i].match_subdomains());
+    const char* schemes[] = {
+      chrome::kHttpScheme,
+      chrome::kHttpsScheme,
+      chrome::kFileScheme,
+      chrome::kChromeUIScheme,
+    };
+    for (size_t j = 0; j < arraysize(schemes); ++j) {
+      if (permissions[i].MatchesScheme(schemes[j])) {
+        WebSecurityPolicy::addOriginAccessWhitelistEntry(
+            extension_url,
+            WebKit::WebString::fromUTF8(schemes[j]),
+            WebKit::WebString::fromUTF8(permissions[i].host()),
+            permissions[i].match_subdomains());
+      }
+    }
   }
 }
 

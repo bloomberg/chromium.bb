@@ -7,6 +7,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+static const int kSchemes = URLPattern::SCHEMES_ALL;
+
 TEST(ExtensionExtentTest, Empty) {
   ExtensionExtent extent;
   EXPECT_FALSE(extent.ContainsURL(GURL("http://www.foo.com/bar")));
@@ -16,7 +18,7 @@ TEST(ExtensionExtentTest, Empty) {
 
 TEST(ExtensionExtentTest, One) {
   ExtensionExtent extent;
-  extent.AddPattern(URLPattern("http://www.google.com/*"));
+  extent.AddPattern(URLPattern(kSchemes, "http://www.google.com/*"));
 
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/")));
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
@@ -26,8 +28,8 @@ TEST(ExtensionExtentTest, One) {
 
 TEST(ExtensionExtentTest, Two) {
   ExtensionExtent extent;
-  extent.AddPattern(URLPattern("http://www.google.com/*"));
-  extent.AddPattern(URLPattern("http://www.yahoo.com/*"));
+  extent.AddPattern(URLPattern(kSchemes, "http://www.google.com/*"));
+  extent.AddPattern(URLPattern(kSchemes, "http://www.yahoo.com/*"));
 
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.google.com/monkey")));
   EXPECT_TRUE(extent.ContainsURL(GURL("http://www.yahoo.com/monkey")));
@@ -36,16 +38,16 @@ TEST(ExtensionExtentTest, Two) {
 
 TEST(ExtensionExtentTest, OverlapsWith) {
   ExtensionExtent extent1;
-  extent1.AddPattern(URLPattern("http://www.google.com/f*"));
-  extent1.AddPattern(URLPattern("http://www.yahoo.com/b*"));
+  extent1.AddPattern(URLPattern(kSchemes, "http://www.google.com/f*"));
+  extent1.AddPattern(URLPattern(kSchemes, "http://www.yahoo.com/b*"));
 
   ExtensionExtent extent2;
-  extent2.AddPattern(URLPattern("http://www.reddit.com/f*"));
-  extent2.AddPattern(URLPattern("http://www.yahoo.com/z*"));
+  extent2.AddPattern(URLPattern(kSchemes, "http://www.reddit.com/f*"));
+  extent2.AddPattern(URLPattern(kSchemes, "http://www.yahoo.com/z*"));
 
   ExtensionExtent extent3;
-  extent3.AddPattern(URLPattern("http://www.google.com/q/*"));
-  extent3.AddPattern(URLPattern("http://www.yahoo.com/b/*"));
+  extent3.AddPattern(URLPattern(kSchemes, "http://www.google.com/q/*"));
+  extent3.AddPattern(URLPattern(kSchemes, "http://www.yahoo.com/b/*"));
 
   EXPECT_FALSE(extent1.OverlapsWith(extent2));
   EXPECT_FALSE(extent2.OverlapsWith(extent1));

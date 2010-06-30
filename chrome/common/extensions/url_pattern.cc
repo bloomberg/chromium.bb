@@ -10,6 +10,7 @@
 
 // TODO(aa): Consider adding chrome-extension? What about more obscure ones
 // like data: and javascript: ?
+// Note: keep this array in sync with kValidSchemeMasks.
 static const char* kValidSchemes[] = {
   chrome::kHttpScheme,
   chrome::kHttpsScheme,
@@ -18,34 +19,51 @@ static const char* kValidSchemes[] = {
   chrome::kChromeUIScheme,
 };
 
+static const int kValidSchemeMasks[] = {
+  URLPattern::SCHEME_HTTP,
+  URLPattern::SCHEME_HTTPS,
+  URLPattern::SCHEME_FILE,
+  URLPattern::SCHEME_FTP,
+  URLPattern::SCHEME_CHROMEUI,
+};
+
+COMPILE_ASSERT(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),
+               must_keep_these_arrays_in_sync);
+
 static const char kPathSeparator[] = "/";
 
-// static
-bool URLPattern::IsValidScheme(const std::string& scheme) {
-  for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
-    if (scheme == kValidSchemes[i])
-      return true;
-  }
-
-  return false;
-}
+static const char kAllUrlsPattern[] = "<all_urls>";
 
 URLPattern::URLPattern()
-    : match_subdomains_(false) {}
+    : valid_schemes_(0), match_all_urls_(false), match_subdomains_(false) {}
 
-URLPattern::URLPattern(const std::string& pattern)
-    : match_subdomains_(false) {
+URLPattern::URLPattern(int valid_schemes)
+    : valid_schemes_(valid_schemes), match_all_urls_(false),
+      match_subdomains_(false) {}
+
+URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
+    : valid_schemes_(valid_schemes), match_all_urls_(false),
+      match_subdomains_(false) {
   if (!Parse(pattern))
     NOTREACHED() << "URLPattern is invalid: " << pattern;
 }
 
 bool URLPattern::Parse(const std::string& pattern) {
+  // Special case pattern to match every valid URL.
+  if (pattern == kAllUrlsPattern) {
+    match_all_urls_ = true;
+    match_subdomains_ = true;
+    scheme_ = "*";
+    host_.clear();
+    path_ = "/*";
+    return true;
+  }
+
   size_t scheme_end_pos = pattern.find(chrome::kStandardSchemeSeparator);
   if (scheme_end_pos == std::string::npos)
     return false;
 
-  scheme_ = pattern.substr(0, scheme_end_pos);
-  if (!IsValidScheme(scheme_))
+  if (!SetScheme(pattern.substr(0, scheme_end_pos)))
     return false;
 
   size_t host_start_pos = scheme_end_pos +
@@ -91,8 +109,27 @@ bool URLPattern::Parse(const std::string& pattern) {
   return true;
 }
 
+bool URLPattern::SetScheme(const std::string& scheme) {
+  scheme_ = scheme;
+  if (scheme_ == "*") {
+    valid_schemes_ &= (SCHEME_HTTP | SCHEME_HTTPS);
+  } else if (!IsValidScheme(scheme_)) {
+    return false;
+  }
+  return true;
+}
+
+bool URLPattern::IsValidScheme(const std::string& scheme) const {
+  for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
+    if (scheme == kValidSchemes[i] && (valid_schemes_ & kValidSchemeMasks[i]))
+      return true;
+  }
+
+  return false;
+}
+
 bool URLPattern::MatchesUrl(const GURL &test) const {
-  if (test.scheme() != scheme_)
+  if (!MatchesScheme(test.scheme()))
     return false;
 
   if (!MatchesHost(test))
@@ -102,6 +139,13 @@ bool URLPattern::MatchesUrl(const GURL &test) const {
     return false;
 
   return true;
+}
+
+bool URLPattern::MatchesScheme(const std::string& test) const {
+  if (scheme_ == "*")
+    return IsValidScheme(test);
+
+  return test == scheme_;
 }
 
 bool URLPattern::MatchesHost(const std::string& host) const {
@@ -157,6 +201,9 @@ bool URLPattern::MatchesPath(const std::string& test) const {
 }
 
 std::string URLPattern::GetAsString() const {
+  if (match_all_urls_)
+    return kAllUrlsPattern;
+
   std::string spec = scheme_ + chrome::kStandardSchemeSeparator;
 
   if (match_subdomains_) {
@@ -175,7 +222,7 @@ std::string URLPattern::GetAsString() const {
 }
 
 bool URLPattern::OverlapsWith(const URLPattern& other) const {
-  if (scheme_ != other.scheme())
+  if (!MatchesScheme(other.scheme_) && !other.MatchesScheme(scheme_))
     return false;
 
   if (!MatchesHost(other.host()) && !other.MatchesHost(host_))

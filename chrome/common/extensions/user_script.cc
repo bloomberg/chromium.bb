@@ -31,7 +31,13 @@ static bool UrlMatchesGlobs(const std::vector<std::string>* globs,
 }
 }
 
+// static
 const char UserScript::kFileExtension[] = ".user.js";
+
+// static
+const int UserScript::kValidUserScriptSchemes =
+    URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
+    URLPattern::SCHEME_FILE | URLPattern::SCHEME_FTP;
 
 bool UserScript::HasUserScriptFileExtension(const GURL& url) {
   return EndsWith(url.ExtractFileName(), kFileExtension, false);
@@ -98,6 +104,7 @@ void UserScript::Pickle(::Pickle* pickle) const {
   pickle->WriteSize(url_patterns_.size());
   for (PatternList::const_iterator pattern = url_patterns_.begin();
        pattern != url_patterns_.end(); ++pattern) {
+    pickle->WriteInt(pattern->valid_schemes());
     pickle->WriteString(pattern->GetAsString());
   }
 
@@ -153,8 +160,10 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
 
   url_patterns_.clear();
   for (size_t i = 0; i < num_patterns; ++i) {
+    int valid_schemes;
+    CHECK(pickle.ReadInt(iter, &valid_schemes));
     std::string pattern_str;
-    URLPattern pattern;
+    URLPattern pattern(valid_schemes);
     CHECK(pickle.ReadString(iter, &pattern_str));
     CHECK(pattern.Parse(pattern_str));
     url_patterns_.push_back(pattern);
