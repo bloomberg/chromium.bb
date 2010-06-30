@@ -223,7 +223,7 @@ ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
       simulate_input::SendCharA, 'd', simulate_input::ALT),
       delay);
 
-  const unsigned int kInterval = 100;
+  const unsigned int kInterval = 500;
   int next_delay = delay + kInterval;
 
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
