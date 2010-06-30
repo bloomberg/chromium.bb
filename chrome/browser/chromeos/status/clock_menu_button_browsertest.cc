@@ -7,6 +7,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/status/browser_status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
@@ -35,9 +37,9 @@ IN_PROC_BROWSER_TEST_F(ClockMenuButtonTest, TimezoneTest) {
   ASSERT_TRUE(clock != NULL);
   // Update timezone and make sure clock text changes.
   std::wstring text_before = clock->text();
-  StringPrefMember timezone;
-  timezone.Init(prefs::kTimeZone, browser()->profile()->GetPrefs(), NULL);
-  timezone.SetValue("Asia/Hong_Kong");
+  scoped_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone(
+      icu::UnicodeString::fromUTF8("Asia/Hong_Kong")));
+  CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone.get());
   std::wstring text_after = clock->text();
   EXPECT_NE(text_before, text_after);
 }

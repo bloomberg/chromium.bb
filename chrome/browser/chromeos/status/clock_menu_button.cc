@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -26,6 +27,9 @@ const int kTimerSlopSeconds = 1;
 ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
     : MenuButton(NULL, std::wstring(), this, false),
       host_(host) {
+  // Add as SystemLibrary observer. We update the clock if timezone changes.
+  CrosLibrary::Get()->GetSystemLibrary()->AddObserver(this);
+
   set_border(NULL);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
@@ -33,10 +37,10 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
   SetShowHighlighted(false);
   set_alignment(TextButton::ALIGN_RIGHT);
   UpdateTextAndSetNextTimer();
-  // Init member prefs so we can update the clock if prefs change.
-  // This only works if we are within a browser and have a profile.
-  if (host->GetProfile())
-    timezone_.Init(prefs::kTimeZone, host->GetProfile()->GetPrefs(), this);
+}
+
+ClockMenuButton::~ClockMenuButton() {
+  CrosLibrary::Get()->GetSystemLibrary()->RemoveObserver(this);
 }
 
 void ClockMenuButton::UpdateTextAndSetNextTimer() {
@@ -111,19 +115,11 @@ void ClockMenuButton::ActivatedAt(int index) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ClockMenuButton, NotificationObserver implementation:
+// ClockMenuButton, SystemLibrary::Observer implementation:
 
-void ClockMenuButton::Observe(NotificationType type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
-    const std::wstring* pref_name = Details<std::wstring>(details).ptr();
-    if (!pref_name || *pref_name == prefs::kTimeZone) {
-      UpdateText();
-    }
-  }
+void ClockMenuButton::TimezoneChanged(const icu::TimeZone& timezone) {
+  UpdateText();
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClockMenuButton, views::ViewMenuDelegate implementation:

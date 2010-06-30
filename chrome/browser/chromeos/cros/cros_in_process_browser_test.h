@@ -21,6 +21,7 @@ class MockPowerLibrary;
 class MockScreenLockLibrary;
 class MockScreenLockLibrary;
 class MockSynapticsLibrary;
+class MockSystemLibrary;
 
 // Base class for Chromium OS tests wanting to bring up a browser in the
 // unit test process and mock some parts of CrosLibrary. Once you mock part of
@@ -54,6 +55,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   void InitMockPowerLibrary();
   void InitMockScreenLockLibrary();
   void InitMockSynapticsLibrary();
+  void InitMockSystemLibrary();
 
   // This method setups corresponding expectations for basic mocks that
   // are used by status area items.
@@ -69,6 +71,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   void SetNetworkLibraryStatusAreaExpectations();
   void SetPowerLibraryStatusAreaExpectations();
   void SetSynapticsLibraryExpectations();
+  void SetSystemLibraryExpectations();
 
   // Overriden for things you would normally override TearDown for.
   virtual void TearDownInProcessBrowserTestFixture();
@@ -85,6 +88,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   MockPowerLibrary* mock_power_library_;
   MockScreenLockLibrary* mock_screen_lock_library_;
   MockSynapticsLibrary* mock_synaptics_library_;
+  MockSystemLibrary* mock_system_library_;
 
   ImePropertyList ime_properties_;
 

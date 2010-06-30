@@ -18,7 +18,7 @@ namespace chromeos {
 
 // The Preferences class handles Chrome OS preferences. When the class
 // is first initialized, it will initialize the OS settings to what's stored in
-// the preferences. These include timezones, touchpad settings, etc.
+// the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
 class Preferences : public NotificationObserver {
  public:
@@ -43,8 +43,6 @@ class Preferences : public NotificationObserver {
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
  private:
-  void SetTimeZone(const std::string& id);
-
   // Writes boolean |value| to the input method (IBus) configuration daemon.
   // |section| (e.g. "general") and |name| (e.g. "use_global_engine") should
   // not be NULL.
@@ -76,7 +74,6 @@ class Preferences : public NotificationObserver {
                                         const char* name,
                                         const std::string& value);
 
-  StringPrefMember timezone_;
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;

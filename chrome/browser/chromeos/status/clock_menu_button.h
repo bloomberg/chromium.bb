@@ -7,7 +7,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/pref_member.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_service.h"
 #include "unicode/calendar.h"
@@ -24,10 +24,10 @@ class StatusAreaHost;
 class ClockMenuButton : public views::MenuButton,
                         public views::ViewMenuDelegate,
                         public menus::MenuModel,
-                        public NotificationObserver {
+                        public SystemLibrary::Observer {
  public:
   explicit ClockMenuButton(StatusAreaHost* host);
-  virtual ~ClockMenuButton() {}
+  virtual ~ClockMenuButton();
 
   // menus::MenuModel implementation.
   virtual bool HasIcons() const  { return false; }
@@ -50,10 +50,8 @@ class ClockMenuButton : public views::MenuButton,
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
 
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // Overridden from SystemLibrary::Observer:
+  virtual void TimezoneChanged(const icu::TimeZone& timezone);
 
   // Updates the time on the menu button. Can be called by host if timezone
   // changes.
@@ -74,9 +72,6 @@ class ClockMenuButton : public views::MenuButton,
   scoped_ptr<views::Menu2> clock_menu_;
 
   StatusAreaHost* host_;
-
-  // Preferences for this section:
-  StringPrefMember timezone_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
 };

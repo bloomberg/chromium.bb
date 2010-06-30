@@ -19,7 +19,6 @@ namespace chromeos {
 
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kTimeZone, "US/Pacific");
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
   prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
@@ -79,7 +78,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 }
 
 void Preferences::Init(PrefService* prefs) {
-  timezone_.Init(prefs::kTimeZone, prefs, this);
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   accessibility_enabled_.Init(prefs::kAccessibilityEnabled, prefs, this);
   vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled, prefs, this);
@@ -140,8 +138,6 @@ void Preferences::Observe(NotificationType type,
 }
 
 void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
-  if (!pref_name || *pref_name == prefs::kTimeZone)
-    SetTimeZone(timezone_.GetValue());
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
     CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
         PARAM_BOOL_TAP_TO_CLICK,
@@ -257,12 +253,6 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
                                language_mozc_integer_prefs_[i].GetValue());
     }
   }
-}
-
-void Preferences::SetTimeZone(const std::string& id) {
-  icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-      icu::UnicodeString::fromUTF8(id));
-  icu::TimeZone::adoptDefault(timezone);
 }
 
 void Preferences::SetLanguageConfigBoolean(const char* section,

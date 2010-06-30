@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/mock_synaptics_library.h"
+#include "chrome/browser/chromeos/cros/mock_system_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -39,7 +40,8 @@ CrosInProcessBrowserTest::CrosInProcessBrowserTest()
       mock_network_library_(NULL),
       mock_power_library_(NULL),
       mock_screen_lock_library_(NULL),
-      mock_synaptics_library_(NULL) {}
+      mock_synaptics_library_(NULL),
+      mock_system_library_(NULL) {}
 
 CrosInProcessBrowserTest::~CrosInProcessBrowserTest() {
 }
@@ -54,6 +56,7 @@ void CrosInProcessBrowserTest::InitStatusAreaMocks() {
   InitMockNetworkLibrary();
   InitMockPowerLibrary();
   InitMockSynapticsLibrary();
+  InitMockSystemLibrary();
 }
 
 void CrosInProcessBrowserTest::InitMockLibraryLoader() {
@@ -120,6 +123,14 @@ void CrosInProcessBrowserTest::InitMockSynapticsLibrary() {
     return;
   mock_synaptics_library_ = new MockSynapticsLibrary();
   test_api()->SetSynapticsLibrary(mock_synaptics_library_, true);
+}
+
+void CrosInProcessBrowserTest::InitMockSystemLibrary() {
+  InitMockLibraryLoader();
+  if (mock_system_library_)
+    return;
+  mock_system_library_ = new MockSystemLibrary();
+  test_api()->SetSystemLibrary(mock_system_library_, true);
 }
 
 void CrosInProcessBrowserTest::SetStatusAreaMocksExpectations() {
@@ -243,6 +254,13 @@ void CrosInProcessBrowserTest::SetSynapticsLibraryExpectations() {
       .Times(AnyNumber());
 }
 
+void CrosInProcessBrowserTest::SetSystemLibraryExpectations() {
+  EXPECT_CALL(*mock_system_library_, GetTimezone())
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_system_library_, SetTimezone(_))
+      .Times(AnyNumber());
+}
+
 void CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture() {
   // Prevent bogus gMock leak check from firing.
   if (loader_)
@@ -261,6 +279,8 @@ void CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture() {
     test_api()->SetScreenLockLibrary(NULL, false);
   if (mock_synaptics_library_)
     test_api()->SetSynapticsLibrary(NULL, false);
+  if (mock_system_library_)
+    test_api()->SetSystemLibrary(NULL, false);
 }
 
 }  // namespace chromeos

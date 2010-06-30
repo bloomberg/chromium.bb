@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/accelerator.h"
 #include "views/painter.h"
@@ -618,11 +618,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       if (!timezone_name.empty()) {
         icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
             icu::UnicodeString::fromUTF8(timezone_name));
-        icu::TimeZone::adoptDefault(timezone);
-        // Save timezone to default profile preferences.
-        PrefService* prefs = ProfileManager::GetDefaultProfile()->GetPrefs();
-        prefs->SetString(prefs::kTimeZone, timezone_name);
-        prefs->SavePersistentPrefs();
+        chromeos::CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone);
       }
     }
   }

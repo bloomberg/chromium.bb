@@ -10,6 +10,8 @@
 #include "app/combobox_model.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/pref_member.h"
@@ -30,20 +32,23 @@ namespace chromeos {
 
 // Date/Time section for datetime settings
 class DateTimeSection : public SettingsPageSection,
-                        public views::Combobox::Listener {
+                        public views::Combobox::Listener,
+                        public SystemLibrary::Observer {
  public:
   explicit DateTimeSection(Profile* profile);
-  virtual ~DateTimeSection() {}
+  virtual ~DateTimeSection();
 
   // Overridden from views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* sender,
                            int prev_index,
                            int new_index);
 
+  // Overridden from SystemLibrary::Observer:
+  virtual void TimezoneChanged(const icu::TimeZone& timezone);
+
  protected:
   // SettingsPageSection overrides:
   virtual void InitContents(GridLayout* layout);
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
  private:
   // The combobox model for the list of timezones.
@@ -126,12 +131,8 @@ class DateTimeSection : public SettingsPageSection,
           L"(GMT+%d) " : L"(GMT%d) "), hour_offset) + output;
     }
 
-    virtual std::string GetTimeZoneIDAt(int index) {
-      icu::UnicodeString id;
-      timezones_[index]->getID(id);
-      std::string output;
-      UTF16ToUTF8(id.getBuffer(), id.length(), &output);
-      return output;
+    virtual icu::TimeZone* GetTimeZoneAt(int index) {
+      return timezones_[index];
     }
 
    private:
@@ -140,17 +141,11 @@ class DateTimeSection : public SettingsPageSection,
     DISALLOW_COPY_AND_ASSIGN(TimezoneComboboxModel);
   };
 
-  // Selects the timezone.
-  void SelectTimeZone(const std::string& id);
-
   // TimeZone combobox model.
   views::Combobox* timezone_combobox_;
 
   // Controls for this section:
   TimezoneComboboxModel timezone_combobox_model_;
-
-  // Preferences for this section:
-  StringPrefMember timezone_;
 
   DISALLOW_COPY_AND_ASSIGN(DateTimeSection);
 };
@@ -158,6 +153,11 @@ class DateTimeSection : public SettingsPageSection,
 DateTimeSection::DateTimeSection(Profile* profile)
     : SettingsPageSection(profile, IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME),
       timezone_combobox_(NULL) {
+  CrosLibrary::Get()->GetSystemLibrary()->AddObserver(this);
+}
+
+DateTimeSection::~DateTimeSection() {
+  CrosLibrary::Get()->GetSystemLibrary()->RemoveObserver(this);
 }
 
 void DateTimeSection::ItemChanged(views::Combobox* sender,
@@ -165,7 +165,18 @@ void DateTimeSection::ItemChanged(views::Combobox* sender,
                                   int new_index) {
   if (new_index == prev_index)
     return;
-  timezone_.SetValue(timezone_combobox_model_.GetTimeZoneIDAt(new_index));
+
+  CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(
+      timezone_combobox_model_.GetTimeZoneAt(new_index));
+}
+
+void DateTimeSection::TimezoneChanged(const icu::TimeZone& timezone) {
+  for (int i = 0; i < timezone_combobox_model_.GetItemCount(); i++) {
+    if (*timezone_combobox_model_.GetTimeZoneAt(i) == timezone) {
+      timezone_combobox_->SetSelectedItem(i);
+      return;
+    }
+  }
 }
 
 void DateTimeSection::InitContents(GridLayout* layout) {
@@ -178,24 +189,7 @@ void DateTimeSection::InitContents(GridLayout* layout) {
   layout->AddView(timezone_combobox_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  // Init member prefs so we can update the controls if prefs change.
-  timezone_.Init(prefs::kTimeZone, profile()->GetPrefs(), this);
-}
-
-void DateTimeSection::NotifyPrefChanged(const std::wstring* pref_name) {
-  if (!pref_name || *pref_name == prefs::kTimeZone) {
-    std::string timezone = timezone_.GetValue();
-    SelectTimeZone(timezone);
-  }
-}
-
-void DateTimeSection::SelectTimeZone(const std::string& id) {
-  for (int i = 0; i < timezone_combobox_model_.GetItemCount(); i++) {
-    if (timezone_combobox_model_.GetTimeZoneIDAt(i) == id) {
-      timezone_combobox_->SetSelectedItem(i);
-      return;
-    }
-  }
+  TimezoneChanged(CrosLibrary::Get()->GetSystemLibrary()->GetTimezone());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

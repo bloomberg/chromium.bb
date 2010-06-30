@@ -178,9 +178,6 @@ const wchar_t kTLS1Enabled[] = L"ssl.tls1.enabled";
 #endif
 
 #if defined(OS_CHROMEOS)
-// A string pref set to the timezone.
-const wchar_t kTimeZone[] = L"settings.datetime.timezone";
-
 // A boolean pref set to true if TapToClick is being done in browser.
 const wchar_t kTapToClickEnabled[] = L"settings.touchpad.enable_tap_to_click";
 

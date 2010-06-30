@@ -1511,6 +1511,7 @@
             'browser/chromeos/cros/mock_power_library.h',
             'browser/chromeos/cros/mock_speech_synthesis_library.h',
             'browser/chromeos/cros/mock_synaptics_library.h',
+            'browser/chromeos/cros/mock_system_library.h',
             'browser/chromeos/login/account_screen_browsertest.cc',
             'browser/chromeos/login/login_browsertest.cc',
             'browser/chromeos/login/login_screen_browsertest.cc',

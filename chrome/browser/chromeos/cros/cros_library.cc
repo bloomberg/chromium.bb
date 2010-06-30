@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 
 namespace chromeos {
 
@@ -31,6 +32,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              speech_synthesis_lib_(NULL),
                              synaptics_lib_(NULL),
                              syslogs_lib_(NULL),
+                             system_lib_(NULL),
                              own_library_loader_(true),
                              own_cryptohome_lib_(true),
                              own_keyboard_lib_(true),
@@ -43,6 +45,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_speech_synthesis_lib_(true),
                              own_synaptics_lib_(true),
                              own_syslogs_lib_(true),
+                             own_system_lib_(true),
                              loaded_(false),
                              load_error_(false),
                              test_api_(NULL) {
@@ -74,6 +77,8 @@ CrosLibrary::~CrosLibrary() {
     delete synaptics_lib_;
   if (own_syslogs_lib_)
     delete syslogs_lib_;
+  if (own_system_lib_)
+    delete system_lib_;
   delete test_api_;
 }
 
@@ -146,6 +151,12 @@ SyslogsLibrary* CrosLibrary::GetSyslogsLibrary() {
   if (!syslogs_lib_)
     syslogs_lib_ = new SyslogsLibraryImpl();
   return syslogs_lib_;
+}
+
+SystemLibrary* CrosLibrary::GetSystemLibrary() {
+  if (!system_lib_)
+    system_lib_ = new SystemLibraryImpl();
+  return system_lib_;
 }
 
 bool CrosLibrary::EnsureLoaded() {
@@ -260,6 +271,14 @@ void CrosLibrary::TestApi::SetSyslogsLibrary(SyslogsLibrary* library,
     delete library_->syslogs_lib_;
   library_->own_syslogs_lib_ = own;
   library_->syslogs_lib_ = library;
+}
+
+void CrosLibrary::TestApi::SetSystemLibrary(SystemLibrary* library,
+                                            bool own) {
+  if (library_->system_lib_)
+    delete library_->system_lib_;
+  library_->own_system_lib_ = own;
+  library_->system_lib_ = library;
 }
 
 } // namespace chromeos

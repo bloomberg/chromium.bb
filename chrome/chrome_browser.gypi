@@ -379,6 +379,8 @@
         'browser/chromeos/cros/synaptics_library.h',
         'browser/chromeos/cros/syslogs_library.cc',
         'browser/chromeos/cros/syslogs_library.h',
+        'browser/chromeos/cros/system_library.cc',
+        'browser/chromeos/cros/system_library.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
         'browser/chromeos/dom_ui/system_options_handler.cc',
