@@ -8,7 +8,7 @@ CLASS MACHINE
     ;
     ; For example:  Software\Policies\Microsoft\Windows\Printing
 
-       KEYNAME "Software\Policies\Google\Google Chrome"
+       KEYNAME "Software\Policies\Google\Chrome"
 
     ; This is a simple policy that sets the homepage, or if the homepage should be
     ; the new tab page
@@ -20,12 +20,16 @@ CLASS MACHINE
            EXPLAIN !!HomePage_Explain
            VALUENAME "Homepage"
 
-           PART !!HomePageLocation          EDITTEXT
-              VALUENAME "HomepageLocation"
+           PART !!HomepageMode DROPDOWNLIST
+            VALUENAME "HomepageIsNewTabPage"
+            ITEMLIST
+              NAME !!HomepageIsLocationURL VALUE NUMERIC 0
+              NAME !!HomepageIsNewTabPage VALUE NUMERIC 1
+            END ITEMLIST
            END PART
 
-           PART !!HomePageIsNewTab          CHECKBOX
-              VALUENAME "HomepageIsNewTabPage"
+           PART !!HomepageLocation          EDITTEXT
+              VALUENAME "HomepageLocation"
            END PART
        END POLICY
 
@@ -125,40 +129,55 @@ CLASS MACHINE
 SUPPORTED_WINXPSP2="At least Microsoft Windows XP SP2"
 google="Google"
 googlechrome="Google Chrome"
-HomePage="Set the default home page."
-HomePage_Explain="This policy setting specifies the location of the default \
-home page for the user.\nThe homepage can either be set to a URL you specify, \
-or set to the New Tab Page.\n\n If the New Tab Page option is choosen, this \
-will override the URL location."
-HomePageLocation="The homepage URL."
-HomePageIsNewTab="Use the New Tab Page as the home page."
-Proxy="Override the proxy server settings."
-Proxy_Explain="This policy allows you to specify the proxy server used by \
-Google Chrome.\n\nIf you choose to disable the proxy server settings by \
-choosing always to use a direct connection, all other options will be \
-ignored.\n\nIf you specify a proxy server, the autodetect option will be \
-ignored.\n\nFor detailed examples, visit: http://www.chromium.org/developers\
-/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett"
-ProxyServer="The address of the proxy server.\n"
-ProxyServerMode="Choose how to specify proxy server settings"
-ProxyServerDisabled="Always use direct connections."
-ProxyServerAutoDetect="Auto detect the proxy settings."
-ProxyServerManual="Manually specify the proxy settings."
-ProxyServerUseSystem="Use the system proxy settings."
-ProxyBypassList="Comma separated list of bypass rules.\n"
-ProxyPacUrl="The url to a proxy pac file.\n"
-AlternateErrorPagesEnabled="Enable alternative error pages."
-AlternateErrorPagesEnabled_Explain="This policy disables the use of alternative error pages built \
-into Google Chrome (such as 'page not found'.)"
-SearchSuggestEnabled="Enable search suggestions."
-SearchSuggestEnabled_Explain="This policy enables search suggestions in the Omnibox."
-DnsPrefetchingEnabled="Enable search suggestions."
-DnsPrefetchingEnabled_Explain="This policy enables search suggestions in the Omnibox."
-SafeBrowsingEnabled="Enable safe browsing."
-SafeBrowsingEnabled_Explain="This policy enables Safe Browsing."
-MetricsReportingEnabled="Enable reporting of usage and crash related data."
-MetricsReportingEnabled_Explain="This policy enables the anonymous reporting of usage \
-and crash related data to Google."
-Sync="Disable syncronization of data with Google."
-Sync_Explain="This policy disables data synchronization using Google-hosted \
-sync services."
+HomePage="Configure default home page"
+HomePage_Explain="Configures the default home page and prevents users from changing homepage settings.\n\n\
+The homepage can either be set to a URL you specify or set to the New Tab Page.\n\n\
+If you specify the New Tab Page is specified as the homepage, the homepage URL location is ignored.\n\n\
+If you enable this setting, users cannot change their homepage settings in Google Chrome."
+HomepageMode="Homepage type:"
+HomepageIsLocationURL="Always use homepage URL as homepage"
+HomepageIsNewTabPage="Always use New Tab Page as homepage"
+HomepageLocation="Homepage URL:"
+Proxy="Configure proxy server"
+Proxy_Explain="Allows you to specify the proxy server used by Google Chrome and prevents users from changing proxy settings.\n\n\
+If you choose to never use a proxy server and always connect directly, \
+all other options will be ignored.\n\nIf you choose to auto detect the proxy server, all other \
+options will be ignored.\n\nFor detailed examples, visit: \
+http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett\n\n\
+If you enable this setting, Google Chrome will ignore all proxy-related options specified from the command line."
+ProxyServer="Address or URL of proxy server:"
+ProxyServerMode="Choose how to specify proxy server settings:"
+ProxyServerDisabled="Never use a proxy"
+ProxyServerAutoDetect="Auto detect proxy settings"
+ProxyServerManual="Manually specify proxy settings"
+ProxyServerUseSystem="Use system proxy settings"
+ProxyBypassList="Comma-separated list of bypass rules:"
+ProxyPacUrl="URL to a proxy .pac file:"
+AlternateErrorPagesEnabled="Enable alternate error pages"
+AlternateErrorPagesEnabled_Explain="Enables the use of alternate error pages that are built \
+into Google Chrome (such as 'page not found') and prevents users from changing this setting.\n\n\
+If you enable this setting, alternate error pages will be used.\n\n\
+If you disable this setting, alternate error pages will never be used.\n\n\
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+SearchSuggestEnabled="Enable search suggestions"
+SearchSuggestEnabled_Explain="Enables search suggestions in the Omnibox and prevents users from changing this setting.\n\n\
+If you enable this setting, search suggestions will be used.\n\n\
+If you disable this setting, search suggestions will never be used.\n\n\
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+DnsPrefetchingEnabled="Enable search suggestions"
+DnsPrefetchingEnabled_Explain="Enables DNS prefecthing and prevents users from changing this setting.\n\n\
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+SafeBrowsingEnabled="Enable Safe Browsing"
+SafeBrowsingEnabled_Explain="Enables and disables whether Google Chrome's Safe Browsing feature and prevents users from changing this setting.\n\n\
+If you enable this setting, Safe Browsing will always be active.\n\n\
+If you disable this setting, Safe Browsing will never be active.\n\n\
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+MetricsReportingEnabled="Enable reporting of usage and crash-related data"
+MetricsReportingEnabled_Explain="Enables the anonymous reporting of usage \
+and crash-related data to Google and prevents users from changing this setting.\n\n\
+If you enable this setting, anonymous reporting of usage and crash-related data will be sent to Google.\n\n\
+If you disable this setting, anonymous reporting of usage and crash-related data will never be sent to Google.\n\n\
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+Sync="Disallow synchronization of data with Google"
+Sync_Explain="Disallows data synchronization using Google-hosted sync services and prevents users from changing this setting.\n\n\
+If you enable this setting, users cannot change or override this setting in Google Chrome."

@@ -16,7 +16,7 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t ConfigurationPolicyProviderWin::kPolicyRegistrySubKey[] =
-    L"SOFTWARE\\Policies\\Google\\Google Chrome";
+    L"SOFTWARE\\Policies\\Google\\Chrome";
 #else
 const wchar_t ConfigurationPolicyProviderWin::kPolicyRegistrySubKey[] =
     L"SOFTWARE\\Policies\\Chromium";
