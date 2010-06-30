@@ -193,7 +193,13 @@ class ProcessSingletonTest : public UITest {
   base::WaitableEvent threads_waker_;
 };
 
-TEST_F(ProcessSingletonTest, StartupRaceCondition) {
+#if defined(OS_LINUX)
+// http://crbug.com/47979
+#define MAYBE_StartupRaceCondition FAILS_StartupRaceCondition
+#else
+#define MAYBE_StartupRaceCondition StartupRaceCondition
+#endif
+TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
   // We use this to stop the attempts loop on the first failure.
   bool failed = false;
   for (size_t attempt = 0; attempt < kNbAttempts && !failed; ++attempt) {
