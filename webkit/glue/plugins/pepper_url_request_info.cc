@@ -5,10 +5,15 @@
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 
 #include "base/logging.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/ppapi/c/pp_var.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_string.h"
 #include "webkit/glue/plugins/pepper_var.h"
+
+using WebKit::WebString;
 
 namespace pepper {
 
@@ -64,8 +69,19 @@ bool AppendFileToBody(PP_Resource request_id,
                       int64_t start_offset,
                       int64_t number_of_bytes,
                       PP_Time expected_last_modified_time) {
-  NOTIMPLEMENTED();  // TODO(darin): Implement me!
-  return false;
+  scoped_refptr<URLRequestInfo> request(
+      Resource::GetAs<URLRequestInfo>(request_id));
+  if (!request.get())
+    return false;
+
+  scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
+  if (!file_ref.get())
+    return false;
+
+  return request->AppendFileToBody(file_ref,
+                                   start_offset,
+                                   number_of_bytes,
+                                   expected_last_modified_time);
 }
 
 const PPB_URLRequestInfo ppb_urlrequestinfo = {
@@ -80,6 +96,7 @@ const PPB_URLRequestInfo ppb_urlrequestinfo = {
 
 URLRequestInfo::URLRequestInfo(PluginModule* module)
     : Resource(module) {
+  web_request_.initialize();
 }
 
 URLRequestInfo::~URLRequestInfo() {
@@ -98,11 +115,31 @@ bool URLRequestInfo::SetBooleanProperty(PP_URLRequestProperty property,
 
 bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty property,
                                        const std::string& value) {
-  NOTIMPLEMENTED();  // TODO(darin): Implement me!
+  // TODO(darin): Validate input.  Perhaps at a different layer?
+  switch (property) {
+    case PP_URLRequestProperty_URL:
+      web_request_.setURL(GURL(value));
+      return true;
+    case PP_URLRequestProperty_Method:
+      web_request_.setHTTPMethod(WebString::fromUTF8(value));
+      return true;
+    case PP_URLRequestProperty_Headers:
+      // TODO(darin): Support extra request headers
+      NOTIMPLEMENTED();
+      return false;
+  }
   return false;
 }
 
 bool URLRequestInfo::AppendDataToBody(const std::string& data) {
+  NOTIMPLEMENTED();  // TODO(darin): Implement me!
+  return false;
+}
+
+bool URLRequestInfo::AppendFileToBody(FileRef* file_ref,
+                                      int64_t start_offset,
+                                      int64_t number_of_bytes,
+                                      PP_Time expected_last_modified_time) {
   NOTIMPLEMENTED();  // TODO(darin): Implement me!
   return false;
 }

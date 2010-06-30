@@ -79,7 +79,7 @@ class ResourceLoaderBridge {
     // Used for plugin to browser requests.
     uint32 request_context;
 
-    // Identifies that appcache host this request is associated with.
+    // Identifies what appcache host this request is associated with.
     int appcache_host_id;
 
     // Used to associated the bridge with a frame's network context.

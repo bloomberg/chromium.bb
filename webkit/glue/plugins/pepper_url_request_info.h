@@ -8,9 +8,12 @@
 #include <string>
 
 #include "third_party/ppapi/c/ppb_url_request_info.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace pepper {
+
+class FileRef;
 
 class URLRequestInfo : public Resource {
  public:
@@ -29,6 +32,17 @@ class URLRequestInfo : public Resource {
   bool SetStringProperty(PP_URLRequestProperty property,
                          const std::string& value);
   bool AppendDataToBody(const std::string& data);
+  bool AppendFileToBody(FileRef* file_ref,
+                        int64_t start_offset,
+                        int64_t number_of_bytes,
+                        PP_Time expected_last_modified_time);
+
+  const WebKit::WebURLRequest& web_request() const {
+    return web_request_;
+  }
+
+ private:
+  WebKit::WebURLRequest web_request_;
 };
 
 }  // namespace pepper

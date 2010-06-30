@@ -5,9 +5,14 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_URL_LOADER_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_URL_LOADER_H_
 
+#include <deque>
+
+#include "base/scoped_ptr.h"
+#include "third_party/ppapi/c/pp_completion_callback.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
-typedef struct _pp_CompletionCallback PP_CompletionCallback;
 typedef struct _ppb_URLLoader PPB_URLLoader;
 
 namespace pepper {
@@ -16,7 +21,7 @@ class PluginInstance;
 class URLRequestInfo;
 class URLResponseInfo;
 
-class URLLoader : public Resource {
+class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
  public:
   explicit URLLoader(PluginInstance* instance);
   virtual ~URLLoader();
@@ -37,7 +42,7 @@ class URLLoader : public Resource {
 
   URLResponseInfo* response_info() const { return response_info_; }
 
-  // Progress counters:
+  // Progress counters.
   int64_t bytes_sent() const { return bytes_sent_; }
   int64_t total_bytes_to_be_sent() const { return total_bytes_to_be_sent_; }
   int64_t bytes_received() const { return bytes_received_; }
@@ -46,11 +51,36 @@ class URLLoader : public Resource {
   }
 
  private:
+  void RunCallback(int32_t result);
+  size_t FillUserBuffer();
+
+  // WebKit::WebURLLoaderClient implementation.
+  virtual void willSendRequest(WebKit::WebURLLoader* loader,
+                               WebKit::WebURLRequest& new_request,
+                               const WebKit::WebURLResponse& redir_response);
+  virtual void didSendData(WebKit::WebURLLoader* loader,
+                           unsigned long long bytes_sent,
+                           unsigned long long total_bytes_to_be_sent);
+  virtual void didReceiveResponse(WebKit::WebURLLoader* loader,
+                                  const WebKit::WebURLResponse& response);
+  virtual void didReceiveData(WebKit::WebURLLoader* loader,
+                              const char* data,
+                              int data_length);
+  virtual void didFinishLoading(WebKit::WebURLLoader* loader);
+  virtual void didFail(WebKit::WebURLLoader* loader,
+                       const WebKit::WebURLError& error);
+
+  scoped_refptr<PluginInstance> instance_;
+  scoped_ptr<WebKit::WebURLLoader> loader_;
   scoped_refptr<URLResponseInfo> response_info_;
+  PP_CompletionCallback pending_callback_;
+  std::deque<char> buffer_;
   int64_t bytes_sent_;
   int64_t total_bytes_to_be_sent_;
   int64_t bytes_received_;
   int64_t total_bytes_to_be_received_;
+  char* user_buffer_;
+  size_t user_buffer_size_;
 };
 
 }  // namespace pepper

@@ -50,6 +50,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
 
+  WebKit::WebPluginContainer* container() const { return container_; }
+
   const gfx::Rect& position() const { return position_; }
   const gfx::Rect& clip() const { return clip_; }
 
