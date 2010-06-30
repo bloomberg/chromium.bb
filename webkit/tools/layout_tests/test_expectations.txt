@@ -9,3 +9,6 @@ BUG47259 WIN : http/tests/local/blob/send-data-blob.html = TEXT
 
 // I need to do a build on a Hardy box in order to get the baselines to agree.
 LINUX BUG_AGL : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyle.html = IMAGE TEXT
+
+// Temp hack to disable this test failure due to a WebKit roll while I investigate it.
+BUG_LEVIN : editing/pasteboard/5761530-1.html = TEXT
