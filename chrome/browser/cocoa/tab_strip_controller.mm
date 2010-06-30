@@ -65,7 +65,7 @@ const CGFloat kNewTabButtonOffset = 8.0;
 const CGFloat kIncognitoBadgeTabStripShrink = 18;
 
 // Time (in seconds) in which tabs animate to their final position.
-const NSTimeInterval kAnimationDuration = 0.2;
+const NSTimeInterval kAnimationDuration = 0.125;
 
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
 // all the work.  Useful for code that wants to conditionally animate.
