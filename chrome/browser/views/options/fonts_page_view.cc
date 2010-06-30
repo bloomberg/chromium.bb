@@ -96,12 +96,12 @@ void FontDisplayView::SetFontType(const std::wstring& font_name,
 }
 
 void FontDisplayView::Paint(gfx::Canvas* canvas) {
-  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC dc = canvas->BeginPlatformPaint();
   RECT rect = { 0, 0, width(), height() };
   gfx::NativeTheme::instance()->PaintTextField(
       dc, EP_BACKGROUND, EBS_NORMAL, 0, &rect, ::GetSysColor(COLOR_3DFACE),
       true, true);
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->EndPlatformPaint();
 }
 
 void FontDisplayView::Layout() {

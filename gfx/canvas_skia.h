@@ -122,6 +122,8 @@ class CanvasSkia : public skia::PlatformCanvas,
   virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h);
   virtual void TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h);
+  virtual gfx::NativeDrawingContext BeginPlatformPaint();
+  virtual void EndPlatformPaint();
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
 

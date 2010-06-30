@@ -22,10 +22,10 @@ class ListBackground : public views::Background {
   virtual ~ListBackground() {}
 
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
-    HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+    HDC dc = canvas->BeginPlatformPaint();
     RECT native_lb = view->GetLocalBounds(true).ToRECT();
     gfx::NativeTheme::instance()->PaintListBackground(dc, true, &native_lb);
-    canvas->AsCanvasSkia()->endPlatformPaint();
+    canvas->EndPlatformPaint();
   }
 
  private:

@@ -20,7 +20,7 @@ void MenuSeparator::Paint(gfx::Canvas* canvas) {
   // The gutter is rendered before the background.
   int start_x = 0;
   int start_y = height() / 3;
-  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC dc = canvas->BeginPlatformPaint();
   if (config.render_gutter) {
     // If render_gutter is true, we're on Vista and need to render the
     // gutter, then indent the separator from the gutter.
@@ -36,7 +36,7 @@ void MenuSeparator::Paint(gfx::Canvas* canvas) {
   RECT separator_bounds = { start_x, start_y, width(), height() };
   gfx::NativeTheme::instance()->PaintMenuSeparator(
       dc, MENU_POPUPSEPARATOR, MPI_NORMAL, &separator_bounds);
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->EndPlatformPaint();
 }
 
 gfx::Size MenuSeparator::GetPreferredSize() {

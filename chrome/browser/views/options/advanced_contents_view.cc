@@ -135,12 +135,12 @@ void FileDisplayArea::SetFile(const FilePath& file_path) {
 }
 
 void FileDisplayArea::Paint(gfx::Canvas* canvas) {
-  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC dc = canvas->BeginPlatformPaint();
   RECT rect = { 0, 0, width(), height() };
   gfx::NativeTheme::instance()->PaintTextField(
       dc, EP_EDITTEXT, ETS_READONLY, 0, &rect,
       skia::SkColorToCOLORREF(text_field_background_color_), true, true);
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->EndPlatformPaint();
   // Mirror left point for icon_bounds_ to draw icon in RTL locales correctly.
   canvas->DrawBitmapInt(default_folder_icon_,
                         MirroredLeftPointForRect(icon_bounds_),

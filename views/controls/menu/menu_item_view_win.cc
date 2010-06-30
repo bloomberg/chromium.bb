@@ -34,7 +34,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
        GetChildViewCount() == 0);
   int state = render_selection ? MPI_HOT :
                                  (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
-  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC dc = canvas->BeginPlatformPaint();
 
   // The gutter is rendered before the background.
   if (config.render_gutter && !for_drag) {
@@ -131,7 +131,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
         NativeTheme::MENU, dc, MENU_POPUPSUBMENU, state_id, &arrow_rect,
         arrow_direction, render_selection);
   }
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->EndPlatformPaint();
 }
 void MenuItemView::PaintCheck(HDC dc,
                               int state_id,

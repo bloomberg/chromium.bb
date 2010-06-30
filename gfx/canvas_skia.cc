@@ -298,6 +298,14 @@ void CanvasSkia::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
   restore();
 }
 
+gfx::NativeDrawingContext CanvasSkia::BeginPlatformPaint() {
+  return beginPlatformPaint();
+}
+
+void CanvasSkia::EndPlatformPaint() {
+  endPlatformPaint();
+}
+
 CanvasSkia* CanvasSkia::AsCanvasSkia() {
   return this;
 }

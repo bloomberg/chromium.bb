@@ -418,7 +418,7 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
   if (window()->GetDelegate()->CanResize() ||
       window()->GetDelegate()->CanMaximize()) {
 #if defined(OS_WIN)
-    HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+    HDC dc = canvas->BeginPlatformPaint();
     SIZE gripper_size = { 0, 0 };
     gfx::NativeTheme::instance()->GetThemePartSize(
         gfx::NativeTheme::STATUS, dc, SP_GRIPPER, 1, NULL, TS_TRUE,
@@ -434,7 +434,7 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
     RECT native_bounds = size_box_bounds_.ToRECT();
     gfx::NativeTheme::instance()->PaintStatusGripper(
         dc, SP_PANE, 1, 0, &native_bounds);
-    canvas->AsCanvasSkia()->endPlatformPaint();
+    canvas->EndPlatformPaint();
 #else
     NOTIMPLEMENTED();
     // TODO(port): paint size box

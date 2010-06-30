@@ -100,7 +100,7 @@ void NativeViewPhotoboothWin::PaintScreenshotIntoCanvas(
 
   // Transfer the contents of the layered capture window to the screen-shot
   // canvas' DIB.
-  HDC target_dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC target_dc = canvas->BeginPlatformPaint();
   HDC source_dc = GetDC(current_hwnd_);
   RECT window_rect = {0};
   GetWindowRect(current_hwnd_, &window_rect);
@@ -113,7 +113,7 @@ void NativeViewPhotoboothWin::PaintScreenshotIntoCanvas(
       target_bounds.x(), target_bounds.y(), target_bounds.width(),
       target_bounds.height());
   ReleaseDC(current_hwnd_, source_dc);
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->EndPlatformPaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

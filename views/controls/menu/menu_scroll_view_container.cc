@@ -83,14 +83,14 @@ class MenuScrollButton : public View {
     const MenuConfig& config = MenuConfig::instance();
 
 #if defined(OS_WIN)
-    HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+    HDC dc = canvas->BeginPlatformPaint();
 
     // The background.
     RECT item_bounds = { 0, 0, width(), height() };
     NativeTheme::instance()->PaintMenuItemBackground(
         NativeTheme::MENU, dc, MENU_POPUPITEM, MPI_NORMAL, false,
         &item_bounds);
-    canvas->AsCanvasSkia()->endPlatformPaint();
+    canvas->EndPlatformPaint();
 
     SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 #else
@@ -185,11 +185,11 @@ void MenuScrollViewContainer::PaintBackground(gfx::Canvas* canvas) {
   }
 
 #if defined(OS_WIN)
-  HDC dc = canvas->AsCanvasSkia()->beginPlatformPaint();
+  HDC dc = canvas->BeginPlatformPaint();
   RECT bounds = {0, 0, width(), height()};
   NativeTheme::instance()->PaintMenuBackground(
       NativeTheme::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
-  canvas->AsCanvasSkia()->endPlatformPaint();
+  canvas->EndPlatformPaint();
 #elif defined(OS_CHROMEOS)
   static const SkColor kGradientColors[2] = {
       SK_ColorWHITE,

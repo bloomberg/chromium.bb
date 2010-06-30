@@ -184,6 +184,14 @@ class Canvas {
   virtual void TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h) = 0;
 
+  // Returns a native drawing context for platform specific drawing routines to
+  // use. Must be balanced by a call to EndPlatformPaint().
+  virtual gfx::NativeDrawingContext BeginPlatformPaint() = 0;
+
+  // Signifies the end of platform drawing using the native drawing context
+  // returned by BeginPlatformPaint().
+  virtual void EndPlatformPaint() = 0;
+
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.
   // A quick and dirty way to obtain the underlying SkCanvas.
