@@ -87,6 +87,42 @@
 extern "C" {
 #endif
 
+/* ------------------------------- Core WGL -------------------------------- */
+
+/* This section supports dynamic lookup of the core WGL entry points
+   under different names. It is not supported for GLEW_MX. */
+
+#ifndef GLEW_MX
+
+#ifndef WGL_core_wgl
+#define WGL_core_wgl 1
+
+typedef BOOL (WINAPI * PFNWGLCOPYCONTEXTPROC)(HGLRC, HGLRC, UINT);
+typedef HGLRC (WINAPI * PFNWGLCREATECONTEXTPROC)(HDC);
+typedef HGLRC (WINAPI * PFNWGLCREATELAYERCONTEXTPROC)(HDC, int);
+typedef BOOL (WINAPI * PFNWGLDELETECONTEXTPROC)(HGLRC);
+typedef HGLRC (WINAPI * PFNWGLGETCURRENTCONTEXTPROC)(VOID);
+typedef HDC (WINAPI * PFNWGLGETCURRENTDCPROC)(VOID);
+typedef PROC (WINAPI * PFNWGLGETPROCADDRESSPROC)(LPCSTR);
+typedef BOOL (WINAPI * PFNWGLMAKECURRENTPROC)(HDC, HGLRC);
+typedef BOOL (WINAPI * PFNWGLSHARELISTSPROC)(HGLRC, HGLRC);
+typedef BOOL (WINAPI * PFNSWAPBUFFERSPROC)(HDC);
+
+#define wglewCopyContext WGLEW_GET_FUN(__wglewCopyContext)
+#define wglewCreateContext WGLEW_GET_FUN(__wglewCreateContext)
+#define wglewCreateLayerContext WGLEW_GET_FUN(__wglewCreateLayerContext)
+#define wglewDeleteContext WGLEW_GET_FUN(__wglewDeleteContext)
+#define wglewGetCurrentContext WGLEW_GET_FUN(__wglewGetCurrentContext)
+#define wglewGetCurrentDC WGLEW_GET_FUN(__wglewGetCurrentDC)
+#define wglewGetProcAddress WGLEW_GET_FUN(__wglewGetProcAddress)
+#define wglewMakeCurrent WGLEW_GET_FUN(__wglewMakeCurrent)
+#define wglewShareLists WGLEW_GET_FUN(__wglewShareLists)
+#define wglewSwapBuffers WGLEW_GET_FUN(__wglewSwapBuffers)
+
+#endif /* WGL_core_wgl */
+
+#endif /* !GLEW_MX */
+
 /* -------------------------- WGL_3DFX_multisample ------------------------- */
 
 #ifndef WGL_3DFX_multisample
@@ -967,6 +1003,17 @@ struct WGLEWContextStruct
 {
 #endif /* GLEW_MX */
 
+WGLEW_EXPORT PFNWGLCOPYCONTEXTPROC __wglewCopyContext;
+WGLEW_EXPORT PFNWGLCREATECONTEXTPROC __wglewCreateContext;
+WGLEW_EXPORT PFNWGLCREATELAYERCONTEXTPROC __wglewCreateLayerContext;
+WGLEW_EXPORT PFNWGLDELETECONTEXTPROC __wglewDeleteContext;
+WGLEW_EXPORT PFNWGLGETCURRENTCONTEXTPROC __wglewGetCurrentContext;
+WGLEW_EXPORT PFNWGLGETCURRENTDCPROC __wglewGetCurrentDC;
+WGLEW_EXPORT PFNWGLGETPROCADDRESSPROC __wglewGetProcAddress;
+WGLEW_EXPORT PFNWGLMAKECURRENTPROC __wglewMakeCurrent;
+WGLEW_EXPORT PFNWGLSHARELISTSPROC __wglewShareLists;
+WGLEW_EXPORT PFNSWAPBUFFERSPROC __wglewSwapBuffers;
+
 WGLEW_EXPORT PFNWGLSETSTEREOEMITTERSTATE3DLPROC __wglewSetStereoEmitterState3DL;
 
 WGLEW_EXPORT PFNWGLCREATEBUFFERREGIONARBPROC __wglewCreateBufferRegionARB;
@@ -1150,6 +1197,7 @@ GLEWAPI GLboolean wglewContextIsSupported (WGLEWContext* ctx, const char* name);
 #define WGLEW_GET_VAR(x) (*(const GLboolean*)&x)
 #define WGLEW_GET_FUN(x) x
 
+GLEWAPI GLboolean wglewInit();
 GLEWAPI GLboolean wglewIsSupported (const char* name);
 
 #endif /* GLEW_MX */

@@ -26,5 +26,8 @@ Compared to the original distribution:
   - Fixed the order of #include guards around
     _glewInit_GLX_VERSION_1_1 in glew.c when GLEW_MX is defined.
 
+  - For the case where GLEW_MX is not defined, added a wglewInit() and
+    support for dynamically looking up even the core WGL entry points.
+
 Originally obtained from http://glew.sourceforge.net/ . The
 LICENSE.txt from that distribution has been preserved here.

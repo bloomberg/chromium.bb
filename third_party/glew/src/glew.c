@@ -72,11 +72,35 @@
 #endif /* GLEW_MX */
 
 #ifdef _WIN32
+
+#ifndef GLEW_MX
+void* WinGetProcAddress(const GLubyte* name);
+
+GLboolean wglewInit()
+{
+  GLboolean r = GL_FALSE;
+
+  r = ((wglewCopyContext = (PFNWGLCOPYCONTEXTPROC)WinGetProcAddress((const GLubyte*)"wglCopyContext")) == NULL) || r;
+  r = ((wglewCreateContext = (PFNWGLCREATECONTEXTPROC)WinGetProcAddress((const GLubyte*)"wglCreateContext")) == NULL) || r;
+  r = ((wglewCreateLayerContext = (PFNWGLCREATELAYERCONTEXTPROC)WinGetProcAddress((const GLubyte*)"wglCreateLayerContext")) == NULL) || r;
+  r = ((wglewDeleteContext = (PFNWGLDELETECONTEXTPROC)WinGetProcAddress((const GLubyte*)"wglDeleteContext")) == NULL) || r;
+  r = ((wglewGetCurrentContext = (PFNWGLGETCURRENTCONTEXTPROC)WinGetProcAddress((const GLubyte*)"wglGetCurrentContext")) == NULL) || r;
+  r = ((wglewGetCurrentDC = (PFNWGLGETCURRENTDCPROC)WinGetProcAddress((const GLubyte*)"wglGetCurrentDC")) == NULL) || r;
+  r = ((wglewGetProcAddress = (PFNWGLGETPROCADDRESSPROC)WinGetProcAddress((const GLubyte*)"wglGetProcAddress")) == NULL) || r;
+  r = ((wglewMakeCurrent = (PFNWGLMAKECURRENTPROC)WinGetProcAddress((const GLubyte*)"wglMakeCurrent")) == NULL) || r;
+  r = ((wglewShareLists = (PFNWGLSHARELISTSPROC)WinGetProcAddress((const GLubyte*)"wglShareLists")) == NULL) || r;
+  r = ((wglewSwapBuffers = (PFNSWAPBUFFERSPROC)WinGetProcAddress((const GLubyte*)"SwapBuffers")) == NULL) || r;
+
+  return !r;
+}
+#endif /* !GLEW_MX */
+
 void* WinGetProcAddress(const GLubyte* name)
 {
   /* Need to use GetProcAddress to bootstrap things now that we are
      dynamically looking up OpenGL 1.1 entry points as well. */
   static HMODULE oglImage = NULL;
+  static HMODULE gdi32Image = NULL; // For SwapBuffers.
   static PFNOSMESAGETPROCADDRESSPROC osmesaGetProcAddress = NULL;
   void* proc = NULL;
 
@@ -84,6 +108,12 @@ void* WinGetProcAddress(const GLubyte* name)
     oglImage = LoadLibraryA("osmesa.dll");
     if (NULL == oglImage) {
       oglImage = LoadLibraryA("opengl32.dll");
+#ifndef GLEW_MX
+      if (NULL != oglImage) {
+          gdi32Image = LoadLibraryA("gdi32.dll");
+          wglewInit();
+      }
+#endif /* !GLEW_MX */
     }
     else {
       osmesaGetProcAddress = (PFNOSMESAGETPROCADDRESSPROC) GetProcAddress(oglImage, "OSMesaGetProcAddress");
@@ -91,14 +121,25 @@ void* WinGetProcAddress(const GLubyte* name)
   }
   if (NULL != oglImage) {
     proc = (void*) GetProcAddress(oglImage, (LPCSTR) name);
+#ifndef GLEW_MX
+    if (NULL == proc) {
+        proc = (void*) GetProcAddress(gdi32Image, (LPCSTR) name);
+    }
+#endif
   }
   if (NULL == proc) {
     if (osmesaGetProcAddress) {
       proc = osmesaGetProcAddress(name);
     }
+#ifdef GLEW_MX
     else {
       proc = wglGetProcAddress((LPCSTR) name);
     }
+#else
+    else if (wglewGetProcAddress) {
+      proc = wglewGetProcAddress((LPCSTR) name);
+    }
+#endif
   }
   return proc;
 }
@@ -8077,6 +8118,17 @@ GLenum glewContextInit (GLEW_CONTEXT_ARG_DEF_LIST)
 
 #if !defined(GLEW_MX)
 
+PFNWGLCOPYCONTEXTPROC __wglewCopyContext = NULL;
+PFNWGLCREATECONTEXTPROC __wglewCreateContext = NULL;
+PFNWGLCREATELAYERCONTEXTPROC __wglewCreateLayerContext = NULL;
+PFNWGLDELETECONTEXTPROC __wglewDeleteContext = NULL;
+PFNWGLGETCURRENTCONTEXTPROC __wglewGetCurrentContext = NULL;
+PFNWGLGETCURRENTDCPROC __wglewGetCurrentDC = NULL;
+PFNWGLGETPROCADDRESSPROC __wglewGetProcAddress = NULL;
+PFNWGLMAKECURRENTPROC __wglewMakeCurrent = NULL;
+PFNWGLSHARELISTSPROC __wglewShareLists = NULL;
+PFNSWAPBUFFERSPROC __wglewSwapBuffers = NULL;
+
 PFNWGLSETSTEREOEMITTERSTATE3DLPROC __wglewSetStereoEmitterState3DL = NULL;
 
 PFNWGLCREATEBUFFERREGIONARBPROC __wglewCreateBufferRegionARB = NULL;
@@ -8714,7 +8766,7 @@ GLboolean wglewGetExtension (const char* name)
     else
       p = (GLubyte*)_wglewGetExtensionsStringEXT();
   else
-    p = (GLubyte*)_wglewGetExtensionsStringARB(wglGetCurrentDC());
+    p = (GLubyte*)_wglewGetExtensionsStringARB(wglewGetCurrentDC());
   if (0 == p) return GL_FALSE;
   end = p + _glewStrLen(p);
   while (p < end)
