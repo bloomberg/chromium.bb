@@ -35,11 +35,11 @@ typedef void (*NPShutdownType)();
 
 class Callback;
 
-char* nexe_file;
 NPPluginFuncs plugin_funcs;
 std::map<std::string, char*> interned_strings;
 std::queue<Callback> callback_queue;
 std::vector<NPObject*> all_objects;
+std::map<std::string, std::string> url_to_filename;
 
 void fb_NPN_ReleaseObject(NPObject* npobj);
 NPObject* MakeWindowObject();
@@ -47,6 +47,7 @@ NPObject* MakeWindowObject();
 
 class Callback {
 public:
+  std::string filename;
   void* notify_data;
   void run(NPP instance) {
     NPStream stream;
@@ -60,9 +61,8 @@ public:
     CheckRetval(plugin_funcs.newstream(instance, mime_type, &stream,
                                        is_seekable, &requested_type));
     ASSERT_EQ(requested_type, NP_ASFILEONLY);
-    const char* filename = nexe_file;
     // NPP_StreamAsFile
-    plugin_funcs.asfile(instance, &stream, filename);
+    plugin_funcs.asfile(instance, &stream, filename.c_str());
   };
 };
 
@@ -113,10 +113,11 @@ NPError fb_NPN_GetURLNotify(NPP instance, const char* url,
                             const char* target, void* notify_data) {
   UNREFERENCED_PARAMETER(instance);
   CHECK(url != NULL);
-  CHECK(strcmp(url, "http://localhost/foo.nexe") == 0);
   CHECK(target == NULL);
   Callback callback;
   callback.notify_data = notify_data;
+  CHECK(url_to_filename.find(url) != url_to_filename.end());
+  callback.filename = url_to_filename[url];
   callback_queue.push(callback);
   return NPERR_NO_ERROR;
 }
@@ -356,9 +357,7 @@ void TestNewAndDestroy() {
   CheckRetval(plugin_funcs.destroy(plugin_instance, NULL));
 }
 
-void TestSrpcHelloWorld() {
-  printf("Test running srpc_hw...\n");
-
+void TestHelloWorldMethod(const char* nexe_url) {
   NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
   NPP plugin_instance = new NPP_t;
   int argc = 0;
@@ -374,7 +373,7 @@ void TestSrpcHelloWorld() {
   CheckRetval(plugin_funcs.getvalue(plugin_instance,
                                     NPPVpluginScriptableNPObject, &plugin_obj));
   NPVariant url;
-  STRINGZ_TO_NPVARIANT("http://localhost/foo.nexe", url);
+  STRINGZ_TO_NPVARIANT(nexe_url, url);
   bool is_ok = fb_NPN_SetProperty(plugin_instance, plugin_obj,
                                   fb_NPN_GetStringIdentifier("src"), &url);
   CHECK(is_ok);
@@ -395,8 +394,14 @@ void TestSrpcHelloWorld() {
                         &result);
   CHECK(is_ok);
   CHECK(NPVARIANT_IS_STRING(result));
-  ASSERT_EQ(strcmp(result.value.stringValue.UTF8Characters,
-                   "hello, world."), 0);
+  std::string actual(result.value.stringValue.UTF8Characters,
+                     result.value.stringValue.UTF8Length);
+  std::string expected = "hello, world.";
+  if (actual != expected) {
+    fprintf(stderr, "Expected '%s' but got '%s'",
+            expected.c_str(), actual.c_str());
+    abort();
+  }
   fb_NPN_ReleaseVariantValue(&result);
 
   printf("object count = %"NACL_PRIuS"\n", all_objects.size());
@@ -428,9 +433,19 @@ void TestSrpcHelloWorld() {
 }
 
 int main(int argc, char** argv) {
-  CHECK(argc == 3);
+  NaClLogModuleInit();
+
+  // Usage: fake_browser_test plugin_path [leafname filename]*
+  CHECK(argc >= 2);
   char* plugin_file = argv[1];
-  nexe_file = argv[2];
+  int arg;
+  // Read URL->filename mapping.
+  for(arg = 2; arg + 1 < argc; arg += 2) {
+    std::string url = std::string("http://localhost/") + argv[arg];
+    std::string filename = argv[arg + 1];
+    url_to_filename[url] = filename;
+  }
+  CHECK(arg == argc);
 
   void* dl_handle = dlopen(plugin_file, RTLD_NOW | RTLD_LOCAL);
   CHECK(dl_handle != NULL);
@@ -455,7 +470,12 @@ int main(int argc, char** argv) {
   CHECK(plugin_funcs.newp != NULL);
 
   TestNewAndDestroy();
-  TestSrpcHelloWorld();
+
+  printf("Test running srpc_hw...\n");
+  TestHelloWorldMethod("http://localhost/srpc_hw.nexe");
+
+  printf("Test running npapi_hw...\n");
+  TestHelloWorldMethod("http://localhost/npapi_hw.nexe");
 
   NPShutdownType shutdown_func =
     reinterpret_cast<NPShutdownType>(

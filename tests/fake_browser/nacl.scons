@@ -7,6 +7,8 @@ Import('env')
 
 # This is built by tests/srpc_hw/nacl.scons.
 srpc_hello_world_prog = env.File('${STAGING_DIR}/srpc_hw.nexe')
+# This is built by tests/npapi_hw/nacl.scons.
+npapi_hello_world_prog = env.File('${STAGING_DIR}/npapi_hw.nexe')
 
 if 'TRUSTED_ENV' not in env:
   Return()
@@ -42,7 +44,9 @@ else:
 sel_ldr = trusted_env.File(
     '${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 node = env.CommandTest('fake_browser_test.out',
-                       [fake_browser, plugin, srpc_hello_world_prog],
+                       [fake_browser, plugin,
+                        "srpc_hw.nexe", srpc_hello_world_prog,
+                        "npapi_hw.nexe", npapi_hello_world_prog],
                        'medium',
                        osenv='NACL_SEL_LDR=%s' % sel_ldr)
 env.Depends(node, sel_ldr)
