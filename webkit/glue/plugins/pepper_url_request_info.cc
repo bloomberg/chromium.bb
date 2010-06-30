@@ -127,8 +127,9 @@ bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty property,
       // TODO(darin): Support extra request headers
       NOTIMPLEMENTED();
       return false;
+    default:
+      return false;
   }
-  return false;
 }
 
 bool URLRequestInfo::AppendDataToBody(const std::string& data) {
