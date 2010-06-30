@@ -175,7 +175,6 @@ extern const char kMetricsRecordingOnly[];
 extern const char kNaClBrokerProcess[];
 extern const char kNaClLoaderProcess[];
 extern const char kNaClStartupDialog[];
-extern const char kNewTabPage[];
 extern const char kNewWrenchMenu[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoEvents[];

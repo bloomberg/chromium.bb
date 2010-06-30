@@ -583,12 +583,6 @@ const char kNaClLoaderProcess[]             = "nacl-loader";
 // Causes the Native Client process to display a dialog on launch.
 const char kNaClStartupDialog[]             = "nacl-startup-dialog";
 
-// Allows the new tab page resource to be loaded from a local HTML file. This
-// should be a path to the HTML file that you want to use for the new tab page.
-// It is used for manually testing new versions of the new tab page only,
-// performance will be poor.
-const char kNewTabPage[]                    = "new-tab-page";
-
 // Uses the new unified app menu instead of the old "page/app" split menus.
 const char kNewWrenchMenu[]                 = "new-wrench-menu";
 

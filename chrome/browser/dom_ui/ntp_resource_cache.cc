@@ -64,27 +64,6 @@ std::wstring GetUrlWithLang(const char* const url) {
   return ASCIIToWide(google_util::AppendGoogleLocaleParam(GURL(url)).spec());
 }
 
-// In case a file path to the new tab page was provided this tries to load
-// the file and returns the file content if successful. This returns an
-// empty string in case of failure.
-std::string GetCustomNewTabPageFromCommandLine() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const FilePath file_path = command_line->GetSwitchValuePath(
-      switches::kNewTabPage);
-
-  if (!file_path.empty()) {
-    // Read the file contents in, blocking the UI thread of the browser.
-    // This is for testing purposes only! It is used to test new versions of
-    // the new tab page using a special command line option. Never use this
-    // in a way that will be used by default in product.
-    std::string file_contents;
-    if (file_util::ReadFileToString(FilePath(file_path), &file_contents))
-      return file_contents;
-  }
-
-  return std::string();
-}
-
 std::string SkColorToRGBAString(SkColor color) {
   // We convert the alpha using DoubleToString because StringPrintf will use
   // locale specific formatters (e.g., use , instead of . in German).
@@ -327,21 +306,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       prefs::kNTPShownSections);
   localized_strings.SetInteger(L"shown_sections", shown_sections);
 
-  // In case we have the new new tab page enabled we first try to read the file
-  // provided on the command line. If that fails we just get the resource from
-  // the resource bundle.
-  base::StringPiece new_tab_html;
-  std::string new_tab_html_str;
-  new_tab_html_str = GetCustomNewTabPageFromCommandLine();
-
-  if (!new_tab_html_str.empty()) {
-    new_tab_html = base::StringPiece(new_tab_html_str);
-  }
-
-  if (new_tab_html.empty()) {
-    new_tab_html = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_NEW_NEW_TAB_HTML);
-  }
+  base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
+      GetRawDataResource(IDR_NEW_NEW_TAB_HTML));
 
   // Inject the template data into the HTML so that it is available before any
   // layout is needed.
