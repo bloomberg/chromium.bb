@@ -2729,6 +2729,9 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            ['exclude', 'browser/dom_ui/filebrowse_ui.cc'],
+            ['exclude', 'browser/dom_ui/mediaplayer_ui.cc'],
+            ['exclude', 'browser/dom_ui/slideshow_ui.cc'],
           ],
         }],
         ['chromeos==1', {
@@ -3010,7 +3013,7 @@
                 '<(allocator_target)',
               ],
             }],
-          ],          
+          ],
         }, {  # 'OS!="win"
           'sources/': [
             # Exclude all of hang_monitor.
