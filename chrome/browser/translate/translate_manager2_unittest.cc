@@ -24,10 +24,12 @@
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cld/languages/public/languages.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 
 using testing::_;
 using testing::Pointee;
 using testing::Property;
+using WebKit::WebContextMenuData;
 
 class TestTranslateManager2 : public TranslateManager2 {
  public:
@@ -234,7 +236,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.y = 0;
     params.is_image_blocked = false;
     params.media_flags = 0;
-    params.spellcheck_enabled = false;;
+    params.spellcheck_enabled = false;
     params.is_editable = false;
     params.page_url = tab_contents->controller().GetActiveEntry()->url();
 #if defined(OS_MACOSX)
@@ -242,7 +244,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
-    params.edit_flags = 0;
+    params.edit_flags = WebContextMenuData::CanTranslate;
     return new TestRenderViewContextMenu(tab_contents, params);
   }
 
@@ -838,8 +840,7 @@ TEST_F(TranslateManager2Test, AlwaysTranslateLanguagePref) {
 }
 
 // Context menu.
-// TODO(estade): fix this test. Failing since r51157.
-TEST_F(TranslateManager2Test, FAILS_ContextMenu) {
+TEST_F(TranslateManager2Test, ContextMenu) {
   // Blacklist www.google.fr and French for translation.
   GURL url("http://www.google.fr");
   TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
