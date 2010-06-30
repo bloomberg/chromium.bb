@@ -28,7 +28,7 @@ class ConnectedSocket : public DescBasedHandle {
  public:
   static ConnectedSocket* New(Plugin* plugin,
                               nacl::DescWrapper* desc,
-                              ServiceRuntime* service_runtime);
+                              bool can_use_proxied_npapi);
 
   virtual bool InvokeEx(uintptr_t method_id,
                         CallType call_type,
@@ -44,8 +44,7 @@ class ConnectedSocket : public DescBasedHandle {
   virtual ~ConnectedSocket();
   bool Init(Plugin* plugin,
             nacl::DescWrapper* desc,
-            ServiceRuntime* service_runtime);
-  ServiceRuntime* service_runtime_;
+            bool can_use_proxied_npapi);
   SrpcClient* srpc_client_;
 };
 

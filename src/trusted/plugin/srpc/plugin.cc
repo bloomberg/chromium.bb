@@ -308,6 +308,7 @@ bool Plugin::SetSrcPropertyImpl(const nacl::string &url) {
     socket_address_ = NULL;
     socket_->Unref();
     socket_ = NULL;
+    delete service_runtime_;
     service_runtime_ = NULL;
   }
   // Load the new module if the origin of the page is valid.
@@ -453,6 +454,7 @@ Plugin::~Plugin() {
   // Clear the pointers to the connected socket and service runtime interface.
   socket_address_ = NULL;
   socket_ = NULL;
+  delete service_runtime_;
   service_runtime_ = NULL;
   PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
   free(local_url_);

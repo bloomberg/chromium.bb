@@ -15,7 +15,6 @@
 
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/service_runtime.h"
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/trusted/plugin/npapi/video.h"
@@ -65,13 +64,13 @@ bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
 
 ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
                                       nacl::DescWrapper* desc,
-                                      ServiceRuntime* service_runtime) {
+                                      bool can_use_proxied_npapi) {
   PLUGIN_PRINTF(("ConnectedSocket::New()\n"));
 
   ConnectedSocket* connected_socket = new(std::nothrow) ConnectedSocket();
 
   if (connected_socket == NULL ||
-      !connected_socket->Init(plugin, desc, service_runtime)) {
+      !connected_socket->Init(plugin, desc, can_use_proxied_npapi)) {
     // Ok to delete if NULL.
     delete connected_socket;
     return NULL;
@@ -82,7 +81,7 @@ ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
 
 bool ConnectedSocket::Init(Plugin* plugin,
                            nacl::DescWrapper* wrapper,
-                           ServiceRuntime* service_runtime) {
+                           bool can_use_proxied_npapi) {
   // TODO(sehr): this lock seems like it should be movable to PluginNpapi.
   VideoScopedGlobalLock video_lock;
 
@@ -91,17 +90,14 @@ bool ConnectedSocket::Init(Plugin* plugin,
     return false;
   }
 
-  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p, %d, %p)\n",
+  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p, %d)\n",
                  static_cast<void*>(plugin),
                  static_cast<void*>(wrapper),
-                 (NULL == service_runtime),
-                 static_cast<void*>(service_runtime)));
-
-  service_runtime_ = service_runtime;
+                 can_use_proxied_npapi));
 
   // Get SRPC client interface going over socket.  Only the JavaScript main
   // channel may use proxied NPAPI (not the command channels).
-  srpc_client_ = new(std::nothrow) SrpcClient(NULL != service_runtime);
+  srpc_client_ = new(std::nothrow) SrpcClient(can_use_proxied_npapi);
   if (NULL == srpc_client_) {
     // Return an error.
     // TODO(sehr): make sure that clients check for this as well.
@@ -118,15 +114,14 @@ bool ConnectedSocket::Init(Plugin* plugin,
   }
 
   // Only enable video on socket with service_runtime.
-  if (NULL != service_runtime_) {
+  if (can_use_proxied_npapi) {
     plugin->EnableVideo();
   }
   return true;
 }
 
 ConnectedSocket::ConnectedSocket()
-  : service_runtime_(NULL),
-    srpc_client_(NULL) {
+  : srpc_client_(NULL) {
   PLUGIN_PRINTF(("ConnectedSocket::ConnectedSocket(%p)\n",
                  static_cast<void*>(this)));
 }
@@ -137,15 +132,6 @@ ConnectedSocket::~ConnectedSocket() {
 
   // Free the SRPC connection.
   delete srpc_client_;
-  //  Free the rpc method descriptors and terminate the connection to
-  //  the service runtime instance.
-  PLUGIN_PRINTF(("ConnectedSocket(%p): deleting SRI %p\n",
-                 static_cast<void*>(this),
-                 static_cast<void*>(service_runtime_)));
-
-  if (service_runtime_) {
-    delete service_runtime_;
-  }
 }
 
 }  // namespace plugin
