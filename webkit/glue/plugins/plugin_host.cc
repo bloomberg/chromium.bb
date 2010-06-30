@@ -569,7 +569,8 @@ const char* NPN_UserAgent(NPP id) {
   }
 
   if (use_mozilla_user_agent)
-    return "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9a1) Gecko/20061103 Firefox/2.0a1";
+    return "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9a1) "
+        "Gecko/20061103 Firefox/2.0a1";
 #elif defined(OS_MACOSX)
   // Silverlight 4 doesn't handle events correctly unless we claim to be Safari.
   scoped_refptr<NPAPI::PluginInstance> plugin;
@@ -705,6 +706,10 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   #if !defined(OS_MACOSX)  // OS X doesn't have windowed plugins.
     case NPNVnetscapeWindow: {
       scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      if (!plugin.get()) {
+        NOTREACHED();
+        return NPERR_GENERIC_ERROR;
+      }
       gfx::PluginWindowHandle handle = plugin->window_handle();
       *((void**)value) = (void*)handle;
       rv = NPERR_NO_ERROR;
