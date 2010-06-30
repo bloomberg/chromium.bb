@@ -187,7 +187,7 @@ deps_os = {
     "src/third_party/xulrunner-sdk":
       "/trunk/deps/third_party/xulrunner-sdk@17887",
     "src/chrome_frame/tools/test/reference_build/chrome":
-      "/trunk/deps/reference_builds/chrome@41984",
+      "/trunk/deps/reference_builds/chrome@51194",
 
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
