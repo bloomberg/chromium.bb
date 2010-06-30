@@ -556,9 +556,13 @@ bool CreateTabFunction::RunImpl() {
   // fall back to a normal window.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
       browser->profile()->IsOffTheRecord()) {
-    browser = Browser::GetOrCreateTabbedBrowser(
-        browser->profile()->GetOriginalProfile());
-    DCHECK(browser);
+    Profile* profile = browser->profile()->GetOriginalProfile();
+    browser = BrowserList::FindBrowserWithType(profile,
+                                               Browser::TYPE_NORMAL, false);
+    if (!browser) {
+      browser = Browser::Create(profile);
+      browser->window()->Show();
+    }
   }
 
   TabStripModel* tab_strip = browser->tabstrip_model();
