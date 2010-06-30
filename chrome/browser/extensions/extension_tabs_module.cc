@@ -139,18 +139,15 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
 // fully populated tab objects.
 DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
                                                      bool populate_tabs) {
+  DCHECK(browser);
+  DCHECK(browser->window());
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetWindowId(browser));
-  bool focused = false;
-  if (browser->window())
-    focused = browser->window()->IsActive();
-
   result->SetBoolean(keys::kIncognitoKey,
                      browser->profile()->IsOffTheRecord());
-  result->SetBoolean(keys::kFocusedKey, focused);
+  result->SetBoolean(keys::kFocusedKey, browser->window()->IsActive());
   gfx::Rect bounds = browser->window()->GetRestoredBounds();
 
-  // TODO(rafaelw): zIndex ?
   result->SetInteger(keys::kLeftKey, bounds.x());
   result->SetInteger(keys::kTopKey, bounds.y());
   result->SetInteger(keys::kWidthKey, bounds.width());
@@ -224,8 +221,11 @@ bool GetWindowFunction::RunImpl() {
 
   Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
                                                include_incognito(), &error_);
-  if (!browser)
+  if (!browser || !browser->window()) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kWindowNotFoundError, IntToString(window_id));
     return false;
+  }
 
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
   return true;
@@ -233,7 +233,7 @@ bool GetWindowFunction::RunImpl() {
 
 bool GetCurrentWindowFunction::RunImpl() {
   Browser* browser = GetCurrentBrowser();
-  if (!browser) {
+  if (!browser || !browser->window()) {
     error_ = keys::kNoCurrentWindowError;
     return false;
   }
@@ -244,7 +244,7 @@ bool GetCurrentWindowFunction::RunImpl() {
 bool GetLastFocusedWindowFunction::RunImpl() {
   Browser* browser = BrowserList::FindBrowserWithType(
       profile(), Browser::TYPE_ANY, include_incognito());
-  if (!browser) {
+  if (!browser || !browser->window()) {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
   }
@@ -269,9 +269,10 @@ bool GetAllWindowsFunction::RunImpl() {
       include_incognito() ? profile()->GetOffTheRecordProfile() : NULL;
   for (BrowserList::const_iterator browser = BrowserList::begin();
     browser != BrowserList::end(); ++browser) {
-      // Only examine browsers in the current profile.
-      if ((*browser)->profile() == profile() ||
-          (*browser)->profile() == incognito_profile) {
+      // Only examine browsers in the current profile that have windows.
+      if (((*browser)->profile() == profile() ||
+           (*browser)->profile() == incognito_profile) &&
+          (*browser)->window()) {
         static_cast<ListValue*>(result_.get())->
           Append(ExtensionTabUtil::CreateWindowValue(*browser, populate_tabs));
       }
@@ -375,7 +376,6 @@ bool CreateWindowFunction::RunImpl() {
   new_window->window()->SetBounds(bounds);
   new_window->window()->Show();
 
-  // TODO(rafaelw): support |focused|, |zIndex|
   if (new_window->profile()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if the extension isn't allowed.
     result_.reset(Value::CreateNullValue());
@@ -394,8 +394,11 @@ bool UpdateWindowFunction::RunImpl() {
 
   Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
                                                include_incognito(), &error_);
-  if (!browser)
+  if (!browser || !browser->window()) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kWindowNotFoundError, IntToString(window_id));
     return false;
+  }
 
   gfx::Rect bounds = browser->window()->GetRestoredBounds();
   // Any part of the bounds can optionally be set by the caller.
@@ -429,7 +432,6 @@ bool UpdateWindowFunction::RunImpl() {
   }
 
   browser->window()->SetBounds(bounds);
-  // TODO(rafaelw): Support |focused|.
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
 
   return true;
@@ -1052,7 +1054,7 @@ static Browser* GetBrowserInProfileWithId(Profile* profile,
   }
 
   if (error_message)
-    *error_message= ExtensionErrorUtils::FormatErrorMessage(
+    *error_message = ExtensionErrorUtils::FormatErrorMessage(
         keys::kWindowNotFoundError, IntToString(window_id));
 
   return NULL;
