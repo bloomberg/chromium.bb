@@ -161,7 +161,7 @@ INLINE static void handle_free(OrigFn fn, size_t ptr) {
   /* Tell memcheck that this memory is poisoned now.
      Don't poison first 8 bytes as they are used by malloc/free internally. */
   VALGRIND_MAKE_MEM_NOACCESS(base + 2 * sizeof(size_t),
-                             size - 2 * sizeof(size_t) + 2 * kRedZoneSize);
+      size - 2 * sizeof(size_t) + 2 * kRedZoneSize);
   VALGRIND_FREELIKE_BLOCK(base + kRedZoneSize, kRedZoneSize);
   CALL_FN_v_W(fn, ptr);
   stop_ignore_all_accesses_and_sync();
@@ -178,13 +178,20 @@ size_t VG_NACL_FUNC(malloc)(size_t size) {
 }
 
 /* calloc() */
+/* We implement calloc() via malloc and memset because, for some
+   reason, Valgrind can not unwind stack traces originating in calloc
+   (or, more exactly, memset) guts. We need these stack traces to
+   suppress false reports that happen in all memory allocation
+   functions.
+   There is a comment for CALL_FN_W_v in nacl_valgrind.h about the importance
+   of luck in stack unwinding; it seems that in this case we ran out of it :)
+*/
 size_t VG_NACL_FUNC(calloc)(size_t nmemb, size_t size) {
-  OrigFn fn;
-  size_t ptr;
-  VALGRIND_GET_ORIG_FN(fn);
-  size_t allocSize = handle_malloc_before(nmemb * size);
-  CALL_FN_W_WW(ptr, fn, 1, allocSize);
-  return handle_malloc_after(ptr, nmemb * size);
+  size_t totalSize = nmemb * size;
+  void* ptr = malloc(totalSize);
+  if (ptr)
+    memset(ptr, 0, totalSize);
+  return (size_t)ptr;
 }
 
 /* realloc() */
