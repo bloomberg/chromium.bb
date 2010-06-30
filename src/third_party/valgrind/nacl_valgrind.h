@@ -1203,12 +1203,10 @@ typedef
       _argvec[0] = (uint64_t)_orig.nraddr;                   \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1225,13 +1223,11 @@ typedef
       _argvec[1] = (uint64_t)(arg1);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                                 \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
+         "naclasp $128,%%r15\n\t"                   \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1249,14 +1245,12 @@ typedef
       _argvec[2] = (uint64_t)(arg2);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "movq 16(%%rax), %%rsi\n\t"                              \
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1275,7 +1269,6 @@ typedef
       _argvec[3] = (uint64_t)(arg3);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "movq 24(%%rax), %%rdx\n\t"                              \
          "movq 16(%%rax), %%rsi\n\t"                              \
@@ -1283,7 +1276,6 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1303,7 +1295,6 @@ typedef
       _argvec[4] = (uint64_t)(arg4);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "movq 32(%%rax), %%rcx\n\t"                              \
          "movq 24(%%rax), %%rdx\n\t"                              \
@@ -1312,7 +1303,6 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1333,7 +1323,6 @@ typedef
       _argvec[5] = (uint64_t)(arg5);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "movq 40(%%rax), %%r8\n\t"                               \
          "movq 32(%%rax), %%rcx\n\t"                              \
@@ -1343,7 +1332,6 @@ typedef
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1365,7 +1353,6 @@ typedef
       _argvec[6] = (uint64_t)(arg6);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "movq 48(%%rax), %%r9\n\t"                               \
          "movq 40(%%rax), %%r8\n\t"                               \
@@ -1375,7 +1362,6 @@ typedef
          "movq 8(%%rax), %%rdi\n\t"                               \
          "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          VALGRIND_CALL_NOREDIR_RAX                                \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
@@ -1400,7 +1386,6 @@ typedef
       _argvec[7] = (uint64_t)(arg7);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "pushq 56(%%rax)\n\t"                                    \
          "movq 48(%%rax), %%r9\n\t"                               \
@@ -1413,7 +1398,6 @@ typedef
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $8, %%rsp\n"                                       \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1438,7 +1422,6 @@ typedef
       _argvec[8] = (uint64_t)(arg8);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "pushq 64(%%rax)\n\t"                                    \
          "pushq 56(%%rax)\n\t"                                    \
@@ -1452,7 +1435,6 @@ typedef
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $16, %%rsp\n"                                      \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1478,7 +1460,6 @@ typedef
       _argvec[9] = (uint64_t)(arg9);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "pushq 72(%%rax)\n\t"                                    \
          "pushq 64(%%rax)\n\t"                                    \
@@ -1493,7 +1474,6 @@ typedef
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $24, %%rsp\n"                                      \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1520,7 +1500,6 @@ typedef
       _argvec[10] = (uint64_t)(arg10);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "pushq 80(%%rax)\n\t"                                    \
          "pushq 72(%%rax)\n\t"                                    \
@@ -1536,7 +1515,6 @@ typedef
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $32, %%rsp\n"                                      \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1564,7 +1542,6 @@ typedef
       _argvec[11] = (uint64_t)(arg11);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "pushq 88(%%rax)\n\t"                                    \
          "pushq 80(%%rax)\n\t"                                    \
@@ -1581,7 +1558,6 @@ typedef
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $40, %%rsp\n"                                      \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
@@ -1610,7 +1586,6 @@ typedef
       _argvec[12] = (uint64_t)(arg12);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         ".cfi_adjust_cfa_offset 0x80\n\t"                        \
          __SANDBOX_RAX_ASM                                        \
          "pushq 96(%%rax)\n\t"                                    \
          "pushq 88(%%rax)\n\t"                                    \
@@ -1628,7 +1603,6 @@ typedef
          VALGRIND_CALL_NOREDIR_RAX                                \
          "addq $48, %%rsp\n"                                      \
          "naclasp $128,%%r15\n\t"                   \
-         ".cfi_adjust_cfa_offset -0x80\n\t"                        \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0])                            \
          : /*trash*/ "cc", "memory", __CALLER_SAVED_REGS          \
