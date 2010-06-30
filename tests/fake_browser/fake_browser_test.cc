@@ -415,11 +415,18 @@ void TestHelloWorldMethod(const char* nexe_url) {
   // http://code.google.com/p/nativeclient/issues/detail?id=652:
   //reverse(all_objects.begin(), all_objects.end());
 
-  for (std::vector<NPObject*>::iterator it = all_objects.begin();
-       it != all_objects.end();
-       it++) {
-    printf("forcibly destroy object...\n");
-    NPObject* npobj = *it;
+  // We do not use an iterator to iterate across the vector, because
+  // the vector can change during the iteration:  deallocate() can call
+  // NPN_ReleaseObject().  However, that is actually a bug for an
+  // invalidate()d object.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=652
+  // TODO(mseaborn): Ensure that all_objects does not change here.
+  int count = 0;
+  while (all_objects.size() > 0) {
+    NPObject* npobj = all_objects.front();
+    all_objects.erase(all_objects.begin());
+    printf("forcibly destroy object %i (%"NACL_PRIuS" remaining)...\n",
+           count++, all_objects.size());
     if (npobj->_class->invalidate != NULL) {
       npobj->_class->invalidate(npobj);
     }
@@ -429,7 +436,6 @@ void TestHelloWorldMethod(const char* nexe_url) {
       free(npobj);
     }
   }
-  all_objects.clear();
 }
 
 int main(int argc, char** argv) {
