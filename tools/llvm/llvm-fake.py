@@ -148,6 +148,7 @@ global_config_flags = {
     '-mattr=+vfp3',
     '-mtriple=armv7a-*-*eabi*',
     '-arm-reserve-r9',
+    '-inline-all-const-memcpy'
   ],
 
 
