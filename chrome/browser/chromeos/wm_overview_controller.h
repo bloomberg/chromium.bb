@@ -26,7 +26,6 @@ class RenderWidgetHost;
 namespace chromeos {
 
 class BrowserListener;
-class WmOverviewSnapshot;
 
 // WmOverviewController is responsible for managing a list of objects
 // that listen to the browsers (BrowserListeners, defined in the

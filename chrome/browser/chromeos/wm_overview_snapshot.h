@@ -14,8 +14,8 @@ class Browser;
 
 namespace chromeos {
 
-// A single snapshot displayed by WmOverviewController.
-// WmOverviewSnapshot contains a label, favicon and snapshot.
+// WmOverviewSnapshot contains a snapshot image of the tab at the
+// given index.
 class WmOverviewSnapshot : public views::WidgetGtk {
  public:
   WmOverviewSnapshot();

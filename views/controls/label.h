@@ -45,6 +45,9 @@ class Label : public View {
   // The view class name.
   static const char kViewClassName[];
 
+  // The padding for the focus border when rendering focused text.
+  static const int kFocusBorderPadding;
+
   Label();
   explicit Label(const std::wstring& text);
   Label(const std::wstring& text, const gfx::Font& font);
@@ -186,12 +189,25 @@ class Label : public View {
   void set_collapse_when_hidden(bool value) { collapse_when_hidden_ = value; }
   bool collapse_when_hidden() const { return collapse_when_hidden_; }
 
+  // Gets/set whether or not this label is to be painted as a focused element.
   void set_paint_as_focused(bool paint_as_focused) {
     paint_as_focused_ = paint_as_focused;
   }
+  bool paint_as_focused() const { return paint_as_focused_; }
 
   void SetHasFocusBorder(bool has_focus_border);
 
+ protected:
+  // Called by Paint to paint the text.  Override this to change how
+  // text is painted.
+  virtual void PaintText(gfx::Canvas* canvas,
+                         const std::wstring& text,
+                         const gfx::Rect& text_bounds,
+                         int flags);
+
+  void invalidate_text_size() { text_size_valid_ = false; }
+
+  virtual gfx::Size GetTextSize() const;
  private:
   // These tests call CalculateDrawStringParams in order to verify the
   // calculations done for drawing text.
@@ -203,11 +219,6 @@ class Label : public View {
   static gfx::Font GetDefaultFont();
 
   void Init(const std::wstring& text, const gfx::Font& font);
-
-  // Returns parameters to be used for the DrawString call.
-  void CalculateDrawStringParams(std::wstring* paint_text,
-                                 gfx::Rect* text_bounds,
-                                 int* flags) const;
 
   // If the mouse is over the text, SetContainsMouse(true) is invoked, otherwise
   // SetContainsMouse(false) is invoked.
@@ -221,11 +232,14 @@ class Label : public View {
   // Returns where the text is drawn, in the receivers coordinate system.
   gfx::Rect GetTextBounds() const;
 
-  gfx::Size GetTextSize() const;
-
   int ComputeMultiLineFlags() const;
 
   gfx::Rect GetAvailableRect() const;
+
+  // Returns parameters to be used for the DrawString call.
+  void CalculateDrawStringParams(std::wstring* paint_text,
+                                 gfx::Rect* text_bounds,
+                                 int* flags) const;
 
   // The colors to use for enabled and disabled labels.
   static SkColor kEnabledColor, kDisabledColor;

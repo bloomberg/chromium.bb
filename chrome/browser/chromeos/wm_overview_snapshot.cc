@@ -10,13 +10,10 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
 
-using views::ColumnSet;
-using views::GridLayout;
 using std::vector;
 
 #if !defined(OS_CHROMEOS)

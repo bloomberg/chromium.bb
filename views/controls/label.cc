@@ -25,7 +25,7 @@ namespace views {
 const char Label::kViewClassName[] = "views/Label";
 SkColor Label::kEnabledColor, Label::kDisabledColor;
 
-static const int kFocusBorderPadding = 1;
+const int Label::kFocusBorderPadding = 1;
 
 Label::Label() {
   Init(std::wstring(), GetDefaultFont());
@@ -78,19 +78,12 @@ void Label::DidChangeBounds(const gfx::Rect& previous,
 
 void Label::Paint(gfx::Canvas* canvas) {
   PaintBackground(canvas);
+
   std::wstring paint_text;
   gfx::Rect text_bounds;
   int flags = 0;
   CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
-  canvas->DrawStringInt(paint_text, font_, color_,
-                        text_bounds.x(), text_bounds.y(),
-                        text_bounds.width(), text_bounds.height(), flags);
-
-  if (HasFocus() || paint_as_focused_) {
-    text_bounds.Inset(-kFocusBorderPadding, -kFocusBorderPadding);
-    canvas->DrawFocusRect(text_bounds.x(), text_bounds.y(),
-                          text_bounds.width(), text_bounds.height());
-  }
+  PaintText(canvas, paint_text, text_bounds, flags);
 }
 
 void Label::PaintBackground(gfx::Canvas* canvas) {
@@ -266,6 +259,44 @@ void Label::SetHasFocusBorder(bool has_focus_border) {
   text_size_valid_ &= !is_multi_line_;
 }
 
+void Label::PaintText(gfx::Canvas* canvas,
+                      const std::wstring& text,
+                      const gfx::Rect& text_bounds,
+                      int flags) {
+  canvas->DrawStringInt(text, font_, color_,
+                        text_bounds.x(), text_bounds.y(),
+                        text_bounds.width(), text_bounds.height(), flags);
+
+  if (HasFocus() || paint_as_focused_) {
+    gfx::Rect focus_bounds = text_bounds;
+    focus_bounds.Inset(-kFocusBorderPadding, -kFocusBorderPadding);
+    canvas->DrawFocusRect(focus_bounds.x(), focus_bounds.y(),
+                          focus_bounds.width(), focus_bounds.height());
+  }
+}
+
+gfx::Size Label::GetTextSize() const {
+  if (!text_size_valid_) {
+    // For single-line strings, we supply the largest possible width, because
+    // while adding NO_ELLIPSIS to the flags works on Windows for forcing
+    // SizeStringInt() to calculate the desired width, it doesn't seem to work
+    // on Linux.
+    int w = is_multi_line_ ?
+        GetAvailableRect().width() : std::numeric_limits<int>::max();
+    int h = font_.height();
+    // For single-line strings, ignore the available width and calculate how
+    // wide the text wants to be.
+    int flags = ComputeMultiLineFlags();
+    if (!is_multi_line_)
+      flags |= gfx::Canvas::NO_ELLIPSIS;
+    gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, flags);
+    text_size_.SetSize(w, h);
+    text_size_valid_ = true;
+  }
+
+  return text_size_;
+}
+
 // static
 gfx::Font Label::GetDefaultFont() {
   return ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
@@ -300,36 +331,6 @@ void Label::Init(const std::wstring& text, const gfx::Font& font) {
   rtl_alignment_mode_ = USE_UI_ALIGNMENT;
   paint_as_focused_ = false;
   has_focus_border_ = false;
-}
-
-void Label::CalculateDrawStringParams(std::wstring* paint_text,
-                                      gfx::Rect* text_bounds,
-                                      int* flags) const {
-  DCHECK(paint_text && text_bounds && flags);
-
-  if (url_set_) {
-    // TODO(jungshik) : Figure out how to get 'intl.accept_languages'
-    // preference and use it when calling ElideUrl.
-    *paint_text = gfx::ElideUrl(url_, font_, width(), std::wstring());
-
-    // An URLs is always treated as an LTR text and therefore we should
-    // explicitly mark it as such if the locale is RTL so that URLs containing
-    // Hebrew or Arabic characters are displayed correctly.
-    //
-    // Note that we don't check the View's UI layout setting in order to
-    // determine whether or not to insert the special Unicode formatting
-    // characters. We use the locale settings because an URL is always treated
-    // as an LTR string, even if its containing view does not use an RTL UI
-    // layout.
-    base::i18n::GetDisplayStringInLTRDirectionality(paint_text);
-  } else if (elide_in_middle_) {
-    *paint_text = gfx::ElideText(text_, font_, width(), true);
-  } else {
-    *paint_text = text_;
-  }
-
-  *text_bounds = GetTextBounds();
-  *flags = ComputeMultiLineFlags();
 }
 
 void Label::UpdateContainsMouse(const MouseEvent& event) {
@@ -374,28 +375,6 @@ gfx::Rect Label::GetTextBounds() const {
   return gfx::Rect(text_origin, text_size);
 }
 
-gfx::Size Label::GetTextSize() const {
-  if (!text_size_valid_) {
-    // For single-line strings, we supply the largest possible width, because
-    // while adding NO_ELLIPSIS to the flags works on Windows for forcing
-    // SizeStringInt() to calculate the desired width, it doesn't seem to work
-    // on Linux.
-    int w = is_multi_line_ ?
-        GetAvailableRect().width() : std::numeric_limits<int>::max();
-    int h = font_.height();
-    // For single-line strings, ignore the available width and calculate how
-    // wide the text wants to be.
-    int flags = ComputeMultiLineFlags();
-    if (!is_multi_line_)
-      flags |= gfx::Canvas::NO_ELLIPSIS;
-    gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, flags);
-    text_size_.SetSize(w, h);
-    text_size_valid_ = true;
-  }
-
-  return text_size_;
-}
-
 int Label::ComputeMultiLineFlags() const {
   if (!is_multi_line_)
     return 0;
@@ -430,6 +409,36 @@ gfx::Rect Label::GetAvailableRect() const {
   gfx::Insets insets(GetInsets());
   bounds.Inset(insets.left(), insets.top(), insets.right(), insets.bottom());
   return bounds;
+}
+
+void Label::CalculateDrawStringParams(std::wstring* paint_text,
+                                      gfx::Rect* text_bounds,
+                                      int* flags) const {
+  DCHECK(paint_text && text_bounds && flags);
+
+  if (url_set_) {
+    // TODO(jungshik) : Figure out how to get 'intl.accept_languages'
+    // preference and use it when calling ElideUrl.
+    *paint_text = gfx::ElideUrl(url_, font_, width(), std::wstring());
+
+    // An URLs is always treated as an LTR text and therefore we should
+    // explicitly mark it as such if the locale is RTL so that URLs containing
+    // Hebrew or Arabic characters are displayed correctly.
+    //
+    // Note that we don't check the View's UI layout setting in order to
+    // determine whether or not to insert the special Unicode formatting
+    // characters. We use the locale settings because an URL is always treated
+    // as an LTR string, even if its containing view does not use an RTL UI
+    // layout.
+    base::i18n::GetDisplayStringInLTRDirectionality(paint_text);
+  } else if (elide_in_middle_) {
+    *paint_text = gfx::ElideText(text_, font_, width(), true);
+  } else {
+    *paint_text = text_;
+  }
+
+  *text_bounds = GetTextBounds();
+  *flags = ComputeMultiLineFlags();
 }
 
 }  // namespace views
