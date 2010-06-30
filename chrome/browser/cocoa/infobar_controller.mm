@@ -281,6 +281,12 @@ const float kAnimateCloseDuration = 0.12;
 - (void)setLabelToMessage:(NSString*)message
                  withLink:(NSString*)link
                  atOffset:(NSUInteger)linkOffset {
+  if (linkOffset == std::wstring::npos) {
+    // linkOffset == std::wstring::npos means the link should be right-aligned,
+    // which is not supported on Mac (http://crbug.com/47728).
+    NOTIMPLEMENTED();
+    linkOffset = [message length];
+  }
   // Create an attributes dictionary for the entire message.  We have
   // to expicitly set the font the control's font.  We also override
   // the cursor to give us the normal cursor rather than the text

@@ -57,7 +57,6 @@ class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
 
   virtual std::wstring GetMessageTextWithOffset(size_t* link_offset) const {
     message_text_accessed = true;
-    *link_offset = 1;
     return kMockLinkInfoBarMessage;
   }
 
