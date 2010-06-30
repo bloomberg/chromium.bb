@@ -2865,6 +2865,7 @@ BlockGroup::BlockGroup(
     const long long stop = start + size_;
 
     bool bSimpleBlock = false;
+    bool bReferenceBlock = false;
 
     while (pos < stop)
     {
@@ -2878,6 +2879,8 @@ BlockGroup::BlockGroup(
                 m_nextTimeCode = t;
             else
                 assert(false);
+
+            bReferenceBlock = true;
         }
         else
         {
@@ -2917,7 +2920,7 @@ BlockGroup::BlockGroup(
     assert(m_pBlock);
 
     if (!bSimpleBlock)
-        m_pBlock->SetKey(m_prevTimeCode >= 0);
+        m_pBlock->SetKey(!bReferenceBlock);
 }
 
 
