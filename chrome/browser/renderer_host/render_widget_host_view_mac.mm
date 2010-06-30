@@ -1585,7 +1585,7 @@ static const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
   return [[toolTip_ copy] autorelease];
 }
 
-// Below is our NSTextInputClient implementation.
+// Below is our NSTextInput implementation.
 //
 // When WebHTMLView receives a NSKeyDown event, WebHTMLView calls the following
 // functions to process this event.
@@ -1662,8 +1662,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return NSNotFound;
 }
 
-- (NSRect)firstRectForCharacterRange:(NSRange)theRange
-                         actualRange:(NSRangePointer)actualRange {
+- (NSRect)firstRectForCharacterRange:(NSRange)theRange {
   // An input method requests a cursor rectangle to display its candidate
   // window.
   // Calculate the screen coordinate of the cursor rectangle saved in
@@ -1678,12 +1677,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (window)
     resultRect.origin = [window convertBaseToScreen:resultRect.origin];
 
-  // If marked text is available, then we actually return the rect of the
-  // selected range within the marked text. Otherwise, we actually can't get
-  // the rect of an arbitrary range in the web content, so just return the
-  // caret rect instead and don't touch actualRange at all.
-  if (actualRange && hasMarkedText_)
-    *actualRange = selectedRange_;
   return resultRect;
 }
 
@@ -1702,8 +1695,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return hasMarkedText_ ? markedRange_ : NSMakeRange(NSNotFound, 0);
 }
 
-- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range
-                                   actualRange:(NSRangePointer)actualRange {
+- (NSAttributedString *)attributedSubstringFromRange:(NSRange)range {
   // TODO(hbono): Even though many input method works without implementing
   // this method, we need to save a copy of the string in the setMarkedText
   // method and create a NSAttributedString with the given range.
@@ -1718,8 +1710,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 // Each RenderWidgetHostViewCocoa has its own input context, but we return
 // nil when the caret is in non-editable content or password box to avoid
 // making input methods do their work.
-- (NSTextInputContext *)inputContext
-{
+- (NSTextInputContext *)inputContext {
   switch(renderWidgetHostView_->text_input_type_) {
     case WebKit::WebTextInputTypeNone:
     case WebKit::WebTextInputTypePassword:
@@ -1757,13 +1748,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     unmarkTextCalled_ = YES;
 }
 
-- (void)setMarkedText:(id)string selectedRange:(NSRange)newSelRange
-                              replacementRange:(NSRange)replacementRange {
+- (void)setMarkedText:(id)string selectedRange:(NSRange)newSelRange {
   // An input method updates the composition string.
   // We send the given text and range to the renderer so it can update the
   // composition node of WebKit.
-  // TODO(suzhe): It's hard for us to support replacementRange without accessing
-  // the full web content.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   int length = [im_text length];
@@ -1819,7 +1807,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   }
 }
 
-- (void)insertText:(id)string replacementRange:(NSRange)replacementRange {
+- (void)insertText:(id)string {
   // An input method has characters to be inserted.
   // Same as Linux, Mac calls this method not only:
   // * when an input method finishs composing text, but also;
@@ -1833,8 +1821,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // Text inserting might be initiated by other source instead of keyboard
   // events, such as the Characters dialog. In this case the text should be
   // sent as an input method event as well.
-  // TODO(suzhe): It's hard for us to support replacementRange without accessing
-  // the full web content.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   if (handlingKeyDown_) {
