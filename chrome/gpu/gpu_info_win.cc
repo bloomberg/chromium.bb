@@ -11,37 +11,6 @@
 #include "base/scoped_native_library.h"
 #include "base/string_util.h"
 
-uint32 GPUInfo::vendor_id() const {
-  return vendor_id_;
-}
-
-uint32 GPUInfo::device_id() const {
-  return device_id_;
-}
-
-std::wstring GPUInfo::driver_version() const {
-  return driver_version_;
-}
-
-uint32 GPUInfo::pixel_shader_version() const {
-  return pixel_shader_version_;
-}
-
-uint32 GPUInfo::vertex_shader_version() const {
-  return vertex_shader_version_;
-}
-
-void GPUInfo::SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
-                              const std::wstring& driver_version,
-                              uint32 pixel_shader_version,
-                              uint32 vertex_shader_version) {
-  vendor_id_ = vendor_id;
-  device_id_ = device_id;
-  driver_version_ = driver_version;
-  pixel_shader_version_ = pixel_shader_version;
-  vertex_shader_version_ = vertex_shader_version;
-}
-
 bool GPUInfo::CollectGraphicsInfo() {
   FilePath d3d_path(base::GetNativeLibraryName(L"d3d9"));
   base::ScopedNativeLibrary d3dlib(d3d_path);

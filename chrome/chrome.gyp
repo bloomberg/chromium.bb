@@ -690,6 +690,7 @@
         'gpu/gpu_config.h',
         'gpu/gpu_info_win.cc',
         'gpu/gpu_info.h',
+        'gpu/gpu_info.cc',
         'gpu/gpu_main.cc',
         'gpu/gpu_process.cc',
         'gpu/gpu_process.h',
